@@ -41,8 +41,9 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // Trade, with the Position Change Reflection completed or declined. D5: or deferred.
   'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline', 'Defer'],
   // D4: the Open list and Detail carry the current evaluation. D5: Detail carries Debt status and actions.
-  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'CurrentEvaluation'],
-  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt'],
+  // D5R: the evaluation also carries Reward : risk now.
+  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'CurrentEvaluation', 'RewardRiskNow'],
+  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt', 'RewardRiskNow'],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
   'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
@@ -50,9 +51,12 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
   'MarketData.recover': [],
   // D5 P17: owed reflections inside the walk; there is no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections'],
-  'DailyReview.getTrade': ['OwedReflections'],
-  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt'],
+  // D5R: the walk carries each Trade's range position and the gap groups' Trades; a card carries the Plan
+  // baseline; SaveReviewMarks saves one card's Marks in one commit. Market Data's prepare and apply pair
+  // is an internal seam of that save and is not an operation (P37).
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades'],
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline'],
+  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
 };
 
 export function installedCapabilities(releaseId: string, sessionPolicy: SessionPolicyIdentity): InstalledCapabilityManifest {

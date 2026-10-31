@@ -4,6 +4,7 @@
 // a route qualifies by variant is presented by some route, the manifest names the schema version
 // this release writes, and every declared Entry Type is seeded in a fresh Workspace.
 // From D4 (T4.19): the manifest names the session-policy identity the release applies.
+// From D5R (T5R.6): Market Data's prepare/apply pair is absent from the facade and the manifest.
 import { IDBFactory } from 'fake-indexeddb';
 import { createApplication, facadeOperations } from '../src/app/compose.ts';
 import { ROUTES, type RouteDefinition } from '../src/app/routes.ts';
@@ -34,6 +35,11 @@ const manifest = Object.keys(app.capabilities.operations).sort();
 const facade = facadeOperations(app);
 for (const op of manifest) if (!facade.includes(op)) problems.push(`manifest declares ${op}, which the facade does not expose`);
 for (const op of facade) if (!manifest.includes(op)) problems.push(`facade exposes ${op}, which the manifest does not declare`);
+// From D5R (T5R.6): Market Data's prepare and apply pair is an internal seam of DailyReview.save (P37),
+// so neither the facade nor the manifest names it.
+for (const op of [...facade, ...manifest]) {
+  if (/prepareEffects|applyPreparedEffects/.test(op)) problems.push(`${op} is an internal seam and must not be a public operation`);
+}
 for (const route of ROUTES) {
   for (const op of route.requires) {
     if (!manifest.includes(op)) problems.push(`route ${route.id} requires absent capability ${op}`);

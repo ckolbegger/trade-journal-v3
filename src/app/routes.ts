@@ -21,7 +21,7 @@ export const ROUTES = [
     label: 'Trades',
     // The Open (default) and Planned tabs (D2 A32).
     requires: ['TradeViewsAndReporting.browseTrades'],
-    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'CurrentEvaluation'] },
+    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'CurrentEvaluation', 'RewardRiskNow'] },
     navigation: true,
     readOnly: true,
   },
@@ -41,9 +41,9 @@ export const ROUTES = [
     ],
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
-      'DailyReview.open': ['LatestCompleted', 'OwedReflections'],
-      'DailyReview.getTrade': ['OwedReflections'],
-      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt'],
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades'],
+      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline'],
+      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
       'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
     },
@@ -57,7 +57,7 @@ export const ROUTES = [
     // D5 P17: Debt status, and answering or declining an owed reflection here (Source Trade Detail).
     requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query', 'Journal.save'],
     variants: {
-      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt'],
+      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt', 'RewardRiskNow'],
       'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
       'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
     },

@@ -106,7 +106,8 @@ export async function createApplication(deps: ApplicationDeps) {
     DailyReview: {
       open: (request: Parameters<typeof dailyReview.open>[0]) => dailyReview.open(request),
       getTrade: (request: Parameters<typeof dailyReview.getTrade>[0]) => dailyReview.getTrade(request),
-      save: ((request) => dailyReview.save(request)) as typeof dailyReview.save,
+      // Both overloads pass through: Action and Debt saves keep their result, SaveReviewMarks may answer a bare ReviewChanged.
+      save: dailyReview.save,
     },
     capabilities: installedCapabilities(deps.releaseId, sessionPolicy.identity),
     session,

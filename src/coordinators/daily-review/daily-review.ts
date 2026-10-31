@@ -150,8 +150,11 @@ export interface DailyReview {
   open(request: OpenDailyReviewRequest): Promise<OpenDailyReviewResult>;
   getTrade(request: GetDailyTradeReviewRequest): Promise<GetDailyTradeReviewResult>;
   // The Action and Debt saves keep their results; a Marks save (or any request) may also answer a bare ReviewChanged.
-  save(request: SaveTradeActionRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
-  save(request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult>;
+  // A property of overloaded call signatures, not a method, so the facade can forward it unbound.
+  readonly save: {
+    (request: SaveTradeActionRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
+    (request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult>;
+  };
 }
 
 // The Trade's place in the walk and, when its facts replay, its evaluation at the Review-date frame.
@@ -703,13 +706,18 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'MarksSaved', marks, review };
   }
 
+  // The overloads (see the interface) narrow the result by request kind; the body answers the widest.
+  function save(request: SaveTradeActionRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
+  function save(request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult>;
+  function save(request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult> {
+    return deps.guard.run('DailyReview.save', () => {
+      if (request.kind === 'ResolveReviewDebt') return resolveReviewDebt(request);
+      return request.kind === 'SaveReviewMarks' ? saveReviewMarks(request) : saveTradeAction(request);
+    });
+  }
+
   return {
-    // The overloads (see the interface) narrow the result by request kind; the body answers the widest.
-    save: ((request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult> =>
-      deps.guard.run('DailyReview.save', () => {
-        if (request.kind === 'ResolveReviewDebt') return resolveReviewDebt(request);
-        return request.kind === 'SaveReviewMarks' ? saveReviewMarks(request) : saveTradeAction(request);
-      })) as DailyReview['save'],
+    save,
 
     // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
     open: (request) =>

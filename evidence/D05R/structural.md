@@ -372,3 +372,20 @@ Test-only fix to `e2e/d4/responsive-a11y.spec.ts:68`. The suite serves `dist-rel
 Failures before and after: 5 of 50 before, 0 of 50 after. Throttle: none. dist-faults was not rebuilt (this case does not use it).
 
 ocr review of `5aa2141`: not run, at the user's direction (test-only commit; the user accepted the stress and mutation checks above).
+
+## T5R.6 Capability manifest and composition
+
+Changes: `src/coordinators/workspace/capabilities.ts` (manifest), `src/app/routes.ts` (Review, Trades and Trade Detail present the new variants), `src/app/compose.ts` and `src/coordinators/daily-review/daily-review.ts` (typing), `tools/verify-capabilities.ts`, and the exact-manifest expectation in `src/coordinators/workspace/workspace.test.ts`.
+
+- Manifest additions, as variants of existing operations: `DailyReview.save` gains `SaveReviewMarks`; `DailyReview.open` gains `RangePosition` and `GapTrades`; `DailyReview.getTrade` gains `PlanBaseline`; `TradeViewsAndReporting.browseTrades` and `getTradeDetail` gain `RewardRiskNow` (the evaluation both carry). No new operation names, so the counts equal D5's.
+- Market Data `prepareEffects` and `applyPreparedEffects` are not on the facade or in the manifest. `verify-capabilities.ts` now fails if either name appears in either list (the only change to the script).
+- Typing: the two casts are gone. `DailyReview.save` is now a property of overloaded call signatures (a method triggered `@typescript-eslint/unbound-method` when forwarded), implemented by a local overloaded function, and the facade forwards `dailyReview.save` directly. Behaviour unchanged; `ReviewChanged.evidence` stays required for the Action and Debt saves.
+
+| Command | Result |
+|---|---|
+| `npm run verify:capabilities` | exit 0; `19 operations, 10 variant-qualified, 8 routes, 3 Entry Types, schema 4` (D5: 19 / 10 / 8 / 3 / 4) |
+| `npx vitest run src tests/integration` | exit 0; 124 files, 1026 tests passed (one earlier run before the manifest test was updated failed; two later runs passed) |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 (first attempt failed unbound-method on the facade; fixed by the property typing above) |
+| `npm run lint:deps` | exit 0 |
