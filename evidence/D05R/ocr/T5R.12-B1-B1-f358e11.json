@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 55127,
+    "input_tokens": 54744,
+    "output_tokens": 383,
+    "cache_read_tokens": 13440,
+    "elapsed": "29s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The new href expression introduces a nested ternary, which the review checklist explicitly prohibits. Compute the query suffix before the JSX using if/else branches (instrument first, then panel) to preserve the precedence without nesting conditional expressions.",
+      "existing_code": "      href={`/review?trade=${tradeId}${instrument !== undefined ? `\u0026instrument=${encodeURIComponent(instrument)}` : panel === undefined ? '' : `\u0026panel=${panel}`}`}",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/ReviewView.tsx",
+      "files": [
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "9551af96-040f-45e9-84b6-e2d1534ab93b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9551af96-040f-45e9-84b6-e2d1534ab93b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f358e113",
+      "resolved_base": "26806cbdec6340516dc5bd697f1e9991fd5e06ca",
+      "resolved_head": "f358e113426edffe6e33b53560491a8137b359d2",
+      "exact_range": "26806cbdec6340516dc5bd697f1e9991fd5e06ca..f358e113426edffe6e33b53560491a8137b359d2",
+      "source_artifact_sha256": "70e2882b17a1d05b75550093468d1c2ec383e930c8984cae480609cd096c0685"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "861b4b2c4ad916e6a7e9f6ca1ae0ae9384a54caa5e835d04494758d8979d53a5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "861b4b2c4ad916e6a7e9f6ca1ae0ae9384a54caa5e835d04494758d8979d53a5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 29187
+  }
+}

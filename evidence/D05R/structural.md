@@ -1026,3 +1026,13 @@ Record. All in `ReviewCards.test.tsx`:
 | an unknown `panel` value is ignored (flagged first-run pass) | mutation: the param cast to `PanelName` unchecked fails with `expected [ 'false', 'false', 'false' ] to deeply equal [ 'false', 'false', 'true' ]` |
 
 The `?instrument=` match still wins over `panel` (Marks). Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 376 passed. No browser spec changed.
+
+ocr review of `f358e11` (T5R.12-B1-B1): one file reviewed (three excluded). Raw output: [ocr/T5R.12-B1-B1-f358e11.json](ocr/T5R.12-B1-B1-f358e11.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| low | `ReviewView.tsx:40` | `CardLink`'s `href` nests a ternary (instrument, then panel, then nothing) inside a template literal; compute the query before the JSX. | Valid (readability only; behavior correct): bug task T5R.12-B1-B1-B1. |
+
+### T5R.12-B1-B1-B1 CardLink's query computed before the JSX
+
+Structural: the `href` query is built in a plain statement before the JSX, same output. Verified by the existing `ReviewCards.test.tsx` cases staying green.
