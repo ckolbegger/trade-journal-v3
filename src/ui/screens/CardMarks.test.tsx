@@ -521,6 +521,31 @@ describe('earlier sessions after a save', () => {
   });
 });
 
+describe('earlier sessions after Refresh', () => {
+  it('should send an earlier-session draft with the resolution and revision of the newest Review after Refresh, not those of the first snapshot', async () => {
+    const acknowledgment = { versionId: 'a1', kind: 'Asserted' as const, reason: 'no quote', savedAt: '2026-10-12T21:00:00Z' };
+    const changedGap: Earlier[number] = { ...xyzGap, missing: [], acknowledged: [FRIDAY], revisions: { [FRIDAY]: 4 }, acknowledgments: { [FRIDAY]: acknowledgment } };
+    const changed = review({ families: [{ family: 'Marks', today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [changedGap] }, { family: 'Trades', trades: WALK }] });
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [] } }).mockResolvedValueOnce(marksSavedResult([savedKey('XYZ', FRIDAY, '51.00')]));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await within(panel).findByRole('alert');
+
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(changed);
+    await user.click(within(panel).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByText('Acknowledged Unavailable')).toBeTruthy());
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+
+    await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(facade.DailyReview.save).mock.calls[1]![0]).toMatchObject({ entries: [{ key: { instrumentKey: 'XYZ', tradingDate: FRIDAY }, expectedRevision: 4 }] });
+  });
+});
+
 describe('Save Marks (P37, A155) not written', () => {
   it('should say nothing was saved, keep the drafts, and offer Refresh when the Review changed, and say so when storage failed', async () => {
     const facade = cardFacade();

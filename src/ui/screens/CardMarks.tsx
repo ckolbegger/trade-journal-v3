@@ -243,6 +243,21 @@ function GapList({ panel: shared, group }: { readonly panel: Panel; readonly gro
   );
 }
 
+// The sessions the card opened with, each read from the newest Review that still lists it: a session another tab
+// resolved stays listed, at its new resolution and revision, and one the Review no longer lists keeps its snapshot.
+function withNewest(opened: GapGroup, newest: GapGroup | undefined): GapGroup {
+  const listed = (group: GapGroup | undefined, date: string) => group !== undefined && (group.missing.includes(date) || group.acknowledged.includes(date));
+  const sessions = sessionsOf(opened);
+  const source = (date: string) => (listed(newest, date) ? newest! : opened);
+  const from = (list: (group: GapGroup) => readonly string[]) => sessions.filter((date) => list(source(date)).includes(date));
+  const pick = <T,>(table: (group: GapGroup) => Readonly<Record<string, T>>): Record<string, T> =>
+    Object.fromEntries(sessions.flatMap((date) => {
+      const value = table(source(date))[date];
+      return value === undefined ? [] : [[date, value]];
+    }));
+  return { ...opened, missing: from((group) => group.missing), acknowledged: from((group) => group.acknowledged), revisions: pick((group) => group.revisions), acknowledgments: pick((group) => group.acknowledgments) };
+}
+
 export interface CardMarksProps {
   readonly facade: UiFacade;
   readonly tradeId: string;
@@ -264,7 +279,8 @@ export function CardMarks({ facade, tradeId, marks, underlying, onEntryDirty, on
   const uid = useId();
   const { writable, report } = useRuntime();
   // The earlier sessions as the card opened: a session filled meanwhile stays listed with its saved Mark until the card is closed.
-  const [earlier] = useState(marks.earlier);
+  const [opened] = useState(marks.earlier);
+  const earlier = opened.map((group) => withNewest(group, marks.earlier.find((now) => now.instrumentKey === group.instrumentKey)));
   const [drafts, setDrafts] = useState<Readonly<Record<string, Draft>>>({});
   const [issues, setIssues] = useState<Readonly<Record<string, readonly FieldIssue[]>>>({});
   const [notices, setNotices] = useState<Readonly<Record<string, string>>>({});
