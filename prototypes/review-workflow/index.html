@@ -33,6 +33,8 @@ p { margin: 0.2rem 0; }
 
 /* Prototype chrome */
 .topbar { position: sticky; top: 0; z-index: 20; background: var(--ink); color: #fff; padding: 0.5rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; }
+/* The prototype's bar wraps on phones; it scrolls away there so it never covers an opened card. */
+@media (max-width: 700px) { .topbar { position: static; } .pcard { scroll-margin-top: 0.5rem; } }
 .topbar .proto { background: #fff4dd; color: var(--ink); border-radius: 999px; padding: 0 0.5rem; font-size: 0.75rem; font-weight: 700; }
 .tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 .tabs button { font: inherit; font-weight: 600; background: transparent; color: #fff; border: 2px solid #fff6; border-radius: 999px; padding: 0.3rem 0.8rem; cursor: pointer; min-height: 36px; }
@@ -114,14 +116,18 @@ label.field { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.35r
 .statusbar { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: baseline; margin-bottom: 0.5rem; }
 .nav-foot { display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
 
-/* B — choose, accordions */
-.split { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
-@media (min-width: 820px) { .split { grid-template-columns: 290px 1fr; align-items: start; } .queue { position: sticky; top: 4rem; } }
-.queue { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-.queue button { width: 100%; font: inherit; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.45rem 0.65rem; cursor: pointer; }
-.queue button[aria-current='true'] { border: 2px solid var(--ink); box-shadow: inset 4px 0 0 var(--ink); }
-.queue .q-name { font-weight: 700; }
-.queue .q-todo { font-size: 0.82rem; color: var(--muted); }
+/* B — choose, each position card opens in place */
+.queue { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 0.4rem; max-width: 860px; }
+.pcard { background: var(--card); border: 1px solid var(--line); border-radius: 12px; scroll-margin-top: 4.5rem; min-width: 0; }
+.pcard.open { border: 2px solid var(--ink); box-shadow: inset 4px 0 0 var(--ink); }
+.pcard.done:not(.open) { background: #f4faf5; }
+.pcard-btn { width: 100%; font: inherit; text-align: left; background: transparent; border: none; border-radius: 12px; padding: 0.5rem 0.75rem; cursor: pointer; min-height: 48px; display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.6rem; align-items: center; }
+.pcard-btn .q-name { font-weight: 700; font-size: 1.05rem; }
+.pcard-btn .q-todo { font-size: 0.85rem; color: var(--muted); grid-column: 1; }
+.pcard-btn .q-side { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: 0.4rem; align-items: center; }
+.pcard-btn .chev { transition: transform 0.15s; }
+.pcard-btn[aria-expanded='true'] .chev { transform: rotate(90deg); }
+.pcard-body { padding: 0 0.75rem 0.75rem; }
 .acc { border: 1px solid var(--line); border-radius: 10px; margin: 0.4rem 0; background: var(--card); }
 .acc > h3 { margin: 0; font-variant: normal; text-transform: none; letter-spacing: 0; color: var(--ink); font-size: 1rem; }
 .acc-btn { width: 100%; font: inherit; background: transparent; border: none; cursor: pointer; padding: 0.55rem 0.75rem; display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; text-align: left; min-height: 44px; }
@@ -171,7 +177,7 @@ const INST = {
   'SPY 620C': 'SPY Nov 20 620 Call',
 };
 // Ordered by attention, as the Review returns them.
-const POS = [
+const BASE = [
   { id: 'spy', name: 'SPY Iron Condor', meta: 'Iron Condor · Income · IBKR', opened: '2026-10-28', multi: true, band: 'Quantified pressure', reason: '41% of the way from entry to the Stop',
     stopTarget: 'Stop: close for $8.20 · Target: close for $1.00',
     legs: [ { k: 'SPY 540P', q: 1, m: 100, e: 2.10 }, { k: 'SPY 560P', q: -1, m: 100, e: 4.35 }, { k: 'SPY 600C', q: -1, m: 100, e: 3.05 }, { k: 'SPY 620C', q: 1, m: 100, e: 1.20 } ],
@@ -190,11 +196,20 @@ const POS = [
     stopTarget: 'Stop $395.00 · Target $450.00',
     legs: [ { k: 'MSFT', q: 50, m: 1, e: 412.00 } ], refl: [] },
 ];
+// Sixteen routine Long Stock positions, to try the Review with 20 positions.
+const FILLER = ['AMZN', 'GOOGL', 'META', 'NVDA', 'JPM', 'V', 'KO', 'PEP', 'XOM', 'CVX', 'HD', 'COST', 'UNH', 'LLY', 'ORCL', 'ADBE'].map((t, i) => {
+  const e = 50 + i * 17.25;
+  INST[t] = t;
+  return { id: t.toLowerCase(), name: t, meta: 'Long Stock · Swing · Schwab', opened: '2026-10-20', band: 'Routine', reason: 'No pressure toward the Stop or the Target',
+    stopTarget: `Stop ${'$' + (e * 0.92).toFixed(2)} · Target ${'$' + (e * 1.15).toFixed(2)}`, legs: [{ k: t, q: 20, m: 1, e }], refl: [] };
+});
+let POS = BASE;
 // Marks already recorded before this Review (earlier sessions).
 const REC = { 'MSFT|2026-10-27': 409.10, 'MSFT|2026-10-28': 413.75, 'AAPL 250C|2026-10-27': 2.40, 'AAPL 250C|2026-10-28': 2.70,
   'SPY 540P|2026-10-28': 1.95, 'SPY 560P|2026-10-28': 3.90, 'SPY 600C|2026-10-28': 2.80, 'SPY 620C|2026-10-28': 1.05 };
 // What the Pricing Provider returns in Automatic mode (D11). SPY 560P has no close; SPY 600C was overridden by hand.
 const AUTO = { 'AAPL|2026-10-27': 228.95, 'AAPL|2026-10-28': 231.40, 'AAPL|2026-10-29': 233.85, 'MSFT|2026-10-29': 418.20, 'AAPL 250C|2026-10-29': 2.85, 'SPY 540P|2026-10-29': 1.65, 'SPY 620C|2026-10-29': 0.90, 'SPY 600C|2026-10-29': 2.55 };
+for (const f of FILLER) { const e = f.legs[0].e; REC[`${f.name}|2026-10-27`] = +(e * 1.01).toFixed(2); REC[`${f.name}|2026-10-28`] = +(e * 1.02).toFixed(2); AUTO[`${f.name}|2026-10-29`] = +(e * 1.025).toFixed(2); }
 const MODES = ['Planned', 'Deliberate Adjustment', 'Reactive', 'Impulsive'];
 const EMOTIONS = ['Calm', 'Confident', 'Curious', 'Anxious', 'Fearful', 'Frustrated', 'Excited', 'Bored'];
 const CHOICES = ['Hold', 'Exit', 'Roll', 'Adjust'];
@@ -202,7 +217,8 @@ const BAND_ORDER = ['Blocker', 'Boundary reached', 'Evidence limited', 'Quantifi
 
 // ---------- State ----------
 let S;
-function init(pricing = 'manual', variant = 'A') {
+function init(pricing = 'manual', variant = 'A', many = false) {
+  POS = many ? [...BASE, ...FILLER] : BASE;
   const marks = {};
   for (const p of POS) for (const k of [...reqKeys(p), ...gapKeys(p)]) {
     if (marks[k]) continue;
@@ -212,7 +228,7 @@ function init(pricing = 'manual', variant = 'A') {
   }
   // A Manual Mark entered on Trade Detail earlier today; it wins over the provider's price.
   marks['SPY 600C|2026-10-29'] = { v: 2.40, src: 'manual', by: 'detail', provider: pricing === 'auto' ? 2.55 : undefined };
-  S = { variant, pricing, marks, refl: {}, draft: {}, act: {},
+  S = { variant, pricing, many, marks, refl: {}, draft: {}, act: {},
     ui: { openRefl: null, msg: null, aIdx: 0, aDone: false, bSel: POS[0].id, bPanel: null, cDrawer: null, focusSel: null } };
   S.ui.bPanel = firstPanel(POS[0]);
 }
@@ -400,31 +416,41 @@ function nextIncomplete(from) {
   return -1;
 }
 
-// ---------- B: choose next, accordion panels ----------
-function viewB() {
-  const p = POS.find((q) => q.id === S.ui.bSel);
-  const queue = `<ul class="queue" aria-label="Positions to review">${POS.map((q) => `<li><button data-act="bSel" data-pid="${q.id}" data-fid="q:${q.id}" aria-current="${q.id === p.id}">
-      <div class="spread"><span class="q-name">${esc(q.name)}</span>${posDone(q) ? '<span class="chip done">✓ Done</span>' : bandChip(q)}</div>
-      <div class="q-todo">${posDone(q) ? (S.act[q.id].choice) : todoText(q)}</div></button></li>`).join('')}</ul>`;
+// ---------- B: choose next; a position card opens in place with its work in accordion panels ----------
+function bBody(p) {
   const panel = (id, title, summary, ok, body) => {
     const open = S.ui.bPanel === id;
-    return `<div class="acc"><h3><button class="acc-btn" aria-expanded="${open}" aria-controls="acc-${id}" data-act="bPanel" data-panel="${id}" data-fid="acc:${p.id}:${id}">
-        <span><span class="t">${title}</span> <span class="s">${summary}</span></span><span class="row">${ok}<span class="chev" aria-hidden="true">▸</span></span></button></h3>
-      ${open ? `<div class="acc-body" id="acc-${id}">${body}</div>` : ''}</div>`;
+    return `<div class="acc"><h4 style="margin:0"><button class="acc-btn" aria-expanded="${open}" aria-controls="acc-${p.id}-${id}" data-act="bPanel" data-panel="${id}" data-fid="acc:${p.id}:${id}">
+        <span><span class="t">${title}</span> <span class="s">${summary}</span></span><span class="row">${ok}<span class="chev" aria-hidden="true">▸</span></span></button></h4>
+      ${open ? `<div class="acc-body" id="acc-${p.id}-${id}">${body}</div>` : ''}</div>`;
   };
   const rDue = reflLeft(p);
   const a = S.act[p.id];
-  return `<div class="statusbar"><span>Review Date <b>${DLABEL[TODAY]}</b></span><b>${reviewStatus()}</b><span class="hint">${POS.filter(posDone).length} of ${POS.length} positions done · pick any position</span></div>
-    <div class="split">
-      <nav aria-label="Review queue">${queue}</nav>
-      <section class="card" id="b-main" aria-label="${esc(p.name)} review">
-        ${posHeader(p)}
-        ${panel('marks', 'Marks', marksSummary(p), doneChip(marksDone(p), marksDone(p) ? 'In' : `${marksLeft(p)} needed`), marksSection(p))}
-        ${panel('refl', 'Reflections', p.refl.length ? `${p.refl.length} owed, ${rDue} due now` : 'none owed', p.refl.length ? doneChip(rDue === 0, rDue === 0 ? 'Nothing due' : `${rDue} due`) : '<span class="chip quiet">None</span>', reflSection(p))}
-        ${panel('action', 'Action', a?.saved ? a.choice : 'Hold, Exit, Roll or Adjust', doneChip(actDone(p), actDone(p) ? 'Saved' : 'Needed'), actionSection(p))}
-        ${S.ui.msg ? `<p role="status" class="small">${S.ui.msg}</p>` : ''}
-      </section>
+  return `<div class="pcard-body" id="pb-${p.id}">
+      ${S.ui.msg ? `<p role="status" class="small chip info" style="white-space:normal">${S.ui.msg}</p>` : ''}
+      <p class="muted small">${p.meta}</p>
+      <div class="figs"><span>${pnlText(p)}</span><span class="muted">${p.stopTarget}</span></div>
+      ${reasons(p).map((r) => `<p class="small">${r}</p>`).join('')}
+      ${panel('marks', 'Marks', marksSummary(p), doneChip(marksDone(p), marksDone(p) ? 'In' : `${marksLeft(p)} needed`), marksSection(p))}
+      ${panel('refl', 'Reflections', p.refl.length ? `${p.refl.length} owed, ${rDue} due now` : 'none owed', p.refl.length ? doneChip(rDue === 0, rDue === 0 ? 'Nothing due' : `${rDue} due`) : '<span class="chip quiet">None</span>', reflSection(p))}
+      ${panel('action', 'Action', a?.saved ? a.choice : 'Hold, Exit, Roll or Adjust', doneChip(actDone(p), actDone(p) ? 'Saved' : 'Needed'), actionSection(p))}
     </div>`;
+}
+function viewB() {
+  const cards = POS.map((q) => {
+    const open = q.id === S.ui.bSel;
+    return `<li class="pcard ${open ? 'open' : ''} ${posDone(q) ? 'done' : ''}" id="pc-${q.id}">
+      <h2 style="margin:0;font-size:inherit"><button class="pcard-btn" aria-expanded="${open}" aria-controls="pb-${q.id}" data-act="bSel" data-pid="${q.id}" data-fid="hd:${q.id}">
+        <span class="q-name">${esc(q.name)}</span>
+        <span class="q-todo">${posDone(q) ? `Done · ${S.act[q.id].choice}` : todoText(q)}</span>
+        <span class="q-side">${posDone(q) ? '<span class="chip done">✓ Done</span>' : bandChip(q)}<span class="chev" aria-hidden="true">▸</span></span>
+      </button></h2>
+      ${open ? bBody(q) : ''}
+    </li>`;
+  }).join('');
+  return `<div class="queue"><div class="statusbar"><span>Review Date <b>${DLABEL[TODAY]}</b></span><b>${reviewStatus()}</b><span class="hint">${POS.filter(posDone).length} of ${POS.length} positions done · open any position</span></div>
+</div>
+    <ul class="queue" aria-label="Positions to review">${cards}</ul>`;
 }
 
 // ---------- C: review sheet with a drawer ----------
@@ -476,7 +502,7 @@ function drawer() {
 const VARIANTS = {
   A: { tab: 'A · Guided', idea: 'Steps through positions in attention order. Each position shows all its work on one card: Marks grouped by session, reflections grouped by day, then the Action. The Review lands you back on the stepper when you finish.',
     multi: 'A multi-leg position lists one Mark row per leg, under the same session heading.', auto: 'Fetched prices arrive filled and tagged; the Marks step becomes a quick check, and only the one missing leg asks for a price.' },
-  B: { tab: 'B · Choose next', idea: 'A queue of positions with what each still owes. Picking one opens its work in accordion panels, one open at a time; finishing a panel opens the next, finishing a position moves you to the next one.',
+  B: { tab: 'B · Choose next', idea: 'A list of position cards, each showing its band and what it still owes. Clicking a card opens it in place, with its work in accordion panels, one open at a time, and closes the card that was open, so the work is always where you clicked. Finishing a panel opens the next; finishing a position opens the next unfinished card.',
     multi: 'The Marks panel header counts legs, so a 4-leg condor reads “3 of 4” without opening.', auto: 'Positions whose prices all arrived show their Marks panel as done and open straight to Reflections or Action.' },
   C: { tab: 'C · Review sheet', idea: 'The whole Review on one screen as a sheet: positions with their legs as rows, the last three sessions as price columns, then Reflections and Action. Routine positions take one click (Hold); thinking work opens in a side drawer.',
     multi: 'Legs are rows, so shared Instruments and synchronized same-date Marks line up in one column.', auto: 'Fetched cells show “auto”; the sheet becomes a scan for the few amber cells. Recorded earlier closes give context for typing a price.' },
@@ -489,6 +515,7 @@ function render() {
     <header class="topbar"><h1>Review</h1><span class="proto">PROTOTYPE</span>
       <div class="tabs" role="tablist" aria-label="Variants">${Object.entries(VARIANTS).map(([id, x]) => `<button role="tab" aria-selected="${S.variant === id}" data-act="variant" data-v="${id}" data-fid="tab:${id}">${x.tab}</button>`).join('')}</div>
       <div class="controls"><span class="small">Pricing</span><div class="seg">${[['manual', 'Manual (today)'], ['auto', 'Automatic (D11)']].map(([m, t]) => `<button aria-pressed="${S.pricing === m}" data-act="pricing" data-mode="${m}" data-fid="pr:${m}">${t}</button>`).join('')}</div>
+        <span class="small">Positions</span><div class="seg">${[['0', '4'], ['1', '20']].map(([m, t]) => `<button aria-pressed="${S.many === (m === '1')}" data-act="many" data-many="${m}" data-fid="mn:${m}">${t}</button>`).join('')}</div>
         <button class="btn small" data-act="reset" data-fid="reset">Reset</button></div>
     </header>
     <div class="intro"><details><summary>${v.tab}: what this tries</summary><p>${v.idea}</p><ul><li><b>Multi-leg (D10):</b> ${v.multi}</li><li><b>Automatic pricing (D11):</b> ${v.auto}</li>
@@ -499,6 +526,8 @@ function render() {
   const target = S.ui.focusSel ? document.querySelector(`[data-fid="${S.ui.focusSel}"]`) : fid ? document.querySelector(`[data-fid="${CSS.escape(fid)}"]`) : null;
   if (target) { target.focus({ preventScroll: !S.ui.focusSel }); if (S.ui.focusSel) target.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
   S.ui.focusSel = null;
+  // B: an opened card's top goes just under the bar, so its work is in view without scrolling.
+  if (S.ui.scrollTo) { document.getElementById(S.ui.scrollTo)?.scrollIntoView({ block: 'start', behavior: 'instant' }); S.ui.scrollTo = null; }
 }
 
 // After work changes, the guided variants move the trader on.
@@ -507,7 +536,7 @@ function advanceB(p, from) {
   if (posDone(p)) {
     const next = POS.find((q) => !posDone(q));
     S.ui.msg = next ? `${p.name} is done. Next: ${next.name}.` : 'Every position is done. The Review is complete.';
-    if (next) { S.ui.bSel = next.id; S.ui.bPanel = firstPanel(next); S.ui.focusSel = `hd:${next.id}`; }
+    if (next) { S.ui.bSel = next.id; S.ui.bPanel = firstPanel(next); S.ui.focusSel = `hd:${next.id}`; S.ui.scrollTo = `pc-${next.id}`; }
     return;
   }
   const order = ['marks', 'refl', 'action'];
@@ -535,8 +564,9 @@ app.addEventListener('click', (e) => {
   const reflPos = (id) => POS.find((q) => q.refl.some((r) => r.id === id));
   switch (d.act) {
     case 'variant': S.variant = d.v; S.ui.msg = null; S.ui.cDrawer = null; break;
-    case 'pricing': { const v = S.variant; init(d.mode, v); break; }
-    case 'reset': init(S.pricing, S.variant); break;
+    case 'pricing': init(d.mode, S.variant, S.many); break;
+    case 'many': init(S.pricing, S.variant, d.many === '1'); break;
+    case 'reset': init(S.pricing, S.variant, S.many); break;
     case 'unavail': S.marks[d.key] = { v: null, src: 'unavail' }; advanceB(POS.find((q) => q.id === S.ui.bSel), 'marks'); break;
     case 'undoUnavail': S.marks[d.key] = { v: null, src: null }; break;
     case 'openRefl': S.ui.openRefl = d.id; S.ui.focusSel = `d:${d.id}:mode:${MODES[0]}`; break;
@@ -563,7 +593,11 @@ app.addEventListener('click', (e) => {
     case 'aGo': S.ui.aIdx = +d.i; S.ui.aDone = false; S.ui.msg = null; S.ui.focusSel = `hd:${POS[+d.i].id}`; break;
     case 'aPrev': S.ui.aIdx = Math.max(0, S.ui.aIdx - 1); S.ui.msg = null; S.ui.focusSel = `hd:${POS[S.ui.aIdx].id}`; break;
     case 'aNext': { const n = nextIncomplete(S.ui.aIdx); S.ui.msg = null; if (n === -1) { S.ui.aDone = true; S.ui.focusSel = 'hd:done'; } else { S.ui.aIdx = n; S.ui.focusSel = `hd:${POS[n].id}`; } break; }
-    case 'bSel': S.ui.bSel = p.id; S.ui.bPanel = firstPanel(p); S.ui.msg = null; S.ui.focusSel = `hd:${p.id}`; break;
+    case 'bSel':
+      S.ui.msg = null; S.ui.focusSel = `hd:${p.id}`;
+      if (S.ui.bSel === p.id) S.ui.bSel = null;
+      else { S.ui.bSel = p.id; S.ui.bPanel = firstPanel(p); S.ui.scrollTo = `pc-${p.id}`; }
+      break;
     case 'bPanel': S.ui.bPanel = S.ui.bPanel === d.panel ? null : d.panel; break;
     case 'quickHold': S.act[p.id] = { choice: 'Hold', note: '', saved: true }; break;
     case 'cOpen': S.ui.cDrawer = { pid: p.id, sec: d.sec }; S.ui.msg = null; S.ui.focusSel = d.sec === 'refl' && p.refl.length ? `o:${(p.refl.find((r) => !S.refl[r.id]) ?? p.refl[0]).id}` : d.sec === 'action' ? (S.act[p.id]?.saved ? `ea:${p.id}` : `ch:${p.id}:Hold`) : `hd:${p.id}`; break;
