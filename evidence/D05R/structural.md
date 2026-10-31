@@ -616,3 +616,33 @@ ocr review of `d9e81b0`: one file reviewed (test excluded), no findings. Raw out
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.8-resort-*.txt`. The suite-runner ended its turn while the run was still going; the main session read the finished browser and checks files directly.
+
+## T5R.9 UI: Marks panel and Save Marks
+
+Commit `f5ed966`: the card's Marks panel replaces T5R.8's temporary per-row rows. All 9 planned cases are in `CardMarks.test.tsx`; 7 went red then green, and "rows with a Mark" was a first-run pass (D4's per-row Correct and Withdraw kept), mutation-checked (`withdraw={false}`: no "Withdraw" button).
+
+| Case | Red |
+|---|---|
+| rows | no "also held by" text |
+| drafts | no Price field |
+| Save Marks sends one command | `save` not called |
+| renders from MarksSaved | `$52.00` not found |
+| Rejected | no issue text beside the row |
+| Conflict | current `$51.50` not shown |
+| ChangedDuringAssembly | no "figures are out of date" notice |
+| keyboard | focus not on the next price |
+| rows with a Mark | first-run pass, mutation-checked |
+
+Extras beyond the plan's cases:
+- **The two ocr findings carried from `5ab6a29`.** Two quick per-row saves now share one in-flight `reopen` and show no "couldn't refresh" banner. A saved earlier session stays saved after paging, through a per-key overlay that wins when its revision is at least the Review's. Both were first-run passes and mutation-checked (the old guard: `called 2 times`, not 3; `>=` flipped: `$9.00` not found). **Process note:** the `reopen` fix was written before its test, against "never code ahead of red". The overlay's mutation fails before the paging step, so it guards the overlay but not the paging half on its own.
+- **Not-written results.** ReviewChanged shows a notice with Refresh; StorageFailure or a thrown error shows "could not be saved". Drafts are kept.
+- **Moved unit tests.** 3 in `ReviewCards.test.tsx` and 10 in `ReviewView.test.tsx` move from Enter/Save Mark to drafts and Save Marks.
+
+Implementation decisions and notes for later tasks:
+- **The next panel (A157)** is a focus move until T5R.10 builds the panels: to the first due reflection, else to the Action. It's triggered by an `advance` count on `ReviewCard`. The result's `nextStep` is unused; the hand-off between cards is T5R.12's.
+- **"Grouped by date".** D4's grouping is kept (one list per Instrument, sessions newest first), so D4's paging cases move over unchanged. With one Instrument per card (Long Stock) the two read the same; D7's multi-Instrument cards must revisit it.
+- **After MarksSaved**, `ReviewView` merges the saved Marks into the Marks family, so other cards holding the same key show them saved, and takes the result's Trades, so cards re-sort (amended A150).
+- **Browser helpers.** `enterMark` and `acknowledgeMark` in `e2e/d4/support.ts` draft in the open card and press Save Marks; the old flow is kept for the update cases that run a previous release. `runtime-failure.spec.ts`'s read-only absent checks name the new controls (no Price field, no Save Marks). `responsive-a11y.spec.ts` types a price then Discards for axe, and its keyboard test ends Enter → Save Marks → Enter. No D4 or D5 expectation changed; `e2e/d5/support.ts` needed nothing.
+- **Types and props.** Type re-exports in `src/coordinators/daily-review/index.ts` and `src/app/types.ts`; `MarkEntry` gains `offerEntry?`, `children?` and a saved-result argument to `onSaved`; `ReviewCard` gains `advance`, `onSaveMarks`, `outOfDate`.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 23 files, 348 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 155 passed.
