@@ -6,7 +6,7 @@ import { PageTitle } from '../PageTitle.tsx';
 import { shortDate } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import type { CardMarkRows, EntryDirty } from './CardMarks.tsx';
-import { NO_GO, ReviewCard, type CardDetail, type Go, type PanelName, type Remaining } from './ReviewCard.tsx';
+import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName, type Remaining } from './ReviewCard.tsx';
 
 export interface ReviewViewProps {
   readonly facade: UiFacade;
@@ -37,7 +37,7 @@ function holderOf(review: Ready, instrumentKey: string): string | undefined {
 function CardLink({ tradeId, open, panel, instrument, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly children: ReactNode }) {
   return (
     <a
-      href={`/review?trade=${tradeId}${instrument === undefined ? '' : `&instrument=${encodeURIComponent(instrument)}`}`}
+      href={`/review?trade=${tradeId}${instrument !== undefined ? `&instrument=${encodeURIComponent(instrument)}` : panel === undefined ? '' : `&panel=${panel}`}`}
       onClick={(event) => {
         // A new-tab or new-window click is the browser's: the href names the same card, panel and row.
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
@@ -247,7 +247,10 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     if (wanted !== null && walkedTrades(initial).some((t) => t.tradeId === wanted)) {
       const marks = marksOf(initial, wanted);
       const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
-      return holds ? { tradeId: wanted, panel: 'Marks', instrument } : { tradeId: wanted };
+      if (holds) return { tradeId: wanted, panel: 'Marks', instrument };
+      // An unknown panel name is ignored: the first panel not done opens.
+      const panel = PANELS.find((name) => name === params.get('panel'));
+      return panel === undefined ? { tradeId: wanted } : { tradeId: wanted, panel };
     }
     const holder = instrument === null ? undefined : holderOf(initial, instrument);
     return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;

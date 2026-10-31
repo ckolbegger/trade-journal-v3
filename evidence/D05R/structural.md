@@ -1016,3 +1016,13 @@ ocr review of `da270ff` (T5R.12-B1): one file reviewed (three excluded); one rou
 ### T5R.12-B1-B1 Card links carry their panel
 
 An Action or Reflection blocker's `href` names its panel (`&panel=<name>`), and the load path opens that panel, so a new tab matches a plain click.
+
+Record. All in `ReviewCards.test.tsx`:
+
+| Case | Red |
+|---|---|
+| Action and Reflection blocker links carry `&panel=Action` / `&panel=Reflections` (Mark links keep `&instrument=`) | `expected '/review?trade=t-b' to be '/review?trade=t-b&panel=Action'` |
+| `?trade=t-e&panel=Marks` opens T-E on Marks, not its first panel not done (Action) | `expected [ 'false', 'false', 'true' ] to deeply equal [ 'true', 'false', 'false' ]` |
+| an unknown `panel` value is ignored (flagged first-run pass) | mutation: the param cast to `PanelName` unchecked fails with `expected [ 'false', 'false', 'false' ] to deeply equal [ 'false', 'false', 'true' ]` |
+
+The `?instrument=` match still wins over `panel` (Marks). Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 376 passed. No browser spec changed.

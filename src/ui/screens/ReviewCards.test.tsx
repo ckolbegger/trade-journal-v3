@@ -583,19 +583,36 @@ describe('links (A161)', () => {
     expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
     expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
   });
+
+  const panelStates = (card: HTMLElement) => (['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
+
+  it('should open the panel that the panel param names, not the first panel that is not done', async () => {
+    renderReview(cardFacade(), { at: '/review?trade=t-e&panel=Marks' });
+    const card = await screen.findByRole('region', { name: 'JKL review' });
+
+    // T-E's Action is its first panel not done; the link names Marks.
+    expect(panelStates(card)).toEqual(['true', 'false', 'false']);
+  });
+
+  it('should ignore a panel param that names no panel', async () => {
+    renderReview(cardFacade(), { at: '/review?trade=t-e&panel=Nonsense' });
+    const card = await screen.findByRole('region', { name: 'JKL review' });
+
+    expect(panelStates(card)).toEqual(['false', 'false', 'true']);
+  });
 });
 
 describe('blocker links open in a new tab (A161)', () => {
   const blockers = incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] }, { code: 'ActionMissing', tradeId: 't-b' }, { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] });
 
-  it('should give a Mark blocker link the Instrument in its href, and Action and Reflection links only the Trade', async () => {
+  it('should give a Mark blocker link the Instrument in its href, and Action and Reflection links the Trade and their panel', async () => {
     renderReview(cardFacade(review({ completion: blockers })));
     await screen.findByRole('region', { name: 'ABC review' });
     const status = screen.getByRole('region', { name: 'Review status' });
 
     expect(within(status).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
-    expect(within(status).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/review?trade=t-b');
-    expect(within(status).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/review?trade=t-a');
+    expect(within(status).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/review?trade=t-b&panel=Action');
+    expect(within(status).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/review?trade=t-a&panel=Reflections');
   });
 
   it.each([
