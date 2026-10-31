@@ -1241,8 +1241,10 @@ describe('reflections', () => {
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: owedPair[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'No time.' } });
     expect(await within(friday).findByText('Declined to reflect. Reason: No time.')).toBeTruthy();
-    // The Monday reflection is still owed, so focus moves to it.
-    expect(document.activeElement).toBe(within(monday).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
+    // Nothing is due now, so the panel moves on; the Monday reflection stays listed and answerable.
+    await vi.waitFor(() => expect(panelHeader(card, 'Action').getAttribute('aria-expanded')).toBe('true'));
+    await user.click(panelHeader(card, 'Reflections'));
+    expect(within(monday).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ })).toBeTruthy();
   });
 });
 
@@ -1314,6 +1316,25 @@ describe('moving on', () => {
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
     expect(screen.getByRole('button', { name: /^Review XYZ\b/ }).getAttribute('aria-expanded')).toBe('false');
     expect(screen.getByRole('button', { name: /^Review DEF\b/ }).getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+describe('moving on from Reflections', () => {
+  it('should open the next panel that is not done when the card last Due reflection is resolved, though a reflection due in the next Review remains', async () => {
+    const user = userEvent.setup();
+    const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
+    const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
+    const post = { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: post });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    expect(panelHeader(card, 'Reflections').getAttribute('aria-expanded')).toBe('true');
+
+    await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+
+    await vi.waitFor(() => expect(panelHeader(card, 'Action').getAttribute('aria-expanded')).toBe('true'));
+    expect(panelHeader(card, 'Reflections').getAttribute('aria-expanded')).toBe('false');
   });
 });
 

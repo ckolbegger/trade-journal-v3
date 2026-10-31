@@ -68,7 +68,7 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
   const [open, setOpen] = useState<string>();
   const [resolved, setResolved] = useState<ReadonlySet<string>>(new Set());
   const buttons = useRef(new Map<string, HTMLButtonElement>());
-  // Where focus goes once the resolved reflection has rendered: the next reflection's button, or on when none remains.
+  // Where focus goes once the resolved reflection has rendered: the next reflection's button, or on when none is due.
   const [focusNext, setFocusNext] = useState<{ readonly debtId: string | undefined }>();
   useEffect(() => {
     if (!focusNext) return;
@@ -99,7 +99,8 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
   };
   const resolvedOne = (debtId: string) => {
     setResolved(new Set(resolved).add(debtId));
-    setFocusNext({ debtId: reflections.find((r) => r.debtId !== debtId && !resolved.has(r.debtId))?.debtId });
+    // The panel's work is finished once nothing due now remains; later ones stay listed and answerable.
+    setFocusNext({ debtId: reflections.find((r) => r.debtId !== debtId && !resolved.has(r.debtId) && r.classification === 'Due')?.debtId });
   };
   const headingId = useId();
   if (reflections.length === 0) return null;
