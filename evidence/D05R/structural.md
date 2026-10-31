@@ -475,3 +475,13 @@ The gap: P39 requires each collapsed card's slider description to give Risk to s
 Cases:
 - it should return each walked Trade's Ongoing Risk to Stop, current P&L, and Reward : risk now, from the Review-date evaluation: T-A at XYZ 52.00 with Reward : risk now 8/9, T-B with Reward : risk NotApplicable, and T-C Unavailable with the missing Mark;
 - the same figures after `SaveReviewMarks`, in `PostMarksReview`'s walked Trades.
+
+Done in commit `ed3cf69`. Both cases went red (`expected undefined to deeply equal { kind: 'Value', … }`) and then green, with no first-run passes.
+- **The field.** `WalkedTrade` gains an optional `figures: SliderFigures` (`riskToStop`, `pnl` = `currentMarkedPnl`, `rewardRiskNow`, each an unformatted `CalculationResult`). It is taken from the evaluation `reviewItem` already carries, so there's no new request. It is absent when the facts are incoherent and there's no evaluation.
+- **Agreement with the card.** The figures equal `getTrade`'s for T-A, T-B and T-C, and after `SaveReviewMarks` too.
+- **One existing test changed.** "should return the same attention reasons as the overview…" also strips `figures` before comparing.
+- **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; 92 daily-review tests pass.
+- **Process slip.** The agent used `sed -i` once (the `index.ts` export line), against the Edit-only rule. The result is correct.
+- **Note for T5R.8.** The coordinator's `SliderFigures` (calculation results) and T5R.7's `SliderFigures` props (formatted strings) share a name. T5R.8 maps one to the other.
+
+ocr review of `ed3cf69`: three files reviewed, no findings. Raw output: [ocr/T5R.3-B3-ed3cf69.json](ocr/T5R.3-B3-ed3cf69.json).
