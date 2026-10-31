@@ -336,3 +336,18 @@ Done: `settle` is now a block body with two plain `if` statements (database mism
 - `npm run lint:deps`: exit 0
 
 Commit `3573bdc`. ocr review: one file reviewed, no findings. Raw output: [ocr/T5R.5-B3-3573bdc.json](ocr/T5R.5-B3-3573bdc.json).
+
+### Cumulative suite at `1378fc0` (T5R.5 closed)
+
+2026-10-31, by `suite-runner`, label `t5r.5-save-marks`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 71 files, 921 tests passed; exit 0 | [unit](suite-runs/t5r.5-save-marks-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.5-save-marks-integration.txt) |
+| Browser (Chromium) | 154 passed, 1 failed (5.7 min); exit 1 | [browser](suite-runs/t5r.5-save-marks-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.5-save-marks-checks.txt) |
+
+The one failure is B4.13, "should lay the Action choices out as compact chips, each radio inside its label, at 375 and 320 px" (`e2e/d4/responsive-a11y.spec.ts:68`), at line 84: `Error: Hold radio inside its chip at 375` (expected true, received false). This is the flaky case carried over from D5. Following the rule (rerun once alone before treating it as real), `npx playwright test e2e/d4/responsive-a11y.spec.ts:68 --project=chromium` passed (1 passed, 4.6 s). It has now failed under load twice and passed alone both times. T5R.8 and T5R.15 rework this check when it moves onto cards.
+
+Process note: the suite-runner left several `sleep` waiter shells running, against its brief. The main session stopped the agent and killed them.
