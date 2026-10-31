@@ -680,3 +680,5 @@ Done in commit `6c7c0ff` (T5R.9-B1):
 - **The fix.** The inputs stay enabled; on MarksSaved a draft is cleared only when its key was sent and its price, unavailable flag and reason all equal what was sent.
 - **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 23 files, 350 passed.
 - **Process note:** the agent ran two no-op here-doc and python commands that changed nothing, against the Edit-only rule.
+
+ocr review of `6c7c0ff`: one file reviewed, no findings. Raw output: [ocr/T5R.9-B1-6c7c0ff.json](ocr/T5R.9-B1-6c7c0ff.json).
