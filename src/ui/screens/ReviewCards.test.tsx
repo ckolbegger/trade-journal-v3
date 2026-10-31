@@ -154,10 +154,10 @@ function cardFacade(overview: Ready = review()): UiFacade {
   return facade;
 }
 
-function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void } = {}) {
+function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; at?: string } = {}) {
   render(
     <RuntimeContext.Provider value={{ writable: options.writable ?? true, timeZone: 'America/New_York', report: () => undefined }}>
-      <MemoryRouter initialEntries={['/review']}>
+      <MemoryRouter initialEntries={[options.at ?? '/review']}>
         <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
@@ -542,5 +542,93 @@ describe('read only (A162)', () => {
     expect(within(card).getByRole('form', { name: 'Reflection' })).toBeTruthy();
     for (const field of [...screen.queryAllByRole('textbox'), ...screen.queryAllByRole('radio')]) expect((field as HTMLInputElement).disabled).toBe(true);
     for (const name of ['Save Marks', 'Answer', 'Decline', 'Save', 'Save Mark', 'Change', 'Enter', 'Correct']) expect(screen.queryByRole('button', { name })).toBeNull();
+  });
+});
+
+describe('links (A161)', () => {
+  it('should open the first card holding XYZ in attention order on its Marks panel, with focus on XYZ row, for /review?instrument=XYZ', async () => {
+    const facade = cardFacade();
+    renderReview(facade, { at: '/review?instrument=XYZ' });
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+
+    // T-F comes before T-A in attention order; the card ABC that would open on load does not.
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
+    expect(card.closest('li')).toBe(headers()[2]!.closest('li'));
+    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-f' });
+    expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
+  });
+
+  it('should open T-E card on its first panel that is not done for /review?trade=t-e', async () => {
+    const facade = cardFacade();
+    renderReview(facade, { at: '/review?trade=t-e' });
+    const card = await screen.findByRole('region', { name: 'JKL review' });
+
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'true']);
+    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-e' });
+    // Its Marks are saved and no reflection is due, so the Action is the first panel not done.
+    expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+  });
+});
+
+describe('header', () => {
+  it('should show the Review Date, completion as text, and the blockers, with Missing Marks first, each opening the card and panel that resolve it', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade(
+      review({
+        completion: incomplete(
+          { code: 'ActionMissing', tradeId: 't-b' },
+          { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] },
+          { code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] },
+        ),
+      }),
+    );
+    renderReview(facade);
+    const status = await screen.findByRole('region', { name: 'Review status' });
+
+    expect(within(status).getByText('Mon Oct 12')).toBeTruthy();
+    expect(within(status).getByText('Incomplete')).toBeTruthy();
+    const blockers = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    expect(blockers.map((b) => b.textContent)).toEqual(['Mark missing for DEF on Mon Oct 12', 'Action missing for ABC', 'Reflection due for XYZ']);
+    await screen.findByRole('region', { name: 'ABC review' });
+
+    // The Mark opens DEF's card on its Marks panel, with focus on the row.
+    await user.click(within(blockers[0]!).getByRole('link', { name: 'DEF' }));
+    const def = await screen.findByRole('region', { name: 'DEF review' });
+    expect(within(def).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(within(def).getByRole('region', { name: 'DEF Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
+    // The reflection opens XYZ's card on its Reflections panel.
+    await user.click(within(blockers[2]!).getByRole('link', { name: 'XYZ' }));
+    const xyz = await screen.findByRole('region', { name: 'XYZ review' });
+    expect(within(xyz).getByRole('button', { name: /^Reflections\b/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
+    // The Action opens ABC's card on its Action panel, from another panel.
+    await user.click(within(blockers[1]!).getByRole('link', { name: 'ABC' }));
+    const abc = await screen.findByRole('region', { name: 'ABC review' });
+    expect(within(abc).getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+describe('Action save while other forms hold values (A156)', () => {
+  it('should stay on the card, keep the entered Mark, and say why when an Action save names another card as the next step', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    const post = { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TF) }, binding } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
+    renderReview(facade, { at: '/review?trade=t-c' });
+    const card = await screen.findByRole('region', { name: 'DEF review' });
+    await user.type(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText('Price'), '33.10');
+    await showPanel(user, card, 'Action');
+
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledTimes(1));
+    expect((await screen.findByRole('status')).textContent).toContain('Save or discard what you entered for DEF');
+    expect(screen.getByRole('region', { name: 'DEF review' })).toBe(card);
+    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    await showPanel(user, card, 'Marks');
+    expect(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText<HTMLInputElement>('Price').value).toBe('33.10');
   });
 });

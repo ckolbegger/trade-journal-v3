@@ -32,6 +32,18 @@ function sliderFigures(figures: SliderEvaluation | undefined): { readonly riskTo
   return { riskToStop: calculation(figures.riskToStop, money), pnl: calculation(figures.pnl, signed(money)), rewardToRisk: calculation(figures.rewardRiskNow, ratio) };
 }
 
+export const PANELS = ['Marks', 'Reflections', 'Action'] as const;
+export type PanelName = (typeof PANELS)[number];
+
+// Where a link into the Review sends this card (A161): a panel to open, and an Instrument's row to focus. The count grows
+// with each link, so a card that is already open answers the next one too.
+export interface Go {
+  readonly panel?: PanelName;
+  readonly instrument?: string;
+  readonly count: number;
+}
+export const NO_GO: Go = { count: 0 };
+
 // What the open card shows while its Trade is read, or when it could not be.
 export type CardDetail = 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview };
 
@@ -45,6 +57,7 @@ export interface ReviewCardProps {
   readonly reveal: number;
   // A count that grows each time Save Marks finishes on this card: it moves on to its next panel that is not done (A157).
   readonly advance: number;
+  readonly go: Go;
   readonly marks: CardMarkRows;
   readonly underlying: (tradeId: string) => string;
   readonly onToggle: () => void;
@@ -63,7 +76,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, advance, marks, underlying, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, advance, go, marks, underlying, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -95,6 +108,7 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
           facade={facade}
           trade={detail.trade}
           advance={advance}
+          go={go}
           remaining={remaining}
           marks={marks}
           underlying={underlying}
@@ -116,6 +130,7 @@ interface CardBodyProps {
   readonly facade: UiFacade;
   readonly trade: DailyTradeReview;
   readonly advance: number;
+  readonly go: Go;
   readonly remaining: Remaining;
   readonly marks: CardMarkRows;
   readonly underlying: (tradeId: string) => string;
@@ -128,9 +143,6 @@ interface CardBodyProps {
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
 }
-
-const PANELS = ['Marks', 'Reflections', 'Action'] as const;
-type PanelName = (typeof PANELS)[number];
 
 // What a panel's header says: a one-line summary and a status.
 interface PanelHeader {
@@ -180,7 +192,7 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, advance, remaining, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, advance, go, remaining, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, marks, remaining);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -188,13 +200,32 @@ function CardBody({ facade, trade, advance, remaining, marks, underlying, onSave
     const start = PANELS.indexOf(from);
     return [...PANELS.slice(start + 1), ...PANELS.slice(0, start)].find((name) => !headers[name].done);
   };
-  // The card opens on its first panel that is not done.
-  const [open, setOpen] = useState<PanelName>(() => PANELS.find((name) => !headers[name].done) ?? 'Action');
+  // The card opens on the panel a link names, or else on its first panel that is not done.
+  const [open, setOpen] = useState<PanelName>(() => go.panel ?? PANELS.find((name) => !headers[name].done) ?? 'Action');
   const panelButtons = useRef<Partial<Record<PanelName, HTMLButtonElement | null>>>({});
   const [focusPanel, setFocusPanel] = useState<{ readonly panel: PanelName }>();
   useEffect(() => {
     if (focusPanel) panelButtons.current[focusPanel.panel]?.focus();
   }, [focusPanel]);
+  // A link to a card that is already open moves it to the panel named (A161).
+  const [handledGo, setHandledGo] = useState(go.count);
+  if (go.count !== handledGo) {
+    setHandledGo(go.count);
+    if (go.panel) {
+      setOpen(go.panel);
+      if (!go.instrument) setFocusPanel({ panel: go.panel });
+    }
+  }
+  // Focus goes to the row of the Instrument a link names.
+  const body = useRef<HTMLElement>(null);
+  const { count: linked, instrument } = go;
+  useEffect(() => {
+    if (linked === 0 || instrument === undefined) return;
+    const row = [...(body.current?.querySelectorAll<HTMLElement>('section[aria-label]') ?? [])].find((section) => section.getAttribute('aria-label')?.startsWith(`${instrument} Mark, `));
+    const control = row?.querySelector<HTMLElement>('input:not([disabled]), textarea:not([disabled]), button:not([disabled])');
+    if (row && !control) row.tabIndex = -1;
+    (control ?? row)?.focus();
+  }, [linked, instrument]);
   // A panel's work is finished: the next panel that is not done after that one opens and takes focus. A trader who has
   // since opened another panel that still has work stays on it.
   const moveOn = (from: PanelName) => {
@@ -220,7 +251,7 @@ function CardBody({ facade, trade, advance, remaining, marks, underlying, onSave
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
   return (
-    <section aria-label={`${trade.underlying} review`}>
+    <section aria-label={`${trade.underlying} review`} ref={body}>
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>
