@@ -605,3 +605,14 @@ Done in commit `d9e81b0`:
 - **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 22 files, 336 passed; after `npm run build:releases`, B4.1 alone passed.
 
 ocr review of `d9e81b0`: one file reviewed (test excluded), no findings. Raw output: [ocr/T5R.8-B4-d9e81b0.json](ocr/T5R.8-B4-d9e81b0.json).
+
+### Cumulative suite at `fdee705` (T5R.8 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 73 files, 932 passed |
+| Integration | 53 files, 105 passed |
+| Browser | 155 passed (5.6 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.8-resort-*.txt`. The suite-runner ended its turn while the run was still going; the main session read the finished browser and checks files directly.
