@@ -414,3 +414,5 @@ Done: `capabilities.ts` and `routes.ts` restore the D5 lists of `browseTrades` (
 | `npx tsc6 --noEmit` | exit 0 |
 | `npm run lint` | exit 0 |
 | `npm run lint:deps` | exit 0 |
+
+ocr review of `881d40c`: two files reviewed, no findings. Raw output: [ocr/T5R.6-B1-881d40c.json](ocr/T5R.6-B1-881d40c.json).
