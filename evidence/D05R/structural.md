@@ -875,3 +875,15 @@ Done in commit `cf007eb` (T5R.10-H2-B3, structural): `reachPanel(page, 'MNO', 'M
 ocr review of `cf007eb`: ocr selected nothing (spec excluded). The reviewing agent read the diff: one added reach before all three reads; every `expect` unchanged. One nit: a stray dropped space (`const earlier =page…`), no behavior change; folded into T5R.10-H3's brief. Raw output: [ocr/T5R.10-H2-B3-cf007eb.json](ocr/T5R.10-H2-B3-cf007eb.json).
 
 T5R.10-H2's ocr findings are worked (H2-B1 to B3). T5R.10-H3 is next.
+
+## T5R.10-H3 D5 browser specs on the card helpers
+
+Commit `0a21dc4`: the eight D5 specs moved onto the helpers, and the transitional shapes removed. `build:faults` and `build:releases` exit 0; `npx playwright test e2e/d4` 24 passed; `e2e/d5` 12 passed, 1 failed; `npm run test:e2e` 160 passed, 1 failed. The failure is B5.7 (`kill-offline.spec.ts`), blocked rather than shown broken: two headless Chrome processes left from earlier B5.7 runs in this worktree (pids 35798 and 68015, started 16:01 and 17:48, profiles under `test-results/d5-kill-offline-B5-7-…`) still listen on B5.7's fixed ports 9341 and 9342 (confirmed by `lsof`). One run failed with `net::ERR_ABORTED` on the first `goto`; the next timed out in the kill step after `answerDebt` had passed. The task agent's `pkill` was refused by the permission classifier; the main session didn't work around it and asked the user. typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
+**Expect-diff** of `e2e/d5/*.spec.ts`: every changed `expect` keeps its matcher and value; none added.
+
+**Support changes:** removed `continueToTrades`, `openCard`, `markEntry`, `actionForm`, `markAndOpenCard`, the click-rewriting proxy and D5's synchronous `reflectionsOf`; `tradesFamily` is a plain raw locator (decision 66); `reachOldCard` presses Continue to Trades only when the Trades list isn't shown; `saveAction` requires the symbol; the `gaps.spec.ts` space is restored. Left in place, unused: `openPanel`, `showPanel`, `anyPanelHeader`.
+
+Decisions for review:
+- `answerDebt(page, symbol | undefined)` and `declineDebt(page, reason, symbol | undefined)` take `undefined` for the three cases that answer on Trade Detail, which has no card (detail-debt, B5.8, responsive); `debtForm(page)` and `fillDebtAnswers` stay for those steps.
+- `answerDebt` and `declineDebt` now wait for the form to hide, then reach the Reflections panel again before reading "Saved reflection", because the save moves the card on to its Action panel (A157). A helper change, not a spec change; without it B5.1 and B5.7 failed.
