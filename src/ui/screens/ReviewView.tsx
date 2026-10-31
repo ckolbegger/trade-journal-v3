@@ -199,8 +199,8 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     return result?.kind === 'Ready' ? result : undefined;
   };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
-  const refreshTrade = async (tradeId: string): Promise<boolean> => {
-    const request = selection.current;
+  // The opening the refresh belongs to: the one the save was entered under, or the one shown when it is asked for.
+  const refreshTrade = async (tradeId: string, request = selection.current): Promise<boolean> => {
     // A card opened while the Review is being asked for waits for it, so it is read under the binding it returns.
     const asking = reopen().then((next) => {
       if (next) apply(() => next);
@@ -273,9 +273,10 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // A saved Mark changes what the card's figures and the Action's binding are read at: the Review and the card are read again.
   const [rereading, setRereading] = useState(false);
   const markSaved = () => {
-    if (openId === undefined) return;
+    if (openId === undefined || shown === undefined) return;
     setRereading(true);
-    void refreshTrade(openId).then((ok) => {
+    // The opening is this render's: a Mark saved here finishes after another card opened, and must not replace it.
+    void refreshTrade(openId, shown.opening).then((ok) => {
       setFailed(!ok);
       setRereading(false);
     });

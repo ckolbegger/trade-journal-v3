@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -347,6 +347,49 @@ describe('card order within a view (A150)', () => {
 
     const underlyings = headers().map((h) => /Review (\w+)/.exec(h.getAttribute('aria-label') ?? h.textContent ?? '')?.[1]);
     expect(underlyings).toEqual(['ABC', 'DEF', 'XYZ', 'XYZ', 'JKL']);
+  });
+});
+
+describe('a late Mark save', () => {
+  it('should keep the newly opened card shown, with its values, when a Mark saved on the previous card finishes after the switch', async () => {
+    const user = userEvent.setup();
+    // DEF's Mark is an acknowledgment, which Withdraw saves with nothing typed, so another card can be opened while the save is in flight.
+    const acknowledged: MarkResolution = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: CUTOFF } };
+    const overview = review({
+      families: [
+        { family: 'Marks', today: [markRow('ABC', ['t-b'], available('27.50')), { ...markRow('DEF', ['t-c'], acknowledged), task: null }, markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
+        { family: 'Trades', trades: WALK },
+      ],
+    });
+    const facade = cardFacade(overview);
+    let finish: (result: never) => void = () => undefined;
+    vi.mocked(facade.MarketData.save).mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(headers()[1]!);
+    const card = await screen.findByRole('region', { name: 'DEF review' });
+    await user.click(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByRole('button', { name: 'Withdraw' }));
+    await waitFor(() => expect(facade.MarketData.save).toHaveBeenCalledTimes(1));
+
+    // Another card is opened while the save is in flight, and a value is typed into it.
+    await user.click(headers()[4]!);
+    const other = await screen.findByRole('region', { name: 'JKL review' });
+    await user.type(within(other).getAllByRole('textbox')[0]!, 'kept');
+    finish({
+      kind: 'Saved',
+      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
+      resolution: { kind: 'Missing' },
+      resolutionRevision: 'None',
+      classification: 'Withdrawal',
+      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 1 },
+    } as never);
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    // Let the refresh run to its end.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+    expect(screen.getByRole('region', { name: 'JKL review' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
+    expect(within(screen.getByRole('region', { name: 'JKL review' })).getAllByRole('textbox')[0]).toHaveProperty('value', 'kept');
   });
 });
 
