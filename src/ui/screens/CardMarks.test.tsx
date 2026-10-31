@@ -392,6 +392,24 @@ describe('Save Marks (P37, A155) with the Review changed during assembly', () =>
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(within(panel).queryByText(/figures are out of date/)).toBeNull());
   });
+
+  it('should clear the out-of-date notice and its Refresh when a later Save Marks returns a Ready Review', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')], { kind: 'ChangedDuringAssembly' }));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText('Price'), '52.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await waitFor(() => expect(within(panel).getByText(/figures are out of date/)).toBeTruthy());
+
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSavedResult([savedKey('XYZ', FRIDAY, '51.00')]));
+    await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+
+    await waitFor(() => expect(within(panel).queryByText(/figures are out of date/)).toBeNull());
+    expect(within(panel).queryByRole('button', { name: 'Refresh' })).toBeNull();
+  });
 });
 
 describe('keyboard', () => {

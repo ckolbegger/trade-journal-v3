@@ -335,6 +335,8 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
       setStale(tradeId);
       return;
     }
+    // A Review that read cleanly makes the figures current again, so an earlier out-of-date notice goes.
+    setStale(undefined);
     apply((current) => ({ ...current, completion: post.completion, binding: post.binding, families: current.families.map((f) => (f.family === 'Trades' ? { ...f, trades: post.trades } : f)) }));
     if (selection.current !== opening) return;
     setShown({ tradeId: post.trade.tradeId, opening, detail: { trade: post.trade } });
