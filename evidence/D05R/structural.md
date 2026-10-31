@@ -1082,3 +1082,14 @@ ocr review of `899c795` (T5R.12-B2): one file reviewed (tests and evidence exclu
 **Process note (T5R.12-B3):** the subagent ran one no-op here-string (`cat >/dev/null <<< ""`), against the Edit-only rule; no file changed. Three of its four cases were first-run passes, each mutation-checked and flagged in its record. It wraps the Mark landing in `flushSync` so the row keeps focus over the card header's focus effect.
 
 ocr review of `6561fe5` (T5R.12-B3): one file reviewed (four excluded), no findings. The reviewing agent read the `saved` handler: the hold returns first, `find` over `walkedTrades` gives the first card in Review order, and the `flushSync` (outside render and effects) commits the reveal before the read, so the row keeps focus. Raw output: [ocr/T5R.12-B3-6561fe5.json](ocr/T5R.12-B3-6561fe5.json). T5R.12's ocr findings are worked (B1, B1-B1, B1-B1-B1, B2, B3).
+
+### Cumulative suite at `3f0a259` (T5R.12 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 75 files, 979 passed |
+| Integration | 53 files, 105 passed |
+| Browser | 161 passed (5.9 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.12-links-*.txt` (renamed from a double-hyphen prefix that my brief caused). Ports 5175, 9341 and 9342 clear before and after. `3f0a259` holds every T5R.12 code change (B3, `6561fe5`, is the last); later commits are evidence only.
