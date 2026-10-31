@@ -454,3 +454,14 @@ Implementation decisions, made by the main session:
 Not covered by a planned case: `AwaitingClose` reads "Awaiting the next close" and `FactsIncoherent` reads "Not available".
 
 ocr review of `a17ab50`: four files reviewed (test excluded), no findings. Raw output: [ocr/T5R.7-a17ab50.json](ocr/T5R.7-a17ab50.json).
+
+### Cumulative suite at `78b22e3` (T5R.7 closed)
+
+2026-10-31, by `suite-runner`, label `t5r.7-slider`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 72 files, 925 tests passed; exit 0 | [unit](suite-runs/t5r.7-slider-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.7-slider-integration.txt) |
+| Browser (Chromium) | 155 passed (5.6 min); exit 0 | [browser](suite-runs/t5r.7-slider-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.7-slider-checks.txt) |
