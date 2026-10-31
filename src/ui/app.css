@@ -1007,3 +1007,48 @@ table.lots td:first-child {
   padding: 0.75rem 0;
   border-top: 1px solid var(--line);
 }
+
+/* Stop-to-Target slider (P39): red at the Stop, green at the Target; the dot is the Mark, the tick is entry. Fluid in width. */
+.slider {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 6rem;
+  height: 18px;
+}
+.slider-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--stop), #d9a441 50%, var(--target));
+}
+.slider-none .slider-track {
+  background: var(--neutral-ground);
+  border: 1px dashed var(--muted);
+}
+.slider-entry {
+  position: absolute;
+  top: 1px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--ink);
+}
+.slider-now {
+  position: absolute;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: var(--card);
+  box-shadow: 0 0 0 2px var(--card);
+}
+.slider-now.slider-pinned {
+  border-radius: 3px;
+}

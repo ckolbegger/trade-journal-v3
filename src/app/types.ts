@@ -140,6 +140,7 @@ export type {
   OpenDailyReviewResult,
   // Owed reflections inside the walk (D5 P17, A68) and their resolution.
   OwedReflection,
+  RangePosition,
   ReflectionClassification,
   ReflectionCounts,
   ReflectionSaveBinding,
