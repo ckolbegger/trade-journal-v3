@@ -933,3 +933,5 @@ Notes:
 - **Fixtures:** the evaluation builders in `ReviewCard.test.tsx`, `ReviewCards.test.tsx` and `CardMarks.test.tsx` lacked `rewardRiskNow` and `planBaseline`, which the real `getTrade` always returns; 61 unit tests failed until both were added. Fixture-only; no expectation changed.
 
 Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 363 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 161 passed; ports 5175, 9341 and 9342 clear before and after. No e2e spec changed.
+
+ocr review of `b2b5d04`: two files reviewed (`CardFigures.tsx`, `ReviewCard.tsx`; five test and log files excluded), no findings. Raw output: [ocr/T5R.11-b2b5d04.json](ocr/T5R.11-b2b5d04.json).
