@@ -684,3 +684,5 @@ Done in commit `6c7c0ff` (T5R.9-B1):
 ocr review of `6c7c0ff`: one file reviewed, no findings. Raw output: [ocr/T5R.9-B1-6c7c0ff.json](ocr/T5R.9-B1-6c7c0ff.json).
 
 Done in commit `eec558b` (T5R.9-B2): the first save returns ChangedDuringAssembly, the second a Ready Review. Red: `expected <strong></strong> to be null` (the notice stayed). Then green; no first-run passes. The fix is one `setStale(undefined)` on `marksSaved`'s Ready path, unconditional, since a Ready Review makes the figures current and `stale` holds one id. `npx vitest run src/ui` 23 files, 351 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0. (The task agent's own note, placed above B1's record, was moved here.)
+
+ocr review of `eec558b`: one file reviewed, no findings. Raw output: [ocr/T5R.9-B2-eec558b.json](ocr/T5R.9-B2-eec558b.json).
