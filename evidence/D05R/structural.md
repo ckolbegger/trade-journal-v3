@@ -465,3 +465,13 @@ ocr review of `a17ab50`: four files reviewed (test excluded), no findings. Raw o
 | Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.7-slider-integration.txt) |
 | Browser (Chromium) | 155 passed (5.6 min); exit 0 | [browser](suite-runs/t5r.7-slider-browser.txt) |
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.7-slider-checks.txt) |
+
+## T5R.3-B3 Each walked Trade carries its slider's figures (gap found before T5R.8)
+
+The gap: P39 requires each collapsed card's slider description to give Risk to stop, P&L and Reward : risk (T5R.7, A150). The overview's `WalkedTrade` carries the range position, but not those three figures. P39 rejected the alternative, a `getTrade` per collapsed card (its option b).
+
+`open` already evaluates every walked Trade (`daily-review.ts:168`), so the figures can come from that evaluation with no new request. A163 allows this: the overview's new fields "are computed from data `open` already reads". The main session judged this implementation-level, not a plan deviation, because it completes P39's own requirement within A163.
+
+Cases:
+- it should return each walked Trade's Ongoing Risk to Stop, current P&L, and Reward : risk now, from the Review-date evaluation: T-A at XYZ 52.00 with Reward : risk now 8/9, T-B with Reward : risk NotApplicable, and T-C Unavailable with the missing Mark;
+- the same figures after `SaveReviewMarks`, in `PostMarksReview`'s walked Trades.
