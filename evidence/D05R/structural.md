@@ -817,3 +817,23 @@ Done in commit `230dbe7` (T5R.10-H1-B2, test only): the finding can't occur thro
 ocr review of `230dbe7`: ocr selected nothing (spec and log excluded). The reviewing agent read the test: the refusal really happens first (the reach rejects naming XYZ, and the hold status shows), and ABC really opens after the draft is cleared (`aria-expanded="true"`). No findings. Raw output: [ocr/T5R.10-H1-B2-230dbe7.json](ocr/T5R.10-H1-B2-230dbe7.json). The working tree held a leftover from the agent's mutation restore (one lost line break in `support.ts`, behavior unchanged); the main session discarded it with `git restore`.
 
 T5R.10-H1's ocr findings are worked (H1-B1, H1-B2). T5R.10-H2 is next.
+
+## T5R.10-H2 D4 browser specs on the card helpers
+
+Commit `59f037b`: the 11 D4 specs moved onto the helpers. `build:faults` and `build:releases` exit 0; `npx playwright test e2e/d4 --project=chromium` 24 passed (the first run had 2 failures, fixed below); typecheck, `tsc6`, lint and `lint:deps` exit 0. **Expect-diff** (`git diff -U0` of `e2e/d4/*.spec.ts`): every changed `expect` keeps its matcher and expected value; only locators changed. One `expect` was added, not changed (below).
+
+Beyond renames (reach calls added, within the migration rule):
+- `runtime-failure.spec.ts`, B4.10: `reachPanel(…, 'Action')` before the "Saved Action" and "No Action saved." checks, which sit in the Action panel.
+- `responsive-a11y.spec.ts`, the keyboard-only case: after Save Marks the card moves on to the Action panel (A157), so the later "Manual" row check read a hidden panel. Added: a raw `expect(panelHeader(page,'XYZ','Action')).toHaveAttribute('aria-expanded','true')`, a navigation assertion, then `reachPanel(…, 'Marks')` before the "Manual" check and `reachPanel(…, 'Action')` after it. Those two reaches press panel headers with the mouse inside a keyboard-only case, which section 6.4's rule 4 says keeps explicit steps. Bug task **T5R.10-H2-B1**.
+- B4.12 switches between the Marks and Action panels through `markRow` and `actionFormOf`; the typed correction survives; expectations unchanged.
+
+Retire list (section 6.4) against what H2 still needs:
+- `review.spec.ts` keeps `marksFamily` for B4.1's "first card open on its Marks", a navigation assertion made before any reach (rule 4).
+- `update.spec.ts` keeps `tradesFamily` for its read of the old release's Trades section (rule 5).
+Section 6.4 lists both as retired. The session asks the user before H3 retires the rest.
+
+Other: `offline.spec.ts`'s local `markFor` is replaced by `markRow`. The old exports stay for D5 until H3. **Process note:** one no-op `python3 -` here-doc.
+
+#### T5R.10-H2-B1 The keyboard-only case reaches panels with the keyboard
+
+In `responsive-a11y.spec.ts`'s keyboard-only case, replace the two mouse reaches with the keyboard on the raw panel headers (focus the header, press Enter, check `aria-expanded`), keeping every expectation.
