@@ -627,7 +627,21 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         };
         return { key, expectedRevision: entry.expectedRevision, record, resolution: resolve(record), resolutionRevision, classification: revision.intention, revision };
       });
-      return { kind: 'Prepared', entries: prepared };
+      // A Mark prepared in this batch for an earlier date is the Stale context query will report once committed (A47, A154).
+      const entriesWithStale = prepared.map((entry, i): PreparedMarketDataEntry => {
+        if (!('acknowledgment' in entry)) return entry;
+        let stale = read[i]!.stale;
+        for (const other of prepared) {
+          if (!('revision' in other) || other.key.instrumentKey !== entry.key.instrumentKey) continue;
+          if (other.key.tradingDate >= entry.key.tradingDate || (stale && other.key.tradingDate < stale.tradingDate)) continue;
+          const day = deps.sessionPolicy.classify(other.key.tradingDate);
+          if (day.kind !== 'Session') continue;
+          const { revisionId, revisionNumber, price } = other.revision;
+          stale = { tradingDate: other.key.tradingDate, price, revisionId, revisionNumber, closeInstant: day.close };
+        }
+        return { ...entry, resolution: resolve(entry.record, stale) };
+      });
+      return { kind: 'Prepared', entries: entriesWithStale };
     },
     applyPreparedEffects(tx, prepared) {
       requireOpen(tx);

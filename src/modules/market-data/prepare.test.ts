@@ -157,6 +157,27 @@ describe('prepareEffects (P37, A154)', () => {
     });
     expect(await stored(persistence)).toEqual(before);
   });
+
+  it('should disclose a Mark prepared earlier in the same batch as the Stale context of a later acknowledgment for the same instrument', async () => {
+    const { marketData, persistence } = await setup();
+    const FRIDAY = '2026-10-09';
+    const effect = await prepared(marketData, [
+      mark('XYZ', '52.5', { key: { instrumentKey: 'XYZ', tradingDate: FRIDAY } }),
+      unavailable('XYZ', 'No close'),
+    ]);
+    const acknowledged = effect.entries[1]!;
+    expect(acknowledged.resolution).toMatchObject({
+      kind: 'AcknowledgedUnavailable',
+      stale: { tradingDate: FRIDAY, price: '52.5', revisionId: 'rev-0001', revisionNumber: 1 },
+    });
+    const tx = beginSemanticTransaction();
+    marketData.applyPreparedEffects(tx, effect);
+    const { checks, writes } = tx.close();
+    expect((await persistence.commit({ checks, writes })).kind).toBe('Committed');
+    const queried = await marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: MONDAY }, instruments: ['XYZ'] });
+    if (queried.kind !== 'Frames') throw new Error(`expected Frames, got ${queried.kind}`);
+    expect(queried.frames[0]!.resolution).toEqual(acknowledged.resolution);
+  });
 });
 
 describe('applyPreparedEffects', () => {
