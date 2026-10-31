@@ -1078,3 +1078,5 @@ Record. `CardLink` now builds `href` with `let href = ...; if (instrument !== un
 ocr review of `9f92e17` (T5R.12-B1-B1-B1): one file reviewed, no findings. Raw output: [ocr/T5R.12-B1-B1-B1-9f92e17.json](ocr/T5R.12-B1-B1-B1-9f92e17.json). T5R.12-B1's chain is closed.
 
 ocr review of `899c795` (T5R.12-B2): one file reviewed (tests and evidence excluded), no findings. Raw output: [ocr/T5R.12-B2-899c795.json](ocr/T5R.12-B2-899c795.json).
+
+**Process note (T5R.12-B3):** the subagent ran one no-op here-string (`cat >/dev/null <<< ""`), against the Edit-only rule; no file changed. Three of its four cases were first-run passes, each mutation-checked and flagged in its record. It wraps the Mark landing in `flushSync` so the row keeps focus over the card header's focus effect.
