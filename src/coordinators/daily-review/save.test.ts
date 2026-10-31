@@ -73,6 +73,36 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     expect(review.nextStep.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
   }, 30_000);
 
+  it('should not return a next-step card read at a later Workspace revision than the post-save overview', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    await stack.saveMark('DEF', '40.50');
+    const binding = await bindingFor(stack, a);
+    let committed = false;
+    const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
+      const result = await stack.persistence.commit(...args);
+      committed = true;
+      return result;
+    }) as typeof stack.persistence.commit;
+    // After the commit, the first session read is the overview's and the second is the next card's: one write lands between them.
+    let sessions = 0;
+    const query = (async (...args: Parameters<typeof stack.marketData.query>) => {
+      if (committed && args[0].kind === 'ResolveSession' && ++sessions === 2) await stack.saveMark('ABC', '27.00', '2026-10-08');
+      return stack.marketData.query(...args);
+    }) as typeof stack.marketData.query;
+    const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit }, marketData: { ...stack.marketData, query } });
+
+    const result = saved(await review.save({ kind: 'SaveTradeAction', binding, action: 'Hold' }));
+
+    expect(sessions).toBeGreaterThanOrEqual(2);
+    if (result.review.kind === 'Ready') {
+      const opened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+      expect(opened.kind === 'Ready' && opened.binding.workspace.contentRevision).toBe(result.review.binding.workspace.contentRevision);
+    } else {
+      expect(result.review).toEqual({ kind: 'ChangedDuringAssembly' });
+    }
+  }, 30_000);
+
   it('should, after an Action save, return as the next step the first Trade that is not done starting from the saved Trade, not from the head of the walk', async () => {
     const stack = await reviewStack(MONDAY_1700);
     await fiveTradeFixture(stack);

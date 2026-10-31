@@ -443,19 +443,35 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
-  const getTrade = (request: GetDailyTradeReviewRequest) =>
-    coherently<GetDailyTradeReviewResult>(async () => {
+  // `atRevision` is the Workspace content revision the card must be read at: only a post-save assembly names it,
+  // since a trader's `getTrade` is valid after unrelated writes. A card settled at another revision is `Moved`.
+  const readTrade = (request: GetDailyTradeReviewRequest, atRevision?: number) =>
+    coherently<GetDailyTradeReviewResult | { readonly kind: 'Moved' }>(async () => {
       const pass = await assembleTrade(request);
       if (pass.kind === 'Expired') return { retry: true };
       if (pass.kind !== 'Ready') return { done: pass };
       // The overview's Workspace is the one this read must be in; its content revision moves with every write.
       return {
         settle: ({ workspace }) =>
-          workspace.databaseName === request.binding.workspace.databaseName
-            ? { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } }
-            : { kind: 'ReviewChanged' },
+          workspace.databaseName !== request.binding.workspace.databaseName
+            ? { kind: 'ReviewChanged' }
+            : atRevision !== undefined && workspace.contentRevision !== atRevision
+              ? { kind: 'Moved' }
+              : { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } },
       };
     });
+
+  const getTrade = (request: GetDailyTradeReviewRequest) => readTrade(request) as Promise<GetDailyTradeReviewResult>;
+
+  // A post-save assembly is one revision: when a card settles at another revision than the overview, the
+  // whole assembly is read again, bounded like every other (A46).
+  async function atOneRevision<R>(assemble: () => Promise<R | undefined>): Promise<R | { readonly kind: 'ChangedDuringAssembly' }> {
+    for (let i = 0; i < ASSEMBLY_ATTEMPTS; i++) {
+      const result = await assemble();
+      if (result !== undefined) return result;
+    }
+    return { kind: 'ChangedDuringAssembly' };
+  }
 
   // The prompts of the Daily Trade Review definition, by the option each Action chooses.
   const ACTION_PROMPT = 'prompt.daily-trade-review.action';
@@ -597,31 +613,39 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     });
   }
 
-  async function postSaveReview(reviewDate: string, from?: string): Promise<PostSaveReview> {
-    const read = await readAfterSave(reviewDate, from);
-    if (read.kind !== 'Ready') return read;
-    const { nextTask } = read;
-    const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding };
-    if (nextTask.kind !== 'Trade') return { ...review, nextStep: nextTask };
-    const next = await getTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding });
-    if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
-    return { ...review, nextStep: { kind: 'Trade', trade: next.trade } };
+  function postSaveReview(reviewDate: string, from?: string): Promise<PostSaveReview> {
+    return atOneRevision<PostSaveReview>(async () => {
+      const read = await readAfterSave(reviewDate, from);
+      if (read.kind !== 'Ready') return read;
+      const { nextTask } = read;
+      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding };
+      if (nextTask.kind !== 'Trade') return { ...review, nextStep: nextTask };
+      const next = await readTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding }, read.binding.workspace.contentRevision);
+      if (next.kind === 'Moved') return undefined;
+      if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
+      return { ...review, nextStep: { kind: 'Trade', trade: next.trade } };
+    });
   }
 
   // The Review under the Marks a save left, with the card they were saved from (P38, A155).
-  async function postMarksReview(reviewDate: string, tradeId: string): Promise<PostMarksReview> {
-    const read = await readAfterSave(reviewDate, tradeId);
-    if (read.kind !== 'Ready') return read;
-    const card = await getTrade({ reviewDate, tradeId, binding: read.binding });
-    if (card.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
-    const { nextTask } = read;
-    const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, trades: read.trades, trade: card.trade };
-    if (nextTask.kind === 'Done') return { ...review, nextStep: nextTask };
-    // A Missing Mark is shown on the first card of the walk that holds its Instrument (P36).
-    const nextId = nextTask.kind === 'Mark' ? read.trades.find(({ tradeId: id }) => nextTask.row.trades.includes(id))?.tradeId ?? tradeId : nextTask.tradeId;
-    const next = nextId === tradeId ? card : await getTrade({ reviewDate, tradeId: nextId, binding: read.binding });
-    if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
-    return { ...review, nextStep: nextTask.kind === 'Mark' ? { kind: 'Mark', row: nextTask.row, trade: next.trade } : { kind: 'Trade', trade: next.trade } };
+  function postMarksReview(reviewDate: string, tradeId: string): Promise<PostMarksReview> {
+    return atOneRevision<PostMarksReview>(async () => {
+      const read = await readAfterSave(reviewDate, tradeId);
+      if (read.kind !== 'Ready') return read;
+      const revision = read.binding.workspace.contentRevision;
+      const card = await readTrade({ reviewDate, tradeId, binding: read.binding }, revision);
+      if (card.kind === 'Moved') return undefined;
+      if (card.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
+      const { nextTask } = read;
+      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, trades: read.trades, trade: card.trade };
+      if (nextTask.kind === 'Done') return { ...review, nextStep: nextTask };
+      // A Missing Mark is shown on the first card of the walk that holds its Instrument (P36).
+      const nextId = nextTask.kind === 'Mark' ? read.trades.find(({ tradeId: id }) => nextTask.row.trades.includes(id))?.tradeId ?? tradeId : nextTask.tradeId;
+      const next = nextId === tradeId ? card : await readTrade({ reviewDate, tradeId: nextId, binding: read.binding }, revision);
+      if (next.kind === 'Moved') return undefined;
+      if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
+      return { ...review, nextStep: nextTask.kind === 'Mark' ? { kind: 'Mark', row: nextTask.row, trade: next.trade } : { kind: 'Trade', trade: next.trade } };
+    });
   }
 
   // The Debt's resolution is prepared with Source Daily Review and staged in this coordinator's own commit (A64).

@@ -142,6 +142,35 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     expect(result.marks[0]!.resolutionRevision).toBe(stored.value!['resolutionRevision']);
   }, 30_000);
 
+  it('should not return a MarksSaved card read at a later Workspace revision than its overview', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack, { withoutMarks: true });
+    const { reviewDate, ...binding } = await overview(stack);
+    let committed = false;
+    const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
+      const result = await stack.persistence.commit(...args);
+      committed = true;
+      return result;
+    }) as typeof stack.persistence.commit;
+    // After the commit, the first session read is the overview's and the second is the card's: one write lands between them.
+    let sessions = 0;
+    const query = (async (...args: Parameters<typeof stack.marketData.query>) => {
+      if (committed && args[0].kind === 'ResolveSession' && ++sessions === 2) await stack.saveMark('ZZZ', '10.00');
+      return stack.marketData.query(...args);
+    }) as typeof stack.marketData.query;
+    const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit }, marketData: { ...stack.marketData, query } });
+
+    const result = marksSaved(await review.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding, entries: xyzEntries }));
+
+    expect(result.marks).toHaveLength(2);
+    if (result.review.kind === 'Ready') {
+      const current = await overview(stack);
+      expect(result.review.binding.workspace.contentRevision).toBe(current.workspace.contentRevision);
+    } else {
+      expect(result.review).toEqual({ kind: 'ChangedDuringAssembly' });
+    }
+  }, 30_000);
+
   it('should return ReviewChanged and write nothing when the binding Workspace database is not the active one', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a } = await cardFixture(stack, { withoutMarks: true });
