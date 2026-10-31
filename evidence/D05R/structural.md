@@ -901,3 +901,7 @@ ocr reviewed the two support files (ten specs excluded) and raised nothing. The 
 In `faults.spec.ts`, order the read-only checks so the page-wide "no Save" check runs once with the Action panel open and once with the Reflections panel open (reorder or repeat the existing `expect`, matcher and value unchanged).
 
 Done in commit `a0e8b63` (T5R.10-H3-B1, structural): one identical "no Save" `expect` added right after the Answer and Decline absent checks, with the Reflections panel open; the original stays after `actionFormOf`, with the Action panel open. No other `expect` touched. `faults.spec.ts` 2 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0. Not shown failing against a present Save button.
+
+ocr review of `a0e8b63`: ocr selected nothing (spec excluded). The reviewing agent read the diff: one line added, each "no Save" check now runs with its panel open, nothing else changed. No findings. Note: the Reflection form has no "Save" button (its controls are Answer, Decline and Cancel, `DebtForm.tsx:209-223`), so the added check is a page-wide backstop against a stray "Save"; the form's own submit is covered by the existing "no Answer" check. Raw output: [ocr/T5R.10-H3-B1-a0e8b63.json](ocr/T5R.10-H3-B1-a0e8b63.json).
+
+T5R.10-H3's ocr findings are worked (H3-B1).
