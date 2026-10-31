@@ -1,6 +1,6 @@
 # D5R — Review redesign: one card per position: task breakdown
 
-Status: **agreed by the user, 2026-10-31 (P36–P41, A150–A163); awaiting plan revision 20.** Not yet part of the frozen plan. Revised on 2026-10-31 at the user's direction: a card's Marks are saved through a Daily Review command whose result carries the refreshed Review (P37, P38), replacing the earlier draft's Market Data batch command and refresh through `open`. Agreeing it means plan revision 20, with plan decision 61 recording the reopened passages listed in P36 and P37, and an entry in the implementation plan's deliverable summary between D5 and D6. Until then the frozen plan (revision 19) and D6's breakdown stand unchanged.
+Status: **agreed by the user, 2026-10-31 (P36–P41, A150–A163); part of the frozen plan from revision 20 (decision 61).** Revised on 2026-10-31 at the user's direction: a card's Marks are saved through a Daily Review command whose result carries the refreshed Review (P37, P38), replacing the earlier draft's Market Data batch command and refresh through `open`. Plan revision 20 adds it, with plan decision 61 recording the reopened passages listed in P36 and P37, an entry in the implementation plan's deliverable summary between D5 and D6, and the amendment notes of section 9.
 
 D5R revises the Daily Review screen that D4 built (A57, A48, A60) and D5 extended (A71). The layout and visuals are taken from **layout B** of the Review prototype (`prototypes/review-workflow/index.html`, the "B · Choose next" tab, as of commit `e4bbc4b`). The prototype is a picture of the workflow, not a specification: where it differs from the specs or the plan, this breakdown says which wins (section 1.3, A159 and A160).
 
@@ -429,12 +429,9 @@ The acceptance matrix's AC-REV-002 row gains a note naming plan decision 61.
 ## 10. Before work starts
 
 1. ~~The user agrees or amends P36–P41 and A150–A163.~~ Done: all agreed on 2026-10-31.
-2. **Plan revision 20:**
-   - plan decision 61, naming the reopened passages: Daily Review "Date, eligibility, and ordering" and AC-REV-002's family order (P36); Daily Review `save`'s two commands and the Market Data interface (P37);
-   - D5R in the deliverable summary between D5 and D6;
-   - tag `claude-opus-5.5-plan-r20`.
-3. **Spec map:** retag the Daily Review, Market Data, and UI contract sections for D5R in `plan/spec-map.md`, then regenerate the reading lists with `.claude/scripts/spec-reading-lists.py` (decision 45).
-4. **Handoff:** write `plan/D05R-handoff.md`, and point the D6 handoff at D5R's tag.
+2. ~~Plan revision 20.~~ Done: decision 61, D5R in the deliverable summary and definitions, the amendment notes of section 9 in D4–D7 and the acceptance matrix, tagged `claude-opus-5.5-plan-r20`.
+3. ~~Spec reading.~~ No retag: every spec section D5R uses is already tagged for D5 or core, except AC-MARK-004 (S047, `specs/acceptance/acceptance-contract.md` lines 289–295, tagged D4). D5R's reading list is therefore `plan/spec-reading/D05.md` plus S047. The reading-list script names deliverables by number, so D5R has no list of its own.
+4. ~~Handoff.~~ Done: `plan/D05R-handoff.md`. The D6 handoff carries a note that D5R runs first; D5R's session rewrites its starting point when D5R is tagged.
 
 ---
 
