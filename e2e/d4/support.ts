@@ -207,7 +207,9 @@ export async function showPanel(page: Page, name: Panel): Promise<void> {
 export type CardPanel = Panel;
 export const tradeCard = (page: Page, symbol: string): Locator => page.getByRole('region', { name: `${symbol} review`, exact: true });
 // Raw locators: they never click, so a step that asserts which card or panel is open can read them before any reach.
-export const cardHeader = (page: Page, symbol: string): Locator => page.getByRole('button', { name: new RegExp(`^Review ${symbol}\\b`) });
+// A symbol may hold a dot (BRK.B): it is escaped, and must be followed by whitespace or the end, so BRK never matches BRK.B.
+export const cardHeader = (page: Page, symbol: string): Locator =>
+  page.getByRole('button', { name: new RegExp(`^Review ${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$)`) });
 export const panelHeader = (page: Page, symbol: string, panel: Panel): Locator => tradeCard(page, symbol).getByRole('button', { name: new RegExp(`^${panel}\\b`) });
 export async function openPanelOf(page: Page, symbol: string): Promise<Panel | undefined> {
   for (const name of PANELS) if ((await panelHeader(page, symbol, name).getAttribute('aria-expanded')) === 'true') return name;

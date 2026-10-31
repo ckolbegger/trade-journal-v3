@@ -1,4 +1,4 @@
-import { actionFormOf, cardHeader, createTrades, expect, marksFamily, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, reachCard, status, test } from './support.ts';
+import { actionFormOf, cardHeader, createTrades, expect, marksFamily, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, status, test } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -56,6 +56,21 @@ test.describe('reach (decision 65)', () => {
     await expect(cardHeader(page, 'XYZ')).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'false');
     await expect(row.getByLabel('Price')).toHaveValue('52.00');
+    await context.close();
+  });
+
+  test('should reach BRK’s card, not BRK.B’s, when both Trades are listed', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page, [
+      { plan: { ...PLAN, symbol: 'BRK.B', quantity: '100', entry: '50', stop: '47.50', target: '56' }, fills: [['100', '50.00', '2026-10-12T10:00']] },
+      { plan: { ...PLAN, symbol: 'BRK', quantity: '100', entry: '30', stop: '28', target: '36' }, fills: [['100', '30.00', '2026-10-12T10:00']] },
+    ]);
+    await openReview(page);
+
+    const card = await reachCard(page, 'BRK');
+    await expect(card).toBeVisible();
+    await expect(cardHeader(page, 'BRK')).toHaveAttribute('aria-expanded', 'true');
+    await expect(cardHeader(page, 'BRK.B')).toHaveAttribute('aria-expanded', 'false');
     await context.close();
   });
 
