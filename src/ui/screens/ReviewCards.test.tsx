@@ -314,6 +314,42 @@ describe('after a Mark save', () => {
   });
 });
 
+describe('card order within a view (A150)', () => {
+  it('should keep each card in its place within the view when a refreshed Review returns the Trades in a different order', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    const reordered = review({
+      families: [
+        { family: 'Marks', today: [], earlier: [] },
+        { family: 'Trades', trades: [...WALK].reverse() },
+      ],
+    });
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(reordered);
+    vi.mocked(facade.MarketData.save).mockResolvedValue({
+      kind: 'Saved',
+      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
+      resolution: available('40.50'),
+      resolutionRevision: 1,
+      classification: 'InitialManual',
+      revision: { revisionId: 'r1', revisionNumber: 1, price: '40.50', source: 'Manual', intention: 'InitialManual', observedAt: CUTOFF, savedAt: CUTOFF },
+      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 'None' },
+    } as never);
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(headers()[1]!);
+    const card = await screen.findByRole('region', { name: 'DEF review' });
+    const entry = within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' });
+    await user.click(within(entry).getByRole('button', { name: 'Enter' }));
+    await user.type(within(entry).getByLabelText('Price'), '40.50');
+    await user.click(within(entry).getByRole('button', { name: 'Save Mark' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(3));
+
+    const underlyings = headers().map((h) => /Review (\w+)/.exec(h.getAttribute('aria-label') ?? h.textContent ?? '')?.[1]);
+    expect(underlyings).toEqual(['ABC', 'DEF', 'XYZ', 'XYZ', 'JKL']);
+  });
+});
+
 describe('Save while the Review is read again', () => {
   it('should hold the Action Save while the Review is read again after a Mark is saved, then offer it under the new binding', async () => {
     const user = userEvent.setup();

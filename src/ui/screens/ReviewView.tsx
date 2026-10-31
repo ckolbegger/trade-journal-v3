@@ -139,11 +139,17 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // The save's result is the Review from here on; the ref holds the latest, so a read never uses an older binding.
   const [review, setReview] = useState(initial);
   const latest = useRef(initial);
+  // The card order fixed when the view first shows (A150); a refreshed Review changes the cards' content, not their places.
+  // A Trade new to a refreshed Review is appended; one it no longer holds has no card.
+  const [order, setOrder] = useState(() => walkedTrades(initial).map((t) => t.tradeId));
   const apply = (update: (current: Ready) => Ready) => {
     latest.current = update(latest.current);
+    const added = walkedTrades(latest.current).map((t) => t.tradeId);
+    setOrder((current) => [...current, ...added.filter((id) => !current.includes(id))]);
     setReview(latest.current);
   };
-  const trades = walkedTrades(review);
+  const walked = walkedTrades(review);
+  const trades = order.flatMap((id) => walked.filter((t) => t.tradeId === id));
   const underlying = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
   // The card that is open: the first card that is not Done opens when the Review loads (A151).
   const [firstId] = useState(() => walkedTrades(initial).find((t) => isOwing(remainingOf(t.tradeId, initial.completion)))?.tradeId);
