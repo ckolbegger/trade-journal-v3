@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 36171,
+    "input_tokens": 35839,
+    "output_tokens": 332,
+    "cache_read_tokens": 5760,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Capability-aware daily review routing and workspace integration",
+      "files": [
+        "src/app/compose.ts",
+        "src/app/routes.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/workspace/capabilities.ts",
+        "tools/verify-capabilities.ts"
+      ]
+    }
+  ],
+  "session_id": "b6a704c8-a2b3-491b-833c-6a1e23d7fcd4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b6a704c8-a2b3-491b-833c-6a1e23d7fcd4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4ff8eea",
+      "resolved_base": "c21c8ecb7b18d0f65006e39498f17bbe8d5fc970",
+      "resolved_head": "4ff8eead81df0e05896094fb6d7f43298a6f1760",
+      "exact_range": "c21c8ecb7b18d0f65006e39498f17bbe8d5fc970..4ff8eead81df0e05896094fb6d7f43298a6f1760",
+      "source_artifact_sha256": "02e3d4191603b00c79fb0a021dc3b4bcef441a97539abe20157ef3d2b0e82218"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "1956239dfb88aa9650fa6b18494b5120e1601ef6d425970101e259c2415df7c4"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "6a1d22be37b2cd74d0fa786f397d810cf968e95ed1ed9073420a2e269721449e"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "9368b33d5fb318b553a09fffabad7a9b0f14baa0af538246f5c1406aed3e49f2"
+        },
+        {
+          "item_id": "576163b4eb3e849937e1ce9583972349d7efcba04b6d519e527e2e2442ff10cd",
+          "path": "tools/verify-capabilities.ts",
+          "fingerprint": "3a663ad29959ac50fb4449d21e0d21cec69521d1cbac37dad7ab0b097a1b950a"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "51a2a669acbd03b7a410b58fe1b0beea43aefb5520617c14e29d932f65b24127"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "1956239dfb88aa9650fa6b18494b5120e1601ef6d425970101e259c2415df7c4"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "6a1d22be37b2cd74d0fa786f397d810cf968e95ed1ed9073420a2e269721449e"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "9368b33d5fb318b553a09fffabad7a9b0f14baa0af538246f5c1406aed3e49f2"
+        },
+        {
+          "item_id": "576163b4eb3e849937e1ce9583972349d7efcba04b6d519e527e2e2442ff10cd",
+          "path": "tools/verify-capabilities.ts",
+          "fingerprint": "3a663ad29959ac50fb4449d21e0d21cec69521d1cbac37dad7ab0b097a1b950a"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "51a2a669acbd03b7a410b58fe1b0beea43aefb5520617c14e29d932f65b24127"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 20691
+  }
+}

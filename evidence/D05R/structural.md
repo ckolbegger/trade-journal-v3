@@ -389,3 +389,17 @@ Changes: `src/coordinators/workspace/capabilities.ts` (manifest), `src/app/route
 | `npx tsc6 --noEmit` | exit 0 |
 | `npm run lint` | exit 0 (first attempt failed unbound-method on the facade; fixed by the property typing above) |
 | `npm run lint:deps` | exit 0 |
+
+Process note (main session): the task agent appended this section with a `cat >>` here-doc, which the Edit-only rule forbids. The content is correct, so it was left as it is.
+
+### ocr review of `4ff8eea`
+
+Five files reviewed, no findings. Raw output: [ocr/T5R.6-4ff8eea.json](ocr/T5R.6-4ff8eea.json).
+
+### Main-session review: `RewardRiskNow` advertised where it isn't shown
+
+The commit added a `RewardRiskNow` variant to `TradeViewsAndReporting.browseTrades` and `getTradeDetail`, in the manifest and on the Trades and Trade Detail routes. No UI renders `rewardRiskNow` (a search of `src/ui` finds nothing). In D5R only the Review's open card shows it (P40, A158, T5R.11). P40 says Trade Detail "can use it later", not now. The variant therefore advertises behaviour those routes don't present, against "Capability honesty" (implementation plan, "Rules every deliverable follows") and T5R.6's "nothing beyond D5R is" reachable. This is bug task **T5R.6-B1**.
+
+#### T5R.6-B1 Reward : risk now advertised only where the Review presents it
+
+Change: remove `RewardRiskNow` from `browseTrades` and `getTradeDetail`, in the manifest and on the routes. Add it as a variant of `DailyReview.getTrade`, presented by the Review route, whose card shows it from T5R.11. Update the exact-manifest test. Verification: `npm run verify:capabilities` (19 / 10 / 8 / 3 / schema 4), the workspace manifest test, typecheck, `tsc6`, lint, `lint:deps`.
