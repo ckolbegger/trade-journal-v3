@@ -1,5 +1,7 @@
 # Handoff: `claude-opus-5.5`, implement D6
 
+> **Not the next deliverable yet (2026-10-31).** Plan revision 20 (decision 61) inserted D5R, the Review redesign, before D6. Implement D5R first, from [D05R-handoff.md](D05R-handoff.md). D5R's session rewrites this note's location checks, starting point and section 4 when D5R is tagged; until then, do not start D6 from it.
+
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, D6 specifics, what D5 left in place, and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
 Written 2026-10-30, after D5 completed. [D05-handoff.md](D05-handoff.md) is the record of D5's session (section 7 lists every D5 task, commit, decision and flagged item); this note is the starting point for D6.
