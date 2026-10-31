@@ -1121,3 +1121,7 @@ Ports 5175, 5181, 9341 and 9342: no listener before the first run, none after th
 | `npm run test:integration` | 54 files, 108 passed |
 
 Process note: one no-op here-string (`cat > /dev/null <<< ""`) was run by mistake against the Edit-only rule; no file changed.
+
+ocr review of `1515243` (T5R.13): two files reviewed (`request-counter.ts`, `bench-run.ts`; the test excluded), no findings. Raw output: [ocr/T5R.13-1515243.json](ocr/T5R.13-1515243.json). The reviewing agent didn't read the code itself, so the orchestrator checked its two questions from the diff:
+- **Counter:** the `IDBDatabase.prototype.transaction` wrap logs only while a recording is open and `transactions` is set (reset in `finally`), one entry per call; the store, index and cursor wraps are unchanged, so nothing is double-counted.
+- **Bench timings:** each starts at a capture-phase pointer press and ends at the first DOM mutation after which the result holds (card shown with nothing loading; no drafts counted; Action form gone), on the real clock: click to rendered result, as the plan asks.
