@@ -99,6 +99,9 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T5R.8 | UI: position cards, opened in place | UI | B | T5R.7 | `ReviewView`, `ReviewCard` |
 | T5R.9 | UI: Marks panel and Save Marks | UI | B | T5R.8 | `CardMarks` |
 | T5R.10 | UI: Reflections and Action panels | UI | B | T5R.8 | `ReviewCard` |
+| T5R.10-H1 | Browser card helpers (decision 65, section 6.4) | test | B | T5R.10 | `reachCard`, `reachPanel` in `e2e/d4/support.ts` |
+| T5R.10-H2 | D4 browser specs on the card helpers | test | S | T5R.10-H1 | `test:e2e -- e2e/d4` |
+| T5R.10-H3 | D5 browser specs on the card helpers | test | S | T5R.10-H1 | `test:e2e -- e2e/d5` |
 | T5R.11 | UI: open-card figures | UI | B | T5R.8 | `CardFigures` |
 | T5R.12 | UI: links, blockers, and next step | UI | B | T5R.9, T5R.10 | `ReviewView` |
 | T5R.13 | Query-count proof and latency run | test | S | T5R.6 | `test:integration -- d5r/query-count`, `bench:run` |
@@ -320,6 +323,8 @@ describe("header")
 | Task | Verification (exact) | Expected result | Behavior that depends on it |
 |---|---|---|---|
 | T5R.6 Capability manifest and composition | `npm run verify:capabilities` | The manifest adds `DailyReview.save` (`SaveReviewMarks`), Market Data's prepare/apply pair as an internal seam (absent from the facade), Reward : risk now in `evaluate`, the range position and gap Trades in `DailyReview.open`, and the Plan baseline in `getTrade`. Every new operation is reachable from the Review's cards, and nothing beyond D5R is. | AC-CAP-001. |
+| T5R.10-H2 D4 specs on the card helpers | `npm run build:faults`, `npm run build:releases`, then `npx playwright test e2e/d4 --project=chromium` | Every D4 browser case passes. In the diff of `e2e/d4/*.spec.ts`, every changed `expect` keeps its matcher and expected value; only how the element is reached changes (section 6.4). | Cumulative regression; T5R.15. |
+| T5R.10-H3 D5 specs on the card helpers | as T5R.10-H2, for `e2e/d5` | Every D5 browser case passes, with the same diff rule. Then a complete cumulative run closes T5R.10. | Cumulative regression; T5R.15. |
 | T5R.13 Query count and latency | `npm run test:integration -- d5r/query-count`; `npm run bench:run` | A Review `open` issues exactly D5's request counts: the range position and gap Trades add no request. `SaveReviewMarks` with n entries issues one read-only snapshot with n record reads, one read-write commit with n checks and n writes, then the same post-save assembly requests as a `SaveTradeAction`, with no recovery or gap-scan request. `bench:run` adds disclosed, ungated timings on the mature dataset for "open the first card" (`open` plus one `getTrade`), a `SaveReviewMarks` of one card's Marks, and a `SaveTradeAction`, from the click to the rendered result. Results go to `evidence/D05R/bench.md`. | AC-PERF-001; P38. |
 | T5R.14 Node integration suite | `npm run test:integration` | Every case in sections 6.1 of D1, D2, D4, D5, and D5R passes. | Cumulative regression. |
 | T5R.15 Browser suite | `npm run test:e2e` (Chromium) | Every D4 and D5 browser case passes against the cards (section 6.3), and every case in section 6.2 passes. | Cumulative regression. |
@@ -364,12 +369,50 @@ Chromium only (decision 19). Dates are set with Playwright's clock on the produc
 
 ### 6.3 Moving the D4 and D5 browser cases onto cards
 
+**Amended by decision 65 (revision 24):** the helper-only rule below held for cards (T5R.8) and drafts (T5R.9), but not for panels (T5R.10): with one panel open at a time, 19 cases read a panel the card didn't open on. Section 6.4 replaces the rule with card helpers that reach what a step reads or uses, and allows mechanical call-site edits in the specs.
+
 The D4 and D5 browser cases keep their procedures and expectations, with the layout steps changed:
 - "Continue to Trades" and "Review XYZ" become opening XYZ's card.
 - Marks entered in the Marks family become drafts in the card's Marks panel saved with Save Marks.
 - "The Marks family first" becomes "the card opens on its Marks panel".
 
 The change is made once, in `e2e/d4/support.ts` and `e2e/d5/support.ts`, plus the specs that use the button by name: `review.spec.ts` and `responsive-a11y.spec.ts` in `e2e/d4`. No D4 or D5 expectation about saved data, completion, or durable state changes. The unit tests of the retired views (`ReviewView.test.tsx`'s Marks family and Continue to Trades cases, and `ReviewTrade.test.tsx`'s placement cases) are replaced by T5R.8–T5R.12. `MarkEntry`, `DebtForm`, and `ActionForm` keep their tests.
+
+### 6.4 Card helpers (decision 65)
+
+**Why.** The Review's layout keeps changing: cards (T5R.8), drafts (T5R.9), panels (T5R.10), then figures (T5R.11), links and next step (T5R.12), and later D6 and D7, whose option cards hold several Instruments. A spec step that says *what* it reads ("XYZ's Monday Mark row") should not also say *how to get there*. One helper module owns the route, so a layout change edits that module, not every spec.
+
+**Where.** `e2e/d4/support.ts`, re-exported by `e2e/d5/support.ts` (and by `e2e/d5r`'s support in T5R.15).
+
+**API.**
+- `reachCard(page, symbol): Promise<Locator>` opens the Trade's card unless it is open, waits for its content, and returns the card's region.
+- `reachPanel(page, symbol, panel): Promise<Locator>` reaches the card, then opens `'Marks' | 'Reflections' | 'Action'` unless it is open, and returns the panel's region.
+- Element helpers built on them, each async and symbol-qualified: `markRow(page, symbol, date)`, `actionFormOf(page, symbol)`, `reflectionsOf(page, symbol)`, `debtFormOf(page, symbol)`. The write helpers (`enterMark`, `acknowledgeMark`, `saveAction`, `answerDebt`, `declineDebt`) use them.
+- Raw locators that never click, for steps that assert navigation itself: `cardHeader(page, symbol)`, `panelHeader(page, symbol, panel)`, `openPanelOf(page, symbol)`.
+- Retired: the `tradesFamily` proxy, `continueToTrades`, and the unqualified `markEntry`, `actionForm`, `marksFamily` (specs move to the helpers above).
+
+**Rules.**
+1. **Idempotent.** Headers toggle, so every reach checks `aria-expanded` before pressing; reaching what is open changes nothing.
+2. **Loud on refusal.** When opening another card is refused because the open card holds unsaved work (A156), the reach fails with a message naming both cards. It never reads from the wrong card. Switching panels within a card is allowed (the panels stay mounted, so drafts survive).
+3. **Reads never save.** A reach never presses Save, Save Marks, Discard, or a confirm.
+4. **Navigation is asserted raw.** A step that checks which card or panel is open, or where focus is (A151's first card on load, A157's next panel, T5R.12's next step, `responsive-a11y`'s keyboard-only and focus checks), uses the raw locators and asserts before any reach.
+5. **Old releases.** On a Review without cards (the update cases first run `dist-releases/d4`), the reaches return the old layout's elements, as the current `hasCards` path does.
+
+**Migration rule (T5R.10-H2, T5R.10-H3).** Spec edits are mechanical: a reach call or `await` added, a helper renamed, a "Continue to Trades" or "Review XYZ" step replaced by a reach. Every `expect` keeps its matcher and expected value. A case that would need anything more is not edited; it goes to the user.
+
+#### T5R.10-H1 Browser card helpers
+
+Seam: the helpers in `e2e/d4/support.ts`, proved in `e2e/d4/card-helpers.spec.ts` against the built app with four Trades (`FOUR_TRADES`) at Monday 17:00, XYZ's card open on load.
+
+```text
+describe("reach (decision 65)")
+  it should open ABC's collapsed card and its Marks panel and return ABC's Monday row, Missing
+  it should leave XYZ's card on its Action panel, with a typed Intent, unchanged when XYZ's Action form is reached again
+  it should fail naming XYZ's and ABC's cards when reaching ABC's card is refused while XYZ's card holds a Mark draft, and leave XYZ's card open with its draft
+  it should return the Marks family's row for XYZ on a previous release's Review (dist-releases/d4)
+```
+
+Red notes: the second case may pass on the first run if the first case's reach already checks `aria-expanded`; it then needs the mutation check (reach presses the header unconditionally). The fourth runs on the `d4Release` fixture the update cases use.
 
 ---
 
