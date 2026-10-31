@@ -4,7 +4,7 @@ import { cardFixture, FRIDAY_DATE, MONDAY_1700, REVIEW_DATE, reviewStack, type R
 import { dumpAll } from '../../../tests/support/stack.ts';
 import type { MarketDataPrepareEntry } from '../../modules/market-data/index.ts';
 import { createDailyReview } from './index.ts';
-import type { ReviewBinding, SaveDailyReviewResult } from './index.ts';
+import type { ReviewBinding, SaveReviewMarksResult } from './index.ts';
 
 // T5R.5: DailyReview.save (SaveReviewMarks), against the card fixture at Monday 17:00 with no Monday Marks.
 
@@ -23,17 +23,17 @@ const initial = (instrumentKey: string, tradingDate: string, price: string): Mar
 // T-A's card: its Friday and Monday XYZ Marks.
 const xyzEntries = [initial('XYZ', REVIEW_DATE, '52.00'), initial('XYZ', FRIDAY_DATE, '51.00')];
 
-async function saveMarks(stack: ReviewStack, tradeId: string, entries: readonly MarketDataPrepareEntry[]): Promise<SaveDailyReviewResult> {
+async function saveMarks(stack: ReviewStack, tradeId: string, entries: readonly MarketDataPrepareEntry[]): Promise<SaveReviewMarksResult> {
   const { reviewDate, ...binding } = await overview(stack);
   return stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId, binding, entries });
 }
 
-function marksSaved(result: SaveDailyReviewResult) {
+function marksSaved(result: SaveReviewMarksResult) {
   if (result.kind !== 'MarksSaved') throw new Error(`expected MarksSaved, got ${result.kind}`);
   return result;
 }
 
-function ready(result: SaveDailyReviewResult) {
+function ready(result: SaveReviewMarksResult) {
   const { review } = marksSaved(result);
   if (review.kind !== 'Ready') throw new Error(`expected a Ready review, got ${review.kind}`);
   return review;
@@ -140,6 +140,19 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     expect(result.marks).toHaveLength(2);
     const stored = await stack.persistence.readSnapshot(['observations'], (tx) => tx.get('observations', [REVIEW_DATE, 'XYZ']));
     expect(result.marks[0]!.resolutionRevision).toBe(stored.value!['resolutionRevision']);
+  }, 30_000);
+
+  it('should return ReviewChanged and write nothing when the binding Workspace database is not the active one', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack, { withoutMarks: true });
+    const { reviewDate, ...binding } = await overview(stack);
+    const other = { ...binding, workspace: { ...binding.workspace, databaseName: `${binding.workspace.databaseName}-other` } };
+    const before = await dumpAll(stack.factory);
+
+    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding: other, entries: xyzEntries });
+
+    expect(result).toEqual({ kind: 'ReviewChanged' });
+    expect(await dumpAll(stack.factory)).toEqual(before);
   }, 30_000);
 });
 

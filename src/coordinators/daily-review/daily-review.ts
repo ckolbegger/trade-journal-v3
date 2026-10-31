@@ -36,6 +36,7 @@ import type {
   SaveDailyReviewResult,
   SavedMark,
   SaveReviewMarksRequest,
+  SaveReviewMarksResult,
   SaveTradeActionRequest,
   TradeSaveBinding,
 } from './types.ts';
@@ -148,7 +149,9 @@ function nextTaskOf(today: readonly MarkRow[], walkOrder: readonly string[], act
 export interface DailyReview {
   open(request: OpenDailyReviewRequest): Promise<OpenDailyReviewResult>;
   getTrade(request: GetDailyTradeReviewRequest): Promise<GetDailyTradeReviewResult>;
-  save(request: SaveDailyReviewRequest): Promise<SaveDailyReviewResult>;
+  // The Action and Debt saves keep their results; a Marks save (or any request) may also answer a bare ReviewChanged.
+  save(request: SaveTradeActionRequest | ResolveReviewDebtRequest): Promise<SaveDailyReviewResult>;
+  save(request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult>;
 }
 
 // The Trade's place in the walk and, when its facts replay, its evaluation at the Review-date frame.
@@ -654,7 +657,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   // The Marks are prepared by Market Data and staged in this coordinator's own commit (A155). A Conflict is
   // reported, never retried: Market Data has no shared counter to wait out (ADR 0011).
-  async function saveReviewMarks(request: SaveReviewMarksRequest): Promise<SaveDailyReviewResult> {
+  async function saveReviewMarks(request: SaveReviewMarksRequest): Promise<SaveReviewMarksResult> {
+    // Only the Workspace is bound: a request from another Workspace never writes here. The keys and the
+    // content revision are not compared, since Market Data's per-key revision checks own them.
+    const { workspace } = await currentBinding();
+    if (workspace.databaseName !== request.binding.workspace.databaseName) return { kind: 'ReviewChanged' };
     const prepared = await deps.marketData.prepareEffects({ entries: request.entries });
     if (prepared.kind !== 'Prepared') return prepared;
     const tx = beginSemanticTransaction();
@@ -674,11 +681,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   return {
-    save: (request) =>
+    // The overloads (see the interface) narrow the result by request kind; the body answers the widest.
+    save: ((request: SaveDailyReviewRequest): Promise<SaveReviewMarksResult> =>
       deps.guard.run('DailyReview.save', () => {
         if (request.kind === 'ResolveReviewDebt') return resolveReviewDebt(request);
         return request.kind === 'SaveReviewMarks' ? saveReviewMarks(request) : saveTradeAction(request);
-      }),
+      })) as DailyReview['save'],
 
     // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
     open: (request) =>

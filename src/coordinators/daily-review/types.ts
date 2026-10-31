@@ -353,3 +353,6 @@ export type SaveDailyReviewResult =
   | { readonly kind: 'ChangedDuringAssembly' }
   | RuntimeNotWritable
   | StorageFailure;
+
+// A Marks save can also be refused because its binding names another Workspace: nothing was written, and there is no Trade to refresh evidence for.
+export type SaveReviewMarksResult = SaveDailyReviewResult | { readonly kind: 'ReviewChanged'; readonly evidence?: undefined };

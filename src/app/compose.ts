@@ -106,7 +106,7 @@ export async function createApplication(deps: ApplicationDeps) {
     DailyReview: {
       open: (request: Parameters<typeof dailyReview.open>[0]) => dailyReview.open(request),
       getTrade: (request: Parameters<typeof dailyReview.getTrade>[0]) => dailyReview.getTrade(request),
-      save: (request: Parameters<typeof dailyReview.save>[0]) => dailyReview.save(request),
+      save: ((request) => dailyReview.save(request)) as typeof dailyReview.save,
     },
     capabilities: installedCapabilities(deps.releaseId, sessionPolicy.identity),
     session,
