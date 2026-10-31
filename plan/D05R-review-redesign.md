@@ -76,7 +76,7 @@ Numbering continues from D8's A123–A149. These are implementation-level choice
 
 | Canonical boundary | Code location | D5R operations |
 |---|---|---|
-| Market Data | `src/modules/market-data/` | `prepareEffects` and `applyPreparedEffects` (P37, A154); `save` rebuilt on them |
+| Market Data | `src/modules/market-data/` | `prepareEffects` and `applyPreparedEffects` (P37, A154); `save` rebuilt on them; `recover`'s historical gaps return each listed session's close (decision 62, revision 21) |
 | Trade Analysis | `src/domain/trade-analysis/` | `evaluate`: current Reward : risk (P40) |
 | Daily Review | `src/coordinators/daily-review/` | `open`: range position per walked Trade (P39), Trades per historical gap group; `getTrade`: the Plan baseline (P40); `save` (`SaveReviewMarks`, P37, P38, A155) |
 | UI | `src/ui/` | card list, slider, Marks panel with Save Marks, Reflections and Action panels, figure grid, links; retires the Marks family view and Continue to Trades |
