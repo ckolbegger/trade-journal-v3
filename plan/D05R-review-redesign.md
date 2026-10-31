@@ -389,7 +389,7 @@ The change is made once, in `e2e/d4/support.ts` and `e2e/d5/support.ts`, plus th
 - `reachPanel(page, symbol, panel): Promise<Locator>` reaches the card, then opens `'Marks' | 'Reflections' | 'Action'` unless it is open, and returns the panel's region.
 - Element helpers built on them, each async and symbol-qualified: `markRow(page, symbol, date)`, `actionFormOf(page, symbol)`, `reflectionsOf(page, symbol)`, `debtFormOf(page, symbol)`. The write helpers (`enterMark`, `acknowledgeMark`, `saveAction`, `answerDebt`, `declineDebt`) use them.
 - Raw locators that never click, for steps that assert navigation itself: `cardHeader(page, symbol)`, `panelHeader(page, symbol, panel)`, `openPanelOf(page, symbol)`.
-- Retired: the `tradesFamily` proxy, `continueToTrades`, and the unqualified `markEntry`, `actionForm`, `marksFamily` (specs move to the helpers above).
+- Retired: the `tradesFamily` proxy, `continueToTrades`, and the unqualified `markEntry`, `actionForm` (specs move to the helpers above). **Amended by decision 66 (revision 25):** `marksFamily` and a plain `tradesFamily` (the click-rewriting proxy removed) stay as raw locators, used only for rule 4 steps (B4.1's "first card opens on its Marks") and rule 5 steps (the update case's old-release Trades section).
 
 **Rules.**
 1. **Idempotent.** Headers toggle, so every reach checks `aria-expanded` before pressing; reaching what is open changes nothing.
