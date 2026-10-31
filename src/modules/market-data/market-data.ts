@@ -231,6 +231,8 @@ export interface HistoricalGaps {
   readonly revisions: Readonly<Record<string, ExpectedResolutionRevision>>;
   // The effective acknowledgment of each acknowledged date, as its resolution carries it.
   readonly acknowledgments: Readonly<Record<string, AcknowledgmentVersion>>;
+  // The session close (an instant) of each listed date: only Market Data sees the session policy (decision 62).
+  readonly closes: Readonly<Record<string, string>>;
 }
 
 // Transient: it is never stored and creates no fact.
@@ -448,6 +450,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
                   return resolution?.kind === 'AcknowledgedUnavailable' ? [[k.date, resolution.acknowledgment]] : [];
                 }),
               ),
+              closes: Object.fromEntries(relevant.filter((s) => resolutionOf.get(s.date)?.kind !== 'Available').map((s) => [s.date, s.close])),
             };
             return { gaps, beforeCoverage };
           }),

@@ -155,3 +155,20 @@ It reviewed `attention.ts`, `daily-review.ts`, `types.ts` and `tests/support/rev
 | Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-range-positions-integration.txt) |
 | Browser (Chromium) | 155 passed (5.6 min); exit 0 | [browser](suite-runs/t5r.3-range-positions-browser.txt) |
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-range-positions-checks.txt) |
+
+## T5R.3-B1 Gap Trades from session closes (decision 62)
+
+Defect (T5R.3 flag 1): a gap group's `trades[].from` was the New York calendar date of the Trade's earliest exposure, by a hard-coded `America/New_York` in Daily Review (against D4 A39). A Trade filled Friday 17:00 was listed from Friday, so Friday's gap showed on its card.
+
+Cases (commands logged in `tdd-log.md` under T5R.3-B1):
+1. Market Data `recover` test "should return the session close of each listed historical gap date". Red: `AssertionError: expected undefined to deeply equal { …(2) }` (`closes` absent). Green after the fix.
+2. Daily Review "should list a Trade filled after a session close from the next session, so that session gap is not on its card". Setup chosen: Monday Review, so Friday 2026-10-09 is the only listed date, and a second XYZ Trade filled Friday 21:00Z (17:00 New York, after the 20:00Z close) has no relevant listed date and must be absent. A "from 2026-10-12" setup would need a Tuesday Review with a Monday gap, so the absent case was taken as the unambiguous one. Red (assertion, against the old code): `AssertionError: expected [ 'id-0008', 'id-0049', 'id-0058' ] to deeply equal [ 'id-0008', 'id-0049' ]` (the new Trade listed). Green after the fix.
+
+Fix:
+- `HistoricalGaps.closes: Readonly<Record<string, string>>` in `src/modules/market-data/market-data.ts`: the session close (instant string) of each listed date, Missing or acknowledged, filled from the `relevant` sessions the scan already has. No new request, nothing stored.
+- Daily Review: `exchangeDateOf` and its hard-coded zone removed (the `Temporal` import stays; it is used for Debt comparison). New `firstRelevantGapDate(closes, exposure)` returns the first listed date (sorted) whose close is at or after the Trade's `earliestRelevance`; a Trade with none is left out of the group.
+- Choice: `HistoricalGapGroup` does not pass `closes` through. `assemble` now names the five fields instead of spreading `g`; the group's shape is unchanged.
+
+Deviation flagged: the existing T5R.3 gap case expected T-F from 2026-10-12, but in a Monday Review the only listed date is Friday, and T-F's first fill (Monday 10:30) is after Friday's close, so under decision 62 T-F has no relevant listed date and is left out. That case's name and assertion were changed to T-A only (from 2026-10-09). The brief said it must stay green; it cannot, since decision 62 contradicts it.
+
+Checks (each alone, exit 0): `npx vitest run src/modules/market-data src/coordinators src/domain` (392 passed), `src/ui` (327), `tests/integration` (105), `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`.

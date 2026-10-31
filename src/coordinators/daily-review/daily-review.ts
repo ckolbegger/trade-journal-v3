@@ -48,9 +48,12 @@ export interface DailyReviewDeps {
 
 const ASSEMBLY_ATTEMPTS = 3;
 
-// The exchange calendar date of an instant: the first date a Trade's exposure can be relevant from.
-// Daily Review does not see the session policy (D4 A39), so a date past that day's close is not moved on.
-const exchangeDateOf = (instant: string): string => Temporal.Instant.from(instant).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
+// The first listed gap date whose session close, as Market Data returns it, is at or after the exposure: the
+// session the exposure is relevant from. Daily Review does not see the session policy (D4 A39; decision 62).
+const firstRelevantGapDate = (closes: Readonly<Record<string, string>>, exposure: string): string | undefined =>
+  Object.entries(closes)
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .find(([, close]) => Temporal.Instant.compare(Temporal.Instant.from(close), Temporal.Instant.from(exposure)) >= 0)?.[0];
 
 // Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare.
 function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying' | 'lastActivity'>, incoherent: IncoherentFacts): ReviewTradeItem {
@@ -271,9 +274,19 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       .filter((g) => g.missing.length + g.acknowledged.length > 0)
       .map(
         (g): HistoricalGapGroup => ({
-          ...g,
+          // The closes only place each Trade's first date, so they do not pass through to the group.
+          instrumentKey: g.instrumentKey,
+          missing: g.missing,
+          acknowledged: g.acknowledged,
+          revisions: g.revisions,
+          acknowledgments: g.acknowledgments,
           trades: ranked.flatMap(({ item }) =>
-            requirements.filter((r) => r.tradeId === item.tradeId && r.instrument.symbol === g.instrumentKey).map((r) => ({ tradeId: r.tradeId, from: exchangeDateOf(r.earliestRelevance) })),
+            requirements
+              .filter((r) => r.tradeId === item.tradeId && r.instrument.symbol === g.instrumentKey)
+              .flatMap((r) => {
+                const from = firstRelevantGapDate(g.closes, r.earliestRelevance);
+                return from === undefined ? [] : [{ tradeId: r.tradeId, from }];
+              }),
           ),
           blocking: false,
         }),

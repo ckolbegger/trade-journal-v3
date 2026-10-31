@@ -133,6 +133,15 @@ describe('recover without a provider (A56)', () => {
     expect(result.gaps[0]!.revisions).toEqual({ '2026-10-12': 'None', '2026-10-09': 1 });
   });
 
+  it('should return the session close of each listed historical gap date', async () => {
+    const { marketData } = await fixture(WEDNESDAY_NOON);
+    await marketData.save(acknowledge('MNO', '2026-10-09'));
+    const result = await marketData.recover(review([MNO], '2026-10-13'));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    // Missing 2026-10-12 and acknowledged 2026-10-09, each closing at 16:00 America/New_York; 2026-10-07 and 10-08 have marks.
+    expect(result.gaps[0]!.closes).toEqual({ '2026-10-12': '2026-10-12T20:00:00Z', '2026-10-09': '2026-10-09T20:00:00Z' });
+  });
+
   it('should carry the effective acknowledgment of each acknowledged gap date', async () => {
     const { marketData } = await fixture(WEDNESDAY_NOON);
     await marketData.save(acknowledge('MNO', '2026-10-09'));
