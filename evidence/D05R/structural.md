@@ -1045,3 +1045,5 @@ Record. `CardLink` now builds `href` with `let href = ...; if (instrument !== un
 | `npx vitest run src/ui/screens/ReviewCards.test.tsx` (after) | exit 0, 25 passed |
 | `npx vitest run src/ui` | exit 0, 24 files, 376 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+
+ocr review of `9f92e17` (T5R.12-B1-B1-B1): one file reviewed, no findings. Raw output: [ocr/T5R.12-B1-B1-B1-9f92e17.json](ocr/T5R.12-B1-B1-B1-9f92e17.json). T5R.12-B1's chain is closed.
