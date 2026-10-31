@@ -35,9 +35,12 @@ function holderOf(review: Ready, instrumentKey: string): string | undefined {
 
 // A link that opens the card; it stays a real link, so it can be opened in a new tab.
 function CardLink({ tradeId, open, panel, instrument, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly children: ReactNode }) {
+  let href = `/review?trade=${tradeId}`;
+  if (instrument !== undefined) href += `&instrument=${encodeURIComponent(instrument)}`;
+  else if (panel !== undefined) href += `&panel=${panel}`;
   return (
     <a
-      href={`/review?trade=${tradeId}${instrument !== undefined ? `&instrument=${encodeURIComponent(instrument)}` : panel === undefined ? '' : `&panel=${panel}`}`}
+      href={href}
       onClick={(event) => {
         // A new-tab or new-window click is the browser's: the href names the same card, panel and row.
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;

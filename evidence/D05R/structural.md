@@ -1036,3 +1036,12 @@ ocr review of `f358e11` (T5R.12-B1-B1): one file reviewed (three excluded). Raw 
 ### T5R.12-B1-B1-B1 CardLink's query computed before the JSX
 
 Structural: the `href` query is built in a plain statement before the JSX, same output. Verified by the existing `ReviewCards.test.tsx` cases staying green.
+
+Record. `CardLink` now builds `href` with `let href = ...; if (instrument !== undefined) href += '&instrument=' + encodeURIComponent(...); else if (panel !== undefined) href += '&panel=...'` (no `URLSearchParams`, so the encoding is unchanged).
+
+| Command | Result |
+|---|---|
+| `npx vitest run src/ui/screens/ReviewCards.test.tsx` (before) | exit 0, 25 passed |
+| `npx vitest run src/ui/screens/ReviewCards.test.tsx` (after) | exit 0, 25 passed |
+| `npx vitest run src/ui` | exit 0, 24 files, 376 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
