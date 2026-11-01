@@ -1136,3 +1136,27 @@ ocr review of `1515243` (T5R.13): two files reviewed (`request-counter.ts`, `ben
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.13-perf-*.txt`. Ports 5175, 5181, 9341 and 9342 clear before and after; `bench:run` not part of the run.
+
+## T5R.14 Node integration suite
+
+Tests in `tests/integration/d5r/` (`support.ts` builds the card fixture through facade operations only: `cardApp({ withMarks })`, T-A planned Friday with both Position Changes deferred, T-F a second XYZ Trade, the Monday Marks saved by `MarketData.save` before any Review exists). No test substitute was added (section 6.0). Six cases in nine tests, all first-run passes since T5R.1 to T5R.6 built the behavior; each mutation-checked and restored (`git diff -- src` empty), rows in `tdd-log.md`.
+
+| Case (file) | Proves | Mutation | First failure line |
+|---|---|---|---|
+| I5R.1 Save Marks together (`save-marks.test.ts`) | results equal the stored records and a fresh `open` after each save; after restart the Review-date rows resolved, XYZ Friday gap gone, T-C `NotPlaced` MissingInput with the `AcknowledgedUnavailable` reason, `CompleteWithUnavailableMarks` once D-1 and five Actions are saved; the dump holds the three records the saves wrote and one acknowledgment | `resolutionRevision + 1` in `SavedMark` | `AssertionError: expected 2 to be 1` |
+| I5R.2 Nothing or everything (`nothing-or-everything.test.ts`, three tests) | (a) `Rejected` with every issue at entry 1, field price, dump unchanged; (b) a second `observations` write that the store refuses aborts the transaction (`StorageFailure`), dump unchanged, retry writes four records at revision 1; (c) the second command from the same binding is `Conflict` naming all four keys, dump unchanged, one revision per key | (a) `entryIndex + 1`; (b) one transaction per entry; (c) `conflicts.slice(0, 1)` | `expected [ [ 2, 'price' ] ] to deeply equal [ [ 1, 'price' ] ]`; `expected { kind: 'MarksSaved', …(2) } to deeply equal ObjectContaining{…}`; `expected [ 'ABC' ] to deeply equal [ 'ABC', 'DEF', 'JKL', 'XYZ' ]` |
+| I5R.3 Shared Mark through either card (`shared-mark.test.ts`) | a save from T-F's card returns T-A's and T-F's items placed at 9/17 and 4/7 with Reward : risk 8/9 and 3/4, both cards' frame price 52, no XYZ Mark-missing reason, a fresh `open` equal, one observation record | result lists only the saved-from Trade | `TypeError: Cannot read properties of undefined (reading 'rangePosition')` |
+| I5R.4 Range position and baseline end to end (`range-and-baseline.test.ts`) | section 4's table (range positions, Reward : risk now, planned ratios for all five Trades), T-A's baseline 1R 250, planned reward 600, 12/5, after restart | swapped risk and reward in the share; `oneR` from the planned reward | `expected { kind: 'Placed', …(2) } to deeply equal { kind: 'Placed', …(2) }`; baseline assertion at line 37 |
+| I5R.5 Gap Trades (`gap-trades.test.ts`) | XYZ gap group names T-F from Monday and T-A from Friday; the Review completes (`CompleteWithUnavailableMarks`) with the Friday gap still listed | every `from` set to the Review date | `expected [ { tradeId: 'id-0049', …(1) }, …(1) ] to deeply equal […]` |
+| I5R.6 Write gate (`write-gate.test.ts`, two tests) | `RuntimeNotWritable` (inventory) from `SaveReviewMarks` (a Mark and an acknowledgment) and from `MarketData.save`, dump unchanged, status `RecoveryOnly`, the Review still opens | guard defeated and the commit-level return removed | `Error: unexpected commit result: RuntimeNotWritable`; `expected { kind: 'Conflict', …(3) } to deeply equal ObjectContaining{…}` |
+
+Interpretations, disclosed:
+- **I5R.1:** completion needs ABC and JKL Marks too, so they are saved by `MarketData.save` first; the "three observation records and one acknowledgment" are those the two `SaveReviewMarks` calls wrote (XYZ Monday, XYZ Friday, DEF Monday), found by excluding the two seeded keys.
+- **I5R.2 (b):** the fault is the store refusing the second `observations` write (an `add` of the first write's key, a ConstraintError after the first write was accepted), which aborts the transaction and gives `StorageFailure`. A fault thrown synchronously from `put` did not abort: `Persistence.commit` lets the exception out before awaiting `tx.done`, so the first write committed on its own. That fault is not one IndexedDB raises for a plain record, so it is a note, not a defect.
+- **I5R.2 (a), (c):** the four entries are on four Instruments (ABC, DEF, JKL, XYZ for Monday) saved from T-A's card; `prepareEffects` does not tie an entry to the card's Instrument.
+- **I5R.6:** the mutation guard also refuses before the save. With the guard defeated alone both tests still pass, so the commit-level refusal is shown to hold through the facade; the cases fail only when it is also removed.
+
+| Check | Result |
+|---|---|
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+| `npm run test:integration` | 60 files, 117 passed (D1, D2, D4, D5 and D5R; was 54 files, 108) |
