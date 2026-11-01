@@ -8,7 +8,7 @@ This note was written on 2026-10-30, after D5 completed. On 2026-11-01, after D5
 
 This note is the starting point for D6.
 
-> **Not the next deliverable yet.** Plan revision 28 (decision 69) inserts **D5R2, "Review card progress"**, before D6 ([D05R2-review-card-progress.md](D05R2-review-card-progress.md)). D5R2 moves each Review card's progress into the Daily Review coordinator, the due classification into `src/domain/journal-debt/`, the folding of save results into one held-Review module, and each commit binding into the module that owns it, so that D6 only adds new behaviour. Implement D5R2 first, from its own handoff. D5R2's session rewrites this note's starting point, revision, and counts when D5R2 is tagged `claude-opus-5.5-d5r2`. Until then, the location checks below describe the D5R starting point and are not current.
+> **Not the next deliverable yet.** Plan revision 28 (decision 69) inserts **D5R2, "Review card progress"**, before D6 ([D05R2-review-card-progress.md](D05R2-review-card-progress.md)). D5R2 moves each Review card's progress into the Daily Review coordinator, the due classification into `src/domain/journal-debt/`, the folding of save results into one held-Review module, and each commit binding into the module that owns it, so that D6 only adds new behaviour. Implement D5R2 first, from [D05R2-handoff.md](D05R2-handoff.md). D5R2's session rewrites this note's starting point, revision, and counts when D5R2 is tagged `claude-opus-5.5-d5r2`. Until then, the location checks below describe the D5R starting point and are not current.
 
 This session **implements D6, "Close a Long Stock position"**, under the frozen plan at revision 27.
 
