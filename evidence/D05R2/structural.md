@@ -479,3 +479,24 @@ Date 2026-11-01 09:48 EST.
 | Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.12-F2-integration.txt` |
 | Browser (Chromium) | `npm run test:e2e` | `179 passed (7.2m)`, exit 0 | `suite-runs/T5R2.12-F2-browser.txt` |
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.12-F2-checks.txt` |
+
+## T5R2.13 Daily Review drops its counter copies
+
+Commit `1d48c14`. The two `journal@<revision>` requires in `daily-review.ts` (the Action save and the Debt resolution) are removed, since `applyPreparedEffects` stages the binding (A174, T5R2.11). The Action save's comment now says Journal binds the counter; the Retry-on-Conflict and `continue` behaviour is untouched. Verification as the plan states it: `npm run test:unit -- src/coordinators/daily-review` 6 files, 104 tests passed; `npm run test:integration -- d4 d5 d5r` 39 files, 68 tests passed; `rg 'journal@' src --glob '!*.test.*'` finds only `src/modules/journal/journal.ts:60` (the binding name) and `:70` (`isJournalCounterBinding`). No existing case changed.
+
+### ocr review of `1d48c14`
+
+Session `cdfc7f65-c116-468c-8774-e2d09eb3a053`, 1 file reviewed, no findings. Raw output: [ocr/T5R2.13.json](ocr/T5R2.13.json).
+
+### Cumulative suite at `1d48c14` (T5R2.13 closed)
+
+Date 2026-11-01 10:00 EST.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 79 passed (79)`, `Tests 1047 passed (1047)`, exit 0 | `suite-runs/T5R2.13-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.13-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.2m)`, exit 0 | `suite-runs/T5R2.13-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.13-checks.txt` |
+
+Ports 9341, 9342 and 5175 free afterwards. The runner left three polling shells of its own (`pgrep -f full-suite.sh` loops, from this session's suite runs); the main session stopped them.
