@@ -453,3 +453,16 @@ New checks beyond the plan (the "Before" is the hook of `15d6fc0`):
 Result: all 8 bypasses were allowed by `15d6fc0` (red) and are denied now; the 50 cases above (8 bypasses, 13 earlier, 5 extra checks, 10 allowed commands, 14 new checks) all match their expectations after the change. Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps` exit 0. The script runs under macOS bash 3.2, which was a constraint (no negative array subscripts).
 
 **Known limits** (updated in the script header): the dismissed finding stays (a quoted `cd` path with spaces is cut at the first space; the root has no spaces); a quoted string holding `;`, `&` or `|` can split a command wrongly; `cd` inside a subshell is taken to apply to the rest of the command; `$(...)`, environment prefixes and aliases are not looked into; `git checkout .` and `git reset <path>` without `--` are still refused.
+
+### ocr review of `8ce7b2b` (Retro-B1), round 2
+
+Session `af9fec1a-f2f2-4730-b098-80c5fbca5121`, model gpt-6.1-sol, 1 file reviewed (in place), 4 comments. Raw output: [ocr/Retro-B1-8ce7b2b.json](ocr/Retro-B1-8ce7b2b.json). The reviewer tested each claim by piping commands to the hook.
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| high | `guard-shell-writes.sh:98-99` | `--work-tree` and `--git-dir` share one tracked directory, so a `--work-tree` at the project with a `--git-dir` outside it counts as outside. Relative option values also resolve against the previous option's path. | Valid (reproduced), low practical impact: Retro-B2 |
+| high | `:101` | An attached `-C/path` isn't recognised. | **Dismissed:** git rejects the attached form (`git -C/tmp status` prints "unknown option: -C/tmp"), so it can't move HEAD. |
+| medium | `:92` | `cd -` leaves the tracked directory unchanged, so `cd /tmp; cd -; <HEAD move>` from the project is allowed. | Valid (reproduced): Retro-B2 |
+| medium | `:58` | An empty slice on `/..` raises a bash expansion error. | **Dismissed:** on `/bin/bash` 3.2 the slice is empty with no error, and the hook still denies (rc 0, deny output). |
+
+**Bug task Retro-B2: `--work-tree` and `cd -` fail closed.** Defects: (1) a `--work-tree` inside the root is overridden by a `--git-dir` outside it; (2) `cd -` isn't tracked. Cases: `git --work-tree=<root> --git-dir=/tmp/x.git` with a HEAD move from cwd `/tmp` is denied; `cd /tmp; cd -; <HEAD move>` from the root is denied; each red first against `8ce7b2b`; the 50 earlier cases keep their results. This is the second round of bug tasks on the guard; if Retro-B2's review still leaves findings, that third round is a stop condition, and the main session asks the user.
