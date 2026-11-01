@@ -429,3 +429,25 @@ Date 2026-11-01 09:07 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-10-progress-wording-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.11 Journal: applyPreparedEffects binds its counter
+
+Commit `ca04024`. `applyPreparedEffects` now requires `journalUnchanged(prepared.snapshot.journalRevision)` beside its counter write (ADR 0011: every write that advances a shared counter binds it). `save` drops its own copy of the check, and its counter-only retry recognizes the binding through the new export `isJournalCounterBinding`. New file `counter-binding.test.ts`, 3 cases. **Case 2, "should commit a prepared effect when no Journal write …", was a first-run pass, flagged** (mutation: the counter write `journalRevision + 1` became `+ 2`; failure `expected 5 to be 4`). Case 3's code was written ahead of its red by the first subagent, then reverted and given a genuine red.
+
+- **Implementation decision (recommended and applied):** three existing cases apply one prepared effect twice and expect the uniqueness backstop's `ConstraintViolation`. With the binding, the second commit fails `journal@<n>` first, because checks run before writes. Each case keeps its expected values: only the second apply's input changes, to the same prepared effect with `snapshot.journalRevision` advanced by one, with a comment saying why. The cases are `daily-trade-review.test.ts`, "should return Conflict when the expected Entry revision is stale, and fail the transaction on a second new Entry for the same key"; `journal.test.ts`, "should fail the transaction when a Plan Reflection already exists for the same obligation key"; and `position-change-reflection.test.ts`, "should stage the Debt … fail the transaction when the key already has an outcome". Re-preparing was rejected because a fresh prepare gives a new Entry id, which moves the violation to `journalObligations` and changes the expected `store`.
+- **Slip:** the second subagent made the three test edits with a Python script, against the Edit-only rule. The diff is those three inputs plus comments.
+
+### ocr review of `ca04024`
+
+Session `4847c15b-e225-4ccb-86a8-94873864a505`, 2 files reviewed (test files skipped), no findings. Raw output: [ocr/T5R2.11.json](ocr/T5R2.11.json).
+
+### Cumulative suite at `ca04024` (T5R2.11 closed)
+
+Date 2026-11-01 09:23 EST. The only untracked file was `.claude/settings.json`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 78 passed (78)`, `Tests 1044 passed (1044)`, exit 0 | `suite-runs/T5R2.11-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.11-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.3m)`, exit 0 | `suite-runs/T5R2.11-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.11-checks.txt` |
