@@ -1426,3 +1426,16 @@ New B5R.11 case (`e2e/d5r/responsive-a11y.spec.ts`), measuring T-A's header: bes
 Checks: `npx vitest run src` 1005 passed; typecheck, `tsc6`, lint, `lint:deps` exit 0. After `build:faults` and `build:releases`, whole `npm run test:e2e` at 01:04–01:11 EST: 172 passed, 6 failed, exactly T5R.15-F1's six environmental D1-release cases; B4.13 and the axe runs passed. Ports clear before and after; no background work left.
 
 ocr review of `9b00a8b` (T5R.15-I6): one file reviewed (`app.css`; the spec and the log excluded), no findings. The reviewer checked that containment can't collapse the card (a block `<li>` in a plain list), that no sticky or absolutely positioned descendant is affected, and that no other size query inside the card needs to become a container query. **Minor observation, no task:** `max-width: 39.99rem` leaves a header between 639.84 and 640 px wide beside the slider, a sub-pixel gap that `width < 40rem` would close; the previous `639.98px` media query had the same kind of gap, and no tested width lands there. Raw output: [ocr/T5R.15-I6-9b00a8b.json](ocr/T5R.15-I6-9b00a8b.json).
+
+### T5R.15 cumulative run
+
+At `2623dea` (code as of `da7e128`; later commits are evidence and handoff only), started 02:01 EST on 2026-11-01, after the repeated fall-back hour, by `suite-runner`, label `t5r.15-cumulative`:
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit (`npx vitest run src`) | 75 files, 1005 passed, exit 0 | [suite-runs/t5r.15-cumulative-unit.txt](suite-runs/t5r.15-cumulative-unit.txt) |
+| Node integration (`npx vitest run tests/integration`) | 60 files, 117 passed, exit 0 | [suite-runs/t5r.15-cumulative-integration.txt](suite-runs/t5r.15-cumulative-integration.txt) |
+| Browser (`npm run test:e2e`, Chromium) | 178 passed (7.0 min), exit 0 | [suite-runs/t5r.15-cumulative-browser.txt](suite-runs/t5r.15-cumulative-browser.txt) |
+| Static and verify checks (typecheck, `tsc6`, lint, `lint:deps`, build, and the seven `verify:*`) | 12 of 12 exit 0 | [suite-runs/t5r.15-cumulative-checks.txt](suite-runs/t5r.15-cumulative-checks.txt) |
+
+All green, with no reruns. T5R.15-F1's six D1-release cases pass outside the fall-back hour, as expected, and the known flakes did not fail. Ports 5175, 9341 and 9342 were free before and after the run.
