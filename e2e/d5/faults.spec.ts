@@ -1,6 +1,6 @@
 import {
   actionFormOf, AT_10, completion, confirmReference, debtForm, debtFormOf, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
-  openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, workspaceOf,
+  openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -27,7 +27,7 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
     await reachCard(page, 'XYZ');
-    await expect(page.getByRole('region', { name: 'XYZ review', exact: true })).toBeVisible();
+    await expect(tradeCard(page, 'XYZ')).toBeVisible();
     await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
     // The card's "Reflect on <time>" button (the Review's equivalent of Reflect now) is still offered in
     // Recovery Only; it opens the prompts read only. What must be absent is every control that answers,

@@ -1,6 +1,6 @@
 import {
-  BASE_URL, createCardFixture, enterMarkOf, expect, firstPage, launchAt, markRowOf, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachTrade, READY, spawnedBrowser, tagCards, test, workspaceOf,
-  type CardTrade,
+  BASE_URL, createCardFixture, enterMark, expect, firstPage, launchAt, markRow, MONDAY, MONDAY_1700, observationsOf, onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, READY, spawnedBrowser, test, workspaceOf,
+  type TradeRef,
 } from './support.ts';
 
 const NOT_WRITABLE = { name: /Read only/ };
@@ -10,15 +10,16 @@ test.describe('B5R.9 Kill after Save Marks', () => {
   test('should keep the Marks after the browser is killed once the rows render from the result, and show the card with them saved', async ({ profile }) => {
     test.setTimeout(240_000);
     const killed = await spawnedBrowser(profile.dir, 9341);
+    // The Trade's id comes from the app in the first launch; it is stored data, so the relaunch reaches the same card with it.
+    let tA!: TradeRef;
     try {
       await pinClock(killed.context, MONDAY_1700);
       const page = await onboardedPage(killed.context);
-      await createCardFixture(page);
+      ({ 'T-A': tA } = await createCardFixture(page));
       await openReview(page);
-      await tagCards(page);
-      await enterMarkOf(page, 'T-A', MONDAY, '52.00');
+      await enterMark(page, tA, MONDAY, '52.00');
       // The rows render from the result; the browser is killed right after.
-      await expect(await markRowOf(page, 'T-A', MONDAY)).toContainText('Manual');
+      await expect(await markRow(page, tA, MONDAY)).toContainText('Manual');
     } finally {
       await killed.kill();
     }
@@ -29,8 +30,7 @@ test.describe('B5R.9 Kill after Save Marks', () => {
       const page = await firstPage(relaunched.context);
       await page.goto(`${BASE_URL}/`);
       await openReview(page);
-      await tagCards(page);
-      const row = await markRowOf(page, 'T-A', MONDAY);
+      const row = await markRow(page, tA, MONDAY);
       await expect(row).toContainText('Manual');
       await expect(row).toContainText('52');
       const observations = observationsOf(workspaceOf(await probe(page))!);
@@ -47,7 +47,7 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
   test('should save Marks offline after a full stop and keep them across another offline restart (AC-DEL-001)', async ({ server, profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
-    await createCardFixture(page);
+    const { 'T-A': tA } = await createCardFixture(page);
     await openReview(page);
     await context.close();
     // Network disabled: offline emulation plus no server for the origin at all.
@@ -58,9 +58,8 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
     await first.goto('/');
     await openReview(first);
     await expect(first.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
-    await tagCards(first);
-    await enterMarkOf(first, 'T-A', MONDAY, '52.00');
-    await expect(await markRowOf(first, 'T-A', MONDAY)).toContainText('Manual');
+    await enterMark(first, tA, MONDAY, '52.00');
+    await expect(await markRow(first, tA, MONDAY)).toContainText('Manual');
     await offline.close();
 
     // Another offline restart: the Mark survives and the card shows it saved.
@@ -69,8 +68,7 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
     await reopened.goto('/');
     await openReview(reopened);
     await expect(reopened.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
-    await tagCards(reopened);
-    await expect(await markRowOf(reopened, 'T-A', MONDAY)).toContainText('Manual');
+    await expect(await markRow(reopened, tA, MONDAY)).toContainText('Manual');
     const observations = observationsOf(workspaceOf(await probe(reopened))!);
     expect(observations.map((o) => `${o.instrumentKey} ${Number(o.marks[0]!.price)}`)).toEqual(['XYZ 52']);
     await again.close();
@@ -80,10 +78,9 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
     test.setTimeout(240_000);
     server.use('dist-faults');
     const { context: setup, page: first } = await onboardedAt(profile, MONDAY_1700);
-    await createCardFixture(first);
+    const trades = await createCardFixture(first);
     await openReview(first);
-    await tagCards(first);
-    await enterMarkOf(first, 'T-A', MONDAY, '52.00');
+    await enterMark(first, trades['T-A'], MONDAY, '52.00');
     const before = await probe(first);
     await setup.close();
 
@@ -93,9 +90,8 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
     await expect(page.getByRole('region', { name: READ_ONLY })).toBeVisible(READY);
 
     await openReview(page);
-    await tagCards(page);
-    for (const trade of ['T-A', 'T-F', 'T-B', 'T-C', 'T-E'] as const satisfies readonly CardTrade[]) {
-      const card = await reachTrade(page, trade);
+    for (const trade of [trades['T-A'], trades['T-F'], trades['T-B'], trades['T-C'], trades['T-E']]) {
+      const card = await reachCard(page, trade);
       await expect(card).toBeVisible();
       // Every panel stays mounted, so these counts cover the Marks, Reflections and Action panels alike.
       await expect(card.locator('input, textarea')).toHaveCount(0);
@@ -105,8 +101,8 @@ test.describe('B5R.10 Offline and Recovery Only (faults build)', () => {
       await expect(card.getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
     }
     // The saved Mark is shown, and the Missing rows are shown as such, in a read-only card.
-    await expect(await markRowOf(page, 'T-A', MONDAY)).toContainText('Manual');
-    await expect(await markRowOf(page, 'T-C', MONDAY)).toContainText('Missing');
+    await expect(await markRow(page, trades['T-A'], MONDAY)).toContainText('Manual');
+    await expect(await markRow(page, trades['T-C'], MONDAY)).toContainText('Missing');
 
     expect(await probe(page)).toEqual(before);
     await context.close();

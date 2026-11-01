@@ -1,5 +1,5 @@
 import {
-  answerDebt, completion, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markRow, onboardedAt, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test,
+  answerDebt, completion, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markRow, onboardedAt, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test, tradeCard,
   TUESDAY, TUESDAY_1005, TUESDAY_1230, WEDNESDAY, WEDNESDAY_1700, workspaceOf,
 } from './support.ts';
 
@@ -37,7 +37,7 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     await enterMark(page, 'XYZ', TUESDAY, '52.00');
     await enterMark(page, 'XYZ', WEDNESDAY, '52.50');
     await reachCard(page, 'XYZ');
-    await expect(page.getByRole('region', { name: 'XYZ review', exact: true })).toBeVisible();
+    await expect(tradeCard(page, 'XYZ')).toBeVisible();
     await expect(await reflectionsOf(page, 'XYZ')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Reflect on / })).toHaveCount(0);
     await expect(completion(page)).toHaveText('Incomplete');

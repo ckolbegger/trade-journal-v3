@@ -1,6 +1,6 @@
 import {
   answerDebt, AT_10, backToTrade, BASE_URL, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005,
-  onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, reflectionsOf, spawnedBrowser, test, TUESDAY, TUESDAY_1700, workspaceOf,
+  onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, reflectionsOf, spawnedBrowser, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const NOT_WRITABLE = { name: /Read only/ };
@@ -33,7 +33,7 @@ test.describe('B5.7 Kill after commit', () => {
       await page.goto(`${BASE_URL}/`);
       await openReview(page);
       await reachCard(page, 'XYZ');
-      await expect(page.getByRole('region', { name: 'XYZ review', exact: true })).toBeVisible();
+      await expect(tradeCard(page, 'XYZ')).toBeVisible();
       await expect(await reflectionsOf(page, 'XYZ')).toHaveCount(0);
       await expect(page.getByRole('button', { name: /^Reflect on / })).toHaveCount(0);
 

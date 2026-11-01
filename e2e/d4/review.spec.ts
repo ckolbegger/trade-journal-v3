@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, cardList, createTrades, enterMark, expect, firstPage, launchAt, markRow, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, reachPanel, saveAction, status, test, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
+import { actionEntriesOf, actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, firstPage, launchAt, markRow, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, reachPanel, saveAction, status, test, tradeCard, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -28,7 +28,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     await expect(rows).toHaveCount(4);
     await expect(rows.nth(0)).toContainText('ABC');
     await expect(rows.nth(0)).toContainText('Boundary reached');
-    for (const symbol of ['XYZ', 'JKL', 'DEF']) await expect(cardList(page).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Quantified pressure');
+    for (const symbol of ['XYZ', 'JKL', 'DEF']) await expect(cardHeader(page, symbol)).toContainText('Quantified pressure');
     await expect(rows.nth(1)).toContainText('XYZ');
     await expect(rows.nth(2)).toContainText('JKL');
     await expect(rows.nth(3)).toContainText('DEF');
@@ -41,7 +41,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     await reachCard(page, 'XYZ');
     await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
     // The Trade's figures carry the worst case and the R of risk and reward.
-    const figures = page.getByRole('region', { name: 'XYZ review' });
+    const figures = tradeCard(page, 'XYZ');
     const figure = (term: string) => figures.locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
     await expect(figure('Current Marked Trade P&L')).toHaveText('+$180.00 · +0.72R');
     await expect(figure('Ongoing Risk to Stop')).toHaveText('$450.00 · 1.80R');
@@ -69,7 +69,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     await expect(status(again)).not.toContainText('Incomplete');
     const expected = { XYZ: 'Hold', ABC: 'Exit', JKL: 'Adjust', DEF: 'Hold' };
     for (const [symbol, action] of Object.entries(expected)) {
-      await expect(cardList(again).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
+      await expect(cardHeader(again, symbol)).toContainText('Action saved');
       await reachPanel(again, symbol, 'Action');
       await expect(again.getByRole('region', { name: 'Saved Action' })).toContainText(`Saved Action: ${action}`);
     }

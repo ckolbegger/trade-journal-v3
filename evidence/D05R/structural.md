@@ -1341,3 +1341,39 @@ Commit `c771591`. `TradeRef = { symbol, tradeId, label? }`, `CardRef = string | 
 - Checks: `npx playwright test e2e/d4 e2e/d5 e2e/d5r --project=chromium` 52 passed (3.1 min); `npx vitest run src` 987 passed; typecheck, `tsc6`, lint, `lint:deps` exit 0. No `src/` change; no existing `expect` changed. Ports clear before and after.
 
 ocr review of `c771591` (T5R.15-I2), test-only, run in a scratch clone with the four files relocated under `src/itg/d5r/`: four files reviewed, no findings. ocr warning: two of its file reads failed on paths that exist only in the original layout (relocation artifact), so its cross-checking between helper files was limited. Raw output: [ocr/T5R.15-I2-c771591.json](ocr/T5R.15-I2-c771591.json).
+
+### T5R.15-I3 D5R, D4 and D5 browser specs on the Trade-keyed helpers (decision 68)
+
+Parent `c7715914`. No `src/` change.
+
+**What changed**
+- `e2e/d5r/support.ts`: deleted `tagCards`, `isShared`, the two-path `cardItem`, `headerOf`, `panelHeaderOf` and the nine twins (`reachTrade`, `reachTradePanel`, `markRowOf`, `enterMarkOf`, `actionFormOfTrade`, `saveActionOf`, `reflectionsOfTrade`, `debtFormOfTrade`, `answerDebtOf`). `sliderOf`, `saveMarksOf` and `remainsOf` stay, now taking a `CardRef` and reading through D4's `cardItem`.
+- Every `e2e/d5r` spec takes the `TradeRef`s `createCardFixture` returns (`const { 'T-A': tA, … } = await createCardFixture(page)`) and calls the shared helpers (`cardHeader`, `panelHeader`, `reachCard`, `reachPanel`, `markRow`, `enterMark`, `saveAction`, `reflectionsOf`, `actionFormOf`, `answerDebt`). Every `tagCards` call is gone. B5R.9 declares `let tA!: TradeRef` because the Trade's id comes from the first launch and the relaunch reaches the same card with it.
+- D4 and D5 inline lookups: `cardOf` (`runtime-failure.spec.ts`) became `tradeCard`; the inline "XYZ review" regions in `d5/faults`, `d5/detail-debt`, `d5/kill-offline` and `d4/review` (about line 44) became `tradeCard`; the `hasText: 'Review XYZ'` list items in `d4/review` (two), `d4/offline`, `d4/kill` and `d5/update` became `cardHeader` (the header button holds the band and the "Action saved" text, so the `toContainText` matchers are unchanged); `row.getByRole('link').first()` in `runtime-failure.spec.ts` became the link named `ABC`.
+- Kept on purpose: `d4/update.spec.ts`'s old-release reads, `d4/review.spec.ts`'s `rows.nth(n)` checks, B5R.2's `cards.nth(17)`, and the `tradeCard(page, 'XYZ')` / `'ABC'` / `'DEF'` reads of the one open card. B5R.7 keeps its `dot('T-A')` / `tick('T-A')` helpers keyed by fixture label (resolved through the fixture's refs) so the one `expect` whose matcher argument holds a helper call stays textually identical.
+
+**Verification 1: browser suite** (`npm run build:faults`, `npm run build:releases`, `npm run test:e2e`; Chromium). Ports 5175, 9341, 9342 free before each run and after the last (`lsof` empty).
+- Run 1 (about 00:54 to 01:01): `176 passed (6.9m)`, exit 0: 124 D1/D2 cases and 52 D4/D5/D5R cases. (B5R.7's spec was edited a minute into this run, so this run may have used its earlier text; run 2 covers the final text.)
+- Run 2 (01:03 to 01:12, final spec text): `154 passed`, `22 failed`, all 22 in `e2e/d1` and `e2e/d2`; **zero failures in d4, d5 or d5r** (all 52 D4/D5/D5R cases passed, among them every B5R case, including B5R.1, B5R.3 and B5R.7 to B5R.10 on the shared helpers' `checkSavedRow` and `debtForm toHaveCount(0)` checks for T-A and T-F).
+- The 22 are the D1/D2 cases that confirm a Plan or Entry on the real clock (e.g. `d1/plan.spec.ts:7`, `d2/responsive-a11y.spec.ts:205`); each times out waiting for the heading after Confirm Plan, and the page snapshot still shows the New Plan form with "Plan time: 2026-11-01T01:12". No spec or helper they use is in this task's diff (`grep` of `e2e/d1` and `e2e/d2` for imports from d4, d5 or d5r is empty). Rerun alone once (`npx playwright test e2e/d1 e2e/d2 --project=chromium`, 01:13): the same 22 fail, 102 pass. Rerun with `TZ=UTC` (01:19): the same 22 fail. They passed in run 1 (started about 00:54) and fail in every run from 01:03; the real clock is now inside the hour (01:00 to 02:00 on 2026-11-01) that repeats when US clocks fall back. This looks like a real-clock, daylight-saving-hour problem in D1/D2's cases (or the app's Plan-time handling), not a result of this task, but it is **not confirmed**: rerun `npm run test:e2e` once the repeated hour is over (the wall clock reads 02:00 EST, about 95 minutes after 01:25 EDT) to see the 22 pass.
+
+**Verification 2: no D5R tag, tag helper or twin** (`e2e/d5r/support.ts` and every spec):
+```text
+$ grep -nE "tagCards|isShared|data-trade[^-]|headerOf|panelHeaderOf|reachTrade|reachTradePanel|markRowOf|enterMarkOf|actionFormOfTrade|saveActionOf|reflectionsOfTrade|debtFormOfTrade|answerDebtOf" e2e/d5r/support.ts
+(no output; exit 1)
+$ grep -rnE "tagCards|isShared|data-trade[^-]|headerOf|panelHeaderOf|reachTrade|reachTradePanel|markRowOf|enterMarkOf|actionFormOfTrade|saveActionOf|reflectionsOfTrade|debtFormOfTrade|answerDebtOf" e2e
+(no output; exit 1)
+```
+
+**Verification 3: migration diff check.** `git diff -U0 HEAD -- e2e/d4 e2e/d5 e2e/d5r` (HEAD is the parent `c7715914`), every removed and added line holding `expect(` cut to its matcher onward (`sed -E 's/^[-+].*(\.to[A-Za-z]+\(.*)$/\1/'`), sorted, compared with `diff`:
+- Spec files only (`'e2e/d4/*.spec.ts' 'e2e/d5/*.spec.ts' 'e2e/d5r/*.spec.ts'`): 63 removed, 63 added; `diff` reports exactly one line pair:
+  ```text
+  < .toHaveAttribute('data-trade', 'T-A');
+  > .toHaveAttribute('data-trade-id', tA.tradeId);
+  ```
+  the one sanctioned change (B5R.1, T-A's card first, now read from the app's hook).
+- Whole diff including the three `support.ts` files: 72 removed, 63 added. The nine extra removed lines are the nine `expect(` calls inside the deleted D5R helpers (`tagCards`, the twins; their checks live on in D4's shared helpers, which already hold them); the three `support.ts` files had 20 + 4 + 9 `expect(` before and 20 + 4 + 0 after.
+- Count of `expect(` in the spec files: 593 before, 593 after (does not drop). In all of `e2e/d4`, `e2e/d5`, `e2e/d5r`: 626 before, 617 after, the difference being the nine in the deleted helpers.
+- A first version of B5R.7 changed `tick('T-A')` inside a matcher argument to `tick(tA)`; the check caught it and the helpers were keyed by label instead, which removed the pair.
+
+**Verification 4:** `npx vitest run src` 75 files, 987 tests passed; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` all exit 0.

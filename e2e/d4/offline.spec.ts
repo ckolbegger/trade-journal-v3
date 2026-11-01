@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { actionEntriesOf, cardList, completion, createTrades, enterMark, expect, firstPage, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, test, TUESDAY_1700, workspaceOf } from './support.ts';
+import { actionEntriesOf, cardHeader, completion, createTrades, enterMark, expect, firstPage, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, test, TUESDAY_1700, workspaceOf } from './support.ts';
 
 const SYMBOLS = ['XYZ', 'ABC', 'DEF', 'JKL'] as const;
 const MONDAY_MARKS = { XYZ: '52.00', ABC: '27.50', DEF: '40.50', JKL: '21.00' } as const;
@@ -49,7 +49,7 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
     await openReview(reopened);
     await expect(reopened.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await expect(completion(reopened)).toHaveText('Complete');
-    for (const symbol of SYMBOLS) await expect(cardList(reopened).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
+    for (const symbol of SYMBOLS) await expect(cardHeader(reopened, symbol)).toContainText('Action saved');
     const workspace = workspaceOf(await probe(reopened))!;
     expect(actionEntriesOf(workspace)).toHaveLength(8);
     const dates = actionEntriesOf(workspace).map((e) => e.obligationKey?.[1]).sort();

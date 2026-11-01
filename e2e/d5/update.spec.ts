@@ -1,6 +1,6 @@
 import {
-  actionEntriesOf, AT_10, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry,
-  reflectionsOf, reloadFromNotice, rootOf, saveAction, SECOND_PLAN, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, tradesFamily, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf,
+  actionEntriesOf, AT_10, cardHeader, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry,
+  reflectionsOf, reloadFromNotice, rootOf, saveAction, SECOND_PLAN, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf,
 } from './support.ts';
 
 test.describe('B5.6 Update from D4 with data', () => {
@@ -42,7 +42,7 @@ test.describe('B5.6 Update from D4 with data', () => {
     await openReview(page);
     await expect(completion(page)).toHaveText('Complete');
     for (const symbol of ['ABC', 'XYZ']) {
-      await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
+      await expect(cardHeader(page, symbol)).toContainText('Action saved');
     }
 
     // A deferred entry dated Monday afternoon is due in Tuesday's Review.
