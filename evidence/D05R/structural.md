@@ -1329,3 +1329,15 @@ Commit `9703fdf`. `li.review-card` carries `data-trade-id`; the header shows the
 **Process note (T5R.15-I1):** one tdd-log note appended with a shell here-doc (content correct), against the Edit-only rule; one build's output sent to `/tmp` and deleted.
 
 ocr review of `9703fdf` (T5R.15-I1): two files reviewed (`app.css`, `ReviewCard.tsx`; three test/evidence files excluded), no findings. Raw output: [ocr/T5R.15-I1-9703fdf.json](ocr/T5R.15-I1-9703fdf.json).
+
+### T5R.15-I2 Browser card helpers reach a card by its Trade (decision 68)
+
+Commit `c771591`. `TradeRef = { symbol, tradeId, label? }`, `CardRef = string | TradeRef` in `e2e/d4/support.ts`; one resolver maps a `TradeRef` to `li.review-card[data-trade-id=…]`, its header and its body region; every card helper takes a `CardRef`; `createTradeAt`/`createTrades` return ids (`currentTradeId` reads `/trades/<id>`); `createCardFixture` returns `Record<CardTrade, TradeRef>` labelled `T-A`…`T-F`. Cases in `e2e/d4/card-helpers.spec.ts`, describe "reach by Trade (decision 68)", logged by hand:
+- Case 1 (second XYZ card by id): red `TypeError: symbol.replace is not a function` in `cardHeader`; green.
+- Case 2 (refusal names both cards): red `toMatch` — expected "Cannot reach T-F's card: T-A's card holds unsaved work…", got "Cannot reach XYZ's card: XYZ's card…"; green. Refusal code was once written ahead of this red, reverted, and the red rerun genuinely.
+- Case 3 (each XYZ card by Trade after re-sort and reload): **first-run pass, flagged**. Mutation: the resolver reused the list position recorded at a Trade's first reach; failed at `checkSavedRow` ("Save Marks (0)" expected, "(1)" on the stale-position card). Restored. The case also asserts the order changed.
+- B2 findings absorbed: no tag, so no stale tag or precondition; the refusal names both cards; `answerDebt`/`declineDebt`'s final "Saved reflection" check is scoped to the reached panel — no case can make the page-wide version fail (one card open at a time), so the scope was checked by reading the diff. `checkSavedRow` and `debtForm toHaveCount(0)` kept.
+- **Implementation decision (recorded):** the refusal names each card by its `TradeRef` label, else by symbol and id; labels come from a module map filled from labelled refs the helpers have seen, so the holder is named by label only if its labelled ref passed through a helper earlier in the test.
+- Checks: `npx playwright test e2e/d4 e2e/d5 e2e/d5r --project=chromium` 52 passed (3.1 min); `npx vitest run src` 987 passed; typecheck, `tsc6`, lint, `lint:deps` exit 0. No `src/` change; no existing `expect` changed. Ports clear before and after.
+
+ocr review of `c771591` (T5R.15-I2), test-only, run in a scratch clone with the four files relocated under `src/itg/d5r/`: four files reviewed, no findings. ocr warning: two of its file reads failed on paths that exist only in the original layout (relocation artifact), so its cross-checking between helper files was limited. Raw output: [ocr/T5R.15-I2-c771591.json](ocr/T5R.15-I2-c771591.json).

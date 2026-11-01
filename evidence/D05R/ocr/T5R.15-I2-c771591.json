@@ -1,0 +1,131 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 95199,
+    "input_tokens": 93949,
+    "output_tokens": 1250,
+    "cache_read_tokens": 7680,
+    "elapsed": "55s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 2,
+    "failure_by_tool": {
+      "file_read": 2
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 5,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d5r/card-helpers-cases.ts,src/itg/d5r/support-d4.ts,src/itg/d5r/support-d5.ts,src/itg/d5r/support-d5r.ts",
+        "arguments": "{\"file_path\":\"src/itg/d4/support.ts\",\"start_line\":1,\"end_line\":40}",
+        "error": "file \"src/itg/d4/support.ts\" not found: git show HEAD:src/itg/d4/support.ts: exit status 128: fatal: path 'src/itg/d4/support.ts' does not exist in 'HEAD'\n"
+      },
+      {
+        "tool_call_number": 6,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d5r/card-helpers-cases.ts,src/itg/d5r/support-d4.ts,src/itg/d5r/support-d5.ts,src/itg/d5r/support-d5r.ts",
+        "arguments": "{\"file_path\":\"src/itg/d5r/support.ts\",\"start_line\":1,\"end_line\":60}",
+        "error": "file \"src/itg/d5r/support.ts\" not found: git show HEAD:src/itg/d5r/support.ts: exit status 128: fatal: path 'src/itg/d5r/support.ts' does not exist in 'HEAD'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D5R card helper cases and version-specific support",
+      "files": [
+        "src/itg/d5r/card-helpers-cases.ts",
+        "src/itg/d5r/support-d4.ts",
+        "src/itg/d5r/support-d5.ts",
+        "src/itg/d5r/support-d5r.ts"
+      ]
+    }
+  ],
+  "session_id": "f83caa5d-5c7d-4052-9a9d-9c57a27fa66e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f83caa5d-5c7d-4052-9a9d-9c57a27fa66e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "456820d368583045cabf632419e42f8cc6ee7ea6",
+      "resolved_head": "bc7cbfd686ee6c8ec2d56fcc42999b57cc9e402b",
+      "exact_range": "456820d368583045cabf632419e42f8cc6ee7ea6..bc7cbfd686ee6c8ec2d56fcc42999b57cc9e402b",
+      "source_artifact_sha256": "6f787dd6c856b840b8342d3a1b0d6fa86506a99e45fcb7d4a799ffe2ba730aa3"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "19e006d3035ed4cceee69843f1467bc5a38231811605632e6b29123489f16371",
+          "path": "src/itg/d5r/card-helpers-cases.ts",
+          "fingerprint": "902a559a51f5f1a2d207e7f443818811a5a203cbddcfbc97cb2a629bf80784d7"
+        },
+        {
+          "item_id": "33d004e73bcc7ba46a47982cd39ba2f432eb1ae6d293602e9eabaaa5588e61ad",
+          "path": "src/itg/d5r/support-d5r.ts",
+          "fingerprint": "58478a7dbcea86fc69d388d6a6ee6d3f205bd619d81ca2f607c0ac1b68c20eeb"
+        },
+        {
+          "item_id": "47e0569e11d365bc516e259db9feb55561f6f4b9495d85b0e710acab2b37bbe2",
+          "path": "src/itg/d5r/support-d4.ts",
+          "fingerprint": "330a23b768ed9d10a9ba60d2b9fd2e5a1c09b35816815cfe777bdbc4acf7b38d"
+        },
+        {
+          "item_id": "8006c04ae071e83522f5b7211a9c153137aada92924ef39a7f348b39f05a3682",
+          "path": "src/itg/d5r/support-d5.ts",
+          "fingerprint": "b85f7ea9b5083ae52c6a118c0f66b048339e75fbc7473d3fa5d61fb4e533b3ae"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "19e006d3035ed4cceee69843f1467bc5a38231811605632e6b29123489f16371",
+          "path": "src/itg/d5r/card-helpers-cases.ts",
+          "fingerprint": "902a559a51f5f1a2d207e7f443818811a5a203cbddcfbc97cb2a629bf80784d7"
+        },
+        {
+          "item_id": "33d004e73bcc7ba46a47982cd39ba2f432eb1ae6d293602e9eabaaa5588e61ad",
+          "path": "src/itg/d5r/support-d5r.ts",
+          "fingerprint": "58478a7dbcea86fc69d388d6a6ee6d3f205bd619d81ca2f607c0ac1b68c20eeb"
+        },
+        {
+          "item_id": "47e0569e11d365bc516e259db9feb55561f6f4b9495d85b0e710acab2b37bbe2",
+          "path": "src/itg/d5r/support-d4.ts",
+          "fingerprint": "330a23b768ed9d10a9ba60d2b9fd2e5a1c09b35816815cfe777bdbc4acf7b38d"
+        },
+        {
+          "item_id": "8006c04ae071e83522f5b7211a9c153137aada92924ef39a7f348b39f05a3682",
+          "path": "src/itg/d5r/support-d5.ts",
+          "fingerprint": "b85f7ea9b5083ae52c6a118c0f66b048339e75fbc7473d3fa5d61fb4e533b3ae"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 55363
+  }
+}
