@@ -149,3 +149,18 @@ Session `5f7e72c0-4622-4158-a548-407c66fa3aea`, model gpt-6.1-sol, 1 file review
 Session `288d5299-807e-4fa4-865b-dc626f179405`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), no findings. Raw output: [ocr/T6P.2-B3-18b3f01.json](ocr/T6P.2-B3-18b3f01.json). T6P.2 and its three bug tasks now all have ocr reviews with no findings.
 
 Note: B3's red run with a metacharacter in `TJ_E2E_CURRENT` executed a `touch` in the repository root and created three stray untracked files, which the subagent removed; the main session confirmed none remain.
+
+### Cumulative run after T6P.2
+
+Delegated to `suite-runner`, 2026-11-01 15:26 EST, commit `d44bc1b` (T6P.2 and its bug tasks B1–B3). Base commit (A180): `0dde16c`.
+
+**Tier decision (main session).** `full-suite.sh --choose-tier 0dde16c` printed `task`: T6P.2 changed only `.claude/scripts/full-suite.sh` and evidence, and P55's full-tier path list doesn't include `.claude/scripts/`. The prefactor's handoff (working rules, "Cumulative runs") requires every prefactor run to be the full tier, so the runner used the `browser` stage. P55's list was left as planned. The same applies to T6P.5, which changes only process documents.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files  80 passed (80)`, `Tests  1051 passed (1051)`, exit 0 | [suite-runs/t6p-2-tiers-unit.txt](suite-runs/t6p-2-tiers-unit.txt) |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files  60 passed (60)`, `Tests  117 passed (117)`, exit 0 | [suite-runs/t6p-2-tiers-integration.txt](suite-runs/t6p-2-tiers-integration.txt) |
+| Browser (Chromium), full tier (`browser` stage) | `npm run test:e2e` | `176 passed (7.4m)`, exit 0 | [suite-runs/t6p-2-tiers-browser.txt](suite-runs/t6p-2-tiers-browser.txt) |
+| Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-2-tiers-checks.txt](suite-runs/t6p-2-tiers-checks.txt) |
+
+Ports 9341, 9342 and 5175 were free before and after. Browser stage wall time 7:23 (moved to the background by the harness after 180 s; the runner waited for the completion notice).
