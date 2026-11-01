@@ -822,7 +822,7 @@ describe('card-top scroll once the body shows (T5R.15-B1-B1)', () => {
     const card = await screen.findByRole('region', { name: 'XYZ review' });
 
     expect(document.activeElement).toBe(headers()[2]);
-    expect(topScrolls(scrollIntoView, card.closest('li'))).toEqual([{ block: 'start' }, { block: 'start' }]);
+    await waitFor(() => expect(topScrolls(scrollIntoView, card.closest('li'))).toEqual([{ block: 'start' }, { block: 'start' }]));
   });
 });
 
