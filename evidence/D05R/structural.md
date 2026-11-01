@@ -1574,3 +1574,16 @@ New browser case in `e2e/d5r/responsive-a11y.spec.ts`: *should keep the bottom n
 Checks: `npm run test:e2e` 179 passed; `npx vitest run src` 1011 passed; the four static checks exit 0.
 
 ocr review of `741b192`: one file reviewed, no findings. The only two `z-index` declarations in `src/` are the nav's and the pinned cells'. Banners and notices are in flow, and there are no dialogs or skip link. The nav is positioned at both layouts: fixed when narrow, sticky when wide. Raw output: [ocr/T5R.16-B5-741b192.json](ocr/T5R.16-B5-741b192.json).
+
+### T5R.16 cumulative run after critic 2's bug tasks
+
+At `dea9849` (code as of `741b192`), started 03:46 EST, by `suite-runner`, label `t5r.16-cumulative-2`:
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 75 files, 1011 passed, exit 0 | [suite-runs/t5r.16-cumulative-2-unit.txt](suite-runs/t5r.16-cumulative-2-unit.txt) |
+| Node integration | 60 files, 117 passed, exit 0 | [suite-runs/t5r.16-cumulative-2-integration.txt](suite-runs/t5r.16-cumulative-2-integration.txt) |
+| Browser (`npm run test:e2e`, Chromium) | 179 passed (7.1 min), exit 0 | [suite-runs/t5r.16-cumulative-2-browser.txt](suite-runs/t5r.16-cumulative-2-browser.txt) |
+| Static and verify checks | 12 of 12 exit 0 | [suite-runs/t5r.16-cumulative-2-checks.txt](suite-runs/t5r.16-cumulative-2-checks.txt) |
+
+Every suite passed with no reruns. Ports were clear before and after.
