@@ -64,6 +64,12 @@ function journalUnchanged(journalRevision: number): BindingCheck {
   };
 }
 
+// True for the name journalUnchanged gives the Journal counter's binding, so a coordinator can tell
+// a counter-only conflict from a subject conflict without knowing the naming.
+export function isJournalCounterBinding(name: string): boolean {
+  return /^journal@\d+$/.test(name);
+}
+
 interface JournalMeta {
   readonly key: 'journal';
   readonly journalRevision: number;
@@ -608,11 +614,11 @@ export function createJournal(deps: JournalDeps): Journal {
         const tx = beginSemanticTransaction();
         const staged = journal.applyPreparedEffects(tx, prepared, {});
         const { checks, writes } = tx.close();
-        const committed = await deps.persistence.commit({ checks: [...checks, journalUnchanged(prepared.snapshot.journalRevision)], writes });
+        const committed = await deps.persistence.commit({ checks, writes });
         if (committed.kind === 'RuntimeNotWritable') return committed;
         if (committed.kind !== 'Committed') {
           // Only the shared Journal counter moved: read, validate, and prepare afresh (ADR 0011).
-          if (committed.kind === 'Conflict' && committed.binding.startsWith('journal@') && attempt < MAX_ATTEMPTS) continue;
+          if (committed.kind === 'Conflict' && isJournalCounterBinding(committed.binding) && attempt < MAX_ATTEMPTS) continue;
           return { kind: 'Conflict', currentOutcome: await currentOutcome(prepared.effects.debtResolutions![0]!.current['obligationKey'] as string) };
         }
         const [entry] = staged.entries;
@@ -869,6 +875,8 @@ export function createJournal(deps: JournalDeps): Journal {
         };
       });
       debts.push(...resolved);
+      // The counter is written as the value read plus one, so it is bound too (ADR 0011).
+      tx.require(journalUnchanged(prepared.snapshot.journalRevision));
       tx.stage({ op: 'put', store: 'meta', value: { key: 'journal', journalRevision: prepared.snapshot.journalRevision + 1 } });
       return { kind: 'Staged', entries, declines, ...(debts.length > 0 && { debts }), ...(prepared.action && { action: { ...prepared.action, id: entries[0]!.id } }) };
     },

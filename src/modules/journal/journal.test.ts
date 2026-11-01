@@ -353,7 +353,8 @@ describe('applyPreparedEffects', () => {
     const before = await stored(persistence);
 
     const second = beginSemanticTransaction();
-    j.applyPreparedEffects(second, p, mapping);
+    // The counter advanced after the first commit, so the second commit reaches the uniqueness backstop.
+    j.applyPreparedEffects(second, { ...p, snapshot: { ...p.snapshot, journalRevision: p.snapshot.journalRevision + 1 } }, mapping);
     second.stage({ op: 'put', store: 'trades', value: { tradeId: 'some-other-effect' } });
     expect(await persistence.commit(second.close())).toEqual({ kind: 'ConstraintViolation', store: 'journalEntries' });
     expect(await stored(persistence)).toEqual(before);

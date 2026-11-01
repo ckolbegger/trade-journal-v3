@@ -384,7 +384,8 @@ describe('applyPreparedEffects and the obligation index', () => {
 
     // A key that already has an outcome, here the Debt itself, fails the whole transaction.
     const again = beginSemanticTransaction();
-    deferred.journal.applyPreparedEffects(again, deferred.prepared, mapping);
+    // The counter advanced after the first commit, so the second commit reaches the uniqueness backstop.
+    deferred.journal.applyPreparedEffects(again, { ...deferred.prepared, snapshot: { ...deferred.prepared.snapshot, journalRevision: deferred.prepared.snapshot.journalRevision + 1 } }, mapping);
     expect(await deferred.persistence.commit(again.close())).toEqual(expect.objectContaining({ kind: 'ConstraintViolation' }));
   });
 

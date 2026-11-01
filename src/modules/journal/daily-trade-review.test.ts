@@ -267,7 +267,8 @@ describe('edit by expected revision (AC-JOUR-005)', () => {
     };
     expect((await stage(prepareNew)).kind).toBe('Committed');
     // A second new Entry for the same (Trade, Review Date) key fails the whole transaction.
-    expect(await stage(prepareRetry)).toEqual(expect.objectContaining({ kind: 'ConstraintViolation' }));
+    // The counter advanced after the first commit, so the retry carries the current revision and reaches the uniqueness backstop.
+    expect(await stage({ ...prepareRetry, snapshot: { ...prepareRetry.snapshot, journalRevision: prepareRetry.snapshot.journalRevision + 1 } })).toEqual(expect.objectContaining({ kind: 'ConstraintViolation' }));
     expect((await stored(persistence)).entries).toHaveLength(1);
 
     expect((await apply(j, persistence, complete({ [ACTION]: option('Roll'), [INTENT]: { kind: 'Text', text: 'Roll out.' } }, { expectedEntryRevision: 1 }))).committed.kind).toBe('Committed');
