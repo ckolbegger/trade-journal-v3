@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 90633,
+    "input_tokens": 89493,
+    "output_tokens": 1140,
+    "cache_read_tokens": 7680,
+    "elapsed": "1m32s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Card review UI and held-review behavior",
+      "files": [
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/held-review.ts"
+      ]
+    }
+  ],
+  "session_id": "628f3ba6-32af-4673-b71f-03d7ca9c377c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "628f3ba6-32af-4673-b71f-03d7ca9c377c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "78180012",
+      "resolved_base": "74192c5685299f84df3c74708d83f6432f13b88e",
+      "resolved_head": "7818001207341f85f00fdb037f34ced9456a4d67",
+      "exact_range": "74192c5685299f84df3c74708d83f6432f13b88e..7818001207341f85f00fdb037f34ced9456a4d67",
+      "source_artifact_sha256": "64cb6d095f6061de09089c6d6bbbead5506bd848e82a137ce88460154c45fa8c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "e613f7c78aca07473fe12e4cfcbba0919a94cb684e58f5f8dcc46dbe6c2d64cf"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "77bdceb6bd39ecdf636c8150dcc01a6b2f1c14e21d7f5e7f59eded702bdcc707"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "ab39902649e6422ec4547d801931edacc232e00bcabcdde7e8b98f0d1f17f0c4"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "b8f4d5c47af81d8f3470caf7447e83a282d21d0b658c69d427a9cac01cd1f26d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "e613f7c78aca07473fe12e4cfcbba0919a94cb684e58f5f8dcc46dbe6c2d64cf"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "77bdceb6bd39ecdf636c8150dcc01a6b2f1c14e21d7f5e7f59eded702bdcc707"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "ab39902649e6422ec4547d801931edacc232e00bcabcdde7e8b98f0d1f17f0c4"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "b8f4d5c47af81d8f3470caf7447e83a282d21d0b658c69d427a9cac01cd1f26d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 92296
+  }
+}

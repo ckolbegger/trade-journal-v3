@@ -374,3 +374,20 @@ Kept unchanged, as the plan says: `CardMarks.test.tsx` "should send an earlier-s
 | `rg -n 'heldStanding\(\|standing\(\|onResult\(' src/ui/screens/CardMarks.tsx` | row standing: line 129 (`panel.standing(...)`, defined at 294 as `heldStanding(heldReview, key) ?? listed`); Save Marks entry expected revision: line 319 (`standing(...).revision`); per-row save folds `MarkSaved`: line 131; Save Marks Conflict folds `MarksConflict`: line 343 |
 | `npx vitest run tests/integration/d5r` | `Test Files 7 passed (7)`, `Tests 12 passed (12)`, exit 0 |
 | `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+
+### ocr review of `7818001`
+
+Session `628f3ba6-32af-4673-b71f-03d7ca9c377c`, 4 files reviewed, no findings. Raw output: [ocr/T5R2.9-7818001.json](ocr/T5R2.9-7818001.json). Main-session note: the subagent also widened `held-review.ts`'s `MarkSaved` and `MovedKey` revision to `ExpectedResolutionRevision` (`'None' | number`), comparing with `rank`; numeric behaviour unchanged.
+
+### Cumulative suite at `7818001` (T5R2.9 closed)
+
+Date 2026-11-01 08:42 EST. The working tree's only uncommitted changes were evidence files. The unit count falls by 1 (the mounted case removed above).
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 77 passed (77)`, `Tests 1035 passed (1035)`, exit 0 | `suite-runs/t5r2-9-cardmarks-standing-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-9-cardmarks-standing-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-9-cardmarks-standing-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-9-cardmarks-standing-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after. The runner reported a stray zsh busy-loop (PID 46576, from an earlier D5 command on `evidence/D05/suite-runs`), not started by this session; left alone and reported to the user.
