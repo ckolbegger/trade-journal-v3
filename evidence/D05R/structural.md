@@ -1285,3 +1285,15 @@ Fix (`src/ui/screens/ReviewCard.tsx`): the card already scrolled to its top at t
 ### T5R.15-B2 The D5R helpers tell T-A from T-F by Trade, not by load-time state
 
 Tag the two XYZ cards from something that identifies the Trade (e.g. the card's own link to its Trade), so tagging needs no "reflection due" precondition and survives remounts; name the fixture Trade in `reachTrade`'s refusal; scope `answerDebtOf`'s final check to the card.
+
+ocr review of `ae7590a` (T5R.15-B1): one file reviewed. Raw output: [ocr/T5R.15-B1-ae7590a.json](ocr/T5R.15-B1-ae7590a.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `ReviewCard.tsx:93-94` | The new scroll to the card's top also runs for Mark-row landings (links, an Action save's Mark next step), after the body's effect has focused the row; child effects run first, so a row below the fold ends up off screen. | Valid: bug task T5R.15-B1-B1. |
+
+The reviewing agent found the rest clean: no scroll on load (`reveal === 0`), none on a refresh or re-sort (`scrolledFor` guard), and no missed reveal.
+
+### T5R.15-B1-B1 The card-top scroll leaves a focused Mark row in view
+
+When the opened card's body already holds focus (a Mark-row landing), the card-top scroll is skipped (still counted for that reveal), so the focused row stays in view.

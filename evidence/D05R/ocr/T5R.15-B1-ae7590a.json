@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 96273,
+    "input_tokens": 95588,
+    "output_tokens": 685,
+    "cache_read_tokens": 21120,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "This scroll also runs for Mark-row landings, after CardBody's effect has focused the requested row. For example, Action save's Mark-next-step path uses flushSync to reveal the loading card first; when the read completes, the row receives focus and scrolls into view, then this parent effect scrolls back to the card header. For a row further down the Marks panel, the focused control is now off-screen. Preserve the focus-driven landing (for example, skip this second scroll when focus has moved into the card body), while still recording that reveal as handled so a refresh cannot scroll it later.",
+      "existing_code": "    scrolledFor.current = reveal;\n    item.current?.scrollIntoView?.({ block: 'start' });",
+      "start_line": 93,
+      "end_line": 94,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/ReviewCard.tsx",
+      "files": [
+        "src/ui/screens/ReviewCard.tsx"
+      ]
+    }
+  ],
+  "session_id": "8caed19b-7f7a-4eda-b2ba-01a6a596a7b1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8caed19b-7f7a-4eda-b2ba-01a6a596a7b1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ae7590af",
+      "resolved_base": "a14801f84fe6dcc6565f5dae97a95fa06aeb74f9",
+      "resolved_head": "ae7590af979bff3f159ac2f0ef780d53001d4cae",
+      "exact_range": "a14801f84fe6dcc6565f5dae97a95fa06aeb74f9..ae7590af979bff3f159ac2f0ef780d53001d4cae",
+      "source_artifact_sha256": "cbe042657bb8c94b4a17cfda7889f311214bb64576bd29a9808f65015597d9e8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "5ab4d74023695d02d7a39f22393d0689719b5bcbe0f27c063ed7051ade6eba49"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "5ab4d74023695d02d7a39f22393d0689719b5bcbe0f27c063ed7051ade6eba49"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 72759
+  }
+}
