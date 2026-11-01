@@ -296,3 +296,16 @@ Edited by the main session on 2026-11-01, under the breakdown's section 3, "T6P.
 - **The user's memory, "record full suite runs"** (outside the repository): a task ends with the cumulative run in the tier `browser-auto <base>` picks, with the tier and reason recorded, and every critic gate is preceded by a full-tier run. **Why:** the user's decision on 2026-11-01 after the browser-suite review. Cites P55. Its index line in `MEMORY.md` now says the same.
 
 **Verification:** `grep -c -E 'P55|P56'` gives 1 for each of the four documents, so each cites the decision it applies.
+
+### Cumulative run after T6P.5
+
+Delegated to `suite-runner` (its first run under T6P.5's instructions), 2026-11-01 16:30–16:38 EST, commit `725b6e4` (uncommitted: the run's output files). Base commit (A180): `332f44f`. `full-suite.sh --choose-tier 332f44f` printed `task` (process documents only); following the prefactor handoff, the browser stage was `browser`, the full tier.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files  80 passed (80)`, `Tests  1051 passed (1051)`, exit 0 | [suite-runs/t6p-5-docs-unit.txt](suite-runs/t6p-5-docs-unit.txt) |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files  60 passed (60)`, `Tests  117 passed (117)`, exit 0 | [suite-runs/t6p-5-docs-integration.txt](suite-runs/t6p-5-docs-integration.txt) |
+| Browser (Chromium), full tier | `browser` (`npm run test:e2e`) | `147 passed (6.6m)`, exit 0 | [suite-runs/t6p-5-docs-browser.txt](suite-runs/t6p-5-docs-browser.txt) |
+| Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-5-docs-checks.txt](suite-runs/t6p-5-docs-checks.txt) |
+
+Ports 9341, 9342 and 5175 were free before and after. Browser stage 6 min 38 s (moved to the background by the harness after 180 s; the runner waited for the completion notice). T6P.5 has no ocr review: it changes process documents only, with no implementation.
