@@ -1393,3 +1393,13 @@ Checks: `npx vitest run src` 997 passed (one full run failed the known `TradeLis
 **Process notes (T5R.15-F1):** one `sed -i` on `PlanForm.test.tsx` that matched nothing, one no-op here-doc, and one blocked `pkill`, against the Edit-only rule; the agent also left four `while pgrep -f "playwright test e2e/d1"` wait loops that matched their own command lines and never ended. They were ended by stopping the agent. Future briefs say: no wait loops on `pgrep -f`.
 
 ocr review of `026d624` (T5R.15-F1): four files reviewed (`PlanForm.tsx`, `PositionChangeForm.tsx`, `local-time.ts`, `position-change-issues.ts`; two test files and the log excluded), no findings. Raw output: [ocr/T5R.15-F1-026d624.json](ocr/T5R.15-F1-026d624.json).
+
+### T5R.15-I4 Messages and blockers name the Trade (decision 68)
+
+Commit `095e325`. `tradeName(trade)` in `src/ui/format.ts` ("XYZ (Long 100 shares @ $50.18)", or the Underlying alone). Cases, each red first: `tradeName` (red: `tradeName is not a function`); the four blockers name the Trade, Mark missing keeps the Instrument (red: "Action missing for XYZ"; the first green run failed on the test waiting for the wrong card, fixed and rerun green); "Trades:" under Complete with unavailable Marks (red: "Trades: DEF, XYZ, XYZ"); hold message on another header press; message after an Action save on a held card; the open card's body label "<name> review" (red: no such region). Cases 1 and 6 were renamed for `-t` filtering; their first runs matched no test (exit 0), so those rows were deleted as invalid and a note records it. No first-run passes.
+
+- Refactor: one `tradeLabels(trades)` in `ReviewView.tsx` gives `name` and `line`; `Status` takes `name`; "also held by" keeps `line`. `CardBody` gained a `name` prop.
+- `tradeCard` (`e2e/d4/support.ts`) matches `^<escaped symbol>(?: \([^)]*\))? review$`; the old-release (rule 5) cases still pass. B5R.5's hold message (the authorized change) expects "…for XYZ (Long 100 shares @ $50.18) to leave it."; D4's `hold.spec.ts` and `acknowledge.spec.ts` pass unchanged.
+- Checks: typecheck, `tsc6`, lint, `lint:deps` exit 0; `npx vitest run src` 1003 passed. After `build:faults` and `build:releases`, whole `npm run test:e2e`: 170 passed, 6 failed — exactly T5R.15-F1's six D1-release cases (the clock read 01:4x EDT; every 01:xx wall time that day is ambiguous, on either pass of the hour). Ports clear before and after. The agent stopped with background work still running and was stopped by the main session.
+
+ocr review of `095e325` (T5R.15-I4): four files reviewed (`format.ts`, `ReviewCard.tsx`, `ReviewView.tsx`, `e2e/d4/support.ts`'s `tradeCard`), no findings. Raw output: [ocr/T5R.15-I4-095e325.json](ocr/T5R.15-I4-095e325.json).

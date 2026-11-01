@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 98224,
+    "input_tokens": 97164,
+    "output_tokens": 1060,
+    "cache_read_tokens": 16256,
+    "elapsed": "50s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Review UI formatting and end-to-end support",
+      "files": [
+        "e2e/d4/support.ts",
+        "src/ui/format.ts",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "2d739a30-362b-4708-a1ed-2493196f0952",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2d739a30-362b-4708-a1ed-2493196f0952",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "095e3259",
+      "resolved_base": "605ef327b0a8e16199dc5e5aebe75408720ae1e4",
+      "resolved_head": "095e3259aa60327a78479a9f61023f28c8432a3c",
+      "exact_range": "605ef327b0a8e16199dc5e5aebe75408720ae1e4..095e3259aa60327a78479a9f61023f28c8432a3c",
+      "source_artifact_sha256": "72b80fe83a40943659d09669e045ec9b3321603358bba120546ce82e2d1490b9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "27ae1f8e952ac7801c8117c3bc8cca0526533c4696bcc6d6b037d0382702bb41"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "650443323717d88b95e9a6ccc460804f51f17cc987348c6e131af3d6ef125925"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "4581250c85aea79aefe3de557c381d552dccfd89f98a82d9294ddb0ed772b738"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "339c2692bcfd2c1f17f98f8e75e7ff533d906798a7301a9374e321a363a000f6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "27ae1f8e952ac7801c8117c3bc8cca0526533c4696bcc6d6b037d0382702bb41"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "650443323717d88b95e9a6ccc460804f51f17cc987348c6e131af3d6ef125925"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "4581250c85aea79aefe3de557c381d552dccfd89f98a82d9294ddb0ed772b738"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "339c2692bcfd2c1f17f98f8e75e7ff533d906798a7301a9374e321a363a000f6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 50274
+  }
+}
