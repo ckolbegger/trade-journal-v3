@@ -1,4 +1,4 @@
-import { IDBDatabase as FakeIDBDatabase, IDBFactory, IDBObjectStore as FakeIDBObjectStore } from 'fake-indexeddb';
+import { IDBDatabase as FakeIDBDatabase, IDBFactory, IDBObjectStore as FakeIDBObjectStore, IDBTransaction as FakeIDBTransaction } from 'fake-indexeddb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { createPersistence, rebuildPrivateState, type WriteGate } from './index.ts';
@@ -312,6 +312,26 @@ describe('semantic commit', () => {
     expect(unhandled).toEqual([]);
     expect(await rawGet(databaseName, 'trades', 'trade-1')).toBeUndefined();
     expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
+  });
+
+  it('should reject with the original write error when the abort in the catch also throws', async () => {
+    const { p } = await created();
+    const failure = new Error('keyOf failed');
+    vi.mocked(keyOf).mockImplementationOnce(() => {
+      throw failure;
+    });
+    // A finished transaction refuses abort(); the faked abort stands in for that, leaving the transaction to auto-commit.
+    const abort = vi.spyOn(FakeIDBTransaction.prototype, 'abort').mockImplementation(() => {
+      throw new DOMException('The transaction has finished.', 'InvalidStateError');
+    });
+    try {
+      await expect(
+        p.commit({ checks: [], writes: [{ op: 'put', store: 'trades', value: { tradeId: 'trade-1' } }] }),
+      ).rejects.toBe(failure);
+      expect(abort).toHaveBeenCalled();
+    } finally {
+      abort.mockRestore();
+    }
   });
 
   it('should open write transactions with durability "strict"', async () => {

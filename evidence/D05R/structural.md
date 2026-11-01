@@ -1198,4 +1198,8 @@ Record (implemented):
 
 `tx.abort()` in the synchronous catch is guarded, as at `persistence.ts:277`, so the original error is always the one rethrown.
 
+Record (implemented):
+- Test: `src/persistence/persistence.test.ts`, "should reject with the original write error when the abort in the catch also throws". `keyOf` made to throw once (pass-through mock) and `IDBTransaction.prototype.abort` from fake-indexeddb spied to throw an `InvalidStateError` DOMException, restored in `finally`. Asserts the call rejects with the original `keyOf` error and that abort was attempted. Stored state is not asserted (the faked abort leaves the transaction to auto-commit).
+- Red: `AssertionError: expected DOMException{ stack: 'InvalidStateEr…' } to be Error: keyOf failed` (the abort error replaced the original). Green after wrapping `tx.abort()` in the catch in try/catch with a comment. Rows are in `tdd-log.md`.
+
 ocr review of `3ade164` (T5R.14-B1-B1): one file reviewed (three excluded), no findings. The reviewing agent confirmed `keyOf` runs before any request exists, and that the module-level `vi.mock('./schema.ts')` passes through to the real `keyOf` (no mock-reset settings in the config; the file's 22 tests pass). Raw output: [ocr/T5R.14-B1-B1-3ade164.json](ocr/T5R.14-B1-B1-3ade164.json).

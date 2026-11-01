@@ -404,7 +404,11 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         tx.objectStore('meta').put({ key: 'content', contentRevision }).catch(() => undefined);
       } catch (error) {
         // A synchronous throw would leave the transaction open to auto-commit the writes already issued.
-        tx.abort();
+        try {
+          tx.abort();
+        } catch {
+          // Already finished: the original error is the one to report.
+        }
         await tx.done.catch(() => undefined);
         throw error;
       }
