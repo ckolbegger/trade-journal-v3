@@ -451,3 +451,31 @@ Date 2026-11-01 09:23 EST. The only untracked file was `.claude/settings.json`.
 | Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.11-integration.txt` |
 | Browser (Chromium) | `npm run test:e2e` | `179 passed (7.3m)`, exit 0 | `suite-runs/T5R2.11-browser.txt` |
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.11-checks.txt` |
+
+## T5R2.12 Trade Workflows: retry a counter-only conflict
+
+Commit `93dce82`. New helper `retryCounterConflict` in `src/coordinators/trade-workflows/counter-retry.ts` reruns a whole attempt (reads, preparation, commit) while the result is a `Conflict` whose only changed binding satisfies `isJournalCounterBinding`, up to 3 attempts in all (ADR 0011, A175), mirroring `Journal.save`. `recordPositionChange`'s old body is the private `attemptPositionChange`, wrapped by the helper; `confirmPlan` is wrapped inside its guard. A Trade or catalog binding conflict is returned at once; the existing D2 and D5 Conflict cases pass unchanged. New file `counter-conflict.test.ts`, 3 cases: cases 1 and 2 red (`expected 'Conflict' to be 'Recorded'` / `'Confirmed'`), then green after fixing two wrong counts in the tests themselves. **Case 3, "should return Conflict and write nothing when a Journal write lands before each of its three attempts", was a first-run pass, flagged** (mutation: `MAX_ATTEMPTS` 3 → 4; failure `expected { kind: 'Recorded', … } to deeply equal { kind: 'Conflict', … }`).
+- **Slip:** the subagent appended two tdd-log rows with a heredoc and `echo >>` (evidence only; source and tests through Edit/Write).
+
+### ocr review of `93dce82`
+
+Session `fde8b206-32ff-4c0f-bb8b-f140938b1a61`, 3 files reviewed (test files skipped), no findings. Raw output: [ocr/T5R2.12.json](ocr/T5R2.12.json).
+
+### Cumulative suite at `93dce82`: one intermittent unit failure (F2)
+
+Date 2026-11-01 09:38 EST. Unit 1046 of 1047 (`ReviewCards.test.tsx` > "card-top scroll once the body shows (T5R.15-B1-B1)" > "should scroll the card top at the press and again once the body shows, for a plain header open": `expected [ { block: 'start' } ] to deeply equal [ { block: 'start' }, …(1) ]`); integration 117 of 117; browser 179 of 179; checks 12 of 12. Outputs `suite-runs/T5R2.12-*.txt`. The file passed 3 of 3 alone.
+
+### F2 the card-top scroll case waits for the second scroll
+
+Commit `479f8fb`, test only. Cause confirmed: `ReviewCard.tsx:87` scrolls at the press; `ReviewCard.tsx:100` scrolls again only once `bodyShown`, which can land a render after `findByRole('region', { name: 'XYZ review' })` resolves. The final assertion is now inside `waitFor`, with the same expected value. Mutation: line 100 commented out fails the case with the same assertion; restored. The file passed 40 of 40 five times. Not ocr-reviewed: ocr skips test files, so the commit has nothing for it to review. F1 (`ReviewCards.test.tsx:607`) left alone: no evidence its form renders asynchronously; if it recurs, a `findByRole` there is the likely fix.
+
+### Cumulative suite at `479f8fb` (T5R2.12 closed)
+
+Date 2026-11-01 09:48 EST.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 79 passed (79)`, `Tests 1047 passed (1047)`, exit 0 | `suite-runs/T5R2.12-F2-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.12-F2-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.2m)`, exit 0 | `suite-runs/T5R2.12-F2-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.12-F2-checks.txt` |
