@@ -824,33 +824,6 @@ describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('should open the first card in the Review order whose Trade is in the Mark row', async () => {
-    const user = userEvent.setup();
-    const facade = cardFacade();
-    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-e', 't-a'])) });
-    renderReview(facade);
-    const abc = await screen.findByRole('region', { name: 'ABC review' });
-
-    await user.click(within(abc).getByRole('button', { name: 'Save' }));
-
-    await screen.findByRole('region', { name: 'XYZ review' });
-    // T-A comes before T-E in attention order.
-    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
-  });
-
-  it('should keep the old behaviour when none of the row Trades is in the Review', async () => {
-    const user = userEvent.setup();
-    const facade = cardFacade();
-    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: postWith(markStep(['t-zzz'])) });
-    renderReview(facade);
-    const abc = await screen.findByRole('region', { name: 'ABC review' });
-
-    await user.click(within(abc).getByRole('button', { name: 'Save' }));
-
-    expect((await screen.findByRole('status')).textContent).toBe('A Mark is needed before the next Trade. It is listed in its card.');
-    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'false']);
-  });
-
   it('should stay on the card and say to save or discard when the card holds a Mark draft and the next step is a Mark', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();

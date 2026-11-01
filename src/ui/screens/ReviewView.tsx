@@ -2,11 +2,12 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom';
 import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SavedMark, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
+import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
-import type { CardMarkRows, EntryDirty } from './CardMarks.tsx';
+import type { EntryDirty } from './CardMarks.tsx';
+import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName, type Remaining } from './ReviewCard.tsx';
 
 export interface ReviewViewProps {
@@ -183,11 +184,12 @@ interface LinkedCard {
 
 // The card a link's search params name, if the Review holds it (A161): ?trade= picks the card, ?instrument= its Marks row when
 // that card holds the Instrument, else ?panel=; ?instrument= alone picks the first card holding it.
-function linkedCard(review: Ready, params: URLSearchParams): LinkedCard | undefined {
+function linkedCard(held: Held, params: URLSearchParams): LinkedCard | undefined {
+  const review = held.review;
   const instrument = params.get('instrument');
   const wanted = params.get('trade');
   if (wanted !== null && walkedTrades(review).some((t) => t.tradeId === wanted)) {
-    const marks = marksOf(review, wanted);
+    const marks = marksOf(held, wanted);
     const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
     if (holds) return { tradeId: wanted, panel: 'Marks', instrument };
     // An unknown panel name is ignored: the first panel not done opens.
@@ -201,58 +203,7 @@ function linkedCard(review: Ready, params: URLSearchParams): LinkedCard | undefi
 // A card is Done when it owes nothing (A150).
 const isOwing = (remaining: Remaining): boolean => remaining.marks > 0 || remaining.reflections > 0 || remaining.action;
 
-// The Marks a card owns: the Review-date rows that name its Trade, and the earlier sessions from the date it is relevant (A153).
-function marksOf(review: Ready, tradeId: string): CardMarkRows {
-  const family = review.families.find((f) => f.family === 'Marks');
-  if (family?.family !== 'Marks') return { today: [], earlier: [] };
-  const earlier = family.earlier.flatMap((group) => {
-    const from = group.trades.find((t) => t.tradeId === tradeId)?.from;
-    if (from === undefined) return [];
-    const missing = group.missing.filter((date) => date >= from);
-    const acknowledged = group.acknowledged.filter((date) => date >= from);
-    return missing.length + acknowledged.length > 0 ? [{ ...group, missing, acknowledged }] : [];
-  });
-  return { today: family.today.filter((row) => row.trades.includes(tradeId)), earlier };
-}
-
 type MarksSaved = Extract<SaveReviewMarksResult, { kind: 'MarksSaved' }>;
-
-// The Review's Marks family after a Marks save: each saved key's resolution and revision on its Review-date row, and a
-// saved earlier session out of its Instrument's gap list (an acknowledged one stays, listed as acknowledged). The gap groups
-// are rebuilt at the next `open` (P38); until then no card holding the key shows it as it was.
-function withSavedMarks(review: Ready, saved: readonly SavedMark[]): Ready {
-  const savedFor = (instrumentKey: string, tradingDate: string) => saved.find((m) => m.key.instrumentKey === instrumentKey && m.key.tradingDate === tradingDate);
-  return {
-    ...review,
-    families: review.families.map((family) => {
-      if (family.family !== 'Marks') return family;
-      const today = family.today.map((row) => {
-        const mark = savedFor(row.instrumentKey, row.tradingDate);
-        return mark ? { ...row, resolution: mark.resolution, resolutionRevision: mark.resolutionRevision, task: mark.resolution.kind === 'Missing' ? ('Manual' as const) : null } : row;
-      });
-      const earlier = family.earlier.map((group) => {
-        const marked = [...group.missing, ...group.acknowledged].flatMap((date) => {
-          const mark = savedFor(group.instrumentKey, date);
-          return mark ? [{ date, mark }] : [];
-        });
-        if (marked.length === 0) return group;
-        const dates = new Set(marked.map((m) => m.date));
-        const acknowledgments = { ...group.acknowledgments };
-        const revisions = { ...group.revisions };
-        const acknowledged = group.acknowledged.filter((date) => !dates.has(date));
-        for (const { date, mark } of marked) {
-          revisions[date] = mark.resolutionRevision;
-          if (mark.resolution.kind === 'AcknowledgedUnavailable') {
-            acknowledgments[date] = mark.resolution.acknowledgment;
-            acknowledged.push(date);
-          }
-        }
-        return { ...group, missing: group.missing.filter((date) => !dates.has(date)), acknowledged, revisions, acknowledgments };
-      });
-      return { ...family, today, earlier };
-    }),
-  };
-}
 
 type ViewState =
   | { readonly kind: 'Loading' }
@@ -262,12 +213,13 @@ type ViewState =
 
 // A Ready Review: its status, then one card per walked Trade in the overview's attention order (A150).
 function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly onDirtyChange: (dirty: boolean) => void }) {
-  // The save's result is the Review from here on; the ref holds the latest, so a read never uses an older binding.
-  const [review, setReview] = useState(initial);
-  const latest = useRef(initial);
-  const apply = (update: (current: Ready) => Ready) => {
-    latest.current = update(latest.current);
-    setReview(latest.current);
+  // The held Review (A171): each result is folded into it; the ref holds the latest, so a read never uses an older binding.
+  const [heldReview, setHeldReview] = useState<Held>({ review: initial, standings: {} });
+  const review = heldReview.review;
+  const latest = useRef(heldReview);
+  const apply = (result: HeldResult) => {
+    latest.current = fold(latest.current, result);
+    setHeldReview(latest.current);
   };
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
@@ -275,7 +227,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // A link into the Review names the card that opens on load (A161): the first holding ?instrument=, on its Marks panel with
   // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
   const [params] = useSearchParams();
-  const [link] = useState(() => linkedCard(initial, params));
+  const [link] = useState(() => linkedCard(heldReview, params));
   const [firstId] = useState(() => link?.tradeId ?? walkedTrades(initial).find((t) => isOwing(remainingOf(t.tradeId, initial.completion)))?.tradeId);
   // The link the open card is to answer, and the card it is for.
   const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, count: 1 } : NO_GO });
@@ -302,7 +254,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   const read = useCallback(
     async (tradeId: string, request: number) => {
       await refreshing.current;
-      const from = latest.current;
+      const from = latest.current.review;
       const result = await facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
       if (selection.current === request) setShown({ tradeId, opening: request, detail: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });
     },
@@ -338,7 +290,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   const refreshTrade = async (tradeId: string, request = selection.current): Promise<boolean> => {
     // A card opened while the Review is being asked for waits for it, so it is read under the binding it returns.
     const asking = reopen().then((next) => {
-      if (next) apply(() => next);
+      if (next) apply({ kind: 'Opened', review: next });
       return next;
     });
     refreshing.current = asking;
@@ -363,7 +315,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     // The card holds other entered values (a Mark draft, a reflection draft): going on would lose them (A156). The card stays,
     // read again so its Action shows as saved, and says why.
     if (open &&openId !== undefined && [...dirty.current].some((id) => id !== `action:${openId}`)) {
-      if (post.kind === 'Ready') apply((current) => ({ ...current, completion: post.completion, binding: post.binding }));
+      apply({ kind: 'ActionSaved', review: post });
       setAfterSave(`The Action is saved. Save or discard what you entered for ${name(openId)} to go on.`);
       void refreshTrade(openId, opening).then((ok) => setFailed(!ok));
       return;
@@ -375,35 +327,32 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
       }
       return;
     }
-    apply((current) => ({ ...current, completion: post.completion, binding: post.binding }));
+    apply({ kind: 'ActionSaved', review: post });
     if (!open) return;
-    const next = post.nextStep;
+    const next = nextCard(latest.current, post.nextStep);
     setGo({ tradeId: undefined, go: NO_GO });
     // A Mark is the next step: the first card holding it opens on its Marks panel with focus in the row, as a Mark blocker's link does.
-    const markCard = next.kind === 'Mark' ? walkedTrades(latest.current).find((t) => next.row.trades.includes(t.tradeId)) : undefined;
-    if (next.kind === 'Mark' && markCard !== undefined) {
+    if (next.kind === 'Mark') {
       // The card is shown before it is read: the read's result would otherwise batch into the same render, and the card's header,
       // revealed after its body mounts, would take the focus from the row.
       let request = 0;
       flushSync(() => {
         setAfterSave(undefined);
-        setReveal((current) => ({ tradeId: markCard.tradeId, count: current.count + 1 }));
-        setGo((current) => ({ tradeId: markCard.tradeId, go: { panel: 'Marks', instrument: next.row.instrumentKey, count: current.go.count + 1 } }));
-        request = show(markCard.tradeId, 'Loading');
+        setReveal((current) => ({ tradeId: next.tradeId, count: current.count + 1 }));
+        setGo((current) => ({ tradeId: next.tradeId, go: { panel: 'Marks', instrument: next.instrumentKey, count: current.go.count + 1 } }));
+        request = show(next.tradeId, 'Loading');
       });
-      void read(markCard.tradeId, request);
+      void read(next.tradeId, request);
       return;
     }
     if (next.kind === 'Trade') {
       setReveal((current) => ({ tradeId: next.trade.tradeId, count: current.count + 1 }));
       show(next.trade.tradeId, { trade: next.trade });
     } else collapse();
-    setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'Mark' ? AFTER_SAVE.Mark : undefined);
+    setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
   };
   // A resolved reflection leaves the card open to show it resolved, so only the overview's completion and binding follow the result.
-  const reflectionResolved = (post: PostSaveReview) => {
-    if (post.kind === 'Ready') apply((current) => ({ ...current, completion: post.completion, binding: post.binding }));
-  };
+  const reflectionResolved = (post: PostSaveReview) => apply({ kind: 'DebtResolved', review: post });
   // The entries holding a value (Mark drafts, Action and reflection forms); the page is unsaved while any does (A156).
   const dirty = useRef(new Set<string>());
   const [held, setHeld] = useState(false);
@@ -465,7 +414,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // The saved Marks and the Review under them are the screen's from here on, with no read (P38, A157): the Trades re-sort,
   // and the open card shows its refreshed Trade in place, keeping what was entered in it.
   const marksSaved = ({ marks, review: post }: MarksSaved, opening: number, tradeId: string) => {
-    apply((current) => withSavedMarks(current, marks));
+    apply({ kind: 'MarksSaved', marks, review: post });
     if (post.kind !== 'Ready') {
       // The Marks are saved, but the Review under them could not be read: the card says so until Refresh.
       setStale(tradeId);
@@ -473,13 +422,12 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     }
     // A Review that read cleanly makes the figures current again, so an earlier out-of-date notice goes.
     setStale(undefined);
-    apply((current) => ({ ...current, completion: post.completion, binding: post.binding, families: current.families.map((f) => (f.family === 'Trades' ? { ...f, trades: post.trades } : f)) }));
     if (selection.current !== opening) return;
     setShown({ tradeId: post.trade.tradeId, opening, detail: { trade: post.trade } });
     setAdvance((current) => ({ tradeId: post.trade.tradeId, count: current.count + 1 }));
   };
   const saveMarks = async (entries: readonly MarketDataPrepareEntry[]): Promise<SaveReviewMarksResult> => {
-    const from = latest.current;
+    const from = latest.current.review;
     const opening = shown?.opening ?? -1;
     const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, tradeId: openId ?? '', binding: from.binding, entries });
     if (result.kind === 'MarksSaved') marksSaved(result, opening, openId ?? '');
@@ -510,7 +458,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
             reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
             advance={advance.tradeId === trade.tradeId ? advance.count : 0}
             go={go.tradeId === trade.tradeId ? go.go : NO_GO}
-            marks={marksOf(review, trade.tradeId)}
+            marks={marksOf(heldReview, trade.tradeId)}
             tradeLine={tradeLine}
             onToggle={() => toggle(trade.tradeId)}
             onSaved={(result) => saved(result, shown?.opening ?? -1)}

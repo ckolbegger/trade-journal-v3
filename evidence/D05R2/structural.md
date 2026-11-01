@@ -304,3 +304,29 @@ Date 2026-11-01 08:15 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-7-b1-standing-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.8 ReviewView folds every result through the module
+
+`ReviewView.tsx` now holds a `Held` (`{ review, standings }`) in state and in the `latest` ref. One `apply(result: HeldResult)` calls `fold`. `saved` applies `ActionSaved` (also on the unsaved-draft branch) and acts on `nextCard` (the `flushSync` Mark-card branch, scrolling and focus stay in the view); `reflectionResolved` applies `DebtResolved`; `marksSaved` applies `MarksSaved` once (the walked-Trade re-sort is in `fold`); `refreshTrade` applies `Opened`. `withSavedMarks` and the local `marksOf` are removed; the cards and `linkedCard` use the module's `marksOf`. The requests, shared in-flight `reopen`, opening counter, unsaved-state guards, after-save messages and effects stay.
+
+### Removed mounted cases
+
+Both in `src/ui/screens/ReviewCards.test.tsx`; carried by `src/ui/screens/held-review.test.ts`, describe "nextCard (P50)".
+
+| Case removed | Expected values | Carried by |
+|---|---|---|
+| "should open the first card in the Review order whose Trade is in the Mark row" | Row Trades `t-e`, `t-a`; the XYZ card (T-A, earlier in attention order than T-E) opens and no other. | `nextCard`, first case: row Trades `t-f`, `t-a` over held order T-A, T-F, T-C gives `{ kind: 'Mark', tradeId: 't-a', instrumentKey: 'DEF' }`. |
+| "should keep the old behaviour when none of the row Trades is in the Review" | Row Trade `t-zzz`; status reads "A Mark is needed before the next Trade. It is listed in its card." and no card opens. | `nextCard`, second case: row Trade `t-zzz` gives `{ kind: 'MarkNotHeld' }`. The message and closed cards stay in the view (it maps `MarkNotHeld` to the message and `collapse()`). |
+
+Left for T5R2.9 (they depend on `CardMarks`' own `standings`, which T5R2.9 removes): `ReviewView.test.tsx` "should keep an earlier-session Mark saved resolution when the Review re-renders without a newer revision" and `CardMarks.test.tsx` "should send an earlier-session draft with the resolution and revision of the newest Review after Refresh ...". The three rendering-continuity cases of section 6.1a stay mounted.
+
+### Verification (each on its own)
+
+| Command | Result |
+|---|---|
+| `npm run test:unit -- src/ui` | `Test Files 25 passed (25)`, `Tests 421 passed (421)`, exit 0 (every remaining mounted case unchanged) |
+| `npm run typecheck` | exit 0 |
+| `rg 'withSavedMarks\|function marksOf' src/ui/screens/ReviewView.tsx` | no matches, exit 1 |
+| `rg -n 'fold\(\|apply\(\|nextCard\(\|marksOf\(' src/ui/screens/ReviewView.tsx` | `apply` (which calls `fold`, line 221) is called for `Opened` (293, refreshTrade), `ActionSaved` (318, 330, `saved`), `DebtResolved` (355, `reflectionResolved`), `MarksSaved` (417, `marksSaved`); `nextCard(latest.current, post.nextStep)` at 332 in `saved`; `marksOf(heldReview, ...)` at 192 and 461 |
+| `npx vitest run tests/integration/d5r` | `Test Files 7 passed (7)`, `Tests 12 passed (12)`, exit 0 |
+| `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
