@@ -887,3 +887,118 @@ describe('Action save while other forms hold values (A156)', () => {
     expect(within(within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText<HTMLInputElement>('Price').value).toBe('33.10');
   });
 });
+
+describe('Trade names in messages and blockers (decision 68)', () => {
+  // The two XYZ Trades carry summaries here only; the shared fixtures carry none.
+  const NAME_F = 'XYZ (Long 100 shares @ $50.18)';
+  const NAME_A = 'XYZ (Long 50 shares @ $61.00)';
+  const named = [
+    TB,
+    TC,
+    { ...TF, summary: { kind: 'Stock' as const, direction: 'Long' as const, quantity: rational(100n), price: rational(5018n, 100n) } },
+    { ...TA, summary: { kind: 'Stock' as const, direction: 'Long' as const, quantity: rational(50n), price: rational(61n) } },
+    TE,
+  ];
+  const namedReview = (over: Partial<Ready> = {}): Ready => review({ families: [review().families[0]!, { family: 'Trades', trades: named }], ...over });
+
+  it('should name the Trade in the Action missing, Reflection due, recorded facts disagree, and cannot be replayed blockers, each link still opening its card and panel, while Mark missing names the Instrument', async () => {
+    const user = userEvent.setup();
+    renderReview(
+      cardFacade(
+        namedReview({
+          completion: incomplete(
+            { code: 'ActionMissing', tradeId: 't-f' },
+            { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] },
+            { code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] },
+            { code: 'IntegrityDisagreement', tradeId: 't-f', findings: [] },
+            { code: 'IncoherentFacts', tradeId: 't-b', findings: [] as never },
+          ),
+        }),
+      ),
+    );
+    const status = await screen.findByRole('region', { name: 'Review status' });
+
+    const blockers = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    // A Trade with no summary is named by its Underlying alone.
+    expect(blockers.map((b) => b.textContent)).toEqual([
+      'Mark missing for DEF on Mon Oct 12',
+      `Action missing for ${NAME_F}`,
+      `Reflection due for ${NAME_A}`,
+      `${NAME_F}: recorded facts disagree`,
+      'ABC: recorded facts cannot be replayed',
+    ]);
+    const open = (index: number) => within(headers()[index]!.closest('li')!);
+    const panelOpen = (index: number, panel: 'Marks' | 'Reflections' | 'Action') => open(index).getByRole('button', { name: new RegExp(`^${panel}\\b`) }).getAttribute('aria-expanded');
+    await waitFor(() => expect(headers().some((h) => h.getAttribute('aria-expanded') === 'true')).toBe(true));
+
+    // Each link names the Trade and opens that Trade's own card on the panel that resolves it.
+    const action = within(blockers[1]!).getByRole('link', { name: NAME_F });
+    expect(action.getAttribute('href')).toBe('/review?trade=t-f&panel=Action');
+    await user.click(action);
+    await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']));
+    await waitFor(() => expect(panelOpen(2, 'Action')).toBe('true'));
+    const reflection = within(blockers[2]!).getByRole('link', { name: NAME_A });
+    expect(reflection.getAttribute('href')).toBe('/review?trade=t-a&panel=Reflections');
+    await user.click(reflection);
+    await waitFor(() => expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']));
+    await waitFor(() => expect(panelOpen(3, 'Reflections')).toBe('true'));
+    // Mark missing keeps naming the Instrument, which links with the Trade and the row.
+    expect(within(blockers[0]!).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
+  });
+
+  it('should list the Trades by name under Complete with unavailable Marks', async () => {
+    const completion: ReviewCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: ['DEF', 'XYZ'], trades: ['t-c', 't-f', 't-a'], families: ['Valuation'] };
+    renderReview(cardFacade(namedReview({ completion })));
+    const status = await screen.findByRole('region', { name: 'Review status' });
+
+    // DEF's Trade has no summary here, so it reads by its Underlying alone.
+    expect(within(within(status).getByRole('group', { name: 'Unavailable Marks' })).getByText(/^Trades:/).textContent).toBe(`Trades: DEF, ${NAME_F}, ${NAME_A}`);
+  });
+
+  it('should name the Trade in the hold message when another header is pressed while the open card holds unsaved work', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade(namedReview());
+    renderReview(facade, { at: '/review?trade=t-f&panel=Action' });
+    const form = await screen.findByRole('form', { name: 'Action' });
+    await user.click(within(form).getByRole('radio', { name: 'Exit' }));
+
+    await user.click(headers()[0]!);
+
+    expect((await screen.findByRole('status')).textContent).toBe(`Save or discard what you entered for ${NAME_F} to leave it.`);
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
+  });
+
+  it('should name the Trade in the message after an Action save on a held card', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade(namedReview());
+    const post = { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
+    renderReview(facade, { at: '/review?trade=t-f' });
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
+    const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
+    // A Mark draft holds the card while its Action is saved.
+    await showPanel(user, card, 'Marks');
+    const entry = within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
+    await user.click(within(entry).getByRole('button', { name: 'Correct' }));
+    await user.type(within(entry).getByLabelText('Price'), '53.00');
+    await showPanel(user, card, 'Action');
+
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+
+    expect((await screen.findByRole('status')).textContent).toBe(`The Action is saved. Save or discard what you entered for ${NAME_F} to go on.`);
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
+  });
+
+  it('should label the open card body with the Trade name then review, and with the Underlying then review for a Trade with no summary', async () => {
+    const user = userEvent.setup();
+    const noSummary = { ...TA, underlying: 'XYZ', summary: undefined };
+    renderReview(cardFacade(namedReview({ families: [review().families[0]!, { family: 'Trades', trades: [TB, TC, named[2]!, noSummary, TE] }] })), { at: '/review?trade=t-f' });
+
+    // Two Trades on one Underlying read apart.
+    const card = await screen.findByRole('region', { name: `${NAME_F} review` });
+    expect(card.closest('li')!.getAttribute('data-trade-id')).toBe('t-f');
+    await user.click(headers()[3]!);
+    expect((await screen.findByRole('region', { name: 'XYZ review' })).closest('li')!.getAttribute('data-trade-id')).toBe('t-a');
+    expect(screen.queryByRole('region', { name: `${NAME_F} review` })).toBeNull();
+  });
+});

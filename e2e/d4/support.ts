@@ -196,14 +196,16 @@ const labelOfId = new Map<string, string>();
 function resolve(page: Page, card: CardRef): { item: Locator; header: Locator; body: Locator } {
   const symbol = symbolOf(card);
   const headerName = new RegExp(`^Review ${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$)`);
-  const bodyName = `${symbol} review`;
+  // The body is labelled with the Trade's name, "XYZ (Long 100 shares @ $50.18) review", or "XYZ review" without a summary (decision 68);
+  // D4's old release has the bare form only. The pattern is anchored at both ends, so the nested regions never match.
+  const bodyName = new RegExp(`^${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?: \\([^)]*\\))? review$`);
   if (typeof card === 'string') {
     const header = page.getByRole('button', { name: headerName });
-    return { item: cardList(page).locator('li.review-card').filter({ has: header }), header, body: page.getByRole('region', { name: bodyName, exact: true }) };
+    return { item: cardList(page).locator('li.review-card').filter({ has: header }), header, body: page.getByRole('region', { name: bodyName }) };
   }
   if (card.label !== undefined) labelOfId.set(card.tradeId, card.label);
   const item = page.locator(`li.review-card[data-trade-id="${card.tradeId}"]`);
-  return { item, header: item.getByRole('button', { name: headerName }), body: item.getByRole('region', { name: bodyName, exact: true }) };
+  return { item, header: item.getByRole('button', { name: headerName }), body: item.getByRole('region', { name: bodyName }) };
 }
 
 // The card's list item, collapsed or open.

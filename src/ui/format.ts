@@ -29,6 +29,10 @@ export const localTime = (instant: string, timeZone: string): string => toWorksp
 export const tradeSummary = (summary: PlannedTradeItem['summary']): string =>
   `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
 
+// A Trade named in a sentence: its Underlying, then its summary line in parentheses; the Underlying alone without a summary (A150).
+export const tradeName = (trade: { readonly underlying: string; readonly summary?: PlannedTradeItem['summary'] }): string =>
+  trade.summary ? `${trade.underlying} (${tradeSummary(trade.summary)})` : trade.underlying;
+
 // Signed cost of the open exposure: a debit as Money, a credit (negative) as its magnitude then "credit".
 export const netCost = (value: Rational): string =>
   value.numerator < 0n ? `${money(Rational.of(-value.numerator, value.denominator))} credit` : money(value);

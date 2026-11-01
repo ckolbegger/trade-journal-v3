@@ -82,7 +82,7 @@ test.describe('B5R.5 Unsaved work holds the card', () => {
     await (await markRow(page, tA, MONDAY)).getByLabel('Price').fill('52.00');
     // Press another card's header (navigation: raw locators).
     await cardHeader(page, tB).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Save or discard what you entered for XYZ to leave it.' })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it.' })).toBeVisible();
     await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
     await expect(cardHeader(page, tB)).toHaveAttribute('aria-expanded', 'false');
 

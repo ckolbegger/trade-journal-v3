@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom';
 import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SavedMark, SaveReviewMarksResult } from '../../app/types.ts';
+import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SavedMark, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
-import { shortDate, tradeSummary } from '../format.ts';
+import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import type { CardMarkRows, EntryDirty } from './CardMarks.tsx';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName, type Remaining } from './ReviewCard.tsx';
@@ -54,8 +54,8 @@ function CardLink({ tradeId, open, panel, instrument, children }: { readonly tra
   );
 }
 
-// The Trade a blocker names, by its Underlying; each opens the card and panel that resolve it (A161).
-function blockerText(reason: IncompleteReason, review: Ready, underlying: (tradeId: string) => string, open: OpenCard): ReactNode {
+// The Trade a blocker names, by its name (A150); each opens the card and panel that resolve it (A161).
+function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: string) => string, open: OpenCard): ReactNode {
   switch (reason.code) {
     case 'MarkMissing': {
       const tradeId = walkedTrades(review).find((t) => reason.trades.includes(t.tradeId))?.tradeId;
@@ -76,7 +76,7 @@ function blockerText(reason: IncompleteReason, review: Ready, underlying: (trade
         <>
           Action missing for{' '}
           <CardLink tradeId={reason.tradeId} open={open} panel="Action">
-            {underlying(reason.tradeId)}
+            {name(reason.tradeId)}
           </CardLink>
         </>
       );
@@ -86,14 +86,14 @@ function blockerText(reason: IncompleteReason, review: Ready, underlying: (trade
         <>
           {reason.debtIds.length === 1 ? 'Reflection' : `${reason.debtIds.length} reflections`} due for{' '}
           <CardLink tradeId={reason.tradeId} open={open} panel="Reflections">
-            {underlying(reason.tradeId)}
+            {name(reason.tradeId)}
           </CardLink>
         </>
       );
     case 'IntegrityDisagreement':
-      return `${underlying(reason.tradeId)}: recorded facts disagree`;
+      return `${name(reason.tradeId)}: recorded facts disagree`;
     case 'IncoherentFacts':
-      return `${underlying(reason.tradeId)}: recorded facts cannot be replayed`;
+      return `${name(reason.tradeId)}: recorded facts cannot be replayed`;
   }
 }
 
@@ -110,9 +110,23 @@ const walkedTrades = (review: Ready) => review.families.flatMap((f) => (f.family
 // The blockers with Missing Marks first (P36), the rest in the order the Review gave them.
 const marksFirst = (reasons: readonly IncompleteReason[]): IncompleteReason[] => [...reasons.filter((r) => r.code === 'MarkMissing'), ...reasons.filter((r) => r.code !== 'MarkMissing')];
 
-function Status({ review, completion, openCard }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly openCard: OpenCard }) {
-  const trades = walkedTrades(review);
-  const underlying = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
+// How the Review names a Trade it holds, from one lookup over its walked Trades: `name` in a sentence (A150, "XYZ (Long 100
+// shares @ $50.18)"), and `line` for "also held by", the summary line alone (decision 67). The Trade id stands for one it does not hold.
+function tradeLabels(trades: readonly WalkedTrade[]) {
+  const find = (tradeId: string) => trades.find((t) => t.tradeId === tradeId);
+  return {
+    name: (tradeId: string) => {
+      const found = find(tradeId);
+      return found ? tradeName(found) : tradeId;
+    },
+    line: (tradeId: string) => {
+      const found = find(tradeId);
+      return found?.summary ? tradeSummary(found.summary) : (found?.underlying ?? tradeId);
+    },
+  };
+}
+
+function Status({ review, completion, name, openCard }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard }) {
   return (
     <section className="card" aria-label="Review status">
       <ReviewDate date={review.reviewDate} />
@@ -122,14 +136,14 @@ function Status({ review, completion, openCard }: { readonly review: Ready; read
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">
           <p>Instruments: {completion.instruments.join(', ')}</p>
-          <p>Trades: {completion.trades.map(underlying).join(', ')}</p>
+          <p>Trades: {completion.trades.map(name).join(', ')}</p>
           <p>Not calculated: {completion.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
         </div>
       )}
       {completion.kind === 'Incomplete' && (
         <ul aria-label="Blockers">
           {marksFirst(completion.reasons).map((reason, i) => (
-            <li key={i}>{blockerText(reason, review, underlying, openCard)}</li>
+            <li key={i}>{blockerText(reason, review, name, openCard)}</li>
           ))}
         </ul>
       )}
@@ -257,12 +271,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   };
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
-  const underlying = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
-  // A Trade named by its summary line, as the Trade list shows it; its Underlying when it has none (decision 67).
-  const tradeLine = (tradeId: string) => {
-    const summary = trades.find((t) => t.tradeId === tradeId)?.summary;
-    return summary ? tradeSummary(summary) : underlying(tradeId);
-  };
+  const { name, line: tradeLine } = tradeLabels(trades);
   // A link into the Review names the card that opens on load (A161): the first holding ?instrument=, on its Marks panel with
   // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
   const [params] = useSearchParams();
@@ -355,7 +364,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     // read again so its Action shows as saved, and says why.
     if (open &&openId !== undefined && [...dirty.current].some((id) => id !== `action:${openId}`)) {
       if (post.kind === 'Ready') apply((current) => ({ ...current, completion: post.completion, binding: post.binding }));
-      setAfterSave(`The Action is saved. Save or discard what you entered for ${underlying(openId)} to go on.`);
+      setAfterSave(`The Action is saved. Save or discard what you entered for ${name(openId)} to go on.`);
       void refreshTrade(openId, opening).then((ok) => setFailed(!ok));
       return;
     }
@@ -482,7 +491,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   }, [firstId, read]);
   return (
     <>
-      <Status review={review} completion={review.completion} openCard={openCard} />
+      <Status review={review} completion={review.completion} name={name} openCard={openCard} />
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>

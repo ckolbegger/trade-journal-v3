@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { DailyTradeReview, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { money, ratio, shortDate, tradeSummary } from '../format.ts';
+import { money, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
 import { calculation, signed } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
@@ -113,7 +113,7 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
         </h3>
         <StopTargetSlider position={trade.rangePosition} figures={sliderFigures(trade.figures)} />
       </div>
-      {expanded && holdMessage && <p role="status">Save or discard what you entered for {trade.underlying} to leave it.</p>}
+      {expanded && holdMessage && <p role="status">Save or discard what you entered for {tradeName(trade)} to leave it.</p>}
       {expanded && detail === 'Loading' && <p role="status">Loading the Trade…</p>}
       {expanded && detail === 'Unavailable' && (
         <div role="alert" className="banner warning">
@@ -125,6 +125,7 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
           key={`${detail.trade.tradeId}:${detail.trade.saveBinding.reviewDate}`}
           facade={facade}
           trade={detail.trade}
+          name={tradeName(trade)}
           advance={advance}
           go={go}
           remaining={remaining}
@@ -147,6 +148,8 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
 interface CardBodyProps {
   readonly facade: UiFacade;
   readonly trade: DailyTradeReview;
+  // The Trade's name (A150): it labels the region, so a screen reader hears which Trade it is.
+  readonly name: string;
   readonly advance: number;
   readonly go: Go;
   readonly remaining: Remaining;
@@ -210,7 +213,7 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, advance, go, remaining, marks, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, name, advance, go, remaining, marks, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, marks, remaining);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -269,7 +272,7 @@ function CardBody({ facade, trade, advance, go, remaining, marks, tradeLine, onS
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
   return (
-    <section aria-label={`${trade.underlying} review`} ref={body}>
+    <section aria-label={`${name} review`} ref={body}>
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>

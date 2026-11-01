@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../domain/values/index.ts';
-import { decimalMoney, money, netCost, ratio, rMultiple, tradeSummary } from './format.ts';
+import { decimalMoney, money, netCost, ratio, rMultiple, tradeName, tradeSummary } from './format.ts';
 
 const r = (numerator: bigint, denominator: bigint) => Rational.of(numerator, denominator);
 
@@ -22,6 +22,14 @@ describe('R multiple format', () => {
     expect(ratio(r(13n, 10n))).toBe('1.3');
     expect(ratio(r(1n, 1n))).toBe('1');
     expect(ratio(r(12n, 5n))).toBe('2.4');
+  });
+});
+
+describe('Trade names (decision 68)', () => {
+  it('should name a Trade by its Underlying then its summary line in parentheses, and by the Underlying alone when it has no summary', () => {
+    const summary = { kind: 'Stock' as const, direction: 'Long' as const, quantity: r(100n, 1n), price: r(5018n, 100n) };
+    expect(tradeName({ underlying: 'XYZ', summary })).toBe('XYZ (Long 100 shares @ $50.18)');
+    expect(tradeName({ underlying: 'XYZ' })).toBe('XYZ');
   });
 });
 
