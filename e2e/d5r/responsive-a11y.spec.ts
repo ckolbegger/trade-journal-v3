@@ -1,5 +1,5 @@
 import {
-  actionFormOf, cardHeader, cardItem, completion, createCardFixture, expect, expectAccessible, FRIDAY, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, sliderOf, status, tabTo,
+  actionFormOf, cardHeader, cardItem, completion, createCardFixture, createRoutineTrades, createTrades, expect, expectAccessible, FRIDAY, markRow, MONDAY, MONDAY_1700, onboardedAt, openReview, panelHeader, reachPanel, READY, remainsOf, sliderOf, status, tabTo,
   test, tradeCard, type TradeRef,
 } from './support.ts';
 
@@ -152,6 +152,52 @@ test.describe('B5R.11 Responsive and accessible', () => {
           expect(slider.width, `slider width ${at}`).toBeGreaterThanOrEqual(head.width - 2);
         }
       }, `slider placement at ${width} px`).toPass({ timeout: 5000 });
+    }
+    await context.close();
+  });
+
+  test('should keep the bottom navigation above the Open list\'s sticky cells at 375 and 320 px, so its Review and Trades links take the click', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page);
+    await createRoutineTrades(page, 8);
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await nav.getByRole('link', { name: 'Trades' }).click();
+    const list = page.getByRole('table', { name: 'Open Trades' });
+    await expect(list).toBeVisible(READY);
+
+    for (const width of [375, 320]) {
+      await page.setViewportSize({ width, height: 640 });
+      await expect(list).toBeVisible(READY);
+      const at = `at ${width} px`;
+      // Scroll the page until a row's pinned Underlying cell sits behind the Trades link, near the top of the bottom navigation.
+      const cells = list.locator('tbody td:first-child');
+      const row = (await cells.count()) - 3;
+      await cells.nth(row).scrollIntoViewIfNeeded();
+      const navBox = (await nav.boundingBox())!;
+      const cellBox = (await cells.nth(row).boundingBox())!;
+      await page.evaluate((by) => window.scrollBy(0, by), cellBox.y - navBox.y - 10);
+
+      // What is painted topmost at each link's centre is the link or something inside it, never a table cell.
+      for (const name of ['Review', 'Trades']) {
+        const target = nav.getByRole('link', { name });
+        const box = (await target.boundingBox())!;
+        const x = box.x + box.width / 2;
+        const y = box.y + box.height / 2;
+        const stack = await page.evaluate(([px, py]) => document.elementsFromPoint(px!, py!).map((el) => el.tagName), [x, y]);
+        expect(stack, `a table cell is under the ${name} link ${at}`).toContain('TD');
+        const top = await target.evaluate((el, [px, py]) => {
+          const hit = document.elementFromPoint(px!, py!);
+          return hit !== null && el.contains(hit) ? 'link' : (hit?.tagName ?? 'nothing');
+        }, [x, y]);
+        expect(top, `topmost element at the ${name} link's centre ${at}`).toBe('link');
+      }
+
+      // A real click on Review, without force, reaches the Review.
+      await nav.getByRole('link', { name: 'Review' }).click({ timeout: 5000 });
+      await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
+      await nav.getByRole('link', { name: 'Trades' }).click({ timeout: 5000 });
+      await expect(list).toBeVisible(READY);
     }
     await context.close();
   });

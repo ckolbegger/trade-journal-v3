@@ -87,6 +87,8 @@ a {
 .shell > .nav {
   position: fixed;
   inset: auto 0 0 0;
+  /* Above the Open list's pinned cells (z-index 1), which would otherwise paint over the links when rows scroll beneath. */
+  z-index: 2;
   display: flex;
   justify-content: space-around;
   background: var(--card);
