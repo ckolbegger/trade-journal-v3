@@ -1205,3 +1205,14 @@ Record (implemented):
 ocr review of `3ade164` (T5R.14-B1-B1): one file reviewed (three excluded), no findings. The reviewing agent confirmed `keyOf` runs before any request exists, and that the module-level `vi.mock('./schema.ts')` passes through to the real `keyOf` (no mock-reset settings in the config; the file's 22 tests pass). Raw output: [ocr/T5R.14-B1-B1-3ade164.json](ocr/T5R.14-B1-B1-3ade164.json).
 
 ocr review of `a3a2466` (T5R.14-B1-B2): one file reviewed (three excluded), no findings. The reviewing agent judged `await tx.done.catch(() => undefined)` unable to hang (an `abort()` that throws means the transaction already settled) and the swallowed abort error harmless. Raw output: [ocr/T5R.14-B1-B2-a3a2466.json](ocr/T5R.14-B1-B2-a3a2466.json). T5R.14's ocr findings are worked (B1, B1-B1, B1-B2).
+
+### Cumulative suite at `35461dd` (T5R.14 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 75 files, 982 passed |
+| Integration | 60 files, 117 passed |
+| Browser | 161 passed (5.8 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.14-integration-*.txt`. Ports 5175, 5181, 9341 and 9342 clear before and after. `35461dd` holds every T5R.14 code change (B1-B2, `a3a2466`, is the last); later commits are evidence only.
