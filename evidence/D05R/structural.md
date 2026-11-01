@@ -1125,3 +1125,14 @@ Process note: one no-op here-string (`cat > /dev/null <<< ""`) was run by mistak
 ocr review of `1515243` (T5R.13): two files reviewed (`request-counter.ts`, `bench-run.ts`; the test excluded), no findings. Raw output: [ocr/T5R.13-1515243.json](ocr/T5R.13-1515243.json). The reviewing agent didn't read the code itself, so the orchestrator checked its two questions from the diff:
 - **Counter:** the `IDBDatabase.prototype.transaction` wrap logs only while a recording is open and `transactions` is set (reset in `finally`), one entry per call; the store, index and cursor wraps are unchanged, so nothing is double-counted.
 - **Bench timings:** each starts at a capture-phase pointer press and ends at the first DOM mutation after which the result holds (card shown with nothing loading; no drafts counted; Action form gone), on the real clock: click to rendered result, as the plan asks.
+
+### Cumulative suite at `3e4e68d` (T5R.13 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 75 files, 979 passed |
+| Integration | 54 files, 108 passed |
+| Browser | 161 passed (6.0 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.13-perf-*.txt`. Ports 5175, 5181, 9341 and 9342 clear before and after; `bench:run` not part of the run.
