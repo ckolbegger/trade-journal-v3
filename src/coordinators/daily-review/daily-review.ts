@@ -3,7 +3,7 @@ import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue } from '../../domain/journal-debt/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
-import type { FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
+import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -514,7 +514,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   const optionalText = (promptId: string, text: string | undefined) => (text === undefined || text.trim() === '' ? {} : { [promptId]: { kind: 'Text' as const, text: text.trim() } });
 
   // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
-  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly marks: readonly (readonly [instrumentKey: string, tradingDate: string, resolutionRevision: number | 'None'])[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
+  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly evidenceBinding: EvidenceBinding } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
   async function checkBinding(binding: TradeSaveBinding): Promise<Attempt<Checked>> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
     if (session.kind === 'Rejected') return { done: session };
@@ -524,24 +524,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const entry = eligible.find(({ analysis }) => analysis.tradeId === binding.tradeId);
     // The same request as the overview's recovery, so its snapshot is comparable.
     const instruments = [...observationNeeds(eligible).earliest.keys()];
-    // Read before the frames, so a Mark saved in between fails the commit's recheck rather than slipping past.
-    const { value: marks } = await deps.persistence.readSnapshot(['observations'], async (tx) => {
-      const bound: (readonly [instrumentKey: string, date: string, resolutionRevision: number | 'None'])[] = [];
-      for (const key of instruments) {
-        const onDate = await tx.get('observations', [binding.reviewDate, key]);
-        bound.push([key, binding.reviewDate, (onDate?.['resolutionRevision'] as number | undefined) ?? 'None']);
-        if (onDate?.['effectiveMarkId']) continue;
-        // Without a Mark on the Review date the Stale context is the latest earlier effective Mark: part of the evidence.
-        const earlier = await tx.findLastFromIndex(
-          'observations',
-          'byInstrumentDate',
-          IDBKeyRange.bound([key], [key, binding.reviewDate], false, true),
-          (r) => r['instrumentKey'] === key && (r['effectiveMarkId'] as string | null) !== null,
-        );
-        if (earlier) bound.push([key, earlier['tradingDate'] as string, earlier['resolutionRevision'] as number]);
-      }
-      return bound;
-    });
     const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: binding.reviewDate }, instruments });
     if (frames.kind === 'Rejected') return { done: frames };
     if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
@@ -552,7 +534,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       settle: ({ workspace }) =>
         stale || workspace.databaseName !== binding.databaseName
           ? { kind: 'ReviewChanged', evidence }
-          : { kind: 'Checked', cutoff: session.closeInstant, marks },
+          : { kind: 'Checked', cutoff: session.closeInstant, evidenceBinding: frames.evidenceBinding },
     };
   }
 
@@ -593,15 +575,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const tx = beginSemanticTransaction();
     // The Trade the Action was judged against, rechecked in the commit.
     tx.require({ name: `trade:${binding.tradeId}`, store: 'trades', key: binding.tradeId, verify: (current) => current?.['factRevision'] === binding.factRevision });
-    // The Review-date evidence, by each Instrument's resolution revision (a Mark or an acknowledgment moves it), and the Stale-context Mark's.
-    for (const [instrumentKey, date, revision] of checked.marks) {
-      tx.require({
-        name: `mark:${instrumentKey}@${date}`,
-        store: 'observations',
-        key: [date, instrumentKey],
-        verify: (current) => (current?.['resolutionRevision'] ?? 'None') === revision,
-      });
-    }
+    // The Review-date evidence, bound by Market Data.
+    deps.marketData.bindEvidence(tx, checked.evidenceBinding);
     // Journal's applyPreparedEffects binds the shared counter (ADR 0011): when it alone moved, the save is read again.
     const applied = deps.journal.applyPreparedEffects(tx, prepared, {});
     const committed = await deps.persistence.commit(tx.close());
