@@ -36,6 +36,8 @@ export {
   type RecordedDeviationVersion,
   type LifecycleAgreement,
   type LifecycleState,
+  type LotMatch,
+  type LotMatchResult,
   type TradeAnalysisRecord,
   type TradeDerivationInput,
   type UnavailableDetail,

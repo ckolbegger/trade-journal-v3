@@ -5,12 +5,13 @@ import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLeg
 
 export type LifecycleState = 'Planned' | 'Open' | 'Closed' | 'Abandoned';
 
-// One effective fill. D2 records Buys of the Plan's Stock serving its Planned Leg (D2 A18).
+// One effective fill. D2 records Buys and D6 Sells of the Plan's Stock serving its Planned Leg
+// (D2 A18, D6 A76).
 export interface ExecutionFact {
   readonly factId: string;
   readonly economicTime: Instant;
   readonly recordedSequence: number;
-  readonly action: 'Buy';
+  readonly action: 'Buy' | 'Sell';
   readonly instrument: { readonly kind: 'Stock'; readonly symbol: string };
   readonly quantity: string;
   readonly price: string;
@@ -84,6 +85,28 @@ export interface OpenLot {
   readonly quantity: Rational;
   readonly price: Rational;
   readonly unconsumedOpeningFee: Rational;
+}
+
+// A derived FIFO link from one opening Execution to one disposing Execution (A78). It copies no
+// price or P&L: allocated fees and the realized amount are separate results keyed to it.
+export interface LotMatch {
+  readonly openingExecutionId: string;
+  readonly disposingExecutionId: string;
+  readonly quantity: Rational;
+  readonly policy: 'FIFO';
+}
+
+// The results keyed to one Lot Match by its identity (opening Execution, disposing Execution,
+// policy), separate from the link itself (A78).
+export interface LotMatchResult {
+  readonly openingExecutionId: string;
+  readonly disposingExecutionId: string;
+  readonly policy: 'FIFO';
+  // The disposing Execution's Economic Time, which places the realization in time.
+  readonly disposedAt: Instant;
+  readonly allocatedOpeningFee: Rational;
+  readonly allocatedDisposalFee: Rational;
+  readonly realized: Rational;
 }
 
 // Derived signed net quantity and Open Lots for one exact Instrument within the Trade.
@@ -247,12 +270,20 @@ export interface DerivedTradeState {
   // Effective Executions in Fact Order, each with its Position Change.
   readonly facts: readonly (ExecutionFact & { readonly positionChangeId: string })[];
   readonly positions: readonly InstrumentPosition[];
+  // Expected FIFO Lot Matches in disposing Fact Order, oldest Lot first within one Execution (A79).
+  readonly lotMatches: readonly LotMatch[];
+  // One result per Lot Match, in the same order, keyed by the match's identity (A78, A80, A81).
+  readonly lotMatchResults: readonly LotMatchResult[];
+  // The sum of the realized amounts of the Lot Matches among the effective facts, so at the cutoff
+  // when one is given (A81).
+  readonly realizedToDate: Rational;
   // The Economic Time of the first effective opening Execution; null while the Trade is Planned.
   readonly exposureStart: Instant | null;
   // One per Instrument with remaining quantity; none for a Planned Trade.
   readonly observationRequirements: readonly ObservationRequirement[];
-  // Every opening Execution's actual fee, each counted once.
-  readonly fees: { readonly incurredOpening: Rational };
+  // Actual fees, each Execution's counted once: the opening Executions' alone, and every Execution's
+  // (A80). Neither is ever subtracted from realized P&L again.
+  readonly fees: { readonly incurredOpening: Rational; readonly incurred: Rational };
   // Signed cost of the remaining open exposure: quantity x price over the Open Lots plus their unconsumed
   // opening fees (D4's C + F). Stock only until options add a multiplier.
   readonly netCost: CalculationResult<Rational, 'NoOpenQuantity'>;
@@ -308,22 +339,64 @@ function netCostOf(positions: readonly InstrumentPosition[]): DerivedTradeState[
   return { kind: 'Value', value: total };
 }
 
-// Each opening Execution creates one Open Lot holding its whole fee (D2 A22).
-function positionsOf(facts: readonly ExecutionFact[]): InstrumentPosition[] {
-  const lots = facts.map((e): OpenLot => ({
-    openingExecutionId: e.factId,
-    quantity: decimal(e.quantity),
-    price: decimal(e.price),
-    unconsumedOpeningFee: decimal(e.fee),
-  }));
-  if (lots.length === 0) return [];
-  return [
-    {
-      instrument: facts[0]!.instrument,
-      quantity: lots.reduce((sum, l) => sum.add(l.quantity), Rational.of(0n)),
-      openLots: lots,
-    },
-  ];
+// Replays the facts in Fact Order. Each Buy creates one Open Lot holding its whole fee (D2 A22);
+// each Sell consumes the oldest Lots first (A79), one Lot Match per Lot it touches. Nothing is
+// stored (P23).
+function replayOf(facts: readonly ExecutionFact[]): {
+  positions: InstrumentPosition[];
+  lotMatches: LotMatch[];
+  lotMatchResults: LotMatchResult[];
+} {
+  const lots: OpenLot[] = [];
+  const originals = new Map<string, { quantity: Rational; price: Rational; fee: Rational }>();
+  const lotMatches: LotMatch[] = [];
+  const lotMatchResults: LotMatchResult[] = [];
+  for (const e of facts) {
+    if (e.action === 'Buy') {
+      const lot = { quantity: decimal(e.quantity), price: decimal(e.price), fee: decimal(e.fee) };
+      originals.set(e.factId, lot);
+      lots.push({ openingExecutionId: e.factId, quantity: lot.quantity, price: lot.price, unconsumedOpeningFee: lot.fee });
+      continue;
+    }
+    const sold = decimal(e.quantity);
+    let remaining = sold;
+    while (remaining.compare(Rational.of(0n)) > 0 && lots.length > 0) {
+      const lot = lots[0]!;
+      const matched = lot.quantity.compare(remaining) < 0 ? lot.quantity : remaining;
+      const original = originals.get(lot.openingExecutionId)!;
+      // A Lot's opening fee is allocated in proportion to matched quantity over its original quantity (A80).
+      const allocatedOpeningFee = original.fee.mul(matched).div(original.quantity);
+      lotMatches.push({ openingExecutionId: lot.openingExecutionId, disposingExecutionId: e.factId, quantity: matched, policy: 'FIFO' });
+      // A Sell's fee is allocated across its Lot Matches in proportion to matched quantity (A80).
+      const allocatedDisposalFee = decimal(e.fee).mul(matched).div(sold);
+      lotMatchResults.push({
+        openingExecutionId: lot.openingExecutionId,
+        disposingExecutionId: e.factId,
+        policy: 'FIFO',
+        disposedAt: e.economicTime,
+        allocatedOpeningFee,
+        allocatedDisposalFee,
+        // q x (sell price - buy price) less both allocated fees (A80).
+        realized: matched.mul(decimal(e.price).sub(original.price)).sub(allocatedOpeningFee).sub(allocatedDisposalFee),
+      });
+      remaining = remaining.sub(matched);
+      const left = { ...lot, unconsumedOpeningFee: lot.unconsumedOpeningFee.sub(allocatedOpeningFee) };
+      if (lot.quantity.compare(matched) === 0) lots.shift();
+      else lots[0] = { ...left, quantity: lot.quantity.sub(matched) };
+    }
+  }
+  if (facts.length === 0) return { positions: [], lotMatches, lotMatchResults };
+  return {
+    positions: [
+      {
+        instrument: facts[0]!.instrument,
+        quantity: lots.reduce((sum, l) => sum.add(l.quantity), Rational.of(0n)),
+        openLots: lots,
+      },
+    ],
+    lotMatches,
+    lotMatchResults,
+  };
 }
 
 function observationRequirementsOf(
@@ -609,7 +682,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
       pc.executions.map((e) => ({ ...e, instrument: { ...e.instrument }, intent: { ...e.intent }, positionChangeId: pc.factId })),
     )
     .sort(factOrder);
-  const positions = positionsOf(facts);
+  const { positions, lotMatches, lotMatchResults } = replayOf(facts);
   const entry = entryWindowOf(record);
   const baseline = frozenBaseline(record.plan);
   // Effective facts that leave nonzero exposure make the Trade Open; none leave it Planned.
@@ -633,9 +706,15 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     agreement,
     facts,
     positions,
+    lotMatches,
+    lotMatchResults,
+    realizedToDate: lotMatchResults.reduce((sum, r) => sum.add(r.realized), Rational.of(0n)),
     exposureStart: facts[0]?.economicTime ?? null,
     observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
-    fees: { incurredOpening: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)) },
+    fees: {
+      incurredOpening: facts.filter((e) => e.action === 'Buy').reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
+      incurred: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
+    },
     netCost: netCostOf(positions),
     baseline,
     entryResolution: entry.resolution,
