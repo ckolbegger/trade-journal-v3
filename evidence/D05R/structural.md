@@ -1160,3 +1160,13 @@ Interpretations, disclosed:
 |---|---|
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
 | `npm run test:integration` | 60 files, 117 passed (D1, D2, D4, D5 and D5R; was 54 files, 108) |
+
+ocr review of `006f528` (T5R.14): ocr reviewed one file (tests and evidence excluded), no findings; the reviewing agent checked the cases against section 6.1 (all six present; I5R.2 read in full). Raw output: [ocr/T5R.14-006f528.json](ocr/T5R.14-006f528.json). The orchestrator also asked it to assess the task agent's I5R.2(b) note independently:
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `src/persistence/persistence.ts:386-404` | A synchronous throw from `put`/`add`/`delete` or `keyOf` after the first write leaves the transaction open; it auto-commits the earlier writes, so a partial write set commits and the content revision bump (`:402`) is never issued. | Valid (programmer error only: DataError, DataCloneError or a `keyOf` throw from a malformed record; validated input can't reach it): bug task T5R.14-B1. |
+
+### T5R.14-B1 A synchronous throw during commit aborts the transaction
+
+`Persistence.commit` aborts the transaction when any write (or the meta write) throws synchronously, waits for the abort, and rethrows, so no write of the set is stored.

@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 30857,
+    "input_tokens": 30408,
+    "output_tokens": 449,
+    "cache_read_tokens": 7680,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "tests/integration/d5r/support.ts",
+      "files": [
+        "tests/integration/d5r/support.ts"
+      ]
+    }
+  ],
+  "session_id": "45d94c5c-17ab-498f-bd78-70920460639a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "45d94c5c-17ab-498f-bd78-70920460639a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "006f5289",
+      "resolved_base": "01489ce4986f0281591459d1bb7dcb39eac52aaa",
+      "resolved_head": "006f5289273869a0e1a5c108438c342538069eb9",
+      "exact_range": "01489ce4986f0281591459d1bb7dcb39eac52aaa..006f5289273869a0e1a5c108438c342538069eb9",
+      "source_artifact_sha256": "9b21be6175174ad98766993bf1097861620cb918c298e2ce7302e0dd5f138778"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3f33252bb4b31752580830b6bf726d1fd52ec689a76fa7feeb6f35cd43bec753",
+          "path": "tests/integration/d5r/support.ts",
+          "fingerprint": "e6386ccfea88bd2e595a2a186f9c49c951c36a403e5f92823077cb290c45a8ee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3f33252bb4b31752580830b6bf726d1fd52ec689a76fa7feeb6f35cd43bec753",
+          "path": "tests/integration/d5r/support.ts",
+          "fingerprint": "e6386ccfea88bd2e595a2a186f9c49c951c36a403e5f92823077cb290c45a8ee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 24440
+  }
+}
