@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { DailyTradeReview, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
+import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { money, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
 import { calculation, signed } from '../figures.ts';
@@ -12,18 +12,19 @@ import { ReviewReflections } from './ReviewReflections.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
 import { StopTargetSlider } from './StopTargetSlider.tsx';
 
-// What a card still owes, from the Review's completion: Marks and reflections by count, the Action by presence.
-export interface Remaining {
-  readonly marks: number;
-  readonly reflections: number;
-  readonly action: boolean;
-}
-
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
-// "2 Marks · 1 reflection due · Action", or Done once nothing remains (A150).
-function remainsText({ marks, reflections, action }: Remaining): string {
-  const parts = [...(marks > 0 ? [plural(marks, 'Mark', 'Marks')] : []), ...(reflections > 0 ? [plural(reflections, 'reflection', 'reflections') + ' due'] : []), ...(action ? ['Action'] : [])];
+// A card's panel progress by name: the record has all three on a walked card (A164).
+function panelOf<P extends PanelProgress['panel']>(progress: CardProgress, panel: P): Extract<PanelProgress, { panel: P }> {
+  return progress.panels.find((p): p is Extract<PanelProgress, { panel: P }> => p.panel === panel)!;
+}
+
+// "2 Marks · 1 reflection due · Action", or Done once the card is done (A150, A169): the words of the progress record.
+function remainsText(progress: CardProgress): string {
+  const { needed } = panelOf(progress, 'Marks');
+  const { dueNow } = panelOf(progress, 'Reflections');
+  const { owed } = panelOf(progress, 'Action');
+  const parts = [...(needed > 0 ? [plural(needed, 'Mark', 'Marks')] : []), ...(dueNow > 0 ? [plural(dueNow, 'reflection', 'reflections') + ' due'] : []), ...(owed ? ['Action'] : [])];
   return parts.length > 0 ? parts.join(' · ') : 'Done · Action saved';
 }
 
@@ -51,7 +52,6 @@ export type CardDetail = 'Loading' | 'Unavailable' | { readonly trade: DailyTrad
 export interface ReviewCardProps {
   readonly facade: UiFacade;
   readonly trade: WalkedTrade;
-  readonly remaining: Remaining;
   readonly expanded: boolean;
   readonly detail: CardDetail | undefined;
   // A count that grows each time the trader asks for this card: it scrolls into view and takes focus on its header.
@@ -79,7 +79,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -110,7 +110,7 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
                 <span className="review-card-summary">{tradeSummary(trade.summary)}</span>{' '}
               </>
             )}
-            <span className="review-card-remains">{remainsText(remaining)}</span>{' '}
+            <span className="review-card-remains">{remainsText(trade.progress)}</span>{' '}
             <Badge tone="neutral">{BAND_TEXT[trade.band]}</Badge>
           </button>
         </h3>
@@ -128,10 +128,10 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
           key={`${detail.trade.tradeId}:${detail.trade.saveBinding.reviewDate}`}
           facade={facade}
           trade={detail.trade}
+          progress={trade.progress}
           name={tradeName(trade)}
           advance={advance}
           go={go}
-          remaining={remaining}
           marks={marks}
           held={held}
           onResult={onResult}
@@ -153,11 +153,12 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
 interface CardBodyProps {
   readonly facade: UiFacade;
   readonly trade: DailyTradeReview;
+  // The newest progress the screen holds for this Trade (A165): the panels word it.
+  readonly progress: CardProgress;
   // The Trade's name (A150): it labels the region, so a screen reader hears which Trade it is.
   readonly name: string;
   readonly advance: number;
   readonly go: Go;
-  readonly remaining: Remaining;
   readonly marks: CardMarkRows;
   readonly held: CardMarksProps['held'];
   readonly onResult: CardMarksProps['onResult'];
@@ -186,46 +187,44 @@ function marksStatus(needed: number, rows: number, earlier: number): string {
   return 'None';
 }
 
-// Owed counts the reflections still outstanding, so one answered or declined in this view is no longer owed.
-function reflectionsStatus(due: number, owed: number, anyResolved: boolean): string {
+// Owed counts the reflections still outstanding, so one answered or declined in this view is no longer owed (P46).
+function reflectionsStatus(due: number, owed: number): string {
   if (due > 0) return `${due} due`;
   if (owed > 0) return 'Not due';
-  if (anyResolved) return 'Resolved';
   return 'None';
 }
 
-function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: Remaining, resolvedDebts: ReadonlySet<string>): Record<PanelName, PanelHeader> {
-  const rows = marks.today.length;
+function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: CardMarkRows): Record<PanelName, PanelHeader> {
+  const { resolved, needed } = panelOf(progress, 'Marks');
+  const rows = resolved + needed;
   const earlier = marks.earlier.reduce((sum, group) => sum + group.missing.length + group.acknowledged.length, 0);
   const date = shortDate(trade.saveBinding.reviewDate);
-  const owed = trade.reflections.filter((r) => !resolvedDebts.has(r.debtId)).length;
-  const due = remaining.reflections;
+  const { dueNow: due, later } = panelOf(progress, 'Reflections');
+  const owed = due + later;
   const form = trade.form;
   return {
     Marks: {
-      summary: [rows > 0 ? `${rows - remaining.marks} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
-      status: marksStatus(remaining.marks, rows, earlier),
-      done: remaining.marks === 0,
+      summary: [rows > 0 ? `${resolved} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
+      status: marksStatus(needed, rows, earlier),
+      done: panelOf(progress, 'Marks').done,
     },
     Reflections: {
       summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
-      status: reflectionsStatus(due, owed, owed < trade.reflections.length),
-      done: due === 0,
+      status: reflectionsStatus(due, owed),
+      done: panelOf(progress, 'Reflections').done,
     },
     Action: {
       summary: form.kind === 'Saved' ? form.action.action : 'Hold, Exit, Roll or Adjust',
-      status: form.kind === 'Saved' ? 'Saved' : 'Needed',
-      done: form.kind === 'Saved',
+      status: panelOf(progress, 'Action').owed ? 'Needed' : 'Saved',
+      done: panelOf(progress, 'Action').done,
     },
   };
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, name, advance, go, remaining, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
-  // The reflections answered or declined in this view: the panel reports each as it resolves.
-  const [resolvedDebts, setResolvedDebts] = useState<ReadonlySet<string>>(new Set());
-  const headers = panelHeaders(trade, marks, remaining, resolvedDebts);
+  const headers = panelHeaders(trade, progress, marks);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
   const nextAfter = (from: PanelName): PanelName | undefined => {
     const start = PANELS.indexOf(from);
@@ -300,7 +299,7 @@ function CardBody({ facade, trade, name, advance, go, remaining, marks, held, on
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
-            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onDebtResolved={(debtId) => setResolvedDebts((set) => new Set(set).add(debtId))} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
+            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>

@@ -151,6 +151,28 @@ describe('fold (A171)', () => {
   });
 });
 
+describe('fold with progress (A165, A171)', () => {
+  it('should replace a walked Trade progress with the one an ActionSaved or DebtResolved Review cards carry, and leave the other Trades as held', () => {
+    const before = held();
+    const saved = cardProgress(0, 1, { owed: false });
+    const resolved = cardProgress(0, 0, { needed: 0 });
+    const walkedProgress = (r: Ready) => r.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => [t.tradeId, t.progress] as const) : []));
+
+    for (const kind of ['ActionSaved', 'DebtResolved'] as const) {
+      // A card for a Trade the Review does not hold is ignored.
+      const post: PostSaveReview = { kind: 'Ready', cards: [{ tradeId: 't-a', progress: saved }, { tradeId: 't-z', progress: resolved }], progress: { tradesWithAction: 1, tradesEligible: 3 }, completion: OWING, nextStep: { kind: 'Done' }, binding: newBinding };
+
+      const next = fold(before, { kind, review: post });
+
+      expect(walkedProgress(next.review)).toEqual([
+        ['t-a', saved],
+        ['t-f', TF.progress],
+        ['t-c', TC.progress],
+      ]);
+    }
+  });
+});
+
 describe('standing (A172)', () => {
   const key = (instrumentKey: string, tradingDate: string) => ({ instrumentKey, tradingDate });
 

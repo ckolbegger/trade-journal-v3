@@ -59,6 +59,7 @@ const TC = trade('t-c', 'DEF', {
   band: 'EvidenceLimited',
   reasons: [{ code: 'MarkMissing', instrumentKey: 'DEF', date: '2026-10-12' }],
   rangePosition: { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: '2026-10-12' },
+  progress: cardProgress(0, 0, { needed: 1, resolved: 0 }),
 });
 const TF = trade('t-f', 'XYZ', {
   band: 'QuantifiedPressure',
@@ -244,16 +245,35 @@ describe('card list (A150)', () => {
     expect(screen.queryByRole('button', { name: 'Continue to Trades' })).toBeNull();
   });
 
-  it('should show Done and Action saved on a card whose Marks are resolved, with no due reflection and a saved Action', async () => {
-    // T-E has its Mark, no reflection due, and its Action saved: the Action is the one thing no longer owed.
-    renderReview(cardFacade(review({ completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a')) })));
+});
+
+describe('card header from progress (A169)', () => {
+  it('should read 2 Marks · 1 reflection due · Action for progress with 2 Marks needed, 1 reflection due now and the Action owed, and Done · Action saved for a done card, with no other input to the header', async () => {
+    // The completion reasons disagree with the progress on purpose: they name an Action for T-E and no Marks or reflection for T-C.
+    // T-C owes 2 Marks and a reflection by its progress; T-E owes nothing by its progress.
+    const walk = [TB, { ...TC, progress: cardProgress(1, 0, { needed: 2 }) }, TF, TA, { ...TE, progress: cardProgress(0, 0, { owed: false }) }];
+    renderReview(cardFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')) })));
     await screen.findAllByRole('button', { name: /^Review / });
 
+    const def = headers().find((h) => h.textContent?.includes('DEF'))!;
+    expect(def.textContent).toContain('2 Marks · 1 reflection due · Action');
     const jkl = headers().find((h) => h.textContent?.includes('JKL'))!;
     expect(jkl.textContent).toContain('Done · Action saved');
     // The card keeps its place, and the others are not Done.
     expect(headers().indexOf(jkl)).toBe(4);
     for (const other of headers().filter((h) => h !== jkl)) expect(other.textContent).not.toContain('Done');
+  });
+
+  it('should open on load the first card whose progress is not done', async () => {
+    // The first two cards are done by their progress, though the completion reasons name an Action for T-B; T-F is the first not done.
+    const walk = [{ ...TB, progress: cardProgress(0, 0, { owed: false }) }, { ...TC, progress: cardProgress(0, 0, { owed: false }) }, TF, TA, TE];
+    const facade = cardFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: walk }], completion: incomplete(...actionMissing('t-b')) }));
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'XYZ review' });
+
+    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-f' });
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
   });
 });
 
@@ -307,7 +327,8 @@ describe('opening in place (A151)', () => {
 
     // With every card Done, none opens and nothing is read.
     cleanup();
-    const done = cardFacade(review({ completion: { kind: 'Complete' } }));
+    const everyCardDone = WALK.map((t) => ({ ...t, progress: cardProgress(0, 0, { owed: false }) }));
+    const done = cardFacade(review({ completion: { kind: 'Complete' }, families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: everyCardDone }] }));
     renderReview(done);
     await screen.findAllByRole('button', { name: /^Review / });
     expect(headers().every((h) => h.getAttribute('aria-expanded') === 'false')).toBe(true);
@@ -354,7 +375,9 @@ describe('after a per-row Mark save', () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     const moved: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
-    const afterMark = review({ binding: moved, completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')) });
+    // The refreshed Review's DEF card has its Mark: its progress no longer needs one.
+    const walked = [TB, { ...TC, progress: cardProgress() }, TF, TA, TE];
+    const afterMark = review({ binding: moved, completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')), families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: walked }] });
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(afterMark);
     vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
     renderReview(facade);

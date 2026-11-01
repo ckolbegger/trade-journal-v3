@@ -8,7 +8,7 @@ import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import type { EntryDirty } from './CardMarks.tsx';
 import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
-import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName, type Remaining } from './ReviewCard.tsx';
+import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
 
 export interface ReviewViewProps {
   readonly facade: UiFacade;
@@ -152,16 +152,6 @@ function Status({ review, completion, name, openCard }: { readonly review: Ready
   );
 }
 
-// What a Trade still owes, read from the Review's completion: it follows every save's result.
-function remainingOf(tradeId: string, completion: ReviewCompletion): Remaining {
-  const reasons = completion.kind === 'Incomplete' ? completion.reasons : [];
-  return {
-    marks: reasons.filter((r) => r.code === 'MarkMissing' && r.trades.includes(tradeId)).length,
-    reflections: reasons.flatMap((r) => (r.code === 'ReflectionDue' && r.tradeId === tradeId ? [r.debtIds.length] : [])).reduce((a, b) => a + b, 0),
-    action: reasons.some((r) => r.code === 'ActionMissing' && r.tradeId === tradeId),
-  };
-}
-
 // The card that is open, with the count of the opening it was shown at, and what it shows.
 interface Shown {
   readonly tradeId: string;
@@ -200,9 +190,6 @@ function linkedCard(held: Held, params: URLSearchParams): LinkedCard | undefined
   return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;
 }
 
-// A card is Done when it owes nothing (A150).
-const isOwing = (remaining: Remaining): boolean => remaining.marks > 0 || remaining.reflections > 0 || remaining.action;
-
 type MarksSaved = Extract<SaveReviewMarksResult, { kind: 'MarksSaved' }>;
 
 type ViewState =
@@ -228,7 +215,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
   const [params] = useSearchParams();
   const [link] = useState(() => linkedCard(heldReview, params));
-  const [firstId] = useState(() => link?.tradeId ?? walkedTrades(initial).find((t) => isOwing(remainingOf(t.tradeId, initial.completion)))?.tradeId);
+  const [firstId] = useState(() => link?.tradeId ?? walkedTrades(initial).find((t) => !t.progress.done)?.tradeId);
   // The link the open card is to answer, and the card it is for.
   const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, count: 1 } : NO_GO });
   const [shown, setShown] = useState<Shown | undefined>(firstId === undefined ? undefined : { tradeId: firstId, opening: 0, detail: 'Loading' });
@@ -452,7 +439,6 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
             key={trade.tradeId}
             facade={facade}
             trade={trade}
-            remaining={remainingOf(trade.tradeId, review.completion)}
             expanded={trade.tradeId === openId}
             detail={trade.tradeId === openId ? shown?.detail : undefined}
             reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}

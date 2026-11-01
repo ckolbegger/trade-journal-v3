@@ -45,9 +45,11 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   progress: cardProgress(),
   ...over,
 });
-const TA = walked('t-a', 'XYZ');
-const TF = walked('t-f', 'XYZ', { summary: { kind: 'Stock', direction: 'Long', quantity: rational(100n), price: rational(50n) } });
-const TC = walked('t-c', 'DEF');
+// Each card holds a Review-date row without a Mark, so its progress needs one.
+const needsMark = cardProgress(0, 0, { needed: 1, resolved: 0 });
+const TA = walked('t-a', 'XYZ', { progress: needsMark });
+const TF = walked('t-f', 'XYZ', { progress: needsMark, summary: { kind: 'Stock', direction: 'Long', quantity: rational(100n), price: rational(50n) } });
+const TC = walked('t-c', 'DEF', { progress: needsMark });
 const WALK = [TA, TF, TC] as const;
 
 const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrumentKey, tradingDate: MONDAY, trades });

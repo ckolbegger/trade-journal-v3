@@ -36,7 +36,10 @@ export function fold(held: Held, result: HeldResult): Held {
     case 'DebtResolved': {
       const post = result.review;
       if (post.kind !== 'Ready') return held;
-      return { ...held, review: { ...held.review, completion: post.completion, binding: post.binding } };
+      // The newest progress for each Trade the result carries one for (A165); a Trade the Review does not hold is ignored.
+      const progressOf = new Map(post.cards.map((card) => [card.tradeId, card.progress]));
+      const families = held.review.families.map((f) => (f.family === 'Trades' ? { ...f, trades: f.trades.map((t) => ({ ...t, progress: progressOf.get(t.tradeId) ?? t.progress })) } : f));
+      return { ...held, review: { ...held.review, completion: post.completion, binding: post.binding, families } };
     }
     case 'MarksSaved': {
       const learned = learn({ ...held, review: withSavedMarks(held.review, result.marks) }, result.marks);

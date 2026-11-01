@@ -47,16 +47,34 @@ const tradeItem = (tradeId: string, underlying: string, over: Partial<ReviewTrad
   ...over,
 });
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];
+const progressFor = (rows: readonly MarkRow[], dueNow: number, owed: boolean) => {
+  const needed = rows.filter((row) => row.resolution.kind === 'Missing').length;
+  return cardProgress(dueNow, 0, { needed, resolved: rows.length - needed, owed });
+};
 function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: readonly ReviewTradeItem[]; completion?: ReviewCompletion; reviewDate?: string } = {}): Ready {
+  const completion = over.completion ?? { kind: 'Complete' };
+  const reasons = completion.kind === 'Incomplete' ? completion.reasons : [];
   return {
     kind: 'Ready',
     reviewDate: over.reviewDate ?? '2026-10-12',
     cutoff: CUTOFF,
     families: [
       { family: 'Marks', today: over.today ?? [], earlier: over.earlier ?? [] },
-      { family: 'Trades', trades: (over.trades ?? []).map((t) => ({ ...t, progress: cardProgress() })) },
+      // The double's progress follows its Review-date rows and its completion reasons (D5R2 section 6.3): a row without a Mark is
+      // needed, one with a Mark resolved; a reflection reason is due now, and the Action is owed while the completion names it.
+      {
+        family: 'Trades',
+        trades: (over.trades ?? []).map((t) => ({
+          ...t,
+          progress: progressFor(
+            (over.today ?? []).filter((row) => row.trades.includes(t.tradeId)),
+            reasons.flatMap((r) => (r.code === 'ReflectionDue' && r.tradeId === t.tradeId ? r.debtIds : [])).length,
+            reasons.some((r) => r.code === 'ActionMissing' && r.tradeId === t.tradeId),
+          ),
+        })),
+      },
     ],
-    completion: over.completion ?? { kind: 'Complete' },
+    completion,
     binding,
   };
 }
