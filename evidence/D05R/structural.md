@@ -1439,3 +1439,21 @@ At `2623dea` (code as of `da7e128`; later commits are evidence and handoff only)
 | Static and verify checks (typecheck, `tsc6`, lint, `lint:deps`, build, and the seven `verify:*`) | 12 of 12 exit 0 | [suite-runs/t5r.15-cumulative-checks.txt](suite-runs/t5r.15-cumulative-checks.txt) |
 
 All green, with no reruns. T5R.15-F1's six D1-release cases pass outside the fall-back hour, as expected, and the known flakes did not fail. Ports 5175, 9341 and 9342 were free before and after the run.
+
+## T5R.16 Independent browser-critic gate
+
+**Critic 1 at `26e4338`:** every flow C5R.1 to C5R.9 (with decision 68's amendments), the slider-placement checks, and the 375 and 320 px checks pass. The critic reports overall PASS but names two low-severity defects that fail no pass condition. Report: [critic-1.md](critic-1.md). The main session's reading:
+- **Defect 1, the Marks panel's "N of M":** the code counts what is still needed ("0 of 1 for Mon Oct 12 · Saved" after saving). A152's example ("1 of 4 for Mon Oct 12", "3 needed") and the prototype decision 61 cites (`prototypes/review-workflow/index.html`, `marksSummary`: `${n} of ${req.length}` with `n` the filled rows) both count what is done. This is a departure from the plan, not an ambiguity. It becomes bug task **T5R.16-B1**. T5R.10's panels case expects "2 of 2 for Mon Oct 12" on a card with two missing rows, which encodes the wrong count; under B1 it reads "0 of 2".
+- **Defect 2, focus after "Reflect on…":** focus drops to the body when the Review card's Reflection form opens. That contradicts the UI contract's "logical focus after navigation or validation" (Accessibility; "Keyboard focus is visible and logical"). It becomes bug task **T5R.16-B2**, scoped to the Review card. Trade Detail's identical behaviour is D5 critic-1's first minor observation, which the user chose not to pursue.
+- **Minor observations, no task:**
+  - **A156's "route changes … wait":** a nav click with an unsaved Mark draft leaves the Review and drops the draft. A156 asks for `onDirtyChange` "as today", and its citation (D1 A5) covers update activation only; AC-JOUR-001 (nothing recorded without Save) holds. Recorded as a plan-wording note for the final report.
+  - **Recovery Only "Reflect on…":** the button opens a disabled form; A162 says "as in D4 and D5", and D5 behaves the same (D5 critic-1, sixth observation).
+  - The rest (header scrolled out of view after focus moves to a row, blocker links not updating the URL, the planned Reward : risk as a bare number, the next-card choice, the critic's own helper misuse) are recorded in the report.
+
+## Critic cost
+
+Figures from the critic's completion notice (the harness's own token count). Brief v2 = `.claude/docs/critic-brief.md` with setup helpers from `e2e/d5/support.ts` and `e2e/d5r/support.ts`.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| critic-1 (T5R.16) | `26e4338` | v2 | 200,119 | 54 | 13 min 34 s | 2 (low; overall PASS) |
