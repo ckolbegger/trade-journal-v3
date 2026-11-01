@@ -1,0 +1,170 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 1,
+    "total_tokens": 165492,
+    "input_tokens": 164140,
+    "output_tokens": 1352,
+    "cache_read_tokens": 30720,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/verify-fixtures.ts",
+      "content": "Defaulting missing panel counts to zero makes the fixture verifier accept an incomplete Reflections panel. In particular, all pre-schema-4 fixtures are expected to have zero counts, so omitting `dueNow` or `later` now passes `debtViolations`, whereas that check explicitly treats missing counts as a violation. Preserve undefined values (or reject missing counts explicitly) so the compatibility adapter does not hide this regression.",
+      "suggestion_code": "        return panel ? { ...trade, reflections: { due: panel.dueNow, later: panel.later } } : trade;",
+      "existing_code": "        return panel ? { ...trade, reflections: { due: panel.dueNow ?? 0, later: panel.later ?? 0 } } : trade;",
+      "start_line": 64,
+      "end_line": 64,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Application benchmark generation and types",
+      "files": [
+        "src/app/bench-generator.ts",
+        "src/app/types.ts"
+      ]
+    },
+    {
+      "label": "Daily review coordinator and public types",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Fixture verification and reflection count support",
+      "files": [
+        "tests/support/reflection-counts.ts",
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "c81d70b2-7c2b-4202-ad86-76a4f3a00aff",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c81d70b2-7c2b-4202-ad86-76a4f3a00aff",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "509f5827",
+      "resolved_base": "a19705638b73157aa7677f3d54162c7335cdb4aa",
+      "resolved_head": "509f582780ab091f18dacffc96d2b05f447b4346",
+      "exact_range": "a19705638b73157aa7677f3d54162c7335cdb4aa..509f582780ab091f18dacffc96d2b05f447b4346",
+      "source_artifact_sha256": "ca5f5e030a1b103d5fabfca19cfdda2f79aecd1fff12277dc4cd5bb5229ac085"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "cede510f570c8018b3e05ea3c0317cd9c37a43e33acc468939da995d3427e01d"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "fa1a4dd57f4bb05d9f4f1f5e69e488434f88429e5d7e23a477ddb45380e766e7"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "d04964f0f68480ee207ef164c66d75ba2456aec97004a28ee28fde3dd2fcc78d"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "97b6d55fa82d655e0629e0cdd8761629583b1bcde2df88383fc0038c4835570a"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a0652e92cbf904bbe11a4508c8506e2652ce3ba8048b6030eda8aa43e23e382d"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "b2fb82f738a7f532c08e001f1fdc7bdd97c652950d8a150675ab1cc549a72aa9"
+        },
+        {
+          "item_id": "c3152db279b6203821a873eaa10b8c51641a0921fec1261549a9b0cb313539ca",
+          "path": "tests/support/reflection-counts.ts",
+          "fingerprint": "a99687fe9ad8d385f642065eea8bf379ce2897599efe912dd716f6db0cba389c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "cede510f570c8018b3e05ea3c0317cd9c37a43e33acc468939da995d3427e01d"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "fa1a4dd57f4bb05d9f4f1f5e69e488434f88429e5d7e23a477ddb45380e766e7"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "d04964f0f68480ee207ef164c66d75ba2456aec97004a28ee28fde3dd2fcc78d"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "97b6d55fa82d655e0629e0cdd8761629583b1bcde2df88383fc0038c4835570a"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a0652e92cbf904bbe11a4508c8506e2652ce3ba8048b6030eda8aa43e23e382d"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "b2fb82f738a7f532c08e001f1fdc7bdd97c652950d8a150675ab1cc549a72aa9"
+        },
+        {
+          "item_id": "c3152db279b6203821a873eaa10b8c51641a0921fec1261549a9b0cb313539ca",
+          "path": "tests/support/reflection-counts.ts",
+          "fingerprint": "a99687fe9ad8d385f642065eea8bf379ce2897599efe912dd716f6db0cba389c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 50901
+  }
+}

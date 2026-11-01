@@ -143,3 +143,40 @@ Date 2026-11-01 07:09 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-4-progress-open-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.5 Daily Review: card progress in `getTrade` and every save result
+
+Behavioral; rows in `tdd-log.md`. Commit `509f582`: `DailyTradeReview.progress`; `PostSaveReview.cards` (`{ tradeId, progress }[]`, the saved Trade after `SaveTradeAction`, the Debt's Trade after `ResolveReviewDebt` when walked; none for `ChangedDuringAssembly`); `PostMarksReview.trades` and `trade` carry progress; `WalkedTrade.reflections` and `ReflectionCounts` removed (A167). A shared internal `cardProgress(marks, reflections, owed)` serves `assemble` and `assembleTrade`. The post-save assemblies still call `assemble(..., withGaps = false)`; `d5r/query-count` passes unchanged.
+
+**First-run passes (flagged):** cases 3, 4 and 5 passed on their first run: cases 3 and 4 share `postSaveReview` with case 2, and case 5's `PostMarksReview.trades` already carried T5R2.4's progress. Mutation checks in `tdd-log.md` (`cards` built from the other walked Trades: `TypeError`; Reflections `later` plus one; Marks `resolved` plus one: assertion failures). The invalid red rows that `tdd.sh` wrote for them (exit 0) stay in the log above their notes.
+
+**Readers of the removed field** (A167 named the bench generator and `resolve-debt.test.ts`): also `reflections.test.ts` and six D5 integration files (`migration`, `query-count`, `resolve`, `review-debt`, `review`, `write-gate`). They read the Reflections panel through a test helper, `tests/support/reflection-counts.ts`, with unchanged expected values. The bench generator reads the panel's `dueNow`; its dataset and version are unchanged. UI test fixtures only dropped `reflections` and gained `progress` and `cards: []`; no UI expectation changed.
+
+**Decision (user, 2026-11-01): the frozen v4 views and the removed field.** `tests/fixtures/workspace-v4/expected-views.json` holds `reflections` on every walked item, and D4 A51 requires the migrated views to equal the snapshot on every field it contains, while A167 removes the field and A168 changes no fixture. The subagent left every fixture unchanged (`git diff claude-opus-5.5-d5r -- tests/fixtures` empty) and added `withWalkedReflections` to `tools/verify-fixtures.ts`, which states the old `reflections: { due, later }` from the Reflections panel's `dueNow` and `later` before the comparison, so the same frozen counts are still checked against the new code. The main session asked the user, recommending this over keeping the field (against A167) or refreezing the fixture (against A51, a plan revision). **The user chose to keep the mapping.** It is an implementation note under A51, not a plan revision.
+
+### ocr review of `509f582`
+
+Session `c81d70b2-7c2b-4202-ad86-76a4f3a00aff`, 7 files reviewed, 1 finding. Raw output: [ocr/T5R2.5-509f582.json](ocr/T5R2.5-509f582.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | test | `tools/verify-fixtures.ts:64` | `?? 0` on the panel's `dueNow` and `later` lets a Reflections panel with missing counts pass `debtViolations`. | Valid, low impact: the check before T5R2.5 treated missing counts as a violation. |
+
+### T5R2.5-B1 The fixture mapping keeps missing counts missing
+
+- **Finding:** ocr's finding above.
+- **Defect:** for a migrated pre-schema-4 Workspace, a walked item whose Reflections panel lacks `dueNow` or `later` is stated as `{ due: 0, later: 0 }`, so `debtViolations` reports it Debt-free where the old check flagged the missing count.
+- **Case:** it should report a migrated Workspace's walked item as a Debt violation when its Reflections panel carries no `dueNow` or `later` count.
+
+### Cumulative suite at `509f582`
+
+Date 2026-11-01 07:28 EST. The working tree's only uncommitted changes were evidence files. T5R2.5 closes after T5R2.5-B1.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 76 passed (76)`, `Tests 1025 passed (1025)`, exit 0 | `suite-runs/t5r2-5-progress-saves-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-5-progress-saves-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-5-progress-saves-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-5-progress-saves-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.
