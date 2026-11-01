@@ -1251,6 +1251,38 @@ describe('reflections', () => {
     await user.click(panelHeader(card, 'Reflections'));
     expect(within(monday).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ })).toBeTruthy();
   });
+
+  it('should move focus into the Reflection form when Reflect on is pressed in a Review card, and back to its button when the form is cancelled', async () => {
+    const user = userEvent.setup();
+    const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
+    renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair })));
+    const card = await openTrade(user, 'XYZ');
+    const button = () => within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ });
+
+    // Pressed with the keyboard, as a screen reader user would.
+    button().focus();
+    await user.keyboard('{Enter}');
+
+    const form = within(card).getByRole('form', { name: 'Reflection' });
+    expect(document.activeElement).toBe(within(form).getAllByRole('radio')[0]);
+
+    await user.click(within(form).getByRole('button', { name: 'Cancel' }));
+
+    expect(within(card).queryByRole('form', { name: 'Reflection' })).toBeNull();
+    expect(document.activeElement).toBe(button());
+  });
+
+  it('should move focus to Cancel when Reflect on is pressed while the runtime is read only, since every input is disabled', async () => {
+    const user = userEvent.setup();
+    const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
+    renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair })), { writable: false });
+    const card = await openTrade(user, 'XYZ');
+
+    await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+
+    const form = within(card).getByRole('form', { name: 'Reflection' });
+    expect(document.activeElement).toBe(within(form).getByRole('button', { name: 'Cancel' }));
+  });
 });
 
 describe('Action (A159)', () => {

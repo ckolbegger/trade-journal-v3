@@ -41,8 +41,18 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
   const { debtId } = reflection;
   const dirty = useCallback((isDirty: boolean) => onEntryDirty(`debt:${debtId}`, isDirty), [debtId, onEntryDirty]);
   const when = localTime(reflection.economicTime, timeZone);
+  const row = useRef<HTMLLIElement>(null);
+  const button = useRef<HTMLButtonElement | null>(null);
+  const wasOpen = useRef(false);
+  // Opening the form moves focus into it, to its first enabled control; cancelling puts focus back on the button.
+  // A resolved reflection keeps isOpen set, and the panel moves focus on itself.
+  useEffect(() => {
+    if (isOpen && !wasOpen.current) row.current?.querySelector<HTMLElement>('form :is(input, textarea, select, button):not(:disabled)')?.focus();
+    else if (!isOpen && wasOpen.current) button.current?.focus();
+    wasOpen.current = isOpen;
+  }, [isOpen]);
   return (
-    <li>
+    <li ref={row}>
       <p>
         Position Change at <span className="nowrap">{when}</span>
       </p>
@@ -52,7 +62,13 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
         ))}
       </ul>
       {!resolved && !isOpen && (
-        <button type="button" ref={buttonRef} className="pill secondary" disabled={blocked} onClick={onOpen}>
+        <button
+          type="button"
+          ref={(element) => {
+            button.current = element;
+            buttonRef(element);
+          }}
+          className="pill secondary" disabled={blocked} onClick={onOpen}>
           Reflect on {when}
         </button>
       )}
