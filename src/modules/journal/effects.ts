@@ -1,3 +1,4 @@
+import type { DueRule } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 
 // A candidate reference names a not-yet-durable fact inside one prepared command; it reserves
@@ -152,7 +153,7 @@ export interface PreparedDebt {
   readonly origin: { readonly kind: 'PositionChange'; readonly ref: CandidateRef };
   readonly momentTime: Instant;
   readonly dueAnchor: Instant;
-  readonly dueRule: 'OneSessionGrace';
+  readonly dueRule: DueRule;
   readonly route: 'JournalOnly';
 }
 
@@ -246,7 +247,7 @@ export interface DebtProjection {
   readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
   readonly momentTime: Instant;
   readonly dueAnchor: Instant;
-  readonly dueRule: 'OneSessionGrace';
+  readonly dueRule: DueRule;
   readonly route: 'JournalOnly';
   readonly status: 'Outstanding' | 'Settled' | 'Declined';
   // The Debt's last version identity, its optimistic binding.

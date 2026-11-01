@@ -1,4 +1,5 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
+import type { DueRule } from '../../domain/journal-debt/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { beginSemanticTransaction, requireOpen, type BindingCheck, type IdGenerator, type Persistence, type SemanticTransaction, type Write } from '../../persistence/index.ts';
 import type {
@@ -159,7 +160,7 @@ interface StoredDebt {
   readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
   readonly momentTime: string;
   readonly dueAnchor: string;
-  readonly dueRule: 'OneSessionGrace';
+  readonly dueRule: DueRule;
   readonly route: 'JournalOnly';
   readonly anchorTradeId: string;
   readonly outstandingDue?: string;

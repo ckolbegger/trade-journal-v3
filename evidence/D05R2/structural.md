@@ -57,3 +57,18 @@ Date 2026-11-01 06:32 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | typecheck, `tsc6 --noEmit`, lint, `lint:deps`, build, `verify:release`, `verify:capabilities`, `verify:releases`, `verify:no-fault-hooks`, `verify:capacity`, `verify:fixtures`, `verify:session-policy` | 12 of 12 exit 0 | `suite-runs/t5r2-1-classify-due-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.2 Journal imports the due rule
+
+Type-only change (A166, P44). `dueRule: 'OneSessionGrace'` became `dueRule: DueRule` (type imported from `src/domain/journal-debt/index.ts`) at three declarations: `src/modules/journal/journal.ts` (the Debt shape) and `src/modules/journal/effects.ts` (two effect shapes). The stored value `dueRule: 'OneSessionGrace'` written into a new Debt in `journal.ts` is unchanged. `.dependency-cruiser.js` allows modules to import `src/domain` (`lint:deps` passes).
+
+| Command | Result |
+|---|---|
+| `npm run typecheck` | exit 0 |
+| `npm run lint:deps` | exit 0, no dependency violations (243 modules) |
+| `npm run verify:fixtures` | exit 0, workspace-v1 to v4 open Ready at schema 4, views equal |
+| `npm run test:unit -- src/modules/journal` | exit 0, 7 files, 69 tests passed |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `rg "'OneSessionGrace'" src --glob '!*.test.*'` | only `src/domain/journal-debt/index.ts` (`export type DueRule`) and `src/modules/journal/journal.ts` (value in a new Debt); no type declaration remains |
+| `git diff claude-opus-5.5-d5r -- tests/fixtures` | empty (0 lines) |
