@@ -591,3 +591,7 @@ At `ccff276` (no code commit follows it): `npm run test:integration` (`vitest ru
 ## T5R2.18 Browser suite
 
 At `ccff276`: `npm run test:e2e` (Chromium), 179 passed, exit 0 (the T5R2.16 cumulative run, `suite-runs/T5R2.16-browser.txt`; no code change since). `git diff claude-opus-5.5-d5r -- e2e` is empty (0 bytes) (P47). AC-REV-002 and AC-REV-006 re-proved by those cases.
+
+## F2 ocr review, test-only procedure (correction)
+
+The F2 section above says F2 was not ocr-reviewed. That skipped the handoff's rule for test-only commits, so the review was run late, as that rule says: the commit was recreated in a scratch clone with the changed describe block relocated to `src/itg/d5r2/card-top-scroll.ts` as plain `.ts`. Session `ef2b9a6b-fa3b-44ae-b653-c2a134706b95`, 1 file reviewed, 5 comments, **all dismissed as caused only by the relocation**: an unbalanced describe from the slice, a stand-in helper module, a missing `within` import, the plain `.ts` name not discovered by Vitest, and the `afterEach` restore dropped by the slice (present at `ReviewCards.test.tsx:803-806`). No comment on the `waitFor` wrap itself. Raw output: [ocr/F2.json](ocr/F2.json).
