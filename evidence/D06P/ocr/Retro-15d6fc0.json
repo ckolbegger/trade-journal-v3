@@ -1,0 +1,130 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 5,
+    "total_tokens": 48287,
+    "input_tokens": 45652,
+    "output_tokens": 2635,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m55s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "Directory classification can allow HEAD moves in the protected repository after ordinary relative navigation. For a root of /work/repo, `cd /work \u0026\u0026 cd repo \u0026\u0026 git reset --hard` leaves `inside=0`, even though Git runs in /work/repo. Likewise, `git -C /tmp/../work/repo reset --hard` is classified as external. Track the effective working directory and normalize relative paths and `..` components before comparing it with the project root.",
+      "existing_code": "    /*) [[ \"$p\" != \"$root\" \u0026\u0026 \"$p\" != \"$root\"/* ]] ;;\n    *) ((! inside)) ;;",
+      "start_line": 37,
+      "end_line": 38,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "Common Git global options bypass this check entirely: `git --no-pager reset --hard` and `git -c advice.detachedHead=false checkout HEAD~1` do not match, so both are allowed in the protected worktree. Parse supported global options before identifying the subcommand, including their argument values and any `-C` directory changes.",
+      "existing_code": "  elif [[ \"$seg\" =~ ^[[:space:]]*git[[:space:]]+(-C[[:space:]]+([^[:space:]]+)[[:space:]]+)?(switch|checkout|reset)([[:space:]]+(.*))?$ ]]; then",
+      "start_line": 49,
+      "end_line": 49,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "Quoted directory paths are truncated at the first space. If the project root is `/work/my project`, `cd \"/work/my project\" \u0026\u0026 git reset --hard` passes `/work/my` to `outside()`, marks the command as external, and allows the reset. The `git -C` matcher also fails to recognize a quoted path containing spaces. Preserve complete quoted path arguments when parsing both forms so projects in directories containing spaces remain protected.",
+      "existing_code": "  if [[ \"$seg\" =~ ^[[:space:]]*cd[[:space:]]+([^[:space:]]+) ]]; then\n    outside \"${BASH_REMATCH[1]}\" \u0026\u0026 inside=0 || inside=1",
+      "start_line": 47,
+      "end_line": 48,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "Shell redirections and comments are counted as positional Git arguments, so an ordinary revision reset such as `git reset HEAD~1 \u003e/dev/null` (or `git reset HEAD~1 # undo`) has more than one entry in `pos` and is allowed. Both commands move HEAD in the protected worktree, and the existing write checks permit `/dev/null`. Exclude shell redirections and comments before counting Git arguments.",
+      "existing_code": "        elif [[ \"$args\" != *\" -- \"* \u0026\u0026 ${#pos[@]} -eq 1 \u0026\u0026 \"${pos[0]}\" != HEAD ]]; then moves=1; fi ;;",
+      "start_line": 62,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "The opening subshell parenthesis is removed, but the closing one remains in the arguments. Consequently, `(git reset --hard)` is parsed with `--hard)` rather than `--hard`; it matches neither the mode check nor the positional-revision check and is allowed to reset the protected worktree. Handle closing shell grouping delimiters as well as opening ones before classifying reset arguments.",
+      "existing_code": "  seg=${seg#\\(}",
+      "start_line": 46,
+      "end_line": 46,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": ".claude/hooks/guard-shell-writes.sh",
+      "files": [
+        ".claude/hooks/guard-shell-writes.sh"
+      ]
+    }
+  ],
+  "session_id": "ba2e874d-cb88-4940-81ac-b39315c14a37",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ba2e874d-cb88-4940-81ac-b39315c14a37",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "15d6fc0a",
+      "resolved_base": "adf38297d70940935714e8546093c6c3c1786869",
+      "resolved_head": "15d6fc0a2c73c9b827881c646fe2b531bde031cf",
+      "exact_range": "adf38297d70940935714e8546093c6c3c1786869..15d6fc0a2c73c9b827881c646fe2b531bde031cf",
+      "source_artifact_sha256": "7db1a15e9fb7b93511a1d9520646c10c1e566859f69f444e94722fd77dc9533f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7d457d07f1a748aa42befd0eb532bbf92a74868b8450e66494a3a6dfd18c2293",
+          "path": ".claude/hooks/guard-shell-writes.sh",
+          "fingerprint": "ed4ad3f72517be552d4e829066dc901820187a868e2e63e1a34a6e62e42175e2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7d457d07f1a748aa42befd0eb532bbf92a74868b8450e66494a3a6dfd18c2293",
+          "path": ".claude/hooks/guard-shell-writes.sh",
+          "fingerprint": "ed4ad3f72517be552d4e829066dc901820187a868e2e63e1a34a6e62e42175e2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 115270
+  }
+}

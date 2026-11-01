@@ -371,3 +371,17 @@ Source: the user's retrospective of the D6 prefactor session (2026-11-01). An oc
 Extra checks after the change (not part of the 13): `cd $D/repo && git checkout -q -b relocated abc^` allow; `git reset` allow; `git reset -- src/x.ts` allow; `git reset HEAD~1` deny; `cd $CLAUDE_PROJECT_DIR && git switch x` deny. The deny reason text was read back from the live hook, which also refused the agent's own test commands that contained these git commands as text.
 
 **Known limits:** `git checkout .` and `git reset <path>` without `--` are refused (use `git checkout -- .` and `git reset -- <path>`); a quoted string containing `;`, `&` or `|` followed by a HEAD-moving git command can be refused wrongly; `cd` inside a subshell is treated as if it applied to the rest of the command.
+
+### ocr review of `15d6fc0`
+
+Session `ba2e874d-cb88-4940-81ac-b39315c14a37`, model gpt-6.1-sol, 1 file reviewed (in place), 5 comments. Raw output: [ocr/Retro-15d6fc0.json](ocr/Retro-15d6fc0.json). (A first run with a 3,350-character background, over ocr's 2,000 limit, was session `24dfabaf-…` and also gave 5 comments; the reviewer reran with a 1,244-character summary.) The reviewer tested each claim by piping commands to the hook, never running them.
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| high | `guard-shell-writes.sh:37-38` | Relative `cd` and `..` aren't normalized, so leaving the root and coming back by a relative path, or a `-C` path with `..`, counts as outside. | Valid (reproduced) |
+| medium | `:49` | Git's global options before the subcommand (`--no-pager`, `-c k=v`) bypass the rule. | Valid (reproduced) |
+| medium | `:62` | A redirect or comment counts as a positional argument, so a bare `reset <rev>` followed by `>/dev/null`, `2>&1` or `# …` is allowed. | Valid (reproduced) |
+| medium | `:46` | A closing parenthesis stays on the last argument, so a HEAD move wrapped in a subshell is allowed. | Valid (reproduced) |
+| medium | `:47-48` | A quoted `cd` path with spaces is cut at the first space. | **Dismissed:** the project root has no spaces, so no `cd` back into it can be cut. Recorded for the final report. |
+
+**Bug task Retro-B1: the HEAD rule normalizes words before matching.** All four Valid findings have one cause: the rule splits a segment into words without normalizing them. So they're one bug task rather than four in series. This bends `implementing.md`'s one-at-a-time rule, a main-session decision recorded here. Its cases: each of the four bypasses is denied (red first against `15d6fc0`), and the 13 earlier cases and the reviewer's allowed commands keep their results.
