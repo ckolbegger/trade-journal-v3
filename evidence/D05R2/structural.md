@@ -180,3 +180,17 @@ Date 2026-11-01 07:28 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-5-progress-saves-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.5-B1 The fixture mapping keeps missing counts missing — verification
+
+Seam: `withWalkedReflections` and `debtViolations` moved unchanged into `tools/fixture-views.ts` (imported by `tools/verify-fixtures.ts`), tested in `tools/fixture-views.test.ts`. `tools/` was in no vitest include, so `tools/**/*.test.ts` was added to the `unit` project in `vite.config.ts`. Fix: the panel's `dueNow` and `later` are no longer defaulted to 0, so a missing count stays `undefined` and `debtViolations` reports it.
+
+| Command | Result |
+|---|---|
+| `npm run verify:fixtures` | exit 0; workspace-v1, v2, v3 migrated to 4, v4 opened without migration, all four "views equal" |
+| `git diff claude-opus-5.5-d5r -- tests/fixtures` | empty |
+| `npm run test:unit -- tools` | `Tests 1 passed (1)` |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |
