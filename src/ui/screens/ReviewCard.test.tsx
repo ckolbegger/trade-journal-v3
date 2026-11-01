@@ -1397,6 +1397,41 @@ describe('a reflection draft when the shell turns read only', () => {
 });
 
 describe('panels (A152)', () => {
+  it('should count the Marks that are done in the Marks panel summary, reading 1 of 2 with 1 needed after one of two Marks is saved, and 2 of 2 with Saved when both are', async () => {
+    const user = userEvent.setup();
+    const markReasons = (...keys: string[]): ReviewCompletion => ({
+      kind: 'Incomplete',
+      reasons: [...keys.map((instrumentKey) => ({ code: 'MarkMissing', instrumentKey, tradingDate: '2026-10-12', trades: ['t1'] }) as const), { code: 'ActionMissing', tradeId: 't1' }],
+    });
+    const walked = [{ ...item('t1', 'XYZ'), reflections: { due: 0, later: 0 } }];
+    const review = ready([item('t1', 'XYZ')], [], { completion: markReasons('XYZ', 'ABC'), families: [{ family: 'Marks', today: [markRow('XYZ'), markRow('ABC')], earlier: [] }, { family: 'Trades', trades: walked }] });
+    const trade = tradeReview('t1', 'XYZ');
+    const facade = walkFacade(review, trade);
+    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    const marksSaved = (instrumentKey: string, completion: ReviewCompletion): SaveDailyReviewResult => ({
+      kind: 'MarksSaved',
+      marks: [{ key: { instrumentKey, tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion, binding, trades: walked, trade, nextStep: { kind: 'Trade', trade } },
+    });
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(marksSaved('XYZ', markReasons('ABC'))).mockResolvedValueOnce(marksSaved('ABC', markReasons()));
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    const marks = panelHeader(card, 'Marks');
+    expect(within(marks).getByText('0 of 2 for Mon Oct 12')).toBeTruthy();
+    expect(within(marks).getByText('2 needed')).toBeTruthy();
+
+    await user.type(within(within(card).getByRole('region', { name: /^XYZ Mark, / })).getByLabelText('Price'), '52.00');
+    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('1 of 2 for Mon Oct 12')).toBeTruthy());
+    expect(within(panelHeader(card, 'Marks')).getByText('1 needed')).toBeTruthy();
+
+    await user.click(panelHeader(card, 'Marks'));
+    await user.type(within(within(card).getByRole('region', { name: /^ABC Mark, / })).getByLabelText('Price'), '52.00');
+    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('2 of 2 for Mon Oct 12')).toBeTruthy());
+    expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy();
+  });
+
   it('should show Marks, Reflections, and Action panels in that order, with one open at a time, each header a button with its summary and status as text, and None on Reflections for a card that owes none', async () => {
     const user = userEvent.setup();
     renderWalk(walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair })));
@@ -1405,7 +1440,7 @@ describe('panels (A152)', () => {
     const [marks, reflections, action] = [panelHeader(card, 'Marks'), panelHeader(card, 'Reflections'), panelHeader(card, 'Action')] as const;
     expect(marks.compareDocumentPosition(reflections) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(reflections.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(marks).getByText('2 of 2 for Mon Oct 12 · 1 earlier optional')).toBeTruthy();
+    expect(within(marks).getByText('0 of 2 for Mon Oct 12 · 1 earlier optional')).toBeTruthy();
     expect(within(marks).getByText('2 needed')).toBeTruthy();
     expect(within(reflections).getByText('2 owed, 1 due now')).toBeTruthy();
     expect(within(reflections).getByText('1 due')).toBeTruthy();

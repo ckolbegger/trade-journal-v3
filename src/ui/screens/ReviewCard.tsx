@@ -195,7 +195,7 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
   const form = trade.form;
   return {
     Marks: {
-      summary: [rows > 0 ? `${remaining.marks} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
+      summary: [rows > 0 ? `${rows - remaining.marks} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
       status: marksStatus(remaining.marks, rows, earlier),
       done: remaining.marks === 0,
     },
