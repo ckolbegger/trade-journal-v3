@@ -43,7 +43,7 @@ async function expectBothPlans(page: Page): Promise<void> {
 const AUTHORITATIVE = ['catalog', 'trades', 'journalEntries'] as const;
 const authoritative = (db: ProbedDatabase) => Object.fromEntries(AUTHORITATIVE.map((store) => [store, withoutStamps(db.stores[store])]));
 
-test.describe('B2.3 update from D1 with data', () => {
+test.describe('B2.3 update from D1 with data', { tag: '@release-history' }, () => {
   test('should show the migration message, then list both Plans under Planned with Record entry working and About at schema 2, on a new database with the old one gone', async ({
     server,
     profile,
@@ -118,7 +118,7 @@ test.describe('B2.4 Migration Blocked (faults build)', () => {
   });
 });
 
-test.describe('B2.5 old tab during migration', () => {
+test.describe('B2.5 old tab during migration', { tag: '@release-history' }, () => {
   test('should show "Updated in another tab" in the old tab with its values on screen, return RuntimeNotWritable on Confirm, and write nothing to the old database after the snapshot', async ({
     server,
     profile,

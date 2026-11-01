@@ -1,6 +1,6 @@
 import { confirmPlan, expect, firstPage, onboardedPage, PLAN, PLANNED, READY, test } from './support.ts';
 
-test.describe('B1.4 offline cold restart', () => {
+test.describe('B1.4 offline cold restart', { tag: '@every-task' }, () => {
   test('should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart', async ({ server, profile }) => {
     const online = await profile.launch();
     await confirmPlan(await onboardedPage(online));

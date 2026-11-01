@@ -33,7 +33,7 @@ test.describe('B1.2 onboarding and first Plan', () => {
   });
 });
 
-test.describe('B1.3 kill after commit', () => {
+test.describe('B1.3 kill after commit', { tag: '@every-task' }, () => {
   test('should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders', async ({ server, profile }) => {
     void server;
     const killed = await spawnedBrowser(profile.dir, 9333);

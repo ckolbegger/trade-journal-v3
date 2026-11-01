@@ -2,7 +2,7 @@ import { actionEntriesOf, checkForUpdate, completion, confirmReference, enterMar
 
 const AT_10 = { quantity: '100', price: '50.00', fee: '1.00', time: '2026-10-12T10:00' };
 
-test.describe('B4.7 update from D2 with data', () => {
+test.describe('B4.7 update from D2 with data', { tag: '@release-history' }, () => {
   test('should show Updating your journal, then the Review with both Instruments, a working Mark and Action, About at schema 3 with the session policy, and the new database pointed to with the old one gone', async ({ server, profile }) => {
     server.use('dist-releases/d2');
     const context = await launchAt(profile, MONDAY_1700);

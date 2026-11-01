@@ -1,7 +1,7 @@
 import { assetDigest, type OfflineReleaseInventory } from '../../src/delivery/inventory.ts';
 import { BASE_URL, expect, onboardedPage, test } from './support.ts';
 
-test.describe('B1.1 identity and Writable tab', () => {
+test.describe('B1.1 identity and Writable tab', { tag: '@every-task' }, () => {
   for (const userAgent of [undefined, 'UnknownBrowser/0.1 (unrecognized)']) {
     test(`should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing${userAgent ? ' under an unknown user agent' : ''}`, async ({
       server,

@@ -1,6 +1,6 @@
 import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, PLANNED, probe, READY, test } from './support.ts';
 
-test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', () => {
+test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', { tag: '@every-task' }, () => {
   test('should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged', async ({ server, profile }) => {
     test.setTimeout(180_000);
     void server;
