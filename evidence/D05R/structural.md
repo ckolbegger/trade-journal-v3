@@ -1458,6 +1458,7 @@ Figures from the critic's completion notice (the harness's own token count). Bri
 |---|---|---|---|---|---|---|
 | critic-1 (T5R.16) | `26e4338` | v2 | 200,119 | 54 | 13 min 34 s | 2 (low; overall PASS) |
 | critic-2 (T5R.16) | `e3ee092` | v2 | 200,204 | 90 | 13 min 15 s | 2 low, plus 1 medium that predates D5R (overall PASS) |
+| critic-3 (T5R.16) | `a4c48ae` | v2 | 203,987 | 68 | 12 min 42 s | 0 |
 
 ### T5R.16-B1 The Marks panel's summary counts the Marks that are done (critic 1, defect 1)
 
@@ -1587,3 +1588,15 @@ At `dea9849` (code as of `741b192`), started 03:46 EST, by `suite-runner`, label
 | Static and verify checks | 12 of 12 exit 0 | [suite-runs/t5r.16-cumulative-2-checks.txt](suite-runs/t5r.16-cumulative-2-checks.txt) |
 
 Every suite passed with no reruns. Ports were clear before and after.
+
+### The gate passes
+
+**Critic 3 at `a4c48ae`**, run after B3 to B5, finds no defects. Every flow from C5R.1 to C5R.9 passes with decision 68's amendments, and so do the 375 and 320 px checks. Critic 2's three defects did not recur. The report is [critic-3.md](critic-3.md), with eight minor observations.
+
+Two of those observations ask for the plan's intent to be confirmed. Neither fails a pass condition, so neither becomes a task:
+- **The next card after a save follows the Missing-Mark Instrument order, not attention order.** P36 says the step "prefers a card with a Missing current Mark", and T5R.12-B3 (the user's decision) opens "the first card in Review order holding a Trade in `row.trades`" for the first Missing row.
+- **"At entry" shows only while the Review-date Mark is missing.** This is D4 P12 and P13's conditional line, and T5R.11's planned T-A case at 52.00 reads the same way.
+
+The other observations repeat critics 1 and 2: the header can sit out of view after focus moves to a row, a route change drops a held draft, the heading levels inside a card are out of order, and two hold messages can show at once.
+
+The gate's newest green cumulative run, `t5r.16-cumulative-2` at `dea9849`, covers the code. No source has changed since `741b192`. At the tag the counts are 75 unit files with 1011 tests, 60 integration files with 117 tests, 179 browser cases, and 12 of 12 checks.
