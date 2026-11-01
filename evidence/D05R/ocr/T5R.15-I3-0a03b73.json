@@ -1,0 +1,229 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 0,
+    "total_tokens": 148603,
+    "input_tokens": 147109,
+    "output_tokens": 1494,
+    "cache_read_tokens": 17280,
+    "elapsed": "45s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 3,
+      "file_find": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D4 and D5 integration regression tests",
+      "files": [
+        "src/itg/d5r/d4-kill-spec.ts",
+        "src/itg/d5r/d4-offline-spec.ts",
+        "src/itg/d5r/d4-review-spec.ts",
+        "src/itg/d5r/d4-runtime-failure-spec.ts",
+        "src/itg/d5r/d5-detail-debt-spec.ts",
+        "src/itg/d5r/d5-faults-spec.ts",
+        "src/itg/d5r/d5-kill-offline-spec.ts",
+        "src/itg/d5r/d5-update-spec.ts"
+      ]
+    },
+    {
+      "label": "D5R integration tests and shared support",
+      "files": [
+        "src/itg/d5r/d5r-durability-spec.ts",
+        "src/itg/d5r/d5r-marks-spec.ts",
+        "src/itg/d5r/d5r-responsive-a11y-spec.ts",
+        "src/itg/d5r/d5r-review-spec.ts",
+        "src/itg/d5r/d5r-sliders-spec.ts",
+        "src/itg/d5r/d5r-support.ts"
+      ]
+    }
+  ],
+  "session_id": "fd89984e-877e-439d-b5d2-dbe9fcff4f76",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fd89984e-877e-439d-b5d2-dbe9fcff4f76",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "c5f041910aa36cc076c2c7decf201d80a9f0f822",
+      "resolved_head": "c439cab776d223532178ce003350ae3012366327",
+      "exact_range": "c5f041910aa36cc076c2c7decf201d80a9f0f822..c439cab776d223532178ce003350ae3012366327",
+      "source_artifact_sha256": "7bd321656df4921f42b048dc2f671395e88425df76b689dc82d3c4c02b94c796"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1118d01c7dd7c95ab499444a7f12a58f2b294db6021f4f0a5ed46aab5f4ac0ca",
+          "path": "src/itg/d5r/d5-kill-offline-spec.ts",
+          "fingerprint": "5975838fe66b9710c67ab4208c0383d24d34bf982c82fa60c1c8c932cf07f1f3"
+        },
+        {
+          "item_id": "1eae9d60490d950f7b93ec8d90b09cd50cf06f0684872424a36cfca3dc303808",
+          "path": "src/itg/d5r/d4-offline-spec.ts",
+          "fingerprint": "410117ded72c77fc2d36ad1afdc7743eb3fcf0db31f3e3893135ed731c753537"
+        },
+        {
+          "item_id": "36f18a096d4987ea0e01fa9f4e0a43228fac894baf857a7283995f323340b908",
+          "path": "src/itg/d5r/d5r-sliders-spec.ts",
+          "fingerprint": "c5dd3be21c6093a252cff5ec2e373a8a2d463066df2a3cba8eb3abc272047742"
+        },
+        {
+          "item_id": "542fc62c64e90330d6bcf98e706ad8bd2fc8afe761d0e6cb2eafc66570b41ec7",
+          "path": "src/itg/d5r/d5r-support.ts",
+          "fingerprint": "33ca5eb74a9ab3bd15358dc435dace22c4cbc1326875cdcae5afedb34888f0a6"
+        },
+        {
+          "item_id": "5d5a69100439d187b5942946e9db4828164410f71200c7eca3b0d5d4b73c61b6",
+          "path": "src/itg/d5r/d5r-durability-spec.ts",
+          "fingerprint": "2216e6762f9bafb422dbca7a2119ba80958a7a68e8e657a6ced0b34d1be4b3a5"
+        },
+        {
+          "item_id": "686b31fae8d766a8f4b390b5084275df4a8ea0e6e39389b1155e72c01daa39d8",
+          "path": "src/itg/d5r/d4-kill-spec.ts",
+          "fingerprint": "3643d5c6b57da03f31792d5fe0271f4f6fecdd16879eb537ba2d3a848240d9aa"
+        },
+        {
+          "item_id": "848e0c60d6e422e4e6bc1ec883a2d2c47aa63ae87787ee8a4da8bcdb6fa9937c",
+          "path": "src/itg/d5r/d4-runtime-failure-spec.ts",
+          "fingerprint": "b75a989e99a1a49afa3269b3261756252856fe9c3300d7c61c93c89670e05deb"
+        },
+        {
+          "item_id": "8dedc9ed5de72c8d7dfc39e8938cdacdfb88a564ff707fdd345e5b076007ec4a",
+          "path": "src/itg/d5r/d5r-marks-spec.ts",
+          "fingerprint": "6d122d126d43fb9910bb45023935e4839d5d94d8f0739c91ba0a110be819b587"
+        },
+        {
+          "item_id": "b29757a5cba04e9a05cf97117fbd0b60ee7ec07485e3fb284af03994e4c40949",
+          "path": "src/itg/d5r/d5-detail-debt-spec.ts",
+          "fingerprint": "498c0922c54014c08f451ade1063d6f37b9b72c316aa3d67dac62a323952468f"
+        },
+        {
+          "item_id": "b89d58a9f4e1ff35e8c423f8caace52faa085b782320aefb165905a53c3e614c",
+          "path": "src/itg/d5r/d5-update-spec.ts",
+          "fingerprint": "d6c62c7e28fe5f25aed46a70727c91c6fb33880dc8411c3d02f25c39fd98d26e"
+        },
+        {
+          "item_id": "d2e93bfe480605ebad2e21d2a2d6c1f3dc5d6ad5a484f552a80b37752213c882",
+          "path": "src/itg/d5r/d5r-responsive-a11y-spec.ts",
+          "fingerprint": "11c3f4d53c0ca10dfe43128b9593af53e09d379331c86a6cea166d46c1e534c2"
+        },
+        {
+          "item_id": "d579e7c84f517e3f2df1ee689bb95b888d3a3b3074d927b4e30f7bc11145534e",
+          "path": "src/itg/d5r/d4-review-spec.ts",
+          "fingerprint": "45bba543ac2746eb7f63e8d3d761fbb9b2b75e62fa8821a4d01a5857833f5253"
+        },
+        {
+          "item_id": "f795113b33a0fa6e3d9a7154c688a9861cd0266b133018cbda2e236d617ed8b6",
+          "path": "src/itg/d5r/d5r-review-spec.ts",
+          "fingerprint": "24a711b3db0f05104615e044e6ef9eab8127ebcce3d8d1eab4b68008b31e8ce6"
+        },
+        {
+          "item_id": "f7e5b92b06cead29bbe8ac0a18a59bf2fcef3b56f96a18d8e301887b6bb2f9d6",
+          "path": "src/itg/d5r/d5-faults-spec.ts",
+          "fingerprint": "af5cecc11e1df4faf55e3078426e21f81cf9e2334d1c71bab8fd36992590a819"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1118d01c7dd7c95ab499444a7f12a58f2b294db6021f4f0a5ed46aab5f4ac0ca",
+          "path": "src/itg/d5r/d5-kill-offline-spec.ts",
+          "fingerprint": "5975838fe66b9710c67ab4208c0383d24d34bf982c82fa60c1c8c932cf07f1f3"
+        },
+        {
+          "item_id": "1eae9d60490d950f7b93ec8d90b09cd50cf06f0684872424a36cfca3dc303808",
+          "path": "src/itg/d5r/d4-offline-spec.ts",
+          "fingerprint": "410117ded72c77fc2d36ad1afdc7743eb3fcf0db31f3e3893135ed731c753537"
+        },
+        {
+          "item_id": "36f18a096d4987ea0e01fa9f4e0a43228fac894baf857a7283995f323340b908",
+          "path": "src/itg/d5r/d5r-sliders-spec.ts",
+          "fingerprint": "c5dd3be21c6093a252cff5ec2e373a8a2d463066df2a3cba8eb3abc272047742"
+        },
+        {
+          "item_id": "542fc62c64e90330d6bcf98e706ad8bd2fc8afe761d0e6cb2eafc66570b41ec7",
+          "path": "src/itg/d5r/d5r-support.ts",
+          "fingerprint": "33ca5eb74a9ab3bd15358dc435dace22c4cbc1326875cdcae5afedb34888f0a6"
+        },
+        {
+          "item_id": "5d5a69100439d187b5942946e9db4828164410f71200c7eca3b0d5d4b73c61b6",
+          "path": "src/itg/d5r/d5r-durability-spec.ts",
+          "fingerprint": "2216e6762f9bafb422dbca7a2119ba80958a7a68e8e657a6ced0b34d1be4b3a5"
+        },
+        {
+          "item_id": "686b31fae8d766a8f4b390b5084275df4a8ea0e6e39389b1155e72c01daa39d8",
+          "path": "src/itg/d5r/d4-kill-spec.ts",
+          "fingerprint": "3643d5c6b57da03f31792d5fe0271f4f6fecdd16879eb537ba2d3a848240d9aa"
+        },
+        {
+          "item_id": "848e0c60d6e422e4e6bc1ec883a2d2c47aa63ae87787ee8a4da8bcdb6fa9937c",
+          "path": "src/itg/d5r/d4-runtime-failure-spec.ts",
+          "fingerprint": "b75a989e99a1a49afa3269b3261756252856fe9c3300d7c61c93c89670e05deb"
+        },
+        {
+          "item_id": "8dedc9ed5de72c8d7dfc39e8938cdacdfb88a564ff707fdd345e5b076007ec4a",
+          "path": "src/itg/d5r/d5r-marks-spec.ts",
+          "fingerprint": "6d122d126d43fb9910bb45023935e4839d5d94d8f0739c91ba0a110be819b587"
+        },
+        {
+          "item_id": "b29757a5cba04e9a05cf97117fbd0b60ee7ec07485e3fb284af03994e4c40949",
+          "path": "src/itg/d5r/d5-detail-debt-spec.ts",
+          "fingerprint": "498c0922c54014c08f451ade1063d6f37b9b72c316aa3d67dac62a323952468f"
+        },
+        {
+          "item_id": "b89d58a9f4e1ff35e8c423f8caace52faa085b782320aefb165905a53c3e614c",
+          "path": "src/itg/d5r/d5-update-spec.ts",
+          "fingerprint": "d6c62c7e28fe5f25aed46a70727c91c6fb33880dc8411c3d02f25c39fd98d26e"
+        },
+        {
+          "item_id": "d2e93bfe480605ebad2e21d2a2d6c1f3dc5d6ad5a484f552a80b37752213c882",
+          "path": "src/itg/d5r/d5r-responsive-a11y-spec.ts",
+          "fingerprint": "11c3f4d53c0ca10dfe43128b9593af53e09d379331c86a6cea166d46c1e534c2"
+        },
+        {
+          "item_id": "d579e7c84f517e3f2df1ee689bb95b888d3a3b3074d927b4e30f7bc11145534e",
+          "path": "src/itg/d5r/d4-review-spec.ts",
+          "fingerprint": "45bba543ac2746eb7f63e8d3d761fbb9b2b75e62fa8821a4d01a5857833f5253"
+        },
+        {
+          "item_id": "f795113b33a0fa6e3d9a7154c688a9861cd0266b133018cbda2e236d617ed8b6",
+          "path": "src/itg/d5r/d5r-review-spec.ts",
+          "fingerprint": "24a711b3db0f05104615e044e6ef9eab8127ebcce3d8d1eab4b68008b31e8ce6"
+        },
+        {
+          "item_id": "f7e5b92b06cead29bbe8ac0a18a59bf2fcef3b56f96a18d8e301887b6bb2f9d6",
+          "path": "src/itg/d5r/d5-faults-spec.ts",
+          "fingerprint": "af5cecc11e1df4faf55e3078426e21f81cf9e2334d1c71bab8fd36992590a819"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 45108
+  }
+}
