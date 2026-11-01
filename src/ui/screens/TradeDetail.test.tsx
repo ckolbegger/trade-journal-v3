@@ -21,7 +21,7 @@ import {
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DueClassification, NarrativeItem, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
+import type { DueClassification, NarrativeItem, RecordedDeviationVersion, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -258,7 +258,7 @@ describe('Open Trade Detail', () => {
 
     const understated = {
       ...pc3Excess,
-      versions: [{ ...pc3Excess.versions[0]!, quantityAbovePlan: '15' }],
+      versions: [{ ...pc3Excess.versions[0]!, quantityAbovePlan: '15' } as RecordedDeviationVersion],
     };
     renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [understated] }));
     const quantities = await screen.findByRole('region', {

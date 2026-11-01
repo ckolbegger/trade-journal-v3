@@ -1,6 +1,6 @@
 import { IDBIndex as FakeIDBIndex, IDBObjectStore as FakeIDBObjectStore } from 'fake-indexeddb';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DeviationAction, DeviationFingerprint, IntegrityFinding, RecordedDeviation, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
+import type { DeviationAction, ExcessFingerprint, IntegrityFinding, RecordedDeviation, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { beginSemanticTransaction, NotInSemanticTransaction, rebuildPrivateState, type Persistence } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
@@ -102,7 +102,7 @@ function documentWith(
   };
 }
 
-const fingerprint = (positionChangeId: string): DeviationFingerprint => ({ tradeId: 'trade-1', plannedLegId: 'trade-1:leg', positionChangeId });
+const fingerprint = (positionChangeId: string): ExcessFingerprint => ({ tradeId: 'trade-1', plannedLegId: 'trade-1:leg', positionChangeId });
 
 function occurrence(occurrenceId: string, positionChangeId: string, quantityAbovePlan: string, economicTime: string): RecordedDeviation {
   return {

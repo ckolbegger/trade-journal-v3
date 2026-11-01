@@ -112,7 +112,7 @@ function actionsMatch(prepared: Extract<PrepareTradeChangeResult, { kind: 'Prepa
   const recorded = new Map((prepared.before?.deviations ?? []).map((d) => [d.occurrenceId, d]));
   const accounted = new Set<string>();
   const factIds = new Set(prepared.candidate.facts.filter((f) => f.kind === 'PositionChange' || f.kind === 'PlannedLeg').map((f) => f.factId));
-  const names = (f: DeviationFingerprint) => f.tradeId === prepared.candidate.tradeId && factIds.has(f.plannedLegId) && factIds.has(f.positionChangeId);
+  const names = (f: DeviationFingerprint) => f.tradeId === prepared.candidate.tradeId && factIds.has(f.plannedLegId) && (f.positionChangeId === undefined || factIds.has(f.positionChangeId));
   for (const action of actions) {
     if (action.kind === 'Create') {
       if (!names(action.occurrence.fingerprint)) return false;
@@ -136,15 +136,26 @@ export function applyDeviationActions(
   ids: IdGenerator,
   durable: (id: string) => string = (id) => id,
 ): RecordedDeviation[] {
-  const version = (o: ExpectedDeviation): RecordedDeviationVersion => ({
-    fingerprint: { ...o.fingerprint, positionChangeId: durable(o.fingerprint.positionChangeId) },
-    type: o.type,
-    form: o.form,
-    quantityAbovePlan: decimalText(o.quantityAbovePlan),
-    causingPositionChangeId: durable(o.causingPositionChangeId),
-    economicTime: o.economicTime,
-    status: 'Active',
-  });
+  const version = (o: ExpectedDeviation): RecordedDeviationVersion =>
+    o.form === 'Excess'
+      ? {
+          fingerprint: { ...o.fingerprint, positionChangeId: durable(o.fingerprint.positionChangeId) },
+          type: o.type,
+          form: o.form,
+          quantityAbovePlan: decimalText(o.quantityAbovePlan),
+          causingPositionChangeId: durable(o.causingPositionChangeId),
+          economicTime: o.economicTime,
+          status: 'Active',
+        }
+      : {
+          fingerprint: o.fingerprint,
+          type: o.type,
+          form: o.form,
+          quantityBelowPlan: decimalText(o.quantityBelowPlan),
+          causingPositionChangeId: durable(o.causingPositionChangeId),
+          economicTime: o.economicTime,
+          status: 'Active',
+        };
   const deviations = [...recorded];
   const append = (occurrenceId: string, next: (latest: RecordedDeviationVersion) => RecordedDeviationVersion) => {
     const i = deviations.findIndex((d) => d.occurrenceId === occurrenceId);

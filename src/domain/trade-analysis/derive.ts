@@ -169,21 +169,48 @@ export interface LegFulfillment {
 
 // Identifies one Entry Size (Excess) occurrence: the Planned Leg and the Position Change that
 // raised its open quantity above plan (P4).
-export interface DeviationFingerprint {
+// The members absent from the other variant are typed `undefined`, so reading either variant's
+// member from the union stays legal and its absence is the discriminant.
+export interface ExcessFingerprint {
   readonly tradeId: string;
   readonly plannedLegId: string;
   readonly positionChangeId: string;
+  readonly form?: undefined;
 }
 
-// A deterministic fact-only Deviation the facts imply (A26's version, without its status).
-export interface ExpectedDeviation {
-  readonly fingerprint: DeviationFingerprint;
-  readonly type: 'EntrySize';
-  readonly form: 'Excess';
-  readonly quantityAbovePlan: Rational;
-  readonly causingPositionChangeId: string;
-  readonly economicTime: Instant;
+// Identifies one Entry Size (Shortfall) occurrence: the Planned Leg alone, so a moved cutoff changes
+// its cause and quantity but not its identity (A83).
+export interface ShortfallFingerprint {
+  readonly tradeId: string;
+  readonly plannedLegId: string;
+  readonly form: 'Shortfall';
+  readonly positionChangeId?: undefined;
 }
+
+export type DeviationFingerprint = ExcessFingerprint | ShortfallFingerprint;
+
+// A deterministic fact-only Deviation the facts imply (A26's version, without its status).
+export type ExpectedDeviation =
+  | {
+      readonly fingerprint: ExcessFingerprint;
+      readonly type: 'EntrySize';
+      readonly form: 'Excess';
+      readonly quantityAbovePlan: Rational;
+      readonly quantityBelowPlan?: undefined;
+      readonly causingPositionChangeId: string;
+      readonly economicTime: Instant;
+    }
+  // A83: the planned quantity less the quantity entered at resolution, caused by the cutting Sell's
+  // Position Change at its Economic Time.
+  | {
+      readonly fingerprint: ShortfallFingerprint;
+      readonly type: 'EntrySize';
+      readonly form: 'Shortfall';
+      readonly quantityAbovePlan?: undefined;
+      readonly quantityBelowPlan: Rational;
+      readonly causingPositionChangeId: string;
+      readonly economicTime: Instant;
+    };
 
 // A structured integrity finding: stored state that disagrees with what the facts imply. Analysis
 // reports it and never repairs it.
@@ -208,14 +235,27 @@ export type IntegrityFinding =
     };
 
 // One version of a recorded occurrence (A26): supersession appends a Superseded version.
-export type RecordedDeviationVersion = {
-  readonly fingerprint: DeviationFingerprint;
-  readonly type: 'EntrySize';
-  readonly form: 'Excess';
-  readonly quantityAbovePlan: string;
-  readonly causingPositionChangeId: string;
-  readonly economicTime: Instant;
-} & ({ readonly status: 'Active' } | { readonly status: 'Superseded'; readonly reason: 'NoLongerExpected' });
+export type RecordedDeviationVersion = (
+  | {
+      readonly fingerprint: ExcessFingerprint;
+      readonly type: 'EntrySize';
+      readonly form: 'Excess';
+      readonly quantityAbovePlan: string;
+      readonly quantityBelowPlan?: undefined;
+      readonly causingPositionChangeId: string;
+      readonly economicTime: Instant;
+    }
+  | {
+      readonly fingerprint: ShortfallFingerprint;
+      readonly type: 'EntrySize';
+      readonly form: 'Shortfall';
+      readonly quantityAbovePlan?: undefined;
+      readonly quantityBelowPlan: string;
+      readonly causingPositionChangeId: string;
+      readonly economicTime: Instant;
+    }
+) &
+  ({ readonly status: 'Active' } | { readonly status: 'Superseded'; readonly reason: 'NoLongerExpected' });
 
 // A recorded Deviation occurrence: a stable occurrence identity with its version list (A26).
 export interface RecordedDeviation {
@@ -497,12 +537,22 @@ function factOrder(a: Ordered, b: Ordered): number {
 }
 
 // The entry window opens with the first Position Change and resolves at the first one, in Fact
-// Order, after which every Planned Leg's entered quantity reaches its planned quantity (A23). The
-// window holds every Execution of the Position Changes up to and including the resolving one.
-function entryWindowOf(record: TradeAnalysisRecord): { resolution: EntryResolution; window: ExecutionFact[] } {
+// Order, after which every Planned Leg's entered quantity reaches its planned quantity (A23), or
+// immediately before the first Position Change holding a Sell, whichever comes first (A82). The
+// window holds every Execution of the Position Changes up to and including the resolving one; a
+// window cut by a Sell names that cutting Position Change.
+function entryWindowOf(record: TradeAnalysisRecord): {
+  resolution: EntryResolution;
+  window: ExecutionFact[];
+  cutBy?: PositionChangeFact;
+} {
   const entered = new Map<string, Rational>();
   const window: ExecutionFact[] = [];
+  let last: PositionChangeFact | undefined;
   for (const pc of [...record.positionChanges].sort(factOrder)) {
+    if (last && pc.executions.some((e) => e.action === 'Sell'))
+      return { resolution: { kind: 'Resolved', positionChangeId: last.factId }, window, cutBy: pc };
+    last = pc;
     for (const e of pc.executions) {
       const leg = e.intent.plannedLegId;
       // Only a Buy enters; a Sell reduces exposure (P4).
@@ -611,9 +661,44 @@ function deviationsOf(record: TradeAnalysisRecord): ExpectedDeviation[] {
   });
 }
 
-const fingerprintKey = (f: DeviationFingerprint) => JSON.stringify([f.tradeId, f.plannedLegId, f.positionChangeId]);
+// Entry Size shortfall (A83): when the first reduction cuts the entry window before a Planned Leg is
+// entered in full, one occurrence per such leg holds the planned quantity less the quantity entered
+// at resolution, caused by the cutting Sell's Position Change.
+function shortfallsOf(
+  record: TradeAnalysisRecord,
+  entry: { window: readonly ExecutionFact[]; cutBy?: PositionChangeFact },
+): ExpectedDeviation[] {
+  const cut = entry.cutBy;
+  if (!cut) return [];
+  return record.plan.legs.flatMap((leg): ExpectedDeviation[] => {
+    const entered = total(
+      entry.window.filter((e) => e.intent.plannedLegId === leg.factId),
+      (e) => decimal(e.quantity),
+    );
+    const short = decimal(leg.quantity).sub(entered);
+    if (short.compare(Rational.of(0n)) <= 0) return [];
+    return [
+      {
+        fingerprint: { tradeId: record.tradeId, plannedLegId: leg.factId, form: 'Shortfall' },
+        type: 'EntrySize',
+        form: 'Shortfall',
+        quantityBelowPlan: short,
+        causingPositionChangeId: cut.factId,
+        economicTime: cut.economicTime,
+      },
+    ];
+  });
+}
+
+const fingerprintKey = (f: DeviationFingerprint) =>
+  JSON.stringify([f.tradeId, f.plannedLegId, f.form === 'Shortfall' ? f.form : f.positionChangeId]);
 
 const latestVersion = (r: RecordedDeviation) => r.versions[r.versions.length - 1]!;
+
+// The quantity an occurrence holds: above plan for Excess, below plan for Shortfall.
+const quantityOf = (d: ExpectedDeviation): Rational => (d.form === 'Excess' ? d.quantityAbovePlan : d.quantityBelowPlan);
+const recordedQuantityOf = (v: RecordedDeviationVersion): Rational =>
+  decimal(v.form === 'Excess' ? v.quantityAbovePlan : v.quantityBelowPlan);
 
 // Pairs each expected occurrence with the recorded one of the same fingerprint, and returns the
 // recorded occurrences left unpaired.
@@ -653,14 +738,14 @@ function deviationFindings(expected: readonly ExpectedDeviation[], recorded: rea
       });
       continue;
     }
-    const stored = decimal(match.version.quantityAbovePlan);
-    if (stored.compare(occurrence.quantityAbovePlan) !== 0)
+    const stored = recordedQuantityOf(match.version);
+    if (stored.compare(quantityOf(occurrence)) !== 0)
       findings.push({
         kind: 'DeviationQuantityDisagreement',
         fingerprint: occurrence.fingerprint,
         occurrenceId: match.occurrenceId,
         recorded: stored,
-        expected: occurrence.quantityAbovePlan,
+        expected: quantityOf(occurrence),
       });
   }
   for (const { occurrenceId, version } of unpaired)
@@ -680,7 +765,7 @@ function deviationActions(expected: readonly ExpectedDeviation[], recorded: read
     ...pairs.map(({ occurrence, match }): DeviationAction => {
       if (!match) return { kind: 'Create', occurrence };
       const unchanged =
-        match.version.status === 'Active' && decimal(match.version.quantityAbovePlan).compare(occurrence.quantityAbovePlan) === 0;
+        match.version.status === 'Active' && recordedQuantityOf(match.version).compare(quantityOf(occurrence)) === 0;
       return unchanged
         ? {
             kind: 'Retain',
@@ -714,21 +799,22 @@ function changeEffects(before: DerivedTradeState, lifecycle: LifecycleState, dev
   const prior = new Map(before.deviations.map((d) => [fingerprintKey(d.fingerprint), d]));
   for (const d of deviations) {
     const key = fingerprintKey(d.fingerprint);
-    const from = prior.get(key)?.quantityAbovePlan ?? null;
+    const earlier = prior.get(key);
+    const from = earlier ? quantityOf(earlier) : null;
     prior.delete(key);
-    if (from?.compare(d.quantityAbovePlan) !== 0)
+    if (from?.compare(quantityOf(d)) !== 0)
       effects.push({
         kind: 'DeviationChange',
         fingerprint: d.fingerprint,
         from,
-        to: d.quantityAbovePlan,
+        to: quantityOf(d),
       });
   }
   for (const d of prior.values())
     effects.push({
       kind: 'DeviationChange',
       fingerprint: d.fingerprint,
-      from: d.quantityAbovePlan,
+      from: quantityOf(d),
       to: null,
     });
   return effects;
@@ -770,7 +856,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
   const expectedLifecycle: LifecycleState = lifecycleOf(facts, positions);
   const closed = expectedLifecycle === 'Closed';
   const realizedToDate = lotMatchResults.reduce((sum, r) => (r.realized.kind === 'Value' ? sum.add(r.realized.value) : sum), Rational.of(0n));
-  const deviations = deviationsOf(record);
+  const deviations = [...deviationsOf(record), ...shortfallsOf(record, entry)];
   const before = input.candidate && derive({ record: input.candidate.before, ...(input.cutoff && { cutoff: input.cutoff }) });
   if (before?.kind === 'IncoherentFacts') return before;
   const agreement: LifecycleAgreement =

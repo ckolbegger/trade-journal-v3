@@ -198,7 +198,7 @@ function reconciliationOf(
             const expected = action.occurrence.fingerprint;
             return (
               fingerprint.plannedLegId === expected.plannedLegId &&
-              fingerprint.positionChangeId === (mapping[expected.positionChangeId] ?? expected.positionChangeId)
+              fingerprint.positionChangeId === (expected.positionChangeId && (mapping[expected.positionChangeId] ?? expected.positionChangeId))
             );
           })!
         : recorded.find((d) => d.occurrenceId === action.occurrenceId)!;

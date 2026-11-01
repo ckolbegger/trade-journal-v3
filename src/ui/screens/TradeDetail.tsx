@@ -626,10 +626,10 @@ function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; re
   const recorded = (occurrenceId: string) => view.deviations.find((d) => d.occurrenceId === occurrenceId)?.versions.at(-1)?.quantityAbovePlan;
   const row = (finding: IntegrityFinding): readonly [string, string, string] => {
     if (finding.kind === 'LifecycleDisagreement') return ['Lifecycle', finding.stored, finding.expected];
-    const record = `Entry Size Deviation, Position Change at ${timeOf(finding.fingerprint.positionChangeId)}`;
+    const record = `Entry Size Deviation, Position Change at ${timeOf(finding.fingerprint.positionChangeId ?? '')}`;
     switch (finding.kind) {
       case 'DeviationMissing':
-        return [record, 'None', `${quantity(finding.expected.quantityAbovePlan)} shares`];
+        return [record, 'None', `${quantity(finding.expected.quantityAbovePlan ?? finding.expected.quantityBelowPlan)} shares`];
       case 'DeviationQuantityDisagreement':
         return [record, `${quantity(finding.recorded)} shares`, `${quantity(finding.expected)} shares`];
       case 'DeviationUnexpected':
