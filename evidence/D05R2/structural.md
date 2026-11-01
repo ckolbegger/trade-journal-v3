@@ -72,3 +72,22 @@ Type-only change (A166, P44). `dueRule: 'OneSessionGrace'` became `dueRule: DueR
 | `npm run lint` | exit 0 |
 | `rg "'OneSessionGrace'" src --glob '!*.test.*'` | only `src/domain/journal-debt/index.ts` (`export type DueRule`) and `src/modules/journal/journal.ts` (value in a new Debt); no type declaration remains |
 | `git diff claude-opus-5.5-d5r -- tests/fixtures` | empty (0 lines) |
+
+The breakdown's A166 counts "four places"; at `claude-opus-5.5-d5r` there are three type declarations (`journal.ts:162`, `effects.ts:155`, `effects.ts:249`) plus the stored value at `journal.ts:409`, which stays a literal. Checked by the main session with `git grep -n OneSessionGrace claude-opus-5.5-d5r -- src ':!*.test.*'`.
+
+### ocr review of `451b093`
+
+Session `7b9a23a1-e187-496f-920a-e0da745a331a`, 2 files reviewed, no findings. Raw output: [ocr/T5R2.2-451b093.json](ocr/T5R2.2-451b093.json).
+
+### Cumulative suite at `451b093` (T5R2.2 closed)
+
+Date 2026-11-01 06:43 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 76 passed (76)`, `Tests 1015 passed (1015)`, exit 0 | `suite-runs/t5r2-2-journal-due-rule-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-2-journal-due-rule-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-2-journal-due-rule-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-2-journal-due-rule-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.

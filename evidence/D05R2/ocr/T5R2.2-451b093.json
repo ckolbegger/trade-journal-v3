@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 18293,
+    "input_tokens": 18022,
+    "output_tokens": 271,
+    "cache_read_tokens": 7680,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    }
+  ],
+  "session_id": "7b9a23a1-e187-496f-920a-e0da745a331a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7b9a23a1-e187-496f-920a-e0da745a331a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "451b093c",
+      "resolved_base": "b54a486784054cbd18f37c2842bc3452761a2077",
+      "resolved_head": "451b093cfca9b9eee2c1f684122aba85d67af08d",
+      "exact_range": "b54a486784054cbd18f37c2842bc3452761a2077..451b093cfca9b9eee2c1f684122aba85d67af08d",
+      "source_artifact_sha256": "230023c0284a7ff27453012e5a09cded79a0e605ba725a1202bc4bcbd3d02077"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "2922144b8b262af1bf7f89cff8649a1031cd3c57fbbaf16590fea9a417c5309b"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "416f8848de4279653b0cf23d7c5d9ab816a37049039212b156fb58658c98980d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "2922144b8b262af1bf7f89cff8649a1031cd3c57fbbaf16590fea9a417c5309b"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "416f8848de4279653b0cf23d7c5d9ab816a37049039212b156fb58658c98980d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 18653
+  }
+}
