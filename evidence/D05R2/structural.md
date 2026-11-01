@@ -224,3 +224,20 @@ Change: new `src/ui/due-text.ts` exports `DUE_TEXT: Record<DueClassification, st
 | `rg 'DUE_TEXT' src/ui` | defined only at `src/ui/due-text.ts:4`; the other hits are the two imports and the two uses |
 | `rg "ReviewReflections" src/ui/screens/OwedDebtItem.tsx` | no match, exit 1 |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+
+### ocr review of `753bca9`
+
+Session `93767b47-acb2-4f7a-88fe-86eafa152fa3`, 3 files reviewed, no findings. Raw output: [ocr/T5R2.6-753bca9.json](ocr/T5R2.6-753bca9.json).
+
+### Cumulative suite at `753bca9` (T5R2.6 closed)
+
+Date 2026-11-01 07:50 EST. The working tree's only uncommitted changes were evidence files. This run also covers T5R2.5-B1's code; F1 did not recur.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 76 passed (76)`, `Tests 1025 passed (1025)`, exit 0 | `suite-runs/t5r2-6-due-text-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-6-due-text-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-6-due-text-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-6-due-text-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.
