@@ -309,3 +309,37 @@ Delegated to `suite-runner` (its first run under T6P.5's instructions), 2026-11-
 | Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-5-docs-checks.txt](suite-runs/t6p-5-docs-checks.txt) |
 
 Ports 9341, 9342 and 5175 were free before and after. Browser stage 6 min 38 s (moved to the background by the harness after 180 s; the runner waited for the completion notice). T6P.5 has no ocr review: it changes process documents only, with no implementation.
+
+## T6P.6 Gate runs
+
+Delegated to `suite-runner`, 2026-11-01 16:39–16:48 EST, commit `eceb9a0` (uncommitted: the runs' output files). Ports 9341, 9342 and 5175 were free before the first run and after the last.
+
+**Run 1, complete cumulative, full tier** (label `t6p-6-full`, stage `browser`):
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 80 passed (80)`, `Tests 1051 passed (1051)`, exit 0 | [suite-runs/t6p-6-full-unit.txt](suite-runs/t6p-6-full-unit.txt) |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | [suite-runs/t6p-6-full-integration.txt](suite-runs/t6p-6-full-integration.txt) |
+| Browser (Chromium), full tier | `browser` (`npm run test:e2e`) | `147 passed (6.7m)`, exit 0; wall time 16:40:13–16:46:54 (6 min 41 s) | [suite-runs/t6p-6-full-browser.txt](suite-runs/t6p-6-full-browser.txt) |
+| Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-6-full-checks.txt](suite-runs/t6p-6-full-checks.txt) |
+
+**Runs 2 and 3:**
+
+| Run | Command | Result | Exit | Wall time | Output |
+|---|---|---|---|---|---|
+| Release history | `npm run test:e2e:release-history` | `3 passed (14.2s)` | 0 | about 16 s (16:47:24–16:47:40) | [suite-runs/t6p-6-release-history.txt](suite-runs/t6p-6-release-history.txt) |
+| Task tier | `.claude/scripts/full-suite.sh evidence/D06P t6p-6-task browser-task` | `5 passed` (no `e2e/d6p`, so only the `@every-task` call ran) | 0 | about 11 s (16:47:43–16:47:54) | [suite-runs/t6p-6-task-browser.txt](suite-runs/t6p-6-task-browser.txt) |
+
+**Main session:** `git diff claude-opus-5.5-d5r2 -- src` is empty.
+
+Every expected result in the breakdown's section 3, "T6P.6 Gate runs", is met, so the gate in section 5 holds: T6P.1–T6P.5 are committed with each code commit's ocr findings resolved (T6P.2's three as bug tasks B1–B3), T6P.6's three runs pass, and `src/` is unchanged.
+
+**Measured times:**
+
+| | Before the prefactor | After |
+|---|---|---|
+| Full browser tier (`npm run test:e2e`) | 179 tests, 7.4 min (D5R2) | 147 tests, 6.6–6.8 min (T6P.4 to T6P.6) |
+| Task tier (`browser-task`, no current folder) | none | 5 tests, about 11–14 s wall time |
+| Task tier with a 15-test current folder (`TJ_E2E_CURRENT=e2e/d5r`) | none | 20 tests, about 1 min 26 s |
+| Release history | in the full run | 3 tests, about 15–16 s |
+| `e2e/d2/ui-alignment.spec.ts` alone | 69 tests, 2.1 min (after T6P.3) | 45 tests, 1.6 min (95.7–97.9 s, three runs) |
