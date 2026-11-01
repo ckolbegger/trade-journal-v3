@@ -388,7 +388,7 @@ describe('Open list current evaluation', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['/review?trade=trade-7&instrument=ABC', '/review?trade=trade-7&instrument=ABC']);
   });
 
-  it('should show Awaiting the next close in place of the P&L when the evaluation reports AwaitingClose,with no at-entry risk in the list, and the dated line when present', async () => {
+  it('should show Awaiting the next close in place of the P&L when the evaluation reports AwaitingClose, with no at-entry risk in the list, and the dated line when present', async () => {
     const atEntry = { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(503n, 10n), riskFromEntry: Rational.of(130n), rewardFromEntry: Rational.of(230n) };
     const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
     const awaiting = valued({ currentMarkedPnl: awaitingClose, currentMarkedPnlInPlanR: awaitingClose, atEntry, datedLine: dated });
