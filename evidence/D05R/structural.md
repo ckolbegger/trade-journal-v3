@@ -1189,6 +1189,11 @@ No path was found where an async request error and the synchronous catch both ac
 
 `keyOf` is computed before the write is issued (or the request's handler attached at once), so a throw leaves no request without a handler.
 
+Record (implemented):
+- Test: `src/persistence/persistence.test.ts`, "should reject with the keyOf error, store nothing and leave no unhandled rejection when keyOf throws". A `put` to `trades` with `keyOf` made to throw once; asserts the call rejects with that error, the record is absent, the content revision is still 1, and a `process.on('unhandledRejection')` listener (registered for the test, removed in `finally`) saw nothing after three macrotask ticks.
+- Seam: `keyOf` only reads fields (and the store must exist for `tx.objectStore`), so no real record or store makes it throw. The test uses a module-level `vi.mock('./schema.ts')` that wraps the real `keyOf` in `vi.fn` (pass-through) and `mockImplementationOnce` to throw. A spy, not a real input.
+- Red: `AssertionError: expected [ Array(1) ] to deeply equal []` (one unhandled AbortError rejection). Green after moving `keyOf` (the `revisions.push`) before the `add`/`put` call. ADR 0011 checks, the async-error path, and the abort-and-rethrow are unchanged. Rows are in `tdd-log.md`.
+
 ### T5R.14-B1-B2 The abort in the catch can't mask the original error
 
 `tx.abort()` in the synchronous catch is guarded, as at `persistence.ts:277`, so the original error is always the one rethrown.

@@ -393,8 +393,9 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
             request = store.delete(write.key);
           } else {
             const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
-            request = write.op === 'add' ? store.add(value) : store.put(value);
+            // Before the request exists: a throw after it would leave a request with no handler attached.
             revisions.push({ store: write.store, key: keyOf(write.store, value), revision: contentRevision });
+            request = write.op === 'add' ? store.add(value) : store.put(value);
           }
           request.catch((error: unknown) => {
             if (error instanceof Error && error.name === 'ConstraintError') violation ??= write.store;

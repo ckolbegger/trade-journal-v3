@@ -3,6 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { createPersistence, rebuildPrivateState, type WriteGate } from './index.ts';
 import { TEST_SESSION_POLICY } from '../../tests/support/session-policy.ts';
+import { keyOf } from './schema.ts';
+
+// Passes through to the real keyOf; one case makes it throw, since no real record can (it only reads fields).
+vi.mock('./schema.ts', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./schema.ts')>();
+  return { ...original, keyOf: vi.fn(original.keyOf) };
+});
 
 function sequentialIds() {
   let n = 0;
@@ -279,6 +286,30 @@ describe('semantic commit', () => {
         ],
       }),
     ).rejects.toMatchObject({ name: 'DataError' });
+    expect(await rawGet(databaseName, 'trades', 'trade-1')).toBeUndefined();
+    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
+  });
+
+  it('should reject with the keyOf error, store nothing and leave no unhandled rejection when keyOf throws', async () => {
+    const { p, databaseName } = await created();
+    // keyOf only reads fields, so no real record makes it throw: a spy on that seam stands in for the programmer error.
+    const failure = new Error('keyOf failed');
+    vi.mocked(keyOf).mockImplementationOnce(() => {
+      throw failure;
+    });
+    const unhandled: unknown[] = [];
+    const listener = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', listener);
+    try {
+      await expect(
+        p.commit({ checks: [], writes: [{ op: 'put', store: 'trades', value: { tradeId: 'trade-1' } }] }),
+      ).rejects.toBe(failure);
+      // Unhandled rejections are reported after the microtask queue drains, so wait a few macrotasks.
+      for (let i = 0; i < 3; i++) await new Promise((resolve) => setTimeout(resolve, 0));
+    } finally {
+      process.off('unhandledRejection', listener);
+    }
+    expect(unhandled).toEqual([]);
     expect(await rawGet(databaseName, 'trades', 'trade-1')).toBeUndefined();
     expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
   });
