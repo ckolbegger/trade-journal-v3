@@ -64,7 +64,7 @@ describe('I5R.1 Save Marks together', () => {
     expect(marksFamily.earlier.some((g) => g.instrumentKey === 'XYZ')).toBe(false);
     const walked = reopened.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
     const c = walked.find((t) => t.tradeId === trades.c)!;
-    expect(c.rangePosition).toEqual({ kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: MONDAY });
+    expect(c.rangePosition).toEqual({ kind: 'NotPlaced', reason: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: MONDAY });
     expect(c.reasons).toContainEqual({ code: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: MONDAY });
 
     // Actions for the five Trades and D-1 resolved: the Review completes with DEF unavailable.

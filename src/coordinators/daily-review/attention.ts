@@ -30,7 +30,7 @@ function decimal(text: string): Rational {
 // open cost, without fees, in place of the Mark; "now" is the evaluation's Value.
 type RiskReward =
   | { readonly kind: 'Figures'; readonly riskNow: Rational; readonly rewardNow: Rational; readonly riskAtEntry: Rational; readonly rewardAtEntry: Rational; readonly mark: Rational; readonly averageCost: Rational }
-  | { readonly kind: 'Missing'; readonly detail: { readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string } | { readonly reason: 'AwaitingClose'; readonly after: string } };
+  | { readonly kind: 'Missing'; readonly acknowledged: boolean; readonly detail: { readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string } | { readonly reason: 'AwaitingClose'; readonly after: string } };
 
 function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): RiskReward {
   const risk = evaluation.ongoingRiskToStop;
@@ -40,6 +40,7 @@ function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): Ri
     if (missing.kind !== 'Unavailable') throw new Error('A pressure input is neither a Value nor Unavailable');
     return {
       kind: 'Missing',
+      acknowledged: missing.reason === 'AcknowledgedUnavailable',
       detail:
         'instrument' in missing.detail
           ? { reason: 'MissingInput', instrumentKey: missing.detail.instrument.symbol, date: missing.detail.date }
@@ -78,7 +79,11 @@ function pressureOf(figures: RiskReward): PressureBasis {
 const shareOf = (risk: Rational, reward: Rational) => risk.div(risk.add(reward));
 
 function rangePositionOf(figures: RiskReward): RangePosition {
-  if (figures.kind === 'Missing') return { kind: 'NotPlaced', ...figures.detail };
+  if (figures.kind === 'Missing') {
+    const { detail } = figures;
+    if (detail.reason === 'MissingInput' && figures.acknowledged) return { kind: 'NotPlaced', ...detail, reason: 'AcknowledgedUnavailable' };
+    return { kind: 'NotPlaced', ...detail };
+  }
   const atEntry = shareOf(figures.riskAtEntry, figures.rewardAtEntry);
   if (figures.riskNow.compare(ZERO) <= 0) return { kind: 'Placed', now: ZERO, atEntry, pinned: 'Stop' };
   if (figures.rewardNow.compare(ZERO) <= 0) return { kind: 'Placed', now: Rational.of(1n), atEntry, pinned: 'Target' };

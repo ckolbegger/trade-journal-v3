@@ -50,10 +50,11 @@ export type PressureBasis =
 
 // Where the Review-date Mark sits in the Trade's Stop-to-Target range (P39): risk ÷ (risk + reward), with the
 // same risk and reward the pressure basis uses, now and at entry. `pinned` names the end the Mark is at or past:
-// risk is zero at the Stop (share 0), reward is zero at the Target (share 1).
+// risk is zero at the Stop (share 0), reward is zero at the Target (share 1). A missing Mark and the trader's
+// acknowledgment that none can be had are two reasons, so the slider names each in its own words.
 export type RangePosition =
   | { readonly kind: 'Placed'; readonly now: Rational; readonly atEntry: Rational; readonly pinned?: 'Stop' | 'Target' }
-  | { readonly kind: 'NotPlaced'; readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string }
+  | { readonly kind: 'NotPlaced'; readonly reason: 'MissingInput' | 'AcknowledgedUnavailable'; readonly instrumentKey: string; readonly date: string }
   | { readonly kind: 'NotPlaced'; readonly reason: 'AwaitingClose'; readonly after: string }
   | { readonly kind: 'NotPlaced'; readonly reason: 'FactsIncoherent' };
 

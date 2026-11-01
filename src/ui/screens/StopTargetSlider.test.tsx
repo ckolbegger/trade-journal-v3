@@ -54,4 +54,12 @@ describe('ends and missing inputs', () => {
     expect(container.querySelector('.slider-entry')).toBeNull();
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe('Mark missing: DEF, Mon Oct 12'); // shortDate adds the weekday, as figures.ts does everywhere else
   });
+
+  it('should read Acknowledged unavailable: DEF, Mon Oct 12 as its description, not Mark missing, when the position is not placed because the trader acknowledged the Mark unavailable', () => {
+    const acknowledged: RangePosition = { kind: 'NotPlaced', reason: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: '2026-10-12' };
+    const { container } = render(<StopTargetSlider position={acknowledged} figures={figures} />);
+    expect(container.querySelector('.slider-none')).not.toBeNull();
+    expect(container.querySelector('.slider-now')).toBeNull();
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe('Acknowledged unavailable: DEF, Mon Oct 12');
+  });
 });

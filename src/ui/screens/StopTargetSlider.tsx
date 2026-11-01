@@ -17,8 +17,16 @@ const wholePercent = (share: Rational): string => `${(200n * share.numerator + s
 
 // The missing input in the words figures.ts uses.
 function notPlaced(position: Extract<RangePosition, { kind: 'NotPlaced' }>): string {
-  if (position.reason === 'MissingInput') return `Mark missing: ${position.instrumentKey}, ${shortDate(position.date)}`;
-  return position.reason === 'AwaitingClose' ? 'Awaiting the next close' : 'Not available';
+  switch (position.reason) {
+    case 'MissingInput':
+      return `Mark missing: ${position.instrumentKey}, ${shortDate(position.date)}`;
+    case 'AcknowledgedUnavailable':
+      return `Acknowledged unavailable: ${position.instrumentKey}, ${shortDate(position.date)}`;
+    case 'AwaitingClose':
+      return 'Awaiting the next close';
+    case 'FactsIncoherent':
+      return 'Not available';
+  }
 }
 
 function describe(position: Extract<RangePosition, { kind: 'Placed' }>, figures: SliderFigures): string {
