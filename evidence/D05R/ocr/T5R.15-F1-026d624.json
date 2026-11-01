@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 40768,
+    "input_tokens": 40471,
+    "output_tokens": 297,
+    "cache_read_tokens": 5760,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Plan and position change forms: local-time handling and validation",
+      "files": [
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/local-time.ts",
+        "src/ui/screens/position-change-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "cc1fbad6-deaa-49ab-9cbb-bc1e26173859",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cc1fbad6-deaa-49ab-9cbb-bc1e26173859",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "026d6243",
+      "resolved_base": "256f1d01d549c964d24bf3405bde882ce6b0cc97",
+      "resolved_head": "026d62439dcef07bf633e0c9ed6ca5c4d26c57bf",
+      "exact_range": "256f1d01d549c964d24bf3405bde882ce6b0cc97..026d62439dcef07bf633e0c9ed6ca5c4d26c57bf",
+      "source_artifact_sha256": "fde3b261f62bfad4e8cdff26a8080797eb4e2b8e2309f43ede7ee00050b9110c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "96287987a4bdd8af2015a910d79653839d274a6f21a7a983d520422b52b1f05c"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "66ad29a644c242e6596b4f780acfc404f759d29c1970216e8afe57fab750aae6"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "4912e0604bab1e5cf20299f59de2cad0adda59e3bcdc8916c1737a74fa3ff09e"
+        },
+        {
+          "item_id": "e4cfd77bcb497df2917a4b54b4de8e2947c2384414921d333c604b9f30b55f61",
+          "path": "src/ui/screens/local-time.ts",
+          "fingerprint": "bd081915c0e15e7f2a90537caea02ef34190ef17d3e2ccee2a4a3bae2be12309"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "96287987a4bdd8af2015a910d79653839d274a6f21a7a983d520422b52b1f05c"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "66ad29a644c242e6596b4f780acfc404f759d29c1970216e8afe57fab750aae6"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "4912e0604bab1e5cf20299f59de2cad0adda59e3bcdc8916c1737a74fa3ff09e"
+        },
+        {
+          "item_id": "e4cfd77bcb497df2917a4b54b4de8e2947c2384414921d333c604b9f30b55f61",
+          "path": "src/ui/screens/local-time.ts",
+          "fingerprint": "bd081915c0e15e7f2a90537caea02ef34190ef17d3e2ccee2a4a3bae2be12309"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 19069
+  }
+}
