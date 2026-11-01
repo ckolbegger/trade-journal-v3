@@ -55,19 +55,19 @@ Numbering continues from D8's A123–A149. These are implementation-level choice
 
 | # | Assumption |
 |---|---|
-| A150 | **Card list:** one card per walked Trade, in the overview's attention order. **Amended by decision 64 (revision 23):** the cards follow the newest Review the screen holds, so a save that returns a refreshed Review (a saved Mark changes a Trade's pressure) re-sorts them; the open card stays open, with its entered values, as it moves. This was "stable within a Review view" (Daily Review, "Date, eligibility, and ordering"), read as one screen; the spec's own rule, "A fresh `open` may produce a new order", applies to each refreshed Review. A collapsed card is one heading button: Underlying; what remains ("2 Marks · 1 reflection due · Action", from the overview's Mark rows, reflection counts, and completion reasons); the band as a badge; and the slider (P39). A card is **Done** when its Review-date Marks are resolved, it has no due reflection, and its Action is saved. A Done card shows "Done · Action saved" and keeps its place. |
+| A150 | **Card list:** one card per walked Trade, in the overview's attention order. **Amended by decision 64 (revision 23):** the cards follow the newest Review the screen holds, so a save that returns a refreshed Review (a saved Mark changes a Trade's pressure) re-sorts them; the open card stays open, with its entered values, as it moves. This was "stable within a Review view" (Daily Review, "Date, eligibility, and ordering"), read as one screen; the spec's own rule, "A fresh `open` may produce a new order", applies to each refreshed Review. A collapsed card is one heading button: Underlying; what remains ("2 Marks · 1 reflection due · Action", from the overview's Mark rows, reflection counts, and completion reasons); the band as a badge; and the slider (P39). A card is **Done** when its Review-date Marks are resolved, it has no due reflection, and its Action is saved. A Done card shows "Done · Action saved" and keeps its place. **Amended by decision 68 (revision 27):** the header shows the Trade's summary line after the Underlying, in its own span (`tradeSummary`, the text the Trade list and "also held by" show, e.g. "XYZ  Long 100 shares @ $50.18"), so two cards on one Underlying read apart; a Trade with no summary (facts that cannot be replayed) shows the Underlying alone. Each card's list item carries its Trade's id as `data-trade-id`, a hook for tests that shows nothing. Wherever the Review names a Trade in a sentence (the hold messages in A156, the blockers, and "Trades:" under Complete with unavailable Marks), it uses the Trade's **name**: the Underlying, then the summary line in parentheses, "XYZ (Long 100 shares @ $50.18)", or the Underlying alone without a summary. "Mark missing for XYZ" still names the Instrument, whose Mark is shared, and "also held by" still names the other Trades by their summary line alone (decision 67). The open card's body keeps its label "XYZ review": one card is open at a time, and its header names the Trade. |
 | A151 | **One card open at a time, opened in place.** Pressing a collapsed header calls `getTrade` (as today), closes the card that was open, opens the pressed card in place, scrolls its top just under the page header, and moves focus to its header button (`aria-expanded`). Pressing an open card's header collapses it. On load the first card that is not Done opens. If every card is Done, none opens. |
 | A152 | **Panels:** inside the open card, after its figures (A158), three panels in the spec's work order (P36): **Marks**, **Reflections**, **Action**. One panel is open at a time. Each panel header is a button with a one-line summary ("1 of 4 for Mon Oct 12 · 2 earlier optional"; "2 owed, 1 due now"; "Hold, Exit, Roll or Adjust") and a status badge as text ("3 needed", "1 due", "Saved"). The card opens on its first panel that is not done. Finishing a panel's work opens the next panel that is not done. |
 | A153 | **Marks panel:** the Review-date rows for the card's Instruments come first, then the card's earlier sessions without Marks under "Earlier sessions without Marks — optional", grouped by date, newest first, 20 sessions per page (D4 A57). A shared Instrument's row says "also held by" with the other Trades' Underlyings. **Amended by decision 67 (revision 26):** it names each other Trade by the summary line the Trade list shows (`tradeSummary`, e.g. "Buy 100 shares @ $50.00"), linked to that Trade; a shared Instrument has one Underlying, so the Underlying told the trader nothing. A typed price, or "Can't get a price" with its reason, is a **draft**: the row is marked "Unsaved" and nothing is written. **Save Marks (n)** and **Discard** sit at the panel's foot. A row with an exact Mark or an acknowledgment keeps D4's per-row **Correct** and **Withdraw**, which save at once through `MarketData.save` as today. Enter moves to the next price; from the last price it moves to Save Marks. |
 | A154 | **Market Data prepare/apply (P37):** `prepareEffects({ entries })` takes 1–100 entries with distinct keys, each `{ key, expectedRevision, intention }`. It validates them all at once and returns issues keyed by entry index and field. The codes are D4's key, session, price, and reason codes, plus `DuplicateKey` and `TooManyEntries`. It then reads every key's current record in one read-only snapshot. If any expected revision is stale, or an acknowledgment meets an exact Mark (`MarkExists`), it returns `Conflict` naming every such key with its current resolution. Otherwise it returns a prepared effect: each new record (the appended revision with its id and save time, and the bumped `resolutionRevision`) and the resolution, revision, and classification each key will report. It writes nothing. `applyPreparedEffects(tx, prepared)` adds, per key, a check that the record's `resolutionRevision` is still the one prepared against, and a `put` of the new record. A key that moved between prepare and commit therefore fails the whole commit with nothing written. `save` keeps its command and result types and becomes prepare, apply, and commit for its one key. Market Data has no shared counter to guard (decision 53). |
 | A155 | **`SaveReviewMarks` (P37, P38):** `{ kind: 'SaveReviewMarks', reviewDate, tradeId, binding, entries }`, where `tradeId` is the card the Marks were saved from and `binding` is the overview's binding. Daily Review calls `marketData.prepareEffects` (passing its `Rejected` or `Conflict` straight back, writing nothing), opens a semantic transaction, applies the prepared effect, and commits. It adds no other check: Market Data accepts any well-formed key on a completed session (D4 P10), and the screen offers only the Review's keys. After the commit, it assembles the revised Review as an Action save does (D5 A67, Review-date frames only) and `getTrade` for `tradeId` under the new binding. The result is `MarksSaved` with each key's resolution, revision, and classification; the revised progress, completion, binding, and walked Trade items (summary, band, reasons, range position); the refreshed card; and the next step. If the assembly fails after the commit, the result still reports the saved Marks, with the Review part as `ChangedDuringAssembly`, as for an Action save. |
-| A156 | **Leaving with unsaved work:** while the open card holds a draft Mark, or a Debt or Action form holds an entered value, its header cannot collapse it and no other card opens. The card says "Save or discard what you entered for XYZ to leave it." The screen reports unsaved state through `onDirtyChange` as today, so route changes and the update notice wait (D1 A5). |
+| A156 | **Leaving with unsaved work:** while the open card holds a draft Mark, or a Debt or Action form holds an entered value, its header cannot collapse it and no other card opens. The card says "Save or discard what you entered for XYZ to leave it." The screen reports unsaved state through `onDirtyChange` as today, so route changes and the update notice wait (D1 A5). **Amended by decision 68 (revision 27):** the messages name the Trade (A150): "Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to leave it.", and after an Action save on a held card (T5R.12), "The Action is saved. Save or discard what you entered for XYZ (Long 100 shares @ $50.18) to go on." |
 | A157 | **After Save Marks (P38):** every row, the card's figures, and every collapsed card's summary and slider render from the `MarksSaved` result. The open card stays open and moves to its next panel that is not done. When the result's Review part is `ChangedDuringAssembly`, the saved rows render, and the card says its figures are out of date and offers **Refresh**, which calls `open` and `getTrade`. |
 | A158 | **Open-card figures:** the card's figure grid shows Current P&L, Risk to stop, Worst case, and Reward to target, each in dollars and R; then Reward : risk, now and planned (P40); then At entry; then the dated last close when present (D4 P12, P13). Every figure that is not a `Value` reads in words from `src/ui/figures.ts` (for example "Mark missing: DEF, Oct 12"), never as 0 (UI contract, "Numbers, availability, and graphs"). |
 | A159 | **Action form keeps Hold preselected.** The prototype's Action panel starts with no choice. The spec wins: Hold is preselected only in returned view state and one visible Save records it (UI contract, "Forms and evidence capture"; AC-REV-003). As in D4, saving an Action is not gated on the card's Marks. A missing Mark keeps the Review Incomplete and the card not Done. |
 | A160 | **Other prototype differences:** the prototype's Save Marks blocked an invalid price on the screen. In the app, the screen sends the command and shows the returned issues (A154). The prototype's mode switches (Manual or Automatic pricing, 4 or 20 positions) are prototype controls only. |
-| A161 | **Links into the Review (replaces D4 A60):** `/review?instrument=XYZ` opens the first card, in attention order, that holds XYZ, on its Marks panel, with focus on XYZ's row. `/review?trade=T` opens T's card on its first panel that is not done. The header's blockers link to the card and panel that resolve them. The Open list's and Trade Detail's Missing-Mark disclosures keep linking with `?instrument=`. |
-| A162 | **Responsive and read only:** at narrow widths the card header puts the slider on its own full-width row under the Underlying. Panels, figures, and forms stack in one column. Resizing keeps the open card, the open panel, and every draft and form value (UI contract, "Responsive behavior"). In Recovery Only every card still opens and shows its figures, Marks, reflections, and saved Action. Inputs and Save Marks, Answer, Decline, and Save are not offered, as in D4 and D5. |
+| A161 | **Links into the Review (replaces D4 A60):** `/review?instrument=XYZ` opens the first card, in attention order, that holds XYZ, on its Marks panel, with focus on XYZ's row. `/review?trade=T` opens T's card on its first panel that is not done. The header's blockers link to the card and panel that resolve them. The Open list's and Trade Detail's Missing-Mark disclosures keep linking with `?instrument=`. **Amended by decision 68 (revision 27):** those disclosures link with `?trade=<id>&instrument=<key>`, so each opens its own Trade's card on Marks with focus on the row, never another Trade's card on the same Instrument (T5R.12-B1 already acts on the pair). A bare `?instrument=` still opens the first card holding it. The blockers name the Trade (A150). |
+| A162 | **Responsive and read only:** at narrow widths the card header puts the slider on its own full-width row under the Underlying. Panels, figures, and forms stack in one column. Resizing keeps the open card, the open panel, and every draft and form value (UI contract, "Responsive behavior"). In Recovery Only every card still opens and shows its figures, Marks, reflections, and saved Action. Inputs and Save Marks, Answer, Decline, and Save are not offered, as in D4 and D5. **Amended by decision 68 (revision 27):** the slider takes its own row only when the card is too narrow for it, whatever the viewport. While the card's header is at least 40rem (640 px) wide, the slider stays in its 9rem side column; narrower, it takes its own full-width row under the header's text. The switch follows the card's own width (a CSS container query on the card), not the viewport's. Measured with the summary line (A150): at the old switch (a 640 px viewport, so a 574 px header) the card fixture's header took three lines beside the slider; at a 640 px header even a long one ("GOOGL Long 1250.5 shares @ $1,234.56 2 Marks · 2 reflections due · Action Quantified pressure") fits on two. With today's page layout the slider is below under about a 706 px viewport, beside from there to 959 px, and beside again at 960 px and wider with the sidebar (a 674 px header). The UI contract ("Responsive behavior") leaves exact breakpoints to the implementation, and the card's width follows the live viewport width. |
 | A163 | **No storage change:** D5R adds no store, index, or schema version. No migration, fixture freeze, or capacity basis change is needed. The overview's new fields (P39, the gap groups' Trades) are computed from data `open` already reads. A Mark saved through `SaveReviewMarks` is the same `observations` record `MarketData.save` writes. |
 
 ---
@@ -107,6 +107,12 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T5R.13 | Query-count proof and latency run | test | S | T5R.6 | `test:integration -- d5r/query-count`, `bench:run` |
 | T5R.14 | Node mock-free integration suite | test | S | T5R.6 | `test:integration` |
 | T5R.15 | Browser suite: D4 and D5 cases moved onto cards, and D5R cases | test | S | T5R.7–T5R.12 | `test:e2e` |
+| T5R.15-I1 | UI: each card carries its Trade id and shows its summary line (decision 68, section 6.5) | UI | B | T5R.15-B1-B1, T5R.9-B5 | `ReviewView`, `ReviewCard` |
+| T5R.15-I2 | Browser card helpers reach a card by its Trade (section 6.5; absorbs T5R.15-B2) | test | B | T5R.15-I1 | `reachCard`, `reachPanel` in `e2e/d4/support.ts` |
+| T5R.15-I3 | D5R, D4 and D5 browser specs on the Trade-keyed helpers | test | S | T5R.15-I2 | `test:e2e` |
+| T5R.15-I4 | UI: messages and blockers name the Trade | UI | B | T5R.15-I1 | `tradeName`, `ReviewView`, `ReviewCard` |
+| T5R.15-I5 | UI: Missing-Mark links open the Trade's own card | UI | B | T5R.15-I3 | `TradeList`, `TradeDetail`; B5R.12 |
+| T5R.15-I6 | UI: the slider leaves the header's side only when the card is too narrow | UI | B | T5R.15-I1 | card header CSS; B5R.11 |
 | T5R.16 | Independent browser-critic gate | test | S | all | fresh critic report |
 
 **Parallel tracks.** Once the prepared Mark effect, `SaveReviewMarks` and its result, the range position, and the Plan baseline are fixed in T5R.6's type module, two tracks proceed in parallel:
@@ -328,6 +334,7 @@ describe("header")
 | T5R.13 Query count and latency | `npm run test:integration -- d5r/query-count`; `npm run bench:run` | A Review `open` issues exactly D5's request counts: the range position and gap Trades add no request. `SaveReviewMarks` with n entries issues one read-only snapshot with n record reads, one read-write commit with n checks and n writes, then the same post-save assembly requests as a `SaveTradeAction`, with no recovery or gap-scan request. `bench:run` adds disclosed, ungated timings on the mature dataset for "open the first card" (`open` plus one `getTrade`), a `SaveReviewMarks` of one card's Marks, and a `SaveTradeAction`, from the click to the rendered result. Results go to `evidence/D05R/bench.md`. | AC-PERF-001; P38. |
 | T5R.14 Node integration suite | `npm run test:integration` | Every case in sections 6.1 of D1, D2, D4, D5, and D5R passes. | Cumulative regression. |
 | T5R.15 Browser suite | `npm run test:e2e` (Chromium) | Every D4 and D5 browser case passes against the cards (section 6.3), and every case in section 6.2 passes. | Cumulative regression. |
+| T5R.15-I3 Specs on the Trade-keyed helpers | `npm run build:faults`, `npm run build:releases`, then `npm run test:e2e`; then the migration diff check of section 6.5 over `e2e/d4`, `e2e/d5` and `e2e/d5r` | Every browser case passes. `e2e/d5r/support.ts` holds no `tagCards`, `isShared`, Trade twin helper or `data-trade` tag, and no spec calls them. In the spec diff every changed `expect` keeps its matcher and expected value, with one sanctioned exception (section 6.5). The count of `expect(` does not drop. | Cumulative regression; T5R.15-I5; T5R.16. |
 | T5R.16 Browser critic | Fresh critic agent per section 7 | A structured report with every flow passing. | Deliverable gate. |
 
 ---
@@ -365,7 +372,8 @@ Chromium only (decision 19). Dates are set with Playwright's clock on the produc
 | B5R.8 Changed evidence | Open T-A's card; in a second tab save XYZ; in the first type XYZ and Save Marks. | Conflict shown with the other tab's value; the draft kept; nothing written by the first tab (AC-REV-005). |
 | B5R.9 Kill after Save Marks | SIGKILL right after the rows render from the result; relaunch. | The Marks are present; the card shows them saved. |
 | B5R.10 Offline and Recovery Only (*faults build*) | Relaunch offline and Save Marks; then relaunch with `?faults=control`. | Offline: saves and survives restart (AC-DEL-001). Recovery Only: cards open read only, with no inputs or Save buttons; probe unchanged. |
-| B5R.11 Responsive and accessible | Half-fill drafts at 1280 px; resize to 390 px and back; run axe on the card list, an open card with each panel open, and the slider; complete one card with the keyboard only. | Drafts and the open panel survive; the slider moves to its own row at narrow width; no WCAG 2.1 AA violations; band, status, and "Unsaved" are text; focus is visible throughout (AC-UI-001, AC-UI-002). |
+| B5R.11 Responsive and accessible | Half-fill drafts at 1280 px; resize to 390 px and back; run axe on the card list, an open card with each panel open, and the slider; complete one card with the keyboard only. | Drafts and the open panel survive; the slider moves to its own row at narrow width; no WCAG 2.1 AA violations; band, status, and "Unsaved" are text; focus is visible throughout (AC-UI-001, AC-UI-002). **Amended by decision 68 (revision 27):** the slider leaves the header's side only when the card's header is under 40rem (A162): beside it at 1280, 960 and 760 px, with T-A's header text on at most two lines; on its own full-width row below it at 700 and 390 px (T5R.15-I6). |
+| B5R.12 Missing-Mark link on a shared Instrument (decision 68) | Card fixture, no Monday Marks. From the Open list, follow the "Mark missing" link in the row of the XYZ Trade that is *not* the first card holding XYZ in attention order. | That Trade's card opens on its Marks panel with focus on XYZ's row; the other XYZ card stays collapsed (A161, T5R.15-I5). |
 
 ### 6.3 Moving the D4 and D5 browser cases onto cards
 
@@ -384,7 +392,7 @@ The change is made once, in `e2e/d4/support.ts` and `e2e/d5/support.ts`, plus th
 
 **Where.** `e2e/d4/support.ts`, re-exported by `e2e/d5/support.ts` (and by `e2e/d5r`'s support in T5R.15).
 
-**API.**
+**API.** **Amended by decision 68 (revision 27):** each helper below takes a `CardRef`, a symbol or a Trade reference, so two Trades on one Underlying are reached apart (section 6.5, T5R.15-I2).
 - `reachCard(page, symbol): Promise<Locator>` opens the Trade's card unless it is open, waits for its content, and returns the card's region.
 - `reachPanel(page, symbol, panel): Promise<Locator>` reaches the card, then opens `'Marks' | 'Reflections' | 'Action'` unless it is open, and returns the panel's region.
 - Element helpers built on them, each async and symbol-qualified: `markRow(page, symbol, date)`, `actionFormOf(page, symbol)`, `reflectionsOf(page, symbol)`, `debtFormOf(page, symbol)`. The write helpers (`enterMark`, `acknowledgeMark`, `saveAction`, `answerDebt`, `declineDebt`) use them.
@@ -414,6 +422,118 @@ describe("reach (decision 65)")
 
 Red notes: the second case may pass on the first run if the first case's reach already checks `aria-expanded`; it then needs the mutation check (reach presses the header unconditionally). The fourth runs on the `d4Release` fixture the update cases use.
 
+### 6.5 Card identity (decision 68)
+
+**Why.** Two Trades can hold one Underlying (the card fixture's T-A and T-F on XYZ). Their cards read "XYZ" alike, so the trader can't tell them apart. The messages and blockers name both "XYZ", and a Missing-Mark link can open the other Trade's card. In the tests, D4's symbol-keyed helpers can't reach either card, so `e2e/d5r/support.ts` tags the two cards from load-time state (`tagCards`) and keeps Trade-keyed twins of nine helpers (T5R.15-B2's three ocr findings). Decision 68 gives each card its Trade id in the HTML, a header that names the Trade (A150), names in the messages and blockers (A156), Trade-carrying links (A161), and a slider placement that follows the card's width (A162).
+
+**Order.** The app's hook and header (I1) land first. The helper tasks (I2, I3) then run against the current messages: the helpers match only the header's `^Review <symbol>` prefix and the hold message's opening words, so I4's wording doesn't disturb them. I5's browser case uses I2's Trade references. I4 and I6 depend only on I1.
+
+**Region label kept.** The open card's body stays labelled "XYZ review". About 100 unit matchers and 7 browser matcher definitions depend on it, D4's old release (rule 5) uses it, and it stays unique because one card is open at a time. A Trade-keyed reach finds the region inside its card's list item, so a second open body could never be read by mistake.
+
+#### T5R.15-I1 UI: each card carries its Trade id and shows its summary line
+
+Seam: `ReviewView` and `ReviewCard`, with the facade test double returning the card fixture (`ReviewCards.test.tsx`).
+
+```text
+describe("card identity (decision 68)")
+  it should put each card's Trade id on its list item as data-trade-id, in attention order (t-b, t-c, t-f, t-a, t-e)
+  it should show the Trade's summary line after the Underlying in the card header, in its own span, and the Underlying alone for a Trade with no summary
+```
+
+Red notes:
+- **The summary goes in its own span.** `.review-card-name` keeps the Underlying alone, so `tagCards` (which reads that span's text) keeps working until I3 retires it. The case's fixtures carry summaries local to the case (`{ ...TA, summary }`). The shared fixtures carry none, so no existing assertion changes; "Review ABC Action" (`ReviewCards.test.tsx`, about line 228) becomes the no-summary check.
+- **A planned guard.** The existing re-sort case (`ReviewCards.test.tsx`, about line 360) asserts the Underlyings in order, `JKL, XYZ, XYZ, DEF, ABC`, so it can't see whether T-A and T-F swapped. It gains an assertion beside that one: the list items' ids in order, `t-e, t-a, t-f, t-c, t-b`. This may pass on its first run once case 1 is green (the items are keyed by `tradeId`). Its mutation check renders each id from the card's position in the first Review.
+- **Name picks, not position picks.** `CardMarks.test.tsx`'s three picks of T-F's card by position (about lines 258, 276–278 and 637–638) become picks by its header name, its summary line escaped in the pattern. `TF_PLACED` is built from `TF`, so it keeps its summary. No assertion changes. This lands with case 2, since the picks need the summary in the header.
+
+#### T5R.15-I2 Browser card helpers reach a card by its Trade
+
+Seam: the helpers in `e2e/d4/support.ts`, proved in `e2e/d4/card-helpers.spec.ts` against the built app with `FOUR_TRADES` plus a second XYZ Trade (T-F's Plan and fill) at Monday 17:00.
+
+**API (amends section 6.4's).**
+- `TradeRef = { symbol, tradeId, label? }`, and `CardRef = string | TradeRef`. A bare string is a symbol, exactly as today.
+- Every card helper takes a `CardRef`: `cardItem` (moved from D5R), `cardHeader`, `panelHeader`, `openPanelOf`, `tradeCard`, `reachCard`, `reachPanel`, `markRow`, `actionFormOf`, `reflectionsOf`, `debtFormOf`, `enterMark`, `acknowledgeMark` and `saveAction`, plus D5's `answerDebt` and `declineDebt`.
+- **One internal resolver.** A `TradeRef` resolves to `li.review-card[data-trade-id="<id>"]`, its header button, and the "XYZ review" region inside that item. A string resolves exactly as today.
+- **Ids come from the app.** `createTradeAt` and `createTrades` return each Trade's id, read from the `/trades/<id>` URL right after Confirm Plan. `createCardFixture` returns `Record<CardTrade, TradeRef>`, labelled `T-A` to `T-F`. An id is stored data, so it holds across reloads, relaunches, kills and second tabs, with no re-tagging.
+- **Rule 5:** a `TradeRef` on a Review without cards falls back to its symbol's old-release path.
+
+```text
+describe("reach by Trade (decision 68)")
+  it should open the second XYZ Trade's collapsed card by its Trade id and return its Monday row, leaving the first XYZ card collapsed
+  it should fail naming both XYZ cards, the holder found by its list item's Trade id, when reaching the second is refused while the first holds a Mark draft
+  it should reach each XYZ card by its Trade after the cards re-sort and after a reload
+```
+
+Red notes:
+- **The third case may pass on the first run** once the first is green. Its mutation check makes `cardItem` remember the list item's position at the first call.
+- **T5R.15-B2 absorbed, finding by finding.** The stale tag and its "exactly one XYZ card owes a reflection" precondition go with `tagCards`. The refusal names both cards (case 2). `answerDebt`'s final "Saved reflection" check is scoped to the panel its reach returns. No case can make the page-wide version fail, since one card is open at a time, so the scope is checked by reading the diff, and the evidence says so.
+- **Behaviour converges on D4's.** The D5R twins skipped two D4 checks that the shared helpers make: `enterMark`'s saved-row check (`checkSavedRow`) and `answerDebt`'s `debtForm toHaveCount(0)`. After I3, B5R.1, B5R.3 and B5R.7–B5R.10 run them for T-A and T-F. If one fails, it's a genuine finding for the main session, not something to loosen.
+
+#### T5R.15-I3 D5R, D4 and D5 browser specs on the Trade-keyed helpers
+
+Structural (section 5).
+- **D5R.** Every `e2e/d5r` spec takes its fixture's `TradeRef`s and calls the shared helpers. `tagCards`, `isShared`, the two-path `cardItem`, `headerOf` and `panelHeaderOf`, and the nine twins are deleted from `e2e/d5r/support.ts`. `sliderOf`, `saveMarksOf` and `remainsOf` stay, taking a `CardRef`.
+- **D4 and D5 inline lookups** move onto the helpers:
+  - `cardOf` in `e2e/d4/runtime-failure.spec.ts` becomes `tradeCard`;
+  - the inline "XYZ review" regions in `e2e/d5/faults.spec.ts`, `detail-debt.spec.ts` and `kill-offline.spec.ts`, and in `e2e/d4/review.spec.ts` (about line 44), become `tradeCard`;
+  - the list items found by `hasText: 'Review XYZ'` (`e2e/d4/review.spec.ts` about lines 31 and 72, `offline.spec.ts` about line 52, `kill.spec.ts` about line 28, and `e2e/d5/update.spec.ts` about line 45, whose `d5` release is built from current source) become `cardHeader`;
+  - the Open-list `row.getByRole('link').first()` in `runtime-failure.spec.ts` (about line 60) becomes the Underlying link by name.
+- **Kept on purpose:**
+  - `e2e/d4/update.spec.ts`'s old-release reads (rule 5);
+  - `e2e/d4/review.spec.ts`'s `rows.nth(n)` attention-order checks and B5R.2's `cards.nth(17)`, whose position is the point;
+  - `tradeCard(page, 'XYZ')` reads of the one open card.
+- **Migration diff check.** Run `git diff -U0 -- e2e/d4 e2e/d5 e2e/d5r`. Strip each removed and added `expect(` line to its matcher onward (`.toX(…)`), sort the two lists and compare them. They must be identical, and the count of `expect(` must not drop.
+- **The one sanctioned value change:** `e2e/d5r/review.spec.ts` (about line 19), where `toHaveAttribute('data-trade', 'T-A')` becomes `toHaveAttribute('data-trade-id', <T-A's id>)`. It's the same check, that T-A's card is first, read from the app's hook instead of the test's tag.
+
+#### T5R.15-I4 UI: messages and blockers name the Trade
+
+Seam: `tradeName` in `src/ui/format.ts` (beside `tradeSummary`), then `ReviewView` and `ReviewCard` with the facade test double.
+
+```text
+describe("Trade names (decision 68)")
+  it should name a Trade "XYZ (Long 100 shares @ $50.18)" from its Underlying and summary, and "XYZ" when it has no summary
+  it should name the Trade in the Action missing, Reflection due, recorded facts disagree, and cannot be replayed blockers, each link still opening its card and panel, while Mark missing names the Instrument
+  it should list the Trades by name under Complete with unavailable Marks
+  it should name the Trade in the hold message when another header is pressed while the open card holds unsaved work
+  it should name the Trade in the message after an Action save on a held card
+```
+
+Red notes:
+- **The first case is a pure function** (`format.test.ts`). The others give the named Trades summaries local to the case. The last case covers a message that has no test today.
+- **Refactor step.** The two `underlying` lookups in `ReviewView.tsx` (in `Status` and `ReadyReview`) and `tradeLine` become one lookup over the newest Review's walked Trades, with `name` and `line` built from it. `Status` already receives that Review. "also held by" keeps the summary line alone (`line`, decision 67).
+- **Changed existing expectations:**
+  - **B5R.5** (`e2e/d5r/marks.spec.ts`, about line 88): the hold message becomes "…for XYZ (Long 100 shares @ $50.18) to leave it.", T-A's 60 @ 50.10 plus 40 @ 50.30. This change is authorized here.
+  - **Unit tests:** none, because the shared fixtures carry no summary.
+  - **D4's `hold.spec.ts` and `acknowledge.spec.ts`** match substrings and keep passing unchanged.
+  - **The helpers' refusal regex** (`/entered for (.+?) to leave it/`) still captures the name.
+- **Browser check:** rebuild the releases, then run `e2e/d5r/marks.spec.ts`, `e2e/d4/hold.spec.ts`, `e2e/d4/acknowledge.spec.ts` and `e2e/d4/card-helpers.spec.ts`.
+
+#### T5R.15-I5 UI: Missing-Mark links open the Trade's own card
+
+Seams: `TradeList` and `TradeDetail` (unit), then B5R.12 (browser, in `e2e/d5r/sliders.spec.ts` beside B5R.6).
+
+```text
+describe("Mark missing links (A161, decision 68)")
+  it should link the Open list's Mark missing figure to /review?trade=<id>&instrument=<key>
+  it should link Trade Detail's Mark missing line to /review?trade=<id>&instrument=<key>
+```
+
+Red notes:
+- **Existing link expectations change:** the expected values of the existing link assertions (`TradeList.test.tsx` about lines 373, 419 and 441, and `TradeDetail.test.tsx` about line 898) gain `trade=<id>&`. Each case's red is its updated assertion against today's link.
+- **B5R.12:** it goes red against today's build, landing on the first holder. It runs after `npm run build:releases`.
+- **Unchanged:** B5R.6 (DEF has one holder) and the D4 link cases, which match by name and never assert `href`.
+
+#### T5R.15-I6 UI: the slider leaves the header's side only when the card is too narrow
+
+Seam: the card header's CSS in `src/ui/app.css`, proved by B5R.11 (browser). jsdom has no layout, so there's no unit case.
+
+- `.review-card` becomes an inline-size container. A container query below 40rem gives `.review-card-head` its single-column row. The viewport media query at 639.98 px is removed (A162).
+- New case, in B5R.11's describe: *it should keep the slider beside the header while the card's header is at least 40rem wide, with T-A's header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px.*
+- **Red:** at 700 px the slider sits beside today. **Mutation after green:** restore the viewport query, and the case fails at 700 px.
+- **Runs unchanged:**
+  - B5R.11's existing case (beside at 1280, below at 390, with drafts kept);
+  - B4.13 (`e2e/d4/responsive-a11y.spec.ts`), which checks the Action chips and the navigation's switch at 960 px, not the slider;
+  - its axe runs.
+
 ---
 
 ## 7. Browser-critic flows
@@ -432,6 +552,11 @@ The critic receives the frozen `specs/`, the plan index, the D1, D2, D4, D5, and
 | C5R.8 Leaving and links | Unsaved work holds the card. Missing-Mark links from the Open list and Trade Detail open the right card and panel. |
 | C5R.9 Narrow, keyboard, Recovery Only | 375 and 320 px with no horizontal scroll; a whole card completed by keyboard; Recovery Only cards read only. |
 
+**Amended by decision 68 (revision 27):**
+- **C5R.4:** the two cards holding the shared Instrument read apart by their headers' summary lines, and every message or blocker names the Trade it means.
+- **C5R.8:** a Missing-Mark link opens the card of the Trade it was followed from, even when another Trade holds the same Instrument.
+- **C5R.9:** the slider moves under the header's text only when the card is too narrow for it, not at every narrow viewport.
+
 ---
 
 ## 8. Acceptance
@@ -447,7 +572,7 @@ D5R adds no acceptance row. It re-proves, on the new screen:
 | AC-MARK-004 (historical gaps do not block) | T5R.3, I5R.5 |
 | AC-RESP-001 (result sufficient to render) | T5R.1, T5R.5, T5R.9, I5R.1 |
 | AC-JOUR-001 (nothing saved without Save) | T5R.9, B5R.5 |
-| AC-UI-001, AC-UI-002 (responsive, accessible) | T5R.7, B5R.11, C5R.9 |
+| AC-UI-001, AC-UI-002 (responsive, accessible) | T5R.7, T5R.15-I6, B5R.11, C5R.9 |
 | AC-DEL-001, AC-DEL-006 (offline; write gate) | T5R.5, I5R.6, B5R.10 |
 | AC-PERF-001 (bounded requests) | T5R.13 |
 

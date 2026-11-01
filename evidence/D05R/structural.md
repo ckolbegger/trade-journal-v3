@@ -1297,6 +1297,8 @@ The shared Instrument's Marks row now reads "also held by" followed by each othe
 
 Tag the two XYZ cards from something that identifies the Trade (e.g. the card's own link to its Trade), so tagging needs no "reflection due" precondition and survives remounts; name the fixture Trade in `reachTrade`'s refusal; scope `answerDebtOf`'s final check to the card.
 
+**First attempt: stopped with no change.** No rendered card carries its Trade id. A collapsed card shows only the Underlying, what remains, the band and the slider, and the card's own links to its Trade appear only in an open card's Marks panel, so nothing in the list tells T-A's card from T-F's. Re-tagging from any other visible state would only move the load-time dependency. **The user's choice (2026-10-31):** put the Trade id in the HTML, as `data-trade-id` on each card's list item, because it works even when two Trades have identical summary lines. The tests take the ids from the Trade list's `/trades/<id>` links, or from the URL right after creating a Trade. **Superseded** by plan revision 27 (decision 68): the card-identity tasks T5R.15-I1 to I6 (breakdown section 6.5). I1 adds the hook. I2 and I3 retire `tagCards` and the Trade twins, absorbing all three findings: there is no tag to go stale and no "reflection due" precondition, the refusal names both cards, and the "Saved reflection" check is scoped to the panel. B2 gets no commit of its own.
+
 ocr review of `ae7590a` (T5R.15-B1): one file reviewed. Raw output: [ocr/T5R.15-B1-ae7590a.json](ocr/T5R.15-B1-ae7590a.json).
 
 | Severity | Location | Claim | Assessment |
