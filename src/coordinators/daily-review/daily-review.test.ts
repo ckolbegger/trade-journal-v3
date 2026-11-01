@@ -209,6 +209,16 @@ describe('attention order', () => {
     expect(pressureE!.basis).toEqual({ kind: 'Comparable', side: 'Winning', share: Rational.of(1n, 10n), atEntry: Rational.of(1000n), now: Rational.of(900n) });
   }, 30_000);
 
+  it('should carry each walked Trade summary, the open quantity at its average price (decision 67)', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { b } = await fiveTradeFixture(stack);
+
+    const trades = walk(await open(stack, MONDAY_1700));
+
+    // T-B holds 100 @ 30.00.
+    expect(trades.find((t) => t.tradeId === b)!.summary).toEqual({ kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(30n) });
+  }, 30_000);
+
   it('should keep T-B in boundary reached although its risk to stop is zero', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const b = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });

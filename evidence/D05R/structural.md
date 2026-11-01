@@ -1282,6 +1282,17 @@ Fix (`src/ui/screens/ReviewCard.tsx`): the card already scrolled to its top at t
 
 ### T5R.9-B5 "also held by" names the other Trades by their summary line (decision 67)
 
+The shared Instrument's Marks row now reads "also held by" followed by each other Trade's summary line (`tradeSummary`, e.g. "Long 50 shares @ $50.00"), linked to `/trades/<id>`.
+
+- Coordinator (`daily-review.ts`, `types.ts`): `ReviewTradeItem` gains an optional `summary?: TradeSummary`, set in `reviewItem` from `openLongStockSummary` of the cutoff derivation the Review already holds. No storage request is added (P38). A Trade whose facts cannot be replayed (incoherent) has none.
+- UI: `ReviewView` builds `tradeLine(tradeId)` from the walked item's summary with `tradeSummary`; the `underlying` prop of `ReviewCard`, `CardBody`, and `CardMarks` (used only for this row) became `tradeLine`. **Fallback:** when the item has no summary, the line is the Trade's Underlying (then its id), as before.
+- Summary text: `tradeSummary` prints the direction as the summary carries it, so Review rows read "Long 50 shares @ $50.00", not "Buy 100 shares" as the brief's example. Open quantity at the average open-lot price (the Trade Detail's open-position summary), not the Plan's.
+- Cases: coordinator "should carry each walked Trade summary, the open quantity at its average price (decision 67)" (T-B: 100 @ 30.00); red `expected undefined to deeply equal { kind: 'Stock', …(3) }`. T5R.9 UI case updated per decision 67 (red: `Unable to find an accessible element with the role "link" and name "Long 100 shares @ $50.00"`). B5R.3 (`e2e/d5r/marks.spec.ts`) expects "also held by Long 50 shares @ $50.00" and the link; it was a first-run pass, mutation-checked and flagged in `tdd-log.md`. The "Underlying fallback" has no dedicated case.
+- Fixtures: `TF` in `CardMarks.test.tsx` carries a summary (fixture-only). `summary` is optional, so no other `ReviewTradeItem` fixture changed.
+- Checks: typecheck, `tsc6`, lint, `lint:deps` exit 0; `npx vitest run src` 985 passed; `npm run test:integration` 117 passed (query-count cases unchanged and green). Whole `npm run test:e2e`: 173 passed, 6.9 min (B5R.3 passes). Ports 5175, 9341, and 9342 were clear before and after.
+
+**Process note (T5R.9-B5):** the subagent ran one stray no-op here-doc `cat >/dev/null` (no file changed), against the Edit-only rule.
+
 ### T5R.15-B2 The D5R helpers tell T-A from T-F by Trade, not by load-time state
 
 Tag the two XYZ cards from something that identifies the Trade (e.g. the card's own link to its Trade), so tagging needs no "reflection due" precondition and survives remounts; name the fixture Trade in `reachTrade`'s refusal; scope `answerDebtOf`'s final check to the card.

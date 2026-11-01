@@ -61,6 +61,8 @@ export type RangePosition =
 export interface ReviewTradeItem {
   readonly tradeId: string;
   readonly underlying: string;
+  // What the Trade holds, for naming it where it shares an Instrument (decision 67); absent when its facts cannot be replayed.
+  readonly summary?: TradeSummary;
   // The latest activity on the Trade (the Plan time before its first Position Change).
   readonly lastActivity: Instant;
   readonly band: AttentionBand;

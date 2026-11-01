@@ -59,7 +59,7 @@ export interface ReviewCardProps {
   readonly advance: number;
   readonly go: Go;
   readonly marks: CardMarkRows;
-  readonly underlying: (tradeId: string) => string;
+  readonly tradeLine: (tradeId: string) => string;
   readonly onToggle: () => void;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
@@ -76,7 +76,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, advance, go, marks, underlying, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, advance, go, marks, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -123,7 +123,7 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
           go={go}
           remaining={remaining}
           marks={marks}
-          underlying={underlying}
+          tradeLine={tradeLine}
           onSaved={onSaved}
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
@@ -145,7 +145,7 @@ interface CardBodyProps {
   readonly go: Go;
   readonly remaining: Remaining;
   readonly marks: CardMarkRows;
-  readonly underlying: (tradeId: string) => string;
+  readonly tradeLine: (tradeId: string) => string;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
@@ -204,7 +204,7 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, advance, go, remaining, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, advance, go, remaining, marks, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, marks, remaining);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -280,7 +280,7 @@ function CardBody({ facade, trade, advance, go, remaining, marks, underlying, on
             </button>
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
-            {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} underlying={underlying} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
+            {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} tradeLine={tradeLine}onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>

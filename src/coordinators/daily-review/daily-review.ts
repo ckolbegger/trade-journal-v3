@@ -166,7 +166,8 @@ function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade,
   const frame = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
   if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
   const evaluation = evaluate({ state: derivation, frame: observationFrame(frame) });
-  const item: ReviewTradeItem = { ...identity, ...attentionOf(derivation, evaluation, integrity.findings) };
+  const held = openLongStockSummary(derivation);
+  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, evaluation, integrity.findings) };
   return { item, evaluation };
 }
 

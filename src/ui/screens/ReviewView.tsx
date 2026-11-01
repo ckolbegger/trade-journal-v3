@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SavedMark, SaveReviewMarksResult } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
-import { shortDate } from '../format.ts';
+import { shortDate, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import type { CardMarkRows, EntryDirty } from './CardMarks.tsx';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName, type Remaining } from './ReviewCard.tsx';
@@ -258,6 +258,11 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
   const underlying = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
+  // A Trade named by its summary line, as the Trade list shows it; its Underlying when it has none (decision 67).
+  const tradeLine = (tradeId: string) => {
+    const summary = trades.find((t) => t.tradeId === tradeId)?.summary;
+    return summary ? tradeSummary(summary) : underlying(tradeId);
+  };
   // A link into the Review names the card that opens on load (A161): the first holding ?instrument=, on its Marks panel with
   // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
   const [params] = useSearchParams();
@@ -497,7 +502,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
             advance={advance.tradeId === trade.tradeId ? advance.count : 0}
             go={go.tradeId === trade.tradeId ? go.go : NO_GO}
             marks={marksOf(review, trade.tradeId)}
-            underlying={underlying}
+            tradeLine={tradeLine}
             onToggle={() => toggle(trade.tradeId)}
             onSaved={(result) => saved(result, shown?.opening ?? -1)}
             onReflectionResolved={reflectionResolved}

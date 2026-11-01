@@ -44,7 +44,7 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   ...over,
 });
 const TA = walked('t-a', 'XYZ');
-const TF = walked('t-f', 'XYZ');
+const TF = walked('t-f', 'XYZ', { summary: { kind: 'Stock', direction: 'Long', quantity: rational(100n), price: rational(50n) } });
 const TC = walked('t-c', 'DEF');
 const WALK = [TA, TF, TC] as const;
 
@@ -623,8 +623,11 @@ describe('rows (A153)', () => {
     expect(within(today).getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual(['XYZ']);
     // The shared Instrument names the other Trade holding it, linked; a row never lists its own card's Trade.
     const xyz = within(today).getAllByRole('listitem')[0]!;
+    // It names that Trade by its summary line, as the Trade list shows it (decision 67), not by the shared Underlying.
     expect(within(xyz).getByText(/also held by/)).toBeTruthy();
-    expect(within(xyz).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t-f']);
+    const link = within(xyz).getByRole('link', { name: 'Long 100 shares @ $50.00' });
+    expect(link.getAttribute('href')).toBe('/trades/t-f');
+    expect(within(xyz).getAllByRole('link')).toHaveLength(1);
     // The earlier sessions follow the Review-date rows, under their heading.
     expect(within(panel).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual(["Today's Marks", 'Earlier sessions without Marks — optional']);
     const earlier = within(panel).getByRole('region', { name: 'XYZ earlier sessions' });

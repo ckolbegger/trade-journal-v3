@@ -21,8 +21,9 @@ test.describe('B5R.3 Shared Mark', () => {
     // Opening T-A's card shows XYZ saved, and that T-F's card holds it too.
     const marks = await reachTradePanel(page, 'T-A', 'Marks');
     const today = marks.getByRole('list', { name: "Today's Marks" }).getByRole('listitem').first();
-    await expect(today).toContainText('also held by XYZ');
-    await expect(today.getByRole('link', { name: 'XYZ' })).toHaveAttribute('href', /^\/trades\//);
+    // It names T-F by its Trade-list summary line (50 shares at 50.00), linked to it (decision 67).
+    await expect(today).toContainText('also held by Long 50 shares @ $50.00');
+    await expect(today.getByRole('link', { name: 'Long 50 shares @ $50.00' })).toHaveAttribute('href', /^\/trades\//);
     await expect(await markRowOf(page, 'T-A', MONDAY)).toContainText('Manual');
     await expect(await markRowOf(page, 'T-A', MONDAY)).toContainText('52');
 

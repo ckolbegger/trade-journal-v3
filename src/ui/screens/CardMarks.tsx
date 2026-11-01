@@ -152,8 +152,8 @@ function KeyRow({ panel, instrumentKey, tradingDate, resolution, resolutionRevis
 }
 
 // Today's Mark tasks: one row per Instrument with the eligible Trades that hold it.
-function TodayRow({ panel, row, cardTradeId, underlying }: { readonly panel: Panel; readonly row: MarkRow; readonly cardTradeId: string; readonly underlying: (tradeId: string) => string }) {
-  // A shared Instrument names the other Trades that hold it (A153).
+function TodayRow({ panel, row, cardTradeId, tradeLine }: { readonly panel: Panel; readonly row: MarkRow; readonly cardTradeId: string; readonly tradeLine: (tradeId: string) => string }) {
+  // A shared Instrument names the other Trades that hold it, by their summary line (A153, decision 67).
   const others = row.trades.filter((tradeId) => tradeId !== cardTradeId);
   return (
     <li>
@@ -164,7 +164,7 @@ function TodayRow({ panel, row, cardTradeId, underlying }: { readonly panel: Pan
           {others.map((tradeId, i) => (
             <span key={tradeId}>
               {i > 0 && ', '}
-              <Link to={`/trades/${tradeId}`}>{underlying(tradeId)}</Link>
+              <Link to={`/trades/${tradeId}`}>{tradeLine(tradeId)}</Link>
             </span>
           ))}
         </p>
@@ -262,7 +262,8 @@ export interface CardMarksProps {
   readonly facade: UiFacade;
   readonly tradeId: string;
   readonly marks: CardMarkRows;
-  readonly underlying: (tradeId: string) => string;
+  // A Trade's summary line, or its Underlying when it has none.
+  readonly tradeLine: (tradeId: string) => string;
   readonly onEntryDirty: EntryDirty;
   readonly onMarkSaved: () => void;
   // Saves the drafts as one command (P37); the host applies a saved result to the Review.
@@ -275,7 +276,7 @@ export interface CardMarksProps {
 
 // The Marks panel of an open card (A153): its Review-date rows, then its earlier sessions. A typed price or a
 // "Can't get a price" is a draft until Save Marks; a row with a Mark keeps its own Correct and Withdraw.
-export function CardMarks({ facade, tradeId, marks, underlying, onEntryDirty, onMarkSaved, onSaveMarks, outOfDate, onRefresh }: CardMarksProps) {
+export function CardMarks({ facade, tradeId, marks, tradeLine, onEntryDirty, onMarkSaved, onSaveMarks, outOfDate, onRefresh }: CardMarksProps) {
   const uid = useId();
   const { writable, report } = useRuntime();
   // The earlier sessions as the card opened: a session filled meanwhile stays listed with its saved Mark until the card is closed.
@@ -401,7 +402,7 @@ export function CardMarks({ facade, tradeId, marks, underlying, onEntryDirty, on
       <h3>Today's Marks</h3>
       <ul aria-label="Today's Marks" className="review-rows">
         {marks.today.map((row) => (
-          <TodayRow key={rowId(row.instrumentKey, row.tradingDate)} panel={panel} row={row} cardTradeId={tradeId} underlying={underlying} />
+          <TodayRow key={rowId(row.instrumentKey, row.tradingDate)} panel={panel} row={row} cardTradeId={tradeId} tradeLine={tradeLine} />
         ))}
       </ul>
       {earlier.length > 0 && (
