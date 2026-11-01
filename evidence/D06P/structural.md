@@ -493,3 +493,14 @@ Fixes the two Valid findings of the round-2 ocr review of `8ce7b2b` (see above).
 Result: 7 of the 12 new cases were allowed by `8ce7b2b` against an expected deny (red: N1, N3, N4, N5, N8, N10, N12); N2 and N11 already denied, N6, N7, N9 are the allow guards. After the change all 12 match, and the 50 earlier cases (the Retro-B1 table above) keep their results (0 mismatches in the run of all 62). Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps` exit 0.
 
 **Known limits** (script header updated): those of Retro-B1 stay, plus a lone `--git-dir` outside the root with the cwd inside it is allowed although git would then use the cwd as the work tree (kept so that the two earlier allow checks hold).
+
+### ocr review of `c30fe95` (Retro-B2), round 3
+
+Session `1687c8ab-969a-4c64-9e57-643a5d833fc0`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), 2 comments. Raw output: [ocr/Retro-B2-c30fe95.json](ocr/Retro-B2-c30fe95.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `guard-shell-writes.sh:109-112` | Relative `--git-dir` and `--work-tree` values are resolved when read, but git applies them against its final directory, so a later `-C <root>` from an outside cwd gets through. | Valid, contrived (reproduced): **accepted as a known limit** |
+| medium | `:77` | The first `cd -` is assumed to stay in the cwd, but bash uses `$OLDPWD`, which the hook can't see. | Doubtful: **accepted as a known limit** |
+
+**Decision (the user, 2026-11-01): no further fix round.** This was the third round of bug tasks on the HEAD rule, a stop condition, so the main session asked the user. Each round found a rarer spelling of a HEAD move. None of round 2's or round 3's spellings is one an agent has typed, and the guard reads command text only. It is a guard against habit, not a sandbox. Every ordinary HEAD move in the worktree is refused. The two findings above join the known limits; the script itself is unchanged since `c30fe95`. The mitigation of the cause, a standard scratch-clone script named in the guard's refusal message, is deferred as tech debt item 7 (plan revision 31), with its trigger.

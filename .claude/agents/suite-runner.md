@@ -21,7 +21,7 @@ If the evidence directory or label is missing, infer the evidence directory from
 
 ## Steps
 
-1. Confirm nothing listens on ports 5175, 9341 or 9342 (`lsof -nP -iTCP:<port> -sTCP:LISTEN`). If one is busy, report it and stop: another run or server is using it, and it isn't yours to stop.
+1. Confirm nothing listens on 5175 (every test server) or on 9341 and 9342 (the Chromium that the D5 and D5R kill tests spawn; one left over makes their next launch fail). Use `lsof -nP -iTCP:<port> -sTCP:LISTEN`. If one is busy, report what holds it and stop; it isn't yours to stop.
 2. Run the suite in four stages, one foreground Bash call each, in this order, with the Bash tool's `timeout` set to 600000 on every call:
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> unit`
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> integration`

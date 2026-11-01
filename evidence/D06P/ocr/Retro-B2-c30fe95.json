@@ -1,0 +1,102 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 69136,
+    "input_tokens": 67837,
+    "output_tokens": 1299,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "Relative --git-dir/--work-tree values are resolved too early when a later -C changes Git's directory. Git retains these option values and interprets relative paths against its final directory. For example, from /tmp, `git --git-dir=.git --work-tree=. -C \u003croot\u003e reset --hard` operates on the project, but this hook records both paths under /tmp and allows it. Store the raw option values, then resolve them against the final `here` after parsing all global options (including the equals forms). Add a regression case with -C after these options.",
+      "existing_code": "          --git-dir) resolve \"$here\" \"${toks[i+1]:-.}\"; gd=$res; ((i+=2)) ;;\n          --work-tree) resolve \"$here\" \"${toks[i+1]:-.}\"; wt=$res; ((i+=2)) ;;",
+      "start_line": 109,
+      "end_line": 110,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/hooks/guard-shell-writes.sh",
+      "content": "The first `cd -` does not necessarily stay in the initial cwd: Bash uses `$OLDPWD`, which may already be set in the shell environment. For example, with cwd `/tmp` and `OLDPWD` pointing at the project, `cd -; git reset --hard` returns to the project, but this initialization keeps both tracked directories at `/tmp` and allows the reset. Treat the initial previous directory as unknown and conservatively handle a HEAD move after returning to it, or obtain the shell's actual previous directory rather than assuming it equals cwd.",
+      "existing_code": "prev=$cur # the directory before the last cd; at the start, the cwd (a failed cd - stays put)",
+      "start_line": 77,
+      "end_line": 77,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": ".claude/hooks/guard-shell-writes.sh",
+      "files": [
+        ".claude/hooks/guard-shell-writes.sh"
+      ]
+    }
+  ],
+  "session_id": "1687c8ab-969a-4c64-9e57-643a5d833fc0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1687c8ab-969a-4c64-9e57-643a5d833fc0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c30fe952",
+      "resolved_base": "097d2484f9ba4200aab71ef0848ea48842ae2ccb",
+      "resolved_head": "c30fe952ba566ce0a35c2c16010e9b43f9a437d0",
+      "exact_range": "097d2484f9ba4200aab71ef0848ea48842ae2ccb..c30fe952ba566ce0a35c2c16010e9b43f9a437d0",
+      "source_artifact_sha256": "f62df643a92da45d7e232129f52f3abe2cfcfb8f313c1ab2def89424dbac687f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7d457d07f1a748aa42befd0eb532bbf92a74868b8450e66494a3a6dfd18c2293",
+          "path": ".claude/hooks/guard-shell-writes.sh",
+          "fingerprint": "f3b0799803ec0ba1398b974f5c84197b1fb39de84b903517a6755a7cf51d2b30"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7d457d07f1a748aa42befd0eb532bbf92a74868b8450e66494a3a6dfd18c2293",
+          "path": ".claude/hooks/guard-shell-writes.sh",
+          "fingerprint": "f3b0799803ec0ba1398b974f5c84197b1fb39de84b903517a6755a7cf51d2b30"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 70160
+  }
+}
