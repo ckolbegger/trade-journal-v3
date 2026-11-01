@@ -595,3 +595,17 @@ At `ccff276`: `npm run test:e2e` (Chromium), 179 passed, exit 0 (the T5R2.16 cum
 ## F2 ocr review, test-only procedure (correction)
 
 The F2 section above says F2 was not ocr-reviewed. That skipped the handoff's rule for test-only commits, so the review was run late, as that rule says: the commit was recreated in a scratch clone with the changed describe block relocated to `src/itg/d5r2/card-top-scroll.ts` as plain `.ts`. Session `ef2b9a6b-fa3b-44ae-b653-c2a134706b95`, 1 file reviewed, 5 comments, **all dismissed as caused only by the relocation**: an unbalanced describe from the slice, a stand-in helper module, a missing `within` import, the plain `.ts` name not discovered by Vitest, and the `afterEach` restore dropped by the slice (present at `ReviewCards.test.tsx:803-806`). No comment on the `waitFor` wrap itself. Raw output: [ocr/F2.json](ocr/F2.json).
+
+## T5R2.19 Browser critic
+
+Coverage check before the spawn (handoff section 3): the newest cumulative record is at `ccff276`; `git diff --quiet ccff2768 HEAD -- . ':!evidence' ':!plan'` was clean and `git status --porcelain -- . ':!evidence' ':!plan'` showed only the untracked `.claude/settings.json`, so the run was reused.
+
+Critic 1 (fresh `general-purpose` agent, brief v2, at `9cc0bfc`, last code commit `ccff276`): **PASS, no defects.** All seven flows passed (C5R.1, C5R.2, C5R.3, C5R.4, C5R.8, C5R.9, C5R2.1). It built a D5R baseline from `claude-opus-5.5-d5r` and ran each flow on the same stored data under both builds: every transcript matched except P46's line ("Resolved" → "None", the same after a reload). The Action panel right after a save read "Action Hold / Saved", agreeing with the header, before and after a reload. 375 and 320 px: no horizontal scroll in 7 states each. Port 5175 only; every server stopped; `git status --short` showed only `?? .claude/settings.json`. Seven minor observations, all present in D5R unchanged (D5R's and earlier observations are not pursued, handoff section 6). Report: [critic-1.md](critic-1.md).
+
+### Critic cost
+
+Figures from the critic's completion notice (the harness's own token count). Brief v2 = `.claude/docs/critic-brief.md` with setup helpers from `e2e/d5r/support.ts` and the modules it re-exports.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 1 | `9cc0bfc` (code `ccff276`) | v2 | 199,211 | 68 | 25 min 46 s | none |
