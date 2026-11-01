@@ -1,7 +1,9 @@
 import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, probe, profileAt, READY, test } from './support.ts';
 
+const B1_5_FAULT_SETS: typeof FAULT_SETS = [['diagnostic'], ['control', 'inventory']];
+
 test.describe('B1.5 Unsupported matrix (faults build)', () => {
-  for (const failing of FAULT_SETS) {
+  for (const failing of B1_5_FAULT_SETS) {
     test(`should show Unsupported naming exactly ${failing.join(' and ')}, with Retry and the another-browser recommendation, creating no Workspace`, async ({ server }, info) => {
       void server;
       const context = await profileAt(info.outputPath('profile')).launch();

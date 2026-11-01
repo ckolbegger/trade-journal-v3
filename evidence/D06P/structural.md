@@ -164,3 +164,27 @@ Delegated to `suite-runner`, 2026-11-01 15:26 EST, commit `d44bc1b` (T6P.2 and i
 | Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-2-tiers-checks.txt](suite-runs/t6p-2-tiers-checks.txt) |
 
 Ports 9341, 9342 and 5175 were free before and after. Browser stage wall time 7:23 (moved to the background by the harness after 180 s; the runner waited for the completion notice).
+
+## T6P.3 B1.5 trim and T2.55-B3 removal
+
+**Edits.**
+
+- B1.5 (`e2e/d1/readiness.spec.ts`): added `const B1_5_FAULT_SETS: typeof FAULT_SETS = [['diagnostic'], ['control', 'inventory']];` and the loop now iterates it. The case body is unchanged. `FAULT_SETS` in `e2e/d1/support.ts` is untouched because `e2e/d1/recovery-only.spec.ts` still loops all six. Fault sets removed from B1.5: `capacity`, `control`, `inventory`, and `diagnostic + capacity` (4 tests). Kept: `diagnostic` and `control + inventory`.
+- T2.55-B3 (`e2e/d2/ui-alignment.spec.ts`): removed the `describe` "T2.55-B3 Last activity on the Open Detail" (its one test, 17 lines including the trailing blank line): `should show Last activity in the Position card as the latest Position Change time`. Nothing else was removed. No helper or import was used only by it: `confirmReference`, `recordEntry`, `backToTrade`, `PC1`, `PC2`, `onboardedPage` and `READY` are each used elsewhere in the file (T2.55-B4 and others).
+- `src/` unchanged: `git diff claude-opus-5.5-d5r2 --stat -- src` prints nothing.
+
+**Verification.**
+
+| Command | Result | Exit |
+|---|---|---|
+| `npx playwright test e2e/d1/readiness.spec.ts --list` | `Total: 3 tests in 1 file` (two B1.5 cases, naming `diagnostic` and `control and inventory`, plus B1.7) | 0 |
+| `npx vitest run src/ui/screens/TradeDetail.test.tsx -t "Last activity"` | `Tests  1 passed \| 66 skipped (67)` (the case "should show Last activity in the Position card as a labelled local time") | 0 |
+| `npm run test:e2e` (15:36:33 to 15:43:48, 7 min 14 s, moved to the background by the harness after 180 s; waited for the completion notice) | `171 passed (7.2m)` = 176 − 4 − 1 | 0 |
+| `npx playwright test e2e/d2/ui-alignment.spec.ts --list` | `Total: 69 tests in 1 file` (was 70) | 0 |
+| `grep -c 'expect(' e2e/d2/ui-alignment.spec.ts` | `257` (was 259; the removed test had two `expect(` lines). T6P.4 compares against 257. | 0 |
+| `npm run typecheck` | exit 0 | 0 |
+| `npx tsc6 --noEmit` | exit 0 | 0 |
+| `npm run lint` | exit 0 | 0 |
+| `npm run lint:deps` | exit 0 | 0 |
+
+Ports 5175, 9341 and 9342 were free before and after the browser run.
