@@ -466,3 +466,30 @@ Session `af9fec1a-f2f2-4730-b098-80c5fbca5121`, model gpt-6.1-sol, 1 file review
 | medium | `:58` | An empty slice on `/..` raises a bash expansion error. | **Dismissed:** on `/bin/bash` 3.2 the slice is empty with no error, and the hook still denies (rc 0, deny output). |
 
 **Bug task Retro-B2: `--work-tree` and `cd -` fail closed.** Defects: (1) a `--work-tree` inside the root is overridden by a `--git-dir` outside it; (2) `cd -` isn't tracked. Cases: `git --work-tree=<root> --git-dir=/tmp/x.git` with a HEAD move from cwd `/tmp` is denied; `cd /tmp; cd -; <HEAD move>` from the root is denied; each red first against `8ce7b2b`; the 50 earlier cases keep their results. This is the second round of bug tasks on the guard; if Retro-B2's review still leaves findings, that third round is a stop condition, and the main session asks the user.
+
+## Retro-B2 `--work-tree` and `cd -` fail closed
+
+Fixes the two Valid findings of the round-2 ocr review of `8ce7b2b` (see above). Same method: each case piped to the hook as its own command through a runner outside the repository, never executed. ROOT is `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5`; every case has that root. The "Before" is the hook of `8ce7b2b`.
+
+**Change** in `.claude/hooks/guard-shell-writes.sh`:
+1. `--work-tree` and `--git-dir` are tracked in separate variables, each resolved against git's directory (the cwd, moved by any `-C` before it), not against the previous option's path. A command counts as inside the root when either one is inside it. With neither option, the directory itself is used, as before. Given alone, one option stands for both (this keeps the earlier checks `git --git-dir=/tmp/x/.git reset --hard` and `git --work-tree=/tmp/x checkout abc` allowed; the one case that is lax is a lone outside `--git-dir` with the cwd inside the root, listed under known limits).
+2. `cd -` switches to the previous directory (chosen over setting the directory to unknown, because `outside` treats unknown as outside and the rule would then allow the command). The previous directory is updated by every `cd`; at the start it is the cwd, so a first `cd -` stays put, as a failed `cd` does.
+
+| # | Command | cwd | Expected | Before | After |
+|---|---|---|---|---|---|
+| N1 | `git --work-tree=ROOT --git-dir=/tmp/x.git reset --hard` | `/tmp` | deny | allow (red) | deny |
+| N2 | `git --git-dir=/tmp/x.git --work-tree=ROOT reset --hard` | `/tmp` | deny | deny | deny |
+| N3 | `cd /tmp; cd -; git reset --hard` | ROOT | deny | allow (red) | deny |
+| N4 | `git --git-dir=/tmp/x.git --work-tree=../Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5 reset --hard` (relative) | `/tmp` | deny | allow (red) | deny |
+| N5 | `git --git-dir=/tmp/x.git --work-tree=claude-opus-5.5 reset --hard` (relative) | `/Users/ckolbegger/src/trade-journal-v3/worktrees` | deny | allow (red) | deny |
+| N6 | `git --git-dir=/tmp/x.git --work-tree=/tmp/w reset --hard` (both outside) | `/tmp` | allow | allow | allow |
+| N7 | `cd /tmp/a; cd /tmp/b; cd -; git reset --hard` | `/tmp` | allow | allow | allow |
+| N8 | `cd /tmp/a; cd -; cd /tmp; cd -; git switch x` | ROOT | deny | allow (red) | deny |
+| N9 | `git --git-dir=/tmp/x.git --work-tree=w reset --hard` (relative, outside) | `/tmp` | allow | allow | allow |
+| N10 | `git --work-tree=ROOT --git-dir=/tmp/x.git checkout abc` | `/tmp` | deny | allow (red) | deny |
+| N11 | `git --work-tree=/tmp/w --git-dir=ROOT/.git reset --hard` | `/tmp` | deny | deny | deny |
+| N12 | `git -C claude-opus-5.5 --git-dir=/tmp/x.git --work-tree=. reset --hard` | `/Users/ckolbegger/src/trade-journal-v3/worktrees` | deny | allow (red) | deny |
+
+Result: 7 of the 12 new cases were allowed by `8ce7b2b` against an expected deny (red: N1, N3, N4, N5, N8, N10, N12); N2 and N11 already denied, N6, N7, N9 are the allow guards. After the change all 12 match, and the 50 earlier cases (the Retro-B1 table above) keep their results (0 mismatches in the run of all 62). Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps` exit 0.
+
+**Known limits** (script header updated): those of Retro-B1 stay, plus a lone `--git-dir` outside the root with the cwd inside it is allowed although git would then use the cwd as the work tree (kept so that the two earlier allow checks hold).

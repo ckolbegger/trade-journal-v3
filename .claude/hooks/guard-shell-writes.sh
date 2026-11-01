@@ -15,17 +15,22 @@
 # /dev/null, and paths outside the project (temporary and scratch directories); git
 # path restores (git checkout [<rev>] -- <path>), unstaging (git reset, git reset HEAD
 # <path>), every other git command, and the HEAD-moving commands above when they run in
-# another repository (a cd, git -C, --git-dir or --work-tree to a path outside the
+# another repository (a cd, git -C, --git-dir and --work-tree to paths outside the
 # project, or a cwd outside it).
 # Each simple command is normalized before the git rule reads it: a leading ( and trailing
 # ) are dropped, so are redirects (with their targets) and everything from a # word on;
 # git's global options (--no-pager, -c k=v, -C path, --git-dir, ...) are skipped to reach
-# the subcommand; and the directory each cd leads to is tracked, with relative paths and
-# .. folded lexically, so no filesystem access is needed.
+# the subcommand; and the directory each cd leads to is tracked (cd - returns to the
+# previous one), with relative paths and .. folded lexically, so no filesystem access is
+# needed. --work-tree and --git-dir are tracked separately, each resolved against the
+# directory (after any -C); a command counts as in the project when either is inside it.
+# Given alone, one of them stands for both.
 # It reads the command text only, so it is a guard against habit, not a sandbox. Known
 # limits: a quoted path with spaces is cut at the first space; a quoted string holding
 # ;, & or | can split a command wrongly; a cd inside a subshell is taken to apply to the
-# rest of the command; $(...), env prefixes and aliases are not looked into.
+# rest of the command; $(...), env prefixes and aliases are not looked into; a lone
+# --git-dir outside the project with the cwd inside it is allowed although git would then
+# use the cwd as work tree.
 input=$(cat)
 cmd=$(jq -r '.tool_input.command // empty' <<<"$input")
 [[ -z "$cmd" ]] && exit 0
@@ -69,6 +74,7 @@ outside() { # absolute path or ?: 0 when it is not in the project's repository
 cur=$root # directory the command runs in, as far as the text tells
 cwd=$(jq -r '.cwd // empty' <<<"$input")
 [[ -n "$cwd" ]] && { resolve / "$cwd"; cur=$res; }
+prev=$cur # the directory before the last cd; at the start, the cwd (a failed cd - stays put)
 while read -r -a words; do # one simple command per line
   toks=()
   skip=0
@@ -88,22 +94,30 @@ while read -r -a words; do # one simple command per line
     cd)
       i=1
       while [[ "${toks[i]:-}" == -* && "${toks[i]}" != - ]]; do ((i++)); done
+      old=$cur
       if [[ -z "${toks[i]:-}" ]]; then cur=? # a bare cd goes home
-      elif [[ "${toks[i]}" != - ]]; then resolve "$cur" "${toks[i]}"; cur=$res; fi ;;
+      elif [[ "${toks[i]}" == - ]]; then cur=$prev # cd - returns to the previous directory
+      else resolve "$cur" "${toks[i]}"; cur=$res; fi
+      prev=$old ;;
     git)
-      here=$cur
+      here=$cur # git's directory: -C moves it
+      wt= gd=   # --work-tree and --git-dir, each resolved against here; empty when not given
       i=1
       while [[ "${toks[i]:-}" == -* ]]; do # global options before the subcommand
         case "${toks[i]}" in
-          -C|--git-dir|--work-tree) resolve "$here" "${toks[i+1]:-.}"; here=$res; ((i+=2)) ;;
-          --git-dir=*|--work-tree=*) resolve "$here" "${toks[i]#*=}"; here=$res; ((i++)) ;;
+          -C) resolve "$here" "${toks[i+1]:-.}"; here=$res; ((i+=2)) ;;
+          --git-dir) resolve "$here" "${toks[i+1]:-.}"; gd=$res; ((i+=2)) ;;
+          --work-tree) resolve "$here" "${toks[i+1]:-.}"; wt=$res; ((i+=2)) ;;
+          --git-dir=*) resolve "$here" "${toks[i]#*=}"; gd=$res; ((i++)) ;;
+          --work-tree=*) resolve "$here" "${toks[i]#*=}"; wt=$res; ((i++)) ;;
           -c|--namespace|--super-prefix|--config-env|--exec-path) ((i+=2)) ;;
           *) ((i++)) ;;
         esac
       done
       sub=${toks[i]:-}
       [[ "$sub" == switch || "$sub" == checkout || "$sub" == reset ]] || continue
-      outside "$here" && continue
+      [[ -z "$wt$gd" ]] && wt=$here # without the options both are the directory itself
+      outside "$wt" && outside "$gd" && continue # inside when either one is in the project
       args=" ${toks[*]:i+1} "
       pos=()
       for x in "${toks[@]:i+1}"; do [[ "$x" == -* ]] || pos+=("$x"); done
