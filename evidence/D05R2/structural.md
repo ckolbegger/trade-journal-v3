@@ -194,3 +194,22 @@ Seam: `withWalkedReflections` and `debtViolations` moved unchanged into `tools/f
 | `npx tsc6 --noEmit` | exit 0 |
 | `npm run lint` | exit 0 |
 | `npm run lint:deps` | exit 0 |
+
+Main-session notes on T5R2.5-B1: the subagent appended its two evidence rows with `cat >>` heredocs, a slip against the Edit-only rule (content checked, correct). The new test lives in `tools/fixture-views.test.ts`, which `npm run test:unit` reaches (`vite.config.ts` adds `tools/**/*.test.ts` to the unit project) but the cumulative suite's `npx vitest run src` does not.
+
+### ocr review of `dc004c4`
+
+Session `c3e6814e-59e7-4f3b-8d29-efd0df73b9d6`, 3 files reviewed, no findings. Raw output: [ocr/T5R2.5-B1-dc004c4.json](ocr/T5R2.5-B1-dc004c4.json).
+
+### Cumulative suite at `dc004c4`
+
+Date 2026-11-01 07:39 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 1 failed, 75 passed (76)`, `Tests 1 failed, 1024 passed (1025)`, exit 1 | `suite-runs/t5r2-5-b1-fixture-mapping-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-5-b1-fixture-mapping-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-5-b1-fixture-mapping-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-5-b1-fixture-mapping-checks.txt` |
+
+**F1, the one unit failure:** `src/ui/screens/ReviewCards.test.tsx:607`, "links (A161) > should open the first card holding XYZ in attention order on its Marks panel, with focus on XYZ row, for /review?instrument=XYZ" (`AssertionError: expected false to be true`, the XYZ Mark region lookup). The commit changes no UI code (`tools/` and `vite.config.ts` only). Reproduction by the main session: the case alone passed (`npx vitest run src/ui/screens/ReviewCards.test.tsx -t "should open the first card holding XYZ in attention order on its Marks panel"`, 1 passed); its file passed (41 of 41); then `npx vitest run src` twice in a row passed both times (`Tests 1025 passed (1025)`). Treated as intermittent under the full run's load, not a defect of `dc004c4`. It passed in all five earlier D5R2 cumulative runs. If it recurs, it becomes a stability task like D5R's B4.13-F1. T5R2.5 is closed; T5R2.6's cumulative run covers this commit's code.

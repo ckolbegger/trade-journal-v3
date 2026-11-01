@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 13843,
+    "input_tokens": 13724,
+    "output_tokens": 119,
+    "cache_read_tokens": 3840,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_find": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/fixture-views.ts",
+        "tools/verify-fixtures.ts",
+        "vite.config.ts"
+      ]
+    }
+  ],
+  "session_id": "c3e6814e-59e7-4f3b-8d29-efd0df73b9d6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3e6814e-59e7-4f3b-8d29-efd0df73b9d6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "dc004c4a",
+      "resolved_base": "616f095328a84e958e5cce8cb5d11c3c7f553dcb",
+      "resolved_head": "dc004c4abe939c40a2080a08295a80d966aeb188",
+      "exact_range": "616f095328a84e958e5cce8cb5d11c3c7f553dcb..dc004c4abe939c40a2080a08295a80d966aeb188",
+      "source_artifact_sha256": "7e692e8f34bda496ae27bfdd2af5d697a140db91190799258c8c43fd6ed0d498"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "13cc854b099261fe514adddc5afd1596372d1fd5c7a7da121d3a66967c018f94"
+        },
+        {
+          "item_id": "1957004d29e25b40fcd98223c2fac9fb395c41e70bad3566e17ee6a401220636",
+          "path": "vite.config.ts",
+          "fingerprint": "3670e0e81dffc7d172f90bf34ba44b8b7a8efc9156c3f78a458473de3473d282"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "be2d73308c40c5d30c03e48962be27c0e370bb7b7dd9109c9e912e6e221bbbe6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "13cc854b099261fe514adddc5afd1596372d1fd5c7a7da121d3a66967c018f94"
+        },
+        {
+          "item_id": "1957004d29e25b40fcd98223c2fac9fb395c41e70bad3566e17ee6a401220636",
+          "path": "vite.config.ts",
+          "fingerprint": "3670e0e81dffc7d172f90bf34ba44b8b7a8efc9156c3f78a458473de3473d282"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "be2d73308c40c5d30c03e48962be27c0e370bb7b7dd9109c9e912e6e221bbbe6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9523
+  }
+}
