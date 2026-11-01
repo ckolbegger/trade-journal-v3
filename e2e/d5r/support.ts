@@ -3,8 +3,8 @@
 // apart, and the slider and Save Marks locators.
 import type { Locator, Page } from '@playwright/test';
 import {
-  actionFormOf, backToTrade, cardHeader, cardList, confirmReference, createTradeAt, createTrades, deferEntry, enterMark, expect, FOUR_TRADES, PLAN, panelHeader, reachCard, reachPanel, READY, recordEntry, reflectionsOf, saveAction, tradeCard,
-  type CardPanel, type FixtureTrade, type PlanValues,
+  actionFormOf, backToTrade, cardHeader, cardList, confirmReference, createTradeAt, createTrades, currentTradeId, deferEntry, enterMark, expect, FOUR_TRADES, PLAN, panelHeader, reachCard, reachPanel, READY, recordEntry, reflectionsOf, saveAction, tradeCard,
+  type CardPanel, type FixtureTrade, type PlanValues, type TradeRef,
 } from '../d5/support.ts';
 
 export * from '../d5/support.ts';
@@ -24,15 +24,20 @@ const T_F: PlanValues = { ...PLAN, symbol: 'XYZ', quantity: '50', entry: '50', s
 // D4's five-Trade fixture without T-D, with T-F (50 shares at 50.00, Monday 10:30), T-A's first Position Change on an
 // earlier day at 10:00 with no Mark for that day (Friday, or Thursday for the case that needs two earlier sessions), and
 // both of T-A's Position Changes recorded with Reflect later: D-1 (due in Monday's Review) and D-2 (Monday 11:00).
-export async function createCardFixture(page: Page, options: { readonly earlierDay?: '2026-10-09' | '2026-10-08' } = {}): Promise<void> {
+// Returns each Trade as a Trade reference (its Underlying, the id the app gave it, and its fixture label), which the card
+// helpers take to reach its card.
+export async function createCardFixture(page: Page, options: { readonly earlierDay?: '2026-10-09' | '2026-10-08' } = {}): Promise<Record<CardTrade, TradeRef>> {
   const day = options.earlierDay ?? '2026-10-09';
-  await createTradeAt(page, T_A, `${day}T09:30`, []);
+  const tA = await createTradeAt(page, T_A, `${day}T09:30`, []);
   await deferEntry(page, [{ quantity: '60', price: '50.10', fee: '1.00', time: `${day}T10:00` }]);
   await backToTrade(page, 'XYZ');
   await deferEntry(page, [{ quantity: '40', price: '50.30', fee: '1.00', time: '2026-10-12T11:00' }]);
-  await createTrades(page, FOUR_TRADES.slice(1));
+  const [tB, tC, tE] = await createTrades(page, FOUR_TRADES.slice(1));
   await confirmReference(page, T_F);
+  const tF = await currentTradeId(page);
   await recordEntry(page, [{ quantity: '50', price: '50.00', fee: '1.00', time: '2026-10-12T10:30' }]);
+  const ref = (trade: CardTrade, tradeId: string | undefined): TradeRef => ({ symbol: SYMBOL[trade], tradeId: tradeId!, label: trade });
+  return { 'T-A': ref('T-A', tA), 'T-B': ref('T-B', tB), 'T-C': ref('T-C', tC), 'T-E': ref('T-E', tE), 'T-F': ref('T-F', tF) };
 }
 
 // Routine Trades for the long list: one Long Stock Trade each, entered Monday 10:00.
@@ -62,7 +67,8 @@ export async function tagCards(page: Page): Promise<void> {
   if (!tagged) throw new Error('Cannot tell T-A from T-F: expected two XYZ cards, exactly one owing a reflection. Tag the cards right after the Review loads.');
 }
 
-// The list item of a fixture Trade's card, collapsed or open.
+// The list item of a fixture Trade's card, collapsed or open. This two-path version shadows D4's Trade-keyed `cardItem` (which
+// the star export above carries) until T5R.15-I3 moves the specs onto it and deletes this one.
 export const cardItem = (page: Page, trade: CardTrade): Locator =>
   isShared(trade) ? page.locator(`li.review-card[data-trade="${trade}"]`) : cardList(page).locator('li.review-card').filter({ has: cardHeader(page, SYMBOL[trade]) });
 

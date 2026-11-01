@@ -75,15 +75,24 @@ export const FOUR_TRADES: readonly FixtureTrade[] = [
   { plan: plan('JKL', '100', '20', '19', '30'), fills: [['100', '20.00', AT_10]] },
 ];
 
-// Creates each Trade through the UI: Plan, then one Position Change per fill.
-export async function createTrades(page: Page, trades: readonly FixtureTrade[] = FOUR_TRADES): Promise<void> {
+// The id of the Trade whose page is open, read from its /trades/<id> URL (an id is stored data, so it holds across reloads).
+export async function currentTradeId(page: Page): Promise<string> {
+  await expect(page).toHaveURL(/\/trades\/[^/?#]+/, READY);
+  return /\/trades\/([^/?#]+)/.exec(page.url())![1]!;
+}
+
+// Creates each Trade through the UI: Plan, then one Position Change per fill. Returns each Trade's id, in order.
+export async function createTrades(page: Page, trades: readonly FixtureTrade[] = FOUR_TRADES): Promise<string[]> {
+  const ids: string[] = [];
   for (const trade of trades) {
     await confirmReference(page, trade.plan);
+    ids.push(await currentTradeId(page));
     for (const [index, [quantity, price, time]] of trade.fills.entries()) {
       if (index > 0) await backToTrade(page, trade.plan.symbol);
       await recordEntry(page, [{ quantity, price, fee: '1.00', time }]);
     }
   }
+  return ids;
 }
 
 // Records, across every document the context loads (the update's Reload may load more than one),
@@ -101,16 +110,19 @@ export async function watchUpdatingAcrossDocuments(context: BrowserContext): Pro
 }
 
 // Confirms a Plan dated `planTime` and records one fill at `fillTime` (both Workspace-local), ending on its receipt.
-export async function createTradeAt(page: Page, values: PlanValues, planTime: string, fills: readonly (readonly [string, string, string])[]): Promise<void> {
+// Returns the Trade's id.
+export async function createTradeAt(page: Page, values: PlanValues, planTime: string, fills: readonly (readonly [string, string, string])[]): Promise<string> {
   await nav(page).getByRole('link', { name: 'New Plan' }).click();
   await fillPlan(page, values);
   await page.getByLabel('Plan time').fill(planTime);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
   await expect(page.getByRole('heading', { name: values.symbol, level: 1 })).toBeVisible();
+  const tradeId = await currentTradeId(page);
   for (const [index, [quantity, price, time]] of fills.entries()) {
     if (index > 0) await backToTrade(page, values.symbol);
     await recordEntry(page, [{ quantity, price, fee: '1.00', time }]);
   }
+  return tradeId;
 }
 
 // ---- The Review's steps ----------------------------------------------------------------------
@@ -161,21 +173,52 @@ export async function showPanel(page: Page, name: Panel): Promise<void> {
   if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
   await expect(header).toHaveAttribute('aria-expanded', 'true');
 }
-// ---- Card helpers (decision 65, D5R section 6.4) -----------------------------------------------
+// ---- Card helpers (decision 65, D5R section 6.4; decision 68, section 6.5) ---------------------------------------
 
 export type CardPanel = Panel;
-export const tradeCard = (page: Page, symbol: string): Locator => page.getByRole('region', { name: `${symbol} review`, exact: true });
+// A card is named by a symbol (the card for that Underlying) or by a Trade reference. Two Trades can hold one Underlying and
+// their cards then read alike, so only the Trade id (the list item's data-trade-id) tells them apart; the label, when given,
+// is what a failure message calls the Trade.
+export interface TradeRef {
+  readonly symbol: string;
+  readonly tradeId: string;
+  readonly label?: string;
+}
+export type CardRef = string | TradeRef;
+const symbolOf = (card: CardRef): string => (typeof card === 'string' ? card : card.symbol);
+// Labels of the Trade references the helpers have been given, by Trade id, so a failure can name the open card by label.
+const labelOfId = new Map<string, string>();
+
+// The one resolver every card helper goes through: the card's list item, its header button and its body region. A Trade
+// reference looks inside the list item with its Trade id, so nothing is ever read from another Trade's card. A symbol may hold a
+// dot (BRK.B): it is escaped, and must be followed by whitespace or the end, so BRK never matches BRK.B. The body is named for
+// the symbol, so the nested Mark-row, Marks and Saved Action regions never match.
+function resolve(page: Page, card: CardRef): { item: Locator; header: Locator; body: Locator } {
+  const symbol = symbolOf(card);
+  const headerName = new RegExp(`^Review ${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$)`);
+  const bodyName = `${symbol} review`;
+  if (typeof card === 'string') {
+    const header = page.getByRole('button', { name: headerName });
+    return { item: cardList(page).locator('li.review-card').filter({ has: header }), header, body: page.getByRole('region', { name: bodyName, exact: true }) };
+  }
+  if (card.label !== undefined) labelOfId.set(card.tradeId, card.label);
+  const item = page.locator(`li.review-card[data-trade-id="${card.tradeId}"]`);
+  return { item, header: item.getByRole('button', { name: headerName }), body: item.getByRole('region', { name: bodyName, exact: true }) };
+}
+
+// The card's list item, collapsed or open.
+export const cardItem = (page: Page, card: CardRef): Locator => resolve(page, card).item;
+export const tradeCard = (page: Page, card: CardRef): Locator => resolve(page, card).body;
 // Raw locators: they never click, so a step that asserts which card or panel is open can read them before any reach.
-// A symbol may hold a dot (BRK.B): it is escaped, and must be followed by whitespace or the end, so BRK never matches BRK.B.
-export const cardHeader = (page: Page, symbol: string): Locator =>
-  page.getByRole('button', { name: new RegExp(`^Review ${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$)`) });
-export const panelHeader = (page: Page, symbol: string, panel: Panel): Locator => tradeCard(page, symbol).getByRole('button', { name: new RegExp(`^${panel}\\b`) });
-export async function openPanelOf(page: Page, symbol: string): Promise<Panel | undefined> {
-  for (const name of PANELS) if ((await panelHeader(page, symbol, name).getAttribute('aria-expanded')) === 'true') return name;
+export const cardHeader = (page: Page, card: CardRef): Locator => resolve(page, card).header;
+export const panelHeader = (page: Page, card: CardRef, panel: Panel): Locator => tradeCard(page, card).getByRole('button', { name: new RegExp(`^${panel}\\b`) });
+export async function openPanelOf(page: Page, card: CardRef): Promise<Panel | undefined> {
+  for (const name of PANELS) if ((await panelHeader(page, card, name).getAttribute('aria-expanded')) === 'true') return name;
   return undefined;
 }
 
 // A previous release's Review (rule 5): the Trade card is reached from the Trades family, and the Marks family is not a card's.
+// There are no list items to tell Trades apart there, so a Trade reference falls back to its symbol.
 async function reachOldCard(page: Page, symbol: string): Promise<Locator> {
   if ((await tradeCard(page, symbol).count()) === 0) {
     if ((await tradesFamily(page).count()) === 0) await page.getByRole('button', { name: 'Continue to Trades' }).click();
@@ -187,9 +230,9 @@ async function reachOldCard(page: Page, symbol: string): Promise<Locator> {
 }
 
 // Opens the Trade's card unless it is open (a header press toggles), waits for its content, and returns its region.
-export async function reachCard(page: Page, symbol: string): Promise<Locator> {
-  if (!(await hasCards(page))) return reachOldCard(page, symbol);
-  const header = cardHeader(page, symbol);
+export async function reachCard(page: Page, card: CardRef): Promise<Locator> {
+  if (!(await hasCards(page))) return reachOldCard(page, symbolOf(card));
+  const header = cardHeader(page, card);
   await expect(header).toBeVisible(READY);
   if ((await header.getAttribute('aria-expanded')) !== 'true') {
     await header.click();
@@ -200,80 +243,88 @@ export async function reachCard(page: Page, symbol: string): Promise<Locator> {
       return (await hold.count()) > 0 ? 'refused' : 'waiting';
     };
     await expect.poll(outcome, READY).not.toBe('waiting');
-    if ((await outcome()) === 'refused') {
-      const holder = /entered for (.+?) to leave it/.exec((await hold.first().textContent()) ?? '')?.[1] ?? 'the open card';
-      throw new Error(`Cannot reach ${symbol}'s card: ${holder}'s card holds unsaved work, so it stays open. Save or discard it first; the helper does neither.`);
-    }
+    if ((await outcome()) === 'refused') throw await refusal(page, card, hold);
   }
   await expect(header).toHaveAttribute('aria-expanded', 'true');
-  await expect(tradeCard(page, symbol)).toBeVisible(READY);
-  return tradeCard(page, symbol);
+  await expect(tradeCard(page, card)).toBeVisible(READY);
+  return tradeCard(page, card);
+}
+// The failure for a refused reach: it names both cards, since two Trades on one Underlying both read "XYZ". The holder is the
+// list item whose header is expanded, found by its Trade id: named by the label of a Trade reference the helpers have been
+// given, else by its symbol (read from the hold message) and the id.
+async function refusal(page: Page, card: CardRef, hold: Locator): Promise<Error> {
+  const open = page.locator('li.review-card').filter({ has: page.getByRole('button', { name: /^Review /, expanded: true }) });
+  const holderId = (await open.count()) > 0 ? await open.first().getAttribute('data-trade-id') : null;
+  const symbol = /entered for (.+?) to leave it/.exec((await hold.first().textContent()) ?? '')?.[1] ?? 'the open card';
+  const holder = holderId === null ? symbol : (labelOfId.get(holderId) ?? `${symbol} (trade ${holderId})`);
+  const target = typeof card === 'string' ? card : (card.label ?? `${card.symbol} (trade ${card.tradeId})`);
+  return new Error(`Cannot reach ${target}'s card: ${holder}'s card holds unsaved work, so it stays open. Save or discard it first; the helper does neither.`);
 }
 // Reaches the card, then opens the panel unless it is open; returns the panel's content.
-export async function reachPanel(page: Page, symbol: string, panel: Panel): Promise<Locator> {
-  if (!(await hasCards(page))) return panel === 'Marks' ? marksFamily(page) : reachOldCard(page, symbol);
-  await reachCard(page, symbol);
-  const header = panelHeader(page, symbol, panel);
+export async function reachPanel(page: Page, card: CardRef, panel: Panel): Promise<Locator> {
+  if (!(await hasCards(page))) return panel === 'Marks' ? marksFamily(page) : reachOldCard(page, symbolOf(card));
+  await reachCard(page, card);
+  const header = panelHeader(page, card, panel);
   await expect(header).toBeVisible(READY);
   if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
   await expect(header).toHaveAttribute('aria-expanded', 'true');
   return page.locator(`[id="${await header.getAttribute('aria-controls')}"]`);
 }
-export async function markRow(page: Page, symbol: string, date: string): Promise<Locator> {
-  return (await reachPanel(page, symbol, 'Marks')).getByRole('region', { name: `${symbol} Mark, ${date}`, exact: true });
+export async function markRow(page: Page, card: CardRef, date: string): Promise<Locator> {
+  return (await reachPanel(page, card, 'Marks')).getByRole('region', { name: `${symbolOf(card)} Mark, ${date}`, exact: true });
 }
-export async function actionFormOf(page: Page, symbol: string): Promise<Locator> {
-  return (await reachPanel(page, symbol, 'Action')).getByRole('form', { name: 'Action' });
+export async function actionFormOf(page: Page, card: CardRef): Promise<Locator> {
+  return (await reachPanel(page, card, 'Action')).getByRole('form', { name: 'Action' });
 }
-export async function reflectionsOf(page: Page, symbol: string): Promise<Locator> {
-  return (await reachPanel(page, symbol, 'Reflections')).getByRole('region', { name: 'Reflections', exact: true });
+export async function reflectionsOf(page: Page, card: CardRef): Promise<Locator> {
+  return (await reachPanel(page, card, 'Reflections')).getByRole('region', { name: 'Reflections', exact: true });
 }
-export async function debtFormOf(page: Page, symbol: string): Promise<Locator> {
-  return (await reachPanel(page, symbol, 'Reflections')).getByRole('form', { name: 'Reflection' });
+export async function debtFormOf(page: Page, card: CardRef): Promise<Locator> {
+  return (await reachPanel(page, card, 'Reflections')).getByRole('form', { name: 'Reflection' });
 }
 
 // Shows the saved row in the Marks panel, then puts back the panel Save Marks moved the card on to (A157).
-async function checkSavedRow(page: Page, symbol: string, date: string, text: string): Promise<void> {
+async function checkSavedRow(page: Page, card: CardRef, date: string, text: string): Promise<void> {
   // The drafts are cleared with the same result that moves the card on; the panel may already be hidden.
-  await expect(tradeCard(page, symbol).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
-  const moved = await openPanelOf(page, symbol);
-  await expect(await markRow(page, symbol, date)).toContainText(text);
-  if (moved !== undefined && moved !== 'Marks') await reachPanel(page, symbol, moved);
+  await expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  const moved = await openPanelOf(page, card);
+  await expect(await markRow(page, card, date)).toContainText(text);
+  if (moved !== undefined && moved !== 'Marks') await reachPanel(page, card, moved);
 }
 
 // On cards the price is a draft in the open card's Marks panel, saved with Save Marks (D5R, A153); a previous release's
 // Review enters it in the row and saves it there.
-export async function enterMark(page: Page, symbol: string, date: string, price: string): Promise<void> {
+export async function enterMark(page: Page, card: CardRef, date: string, price: string): Promise<void> {
   const cards = await hasCards(page);
-  const entry = await markRow(page, symbol, date);
+  const entry = await markRow(page, card, date);
   if (cards) {
     await entry.getByLabel('Price').fill(price);
-    await (await reachPanel(page, symbol, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
+    await (await reachPanel(page, card, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
   } else {
     await entry.getByRole('button', { name: 'Enter', exact: true }).click();
     await entry.getByLabel('Price').fill(price);
     await entry.getByRole('button', { name: 'Save Mark' }).click();
   }
-  if (cards) await checkSavedRow(page, symbol, date, 'Manual');
+  if (cards) await checkSavedRow(page, card, date, 'Manual');
   else await expect(entry.getByText('Manual')).toBeVisible();
 }
 
-export async function acknowledgeMark(page: Page, symbol: string, date: string, reason: string): Promise<void> {
+export async function acknowledgeMark(page: Page, card: CardRef, date: string, reason: string): Promise<void> {
   const cards = await hasCards(page);
-  const entry = await markRow(page, symbol, date);
+  const entry = await markRow(page, card, date);
   await entry.getByRole('button', { name: "Can't get a price" }).click();
   await entry.getByLabel('Reason (required)').fill(reason);
-  if (cards) await (await reachPanel(page, symbol, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
+  if (cards) await (await reachPanel(page, card, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
   else await entry.getByRole('button', { name: 'Save acknowledgment' }).click();
-  if (cards) await checkSavedRow(page, symbol, date, 'Acknowledged Unavailable');
+  if (cards) await checkSavedRow(page, card, date, 'Acknowledged Unavailable');
   else await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
 // Fills the Trade's Action form and presses Save; Hold needs no Intent. Returns once the save result has
 // rendered: a Saved result replaces the form (the next Trade's form, or none), so the element that was
 // pressed is gone. Until then the Review's binding is the old one, and opening another Trade would use it.
-export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent: string | undefined, symbol: string): Promise<void> {
-  const form = await actionFormOf(page, symbol);
+export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent: string | undefined, card: CardRef): Promise<void> {
+  const form = await actionFormOf(page, card);
   const pressed = await form.elementHandle();
   await form.getByRole('radio', { name: action, exact: true }).check();
   if (intent !== undefined) await form.getByLabel(/^Why are you taking this action\?/).fill(intent);

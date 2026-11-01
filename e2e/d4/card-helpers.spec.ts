@@ -1,6 +1,23 @@
-import { actionFormOf, cardHeader, createTrades, expect, marksFamily, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, status, test } from './support.ts';
+import {
+  actionFormOf, cardHeader, cardList, createTrades, enterMark, expect, FOUR_TRADES, marksFamily, markRow, MONDAY_1700, onboardedAt, openPanelOf, openReview, panelHeader, PLAN, reachCard, reloadReview, status, test,
+  tradeCard,
+  type FixtureTrade, type TradeRef,
+} from './support.ts';
 
 const DATE = 'Mon Oct 12';
+
+// FOUR_TRADES plus a second XYZ Trade (the card fixture's T-F): 50 shares at 50.00, Monday 10:30. T-A is the first XYZ Trade.
+const T_F: FixtureTrade = {
+  plan: { ...PLAN, symbol: 'XYZ', quantity: '50', entry: '50', stop: '48', target: '55' },
+  fills: [['50', '50.00', '2026-10-12T10:30']],
+};
+
+// Creates the five Trades through the UI and opens the Review; returns the two XYZ Trades by their ids.
+async function twoXyzReview(page: Parameters<typeof openReview>[0]): Promise<{ tA: TradeRef; tF: TradeRef }> {
+  const ids = await createTrades(page, [...FOUR_TRADES, T_F]);
+  await openReview(page);
+  return { tA: { symbol: 'XYZ', tradeId: ids[0]!, label: 'T-A' }, tF: { symbol: 'XYZ', tradeId: ids[4]!, label: 'T-F' } };
+}
 
 test.describe('reach (decision 65)', () => {
   test('should open ABC’s collapsed card and its Marks panel and return ABC’s Monday row, Missing', async ({ profile }) => {
@@ -102,6 +119,69 @@ test.describe('reach (decision 65)', () => {
     await expect(marksFamily(page).getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true })).toHaveCount(1);
     await expect(row).toContainText('Missing');
     await expect(row.getByRole('button', { name: 'Enter', exact: true })).toBeVisible();
+    await context.close();
+  });
+});
+
+test.describe('reach by Trade (decision 68)', () => {
+  test('should open the second XYZ Trade’s collapsed card by its Trade id and return its Monday row, leaving the first XYZ card collapsed', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const { tA, tF } = await twoXyzReview(page);
+    // One XYZ card is open on load; the helper must open the other by its Trade id.
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
+    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
+
+    const row = await markRow(page, tF, DATE);
+    await expect(row).toContainText('Missing');
+    await expect(row).toBeVisible();
+    await expect(tradeCard(page, tF).getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true })).toHaveCount(1);
+    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'true');
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
+    await expect(panelHeader(page, tF, 'Marks')).toHaveAttribute('aria-expanded', 'true');
+    await context.close();
+  });
+
+  test('should fail naming both XYZ cards, the holder found by its list item’s Trade id, when reaching the second is refused while the first holds a Mark draft', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const { tA, tF } = await twoXyzReview(page);
+
+    const row = await markRow(page, tA, DATE);
+    await row.getByLabel('Price').fill('52.00');
+    const message = await reachCard(page, tF).then(
+      () => undefined,
+      (error: unknown) => (error as Error).message,
+    );
+    // Both cards read "XYZ", so the message tells them apart by their labels.
+    expect(message).toMatch(/Cannot reach T-F's card: T-A's card holds unsaved work/);
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'true');
+    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'false');
+    await expect(row.getByLabel('Price')).toHaveValue('52.00');
+    await context.close();
+  });
+
+  test('should reach each XYZ card by its Trade after the cards re-sort and after a reload', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const { tA, tF } = await twoXyzReview(page);
+    const order = () => cardList(page).locator('li.review-card').evaluateAll((items) => items.map((li) => li.getAttribute('data-trade-id')));
+    // The two Trades differ in their summary lines, so a header that opens is shown to be the right Trade's.
+    const reachEach = async (): Promise<void> => {
+      for (const [card, other, summary] of [[tA, tF, /^Review XYZ Long 100 shares @ \$50\.18/], [tF, tA, /^Review XYZ Long 50 shares @ \$50\.00/]] as const) {
+        await expect(await reachCard(page, card)).toBeVisible();
+        await expect(cardHeader(page, card)).toHaveAccessibleName(summary);
+        await expect(cardHeader(page, card)).toHaveAttribute('aria-expanded', 'true');
+        await expect(cardHeader(page, other)).toHaveAttribute('aria-expanded', 'false');
+      }
+    };
+
+    await reachEach();
+    const before = await order();
+    // XYZ's Mark covers both Trades, so both XYZ cards drop below the cards still missing a Mark.
+    await enterMark(page, tF, DATE, '52.00');
+    expect(await order()).not.toEqual(before);
+    await reachEach();
+
+    await reloadReview(page);
+    await reachEach();
     await context.close();
   });
 });
