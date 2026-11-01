@@ -123,3 +123,19 @@ No browser run was needed. The scratch repository's red run used the committed s
 ### ocr review of `73387a7` (T6P.2-B1)
 
 Session `ec3f2cf0-af59-4e24-b230-aa80de3905f2`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), no findings. Raw output: [ocr/T6P.2-B1-73387a7.json](ocr/T6P.2-B1-73387a7.json).
+
+## T6P.2-B3 The current folder is passed as one argument
+
+Run on 2026-11-01. All red and green runs wrote to throwaway evidence directories in the scratchpad (`<scratch>/b3/D99`, `D98`), so nothing under `evidence/` changed until the final 20-test check. `<scratch>` is `/private/tmp/claude-501/-Users-ckolbegger-src-trade-journal-v3-worktrees-claude-opus-5-5/2e8bb8af-ceb0-4309-9fd5-ff3dbb5a527a/scratchpad`. Existing folders `<scratch>/b3/my folder` and `<scratch>/b3/semi;touch pwned` were made with `mkdir -p`.
+
+| Step | Command | Output | Exit |
+|---|---|---|---|
+| Red, real Playwright | `TJ_E2E_CURRENT="<scratch>/b3/my folder" .claude/scripts/full-suite.sh <scratch>/b3/D99 red browser-task` | first call `5 passed`; the written command line is `$ npx playwright test <scratch>/b3/my folder --grep-invert "@every-task\|@release-history"` and the second call prints `Error: No tests found.` (Playwright treats `<scratch>/b3/my` and `folder` as two filters) | script 1 |
+| Red, argument list | same script with stub `npm` (exits 0) and stub `npx` (prints `argc` and each argument as `[arg]`) first on `PATH`, `TJ_E2E_CURRENT="<scratch>/b3/my folder"`, evidence dir `<scratch>/b3/D98` | second call `npx argc=6`: `[playwright] [test] [<scratch>/b3/my] [folder] [--grep-invert] [@every-task\|@release-history]`, so the folder is two arguments | 0 |
+| Red, metacharacter | same stubs, `TJ_E2E_CURRENT="<scratch>/b3/semi;touch pwned"` | second call `npx argc=3`: `[playwright] [test] [<scratch>/b3/semi]`; the `;` started a second command, which ran a real `touch pwned --grep-invert ...` in the repo root and created stray files `pwned`, `--grep-invert` and `@every-task\|@release-history` (removed again; `git status --short` clean of them) | 0 |
+| Fix | `browser_task`: `cmd2="npx playwright test $current --grep-invert ..."` became `cmd2="npx playwright test $(printf '%q' "$current") --grep-invert ..."`. `%q` leaves a plain path such as `e2e/d5r` unchanged and escapes only spaces and metacharacters, so the `$ <command>` line stays readable and the string `bash -c` runs now reads as one word. Nothing else changed. | | |
+| Green, space | same stubs, `TJ_E2E_CURRENT="<scratch>/b3/my folder"` | written line `$ npx playwright test <scratch>/b3/my\ folder --grep-invert "@every-task\|@release-history"`; `npx argc=5`: `[playwright] [test] [<scratch>/b3/my folder] [--grep-invert] [@every-task\|@release-history]` | 0 |
+| Green, metacharacter | same stubs, `TJ_E2E_CURRENT="<scratch>/b3/semi;touch pwned"` | written line `... semi\;touch\ pwned ...`; `npx argc=5` with the single argument `[<scratch>/b3/semi;touch pwned]`; no `pwned` file in the repo root, `git status --short` shows no stray files | 0 |
+| T6P.2 check | `TJ_E2E_CURRENT=e2e/d5r .claude/scripts/full-suite.sh evidence/D06P t6p-2-b3-check-d5r browser-task` | call 1 `5 passed (10.3s)`; call 2 `$ npx playwright test e2e/d5r --grep-invert "@every-task\|@release-history"` (unchanged text) `15 passed (1.2m)`; both `EXIT 0`; summary `20 passed`; 1 min 25 s wall time; [suite-runs/t6p-2-b3-check-d5r-browser.txt](suite-runs/t6p-2-b3-check-d5r-browser.txt) | 0 |
+
+Ports 5175, 9341 and 9342 were free before and after the 20-test run. Only the real-Playwright red also ran a browser (the first call's 5 `@every-task` tests); the stub runs ran none.

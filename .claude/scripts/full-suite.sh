@@ -99,7 +99,7 @@ browser_task() {
   current=${TJ_E2E_CURRENT:-}
   if [[ -z "$current" ]]; then current=$(current_folder "$dir") || exit 2; fi
   cmd1="npm run build:faults && npm run build:releases && npx playwright test ${folders[*]} --grep @every-task"
-  [[ -d "$current" ]] && cmd2="npx playwright test $current --grep-invert \"@every-task|@release-history\""
+  [[ -d "$current" ]] && cmd2="npx playwright test $(printf '%q' "$current") --grep-invert \"@every-task|@release-history\""
 
   echo "\$ $cmd1" >"$file"
   bash -c "$cmd1" >>"$file" 2>&1
