@@ -550,3 +550,44 @@ Date 2026-11-01 10:57 EST. The worker hang did not recur.
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.15-rerun-checks.txt` |
 
 The first runner left one self-matching `pgrep -f full-suite.sh` polling loop; the main session stopped it.
+
+## T5R2.16 Query count and benchmark
+
+Commit `ccff276`. `npm run test:integration -- d5r/query-count` passed unchanged (1 file, 3 tests; `suite-runs/T5R2.16-query-count.txt`): progress adds no request (A168). `npm run build:bench && npm run bench:run` passed on its fourth attempt, with `.cache/bench/profile` reused on every attempt (never regenerated) and every comparison equal; full results in [bench.md](bench.md), raw output `suite-runs/T5R2.16-bench.txt`.
+
+- **Implementation decision (recommended and applied): the bench harness reads the Review's full Trade names.** Since D5R's T5R.15-I4 (`095e325`, inside `claude-opus-5.5-d5r`, after D5R's bench run of 2026-10-31), the Review names a Trade in full, e.g. "QAJ (Long 120 shares @ $300.97)" (A150). `tools/bench-run.ts` still expected the bare symbol in three places: the due-reflection comparison (now keyed on the underlying before " ("), `cardOf`'s region lookup (now `^SYMBOL(?: \(.*\))? review$`), and the in-page card selector of the save timings (now `aria-label^="SYM "` and `$=" review"`). Expected values (`bench/dataset.json`, `bench/expected-open-rows.json`) are unchanged; no `src/` or `e2e/` change. The first three attempts failed on these, one each (`suite-runs/T5R2.16-bench-first.txt`, `-second.txt`, `-third.txt`). Every other Trade-name selector in the harness was audited and is current. D5R2 changed no label: this is D5R's harness gap.
+- `evidence/D05R/bench.md`, which `bench:run` overwrites, was restored unchanged.
+- **Slip:** the subagent committed before its tdd-log row applied, then amended the local commit (nothing pushed).
+
+| Measure | D5R | D5R2 |
+|---|---|---|
+| Cold start p95 (budget 2,500 ms) | 101.8 ms | 96.2 ms |
+| Warm Planned-to-Open p95 (budget 1,500 ms) | 44.3 ms | 47.3 ms |
+| Open first card, median / p95 | 1854.8 / 1895.4 ms | 1828.6 / 1869.0 ms |
+| Save Marks, median / p95 | 79.8 / 81.3 ms | 82.8 / 85.5 ms |
+| Trade Action save, median / p95 | 90.0 / 90.5 ms | 85.0 / 85.2 ms |
+
+### ocr review of `ccff276`
+
+Session `2fb1d585-a6d0-4cbc-869a-11a5f5c2999f`, 1 file reviewed, no findings. Raw output: [ocr/T5R2.16.json](ocr/T5R2.16.json).
+
+### Cumulative suite at `ccff276` (T5R2.16 closed)
+
+Date 2026-11-01 11:16 EST. `bench:run` was not running.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 80 passed (80)`, `Tests 1051 passed (1051)`, exit 0 | `suite-runs/T5R2.16-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.16-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.4m)`, exit 0 | `suite-runs/T5R2.16-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.16-checks.txt` |
+
+The runner left two self-matching polling loops; the main session stopped them.
+
+## T5R2.17 Node integration suite
+
+At `ccff276` (no code commit follows it): `npm run test:integration` (`vitest run --project integration`), `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 (`suite-runs/T5R2.17-integration.txt`). Every case in sections 6.1 of D1, D2, D4, D5 and D5R passes.
+
+## T5R2.18 Browser suite
+
+At `ccff276`: `npm run test:e2e` (Chromium), 179 passed, exit 0 (the T5R2.16 cumulative run, `suite-runs/T5R2.16-browser.txt`; no code change since). `git diff claude-opus-5.5-d5r -- e2e` is empty (0 bytes) (P47). AC-REV-002 and AC-REV-006 re-proved by those cases.

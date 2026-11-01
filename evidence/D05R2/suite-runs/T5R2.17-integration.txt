@@ -1,0 +1,13 @@
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  60 passed (60)
+      Tests  117 passed (117)
+   Start at  11:25:46
+   Duration  45.44s (transform 1.86s, setup 733ms, import 5.10s, tests 57.32s, environment 3ms)
+
