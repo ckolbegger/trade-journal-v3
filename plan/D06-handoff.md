@@ -1,12 +1,22 @@
 # Handoff: `claude-opus-5.5`, implement D6
 
-> **Not the next deliverable yet (2026-10-31).** Plan revision 20 (decision 61) inserted D5R, the Review redesign, before D6. Implement D5R first, from [D05R-handoff.md](D05R-handoff.md). D5R's session rewrites this note's location checks, starting point and section 4 when D5R is tagged; until then, do not start D6 from it.
-
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, D6 specifics, what D5 left in place, and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
-Written 2026-10-30, after D5 completed. [D05-handoff.md](D05-handoff.md) is the record of D5's session (section 7 lists every D5 task, commit, decision and flagged item); this note is the starting point for D6.
+This note was written on 2026-10-30, after D5 completed. On 2026-11-01, after D5R completed, its location checks, starting point and section 4 were rewritten. Two records cover the earlier sessions, and section 7 of each lists every task, commit, decision and flagged item:
+- [D05-handoff.md](D05-handoff.md) is the record of D5's session.
+- [D05R-handoff.md](D05R-handoff.md) is the record of D5R's session.
 
-This session **implements D6, "Close a Long Stock position"**, under the frozen plan at revision 19. D5 is complete:
+This note is the starting point for D6.
+
+This session **implements D6, "Close a Long Stock position"**, under the frozen plan at revision 27.
+
+D5R, the Review redesign that plan revision 20 (decision 61) inserted before D6, is complete:
+- **Gate:** it passed on the third fresh critic (`evidence/D05R/critic-3.md`, no defects). Critics 1 and 2 reported PASS with low defects, plus one medium defect that predated D5R. All of them were fixed as T5R.16-B1 to B5.
+- **Tag:** `claude-opus-5.5-d5r` on `72c742c`. The tag is local and has not been pushed.
+- **Plan revisions:** revisions 21 to 27 (decisions 62 to 68) amended D5R during its work. Decision 68 identifies each Review card by its Trade.
+- **Acceptance:** D5R adds no acceptance row and changes no row's status. It re-proved its rows on the new screen; see section 8 of the D5R breakdown.
+
+D5 is complete:
 - Its gate passed: critic-1 found no defects (`evidence/D05/critic-1.md`, seven minor observations).
 - Every D5 acceptance row in section 8 of the D5 breakdown is marked covered, and AC-JOUR-003 (full in D5) is covered in `plan/acceptance-matrix.md`.
 - It is tagged `claude-opus-5.5-d5` on `fbe3bb7`. The tag is local and has not been pushed.
@@ -23,9 +33,10 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `5181` |
-| Frozen plan | tag `claude-opus-5.5-plan-r19` (revision 19) |
+| Frozen plan | tag `claude-opus-5.5-plan-r27` (revision 27) |
+| Release D6 builds on | tag `claude-opus-5.5-d5r` (`72c742c`), the D5R release |
 | D5 release | tag `claude-opus-5.5-d5` (`fbe3bb7`) |
-| D6 starting point | tag `claude-opus-5.5-pre-d6` (the commit that added this note) |
+| D6 starting point | tag `claude-opus-5.5-pre-d6b` (the commit that rewrote this note after D5R). The older `claude-opus-5.5-pre-d6` marks the note's first version, before D5R, and is not a starting point. |
 
 Run these checks. Each one must match:
 
@@ -33,13 +44,14 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`; nothing since D4 has been pushed, so N is large (404 at `claude-opus-5.5-pre-d6`). No uncommitted changes. |
-| `git log --oneline claude-opus-5.5-pre-d6..HEAD` | empty at the first session; afterwards only D6 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit |
-| `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r19`, `claude-opus-5.5-d5` and `claude-opus-5.5-pre-d6` |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`. Nothing since `c21c8ec` (pushed during D5R at the user's direction) has been pushed, so N is 172 at `claude-opus-5.5-pre-d6b`. There are no uncommitted changes apart from the user's own untracked `.claude/settings.json`, which is never staged. |
+| `git log --oneline claude-opus-5.5-pre-d6b..HEAD` | Empty at the first session. Afterwards, only D6 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit. |
+| `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r27`, `claude-opus-5.5-d5`, `claude-opus-5.5-d5r` and `claude-opus-5.5-pre-d6b` |
+| `git rev-parse claude-opus-5.5-d5r` | `72c742c1b6f393d432e533a7d65b84c45df933ff` |
 | `git rev-parse claude-opus-5.5-d5` | `fbe3bb71dcc7114e7f0568272be48f0412cfeab8` |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
-| `npm ci && npx vitest run src && npx vitest run tests/integration` | every test file and test passes; at `claude-opus-5.5-pre-d6`, 69 files and 893 tests (unit) and 53 files and 105 tests (integration). The browser suite (`npm run test:e2e`) had 155 passing. |
+| `npm ci && npx vitest run src && npx vitest run tests/integration` | Every test file and test passes. At `claude-opus-5.5-d5r` (unchanged code at `claude-opus-5.5-pre-d6b`) the counts were 75 files and 1011 tests (unit) and 60 files and 117 tests (integration). The browser suite (`npm run test:e2e`, D1 to D5R) had 179 passing, and all 12 static and verify checks passed (`evidence/D05R/structural.md`, the `t5r.16-cumulative-2` run). |
 
 About Node: it comes from Homebrew and isn't pinned there, so a later 26.x is fine. Record the exact version in `evidence/D06/provenance.md`.
 
@@ -61,13 +73,17 @@ The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. I
 **The `specs/` baseline (scoped):** read [plan/spec-reading/D06.md](spec-reading/D06.md), then read exactly the files and line ranges it lists, each range in full. It covers every core section of the [spec map](spec-map.md) plus every section tagged for D6. Don't read `plan/spec-map.md` in full. Search it when the work touches a section that isn't on the list, then read that section in the spec before building on it. If the missing section should have been tagged for D6, correct the map, regenerate the lists with `python3 .claude/scripts/spec-reading-lists.py`, and note the correction in `evidence/D06/structural.md`.
 
 **The frozen plan (scoped):**
-- `plan/implementation-plan.md`: everything except the `## D7` through `## D28` definition sections. That leaves the recorded decisions 1–60, the rules and cumulative obligations, the freeze record, the D1, D2, D4, D5 and D6 definitions (D6's is the work), and the closing sections: parallelism, coverage index, review queue, and tech debt.
+- `plan/implementation-plan.md`: everything except the `## D7` through `## D28` definition sections. That leaves the recorded decisions 1–68, the rules and cumulative obligations, the freeze record, the D1, D2, D4, D5 and D6 definitions (D6's is the work), and the closing sections: parallelism, coverage index, review queue, and tech debt.
 - `plan/technology-stack.md` in full, including "Pinned versions".
 - `plan/acceptance-matrix.md`: only the opening sections, through "Evidence methods common to every row". D6's rows are in full in section 8 of the D6 breakdown. Look up any other row by its scenario ID only when you need it, for example to update a status.
 - `plan/D01-start-a-workspace-and-confirm-a-long-stock-plan.md`: only sections 1 (decisions, assumptions, the storage layout A10, and the mature dataset profile 1.3), 2, 3, 5 and 6.
 - `plan/D02-open-a-long-stock-position.md`: only sections 1 (including the schema-2 layout A28, the decline shape A29, the migration engine A30, Lots A22, the Entry window A23–A26, the entry form A33, and the release harness A34), 2, 3, 5 and 6.
 - `plan/D04-daily-review.md`: sections 1 (P8–P15 and A35–A60, especially A38, A45, A46 on bindings and coherent reads, A53 frames, A54 `AwaitingClose`, A55 the cutoff state D6 extends, A57 and A58 on the Review screen and Action form), 2, 3, 5 and 6.
 - `plan/D05-deferred-reflection-and-journal-debt.md`: sections 1 (P16–P18, A61–A75, and the amendments by decisions 56–59), 2, 3, 5 and 6. Skip its behavioral task cases, critic flows, acceptance rows and clause check unless a D6 task builds on one.
+- `plan/D05R-review-redesign.md`, the Review screen D6 extends:
+  - section 1 (P36–P41 and A150–A163, as amended by decisions 62–68);
+  - section 6.4 (the browser card helpers and their migration rule), plus section 6.5's card identity (decision 68);
+  - section 9 (what D5R changes in D6: P20, A90, A94 and T6.20).
 - **`plan/D06-close-a-long-stock-position.md` in full**, which is the work.
 
 You may read D7's and D8's breakdowns for context where they build on D6 (D7 adds options, Settlement Due and Expiration on top of D6's closes; D8's Restore fixtures include D6's Closed Trades and a Closed Trade whose stored lifecycle disagrees). Read only the parts that touch D6.
@@ -77,7 +93,7 @@ You may read D7's and D8's breakdowns for context where they build on D6 (D7 add
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r20, and the next decision is 61 (D5's session added decisions 56–60 in revisions 15–19). Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2, D4 and D5; scenarios that become full in D6 are also marked in `plan/acceptance-matrix.md`. Run each row's command as written before marking it.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r28, and the next decision is 69. D5's session added decisions 56–60 in revisions 15–19, and D5R's added decisions 61–68 in revisions 20–27. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2, D4 and D5; scenarios that become full in D6 are also marked in `plan/acceptance-matrix.md`. Run each row's command as written before marking it.
 
 ## 3. D6 specifics
 
@@ -88,7 +104,14 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the ne
   - **Decision 57:** a Plan Reflection still cannot be deferred through `confirmPlan`; A66 gives Defer to the Close Review in D6.
   - **A89's "one read transaction":** D4 and D5 assemble the Review from separate module reads made coherent by the binding check (A46, `coherently` in `src/coordinators/daily-review/daily-review.ts`). Extend that pattern rather than inventing a second one; the request-count claims of T6.25 still hold.
 
+  - **Decision 61 and D5R:** D5R replaced the Review screen, after D6's breakdown was written. Decision 61's amendment notes in D6 (P20, A90, A94, and the note above T6.20's cases) say how D6's Review work lands on the new cards.
+
   Where a D6 passage cannot be met as written against the built code, that is a plan question: stop and ask (section 5).
+- **T6.20 is written against `ReviewCard`** (the amendment note above T6.20's cases in the D6 breakdown, decision 61). Its cases keep their expectations, but D4's `ReviewTrade` no longer exists. There are two changes:
+  - An owed-reflection card (`ReflectionsOwed`) is a D5R position card placed after the walk, with a Reflections panel and no Action panel.
+  - **Record the exit** sits in the card's Action panel.
+
+  Build on `src/ui/screens/ReviewCard.tsx`, `ReviewView.tsx` and `ReviewReflections.tsx`. Reach cards in the browser cases through D5R's Trade-keyed helpers (`e2e/d4/support.ts`, `CardRef`; D5R section 6.4's migration rule), not through raw locators.
 - **This is the fourth schema change** (schema 4 → 5), through D2's migration engine (A30) as D4 and D5 used it: the `v4→v5` transform (`src/persistence/migrations/`), the `v1→…→v5` chain, candidate database, pointer flip, cleanup, the `tj-lifecycle` lock and Migration Blocked. `terminalTime` and the sparse `byLifecycleTerminal` index are private and rebuilt, never copied or reported as findings (A87, A96; D8 A139). No Lot Match is ever stored (P23).
 - **Writes follow ADR 0011 (decision 52).** Persistence `commit` checks exact-key bindings; there is no in-transaction read or increment. Counter bindings that fail alone re-read, re-validate and retry up to 3 attempts, as D4 and D5 do. A new outcome for a key still uses `add`, so a duplicate fails the transaction. The Close Review obligation key is `['CloseReview', tradeId]` (A86), separate from the exit's Position Change Reflection key.
 - **Debt resolution reuses D5's core** (A64, A65): `Journal.prepareEffects` with `ResolveDebt`, the Debt snapshot by exact definition revision, and the Review's `ResolveReviewDebt`. Render prompts by stable Prompt and Option identities, never text (`src/domain/daily-trade-review-prompts.ts` is the Daily Trade Review's single source of wording).
@@ -96,15 +119,20 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the ne
 - **Calendar coverage (decision 54).** Coverage is 2024-01-01 through 2028-12-31. Outside it there is no Expected Mark Date or frame and the Review cannot open.
 - **Do not build D7+ behavior early:** options, Expiration, Settlement Due and non-agency closes; backup and Restore; opening an exact past Review date; Rolls and the Rolled Close Reason; correcting or Voiding an exit, and Not Entered on multi-leg Plans (moved to D10); provider prices and Stop Discipline; reports. The same list (D6 section 7) is what D6's critic must not treat as defects.
 - **Clock pinning in tests.** This Chromium has native Temporal, and the app reads `Temporal.Now.instant()`. Playwright's `clock.setFixedTime` pins only `Date`, so every pinned browser case must also patch `Temporal.Now`: use `launchAt`/`pinClock`/`setClock` (from `e2e/d4/support.ts`, re-exported by `e2e/d5/support.ts`). The faults build's `?clock=` (A49) pins both. The bench pin (`tools/bench/pin.ts`) patches Temporal too.
-- **The previous release (A97, T6.21)** is exported from the tag `claude-opus-5.5-d5` (`fbe3bb7`) with `git archive` into a scratch directory and built there. Never create a worktree for it. T6.21 turns D5's current-source `d5` into the tagged one and adds a current `d6`.
+- **The previous release (A97, T6.21).** A97 and T6.21 name the tag `claude-opus-5.5-d5` (`fbe3bb7`): "`dist-releases/d5` is built from tag `claude-opus-5.5-d5`". **Recommendation:** build it from `claude-opus-5.5-d5r` (`72c742c`) instead.
+  - **Why:** `d5r` is the last release before D6, so the harness tests the update a trader would actually take. `claude-opus-5.5-d5` has the same schema 4 but the old Review screen.
+  - **Ask first:** changing the tag changes A97's text, so it is a plan revision. Ask the user before T6.21, with this recommendation, and record the answer as the next revision.
+  - **Which folder:** the user decides whether the folder stays `d5` (built from `d5r`) or becomes a separate `d5r` label.
+  - **How to build:** either way, export the tag with `git archive` into a scratch directory and build it there. Never create a worktree for it.
+  - T6.21 turns the current-source `d5` folder into the tagged release and adds a current `d6`.
 - **Benchmarks (AC-PERF-001, T6.24, T6.25).** D5's generator 3 (`BENCH_GENERATOR_VERSION` in `src/app/bench.ts`) took about 100 minutes (5,980 s) for 1,255 sessions with only 400 Position Changes. D6's generator 4 grows to about 100,000 Position Changes and 24,700 closes (section 1.4), and every simulated session opens and saves a Review through the production facade, so expect several hours or more. Start `bench:generate` in the background as soon as T6.24's generator is committed, keep working on other tasks, and record the generation time. The dataset records the as-of Review's walk and owed-reflection group identities; a Debt's date field is named `momentDate` (the UTC calendar day of its Economic Time). Thresholds stay at a nearest-rank p95 of 2,500 ms cold and 1,500 ms warm (D5: cold 104.8 ms, warm 43.6 ms). Results go in `evidence/D06/bench.md`. The bench serves on `BENCH_PORT = 5181`; every other server uses 5175. If the generated dataset cannot meet a section 1.4 statement exactly (D5's two Outstanding Debts could not), stop and ask, as decision 58 did.
 - **TDD discipline.** Run every `it should` case red, then green, one at a time. Record the commands and outcomes in `evidence/D06/tdd-log.md` (create it before the first task, with a note that its rows are single-case runs; `tdd.sh` refuses to run without it, and runs vitest only, so Playwright reds and greens are logged by hand). Code written before its red is backed out and rerun to a genuine red. A case that passes on its first run because earlier work already built the behavior gets the mutation check in the `tdd-task` agent (an assertion failure or runtime exception, never a compile error or an actionability timeout) and is flagged for the user; never fabricate a red. Structural tasks record their exact verification in `evidence/D06/structural.md`. Engine and OS versions go in `evidence/D06/provenance.md`.
 - **Browser mutation builds.** The release tests serve `dist-releases/<label>`, not `dist`. A mutation check on a browser case must rebuild with `TJ_BUILD_LABEL=d6 npx vite build --outDir dist-releases/d6 --emptyOutDir` (D5's T5.24-B1 found that a plain `vite build` leaves the served release unchanged, so the mutation "passes"), and rebuild clean after restoring.
-- **Test cost.** Routine browser suites run in Chromium only, with the faults build. `test:e2e` runs `e2e/d1 e2e/d2 e2e/d4 e2e/d5`; extend it with `e2e/d6`, since D6's gate needs all five. Evidence from all three engines belongs in RC. Rerun a single browser failure once alone before treating it as real, and record both outcomes.
+- **Test cost.** Routine browser suites run in Chromium only, with the faults build. `test:e2e` runs `e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r`; extend it with `e2e/d6`, since D6's gate needs all six. Evidence from all three engines belongs in RC. Rerun a single browser failure once alone before treating it as real, and record both outcomes.
 - **ocr on test-only commits.** `ocr` excludes test files, so a commit that only adds tests reviews almost nothing in place. Brief the `ocr-review` agent to recreate the commit in a scratch clone (in its own scratch directory, never in the worktree) with the test files relocated under `src/itg/<dnn>/` as plain `.ts`, copying the `support.ts` files alongside in the parent commit. Findings caused only by the relocation (import paths, suite discovery) are dismissed as relocation artifacts.
 - **The browser-critic gate (T6.28).**
   1. Run the complete cumulative unit, integration and browser suites with the `suite-runner` subagent until they pass, and record the run.
-  2. Spawn a **fresh** `general-purpose` critic agent, briefed from `.claude/docs/critic-brief.md` (brief v2). The frozen plan authorizes this spawn. D5's critic brief worked first time: it named the worktree and commit, forbade reading `evidence/` and any other worktree, listed the setup helpers from `e2e/d5/support.ts` (and, for D6, `e2e/d6/support.ts`) by name with the Temporal pin helpers and clock constants, required port 5175 only (never 5181, never an invented port), named the amended flows and the future-capability list, asked for the 375 and 320 px checks of every screen D6 adds or changes, and required `git status --short` in the header.
+  2. Spawn a **fresh** `general-purpose` critic agent, briefed from `.claude/docs/critic-brief.md` (brief v2). The frozen plan authorizes this spawn. D5's critic brief worked first time: it named the worktree and commit, forbade reading `evidence/` and any other worktree, listed the setup helpers from `e2e/d5/support.ts` and `e2e/d5r/support.ts` (and, for D6, `e2e/d6/support.ts`) by name with the Temporal pin helpers and clock constants, required port 5175 only (never 5181, never an invented port), named the amended flows and the future-capability list, asked for the 375 and 320 px checks of every screen D6 adds or changes, and required `git status --short` in the header.
   3. It starts the app itself, drives the production UI in a browser, runs C6.1 onward plus the narrow-layout checks, and never edits code.
   4. Delegate each defect it finds to a fresh subagent, which reproduces it with a failing test first and then fixes it; rerun the suites, and spawn another fresh critic.
   5. Save each report as `evidence/D06/critic-<n>.md` and add a row to the critic-cost table in `evidence/D06/structural.md` (tokens, tool calls and duration from the completion notice).
@@ -114,10 +142,11 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the ne
 
 ## 4. What D5 left in place
 
-Build on these rather than re-creating them. Read the code before extending it. `plan/D05-handoff.md`, section 4, describes what D4 left (application facade, persistence and migration, session policy, Market Data, Journal, Daily Review, Trade Views, Workspace, UI, faults build, release harness, capacity, fixtures, benchmark, test suites); all of it is still in place. D5 added or changed:
+Build on these rather than re-creating them. Read the code before extending it. `plan/D05-handoff.md`, section 4, describes what D4 left (application facade, persistence and migration, session policy, Market Data, Journal, Daily Review, Trade Views, Workspace, UI, faults build, release harness, capacity, fixtures, benchmark, test suites); all of it is still in place. The table lists what D5 added or changed. Its first row covers what D5R then added on top: [D05R-handoff.md](D05R-handoff.md), section 7, has every task and commit. D5R replaced the Review screen described in the D5 rows, which otherwise still stand.
 
 | Piece | Where | Notes for D6 |
 |---|---|---|
+| **D5R (tag `claude-opus-5.5-d5r`)** | **Cards:** `src/ui/screens/ReviewCard.tsx` (position cards, panels, figures), `ReviewView.tsx` (the card list, links, blockers, next step), `ReviewReflections.tsx`, `StopTargetSlider.tsx`, `CardFigures.tsx`. **Save Marks:** `src/coordinators/daily-review/daily-review.ts` (`SaveReviewMarks`). **Market Data:** `src/modules/market-data/market-data.ts` (`prepareEffects`, `applyPreparedEffects`). **Range position:** `src/coordinators/daily-review/attention.ts` (`rangePositionOf`), `types.ts` (`RangePosition`). **Reward : risk now:** `src/domain/trade-analysis/evaluate.ts` (`rewardRiskNow`). **Tests:** `tests/integration/d5r/` and `e2e/d5r/` with `support.ts`. | **Cards (A150–A153, A156–A162; decision 68):** <ul><li>The Review is one card per walked Trade in attention order, opened in place, one at a time.</li><li>Inside a card are Marks, Reflections and Action panels in the spec's work order (P36), one open at a time.</li><li>Unsaved work holds the card (A156).</li><li>Each card is identified by its Trade: `data-trade-id`, the summary line in the header, Trade names in messages and blockers ("XYZ (Long 100 shares @ $50.18)"), and Missing-Mark links with `?trade=&instrument=`.</li><li>The slider moves under the header's text only when the card is under 40rem (a container query).</li></ul>**`SaveReviewMarks` (P37, P38):** saves a card's Marks in one commit and returns the refreshed Review. Cards re-sort on each refreshed Review (decision 64).<br>**Market Data's prepare and apply:** an internal seam that `save` is rebuilt on. The UI never calls it, and it stays out of the facade.<br>**The range position (P39):** each walked Trade's share of its Stop-to-Target range, now and at entry. It is `NotPlaced` with `MissingInput`, `AcknowledgedUnavailable`, `AwaitingClose` or `FactsIncoherent`.<br>**Reward : risk now (P40):** comes from Trade Analysis `evaluate`; `getTrade` adds the Plan baseline.<br>**Historical gaps (decisions 62, 63):** each gap group names its Trades with each Trade's `from`.<br>**Browser helpers (section 6.4 of the D5R breakdown, decisions 65, 66, 68):** `cardItem`, `tradeCard`, `cardHeader`, `panelHeader`, `reachCard`, `reachPanel`, `markRow`, `enterMark`, `saveAction` and others in `e2e/d4/support.ts` take a `CardRef` (a symbol, or a `TradeRef` `{ symbol, tradeId, label }`). `e2e/d5r/support.ts` adds `createCardFixture`, `createRoutineTrades`, `sliderOf`, `saveMarksOf` and `remainsOf`. Spec edits follow the section's migration rule.<br>**For D6:** the owed-reflection group (P20, A90) renders as cards after the walk, with a Reflections panel and no Action panel. Record the exit (A94) sits in the card's Action panel. T6.20 is written against `ReviewCard` (section 3). No store, index or schema change: still schema 4, and `verify:capabilities` reports 19 operations, 10 variant-qualified, 8 routes, 3 Entry Types. |
 | Schema 4 | `src/persistence/schema.ts` (`SCHEMA_VERSION` 4), `src/persistence/migrations/v3-to-v4.ts`, `private-fields.ts` | Store `journalDebts` with private indexes `byOutstandingDue` and `byAnchorTrade` (A62). The `v1→v2→v3→v4` chain runs through `migrations/index.ts`. |
 | Journal Debt | `src/modules/journal/` (`journal.ts`, `effects.ts`, `records.ts`, `section.ts`, `manifest.ts`) | Defer for the Position Change Reflection (A66), `ResolveDebt` (Answer, Decline) against the Debt's snapshot revision, `Journal.query` scopes `OutstandingDebt` (one `getAll` on `byOutstandingDue`) and `TradeNarrative` (one `getAll` on `byAnchorTrade`), Source Trade Detail. Debt records carry `momentTime`, `dueAnchor` and `authoredTime`. |
 | Trade Workflows | `src/coordinators/trade-workflows/` | `recordPositionChange` with Complete, Decline or Defer for its reflection. Facts are never blocked by owed reflections. |
@@ -178,11 +207,11 @@ Never push.
 ## 6. Out of scope
 
 - Any deliverable other than D6, unless the user says otherwise.
-- **D5's critic observations** (`evidence/D05/critic-1.md`, "Minor observations": focus on opening a Debt form on Trade Detail, "Due: Due" on Detail, the "Due" label kept on a resolved reflection, Source shown only after reload, "Reflect on…" in Recovery Only, and the Expected-Mark-Date-relative label at mid-session) and **D4's** (the user chose not to pursue them on 2026-10-29). Don't fix them as part of D6. D6's own requirements still apply where they overlap, for example focus after a save in the new `ReflectionsOwed` cards.
+- **D5's critic observations** (`evidence/D05/critic-1.md`, "Minor observations": focus on opening a Debt form on Trade Detail, "Due: Due" on Detail, the "Due" label kept on a resolved reflection, Source shown only after reload, "Reflect on…" in Recovery Only, and the Expected-Mark-Date-relative label at mid-session) and **D4's** (the user chose not to pursue them on 2026-10-29). The same goes for **D5R's** critics' minor observations (`evidence/D05R/critic-1.md` to `critic-3.md`; summarized in section 7). Where D5R's screen replaced the view a D4 or D5 observation was about, that observation has lapsed. Don't fix any of them as part of D6. D6's own requirements still apply where they overlap, for example focus after a save in the new `ReflectionsOwed` cards.
 - **The tech-debt items** at the end of `plan/implementation-plan.md`: the late Stale-context Mark at a save, an older tab writing after a calendar change, and the Review's open cost growing with history (item 3, recorded 2026-10-30, with proposed fixes the user has not yet chosen).
 - D1's and D2's optional polish, and the D2 items the user triaged as "leave" (`plan/D04-handoff.md`, section 6).
 - F12, the section-validator gaps, carried into D8's T8.6.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 61, unless D6 records further decisions first.
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P42, A164 and decision 69, unless D6 records further decisions first. D5R used P36–P41, A150–A163 and decisions 61–68.
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 
@@ -194,5 +223,5 @@ Update this section at the end of each task.
 |---|---|
 | Tasks done | none |
 | Next task | **T6.1 Trade Analysis: Sell replay, FIFO Lot Matches, fees, realized P&L**, after creating `evidence/D06/` (`tdd-log.md`, `structural.md`, `provenance.md`). |
-| Last commit | the commit that added this note, tagged `claude-opus-5.5-pre-d6` |
-| Open questions | **Carried from D5, not blocking:** `src/ui/screens/TradeList.test.tsx:133` (`tj:open-list-ready` mark count) and B4.13 "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) each failed once under load and passed alone and in later cumulative runs; rerun once alone before treating either as real. Opening the Review takes about 2.2 s on the benchmark profile, ungated (tech debt item 3). |
+| Last commit | the commit that rewrote this note after D5R, tagged `claude-opus-5.5-pre-d6b` |
+| Open questions | **Before T6.21:** ask the user whether the previous release is built from `claude-opus-5.5-d5r`, which needs a plan revision of A97 (section 3, "The previous release").<br>**Carried from D5R, not blocking:**<br>• **The six D2 cases that drive the frozen D1 release** fail only while the New York wall clock is inside a repeated fall-back hour (01:00–01:59 on the first Sunday in November). The D1 release's Plan form can't confirm an ambiguous default time; current code was fixed in T5R.15-F1. These cases are `e2e/d2/migration.spec.ts` 47, 86, 122 and 170, `e2e/d2/responsive-a11y.spec.ts:90` and `e2e/d2/ui-alignment.spec.ts:411`. Run suites outside that hour.<br>• **D5R's critics' minor observations** are in `evidence/D05R/critic-1.md` to `critic-3.md`, and none was a failed pass condition. They include:<br>&nbsp;&nbsp;– a card's header can sit out of view when focus moves to a row after a save or link;<br>&nbsp;&nbsp;– a route change drops a held draft (A156's "route changes wait" is wider than its D1 A5 citation);<br>&nbsp;&nbsp;– heading levels inside an open card are out of order;<br>&nbsp;&nbsp;– the next card follows the Missing-Mark Instrument order.<br>As with D4's and D5's, they are not fixed in D6 unless the user asks.<br>• **D5R's timings** (`evidence/D05R/bench.md`): cold p95 101.8 ms, warm 44.3 ms; opening the first card 1,855 ms median.<br>**Carried from D5, not blocking:** `src/ui/screens/TradeList.test.tsx:133` (`tj:open-list-ready` mark count) and B4.13 "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) each failed once under load and passed alone and in later cumulative runs; rerun once alone before treating either as real. Opening the Review takes about 2.2 s on the benchmark profile, ungated (tech debt item 3). |
