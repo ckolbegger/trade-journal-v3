@@ -223,7 +223,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | none |
-| Next step | **Setup:** create `evidence/D06P/` (section 3). Then **T6P.1 Tags and the routine and release-history scripts**. |
-| Last commit | the commit that added this note with plan revision 30 (decision 71), tagged `claude-opus-5.5-pre-d6p` and `claude-opus-5.5-plan-r30` |
-| Open questions | none |
+| Tasks done | Setup (`9b93ca7`: `evidence/D06P/` and the location checks). **T6P.1** (`c7ba533`, base `9b93ca7`): 5 `@every-task`, 3 `@release-history`, 176 routine; ocr no findings; cumulative run passed (1051, 117, 176 in 7.4 min, 12 of 12). |
+| Next step | **T6P.2 Two tiers in `full-suite.sh`**. Base commit (A180): the commit that records T6P.1's run and this update. |
+| Last commit | the commit that records T6P.1's evidence and this update (`docs(evidence): T6P.1 ocr review and cumulative run`) |
+| Open questions | For the final report: (1) T6P.1's ocr review covered only `package.json`; ocr excludes the tagged spec files, whose change is a `{ tag }` option only. (2) The harness moves a foreground Bash call to the background after 180 s, so long browser runs end with a completion notice (no polling was used). |
