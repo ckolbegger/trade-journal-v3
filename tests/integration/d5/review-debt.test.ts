@@ -1,6 +1,7 @@
 // I5.6: the Review with a deferred reflection end to end (AC-REV-002, AC-REV-006, P17). D4's five-Trade
 // fixture without T-D, with T-A's PC1 deferred (D-1), through the real facade on fake-indexeddb.
 import { describe, expect, it } from 'vitest';
+import { reflectionCounts } from '../../support/reflection-counts.ts';
 import type { Application } from '../../../src/app/compose.ts';
 import {
   bindingFor, device, dumpAll, fixture, journalStores, MONDAY, MONDAY_1700, onboarded, openReview,
@@ -29,7 +30,7 @@ async function runReview(resolution: 'Answer' | 'Decline') {
 
   // Monday: D-1 sits in T-A's card as due in the next Review, and the Review is Complete without it.
   const first = await openReview(app, monday);
-  expect(first.families.flatMap((f) => (f.family === 'Trades' ? f.trades.filter((t) => t.tradeId === a).map((t) => t.reflections) : []))).toEqual([{ due: 0, later: 1 }]);
+  expect(first.families.flatMap((f) => (f.family === 'Trades' ? f.trades.filter((t) => t.tradeId === a).map(reflectionCounts) : []))).toEqual([{ due: 0, later: 1 }]);
   expect((await cardOf(app, monday, a)).reflections).toEqual([expect.objectContaining({ debtId: d1.debtId, classification: 'DueInNextReview' })]);
   await saveMarks(app, MONDAY);
   for (const tradeId of all) await saveAction(app, monday, tradeId);

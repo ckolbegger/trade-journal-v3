@@ -2,7 +2,9 @@
 // Workspace.initialize (D5 A73, AC-REST-004 re-proven for schema 4, AC-JOUR-007 partial).
 import type { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
+import type { WalkedTrade } from '../../../src/app/types.ts';
 import { compareSnapshot } from '../../../tools/fixtures/snapshot-compare.ts';
+import { reflectionCounts } from '../../support/reflection-counts.ts';
 import { debtViewsOf, viewsOf } from '../../../tools/fixtures/workspace-fixture.ts';
 import { currentDatabase, dumpAll, fixtureDatabase, fixtureDevice, fixtureDump, fixtureViews, launch, rawUpdate, restart, workspaceStores } from './support.ts';
 
@@ -39,11 +41,11 @@ describe('I5.1 migrate earlier fixtures', () => {
       // A73: every earlier field equals the fixture's snapshot, and every Debt list and count is empty.
       const asOf = fixtureDump(version).asOf;
       expect(compareSnapshot(await viewsOf(again, version, asOf), fixtureViews(version))).toEqual([]);
-      const debtViews = (await debtViewsOf(again, asOf)) as { debts: unknown[]; reviewTrades: { reflections: unknown[] }[]; review?: { families: { family: string; trades?: { reflections: unknown }[] }[] } };
+      const debtViews = (await debtViewsOf(again, asOf)) as { debts: unknown[]; reviewTrades: { reflections: unknown[] }[]; review?: { families: { family: string; trades?: WalkedTrade[] }[] } };
       expect(debtViews.debts).toEqual([]);
       expect(debtViews.reviewTrades.map((t) => t.reflections)).toEqual(debtViews.reviewTrades.map(() => []));
       const walked = (debtViews.review?.families ?? []).flatMap((f) => (f.family === 'Trades' ? (f.trades ?? []) : []));
-      for (const trade of walked) expect(trade.reflections).toEqual({ due: 0, later: 0 });
+      for (const trade of walked) expect(reflectionCounts(trade)).toEqual({ due: 0, later: 0 });
 
       const dump = await dumpAll(d.factory);
       expect(workspaceStores(dump)['journalDebts']).toEqual([]);

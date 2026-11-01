@@ -7,6 +7,7 @@ import { nyseSessionPolicy } from '../../../src/domain/session-policy/index.ts';
 import { fixedClock } from '../../../src/domain/time/index.ts';
 import { createMarketData } from '../../../src/modules/market-data/index.ts';
 import { debtFixture, TUESDAY_1700, TUESDAY_REVIEW_DATE, type DebtFixture, type DebtName } from '../../support/debt-fixture.ts';
+import { reflectionCounts } from '../../support/reflection-counts.ts';
 import { ELEVEN_AM, reviewStack } from '../../support/review-fixture.ts';
 import { sequentialIds } from '../../support/workspace.ts';
 
@@ -53,7 +54,7 @@ async function dueDebts(fixture: DebtFixture, asOf: string): Promise<DebtName[]>
 }
 
 const dueCount = (review: ReturnType<typeof ready>) =>
-  review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).reduce((sum, trade) => sum + trade.reflections.due, 0);
+  review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).reduce((sum, trade) => sum + reflectionCounts(trade).due, 0);
 
 describe('I5.5 Due timing', () => {
   it('should list D-3 alone on Monday, five Debts in the T5.8 order on Tuesday without D-6 and D-7, and add D-6 and D-7 on Wednesday', async () => {
@@ -93,7 +94,7 @@ describe('I5.5 Due timing', () => {
     await stack.fill(trade, TUESDAY_ELEVEN_AM, '40', '50.30', { kind: 'Defer' });
     const afterTuesday = await open();
     expect(afterTuesday.completion).toEqual({ kind: 'Complete' });
-    expect(afterTuesday.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => t.reflections) : []))).toEqual([{ due: 0, later: 1 }]);
+    expect(afterTuesday.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map(reflectionCounts) : []))).toEqual([{ due: 0, later: 1 }]);
 
     // A Monday-dated deferral is due at once and reopens the completed Tuesday Review.
     await stack.fill(trade, ELEVEN_AM, '10', '50.20', { kind: 'Defer' });

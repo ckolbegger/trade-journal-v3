@@ -50,6 +50,24 @@ function markMissingViolations(views: unknown): string[] {
   });
 }
 
+// D5R2 A167: a walked Trade no longer carries `reflections`; its Reflections panel holds the same counts.
+// The committed views were frozen with the old field, so it is stated here from the panel and compared as before.
+type WalkedItem = { reflections?: { due: number; later: number }; progress?: { panels?: { panel: string; dueNow?: number; later?: number }[] } };
+function withWalkedReflections(views: unknown): unknown {
+  const review = (views as { review?: { families?: { family: string; trades?: WalkedItem[] }[] } }).review;
+  if (!review?.families) return views;
+  const families = review.families.map((family) => ({
+    ...family,
+    ...(family.family === 'Trades' && {
+      trades: (family.trades ?? []).map((trade) => {
+        const panel = trade.progress?.panels?.find((p) => p.panel === 'Reflections');
+        return panel ? { ...trade, reflections: { due: panel.dueNow ?? 0, later: panel.later ?? 0 } } : trade;
+      }),
+    }),
+  }));
+  return { ...(views as object), review: { ...review, families } };
+}
+
 // A73: a Workspace migrated from an earlier schema has no Debt, so every Debt list and count of the
 // current release's views is empty. Each list must be present: a missing one is a violation, not a pass.
 function debtViolations(views: unknown, hasOpenTrades: boolean): string[] {
@@ -113,7 +131,7 @@ for (const name of fixtures) {
     problems.push(`${name}: getStatus is ${status.kind}, not Ready`);
     continue;
   }
-  const views = await viewsOf(app, dump.schemaVersion, dump.asOf);
+  const views = withWalkedReflections(await viewsOf(app, dump.schemaVersion, dump.asOf));
   if (dump.schemaVersion < 3) {
     const open = (views as { open?: unknown[] }).open;
     if (dump.schemaVersion >= 2 && (open?.length ?? 0) === 0) {
@@ -127,7 +145,7 @@ for (const name of fixtures) {
     }
   }
   if (dump.schemaVersion < 4) {
-    const debtViolation = debtViolations({ ...(views as object), ...(await debtViewsOf(app, dump.asOf) as object) }, dump.schemaVersion >= 2);
+    const debtViolation = debtViolations(withWalkedReflections({ ...(views as object), ...(await debtViewsOf(app, dump.asOf) as object) }), dump.schemaVersion >= 2);
     if (debtViolation.length > 0) {
       problems.push(`${name}: not Debt-free after migration: ${debtViolation.join(', ')}`);
       continue;

@@ -28,7 +28,7 @@ import {
   type BenchOutstandingDebt,
 } from './bench.ts';
 import { createApplication, type Application } from './compose.ts';
-import type { ActionChoice, DailyTradeReview, PostSaveReview } from '../coordinators/daily-review/index.ts';
+import type { ActionChoice, DailyTradeReview, PostSaveReview, WalkedTrade } from '../coordinators/daily-review/index.ts';
 import type { AnswerInput } from '../modules/journal/index.ts';
 
 // mulberry32: a small seeded generator, so every run produces the same identities.
@@ -57,6 +57,9 @@ function seededIds(seed: number): IdGenerator {
 
 const MINUTE = 60_000;
 const ACTIONS = ['Exit', 'Roll', 'Adjust'] as const;
+// The reflections a walked Trade owes in this Review, from its Reflections panel (A164).
+const dueNowOf = (item: WalkedTrade) => item.progress.panels.reduce((sum, panel) => sum + (panel.panel === 'Reflections' ? panel.dueNow : 0), 0);
+
 const iso = (ms: number) => new Date(ms).toISOString().replace('.000Z', 'Z');
 
 // One simulated session. The completion is the close plus the policy's 30-minute buffer.
@@ -351,7 +354,7 @@ async function generate() {
     if (opened.kind !== 'Ready' || opened.reviewDate !== session.date) throw new Error(`open ${session.date}: ${opened.kind}`);
     if (last) {
       const marks = opened.families.find((f) => f.family === 'Marks');
-      const due = opened.families.reduce((sum, f) => sum + (f.family === 'Trades' ? f.trades.reduce((s, t) => s + t.reflections.due, 0) : 0), 0);
+      const due = opened.families.reduce((sum, f) => sum + (f.family === 'Trades' ? f.trades.reduce((s, t) => s + dueNowOf(t), 0) : 0), 0);
       final.asOf = {
         asOf: now,
         reviewDate: session.date,
@@ -426,7 +429,7 @@ async function generate() {
     for (const family of opened.families) {
       if (family.family !== 'Trades') continue;
       for (const item of family.trades) {
-        if (item.reflections.due > 0) await resolveDue(item);
+        if (dueNowOf(item) > 0) await resolveDue(item);
         const n = stats.actions++;
         const choice = n % 20 < 3 ? ACTIONS[n % 3]! : 'Hold';
         await save(item, choice, n);

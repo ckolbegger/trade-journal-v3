@@ -73,12 +73,6 @@ export interface ReviewTradeItem {
   readonly rangePosition: RangePosition;
 }
 
-// A walked Trade's Outstanding reflections (P16, A68): due in this Review, or falling due in a later one.
-export interface ReflectionCounts {
-  readonly due: number;
-  readonly later: number;
-}
-
 // A card's panels in work order, as counts and flags (A164). Words are the screen's.
 export type PanelProgress =
   | { readonly panel: 'Marks'; readonly done: boolean; readonly resolved: number; readonly needed: number }
@@ -98,9 +92,8 @@ export interface SliderFigures {
   readonly rewardRiskNow: TradeEvaluation['rewardRiskNow'];
 }
 
-// A Trade of the walk, with its reflection counts; an owed reflection never moves its band.
+// A Trade of the walk, with its card's progress; an owed reflection never moves its band.
 export interface WalkedTrade extends ReviewTradeItem {
-  readonly reflections: ReflectionCounts;
   readonly progress: CardProgress;
   // The figures the card's slider describes (P39, A150): the same evaluation results `getTrade` returns, unformatted.
   // Absent when the Trade's facts cannot be replayed.
@@ -246,6 +239,8 @@ export interface DailyTradeReview {
   readonly datedLastClose?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation };
   // The Trade's Outstanding reflections, oldest anchor first then Debt identity (A68); they sit above the Action form.
   readonly reflections: readonly OwedReflection[];
+  // The card's progress, as `open` lists it on the Trade's walked item (A165).
+  readonly progress: CardProgress;
   readonly form: ActionForm;
   // The Daily Trade Review definition revision the form was rendered from.
   readonly definitionRevision: string;
@@ -318,6 +313,8 @@ export type PostSaveReview =
       readonly completion: ReviewCompletion;
       readonly nextStep: ReviewNextStep;
       readonly binding: ReviewBinding;
+      // The progress of the Trade the save resolved, when it is walked (A165).
+      readonly cards: readonly { readonly tradeId: string; readonly progress: CardProgress }[];
     }
   // The Action is saved; writes kept landing while the Review was read again. Open it afresh.
   | { readonly kind: 'ChangedDuringAssembly' };

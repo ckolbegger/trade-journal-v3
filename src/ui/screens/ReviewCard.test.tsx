@@ -44,7 +44,7 @@ function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = 
     cutoff: '2026-10-12T20:00:00Z',
     families: [
       { family: 'Marks', today: [], earlier: [] },
-      { family: 'Trades', trades: trades.map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() })) },
+      { family: 'Trades', trades: trades.map((t) => ({ ...t, progress: cardProgress() })) },
     ],
     completion: missing.length > 0 ? { kind: 'Incomplete', reasons: missing.map((tradeId) => ({ code: 'ActionMissing' as const, tradeId })) } : { kind: 'Complete' },
     binding,
@@ -93,6 +93,7 @@ function tradeReview(tradeId: string, underlying: string, over: Partial<DailyTra
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     evaluation: evaluation(),
     reflections: [],
+    progress: cardProgress(),
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },
     definitionRevision: 'def1',
     saveBinding: savedBinding({ tradeId, obligationKey: { entryType: 'DailyTradeReview', trade: tradeId, reviewDate: '2026-10-12' } }),
@@ -266,7 +267,7 @@ describe('Action form (AC-REV-003)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValue({
       kind: 'Saved',
       action: savedAction('Hold'),
-      review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }] }, nextStep: { kind: 'Trade', trade: next }, binding: nextBinding },
+      review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }] }, nextStep: { kind: 'Trade', trade: next }, binding: nextBinding },
     });
     renderWalk(facade);
     const user = userEvent.setup();
@@ -308,7 +309,7 @@ describe('Action form (AC-REV-003)', () => {
   it('should require Intent when Exit, Roll, or Adjust is selected, showing the issue beside the field', async () => {
     const first = tradeReview('t1', 'XYZ');
     const facade = walkFacade(ready([item('t1', 'XYZ')]), first);
-    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Roll', 'Move to Nov.'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Roll', 'Move to Nov.'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
     renderWalk(facade);
     const user = userEvent.setup();
 
@@ -340,7 +341,7 @@ describe('Saved Action', () => {
     const saved = savedAction('Exit', 'Because the plan changed.', 2);
     const first = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: saved }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });
     const facade = walkFacade(ready([item('t1', 'XYZ')], []), first);
-    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Roll', 'Roll to November.', 3), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Roll', 'Roll to November.', 3), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
     renderWalk(facade);
     const user = userEvent.setup();
 
@@ -367,7 +368,7 @@ describe('Saved Action answers', () => {
     const saved = savedAction('Hold', undefined, 2, [{ prompt: 'Remarks', answer: { kind: 'Text', text: 'Earnings Thursday.' } }]);
     const first = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: saved }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });
     const facade = walkFacade(ready([item('t1', 'XYZ')], []), first);
-    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold', undefined, 3), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold', undefined, 3), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
     renderWalk(facade);
     const user = userEvent.setup();
 
@@ -391,7 +392,7 @@ describe('Changed review', () => {
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(ready([item('t1', 'XYZ')])).mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { binding: refreshedBinding }));
     vi.mocked(facade.DailyReview.save)
       .mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [], factRevision: 3 } })
-      .mockResolvedValue({ kind: 'Saved', action: savedAction('Exit', 'Stopped out.'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding: refreshedBinding } });
+      .mockResolvedValue({ kind: 'Saved', action: savedAction('Exit', 'Stopped out.'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding: refreshedBinding } });
     renderWalk(facade);
     const user = userEvent.setup();
 
@@ -634,7 +635,7 @@ describe('Conflict refresh with a saved Action', () => {
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
 
     // Save replaces the other save under the refreshed expected Entry revision.
-    save.mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Exit', 'Plan changed.', 3), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    save.mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Exit', 'Plan changed.', 3), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
     await user.click(within(trade).getByRole('button', { name: 'Save' }));
     expect(save).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: savedBinding({ expectedEntryRevision: 2 }), action: 'Exit', intent: 'Plan changed.' });
   });
@@ -722,7 +723,7 @@ describe('After a save', () => {
     const user = userEvent.setup();
     const trades = [item('t1', 'XYZ'), item('t2', 'DEF')];
     const post = (nextStep: Extract<NonNullable<Extract<SaveDailyReviewResult, { kind: 'Saved' }>['review']>, { kind: 'Ready' }>['nextStep']) =>
-      ({ kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: { kind: 'Complete' }, nextStep, binding }) as const;
+      ({ kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: { kind: 'Complete' }, nextStep, binding }) as const;
 
     const facade = walkFacade(ready(trades), tradeReview('t1', 'XYZ'));
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Exit', 'Done.'), review: post({ kind: 'Trade', trade: tradeReview('t2', 'DEF') }) });
@@ -756,7 +757,7 @@ describe('After a save', () => {
 const CONSIDERED = 'Anything you considered doing and decided against?';
 
 describe('the definition optional questions (T4.33-B3)', () => {
-  const closed = { kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } } as const;
+  const closed = { kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } } as const;
   const fill = async (user: ReturnType<typeof userEvent.setup>, trade: HTMLElement) => {
     await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '3');
     await user.type(within(trade).getByRole('textbox', { name: CONSIDERED }), ' Selling the call. ');
@@ -955,7 +956,7 @@ describe('Action form while saving', () => {
 
 describe('Results for a Trade no longer open', () => {
   const post = (nextStep: Extract<NonNullable<Extract<SaveDailyReviewResult, { kind: 'Saved' }>['review']>, { kind: 'Ready' }>['nextStep']) =>
-    ({ kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 3 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }, { code: 'ActionMissing', tradeId: 't3' }] }, nextStep, binding }) as const;
+    ({ kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 3 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }, { code: 'ActionMissing', tradeId: 't3' }] }, nextStep, binding }) as const;
   const trades = [item('t1', 'XYZ'), item('t2', 'DEF'), item('t3', 'GHI')];
   const ready1 = (trade: DailyTradeReview) => ({ kind: 'Ready' as const, reviewDate: '2026-10-12', cutoff: ready(trades).cutoff, trade });
   // Whether each card, in list order, reads Done.
@@ -1157,7 +1158,7 @@ describe('reflections in the Trade card (A71)', () => {
     const reflections = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'Due', '2026-10-12T14:30:00Z', [{}])];
     const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { reflections }));
     const post = (completion: ReviewCompletion) =>
-      ({ kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion, nextStep: { kind: 'Done' }, binding }) as const;
+      ({ kind: 'Ready', cards: [], progress: { tradesWithAction: 0, tradesEligible: 1 }, completion, nextStep: { kind: 'Done' }, binding }) as const;
     const debt = { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never;
     vi.mocked(facade.DailyReview.save)
       .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1', reason: 'No time.' } as never, debt, review: post({ kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }) })
@@ -1217,7 +1218,7 @@ const owingReview = (): Ready =>
         today: [markRow('XYZ'), markRow('ABC')],
         earlier: [{ instrumentKey: 'XYZ', trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
       },
-      { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), reflections: { due: 1, later: 1 }, progress: cardProgress(1, 1) }] },
+      { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1) }] },
     ],
   });
 const owedPair = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'DueInNextReview', '2026-10-12T14:30:00Z', [{}])];
@@ -1228,7 +1229,7 @@ describe('reflections', () => {
     const user = userEvent.setup();
     const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
     const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
-    const post = { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1', reason: 'No time.' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: post });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
@@ -1257,7 +1258,7 @@ describe('reflections', () => {
     const user = userEvent.setup();
     const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
     const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
-    const post = { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
     const resolved = (debtId: string) => ({ kind: 'DebtResolved', decline: { id: `decl-${debtId}` } as never, debt: { debtId, status: 'Settled', revision: `${debtId}-rev-2` } as never, review: post }) as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(resolved('d1')).mockResolvedValueOnce(resolved('d2'));
     renderWalk(facade);
@@ -1316,7 +1317,7 @@ describe('Action (A159)', () => {
   it('should open the Action panel with Hold preselected and one visible Save, which records Hold with no other input', async () => {
     const user = userEvent.setup();
     const facade = walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair }));
-    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
 
@@ -1336,7 +1337,7 @@ describe('Action (A159)', () => {
 describe('moving on', () => {
   it('should open the next panel that is not done when a panel work is finished, and after an Action save open the card the result names as the next step, collapsing this one', async () => {
     const user = userEvent.setup();
-    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() }));
+    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: cardProgress() }));
     const owing: ReviewCompletion = {
       kind: 'Incomplete',
       reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }],
@@ -1354,10 +1355,10 @@ describe('moving on', () => {
       .mockResolvedValueOnce({
         kind: 'MarksSaved',
         marks: [{ key: keyOf, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
-        review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => (t.tradeId === 't1' ? { ...t, reflections: { due: 1, later: 0 }, progress: cardProgress(1, 0) } : t)), trade: first, nextStep: { kind: 'Trade', trade: first } },
+        review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => (t.tradeId === 't1' ? { ...t, progress: cardProgress(1, 0) } : t)), trade: first, nextStep: { kind: 'Trade', trade: first } },
       })
-      .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterDebt, nextStep: { kind: 'Done' }, binding } })
-      .mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: atT2, nextStep: { kind: 'Trade', trade: next }, binding } });
+      .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterDebt, nextStep: { kind: 'Done' }, binding } })
+      .mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: atT2, nextStep: { kind: 'Trade', trade: next }, binding } });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
     const opened = () => (['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
@@ -1388,7 +1389,7 @@ describe('moving on from Reflections', () => {
     const user = userEvent.setup();
     const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
     const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
-    const post = { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: post });
     renderWalk(facade);
     const card = await openTrade(user, 'XYZ');
@@ -1405,7 +1406,7 @@ describe('moving on from Reflections', () => {
 describe('moving on from the panel that finished', () => {
   it('should advance from the Marks panel when Save Marks finishes after the trader opened the Reflections panel, leaving Reflections open while a reflection is due', async () => {
     const user = userEvent.setup();
-    const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() }));
+    const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, progress: cardProgress() }));
     const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
     const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const trade = tradeReview('t1', 'XYZ', { reflections: owedPair });
@@ -1424,7 +1425,7 @@ describe('moving on from the panel that finished', () => {
     held.resolve({
       kind: 'MarksSaved',
       marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
-      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => ({ ...t, reflections: { due: 1, later: 1 }, progress: cardProgress(1, 1) })), trade, nextStep: { kind: 'Trade', trade } },
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => ({ ...t, progress: cardProgress(1, 1) })), trade, nextStep: { kind: 'Trade', trade } },
     });
 
     await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy());
@@ -1462,7 +1463,7 @@ describe('panels (A152)', () => {
       kind: 'Incomplete',
       reasons: [...keys.map((instrumentKey) => ({ code: 'MarkMissing', instrumentKey, tradingDate: '2026-10-12', trades: ['t1'] }) as const), { code: 'ActionMissing', tradeId: 't1' }],
     });
-    const walked = [{ ...item('t1', 'XYZ'), reflections: { due: 0, later: 0 }, progress: cardProgress() }];
+    const walked = [{ ...item('t1', 'XYZ'), progress: cardProgress() }];
     const review = ready([item('t1', 'XYZ')], [], { completion: markReasons('XYZ', 'ABC'), families: [{ family: 'Marks', today: [markRow('XYZ'), markRow('ABC')], earlier: [] }, { family: 'Trades', trades: walked }] });
     const trade = tradeReview('t1', 'XYZ');
     const facade = walkFacade(review, trade);

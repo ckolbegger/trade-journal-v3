@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { debtFixture, TUESDAY_1700, TUESDAY_CUTOFF, type DebtFixture } from '../../../tests/support/debt-fixture.ts';
 import { breakFirstExecution, ELEVEN_AM, reviewStack, TEN_AM } from '../../../tests/support/review-fixture.ts';
+import { reflectionCounts } from '../../../tests/support/reflection-counts.ts';
 import type { OpenDailyReviewResult } from './index.ts';
 
 const open = (fixture: DebtFixture) => fixture.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 });
@@ -19,7 +20,7 @@ describe('reflections per walked Trade (P16, P17, A68)', () => {
     expect(review.families.map((f) => f.family)).toEqual(['Marks', 'Trades']);
     const walk = review.families[1]!;
     if (walk.family !== 'Trades') throw new Error('no Trades family');
-    const counts = Object.fromEntries(walk.trades.map((t) => [t.tradeId, t.reflections]));
+    const counts = Object.fromEntries(walk.trades.map((t) => [t.tradeId, reflectionCounts(t)]));
     const { a, f, e, g, h } = fixture.trades;
     expect(counts).toEqual({
       [a]: { due: 2, later: 1 },
@@ -87,7 +88,7 @@ describe('due classification (A75)', () => {
     const review = ready(await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }));
     const walk = review.families[1]!;
     if (walk.family !== 'Trades') throw new Error('no Trades family');
-    expect(walk.trades.map((t) => t.reflections)).toEqual([{ due: 0, later: 1 }]);
+    expect(walk.trades.map(reflectionCounts)).toEqual([{ due: 0, later: 1 }]);
   }, 60_000);
 });
 
@@ -102,7 +103,7 @@ describe('due classification without frames (A75)', () => {
     const review = ready(await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }));
     const walk = review.families[1]!;
     if (walk.family !== 'Trades') throw new Error('no Trades family');
-    expect(walk.trades.map((t) => t.reflections)).toEqual([{ due: 1, later: 0 }]);
+    expect(walk.trades.map(reflectionCounts)).toEqual([{ due: 1, later: 0 }]);
     expect(review.completion).toEqual({
       kind: 'Incomplete',
       reasons: expect.arrayContaining([{ code: 'ReflectionDue', tradeId: trade.tradeId, debtIds: [expect.any(String)] }]) as unknown,

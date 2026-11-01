@@ -1,6 +1,7 @@
 // I5.7 and I5.8: resolving a Debt on Trade Detail before it is due (P17) and the retry and concurrency
 // rules (AC-JOUR-005), through the real facade on fake-indexeddb.
 import { describe, expect, it } from 'vitest';
+import { reflectionCounts } from '../../support/reflection-counts.ts';
 import {
   bindingFor, confirmReference, detail, device, dumpAll, journalStores, MONDAY_1005, onboarded, openReview, outstandingDebts,
   PC1, positionChange, buy, recordDeferred, reflectionForm, restart, withDebt, type Device,
@@ -54,7 +55,7 @@ describe('I5.7 Resolve on Trade Detail before due', () => {
     const wednesday: Device = { ...d, now: WEDNESDAY_1700 };
     app = await restart(app, wednesday);
     const review = await openReview(app, wednesday);
-    expect(review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => t.reflections) : []))).toEqual([{ due: 0, later: 0 }]);
+    expect(review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map(reflectionCounts) : []))).toEqual([{ due: 0, later: 0 }]);
     const { form: card } = await bindingFor(app, wednesday, tradeId);
     expect(card.reflections).toEqual([]);
   }, 60_000);

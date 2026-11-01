@@ -42,7 +42,6 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
   rangePosition: { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: underlying, date: MONDAY },
-  reflections: { due: 0, later: 0 },
   progress: cardProgress(),
   ...over,
 });
@@ -100,6 +99,7 @@ function tradeReview(item: WalkedTrade, over: Partial<DailyTradeReview> = {}): D
     attention: item,
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     reflections: [],
+    progress: item.progress,
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },
     definitionRevision: 'def1',
     saveBinding: saveBinding(item.tradeId),

@@ -83,7 +83,8 @@ describe('ResolveReviewDebt', () => {
     if (walk?.family !== 'Trades') throw new Error('no Trades family');
     const order = walk.trades.map((t) => t.tradeId);
     const after = [...order.slice(order.indexOf(trades.a) + 1), ...order.slice(0, order.indexOf(trades.a))];
-    const expectedNext = after.find((id) => walk.trades.find((t) => t.tradeId === id)!.reflections.due > 0);
+    const expectedNext = after.find((id) => walk.trades.find((t) => t.tradeId === id)!.progress.panels.some((p) => p.panel === 'Reflections' && p.dueNow > 0));
+    // (the Reflections panel's dueNow replaces the removed walked-item counts, A167)
 
     if (result.review.kind !== 'Ready') throw new Error('expected a Ready review');
     expect(result.review.progress).toEqual({ tradesWithAction: 5, tradesEligible: 5 });

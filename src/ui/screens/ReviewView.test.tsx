@@ -54,7 +54,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
     cutoff: CUTOFF,
     families: [
       { family: 'Marks', today: over.today ?? [], earlier: over.earlier ?? [] },
-      { family: 'Trades', trades: (over.trades ?? []).map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() })) },
+      { family: 'Trades', trades: (over.trades ?? []).map((t) => ({ ...t, progress: cardProgress() })) },
     ],
     completion: over.completion ?? { kind: 'Complete' },
     binding,
@@ -83,6 +83,7 @@ function tradeFor(tradeId: string, underlying: string, reviewDate: string): Dail
     attention: tradeItem(tradeId, underlying),
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     reflections: [],
+    progress: cardProgress(),
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },
     definitionRevision: 'def1',
     saveBinding: {

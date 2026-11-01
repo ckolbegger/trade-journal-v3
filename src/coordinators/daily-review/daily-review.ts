@@ -29,7 +29,6 @@ import type {
   ReviewCompletion,
   ReviewFamily,
   ReviewNextStep,
-  ReflectionCounts,
   ReviewProgress,
   ResolveReviewDebtRequest,
   ReviewTradeItem,
@@ -102,6 +101,16 @@ function outstandingDebtsOf(debts: readonly { readonly debtId: string; readonly 
     if (ids.length > 0) byTrade[tradeId] = ids;
   }
   return byTrade;
+}
+
+// A card's panels in work order; it is done when every panel is (A164).
+function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: { readonly due: number; readonly later: number }, owed: boolean): CardProgress {
+  const panels: PanelProgress[] = [
+    { panel: 'Marks', done: marks.needed === 0, resolved: marks.resolved, needed: marks.needed },
+    { panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later },
+    { panel: 'Action', done: !owed, owed },
+  ];
+  return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };
 }
 
 // The first obligation still open; a Trade is completed with its form after the read.
@@ -307,28 +316,19 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const closes = { previousClose, close: cutoff };
     const dueDebtIds = (tradeId: string) =>
       outstanding.filter((debt) => debt.anchor.tradeId === tradeId && classifyDue(debt.dueAnchor, closes) === 'Due').map((debt) => debt.debtId);
-    const reflectionsOf = (tradeId: string): ReflectionCounts => {
+    const reflectionsOf = (tradeId: string) => {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
     };
     const actions = await deps.journal.queryActions({ reviewDate });
-    // A card's panels in work order; it is done when every panel is (A164).
     const progressOf = (tradeId: string): CardProgress => {
-      const reflections = reflectionsOf(tradeId);
       const rows = today.filter((row) => row.trades.includes(tradeId));
       const needed = rows.filter((row) => row.task === 'Manual').length;
-      const owed = !(tradeId in actions.actions);
-      const panels: PanelProgress[] = [
-        { panel: 'Marks', done: needed === 0, resolved: rows.length - needed, needed },
-        { panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later },
-        { panel: 'Action', done: !owed, owed },
-      ];
-      return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };
+      return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), !(tradeId in actions.actions));
     };
     const walked = ranked.map(
       ({ item, evaluation }): WalkedTrade => ({
         ...item,
-        reflections: reflectionsOf(item.tradeId),
         progress: progressOf(item.tradeId),
         ...(evaluation && { figures: { riskToStop: evaluation.ongoingRiskToStop, pnl: evaluation.currentMarkedPnl, rewardRiskNow: evaluation.rewardRiskNow } }),
       }),
@@ -347,7 +347,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           reason.code === 'IntegrityDisagreement' || reason.code === 'IncoherentFacts' ? [{ ...reason, tradeId: item.tradeId }] : [],
         ),
         ...(item.tradeId in actions.actions ? [] : [{ code: 'ActionMissing' as const, tradeId: item.tradeId }]),
-        ...(item.reflections.due > 0 ? [{ code: 'ReflectionDue' as const, tradeId: item.tradeId, debtIds: dueDebtIds(item.tradeId) }] : []),
+        ...(dueDebtIds(item.tradeId).length > 0 ? [{ code: 'ReflectionDue' as const, tradeId: item.tradeId, debtIds: dueDebtIds(item.tradeId) }] : []),
       ]),
     ];
     const acknowledged = today.filter((row) => row.resolution.kind === 'AcknowledgedUnavailable');
@@ -375,7 +375,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           derivations.map(({ analysis }) => analysis.tradeId),
         ),
       },
-      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => item.reflections.due > 0).map((item) => item.tradeId)), from),
+      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => dueDebtIds(item.tradeId).length > 0).map((item) => item.tradeId)), from),
       progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
     };
   }
@@ -427,6 +427,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
       });
     }
+    // The same counts the overview's walked item holds: this Trade's Review-date rows, its Outstanding Debt, and its Action.
+    const held = new Set(observationNeeds([entry]).requirements.map((r) => r.instrument.symbol));
+    const rows = frames.frames.filter((frame) => held.has(frame.instrumentKey));
+    const needed = rows.filter((frame) => frame.resolution.kind === 'Missing').length;
+    const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
+    const progress = cardProgress({ resolved: rows.length - needed, needed }, { due, later: reflections.length - due }, !saved);
     const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: { selectedAction: 'Hold' } };
     // A saved Action's form is the Entry's first version's definition; a new form takes the latest.
     let definitionRevision = saved?.definitionId;
@@ -451,6 +457,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           },
           ...figures,
           reflections,
+          progress,
           form,
           definitionRevision,
           saveBinding: {
@@ -616,7 +623,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // The Review under the facts the save left, read like `open`. A Review that is no longer Ready
   // (the Trade left the eligible set) is for the trader to open afresh.
   // Review-date frames only, no recovery or gap scan (P38). `trades` is the walk in attention order.
-  type ReadAfterSave = Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep'> & { readonly nextTask: NextTask; readonly trades: readonly WalkedTrade[] };
+  type ReadAfterSave = Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep' | 'cards'> & { readonly nextTask: NextTask; readonly trades: readonly WalkedTrade[] };
   async function readAfterSave(reviewDate: string, from?: string) {
     return coherently<ReadAfterSave | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
       const pass = await assemble({ kind: 'Review', reviewDate }, false, from);
@@ -641,7 +648,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const read = await readAfterSave(reviewDate, from);
       if (read.kind !== 'Ready') return read;
       const { nextTask } = read;
-      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding };
+      // The Trade the save resolved, when it is walked (A165).
+      const cards = read.trades.filter((trade) => trade.tradeId === from).map(({ tradeId, progress }) => ({ tradeId, progress }));
+      const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, cards };
       if (nextTask.kind !== 'Trade') return { ...review, nextStep: nextTask };
       const next = await readTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding }, read.binding.workspace.contentRevision);
       if (next.kind === 'Moved') return undefined;

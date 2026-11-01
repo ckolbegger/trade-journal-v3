@@ -1,6 +1,7 @@
 // I5.11: the write gate refuses every D5 write while the inventory check fails, and the Review, Detail
 // and Debt stay readable (AC-DEL-004, AC-DEL-006). One case per boundary so each is shown to be checked.
 import { describe, expect, it } from 'vitest';
+import { reflectionCounts } from '../../support/reflection-counts.ts';
 import {
   bindingFor, detail, type Device, dumpAll, outstandingDebts, positionChange, buy, PC2, reflectionForm, restart, TUESDAY_1700, withDebt,
 } from './support.ts';
@@ -62,7 +63,7 @@ describe('I5.11 Write gate', () => {
     expect((await recovery.Workspace.getStatus()).kind).toBe('RecoveryOnly');
     const review = await recovery.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: tuesday.now });
     if (review.kind !== 'Ready') throw new Error(`DailyReview.open: ${review.kind}`);
-    const reflections = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map((t) => t.reflections) : []));
+    const reflections = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades.map(reflectionCounts) : []));
     expect(reflections).toEqual([{ due: 1, later: 0 }]);
     const owed = (await detail(recovery, tradeId)).journal.filter((item) => item.kind === 'Debt');
     expect(owed).toEqual([expect.objectContaining({ id: debt.debtId, revision: debt.revision, dueStatus: 'Due' })]);

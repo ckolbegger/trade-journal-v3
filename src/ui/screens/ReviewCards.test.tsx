@@ -46,7 +46,6 @@ const trade = (tradeId: string, underlying: string, over: Partial<WalkedTrade>):
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
   rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 2n) },
-  reflections: { due: 0, later: 0 },
   progress: cardProgress(),
   ...over,
 });
@@ -71,7 +70,6 @@ const TA = trade('t-a', 'XYZ', {
   band: 'QuantifiedPressure',
   reasons: [{ code: 'PressureTowardTarget' }],
   rangePosition: { kind: 'Placed', now: rational(9n, 17n), atEntry: rational(134n, 425n) },
-  reflections: { due: 1, later: 1 },
   progress: cardProgress(1, 1),
   figures: { riskToStop: value(450n), pnl: value(180n), rewardRiskNow: value(8n, 9n) },
 });
@@ -138,6 +136,7 @@ function tradeReview(walked: WalkedTrade, over: Partial<DailyTradeReview> = {}):
       atEntry: null,
     } as unknown as DailyTradeReview['evaluation'],
     reflections: [],
+    progress: walked.progress,
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },
     definitionRevision: 'def1',
     saveBinding: saveBinding(walked.tradeId),
@@ -806,7 +805,7 @@ describe('card-top scroll once the body shows (T5R.15-B1-B1)', () => {
 
 describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
   const markStep = (trades: readonly string[]) => ({ kind: 'Mark', row: markRow('DEF', trades) }) as const;
-  const postWith = (nextStep: ReturnType<typeof markStep>) => ({ kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep, binding }) as const;
+  const postWith = (nextStep: ReturnType<typeof markStep>) => ({ kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep, binding }) as const;
 
   it('should collapse the saving card and open the card for the Missing Mark on its Marks panel, with focus in the row', async () => {
     const user = userEvent.setup();
@@ -873,7 +872,7 @@ describe('Action save while other forms hold values (A156)', () => {
   it('should stay on the card, keep the entered Mark, and say why when an Action save names another card as the next step', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
-    const post = { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TF) }, binding } as const;
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TF) }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-c' });
     const card = await screen.findByRole('region', { name: 'DEF review' });
@@ -974,7 +973,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
   it('should name the Trade in the message after an Action save on a held card', async () => {
     const user = userEvent.setup();
     const facade = cardFacade(namedReview());
-    const post = { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
     renderReview(facade, { at: '/review?trade=t-f' });
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));

@@ -8,6 +8,7 @@ import { createApplication, type Application } from '../../../src/app/compose.ts
 import { nyseSessionPolicy } from '../../../src/domain/session-policy/index.ts';
 import { fixedClock } from '../../../src/domain/time/index.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
+import { reflectionCounts } from '../../support/reflection-counts.ts';
 import { TEST_CAPACITY } from '../../support/stack.ts';
 import { planCommand } from '../d1/support.ts';
 import { complete, device, reflectionDefinitionId } from './support.ts';
@@ -155,7 +156,7 @@ describe('T5.22 query count: the Review open and Trade Detail read Debt', () => 
     ]);
     // The addition: one Debt request, on the sparse index.
     expect(on(review.requests, 'journalDebts')).toEqual([BY_OUTSTANDING_DUE]);
-    expect(review.result.kind === 'Ready' && review.result.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).map((t) => t.reflections.due)).toContain(1);
+    expect(review.result.kind === 'Ready' && review.result.families.flatMap((f) => (f.family === 'Trades' ? f.trades : [])).map((t) => reflectionCounts(t).due)).toContain(1);
   });
 
   it('should add exactly one getAll on byAnchorTrade for a Trade Detail', { timeout: 600_000 }, async () => {

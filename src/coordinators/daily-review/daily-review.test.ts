@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { breakFirstExecution, cardFixture, fiveTradeFixture, rawEditTrade, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
-import { createDailyReview, type OpenDailyReviewResult } from './index.ts';
+import { createDailyReview, type OpenDailyReviewResult, type ReflectionSaveBinding, type SaveDailyReviewResult } from './index.ts';
 
 const open = (stack: ReviewStack, asOf: string) => stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
 
@@ -1013,4 +1013,104 @@ describe('card progress in open (A164)', () => {
 
     expect(progressOf(opened, a)).toEqual({ kind: 'Walked', panels: [marksPanel(1, 0), reflectionsPanel(1, 1), actionPanel(false)], done: false });
   }, 30_000);
+});
+
+const REFLECTION_ANSWERS = {
+  'prompt.position-change-reflection.decision-mode': { kind: 'Option', optionId: 'option.position-change-reflection.decision-mode.as-planned' },
+  'prompt.position-change-reflection.primary-emotion': { kind: 'Option', optionId: 'option.position-change-reflection.primary-emotion.calm' },
+  'prompt.position-change-reflection.decision-confidence': { kind: 'Scale', value: 4 },
+} as const;
+
+const walkedProgress = (opened: OpenDailyReviewResult, tradeId: string) => walk(opened).find((t) => t.tradeId === tradeId)!.progress;
+const panelsOf = (progress: { readonly panels: readonly unknown[] }) => progress.panels;
+
+async function openedBinding(stack: ReviewStack) {
+  const opened = ready(await open(stack, MONDAY_1700));
+  return { opened, reviewDate: opened.reviewDate, binding: opened.binding };
+}
+
+async function tradeOf(stack: ReviewStack, tradeId: string) {
+  const { reviewDate, binding } = await openedBinding(stack);
+  const result = await stack.dailyReview.getTrade({ reviewDate, tradeId, binding });
+  if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+  return result.trade;
+}
+
+async function resolveReflection(stack: ReviewStack, tradeId: string, debtIndex: number): Promise<Extract<SaveDailyReviewResult, { kind: 'DebtResolved' }>> {
+  const { reviewDate } = await openedBinding(stack);
+  const reflection = (await tradeOf(stack, tradeId)).reflections[debtIndex]!;
+  const binding: ReflectionSaveBinding = reflection.saveBinding;
+  const result = await stack.dailyReview.save({ kind: 'ResolveReviewDebt', reviewDate, binding, resolution: { kind: 'Answer', answers: REFLECTION_ANSWERS } });
+  if (result.kind !== 'DebtResolved') throw new Error(`expected DebtResolved, got ${result.kind}`);
+  return result;
+}
+
+describe('card progress in getTrade (A165)', () => {
+  it('should return on T-A card the same progress as T-A walked item in open', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack);
+    const { opened } = await openedBinding(stack);
+
+    const trade = await tradeOf(stack, a);
+
+    expect(trade.progress).toEqual(walkedProgress(opened, a));
+    expect(panelsOf(trade.progress)).toHaveLength(3);
+  }, 30_000);
+});
+
+describe('card progress in save results (A165, Q12)', () => {
+  it('should return T-E progress, done, in the cards of the review a SaveTradeAction for T-E returns, and the next step Trade with its own progress', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { e } = await cardFixture(stack);
+    await stack.saveMark('DEF', '40.50');
+    const binding = (await tradeOf(stack, e)).saveBinding;
+
+    const result = await stack.dailyReview.save({ kind: 'SaveTradeAction', binding, action: 'Hold' });
+
+    if (result.kind !== 'Saved' || result.review.kind !== 'Ready') throw new Error('expected a Ready saved review');
+    expect(result.review.cards).toEqual([{ tradeId: e, progress: { kind: 'Walked', panels: [{ panel: 'Marks', done: true, resolved: 1, needed: 0 }, { panel: 'Reflections', done: true, dueNow: 0, later: 0 }, { panel: 'Action', done: true, owed: false }], done: true } }]);
+    const next = result.review.nextStep;
+    if (next.kind !== 'Trade') throw new Error(`expected a Trade next step, got ${next.kind}`);
+    const reopened = await open(stack, MONDAY_1700);
+    expect(next.trade.progress).toEqual(walkedProgress(reopened, next.trade.tradeId));
+    expect(next.trade.tradeId).not.toBe(e);
+  }, 60_000);
+
+  it('should return T-A progress with 0 due now and 1 later, and the Reflections panel done, after ResolveReviewDebt answers D-1', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack);
+
+    const result = await resolveReflection(stack, a, 0);
+
+    if (result.review.kind !== 'Ready') throw new Error('expected a Ready review');
+    const card = result.review.cards.find((c) => c.tradeId === a)!;
+    expect(panelsOf(card.progress)[1]).toEqual({ panel: 'Reflections', done: true, dueNow: 0, later: 1 });
+    expect(result.review.cards).toHaveLength(1);
+  }, 60_000);
+
+  it('should return T-A progress with 0 due now and 0 later after D-1 and D-2 are both resolved, so the panel has nothing owed', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack);
+    await resolveReflection(stack, a, 0);
+
+    const result = await resolveReflection(stack, a, 0);
+
+    if (result.review.kind !== 'Ready') throw new Error('expected a Ready review');
+    const card = result.review.cards.find((c) => c.tradeId === a)!;
+    expect(panelsOf(card.progress)[1]).toEqual({ panel: 'Reflections', done: true, dueNow: 0, later: 0 });
+  }, 60_000);
+
+  it('should return, after SaveReviewMarks saves XYZ from T-A card without Marks, T-A and T-F each with 1 resolved and 0 needed among the review trades, and T-A card progress equal to its walked item', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, f } = await cardFixture(stack, { withoutMarks: true });
+    const { reviewDate, binding } = await openedBinding(stack);
+    const entries = [{ key: { instrumentKey: 'XYZ', tradingDate: reviewDate }, expectedRevision: 'None' as const, intention: { kind: 'RecordInitialManualMark' as const, price: '52.00' } }];
+
+    const result = await stack.dailyReview.save({ kind: 'SaveReviewMarks', reviewDate, tradeId: a, binding, entries });
+
+    if (result.kind !== 'MarksSaved' || result.review.kind !== 'Ready') throw new Error('expected a Ready marks review');
+    const { trades, trade } = result.review;
+    for (const tradeId of [a, f]) expect(panelsOf(trades.find((t) => t.tradeId === tradeId)!.progress)[0]).toEqual({ panel: 'Marks', done: true, resolved: 1, needed: 0 });
+    expect(trade.progress).toEqual(trades.find((t) => t.tradeId === a)!.progress);
+  }, 60_000);
 });
