@@ -122,3 +122,24 @@ Date 2026-11-01 06:55 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-3-coordinators-classify-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.4 Daily Review: card progress in `open`
+
+Behavioral; rows in `tdd-log.md`. Commit `987f6d7`: `CardProgress` and `PanelProgress` (A164) in `src/coordinators/daily-review/types.ts`, re-exported through `src/app/types.ts`; `progress` on each `WalkedTrade` from `open`; five cases in `daily-review.test.ts`, describe "card progress in open (A164)". **First-run passes (flagged):** cases 2–5 passed on their first run because case 1's expected-progress table needs the whole computation. Each has a mutation check in `tdd-log.md` (shared-row membership by first Trade only; only `Available` counts as resolved; `owed` always true; Reflections always done), each failing with an assertion. Implementation notes: `assemble` reads `queryActions` earlier (same single read; the query-count case passes unchanged). `WalkedTrade.reflections` stays until T5R2.5. A test-only change: the getTrade case "should return the same attention reasons as the overview" strips `progress` from the overview item before comparing it with `trade.attention`, which has none; its expected values are unchanged. Four UI test fixtures gained `progress` through a new helper, `tests/support/card-progress.ts`, so they still type-check; no UI expectation or UI code changed.
+
+### ocr review of `987f6d7`
+
+Session `73653cea-8a30-4056-817d-ff6d66191c14`, 5 files reviewed (6 test files excluded), no findings. Raw output: [ocr/T5R2.4-987f6d7.json](ocr/T5R2.4-987f6d7.json).
+
+### Cumulative suite at `987f6d7` (T5R2.4 closed)
+
+Date 2026-11-01 07:09 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 76 passed (76)`, `Tests 1020 passed (1020)`, exit 0 | `suite-runs/t5r2-4-progress-open-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-4-progress-open-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-4-progress-open-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-4-progress-open-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.

@@ -267,7 +267,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | Setup (`tdd.sh`, `9cbbe55`); T5R2.1 (`9ebeb83`); T5R2.2 (`451b093`); T5R2.3 (`b7ea170`). Latest cumulative run green at `b7ea170`: 1015 unit, 117 integration, 179 browser, 12 of 12 checks. |
-| Next step | **T5R2.4** (Daily Review: card progress in `open`). |
-| Last commit | the evidence and handoff commit after T5R2.3 |
-| Open questions | (1) Location check: `git status -sb` read `ahead 0`, not `ahead 175`, because the branch had been pushed to exactly `claude-opus-5.5-pre-d5r2`; HEAD, tag and remote were the same commit, so the session proceeded (`evidence/D05R2/structural.md`, "Start of D5R2"). (2) T5R2.1 decision: `classifyDue` takes the repository's `Instant` strings, comparing them with `temporal-polyfill`. |
+| Tasks done | Setup (`tdd.sh`, `9cbbe55`); T5R2.1 (`9ebeb83`); T5R2.2 (`451b093`); T5R2.3 (`b7ea170`); T5R2.4 (`987f6d7`). Latest cumulative run green at `987f6d7`: 1020 unit, 117 integration, 179 browser, 12 of 12 checks. |
+| Next step | **T5R2.5** (Daily Review: card progress in `getTrade` and every save result). |
+| Last commit | the evidence and handoff commit after T5R2.4 |
+| Open questions | (1) Location check: `git status -sb` read `ahead 0`, not `ahead 175`, because the branch had been pushed to exactly `claude-opus-5.5-pre-d5r2`; HEAD, tag and remote were the same commit, so the session proceeded (`evidence/D05R2/structural.md`, "Start of D5R2"). (2) T5R2.1 decision: `classifyDue` takes the repository's `Instant` strings, comparing them with `temporal-polyfill`. (3) First-run passes, flagged: T5R2.4 cases 2–5 (mutation checks in `tdd-log.md`). |
