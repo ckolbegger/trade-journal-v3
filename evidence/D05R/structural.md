@@ -1216,3 +1216,46 @@ ocr review of `a3a2466` (T5R.14-B1-B2): one file reviewed (three excluded), no f
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.14-integration-*.txt`. Ports 5175, 5181, 9341 and 9342 clear before and after. `35461dd` holds every T5R.14 code change (B1-B2, `a3a2466`, is the last); later commits are evidence only.
+
+## T5R.15 Browser suite
+
+Files: `e2e/d5r/support.ts` (re-exports `e2e/d5/support.ts`, so D4's card helpers; adds the card fixture builder through the UI, `tagCards`, and Trade-keyed twins of the card helpers for the two XYZ cards), `review.spec.ts` (B5R.1, B5R.2), `marks.spec.ts` (B5R.3, B5R.4, B5R.5, B5R.8), `sliders.spec.ts` (B5R.6, B5R.7), `durability.spec.ts` (B5R.9, B5R.10), `responsive-a11y.spec.ts` (B5R.11); `package.json`'s `test:e2e` gained `e2e/d5r`. No app code, plan, or existing spec changed; `git diff -- src` is empty.
+
+Decisions and readings, for the main session:
+- **T-A and T-F share the Underlying XYZ**, so D4's symbol-qualified helpers (`cardHeader(page, 'XYZ')`, and every helper built on it) match two cards and fail strict mode. `tagCards` marks the two list items once, right after the Review loads, while only T-A owes a reflection (D-1); the mark stays on the item as the cards re-sort. `reachTrade`, `reachTradePanel`, `markRowOf`, `enterMarkOf`, `actionFormOfTrade`, `saveActionOf`, `reflectionsOfTrade`, `debtFormOfTrade`, and `answerDebtOf` take a fixture Trade (`T-A` to `T-F`), follow section 6.4's rules (idempotent, loud on refusal naming both cards, reads never save), and fall back to the D4 helpers for the Trades with their own symbol. Navigation assertions use raw locators (`headerOf`, `panelHeaderOf`, `cardItem`, `sliderOf`).
+- **"also held by T-F"** (B5R.3): A153 says the row names the other Trades' Underlyings, so the app shows "also held by XYZ" with a link to `/trades/<T-F's id>`. The case asserts that text and the link, not "T-F".
+- **B5R.4 needs a third price.** The card fixture gives T-A two Marks rows (Monday, Friday), but the case types three prices. The case builds the fixture with T-A's first Position Change on Thursday 2026-10-08 (so T-A also holds an earlier Thursday row); nothing else changes. Every other case uses the fixture as defined.
+- **B5R.1:** T-B, T-C, and T-E need their own Marks before Complete, so each card's Mark is typed in its card, then its Action saved; the plan's wording names only the first card's Marks.
+- **B5R.10** is two tests: Offline (the d5 production release, server closed) and Recovery Only (the faults build, `?faults=control`), since the two need different served builds.
+- Kill and relaunch use CDP ports 9341 and 9342 (as D5's kill case); the app is served only on 5175.
+
+| Case | Result | Mutation (key assertion made to fail) and its failing line |
+|---|---|---|
+| B5R.1 Review end to end on cards | passed | `findLast` for `find` on the card opened on load (`ReviewView.tsx`): `expect(locator).toHaveAttribute(expected) failed`, `review.spec.ts:20`, `Expected: "true"`, `Received: "false"` |
+| B5R.2 Opening far down the list | **FAILED against the current app** | no mutation; genuine defect, below |
+| B5R.3 Shared Mark | passed | "also held by" line suppressed (`others.length > 5`, `CardMarks.tsx`): `toContainText` failed, `marks.spec.ts:24`, `Received string: "XYZ$52.00 · ManualCorrect"` |
+| B5R.4 Invalid price saves nothing | passed | focus sent to a field that does not exist after a Rejected save: `toBeFocused() failed`, `marks.spec.ts:58`, `Received: inactive` |
+| B5R.5 Unsaved work holds the card | passed | hold check never true (`held && !held`, `ReviewView.tsx`): `toBeVisible() failed`, `marks.spec.ts:87`, the "Save or discard what you entered for XYZ to leave it." status not found |
+| B5R.6 Missing-Mark link | passed | Open list link points at `/review`: `toHaveAttribute failed`, `sliders.spec.ts:20`, DEF's header `Expected: "true"`, `Received: "false"` |
+| B5R.7 Slider states | passed | pinned class removed (`StopTargetSlider.tsx`): `toHaveClass failed`, `sliders.spec.ts:57`, `Expected pattern: /slider-pinned/`, `Received string: "slider-now"` |
+| B5R.8 Changed evidence | passed | drafts cleared on Conflict (`setDrafts({})`, `CardMarks.tsx`): `toBeVisible() failed`, `marks.spec.ts:119`, the Conflict alert not found |
+| B5R.9 Kill after Save Marks | passed | `applyPreparedEffects` stages no write (`market-data.ts`): `toContainText failed`, `durability.spec.ts:34` after the relaunch, `Received string: "MissingPriceCan't get a price"` |
+| B5R.10 Offline | passed | same `applyPreparedEffects` mutation: `toContainText failed`, `durability.spec.ts:73`, after the second offline restart |
+| B5R.10 Recovery Only | passed | draft fields offered when not writable (`(panel.writable \|\| true)`, `CardMarks.tsx`, faults build): `toHaveCount failed`, `durability.spec.ts:101`, `locator('input, textarea')` `Expected: 0`, `Received: 1` |
+| B5R.11 Responsive and accessible | passed | narrow media query of `.review-card-head` changed to `max-width: 100px` (`app.css`): `toBeGreaterThanOrEqual failed`, `responsive-a11y.spec.ts:60`, `Expected: >= 1487.375`, `Received: 1429.375` |
+
+Every mutation was restored and the builds redone; `git diff -- src` is empty. Full rows are in `tdd-log.md`.
+
+### Genuine failure: B5R.2 Opening far down the list
+
+Against the unmodified app, with the card fixture plus 16 routine Trades (21 cards), pressing the 18th card's header opens it, collapses T-A's card, and puts the header in the viewport, but the card's first Price input is below the fold:
+
+`Error: expect(locator).toBeInViewport() failed`, `review.spec.ts:100`, `Locator: ...locator('li.review-card').nth(17).getByLabel('Price').first()`, `Expected: in viewport`, `Received: viewport ratio 0`.
+
+Measured on the same page (viewport 1280 x 900): the header at y 558, the Price input at y 1209, the page scrolled 1737 px. Reading of the cause, from `ReviewCard.tsx` and `ReviewView.tsx` (not changed): the card scrolls itself to the top of the viewport when its header is pressed, at which moment its body is still "Loading the Trade…" and the previous card has just collapsed, so the page is short and the browser clamps the scroll position; the body then loads below the header. The expectation is kept as the plan states it. The remedy is app code (for example scrolling again once the body has loaded), so it is for the main session to schedule as a bug task.
+
+### Whole-suite run
+
+`npm run test:e2e` (all D1, D2, D4, D5, and D5R cases, after `build:faults` and `build:releases`): 172 passed, 1 failed (B5R.2, above), 6.7 min. The 161 earlier browser cases and the other 11 new cases pass. Ports 5175, 9341, and 9342 were clear before the first run and after the last.
+
+Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:deps` exit 0.
