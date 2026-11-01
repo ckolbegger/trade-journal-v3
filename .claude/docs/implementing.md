@@ -30,12 +30,12 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
   - the files and modules it builds on, including public types added by earlier tasks;
   - any `specs/` ranges it needs;
   - its scope limits: what later tasks own, and any temporary rule the task may need until then.
-- The agent definition holds the TDD procedure, the first-run mutation check, committing, and the return format, so the brief doesn't repeat them.
+- The agent definition holds the TDD procedure, the first-run mutation check, the working rules (Edit tool only, scratch directories, exit codes, browser runs and ports, rebuilding after a mutation, staging), committing, the clean-tree check, and the return format, so the brief doesn't repeat them. Likewise, `suite-runner.md` holds its port checks and how it waits for a backgrounded stage, and `ocr-review.md` holds the relocated review for test-only commits.
 
 ## After each task
 
 1. Review the returned summary without re-reading the code.
-2. Run the `ocr-review` subagent (`.claude/agents/ocr-review.md`) on the task's implementation commit, naming the task's breakdown section as background. It runs Alibaba's Open Code Reviewer on that commit's changes and returns a findings table. Copy its raw output file to `evidence/D<nn>/ocr/<task>-<sha>.json` (the agent leaves it in a temporary directory) and record the table in `evidence/D<nn>/structural.md` under the task's heading. Findings don't stop the session (user's direction, 2026-10-24):
+2. Run the `ocr-review` subagent (`.claude/agents/ocr-review.md`) on the task's implementation commit, naming the task's breakdown section as background, and saying "test-only" when the commit changes only tests. It runs Alibaba's Open Code Reviewer on that commit's changes and returns a findings table. Copy its raw output file to `evidence/D<nn>/ocr/<task>-<sha>.json` (the agent leaves it in a temporary directory) and record the table in `evidence/D<nn>/structural.md` under the task's heading. Findings don't stop the session (user's direction, 2026-10-24):
    - Each **Valid** or **Doubtful** finding becomes a bug task, `<task>-B<n>` (numbering continues across the task's rounds). Write it in `structural.md` under the task's heading: the finding, the defect it causes, and its `it should` cases. Delegate each bug task to its own fresh `tdd-task` subagent, failing test first, one at a time. Each bug-fix commit gets its own `ocr-review` run, handled the same way.
    - A **Wrong** finding is recorded as dismissed, with the reason, and listed in the handoff's open questions for the final report. Confirm the reason against the cited lines before dismissing.
    - A defect that a subagent's summary reveals in the task's code (not a later task's planned scope) is handled the same way, as a bug task.

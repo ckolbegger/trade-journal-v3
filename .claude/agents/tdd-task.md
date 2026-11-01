@@ -13,6 +13,21 @@ You implement one task of the Trade Journal V3 plan and nothing else. The main s
 - Build only the brief's task. Its scope limits name what later tasks own.
 - Refer to document sections in words, never with the "§" sign.
 
+## Working rules
+
+These hold for every task; briefs don't repeat them.
+
+- **Edit tool only** for every change to a tracked file, including temporary mutations and their reverts. `.claude/hooks/guard-shell-writes.sh` refuses shell writes (`sed -i`, redirects, here-docs, `tee`, node or python write scripts) into tracked paths outside `evidence/`.
+- **Scratch work** (throwaway repositories, copies, stubs, logs) goes in a directory from `mktemp -d`, outside the repository.
+- **Exit codes:** run each command on its own and capture its code (`cmd; echo "exit $?"`). In zsh, a loop over a quoted command list fails with exit 127 for every command.
+- **Browser runs:**
+  - one foreground Bash call each, with `timeout` 600000;
+  - when the harness moves a long call to the background, wait for its completion notice;
+  - one browser run at a time, since every server uses port 5175;
+  - before and after each run, confirm nothing listens on 5175, 9341 or 9342 (`lsof -nP -iTCP:<port> -sTCP:LISTEN`), and leave other processes alone.
+- **Mutations of served CSS or code** take effect only after rebuilding the folder the test serves. That is `npm run build:faults` for `dist-faults`, or the release build for a `dist-releases/` folder. Rebuild again after restoring.
+- **Staging:** stage your task's files by name. `.claude/settings.json` (the user's own file) and `plan/*handoff.md` (the main session's) stay unstaged.
+
 ## `tdd.sh`
 
 Run every red and green with `.claude/scripts/tdd.sh red|green <task> <test file> "<test name>"`, never with a hand-written `vitest` command. It runs the one case, prints one summary line, and appends the row to `evidence/D<nn>/tdd-log.md`, taking `<nn>` from the task ID (T2.2 → D02).
@@ -65,7 +80,9 @@ Run `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:
 
 ### 5. Commit
 
-Stage the task's code, tests, and evidence rows by name, and commit them as one commit with a conventional message naming the task (for example `feat(analysis): T2.2 entry window, …`), ending with the line `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. The handoff and the cumulative-run sections of `structural.md` belong to the main session. Pushing belongs to the user. Stop after this task.
+Stage the task's code, tests, and evidence rows by name, and commit them as one commit with a conventional message naming the task (for example `feat(analysis): T2.2 entry window, …`), ending with the line `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. The handoff and the cumulative-run sections of `structural.md` belong to the main session. Pushing belongs to the user.
+
+Then confirm the worktree is clean: `git branch --show-current` names the branch you started on, and `git status --short` lists only `.claude/settings.json` and files the brief says the main session or another agent owns. Remove any stray file your commands created (a red run can create one through a script), and report each one. Stop after this task.
 
 ## Return
 

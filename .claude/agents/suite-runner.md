@@ -21,15 +21,17 @@ If the evidence directory or label is missing, infer the evidence directory from
 
 ## Steps
 
-1. Run the suite in four stages, one foreground Bash call each, in this order, with the Bash tool's `timeout` set to 600000 on every call:
+1. Confirm nothing listens on ports 5175, 9341 or 9342 (`lsof -nP -iTCP:<port> -sTCP:LISTEN`). If one is busy, report it and stop: another run or server is using it, and it isn't yours to stop.
+2. Run the suite in four stages, one foreground Bash call each, in this order, with the Bash tool's `timeout` set to 600000 on every call:
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> unit`
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> integration`
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> <browser stage>`, with the browser stage from the inputs (for example `browser-auto 4c1884b`)
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> checks`
 
-   Each call writes its file (`<label>-unit.txt`, `<label>-integration.txt`, `<label>-browser.txt` or `<label>-checks.txt`) and prints a summary. Run every stage even when an earlier one fails. Do not run the suites any other way. Never use `run_in_background`, `&`, `nohup`, or a loop that waits (`sleep`, `until`, `while`, `pgrep`, `ps`); a stage that hits the timeout is a failure to report, not something to wait out. When you finish, no process you started may still be running.
-2. If every command exited 0, go to the report.
-3. If something failed, read just enough of the failing output file to name each failure: run `grep -n` through Bash for `FAIL`, `✘`, `Error`, or `EXIT [1-9]`, then Read a narrow range around each hit. Do not rerun anything.
+   Each call writes its file (`<label>-unit.txt`, `<label>-integration.txt`, `<label>-browser.txt` or `<label>-checks.txt`) and prints a summary. Run every stage even when an earlier one fails. Do not run the suites any other way. The harness moves a long foreground call (the browser stage, usually) to the background after about 180 s: wait for its completion notice, which is the only wait. Never start a call with `run_in_background`, `&` or `nohup`, and never wait in a loop (`sleep`, `until`, `while`, `pgrep`, `ps`). A stage that exceeds the 600000 ms timeout is a failure to report.
+3. Repeat step 1's port check. When you finish, no process you started may still be running.
+4. If every command exited 0, go to the report.
+5. If something failed, read just enough of the failing output file to name each failure: run `grep -n` through Bash for `FAIL`, `✘`, `Error`, or `EXIT [1-9]`, then Read a narrow range around each hit. Do not rerun anything.
 
 ## Report
 
@@ -46,6 +48,7 @@ Date: <from the script>. Commit: <from the script>.
 | Static and verification checks (N commands) | <list the commands> | N of N exit 0 | `<path>` |
 
 Browser tier: <full or task>; <for `browser-auto`, the tier line it printed, copied exactly>.
+Browser wall time: <time>. Ports 5175, 9341, 9342: free before and after.
 
 Failures: none
 ```
