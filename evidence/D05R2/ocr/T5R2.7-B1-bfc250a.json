@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 9075,
+    "input_tokens": 9005,
+    "output_tokens": 70,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/held-review.ts",
+      "files": [
+        "src/ui/screens/held-review.ts"
+      ]
+    }
+  ],
+  "session_id": "b55b8037-a698-4420-8568-0e66b2970b2c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b55b8037-a698-4420-8568-0e66b2970b2c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "bfc250a6",
+      "resolved_base": "5bf72e7b3f8440856fcb95c43d70f81d5d986d56",
+      "resolved_head": "bfc250a62b6f6fae1b2b0ecb54679bd7ae6f6c83",
+      "exact_range": "5bf72e7b3f8440856fcb95c43d70f81d5d986d56..bfc250a62b6f6fae1b2b0ecb54679bd7ae6f6c83",
+      "source_artifact_sha256": "73ecff03b1b138735bb2d791375775d11ac2b12f29aedf913e1a95628413e43b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "ce5312338ff1ff56181c50d56e9363aba3b843ab70d170cbd99002a88328e562"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "ce5312338ff1ff56181c50d56e9363aba3b843ab70d170cbd99002a88328e562"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8629
+  }
+}

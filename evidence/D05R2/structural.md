@@ -283,3 +283,24 @@ Date 2026-11-01 08:05 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-7-held-review-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+### T5R2.7-B1 result
+
+Commit `bfc250a`: `learn` keeps a key's learned standing unless the incoming revision is at least as new (A172). One case in `held-review.test.ts`, describe "standing (A172)", red (`expected { resolution, revision: 1 } to deeply equal { resolution, revision: 2 }`) then green; the file's 13 cases pass. No first-run passes.
+
+### ocr review of `bfc250a`
+
+Session `b55b8037-a698-4420-8568-0e66b2970b2c`, 1 file reviewed, no findings. Raw output: [ocr/T5R2.7-B1-bfc250a.json](ocr/T5R2.7-B1-bfc250a.json).
+
+### Cumulative suite at `bfc250a` (T5R2.7 closed)
+
+Date 2026-11-01 08:15 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 77 passed (77)`, `Tests 1038 passed (1038)`, exit 0 | `suite-runs/t5r2-7-b1-standing-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-7-b1-standing-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-7-b1-standing-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-7-b1-standing-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.
