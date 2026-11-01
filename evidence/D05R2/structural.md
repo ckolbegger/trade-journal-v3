@@ -330,3 +330,20 @@ Left for T5R2.9 (they depend on `CardMarks`' own `standings`, which T5R2.9 remov
 | `rg -n 'fold\(\|apply\(\|nextCard\(\|marksOf\(' src/ui/screens/ReviewView.tsx` | `apply` (which calls `fold`, line 221) is called for `Opened` (293, refreshTrade), `ActionSaved` (318, 330, `saved`), `DebtResolved` (355, `reflectionResolved`), `MarksSaved` (417, `marksSaved`); `nextCard(latest.current, post.nextStep)` at 332 in `saved`; `marksOf(heldReview, ...)` at 192 and 461 |
 | `npx vitest run tests/integration/d5r` | `Test Files 7 passed (7)`, `Tests 12 passed (12)`, exit 0 |
 | `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+
+### ocr review of `74a1ca2`
+
+Session `442faf74-be0b-4de7-9508-e8716bbadefb`, 1 file reviewed, no findings. Raw output: [ocr/T5R2.8-74a1ca2.json](ocr/T5R2.8-74a1ca2.json).
+
+### Cumulative suite at `74a1ca2` (T5R2.8 closed)
+
+Date 2026-11-01 08:30 EST. The working tree's only uncommitted changes were evidence files. The unit count falls by 2 (1038 to 1036): the two mounted cases removed above.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 77 passed (77)`, `Tests 1036 passed (1036)`, exit 0 | `suite-runs/t5r2-8-reviewview-fold-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-8-reviewview-fold-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-8-reviewview-fold-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-8-reviewview-fold-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.
