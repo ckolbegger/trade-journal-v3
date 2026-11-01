@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import type { EntryDefinitionRecord, TradeDetailDebt } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
+import { DUE_TEXT } from '../due-text.ts';
 import { localTime } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult } from './DebtForm.tsx';
-import { DUE_TEXT } from './ReviewReflections.tsx';
 
 // An Outstanding Debt in a Trade's narrative: "Reflection owed" beside its Position Change, with its
 // due status as text (absent outside session-policy coverage) and, while Writable, the ways to resolve it.

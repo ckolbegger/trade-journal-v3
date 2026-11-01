@@ -213,3 +213,14 @@ Date 2026-11-01 07:39 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-5-b1-fixture-mapping-checks.txt` |
 
 **F1, the one unit failure:** `src/ui/screens/ReviewCards.test.tsx:607`, "links (A161) > should open the first card holding XYZ in attention order on its Marks panel, with focus on XYZ row, for /review?instrument=XYZ" (`AssertionError: expected false to be true`, the XYZ Mark region lookup). The commit changes no UI code (`tools/` and `vite.config.ts` only). Reproduction by the main session: the case alone passed (`npx vitest run src/ui/screens/ReviewCards.test.tsx -t "should open the first card holding XYZ in attention order on its Marks panel"`, 1 passed); its file passed (41 of 41); then `npx vitest run src` twice in a row passed both times (`Tests 1025 passed (1025)`). Treated as intermittent under the full run's load, not a defect of `dc004c4`. It passed in all five earlier D5R2 cumulative runs. If it recurs, it becomes a stability task like D5R's B4.13-F1. T5R2.5 is closed; T5R2.6's cumulative run covers this commit's code.
+
+## T5R2.6 One due formatter
+
+Change: new `src/ui/due-text.ts` exports `DUE_TEXT: Record<DueClassification, string>` (same keys and strings as before). `src/ui/screens/ReviewReflections.tsx` no longer defines it and imports it from `../due-text.ts`; `src/ui/screens/OwedDebtItem.tsx` imports it from `../due-text.ts` and nothing from `ReviewReflections.tsx`. No test, e2e or visible-text change.
+
+| Command | Result |
+|---|---|
+| `npm run test:unit -- src/ui` | `Test Files 24 passed (24)`, `Tests 410 passed (410)`, exit 0 (no test changed) |
+| `rg 'DUE_TEXT' src/ui` | defined only at `src/ui/due-text.ts:4`; the other hits are the two imports and the two uses |
+| `rg "ReviewReflections" src/ui/screens/OwedDebtItem.tsx` | no match, exit 1 |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
