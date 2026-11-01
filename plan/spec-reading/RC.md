@@ -2,9 +2,9 @@
 
 Generated from [plan/spec-map.md](../spec-map.md) by `.claude/scripts/spec-reading-lists.py`; do not edit by hand.
 
-Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). 122 entries, 155,023 characters (≈65K tokens).
+Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). 122 entries, 156,130 characters (≈65K tokens).
 
-- `specs/README.md`: 1–99
+- `specs/README.md`: 1–100
 - `specs/acceptance/acceptance-contract.md`: 3–31, 173–179, 402–415, 430–518
 - `specs/adr/0001-domain-facts-pure-analysis-and-coordinators.md`: whole file
 - `specs/adr/0002-semantic-command-atomicity.md`: whole file

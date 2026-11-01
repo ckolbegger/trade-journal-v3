@@ -8,6 +8,8 @@ This note was written on 2026-10-30, after D5 completed. On 2026-11-01, after D5
 
 This note is the starting point for D6.
 
+> **Not the next deliverable yet.** Plan revision 28 (decision 69) inserts **D5R2, "Review card progress"**, before D6 ([D05R2-review-card-progress.md](D05R2-review-card-progress.md)). D5R2 moves each Review card's progress into the Daily Review coordinator, the due classification into `src/domain/journal-debt/`, the folding of save results into one held-Review module, and each commit binding into the module that owns it, so that D6 only adds new behaviour. Implement D5R2 first, from its own handoff. D5R2's session rewrites this note's starting point, revision, and counts when D5R2 is tagged `claude-opus-5.5-d5r2`. Until then, the location checks below describe the D5R starting point and are not current.
+
 This session **implements D6, "Close a Long Stock position"**, under the frozen plan at revision 27.
 
 D5R, the Review redesign that plan revision 20 (decision 61) inserted before D6, is complete:
@@ -93,7 +95,7 @@ You may read D7's and D8's breakdowns for context where they build on D6 (D7 add
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r28, and the next decision is 69. D5's session added decisions 56–60 in revisions 15–19, and D5R's added decisions 61–68 in revisions 20–27. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2, D4 and D5; scenarios that become full in D6 are also marked in `plan/acceptance-matrix.md`. Run each row's command as written before marking it.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r29, and the next decision is 70 (revision 28 and decision 69 add D5R2). D5's session added decisions 56–60 in revisions 15–19, and D5R's added decisions 61–68 in revisions 20–27. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2, D4 and D5; scenarios that become full in D6 are also marked in `plan/acceptance-matrix.md`. Run each row's command as written before marking it.
 
 ## 3. D6 specifics
 
@@ -139,6 +141,7 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the ne
 
   If a fresh agent or a browser can't be provided, stop and report. Never self-certify.
 - **When the gate passes,** commit and create the local tag `claude-opus-5.5-d6` on that commit. D7's harness builds the previous release from it. Don't push the tag unless the user asks.
+- **When you write D7's handoff,** carry the note at the top of the D7 breakdown: tech debt item 5 (missing evidence in one vocabulary) is to be raised with the user before D7 starts, with its recommended refactor deliverable first (decision 69).
 
 ## 4. What D5 left in place
 
@@ -211,7 +214,7 @@ Never push.
 - **The tech-debt items** at the end of `plan/implementation-plan.md`: the late Stale-context Mark at a save, an older tab writing after a calendar change, and the Review's open cost growing with history (item 3, recorded 2026-10-30, with proposed fixes the user has not yet chosen).
 - D1's and D2's optional polish, and the D2 items the user triaged as "leave" (`plan/D04-handoff.md`, section 6).
 - F12, the section-validator gaps, carried into D8's T8.6.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P42, A164 and decision 69, unless D6 records further decisions first. D5R used P36–P41, A150–A163 and decisions 61–68.
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P55, A177 and decision 70, unless D6 records further decisions first. D5R used P36–P41, A150–A163 and decisions 61–68. D5R2 uses P42–P54, A164–A176 and decision 69.
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 
