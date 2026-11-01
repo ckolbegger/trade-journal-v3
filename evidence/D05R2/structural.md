@@ -406,3 +406,26 @@ Section 6.1 of the breakdown, case by case. Apart from P46, no value is dropped.
 | `ReviewCard.test.tsx`, "should show Marks, Reflections, and Action panels in that order …" (stays) | Marks "0 of 2 for Mon Oct 12 · 1 earlier optional" with "2 needed"; Reflections "2 owed, 1 due now" with "1 due"; Action "Hold, Exit, Roll or Adjust" with "Needed"; open panels [Marks]; "None" on Reflections for a card that owes none | Stays mounted; `owingReview` now gives T-1 the progress of 2 Marks needed, 1 due now and 1 later. Values unchanged ("1 earlier optional" is still the length of the earlier rows listed, P49). |
 | `ReviewCard.test.tsx`, "moving on", "moving on from Reflections", "moving on from the panel that finished" (stay) | Panel order Marks, Reflections, Action; the card named by the next step opens | Stay mounted; the walked Trades and save results carry the progress the panels move on (`cards`, `trades`). Values unchanged. |
 | (new, no removed case) `held-review.test.ts`, "fold with progress" | An ActionSaved or DebtResolved Review's `cards` replace the held Trade's progress; other Trades and an unheld Trade are untouched | A165, A171. |
+
+### T5R2.10 main-session notes
+
+Commit `2439bcb`. All nine cases red then green, except **"progress from save results", the SaveTradeAction header case: a first-run pass, flagged** (built by the header case and the fold-with-progress case; mutation: `fold`'s `progressOf.get(t.tradeId)` replaced by a lookup that never matches; failure `AssertionError: expected 'Review XYZ Action Routine' to contain 'Done · Action saved'`). The Marks panel case's first green run failed on a test mistake (it read the rows before opening the panel), fixed in the test and rerun green. `rg 'remainingOf|isOwing|resolvedDebts|onDebtResolved|interface Remaining' src/ui` finds nothing; `git diff claude-opus-5.5-d5r -- e2e` is empty. The one sanctioned expectation change, "Resolved" to "None" (P46), is the only changed value; no `e2e/` file contains "Resolved".
+- **Slip:** the subagent edited `CardMarks.test.tsx` once with a Python replace script (two replacements), against the Edit-only rule; the result matches what Edit would produce.
+- **Implementation notes:** the Action panel's status reads `owed` from the progress record while its summary text still comes from the form (the saved Action's name, or "Hold, Exit, Roll or Adjust"); the subagent judged the gap between the two unobservable. The Marks "Saved" status keys on the record's `resolved + needed > 0`. Mounted fixtures now give each Trade progress consistent with its rows and reasons. The critic brief asks C5R.2 to look at the Action panel right after a save.
+
+### ocr review of `2439bcb`
+
+Session `50ceb0a1-8688-44e0-aee4-ce19e0729c88`, 5 files reviewed (7 test files excluded), no findings. Raw output: [ocr/T5R2.10-2439bcb.json](ocr/T5R2.10-2439bcb.json).
+
+### Cumulative suite at `2439bcb` (T5R2.10 closed)
+
+Date 2026-11-01 09:07 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 77 passed (77)`, `Tests 1041 passed (1041)`, exit 0 | `suite-runs/t5r2-10-progress-wording-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-10-progress-wording-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.5m)`, exit 0 | `suite-runs/t5r2-10-progress-wording-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-10-progress-wording-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.
