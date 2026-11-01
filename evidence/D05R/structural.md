@@ -1259,3 +1259,27 @@ Measured on the same page (viewport 1280 x 900): the header at y 558, the Price 
 `npm run test:e2e` (all D1, D2, D4, D5, and D5R cases, after `build:faults` and `build:releases`): 172 passed, 1 failed (B5R.2, above), 6.7 min. The 161 earlier browser cases and the other 11 new cases pass. Ports 5175, 9341, and 9342 were clear before the first run and after the last.
 
 Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:deps` exit 0.
+
+**B5R.2 fails against the app** (`review.spec.ts:100`): after opening the 18th card, its header is in the viewport but the first Price input is not (header at y 558, input at y 1209 in 1280×900). Likely cause: the card scrolls into view at the press, while its body is still loading and the previous card has just collapsed. Bug task T5R.15-B1.
+
+**The user's decision (2026-10-31), plan revision 26, decision 67:** "also held by" names the other Trades by their Trade-list summary line (`tradeSummary`), not their Underlying, which repeats the card's own symbol. Gap task T5R.9-B5; it changes B5R.3's "also held by XYZ" expectation and the T5R.9 unit case.
+
+ocr review of `0af0c64` (T5R.15): ocr reviewed `e2e/d5r/support.ts` and `package.json` (specs excluded), no findings. The reviewing agent read `support.ts` against section 6.4's rules (all met; the old-release path is delegated to D4's helpers). Raw output: [ocr/T5R.15-0af0c64.json](ocr/T5R.15-0af0c64.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| low | `e2e/d5r/support.ts` (`tagCards`, `cardItem`) | The `data-trade` tag could go stale or mislabel after re-sorts. | Doubtful (cards are keyed by `tradeId`, so the tag moves with its `<li>`; every remount is followed by a fresh `tagCards`). |
+| low | `e2e/d5r/support.ts` (`tagCards`) | Tagging relies on exactly one XYZ card showing "reflection due" at load. | Valid but loud (throws when the precondition fails). |
+| low | `e2e/d5r/support.ts` (`reachTrade`, `answerDebtOf`) | The refusal message names only "XYZ", and `answerDebtOf`'s "Saved reflection" check is page-wide, not scoped to the card. | Valid, minor. |
+
+The three are one bug task, T5R.15-B2, since they share one helper and one fix.
+
+### T5R.15-B1 The opened card's first input is in the viewport (B5R.2)
+
+Opening a card far down the list leaves its header and first input in the viewport without scrolling, once its body has loaded.
+
+### T5R.9-B5 "also held by" names the other Trades by their summary line (decision 67)
+
+### T5R.15-B2 The D5R helpers tell T-A from T-F by Trade, not by load-time state
+
+Tag the two XYZ cards from something that identifies the Trade (e.g. the card's own link to its Trade), so tagging needs no "reflection due" precondition and survives remounts; name the fixture Trade in `reachTrade`'s refusal; scope `answerDebtOf`'s final check to the card.
