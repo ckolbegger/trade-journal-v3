@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { DailyTradeReview, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { money, ratio, shortDate } from '../format.ts';
+import { money, ratio, shortDate, tradeSummary } from '../format.ts';
 import { calculation, signed } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
@@ -97,11 +97,17 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
     item.current?.scrollIntoView?.({ block: 'start' });
   }, [reveal, bodyShown]);
   return (
-    <li className="review-card" ref={item}>
+    <li className="review-card" ref={item} data-trade-id={trade.tradeId}>
       <div className="review-card-head">
         <h3>
           <button type="button" ref={header} aria-expanded={expanded} onClick={onToggle}>
-            <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span> <span className="review-card-remains">{remainsText(remaining)}</span>{' '}
+            <span className="visually-hidden">Review</span> <span className="review-card-name">{trade.underlying}</span>{' '}
+            {trade.summary && (
+              <>
+                <span className="review-card-summary">{tradeSummary(trade.summary)}</span>{' '}
+              </>
+            )}
+            <span className="review-card-remains">{remainsText(remaining)}</span>{' '}
             <Badge tone="neutral">{BAND_TEXT[trade.band]}</Badge>
           </button>
         </h3>

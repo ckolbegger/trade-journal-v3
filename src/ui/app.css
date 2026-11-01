@@ -1094,6 +1094,7 @@ table.lots td:first-child {
 .review-card-name {
   font-weight: 700;
 }
+.review-card-summary,
 .review-card-remains {
   color: var(--muted);
 }

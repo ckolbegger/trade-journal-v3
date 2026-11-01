@@ -8,6 +8,7 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { tradeSummary } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
 
@@ -241,7 +242,10 @@ const EVALUATED = {
   atEntry: null,
 } as unknown as DailyTradeReview['evaluation'];
 // T-F shares XYZ: once the Mark is saved its slider is placed.
-const TF_PLACED = walked('t-f', 'XYZ', { rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 4n) }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
+const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 4n) }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
+// T-F's collapsed card, picked by its header's name: the two XYZ cards read alike but for the summary line (decision 68).
+const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const tfHeader = () => screen.getByRole('button', { name: new RegExp(`^Review XYZ ${escaped(tradeSummary(TF.summary!))}\\b`) });
 const AFTER_XYZ: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };
 
 describe('Save Marks (P37, A155) rendering', () => {
@@ -255,8 +259,8 @@ describe('Save Marks (P37, A155) rendering', () => {
     const user = userEvent.setup();
     const panel = await marksPanel();
     expect(screen.queryByText('Current Marked Trade P&L')).toBeNull();
-    const [, otherHeader] = screen.getAllByRole('button', { name: /^Review XYZ\b/ });
-    expect(otherHeader!.textContent).toContain('1 Mark');
+    const otherHeader = tfHeader();
+    expect(otherHeader.textContent).toContain('1 Mark');
     await user.type(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText('Price'), '52.00');
     await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
@@ -273,9 +277,9 @@ describe('Save Marks (P37, A155) rendering', () => {
     const card = screen.getByRole('region', { name: 'XYZ review' });
     expect(within(card).getByText('Current Marked Trade P&L')).toBeTruthy();
     // The other XYZ card's summary and slider follow the shared Mark.
-    const [, sharedHeader] = screen.getAllByRole('button', { name: /^Review XYZ\b/ });
-    expect(sharedHeader!.textContent).not.toContain('1 Mark');
-    expect(within(sharedHeader!.closest('li')!).getByRole('img').getAttribute('aria-label')).toContain('50% of the way');
+    const sharedHeader = tfHeader();
+    expect(sharedHeader.textContent).not.toContain('1 Mark');
+    expect(within(sharedHeader.closest('li')!).getByRole('img').getAttribute('aria-label')).toContain('50% of the way');
     // No read followed the save.
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(1);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
@@ -634,8 +638,8 @@ describe('rows (A153)', () => {
     expect(within(earlier).getAllByRole('listitem').map((row) => within(row).getByText('Fri Oct 9').textContent)).toEqual(['Fri Oct 9']);
 
     // T-F is relevant to XYZ only from Monday: its card has the Review-date row and no Friday row.
-    await user.click(screen.getAllByRole('button', { name: /^Review XYZ\b/ })[1]!);
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Review XYZ\b/ })[1]!.getAttribute('aria-expanded')).toBe('true'));
+    await user.click(tfHeader());
+    await waitFor(() => expect(tfHeader().getAttribute('aria-expanded')).toBe('true'));
     const other = await marksPanel();
     expect(within(other).getByText(/also held by/)).toBeTruthy();
     expect(within(other).queryByText('Fri Oct 9')).toBeNull();

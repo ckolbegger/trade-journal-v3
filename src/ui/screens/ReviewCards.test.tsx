@@ -255,6 +255,38 @@ describe('card list (A150)', () => {
   });
 });
 
+describe('card identity (decision 68)', () => {
+  it("should put each card's Trade id on its list item as data-trade-id, in attention order (t-b, t-c, t-f, t-a, t-e)", async () => {
+    renderReview(cardFacade());
+    await screen.findAllByRole('button', { name: /^Review / });
+
+    expect(headers().map((h) => h.closest('li')!.getAttribute('data-trade-id'))).toEqual(['t-b', 't-c', 't-f', 't-a', 't-e']);
+  });
+
+  it("should show the Trade's summary line after the Underlying in the card header, in its own span, and the Underlying alone for a Trade with no summary", async () => {
+    const summarised = [
+      TB,
+      TC,
+      { ...TF, summary: { kind: 'Stock' as const, direction: 'Long' as const, quantity: rational(100n), price: rational(5018n, 100n) } },
+      { ...TA, summary: { kind: 'Stock' as const, direction: 'Long' as const, quantity: rational(50n), price: rational(61n) } },
+      TE,
+    ];
+    renderReview(cardFacade(review({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: summarised }] })));
+    await screen.findAllByRole('button', { name: /^Review / });
+
+    const [b, , f, a] = headers() as [HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement];
+    // The summary line follows the Underlying, which stays alone in its own span.
+    expect(f.querySelector('.review-card-name')!.textContent).toBe('XYZ');
+    expect(f.querySelector('.review-card-summary')!.textContent).toBe('Long 100 shares @ $50.18');
+    expect(a.querySelector('.review-card-summary')!.textContent).toBe('Long 50 shares @ $61.00');
+    expect(f.querySelector('.review-card-name')!.nextElementSibling).toBe(f.querySelector('.review-card-summary'));
+    expect(f.getAttribute('aria-label') ?? f.textContent).toMatch(/^Review XYZ Long 100 shares @ \$50\.18 /);
+    // A Trade with no summary shows its Underlying alone.
+    expect(b.querySelector('.review-card-summary')).toBeNull();
+    expect(b.textContent).toMatch(/^Review ABC Action/);
+  });
+});
+
 describe('opening in place (A151)', () => {
   it('should open the first card that is not Done when the Review loads, calling getTrade once for it, with aria-expanded true and its figures and panels inside it', async () => {
     const facade = cardFacade();
@@ -359,6 +391,8 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
 
     const underlyings = headers().map((h) => /Review (\w+)/.exec(h.getAttribute('aria-label') ?? h.textContent ?? '')?.[1]);
     expect(underlyings).toEqual(['JKL', 'XYZ', 'XYZ', 'DEF', 'ABC']);
+    // The two XYZ cards read alike, so their Trade ids show that T-A and T-F swapped too.
+    expect(headers().map((h) => h.closest('li')!.getAttribute('data-trade-id'))).toEqual(['t-e', 't-a', 't-f', 't-c', 't-b']);
   });
 
   it('should keep the open card open, with its entered values, when a refreshed Review moves it', async () => {
