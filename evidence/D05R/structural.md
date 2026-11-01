@@ -1175,3 +1175,20 @@ Record (implemented):
 - Test: `src/persistence/persistence.test.ts`, "should store none of the writes and leave the content revision unchanged when a later write throws synchronously". Two writes: a valid `trades` put, then a `catalog` put of `{}` (no key, so the store throws `DataError` synchronously from `put`; a real store error, no spy). Asserts the call rejects with `DataError`, the first record is absent, and the content revision is still 1.
 - Contract: async request errors already surface as a rejection (except `ConstraintError`, a result value), so the synchronous path also rejects with the original error.
 - Red: `AssertionError: expected { tradeId: 'trade-1', revision: 2 } to be undefined` (the earlier write had auto-committed). Green after wrapping the write loop and the meta write in try/catch that calls `tx.abort()`, awaits `tx.done` (rejection ignored), and rethrows. The async-error path is unchanged. Rows are in `tdd-log.md`.
+
+ocr review of `cc62e88` (T5R.14-B1): one file reviewed, no ocr findings. Raw output: [ocr/T5R.14-B1-cc62e88.json](ocr/T5R.14-B1-cc62e88.json). The reviewing agent's own checks of the orchestrator's two questions:
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| low | `persistence.ts:391-399` | `keyOf` runs after the `add`/`put` request is issued and before its `.catch` is attached; if it throws, the abort rejects that request with no handler (an unhandled rejection). | Valid: bug task T5R.14-B1-B1. |
+| low | `persistence.ts:406` | `tx.abort()` in the catch is unguarded and could mask the original error. | Doubtful (no `await` before the catch, so the transaction can't have finished): bug task T5R.14-B1-B2. |
+
+No path was found where an async request error and the synchronous catch both act.
+
+### T5R.14-B1-B1 No unhandled rejection when `keyOf` throws
+
+`keyOf` is computed before the write is issued (or the request's handler attached at once), so a throw leaves no request without a handler.
+
+### T5R.14-B1-B2 The abort in the catch can't mask the original error
+
+`tx.abort()` in the synchronous catch is guarded, as at `persistence.ts:277`, so the original error is always the one rethrown.
