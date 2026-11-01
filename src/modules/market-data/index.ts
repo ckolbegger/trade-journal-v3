@@ -7,6 +7,7 @@ export {
   type MarketDataIssueCode,
   type FrameContext,
   type MarkFrame,
+  type EvidenceBinding,
   type MarketDataQuery,
   type MarketDataQueryResult,
   type MarketDataConflictedKey,

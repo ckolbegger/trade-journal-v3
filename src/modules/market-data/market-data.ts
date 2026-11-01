@@ -185,6 +185,15 @@ export interface MarkFrame {
   readonly resolution: MarkResolution;
 }
 
+// One bound key: an Instrument's record at a date, at the resolution revision the frames read ('None' for no record).
+interface BoundKey {
+  readonly instrumentKey: string;
+  readonly tradingDate: string;
+  readonly resolutionRevision: ExpectedResolutionRevision;
+}
+
+export type EvidenceBinding = readonly BoundKey[];
+
 export type MarketDataQueryResult =
   // The session's trading date and its close, which is the Review Cutoff (P9).
   | { readonly kind: 'Session'; readonly tradingDate: string; readonly closeInstant: string }
@@ -196,6 +205,8 @@ export type MarketDataQueryResult =
       readonly previousCloseInstant: string;
       // The resolutionRevision each frame's key was read at, by Instrument: the binding a save of it presents.
       readonly resolutionRevisions: Readonly<Record<string, ExpectedResolutionRevision>>;
+      // The keys the frames were read under, opaque to callers: `bindEvidence` stages their recheck (A176).
+      readonly evidenceBinding: EvidenceBinding;
       // Opaque token holding the session-policy revision and the evidence digest (A45).
       readonly snapshotId: string;
       readonly evidenceDigest: string;
@@ -265,6 +276,9 @@ export interface MarketData {
   // The write half: stages, per key, a check that the key is still at the revision prepared against and the new
   // record, in the coordinator's semantic transaction (P37).
   applyPreparedEffects(tx: SemanticTransaction, prepared: PreparedMarketDataEffect): void;
+  // Stages, per bound key, a check that its record is still at the revision the Review frames were read at, named
+  // `mark:<instrument>@<date>`, in the coordinator's semantic transaction (A176). Internal: not a facade operation.
+  bindEvidence(tx: SemanticTransaction, evidenceBinding: EvidenceBinding): void;
   query(query: MarketDataQuery): Promise<MarketDataQueryResult>;
   recover(request: RecoverRequest): Promise<RecoverResult>;
 }
@@ -323,8 +337,18 @@ function isRealDate(text: string): boolean {
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
 }
 
-// The latest earlier date with an effective Mark for the instrument, by one reverse cursor request (A47).
+// The Stale-context source with the resolutionRevision of its record: the revision the evidence binding holds (A176).
+interface StaleSource {
+  readonly context: StaleMarkContext;
+  readonly resolutionRevision: number;
+}
+
 async function staleContextOf(tx: ReadTransaction, policy: SessionPolicy, key: ObservationKey): Promise<StaleMarkContext | undefined> {
+  return (await staleSourceOf(tx, policy, key))?.context;
+}
+
+// The latest earlier date with an effective Mark for the instrument, by one reverse cursor request (A47).
+async function staleSourceOf(tx: ReadTransaction, policy: SessionPolicy, key: ObservationKey): Promise<StaleSource | undefined> {
   const found = await tx.findLastFromIndex(
     'observations',
     'byInstrumentDate',
@@ -340,7 +364,10 @@ async function staleContextOf(tx: ReadTransaction, policy: SessionPolicy, key: O
   const mark = earlier?.marks.find((m) => m.revisionId === earlier.effectiveMarkId);
   const day = earlier && policy.classify(earlier.tradingDate);
   if (!earlier || !mark || day?.kind !== 'Session') return undefined;
-  return { tradingDate: earlier.tradingDate, price: mark.price, revisionId: mark.revisionId, revisionNumber: mark.revisionNumber, closeInstant: day.close };
+  return {
+    context: { tradingDate: earlier.tradingDate, price: mark.price, revisionId: mark.revisionId, revisionNumber: mark.revisionNumber, closeInstant: day.close },
+    resolutionRevision: earlier.resolutionRevision,
+  };
 }
 
 // An as-of instant must be a full ISO instant with an offset; a date-only or free-text value is not one.
@@ -485,8 +512,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     return Promise.all(
       instruments.map(async (instrumentKey) => {
         const record = stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
-        const stale = record?.effectiveMarkId ? undefined : await staleContextOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date });
-        return { record, stale };
+        const source = record?.effectiveMarkId ? undefined : await staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date });
+        const bound: BoundKey[] = [{ instrumentKey, tradingDate: date, resolutionRevision: revisionOf(record) }];
+        if (source) bound.push({ instrumentKey, tradingDate: source.context.tradingDate, resolutionRevision: source.resolutionRevision });
+        return { record, stale: source?.context, bound };
       }),
     );
   }
@@ -532,6 +561,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       resolution: resolve(evidence[i]!.record, evidence[i]!.stale),
     })),
     resolutionRevisions: Object.fromEntries(instruments.map((instrumentKey, i) => [instrumentKey, revisionOf(evidence[i]!.record)])),
+    evidenceBinding: evidence.flatMap(({ bound }) => bound),
     snapshotId,
     evidenceDigest,
   };
@@ -650,6 +680,17 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       for (const { key, expectedRevision, record } of prepared.entries) {
         tx.require(keyUnchanged(key, expectedRevision));
         tx.stage({ op: 'put', store: 'observations', value: { ...record } });
+      }
+    },
+    bindEvidence(tx, evidenceBinding) {
+      requireOpen(tx);
+      for (const { instrumentKey, tradingDate, resolutionRevision } of evidenceBinding) {
+        tx.require({
+          name: `mark:${instrumentKey}@${tradingDate}`,
+          store: 'observations',
+          key: [tradingDate, instrumentKey],
+          verify: (current) => (current?.['resolutionRevision'] ?? 'None') === resolutionRevision,
+        });
       }
     },
     async query(query) {
