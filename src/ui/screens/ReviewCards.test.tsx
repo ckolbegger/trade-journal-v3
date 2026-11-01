@@ -734,6 +734,39 @@ describe('header', () => {
   });
 });
 
+describe('card-top scroll once the body shows (T5R.15-B1-B1)', () => {
+  const original = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
+  afterEach(() => {
+    if (original) Object.defineProperty(Element.prototype, 'scrollIntoView', original);
+    else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  });
+  type Spy = ReturnType<typeof vi.fn<(options: ScrollIntoViewOptions) => void>>;
+  const topScrolls = (spy: Spy, li: Element | null) => spy.mock.contexts.flatMap((context, i) => (context === li ? [spy.mock.calls[i]![0]] : []));
+
+  it('should leave a focused Mark row alone, scrolling the card top only at the press, for a Mark-row landing', async () => {
+    const scrollIntoView: Spy = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    renderReview(cardFacade(), { at: '/review?instrument=XYZ' });
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+
+    await waitFor(() => expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true));
+    expect(topScrolls(scrollIntoView, card.closest('li'))).toEqual([{ block: 'start' }]);
+  });
+
+  it('should scroll the card top at the press and again once the body shows, for a plain header open', async () => {
+    const scrollIntoView: Spy = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    renderReview(cardFacade());
+    await screen.findByRole('region', { name: 'ABC review' });
+
+    fireEvent.click(headers()[2]!);
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+
+    expect(document.activeElement).toBe(headers()[2]);
+    expect(topScrolls(scrollIntoView, card.closest('li'))).toEqual([{ block: 'start' }, { block: 'start' }]);
+  });
+});
+
 describe('Action save whose next step is a Mark (T5R.12-B3)', () => {
   const markStep = (trades: readonly string[]) => ({ kind: 'Mark', row: markRow('DEF', trades) }) as const;
   const postWith = (nextStep: ReturnType<typeof markStep>) => ({ kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep, binding }) as const;

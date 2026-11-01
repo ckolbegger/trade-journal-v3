@@ -91,6 +91,9 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
   useEffect(() => {
     if (reveal === 0 || !bodyShown || scrolledFor.current === reveal) return;
     scrolledFor.current = reveal;
+    // A Mark-row landing has already focused its row in the body (child effects run first): that focus scroll stays.
+    const focused = document.activeElement;
+    if (focused && focused !== header.current && item.current?.contains(focused)) return;
     item.current?.scrollIntoView?.({ block: 'start' });
   }, [reveal, bodyShown]);
   return (
