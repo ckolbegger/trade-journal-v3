@@ -50,3 +50,25 @@ Delegated to `suite-runner`, 2026-11-01 15:03 EST, commit `c7ba533` (the uncommi
 | Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-1-tags-checks.txt](suite-runs/t6p-1-tags-checks.txt) |
 
 Ports 9341, 9342 and 5175 were free before the first stage and after the last. Browser stage wall time about 7 min 22 s (15:04:02 to 15:11:24). The harness moved the call to the background after 180 s, and the runner waited for the completion notice without polling.
+
+## T6P.2 Two tiers in `full-suite.sh`
+
+Run on 2026-11-01 against `.claude/scripts/full-suite.sh` (HEAD `0dde16c`, script uncommitted at run time). New: stages `browser-task` and `browser-auto <base>`, queries `--current-folder <evidence-dir>` and `--choose-tier <base>`, and `TJ_E2E_CURRENT`. The e2e folders of the task tier are read from the `test:e2e` script in `package.json`, so the two lists cannot drift apart. P55's path list is used exactly (`src/ui/`, `src/app/`, `src/sw/`, `src/delivery/`, `src/persistence/`, `src/main.tsx`, any `.css`, `index.html`, `e2e/`, `playwright.config.ts`, `vite.config.ts`, `package.json`, `package-lock.json`, `tools/release*.ts`, `tools/build-releases.ts`). The two `playwright` calls of `browser-task` write to one `<label>-browser.txt`, each followed by its own `EXIT` line, and the script prints the summed counts. `browser` is unchanged and a run with no stage still runs the full tier.
+
+| Command | Exit | Result |
+|---|---|---|
+| `.claude/scripts/full-suite.sh --current-folder evidence/D06` | 0 | `e2e/d6` |
+| `… --current-folder evidence/D05R` | 0 | `e2e/d5r` |
+| `… --current-folder evidence/D05R2` | 0 | `e2e/d5r2` |
+| `… --current-folder evidence/D06P` | 0 | `e2e/d6p` |
+| `… --current-folder evidence/D06/suite-runs` and `evidence/D06P/` | 0 | `e2e/d6` and `e2e/d6p` (a trailing `/suite-runs` or `/` is ignored) |
+| `… --current-folder foo` | 2 | `cannot derive an e2e folder from: foo` |
+| `… --choose-tier c7ba533` (diff to HEAD `0dde16c` holds only `plan/` and `evidence/` paths) | 0 | `task` |
+| `… --choose-tier 9b93ca7` (T6P.1's parent) | 0 | `full: e2e/d1/identity.spec.ts` |
+| `… --choose-tier nosuch` | 2 | `unknown base commit: nosuch` |
+| `.claude/scripts/full-suite.sh evidence/D06P t6p-2-check browser-task` | 0 | the `@every-task` call only (`e2e/d6p` does not exist): `5 passed (10.3s)`; summary `5 passed`; 13.5 s wall time; [suite-runs/t6p-2-check-browser.txt](suite-runs/t6p-2-check-browser.txt) |
+| `TJ_E2E_CURRENT=e2e/d5r .claude/scripts/full-suite.sh evidence/D06P t6p-2-check-d5r browser-task` | 0 | call 1 `5 passed`, call 2 (`npx playwright test e2e/d5r --grep-invert "@every-task\|@release-history"`) `15 passed (1.2m)`, both `EXIT 0`; summary `20 passed`; 1 min 25.6 s wall time; [suite-runs/t6p-2-check-d5r-browser.txt](suite-runs/t6p-2-check-d5r-browser.txt) |
+
+Ports 5175, 9341 and 9342 were free before and after each run. `git status --short evidence` shows only the two new output files; no other evidence folder changed.
+
+Extra wiring checks (not part of the plan's list): `… <scratch>/D99 auto-check browser-auto c7ba533` printed `browser tier: task (no changed path since c7ba533 is on the full-tier list)`, ran `browser-task` (no `e2e/d99`, so one call) and reported `5 passed`, exit 0; its output went to the scratchpad, not to evidence. `browser-auto` with no base, and a fourth argument on another stage, print the usage and exit 2. The full-tier branch of `browser-auto` (it sets the stage to `browser`) was not run, since that is a 7-minute full run; `--choose-tier 9b93ca7` shows the choice it would act on.
