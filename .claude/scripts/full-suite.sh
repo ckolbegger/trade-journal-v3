@@ -44,7 +44,7 @@ current_folder() { # evidence-dir
 choose_tier() { # base
   git rev-parse --verify --quiet "$1^{commit}" >/dev/null || { echo "unknown base commit: $1" >&2; return 2; }
   local paths p
-  paths=$(git -c core.quotePath=false diff --name-only "$1" HEAD) || return 2
+  paths=$(git -c core.quotePath=false diff --no-renames --name-only "$1" HEAD) || return 2
   while IFS= read -r p; do
     case "$p" in
       src/ui/*|src/app/*|src/sw/*|src/delivery/*|src/persistence/*|src/main.tsx|*.css|index.html|e2e/*|\

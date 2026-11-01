@@ -103,3 +103,19 @@ Run on 2026-11-01. Scratch repository from `mktemp -d` (`/var/folders/ks/n63g0mm
 | T6P.2 check | `.claude/scripts/full-suite.sh --current-folder evidence/D06P` (in the worktree) | `e2e/d6p` | 0 |
 
 No browser run was needed. The scratch repository's red run used the committed script (fix not yet applied); the green run used the edited script.
+
+## T6P.2-B2 Renames out of a full-tier path
+
+Run on 2026-11-01. Scratch repository from `mktemp -d` (`/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tmp.tlVXalPdE5`), outside every worktree: a base commit `cf91bc17f7f524c8cce17f2b87b5ee0686f27da8` holding `src/ui/x.tsx` (a copy of `full-suite.sh`, so it is non-empty and rename detection is unambiguous), then a commit that only does `git mv src/ui/x.tsx src/lib/x.tsx`. The worktree's script was invoked by absolute path from inside the scratch repository.
+
+| Step | Command | Output | Exit |
+|---|---|---|---|
+| Red: raw git output | `git diff --name-only cf91bc1… HEAD` (in scratch) | `src/lib/x.tsx` (destination only; the source `src/ui/x.tsx` is not listed) | 0 |
+| Red: tier choice | `<worktree>/.claude/scripts/full-suite.sh --choose-tier cf91bc1…` (in scratch) | `task` | 0 |
+| Fix | `choose_tier`: `git -c core.quotePath=false diff --name-only "$1" HEAD` became `git -c core.quotePath=false diff --no-renames --name-only "$1" HEAD` (path list and patterns untouched) | | |
+| Green: tier choice | same command as the red tier choice | `full: src/ui/x.tsx` | 0 |
+| B1 check (recreated scratch: empty `README` base, then adds empty `src/ui/é.tsx`) | `<worktree>/.claude/scripts/full-suite.sh --choose-tier <base>` (in scratch) | `full: src/ui/é.tsx` | 0 |
+| T6P.2 check | `.claude/scripts/full-suite.sh --choose-tier 9b93ca7` (in the worktree) | `full: e2e/d1/identity.spec.ts` | 0 |
+| T6P.2 check | `.claude/scripts/full-suite.sh --choose-tier c7ba533` (in the worktree) | `task` (its diff to HEAD holds the T6P.2 script, `evidence/` and `plan/`, none on the full-tier list) | 0 |
+
+No browser run was needed. The scratch repository's red run used the committed script (fix not yet applied); the green run used the edited script.
