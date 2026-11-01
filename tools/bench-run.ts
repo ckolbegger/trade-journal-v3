@@ -113,7 +113,8 @@ async function compareOpenList(page: Page, when: string, log = true) {
 }
 
 // The reflections the as-of Review lists as due: its blockers read "Reflection due for X" or
-// "N reflections due for X" for each Trade with due Debt. They must equal the generator's expected
+// "N reflections due for X" for each Trade with due Debt, X naming the Trade in full ("QAJ (Long 120 shares @ $300.97)",
+// A150); the harness compares X's underlying symbol (up to the first " ("). They must equal the generator's expected
 // count and the Trades of its Outstanding Debts (both due at the as-of Review, decision 58).
 const expectedDue = (dataset['asOfDueReflections'] as number | undefined) ?? Number.NaN;
 const expectedDueByTrade = new Map<string, number>();
@@ -140,7 +141,8 @@ async function compareDueReflections(page: Page, when: string) {
     const found = /^(?:Reflection|(\d+) reflections) due for (.+)$/.exec(text.trim());
     if (!found) continue;
     const count = found[1] === undefined ? 1 : Number(found[1]);
-    byTrade.set(found[2]!, (byTrade.get(found[2]!) ?? 0) + count);
+    const underlying = found[2]!.split(' (')[0]!;
+    byTrade.set(underlying, (byTrade.get(underlying) ?? 0) + count);
     total += count;
   }
   const equal = reviewDate === dataset['reviewDate'] && total === expectedDue && isDeepStrictEqual([...byTrade].sort(), [...expectedDueByTrade].sort());
@@ -166,7 +168,8 @@ async function pressToRendered(page: Page, rendered: Rendered, press: () => Prom
     const loading = () => [...document.querySelectorAll('[role="status"]')].some((e) => (e.textContent ?? '').startsWith('Loading the Trade'));
     const holds = (): boolean => {
       if (r.kind === 'cardLoaded') return document.querySelector('section[aria-label$=" review"]') !== null && !loading();
-      const card = `section[aria-label="${r.symbol} review"]`;
+      // The card's region is named for its Trade in full, so it is found by the underlying it starts with.
+      const card = `section[aria-label^="${r.symbol} "][aria-label$=" review"]`;
       if (r.kind === 'actionSaved') return document.querySelector(`${card} form[aria-label="Action"]`) === null && !loading();
       return [...document.querySelectorAll(`${card} section[aria-label="Marks"] button`)].some((b) => b.textContent === 'Save Marks (0)');
     };
@@ -191,7 +194,8 @@ async function pressToRendered(page: Page, rendered: Rendered, press: () => Prom
 }
 
 const primaryLink = (page: Page, name: string) => page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name });
-const cardOf = (page: Page, symbol: string) => page.getByRole('region', { name: `${symbol} review`, exact: true }).first();
+// The card's region is named for its Trade in full ("ABBV (Long 120 shares @ $300.97) review", A150); it is found by its underlying.
+const cardOf = (page: Page, symbol: string) => page.getByRole('region', { name: new RegExp(`^${symbol.replace(/\./g, '\\.')}(?: \\(.*\\))? review$`) }).first();
 
 // Leaves the Review for the Trades list, so the next press on Review opens it afresh.
 async function leaveReview(page: Page) {
@@ -380,7 +384,7 @@ Open list compared with \`bench/expected-open-rows.json\`: before the runs ${bef
 
 ## As-of Review's due reflections (T5.22)
 
-The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (Review Date ${String(dataset['reviewDate'])}). The expected values are \`asOfDueReflections\` and the Trades of \`outstandingDebts\` in \`bench/dataset.json\` (the Outstanding Debts are from ${((dataset['outstandingDebts'] as { momentDate: string }[] | undefined) ?? []).map((d) => d.momentDate).join(' and ')}, both due at the as-of Review, decision 58). A difference fails the run.
+The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (X names the Trade in full; the harness compares its underlying symbol) (Review Date ${String(dataset['reviewDate'])}). The expected values are \`asOfDueReflections\` and the Trades of \`outstandingDebts\` in \`bench/dataset.json\` (the Outstanding Debts are from ${((dataset['outstandingDebts'] as { momentDate: string }[] | undefined) ?? []).map((d) => d.momentDate).join(' and ')}, both due at the as-of Review, decision 58). A difference fails the run.
 
 | When | Due reflections listed (by Trade) | Expected | Result | Time from the click on Review to its status (disclosed, not gated) |
 |---|---|---|---|---|

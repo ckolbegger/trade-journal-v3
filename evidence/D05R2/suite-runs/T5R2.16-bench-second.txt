@@ -1,0 +1,136 @@
+
+> trade-journal-v3@0.0.0 build:bench
+> vite build --mode bench --outDir dist-bench
+
+vite v8.3.4 building client environment for bench...
+transforming...
+✓ 156 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-bench/index.html                            0.50 kB │ gzip:   0.30 kB
+dist-bench/assets/index-PV2JbxLb.css            14.13 kB │ gzip:   3.64 kB
+dist-bench/assets/bench-generator-jUn4mZeS.js   14.68 kB │ gzip:   5.86 kB
+dist-bench/assets/index-BiFQSXIg.js            609.44 kB │ gzip: 182.90 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 89ms
+
+> trade-journal-v3@0.0.0 bench:run
+> node tools/bench-run.ts
+
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 154 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-PV2JbxLb.css   14.13 kB │ gzip:   3.64 kB
+dist/assets/index-BLeC2KT_.js   609.24 kB │ gzip: 182.81 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 88ms
+bench:run: Open list before the runs: 200 rows, equal to the expected rows
+bench:run: as-of Review 2028-12-29 before the runs: 2 due reflections (QAJ 2), equal to the expected 2
+bench:run: cold 1/30 95.4 ms
+bench:run: cold 2/30 94.5 ms
+bench:run: cold 3/30 94.6 ms
+bench:run: cold 4/30 94.3 ms
+bench:run: cold 5/30 94.9 ms
+bench:run: cold 6/30 93.4 ms
+bench:run: cold 7/30 94.3 ms
+bench:run: cold 8/30 93.7 ms
+bench:run: cold 9/30 93.5 ms
+bench:run: cold 10/30 95.8 ms
+bench:run: cold 11/30 92.2 ms
+bench:run: cold 12/30 94.5 ms
+bench:run: cold 13/30 94.3 ms
+bench:run: cold 14/30 95.9 ms
+bench:run: cold 15/30 92.4 ms
+bench:run: cold 16/30 95.8 ms
+bench:run: cold 17/30 95.7 ms
+bench:run: cold 18/30 91.9 ms
+bench:run: cold 19/30 83.0 ms
+bench:run: cold 20/30 94.1 ms
+bench:run: cold 21/30 81.4 ms
+bench:run: cold 22/30 95.3 ms
+bench:run: cold 23/30 95.8 ms
+bench:run: cold 24/30 95.3 ms
+bench:run: cold 25/30 94.0 ms
+bench:run: cold 26/30 94.6 ms
+bench:run: cold 27/30 95.0 ms
+bench:run: cold 28/30 93.9 ms
+bench:run: cold 29/30 94.2 ms
+bench:run: cold 30/30 92.9 ms
+bench:run: warm 1/30 43.6 ms
+bench:run: warm 2/30 41.3 ms
+bench:run: warm 3/30 40.9 ms
+bench:run: warm 4/30 42.0 ms
+bench:run: warm 5/30 40.6 ms
+bench:run: warm 6/30 40.7 ms
+bench:run: warm 7/30 39.5 ms
+bench:run: warm 8/30 42.3 ms
+bench:run: warm 9/30 39.2 ms
+bench:run: warm 10/30 42.4 ms
+bench:run: warm 11/30 39.0 ms
+bench:run: warm 12/30 38.8 ms
+bench:run: warm 13/30 38.2 ms
+bench:run: warm 14/30 38.0 ms
+bench:run: warm 15/30 39.9 ms
+bench:run: warm 16/30 47.2 ms
+bench:run: warm 17/30 38.8 ms
+bench:run: warm 18/30 39.6 ms
+bench:run: warm 19/30 39.1 ms
+bench:run: warm 20/30 38.2 ms
+bench:run: warm 21/30 40.9 ms
+bench:run: warm 22/30 39.7 ms
+bench:run: warm 23/30 39.9 ms
+bench:run: warm 24/30 38.4 ms
+bench:run: warm 25/30 38.5 ms
+bench:run: warm 26/30 37.9 ms
+bench:run: warm 27/30 39.6 ms
+bench:run: warm 28/30 38.8 ms
+bench:run: warm 29/30 39.6 ms
+bench:run: warm 30/30 39.0 ms
+bench:run: Open list after the runs: 200 rows, equal to the expected rows
+bench:run: as-of Review 2028-12-29 after the runs: 2 due reflections (QAJ 2), equal to the expected 2
+bench:run: open the first card 1/10 1718.4 ms
+bench:run: open the first card 2/10 1738.3 ms
+bench:run: open the first card 3/10 1737.1 ms
+bench:run: open the first card 4/10 1764.6 ms
+bench:run: open the first card 5/10 1815.2 ms
+bench:run: open the first card 6/10 1799.6 ms
+bench:run: open the first card 7/10 1807.6 ms
+bench:run: open the first card 8/10 1807.7 ms
+bench:run: open the first card 9/10 1818.2 ms
+bench:run: open the first card 10/10 1831.7 ms
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 60000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('region', { name: 'ABBV review', exact: true }).first() to be visible[22m
+
+    at reachCard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/tools/bench-run.ts:218:14)
+    at async timeSaveMarks (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/tools/bench-run.ts:232:16)
+    at async timeCards (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/tools/bench-run.ts:264:42)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/tools/bench-run.ts:338:17 {
+  log: [
+    "  - waiting for getByRole('region', { name: 'ABBV review', exact: true }).first() to be visible"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v26.12.0
