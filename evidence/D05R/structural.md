@@ -1278,6 +1278,8 @@ The three are one bug task, T5R.15-B2, since they share one helper and one fix.
 
 Opening a card far down the list leaves its header and first input in the viewport without scrolling, once its body has loaded.
 
+Fix (`src/ui/screens/ReviewCard.tsx`): the card already scrolled to its top at the press, while its body was "Loading the Trade…" and the page short, so the browser clamped the position. A second effect now scrolls the card to the top (`block: 'start'`) once, the first time its body is shown for a given reveal count; refreshes of the same card do not scroll again, and focus handling is unchanged. Red: B5R.2 failed at `review.spec.ts:100`, `viewport ratio 0`. Green: B5R.2 passes. `e2e/d5r` and `e2e/d4/card-helpers.spec.ts`: 18 passed. `npx vitest run src/ui`: 383 passed. Typecheck, `tsc6`, lint, and `lint:deps` exit 0. No unit case: jsdom has no layout. Whole `npm run test:e2e`: 173 passed, 6.9 min (B5R.6 and the T5R.12 Mark landings pass with `block: 'start'`). Ports 5175, 9341, and 9342 were clear before and after.
+
 ### T5R.9-B5 "also held by" names the other Trades by their summary line (decision 67)
 
 ### T5R.15-B2 The D5R helpers tell T-A from T-F by Trade, not by load-time state

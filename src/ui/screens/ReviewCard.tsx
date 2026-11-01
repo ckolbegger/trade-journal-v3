@@ -84,6 +84,15 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
     item.current?.scrollIntoView?.({ block: 'start' });
     header.current?.focus({ preventScroll: true });
   }, [reveal]);
+  // The press scrolled while the body was still loading and the page short, so the browser clamped the position: once the body
+  // is there, the card is brought to the top again, so its header and first input are in view.
+  const bodyShown = expanded && typeof detail === 'object';
+  const scrolledFor = useRef(0);
+  useEffect(() => {
+    if (reveal === 0 || !bodyShown || scrolledFor.current === reveal) return;
+    scrolledFor.current = reveal;
+    item.current?.scrollIntoView?.({ block: 'start' });
+  }, [reveal, bodyShown]);
   return (
     <li className="review-card" ref={item}>
       <div className="review-card-head">
