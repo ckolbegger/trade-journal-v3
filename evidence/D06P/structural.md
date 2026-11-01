@@ -194,3 +194,16 @@ Ports 5175, 9341 and 9342 were free before and after the browser run.
 Test-only commit, reviewed by the relocation procedure (prefactor handoff, section 3): a scratch clone outside the worktree, with the two changed specs and their `support.ts` files relocated under `src/itg/d06p/` as plain `.ts` in the parent state, then the commit's changes applied (scratch commit `666770ca`). Session `e757d66f-5c07-48ad-b176-4c01616bf594`, model gpt-6.1-sol (ocr v1.13.3), 2 files reviewed (the relocated spec copies), no findings. Raw output: [ocr/T6P.3-7670ff7.json](ocr/T6P.3-7670ff7.json). The reviewer also confirmed by reading that B1.5's new sets are valid `Check` sets, that no import or helper became unused, and that `src/ui/screens/TradeDetail.test.tsx:123` asserts the same "Last activity" value (`2026-10-12 11:00` for `[PC1, PC2]`).
 
 Process note: the reviewer briefly ran `git checkout 7670ff7c` in the worktree (detached HEAD) and switched straight back to `claude-opus-5.5`. The main session confirmed from the reflog that the branch, HEAD and the working tree are unchanged.
+
+### Cumulative run after T6P.3
+
+Delegated to `suite-runner`, 2026-11-01 15:54 EST, commit `f8d48b1` (uncommitted: the run's own output files). Base commit (A180): `a9ef841`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files  80 passed (80)`, `Tests  1051 passed (1051)`, exit 0 | [suite-runs/t6p-3-trims-unit.txt](suite-runs/t6p-3-trims-unit.txt) |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files  60 passed (60)`, `Tests  117 passed (117)`, exit 0 | [suite-runs/t6p-3-trims-integration.txt](suite-runs/t6p-3-trims-integration.txt) |
+| Browser (Chromium), `browser-auto a9ef841` | chose the full tier, `npm run test:e2e` | `171 passed (7.2m)`, exit 0 | [suite-runs/t6p-3-trims-browser.txt](suite-runs/t6p-3-trims-browser.txt) |
+| Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-3-trims-checks.txt](suite-runs/t6p-3-trims-checks.txt) |
+
+Tier line: `browser tier: full (first matching path since a9ef841: e2e/d1/readiness.spec.ts)`. This is the first real run of `browser-auto`'s full-tier branch. Ports 9341, 9342 and 5175 were free before and after. Browser stage 7.2 min (moved to the background by the harness after 180 s; the runner waited for the completion notice).
