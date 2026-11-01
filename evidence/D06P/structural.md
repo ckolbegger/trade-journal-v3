@@ -385,3 +385,71 @@ Session `ba2e874d-cb88-4940-81ac-b39315c14a37`, model gpt-6.1-sol, 1 file review
 | medium | `:47-48` | A quoted `cd` path with spaces is cut at the first space. | **Dismissed:** the project root has no spaces, so no `cd` back into it can be cut. Recorded for the final report. |
 
 **Bug task Retro-B1: the HEAD rule normalizes words before matching.** All four Valid findings have one cause: the rule splits a segment into words without normalizing them. So they're one bug task rather than four in series. This bends `implementing.md`'s one-at-a-time rule, a main-session decision recorded here. Its cases: each of the four bypasses is denied (red first against `15d6fc0`), and the 13 earlier cases and the reviewer's allowed commands keep their results.
+
+## Retro-B1 The HEAD rule normalizes words before matching
+
+Fixes the four Valid findings of the ocr review of `15d6fc0` (see "Retro: the shell guard refuses HEAD moves in the worktree" above). Same method: each case piped to the hook as its own command through a runner outside the repository, never executed. The root is `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` (written ROOT below), except for cases 1 and 2, which use `/work/repo`. Every row below is the root's cwd unless a cwd is named.
+
+**Change** in `.claude/hooks/guard-shell-writes.sh`: each simple command (split at `;`, `&`, `|`) is tokenized and normalized before the git rule looks at it.
+1. The directory each `cd` leads to is tracked in one variable, and relative paths, `.` and `..` are folded lexically (no filesystem access). `git -C`, `--git-dir` and `--work-tree` paths are resolved against it. The rule applies only when the resolved path is the root or below it. A bare `cd` goes home, which counts as outside.
+2. Git's global options before the subcommand are skipped: `-C <path>`, `--git-dir`, `--work-tree` (with `=` or a separate path), `-c <k=v>` and the other options that take an argument, and any other leading `-...`. A `--git-dir` or `--work-tree` outside the root counts as outside.
+3. Redirect tokens (with their targets) and everything from an unquoted word starting with `#` are dropped.
+4. Leading `(` and trailing `)` are stripped from words.
+
+The header comment and the known limits in the script were updated.
+
+| # | Command | cwd, root | Expected | Before (`15d6fc0`) | After |
+|---|---|---|---|---|---|
+| 1 | `cd /work && cd repo && git reset --hard` | `/work/repo` | deny | allow (red) | deny |
+| 2 | `git -C /tmp/../work/repo reset --hard` | `/tmp`, root `/work/repo` | deny | allow (red) | deny |
+| 3 | `git --no-pager reset --hard` | ROOT | deny | allow (red) | deny |
+| 4 | `git -c advice.detachedHead=false checkout HEAD~1` | ROOT | deny | allow (red) | deny |
+| 5 | `git reset HEAD~1 >/dev/null` | ROOT | deny | allow (red) | deny |
+| 6 | `git reset HEAD~1 2>&1` | ROOT | deny | allow (red) | deny |
+| 7 | `git reset HEAD~1 # undo` | ROOT | deny | allow (red) | deny |
+| 8 | `(git reset --hard)` | ROOT | deny | allow (red) | deny |
+
+The 13 earlier cases keep their results (Before and After columns of the "Retro" table, all as expected):
+
+| # | Command | Expected | Before | After |
+|---|---|---|---|---|
+| 1 | `git checkout 7670ff7c` | deny | deny | deny |
+| 2 | `git switch main` | deny | deny | deny |
+| 3 | `git checkout -b tmp` | deny | deny | deny |
+| 4 | `git reset --hard HEAD~1` | deny | deny | deny |
+| 5 | `git status && git checkout abc123` | deny | deny | deny |
+| 6 | `git checkout -- src/x.ts` | allow | allow | allow |
+| 7 | `git checkout abc123 -- src/x.ts` | allow | allow | allow |
+| 8 | `git reset HEAD src/x.ts` | allow | allow | allow |
+| 9 | `cd /var/folders/xx/T/ocr-review.ab/repo && git checkout -q -b relocated abc^` | allow | allow | allow |
+| 10 | `git -C /tmp/scratch/repo switch x` | allow | allow | allow |
+| 11 | `git checkout abc123` with cwd `/tmp/scratch/repo` | allow | allow | allow |
+| 12 | `git log --oneline -3` | allow | allow | allow |
+| 13 | `sed -i s/a/b/ src/x.ts` | deny | deny | deny |
+
+The earlier extra checks keep their results: `cd $D/repo && git checkout -q -b relocated abc^` allow; `git reset` allow; `git reset -- src/x.ts` allow; `git reset HEAD~1` deny; `cd $CLAUDE_PROJECT_DIR && git switch x` deny.
+
+The allowed commands from the review keep their results (all allow before and after): `git status`, `git log --oneline -3`, `git diff`, `git restore src/x.ts`, `git checkout -- .`, `git checkout HEAD -- src/x.ts`, `git reset HEAD`, `git show HEAD:package.json > /tmp/x`, `git --no-pager log -3`, `git -c core.quotePath=false diff --name-only a b`.
+
+New checks beyond the plan (the "Before" is the hook of `15d6fc0`):
+
+| Command | Expected | Before | After |
+|---|---|---|---|
+| `git --git-dir=/tmp/x/.git reset --hard` | allow | allow | allow |
+| `git --git-dir /tmp/x/.git checkout abc` | allow | allow | allow |
+| `git --work-tree=/tmp/x checkout abc` | allow | allow | allow |
+| `git --git-dir=.git checkout abc` | deny | allow (red) | deny |
+| `git --git-dir .git checkout abc` | deny | allow (red) | deny |
+| `git --no-pager -C src checkout abc` | deny | allow (red) | deny |
+| `git reset HEAD~1 > /dev/null` (separate target word) | deny | allow (red) | deny |
+| `cd src && git checkout abc` | deny | deny | deny |
+| `git -C . switch x` | deny | deny | deny |
+| `( git reset --hard )` | deny | deny | deny |
+| `cd .. && git checkout abc` | allow | deny (wrong) | allow |
+| `git -C .. switch x` | allow | deny (wrong) | allow |
+| `cd && git checkout abc` (home) | allow | deny (wrong) | allow |
+| `cd /work/repo/../other && git switch x` with root `/work/repo` | allow | allow | allow |
+
+Result: all 8 bypasses were allowed by `15d6fc0` (red) and are denied now; the 50 cases above (8 bypasses, 13 earlier, 5 extra checks, 10 allowed commands, 14 new checks) all match their expectations after the change. Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps` exit 0. The script runs under macOS bash 3.2, which was a constraint (no negative array subscripts).
+
+**Known limits** (updated in the script header): the dismissed finding stays (a quoted `cd` path with spaces is cut at the first space; the root has no spaces); a quoted string holding `;`, `&` or `|` can split a command wrongly; `cd` inside a subshell is taken to apply to the rest of the command; `$(...)`, environment prefixes and aliases are not looked into; `git checkout .` and `git reset <path>` without `--` are still refused.

@@ -15,8 +15,17 @@
 # /dev/null, and paths outside the project (temporary and scratch directories); git
 # path restores (git checkout [<rev>] -- <path>), unstaging (git reset, git reset HEAD
 # <path>), every other git command, and the HEAD-moving commands above when they run in
-# another repository (a cd or git -C to a path outside the project, or a cwd outside it).
-# It reads the command text only, so it is a guard against habit, not a sandbox.
+# another repository (a cd, git -C, --git-dir or --work-tree to a path outside the
+# project, or a cwd outside it).
+# Each simple command is normalized before the git rule reads it: a leading ( and trailing
+# ) are dropped, so are redirects (with their targets) and everything from a # word on;
+# git's global options (--no-pager, -c k=v, -C path, --git-dir, ...) are skipped to reach
+# the subcommand; and the directory each cd leads to is tracked, with relative paths and
+# .. folded lexically, so no filesystem access is needed.
+# It reads the command text only, so it is a guard against habit, not a sandbox. Known
+# limits: a quoted path with spaces is cut at the first space; a quoted string holding
+# ;, & or | can split a command wrongly; a cd inside a subshell is taken to apply to the
+# rest of the command; $(...), env prefixes and aliases are not looked into.
 input=$(cat)
 cmd=$(jq -r '.tool_input.command // empty' <<<"$input")
 [[ -z "$cmd" ]] && exit 0
@@ -29,40 +38,84 @@ deny() { # reason, then an optional replacement for the Edit and Write advice
   exit 0
 }
 
-outside() { # path as written: 0 when it is another repository; a relative path keeps $inside
-  local p=${1//[\"\']/}
+shopt -s extglob
+root=${root%/}
+
+resolve() { # directory, path as written: sets $res to the absolute path with . and .. folded lexically, or ? when unknown
+  local p=${2//[\"\']/} parts out=() x IFS
   case "$p" in
-    \$CLAUDE_PROJECT_DIR*|\$\{CLAUDE_PROJECT_DIR\}*) return 1 ;;
-    \$*|\~*) return 0 ;;
-    /*) [[ "$p" != "$root" && "$p" != "$root"/* ]] ;;
-    *) ((! inside)) ;;
+    \$CLAUDE_PROJECT_DIR*) p=$root${p#\$CLAUDE_PROJECT_DIR} ;;
+    \$\{CLAUDE_PROJECT_DIR\}*) p=$root${p#\$\{CLAUDE_PROJECT_DIR\}} ;;
+    \$*|\~*) res=?; return ;;
+    /*) ;;
+    *) [[ "$1" == "?" ]] && { res=?; return; }; p=$1/$p ;;
   esac
+  IFS=/
+  read -ra parts <<<"$p"
+  for x in "${parts[@]}"; do
+    case "$x" in
+      ''|.) ;;
+      ..) out=("${out[@]:0:${#out[@]}-1}") ;;
+      *) out+=("$x") ;;
+    esac
+  done
+  res="/${out[*]}"
 }
 
-inside=1 # 1 while the command runs in the project's repository
+outside() { # absolute path or ?: 0 when it is not in the project's repository
+  [[ "$1" == "?" || ("$1" != "$root" && "$1" != "$root"/*) ]]
+}
+
+cur=$root # directory the command runs in, as far as the text tells
 cwd=$(jq -r '.cwd // empty' <<<"$input")
-[[ -n "$cwd" ]] && outside "$cwd" && inside=0
-while read -r seg; do # one simple command per line
-  seg=${seg#\(}
-  if [[ "$seg" =~ ^[[:space:]]*cd[[:space:]]+([^[:space:]]+) ]]; then
-    outside "${BASH_REMATCH[1]}" && inside=0 || inside=1
-  elif [[ "$seg" =~ ^[[:space:]]*git[[:space:]]+(-C[[:space:]]+([^[:space:]]+)[[:space:]]+)?(switch|checkout|reset)([[:space:]]+(.*))?$ ]]; then
-    here=$inside
-    [[ -n "${BASH_REMATCH[2]}" ]] && { outside "${BASH_REMATCH[2]}" && here=0 || here=1; }
-    ((here)) || continue
-    sub=${BASH_REMATCH[3]} args=" ${BASH_REMATCH[5]} "
-    read -ra words <<<"$args"
-    pos=()
-    for w in "${words[@]}"; do [[ "$w" == -* ]] || pos+=("$w"); done
-    moves=0
-    case "$sub" in
-      switch) moves=1 ;;
-      checkout) [[ "$args" == *" -- "* ]] || moves=1 ;;
-      reset) if [[ "$args" =~ \ --(hard|soft|mixed|merge|keep)\  ]]; then moves=1
-        elif [[ "$args" != *" -- "* && ${#pos[@]} -eq 1 && "${pos[0]}" != HEAD ]]; then moves=1; fi ;;
+[[ -n "$cwd" ]] && { resolve / "$cwd"; cur=$res; }
+while read -r -a words; do # one simple command per line
+  toks=()
+  skip=0
+  for x in "${words[@]}"; do
+    ((skip)) && { skip=0; continue; }
+    ((${#toks[@]})) || x=${x##+(\()} # a subshell's opening parenthesis
+    x=${x%%+(\))}                    # and the closing one
+    [[ -z "$x" ]] && continue
+    case "$x" in
+      \#*) break ;; # a comment runs to the end of the line
+      *([0-9])+([\<\>])) skip=1 ;; # a redirect operator: its target is the next word
+      *([0-9])[\<\>]*) ;;          # a redirect with its target attached
+      *) toks+=("$x") ;;
     esac
-    ((moves)) && deny "moving HEAD in the worktree is not allowed; check commits out in a scratch clone (git clone <root> \$(mktemp -d)/repo)." ""
-  fi
+  done
+  case "${toks[0]:-}" in
+    cd)
+      i=1
+      while [[ "${toks[i]:-}" == -* && "${toks[i]}" != - ]]; do ((i++)); done
+      if [[ -z "${toks[i]:-}" ]]; then cur=? # a bare cd goes home
+      elif [[ "${toks[i]}" != - ]]; then resolve "$cur" "${toks[i]}"; cur=$res; fi ;;
+    git)
+      here=$cur
+      i=1
+      while [[ "${toks[i]:-}" == -* ]]; do # global options before the subcommand
+        case "${toks[i]}" in
+          -C|--git-dir|--work-tree) resolve "$here" "${toks[i+1]:-.}"; here=$res; ((i+=2)) ;;
+          --git-dir=*|--work-tree=*) resolve "$here" "${toks[i]#*=}"; here=$res; ((i++)) ;;
+          -c|--namespace|--super-prefix|--config-env|--exec-path) ((i+=2)) ;;
+          *) ((i++)) ;;
+        esac
+      done
+      sub=${toks[i]:-}
+      [[ "$sub" == switch || "$sub" == checkout || "$sub" == reset ]] || continue
+      outside "$here" && continue
+      args=" ${toks[*]:i+1} "
+      pos=()
+      for x in "${toks[@]:i+1}"; do [[ "$x" == -* ]] || pos+=("$x"); done
+      moves=0
+      case "$sub" in
+        switch) moves=1 ;;
+        checkout) [[ "$args" == *" -- "* ]] || moves=1 ;;
+        reset) if [[ "$args" =~ \ --(hard|soft|mixed|merge|keep)\  ]]; then moves=1
+          elif [[ "$args" != *" -- "* && ${#pos[@]} -eq 1 && "${pos[0]}" != HEAD ]]; then moves=1; fi ;;
+      esac
+      ((moves)) && deny "moving HEAD in the worktree is not allowed; check commits out in a scratch clone (git clone <root> \$(mktemp -d)/repo)." "" ;;
+  esac
 done < <(tr ';&|' '\n' <<<"$cmd")
 
 if grep -qE '(^|[;&|(` ])(g?sed|perl)( +-[^ ]*)* +(-[a-zA-Z]*i|--in-place)' <<<"$cmd"; then
