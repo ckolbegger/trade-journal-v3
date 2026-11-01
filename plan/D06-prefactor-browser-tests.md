@@ -67,10 +67,10 @@ Numbering continues from D5R2's P42–P54.
 | T6P.2 | Two tiers in `full-suite.sh` | structural | T6P.1 | `tdd-task` |
 | T6P.3 | B1.5 trim and T2.55-B3 removal | structural | T6P.1 | `tdd-task` |
 | T6P.4 | Collapse the `ui-alignment.spec.ts` copies | structural | T6P.3 | `tdd-task` |
-| T6P.5 | Process documents and the D6 amendments | documents | T6P.2 | main session |
+| T6P.5 | Process documents | documents | T6P.2 | main session |
 | T6P.6 | Gate runs | verification | T6P.1–T6P.5 | `suite-runner` |
 
-The tasks run in this order, one at a time. Each code task gets an ocr review as `implementing.md` describes, and test-only commits use the test-only ocr procedure from the D5R2 handoff. Every task changes `e2e/` or the suite tooling, so its cumulative run is the full tier.
+The tasks run in this order, one at a time. Each code task gets an ocr review as `implementing.md` describes, and test-only commits use the test-only ocr procedure (the prefactor's handoff, section 3). Every task changes `e2e/` or the suite tooling, so its cumulative run is the full tier.
 
 ---
 
@@ -97,12 +97,16 @@ The tasks run in this order, one at a time. Each code task gets an ocr review as
   - `browser-task`: the builds; `playwright test --grep @every-task` over the `test:e2e` folders; then, in a second call, `playwright test --grep-invert "@every-task|@release-history"` over the current deliverable's folder, if it exists. (The grep keeps a test from running twice.) Both calls write to the same `<label>-browser.txt`, and the summary adds up both counts. When the folder doesn't exist, only the first call runs.
   - `browser-auto <base>`: applies P55's path rule to `git diff --name-only <base> HEAD`, prints the tier and the first matching path, and runs `browser-task` or `browser`.
   - The existing `browser` stage stays the full tier. With no stage, the script still runs everything, and it runs the full tier.
-- **The current deliverable's folder:** taken from the evidence folder's name, lower case, with the leading zero of the number dropped. `evidence/D06` gives `e2e/d6`, `evidence/D05R` gives `e2e/d5r`, and `evidence/D05R2` gives `e2e/d5r2`, which doesn't exist, so it is skipped.
+- **The current deliverable's folder:** taken from the evidence folder's name, lower case, with the leading zero of the number dropped. `evidence/D06` gives `e2e/d6`, `evidence/D05R` gives `e2e/d5r`, and `evidence/D05R2` gives `e2e/d5r2`, which doesn't exist, so it is skipped. The environment variable `TJ_E2E_CURRENT` overrides the derived folder.
+- **Two read-only queries** that print and exit without running anything or writing evidence:
+  - `full-suite.sh --current-folder <evidence-dir>` prints the derived folder.
+  - `full-suite.sh --choose-tier <base>` prints `task`, or `full: <first matching path>`.
 - **Verification (exact):**
+  - `--current-folder` prints `e2e/d6` for `evidence/D06`, `e2e/d5r` for `evidence/D05R`, `e2e/d5r2` for `evidence/D05R2`, and `e2e/d6p` for `evidence/D06P`.
+  - `--choose-tier` prints `task` for a base whose diff to HEAD holds only `plan/` or `evidence/` paths. With T6P.1's parent commit as the base, it prints `full: ` followed by an `e2e/` or `package.json` path.
   - `.claude/scripts/full-suite.sh evidence/D06P t6p-2-check browser-task` runs 5 tests (there is no `e2e/d6p`).
-  - `.claude/scripts/full-suite.sh evidence/D05R t6p-2-check-d5r browser-task` runs 20 (5 plus `e2e/d5r`'s 15).
-  - `browser-auto` with a base whose diff has only `plan/` paths chooses the task tier; with T6P.1's commit as the only change it chooses the full tier, naming `e2e/…`.
-  - All three outputs go to `evidence/D06P/suite-runs/`.
+  - `TJ_E2E_CURRENT=e2e/d5r .claude/scripts/full-suite.sh evidence/D06P t6p-2-check-d5r browser-task` runs 20 (5, plus the 15 in `e2e/d5r`).
+  - Both runs write to `evidence/D06P/suite-runs/`, and nothing under any other evidence folder changes.
 
 ### T6P.3 B1.5 trim and T2.55-B3 removal
 
@@ -126,7 +130,7 @@ The tasks run in this order, one at a time. Each code task gets an ocr review as
   - `npm run test:e2e` passes 147.
 - **Mutation check:** for two collapsed bodies (T2.40 and T2.62's "UNDERLYING header" body), break the measured CSS rule once and confirm the test fails at each width it loops over (the message names the width). Then restore it.
 
-### T6P.5 Process documents and the D6 amendments (main session)
+### T6P.5 Process documents (main session)
 
 - **`.claude/docs/implementing.md`, step 3:** the cumulative run after a task uses `browser-auto <base>`. Before every critic, and in the deliverable's browser-suite task, the runner uses the full tier.
 - **`.claude/agents/suite-runner.md`:**
@@ -134,9 +138,9 @@ The tasks run in this order, one at a time. Each code task gets an ocr review as
   - Its report's Browser row names the tier and, for `browser-auto`, the reason it printed.
 - **`.claude/docs/drafting-breakdowns.md`:** add P56's rule. The task that points a deliverable's previous release at a tag also tags `@release-history` on any update case whose two ends are now both tags.
 - **The user's memory, "record full suite runs":** a task ends with the cumulative run in the tier `browser-auto` picks, and every critic gate is preceded by a full-tier run. **Why:** the user's decision on 2026-11-01 after the browser-suite review.
-- **The plan amendments in section 6,** with decision 71 and the revision 30 tag, committed together.
+The plan amendments in section 6 are not part of this task: plan revision 30 applies them before the prefactor starts.
 
-**Verification:** each document cites the decisions it applies (P55, P56) by number, and section 6's list is applied in full: `git diff --stat` names every file it lists.
+**Verification:** each document cites the decisions it applies (P55, P56) by number.
 
 ### T6P.6 Gate runs
 
@@ -170,17 +174,17 @@ The prefactor is complete when all of the following hold. Then the handoff's pro
 
 ## 6. Amendments to other plan documents (decision 71, revision 30)
 
-Each amendment is a dated note at the place it changes, in the style of decision 70's notes.
+Plan revision 30 applies these when the breakdown is agreed, before the prefactor's first task, as revision 28 did for D5R2. Each amendment is a dated note at the place it changes, in the style of decision 70's notes. A note describes what the prefactor will change; the tests themselves change in T6P.1 to T6P.4.
 
 | Document | Where | Amendment |
 |---|---|---|
 | `implementation-plan.md` | Decisions table | Decision 71: this breakdown, P55–P62, and the two tiers. |
 | `implementation-plan.md` | Plan record, "Immutable revision" | Revision 30, tag `claude-opus-5.5-plan-r30`. |
-| `implementation-plan.md` | Deliverable summary | A row for the D6 prefactor before D6: "0 (tests and tooling)". |
+| `implementation-plan.md` | Deliverable summary, task-graph record, and definitions | A row for the D6 prefactor before D6, "0 (tests and tooling)"; 30 ordered deliverables; a short definition section before D6's. |
 | `implementation-plan.md` | Tech debt, item 6 | The browser stage drops to about 6.5 min in the full tier and about 1 min in the task tier. The trigger (above 8 min) moves further off, and the alternatives stay recorded for when it is reached. |
 | `D01-start-a-workspace-and-confirm-a-long-stock-plan.md` | Section 6.2, B1.5 | Two fault sets in the browser (P59). The Node matrix keeps all six. |
 | `D02-open-a-long-stock-position.md` | Section 6.2, B2.3 and B2.5 | `@release-history`: out of `test:e2e`, run by `test:e2e:release-history` and RC (P56). |
-| `D02-ui-alignment.md` | Section 3, T2.55-B3 and the looped cases | T2.55-B3 removed in favor of the unit case. Looped copies are collapsed into one test per body (P57), with one assertion kept at 1280 only. |
+| `D02-ui-alignment.md` | Section 6, the browser suite | T2.55-B3 removed in favor of the unit case. Looped copies are collapsed into one test per body (P57), with one assertion kept at 1280 only. |
 | `D04-daily-review.md` | Section 6.2, B4.7 | `@release-history` (P56). |
 | `D06-close-a-long-stock-position.md` | T6.21 and its structural row | B5.6 gets `@release-history` in the same task (P56). |
 | `D06-close-a-long-stock-position.md` | T6.27's structural row | "Every case in sections 6.2 of D1, D2, D4, D5, and D6 passes, apart from the `@release-history` cases, which `npm run test:e2e:release-history` runs (P56)." |

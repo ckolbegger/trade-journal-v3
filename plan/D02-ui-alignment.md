@@ -625,6 +625,10 @@ All measurements go in `e2e/d2/ui-alignment.spec.ts`, against `dist-faults` as t
   - the keyboard-only entry;
   - `tabTo`'s visible-focus check;
   - every acceptance-matrix command in D2 section 8, as written. `npm run test:e2e` stays the one command.
+- **Amended by decision 71 (revision 30, P57 and P59):**
+  - Each measurement that a `for` loop repeats as separate tests (over widths, T2.37-B1's stages, or T2.55-B5's blank field) becomes one test that loops inside. That is 17 bodies, replacing 41 tests. Every assertion keeps its matcher, value and message, except one: T2.62's first body checks the Underlying header's height at 1280 only, because the "UNDERLYING header inside its own cell" case makes the same measurement at 320 and 390.
+  - T2.55-B3's Last activity case is removed: `src/ui/screens/TradeDetail.test.tsx` asserts the same label and value.
+  - The spec runs in the full browser tier only (P55).
 
 ---
 
