@@ -139,3 +139,7 @@ Run on 2026-11-01. All red and green runs wrote to throwaway evidence directorie
 | T6P.2 check | `TJ_E2E_CURRENT=e2e/d5r .claude/scripts/full-suite.sh evidence/D06P t6p-2-b3-check-d5r browser-task` | call 1 `5 passed (10.3s)`; call 2 `$ npx playwright test e2e/d5r --grep-invert "@every-task\|@release-history"` (unchanged text) `15 passed (1.2m)`; both `EXIT 0`; summary `20 passed`; 1 min 25 s wall time; [suite-runs/t6p-2-b3-check-d5r-browser.txt](suite-runs/t6p-2-b3-check-d5r-browser.txt) | 0 |
 
 Ports 5175, 9341 and 9342 were free before and after the 20-test run. Only the real-Playwright red also ran a browser (the first call's 5 `@every-task` tests); the stub runs ran none.
+
+### ocr review of `8834b52` (T6P.2-B2)
+
+Session `5f7e72c0-4622-4158-a548-407c66fa3aea`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), no findings. Raw output: [ocr/T6P.2-B2-8834b52.json](ocr/T6P.2-B2-8834b52.json).
