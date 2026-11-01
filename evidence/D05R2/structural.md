@@ -105,3 +105,20 @@ Change: Daily Review's two-way `dueDebtIds` (Due when `classifyDue(dueAnchor, {p
 | `rg 'Temporal.Instant.compare' src/coordinators --glob '!*.test.*'` | two lines, neither on a Debt due anchor: `attention.ts` (lastActivity ordering) and `daily-review.ts` (exposure close lookup) |
 | `rg 'ReflectionClassification\|DebtDueStatus' src tests e2e` | no matches (exit 1) |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+### ocr review of `b7ea170`
+
+Session `25e0c99f-cdcc-4df7-b07f-3ae186982052`, 7 files reviewed, no findings. Raw output: [ocr/T5R2.3-b7ea170.json](ocr/T5R2.3-b7ea170.json). The commit's one test-file change (`TradeDetail.test.tsx`) renames the imported type `DebtDueStatus` to `DueClassification`; no expectation changed (checked by the main session in `git show b7ea170 -- src/ui/screens/TradeDetail.test.tsx`).
+
+### Cumulative suite at `b7ea170` (T5R2.3 closed)
+
+Date 2026-11-01 06:55 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 76 passed (76)`, `Tests 1015 passed (1015)`, exit 0 | `suite-runs/t5r2-3-coordinators-classify-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-3-coordinators-classify-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-3-coordinators-classify-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-3-coordinators-classify-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.

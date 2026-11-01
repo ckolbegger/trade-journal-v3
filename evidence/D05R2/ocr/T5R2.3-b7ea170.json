@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 76164,
+    "input_tokens": 75627,
+    "output_tokens": 537,
+    "cache_read_tokens": 15360,
+    "elapsed": "27s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review coordination, shared types, and reflections screen",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewReflections.tsx"
+      ]
+    },
+    {
+      "label": "Trade views coordinator and exports",
+      "files": [
+        "src/coordinators/trade-views/index.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "25e0c99f-cdcc-4df7-b07f-3ae186982052",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "25e0c99f-cdcc-4df7-b07f-3ae186982052",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b7ea170f",
+      "resolved_base": "43eeb5438c63b6b6da0686658d889543cfc75f5e",
+      "resolved_head": "b7ea170f3ebc16d852ef5666dd45284322d6dc93",
+      "exact_range": "43eeb5438c63b6b6da0686658d889543cfc75f5e..b7ea170f3ebc16d852ef5666dd45284322d6dc93",
+      "source_artifact_sha256": "2d8068fe930a545813826525d54a6cb5de5d3ce95791312c7626d413f928b6e4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "3d2998116e7fd687ac584dab8cda71197827bb8b18c7bc84c3e3efc992a59b71"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "dc477eb597a2a214ab0077af48dd089f4bdc4c175b66fd9d57c20da6ed7fef8c"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "1b32920551efce7fb458eb968b63ff0d11064f8e816dc7884eb5e4bc3da6bba3"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "9831a0f186ab3fda74c37839a4d9bca0d8cd0fd16aaa59a2e4b137ec7238f1a1"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "0b3924400d0eb74a0e3a8ae9737850dbbf19b4be622876b585db77a8922cd382"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "e6a2721439f4baccdf24cf59118a1205a269d7f4358a201990eac72c99ceb312"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "61867fbbd59fb04de2b77c2625f3cea285b4d4d2c2ae9b3096e27dff597fff63"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "3d2998116e7fd687ac584dab8cda71197827bb8b18c7bc84c3e3efc992a59b71"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "dc477eb597a2a214ab0077af48dd089f4bdc4c175b66fd9d57c20da6ed7fef8c"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "1b32920551efce7fb458eb968b63ff0d11064f8e816dc7884eb5e4bc3da6bba3"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "9831a0f186ab3fda74c37839a4d9bca0d8cd0fd16aaa59a2e4b137ec7238f1a1"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "0b3924400d0eb74a0e3a8ae9737850dbbf19b4be622876b585db77a8922cd382"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "e6a2721439f4baccdf24cf59118a1205a269d7f4358a201990eac72c99ceb312"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "61867fbbd59fb04de2b77c2625f3cea285b4d4d2c2ae9b3096e27dff597fff63"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 27241
+  }
+}
