@@ -273,3 +273,16 @@ Both edits were reverted by Edit; `git diff claude-opus-5.5-d5r2 -- src | wc -l`
 Test-only commit, reviewed by the relocation procedure: a scratch clone outside the worktree, base `58da0f3b` holding the parent-state spec as `src/itg/d06p/d2/ui-alignment-e2e.ts` with both `support.ts` files, and scratch commit `81b19445` applying the change. Session `66fddaf4-019b-4f3b-8e25-764b2b7dd4aa`, model gpt-6.1-sol (ocr v1.13.3), 1 file reviewed, no findings. Raw output: [ocr/T6P.4-3cd7ffd.json](ocr/T6P.4-3cd7ffd.json).
 
 Main-session check of the subagent's summary: `seedTrades` already ended by clicking the Trades link and waiting for the Open Trades table; T6P.4 moved those two lines into `showOpenTrades` and calls it from `seedTrades`, so the non-collapsed caller (the "one-line uppercase headers … at 1280" test) runs the same steps as before. The temporary `e2e/d2/tmp-mutation.spec.ts` used for the per-width mutation runs is not in the commit or the working tree.
+
+### Cumulative run after T6P.4
+
+Delegated to `suite-runner`, 2026-11-01 16:21–16:29 EST, commit `ea26160`. Uncommitted at the time: the run's output files and T6P.5's drafted process documents (`.claude/docs/`, `.claude/agents/suite-runner.md`), which no test or check reads; the runner had loaded its instructions before the edit. Base commit (A180): `4c1884b`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files  80 passed (80)`, `Tests  1051 passed (1051)`, exit 0 | [suite-runs/t6p-4-collapse-unit.txt](suite-runs/t6p-4-collapse-unit.txt) |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files  60 passed (60)`, `Tests  117 passed (117)`, exit 0 | [suite-runs/t6p-4-collapse-integration.txt](suite-runs/t6p-4-collapse-integration.txt) |
+| Browser (Chromium), `browser-auto 4c1884b` | chose the full tier, `npm run test:e2e` | `147 passed (6.8m)`, exit 0 | [suite-runs/t6p-4-collapse-browser.txt](suite-runs/t6p-4-collapse-browser.txt) |
+| Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-4-collapse-checks.txt](suite-runs/t6p-4-collapse-checks.txt) |
+
+Tier line: `browser tier: full (first matching path since 4c1884b: e2e/d2/ui-alignment.spec.ts)`. Ports 9341, 9342 and 5175 were free before and after. Browser stage 409 s (moved to the background by the harness after 180 s; the runner waited for the completion notice).
