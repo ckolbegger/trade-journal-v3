@@ -88,3 +88,18 @@ Session `45944089-b9af-4c61-aa71-81175efd1458`, model gpt-6.1-sol, 1 file review
 - **T6P.2-B1 Non-ASCII paths in the tier rule.** Defect: a change under a full-tier path whose name has a non-ASCII character is printed quoted and escaped by git, matches no pattern, and gets the task tier. Check: `--choose-tier` prints `full: <path>` for a base whose diff to HEAD changes only such a file under `src/ui/` (reproduced red first in a scratch repository), and the earlier T6P.2 checks still hold.
 - **T6P.2-B2 Renames out of a full-tier path.** Defect: a file moved from a full-tier path to an unlisted one lists only its destination, so the move gets the task tier. P55 says the full tier applies when the commits "touch" a listed path, and the source of a move is touched. Check: `--choose-tier` prints `full: <source path>` for a base whose diff to HEAD only moves `src/ui/x.tsx` to an unlisted directory (red first in a scratch repository), and the earlier checks still hold.
 - **T6P.2-B3 The current folder is passed as one argument.** Defect: a `TJ_E2E_CURRENT` holding a space or a shell metacharacter is split or interpreted in `browser-task`'s second call. Check: with `TJ_E2E_CURRENT` set to an existing folder whose name has a space, the second call receives it as one argument (red first, shown without running a browser suite where possible), and the T6P.2 `browser-task` checks still hold.
+
+## T6P.2-B1 Non-ASCII paths in the tier rule
+
+Run on 2026-11-01. Scratch repository from `mktemp -d` (`/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tmp.z1l9kJOKiA`), outside every worktree: a base commit `d3876eeed7de1bdda4ef1e246ebcbb2f3814450e` with an empty `README`, then a commit that adds only the empty file `src/ui/é.tsx`. The worktree's script was invoked by absolute path from inside the scratch repository (it does `cd "$(git rev-parse --show-toplevel)"`, so it runs against the scratch repository as is).
+
+| Step | Command | Output | Exit |
+|---|---|---|---|
+| Red: raw git output | `git diff --name-only d3876ee… HEAD` (in scratch) | `"src/ui/\303\251.tsx"` (quoted and escaped, so no `src/ui/*` pattern matches it) | 0 |
+| Red: tier choice | `<worktree>/.claude/scripts/full-suite.sh --choose-tier d3876ee…` (in scratch) | `task` | 0 |
+| Fix | `choose_tier`: `git diff --name-only "$1" HEAD` became `git -c core.quotePath=false diff --name-only "$1" HEAD` (one line; path list and patterns untouched) | | |
+| Green: tier choice | same command as the red tier choice | `full: src/ui/é.tsx` | 0 |
+| T6P.2 check | `.claude/scripts/full-suite.sh --choose-tier 9b93ca7` (in the worktree) | `full: e2e/d1/identity.spec.ts` | 0 |
+| T6P.2 check | `.claude/scripts/full-suite.sh --current-folder evidence/D06P` (in the worktree) | `e2e/d6p` | 0 |
+
+No browser run was needed. The scratch repository's red run used the committed script (fix not yet applied); the green run used the edited script.
