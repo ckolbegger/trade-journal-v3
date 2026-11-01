@@ -1479,3 +1479,16 @@ Commit `42bb7da`. In the Review-side `ReflectionRow` (`ReviewReflections.tsx`), 
 Checks: `npx vitest run src` 1008 passed. Typecheck, `tsc6`, lint and `lint:deps` exit 0. Whole `npm run test:e2e`: 178 passed. One Bash call by the agent that read `.env.local` was denied by the permission classifier and not retried; it used port 5175 as briefed.
 
 ocr review of `42bb7da`: one file reviewed, no findings. The reviewer checked first mount, re-sorts and refreshes, other rows, resolved rows, the ref callback, and Trade Detail. **Minor note:** if a refresh changed an open row's group key (its date or classification), the row would remount and take focus; its entered values would already be lost in that case. Raw output: [ocr/T5R.16-B2-42bb7da.json](ocr/T5R.16-B2-42bb7da.json).
+
+### T5R.16 cumulative run after critic 1's bug tasks
+
+At `1b1e0c4` (code as of `42bb7da`), started 02:46 EST on 2026-11-01, by `suite-runner`, label `t5r.16-cumulative`:
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 75 files, 1008 passed, exit 0 | [suite-runs/t5r.16-cumulative-unit.txt](suite-runs/t5r.16-cumulative-unit.txt) |
+| Node integration | 60 files, 117 passed, exit 0 | [suite-runs/t5r.16-cumulative-integration.txt](suite-runs/t5r.16-cumulative-integration.txt) |
+| Browser (`npm run test:e2e`, Chromium) | 178 passed (7.0 min), exit 0 | [suite-runs/t5r.16-cumulative-browser.txt](suite-runs/t5r.16-cumulative-browser.txt) |
+| Static and verify checks | 12 of 12 exit 0 | [suite-runs/t5r.16-cumulative-checks.txt](suite-runs/t5r.16-cumulative-checks.txt) |
+
+All green, no reruns. Ports clear before and after.
