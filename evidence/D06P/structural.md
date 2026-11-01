@@ -286,3 +286,13 @@ Delegated to `suite-runner`, 2026-11-01 16:21–16:29 EST, commit `ea26160`. Unc
 | Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-4-collapse-checks.txt](suite-runs/t6p-4-collapse-checks.txt) |
 
 Tier line: `browser tier: full (first matching path since 4c1884b: e2e/d2/ui-alignment.spec.ts)`. Ports 9341, 9342 and 5175 were free before and after. Browser stage 409 s (moved to the background by the harness after 180 s; the runner waited for the completion notice).
+
+## T6P.5 Process documents (main session)
+
+Edited by the main session on 2026-11-01, under the breakdown's section 3, "T6P.5 Process documents":
+- **`.claude/docs/implementing.md`, "After each task", step 3:** the runner is passed the browser stage. After a task it is `browser-auto <base>`, with `<base>` the task's starting commit recorded in the handoff before the brief (A180), and `structural.md` records the tier and its printed reason. The full tier (`browser`) runs before every critic, in the deliverable's browser-suite task (T6.27 in D6), and whenever a run needs it. Cites decision 71, P55.
+- **`.claude/agents/suite-runner.md`:** a third input, the browser stage (`browser-auto <base>`, `browser` or `browser-task`; `browser` when none is given); the third call runs that stage; the report's Browser row names the tier, and a "Browser tier" line copies `browser-auto`'s tier line exactly; the task-tier count is the script's sum of its two calls; labels take no trailing hyphen. Cites P55.
+- **`.claude/docs/drafting-breakdowns.md`:** P56's rule. The task that points a deliverable's previous release at a tag also tags `@release-history` on any update case whose two ends are then both tag builds, and the browser-suite task runs both `test:e2e` and `test:e2e:release-history`. Cites P56.
+- **The user's memory, "record full suite runs"** (outside the repository): a task ends with the cumulative run in the tier `browser-auto <base>` picks, with the tier and reason recorded, and every critic gate is preceded by a full-tier run. **Why:** the user's decision on 2026-11-01 after the browser-suite review. Cites P55. Its index line in `MEMORY.md` now says the same.
+
+**Verification:** `grep -c -E 'P55|P56'` gives 1 for each of the four documents, so each cites the decision it applies.

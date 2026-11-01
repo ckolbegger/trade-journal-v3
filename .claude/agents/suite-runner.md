@@ -11,16 +11,20 @@ You run the complete cumulative suite for a trade journal app and report the res
 
 The task prompt gives you:
 - the evidence directory, such as `evidence/D02`
-- a label for the run, such as `t2.5-record-position-change` (lowercase, hyphens)
+- a label for the run, such as `t2.5-record-position-change` (lowercase, hyphens, no trailing hyphen)
+- the browser stage (decision 71, P55), one of:
+  - `browser-auto <base>`: after a task. It picks the tier from the files changed since `<base>` and prints a line `browser tier: full (…)` or `browser tier: task (…)` before running.
+  - `browser`: the full tier (`npm run test:e2e`), before every critic and in a deliverable's browser-suite task.
+  - `browser-task`: the task tier only (the `@every-task` tests, plus the current deliverable's `e2e/` folder when it exists).
 
-If either is missing, infer the evidence directory from the most recent `evidence/D*` folder and use `run-<YYYYMMDD-HHMM>` as the label, and say so in your report.
+If the evidence directory or label is missing, infer the evidence directory from the most recent `evidence/D*` folder and use `run-<YYYYMMDD-HHMM>` as the label. If the browser stage is missing, use `browser` (the full tier). Say so in your report.
 
 ## Steps
 
 1. Run the suite in four stages, one foreground Bash call each, in this order, with the Bash tool's `timeout` set to 600000 on every call:
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> unit`
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> integration`
-   - `.claude/scripts/full-suite.sh <evidence-dir> <label> browser`
+   - `.claude/scripts/full-suite.sh <evidence-dir> <label> <browser stage>`, with the browser stage from the inputs (for example `browser-auto 4c1884b`)
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> checks`
 
    Each call writes its file (`<label>-unit.txt`, `<label>-integration.txt`, `<label>-browser.txt` or `<label>-checks.txt`) and prints a summary. Run every stage even when an earlier one fails. Do not run the suites any other way. Never use `run_in_background`, `&`, `nohup`, or a loop that waits (`sleep`, `until`, `while`, `pgrep`, `ps`); a stage that hits the timeout is a failure to report, not something to wait out. When you finish, no process you started may still be running.
@@ -38,10 +42,12 @@ Date: <from the script>. Commit: <from the script>.
 |---|---|---|---|
 | Unit | `npx vitest run src --reporter=verbose` | `Test Files N passed (N)`, `Tests N passed (N)`, exit 0 | `<path>` |
 | Node integration | `npx vitest run tests/integration --reporter=verbose` | ... | `<path>` |
-| Browser (Chromium) | `npm run test:e2e` | `N passed (Ns)`, exit 0 | `<path>` |
+| Browser (Chromium), <tier> tier | `<browser stage>` | `N passed (Ns)`, exit 0 | `<path>` |
 | Static and verification checks (N commands) | <list the commands> | N of N exit 0 | `<path>` |
+
+Browser tier: <full or task>; <for `browser-auto`, the tier line it printed, copied exactly>.
 
 Failures: none
 ```
 
-Copy the counts exactly as the tool printed them. If the browser stage reports more than 8 minutes, add a line after the table: "Browser stage took <time>, near the 10-minute Bash limit; split it." If anything failed, replace "Failures: none" with one line per failing test or check: the suite, the test name or command, the file and line if shown, and the first line of the error. Never paste raw logs, stack traces, or passing test names.
+Copy the counts exactly as the tool printed them. For the task tier, the count is the sum the script printed for its two calls. If the browser stage reports more than 8 minutes, add a line after the table: "Browser stage took <time>, near the 10-minute Bash limit; split it." If anything failed, replace "Failures: none" with one line per failing test or check: the suite, the test name or command, the file and line if shown, and the first line of the error. Never paste raw logs, stack traces, or passing test names.
