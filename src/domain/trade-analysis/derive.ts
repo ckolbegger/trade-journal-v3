@@ -109,6 +109,15 @@ export interface LotMatchResult {
   readonly realized: CalculationResult<Rational>;
 }
 
+// One mechanism by which a Closed Trade's exposure ended, with the quantity it disposed (A84).
+// Later variants add Expiration, Assignment, Exercise, and cash settlement.
+export interface DispositionMechanism {
+  readonly mechanism: 'Executions';
+  readonly quantity: Rational;
+}
+
+export type TerminalDisposition = CalculationResult<readonly DispositionMechanism[], 'NotClosed'>;
+
 // Derived signed net quantity and Open Lots for one exact Instrument within the Trade.
 export interface InstrumentPosition {
   readonly instrument: ExecutionFact['instrument'];
@@ -234,12 +243,17 @@ export type DeviationAction =
       readonly reason: 'NoLongerExpected';
     };
 
+export type CloseRequirement = 'TerminalWithAgency' | 'NotTerminal';
+
 // Trade Analysis's expected state for one exact candidate, which Trade Record's apply requires.
 export interface DerivedTradeReconciliation {
   readonly candidateDigest: string;
   readonly expectedLifecycle: LifecycleState;
   // The candidate's exposure start, which Trade Record stores in the Trade document (D4 A38).
   readonly exposureStart: Instant | null;
+  // Whether the candidate's new Position Change closes the Trade with trader agency, which requires
+  // a Close Reason (A77); the workflow turns this into its issues.
+  readonly closeRequirement: CloseRequirement;
   readonly deviationActions: readonly DeviationAction[];
   // Where the before-state's stored lifecycle or recorded occurrences disagreed with its own
   // coherent facts: repaired by applying the candidate and disclosed (P7).
@@ -279,7 +293,12 @@ export interface DerivedTradeState {
   readonly realizedToDate: Rational;
   // The Economic Time of the first effective opening Execution; null while the Trade is Planned.
   readonly exposureStart: Instant | null;
-  // One per Instrument with remaining quantity; none for a Planned Trade.
+  // The terminal Position Change's Economic Time; null unless the expected lifecycle is Closed (A87).
+  readonly terminalTime: Instant | null;
+  // How the exposure ended; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A84).
+  readonly terminalDisposition: TerminalDisposition;
+  // Net realized P&L over 1R; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A81).
+  readonly realizedR: CalculationResult<Rational, 'NotClosed'>;  // One per Instrument with remaining quantity; none for a Planned Trade.
   readonly observationRequirements: readonly ObservationRequirement[];
   // Actual fees, each Execution's counted once: the opening Executions' alone, and every Execution's
   // (A80). Neither is ever subtracted from realized P&L again.
@@ -298,18 +317,22 @@ export interface DerivedTradeState {
 }
 
 // Facts that cannot be replayed are a typed rejection naming each fact, never a number.
+export type IncoherentFact =
+  | { readonly factId: string; readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' }
+  // P22: a Sell above the quantity open at its own point in Fact Order; names that quantity.
+  | { readonly factId: string; readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational }
+  // P22: a Sell that leaves the Position flat although a later fact follows it.
+  | { readonly factId: string; readonly reason: 'FlatBeforeLaterFacts' };
+
 export interface IncoherentFacts {
   readonly kind: 'IncoherentFacts';
-  readonly findings: readonly {
-    readonly factId: string;
-    readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId';
-  }[];
+  readonly findings: readonly IncoherentFact[];
 }
 
 export type DerivationResult = DerivedTradeState | IncoherentFacts;
 
-function incoherence(record: TradeAnalysisRecord): IncoherentFacts['findings'] {
-  const findings: { factId: string; reason: IncoherentFacts['findings'][number]['reason'] }[] = [];
+function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
+  const findings: IncoherentFact[] = [];
   const legs = new Set(record.plan.legs.map((l) => l.factId));
   const seen = new Set<string>();
   for (const pc of record.positionChanges) {
@@ -322,6 +345,26 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFacts['findings'] {
       if (!parseDecimal(e.quantity, { positive: true }).ok) findings.push({ factId: e.factId, reason: 'NonpositiveQuantity' });
     }
   }
+  return findings;
+}
+
+// P22: replaying in Fact Order, the open quantity never goes below zero and may reach zero only at
+// the last fact. A Sell above the open quantity is reported with the quantity then available and
+// does not reduce it.
+function positionPathFindings(facts: readonly ExecutionFact[]): IncoherentFact[] {
+  const findings: IncoherentFact[] = [];
+  let open = Rational.of(0n);
+  facts.forEach((e, index) => {
+    const quantity = decimal(e.quantity);
+    if (e.action === 'Buy') {
+      open = open.add(quantity);
+    } else if (quantity.compare(open) > 0) {
+      findings.push({ factId: e.factId, reason: 'ExceedsOpenQuantity', available: open });
+    } else {
+      open = open.sub(quantity);
+      if (open.compare(Rational.of(0n)) === 0 && index < facts.length - 1) findings.push({ factId: e.factId, reason: 'FlatBeforeLaterFacts' });
+    }
+  });
   return findings;
 }
 
@@ -397,6 +440,40 @@ function replayOf(facts: readonly ExecutionFact[]): {
     lotMatches,
     lotMatchResults,
   };
+}
+
+function lifecycleOf(facts: readonly ExecutionFact[], positions: readonly InstrumentPosition[]): LifecycleState {
+  if (facts.length === 0) return 'Planned';
+  return positions.some((p) => p.quantity.compare(Rational.of(0n)) !== 0) ? 'Open' : 'Closed';
+}
+
+// The Position Change holding the last effective fact: with a flat Position it is the terminal one (A87).
+function terminalPositionChangeOf(
+  record: TradeAnalysisRecord,
+  facts: readonly (ExecutionFact & { readonly positionChangeId: string })[],
+): PositionChangeFact {
+  const id = facts[facts.length - 1]!.positionChangeId;
+  return record.positionChanges.find((pc) => pc.factId === id)!;
+}
+
+// Whether the candidate's new (latest-recorded) Position Change is the terminal one. Every D6
+// Execution, Buy or Sell, carries trader agency (A77), so a terminal change always has it.
+function closeRequirementOf(
+  record: TradeAnalysisRecord,
+  facts: readonly (ExecutionFact & { readonly positionChangeId: string })[],
+  closed: boolean,
+): CloseRequirement {
+  if (!closed) return 'NotTerminal';
+  const newest = record.positionChanges.reduce((a, b) => (b.recordedSequence > a.recordedSequence ? b : a));
+  return terminalPositionChangeOf(record, facts).factId === newest.factId ? 'TerminalWithAgency' : 'NotTerminal';
+}
+
+// How a Closed Trade's exposure ended (A84, ADR 0003): derived from the disposing facts, never
+// stored. D6 has one mechanism, Executions, holding the quantity they disposed.
+function terminalDispositionOf(lifecycle: LifecycleState, lotMatches: readonly LotMatch[]): TerminalDisposition {
+  if (lifecycle !== 'Closed') return { kind: 'NotApplicable', reason: 'NotClosed' };
+  const disposed = lotMatches.reduce((sum, m) => sum.add(m.quantity), Rational.of(0n));
+  return { kind: 'Value', value: [{ mechanism: 'Executions', quantity: disposed }] };
 }
 
 function observationRequirementsOf(
@@ -683,11 +760,16 @@ export function derive(input: TradeDerivationInput): DerivationResult {
       pc.executions.map((e) => ({ ...e, instrument: { ...e.instrument }, intent: { ...e.intent }, positionChangeId: pc.factId })),
     )
     .sort(factOrder);
+  const pathFindings = positionPathFindings(facts);
+  if (pathFindings.length > 0) return { kind: 'IncoherentFacts', findings: pathFindings };
   const { positions, lotMatches, lotMatchResults } = replayOf(facts);
   const entry = entryWindowOf(record);
   const baseline = frozenBaseline(record.plan);
-  // Effective facts that leave nonzero exposure make the Trade Open; none leave it Planned.
-  const expectedLifecycle: LifecycleState = positions.length > 0 ? 'Open' : 'Planned';
+  // Nonzero exposure makes the Trade Open; exposure that existed and is gone makes it Closed (the
+  // path checks make that flat point the last fact); no effective fact leaves it Planned.
+  const expectedLifecycle: LifecycleState = lifecycleOf(facts, positions);
+  const closed = expectedLifecycle === 'Closed';
+  const realizedToDate = lotMatchResults.reduce((sum, r) => (r.realized.kind === 'Value' ? sum.add(r.realized.value) : sum), Rational.of(0n));
   const deviations = deviationsOf(record);
   const before = input.candidate && derive({ record: input.candidate.before, ...(input.cutoff && { cutoff: input.cutoff }) });
   if (before?.kind === 'IncoherentFacts') return before;
@@ -709,8 +791,12 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     positions,
     lotMatches,
     lotMatchResults,
-    realizedToDate: lotMatchResults.reduce((sum, r) => (r.realized.kind === 'Value' ? sum.add(r.realized.value) : sum), Rational.of(0n)),
+    realizedToDate,
     exposureStart: facts[0]?.economicTime ?? null,
+    terminalTime: closed ? terminalPositionChangeOf(record, facts).economicTime : null,
+    terminalDisposition: terminalDispositionOf(expectedLifecycle, lotMatches),
+    // Every D6 Trade has a positive 1R, so the quotient is always a Value.
+    realizedR: closed ? value(realizedToDate.div(baseline.oneR)) : { kind: 'NotApplicable', reason: 'NotClosed' },
     observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
     fees: {
       incurredOpening: facts.filter((e) => e.action === 'Buy').reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
@@ -729,6 +815,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
           candidateDigest: input.candidate.digest,
           expectedLifecycle,
           exposureStart: facts[0]?.economicTime ?? null,
+          closeRequirement: closeRequirementOf(record, facts, closed),
           deviationActions: deviationActions(deviations, input.candidate.before.recordedDeviations ?? []),
           repairs: before.findings,
           effects: changeEffects(before, expectedLifecycle, deviations),

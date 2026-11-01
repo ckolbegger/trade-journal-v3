@@ -669,6 +669,8 @@ const UNREPLAYABLE: Record<IncoherentFactFinding['reason'], string> = {
   UnknownPlannedLeg: 'Names a Planned Leg that is not in the Plan',
   NonpositiveQuantity: 'Quantity is not positive',
   DuplicateFactId: 'Shares its identity with another fact',
+  ExceedsOpenQuantity: 'Sells more than was open at that point',
+  FlatBeforeLaterFacts: 'Leaves the Position flat before later facts',
 };
 
 // Recorded facts that cannot be replayed (AC-LIFE-003): each named with its problem. Nothing is
