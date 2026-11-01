@@ -1318,3 +1318,14 @@ Fix (`src/ui/screens/ReviewCard.tsx`): the card-top scroll effect records `scrol
 ocr review of `3def717` (T5R.15-B1-B1): one file reviewed, no findings. The reviewing agent confirmed a plain open leaves focus on the header (so the post-body scroll runs), only landings focus inside the body, and the press-time scroll still runs for landings. Raw output: [ocr/T5R.15-B1-B1-3def717.json](ocr/T5R.15-B1-B1-3def717.json). T5R.15-B1's chain is closed.
 
 ocr review of `61b1828` (T5R.9-B5): five files reviewed, no findings. Raw output: [ocr/T5R.9-B5-61b1828.json](ocr/T5R.9-B5-61b1828.json). The reviewing agent only grepped, so the orchestrator checked the open questions from the code: `open` (`daily-review.ts:281`) and the post-save assembly (`:389`) both build items through `reviewItem`, which sets `summary` from `openLongStockSummary` — the same function the Trade list's line uses (`trade-views.ts:334`, `:417`); a Trade with no derivable summary falls back to its Underlying; `tradeLine` in `ReviewView.tsx` reads the newest Review the screen holds, so it stays current after a save.
+
+### T5R.15-I1 Each card carries its Trade id and shows its summary line (decision 68)
+
+Commit `9703fdf`. `li.review-card` carries `data-trade-id`; the header shows the Trade's summary line (`tradeSummary`) in its own `.review-card-summary` span after `.review-card-name`, which keeps the Underlying alone; a Trade with no summary shows the Underlying alone. Cases in `ReviewCards.test.tsx`: data-trade-id in attention order (red: `expected [null ×5] to deeply equal ['t-b','t-c','t-f','t-a','t-e']`); summary span (red: TypeError, no span). Planned guard on the re-sort case (`t-e, t-a, t-f, t-c, t-b`): a first-run pass, mutation-checked (ids rendered from the first Review's positions; failed as expected) and flagged. `CardMarks.test.tsx`'s three position picks of T-F's card became picks by header name (`tfHeader()`, T-F's summary escaped).
+
+- **Plan wording correction found:** section 6.5 says `TF_PLACED` "is built from `TF`, so it keeps its summary"; it is built by `walked('t-f', …)` without one. The subagent added `summary: TF.summary` to it (fixture only, no assertion changed).
+- Checks: typecheck, `tsc6`, lint, `lint:deps` exit 0; `npx vitest run src` 987 passed; after `build:faults` and `build:releases`, whole `npm run test:e2e` 173 passed (7.0 min) — the longer header names don't disturb the `^Review <symbol>` helpers. Ports 5175, 9341, 9342 clear before and after.
+
+**Process note (T5R.15-I1):** one tdd-log note appended with a shell here-doc (content correct), against the Edit-only rule; one build's output sent to `/tmp` and deleted.
+
+ocr review of `9703fdf` (T5R.15-I1): two files reviewed (`app.css`, `ReviewCard.tsx`; three test/evidence files excluded), no findings. Raw output: [ocr/T5R.15-I1-9703fdf.json](ocr/T5R.15-I1-9703fdf.json).
