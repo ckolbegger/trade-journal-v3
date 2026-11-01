@@ -255,3 +255,31 @@ Section 6.1a's mounted cases whose folding moves, each with its expected values 
 | `ReviewView.test.tsx`, "should keep an earlier session listed with its saved Mark while the card stays open ..." and "should keep a value typed into a Mark entry ..."; `CardMarks.test.tsx`, "should keep an earlier session saved Mark when the trader pages away and back" | Rendering continuity and drafts. | Stay mounted (section 6.1a). The saved date leaving the gap list and its revision are in `fold`, fourth case: Friday leaves `missing`, `revisions` holds 1; a newly acknowledged date stays listed as acknowledged with its acknowledgment; a previously acknowledged date saved with an exact Mark leaves `acknowledged`. |
 
 Plain-data cases for the fold and standing logic that the mounted cases exercise only through the screen: `fold` case 1 (new Trade order from `Opened`), 2 (Ready `ActionSaved` and `DebtResolved` replace completion and binding, ChangedDuringAssembly leaves the Review), 3 (saved key on its Review-date row, Manual task cleared, Trades, completion and binding replaced), 5 (ChangedDuringAssembly applies the saved keys only); `standing` case 1 (`MarkSaved`, `MarksConflict` moved keys: Available "33.10" at 1, Available "9" at 4); `marksOf` (T-A: XYZ row and Friday; T-F: XYZ row, no Friday).
+
+### ocr review of `7359c21`
+
+Session `d8033828-061d-4baa-aa58-6332892285ea`, 1 file reviewed, 2 findings. Raw output: [ocr/T5R2.7-7359c21.json](ocr/T5R2.7-7359c21.json). Main-session notes on the task: fold case 5 first passed because its `ChangedDuringAssembly` branch had been written with case 3; the subagent backed it out to a genuine red and restored it (a correction, not a first-run pass). The table cases use a small fixture built from the UI shapes (`CardMarks.test.tsx`, `cardProgress`), not the stack-backed `cardFixture`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/screens/held-review.ts:61` | `learn` overwrites a key's learned standing with whatever result arrives last, so a late `MarksConflict` at revision 1 replaces a `MarkSaved` at revision 2. | Doubtful, with a failure scenario: a Save Marks request in flight returns its `Conflict` after a per-row save of the same key has been folded. A172 says a key's revision never moves backward. Becomes T5R2.7-B1. |
+| medium | bug | `src/ui/screens/held-review.ts:156` | A saved earlier session that resolves as `Missing` (a withdrawn acknowledgment) is dropped from both gap lists until the next `open`. | **Dismissed (Wrong as a defect of this task):** `ReviewView.withSavedMarks` at `claude-opus-5.5-d5r` does the same (it filters the saved dates out of `missing` and re-adds only `AcknowledgedUnavailable` ones; `ReviewView.tsx` lines 242–250), and A172 says "a saved earlier session leaves its gap list, and an acknowledged one stays". While the card is open, `CardMarks` keeps its list of earlier sessions as the card opened (A172), so the row stays visible there. Changing it would be a visible change, against D5R2's refactor rule. Listed for the final report. |
+
+### T5R2.7-B1 A learned standing never moves backward
+
+- **Finding:** ocr's first finding above.
+- **Defect:** `learn` replaces a key's learned standing unconditionally, so a result carrying an older revision (a late `MarksConflict`, or a `MarksSaved` after a newer `MarkSaved`) moves the key's standing back, and `standing(held, key)` then returns the older resolution and revision (A172).
+- **Case:** it should keep a key's learned standing when a later MarksConflict or MarksSaved reports it at a lower revision, and take the newer one at the same or a higher revision.
+
+### Cumulative suite at `7359c21`
+
+Date 2026-11-01 08:05 EST. The working tree's only uncommitted changes were evidence files. T5R2.7 closes after T5R2.7-B1.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 77 passed (77)`, `Tests 1037 passed (1037)`, exit 0 | `suite-runs/t5r2-7-held-review-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-7-held-review-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.1m)`, exit 0 | `suite-runs/t5r2-7-held-review-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-7-held-review-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.

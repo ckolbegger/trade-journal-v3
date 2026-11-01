@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 209453,
+    "input_tokens": 207587,
+    "output_tokens": 1866,
+    "cache_read_tokens": 26880,
+    "elapsed": "1m59s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 10,
+      "file_find": 2,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/held-review.ts",
+      "content": "Preserve the highest learned revision when merging results. For example, folding `MarkSaved` at revision 2 followed by a delayed `MarksConflict` at revision 1 replaces revision 2 here. If the held Review still lists `None` (or the session has left its gap list), `standing()` then returns revision 1, violating the non-decreasing standing invariant and binding subsequent saves to a stale revision. Compare each incoming revision with the existing learned standing before replacing it, and add a test for results received in descending revision order.",
+      "existing_code": "  return { ...held, standings: { ...held.standings, ...learned } };",
+      "start_line": 61,
+      "end_line": 61,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/held-review.ts",
+      "content": "Keep an earlier session in `missing` when its saved resolution is `Missing`. `SaveReviewMarks` accepts `WithdrawAcknowledgment`, which returns a `Missing` resolution, but this code removes that date from both gap lists. Consequently, withdrawing an earlier acknowledgment makes the session disappear from `marksOf()` until the next open, rather than allowing the user to fill the now-missing Mark. Reclassify saved dates by resolution: retain/add Missing dates in `missing`, retain acknowledged dates in `acknowledged`, and remove only Available dates from both.",
+      "existing_code": "        return { ...group, missing: group.missing.filter((date) =\u003e !dates.has(date)), acknowledged, revisions, acknowledgments };",
+      "start_line": 156,
+      "end_line": 156,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/held-review.ts",
+      "files": [
+        "src/ui/screens/held-review.ts"
+      ]
+    }
+  ],
+  "session_id": "d8033828-061d-4baa-aa58-6332892285ea",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d8033828-061d-4baa-aa58-6332892285ea",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7359c211",
+      "resolved_base": "aa5d7a77f49b455a79b4405e56b222e8c80e767c",
+      "resolved_head": "7359c2111d85c8075e0844e7e0c74abefd09c96d",
+      "exact_range": "aa5d7a77f49b455a79b4405e56b222e8c80e767c..7359c2111d85c8075e0844e7e0c74abefd09c96d",
+      "source_artifact_sha256": "21b97cb6039800b67c303f541c84a45fd45defd1c439e84a7ef2a2a5a07509a8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "e982430d4b4537c8a81ba02949249d42d60171c537a43d2fa0fc41f4664619c2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "e982430d4b4537c8a81ba02949249d42d60171c537a43d2fa0fc41f4664619c2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 118513
+  }
+}
