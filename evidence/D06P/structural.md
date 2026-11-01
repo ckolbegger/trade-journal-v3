@@ -119,3 +119,7 @@ Run on 2026-11-01. Scratch repository from `mktemp -d` (`/var/folders/ks/n63g0mm
 | T6P.2 check | `.claude/scripts/full-suite.sh --choose-tier c7ba533` (in the worktree) | `task` (its diff to HEAD holds the T6P.2 script, `evidence/` and `plan/`, none on the full-tier list) | 0 |
 
 No browser run was needed. The scratch repository's red run used the committed script (fix not yet applied); the green run used the edited script.
+
+### ocr review of `73387a7` (T6P.2-B1)
+
+Session `ec3f2cf0-af59-4e24-b230-aa80de3905f2`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), no findings. Raw output: [ocr/T6P.2-B1-73387a7.json](ocr/T6P.2-B1-73387a7.json).
