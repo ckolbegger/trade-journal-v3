@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 145230,
+    "input_tokens": 143914,
+    "output_tokens": 1316,
+    "cache_read_tokens": 13440,
+    "elapsed": "1m1s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_search": 5,
+      "file_find": 3,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/d06p/d2/ui-alignment-e2e.ts",
+      "files": [
+        "src/itg/d06p/d2/ui-alignment-e2e.ts"
+      ]
+    }
+  ],
+  "session_id": "66fddaf4-019b-4f3b-8e25-764b2b7dd4aa",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "66fddaf4-019b-4f3b-8e25-764b2b7dd4aa",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "81b19445",
+      "resolved_base": "58da0f3bc684a46b743f6aadb5ce3f9f6b7aa241",
+      "resolved_head": "81b194458757d80e7bd4ad81e16d036c12bf0fb9",
+      "exact_range": "58da0f3bc684a46b743f6aadb5ce3f9f6b7aa241..81b194458757d80e7bd4ad81e16d036c12bf0fb9",
+      "source_artifact_sha256": "c4c161b50625523785e71f18ecb54868c18f8a8832077b4fe2f4e9769c52def1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0cb01a86864051fdc7b21c969ed4e9e8c9abf5471856420f279f6536dccafb46",
+          "path": "src/itg/d06p/d2/ui-alignment-e2e.ts",
+          "fingerprint": "0d9e3e19b2c39a986f3b45c026a00671fee6f0a565cd2b0d6c5234c60bc234b8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0cb01a86864051fdc7b21c969ed4e9e8c9abf5471856420f279f6536dccafb46",
+          "path": "src/itg/d06p/d2/ui-alignment-e2e.ts",
+          "fingerprint": "0d9e3e19b2c39a986f3b45c026a00671fee6f0a565cd2b0d6c5234c60bc234b8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 60931
+  }
+}

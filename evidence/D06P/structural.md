@@ -267,3 +267,9 @@ Seven of the 17 bodies keep a profile per width or stage (rows 1 to 6 and 9, wit
 Both edits were reverted by Edit; `git diff claude-opus-5.5-d5r2 -- src | wc -l` is 0 and `dist-faults` was rebuilt from the restored source before the full `npm run test:e2e` run.
 
 **Checks.** `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps` all exit 0. Ports 5175, 9341 and 9342 had no listener before or after every browser run. (A Firefox Nightly process belonging to the user was running throughout; it was not touched.)
+
+### ocr review of `3cd7ffd`
+
+Test-only commit, reviewed by the relocation procedure: a scratch clone outside the worktree, base `58da0f3b` holding the parent-state spec as `src/itg/d06p/d2/ui-alignment-e2e.ts` with both `support.ts` files, and scratch commit `81b19445` applying the change. Session `66fddaf4-019b-4f3b-8e25-764b2b7dd4aa`, model gpt-6.1-sol (ocr v1.13.3), 1 file reviewed, no findings. Raw output: [ocr/T6P.4-3cd7ffd.json](ocr/T6P.4-3cd7ffd.json).
+
+Main-session check of the subagent's summary: `seedTrades` already ended by clicking the Trades link and waiting for the Open Trades table; T6P.4 moved those two lines into `showOpenTrades` and calls it from `seedTrades`, so the non-collapsed caller (the "one-line uppercase headers … at 1280" test) runs the same steps as before. The temporary `e2e/d2/tmp-mutation.spec.ts` used for the per-width mutation runs is not in the commit or the working tree.
