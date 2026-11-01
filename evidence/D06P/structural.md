@@ -72,3 +72,19 @@ Run on 2026-11-01 against `.claude/scripts/full-suite.sh` (HEAD `0dde16c`, scrip
 Ports 5175, 9341 and 9342 were free before and after each run. `git status --short evidence` shows only the two new output files; no other evidence folder changed.
 
 Extra wiring checks (not part of the plan's list): `… <scratch>/D99 auto-check browser-auto c7ba533` printed `browser tier: task (no changed path since c7ba533 is on the full-tier list)`, ran `browser-task` (no `e2e/d99`, so one call) and reported `5 passed`, exit 0; its output went to the scratchpad, not to evidence. `browser-auto` with no base, and a fourth argument on another stage, print the usage and exit 2. The full-tier branch of `browser-auto` (it sets the stage to `browser`) was not run, since that is a 7-minute full run; `--choose-tier 9b93ca7` shows the choice it would act on.
+
+### ocr review of `50a24f7`
+
+Session `45944089-b9af-4c61-aa71-81175efd1458`, model gpt-6.1-sol, 1 file reviewed (`.claude/scripts/full-suite.sh`, in place), 3 comments. Raw output: [ocr/T6P.2-50a24f7.json](ocr/T6P.2-50a24f7.json).
+
+| Severity | Location | Claim | Assessment | Bug task |
+|---|---|---|---|---|
+| medium | `full-suite.sh:47-48` | `git diff --name-only` quotes non-ASCII paths, so a change only to e.g. `src/ui/é.tsx` matches no pattern and picks the task tier. | Valid (reproduced in a scratch repo by the reviewer) | T6P.2-B1 |
+| medium | `full-suite.sh:47` | With default rename detection, `--name-only` lists only the destination, so a move out of `src/ui/` into an unlisted directory picks the task tier. | Valid (reproduced) | T6P.2-B2 |
+| medium | `full-suite.sh:102` | `$current` is expanded unquoted inside the second Playwright command, so a `TJ_E2E_CURRENT` path with spaces or shell metacharacters is split or interpreted. | Doubtful: derived names are alphanumeric, only a hand-set override can trigger it; it has a failure scenario, so it becomes a bug task | T6P.2-B3 |
+
+#### Bug tasks
+
+- **T6P.2-B1 Non-ASCII paths in the tier rule.** Defect: a change under a full-tier path whose name has a non-ASCII character is printed quoted and escaped by git, matches no pattern, and gets the task tier. Check: `--choose-tier` prints `full: <path>` for a base whose diff to HEAD changes only such a file under `src/ui/` (reproduced red first in a scratch repository), and the earlier T6P.2 checks still hold.
+- **T6P.2-B2 Renames out of a full-tier path.** Defect: a file moved from a full-tier path to an unlisted one lists only its destination, so the move gets the task tier. P55 says the full tier applies when the commits "touch" a listed path, and the source of a move is touched. Check: `--choose-tier` prints `full: <source path>` for a base whose diff to HEAD only moves `src/ui/x.tsx` to an unlisted directory (red first in a scratch repository), and the earlier checks still hold.
+- **T6P.2-B3 The current folder is passed as one argument.** Defect: a `TJ_E2E_CURRENT` holding a space or a shell metacharacter is split or interpreted in `browser-task`'s second call. Check: with `TJ_E2E_CURRENT` set to an existing folder whose name has a space, the second call receives it as one argument (red first, shown without running a browser suite where possible), and the T6P.2 `browser-task` checks still hold.
