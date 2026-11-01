@@ -10,6 +10,7 @@ import { reflectionDefinition } from '../../../tests/support/position-change-for
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
+import { cardProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -46,6 +47,7 @@ const trade = (tradeId: string, underlying: string, over: Partial<WalkedTrade>):
   basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
   rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 2n) },
   reflections: { due: 0, later: 0 },
+  progress: cardProgress(),
   ...over,
 });
 const TB = trade('t-b', 'ABC', {
@@ -70,6 +72,7 @@ const TA = trade('t-a', 'XYZ', {
   reasons: [{ code: 'PressureTowardTarget' }],
   rangePosition: { kind: 'Placed', now: rational(9n, 17n), atEntry: rational(134n, 425n) },
   reflections: { due: 1, later: 1 },
+  progress: cardProgress(1, 1),
   figures: { riskToStop: value(450n), pnl: value(180n), rewardRiskNow: value(8n, 9n) },
 });
 const TE = trade('t-e', 'JKL', {

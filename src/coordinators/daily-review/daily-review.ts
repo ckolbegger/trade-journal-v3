@@ -21,6 +21,8 @@ import type {
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
   OwedReflection,
+  CardProgress,
+  PanelProgress,
   PostMarksReview,
   PostSaveReview,
   ReviewBinding,
@@ -309,10 +311,25 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
     };
+    const actions = await deps.journal.queryActions({ reviewDate });
+    // A card's panels in work order; it is done when every panel is (A164).
+    const progressOf = (tradeId: string): CardProgress => {
+      const reflections = reflectionsOf(tradeId);
+      const rows = today.filter((row) => row.trades.includes(tradeId));
+      const needed = rows.filter((row) => row.task === 'Manual').length;
+      const owed = !(tradeId in actions.actions);
+      const panels: PanelProgress[] = [
+        { panel: 'Marks', done: needed === 0, resolved: rows.length - needed, needed },
+        { panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later },
+        { panel: 'Action', done: !owed, owed },
+      ];
+      return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };
+    };
     const walked = ranked.map(
       ({ item, evaluation }): WalkedTrade => ({
         ...item,
         reflections: reflectionsOf(item.tradeId),
+        progress: progressOf(item.tradeId),
         ...(evaluation && { figures: { riskToStop: evaluation.ongoingRiskToStop, pnl: evaluation.currentMarkedPnl, rewardRiskNow: evaluation.rewardRiskNow } }),
       }),
     );
@@ -321,7 +338,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       { family: 'Trades', trades: walked },
     ];
 
-    const actions = await deps.journal.queryActions({ reviewDate });
     const reasons: IncompleteReason[] = [
       ...today
         .filter((row) => row.task === 'Manual')

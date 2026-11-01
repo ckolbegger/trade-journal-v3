@@ -79,6 +79,19 @@ export interface ReflectionCounts {
   readonly later: number;
 }
 
+// A card's panels in work order, as counts and flags (A164). Words are the screen's.
+export type PanelProgress =
+  | { readonly panel: 'Marks'; readonly done: boolean; readonly resolved: number; readonly needed: number }
+  | { readonly panel: 'Reflections'; readonly done: boolean; readonly dueNow: number; readonly later: number }
+  | { readonly panel: 'Action'; readonly done: boolean; readonly owed: boolean };
+
+export interface CardProgress {
+  readonly kind: 'Walked';
+  readonly panels: readonly PanelProgress[];
+  // Every panel is done (A150).
+  readonly done: boolean;
+}
+
 export interface SliderFigures {
   readonly riskToStop: TradeEvaluation['ongoingRiskToStop'];
   readonly pnl: TradeEvaluation['currentMarkedPnl'];
@@ -88,6 +101,7 @@ export interface SliderFigures {
 // A Trade of the walk, with its reflection counts; an owed reflection never moves its band.
 export interface WalkedTrade extends ReviewTradeItem {
   readonly reflections: ReflectionCounts;
+  readonly progress: CardProgress;
   // The figures the card's slider describes (P39, A150): the same evaluation results `getTrade` returns, unformatted.
   // Absent when the Trade's facts cannot be replayed.
   readonly figures?: SliderFigures;

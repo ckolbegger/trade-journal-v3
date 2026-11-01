@@ -9,6 +9,7 @@ import type { DailyTradeReview, ExpectedResolutionRevision, IncompleteReason, Ma
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
+import { cardProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -53,7 +54,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
     cutoff: CUTOFF,
     families: [
       { family: 'Marks', today: over.today ?? [], earlier: over.earlier ?? [] },
-      { family: 'Trades', trades: (over.trades ?? []).map((t) => ({ ...t, reflections: { due: 0, later: 0 } })) },
+      { family: 'Trades', trades: (over.trades ?? []).map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() })) },
     ],
     completion: over.completion ?? { kind: 'Complete' },
     binding,

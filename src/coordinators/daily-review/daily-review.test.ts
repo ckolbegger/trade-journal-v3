@@ -817,8 +817,8 @@ describe('getTrade', () => {
     await breakFirstExecution(stack, e);
     const review = await overview(stack);
     const { reviewDate, binding } = review;
-    // The Trade card's attention is the overview item without its reflection counts and slider figures (T5.8, T5R.3-B3).
-    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'figures')));
+    // The Trade card's attention is the overview item without its reflection counts, card progress and slider figures (T5.8, T5R.3-B3, T5R2.4).
+    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'progress' && key !== 'figures')));
 
     // A disagreement between stored records and facts keeps its Blocker reason, with the figures still evaluated.
     const disagreeing = await stack.dailyReview.getTrade({ reviewDate, tradeId: d, binding });
@@ -954,5 +954,63 @@ describe('Plan baseline (P40)', () => {
       }) as unknown,
     });
     expect(evaluation?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
+  }, 30_000);
+});
+
+describe('card progress in open (A164)', () => {
+  const progressOf = (result: OpenDailyReviewResult, tradeId: string) => walk(result).find((t) => t.tradeId === tradeId)!.progress;
+  const marksPanel = (resolved: number, needed: number) => ({ panel: 'Marks', done: needed === 0, resolved, needed });
+  const reflectionsPanel = (dueNow: number, later: number) => ({ panel: 'Reflections', done: dueNow === 0, dueNow, later });
+  const actionPanel = (owed: boolean) => ({ panel: 'Action', done: !owed, owed });
+
+  it('should return each walked Trade progress with its panels Marks, Reflections, Action in that order and the counts of the expected-progress table, none of them done', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b, c, e, f } = await cardFixture(stack);
+    const opened = await open(stack, MONDAY_1700);
+
+    const expected: readonly (readonly [string, number, number, number, number])[] = [[a, 1, 0, 1, 1], [b, 1, 0, 0, 0], [c, 0, 1, 0, 0], [e, 1, 0, 0, 0], [f, 1, 0, 0, 0]];
+    for (const [tradeId, resolved, needed, dueNow, later] of expected) {
+      expect(progressOf(opened, tradeId)).toEqual({
+        kind: 'Walked',
+        panels: [marksPanel(resolved, needed), reflectionsPanel(dueNow, later), actionPanel(true)],
+        done: false,
+      });
+    }
+    expect(walk(opened)).toHaveLength(5);
+  }, 30_000);
+
+  it('should count a shared Instrument Missing Mark as needed on every card that holds it: T-A and T-F each 0 resolved and 1 needed without Marks', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, f } = await cardFixture(stack, { withoutMarks: true });
+    const opened = await open(stack, MONDAY_1700);
+
+    for (const tradeId of [a, f]) expect(progressOf(opened, tradeId).panels[0]).toEqual(marksPanel(0, 1));
+  }, 30_000);
+
+  it('should count an acknowledged Review-date Mark as resolved: T-C 1 resolved and 0 needed once DEF is acknowledged', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { c } = await cardFixture(stack);
+    await stack.acknowledge('DEF');
+    const opened = await open(stack, MONDAY_1700);
+
+    expect(progressOf(opened, c).panels[0]).toEqual(marksPanel(1, 0));
+  }, 30_000);
+
+  it('should mark the Action panel done, and the card done, once an Action is saved for a Trade with nothing else owed: T-E after Hold', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { e } = await cardFixture(stack);
+    await stack.saveAction(e, 'Hold');
+    const opened = await open(stack, MONDAY_1700);
+
+    expect(progressOf(opened, e)).toEqual({ kind: 'Walked', panels: [marksPanel(1, 0), reflectionsPanel(0, 0), actionPanel(false)], done: true });
+  }, 30_000);
+
+  it('should keep T-A not done after its Action is saved while D-1 is due, with the Reflections panel 1 due now and 1 later', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack);
+    await stack.saveAction(a, 'Hold');
+    const opened = await open(stack, MONDAY_1700);
+
+    expect(progressOf(opened, a)).toEqual({ kind: 'Walked', panels: [marksPanel(1, 0), reflectionsPanel(1, 1), actionPanel(false)], done: false });
   }, 30_000);
 });

@@ -150,6 +150,8 @@ export type {
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
   SliderFigures as SliderEvaluation,
   ReflectionCounts,
+  CardProgress,
+  PanelProgress,
   ReflectionSaveBinding,
   ResolveReviewDebtRequest,
   WalkedTrade,

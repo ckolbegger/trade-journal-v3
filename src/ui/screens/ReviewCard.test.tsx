@@ -12,6 +12,7 @@ import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prom
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
+import { cardProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -43,7 +44,7 @@ function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = 
     cutoff: '2026-10-12T20:00:00Z',
     families: [
       { family: 'Marks', today: [], earlier: [] },
-      { family: 'Trades', trades: trades.map((t) => ({ ...t, reflections: { due: 0, later: 0 } })) },
+      { family: 'Trades', trades: trades.map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() })) },
     ],
     completion: missing.length > 0 ? { kind: 'Incomplete', reasons: missing.map((tradeId) => ({ code: 'ActionMissing' as const, tradeId })) } : { kind: 'Complete' },
     binding,
@@ -1216,7 +1217,7 @@ const owingReview = (): Ready =>
         today: [markRow('XYZ'), markRow('ABC')],
         earlier: [{ instrumentKey: 'XYZ', trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
       },
-      { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), reflections: { due: 1, later: 1 } }] },
+      { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), reflections: { due: 1, later: 1 }, progress: cardProgress(1, 1) }] },
     ],
   });
 const owedPair = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'DueInNextReview', '2026-10-12T14:30:00Z', [{}])];
@@ -1335,7 +1336,7 @@ describe('Action (A159)', () => {
 describe('moving on', () => {
   it('should open the next panel that is not done when a panel work is finished, and after an Action save open the card the result names as the next step, collapsing this one', async () => {
     const user = userEvent.setup();
-    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, reflections: { due: 0, later: 0 } }));
+    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() }));
     const owing: ReviewCompletion = {
       kind: 'Incomplete',
       reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }],
@@ -1353,7 +1354,7 @@ describe('moving on', () => {
       .mockResolvedValueOnce({
         kind: 'MarksSaved',
         marks: [{ key: keyOf, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
-        review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => (t.tradeId === 't1' ? { ...t, reflections: { due: 1, later: 0 } } : t)), trade: first, nextStep: { kind: 'Trade', trade: first } },
+        review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => (t.tradeId === 't1' ? { ...t, reflections: { due: 1, later: 0 }, progress: cardProgress(1, 0) } : t)), trade: first, nextStep: { kind: 'Trade', trade: first } },
       })
       .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterDebt, nextStep: { kind: 'Done' }, binding } })
       .mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: atT2, nextStep: { kind: 'Trade', trade: next }, binding } });
@@ -1404,7 +1405,7 @@ describe('moving on from Reflections', () => {
 describe('moving on from the panel that finished', () => {
   it('should advance from the Marks panel when Save Marks finishes after the trader opened the Reflections panel, leaving Reflections open while a reflection is due', async () => {
     const user = userEvent.setup();
-    const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, reflections: { due: 0, later: 0 } }));
+    const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, reflections: { due: 0, later: 0 }, progress: cardProgress() }));
     const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
     const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const trade = tradeReview('t1', 'XYZ', { reflections: owedPair });
@@ -1423,7 +1424,7 @@ describe('moving on from the panel that finished', () => {
     held.resolve({
       kind: 'MarksSaved',
       marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
-      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => ({ ...t, reflections: { due: 1, later: 1 } })), trade, nextStep: { kind: 'Trade', trade } },
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => ({ ...t, reflections: { due: 1, later: 1 }, progress: cardProgress(1, 1) })), trade, nextStep: { kind: 'Trade', trade } },
     });
 
     await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy());
@@ -1461,7 +1462,7 @@ describe('panels (A152)', () => {
       kind: 'Incomplete',
       reasons: [...keys.map((instrumentKey) => ({ code: 'MarkMissing', instrumentKey, tradingDate: '2026-10-12', trades: ['t1'] }) as const), { code: 'ActionMissing', tradeId: 't1' }],
     });
-    const walked = [{ ...item('t1', 'XYZ'), reflections: { due: 0, later: 0 } }];
+    const walked = [{ ...item('t1', 'XYZ'), reflections: { due: 0, later: 0 }, progress: cardProgress() }];
     const review = ready([item('t1', 'XYZ')], [], { completion: markReasons('XYZ', 'ABC'), families: [{ family: 'Marks', today: [markRow('XYZ'), markRow('ABC')], earlier: [] }, { family: 'Trades', trades: walked }] });
     const trade = tradeReview('t1', 'XYZ');
     const facade = walkFacade(review, trade);

@@ -11,6 +11,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { tradeSummary } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
+import { cardProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -42,6 +43,7 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
   rangePosition: { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: underlying, date: MONDAY },
   reflections: { due: 0, later: 0 },
+  progress: cardProgress(),
   ...over,
 });
 const TA = walked('t-a', 'XYZ');
