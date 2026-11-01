@@ -2,6 +2,9 @@
 // reach domain code only through src/app (D1 section 2). Fixed for D2 by T2.11.
 import type { WorkspaceStatus } from '../coordinators/workspace/index.ts';
 
+// Journal Debt: when an Outstanding Debt falls due against the Review's closes (D5R2 A166).
+export type { DueClassification } from '../domain/journal-debt/index.ts';
+
 // Workspace: status, initialization, migration, and the Installed Capability Manifest.
 export type {
   InitializationReceipt,
@@ -40,7 +43,6 @@ export type {
 
 // Trade Views and Reporting: the Planned and Open lists and Trade Detail.
 export type {
-  DebtDueStatus,
   IncoherentFactFinding,
   IncoherentOpenTradeItem,
   IncoherentPlannedTradeItem,
@@ -147,7 +149,6 @@ export type {
   RangePosition,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
   SliderFigures as SliderEvaluation,
-  ReflectionClassification,
   ReflectionCounts,
   ReflectionSaveBinding,
   ResolveReviewDebtRequest,

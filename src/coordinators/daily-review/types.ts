@@ -1,4 +1,5 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
+import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { ExecutionFact, IncoherentFacts, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
@@ -198,9 +199,6 @@ export interface TradeSaveBinding {
   readonly databaseName: string;
 }
 
-// When an Outstanding reflection falls due, against the Review Date's closes (A63): Due now, in the next Review, or the one after.
-export type ReflectionClassification = 'Due' | 'DueInNextReview' | 'DueInReviewAfterNext';
-
 // What a resolution of one reflection must present: the Debt revision and the snapshot definition revision it was rendered from.
 export interface ReflectionSaveBinding {
   readonly debtId: string;
@@ -214,7 +212,7 @@ export interface OwedReflection {
   readonly definition: EntryDefinitionRecord;
   readonly economicTime: Instant;
   readonly executions: readonly ExecutionFact[];
-  readonly classification: ReflectionClassification;
+  readonly classification: DueClassification;
   readonly saveBinding: ReflectionSaveBinding;
 }
 

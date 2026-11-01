@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
-import type { OwedReflection, PostSaveReview, ReflectionClassification } from '../../app/types.ts';
+import type { DueClassification, OwedReflection, PostSaveReview } from '../../app/types.ts';
 import { decimalMoney as price, localTime, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
 
 // Shared with Trade Detail, whose Debt due status has the same three values.
-export const DUE_TEXT: Record<ReflectionClassification, string> = {
+export const DUE_TEXT: Record<DueClassification, string> = {
   Due: 'Due',
   DueInNextReview: 'Due in the next Review',
   DueInReviewAfterNext: 'Due in the Review after next',
@@ -125,7 +125,7 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
   if (reflections.length === 0) return null;
   const openUnresolved = open !== undefined && !resolved.has(open);
   // One group per session date of the Position Change, in the order the reflections come (oldest first).
-  const groups: { readonly key: string; readonly date: string; readonly classification: ReflectionClassification; readonly items: OwedReflection[] }[] = [];
+  const groups: { readonly key: string; readonly date: string; readonly classification: DueClassification; readonly items: OwedReflection[] }[] = [];
   for (const reflection of reflections) {
     const date = localTime(reflection.economicTime, timeZone).slice(0, 10);
     const key = `${date}:${reflection.classification}`;

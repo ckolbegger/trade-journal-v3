@@ -19,7 +19,7 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
-import { Temporal } from 'temporal-polyfill';
+import { classifyDue, type DueClassification } from '../../domain/journal-debt/index.ts';
 import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
@@ -215,14 +215,11 @@ export interface OpenCurrentEvaluation {
   readonly datedLine?: DatedLine;
 }
 
-// When an Outstanding Debt falls due, against the Expected Mark Date's Review (A69).
-export type DebtDueStatus = 'Due' | 'DueInNextReview' | 'DueInReviewAfterNext';
-
 // An Outstanding Debt in the narrative: "Reflection owed" beside its Position Change, with its snapshot
 // revision (the NarrativeDebt revision and definition). Without a due status outside session-policy
 // coverage, where there is no Expected Mark Date (decision 56).
 export interface TradeDetailDebt extends NarrativeDebt {
-  readonly dueStatus?: DebtDueStatus;
+  readonly dueStatus?: DueClassification;
 }
 
 export type TradeDetailNarrativeItem = NarrativeItem | TradeDetailDebt;
@@ -393,13 +390,9 @@ function inFactOrder(analysis: TradeAnalysisRecord, derived: DerivedTradeState):
 // coverage there is no frame, and a Debt carries no status (decision 56).
 function withDueStatus(narrative: readonly TradeNarrativeItem[], frame: CurrentFrame): TradeDetailNarrativeItem[] {
   return narrative.map((item): TradeDetailNarrativeItem => {
-    if (item.kind !== 'Debt' || !('resolution' in frame)) return item;
-    const anchored = (close: string) => Temporal.Instant.compare(item.dueAnchor, close) <= 0;
-    let dueStatus: DebtDueStatus;
-    if (anchored(frame.previousCloseInstant)) dueStatus = 'Due';
-    else if (anchored(frame.closeInstant)) dueStatus = 'DueInNextReview';
-    else dueStatus = 'DueInReviewAfterNext';
-    return { ...item, dueStatus };
+    if (item.kind !== 'Debt') return item;
+    const dueStatus = classifyDue(item.dueAnchor, 'resolution' in frame ? { previousClose: frame.previousCloseInstant, close: frame.closeInstant } : undefined);
+    return dueStatus === undefined ? item : { ...item, dueStatus };
   });
 }
 

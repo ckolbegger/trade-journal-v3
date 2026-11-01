@@ -21,7 +21,7 @@ import {
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DebtDueStatus, NarrativeItem, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
+import type { DueClassification, NarrativeItem, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -987,7 +987,7 @@ describe('Actions', () => {
 });
 
 describe('Debt on Trade Detail (A69, P17)', () => {
-  const owedDebt = (id: string, positionChangeId: string, momentTime: string, dueStatus?: DebtDueStatus): TradeDetailDebt => ({
+  const owedDebt = (id: string, positionChangeId: string, momentTime: string, dueStatus?: DueClassification): TradeDetailDebt => ({
     kind: 'Debt',
     id,
     entryType: 'Position Change Reflection',

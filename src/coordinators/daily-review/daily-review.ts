@@ -1,6 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { classifyDue } from '../../domain/journal-debt/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
 import type { FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
@@ -20,7 +21,6 @@ import type {
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
   OwedReflection,
-  ReflectionClassification,
   PostMarksReview,
   PostSaveReview,
   ReviewBinding,
@@ -302,8 +302,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // Outstanding Debt, read once (A63), classified against the close of the session before the Review Date (A75).
     const previousClose = recovered.previousCloseInstant;
     const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;
+    const closes = { previousClose, close: cutoff };
     const dueDebtIds = (tradeId: string) =>
-      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && Temporal.Instant.compare(debt.dueAnchor, previousClose) <= 0).map((debt) => debt.debtId);
+      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && classifyDue(debt.dueAnchor, closes) === 'Due').map((debt) => debt.debtId);
     const reflectionsOf = (tradeId: string): ReflectionCounts => {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
@@ -400,10 +401,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const definition = await deps.journal.getDefinitions({ revision: debt.definitionId });
       if (definition.kind !== 'Found') throw new Error(`no definition ${debt.definitionId}`);
       const positionChange = analysis.positionChanges.find((pc) => pc.factId === debt.origin.factId);
-      let classification: ReflectionClassification;
-      if (Temporal.Instant.compare(debt.dueAnchor, frames.previousCloseInstant) <= 0) classification = 'Due';
-      else if (Temporal.Instant.compare(debt.dueAnchor, cutoff) <= 0) classification = 'DueInNextReview';
-      else classification = 'DueInReviewAfterNext';
+      const classification = classifyDue(debt.dueAnchor, { previousClose: frames.previousCloseInstant, close: cutoff });
       reflections.push({
         debtId: debt.debtId,
         definition: definition.definition,

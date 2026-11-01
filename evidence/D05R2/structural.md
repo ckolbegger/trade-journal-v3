@@ -91,3 +91,17 @@ Date 2026-11-01 06:43 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-2-journal-due-rule-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.3 Coordinators classify through the domain module
+
+Change: Daily Review's two-way `dueDebtIds` (Due when `classifyDue(dueAnchor, {previousClose, close: cutoff}) === 'Due'`) and its three-way reflection classification, and Trade Views' `withDueStatus`, now call `classifyDue` from `src/domain/journal-debt`. Trade Views keeps decision 56 (no status without a frame) through the `undefined` overload: no `resolution` in the frame passes `undefined`, and the Debt carries no `dueStatus`. `ReflectionClassification` and `DebtDueStatus` are removed; `OwedReflection.classification` and `TradeDetailDebt.dueStatus` take `DueClassification`, re-exported from `src/app/types.ts` for the UI (`ReviewReflections.tsx`, `TradeDetail.test.tsx` switched). `DUE_TEXT` stays in place (T5R2.6). No expectation, e2e file, or fixture changed.
+
+| Command | Result |
+| --- | --- |
+| `npm run test:unit -- src/coordinators` | 16 files, 198 tests passed, exit 0 |
+| `npm run test:integration -- d5 d5r` | 19 files, 44 tests passed, exit 0 |
+| `npm run test:unit -- src/ui` | 24 files, 410 tests passed, exit 0 |
+| `rg 'dueAnchor' src/coordinators --glob '!*.test.*'` | three lines, all `classifyDue(...)` calls; no `Temporal.Instant.compare` |
+| `rg 'Temporal.Instant.compare' src/coordinators --glob '!*.test.*'` | two lines, neither on a Debt due anchor: `attention.ts` (lastActivity ordering) and `daily-review.ts` (exposure close lookup) |
+| `rg 'ReflectionClassification\|DebtDueStatus' src tests e2e` | no matches (exit 1) |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
