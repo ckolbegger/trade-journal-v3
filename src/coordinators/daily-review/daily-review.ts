@@ -602,13 +602,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         verify: (current) => (current?.['resolutionRevision'] ?? 'None') === revision,
       });
     }
-    // The shared Journal counter this save advances (ADR 0011): when it alone moved, the save is read again.
-    tx.require({
-      name: `journal@${prepared.snapshot.journalRevision}`,
-      store: 'meta',
-      key: 'journal',
-      verify: (current) => ((current?.['journalRevision'] as number | undefined) ?? 0) === prepared.snapshot.journalRevision,
-    });
+    // Journal's applyPreparedEffects binds the shared counter (ADR 0011): when it alone moved, the save is read again.
     const applied = deps.journal.applyPreparedEffects(tx, prepared, {});
     const committed = await deps.persistence.commit(tx.close());
     if (committed.kind === 'Conflict') return { kind: 'Retry' };
@@ -692,12 +686,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       });
       if (prepared.kind !== 'Prepared') return prepared;
       const tx = beginSemanticTransaction();
-      tx.require({
-        name: `journal@${prepared.snapshot.journalRevision}`,
-        store: 'meta',
-        key: 'journal',
-        verify: (current) => ((current?.['journalRevision'] as number | undefined) ?? 0) === prepared.snapshot.journalRevision,
-      });
       const applied = deps.journal.applyPreparedEffects(tx, prepared, {});
       const committed = await deps.persistence.commit(tx.close());
       // Only the Journal counter moved: prepare again, which reports a Debt resolved meanwhile.
