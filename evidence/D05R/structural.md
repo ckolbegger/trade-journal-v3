@@ -1197,3 +1197,5 @@ Record (implemented):
 ### T5R.14-B1-B2 The abort in the catch can't mask the original error
 
 `tx.abort()` in the synchronous catch is guarded, as at `persistence.ts:277`, so the original error is always the one rethrown.
+
+ocr review of `3ade164` (T5R.14-B1-B1): one file reviewed (three excluded), no findings. The reviewing agent confirmed `keyOf` runs before any request exists, and that the module-level `vi.mock('./schema.ts')` passes through to the real `keyOf` (no mock-reset settings in the config; the file's 22 tests pass). Raw output: [ocr/T5R.14-B1-B1-3ade164.json](ocr/T5R.14-B1-B1-3ade164.json).
