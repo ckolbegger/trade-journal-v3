@@ -1,9 +1,9 @@
 #!/bin/zsh
 # usage: tdd.sh red|green <task> <test file> <test name>
 # Runs one test case and appends a row to evidence/D<nn>/tdd-log.md, where <nn> comes from the
-# task ID (T2.2 -> D02, T12.4 -> D12, T5R.1 -> D05R).
+# task ID (T2.2 -> D02, T12.4 -> D12, T5R.1 -> D05R, T5R2.1 -> D05R2).
 phase=$1; task=$2; file=$3; name=$4
-if [[ ! $task =~ '^T([0-9]+)(R?)\.' ]]; then print "task must look like T<n>.<m> or T<n>R.<m>, got: $task"; exit 2; fi
+if [[ ! $task =~ '^T([0-9]+)([A-Z][A-Z0-9]*)?\.' ]]; then print "task must look like T<n>.<m> or T<n><suffix>.<m> (suffix: an upper-case letter, then upper-case letters or digits), got: $task"; exit 2; fi
 log=$(printf 'evidence/D%02d%s/tdd-log.md' $match[1] $match[2])
 if [[ ! -f $log ]]; then print "no log at $log: create it with its header note first"; exit 2; fi
 out=$(npx vitest run "$file" -t "$name" 2>&1); code=$?
