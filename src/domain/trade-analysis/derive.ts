@@ -428,7 +428,8 @@ function entryWindowOf(record: TradeAnalysisRecord): { resolution: EntryResoluti
   for (const pc of [...record.positionChanges].sort(factOrder)) {
     for (const e of pc.executions) {
       const leg = e.intent.plannedLegId;
-      entered.set(leg, (entered.get(leg) ?? Rational.of(0n)).add(decimal(e.quantity)));
+      // Only a Buy enters; a Sell reduces exposure (P4).
+      if (e.action === 'Buy') entered.set(leg, (entered.get(leg) ?? Rational.of(0n)).add(decimal(e.quantity)));
       window.push(e);
     }
     const filled = record.plan.legs.every((leg) => (entered.get(leg.factId)?.compare(decimal(leg.quantity)) ?? -1) >= 0);
@@ -489,7 +490,7 @@ function legFulfillmentOf(
 ): LegFulfillment[] {
   return plan.legs.map((leg) => {
     const entered = total(
-      facts.filter((e) => e.intent.plannedLegId === leg.factId),
+      facts.filter((e) => e.action === 'Buy' && e.intent.plannedLegId === leg.factId),
       (e) => decimal(e.quantity),
     );
     // Any active Entry Size occurrence on the leg is a Deviation (A25).
@@ -512,7 +513,7 @@ function deviationsOf(record: TradeAnalysisRecord): ExpectedDeviation[] {
     let entered = Rational.of(0n);
     return [...record.positionChanges].sort(factOrder).flatMap((pc): ExpectedDeviation[] => {
       const before = entered;
-      for (const e of pc.executions) if (e.intent.plannedLegId === leg.factId) entered = entered.add(decimal(e.quantity));
+      for (const e of pc.executions) if (e.action === 'Buy' && e.intent.plannedLegId === leg.factId) entered = entered.add(decimal(e.quantity));
       const above = entered.sub(before.compare(planned) > 0 ? before : planned);
       if (above.compare(Rational.of(0n)) <= 0) return [];
       return [

@@ -108,3 +108,15 @@ describe('FIFO Lot Matches', () => {
     ]);
   });
 });
+
+describe('entered quantity', () => {
+  it('should count only Buy Executions as entered, so T-A after X1 and after X2 expects no Entry Size occurrence and Fulfillment FilledAsPlanned, with Entry Quality still resolved at PC2', () => {
+    for (const record of [referenceRecord([PC1, PC2, X1]), referenceRecord([PC1, PC2, X1, X2])]) {
+      const derived = derivedState(record);
+      expect(derived.deviations).toEqual([]);
+      expect(derived.legFulfillment).toEqual([{ plannedLegId: 'leg-1', fulfillment: 'FilledAsPlanned' }]);
+      expect(derived.entryResolution).toEqual({ kind: 'Resolved', positionChangeId: 'pc-2' });
+      expect(derived.entryQuality.kind === 'Value' && exact(derived.entryQuality.value.windowQuantity)).toBe('100/1');
+    }
+  });
+});
