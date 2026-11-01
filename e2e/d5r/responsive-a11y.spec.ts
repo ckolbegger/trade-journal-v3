@@ -98,4 +98,61 @@ test.describe('B5R.11 Responsive and accessible', () => {
     await expectAccessible(page, 'Card list with a Done card and a pinned slider');
     await context.close();
   });
+
+  test('should keep the slider beside the header while the card\'s header is at least 40rem wide, with T-A\'s header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px', async ({ profile }) => {
+    test.setTimeout(120_000);
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const { 'T-A': tA } = await createCardFixture(page);
+    await openReview(page);
+
+    // T-A's header: the head row (the card's header width), the visible text pieces' line boxes, and the slider.
+    const measure = async () => {
+      const head = (await cardItem(page, tA).locator('.review-card-head').boundingBox())!;
+      const slider = (await sliderOf(page, tA).boundingBox())!;
+      const lines = await cardHeader(page, tA).evaluate((button) => {
+        const tops: number[] = [];
+        let top = Infinity;
+        let bottom = 0;
+        let right = 0;
+        for (const span of Array.from(button.querySelectorAll('span'))) {
+          for (const rect of Array.from(span.getClientRects())) {
+            if (rect.width <= 1 || rect.height <= 1) continue; // the visually hidden "Review" word
+            if (!tops.some((top) => Math.abs(top - rect.top) < 4)) tops.push(rect.top);
+            top = Math.min(top, rect.top);
+            bottom = Math.max(bottom, rect.bottom);
+            right = Math.max(right, rect.right);
+          }
+        }
+        return { count: tops.length, top, bottom, right };
+      });
+      return { head, slider, lines };
+    };
+
+    const cases: ReadonlyArray<{ width: number; height: number; beside: boolean }> = [
+      { width: 1280, height: 900, beside: true },
+      { width: 960, height: 900, beside: true },
+      { width: 760, height: 900, beside: true },
+      { width: 700, height: 900, beside: false },
+      { width: 390, height: 844, beside: false },
+    ];
+    for (const { width, height, beside } of cases) {
+      await page.setViewportSize({ width, height });
+      await expect(async () => {
+        const { head, slider, lines } = await measure();
+        const at = `at ${width} px`;
+        if (beside) {
+          expect(head.width, `header width ${at}`).toBeGreaterThanOrEqual(640);
+          expect(slider.x, `slider left of the text ${at}`).toBeGreaterThanOrEqual(lines.right - 1);
+          expect(slider.y, `slider top above the text's bottom ${at}`).toBeLessThan(lines.bottom);
+          expect(slider.y + slider.height, `slider bottom below the text's top ${at}`).toBeGreaterThan(lines.top);
+          expect(lines.count, `lines of header text ${at}`).toBeLessThanOrEqual(2);
+        } else {
+          expect(head.width, `header width ${at}`).toBeLessThan(640);
+          expect(slider.y, `slider below the text ${at}`).toBeGreaterThanOrEqual(lines.bottom - 1);
+          expect(slider.width, `slider width ${at}`).toBeGreaterThanOrEqual(head.width - 2);
+        }
+      }, `slider placement at ${width} px`).toPass({ timeout: 5000 });
+    }
+    await context.close();
+  });
 });

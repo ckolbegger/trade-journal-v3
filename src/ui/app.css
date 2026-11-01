@@ -1066,6 +1066,7 @@ table.lots td:first-child {
   margin-bottom: 0.5rem;
   padding: 0 1rem 0.5rem;
   scroll-margin-top: 1rem;
+  container-type: inline-size;
 }
 .review-card-head {
   display: grid;
@@ -1126,8 +1127,8 @@ table.lots td:first-child {
 .review-panel-summary {
   color: var(--muted);
 }
-/* At narrow widths the slider takes its own full-width row under the Underlying (A162). */
-@media (max-width: 639.98px) {
+/* The slider takes its own full-width row under the header's text only when the card's header is under 40rem wide, whatever the viewport (A162). */
+@container (max-width: 39.99rem) {
   .review-card-head {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
