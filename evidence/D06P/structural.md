@@ -343,3 +343,31 @@ Every expected result in the breakdown's section 3, "T6P.6 Gate runs", is met, s
 | Task tier with a 15-test current folder (`TJ_E2E_CURRENT=e2e/d5r`) | none | 20 tests, about 1 min 26 s |
 | Release history | in the full run | 3 tests, about 15–16 s |
 | `e2e/d2/ui-alignment.spec.ts` alone | 69 tests, 2.1 min (after T6P.3) | 45 tests, 1.6 min (95.7–97.9 s, three runs) |
+
+## Retro: the shell guard refuses HEAD moves in the worktree
+
+Source: the user's retrospective of the D6 prefactor session (2026-11-01). An ocr-review agent ran a commit checkout (`7670ff7c`) in the worktree root and detached HEAD until it switched back. Not a plan task, so there is no breakdown section.
+
+**Change:** `.claude/hooks/guard-shell-writes.sh` now denies `git switch`, any `git checkout` without a `--` path list, `git reset --hard|--soft|--mixed|--merge|--keep`, and `git reset <rev>` with no `--` path list, when the command runs in the project's own repository. It reads the command text only (split at `;`, `&`, `|`), so it stays a guard against habit, not a sandbox. A command runs elsewhere when the hook's `.cwd` is outside the root, when an earlier `cd` in the command goes to a path outside the root (absolute outside the root, `$VAR/...` other than `$CLAUDE_PROJECT_DIR`, or `~`), or when it uses `git -C <path outside the root>`. Deny reason: "moving HEAD in the worktree is not allowed; check commits out in a scratch clone (git clone <root> $(mktemp -d)/repo)."
+
+**Method:** each case was piped to the hook as its own command, never executed: `jq -n --arg c '<command>' --arg d '<cwd>' '{tool_input:{command:$c}, cwd:$d}' | CLAUDE_PROJECT_DIR=<root> .claude/hooks/guard-shell-writes.sh`. A deny prints JSON; an allow prints nothing. The root is `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5`. The cases were driven from a case file by a small runner outside the repository (one runner call per case), so that the live hook did not refuse the test commands themselves.
+
+| # | Command | cwd | Expected | Before | After |
+|---|---|---|---|---|---|
+| 1 | `git checkout 7670ff7c` | root | deny | allow (red) | deny |
+| 2 | `git switch main` | root | deny | allow (red) | deny |
+| 3 | `git checkout -b tmp` | root | deny | allow (red) | deny |
+| 4 | `git reset --hard HEAD~1` | root | deny | allow (red) | deny |
+| 5 | `git status && git checkout abc123` | root | deny | allow (red) | deny |
+| 6 | `git checkout -- src/x.ts` | root | allow | allow | allow |
+| 7 | `git checkout abc123 -- src/x.ts` | root | allow | allow | allow |
+| 8 | `git reset HEAD src/x.ts` | root | allow | allow | allow |
+| 9 | `cd /var/folders/xx/T/ocr-review.ab/repo && git checkout -q -b relocated abc^` | root | allow | allow | allow |
+| 10 | `git -C /tmp/scratch/repo switch x` | root | allow | allow | allow |
+| 11 | `git checkout abc123` | `/tmp/scratch/repo` | allow | allow | allow |
+| 12 | `git log --oneline -3` | root | allow | allow | allow |
+| 13 | `sed -i s/a/b/ src/x.ts` (existing refusal) | root | deny | deny | deny |
+
+Extra checks after the change (not part of the 13): `cd $D/repo && git checkout -q -b relocated abc^` allow; `git reset` allow; `git reset -- src/x.ts` allow; `git reset HEAD~1` deny; `cd $CLAUDE_PROJECT_DIR && git switch x` deny. The deny reason text was read back from the live hook, which also refused the agent's own test commands that contained these git commands as text.
+
+**Known limits:** `git checkout .` and `git reset <path>` without `--` are refused (use `git checkout -- .` and `git reset -- <path>`); a quoted string containing `;`, `&` or `|` followed by a HEAD-moving git command can be refused wrongly; `cd` inside a subshell is treated as if it applied to the rest of the command.
