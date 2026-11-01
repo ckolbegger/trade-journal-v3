@@ -179,18 +179,19 @@ function marksStatus(needed: number, rows: number, earlier: number): string {
   return 'None';
 }
 
-function reflectionsStatus(due: number, anyResolved: boolean, owed: number): string {
+// Owed counts the reflections still outstanding, so one answered or declined in this view is no longer owed.
+function reflectionsStatus(due: number, owed: number, anyResolved: boolean): string {
   if (due > 0) return `${due} due`;
-  if (anyResolved) return 'Resolved';
   if (owed > 0) return 'Not due';
+  if (anyResolved) return 'Resolved';
   return 'None';
 }
 
-function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: Remaining): Record<PanelName, PanelHeader> {
+function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: Remaining, resolvedDebts: ReadonlySet<string>): Record<PanelName, PanelHeader> {
   const rows = marks.today.length;
   const earlier = marks.earlier.reduce((sum, group) => sum + group.missing.length + group.acknowledged.length, 0);
   const date = shortDate(trade.saveBinding.reviewDate);
-  const owed = trade.reflections.length;
+  const owed = trade.reflections.filter((r) => !resolvedDebts.has(r.debtId)).length;
   const due = remaining.reflections;
   const form = trade.form;
   return {
@@ -201,7 +202,7 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
     },
     Reflections: {
       summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
-      status: reflectionsStatus(due, trade.reflections.some((r) => r.classification === 'Due'), owed),
+      status: reflectionsStatus(due, owed, owed < trade.reflections.length),
       done: due === 0,
     },
     Action: {
@@ -215,7 +216,9 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
 function CardBody({ facade, trade, name, advance, go, remaining, marks, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
-  const headers = panelHeaders(trade, marks, remaining);
+  // The reflections answered or declined in this view: the panel reports each as it resolves.
+  const [resolvedDebts, setResolvedDebts] = useState<ReadonlySet<string>>(new Set());
+  const headers = panelHeaders(trade, marks, remaining, resolvedDebts);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
   const nextAfter = (from: PanelName): PanelName | undefined => {
     const start = PANELS.indexOf(from);
@@ -290,7 +293,7 @@ function CardBody({ facade, trade, name, advance, go, remaining, marks, tradeLin
           </h4>
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} tradeLine={tradeLine}onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
-            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
+            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onDebtResolved={(debtId) => setResolvedDebts((set) => new Set(set).add(debtId))} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>

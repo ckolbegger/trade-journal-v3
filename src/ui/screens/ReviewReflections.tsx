@@ -18,6 +18,8 @@ interface ReflectionsProps {
   readonly reflections: readonly OwedReflection[];
   // The Review under the facts a resolution left: the host applies its progress and completion.
   readonly onReview: (review: PostSaveReview) => void;
+  // A reflection was answered or declined here: the host counts it no longer owed.
+  readonly onDebtResolved: (debtId: string) => void;
   // No reflection is left to resolve in the card: the host moves focus on.
   readonly onNoneRemaining: () => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
@@ -79,7 +81,7 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
 
 // The Trade's Outstanding reflections above its Action form (A71), each with its Position Change and when it is due.
 // One Debt form is open at a time; a resolved reflection stays in the card as the result rendered it.
-export function ReviewReflections({ facade, reviewDate, reflections, onReview, onNoneRemaining, onEntryDirty }: ReflectionsProps) {
+export function ReviewReflections({ facade, reviewDate, reflections, onReview, onDebtResolved, onNoneRemaining, onEntryDirty }: ReflectionsProps) {
   const { timeZone = 'UTC', report } = useRuntime();
   const [open, setOpen] = useState<string>();
   const [resolved, setResolved] = useState<ReadonlySet<string>>(new Set());
@@ -115,6 +117,7 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
   };
   const resolvedOne = (debtId: string) => {
     setResolved(new Set(resolved).add(debtId));
+    onDebtResolved(debtId);
     // The panel's work is finished once nothing due now remains; later ones stay listed and answerable.
     setFocusNext({ debtId: reflections.find((r) => r.debtId !== debtId && !resolved.has(r.debtId) && r.classification === 'Due')?.debtId });
   };

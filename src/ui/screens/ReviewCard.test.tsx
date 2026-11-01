@@ -1252,6 +1252,32 @@ describe('reflections', () => {
     expect(within(monday).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ })).toBeTruthy();
   });
 
+  it('should count only the reflections still owed in the Reflections panel summary, reading 1 owed, 0 due now and Not due after the due one of two is answered, and None owed and Resolved once both are', async () => {
+    const user = userEvent.setup();
+    const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
+    const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
+    const post = { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
+    const resolved = (debtId: string) => ({ kind: 'DebtResolved', decline: { id: `decl-${debtId}` } as never, debt: { debtId, status: 'Settled', revision: `${debtId}-rev-2` } as never, review: post }) as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(resolved('d1')).mockResolvedValueOnce(resolved('d2'));
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    expect(within(panelHeader(card, 'Reflections')).getByText('2 owed, 1 due now')).toBeTruthy();
+
+    await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    expect(await within(card).findByText('Declined to reflect.')).toBeTruthy();
+
+    // The one answered is no longer owed: the same state read fresh shows one owed and none due.
+    await vi.waitFor(() => expect(within(panelHeader(card, 'Reflections')).getByText('1 owed, 0 due now')).toBeTruthy());
+    expect(within(panelHeader(card, 'Reflections')).getByText('Not due')).toBeTruthy();
+
+    await user.click(panelHeader(card, 'Reflections'));
+    await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
+    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await vi.waitFor(() => expect(within(panelHeader(card, 'Reflections')).getByText('None owed')).toBeTruthy());
+    expect(within(panelHeader(card, 'Reflections')).getByText('Resolved')).toBeTruthy();
+  });
+
   it('should move focus into the Reflection form when Reflect on is pressed in a Review card, and back to its button when the form is cancelled', async () => {
     const user = userEvent.setup();
     const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
