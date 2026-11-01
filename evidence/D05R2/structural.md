@@ -522,3 +522,31 @@ Date 2026-11-01 10:14 EST.
 | Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.14-integration.txt` |
 | Browser (Chromium) | `npm run test:e2e` | `179 passed (7.3m)`, exit 0 | `suite-runs/T5R2.14-browser.txt` |
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.14-checks.txt` |
+
+## T5R2.15 Daily Review binds evidence through Market Data
+
+Commit `3cdf1f2`. `checkBinding` drops its `readSnapshot(['observations'])` block, its `IDBKeyRange` Stale-context lookup and the "Read before the frames" comment; `Checked` carries `evidenceBinding` from the frames it already reads, and `attemptSave` stages it with `deps.marketData.bindEvidence(tx, checked.evidenceBinding)` (A176, P54). No test double changed (they spread `stack.marketData`). Verification as the plan states it: `npm run test:unit -- src/coordinators/daily-review` 6 files, 104 passed; `npm run test:integration -- d4 d5 d5r` 39 files, 68 passed, including the AC-REV-005 cases (`ReviewChanged`, nothing written). No existing case changed.
+
+- **The `rg` check, scoped to Daily Review (user decision, 2026-11-01).** The plan's literal `rg "'observations'|IDBKeyRange" src/coordinators` cannot find nothing: it still matches `src/coordinators/workspace/workspace.ts:186–188` (the D5 schema-4 migration's read, present at `claude-opus-5.5-d5r`) and test files (`daily-review/save-marks.test.ts`, `workspace/migration.test.ts`), none of them in the task's scope. The plan's module table states the rule for Daily Review ("no counter copies and no `observations` reads"). The user approved recording this one-time check scoped to Daily Review, with no plan revision: `rg "'observations'|IDBKeyRange" src/coordinators/daily-review --glob '!*.test.*'` finds nothing (exit 1).
+- **Read-only transactions before the Action save's commit: 3 at `981e4fc`, 2 at `3cdf1f2`, one fewer as the plan requires.** Measured with a throwaway test (deleted, not committed): the five-Trade fixture at Monday 17:00, the Review opened and `getTrade` called for trade A, then a counting wrapper around `persistence.readSnapshot` and `commit` passed to `createDailyReview`, and one `SaveTradeAction` (Hold) with nothing changed; `readSnapshot` calls counted up to the first `commit` (result `Saved`, one commit).
+
+### ocr review of `3cdf1f2`
+
+Session `2c626634-471a-434a-901e-7dbf33715962`, 1 file reviewed, no findings. Raw output: [ocr/T5R2.15.json](ocr/T5R2.15.json).
+
+### Cumulative suite at `3cdf1f2`: one browser worker hang
+
+Date 2026-11-01 10:46 EST. Unit 1051 of 1051; integration 117 of 117; checks 12 of 12; browser 178 of 179: `e2e/d2/ui-alignment.spec.ts:578` "T2.40 Trades tables > should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 1280" hit the 30 s test timeout, followed by "Worker teardown timeout of 30000ms exceeded" (the worker's 74th test; run 8.3 min against the usual 7.2). Outputs `suite-runs/T5R2.15-*.txt`. T5R2.15 touches no Trades-table code. Run alone three times by the main session, all three viewports passed each time (9 of 9).
+
+### Cumulative suite at `3cdf1f2`, rerun (T5R2.15 closed)
+
+Date 2026-11-01 10:57 EST. The worker hang did not recur.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 80 passed (80)`, `Tests 1051 passed (1051)`, exit 0 | `suite-runs/T5R2.15-rerun-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.15-rerun-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.3m)`, exit 0 | `suite-runs/T5R2.15-rerun-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.15-rerun-checks.txt` |
+
+The first runner left one self-matching `pgrep -f full-suite.sh` polling loop; the main session stopped it.
