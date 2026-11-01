@@ -52,7 +52,7 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`. Nothing since `claude-opus-5.5-pre-d5r2` (`75f7f18`, the branch's last push) has been pushed, so N is 42 at `claude-opus-5.5-pre-d6c`. There are no uncommitted changes apart from the user's own untracked `.claude/settings.json`, which is never staged. |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, with no `[ahead N]` at the first session: the branch was pushed at `claude-opus-5.5-pre-d6c`, with that tag, at the user's direction on 2026-11-01. Afterwards it reads `[ahead N]`, where N is the number of D6 commits since that tag, until the user asks for a push. There are no uncommitted changes apart from the user's own untracked `.claude/settings.json`, which is never staged. |
 | `git log --oneline claude-opus-5.5-pre-d6c..HEAD` | Empty at the first session. Afterwards, only D6 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit. |
 | `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r29`, `claude-opus-5.5-d5`, `claude-opus-5.5-d5r`, `claude-opus-5.5-d5r2` and `claude-opus-5.5-pre-d6c` |
 | `git rev-parse claude-opus-5.5-d5r2` | `765ac1ea59f36e7d9923362f655c94bbef90e404` |
