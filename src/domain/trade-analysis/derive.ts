@@ -104,9 +104,9 @@ export interface LotMatchResult {
   readonly policy: 'FIFO';
   // The disposing Execution's Economic Time, which places the realization in time.
   readonly disposedAt: Instant;
-  readonly allocatedOpeningFee: Rational;
-  readonly allocatedDisposalFee: Rational;
-  readonly realized: Rational;
+  readonly allocatedOpeningFee: CalculationResult<Rational>;
+  readonly allocatedDisposalFee: CalculationResult<Rational>;
+  readonly realized: CalculationResult<Rational>;
 }
 
 // Derived signed net quantity and Open Lots for one exact Instrument within the Trade.
@@ -374,10 +374,10 @@ function replayOf(facts: readonly ExecutionFact[]): {
         disposingExecutionId: e.factId,
         policy: 'FIFO',
         disposedAt: e.economicTime,
-        allocatedOpeningFee,
-        allocatedDisposalFee,
+        allocatedOpeningFee: value(allocatedOpeningFee),
+        allocatedDisposalFee: value(allocatedDisposalFee),
         // q x (sell price - buy price) less both allocated fees (A80).
-        realized: matched.mul(decimal(e.price).sub(original.price)).sub(allocatedOpeningFee).sub(allocatedDisposalFee),
+        realized: value(matched.mul(decimal(e.price).sub(original.price)).sub(allocatedOpeningFee).sub(allocatedDisposalFee)),
       });
       remaining = remaining.sub(matched);
       const left = { ...lot, unconsumedOpeningFee: lot.unconsumedOpeningFee.sub(allocatedOpeningFee) };
@@ -708,7 +708,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     positions,
     lotMatches,
     lotMatchResults,
-    realizedToDate: lotMatchResults.reduce((sum, r) => sum.add(r.realized), Rational.of(0n)),
+    realizedToDate: lotMatchResults.reduce((sum, r) => (r.realized.kind === 'Value' ? sum.add(r.realized.value) : sum), Rational.of(0n)),
     exposureStart: facts[0]?.economicTime ?? null,
     observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
     fees: {
