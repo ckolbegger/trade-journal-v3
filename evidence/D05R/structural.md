@@ -1457,6 +1457,7 @@ Figures from the critic's completion notice (the harness's own token count). Bri
 | Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|---|
 | critic-1 (T5R.16) | `26e4338` | v2 | 200,119 | 54 | 13 min 34 s | 2 (low; overall PASS) |
+| critic-2 (T5R.16) | `e3ee092` | v2 | 200,204 | 90 | 13 min 15 s | 2 low, plus 1 medium that predates D5R (overall PASS) |
 
 ### T5R.16-B1 The Marks panel's summary counts the Marks that are done (critic 1, defect 1)
 
@@ -1492,3 +1493,27 @@ At `1b1e0c4` (code as of `42bb7da`), started 02:46 EST on 2026-11-01, by `suite-
 | Static and verify checks | 12 of 12 exit 0 | [suite-runs/t5r.16-cumulative-checks.txt](suite-runs/t5r.16-cumulative-checks.txt) |
 
 All green, no reruns. Ports clear before and after.
+
+### Critic 2's reading
+
+**Critic 2 at `e3ee092`** (after B1 and B2): every flow, C5R.1 to C5R.9, passes, and so do the 375 and 320 px checks. Critic 1's two defects did not recur. Report: [critic-2.md](critic-2.md). The main session's reading:
+
+- **Defect 1, the slider reads "Mark missing" for an acknowledged Mark.**
+  - `RangePosition`'s `NotPlaced` `MissingInput` merges the evaluation's `MarkMissing` and `AcknowledgedUnavailable` reasons (`attention.ts`), so the slider can't tell them apart.
+  - The card's figures already say "Acknowledged unavailable: DEF, Mon Oct 12". That contradicts the UI contract ("Acknowledged Unavailable is visibly a trader acknowledgment, not a price").
+  - It becomes bug task **T5R.16-B3**. The implementation decision is that the range position carries which of the two it is, so the slider uses the figures' words.
+- **Defect 2, "2 owed" just after one of two reflections is answered.**
+  - The summary counts `trade.reflections.length`, which still includes reflections answered in this view. A fresh load reads "1 owed, 0 due now · Not due".
+  - Owed means outstanding (A152's "2 owed, 1 due now"), so this departs from the plan.
+  - It becomes bug task **T5R.16-B4**. The implementation decision: "owed" counts the reflections still outstanding, and the status checks in this order: "N due", "Not due" (some outstanding, none due), "Resolved" (none outstanding, and some answered in this view), "None".
+- **Defect 3, predating D5R: the Open list's sticky Underlying cells cover the fixed bottom navigation at 375 and 320 px.**
+  - A click on Review or Trades lands on a table cell. The D4 release does the same, so this is not a D5R regression.
+  - It blocks the phone path into the Review, against the UI contract ("Responsive behavior": equivalent narrow and wide actions).
+  - No earlier critic observed it, and fixing it needs no deviation. It becomes bug task **T5R.16-B5** (CSS stacking), proved by a browser case.
+- **Minor observations, no task:**
+  - The next card after a save follows the Missing-Mark Instrument order (P36).
+  - Within one Trade, the blockers list the Action before the Reflection.
+  - Heading levels inside the open card are out of order; axe did not flag it.
+  - A route change drops a held draft. This is critic 1's A156 note again.
+  - After a re-sort the card header can be out of view.
+  - Withdraw is offered only for acknowledgments (D4's behaviour).
