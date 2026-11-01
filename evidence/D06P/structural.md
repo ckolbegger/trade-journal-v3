@@ -207,3 +207,63 @@ Delegated to `suite-runner`, 2026-11-01 15:54 EST, commit `f8d48b1` (uncommitted
 | Static and verification checks (12 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures`, `npm run verify:session-policy` | 12 of 12 exit 0 | [suite-runs/t6p-3-trims-checks.txt](suite-runs/t6p-3-trims-checks.txt) |
 
 Tier line: `browser tier: full (first matching path since a9ef841: e2e/d1/readiness.spec.ts)`. This is the first real run of `browser-auto`'s full-tier branch. Ports 9341, 9342 and 5175 were free before and after. Browser stage 7.2 min (moved to the background by the harness after 180 s; the runner waited for the completion notice).
+
+## T6P.4 Collapse the `ui-alignment.spec.ts` copies
+
+Only `e2e/d2/ui-alignment.spec.ts` changed. `git diff claude-opus-5.5-d5r2 -- src` is empty (0 lines), before and after the mutation checks.
+
+**Counts and times.**
+
+| Measure | Before (T6P.3 commit `4c1884b`) | After |
+|---|---|---|
+| `npx playwright test e2e/d2/ui-alignment.spec.ts --list` | 69 | 45 |
+| `grep -c 'expect(' e2e/d2/ui-alignment.spec.ts` | 257 | 257 |
+| File duration, run 1 | 2.1 min (Playwright's own figure; `dist-faults` rebuilt first) | 1.6 min (wall clock 96.2 s) |
+| File duration, run 2 | | 1.6 min (wall clock 95.7 s) |
+| File duration, run 3 | | 1.6 min (wall clock 97.9 s) |
+| `npm run test:e2e` | 171 | 147 passed (6.8 min, exit 0) |
+
+The `expect(` count did not drop because the removed assertion is not its own line: the Underlying header height assertion in T2.62's first body is now `if (width === 1280) expect(header.height, ...)`, one line. The three runs were `npx playwright test e2e/d2/ui-alignment.spec.ts --repeat-each=1`, each `45 passed`. The "before" time is Playwright's one-decimal minute figure from the single run before any change (69 passed); the seconds were not captured, so the saving is about 30 s (the plan estimated 36 s).
+
+**One helper added.** `showOpenTrades(page)` (click the Primary navigation's Trades link, wait for the Open Trades table); `seedTrades` now ends by calling it (same two steps as before). The shared-setup bodies on seeded Trades call it at the start of each width, because the previous width ends on the Planned tab and the body's first step needs the Open tab. Import added: `profileAt` (from `./support.ts`, which re-exports D1's).
+
+**Per-width (or per-stage) fresh profiles** use `profileAt(`${profile.dir}-${width}`).launch()`; the rest launch once with `profile.launch()`. No `test.setTimeout` or `test.slow()` was needed: every collapsed test finished well inside the 30 s default.
+
+| # | Old lines (copies) | New title (widths listed) | Setup | Why |
+|---|---|---|---|---|
+| 1 | 132 (T2.60, x3) | "...outside About at 320, 390 and 1280" | fresh profile per width | Tried shared first: at the second width `tabTo` to the icon failed ("focus ring on BODY"); the Tab walk depends on the focus state of a fresh page. |
+| 2 | 211 (T2.60-B4, x3) | "...New Plan and About at 320, 390 and 1280" | fresh profile per width | Each width confirms its own Plan and then reloads with `persisted` forced true (an init script that stays on the page), so a second width would find a plan and no icon. |
+| 3 | 301 (T2.37-B1, x2 stages) | "...on first run and account onboarding at 390" | fresh profile per stage | First run exists only before the journal is started; the onboarding stage starts it. |
+| 4 | 383 (T2.38 first run and onboarding, x2) | "...on first run and onboarding at 390 and 320" | fresh profile per width | The body walks first run to onboarding, which starts the journal. |
+| 5 | 396 (T2.38 Trades and Open Detail, x2) | "...on Trades and Open Detail at 390 and 320" | fresh profile per width | Open Detail is reached from the entry receipt (`backToTrade`), which the walk on to Trades leaves; a second width cannot repeat the same steps on the same profile. |
+| 6 | 578 (T2.40 tables, x3) | "...in both tables at 390, 320 and 1280" | fresh profile per width | Tried shared (with `showOpenTrades`): at the second width `tabTo` to the Underlying link failed ("focus ring on BODY" at Open at 320), the same focus-state dependence as row 1. Seeding is four Plans per width. |
+| 7 | 591 (T2.40 Records disagree badge, x2) | "...with the Trade cell at 390 and 320" | one setup, one launch | Read-only: `setViewportSize`, then `goto('/?lifecycle=Planned')` per width. |
+| 8 | ~1365 (T2.55-B4, x3) | "...of an incoherent Open row at 1280, 390 and 320" | one setup, one launch | Read-only: `setViewportSize`, `goto('/')`, `expectLayout` per width. |
+| 9 | ~1392 (T2.55-B5, blank Stop and blank Target, x2) | "should mark a blank Stop and a blank Target, not the valid Intended entry, after Confirm Plan" | fresh profile per blank field | The Plan form ends in its error state, and the body starts from a fresh onboarded page. |
+| 10 | ~1410 (T2.55-B6, x3) | "...of an incoherent Planned row at 1280, 390 and 320" | one setup, one launch | Read-only: `setViewportSize`, `goto('/?lifecycle=Planned')`, `expectLayout` per width. |
+| 11 | ~1503 (T2.62 Underlying header and "@", x3) | "...with its price at 320, 390 and 1280" | one setup, `showOpenTrades` between widths | Read-only measurements, no keyboard. Underlying header height assertion runs at 1280 only (P57). |
+| 12 | ~1580 (T2.62 cells inside the scroll region, x2) | "...inside the scroll region at 320 and 390" | one setup, `showOpenTrades` between widths | Read-only. |
+| 13 | ~1595 (T2.62 Records disagree badge, x2) | "...inside the scroll region at 320 and 390" | one setup, one launch | Read-only: `setViewportSize`, `goto('/?lifecycle=Planned')` per width. |
+| 14 | ~1613 (T2.62 UNDERLYING header, x2) | "...on one line at 320 and 390" | one setup, `showOpenTrades` between widths | Read-only. |
+| 15 | ~1793 (T2.67 receipt heading, x3) | "...on one line at 320, 340 and 390" | one setup | Page stays on the receipt; read-only, `setViewportSize` and `expectLayout` per width. |
+| 16 | ~1827 (T2.67 Open Lots, x2) | "...on the card's row edges at 1280 and 320" | one setup | Page stays on the Open Detail; read-only. |
+| 17 | ~1870 (T2.67 caption in view, x2) | "...fully right at 320 and 390" | one setup, `showOpenTrades` between widths | The body scrolls the region back to 0 itself; no keyboard. |
+
+Seven of the 17 bodies keep a profile per width or stage (rows 1 to 6 and 9, with the reasons above); the other ten share one setup. 17 bodies, 41 tests became 17 tests: 69 to 45 (check: 41 - 17 = 24, 69 - 24 = 45). The title of every collapsed test lists the widths (or stages, or blank fields) it loops over; every `expect` kept its matcher, value and message, including `${width}`, `${stage}` and `${where}`.
+
+**The removed assertion.** T2.62's first body: `if (width === 1280) expect(header.height, ...)`, with a comment citing P57. During the mutation check below, the first body passed at 320 and 390 with the header font enlarged, while the UNDERLYING body failed there, which shows the UNDERLYING body is what now covers those widths.
+
+**Mutation checks.** Each is a one-line CSS edit in `src/ui/app.css` (Edit tool), then `npm run build:faults` (the served rule was confirmed in `dist-faults/assets/*.css`), the test, restore, `git diff -- src` empty, and a rebuild. The loop stops at the first failing `expect`, so the committed file shows only the first width; the other widths were shown with a temporary copy of the spec, `e2e/d2/tmp-mutation.spec.ts`, in which the body's width array read `process.env.W ? [Number(process.env.W)] : [...]`. The copy was deleted before the commit and was never staged.
+
+1. T2.40's body: `table.trades th, table.trades td { padding: 0.6rem }` changed to `0.2rem` (the focus outline needs 5 px of room beside the Underlying link).
+   - Committed file, `-g "pin Underlying, keep"`: `Error: Open at 390 outline room left`, `Expected: >= 5`, `Received: 3.1875`.
+   - Copy, `W=320`: `Error: Open at 320 outline room left`, `Received: 3.1875`.
+   - Copy, `W=1280`: `Error: Open at 1280 outline room left`, `Received: 3.1875`.
+2. T2.62's "UNDERLYING header" body: `table.trades th { font-size: 0.8rem }` changed to `1.8rem`.
+   - Committed file, `-g "UNDERLYING header"`: `Error: Open UNDERLYING scrollWidth at 320`, `Expected: <= 104`, `Received: 199` (the other test the pattern matched, T2.62's first body, passed).
+   - Copy, `W=390`: `Error: Open UNDERLYING scrollWidth at 390`, `Expected: <= 104`, `Received: 199`.
+   - Copy, `W=320`: `Error: Open UNDERLYING scrollWidth at 320`, `Expected: <= 104`, `Received: 199`.
+
+Both edits were reverted by Edit; `git diff claude-opus-5.5-d5r2 -- src | wc -l` is 0 and `dist-faults` was rebuilt from the restored source before the full `npm run test:e2e` run.
+
+**Checks.** `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps` all exit 0. Ports 5175, 9341 and 9342 had no listener before or after every browser run. (A Firefox Nightly process belonging to the user was running throughout; it was not touched.)

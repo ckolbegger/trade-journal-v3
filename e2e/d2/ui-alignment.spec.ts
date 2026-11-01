@@ -19,6 +19,7 @@ import {
   PC1,
   PC2,
   PLAN,
+  profileAt,
   READY,
   reflectionSection,
   recordEntry,
@@ -128,10 +129,11 @@ test.describe('T2.37 navigation styling', () => {
 // centred on the text): the full card is on About only, and every other screen shows the icon.
 test.describe('T2.60 storage warning icon', () => {
   const NAME = 'Storage not protected: see About';
-  for (const [width, height] of [[320, 700], [390, 844], [1280, 900]] as const) {
-    test(`should show a focusable warning icon linking to About and no storage card outside About at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should show a focusable warning icon linking to About and no storage card outside About at 320, 390 and 1280', async ({ server, profile }) => {
+    void server;
+    for (const [width, height] of [[320, 700], [390, 844], [1280, 900]] as const) {
+      // The Tab walk to the icon starts from a fresh page's focus, so each width starts from a fresh profile.
+      const context = await profileAt(`${profile.dir}-${width}`).launch();
       const page = await onboardedPage(context);
       await page.setViewportSize({ width, height });
       await expectLayout(page, width);
@@ -169,8 +171,8 @@ test.describe('T2.60 storage warning icon', () => {
       await expect(card.getByText('Back up your journal')).toHaveCount(0);
       await expectAccessible(page, `About with the storage card at ${width}`);
       await context.close();
-    });
-  }
+    }
+  });
 });
 
 // T2.60-B4: the icon sits on the page title's row at its far right, instead of a row of its own.
@@ -207,10 +209,11 @@ test.describe('T2.60-B4 storage icon on the page title row', () => {
 
   const h1Top = (page: Page): Promise<number> => page.evaluate(() => document.querySelector('main h1')!.getBoundingClientRect().top + window.scrollY);
 
-  for (const [width, height] of [[320, 700], [390, 844], [1280, 900]] as const) {
-    test(`should put the storage icon at the far right of the title row on Trades, a Detail, New Plan and About at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should put the storage icon at the far right of the title row on Trades, a Detail, New Plan and About at 320, 390 and 1280', async ({ server, profile }) => {
+    void server;
+    for (const [width, height] of [[320, 700], [390, 844], [1280, 900]] as const) {
+      // Each width confirms its own Plan and later reloads the page as protected, so it starts from a fresh profile.
+      const context = await profileAt(`${profile.dir}-${width}`).launch();
       const page = await onboardedPage(context);
       await page.setViewportSize({ width, height });
       await expectLayout(page, width);
@@ -290,17 +293,18 @@ test.describe('T2.60-B4 storage icon on the page title row', () => {
         expect(Math.abs((await h1Top(page)) - shown[view]!), `${view} h1 top with and without the icon at ${width}`).toBeLessThanOrEqual(1);
       }
       await context.close();
-    });
-  }
+    }
+  });
 });
 
 // The first-run and onboarding screens have no About to link to (no routes before a Workspace
 // exists), so they keep the full card; T2.60 leaves these measurements as they were.
 test.describe('T2.37-B1 durability banner before the shell renders', () => {
-  for (const stage of ['first run', 'account onboarding'] as const) {
-    test(`should keep the storage banner compact with the warning ground on ${stage} at 390`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should keep the storage banner compact with the warning ground on first run and account onboarding at 390', async ({ server, profile }) => {
+    void server;
+    for (const stage of ['first run', 'account onboarding'] as const) {
+      // Each stage starts from a fresh profile: first run exists only before the journal is started.
+      const context = await profileAt(`${profile.dir}-${stage}`).launch();
       const page = await firstPage(context);
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(BASE_URL);
@@ -318,8 +322,8 @@ test.describe('T2.37-B1 durability banner before the shell renders', () => {
       expect(measured.background).toBe(measured.ground);
       expect(measured.height, `banner height on ${stage}`).toBeLessThanOrEqual(120);
       await context.close();
-    });
-  }
+    }
+  });
 });
 
 // ---- T2.38 one content column and side gutters (absorbs F8) ----------------------------------
@@ -379,10 +383,11 @@ test.describe('T2.38 one content column and side gutters', () => {
     await context.close();
   });
 
-  for (const width of WIDTHS) {
-    test(`should keep a 16 px gutter on first run and onboarding at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should keep a 16 px gutter on first run and onboarding at 390 and 320', async ({ server, profile }) => {
+    void server;
+    for (const width of WIDTHS) {
+      // The walk from first run to onboarding changes the profile, so each width starts from a fresh one.
+      const context = await profileAt(`${profile.dir}-${width}`).launch();
       const page = await firstPage(context);
       await page.goto(BASE_URL);
       await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
@@ -391,11 +396,14 @@ test.describe('T2.38 one content column and side gutters', () => {
       await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
       await expectGutters(page, 'onboarding', width);
       await context.close();
-    });
+    }
+  });
 
-    test(`should keep a 16 px gutter on Trades and Open Detail at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should keep a 16 px gutter on Trades and Open Detail at 390 and 320', async ({ server, profile }) => {
+    void server;
+    for (const width of WIDTHS) {
+      // Open Detail is reached from the receipt, which the walk to Trades leaves, so each width starts from a fresh profile.
+      const context = await profileAt(`${profile.dir}-${width}`).launch();
       const page = await onboardedPage(context);
       await confirmReference(page);
       await recordEntry(page, PC1);
@@ -405,8 +413,8 @@ test.describe('T2.38 one content column and side gutters', () => {
       await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
       await expectGutters(page, 'Trades', width);
       await context.close();
-    });
-  }
+    }
+  });
 
   test('should keep a 16 px gutter on Migration Blocked at 390 and 320', async ({ server, profile }) => {
     server.use('dist-releases/d1');
@@ -442,6 +450,11 @@ async function seedTrades(page: Page): Promise<void> {
   await recordEntry(page, PC1);
   await confirmReference(page, plan('DEF'));
   await confirmReference(page, plan('GHI'));
+  await showOpenTrades(page);
+}
+
+// The Open tab of the Trades view, reached from wherever the page is.
+async function showOpenTrades(page: Page): Promise<void> {
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
   await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
 }
@@ -574,35 +587,36 @@ async function expectTradesTables(page: Page, width: number): Promise<void> {
 }
 
 test.describe('T2.40 Trades tables', () => {
-  for (const width of [390, 320, 1280]) {
-    test(`should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 390, 320 and 1280', async ({ server, profile }) => {
+    void server;
+    for (const width of [390, 320, 1280]) {
+      // The Tab walk to each Underlying link starts from a fresh page's focus, so each width starts from a fresh profile.
+      const context = await profileAt(`${profile.dir}-${width}`).launch();
       const page = await onboardedPage(context);
       await seedTrades(page);
       await page.setViewportSize({ width, height: width === 1280 ? 900 : 844 });
       await expect(page.getByRole('navigation', { name: 'Primary' })).toHaveAttribute('data-placement', width === 1280 ? 'sidebar' : 'bottom');
       await expectTradesTables(page, width);
       await context.close();
-    });
-  }
+    }
+  });
 
-  for (const width of [390, 320]) {
-    test(`should keep a Records disagree badge inside the viewport with the Trade cell at ${width}`, async ({ server, profile }) => {
-      void server;
-      const setup = await profile.launch();
-      const page = await onboardedPage(setup);
-      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
-      await recordEntry(page, PC1);
-      await confirmReference(page, { ...PLAN, symbol: 'XYZ' });
-      await recordEntry(page, PC1);
-      await setup.close();
-      // ABC is filed under Planned with its facts intact (findings); XYZ is filed under Planned and cannot be replayed.
-      await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
-      await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'XYZ', lifecycle: 'Planned' });
-      await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'XYZ' });
-      const context = await profile.launch();
-      const app = await firstPage(context);
+  test('should keep a Records disagree badge inside the viewport with the Trade cell at 390 and 320', async ({ server, profile }) => {
+    void server;
+    const setup = await profile.launch();
+    const page = await onboardedPage(setup);
+    await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+    await recordEntry(page, PC1);
+    await confirmReference(page, { ...PLAN, symbol: 'XYZ' });
+    await recordEntry(page, PC1);
+    await setup.close();
+    // ABC is filed under Planned with its facts intact (findings); XYZ is filed under Planned and cannot be replayed.
+    await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
+    await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'XYZ', lifecycle: 'Planned' });
+    await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'XYZ' });
+    const context = await profile.launch();
+    const app = await firstPage(context);
+    for (const width of [390, 320]) {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/?lifecycle=Planned');
       await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
@@ -613,9 +627,9 @@ test.describe('T2.40 Trades tables', () => {
         expect(row.badgeRight!, `badge right at ${width}`).toBeLessThanOrEqual(width);
       }
       await expectAccessible(app, `Planned badges at ${width}`);
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 });
 
 test.describe('T2.41 wide Trades table styling', () => {
@@ -1361,17 +1375,17 @@ test.describe('T2.55-B2 capped Detail label/value rows', () => {
 });
 
 test.describe('T2.55-B4 narrow Net cost on an incoherent Open row', () => {
-  for (const width of [1280, 390, 320]) {
-    test(`should show Net cost once in the accessibility tree of an incoherent Open row at ${width}`, async ({ server, profile }) => {
-      void server;
-      const setup = await profile.launch();
-      const page = await onboardedPage(setup);
-      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
-      await recordEntry(page, PC1);
-      await setup.close();
-      await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'ABC' });
-      const context = await profile.launch();
-      const app = await firstPage(context);
+  test('should show Net cost once in the accessibility tree of an incoherent Open row at 1280, 390 and 320', async ({ server, profile }) => {
+    void server;
+    const setup = await profile.launch();
+    const page = await onboardedPage(setup);
+    await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+    await recordEntry(page, PC1);
+    await setup.close();
+    await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'ABC' });
+    const context = await profile.launch();
+    const app = await firstPage(context);
+    for (const width of [1280, 390, 320]) {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/');
       await expectLayout(app, width);
@@ -1382,16 +1396,17 @@ test.describe('T2.55-B4 narrow Net cost on an incoherent Open row', () => {
       else expect(tree, `no second line at ${width}`).not.toContain('Net cost');
       // Wide: the Net cost cell itself reads Not available.
       if (width >= WIDE_LAYOUT_MIN_WIDTH) await expect(row.locator('td').nth(2)).toHaveText('Not available');
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 });
 
 test.describe('T2.55-B5 price issues on the field that fails', () => {
-  for (const blank of ['Stop', 'Target'] as const) {
-    test(`should mark a blank ${blank}, not the valid Intended entry, after Confirm Plan`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
+  test('should mark a blank Stop and a blank Target, not the valid Intended entry, after Confirm Plan', async ({ server, profile }) => {
+    void server;
+    for (const blank of ['Stop', 'Target'] as const) {
+      // The Plan form ends in its error state, so each blank field starts from a fresh profile.
+      const context = await profileAt(`${profile.dir}-${blank}`).launch();
       const page = await onboardedPage(context);
       await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
       await fillPlan(page, { ...PLAN, [blank.toLowerCase()]: '' });
@@ -1401,24 +1416,24 @@ test.describe('T2.55-B5 price issues on the field that fails', () => {
       await expect(page.getByLabel(blank)).toHaveAccessibleDescription(/price greater than zero/);
       await expect(page.getByLabel('Intended entry')).not.toHaveAttribute('aria-invalid', 'true');
       await context.close();
-    });
-  }
+    }
+  });
 });
 
 test.describe('T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row', () => {
-  for (const width of [1280, 390, 320]) {
-    test(`should show 1R and Reward : risk once in the accessibility tree of an incoherent Planned row at ${width}`, async ({ server, profile }) => {
-      void server;
-      const setup = await profile.launch();
-      const page = await onboardedPage(setup);
-      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
-      await recordEntry(page, PC1);
-      await setup.close();
-      // Raw stored records are edited before launch: the Open Trade is filed under Planned and its facts cannot be replayed.
-      await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
-      await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'ABC' });
-      const context = await profile.launch();
-      const app = await firstPage(context);
+  test('should show 1R and Reward : risk once in the accessibility tree of an incoherent Planned row at 1280, 390 and 320', async ({ server, profile }) => {
+    void server;
+    const setup = await profile.launch();
+    const page = await onboardedPage(setup);
+    await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+    await recordEntry(page, PC1);
+    await setup.close();
+    // Raw stored records are edited before launch: the Open Trade is filed under Planned and its facts cannot be replayed.
+    await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
+    await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'ABC' });
+    const context = await profile.launch();
+    const app = await firstPage(context);
+    for (const width of [1280, 390, 320]) {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/?lifecycle=Planned');
       await expectLayout(app, width);
@@ -1433,9 +1448,9 @@ test.describe('T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row
         await expect(row.locator('td').nth(2)).toHaveText('Not available');
         await expect(row.locator('td').nth(3)).toHaveText('Not available');
       }
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 });
 
 // Client rects of the first "@" and of the price after it, and of "fee" and its amount, found by walking the
@@ -1499,12 +1514,13 @@ function expectAtWithPrice(pairs: readonly AtPair[], where: string): void {
 }
 
 test.describe('T2.62 line breaks', () => {
-  for (const width of [320, 390, 1280]) {
-    test(`should keep the Underlying header on one line and each Trade cell's "@" with its price at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
-      const page = await onboardedPage(context);
-      await seedTrades(page);
+  test(`should keep the Underlying header on one line and each Trade cell's "@" with its price at 320, 390 and 1280`, async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await seedTrades(page);
+    for (const width of [320, 390, 1280]) {
+      await showOpenTrades(page);
       await page.setViewportSize({ width, height: width === 1280 ? 900 : 844 });
       await expectLayout(page, width);
       for (const tab of TABS) {
@@ -1517,14 +1533,15 @@ test.describe('T2.62 line breaks', () => {
           return { text: th.textContent, height: range.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(th).lineHeight) };
         });
         expect(header.text).toBe('Underlying');
-        expect(header.height, `${tab} Underlying header height at ${width}`).toBeLessThanOrEqual(1.6 * header.lineHeight);
+        // P57: at 320 and 390 the UNDERLYING header test below measures the same header with the same bound.
+        if (width === 1280) expect(header.height, `${tab} Underlying header height at ${width}`).toBeLessThanOrEqual(1.6 * header.lineHeight);
         expectAtWithPrice(await atPairs(table.locator('tbody tr td:nth-child(2)')), `${tab} Trade cell at ${width}`);
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         expect(overflow, `${tab} page overflow at ${width}`).toBeLessThanOrEqual(0);
       }
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 
   // T2.65-B1: the Detail summary card's Trade text breaks like the Trades cells' (prices over $1,000 are the widest).
   test('should keep "@" with its price in the Detail summary card Trade text at 320, 340 and 390', async ({ server, profile }) => {
@@ -1576,12 +1593,13 @@ test.describe('T2.62 line breaks', () => {
       );
     });
 
-  for (const width of [320, 390]) {
-    test(`should keep the Underlying and Trade cells, with the second line and any badge, inside the scroll region at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
-      const page = await onboardedPage(context);
-      await seedTrades(page);
+  test('should keep the Underlying and Trade cells, with the second line and any badge, inside the scroll region at 320 and 390', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await seedTrades(page);
+    for (const width of [320, 390]) {
+      await showOpenTrades(page);
       await page.setViewportSize({ width, height: 844 });
       await expectLayout(page, width);
       for (const tab of TABS) {
@@ -1589,32 +1607,37 @@ test.describe('T2.62 line breaks', () => {
         await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
         for (const c of await insideRegion(page, tab)) expect(c.right, `${tab} ${c.cell} cell right edge at ${width}`).toBeLessThanOrEqual(c.limit + 0.5);
       }
-      await context.close();
-    });
+    }
+    await context.close();
+  });
 
-    test(`should keep a Records disagree badge inside the scroll region at ${width}`, async ({ server, profile }) => {
-      void server;
-      const setup = await profile.launch();
-      const page = await onboardedPage(setup);
-      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
-      await recordEntry(page, PC1);
-      await setup.close();
-      await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
-      const context = await profile.launch();
-      const app = await firstPage(context);
+  test('should keep a Records disagree badge inside the scroll region at 320 and 390', async ({ server, profile }) => {
+    void server;
+    const setup = await profile.launch();
+    const page = await onboardedPage(setup);
+    await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+    await recordEntry(page, PC1);
+    await setup.close();
+    await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
+    const context = await profile.launch();
+    const app = await firstPage(context);
+    for (const width of [320, 390]) {
       await app.setViewportSize({ width, height: 844 });
       await app.goto('/?lifecycle=Planned');
       await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
       expect((await measure(app, 'Planned')).rows.filter((r) => r.badgeRight !== undefined).length, `badges at ${width}`).toBe(1);
       for (const c of await insideRegion(app, 'Planned')) expect(c.right, `Planned ${c.cell} cell right edge at ${width}`).toBeLessThanOrEqual(c.limit + 0.5);
-      await context.close();
-    });
+    }
+    await context.close();
+  });
 
-    test(`should keep the UNDERLYING header inside its own cell on one line at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
-      const page = await onboardedPage(context);
-      await seedTrades(page);
+  test('should keep the UNDERLYING header inside its own cell on one line at 320 and 390', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await seedTrades(page);
+    for (const width of [320, 390]) {
+      await showOpenTrades(page);
       await page.setViewportSize({ width, height: 844 });
       await expectLayout(page, width);
       for (const tab of TABS) {
@@ -1648,9 +1671,9 @@ test.describe('T2.62 line breaks', () => {
         expect(h.textRight, `${tab} UNDERLYING text right edge at ${width}`).toBeLessThanOrEqual(h.tradeLeft);
         expect(h.height, `${tab} UNDERLYING one line at ${width}`).toBeLessThanOrEqual(1.6 * h.lineHeight);
       }
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 
   test('should read each Detail Execution as one phrase with the price straight after the "@" at 320, 390 and 1280', async ({ server, profile }) => {
     void server;
@@ -1789,13 +1812,13 @@ test.describe('T2.64 Detail cards', () => {
 
 test.describe('T2.67 leftovers', () => {
   // (b) The receipt heading never parts its date from its time.
-  for (const width of [320, 340, 390]) {
-    test(`should keep the date and time of the receipt heading on one line at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
-      const page = await onboardedPage(context);
-      await confirmReference(page);
-      await recordEntry(page, PC1);
+  test('should keep the date and time of the receipt heading on one line at 320, 340 and 390', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    for (const width of [320, 340, 390]) {
       await page.setViewportSize({ width, height: 844 });
       await expectLayout(page, width);
       const heading = page.getByRole('heading', { name: 'Position Change at 2026-10-12 10:00', level: 2 });
@@ -1818,19 +1841,19 @@ test.describe('T2.67 leftovers', () => {
       expect(Math.abs(tops.time - tops.date), `heading time beside its date at ${width}`).toBeLessThanOrEqual(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
       await expectAccessible(page, `receipt at ${width}`);
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 
   // (c) Open Lots: no pinned-column hairline, and the last row reaches the card's row edges.
-  for (const width of [1280, 320]) {
-    test(`should draw Open Lots without a pinned hairline and with its last row on the card's row edges at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
-      const page = await onboardedPage(context);
-      await confirmReference(page);
-      await recordEntry(page, PC1);
-      await backToTrade(page);
+  test("should draw Open Lots without a pinned hairline and with its last row on the card's row edges at 1280 and 320", async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
       const region = page.getByRole('region', { name: 'Open Lots', exact: true });
@@ -1861,17 +1884,18 @@ test.describe('T2.67 leftovers', () => {
       expect(Math.abs(lots.lastLeft - lots.cardLeft), `last row left edge at ${width}`).toBeLessThanOrEqual(1);
       // At 320 the table scrolls, so its row runs on past the region; the visible edge is the region's.
       expect(Math.abs(Math.min(lots.lastRight, lots.regionRight) - lots.cardRight), `last row right edge at ${width}`).toBeLessThanOrEqual(width === 1280 ? 1 : 1 + 0);
-      await context.close();
-    });
-  }
+    }
+    await context.close();
+  });
 
   // (d) The narrow table caption stays in view when the region is scrolled fully right.
-  for (const width of [320, 390]) {
-    test(`should keep the Trades table caption in view after scrolling the region fully right at ${width}`, async ({ server, profile }) => {
-      void server;
-      const context = await profile.launch();
-      const page = await onboardedPage(context);
-      await seedTrades(page);
+  test('should keep the Trades table caption in view after scrolling the region fully right at 320 and 390', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await seedTrades(page);
+    for (const width of [320, 390]) {
+      await showOpenTrades(page);
       await page.setViewportSize({ width, height: 844 });
       await expectLayout(page, width);
       for (const tab of TABS) {
@@ -1903,8 +1927,8 @@ test.describe('T2.67 leftovers', () => {
           el.scrollLeft = 0;
         });
       }
-      // The T2.40 and T2.62 measurements are asserted by their own tests above; they run unchanged in this suite.
-      await context.close();
-    });
-  }
+    }
+    // The T2.40 and T2.62 measurements are asserted by their own tests above; they run unchanged in this suite.
+    await context.close();
+  });
 });
