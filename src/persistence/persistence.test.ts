@@ -267,6 +267,22 @@ describe('semantic commit', () => {
     expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 2 });
   });
 
+  it('should store none of the writes and leave the content revision unchanged when a later write throws synchronously', async () => {
+    const { p, databaseName } = await created();
+    // The second record has no key, so the store itself throws DataError from put before any request exists.
+    await expect(
+      p.commit({
+        checks: [],
+        writes: [
+          { op: 'put', store: 'trades', value: { tradeId: 'trade-1' } },
+          { op: 'put', store: 'catalog', value: {} },
+        ],
+      }),
+    ).rejects.toMatchObject({ name: 'DataError' });
+    expect(await rawGet(databaseName, 'trades', 'trade-1')).toBeUndefined();
+    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
+  });
+
   it('should open write transactions with durability "strict"', async () => {
     const { p } = await created();
     const transactions = vi.spyOn(FakeIDBDatabase.prototype, 'transaction');

@@ -385,21 +385,28 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       const contentRevision = content.contentRevision + 1;
       let violation: WorkspaceStore | undefined;
       const revisions: RecordRevision[] = [];
-      for (const write of writeSet.writes) {
-        const store = tx.objectStore(write.store);
-        let request: Promise<unknown>;
-        if (write.op === 'delete') {
-          request = store.delete(write.key);
-        } else {
-          const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
-          request = write.op === 'add' ? store.add(value) : store.put(value);
-          revisions.push({ store: write.store, key: keyOf(write.store, value), revision: contentRevision });
+      try {
+        for (const write of writeSet.writes) {
+          const store = tx.objectStore(write.store);
+          let request: Promise<unknown>;
+          if (write.op === 'delete') {
+            request = store.delete(write.key);
+          } else {
+            const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
+            request = write.op === 'add' ? store.add(value) : store.put(value);
+            revisions.push({ store: write.store, key: keyOf(write.store, value), revision: contentRevision });
+          }
+          request.catch((error: unknown) => {
+            if (error instanceof Error && error.name === 'ConstraintError') violation ??= write.store;
+          });
         }
-        request.catch((error: unknown) => {
-          if (error instanceof Error && error.name === 'ConstraintError') violation ??= write.store;
-        });
+        tx.objectStore('meta').put({ key: 'content', contentRevision }).catch(() => undefined);
+      } catch (error) {
+        // A synchronous throw would leave the transaction open to auto-commit the writes already issued.
+        tx.abort();
+        await tx.done.catch(() => undefined);
+        throw error;
       }
-      tx.objectStore('meta').put({ key: 'content', contentRevision }).catch(() => undefined);
       try {
         await tx.done;
       } catch (error) {

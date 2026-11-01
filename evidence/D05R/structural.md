@@ -1170,3 +1170,8 @@ ocr review of `006f528` (T5R.14): ocr reviewed one file (tests and evidence excl
 ### T5R.14-B1 A synchronous throw during commit aborts the transaction
 
 `Persistence.commit` aborts the transaction when any write (or the meta write) throws synchronously, waits for the abort, and rethrows, so no write of the set is stored.
+
+Record (implemented):
+- Test: `src/persistence/persistence.test.ts`, "should store none of the writes and leave the content revision unchanged when a later write throws synchronously". Two writes: a valid `trades` put, then a `catalog` put of `{}` (no key, so the store throws `DataError` synchronously from `put`; a real store error, no spy). Asserts the call rejects with `DataError`, the first record is absent, and the content revision is still 1.
+- Contract: async request errors already surface as a rejection (except `ConstraintError`, a result value), so the synchronous path also rejects with the original error.
+- Red: `AssertionError: expected { tradeId: 'trade-1', revision: 2 } to be undefined` (the earlier write had auto-committed). Green after wrapping the write loop and the meta write in try/catch that calls `tx.abort()`, awaits `tx.done` (rejection ignored), and rethrows. The async-error path is unchanged. Rows are in `tdd-log.md`.
