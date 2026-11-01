@@ -267,7 +267,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | None yet. |
-| Next step | **The `tdd.sh` setup task** (section 3), then T5R2.1. |
-| Last commit | this note, tagged `claude-opus-5.5-pre-d5r2` |
-| Open questions | None yet. |
+| Tasks done | Setup (`tdd.sh`, `9cbbe55`); T5R2.1 (`9ebeb83`, cumulative run green: 1015 unit, 117 integration, 179 browser, 12 of 12 checks). |
+| Next step | **T5R2.2** (Journal imports the due rule). |
+| Last commit | the evidence and handoff commit after T5R2.1 |
+| Open questions | (1) Location check: `git status -sb` read `ahead 0`, not `ahead 175`, because the branch had been pushed to exactly `claude-opus-5.5-pre-d5r2`; HEAD, tag and remote were the same commit, so the session proceeded (`evidence/D05R2/structural.md`, "Start of D5R2"). (2) T5R2.1 decision: `classifyDue` takes the repository's `Instant` strings, comparing them with `temporal-polyfill`. |

@@ -32,3 +32,28 @@ Change in `.claude/scripts/tdd.sh`: the task-ID pattern is now `^T([0-9]+)([A-Z]
    - Exit code: 2
 
 The IDs `T1.`, `T2.`, `T4.`, `T5.` and `T5R.` were not run, because those deliverables' logs exist and a run would append to them. Their mappings (`T2.2` to `D02`, `T12.4` to `D12`, `T5.1` to `D05`, `T5R.1` to `D05R`) are checked by reading the diff: the `printf` format and arguments are untouched, and an unmatched optional group leaves `$match[2]` empty.
+
+### ocr review of `9cbbe55`
+
+Session `627f05e6-a2f0-498c-a593-8a0af9de999c`, 1 file reviewed, no findings. Raw output: [ocr/setup-9cbbe55.json](ocr/setup-9cbbe55.json). The change is tooling only (no product code or test changed since the start-of-D5R2 run), so no cumulative run follows it; T5R2.1's is the first.
+
+## T5R2.1 Domain: due classification
+
+Behavioral; red and green rows in `tdd-log.md`. Commit `9ebeb83`: `src/domain/journal-debt/index.ts` (`DueRule`, `DueClassification`, `SessionCloses`, `classifyDue` with its `undefined` overload) and `classify-due.test.ts` (4 cases). No first-run passes. Implementation decision: `SessionCloses` and the anchor use the repository's `Instant` (an ISO-8601 UTC string from `src/domain/time`), which is what Journal and the coordinators already hold; the comparison is done with `temporal-polyfill`'s `Temporal.Instant.compare`, as A166 asks.
+
+### ocr review of `9ebeb83`
+
+Session `e9ee2433-1568-4db6-a85f-a52d09c6556b`, 1 file reviewed (the test file excluded), no findings. Raw output: [ocr/T5R2.1-9ebeb83.json](ocr/T5R2.1-9ebeb83.json).
+
+### Cumulative suite at `9ebeb83` (T5R2.1 closed)
+
+Date 2026-11-01 06:32 EST. The working tree's only uncommitted changes were evidence files.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 76 passed (76)`, `Tests 1015 passed (1015)`, exit 0 | `suite-runs/t5r2-1-classify-due-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/t5r2-1-classify-due-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.4m)`, exit 0 | `suite-runs/t5r2-1-classify-due-browser.txt` |
+| Static and verification checks (12 commands) | typecheck, `tsc6 --noEmit`, lint, `lint:deps`, build, `verify:release`, `verify:capabilities`, `verify:releases`, `verify:no-fault-hooks`, `verify:capacity`, `verify:fixtures`, `verify:session-policy` | 12 of 12 exit 0 | `suite-runs/t5r2-1-classify-due-checks.txt` |
+
+Ports 9341, 9342 and 5175 free before and after.

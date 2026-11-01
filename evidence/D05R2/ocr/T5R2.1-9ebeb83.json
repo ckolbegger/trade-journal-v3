@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 10335,
+    "input_tokens": 10253,
+    "output_tokens": 82,
+    "cache_read_tokens": 5760,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/domain/journal-debt/index.ts",
+      "files": [
+        "src/domain/journal-debt/index.ts"
+      ]
+    }
+  ],
+  "session_id": "e9ee2433-1568-4db6-a85f-a52d09c6556b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e9ee2433-1568-4db6-a85f-a52d09c6556b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9ebeb833",
+      "resolved_base": "9cbbe55facab01a5085274fb8f1d8ad51e7edf8c",
+      "resolved_head": "9ebeb833da05f2e6b569a2ba4acd1e0829db9821",
+      "exact_range": "9cbbe55facab01a5085274fb8f1d8ad51e7edf8c..9ebeb833da05f2e6b569a2ba4acd1e0829db9821",
+      "source_artifact_sha256": "01ce95d73c15046358c2745ce2256d3caf0694b7744a528a642d4cc2477045a6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e85ab2138fd7271314561cb255ac3e3898b17d878dd4603017d86858c070e6c0",
+          "path": "src/domain/journal-debt/index.ts",
+          "fingerprint": "fd42bb6e133f4fb5f09fbab6f1ede21027f46f1715315b3c1a2ee3ed84095885"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e85ab2138fd7271314561cb255ac3e3898b17d878dd4603017d86858c070e6c0",
+          "path": "src/domain/journal-debt/index.ts",
+          "fingerprint": "fd42bb6e133f4fb5f09fbab6f1ede21027f46f1715315b3c1a2ee3ed84095885"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 10185
+  }
+}

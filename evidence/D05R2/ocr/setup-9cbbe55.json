@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 6334,
+    "input_tokens": 6242,
+    "output_tokens": 92,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": ".claude/scripts/tdd.sh",
+      "files": [
+        ".claude/scripts/tdd.sh"
+      ]
+    }
+  ],
+  "session_id": "627f05e6-a2f0-498c-a593-8a0af9de999c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "627f05e6-a2f0-498c-a593-8a0af9de999c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9cbbe55f",
+      "resolved_base": "75f7f18cc8f9bb3862bdfd1f124ceb2316d60aa8",
+      "resolved_head": "9cbbe55facab01a5085274fb8f1d8ad51e7edf8c",
+      "exact_range": "75f7f18cc8f9bb3862bdfd1f124ceb2316d60aa8..9cbbe55facab01a5085274fb8f1d8ad51e7edf8c",
+      "source_artifact_sha256": "f021e59cbb6a1761f9cf475a7be51cab160abc6c0f5fa02f7a88576c46e51898"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1f7b6a6841b49a11ffeac9d797bd62b4b1a593eefadb7704c8c39c2493137405",
+          "path": ".claude/scripts/tdd.sh",
+          "fingerprint": "271b210b14e692b14b99e01a59bc16a0c9dcce12875f7dd6268c0ed9b6fb1845"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1f7b6a6841b49a11ffeac9d797bd62b4b1a593eefadb7704c8c39c2493137405",
+          "path": ".claude/scripts/tdd.sh",
+          "fingerprint": "271b210b14e692b14b99e01a59bc16a0c9dcce12875f7dd6268c0ed9b6fb1845"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8662
+  }
+}
