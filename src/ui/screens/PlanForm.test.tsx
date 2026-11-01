@@ -24,6 +24,7 @@ function renderForm(
   facade: UiFacade = planFormFacade(),
   onDirtyChange: (dirty: boolean) => void = () => undefined,
   report: (result: { readonly kind: string }) => void = () => undefined,
+  now: () => string = () => '2026-10-12T14:05:00Z',
 ) {
   render(
     <RuntimeContext.Provider value={{ writable: true, report }}>
@@ -31,7 +32,7 @@ function renderForm(
         <Routes>
           <Route
             path="/plans/new"
-            element={<PlanForm facade={facade} timeZone="America/New_York" now={() => '2026-10-12T14:05:00Z'} onDirtyChange={onDirtyChange} />}
+            element={<PlanForm facade={facade} timeZone="America/New_York" now={now} onDirtyChange={onDirtyChange} />}
           />
           <Route path="/trades/:tradeId" element={<DetailFromState />} />
           <Route path="/" element={<p>Trades route</p>} />
@@ -79,7 +80,8 @@ describe('rendering', () => {
   });
 });
 
-async function fillPlan() {
+// `planTime` null leaves the Plan time as the form defaulted it.
+async function fillPlan(planTime: string | null = '2026-10-09T15:30') {
   const user = userEvent.setup();
   await user.selectOptions(await screen.findByLabelText('Account'), 'acct-2');
   await user.type(screen.getByLabelText('Symbol'), 'xyz');
@@ -87,8 +89,10 @@ async function fillPlan() {
   await user.type(screen.getByLabelText('Intended entry'), '50.00');
   await user.type(screen.getByLabelText('Stop'), '47.50');
   await user.type(screen.getByLabelText('Target'), '56.00');
-  await user.clear(screen.getByLabelText('Plan time'));
-  await user.type(screen.getByLabelText('Plan time'), '2026-10-09T15:30');
+  if (planTime !== null) {
+    await user.clear(screen.getByLabelText('Plan time'));
+    if (planTime !== '') await user.type(screen.getByLabelText('Plan time'), planTime);
+  }
   await user.type(screen.getByLabelText('Why this trade, why now?'), 'Breakout above the 50-day.');
   await user.type(screen.getByLabelText('What would invalidate the thesis?'), 'A close below 48.');
   await user.click(within(screen.getByRole('radiogroup', { name: 'Conviction' })).getByLabelText('4'));
@@ -402,5 +406,89 @@ describe('New Plan issues', () => {
     await user.clear(stop);
     await user.type(stop, '10000000000.000002');
     expect(described(stop)).toMatch(/below the intended entry/i);
+  });
+});
+
+// 2026-11-01 01:00 to 02:00 America/New_York happens twice (clocks fall back at 02:00 EDT).
+describe('Plan time during a fall-back hour', () => {
+  const described = (element: HTMLElement) => document.getElementById(element.getAttribute('aria-describedby') ?? '')?.textContent;
+  const summaryLines = async () =>
+    within(await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' }))
+      .getAllByRole('listitem')
+      .map((li) => li.textContent);
+
+  // The form at a fixed clock; a Plan that reaches the Workspace is refused, so nothing navigates.
+  const renderAt = (instant: string) => {
+    const facade = renderForm(planFormFacade(), undefined, undefined, () => instant);
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({ kind: 'Rejected', issues: [], binding: {} } as never);
+    return facade;
+  };
+
+  it('should confirm the Plan at the exact default instant when its Plan time is left unedited during a fall-back hour', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    expect((await screen.findByLabelText<HTMLInputElement>('Plan time')).value).toBe('2026-11-01T01:26');
+    const user = await fillPlan(null);
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(facade.TradeWorkflows.confirmPlan).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(facade.TradeWorkflows.confirmPlan).mock.calls[0]![0].economicTime).toBe('2026-11-01T05:26:00Z');
+  });
+
+  it('should confirm the Plan at the second occurrence when the default instant is in the repeated hour', async () => {
+    const facade = renderAt('2026-11-01T06:26:30Z');
+    const user = await fillPlan(null);
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(vi.mocked(facade.TradeWorkflows.confirmPlan).mock.calls[0]![0].economicTime).toBe('2026-11-01T06:26:00Z');
+  });
+
+  it('should show why and write nothing when an edited Plan time occurs twice at a fall-back', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = await fillPlan('2026-11-01T01:30');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(await summaryLines()).toEqual(['The Plan time occurs twice because clocks fall back; enter an earlier or later time.']);
+    const planTime = screen.getByLabelText('Plan time');
+    expect(planTime.getAttribute('aria-invalid')).toBe('true');
+    expect(described(planTime)).toMatch(/occurs twice because clocks fall back/);
+    expect(document.activeElement).toBe(screen.getByRole('region', { name: 'This Plan can’t be confirmed yet' }));
+    expect(facade.TradeWorkflows.confirmPlan).not.toHaveBeenCalled();
+  });
+
+  it('should show why and write nothing when an edited Plan time does not exist because clocks spring forward', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = await fillPlan('2026-03-08T02:30');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(await summaryLines()).toEqual(['The Plan time does not exist because clocks spring forward; enter an earlier or later time.']);
+    expect(described(screen.getByLabelText('Plan time'))).toMatch(/does not exist because clocks spring forward/);
+    expect(facade.TradeWorkflows.confirmPlan).not.toHaveBeenCalled();
+  });
+
+  it('should show why and write nothing when the Plan time is cleared', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = await fillPlan('');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(await summaryLines()).toEqual(['The Plan time is not a valid date and time; enter one.']);
+    expect(described(screen.getByLabelText('Plan time'))).toMatch(/not a valid date and time/);
+    expect(facade.TradeWorkflows.confirmPlan).not.toHaveBeenCalled();
+  });
+
+  it('should resolve a Plan time retyped to the default text as typed, not as the default instant', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = await fillPlan('2026-11-01T01:26');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(await summaryLines()).toHaveLength(1);
+    expect(facade.TradeWorkflows.confirmPlan).not.toHaveBeenCalled();
+  });
+
+  it('should clear the Plan time message once the Plan time resolves to one instant, then submit it', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = await fillPlan('2026-11-01T01:30');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await summaryLines();
+    const planTime = screen.getByLabelText('Plan time');
+    await user.clear(planTime);
+    await user.type(planTime, '2026-11-01T03:30');
+    expect(planTime.getAttribute('aria-describedby')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(vi.mocked(facade.TradeWorkflows.confirmPlan).mock.calls[0]![0].economicTime).toBe('2026-11-01T08:30:00Z');
   });
 });

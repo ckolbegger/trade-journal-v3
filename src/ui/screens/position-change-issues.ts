@@ -1,4 +1,5 @@
 import type { EntryDefinitionRecord } from '../../app/types.ts';
+import { AMBIGUOUS_TIME, NONEXISTENT_TIME } from './local-time.ts';
 import { describeJournalIssue, type FieldIssue, type Issue } from './plan-issues.ts';
 
 // The field name of one value in one Execution row, stable while rows are added or removed.
@@ -16,6 +17,8 @@ const TIME: Record<string, string> = {
   EconomicTimeBeforePlan: 'the Economic Time cannot be before the Plan time.',
   EconomicTimeInFuture: 'the Economic Time cannot be in the future.',
   InvalidLocalTime: 'enter a date and time.',
+  NonexistentLocalTime: `the Economic Time ${NONEXISTENT_TIME}`,
+  AmbiguousLocalTime: `the Economic Time ${AMBIGUOUS_TIME}`,
 };
 
 function memberMessage(issue: Issue): string {

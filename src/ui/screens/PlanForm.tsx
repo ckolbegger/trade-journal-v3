@@ -8,7 +8,14 @@ import { useRuntime } from '../runtime.tsx';
 import { confirmedDetail } from './confirmed-detail.ts';
 import { answerChanged, fieldIssues, isValidSymbol, IssueSummary, positiveDecimal } from './form-issues.tsx';
 import { describeIssues, type FieldIssue } from './plan-issues.ts';
+import { AMBIGUOUS_TIME, INVALID_TIME, LOCAL_TIME_CODES, minuteOf, NONEXISTENT_TIME } from './local-time.ts';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
+
+const PLAN_TIME_MESSAGES = {
+  InvalidLocalTime: `The Plan time ${INVALID_TIME}`,
+  NonexistentLocalTime: `The Plan time ${NONEXISTENT_TIME}`,
+  AmbiguousLocalTime: `The Plan time ${AMBIGUOUS_TIME}`,
+} as const;
 
 interface Option {
   readonly id: string;
@@ -56,7 +63,11 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   const [strategies, setStrategies] = useState<readonly Option[]>([]);
   const [definition, setDefinition] = useState<EntryDefinitionRecord | undefined>();
   const [answers, setAnswers] = useState<Answers>({});
-  // Plan confirmation Economic Time is trader-entered, defaulting to now (decision 20).
+  // Plan confirmation Economic Time is trader-entered, defaulting to now (decision 20). While the
+  // trader leaves it alone, Confirm Plan submits that instant itself: a wall time that occurs twice
+  // at a fall-back would otherwise make the default unusable.
+  const [defaultInstant] = useState(() => minuteOf(now()));
+  const [timeEdited, setTimeEdited] = useState(false);
   const [fields, setFields] = useState<Fields>(() => ({
     accountId: '',
     strategyId: '',
@@ -65,7 +76,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     entry: '',
     stop: '',
     target: '',
-    planTime: toWorkspaceLocal(now(), timeZone),
+    planTime: toWorkspaceLocal(defaultInstant, timeZone),
   }));
   const set = (name: keyof Fields) => (value: string) => setFields((f) => ({ ...f, [name]: value }));
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
@@ -112,8 +123,13 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (!definition) return;
-    const economicTime = fromWorkspaceLocal(fields.planTime, timeZone);
-    if (!economicTime.ok) return;
+    const economicTime = timeEdited ? fromWorkspaceLocal(fields.planTime, timeZone) : ({ ok: true, instant: defaultInstant } as const);
+    // A time that does not resolve to one instant is explained and nothing is written.
+    if (!economicTime.ok) {
+      setIssues([{ field: 'planTime', message: PLAN_TIME_MESSAGES[economicTime.reason], code: economicTime.reason }]);
+      setReported({ fields, answers });
+      return;
+    }
     const account = accounts?.find((a) => a.id === fields.accountId);
     const strategy = strategies.find((s) => s.id === fields.strategyId);
     const symbol = fields.symbol.trim().toUpperCase();
@@ -172,6 +188,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         return changed('entry') && !!entry;
       case 'stop':
         return (changed('stop') || changed('entry')) && !!stop && (issue.code !== 'NoPositiveRisk' || (!!entry && stop.compare(entry) < 0));
+      case 'planTime':
+        return LOCAL_TIME_CODES.has(issue.code ?? '') && changed('planTime') && fromWorkspaceLocal(fields.planTime, timeZone).ok;
       case 'target':
         return (changed('target') || changed('entry')) && !!target && (issue.code !== 'TargetNotBeyondEntry' || (!!entry && target.compare(entry) > 0));
       default:
@@ -217,10 +235,21 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
           </select>
         </label>
         {input('symbol', 'Symbol')}
-        <label>
-          Plan time
-          <input type="datetime-local" value={fields.planTime} onChange={(e) => set('planTime')(e.target.value)} />
-        </label>
+        <div className="field">
+          <label>
+            Plan time
+            <input
+              type="datetime-local"
+              value={fields.planTime}
+              onChange={(e) => {
+                setTimeEdited(true);
+                set('planTime')(e.target.value);
+              }}
+              {...describedBy('planTime')}
+            />
+          </label>
+          {fieldError('planTime')}
+        </div>
       </section>
       <section className="card" aria-labelledby="plan-risk-heading">
         <h2 id="plan-risk-heading">Risk</h2>

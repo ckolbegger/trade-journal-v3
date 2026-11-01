@@ -17,6 +17,7 @@ function renderForm(
   facade: UiFacade = positionChangeFormFacade(),
   onDirtyChange: (dirty: boolean) => void = () => undefined,
   report: (result: { readonly kind: string }) => void = () => undefined,
+  now: () => string = () => '2026-10-12T14:05:00Z',
 ) {
   render(
     <RuntimeContext.Provider value={{ writable: true, report }}>
@@ -25,7 +26,7 @@ function renderForm(
           <Route
             path="/trades/:tradeId/record-entry"
             element={
-              <PositionChangeForm facade={facade} timeZone="America/New_York" now={() => '2026-10-12T14:05:00Z'} onDirtyChange={onDirtyChange} />
+              <PositionChangeForm facade={facade} timeZone="America/New_York" now={now} onDirtyChange={onDirtyChange} />
             }
           />
           <Route path="/trades/:tradeId" element={<p>Trade Detail route</p>} />
@@ -1263,5 +1264,59 @@ describe('disposition (P18, A70)', () => {
     // Only the load read the Trade; the Debt came from the result alone.
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
     expect(facade.Journal.query).not.toHaveBeenCalled();
+  });
+});
+
+// 2026-11-01 01:00 to 02:00 America/New_York happens twice (clocks fall back at 02:00 EDT).
+describe('Economic Time during a fall-back hour', () => {
+  const described = (element: HTMLElement) => document.getElementById(element.getAttribute('aria-describedby') ?? '')?.textContent;
+  // The form at a fixed clock; a Position Change that reaches the Workspace is refused.
+  const renderAt = (instant: string) => {
+    const facade = renderForm(positionChangeFormFacade(), undefined, undefined, () => instant);
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    return facade;
+  };
+  const times = (facade: UiFacade) =>
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.calls[0]![0].members.map((m) => (m as { economicTime: string }).economicTime);
+
+  it('should save each Execution at the exact default instant when its Economic Time is left unedited during a fall-back hour', async () => {
+    const facade = renderAt('2026-11-01T06:26:30Z');
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-11-01T03:30']]);
+    // The first row's time is edited; a second row added now keeps its default (01:26 the second time).
+    await user.click(screen.getByRole('button', { name: 'Add Execution' }));
+    await user.type(within(row(2)).getByLabelText('Quantity'), '10');
+    await user.type(within(row(2)).getByLabelText('Price'), '50.10');
+    await user.type(within(row(2)).getByLabelText('Fee'), '0');
+    expect(within(row(2)).getByLabelText<HTMLInputElement>('Economic Time').value).toBe('2026-11-01T01:26');
+    await completeReflection(user);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(times(facade)).toEqual(['2026-11-01T08:30:00Z', '2026-11-01T06:26:00Z']);
+  });
+
+  it('should show why and write nothing when an edited Economic Time occurs twice at a fall-back', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-11-01T01:30']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const summary = await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    expect(within(summary).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'Execution 1: the Economic Time occurs twice because clocks fall back; enter an earlier or later time.',
+    ]);
+    expect(document.activeElement).toBe(summary);
+    expect(described(within(row(1)).getByLabelText('Economic Time'))).toMatch(/occurs twice because clocks fall back/);
+    expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+  });
+
+  it('should show why and write nothing when an edited Economic Time does not exist because clocks spring forward', async () => {
+    const facade = renderAt('2026-11-01T05:26:00Z');
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-03-08T02:30']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const summary = await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    expect(within(summary).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'Execution 1: the Economic Time does not exist because clocks spring forward; enter an earlier or later time.',
+    ]);
+    expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
   });
 });

@@ -19,6 +19,7 @@ import type { FieldIssue } from './plan-issues.ts';
 import { describePositionChangeIssues, rowField } from './position-change-issues.ts';
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
+import { LOCAL_TIME_CODES, minuteOf } from './local-time.ts';
 import { INCOHERENT_ENTRY_NOTE } from './TradeDetail.tsx';
 
 export interface PositionChangeFormProps {
@@ -37,12 +38,15 @@ interface Row {
   readonly price: string;
   readonly fee: string;
   readonly time: string;
+  // The instant `time` was defaulted from, until the trader edits it: that exact instant is what
+  // is submitted, since the wall time may occur twice at a fall-back.
+  readonly defaultInstant?: string | undefined;
 }
+
+type EditableField = 'quantity' | 'price' | 'fee' | 'time';
 
 // At most 20 Executions per Position Change (D2 A18).
 const MAX_ROWS = 20;
-// The codes fromWorkspaceLocal can fail with: the form judges all of them itself.
-const LOCAL_TIME_CODES = new Set(['InvalidLocalTime', 'NonexistentLocalTime', 'AmbiguousLocalTime']);
 
 // How the trader meets the reflection: write it now, owe it for later, or decline (P18, A70).
 type Choice = 'now' | 'later' | 'decline';
@@ -77,7 +81,10 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const [choice, setChoice] = useState<Choice>('now');
   const [reason, setReason] = useState('');
   const nextKey = useRef(1);
-  const blankRow = (): Row => ({ key: nextKey.current++, quantity: '', price: '', fee: '', time: toWorkspaceLocal(now(), timeZone) });
+  const blankRow = (): Row => {
+    const defaultInstant = minuteOf(now());
+    return { key: nextKey.current++, quantity: '', price: '', fee: '', time: toWorkspaceLocal(defaultInstant, timeZone), defaultInstant };
+  };
   const [rows, setRows] = useState<readonly Row[]>(() => [blankRow()]);
   // The row as first shown; the form is unsaved while anything differs from it.
   const [initialRow, setInitialRow] = useState(() => rows[0]!);
@@ -221,13 +228,21 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   if (!view || !definition) return <p role="status">Loading the entry form…</p>;
 
   const leg = view.plan.legs[0]!;
-  const setRow = (key: number, name: keyof Omit<Row, 'key'>, value: string) =>
-    setRows((current) => current.map((r) => (r.key === key ? { ...r, [name]: value } : r)));
+  const setRow = (key: number, name: EditableField, value: string) =>
+    setRows((current) =>
+      current.map((r) => {
+        if (r.key !== key) return r;
+        // Editing the time leaves the instant it was defaulted from behind.
+        return name === 'time' ? { ...r, time: value, defaultInstant: undefined } : { ...r, [name]: value };
+      }),
+    );
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const rowKeys = rows.map((r) => r.key);
-    const times = rows.map((row) => fromWorkspaceLocal(row.time, timeZone));
+    const times = rows.map((row) =>
+      row.defaultInstant !== undefined ? ({ ok: true, instant: row.defaultInstant } as const) : fromWorkspaceLocal(row.time, timeZone),
+    );
     // A time that is not a Workspace-local date and time cannot be submitted at all.
     const timeIssues = times.flatMap((time, member) =>
       time.ok ? [] : [{ source: 'TradeWorkflows', member, field: 'economicTime', code: time.reason }],
@@ -357,7 +372,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       </section>
       {rows.map((row, index) => {
         const n = index + 1;
-        const input = (name: keyof Omit<Row, 'key'>, label: string, type?: 'datetime-local', field: string = name, wide = false) => (
+        const input = (name: EditableField, label: string, type?: 'datetime-local', field: string = name, wide = false) => (
           <div className={wide ? 'field field-wide' : 'field'}>
             <label>
               {label}
