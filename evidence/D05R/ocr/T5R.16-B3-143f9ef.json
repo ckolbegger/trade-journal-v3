@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 45777,
+    "input_tokens": 45578,
+    "output_tokens": 199,
+    "cache_read_tokens": 7680,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/daily-review/attention.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/StopTargetSlider.tsx"
+      ]
+    }
+  ],
+  "session_id": "9db737d9-66fb-4d2d-a2bd-e5ccc9c7ddab",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9db737d9-66fb-4d2d-a2bd-e5ccc9c7ddab",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "143f9ef4",
+      "resolved_base": "2515bda4102b80e15cafe6cda981b52d494b7777",
+      "resolved_head": "143f9ef433b2635bf2f8c1a24d846ac3aa8c3d52",
+      "exact_range": "2515bda4102b80e15cafe6cda981b52d494b7777..143f9ef433b2635bf2f8c1a24d846ac3aa8c3d52",
+      "source_artifact_sha256": "d45a1cd18d9ac295efc56ee1d09ceb723ca1fe52feeb48519ce638346db75af0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7755ec7526e77ee9e402fcabe62ff07baa369eaabffd1676a709198f81126690",
+          "path": "src/ui/screens/StopTargetSlider.tsx",
+          "fingerprint": "4db7fe6a2dfd557af6a28e890f3c4bb27f1fdf1cd721a9040cffcac9eaa95899"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "6bf488a70f884b23e8a90e060ac52e71e636cfa47113110dd0811d31557c2866"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "e677a878c49da80e7109a598d30f3ec7e8566f57c5b7011420e8fe7fb5a51e34"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7755ec7526e77ee9e402fcabe62ff07baa369eaabffd1676a709198f81126690",
+          "path": "src/ui/screens/StopTargetSlider.tsx",
+          "fingerprint": "4db7fe6a2dfd557af6a28e890f3c4bb27f1fdf1cd721a9040cffcac9eaa95899"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "6bf488a70f884b23e8a90e060ac52e71e636cfa47113110dd0811d31557c2866"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "e677a878c49da80e7109a598d30f3ec7e8566f57c5b7011420e8fe7fb5a51e34"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 15327
+  }
+}

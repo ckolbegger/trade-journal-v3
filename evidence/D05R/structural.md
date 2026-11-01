@@ -1517,3 +1517,60 @@ All green, no reruns. Ports clear before and after.
   - A route change drops a held draft. This is critic 1's A156 note again.
   - After a re-sort the card header can be out of view.
   - Withdraw is offered only for acknowledgments (D4's behaviour).
+
+### T5R.16-B3 The slider names an acknowledged-unavailable Mark as acknowledged (critic 2, defect 1)
+
+Commit `143f9ef`. `RangePosition`'s `NotPlaced` reason widens to `'MissingInput' | 'AcknowledgedUnavailable'`, with the same `instrumentKey` and `date`. In `attention.ts`, the internal `RiskReward` Missing variant gains `acknowledged`, taken from the evaluation's Unavailable reason, and `rangePositionOf` uses it. `StopTargetSlider`'s `notPlaced` switches over the four reasons in `figures.ts`'s words. The D4 pressure basis (`NotComparable`) is unchanged.
+
+Cases, each red first with an assertion failure:
+- The slider reads "Acknowledged unavailable: DEF, Mon Oct 12". Red: `expected 'Not available'`.
+- `save-marks.test.ts` (coordinator): T-C's range position, in its card and in its walked item, carries the acknowledged reason after DEF is saved unavailable.
+
+Sanctioned expectation change: I5R.1 (`tests/integration/d5r/save-marks.test.ts:67`) asserted `MissingInput` for the acknowledged DEF, which encoded the defect. It now asserts `AcknowledgedUnavailable`, which is what I5R.1's plan row says: "T-C's range position not placed (acknowledged unavailable)". Every Missing-Mark expectation is unchanged. No first-run passes.
+
+Checks:
+- `npx vitest run src`: 1010 passed.
+- Integration: 117 passed.
+- Typecheck, `tsc6`, lint, `lint:deps` and `verify:capabilities` exit 0.
+- `npm run test:e2e`: 178 passed.
+
+ocr review of `143f9ef`: three files reviewed, no findings. The reviewer checked:
+- a Missing Mark still gives `MissingInput`;
+- the reason and the named Instrument come from one Unavailable result, so a two-Instrument Trade can't mix them;
+- `AwaitingClose` and `FactsIncoherent` are untouched;
+- the slider is the only consumer.
+
+It noted a limit that predates this task: a foreign Instrument that is itself acknowledged still reports `MarkMissing` from `evaluate`. The attention reasons already behave that way. Raw output: [ocr/T5R.16-B3-143f9ef.json](ocr/T5R.16-B3-143f9ef.json).
+
+### T5R.16-B4 The Reflections panel's summary counts only reflections still owed (critic 2, defect 2)
+
+Commit `f30c2a2`. `ReviewReflections` gains a required `onDebtResolved(debtId)` prop, called when a save returns `DebtResolved`. `CardBody` keeps `resolvedDebts` and passes it to `panelHeaders`. "N owed" counts `trade.reflections` not in that set. `anyResolved` is `owed < trade.reflections.length`, which replaces the old stand-in `some(classification === 'Due')`. The status checks, in order: "N due", "Not due", "Resolved", "None".
+
+Case, red first: *it should count only the reflections still owed in the Reflections panel summary, reading 1 owed, 0 due now and Not due after the due one of two is answered, and None owed and Resolved once both are*. Red: `Unable to find an element with the text: 1 owed, 0 due now`. No existing expectation encoded the old count. No first-run passes.
+
+Checks: `npx vitest run src` 1011 passed; the four static checks exit 0; `npm run test:e2e` 178 passed.
+
+The agent suspected that reopening the panel remounts `ReviewReflections` and resets its resolved set. **The ocr reviewer refuted this from the code:** every panel stays mounted (`hidden={open !== name}`), so an answered reflection can't show "Reflect on" again. Collapsing and reopening the card calls `getTrade` afresh, and that lists only Outstanding Debts. No task.
+
+ocr review of `f30c2a2`: two files reviewed, no findings. **Cosmetic notes, no task:**
+- After a refresh whose Review date moved, an all-answered panel reads "None owed · None" rather than "Resolved".
+- The header can show the old count for one render between `onReview` and `onResolved`.
+
+Raw output: [ocr/T5R.16-B4-f30c2a2.json](ocr/T5R.16-B4-f30c2a2.json).
+
+### T5R.16-B5 The bottom navigation stays above the Open list's sticky cells (critic 2, defect 3, which predates D5R)
+
+Commit `741b192`. `.shell > .nav` gains `z-index: 2`, above the Open list's pinned Underlying cells' `z-index: 1`. The change is CSS only.
+
+New browser case in `e2e/d5r/responsive-a11y.spec.ts`: *should keep the bottom navigation above the Open list's sticky cells at 375 and 320 px, so its Review and Trades links take the click*. No D2 or D4 spec held narrow Open list checks. It uses four Trades plus eight routine ones and a scroll that puts a pinned cell under the nav. At each width it checks three things:
+- a precondition: a TD is under each link's centre (`elementsFromPoint`);
+- `elementFromPoint` at the centre is the link;
+- Review takes a click without `force`.
+
+**Red:** assertion failure, "topmost element at the Review link's centre at 375 px", expected `link`, received `TD`. **Mutation:** the line was removed and `dist-releases/d5` rebuilt; the case failed; then it was restored and rebuilt clean.
+
+**Slip:** a restore edit failed to match, so a full browser run was started with the mutation still in place. It was stopped, the CSS fixed, and the clean run recorded. The slip is noted in the log.
+
+Checks: `npm run test:e2e` 179 passed; `npx vitest run src` 1011 passed; the four static checks exit 0.
+
+ocr review of `741b192`: one file reviewed, no findings. The only two `z-index` declarations in `src/` are the nav's and the pinned cells'. Banners and notices are in flow, and there are no dialogs or skip link. The nav is positioned at both layouts: fixed when narrow, sticky when wide. Raw output: [ocr/T5R.16-B5-741b192.json](ocr/T5R.16-B5-741b192.json).
