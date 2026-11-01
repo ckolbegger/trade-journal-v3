@@ -47,7 +47,7 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`, where N is 174 at `claude-opus-5.5-pre-d5r2` and grows with each D5R2 commit. No uncommitted changes, except the untracked `.claude/settings.json`: it is the user's own file, expected, and **never staged**. |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`, where N is 175 at `claude-opus-5.5-pre-d5r2` and grows with each D5R2 commit. No uncommitted changes, except the untracked `.claude/settings.json`: it is the user's own file, expected, and **never staged**. |
 | `git log --oneline claude-opus-5.5-pre-d5r2..HEAD` | Empty at the first session. Afterwards, only D5R2 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit. |
 | `git tag --list 'claude-opus-5.5-*'` | Includes `claude-opus-5.5-plan-r28`, `claude-opus-5.5-d5r` and `claude-opus-5.5-pre-d5r2`. |
 | `git rev-parse 'claude-opus-5.5-d5r^{commit}'` | `72c742c1b6f393d432e533a7d65b84c45df933ff` |
@@ -110,10 +110,10 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The ne
 
 ## 3. D5R2 specifics
 
-- **Setup before T5R2.1: `tdd.sh` must accept D5R2's task IDs.**
-  - **The problem:** `.claude/scripts/tdd.sh` accepts `T<n>.<m>` and `T<n>R.<m>` (its pattern is `^T([0-9]+)(R?)\.`). `T5R2.1` doesn't match.
-  - **The task:** delegate a small structural task, "setup: tdd.sh accepts T5R2 task IDs", to a fresh `tdd-task` subagent. It makes the script accept `T<n>R<k>.<m>` and log to `evidence/D<nn>R<k>/tdd-log.md`, so `T5R2.1` goes to `evidence/D05R2/tdd-log.md`. Every other ID maps as before.
-  - **Verification:** run it before the D05R2 log exists, so nothing is appended. `.claude/scripts/tdd.sh red T5R2.1 x y` prints `no log at evidence/D05R2/tdd-log.md`, and `.claude/scripts/tdd.sh red T99.1 x y` prints `no log at evidence/D99/tdd-log.md`. **Don't run it with a `T5R.` ID:** `evidence/D05R/tdd-log.md` exists, so a run would append to D5R's log. Check that mapping in the script's diff instead. Record the outputs in `evidence/D05R2/structural.md`.
+- **Setup before T5R2.1: `tdd.sh` must accept any deliverable suffix.**
+  - **The problem:** `.claude/scripts/tdd.sh` takes the task ID as a parameter and derives the log from it, but its pattern, `^T([0-9]+)(R?)\.`, accepts only `T<n>.<m>` and `T<n>R.<m>`. `T5R2.1` doesn't match, and every new naming form so far has needed an edit.
+  - **The task:** delegate a small structural task, "setup: tdd.sh accepts any deliverable suffix", to a fresh `tdd-task` subagent. It generalizes the pattern to `^T([0-9]+)([A-Z][A-Z0-9]*)?\.` and logs to `evidence/D<nn><suffix>/tdd-log.md`, with `<nn>` zero-padded as today. So `T5R2.1` goes to `evidence/D05R2/tdd-log.md`, a future `T6R.1` to `evidence/D06R/tdd-log.md`, and `T2.2`, `T12.4` and `T5R.1` map as before. The script's header comment and its error message describe the general form. The usage and every call site are unchanged.
+  - **Verification:** run it only with IDs whose log doesn't exist, so nothing is appended. `.claude/scripts/tdd.sh red T5R2.1 x y` prints `no log at evidence/D05R2/tdd-log.md` (run it before that log is created), `.claude/scripts/tdd.sh red T6R.1 x y` prints `no log at evidence/D06R/tdd-log.md`, `.claude/scripts/tdd.sh red T99.1 x y` prints `no log at evidence/D99/tdd-log.md`, and `.claude/scripts/tdd.sh red X5.1 x y` is rejected with exit 2. **Don't run it with a `T1.`, `T2.`, `T4.`, `T5.` or `T5R.` ID:** those deliverables' logs exist, and a run would append to them. Check those mappings in the script's diff instead. Record the outputs in `evidence/D05R2/structural.md`.
   - **Afterwards:** create `evidence/D05R2/tdd-log.md` with its header note. The `suite-runner`, `ocr-review` and critic briefs take `evidence/D05R2` as the evidence directory.
 - **Order.** Run tasks one at a time, in task-graph order: T5R2.1 through T5R2.19 (section 3 of the breakdown). The breakdown's three parallel tracks describe which tasks are independent; don't run them concurrently.
 - **Code pointers.** The breakdown was written against the built code. Give each brief these pointers rather than having the subagent search. Line numbers are as of `claude-opus-5.5-pre-d5r2` and drift as tasks land.
