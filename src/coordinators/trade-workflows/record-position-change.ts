@@ -14,6 +14,7 @@ import {
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { DebtProjection, DeclineProjection, EntryProjection, ReflectionDisposition } from '../../modules/journal/index.ts';
 import { beginSemanticTransaction, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import { retryCounterConflict } from './counter-retry.ts';
 import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
 // One member of a Position Change in the full spec form (D2 A18): the Trade that owns it, its
@@ -205,7 +206,11 @@ function reconciliationOf(
   });
 }
 
-export async function recordPositionChange(deps: TradeWorkflowsDeps, command: PositionChangeCommand): Promise<PositionChangeResult> {
+export function recordPositionChange(deps: TradeWorkflowsDeps, command: PositionChangeCommand): Promise<PositionChangeResult> {
+  return retryCounterConflict(() => attemptPositionChange(deps, command));
+}
+
+async function attemptPositionChange(deps: TradeWorkflowsDeps, command: PositionChangeCommand): Promise<PositionChangeResult> {
   const variants = uninstalledVariants(command);
   if (variants.length > 0 || !installed(command.members)) return { kind: 'VariantNotInstalled', variants };
   const tradeId = command.originTradeId;

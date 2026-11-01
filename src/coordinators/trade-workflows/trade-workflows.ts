@@ -5,6 +5,7 @@ import { assessPlan, derive, type PlanInput } from '../../domain/trade-analysis/
 import type { AnswerInput } from '../../modules/journal/index.ts';
 import { recordPositionChange, type PositionChangeCommand, type PositionChangeResult } from './record-position-change.ts';
 import { beginSemanticTransaction, type BindingCheck, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import { retryCounterConflict } from './counter-retry.ts';
 import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
 export type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
@@ -52,7 +53,7 @@ function unchangedReference(name: string, id: string, recordRevision: number): B
 export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
   return {
     // Readiness is rerun immediately before the mutation (D1 A4).
-    confirmPlan: (command) => deps.guard.run('TradeWorkflows.confirmPlan', () => confirmPlan(command)),
+    confirmPlan: (command) => deps.guard.run('TradeWorkflows.confirmPlan', () => retryCounterConflict(() => confirmPlan(command))),
     recordPositionChange: (command) => deps.guard.run('TradeWorkflows.recordPositionChange', () => recordPositionChange(deps, command)),
   };
 
