@@ -500,3 +500,25 @@ Date 2026-11-01 10:00 EST.
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.13-checks.txt` |
 
 Ports 9341, 9342 and 5175 free afterwards. The runner left three polling shells of its own (`pgrep -f full-suite.sh` loops, from this session's suite runs); the main session stopped them.
+
+## T5R2.14 Market Data: Review frames carry an evidence binding
+
+Commit `981e4fc`. The `Frames` result gains `evidenceBinding: EvidenceBinding` (`readonly BoundKey[]`, with `BoundKey { instrumentKey; tradingDate; resolutionRevision }` internal): per requested Instrument its Review-date key at the revision read (`None` when no record exists), plus the Stale-context source key at its revision when the frame selected one, all from `ResolveFrames`' existing read transaction (A176). `MarketData.bindEvidence(tx, evidenceBinding)` stages one require per key, named `mark:<instrument>@<date>`, store `observations`, key `[tradingDate, instrumentKey]`, verify `(current?.['resolutionRevision'] ?? 'None') === resolutionRevision` (Daily Review's rule). It is on the `MarketData` interface, like `prepareEffects`, not on the facade; `verify:capabilities` reports 19 operations. New file `evidence-binding.test.ts`, 4 cases. Case 1 red (`TypeError: marketData.bindEvidence is not a function`), then green.
+- **Slip, flagged: code ahead of red.** The subagent wrote the whole implementation after case 1's red, so **cases 2–4 were first-run passes**. Each got a mutation check, restored exactly: case 2, the Review-date revision bound as `1` (failure: `expected { kind: 'Committed', … } to deeply equal { kind: 'Conflict', … }`); case 3, the Stale-context key dropped (same failure); case 4, an extra ABC key bound as `None` (`expected 'Conflict' to be 'Committed'`). Accepted without a redo, because each mutation removes exactly the code its case depends on and gives the same evidence a genuine red would.
+- **Implementation decisions:** the Stale-context lookup is split into `staleSourceOf` (context plus the source's revision), with `staleContextOf` kept as a thin wrapper for its two other callers; `evidenceBinding` is on the `Frames` variant for every context, since `frameResult` is shared (`SnapshotChanged` and `recover` do not carry it); the evidence digest is unchanged; tech debt item 1 is unchanged.
+- **Note:** the case names drop the plan's possessive apostrophes ("the frames evidence", "the XYZ Review-date Mark", "the DEF Review date", "the DEF frame") for `-t` filtering, as earlier tasks' names do. A no-op `python3` heredoc ran once and wrote no file.
+
+### ocr review of `981e4fc`
+
+Session `c4093c28-f23f-4551-b111-21e64d36bd14`, 2 files reviewed, no findings. Raw output: [ocr/T5R2.14.json](ocr/T5R2.14.json).
+
+### Cumulative suite at `981e4fc` (T5R2.14 closed)
+
+Date 2026-11-01 10:14 EST.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 80 passed (80)`, `Tests 1051 passed (1051)`, exit 0 | `suite-runs/T5R2.14-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 60 passed (60)`, `Tests 117 passed (117)`, exit 0 | `suite-runs/T5R2.14-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `179 passed (7.3m)`, exit 0 | `suite-runs/T5R2.14-browser.txt` |
+| Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/T5R2.14-checks.txt` |
