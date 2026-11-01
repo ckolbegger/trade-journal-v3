@@ -459,6 +459,8 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
             advance={advance.tradeId === trade.tradeId ? advance.count : 0}
             go={go.tradeId === trade.tradeId ? go.go : NO_GO}
             marks={marksOf(heldReview, trade.tradeId)}
+            held={heldReview}
+            onResult={apply}
             tradeLine={tradeLine}
             onToggle={() => toggle(trade.tradeId)}
             onSaved={(result) => saved(result, shown?.opening ?? -1)}

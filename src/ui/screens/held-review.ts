@@ -18,14 +18,14 @@ export type HeldResult =
   | { readonly kind: 'Opened'; readonly review: Ready }
   | { readonly kind: 'ActionSaved' | 'DebtResolved'; readonly review: PostSaveReview }
   | { readonly kind: 'MarksSaved'; readonly marks: readonly SavedMark[]; readonly review: PostMarksReview }
-  | { readonly kind: 'MarkSaved'; readonly key: ObservationKey; readonly resolution: MarkResolution; readonly resolutionRevision: number }
+  | { readonly kind: 'MarkSaved'; readonly key: ObservationKey; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision }
   | { readonly kind: 'MarksConflict'; readonly moved: readonly MovedKey[] };
 
 // A key a Save Marks Conflict reported as moved, with the resolution and revision it now stands at.
 export interface MovedKey {
   readonly key: ObservationKey;
   readonly resolution: MarkResolution;
-  readonly resolutionRevision: number;
+  readonly resolutionRevision: ExpectedResolutionRevision;
 }
 
 export function fold(held: Held, result: HeldResult): Held {
@@ -60,7 +60,7 @@ function learn(held: Held, keys: readonly MovedKey[]): Held {
   const standings = { ...held.standings };
   for (const k of keys) {
     const known = standings[idOf(k.key)];
-    if (known === undefined || k.resolutionRevision >= rank(known.revision)) standings[idOf(k.key)] = { resolution: k.resolution, revision: k.resolutionRevision };
+    if (known === undefined || rank(k.resolutionRevision) >= rank(known.revision)) standings[idOf(k.key)] = { resolution: k.resolution, revision: k.resolutionRevision };
   }
   return { ...held, standings };
 }

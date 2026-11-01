@@ -1,21 +1,14 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { ExpectedResolutionRevision, MarkResolution, MarkRow, MarketDataPrepareEntry, ReviewFamily, SaveReviewMarksResult } from '../../app/types.ts';
+import type { ExpectedResolutionRevision, MarkResolution, MarkRow, MarketDataPrepareEntry, ObservationKey, SaveReviewMarksResult } from '../../app/types.ts';
 import { shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
+import { standing as heldStanding, type CardMarkRows, type GapGroup, type Held, type HeldResult, type Standing } from './held-review.ts';
 import { MarkEntry, type MarkEntryProps } from './MarkEntry.tsx';
 import { describeMarkIssues } from './mark-issues.ts';
 import type { FieldIssue } from './plan-issues.ts';
-
-export type GapGroup = Extract<ReviewFamily, { family: 'Marks' }>['earlier'][number];
-
-// The Marks a card owns: its Review-date rows, and its earlier sessions without Marks.
-export interface CardMarkRows {
-  readonly today: readonly MarkRow[];
-  readonly earlier: readonly GapGroup[];
-}
 
 export type EntryDirty = (id: string, dirty: boolean) => void;
 
@@ -36,13 +29,6 @@ const NO_DRAFT: Draft = { price: '', unavailable: false, reason: '' };
 const isDraft = (draft: Draft | undefined): draft is Draft => draft !== undefined && (draft.price !== '' || draft.unavailable);
 const CANT_GET_A_PRICE = "Can't get a price";
 
-// Where a key stands: its resolution and the revision a save of it binds to.
-interface Standing {
-  readonly resolution: MarkResolution;
-  readonly revision: ExpectedResolutionRevision;
-}
-const rank = (revision: ExpectedResolutionRevision): number => (revision === 'None' ? 0 : revision);
-
 // What every row of the panel shares: the drafts and the controls over them.
 interface Panel {
   readonly facade: UiFacade;
@@ -54,9 +40,10 @@ interface Panel {
   // What a Conflict said about a row's key: nothing was saved, and the Mark shown is the current one.
   readonly notices: Readonly<Record<string, string>>;
   readonly setDraft: (id: string, draft: Draft) => void;
-  // A key's standing: what this panel learned from its own saves, unless the Review has since shown a newer revision.
-  readonly standing: (id: string, listed: Standing) => Standing;
-  readonly setStanding: (id: string, standing: Standing) => void;
+  // A key's standing, from the held Review; the row's listed values when the Review knows nothing of the key (A172).
+  readonly standing: (key: ObservationKey, listed: Standing) => Standing;
+  // A per-row save reaches the held Review through the fold (P51).
+  readonly onResult: (result: HeldResult) => void;
   readonly onEntryDirty: EntryDirty;
   readonly onMarkSaved: () => void;
   // Enter in a price moves on to the next price, and from the last to Save Marks (A153).
@@ -139,9 +126,9 @@ function DraftFields({ panel, id, resolution }: { readonly panel: Panel; readonl
 // One key's row: its Mark status and the actions on a saved one (Correct, Withdraw), then the draft fields.
 function KeyRow({ panel, instrumentKey, tradingDate, resolution, resolutionRevision, withdraw }: { readonly panel: Panel; readonly instrumentKey: string; readonly tradingDate: string; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision; readonly withdraw: boolean }) {
   const id = rowId(instrumentKey, tradingDate);
-  const now = panel.standing(id, { resolution, revision: resolutionRevision });
+  const now = panel.standing({ instrumentKey, tradingDate }, { resolution, revision: resolutionRevision });
   const saved: MarkEntryProps['onSaved'] = ({ resolution: next, resolutionRevision: revision }) => {
-    panel.setStanding(id, { resolution: next, revision });
+    panel.onResult({ kind: 'MarkSaved', key: { instrumentKey, tradingDate }, resolution: next, resolutionRevision: revision });
     panel.onMarkSaved();
   };
   return (
@@ -262,6 +249,10 @@ export interface CardMarksProps {
   readonly facade: UiFacade;
   readonly tradeId: string;
   readonly marks: CardMarkRows;
+  // The Review the screen holds: every key's standing is read from it (P51).
+  readonly held: Held;
+  // Folds a per-row save and a Save Marks Conflict into the held Review.
+  readonly onResult: (result: HeldResult) => void;
   // A Trade's summary line, or its Underlying when it has none.
   readonly tradeLine: (tradeId: string) => string;
   readonly onEntryDirty: EntryDirty;
@@ -276,7 +267,7 @@ export interface CardMarksProps {
 
 // The Marks panel of an open card (A153): its Review-date rows, then its earlier sessions. A typed price or a
 // "Can't get a price" is a draft until Save Marks; a row with a Mark keeps its own Correct and Withdraw.
-export function CardMarks({ facade, tradeId, marks, tradeLine, onEntryDirty, onMarkSaved, onSaveMarks, outOfDate, onRefresh }: CardMarksProps) {
+export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, tradeLine, onEntryDirty, onMarkSaved, onSaveMarks, outOfDate, onRefresh }: CardMarksProps) {
   const uid = useId();
   const { writable, report } = useRuntime();
   // The earlier sessions as the card opened: a session filled meanwhile stays listed with its saved Mark until the card is closed.
@@ -300,12 +291,7 @@ export function CardMarks({ facade, tradeId, marks, tradeLine, onEntryDirty, onM
   useEffect(() => {
     if (focusField) document.getElementById(focusField.field)?.focus();
   }, [focusField]);
-  const [standings, setStandings] = useState<Readonly<Record<string, Standing>>>({});
-  const setStanding = useCallback((id: string, standing: Standing) => setStandings((current) => ({ ...current, [id]: standing })), []);
-  const standing = (id: string, listed: Standing): Standing => {
-    const own = standings[id];
-    return own !== undefined && rank(own.revision) >= rank(listed.revision) ? own : listed;
-  };
+  const standing = (key: ObservationKey, listed: Standing): Standing => heldStanding(heldReview, key) ?? listed;
   const count = Object.values(drafts).filter(isDraft).length;
   // The card holds while any draft does (A156); leaving the panel abandons them. A read-only card shows no draft
   // fields and no Discard, so it holds nothing: the drafts stay unsaved in state, but they cannot keep the card open.
@@ -318,7 +304,7 @@ export function CardMarks({ facade, tradeId, marks, tradeLine, onEntryDirty, onM
     const prices = [...(section.current?.querySelectorAll<HTMLInputElement>('input[data-mark-price]') ?? [])];
     (prices[prices.indexOf(price) + 1] ?? saveButton.current)?.focus();
   };
-  const panel: Panel = { facade, writable, uid, drafts, issues, notices, setDraft, standing, setStanding, onEntryDirty, onMarkSaved, onPriceEnter };
+  const panel: Panel = { facade, writable, uid, drafts, issues, notices, setDraft, standing, onResult, onEntryDirty, onMarkSaved, onPriceEnter };
   // Every drafted key becomes an entry, in the order the rows are shown, bound to the revision it stands at.
   const keys = [
     ...marks.today.map((row) => ({ instrumentKey: row.instrumentKey, tradingDate: row.tradingDate, listed: { resolution: row.resolution, revision: row.resolutionRevision } })),
@@ -330,7 +316,7 @@ export function CardMarks({ facade, tradeId, marks, tradeLine, onEntryDirty, onM
       const draft = drafts[id];
       if (!isDraft(draft)) return [];
       const intention = draft.unavailable ? ({ kind: 'AssertUnavailable', reason: draft.reason } as const) : ({ kind: 'RecordInitialManualMark', price: draft.price.trim() } as const);
-      const entry: MarketDataPrepareEntry = { key: { instrumentKey, tradingDate }, expectedRevision: standing(id, listed).revision, intention };
+      const entry: MarketDataPrepareEntry = { key: { instrumentKey, tradingDate }, expectedRevision: standing({ instrumentKey, tradingDate }, listed).revision, intention };
       return [{ id, entry }];
     });
     setSaving(true);
@@ -352,12 +338,11 @@ export function CardMarks({ facade, tradeId, marks, tradeLine, onEntryDirty, onM
       // Each key that moved shows what it is now, so the retry binds to it; the drafts stay.
       const moved = result.keys.flatMap((conflicted) => {
         const row = sent[conflicted.entryIndex];
-        return row ? [{ id: row.id, conflicted }] : [];
+        return row ? [{ id: row.id, key: row.entry.key, conflicted }] : [];
       });
-      setStandings((current) => ({ ...current, ...Object.fromEntries(moved.map(({ id, conflicted }) => [id, { resolution: conflicted.resolution, revision: conflicted.resolutionRevision }])) }));
+      onResult({ kind: 'MarksConflict', moved: moved.map(({ key, conflicted }) => ({ key, resolution: conflicted.resolution, resolutionRevision: conflicted.resolutionRevision })) });
       setNotices(Object.fromEntries(moved.map(({ id, conflicted }) => [id, conflicted.code === 'MarkExists' ? 'A Mark already exists for this date, so it cannot be marked unavailable. Nothing was saved.' : 'This Mark changed after you opened it. Nothing was saved. The current Mark is shown above, and your values are kept.'])));
     } else if (result.kind === 'MarksSaved') {
-      setStandings((current) => ({ ...current, ...Object.fromEntries(result.marks.map((m) => [rowId(m.key.instrumentKey, m.key.tradingDate), { resolution: m.resolution, revision: m.resolutionRevision }])) }));
       // A draft typed or changed while the save was pending is not what was sent, so it stays.
       const unchanged = (id: string, current: Draft | undefined) => {
         const was = drafts[id];

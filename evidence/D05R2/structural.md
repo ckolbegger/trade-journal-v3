@@ -347,3 +347,30 @@ Date 2026-11-01 08:30 EST. The working tree's only uncommitted changes were evid
 | Static and verification checks (12 commands) | as at T5R2.1 | 12 of 12 exit 0 | `suite-runs/t5r2-8-reviewview-fold-checks.txt` |
 
 Ports 9341, 9342 and 5175 free before and after.
+
+## T5R2.9 CardMarks reads standings from the held Review
+
+`CardMarks` no longer holds `standings`, `setStanding` or its own `Standing`/`rank`. It takes `held: Held` and `onResult: (result: HeldResult) => void` (passed down from `ReadyReview` through `ReviewCard` and `CardBody`; `held` is `heldReview`, `onResult` is the single `apply`). Each row's resolution and revision, and each Save Marks entry's `expectedRevision`, come from `standing(held, key) ?? listed` (the fallback is the row's listed values when the Review knows nothing of the key). A per-row Correct or Withdraw calls `onResult({ kind: 'MarkSaved', ... })`; a Save Marks `Conflict` calls `onResult({ kind: 'MarksConflict', moved })`, with each moved key taken from the sent entry at `entryIndex`. A `MarksSaved` result needs no call from `CardMarks`: `ReviewView.saveMarks` already folds it, and `fold` records its standings. `CardMarks` now imports `CardMarkRows` and `GapGroup` from `held-review.ts` (its own duplicates are gone; `ReviewCard` imports `CardMarkRows` from there too). The `opened` earlier list stays (A172: rendering). No progress wording, nothing under `e2e/`.
+
+One module change: `HeldResult`'s `MarkSaved` and `MovedKey` now type `resolutionRevision` as `ExpectedResolutionRevision` (the type `MarkEntry` and the Conflict result carry), and `learn` compares with `rank(...)`. For numeric revisions the comparison is the same as before.
+
+### Removed mounted case
+
+`ReviewView.test.tsx`, "should keep an earlier-session Mark saved resolution when the Review re-renders without a newer revision". Carried by `held-review.test.ts`, describe "standing (A172)", third case ("should keep the learned standing when a later Opened Review lists the key at a lower revision ...").
+
+| Mounted value | Carried by |
+|---|---|
+| DEF, Friday 2026-10-09, saved "9" through Save Marks at revision 1 (key left the gap list); a re-read lists it as missing at revision `None`; the row still shows `$9.00` and a Correct sends `expectedResolutionRevision: 1`. | Third `standing` case: XYZ, Friday, saved `available('9')` at revision 1, then `Opened` listing it missing at `None`: `standing` is `{ resolution: available('9'), revision: 1 }`. Listed at 4 or at 1 (acknowledged): the Review's standing wins. |
+
+Kept unchanged, as the plan says: `CardMarks.test.tsx` "should send an earlier-session draft with the resolution and revision of the newest Review after Refresh, not those of the first snapshot" (its entry still sends `expectedRevision: 4`). Its standing part is carried by the same third `standing` case (listed at 4 beats the learned revision). The three rendering-continuity cases stay mounted, unchanged. No harness change was needed: every mounted case renders through `ReviewView`.
+
+### Verification (each on its own)
+
+| Command | Result |
+|---|---|
+| `npm run test:unit -- src/ui` | `Test Files 25 passed (25)`, `Tests 420 passed (420)` (421 less the one removed case), exit 0 |
+| `npm run typecheck` | exit 0 |
+| `rg 'standings\|setStanding' src/ui/screens/CardMarks.tsx` | no matches, exit 1 |
+| `rg -n 'heldStanding\(\|standing\(\|onResult\(' src/ui/screens/CardMarks.tsx` | row standing: line 129 (`panel.standing(...)`, defined at 294 as `heldStanding(heldReview, key) ?? listed`); Save Marks entry expected revision: line 319 (`standing(...).revision`); per-row save folds `MarkSaved`: line 131; Save Marks Conflict folds `MarksConflict`: line 343 |
+| `npx vitest run tests/integration/d5r` | `Test Files 7 passed (7)`, `Tests 12 passed (12)`, exit 0 |
+| `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |

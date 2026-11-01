@@ -441,35 +441,6 @@ describe('Marks in the card (P11, P15)', () => {
     expect(within(screen.getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByLabelText<HTMLInputElement>('Price').value).toBe('12.5');
   });
 
-  it('should keep an earlier-session Mark saved resolution when the Review re-renders without a newer revision', async () => {
-    const returned = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [gap('DEF', { missing: ['2026-10-09'], revisions: { '2026-10-09': 'None' } })], trades: [tradeItem('t1', 'DEF')], completion: incomplete(...actionMissing('t1')) });
-    const facade = reviewFacade(returned);
-    const key = { instrumentKey: 'DEF', tradingDate: '2026-10-09' };
-    const mark = { revisionId: 'r9', revisionNumber: 1, price: '9', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
-    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-09', '9'));
-    renderReview(facade);
-    const user = userEvent.setup();
-    await openMarks(user);
-    const earlierEntry = await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' });
-    await user.type(within(earlierEntry).getByLabelText('Price'), '9');
-    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
-    await within(earlierEntry).findByText('$9.00', { exact: false });
-
-    // Refresh reads the Review again, which returns the same stale revision for that date.
-    await user.click(screen.getByRole('button', { name: 'Refresh' }));
-    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
-
-    const again = screen.getByRole('region', { name: 'DEF Mark, Fri Oct 9' });
-    expect(within(again).getByText('$9.00', { exact: false })).toBeTruthy();
-    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key, resolution: { kind: 'Available', mark }, resolutionRevision: 1 });
-    await user.click(within(again).getByRole('button', { name: 'Correct' }));
-    await user.type(within(again).getByLabelText('Price'), '9.5');
-    await user.type(within(again).getByLabelText('Reason (required)'), 'typo');
-    await user.click(within(again).getByRole('button', { name: 'Save correction' }));
-    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', ...key, price: '9.5', reason: 'typo', expectedResolutionRevision: 1 });
-  });
-
   it('should keep an earlier session listed with its saved Mark while the card stays open, although the Review read again no longer lists it', async () => {
     const trades = [tradeItem('t1', 'DEF')];
     const first = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [gap('DEF', { missing: ['2026-10-09'], revisions: { '2026-10-09': 'None' } })], trades, completion: incomplete(...actionMissing('t1')) });
