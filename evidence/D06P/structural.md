@@ -188,3 +188,9 @@ Ports 9341, 9342 and 5175 were free before and after. Browser stage wall time 7:
 | `npm run lint:deps` | exit 0 | 0 |
 
 Ports 5175, 9341 and 9342 were free before and after the browser run.
+
+### ocr review of `7670ff7`
+
+Test-only commit, reviewed by the relocation procedure (prefactor handoff, section 3): a scratch clone outside the worktree, with the two changed specs and their `support.ts` files relocated under `src/itg/d06p/` as plain `.ts` in the parent state, then the commit's changes applied (scratch commit `666770ca`). Session `e757d66f-5c07-48ad-b176-4c01616bf594`, model gpt-6.1-sol (ocr v1.13.3), 2 files reviewed (the relocated spec copies), no findings. Raw output: [ocr/T6P.3-7670ff7.json](ocr/T6P.3-7670ff7.json). The reviewer also confirmed by reading that B1.5's new sets are valid `Check` sets, that no import or helper became unused, and that `src/ui/screens/TradeDetail.test.tsx:123` asserts the same "Last activity" value (`2026-10-12 11:00` for `[PC1, PC2]`).
+
+Process note: the reviewer briefly ran `git checkout 7670ff7c` in the worktree (detached HEAD) and switched straight back to `claude-opus-5.5`. The main session confirmed from the reflog that the branch, HEAD and the working tree are unchanged.
