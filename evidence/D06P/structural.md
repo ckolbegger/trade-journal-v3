@@ -143,3 +143,9 @@ Ports 5175, 9341 and 9342 were free before and after the 20-test run. Only the r
 ### ocr review of `8834b52` (T6P.2-B2)
 
 Session `5f7e72c0-4622-4158-a548-407c66fa3aea`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), no findings. Raw output: [ocr/T6P.2-B2-8834b52.json](ocr/T6P.2-B2-8834b52.json).
+
+### ocr review of `18b3f01` (T6P.2-B3)
+
+Session `288d5299-807e-4fa4-865b-dc626f179405`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the evidence file), no findings. Raw output: [ocr/T6P.2-B3-18b3f01.json](ocr/T6P.2-B3-18b3f01.json). T6P.2 and its three bug tasks now all have ocr reviews with no findings.
+
+Note: B3's red run with a metacharacter in `TJ_E2E_CURRENT` executed a `touch` in the repository root and created three stray untracked files, which the subagent removed; the main session confirmed none remain.
