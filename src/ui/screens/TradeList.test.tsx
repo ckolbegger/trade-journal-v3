@@ -370,7 +370,7 @@ describe('Open list current evaluation', () => {
     const [, withDated, without] = within(table).getAllByRole('row');
     const cell = (row: HTMLElement) => within(row).getAllByRole('cell')[3]!;
     const link = within(cell(withDated!)).getByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' });
-    expect(link.getAttribute('href')).toBe('/review?instrument=ABC');
+    expect(link.getAttribute('href')).toBe('/review?trade=trade-2&instrument=ABC');
     expect(cell(withDated!).textContent).toBe('Mark missing: ABC, Tue Oct 13 Mon Oct 12 close +$120.00 · +0.48R');
     // With no dated line the cell holds the words alone: no figure.
     expect(cell(without!).textContent).toBe('Mark missing: ABC, Tue Oct 13');
@@ -378,7 +378,17 @@ describe('Open list current evaluation', () => {
     expect(within(within(withDated!).getAllByRole('cell')[1]!).getByText('Mark missing').className).toBe('badge');
   });
 
-  it('should show Awaiting the next close in place of the P&L when the evaluation reports AwaitingClose, with no at-entry risk in the list, and the dated line when present', async () => {
+  it('should link the Open list Mark missing figure to the Review with its trade id and instrument key', async () => {
+    const mine = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark }), tradeId: 'trade-7' };
+    const table = await openTable([valued(), mine]);
+    const [, , row] = within(table).getAllByRole('row');
+    // Each row's link names its own Trade, so a second Trade on the same Underlying never opens the other card.
+    // The figure appears twice, in the P&L cell and in the narrow layout's second line; both link the same way.
+    const links = within(row!).getAllByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' });
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/review?trade=trade-7&instrument=ABC', '/review?trade=trade-7&instrument=ABC']);
+  });
+
+  it('should show Awaiting the next close in place of the P&L when the evaluation reports AwaitingClose,with no at-entry risk in the list, and the dated line when present', async () => {
     const atEntry = { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(503n, 10n), riskFromEntry: Rational.of(130n), rewardFromEntry: Rational.of(230n) };
     const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
     const awaiting = valued({ currentMarkedPnl: awaitingClose, currentMarkedPnlInPlanR: awaitingClose, atEntry, datedLine: dated });
@@ -416,7 +426,7 @@ describe('Open list current evaluation', () => {
     const [, row] = within(table).getAllByRole('row');
     const cells = within(row!).getAllByRole('cell');
     expect(cells[3]!.textContent).toBe('Acknowledged unavailable: ABC, Tue Oct 13');
-    expect(within(cells[3]!).getByRole('link').getAttribute('href')).toBe('/review?instrument=ABC');
+    expect(within(cells[3]!).getByRole('link').getAttribute('href')).toBe('/review?trade=trade-2&instrument=ABC');
     expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
   });
 
@@ -438,6 +448,6 @@ describe('Open list current evaluation', () => {
     const line = (row: HTMLElement) => row.querySelector('.trade-line') as HTMLElement;
     expect(line(gain!).textContent).toBe('Net cost $3,007.00 · P&L +$582.00 · +2.33R');
     expect(line(lost!).textContent).toBe('Net cost $3,007.00 · P&L Mark missing: ABC, Tue Oct 13');
-    expect(within(line(lost!)).getByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' }).getAttribute('href')).toBe('/review?instrument=ABC');
+    expect(within(line(lost!)).getByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' }).getAttribute('href')).toBe('/review?trade=trade-3&instrument=ABC');
   });
 });

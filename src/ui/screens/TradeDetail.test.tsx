@@ -891,11 +891,18 @@ const MON_CLOSE = '2026-10-12T20:00:00Z';
 const monContext = { tradingDate: '2026-10-12', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: MON_CLOSE };
 
 describe('missing or later evidence (P12, P13)', () => {
+  it('should link Trade Detail Mark missing line to the Review with its trade id and instrument key', async () => {
+    renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    // The Trade being read is named, so the Review opens this Trade's card, not another Trade's on the same Instrument.
+    expect(within(valuation).getByRole('link', { name: 'Mark missing for XYZ on Tue Oct 13' }).getAttribute('href')).toBe('/review?trade=trade-1&instrument=XYZ');
+  });
+
   it('should show Mark missing for XYZ on Tue Oct 13, the Stale context labelled stale, an At Mon Oct 12 close section with its own figures, and a link to the Review Marks family', async () => {
     renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext })));
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
     const link = within(valuation).getByRole('link', { name: 'Mark missing for XYZ on Tue Oct 13' });
-    expect(link.getAttribute('href')).toBe('/review?instrument=XYZ');
+    expect(link.getAttribute('href')).toBe('/review?trade=trade-1&instrument=XYZ');
     expect(within(valuation).getByText('Stale context: $51.20 from Mon Oct 12 close (stale, not used in any current figure)')).toBeTruthy();
     expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
 

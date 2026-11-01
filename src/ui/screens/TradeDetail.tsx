@@ -242,7 +242,7 @@ function changeTime(view: OpenTradeDetail, positionChangeId: string, timeZone: s
 
 // The Mark that valued the figures at the Expected Mark Date: its price, source, and save time, and
 // the reason when the effective revision is a Correction.
-function ValuationSection({ current, timeZone }: { readonly current: OpenTradeDetail['current']; readonly timeZone: string }) {
+function ValuationSection({ tradeId, current, timeZone }: { readonly tradeId: string; readonly current: OpenTradeDetail['current']; readonly timeZone: string }) {
   const { mark, markResolution, evaluation } = current;
   const symbol = evaluation.observation.instrument.symbol;
   const stale = evaluation.staleContext;
@@ -251,7 +251,7 @@ function ValuationSection({ current, timeZone }: { readonly current: OpenTradeDe
       <h2 id="valuation-heading">Valuation</h2>
       {markResolution?.kind === 'Missing' && (
         <p>
-          <Link to={`/review?instrument=${encodeURIComponent(symbol)}`}>{`Mark missing for ${symbol} on ${shortDate(evaluation.valuationDate)}`}</Link>
+          <Link to={`/review?trade=${encodeURIComponent(tradeId)}&instrument=${encodeURIComponent(symbol)}`}>{`Mark missing for ${symbol} on ${shortDate(evaluation.valuationDate)}`}</Link>
         </p>
       )}
       {markResolution?.kind === 'AcknowledgedUnavailable' && <p>{`Acknowledged unavailable for ${symbol} on ${shortDate(evaluation.valuationDate)}: your acknowledgment, not a price`}</p>}
@@ -385,7 +385,7 @@ function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly faca
   const openedAt = (executionId: string) => localTime(executions.find((e) => e.factId === executionId)?.economicTime ?? '', timeZone);
   return (
     <>
-      <ValuationSection current={view.current} timeZone={timeZone} />
+      <ValuationSection tradeId={view.tradeId} current={view.current} timeZone={timeZone} />
       {view.current.datedLine && <DatedSection line={view.current.datedLine} />}
       {view.current.evaluation.atEntry && <AtEntrySection atEntry={view.current.evaluation.atEntry} oneR={view.baseline.oneR} />}
       <RiskRewardSection evaluation={view.current.evaluation} baseline={view.baseline} />

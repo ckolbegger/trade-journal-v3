@@ -175,7 +175,7 @@ function OpenList({
                         {derived && (
                           <>
                             {' · P&L '}
-                            <Pnl current={derived.current} />
+                            <Pnl current={derived.current} tradeId={item.tradeId} />
                           </>
                         )}
                       </>
@@ -184,7 +184,7 @@ function OpenList({
                   />
                 </td>
                 <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>
-                <td className="number wide-only">{derived ? <Pnl current={derived.current} /> : NOT_AVAILABLE}</td>
+                <td className="number wide-only">{derived ? <Pnl current={derived.current} tradeId={item.tradeId} /> : NOT_AVAILABLE}</td>
                 <td>{derived ? `${derived.entryStatus} · ${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : NOT_AVAILABLE}</td>
                 <td>{`${item.institution} — ${item.account}`}</td>
               </tr>
@@ -207,14 +207,14 @@ function missingMark(current: Current) {
 }
 
 // Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
-// words link to the Review's Marks family. The dated line's P&L follows, labelled with its date.
-function Pnl({ current }: { readonly current: Current }) {
+// words link to this Trade's own card in the Review (A161). The dated line's P&L follows, labelled with its date.
+function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId: string }) {
   const { currentMarkedPnl: pnl, currentMarkedPnlInPlanR: planR, datedLine } = current;
   const missing = missingMark(current);
   const text = pnlText(pnl, planR);
   return (
     <>
-      {missing ? <Link to={`/review?instrument=${encodeURIComponent(missing.instrument.symbol)}`}>{text}</Link> : text}
+      {missing ? <Link to={`/review?trade=${encodeURIComponent(tradeId)}&instrument=${encodeURIComponent(missing.instrument.symbol)}`}>{text}</Link> : text}
       {datedLine && ` ${shortDate(datedLine.tradingDate)} close ${pnlText(datedLine.evaluation.currentMarkedPnl, datedLine.evaluation.currentMarkedPnlInPlanR)}`}
     </>
   );

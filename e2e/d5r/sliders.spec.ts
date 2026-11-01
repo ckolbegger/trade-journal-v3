@@ -26,6 +26,30 @@ test.describe('B5R.6 Missing-Mark link', () => {
   });
 });
 
+test.describe('B5R.12 Missing-Mark link on a shared Instrument', () => {
+  test('should open the linked Trade’s own card on its Marks panel with focus on XYZ, and leave the other XYZ card collapsed, when the Open list’s Mark missing link of the Trade that is not the first holder is followed', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    const { 'T-A': tA, 'T-F': tF } = await createCardFixture(page);
+
+    await nav(page).getByRole('link', { name: 'Trades' }).click();
+    const list = page.getByRole('table', { name: 'Open Trades' });
+    await expect(list).toBeVisible(READY);
+    // With no Monday Marks, T-A's card (it also owes Friday's gap) comes before T-F's in attention order, so T-F is the second holder of XYZ.
+    const rowOf = (trade: { readonly tradeId: string }) => list.getByRole('row').filter({ has: page.locator(`a[href$="/trades/${trade.tradeId}"]`) });
+    await rowOf(tF).getByRole('link', { name: /^Mark missing: XYZ/ }).click();
+
+    // Navigation and focus: raw locators.
+    await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
+    await expect(cardHeader(page, tF)).toHaveAttribute('aria-expanded', 'true', READY);
+    await expect(panelHeader(page, tF, 'Marks')).toHaveAttribute('aria-expanded', 'true');
+    await expect(tradeCard(page, tF).getByRole('region', { name: `XYZ Mark, ${MONDAY}`, exact: true }).getByLabel('Price')).toBeFocused();
+    // The other XYZ card, and every other card, stays collapsed.
+    await expect(cardHeader(page, tA)).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.review-card-head button[aria-expanded="true"]')).toHaveCount(1);
+    await context.close();
+  });
+});
+
 const centre = async (locator: Locator): Promise<number> => {
   const box = (await locator.boundingBox())!;
   return box.x + box.width / 2;
