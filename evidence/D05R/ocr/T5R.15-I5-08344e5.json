@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 29669,
+    "input_tokens": 29413,
+    "output_tokens": 256,
+    "cache_read_tokens": 7680,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "7b413439-0625-4b9b-ac31-8b8050854ab5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7b413439-0625-4b9b-ac31-8b8050854ab5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "08344e5c",
+      "resolved_base": "f260546708b3c5b4dd324f74ca57d3afe3d78dd9",
+      "resolved_head": "08344e5cfc2c532778a3e0a40e550ed5cd541d79",
+      "exact_range": "f260546708b3c5b4dd324f74ca57d3afe3d78dd9..08344e5cfc2c532778a3e0a40e550ed5cd541d79",
+      "source_artifact_sha256": "db9dd5a43667db8390b5a2b4cd460be20ab282aa19c95fec94e73eecace97e71"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "c45d557b22eb63071bba051f60d8be10470b405b88dd1563c5011de9f9ef742b"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "2b7310b05e055ce6dea490fc3df3c7c69608b69fa96600a9adba05d8fa057aff"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "c45d557b22eb63071bba051f60d8be10470b405b88dd1563c5011de9f9ef742b"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "2b7310b05e055ce6dea490fc3df3c7c69608b69fa96600a9adba05d8fa057aff"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 16727
+  }
+}
