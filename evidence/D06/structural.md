@@ -59,3 +59,32 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.2 Trade Analysis: Closed lifecycle, Terminal Disposition, Realized R, close requirement, position paths
 
 Base commit (for `browser-auto`): `3ccd80ce`.
+
+Commit `9e1d243c` (T6.2, 5 cases red then green, no first-run pass). The reds for ocr findings 2 and 3 of T6.1 are this task's lifecycle red (`expected 'Open' to be 'Closed'`) and `ExceedsOpenQuantity` red (`expected IncoherentFacts, got Derived`). The commit also touches `src/ui/screens/TradeDetail.tsx`, adding one copy line for each new `IncoherentFact` reason so that the exhaustive `UNREPLAYABLE` record still typechecks. This is not a plan deviation. T6.14 or T6.19 may reword the lines. Because the commit touches a path under `src/ui/`, P55 puts this task's cumulative run on the full tier.
+
+### ocr review of `9e1d243c`
+
+Session `351aac07-0c5f-4307-9a1c-11d9eba1897d`, 3 files reviewed (`closed.test.ts` and `tdd-log.md` excluded), **no findings**. Raw output: [ocr/T6.2-9e1d243c.json](ocr/T6.2-9e1d243c.json).
+
+Notes for later tasks, from the T6.2 summary:
+- The P22 checks run in `derive`'s existing `IncoherentFacts` path, on the facts at the cutoff. An excess Sell does not reduce the checked open quantity, so it does not cascade into further findings.
+- `closeRequirement` exists only on `reconciliation`, so only when a candidate binding is supplied. It is computed from the candidate's newest Position Change, the one with the highest `recordedSequence`.
+- `terminalTime` is the terminal Position Change's `economicTime`; for X2 that is `2026-10-13T18:00:00Z`.
+- The `lots.length > 0` guard in `replayOf` can no longer be reached. It was left in place.
+
+### Cumulative run after T6.2
+
+Label `t6.2-closed-lifecycle`, at `9e1d243c` plus uncommitted evidence (2026-11-01 18:42–18:49 EST). Outputs in `suite-runs/t6.2-closed-lifecycle-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 82 files, 1063 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since 3ccd80ce: src/ui/screens/TradeDetail.tsx": 147 passed (6.6 m) |
+| Static and verify checks | 12 of 12 exit 0 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.3 Trade Analysis: Entry window cutoff and Entry Size shortfall
+
+Base commit (for `browser-auto`): `9e1d243c`.
