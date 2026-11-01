@@ -195,6 +195,23 @@ describe('standing (A172)', () => {
     expect(standing(fold(learned, { kind: 'Opened', review: listedAt(4) }), key('XYZ', FRIDAY))).toEqual(acknowledged(4));
     expect(standing(fold(learned, { kind: 'Opened', review: listedAt(1) }), key('XYZ', FRIDAY))).toEqual(acknowledged(1));
   });
+
+  it('should keep a key learned standing when a later MarksConflict or MarksSaved reports it at a lower revision, and take the newer one at the same or a higher revision', () => {
+    const at = (revision: number) => available(String(10 + revision), revision);
+    const k = key('XYZ', MONDAY);
+    const newer = fold(held(), { kind: 'MarkSaved', key: k, resolution: at(2), resolutionRevision: 2 });
+
+    const lateConflict = fold(newer, { kind: 'MarksConflict', moved: [{ key: k, resolution: at(1), resolutionRevision: 1 }] });
+    expect(standing(lateConflict, k)).toEqual({ resolution: at(2), revision: 2 });
+
+    const lateSaved = fold(newer, { kind: 'MarksSaved', marks: [saved('XYZ', MONDAY, at(1), 1)], review: { kind: 'ChangedDuringAssembly' } });
+    expect(standing(lateSaved, k)).toEqual({ resolution: at(2), revision: 2 });
+
+    const same = fold(newer, { kind: 'MarksConflict', moved: [{ key: k, resolution: at(3), resolutionRevision: 2 }] });
+    expect(standing(same, k)).toEqual({ resolution: at(3), revision: 2 });
+    const higher = fold(newer, { kind: 'MarkSaved', key: k, resolution: at(3), resolutionRevision: 3 });
+    expect(standing(higher, k)).toEqual({ resolution: at(3), revision: 3 });
+  });
 });
 
 describe('nextCard (P50)', () => {

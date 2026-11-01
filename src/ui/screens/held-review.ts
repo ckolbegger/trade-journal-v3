@@ -55,10 +55,14 @@ export function fold(held: Held, result: HeldResult): Held {
 
 const idOf = (key: ObservationKey): string => `${key.instrumentKey}:${key.tradingDate}`;
 
-// Records where each key now stands.
+// Records where each key now stands, unless it is already learned at a newer revision (A172: never backward).
 function learn(held: Held, keys: readonly MovedKey[]): Held {
-  const learned = Object.fromEntries(keys.map((k) => [idOf(k.key), { resolution: k.resolution, revision: k.resolutionRevision }]));
-  return { ...held, standings: { ...held.standings, ...learned } };
+  const standings = { ...held.standings };
+  for (const k of keys) {
+    const known = standings[idOf(k.key)];
+    if (known === undefined || k.resolutionRevision >= rank(known.revision)) standings[idOf(k.key)] = { resolution: k.resolution, revision: k.resolutionRevision };
+  }
+  return { ...held, standings };
 }
 
 export type MarkRows = Extract<Ready['families'][number], { family: 'Marks' }>;
