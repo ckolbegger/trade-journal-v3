@@ -1457,3 +1457,25 @@ Figures from the critic's completion notice (the harness's own token count). Bri
 | Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|---|
 | critic-1 (T5R.16) | `26e4338` | v2 | 200,119 | 54 | 13 min 34 s | 2 (low; overall PASS) |
+
+### T5R.16-B1 The Marks panel's summary counts the Marks that are done (critic 1, defect 1)
+
+Commit `9de0017`. In `panelHeaders` (`ReviewCard.tsx`), `${remaining.marks} of ${rows}` becomes `${rows - remaining.marks} of ${rows}`. `remaining.marks` counts the `MarkMissing` reasons that list the Trade, one per Review-date row, so N is never negative and never counts earlier gaps. New case, red first: *should count the Marks that are done in the Marks panel summary, reading 1 of 2 with 1 needed after one of two Marks is saved, and 2 of 2 with Saved when both are* (red: `Unable to find an element with the text: 0 of 2 for Mon Oct 12`). The sanctioned expectation change: T5R.10's panels case now reads `'0 of 2 for Mon Oct 12 · 1 earlier optional'`, with its `'2 needed'` unchanged. No other "N of M for" expectation exists in `src/` or `e2e/`. No first-run passes.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0. `npx vitest run src`: the first full run had 1 failed and 1005 passed, but the agent did not identify the failing case (the filtered log kept only the summary); a full rerun passed 1006 of 1006. It was most likely the known `TradeList.test.tsx` mark-count flake, which is unconfirmed. Whole `npm run test:e2e`: 178 passed.
+
+ocr review of `9de0017`: one file reviewed, no findings. The reviewer checked that the rows `rows` counts and the rows `remaining.marks` counts are the same set, for a shared Instrument, acknowledged rows, and a card saved at load. It noted that no test covers those three shapes; they are not defects. Raw output: [ocr/T5R.16-B1-9de0017.json](ocr/T5R.16-B1-9de0017.json).
+
+### T5R.16-B2 Opening a Reflection form in a Review card moves focus into it (critic 1, defect 2)
+
+Commit `42bb7da`. In the Review-side `ReflectionRow` (`ReviewReflections.tsx`), an effect keyed on `isOpen` acts only on its edges:
+- **Opening:** focus moves to the form's first enabled control. That is the first radio, or Cancel in Recovery Only, where every input is disabled.
+- **Closing by Cancel:** focus returns to the row's "Reflect on…" button. A resolved row keeps `isOpen`, so the next-reflection handoff after an Answer or Decline is untouched.
+
+`DebtForm` and Trade Detail are unchanged. Cases, each red first (an assertion failure, focus on `<body>`):
+- *should move focus into the Reflection form when Reflect on is pressed in a Review card, and back to its button when the form is cancelled*. The Cancel half was mutation-checked (`focus()` → `blur()` fails it), because the first assertion failed before that half could go red.
+- *should move focus to Cancel when Reflect on is pressed while the runtime is read only, since every input is disabled*.
+
+Checks: `npx vitest run src` 1008 passed. Typecheck, `tsc6`, lint and `lint:deps` exit 0. Whole `npm run test:e2e`: 178 passed. One Bash call by the agent that read `.env.local` was denied by the permission classifier and not retried; it used port 5175 as briefed.
+
+ocr review of `42bb7da`: one file reviewed, no findings. The reviewer checked first mount, re-sorts and refreshes, other rows, resolved rows, the ref callback, and Trade Detail. **Minor note:** if a refresh changed an open row's group key (its date or classification), the row would remount and take focus; its entered values would already be lost in that case. Raw output: [ocr/T5R.16-B2-42bb7da.json](ocr/T5R.16-B2-42bb7da.json).

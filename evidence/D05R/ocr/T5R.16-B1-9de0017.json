@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 47071,
+    "input_tokens": 46755,
+    "output_tokens": 316,
+    "cache_read_tokens": 9600,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/ReviewCard.tsx",
+      "files": [
+        "src/ui/screens/ReviewCard.tsx"
+      ]
+    }
+  ],
+  "session_id": "538e5581-1357-4a29-af4d-d7db920c6f67",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "538e5581-1357-4a29-af4d-d7db920c6f67",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9de00176",
+      "resolved_base": "1d9e08fd0dc7e6a9e91a4abdecdd74279edda235",
+      "resolved_head": "9de0017600d370942e93ea44708986d83dbb12d3",
+      "exact_range": "1d9e08fd0dc7e6a9e91a4abdecdd74279edda235..9de0017600d370942e93ea44708986d83dbb12d3",
+      "source_artifact_sha256": "18b0c59d78c5c53869e78705bcbe2f9e33e1c540f4b1adc7de73195388dc0b28"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "c728ecabc11b329ee9b374635c9aa3c93527be47de9b071e788d3098cc3550be"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "c728ecabc11b329ee9b374635c9aa3c93527be47de9b071e788d3098cc3550be"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21299
+  }
+}
