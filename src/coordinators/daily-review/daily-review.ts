@@ -748,6 +748,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return coherently<ReadAfterSave | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
       const pass = await assemble({ kind: 'Review', reviewDate }, false, from);
       if (pass.kind === 'Expired') return { retry: true };
+      // Nothing walked and no reflection due: a settled, complete Review with nothing left to ask, never an unstable read.
+      if (pass.kind === 'Empty') {
+        return { settle: (binding) => ({ kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 0 }, completion: { kind: 'Complete' }, nextTask: { kind: 'Done' }, trades: [], owed: pass.owed, binding: { ...binding, ...pass.evidence } }) };
+      }
       if (pass.kind !== 'Ready') return { done: { kind: 'ChangedDuringAssembly' } };
       const walk = pass.review.families.find((family) => family.family === 'Trades');
       return {

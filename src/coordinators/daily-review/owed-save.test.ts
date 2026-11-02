@@ -94,6 +94,25 @@ describe('ResolveReviewDebt on an owed-reflection card', () => {
     expect(card.tradeId).toBe(trades.M);
     expect(review.nextStep).toEqual({ kind: 'OwedTrade', card });
   }, 60_000);
+
+  it('should return a settled Complete review with next step Done when resolving the last due reflection leaves a Review with no walk Empty', async () => {
+    // T-M alone: nothing is walked, and its Close Review is the only due reflection.
+    const fixture = await closedTradeReviewFixture({ only: ['M'] });
+    const { stack, trades } = fixture;
+    const { reviewDate, card } = await owedCardOf(fixture, 'M');
+
+    const result = resolved(await stack.dailyReview.save({ kind: 'ResolveReviewDebt', reviewDate, binding: card.reflections[0]!.saveBinding, resolution: { kind: 'Answer', answers: CLOSE_REVIEW_ANSWERS } }));
+
+    const review = ready(result);
+    expect(review.completion).toEqual({ kind: 'Complete' });
+    expect(review.nextStep).toEqual({ kind: 'Done' });
+    expect(review.progress).toEqual({ tradesWithAction: 0, tradesEligible: 0 });
+    expect(review.cards).toEqual([{ tradeId: trades.M, progress: reflectionsOwedProgress(0, 0) }]);
+    // The binding is the one a later read accepts: the Review it was settled with is the Empty one `open` returns.
+    const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 });
+    if (reopened.kind !== 'Empty') throw new Error(`expected Empty, got ${reopened.kind}`);
+    expect(review.binding).toEqual(reopened.binding);
+  }, 60_000);
 });
 
 describe('SaveReviewMarks across the walk and the group', () => {
