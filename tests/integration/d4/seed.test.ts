@@ -14,15 +14,17 @@ describe('I4.12 fresh initialization at schema 3', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
-      manifestVersion: 4,
+      manifestVersion: 5,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',
         'entry-type.daily-trade-review',
+        'entry-type.close-review',
         'source.plan-confirmation',
         'source.position-change',
         'source.daily-review',
         'source.trade-detail',
+        'source.trade-close',
       ],
     });
 
@@ -38,12 +40,14 @@ describe('I4.12 fresh initialization at schema 3', () => {
     expect(stores['observations']).toEqual([]);
     const types = (stores['journalTypes'] as { productKey: string }[]).map((t) => t.productKey).sort();
     expect(types).toEqual([
+      'entry-type.close-review',
       'entry-type.daily-trade-review',
       'entry-type.plan-reflection',
       'entry-type.position-change-reflection',
       'source.daily-review',
       'source.plan-confirmation',
       'source.position-change',
+      'source.trade-close',
       'source.trade-detail',
     ]);
 

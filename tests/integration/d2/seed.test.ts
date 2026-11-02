@@ -13,16 +13,18 @@ describe('I2.12 fresh initialization at schema 2', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
-      // The release's current manifest (v4 since D5 T5.12) includes D2's types.
-      manifestVersion: 4,
+      // The release's current manifest (v5 since D6 T6.15) includes D2's types.
+      manifestVersion: 5,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',
         'entry-type.daily-trade-review',
+        'entry-type.close-review',
         'source.plan-confirmation',
         'source.position-change',
         'source.daily-review',
         'source.trade-detail',
+        'source.trade-close',
       ],
     });
 
@@ -34,12 +36,14 @@ describe('I2.12 fresh initialization at schema 2', () => {
     expect(Object.keys(stores)).toEqual(expect.arrayContaining(['journalDeclines', 'journalObligations']));
     const types = (stores['journalTypes'] as { productKey: string }[]).map((t) => t.productKey).sort();
     expect(types).toEqual([
+      'entry-type.close-review',
       'entry-type.daily-trade-review',
       'entry-type.plan-reflection',
       'entry-type.position-change-reflection',
       'source.daily-review',
       'source.plan-confirmation',
       'source.position-change',
+      'source.trade-close',
       'source.trade-detail',
     ]);
   });

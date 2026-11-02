@@ -63,9 +63,9 @@ describe('I2.1 migrate the v1 fixture', () => {
       }),
     );
     expect(opened.receipt.seeds.journal).toEqual({
-      // The release's current manifest (v3 since D4 T4.17) adds the Daily Trade Review as well.
-      manifestVersion: 4,
-      additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'],
+      // The release's current manifest (v5 since D6 T6.15) adds the Daily Trade Review and the Close Review as well.
+      manifestVersion: 5,
+      additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
     });
     const newDatabase = opened.receipt.migration!.databaseName;
 

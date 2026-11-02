@@ -14,15 +14,17 @@ describe('I5.13 fresh initialization at schema 4', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
-      manifestVersion: 4,
+      manifestVersion: 5,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',
         'entry-type.daily-trade-review',
+        'entry-type.close-review',
         'source.plan-confirmation',
         'source.position-change',
         'source.daily-review',
         'source.trade-detail',
+        'source.trade-close',
       ],
     });
 
@@ -37,7 +39,7 @@ describe('I5.13 fresh initialization at schema 4', () => {
     );
     expect(stores['journalDebts']).toEqual([]);
     const sources = (stores['journalTypes'] as { productKey: string; label?: string }[]).filter((t) => t.productKey.startsWith('source.'));
-    expect(sources.map((t) => t.productKey).sort()).toEqual(['source.daily-review', 'source.plan-confirmation', 'source.position-change', 'source.trade-detail']);
+    expect(sources.map((t) => t.productKey).sort()).toEqual(['source.daily-review', 'source.plan-confirmation', 'source.position-change', 'source.trade-close', 'source.trade-detail']);
     expect(sources.find((t) => t.productKey === 'source.trade-detail')).toEqual(expect.objectContaining({ label: 'Trade Detail' }));
 
     // A second launch adds nothing (AC-JOUR-007).

@@ -15,9 +15,9 @@ const pointerRecords = async (factory: IDBFactory) => (await dumpAll(factory))['
 // What the version 4 Journal seed adds when migrating from each schema: the Trade Detail Source is
 // new in 4, so it is the only addition for a schema 3 source.
 const JOURNAL_ADDITIONS = {
-  1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'],
-  2: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'],
-  3: ['source.trade-detail'],
+  1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
+  2: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
+  3: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close'],
 } as const;
 
 describe('I5.1 migrate earlier fixtures', () => {
@@ -30,7 +30,7 @@ describe('I5.1 migrate earlier fixtures', () => {
       expect(opened.receipt.migration).toEqual(
         expect.objectContaining({ fromVersion: version, toVersion: 5, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
-      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 4, additions: JOURNAL_ADDITIONS[version] });
+      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 5, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.seeds.journal.additions).toContain('source.trade-detail');
       const newDatabase = opened.receipt.migration!.databaseName;
 

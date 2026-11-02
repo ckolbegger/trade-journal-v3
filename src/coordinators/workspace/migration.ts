@@ -1,7 +1,7 @@
 import type { SafeAction } from '../../delivery/runtime-not-writable.ts';
 import { formatDecimal, type Rational } from '../../domain/values/index.ts';
 import {
-  D4_JOURNAL_MANIFEST,
+  D5_JOURNAL_MANIFEST,
   prepareJournalSeed,
   validateSection as validateJournal,
   type EntryDefinitionRecord,
@@ -9,7 +9,7 @@ import {
   type JournalTypeRecord,
 } from '../../modules/journal/index.ts';
 import {
-  D1_CATALOG_MANIFEST,
+  D6_CATALOG_MANIFEST,
   prepareSeed,
   validateSection as validateCatalog,
   type CatalogRecord,
@@ -126,11 +126,11 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   const records = persistence.candidateSource(candidate);
 
   // Seed: genuinely missing defaults join the candidate without overwriting customization.
-  const catalogSeed = prepareSeed(await all<CatalogRecord>(records, 'catalog'), D1_CATALOG_MANIFEST, ids);
+  const catalogSeed = prepareSeed(await all<CatalogRecord>(records, 'catalog'), D6_CATALOG_MANIFEST, ids);
   const journalSeed = prepareJournalSeed(
     await all<JournalTypeRecord>(records, 'journalTypes'),
     await all<EntryDefinitionRecord>(records, 'journalDefinitions'),
-    D4_JOURNAL_MANIFEST,
+    D5_JOURNAL_MANIFEST,
     ids,
   );
   if (catalogSeed.kind !== 'Additions' || journalSeed.kind !== 'Additions') throw new Error('Seed manifests conflict with stored defaults');
@@ -141,7 +141,7 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   ]);
 
   // Validate: each module judges its own section; Trade Record derives every Trade.
-  const catalog = await validateCatalog(records, D1_CATALOG_MANIFEST);
+  const catalog = await validateCatalog(records, D6_CATALOG_MANIFEST);
   const journal = await validateJournal(records);
   const trades = await validateTrades(records, { ...catalog.references, anchorTradeIds: journal.references.anchorTradeIds });
   const found = [...catalog.issues, ...journal.issues, ...trades.issues];

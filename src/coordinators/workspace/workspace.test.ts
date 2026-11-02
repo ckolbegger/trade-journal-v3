@@ -29,17 +29,22 @@ describe('initialize', () => {
           fresh: true,
           readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
           seeds: {
-            catalog: { manifestVersion: 1, additions: ['strategy.long-stock'] },
+            catalog: {
+              manifestVersion: 2,
+              additions: ['strategy.long-stock', 'close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'],
+            },
             journal: {
-              manifestVersion: 4,
+              manifestVersion: 5,
               additions: [
                 'entry-type.plan-reflection',
                 'entry-type.position-change-reflection',
                 'entry-type.daily-trade-review',
+                'entry-type.close-review',
                 'source.plan-confirmation',
                 'source.position-change',
                 'source.daily-review',
                 'source.trade-detail',
+                'source.trade-close',
               ],
             },
           },
@@ -54,9 +59,12 @@ describe('initialize', () => {
       ]),
     );
     // Every seeded record was written by the one creating transaction (content revision 1).
-    expect(stored?.['catalog']).toEqual([expect.objectContaining({ productKey: 'strategy.long-stock', revision: 1 })]);
-    expect(stored?.['journalTypes']).toHaveLength(7);
-    expect(stored?.['journalDefinitions']).toEqual([expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 })]);
+    expect(stored?.['catalog']).toEqual([
+      expect.objectContaining({ productKey: 'strategy.long-stock', revision: 1 }),
+      ...['target-reached', 'stop-triggered', 'thesis-invalidated', 'time-based-exit'].map((slug): unknown => expect.objectContaining({ productKey: `close-reason.${slug}`, revision: 1 })),
+    ]);
+    expect(stored?.['journalTypes']).toHaveLength(9);
+    expect(stored?.['journalDefinitions']).toEqual(Array.from({ length: 4 }, (): unknown => expect.objectContaining({ revision: 1 })));
   });
 
   it('should reject an invalid zone with InvalidTimeZone and write nothing', async () => {
@@ -79,8 +87,8 @@ describe('initialize', () => {
         receipt: expect.objectContaining({
           fresh: false,
           seeds: {
-            catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 4, additions: [] },
+            catalog: { manifestVersion: 2, additions: [] },
+            journal: { manifestVersion: 5, additions: [] },
           },
         }) as unknown,
       }),
@@ -141,8 +149,8 @@ describe('initialize', () => {
         kind: 'Opened',
         receipt: expect.objectContaining({
           seeds: {
-            catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 4, additions: [], completed: false },
+            catalog: { manifestVersion: 2, additions: [] },
+            journal: { manifestVersion: 5, additions: [], completed: false },
           },
         }) as unknown,
       }),

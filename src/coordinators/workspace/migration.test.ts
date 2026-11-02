@@ -18,6 +18,11 @@ const V2_DUMP = JSON.parse(readFileSync('tests/fixtures/workspace-v2/dump.json',
 const V2_DATABASE = 'tj-ws-fx-0004';
 const V1_VIEWS: unknown = JSON.parse(readFileSync('tests/fixtures/workspace-v1/expected-views.json', 'utf8'));
 
+// What the schema 5 seed manifests add to any Workspace that lacks them: the four Close Reasons
+// (Catalog manifest 2), then the Close Review Entry Type and the Trade Close Source (Journal manifest 5).
+const CLOSE_REASON_KEYS = ['close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'];
+const CATALOG_SEEDS = { manifestVersion: 2, additions: CLOSE_REASON_KEYS };
+
 type MutableDump = {
   databases: Record<string, { version: number; stores: Record<string, { keyPath: string; autoIncrement: boolean; indexes: unknown[]; records: Record<string, unknown>[] }> }>;
 };
@@ -67,10 +72,10 @@ describe('migration from schema 1', () => {
         fresh: false,
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
         seeds: {
-          catalog: { manifestVersion: 1, additions: [] },
+          catalog: CATALOG_SEEDS,
           journal: {
-            manifestVersion: 4,
-            additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'],
+            manifestVersion: 5,
+            additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
           },
         },
         sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
@@ -93,7 +98,7 @@ describe('migration from schema 1', () => {
     );
     expect(migrated['meta']).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 5 }]));
     expect(migrated['trades']).toEqual(expect.arrayContaining([expect.objectContaining({ tradeId: 'fx-0009', lifecycle: 'Planned' })]));
-    expect(migrated['journalTypes']).toHaveLength(7);
+    expect(migrated['journalTypes']).toHaveLength(9);
     expect(migrated['journalObligations']).toHaveLength(5);
     // The old database is retired and deleted, and no candidate remains.
     expect(Object.keys(dump).sort()).toEqual(['tj-root', result.receipt.migration.databaseName]);
@@ -291,8 +296,8 @@ describe('migration to the current schema', () => {
         fresh: false,
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
         seeds: {
-          catalog: { manifestVersion: 1, additions: [] },
-          journal: { manifestVersion: 4, additions: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'] },
+          catalog: CATALOG_SEEDS,
+          journal: { manifestVersion: 5, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
         },
         sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
         migration: {
@@ -322,8 +327,8 @@ describe('migration to the current schema', () => {
     expect([...opened].filter((name) => name !== 'tj-root' && name !== V1_DATABASE)).toEqual([result.receipt.migration.databaseName]);
     expect(result.receipt.migration).toMatchObject({ fromVersion: 1, toVersion: 5, sourceDatabase: V1_DATABASE });
     expect(result.receipt.seeds.journal).toEqual({
-      manifestVersion: 4,
-      additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'],
+      manifestVersion: 5,
+      additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
     });
     const dump = await dumpAll(factory);
     // One candidate carried the whole v1 to v3 chain, so no intermediate Workspace remains.
@@ -332,7 +337,7 @@ describe('migration to the current schema', () => {
     expect(migrated['meta']).toEqual(
       expect.arrayContaining([{ key: 'schema', schemaVersion: 5 }, expect.objectContaining({ key: 'sessionPolicy', policy: nyseSessionPolicy.identity })]),
     );
-    expect(migrated['journalTypes']).toHaveLength(7);
+    expect(migrated['journalTypes']).toHaveLength(9);
     expect(migrated['observations']).toEqual([]);
   });
 
@@ -417,14 +422,14 @@ const V3_DUMP = JSON.parse(readFileSync('tests/fixtures/workspace-v3/dump.json',
 const V3_DATABASE = 'tj-ws-fx-0005';
 
 describe('migration to the current schema, from v1 through v3', () => {
-  it('should migrate v1, v2, and v3 Workspaces to the current schema and return Opened with a receipt naming the from and to versions, per-store counts, and the seed addition (Trade Detail Source)', async () => {
+  it('should migrate v1, v2, and v3 Workspaces to the current schema and return Opened with a receipt naming the from and to versions, per-store counts, and the seed additions (Trade Detail Source, then the schema 5 Close Reasons, Close Review type, and Trade Close Source)', async () => {
     const v3 = structuredClone(V3_DUMP);
     const v3Stack = await testStack(await loadDump(v3), v3.asOf);
     const v3Workspace = createWorkspace({ ...v3Stack, host: v3Stack.testHost.host, releaseId: v3Stack.testHost.releaseId });
     const cases = [
-      { from: 1, source: V1_DATABASE, workspace: (await v1Stack()).workspace, additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'] },
-      { from: 2, source: V2_DATABASE, workspace: (await v2Stack()).workspace, additions: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'] },
-      { from: 3, source: V3_DATABASE, workspace: v3Workspace, additions: ['source.trade-detail'] },
+      { from: 1, source: V1_DATABASE, workspace: (await v1Stack()).workspace, additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
+      { from: 2, source: V2_DATABASE, workspace: (await v2Stack()).workspace, additions: ['entry-type.daily-trade-review', 'entry-type.close-review', 'source.daily-review', 'source.trade-detail', 'source.trade-close'] },
+      { from: 3, source: V3_DATABASE, workspace: v3Workspace, additions: ['entry-type.close-review', 'source.trade-detail', 'source.trade-close'] },
     ];
     const counts = [
       { catalog: 6, journalDefinitions: 1, journalEntries: 5, journalTypes: 2, meta: 3, trades: 5 },
@@ -440,14 +445,80 @@ describe('migration to the current schema, from v1 through v3', () => {
           fresh: false,
           readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
           seeds: {
-            catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 4, additions },
+            catalog: CATALOG_SEEDS,
+            journal: { manifestVersion: 5, additions },
           },
           sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
           migration: expect.objectContaining({ fromVersion: from, toVersion: 5, sourceDatabase: source, counts: counts[index] }) as unknown,
         },
       });
       expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 5 }));
+    }
+  });
+});
+
+const V4_DUMP = JSON.parse(readFileSync('tests/fixtures/workspace-v4/dump.json', 'utf8')) as WorkspaceDump;
+const V4_DATABASE = 'tj-ws-fx-0005';
+
+describe('migration to schema 5', () => {
+  it('should migrate v1, v2, v3, and v4 Workspaces to schema 5 and return Opened with a receipt naming the from and to versions, per-store counts, and the seed additions (four Close Reasons; the Close Review type, definition, and Trade Close Source)', async () => {
+    const stackOf = async (dumpOf: WorkspaceDump) => {
+      const dump = structuredClone(dumpOf);
+      const stack = await testStack(await loadDump(dump), dump.asOf);
+      return { ...stack, workspace: createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId }) };
+    };
+    const cases = [
+      { from: 1, source: V1_DATABASE, stack: await stackOf(V1_DUMP), journalBefore: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'] },
+      { from: 2, source: V2_DATABASE, stack: await stackOf(V2_DUMP), journalBefore: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'] },
+      { from: 3, source: V3_DATABASE, stack: await stackOf(V3_DUMP), journalBefore: ['source.trade-detail'] },
+      { from: 4, source: V4_DATABASE, stack: await stackOf(V4_DUMP), journalBefore: [] },
+    ];
+    const counts = [
+      { catalog: 6, journalDefinitions: 1, journalEntries: 5, journalTypes: 2, meta: 3, trades: 5 },
+      { catalog: 6, journalDeclines: 3, journalDefinitions: 2, journalEntries: 11, journalTypes: 4, meta: 4, trades: 8 },
+      { catalog: 6, journalDeclines: 3, journalDefinitions: 3, journalEntries: 13, journalTypes: 6, meta: 5, observations: 5, trades: 8 },
+      { catalog: 6, journalDebts: 4, journalDeclines: 4, journalDefinitions: 3, journalEntries: 14, journalTypes: 7, meta: 5, observations: 5, trades: 8 },
+    ];
+    for (const [index, { from, source, stack, journalBefore }] of cases.entries()) {
+      const { workspace, factory } = stack;
+      const seeds = {
+        catalog: { manifestVersion: 2, additions: CLOSE_REASON_KEYS },
+        journal: { manifestVersion: 5, additions: [...journalBefore.filter((key) => key.startsWith('entry-type.')), 'entry-type.close-review', ...journalBefore.filter((key) => key.startsWith('source.')), 'source.trade-close'] },
+      };
+      const result = await workspace.initialize({});
+      expect(result).toEqual({
+        kind: 'Opened',
+        status: expect.objectContaining({ kind: 'Ready', schemaVersion: 5 }) as unknown,
+        receipt: {
+          fresh: false,
+          readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
+          seeds,
+          sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
+          migration: expect.objectContaining({ fromVersion: from, toVersion: 5, sourceDatabase: source, counts: counts[index] }) as unknown,
+        },
+      });
+      expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 5 }));
+
+      // The candidate holds the four Close Reasons in seed order, the Close Review definition, and the Source.
+      const dump = await dumpAll(factory);
+      const migrated = Object.entries(dump).find(([name]) => name.startsWith('tj-ws-') && name !== source)![1];
+      const closeReasons = (migrated['catalog'] as { kind: string; productKey: string; seedOrder: number }[]).filter((r) => r.kind === 'CloseReason');
+      expect(closeReasons.sort((a, b) => a.seedOrder - b.seedOrder).map((r) => r.productKey)).toEqual(CLOSE_REASON_KEYS);
+      const types = migrated['journalTypes'] as { id: string; productKey: string }[];
+      const closeReview = types.find((t) => t.productKey === 'entry-type.close-review');
+      expect(closeReview).toBeDefined();
+      expect(types.map((t) => t.productKey)).toContain('source.trade-close');
+      expect((migrated['journalDefinitions'] as { entryTypeKey: string; revisionNumber: number }[]).filter((d) => d.entryTypeKey === 'entry-type.close-review')).toEqual([
+        expect.objectContaining({ revisionNumber: 1 }),
+      ]);
+
+      // A second launch adds nothing (AC-JOUR-007, AC-REF-001).
+      const second = await workspace.initialize({});
+      expect(second.kind === 'Opened' && [second.receipt.migration, second.receipt.seeds]).toEqual([
+        undefined,
+        { catalog: { manifestVersion: 2, additions: [] }, journal: { manifestVersion: 5, additions: [] } },
+      ]);
+      expect(await dumpAll(factory)).toEqual(dump);
     }
   });
 });
