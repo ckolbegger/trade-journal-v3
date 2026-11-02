@@ -1,0 +1,159 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 177313,
+    "input_tokens": 175377,
+    "output_tokens": 1936,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m11s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Position-change and trade-exit workflow, receipts, and test support",
+      "files": [
+        "src/ui/screens/ClosingTheTrade.tsx",
+        "src/ui/screens/ExitReceipt.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/PositionChangeReceipt.tsx",
+        "src/ui/screens/position-change-issues.ts",
+        "src/ui/screens/reflection-choice.tsx",
+        "tests/support/exit-result-fixtures.ts",
+        "tests/support/position-change-form-facade.ts"
+      ]
+    }
+  ],
+  "session_id": "81fca2e0-24ad-4ea7-84c1-566a24af8257",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "81fca2e0-24ad-4ea7-84c1-566a24af8257",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "dd46c15c",
+      "resolved_base": "b4923821dbd23388ad456f2590e58ffd2b429129",
+      "resolved_head": "dd46c15cb562700cd89b461440d5fbf67b8f3a4d",
+      "exact_range": "b4923821dbd23388ad456f2590e58ffd2b429129..dd46c15cb562700cd89b461440d5fbf67b8f3a4d",
+      "source_artifact_sha256": "fe055fb6f7b26f2397efa174b5c607650d0592b3f7190de9612042239fb35a3b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "aa4155694b0a44ed89998cef8400c7a41e6096e96d467891552fab0aa7aed357"
+        },
+        {
+          "item_id": "38f2a529cccc8990137de34433422ffbc39d32b33a15a093dc8db067e7dcc5a4",
+          "path": "tests/support/exit-result-fixtures.ts",
+          "fingerprint": "5fd14be034d1eddca9201d1e5f82f059cbba9f5255665b121def39ec9f968d49"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "d3669f205f2fc2be1dd46ffacc1140007cfe21fd3163ba8df861fe54b59d7534"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "7e8d2776487eb14e881e8cd0667d9cfb3cd239489401e63eb7cd2997aefc888a"
+        },
+        {
+          "item_id": "7914224c2390ff8b73d71ba65be9f1ed13bfafe20c95bf5645a3a30925569929",
+          "path": "src/ui/screens/reflection-choice.tsx",
+          "fingerprint": "8f14372c79fdbade76bb83f297afaceddb13505240bbb249b445cfadd4f66f36"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "3f8b02cd2ab9592ffc6a7e9a387b34642bc48355c20b734eaebebadc9bdcc1fd"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "22b6aa180bc149e9cf6428b23f91d30948f48bfd590822882ab854ee6b05863e"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "956cbdc447e4778aeca76ecdfc26b47cbbd424d56c65abc4e6c0a493ff6068cc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "aa4155694b0a44ed89998cef8400c7a41e6096e96d467891552fab0aa7aed357"
+        },
+        {
+          "item_id": "38f2a529cccc8990137de34433422ffbc39d32b33a15a093dc8db067e7dcc5a4",
+          "path": "tests/support/exit-result-fixtures.ts",
+          "fingerprint": "5fd14be034d1eddca9201d1e5f82f059cbba9f5255665b121def39ec9f968d49"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "d3669f205f2fc2be1dd46ffacc1140007cfe21fd3163ba8df861fe54b59d7534"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "7e8d2776487eb14e881e8cd0667d9cfb3cd239489401e63eb7cd2997aefc888a"
+        },
+        {
+          "item_id": "7914224c2390ff8b73d71ba65be9f1ed13bfafe20c95bf5645a3a30925569929",
+          "path": "src/ui/screens/reflection-choice.tsx",
+          "fingerprint": "8f14372c79fdbade76bb83f297afaceddb13505240bbb249b445cfadd4f66f36"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "3f8b02cd2ab9592ffc6a7e9a387b34642bc48355c20b734eaebebadc9bdcc1fd"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "22b6aa180bc149e9cf6428b23f91d30948f48bfd590822882ab854ee6b05863e"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "956cbdc447e4778aeca76ecdfc26b47cbbd424d56c65abc4e6c0a493ff6068cc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 71465
+  }
+}

@@ -974,3 +974,101 @@ No reruns were needed.
 ## T6.17 UI: exit form
 
 Base commit (for `browser-auto`): `1cc9ee0b`.
+
+Commit `dd46c15c` (T6.17). The four planned cases ran red then green; the submission case was split into 3a and 3b. Three extra cases were added: position-path issues, which B6.4 needs; a hand-opened exit with no open Position; and a partial exit shown as Open.
+
+**First-run pass, flagged for the user:** the partial-exit receipt case (case 7). The mutation check pinned the Result label to `'Realized P&L'`, and the case then failed with `received "Realized P&L": "+$55.90"`. The label was restored afterwards.
+
+**Files.**
+- New: `ClosingTheTrade.tsx`, `ExitReceipt.tsx`, `reflection-choice.tsx` (shared `ChoiceGroup`), `PositionChangeFormExit.test.tsx` and `tests/support/exit-result-fixtures.ts` (built with the real `derive`).
+- Changed: `PositionChangeForm.tsx`, `position-change-issues.ts` and `tests/support/position-change-form-facade.ts`.
+
+**Route.** No new route. The exit form opens at `/trades/:tradeId/record-entry?action=Sell`, with `EXIT_ACTION` exported. In exit mode it reads:
+- Detail;
+- both reflection definitions;
+- `ReferenceCatalog.query({ family: 'CloseReason', pageSize: 500 })`.
+
+**When "Closing the Trade" shows.** When the entered quantities exactly equal the open quantity, or after `CloseReasonRequired` or `CloseReviewDispositionRequired`.
+
+**Judgement calls, recorded for the final report.**
+- **Close Reason label.** The saved exit shows the Close Reason label by looking up `postCommit.trade.closeReason.closeReasonId` in the Close Reason rows the form already loaded. If the id is not found, it shows the id. Nothing is read again.
+- **Placeholder copy.** Every string is placeholder copy except "Reflection on this exit", "Closing the Trade" and "Closed via sale of 100 shares". That covers the headings, the issue messages, the receipt labels, "Exit recorded", and "This Trade has no open Position to exit." The subagent's report lists them all.
+- **Not rendered.** The receipt does not show the earlier-dated exit disclosure: `lotMatchChanges` and `realizedToDate` before and after (P23). The critic's C6.6 requires it ("The receipt lists the changed matches and realized P&L before and after"), and no UI case plans it. It goes to a bug task.
+
+**Notes for T6.27.**
+- `RecordEntryUnavailable` still says "Record entry isn't available" for a direct `?action=Sell` link.
+- `IssueSummary` takes focus on rejection.
+- The Reflect now, Reflect later and Decline labels appear twice on a closing exit, so tests need to scope them by group.
+
+**Checks.** typecheck, tsc6, lint, lint:deps and `verify:capabilities` pass, and `src/ui` passes 435 tests. Because `src/ui` changed, the run is at the full tier.
+
+**ocr review of `dd46c15c`** (`evidence/D06/ocr/T6.17-dd46c15c.json`): ocr reviewed 8 files and made 0 comments. The reviewer's own reading of the five checks found the following.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| low | `PositionChangeForm.tsx:106,287,363-364` | After `CloseReasonRequired`, `closingRequired` stays set when the quantities no longer equal the open quantity. The section stays shown, and the next save sends the close fields on a non-terminal exit. | Doubtful. The behaviour is deliberate, and the workflow's `NotApplicable` answer hides the section again. The cost is one rejected save and a stale issue. | T6.17-B1 |
+| low | `ClosingTheTrade.tsx:46-47`, `reflection-choice.tsx:33-35`, `PositionChangeForm.tsx:377-394` | The `closeReview` issue is not tied to its group by `aria-describedby`, and `corrected()` never clears it. | Valid, minor | T6.17-B1 |
+
+**The reviewer's answers to the checks:**
+- **Submission.** The close fields are sent only while the section is shown.
+- **Close Reason label.** Looking it up in the loaded rows is acceptable: the workflow result carries only the id, and the other read models resolve labels the same way.
+- **Entry mode.** No regression.
+- **Headings.** In order.
+
+**T6.17-B1** therefore also takes the known gap: the earlier-dated exit disclosure, which covers P23 and C6.6.
+
+### T6.17-B1 Exit receipt discloses changed Lot Matches; Closing section follows the quantities; Close Review issue tied to its group
+
+Commit `7882d60f`.
+
+**1. Earlier-dated disclosure (P23, C6.6).**
+- Red: "should disclose the Lot Matches an earlier-dated exit changed, with the realized P&L before and after". It failed because no `region` "Changed Lot Matches" existed.
+- The new fixture `earlierDatedExitResult()` uses I6.8's 60-share case.
+  - The Lot Matches and realized figures come from `derive`: +$55.90 before, +$131.85 after.
+  - The `lotMatchChanges` are written by hand, because `lotMatchChangesOf` is internal.
+- **Rule** (subagent's choice): disclose when some change is not a Created match of the saved change's own Sell. Then list every change, as I6.8 does, followed by "Realized to date before" and "Realized to date after".
+- **First-run pass, flagged for the user.** The guard case "should not disclose changed Lot Matches for an exit that only created its own" passed first time.
+  - Mutation check: inverting `ownExecutions.has`. It then failed with `expected <section …> to be null`.
+
+**2. Stale Closing section.**
+- Red: "should hide a section the workflow required once the quantities no longer total the open quantity, submit nothing for it, and keep its values". It failed with `expected <section …> to be null`.
+- Fix: `closingRequired` became `closingRequiredAt: Rational | undefined`, the entered total at which the workflow required the section.
+- The section now shows only at that total or at the open quantity. Its values stay in state.
+
+**3. Close Review issue association.**
+- Red: "should tie the Close Review issue to its group and clear it once the disposition changes". It failed on `aria-invalid`.
+- Fix: `ChoiceGroup` takes an optional `describedBy`. `corrected()` clears the `closeReview` issue once the choice changes.
+- Entry mode is unchanged, and the new test asserts that.
+
+**New placeholder copy.**
+- Heading "Changed Lot Matches", plus an intro sentence.
+- Columns "Change", "Quantity before" and "Quantity after".
+- Change kinds "Created", "Revised" and "Superseded".
+- "Realized to date before" and "Realized to date after".
+
+**Checks.** typecheck, tsc6, lint and lint:deps pass. `src/ui` has 439 tests passing.
+
+**ocr review of `7882d60f`** (`evidence/D06/ocr/T6.17-B1-7882d60f.json`): 5 files, 0 comments, no findings.
+
+The reviewer's reading:
+- **The disclosure rule is sound.** `lotMatchChangesOf` keys matches by opening and disposing identity. As a result:
+  - An earlier exit's change always shows as Revised, as Superseded, or as Created with a foreign disposing Execution.
+  - A first exit and a plain later exit stay quiet.
+  - The 60-share and 40-share cases of I6.8 both disclose.
+- **`closingRequiredAt` compares with exact `Rational.equals`.** The section shows only at a total the workflow judged, or at the open quantity.
+- **Entry mode is untouched.**
+
+**Cumulative run `t6.17-exit-form`**, at HEAD `7882d60f`, on 2026-11-01. Browser tier: **full**. The first full-tier path that changed since `1cc9ee0b` is `src/ui/screens/ClosingTheTrade.tsx`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 92 files, 1146 tests passed | `suite-runs/t6.17-exit-form-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.17-exit-form-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.7 min) | `suite-runs/t6.17-exit-form-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.17-exit-form-checks.txt` |
+
+No reruns were needed. Ports 5175, 9341 and 9342 were free before and after the run.
+
+## T6.18 UI: Closed tab and list
+
+Base commit (for `browser-auto`): `7882d60f`.
