@@ -1,0 +1,135 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 176246,
+    "input_tokens": 174208,
+    "output_tokens": 2038,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m17s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/trade-record/trade-record.ts",
+      "content": "Closed queries default to 50 records but do not enforce that limit. For example, `pageSize: 500` makes the new Closed index read fetch 501 documents and return up to 500, bypassing the required bounded Closed-list pages. Clamp Closed page sizes to 50, analogous to the Open limit, and add a test with an oversized requested page.",
+      "existing_code": "      const pageSize = query.lifecycle === 'Open' ? Math.min(query.pageSize ?? OPEN_PAGE_SIZE, OPEN_PAGE_SIZE) : (query.pageSize ?? 50);",
+      "start_line": 428,
+      "end_line": 428,
+      "category": "performance",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/trade-record/trade-record.ts",
+      "content": "This lifecycle-to-index selection introduces a nested ternary, which the supplied coding standard prohibits. Use an explicit conditional or a lifecycle-to-index lookup instead.",
+      "existing_code": "      const keyedIndex = query.lifecycle === 'Open' ? 'byLifecycleActivity' : query.lifecycle === 'Closed' ? 'byLifecycleTerminal' : undefined;",
+      "start_line": 426,
+      "end_line": 426,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade record handling and derived trade analysis",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/modules/trade-record/index.ts",
+        "src/modules/trade-record/records.ts",
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "33ae9998-d426-4526-8b90-15216a46c358",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "33ae9998-d426-4526-8b90-15216a46c358",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9d6d4e51",
+      "resolved_base": "a8a437c9ac773211333c38a83f1fcb26dfdde4b2",
+      "resolved_head": "9d6d4e51d5978b462df4d9c1bed3d36c00c0dd06",
+      "exact_range": "a8a437c9ac773211333c38a83f1fcb26dfdde4b2..9d6d4e51d5978b462df4d9c1bed3d36c00c0dd06",
+      "source_artifact_sha256": "4799ebfd27cba32ccceb15e8383a4d3d35da838dadd5a439864c8a7771dbc4a9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "1a3199dff8f2b19d3325c0d1469a14173d8f39457247546e4ce485a59fb2a005"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "ddfb63e401ac331d0aadc309a602d0b4d51652330696802bc70b4a9ad1738e94"
+        },
+        {
+          "item_id": "71461bd5176ff3bb3ba0e07eed4e3b2e8ea3772f8701d3d17fb862e1a4e08e6d",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "f66397cbfe43b51f319755cf810e54c571bc1a30744a3ae0bd9213eb94a330fc"
+        },
+        {
+          "item_id": "7e128b81e199eceb6933daffb107a2d16b7492a266d90e5395ead33fd5da2ad5",
+          "path": "src/modules/trade-record/records.ts",
+          "fingerprint": "61a341c51087016400cc0b0d88cc87b55955c7e90f50431d761fb661cbc2166c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "1a3199dff8f2b19d3325c0d1469a14173d8f39457247546e4ce485a59fb2a005"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "ddfb63e401ac331d0aadc309a602d0b4d51652330696802bc70b4a9ad1738e94"
+        },
+        {
+          "item_id": "71461bd5176ff3bb3ba0e07eed4e3b2e8ea3772f8701d3d17fb862e1a4e08e6d",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "f66397cbfe43b51f319755cf810e54c571bc1a30744a3ae0bd9213eb94a330fc"
+        },
+        {
+          "item_id": "7e128b81e199eceb6933daffb107a2d16b7492a266d90e5395ead33fd5da2ad5",
+          "path": "src/modules/trade-record/records.ts",
+          "fingerprint": "61a341c51087016400cc0b0d88cc87b55955c7e90f50431d761fb661cbc2166c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 76676
+  }
+}

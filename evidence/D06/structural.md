@@ -220,3 +220,56 @@ T6.5's two browser failures from the first run now pass, and the TradeList flake
 ## T6.6 Trade Record: close facts, Closed index, queries
 
 Base commit (for `browser-auto`): `5867480c`.
+
+Commit `9d6d4e51` (T6.6). It has 5 cases, each red then green, with no first-run pass. Two first reds were void fixture errors: the seeded Trades lacked private keys, and an `applyPreparedChange` fixture was wrong. Both cases were fixed and rerun to genuine reds, with notes in `tdd-log.md`.
+
+What the commit adds:
+- **Close Reason on the request:** `PositionChangeChange.closeReasonId?`, the Catalog identity. Trade Record stores it and never requires it. `CloseReasonRequired` is T6.10's.
+- **Close Reason fact:** stored in `closeReasonFacts`, single version `{closeReasonId, terminalPositionChangeId}`, sequenced after the members (A85).
+- **Terminal fields:** `terminalTime` and `terminalDesc` are set only when the reconciliation expects Closed. They are computed as `rebuild.ts` computes them, and are stripped from candidates and the digest.
+- **Closed list:** reads `byLifecycleTerminal` with one `getAll`, in pages of 50.
+- **Cutoff query (A88):** `StateAtEconomicCutoff(Open, cutoff)` adds one `getAll` on `byLifecycleTerminal` for terminal times after the cutoff. The Closed rows are merged into the Open page by (`activityDesc`, `tradeId`).
+
+Existing test pins updated for the extra `getAll`:
+- `position-change.test.ts`, one case.
+- The Review-open read lists in the D4, D5 and D5R `query-count` integration tests.
+
+T6.25 owns the D6 count proof. `TradeAnalysisRecord` gains optional `closeReason` and `terminalTime`; `derive` ignores both. Neither `src/modules/` nor `tests/integration/` is on P55's full-tier list, so `browser-auto` should choose the task tier.
+
+### ocr review of `9d6d4e51`
+
+Session `33ae9998-d426-4526-8b90-15216a46c358`, 4 files reviewed (6 test and evidence files excluded), 2 comments. Raw output: [ocr/T6.6-9d6d4e51.json](ocr/T6.6-9d6d4e51.json). The reviewer also answered three questions it was asked directly.
+
+| # | Severity | Location | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | medium | `trade-record.ts:428` | Closed queries do not clamp `pageSize` to 50 as Open does, so a caller passing a larger size gets a larger Closed page. | **Doubtful → bug task T6.6-B1.** No caller passes a page size for Closed today. A95 says pages of 50. |
+| 2 | low | `trade-record.ts:426` | The `keyedIndex` selection is a nested ternary, which the coding standard prohibits. | **Valid → T6.6-B1**, as a refactor. |
+| 3 | medium (reviewer's own) | `trade-record.ts` `applyPreparedChange` | It now accepts `Open` or `Closed` for an existing Trade. Nothing stops an `Open` expectation from storing a Close Reason fact. | **Partly valid → T6.6-B1.** The old check also only compared the expectation against a fixed set, because Trade Analysis decides the lifecycle and the digest binds its reconciliation to the candidate. So re-deriving the position in Trade Record is not added. An `Open` expectation whose candidate adds a Close Reason fact contradicts A85 under every lifecycle rule, so it returns `ReconciliationMismatch`. `Closed` without a Close Reason stays allowed, because non-agency closes (A77, D7) have none. |
+
+The other two direct questions found no defect. A88's merged page holds each Trade once: Closed Trades are not in `byLifecycleActivity`, the Closed set is filtered to keys after the cursor, and any Trade commit expires the cursor. The commit and rebuild values of `terminalTime` and `terminalDesc` agree, and both fields are cleared for a Trade that is not Closed.
+
+### T6.6-B1 Trade Record's Closed paths hardened
+
+From ocr findings 1–3. Commit `23041481`, 2 cases plus a refactor, no first-run pass:
+- "should read at most 50 Closed Trades per page even when a larger page size is requested". Red: 55 returned instead of 50. Green: 50 items and a next cursor. The fix adds `CLOSED_PAGE_SIZE = 50` beside `OPEN_PAGE_SIZE`; Planned is unchanged.
+- "should return ReconciliationMismatch when the reconciliation expects Open but the candidate adds a Close Reason fact". Red: `Staged`. Green: `ReconciliationMismatch` with nothing staged.
+- Refactor: the `keyedIndex` and page-size ternary chains became if / else-if blocks. The module's 39 tests passed before and after.
+
+ocr review of `23041481`: session `3200601f-4c5b-4507-8566-7f2d5eb6e7f5`, 1 file reviewed, **no findings**. Raw output: [ocr/T6.6-B1-23041481.json](ocr/T6.6-B1-23041481.json).
+
+### Cumulative run after T6.6
+
+Label `t6.6-trade-record-close`, at `23041481` plus uncommitted evidence (2026-11-01 20:03 EST). Outputs in `suite-runs/t6.6-trade-record-close-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 85 files, 1079 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **task tier**, printed reason "no changed path since 5867480c is on the full-tier list". There is no `e2e/d6` yet, so only `@every-task` ran: 5 passed (11.5 s) |
+| Static and verify checks | 11 of 12 exit 0. `verify:capacity` failed, expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.7 Reference Catalog: Close Reasons
+
+Base commit (for `browser-auto`): `23041481`.

@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 11713,
+    "input_tokens": 11629,
+    "output_tokens": 84,
+    "cache_read_tokens": 3840,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/modules/trade-record/trade-record.ts",
+      "files": [
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "3200601f-4c5b-4507-8566-7f2d5eb6e7f5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3200601f-4c5b-4507-8566-7f2d5eb6e7f5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "23041481",
+      "resolved_base": "9d6d4e51d5978b462df4d9c1bed3d36c00c0dd06",
+      "resolved_head": "23041481ee8016dbba9adb076d07d8e6c6b13688",
+      "exact_range": "9d6d4e51d5978b462df4d9c1bed3d36c00c0dd06..23041481ee8016dbba9adb076d07d8e6c6b13688",
+      "source_artifact_sha256": "3eae7671a3e82825ae2720402ee150afd249988f9cb16396b919eed27f73635a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "8e8709e3b04bd73f564f6780382aec7f53a4f67f3bbe56a2e82c7bde702e8faa"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "8e8709e3b04bd73f564f6780382aec7f53a4f67f3bbe56a2e82c7bde702e8faa"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6424
+  }
+}
