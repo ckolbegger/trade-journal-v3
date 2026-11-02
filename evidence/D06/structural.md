@@ -1072,3 +1072,192 @@ No reruns were needed. Ports 5175, 9341 and 9342 were free before and after the 
 ## T6.18 UI: Closed tab and list
 
 Base commit (for `browser-auto`): `7882d60f`.
+
+Commit `585c4351` (T6.18). Files: `TradeList.tsx` and `TradeList.test.tsx`.
+
+**Cases.**
+1. **Tabs.** The existing test now expects Open, Planned and Closed, with tab stops `[0,-1,-1]` and arrow-key wrap.
+   - Red: `expected ['Open','Planned'] to deeply equal ['Open','Planned','Closed']`.
+2. **Closed list (A95).** Covers the four states and the rows.
+   - Red: `expected 'Loading planned trades…' to match /loading closed trades/i`.
+   - The first green run failed on the test's own hyphen. The formats use U+2212.
+3. **Two extra cases.** These are not first-run passes.
+   - **Cases:** an incoherent Closed row, and a Workspace zone the runtime does not know.
+   - **What happened:** both passed on the first run because their code had been written ahead in case 2.
+   - **How it was fixed:** the code was reverted, both cases were taken to genuine reds (`TypeError … 'compare'`, and `Temporal error: Time zone must be string…`), and the code was restored. The invalid red rows are noted in `tdd-log.md`.
+
+**Columns.** No A95 field was dropped. The table follows revision 8's rule.
+- **Wide:** Underlying, Trade, Realized P&L, Realized R, Disposition ("Closed via sale"), Close Reason, Close date, Account.
+- **Trade cell:** the summary, plus badges for "Records disagree", "Reflection owed" and "N Deviation(s)". The Deviation badge shows only when the count is above 0. **Flagged for the user.**
+- **Narrow:** a second line "Realized P&L … · Realized R …" replaces the two P&L columns.
+
+**Close date.** Shown in the Workspace zone from `useRuntime().timeZone`, as `localTime(terminalTime, tz).slice(0,10)`.
+
+**Paging.** Only the first page is rendered, because the Open and Planned lists have no paging UI and the subagent was told not to invent one. `nextCursor` is ignored, so Closed Trades past the 50th cannot be reached.
+- A95 says "pages of 50", and `trade-views-and-reporting.md` has "bounded pagination". Read together, the trader must be able to reach later pages.
+- This goes to a bug task, **flagged for the user**.
+
+**Copy.** All strings are placeholders and are listed in the subagent report:
+- "Loading closed trades…"
+- the Error state, with Retry
+- "No closed trades yet. A Trade appears here once its exit is recorded."
+- the column headers and badges
+- "Not available" and "Not recorded"
+
+**Checks.** typecheck, tsc6, lint, lint:deps and `verify:capabilities` pass, and the `src/ui` suite passes 442 tests. `src/ui` changed, so the run is full tier.
+
+**ocr review of `585c4351`** (`evidence/D06/ocr/T6.18-585c4351.json`): 1 file, 1 comment.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `TradeList.tsx:292` | Closed Trades past the first 50 are unreachable because `nextCursor` is dropped. | Valid. It was already known (see the paging note above). | T6.18-B1 |
+
+**The reviewer's own answers to the other checks:**
+- **Close date:** correct across midnight and DST, through Temporal.
+- **Sign and R text:** correct.
+- **Narrow/wide duplication:** correct. One copy is in the accessibility tree at each width.
+- **Tabs:** correct. Open and Planned are unchanged.
+
+**Minor observations, recorded only:**
+- The close date prints as ISO (`2026-11-01`), while other lists use `shortDate`.
+- Disposition shows "Closed via sale" for any `Value` mechanism.
+
+### T6.18-B1 Closed list reaches later pages of 50
+
+Commit `60cc115f` (`TradeList.tsx`, `TradeList.test.tsx`). New describe "Closed list paging (T6.18-B1)" with four cases: append in order, `CursorExpired`, next-page failure, and a late page after a tab switch. Each failed first with `Unable to find … button "Show more closed trades"`, and none passed on its first run.
+
+**Test fixes, noted in the log:**
+- **Formatting:** a stray `prettier --write` was reverted, and the reds were rerun.
+- **Fixture:** a missing fourth mock in the `CursorExpired` case.
+- **Stale guard:** the case first passed even with the key check removed, because it asserted before React rendered. It now resolves the late page inside `act`. With the check removed it fails; with the check restored it passes.
+
+**Behaviour:**
+- **State:** `nextCursor` and `paging` (Loading, Failed, Refreshed, Appended) live in the Closed Ready state only.
+- **Next page:** the button uses `aria-busy`/`aria-disabled` and ignores a second press. Rows already shown stay.
+- **`CursorExpired`:** reloads page one and shows "The list was refreshed because your journal changed. Showing from the first page."
+- **Failure:** the rows stay, "We couldn’t load more closed trades. Nothing was changed." appears beside Retry, and Retry resends the same cursor.
+- **Stale guard:** a page applies only if the settled key is unchanged.
+- **Focus:** stays on the button. After the last page it moves to the first new row's Underlying link.
+- **Announcement:** a `role="status"` line reads "N more closed trades shown."
+
+**Copy:** placeholders, as quoted above, plus "Show more closed trades" and "Loading more closed trades…". The `paging` class has no CSS rule yet.
+
+**Checks:** typecheck, tsc6, lint and lint:deps pass. `src/ui`: 446 tests.
+
+**ocr review of `60cc115f`** (`evidence/D06/ocr/T6.18-B1-60cc115f.json`): 1 file, 3 comments.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `TradeList.tsx:331` | Focus recovery runs only for Appended results. A `CursorExpired` reload to a first page with no `nextCursor`, or an empty list, removes the focused button, and focus falls to the body. | Valid, narrow. | T6.18-B2 |
+| medium | `TradeList.tsx:331` | On the final page, focus moves to the first new row even if the trader moved focus away while the request was pending. | Valid, minor. | T6.18-B2 |
+| low | `TradeList.tsx:354-361` | Nested ternaries should become a helper. | Wrong as a defect. The user declined a `no-nested-ternary` rule (`plan/D05R-card-identity-handoff.md:72`); this is style only. | Dismissed |
+
+**Reviewer's answers to the other checks:**
+- **Ordering:** no duplicates or gaps.
+- **Stale guard:** sound for a tab switch, a navigation, a full Retry and unmount.
+- **`aria-disabled`:** enforced.
+- **Status line:** announces once per change.
+- **Open and Planned:** behaviour unchanged.
+
+**Cumulative run `t6.18-closed-list`**, HEAD `60cc115f`, 2026-11-02. Browser tier: full (`src/ui/` changed since `7882d60f`).
+
+The runner's final report never reached the main session, so these results were read from the output files.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 92 files, 1153 tests passed | `suite-runs/t6.18-closed-list-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.18-closed-list-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.18-closed-list-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.18-closed-list-checks.txt` |
+
+T6.18-B2 follows this run, and a further cumulative run follows B2.
+
+### T6.18-B2 Closed paging keeps focus after a refresh and never steals it after a late page
+
+Commit `cad1ed7c` (`TradeList.tsx`, `TradeList.test.tsx`). This is the second round of bug tasks on T6.18.
+
+**Tests.** Three new cases. Each was red on its first run, so none is a first-run pass.
+1. "should move focus to the refreshed status line when a cursor-expired reload leaves no Show more button, instead of dropping it to the page"
+   - red: `expected <body>… to be <p role="status">`
+2. "should move focus to the empty message when a cursor-expired reload finds no closed trades"
+   - red: `expected <body>… to be <p>`
+3. "should leave focus where the trader moved it when the final page arrives late"
+   - red: focus was stolen onto `<a href="/trades/ccc">`
+
+**Fix.** The focus effect returns early unless both of these hold: the button is gone, and `document.activeElement` is `body`. When it does act, it moves focus as follows:
+- **Appended:** to the first new row.
+- **Refreshed, no cursor:** to the paging status line (`tabIndex={-1}`, the `StorageProtectionCard` pattern).
+- **Refreshed, empty list:** to the empty message (`tabIndex={-1}`).
+
+**Limitation, recorded only.** A click on blank space also leaves focus on `body`, so the effect cannot tell that apart from a removed control.
+
+**Checks.** typecheck, tsc6, lint and lint:deps pass. `src/ui` runs 449 tests.
+
+**ocr review of `cad1ed7c`** (`evidence/D06/ocr/T6.18-B2-cad1ed7c.json`): 1 file, 1 comment.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `TradeList.tsx:335` | `activeElement === body` does not show that the removed button had focus. A trader who clicks blank space while the page loads still has `body` focus, so the final page takes it. | Valid, narrow. B2 named this limitation. Tracking whether the button held focus when it was removed would close it. | T6.18-B3 (third round on T6.18) |
+
+**The reviewer's own reading:**
+- **Paths:** Appended, Refreshed, Failed then Retry, and a tab switch are otherwise sound. A tab switch unmounts the list and the key guard drops the late page.
+- **Timing:** the effect runs after commit, with dependencies `[appendedFrom, refreshed, buttonGone]`, so an unrelated re-render does not trigger it.
+- **Screen readers (minor, unverified):** focusing the status line may read it twice.
+- **Pre-existing edge:** an empty final Appended page would leave focus on `body`. The read model does not return one.
+
+**Cumulative run `t6.18-b2-paging-focus`**: HEAD `cad1ed7c`, 2026-11-02. The browser tier was full, because `src/ui/` changed since `7882d60f`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 92 files, 1156 tests passed | `suite-runs/t6.18-b2-paging-focus-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.18-b2-paging-focus-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.18-b2-paging-focus-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.18-b2-paging-focus-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run.
+
+### T6.18-B3 Closed paging moves focus only when the Show more button held it
+
+Commit `9ce6b75d` (`TradeList.tsx`, `TradeList.test.tsx`). This is the third and final round of bug tasks on T6.18.
+
+**Test.** Red: "should leave focus on the page when the trader clicked blank space while the final page loaded, since the Show more button no longer held it". It failed with `expected <a href="/trades/ccc"> to be <body>`. It was not a first-run pass.
+
+**Existing test changed.** B1's append case now calls `button.focus()` before it clicks. It had passed only because focus sat on `body`, which is the behaviour this fix removes.
+
+**Mechanism.**
+- The `Appended` and `Refreshed` paging states carry `focused: boolean`.
+- The settle path captures `moreButton.current === document.activeElement` once, before the state update that removes the button.
+- The effect acts only when the button is gone and `focused` is true. The `body` check is removed.
+
+**Browser note, recorded for the final report.** On Safari and macOS Firefox a mouse click does not focus a button, so focus stays where it was. Keyboard activation still moves focus to the new row.
+
+**Checks.** `src/ui` passes 450 tests. typecheck, tsc6, lint and lint:deps all pass.
+
+**ocr review of `9ce6b75d`** (`evidence/D06/ocr/T6.18-B3-9ce6b75d.json`): 1 file, 0 comments, no findings.
+
+**The reviewer's answers:**
+- `holdsFocus` is read once, after the last `await` and before `change(...)`, on both the Appended and Refreshed paths.
+- `focused` does not carry over: each press resets `paging`, and Failed replaces it.
+- Nothing outside `ClosedList` is affected.
+
+**Dismissed (Wrong, cannot occur).** The reviewer noted, and rated Doubtful, a pre-existing edge: a final Appended page with zero rows would leave focus on `body`. That page cannot exist:
+- **A cursor needs a further record.** The Closed query reads `pageSize + 1` and issues a `nextCursor` only when that extra record exists (T6.14's review).
+- **A commit expires the cursor.** Cursors are bound to the snapshot (`trade-record.md`), so a commit between pages returns `CursorExpired` and the list reloads from the start.
+- **Trades are never deleted.**
+
+So a page fetched with a cursor always has rows. **T6.18 is closed after three rounds, with no finding left.**
+
+**Cumulative run `t6.18-b3-focus-ownership`**, at HEAD `9ce6b75d`, on 2026-11-02. This run closes T6.18. The browser stage ran the full tier, 147 tests, because `src/ui/` changed since `7882d60f`. The runner's final report was not delivered, so these figures were read from the output files.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 92 files, 1157 tests passed | `suite-runs/t6.18-b3-focus-ownership-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.18-b3-focus-ownership-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.7 min) | `suite-runs/t6.18-b3-focus-ownership-browser.txt` |
+| Static and verification (12) | 11 of 12 passed; `verify:capacity` failed, as expected until T6.22 | `suite-runs/t6.18-b3-focus-ownership-checks.txt` |
+
+After the run, nothing was listening on ports 5175, 9341 or 9342.
+
+## T6.19 UI: Trade Detail closing additions
+
+Base commit (for `browser-auto`): `9ce6b75d`.

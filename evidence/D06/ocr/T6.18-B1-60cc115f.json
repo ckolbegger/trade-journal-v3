@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 98506,
+    "input_tokens": 96713,
+    "output_tokens": 1793,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m15s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "Focus recovery only handles Appended results. If CursorExpired reloads a first page with no nextCursor (including an empty list), the focused pagination button is removed while appendedFrom is undefined, so focus falls back to the document body. Handle Refreshed results too, focusing the first refreshed row or a focusable empty-state/panel when the button disappears. Ideally only move focus if it was still on the pagination button when the request completed.",
+      "existing_code": "    if (appendedFrom !== undefined \u0026\u0026 buttonGone) rows.current?.rows[appendedFrom]?.querySelector('a')?.focus();",
+      "start_line": 331,
+      "end_line": 331,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "The pagination message uses nested ternaries, which the review checklist explicitly prohibits; the new button label does too. Use a switch or a small status-to-message helper and a separate label calculation to keep these branches explicit.",
+      "existing_code": "  const message =\n    paging?.kind === 'Failed'\n      ? 'We couldn’t load more closed trades. Nothing was changed.'\n      : paging?.kind === 'Refreshed'\n        ? 'The list was refreshed because your journal changed. Showing from the first page.'\n        : paging?.kind === 'Appended'\n          ? `${added} more closed ${added === 1 ? 'trade' : 'trades'} shown.`\n          : '';",
+      "start_line": 354,
+      "end_line": 361,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "This moves focus on every final-page response, even if the user has moved focus away from the loading button (for example, to a tab or a trade link while the request is pending). A delayed response then unexpectedly steals focus back into the table. Track whether the pagination button still owned focus immediately before removal and only perform focus recovery in that case.",
+      "existing_code": "    if (appendedFrom !== undefined \u0026\u0026 buttonGone) rows.current?.rows[appendedFrom]?.querySelector('a')?.focus();",
+      "start_line": 331,
+      "end_line": 331,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/TradeList.tsx",
+      "files": [
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "bc399a0c-5d50-4e23-a70d-c623774e727a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "bc399a0c-5d50-4e23-a70d-c623774e727a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "60cc115f",
+      "resolved_base": "585c4351f5f6af9add8431690c8b2b6e017d37c0",
+      "resolved_head": "60cc115fc1cb66443fd5669fcb5d53ad48ad7a5e",
+      "exact_range": "585c4351f5f6af9add8431690c8b2b6e017d37c0..60cc115fc1cb66443fd5669fcb5d53ad48ad7a5e",
+      "source_artifact_sha256": "ed30828f9c1617ffa2ab3455da3787ece94ca78e8f281c6bc8349cb39d037afe"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "e2f8fe2c313014aaacf626832d3435b89e47975660995fd589e62b83ec9c7f89"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "e2f8fe2c313014aaacf626832d3435b89e47975660995fd589e62b83ec9c7f89"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 74754
+  }
+}

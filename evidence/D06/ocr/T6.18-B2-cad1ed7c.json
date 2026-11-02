@@ -1,0 +1,92 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 49308,
+    "input_tokens": 48740,
+    "output_tokens": 568,
+    "cache_read_tokens": 13440,
+    "elapsed": "36s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "`document.activeElement === document.body` does not establish that the removed paging button owned focus. For example, while a page is loading, the user can click non-focusable text or blank space, which blurs the button and leaves focus on the body. When the final page arrives, this guard still passes and moves focus to a row/status message, despite the user having moved away. Track whether the paging button still owns focus immediately before it is removed (and clear that ownership when the user moves away), rather than inferring ownership from body focus after removal.",
+      "existing_code": "    if (!buttonGone || document.activeElement !== document.body) return;",
+      "start_line": 335,
+      "end_line": 335,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/TradeList.tsx",
+      "files": [
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "4267ae0f-471f-4dd9-a01a-0d624a5a843f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4267ae0f-471f-4dd9-a01a-0d624a5a843f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cad1ed7c",
+      "resolved_base": "60cc115fc1cb66443fd5669fcb5d53ad48ad7a5e",
+      "resolved_head": "cad1ed7cb66e1317eed937a10da063121784d53a",
+      "exact_range": "60cc115fc1cb66443fd5669fcb5d53ad48ad7a5e..cad1ed7cb66e1317eed937a10da063121784d53a",
+      "source_artifact_sha256": "9a16adfe6f8822cb8e33a8191b4e86c016adeb2234e6012cc291695f062f8050"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "25b24a534fbc9855bce5561df40731922d9592ace10de2672fff89882a7be0da"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "25b24a534fbc9855bce5561df40731922d9592ace10de2672fff89882a7be0da"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 36452
+  }
+}
