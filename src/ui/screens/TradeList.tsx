@@ -1,20 +1,20 @@
 import { Fragment, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
+import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { pnlText } from '../figures.ts';
-import { money, netCost, quantity, ratio, shortDate, tradeSummary } from '../format.ts';
+import { calculation, pnlText, signed } from '../figures.ts';
+import { localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
 export interface TradeListProps {
   readonly facade: UiFacade;
 }
 
-// Only the lifecycles this release can produce (A32); Open is the default.
-const LIFECYCLES = ['Open', 'Planned'] as const;
+// The lifecycles a Trade list can show (A32, A95); Open is the default.
+const LIFECYCLES = ['Open', 'Planned', 'Closed'] as const;
 type Lifecycle = (typeof LIFECYCLES)[number];
 
 type ListState = { readonly kind: 'Loading' } | { readonly kind: 'Ready'; readonly items: readonly unknown[] } | { readonly kind: 'Error' };
@@ -24,7 +24,8 @@ type ListState = { readonly kind: 'Loading' } | { readonly kind: 'Ready'; readon
 // URL, so it survives navigation to a Trade and back.
 export function TradeList({ facade }: TradeListProps) {
   const [params, setParams] = useSearchParams();
-  const lifecycle: Lifecycle = params.get('lifecycle') === 'Planned' ? 'Planned' : 'Open';
+  const requested = params.get('lifecycle');
+  const lifecycle: Lifecycle = LIFECYCLES.find((l) => l === requested) ?? 'Open';
   // Every request gets its own key, so a result is shown only for the request that asked for it.
   // A tab switch is a navigation, which carries a fresh location key; Retry counts attempts.
   const navigation = useLocation().key;
@@ -81,11 +82,9 @@ export function TradeList({ facade }: TradeListProps) {
         ))}
       </div>
       <div role="tabpanel" id={`panel-${lifecycle}`} aria-labelledby={`tab-${lifecycle}`}>
-        {lifecycle === 'Open' ? (
-          <OpenList state={state} retry={() => setAttempt((n) => n + 1)} showPlanned={() => select('Planned')} />
-        ) : (
-          <PlannedList state={state} retry={() => setAttempt((n) => n + 1)} />
-        )}
+        {lifecycle === 'Open' && <OpenList state={state} retry={() => setAttempt((n) => n + 1)} showPlanned={() => select('Planned')} />}
+        {lifecycle === 'Planned' && <PlannedList state={state} retry={() => setAttempt((n) => n + 1)} />}
+        {lifecycle === 'Closed' && <ClosedList state={state} retry={() => setAttempt((n) => n + 1)} />}
       </div>
     </section>
   );
@@ -254,11 +253,14 @@ function TradeCell({
   disagrees,
   line,
   badges,
+  indicators,
 }: {
   readonly text: string;
   readonly disagrees: boolean;
   readonly line: ReactNode;
   readonly badges?: ReactNode;
+  // Badges that belong to the first line, with the summary text.
+  readonly indicators?: ReactNode;
 }) {
   return (
     <>
@@ -271,6 +273,7 @@ function TradeCell({
           <Badge tone="warning">Records disagree</Badge>
         </>
       )}
+      {indicators}
       {line && (
         <>
           {' '}
@@ -279,6 +282,101 @@ function TradeCell({
       )}
       {badges}
     </>
+  );
+}
+
+const GAIN_LOSS = signed(money);
+const R_MULTIPLE = signed(rMultiple);
+
+// The read model pages by 50; this shows the first page, as the Open and Planned lists do (neither pages).
+function ClosedList({ state, retry }: ListProps) {
+  const { timeZone } = useRuntime();
+  if (state.kind === 'Loading') return <p role="status">Loading closed trades…</p>;
+  if (state.kind === 'Error') {
+    return (
+      <section className="card">
+        <p>We couldn’t load your closed trades. Nothing was changed.</p>
+        <button type="button" className="pill secondary" onClick={retry}>
+          Retry
+        </button>
+      </section>
+    );
+  }
+  const items = state.items as readonly (ClosedTradeItem | IncoherentClosedTradeItem)[];
+  if (items.length === 0) {
+    return (
+      <section className="card empty">
+        <p>No closed trades yet. A Trade appears here once its exit is recorded.</p>
+      </section>
+    );
+  }
+  return (
+    // The columns scroll inside their own focusable region on a narrow screen (Underlying pinned), never the page.
+    <div className="table-scroll" role="region" aria-label="Closed Trades" tabIndex={0}>
+      <table className="trades">
+        <caption>Closed Trades</caption>
+        <thead>
+          <tr>
+            <th scope="col">Underlying</th>
+            <th scope="col">Trade</th>
+            <th scope="col" className="number wide-only">
+              Realized P&amp;L
+            </th>
+            <th scope="col" className="number wide-only">
+              Realized R
+            </th>
+            <th scope="col">Disposition</th>
+            <th scope="col">Close Reason</th>
+            <th scope="col">Close date</th>
+            <th scope="col">Account</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item) => {
+            // Facts that cannot be replayed leave the realized figures and disposition unavailable, never a number.
+            const derived = 'netRealizedPnl' in item ? item : undefined;
+            const pnl = derived ? GAIN_LOSS(derived.netRealizedPnl) : NOT_AVAILABLE;
+            const r = derived ? calculation(derived.realizedR, R_MULTIPLE) : NOT_AVAILABLE;
+            return (
+              <tr key={item.tradeId}>
+                <td>
+                  <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
+                </td>
+                <td>
+                  <TradeCell
+                    disagrees={item.integrity === 'Disagrees'}
+                    text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
+                    indicators={
+                      <>
+                        {item.reflectionOwed && (
+                          <>
+                            {' '}
+                            <Badge tone="info">Reflection owed</Badge>
+                          </>
+                        )}
+                        {item.deviationCount > 0 && (
+                          <>
+                            {' '}
+                            <Badge tone="neutral">{`${item.deviationCount} ${item.deviationCount === 1 ? 'Deviation' : 'Deviations'}`}</Badge>
+                          </>
+                        )}
+                      </>
+                    }
+                    line={`Realized P&L ${pnl} · Realized R ${r}`}
+                  />
+                </td>
+                <td className="number wide-only">{pnl}</td>
+                <td className="number wide-only">{r}</td>
+                <td>{derived && derived.terminalDisposition.kind === 'Value' ? 'Closed via sale' : NOT_AVAILABLE}</td>
+                <td>{item.closeReason?.label ?? 'Not recorded'}</td>
+                <td>{timeZone ? localTime(item.terminalTime, timeZone).slice(0, 10) : NOT_AVAILABLE}</td>
+                <td>{`${item.institution} — ${item.account}`}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

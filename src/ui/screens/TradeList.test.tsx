@@ -22,7 +22,7 @@ function renderList(facade: UiFacade, entry = '/?lifecycle=Planned') {
 const readyPage = (items: readonly unknown[]) => ({ kind: 'Ready', view: { items }, binding: {} }) as never;
 
 describe('lifecycle tabs', () => {
-  it('should show Open and Planned tabs as a tablist with Open selected by default, and no other lifecycle', async () => {
+  it('should show Open, Planned, and Closed tabs as a tablist with Open selected by default', async () => {
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([]));
     renderList(facade, '/');
@@ -30,20 +30,21 @@ describe('lifecycle tabs', () => {
       name: 'Trades by lifecycle',
     });
     const tabs = within(tablist).getAllByRole('tab');
-    expect(tabs.map((t) => t.textContent)).toEqual(['Open', 'Planned']);
-    expect(tabs.map((t) => t.getAttribute('aria-selected'))).toEqual(['true', 'false']);
+    expect(tabs.map((t) => t.textContent)).toEqual(['Open', 'Planned', 'Closed']);
+    expect(tabs.map((t) => t.getAttribute('aria-selected'))).toEqual(['true', 'false', 'false']);
     expect(screen.getByRole('tabpanel', { name: 'Open' })).toBeTruthy();
     expect(vi.mocked(facade.TradeViewsAndReporting.browseTrades)).toHaveBeenCalledWith({ lifecycle: 'Open' });
     await screen.findByText(/no open trades/i);
 
     // One tab stop; the arrow keys move between the tabs.
-    expect(tabs.map((t) => t.tabIndex)).toEqual([0, -1]);
+    expect(tabs.map((t) => t.tabIndex)).toEqual([0, -1, -1]);
     fireEvent.keyDown(tabs[0]!, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'Planned' }).getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Planned' }));
-    fireEvent.keyDown(screen.getByRole('tab', { name: 'Planned' }), {
-      key: 'ArrowRight',
-    });
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Planned' }), { key: 'ArrowRight' });
+    expect(screen.getByRole('tab', { name: 'Closed' }).getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Closed' }));
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Closed' }), { key: 'ArrowRight' });
     expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Open' }));
   });
 
@@ -181,6 +182,143 @@ describe('Planned list', () => {
     expect(await screen.findByText(/couldn’t load your planned trades/i)).toBeTruthy();
     screen.getByRole('button', { name: 'Retry' }).click();
     expect(await screen.findByText(/no planned trades yet/i)).toBeTruthy();
+  });
+});
+
+// T-A as the Closed list shows it: 100 shares at an average $50.18 sold for a net $248.00, closed
+// 2026-10-14 02:30 UTC, which is the evening of the 13th in the Workspace zone.
+const closedItem = {
+  tradeId: 'trade-7',
+  underlying: 'XYZ',
+  strategy: 'Long Stock',
+  account: 'Roth IRA',
+  institution: 'Fidelity',
+  summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(2509n, 50n) },
+  netRealizedPnl: Rational.of(248n),
+  realizedR: { kind: 'Value', value: Rational.of(62n, 25n) },
+  terminalDisposition: { kind: 'Value', value: [{ mechanism: 'Executions', quantity: Rational.of(100n) }] },
+  closeReason: { id: 'cr-1', label: 'Target reached' },
+  terminalTime: '2026-10-14T02:30:00Z',
+  deviationCount: 0,
+  reflectionOwed: false,
+  integrity: 'Agrees',
+};
+
+// A null zone is a runtime that does not know the Workspace zone.
+function renderClosed(facade: UiFacade, timeZone: string | null = 'America/New_York') {
+  render(
+    <RuntimeContext.Provider value={{ writable: true, ...(timeZone === null ? {} : { timeZone }), report: () => undefined }}>
+      <MemoryRouter initialEntries={['/?lifecycle=Closed']}>
+        <TradeList facade={facade} />
+      </MemoryRouter>
+    </RuntimeContext.Provider>,
+  );
+}
+
+describe('Closed list (A95)', () => {
+  it('should render distinct Loading, Ready, Empty, and Error states, and rows with signed realized P&L, Realized R, Closed via sale, Close Reason, close date, and indicators with text, numbers right-aligned in tabular numerals', async () => {
+    const loading = facadeDouble();
+    vi.mocked(loading.TradeViewsAndReporting.browseTrades).mockReturnValue(new Promise(() => undefined));
+    renderClosed(loading);
+    expect(screen.getByRole('status').textContent).toMatch(/loading closed trades/i);
+    expect(screen.queryByText(/no closed trades/i)).toBeNull();
+    expect(vi.mocked(loading.TradeViewsAndReporting.browseTrades)).toHaveBeenCalledWith({ lifecycle: 'Closed' });
+    cleanup();
+
+    const loss = {
+      ...closedItem,
+      tradeId: 'trade-8',
+      underlying: 'DEF',
+      netRealizedPnl: Rational.of(-25n, 2n),
+      realizedR: { kind: 'Value', value: Rational.of(-1n, 20n) },
+      closeReason: { id: 'cr-2', label: 'Stop triggered' },
+      deviationCount: 2,
+      reflectionOwed: true,
+    };
+    const ready = facadeDouble();
+    vi.mocked(ready.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([closedItem, loss]));
+    renderClosed(ready);
+    const table = await screen.findByRole('table', { name: 'Closed Trades' });
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', 'Realized P&L', 'Realized R', 'Disposition', 'Close Reason', 'Close date', 'Account']);
+    const [, gain, lost] = within(table).getAllByRole('row');
+    const gainCells = within(gain!).getAllByRole('cell');
+    expect(gainCells.map((c) => c.textContent)).toEqual([
+      'XYZ',
+      'Long 100 shares @ $50.18 Realized P&L +$248.00 · Realized R +2.48R',
+      '+$248.00',
+      '+2.48R',
+      'Closed via sale',
+      'Target reached',
+      '2026-10-13',
+      'Fidelity — Roth IRA',
+    ]);
+    expect(within(gain!).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/trades/trade-7');
+    expect(within(gainCells[1]!).getByText('Realized P&L +$248.00 · Realized R +2.48R').className).toBe('trade-line');
+    // An agreeing row with nothing owed and no Deviation shows no indicator.
+    expect(within(gain!).queryByText(/disagree|reflection owed|deviation/i)).toBeNull();
+    const lostCells = within(lost!).getAllByRole('cell');
+    // A loss carries the formats' own minus sign (U+2212).
+    expect(lostCells.map((c) => c.textContent).slice(1, 4)).toEqual(['Long 100 shares @ $50.18 Reflection owed 2 Deviations Realized P&L −$12.50 · Realized R −0.05R', '−$12.50', '−0.05R']);
+    expect(within(lostCells[1]!).getByText('Reflection owed').className).toBe('badge');
+    // The figures are right-aligned tabular numerals, header and cell alike.
+    for (const column of [2, 3]) {
+      expect(within(table).getAllByRole('columnheader')[column]!.className).toContain('number');
+      expect(gainCells[column]!.className).toContain('number');
+      expect(lostCells[column]!.className).toContain('number');
+    }
+    cleanup();
+
+    const empty = facadeDouble();
+    vi.mocked(empty.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([]));
+    renderClosed(empty);
+    expect(await screen.findByText(/no closed trades yet/i)).toBeTruthy();
+    expect(screen.getByText(/a trade appears here once its exit is recorded/i)).toBeTruthy();
+    cleanup();
+
+    const failing = facadeDouble();
+    vi.mocked(failing.TradeViewsAndReporting.browseTrades)
+      .mockResolvedValueOnce({ kind: 'ChangedDuringAssembly' })
+      .mockRejectedValueOnce(new Error('storage'))
+      .mockResolvedValueOnce(readyPage([]));
+    renderClosed(failing);
+    expect(await screen.findByText(/couldn’t load your closed trades/i)).toBeTruthy();
+    expect(screen.queryByText(/no closed trades/i)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText(/couldn’t load your closed trades/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText(/no closed trades yet/i)).toBeTruthy();
+  });
+
+  it('should show an incoherent Closed row with Records disagree and Not available in place of its realized figures, keeping its Close Reason, close date and account', async () => {
+    const { strategy, account, institution, closeReason, terminalTime } = closedItem;
+    const incoherent = { tradeId: 'trade-9', underlying: 'GHI', strategy, account, institution, closeReason, terminalTime, deviationCount: 0, reflectionOwed: true, integrity: 'Disagrees' };
+    const disagreeing = { ...closedItem, tradeId: 'trade-10', underlying: 'JKL', integrity: 'Disagrees' };
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([incoherent, disagreeing]));
+    renderClosed(facade);
+    const table = await screen.findByRole('table', { name: 'Closed Trades' });
+    const [, broken, flagged] = within(table).getAllByRole('row');
+    expect(within(broken!).getAllByRole('cell').map((c) => c.textContent)).toEqual([
+      'GHI',
+      'Not available Records disagree Reflection owed Realized P&L Not available · Realized R Not available',
+      'Not available',
+      'Not available',
+      'Not available',
+      'Target reached',
+      '2026-10-13',
+      'Fidelity — Roth IRA',
+    ]);
+    expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-9');
+    expect(within(flagged!).getAllByRole('cell')[1]!.textContent).toBe('Long 100 shares @ $50.18 Records disagree Realized P&L +$248.00 · Realized R +2.48R');
+    expect(within(flagged!).getByText('Records disagree').getAttribute('data-tone')).toBe('warning');
+  });
+
+  it('should show the close date as Not available when the Workspace zone is unknown, rather than a date in some other zone', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([closedItem]));
+    renderClosed(facade, null);
+    const table = await screen.findByRole('table', { name: 'Closed Trades' });
+    expect(within(within(table).getAllByRole('row')[1]!).getAllByRole('cell')[6]!.textContent).toBe('Not available');
   });
 });
 
