@@ -4,7 +4,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { closedTradeReviewFixture } from '../../../tests/support/closed-trade-review-fixture.ts';
-import { ELEVEN_AM, TEN_AM, reviewStack } from '../../../tests/support/review-fixture.ts';
+import { ELEVEN_AM, TEN_AM, rawEditTrade, reviewStack } from '../../../tests/support/review-fixture.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import type { PositionChangeMember } from '../trade-workflows/index.ts';
 import { createTradeViews } from './index.ts';
@@ -288,6 +288,23 @@ describe('getTradeDetail: Closed reads no Market Data and requires no Mark (T6.1
     const [debt] = debtOf(rejected);
     expect(debt).toEqual(expect.objectContaining({ kind: 'Debt' }));
     expect(debt).not.toHaveProperty('dueStatus');
+  });
+});
+
+describe('getTradeDetail: a stored-Closed Trade whose facts replay as Open (T6.14-B2, A96)', () => {
+  it('should return Ready with the LifecycleDisagreement and the integrity finding, without throwing, and leave the content revision unchanged', async () => {
+    const t = await tradeA();
+    // Open by its facts (Buys and no Sell), stored Closed with no terminal key, as no writer would leave it.
+    await rawEditTrade(t.stack, t.trade.tradeId, (trade) => ({ ...trade, lifecycle: 'Closed', terminalTime: undefined, terminalDesc: undefined }));
+    const before = await dumpAll(t.stack.factory);
+
+    const result = await createTradeViews(t.stack).getTradeDetail({ tradeId: t.trade.tradeId });
+    if (result.kind !== 'Ready' || !('findings' in result.view)) throw new Error(`expected a Ready Detail with findings, got ${result.kind}`);
+
+    const disagreement = { kind: 'LifecycleDisagreement', stored: 'Closed', expected: 'Open' };
+    expect(result.view.lifecycle).toEqual({ stored: 'Closed', agreement: disagreement });
+    expect(result.view.findings).toEqual([disagreement]);
+    expect(await dumpAll(t.stack.factory)).toEqual(before);
   });
 });
 

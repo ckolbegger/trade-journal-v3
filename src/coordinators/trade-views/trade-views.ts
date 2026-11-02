@@ -733,9 +733,10 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           return { binding, view };
         }
         const lastActivity = s.lastActivity ?? s.planTime;
-        // A stored Closed Trade takes the Closed form before any frame is read: its figures come from the facts
-        // alone and no Mark is required (A92).
-        if (analysis.storedLifecycle === 'Closed') {
+        // A Trade that is Closed by both its stored lifecycle and its facts takes the Closed form before any frame
+        // is read: its figures come from the facts alone and no Mark is required (A92). As with Planned, a
+        // disagreement gets the Open form, which carries the LifecycleDisagreement (A96).
+        if (analysis.storedLifecycle === 'Closed' && derived.expectedLifecycle === 'Closed') {
           const closeReason = analysis.closeReason && (await closeReasonOf(analysis.closeReason.closeReasonId));
           const closes = narrative.some((item) => item.kind === 'Debt') ? await sessionCloses(analysis.plan.underlying) : undefined;
           const view = closedDetail(detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity), closedCurrent(analysis, derived), analysis, derived, closeReason);
