@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 166562,
+    "input_tokens": 165437,
+    "output_tokens": 1125,
+    "cache_read_tokens": 31488,
+    "elapsed": "1m11s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "When there are no walked Trades and the last due owed reflection is resolved, `assemble()` returns `Empty` (also when only not-yet-due reflections remain). `readAfterSave()` converts that to `ChangedDuringAssembly`, so this synthetic done progress is never reached and the save cannot return `nextStep: Done`, despite no concurrent change. Handle an `Empty` post-save assembly as a settled completed review so the final owed card's progress and Done step are returned. Add coverage for resolving the last due reflection with an empty walk.",
+      "existing_code": "      const cards = listed.length \u003e 0 || from === undefined ? listed : [{ tradeId: from, progress: owedCardProgress({ due: 0, later: 0 }) }];",
+      "start_line": 775,
+      "end_line": 775,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/held-review.ts"
+      ]
+    }
+  ],
+  "session_id": "f3cf3c26-8425-4250-b0dd-2ab815d87176",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f3cf3c26-8425-4250-b0dd-2ab815d87176",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "759e171a",
+      "resolved_base": "a97beb1747b4f346687d5403200ee53e78f0990f",
+      "resolved_head": "759e171a734c0992bad11acd41a7f0b7a56e576a",
+      "exact_range": "a97beb1747b4f346687d5403200ee53e78f0990f..759e171a734c0992bad11acd41a7f0b7a56e576a",
+      "source_artifact_sha256": "54baaaeeac35bbe589a4a923a73f0577c339dc4ba974d47191260465ec58fdc2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "4dc6bce5260723e20f1856d47a657be0ece94a7f2f98901d4ba7c88c0d533055"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a5d75043f05500fd1e8244d5b265b46156f09fbe32af41d5c8fba959e1050da4"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "f692de769f6d3ecaba0d75a810c75a17054397c6482fa877c91021ff29e91fac"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "4dc6bce5260723e20f1856d47a657be0ece94a7f2f98901d4ba7c88c0d533055"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a5d75043f05500fd1e8244d5b265b46156f09fbe32af41d5c8fba959e1050da4"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "f692de769f6d3ecaba0d75a810c75a17054397c6482fa877c91021ff29e91fac"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 70982
+  }
+}

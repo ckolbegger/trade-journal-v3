@@ -640,3 +640,64 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.13 Daily Review: `save` across the walk and the group
 
 Base commit (for `browser-auto`): `dde2eb54`.
+
+Commit `759e171a` (T6.13). The one planned case has two clauses, split into tests in `owed-save.test.ts`, plus two added cases.
+
+| Test | Result |
+|---|---|
+| Answer-and-Complete clause | **First-run pass, flagged for the user.** D5's `ResolveReviewDebt`, T6.8's resolution and T6.11's owed-group reasons had already built it. Mutation check: the owed-group `ReflectionDue` filter in `assemble` was inverted, and the case failed with `expected { kind: 'Incomplete', … } to deeply equal { kind: 'Complete' }`. The filter was then restored. |
+| Next-step clause | This is T6.11's ocr finding 1. Red: `{ kind: 'Done' }` instead of T-M's card. Then green. |
+| Added: a resolved Debt returns its owed Trade's progress in `cards` | Red, then green. |
+| Added regression: a Marks save with the walk done returns T-M's card | Red: `ChangedDuringAssembly`. Then green. |
+
+Changes:
+- `ReviewNextStep` and `MarksNextStep` gain `{ kind: 'OwedTrade', card }`.
+- `nextTaskOf` takes the owed group.
+- `PostSaveReview.cards` may hold an owed Trade's progress. That includes a synthetic done progress for a Trade that has just left the group.
+- `src/ui/screens/held-review.ts` gains a minimal `NextCard` variant, without which typecheck fails. T6.20 renders it. This change puts the task on the full tier.
+
+The implementer raised an open question, and it was put to ocr. With no walk, resolving the last due reflection makes the post-save pass `Empty`, and `readAfterSave` maps that to `ChangedDuringAssembly` although the save committed.
+
+### ocr review of `759e171a`
+
+Session `f3cf3c26-8425-4250-b0dd-2ab815d87176`, 3 files reviewed, 1 comment. Raw output: [ocr/T6.13-759e171a.json](ocr/T6.13-759e171a.json).
+
+| # | Severity | Location | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | medium | `daily-review.ts:775` (`assemble` ~408, `readAfterSave` ~749) | **Empty Review after the last due reflection.** With no walk, resolving the last due reflection makes the post-save pass `Empty`. `readAfterSave` maps that to `ChangedDuringAssembly`, so a committed save is reported as an unstable read, with no `Done` step and no card progress. This breaks A90 and AC-RESP-001. | **Valid → bug task T6.13-B1.** This was the implementer's open question. `ChangedDuringAssembly` means the retries were exhausted by concurrent writes (A46). `Empty` is a settled state. |
+
+Direct questions:
+- **Next-step order:** no defect. The owed next step comes only after every walked card is done. Not-yet-due Trades (T-L, T-Q) are never chosen.
+- **Synthetic done progress:** correct in every reachable case.
+- **Post-save reads:** no per-history reads beyond the one next-step card.
+
+### T6.13-B1 An Empty post-save pass settles as Ready
+
+From ocr finding 1. Commit `14a17f7a`, 1 case run red then green:
+- **Case:** "should return a settled Complete review with next step Done when resolving the last due reflection leaves a Review with no walk Empty".
+- **Red:** `ChangedDuringAssembly`.
+- **Green:** `Complete`, `Done`, zero progress, T-M's done card, and a binding equal to the binding of a reopened `Empty` Review.
+- **Fix:** `readAfterSave` settles an `Empty` pass into the existing Ready read, so no new result kind is needed.
+- **Left as is:** a Marks save with no walk still gives `ChangedDuringAssembly`. There are no Marks to save, so that path cannot be reached.
+
+ocr review of `14a17f7a`: session `167a91be-420b-405e-9e81-2f0e11fe50f5`, 1 file reviewed, **no findings**. Raw output: [ocr/T6.13-B1-14a17f7a.json](ocr/T6.13-B1-14a17f7a.json).
+- A torn read still retries under `coherently`, so it can never settle as `Ready`.
+- The binding is built the way `open`'s `Empty` builds it.
+- Observation: the doc comment above `readAfterSave` still says a non-Ready Review is "for the trader to open afresh", which is now stale for `Empty`. Recorded only; it was not changed.
+
+### Cumulative run after T6.13
+
+Label `t6.13-review-save`, at `14a17f7a` plus uncommitted evidence (2026-11-01 22:17 EST). Outputs in `suite-runs/t6.13-review-save-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 90 files, 1122 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since dde2eb54: src/ui/screens/held-review.ts": 147 passed (6.6 m) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed, expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.14 Trade Views: Closed list and Detail; Open Detail with Lot Matches
+
+Base commit (for `browser-auto`): `14a17f7a`.
