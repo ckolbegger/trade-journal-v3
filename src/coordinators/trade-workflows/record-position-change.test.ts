@@ -1,11 +1,12 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
-import type { TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
+import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import type { ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import { D6_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { onboardedStack } from '../../../tests/support/onboarded.ts';
-import type { PositionChangeCommand, PositionChangeMember } from './index.ts';
+import type { PositionChangeCommand, PositionChangeMember, WorkflowIssue } from './index.ts';
 
 // D2's reference Trade (breakdown, section 4): 100 shares, intended entry 50, Stop 47.50, Target 56,
 // confirmed 2026-10-12 09:00 America/New_York. The clock reads 17:00 that day, after the close.
@@ -23,8 +24,8 @@ interface Reference {
   readonly reflectionDefinitionId: string;
 }
 
-async function referenceTrade(): Promise<Reference> {
-  const stack = await onboardedStack(new IDBFactory(), NOW);
+async function referenceTrade(now: string = NOW): Promise<Reference> {
+  const stack = await onboardedStack(new IDBFactory(), now);
   const confirmed = await stack.tradeWorkflows.confirmPlan({
     accountId: stack.account.id,
     accountRevision: stack.account.recordRevision,
@@ -361,12 +362,12 @@ describe('rejected', () => {
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });
 
-  it('should reject a Sell, another Instrument, ExplicitlyUnplanned intent, or a second Trade with VariantNotInstalled', async () => {
+  it('should reject a Buy mixed with a Sell, another Instrument, ExplicitlyUnplanned intent, or a second Trade with VariantNotInstalled', async () => {
     const ref = await referenceTrade();
     const before = await dumpAll(ref.stack.factory);
     const member = buy(ref, PC1, '60', '50.10');
     const attempts: [PositionChangeCommand, string][] = [
-      [command(ref, 1, [{ ...member, action: 'Sell' }]), 'Sell'],
+      [command(ref, 1, [member, { ...member, action: 'Sell' }]), 'MixedActions'],
       [command(ref, 1, [{ ...member, instrument: { kind: 'Stock', symbol: 'ABC' } }]), 'OtherInstrument'],
       [command(ref, 1, [{ ...member, instrument: { kind: 'Option', symbol: 'XYZ261120C00055000' } }]), 'OtherInstrument'],
       [command(ref, 1, [{ ...member, intent: { kind: 'ExplicitlyUnplanned' } }]), 'ExplicitlyUnplanned'],
@@ -433,7 +434,7 @@ describe('rejected', () => {
       command(ref, 1, [{ ...member, economicTime: '2026-10-12T12:00:00Z' }]),
       command(ref, 1, [{ ...member, economicTime: '2026-10-13T00:00:00Z' }]),
       command(ref, 1, [{ ...member, quantity: '0' }]),
-      command(ref, 1, [{ ...member, action: 'Sell' }]),
+      command(ref, 1, [member, { ...member, action: 'Sell' }]),
       command(ref, 1, [member], { kind: 'Complete', form: { definitionId: ref.reflectionDefinitionId, answers: {} } }),
       command(ref, 0, [member]),
     ];
@@ -533,5 +534,334 @@ describe('Defer (AC-JOUR-003)', () => {
     });
     expect(stored.definitionId).toBe(ref.reflectionDefinitionId);
     expect(stored.versions.at(-1)!.status).toBe('Outstanding');
+  });
+});
+
+// T6.10: exits (D6 section 4). Reference Trade T-A: PC1 and PC2 on Monday, X1 and X2 on Tuesday
+// 2026-10-13 at 10:00 and 14:00 New York. The clock reads Tuesday 17:00, after the exits.
+const EXIT_NOW = '2026-10-13T21:00:00Z';
+const X1_TIME = '2026-10-13T14:00:00Z';
+
+interface ExitReference extends Reference {
+  readonly closeReasonId: string;
+  readonly closeReviewDefinitionId: string;
+}
+
+// The reference Trade on a stack whose Catalog and Journal carry the D6 seeds (Close Reasons, Close Review).
+async function exitReference(): Promise<ExitReference> {
+  const ref = await referenceTrade(EXIT_NOW);
+  await ref.stack.catalog.seedDefaults(D6_CATALOG_MANIFEST);
+  await ref.stack.journal.seedDefaults(D5_JOURNAL_MANIFEST);
+  const reasons = await ref.stack.catalog.query({ family: 'CloseReason' });
+  if (reasons.kind !== 'Page') throw new Error('no Close Reasons');
+  const definition = await ref.stack.journal.getDefinitions({ latestFor: 'entry-type.close-review' });
+  if (definition.kind !== 'Found') throw new Error('no Close Review definition');
+  return { ...ref, closeReasonId: reasons.items[0]!.id, closeReviewDefinitionId: definition.definition.id };
+}
+
+const sell = (ref: Reference, economicTime: string, quantity: string, price: string, fee: string) =>
+  buy(ref, economicTime, quantity, price, { action: 'Sell', fee });
+
+// PC1 and PC2 of T-A, each with a completed reflection; returns the Trade's FactRevision.
+const enter = (ref: Reference) => recordAll(ref, [[buy(ref, PC1, '60', '50.10')], [buy(ref, PC2, '40', '50.30')]]);
+
+const X2_TIME = '2026-10-13T18:00:00Z';
+
+// X2: one decision of two Executions that sells the remaining 70 shares.
+const x2Members = (ref: Reference) => [sell(ref, X2_TIME, '50', '53.00', '1.00'), sell(ref, X2_TIME, '20', '53.00', '0.40')];
+
+// PC1, PC2 and X1, then X2's command as the form would submit it, with the given Close Review disposition.
+async function beforeTerminalExit(ref: ExitReference) {
+  const revision = await enter(ref);
+  const x1 = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, [sell(ref, X1_TIME, '30', '52.00', '0.60')]));
+  if (x1.kind !== 'Recorded') throw new Error(`expected Recorded, got ${x1.kind}`);
+  return x1.receipt.factRevision;
+}
+
+const closeCommand = (ref: ExitReference, revision: number, closeReview: ReflectionDisposition): PositionChangeCommand => ({
+  ...command(ref, revision, x2Members(ref)),
+  closeReasonId: ref.closeReasonId,
+  closeReview,
+});
+
+const closeReviewForm = (ref: ExitReference): ReflectionDisposition => ({
+  kind: 'Complete',
+  form: {
+    definitionId: ref.closeReviewDefinitionId,
+    answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } },
+  },
+});
+
+describe('partial exit', () => {
+  it('should commit X1, its Sell Execution, and the exit reflection outcome in one semantic commit, keep the Trade Open, and return the post-commit derivation equal to a fresh derivation of the stored Trade', async () => {
+    const ref = await exitReference();
+    const revision = await enter(ref);
+    const before = workspaceStores(await dumpAll(ref.stack.factory));
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, [sell(ref, X1_TIME, '30', '52.00', '0.60')]));
+    if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    const after = workspaceStores(await dumpAll(ref.stack.factory));
+    // One semantic commit, and the Trade stays Open with no lifecycle transition.
+    expect(contentRevision(after)).toBe(contentRevision(before) + 1);
+    expect(result.receipt.lifecycleTransitions).toEqual([]);
+    expect(result.receipt.factRevision).toBe(revision + 1);
+    expect((after['trades'] as { lifecycle: string }[])[0]!.lifecycle).toBe('Open');
+    expect(result.postCommit.reflection.kind).toBe('Entry');
+    // AC-RESP-001: the returned Trade and derivation are those of a fresh read and derivation.
+    const stored = await ref.stack.tradeRecord.getRecord({ tradeId: ref.trade.tradeId, projection: 'AnalysisInput' });
+    if (stored.kind !== 'Found') throw new Error('trade not found');
+    const record = stored.projection as TradeAnalysisRecord;
+    expect(result.postCommit.trade).toEqual(record);
+    expect(result.postCommit.derivation).toEqual(derive({ record }));
+    // X1 consumes 30 of PC1's 60 shares: realized 57.00 - 0.50 - 0.60 = 55.90, with 70 shares remaining.
+    const { derivation } = result.postCommit;
+    expect(derivation.lotMatches).toEqual([expect.objectContaining({ quantity: Rational.of(30n), policy: 'FIFO' })]);
+    expect(derivation.realizedToDate).toEqual(Rational.of(559n, 10n));
+    expect(derivation.positions[0]!.openLots.map((l) => [l.quantity, l.unconsumedOpeningFee])).toEqual([
+      [Rational.of(30n), Rational.of(1n, 2n)],
+      [Rational.of(40n), Rational.of(1n)],
+    ]);
+  });
+});
+
+const blankReflection = (ref: Reference): ReflectionDisposition => ({ kind: 'Complete', form: { definitionId: ref.reflectionDefinitionId, answers: {} } });
+
+describe('terminal exit AC-POS-004', () => {
+  it('should commit X2 with one Close Reason fact, the Open-to-Closed lifecycle and index move, the terminal time, the exit reflection outcome, and the Close Review outcome for each disposition in one semantic commit, returning the lifecycle transition, Terminal Disposition, Realized R, and both Journal outcome projections', async () => {
+    for (const kind of ['Complete', 'Decline', 'Defer'] as const) {
+      const ref = await exitReference();
+      const revision = await beforeTerminalExit(ref);
+      const disposition: ReflectionDisposition =
+        kind === 'Complete' ? closeReviewForm(ref) : kind === 'Decline' ? { kind, definitionId: ref.closeReviewDefinitionId, reason: 'Nothing to add.' } : { kind };
+      const before = workspaceStores(await dumpAll(ref.stack.factory));
+      const result = await ref.stack.tradeWorkflows.recordPositionChange(closeCommand(ref, revision, disposition));
+      if (result.kind !== 'Recorded') throw new Error(`expected Recorded for ${kind}, got ${result.kind}`);
+      const after = workspaceStores(await dumpAll(ref.stack.factory));
+      // One semantic commit.
+      expect(contentRevision(after)).toBe(contentRevision(before) + 1);
+      // The Trade is Closed, with its terminal time and one Close Reason fact naming X2's Position Change.
+      const trade = (after['trades'] as { lifecycle: string; terminalTime?: string; facts: { kind: string; factId: string }[]; closeReasonFacts: { versions: { value: unknown }[] }[] }[])[0]!;
+      const x2 = trade.facts.filter((f) => f.kind === 'PositionChange').at(-1)!.factId;
+      expect(trade).toEqual(expect.objectContaining({ lifecycle: 'Closed', terminalTime: X2_TIME }));
+      expect(trade.closeReasonFacts).toHaveLength(1);
+      expect(trade.closeReasonFacts[0]!.versions).toEqual([{ versionNumber: 1, value: { closeReasonId: ref.closeReasonId, terminalPositionChangeId: x2 } }]);
+      // The Close Review outcome is separate from the exit's own reflection (Source Trade Close, key CloseReview and Trade).
+      const closeKey = `CloseReview:${ref.trade.tradeId}`;
+      const outcome = { Complete: 'Entry', Decline: 'Decline', Defer: 'Debt' }[kind];
+      expect(after['journalObligations']).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ obligationKey: closeKey, outcome: expect.objectContaining({ kind: outcome }) as unknown }),
+          expect.objectContaining({ obligationKey: `PositionChangeReflection:${x2}`, outcome: expect.objectContaining({ kind: 'Entry' }) as unknown }),
+        ]),
+      );
+      const closeReview = {
+        sourceKey: 'source.trade-close',
+        anchor: { kind: 'Trade', tradeId: ref.trade.tradeId },
+        origin: { kind: 'PositionChange', factId: x2 },
+        momentTime: X2_TIME,
+      };
+      const stored = {
+        Complete: (after['journalEntries'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review'),
+        Decline: (after['journalDeclines'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review'),
+        Defer: (after['journalDebts'] as { entryTypeKey: string }[]).find((e) => e.entryTypeKey === 'entry-type.close-review'),
+      }[kind];
+      expect(stored).toEqual(expect.objectContaining(closeReview));
+      if (kind === 'Defer') expect(stored).toEqual(expect.objectContaining({ dueAnchor: X2_TIME, dueRule: 'OneSessionGrace' }));
+      // The receipt and the post-commit result.
+      const { receipt, postCommit, affected } = result;
+      expect(receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Open', to: 'Closed' }]);
+      expect(receipt.reflection.kind).toBe('Entry');
+      const storedId = kind === 'Defer' ? (stored as unknown as { debtId: string }).debtId : (stored as unknown as { id: string }).id;
+      expect(receipt.closeReview).toEqual({ kind: outcome, id: storedId });
+      expect(postCommit.reflection.kind).toBe('Entry');
+      expect(postCommit.closeReview).toEqual(
+        kind === 'Complete'
+          ? { kind: 'Entry', entry: expect.objectContaining(closeReview) as unknown }
+          : kind === 'Decline'
+            ? { kind: 'Decline', decline: expect.objectContaining(closeReview) as unknown }
+            : { kind: 'Debt', debt: expect.objectContaining({ ...closeReview, status: 'Outstanding', dueAnchor: X2_TIME }) as unknown },
+      );
+      expect(postCommit.trade).toEqual(expect.objectContaining({ storedLifecycle: 'Closed', terminalTime: X2_TIME }));
+      expect(postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId, terminalPositionChangeId: x2 }));
+      expect(postCommit.derivation.expectedLifecycle).toBe('Closed');
+      expect(postCommit.derivation.terminalDisposition).toEqual({ kind: 'Value', value: [{ mechanism: 'Executions', quantity: Rational.of(100n) }] });
+      // Net realized 248.00 over 1R of 250.00.
+      expect(postCommit.derivation.realizedToDate).toEqual(Rational.of(248n));
+      expect(postCommit.derivation.realizedR).toEqual({ kind: 'Value', value: Rational.of(124n, 125n) });
+      expect(affected).toEqual([
+        { scope: 'TradeList', lifecycle: 'Closed' },
+        { scope: 'TradeList', lifecycle: 'Open' },
+      ]);
+    }
+  });
+
+  it('should reject a terminal exit without a Close Reason and without a Close Review disposition, returning CloseReasonRequired and CloseReviewDispositionRequired together with any Journal issues', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    const before = await dumpAll(ref.stack.factory);
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, x2Members(ref), blankReflection(ref)));
+    if (result.kind !== 'Rejected') throw new Error(`expected Rejected, got ${result.kind}`);
+    expect(result.issues).toHaveLength(5);
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' },
+        { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
+        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.decision-mode' }),
+        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.primary-emotion' }),
+        expect.objectContaining({ source: 'Journal', field: 'prompt.position-change-reflection.decision-confidence' }),
+      ]),
+    );
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+  });
+
+  it('should reject a Close Reason or Close Review disposition on a non-terminal exit with CloseReasonNotApplicable and CloseReviewNotApplicable', async () => {
+    const ref = await exitReference();
+    const revision = await enter(ref);
+    const before = await dumpAll(ref.stack.factory);
+    const x1 = [sell(ref, X1_TIME, '30', '52.00', '0.60')];
+    const attempts: [Partial<PositionChangeCommand>, WorkflowIssue[]][] = [
+      [
+        { closeReasonId: ref.closeReasonId, closeReview: { kind: 'Defer' } },
+        [
+          { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonNotApplicable' },
+          { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewNotApplicable' },
+        ],
+      ],
+      [{ closeReasonId: ref.closeReasonId }, [{ source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonNotApplicable' }]],
+      [{ closeReview: { kind: 'Defer' } }, [{ source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewNotApplicable' }]],
+    ];
+    for (const [extra, issues] of attempts) {
+      const result = await ref.stack.tradeWorkflows.recordPositionChange({ ...command(ref, revision, x1), ...extra });
+      expect(result).toEqual(expect.objectContaining({ kind: 'Rejected', issues }));
+      expect(await dumpAll(ref.stack.factory)).toEqual(before);
+    }
+  });
+
+  it('should reject an unknown Close Reason or a Strategy identity with the Catalog resolution issue, together with the Close Review form issues', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    const before = await dumpAll(ref.stack.factory);
+    const blankCloseReview: ReflectionDisposition = { kind: 'Complete', form: { definitionId: ref.closeReviewDefinitionId, answers: {} } };
+    const attempts: [string, string][] = [
+      ['no-such-reason', 'UnknownReference'],
+      [ref.stack.strategy.id, 'WrongKind'],
+    ];
+    for (const [closeReasonId, code] of attempts) {
+      const result = await ref.stack.tradeWorkflows.recordPositionChange({ ...closeCommand(ref, revision, blankCloseReview), closeReasonId });
+      expect(result).toEqual(
+        expect.objectContaining({
+          kind: 'Rejected',
+          issues: [
+            { source: 'ReferenceCatalog', field: 'closeReasonId', code },
+            { source: 'Journal', field: 'prompt.close-review.take-again', code: 'RequiredAnswerMissing' },
+          ],
+        }),
+      );
+      expect(await dumpAll(ref.stack.factory)).toEqual(before);
+    }
+  });
+});
+
+describe('position paths P22', () => {
+  // Monday 10:30 New York, between PC1 (10:00) and PC2 (11:00).
+  const BETWEEN = '2026-10-12T14:30:00Z';
+
+  it('should reject any Position Change on a Trade whose stored lifecycle is Closed with TradeClosed and write nothing', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    const closed = await ref.stack.tradeWorkflows.recordPositionChange(closeCommand(ref, revision, { kind: 'Defer' }));
+    if (closed.kind !== 'Recorded') throw new Error(`expected Recorded, got ${closed.kind}`);
+    const before = await dumpAll(ref.stack.factory);
+    for (const member of [buy(ref, X2_TIME, '10', '50.00'), sell(ref, X2_TIME, '10', '50.00', '0.10')]) {
+      const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, closed.receipt.factRevision, [member]));
+      expect(result).toEqual(expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', code: 'TradeClosed' }] }));
+      expect(await dumpAll(ref.stack.factory)).toEqual(before);
+    }
+  });
+
+  it('should return ExceedsOpenQuantity and FlatBeforeLaterFacts from the candidates analysis as typed issues and write nothing', async () => {
+    const ref = await exitReference();
+    const revision = await enter(ref);
+    const before = await dumpAll(ref.stack.factory);
+    const attempts: [PositionChangeMember[], WorkflowIssue[]][] = [
+      // 101 shares against 100 open.
+      [[sell(ref, X1_TIME, '101', '52.00', '0.60')], [{ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ExceedsOpenQuantity', available: Rational.of(100n) }]],
+      // 70 at 10:30 against the 60 open at that point.
+      [[sell(ref, BETWEEN, '70', '52.00', '0.60')], [{ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ExceedsOpenQuantity', available: Rational.of(60n) }]],
+      // 60 at 10:30 leaves the Position flat before PC2.
+      [[sell(ref, BETWEEN, '60', '52.00', '0.60')], [{ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'FlatBeforeLaterFacts' }]],
+    ];
+    for (const [members, issues] of attempts) {
+      const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, members));
+      expect(result).toEqual(expect.objectContaining({ kind: 'Rejected', issues }));
+      expect(await dumpAll(ref.stack.factory)).toEqual(before);
+    }
+  });
+
+  it('should name the recorded Sell that a new earlier-dated Sell would leave short, with the quantity then available', async () => {
+    const ref = await exitReference();
+    const entered = await enter(ref);
+    const x1 = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, entered, [sell(ref, X1_TIME, '90', '52.00', '0.60')]));
+    if (x1.kind !== 'Recorded') throw new Error(`expected Recorded, got ${x1.kind}`);
+    const before = await dumpAll(ref.stack.factory);
+    // 70 at 11:30 leaves 30, below the 90 that X1 later sells.
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, x1.receipt.factRevision, [sell(ref, '2026-10-12T15:30:00Z', '70', '52.00', '0.60')]));
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'Rejected',
+        issues: [{ source: 'TradeAnalysis', factId: x1.receipt.createdFactIds[1]!, code: 'ExceedsOpenQuantity', available: Rational.of(30n) }],
+      }),
+    );
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+  });
+});
+
+describe('earlier-dated exit P23', () => {
+  // X0 is dated Tuesday 09:45 New York, before X1 at 10:00.
+  const X0_TIME = '2026-10-13T13:45:00Z';
+
+  it('should commit X0 after X1 and disclose in the receipt the derived Lot Matches that changed and the realized P&L before and after', async () => {
+    // [X0 quantity, the FIFO changes it makes, realized-to-date after]
+    const variants = [
+      ['60', 'supersedes X1 from PC1 and creates two', Rational.of(2041n, 20n)],
+      ['40', 'revises X1 from PC1 and creates two', Rational.of(1771n, 20n)],
+    ] as const;
+    for (const [quantity, , realizedAfter] of variants) {
+      const ref = await exitReference();
+      const entered = await enter(ref);
+      const x1 = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, entered, [sell(ref, X1_TIME, '30', '52.00', '0.60')]));
+      if (x1.kind !== 'Recorded') throw new Error(`expected Recorded, got ${x1.kind}`);
+      const [pc1x1] = x1.postCommit.derivation.lotMatches;
+      const pc1 = pc1x1!.openingExecutionId;
+      const x1Execution = pc1x1!.disposingExecutionId;
+      const pc2 = x1.postCommit.derivation.positions[0]!.openLots[1]!.openingExecutionId;
+      const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, x1.receipt.factRevision, [sell(ref, X0_TIME, quantity, '51.00', '0.60')]));
+      if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+      const x0Execution = result.receipt.createdFactIds[1]!;
+      const change = (kind: 'Created' | 'Revised' | 'Superseded', opening: string, disposing: string, before: bigint | null, after: bigint | null) => ({
+        kind,
+        openingExecutionId: opening,
+        disposingExecutionId: disposing,
+        quantity: { before: before === null ? null : Rational.of(before), after: after === null ? null : Rational.of(after) },
+      });
+      // FIFO re-runs over the effective Executions: X0 now takes the oldest shares.
+      expect(result.receipt.lotMatchChanges).toEqual(
+        quantity === '60'
+          ? [
+              change('Superseded', pc1, x1Execution, 30n, null),
+              change('Created', pc1, x0Execution, null, 60n),
+              change('Created', pc2, x1Execution, null, 30n),
+            ]
+          : [
+              change('Created', pc1, x0Execution, null, 40n),
+              change('Revised', pc1, x1Execution, 30n, 20n),
+              change('Created', pc2, x1Execution, null, 10n),
+            ],
+      );
+      expect(result.receipt.realizedToDate).toEqual({ before: Rational.of(559n, 10n), after: realizedAfter });
+      expect(result.postCommit.derivation.realizedToDate).toEqual(realizedAfter);
+      // The disclosure is the difference of two derivations: Lot Matches are never stored (P23).
+      const stored = workspaceStores(await dumpAll(ref.stack.factory));
+      expect(Object.keys(stored).filter((store) => /lot/i.test(store))).toEqual([]);
+    }
   });
 });

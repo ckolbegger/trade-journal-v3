@@ -4,15 +4,18 @@ import type { StorageFailure } from '../mutation-guard.ts';
 import {
   derive,
   type DerivedTradeState,
+  type CloseRequirement,
   type DeviationAction,
   type EntryQuality,
   type IncoherentFacts,
   type IntegrityFinding,
+  type LotMatch,
   type RecordedDeviation,
   type RecordedDeviationVersion,
 } from '../../domain/trade-analysis/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-import type { DebtProjection, DeclineProjection, EntryProjection, ReflectionDisposition } from '../../modules/journal/index.ts';
+import type { DebtProjection, DeclineProjection, EntryProjection, JournalIssue, ReflectionDisposition } from '../../modules/journal/index.ts';
+import type { TradeFact } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { retryCounterConflict } from './counter-retry.ts';
 import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
@@ -38,29 +41,42 @@ export interface PositionChangeCommand {
   readonly trades: readonly { readonly tradeId: string; readonly expectedFactRevision: number }[];
   readonly members: readonly PositionChangeMember[];
   readonly reflection: ReflectionDisposition;
+  // Supplied exactly when the change closes the Trade (D6 A77): the Catalog identity of its one
+  // Close Reason and the disposition of the Close Review, which is separate from `reflection`.
+  readonly closeReasonId?: string;
+  readonly closeReview?: ReflectionDisposition;
 }
 
-// The one Position Change Reflection outcome: its identity in the receipt, its projection after commit.
+type ReflectionOutcome =
+  | { readonly kind: 'Entry'; readonly entry: EntryProjection }
+  | { readonly kind: 'Decline'; readonly decline: DeclineProjection }
+  | { readonly kind: 'Debt'; readonly debt: DebtProjection };
+
+// The one Position Change Reflection outcome, and for a terminal change the Close Review outcome:
+// each one's identity in the receipt, its projection after commit.
 export type PositionChangeSuccess = TradeMutationSuccess<
   {
     // A Defer names the Outstanding Debt it created instead of an Entry or decline (D5 A66).
     readonly reflection: { readonly kind: 'Entry' | 'Decline' | 'Debt'; readonly id: string };
+    // Present only when the change closed the Trade.
+    readonly closeReview?: { readonly kind: 'Entry' | 'Decline' | 'Debt'; readonly id: string };
     // What the commit did to each recorded Deviation occurrence, by fingerprint (D2 A26).
     readonly deviationReconciliation: readonly DeviationReconciliationItem[];
     // Disclosed when the change, typically an earlier-dated one, moved a resolved entry (P5).
     readonly entryChanges: readonly EntryChange[];
     // Before-state disagreements with coherent facts that this commit repaired (P7).
     readonly repairs: readonly IntegrityFinding[];
+    // The derived Lot Matches the change created, revised, or superseded, and the realized P&L
+    // before and after (P23). Nothing is stored: both sides are derivations of the effective facts.
+    readonly lotMatchChanges: readonly LotMatchChange[];
+    readonly realizedToDate: { readonly before: Rational; readonly after: Rational };
   },
   {
-    readonly reflection:
-      | { readonly kind: 'Entry'; readonly entry: EntryProjection }
-      | { readonly kind: 'Decline'; readonly decline: DeclineProjection }
-      | { readonly kind: 'Debt'; readonly debt: DebtProjection };
+    readonly reflection: ReflectionOutcome;
+    // Present only when the change closed the Trade.
+    readonly closeReview?: ReflectionOutcome;
   }
 >;
-
-type ReflectionOutcome = PositionChangeSuccess['postCommit']['reflection'];
 
 // Selects the one outcome the commit produced, and the identity the receipt names for it.
 function reflectionOutcome(journal: {
@@ -101,6 +117,40 @@ export type EntryChange =
   | { readonly kind: 'EntryResolutionMoved'; readonly from: string; readonly to: string }
   | { readonly kind: 'EntryQualityChanged'; readonly from: EntryQuality; readonly to: EntryQuality };
 
+// One derived FIFO match whose matched quantity differs between the before and after derivations,
+// identified by its opening and disposing Executions (A78). A quantity is null on the side where
+// the match does not exist.
+export interface LotMatchChange {
+  readonly kind: 'Created' | 'Revised' | 'Superseded';
+  readonly openingExecutionId: string;
+  readonly disposingExecutionId: string;
+  readonly quantity: { readonly before: Rational | null; readonly after: Rational | null };
+}
+
+// Matches the change removed come first, in their earlier order; then the ones it created or
+// revised, in their new order.
+function lotMatchChangesOf(before: DerivedTradeState, after: DerivedTradeState): LotMatchChange[] {
+  const identity = (m: LotMatch) => `${m.openingExecutionId}|${m.disposingExecutionId}`;
+  const earlier = new Map(before.lotMatches.map((m) => [identity(m), m]));
+  const later = new Set(after.lotMatches.map(identity));
+  const superseded = before.lotMatches
+    .filter((m) => !later.has(identity(m)))
+    .map((m): LotMatchChange => ({ kind: 'Superseded', openingExecutionId: m.openingExecutionId, disposingExecutionId: m.disposingExecutionId, quantity: { before: m.quantity, after: null } }));
+  const current = after.lotMatches.flatMap((m): LotMatchChange[] => {
+    const was = earlier.get(identity(m));
+    if (was?.quantity.equals(m.quantity)) return [];
+    return [
+      {
+        kind: was ? 'Revised' : 'Created',
+        openingExecutionId: m.openingExecutionId,
+        disposingExecutionId: m.disposingExecutionId,
+        quantity: { before: was?.quantity ?? null, after: m.quantity },
+      },
+    ];
+  });
+  return [...superseded, ...current];
+}
+
 // Exact comparison of two Entry Quality results: Rationals are always reduced, so equal values
 // have equal numerators and denominators.
 const exact = (quality: EntryQuality) =>
@@ -121,13 +171,13 @@ function entryChangesOf(before: DerivedTradeState, after: DerivedTradeState): En
   return changes;
 }
 
-// Sells arrive with D6, other Instruments and ExplicitlyUnplanned intent with D10, and Position
-// Changes across several Trades with D20 and D21.
-export type UninstalledVariant = 'Sell' | 'OtherInstrument' | 'ExplicitlyUnplanned' | 'MultipleTrades';
+// A Position Change mixing Buys and Sells (A76), other Instruments and ExplicitlyUnplanned intent
+// (D10), and Position Changes across several Trades (D20, D21) are not installed.
+export type UninstalledVariant = 'MixedActions' | 'OtherInstrument' | 'ExplicitlyUnplanned' | 'MultipleTrades';
 
-// D2's installed variant: Buys of a Stock serving a Planned Leg, every member in the one Trade.
+// The installed variant (D2 A18, D6 A76): Buys or Sells of a Stock serving a Planned Leg, every
+// member in the one Trade, all sharing one action.
 type InstalledMember = PositionChangeMember & {
-  readonly action: 'Buy';
   readonly instrument: { readonly kind: 'Stock' };
   readonly intent: { readonly kind: 'ServesPlannedLeg' };
 };
@@ -136,8 +186,8 @@ function uninstalledVariants(command: PositionChangeCommand): UninstalledVariant
   const variants = new Set<UninstalledVariant>();
   const origin = command.originTradeId;
   if (command.trades.some((t) => t.tradeId !== origin) || command.members.some((m) => m.tradeId !== origin)) variants.add('MultipleTrades');
+  if (new Set(command.members.map((m) => m.action)).size > 1) variants.add('MixedActions');
   for (const member of command.members) {
-    if (member.action !== 'Buy') variants.add('Sell');
     if (member.instrument.kind !== 'Stock') variants.add('OtherInstrument');
     if (member.intent.kind !== 'ServesPlannedLeg') variants.add('ExplicitlyUnplanned');
   }
@@ -145,7 +195,7 @@ function uninstalledVariants(command: PositionChangeCommand): UninstalledVariant
 }
 
 const installed = (members: readonly PositionChangeMember[]): members is readonly InstalledMember[] =>
-  members.every((m) => m.action === 'Buy' && m.instrument.kind === 'Stock' && m.intent.kind === 'ServesPlannedLeg');
+  members.every((m) => m.instrument.kind === 'Stock' && m.intent.kind === 'ServesPlannedLeg');
 
 // At most 20 Executions per Position Change (D2 A18).
 const MAX_EXECUTIONS = 20;
@@ -181,6 +231,49 @@ function memberIssues(member: PositionChangeMember, index: number, planTime: Ins
   return issues;
 }
 
+// A Journal issue is told apart by its Prompt; one with none names the command field of the form
+// it belongs to, when the caller gives one, since two forms can be submitted together.
+function journalIssues(issues: readonly JournalIssue[], form?: string): WorkflowIssue[] {
+  return issues.map((issue) => {
+    const field = issue.promptId ?? form;
+    return { source: 'Journal', ...(field !== undefined && { field }), code: issue.code };
+  });
+}
+
+// A terminal change by a trader requires one Close Reason and a Close Review disposition; any
+// other change takes neither (A77).
+function closeRequirementIssues(command: PositionChangeCommand, requirement: CloseRequirement): WorkflowIssue[] {
+  const issue = (field: string, code: string): WorkflowIssue => ({ source: 'TradeWorkflows', field, code });
+  if (requirement === 'TerminalWithAgency') {
+    return [
+      ...(command.closeReasonId === undefined ? [issue('closeReasonId', 'CloseReasonRequired')] : []),
+      ...(command.closeReview === undefined ? [issue('closeReview', 'CloseReviewDispositionRequired')] : []),
+    ];
+  }
+  return [
+    ...(command.closeReasonId === undefined ? [] : [issue('closeReasonId', 'CloseReasonNotApplicable')]),
+    ...(command.closeReview === undefined ? [] : [issue('closeReview', 'CloseReviewNotApplicable')]),
+  ];
+}
+
+// P22: findings that are only about the position path are the change's own fault and come back as
+// typed issues; any other incoherence is the Trade's facts, not this command (P7).
+function positionPathIssues(findings: IncoherentFacts['findings'], memberIds: readonly string[]): WorkflowIssue[] {
+  const issues: WorkflowIssue[] = [];
+  for (const finding of findings) {
+    if (finding.reason !== 'ExceedsOpenQuantity' && finding.reason !== 'FlatBeforeLaterFacts') return [];
+    const member = memberIds.indexOf(finding.factId);
+    issues.push({
+      source: 'TradeAnalysis',
+      // A recorded Sell the new change would leave short is named by its identity.
+      ...(member >= 0 ? { member, field: 'quantity' } : { factId: finding.factId }),
+      code: finding.reason,
+      ...(finding.reason === 'ExceedsOpenQuantity' && { available: finding.available }),
+    });
+  }
+  return issues;
+}
+
 const earliest = (times: readonly Instant[]): Instant | undefined => [...times].sort((a, b) => Date.parse(a) - Date.parse(b))[0];
 
 // Each Deviation action with the occurrence it acted on, as committed. A created occurrence is found
@@ -206,6 +299,12 @@ function reconciliationOf(
   });
 }
 
+// A rejection names the Workspace snapshot the command was judged against; it never changes it.
+async function rejected(deps: TradeWorkflowsDeps, issues: readonly WorkflowIssue[]): Promise<PositionChangeResult> {
+  const { binding } = await deps.persistence.readSnapshot(['meta'], () => Promise.resolve(null));
+  return { kind: 'Rejected', issues, binding };
+}
+
 export function recordPositionChange(deps: TradeWorkflowsDeps, command: PositionChangeCommand): Promise<PositionChangeResult> {
   return retryCounterConflict(() => attemptPositionChange(deps, command));
 }
@@ -227,45 +326,77 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
       fee: m.fee ?? '',
       economicTime: m.economicTime,
     })),
+    // Carried by the candidate; analysis then rejects it unless the change proves terminal.
+    ...(command.closeReasonId !== undefined && { closeReasonId: command.closeReasonId }),
   });
   // The same binding name the commit-time recheck of the Trade's FactRevision reports.
   if (prepared.kind === 'Conflict') return { kind: 'Conflict', changed: [`trade:${prepared.tradeId}`] };
   if (prepared.kind !== 'Prepared') throw new Error(prepared.kind);
+  // New exposure needs a new Plan, and a missed fill waits for correction or Rebuild (P22).
+  if (prepared.before!.lifecycle === 'Closed') return rejected(deps, [{ source: 'TradeWorkflows', code: 'TradeClosed' }]);
   // Another Stock than the served Planned Leg's is Planned-Leg Terms, not installed until D10.
   const legs = prepared.beforeAnalysisInput!.plan.legs;
   if (command.members.some((m) => m.instrument.symbol !== legs.find((l) => l.factId === m.intent.plannedLegId)?.instrument.symbol)) {
     return { kind: 'VariantNotInstalled', variants: ['OtherInstrument'] };
   }
   // The candidate Position Change the Journal outcome's origin names until apply maps it.
-  const positionChange = prepared.candidate.facts.slice(prepared.before?.facts.length).find((f) => f.kind === 'PositionChange')!;
+  const positionChange = prepared.candidate.facts
+    .slice(prepared.before?.facts.length)
+    .find((f): f is Extract<TradeFact, { kind: 'PositionChange' }> => f.kind === 'PositionChange')!;
+  // Both reflections' moment is the Position Change's Economic Time, its earliest member's (D2 A19,
+  // D6 A86); a command with no members is rejected below, and its form is still validated.
+  const momentTime = earliest(command.members.map((m) => m.economicTime)) ?? prepared.before!.planTime;
   const reflection = await deps.journal.prepareEffects({
     obligation: 'PositionChangeReflection',
     disposition: command.reflection,
     anchor: { kind: 'Trade', ref: tradeId },
     origin: { kind: 'PositionChange', ref: positionChange.factId },
-    // The reflection's moment is the Position Change's Economic Time, its earliest member's (D2 A19);
-    // a command with no members is rejected below, and its form is still validated.
-    momentTime: earliest(command.members.map((m) => m.economicTime)) ?? prepared.before!.planTime,
+    momentTime,
   });
   const issues: WorkflowIssue[] = [
     ...(command.members.length === 0 ? [{ source: 'TradeWorkflows', field: 'members', code: 'NoExecutions' } as const] : []),
     ...(command.members.length > MAX_EXECUTIONS ? [{ source: 'TradeWorkflows', field: 'members', code: 'TooManyExecutions' } as const] : []),
     ...command.members.flatMap((m, i) => memberIssues(m, i, prepared.before!.planTime, deps.clock.now())),
   ];
-  if (reflection.kind === 'Rejected') {
-    for (const issue of reflection.issues) issues.push({ source: 'Journal', ...(issue.promptId && { field: issue.promptId }), code: issue.code });
+  if (reflection.kind === 'Rejected') issues.push(...journalIssues(reflection.issues));
+  // Values that do not parse cannot be replayed, so the candidate is analysed only when every member is valid.
+  const derived = issues.some((i) => i.source === 'TradeWorkflows')
+    ? undefined
+    : derive({ record: prepared.analysisInput, candidate: { digest: prepared.digest, before: prepared.beforeAnalysisInput! } });
+  if (derived?.kind === 'IncoherentFacts') {
+    issues.push(...positionPathIssues(derived.findings, positionChange.versions[0]!.value.memberIds));
   }
-  if (issues.length > 0 || reflection.kind !== 'Prepared') {
-    const { binding } = await deps.persistence.readSnapshot(['meta'], () => Promise.resolve(null));
-    return { kind: 'Rejected', issues, binding };
+  const closeRequirement = derived?.kind === 'Derived' ? derived.reconciliation?.closeRequirement : undefined;
+  if (closeRequirement) issues.push(...closeRequirementIssues(command, closeRequirement));
+  const terminal = closeRequirement === 'TerminalWithAgency';
+  // The Close Reason must be a selectable record of its own family (A77).
+  if (terminal && command.closeReasonId !== undefined) {
+    const resolution = await deps.catalog.resolve([{ name: 'closeReasonId', kind: 'CloseReason', id: command.closeReasonId, mode: 'NewSelection' }]);
+    if (resolution.kind === 'Unresolved') {
+      for (const issue of resolution.issues) issues.push({ source: 'ReferenceCatalog', field: issue.name, code: issue.code });
+    }
   }
-  const derived = derive({ record: prepared.analysisInput, candidate: { digest: prepared.digest, before: prepared.beforeAnalysisInput! } });
+  const closeReview =
+    terminal && command.closeReview
+      ? await deps.journal.prepareEffects({
+          obligation: 'CloseReview',
+          disposition: command.closeReview,
+          anchor: { kind: 'Trade', ref: tradeId },
+          origin: { kind: 'PositionChange', ref: positionChange.factId },
+          momentTime,
+        })
+      : undefined;
+  if (closeReview?.kind === 'Rejected') issues.push(...journalIssues(closeReview.issues, 'closeReview'));
+  if (issues.length > 0 || !derived || reflection.kind !== 'Prepared' || closeReview?.kind === 'Rejected') {
+    return rejected(deps, issues);
+  }
   if (derived.kind === 'IncoherentFacts') return { kind: 'IntegrityDisagreement', tradeId, findings: derived.findings };
   if (!derived.reconciliation) throw new Error('no reconciliation');
   const tx = beginSemanticTransaction();
   const staged = deps.tradeRecord.applyPreparedChange(tx, prepared, derived.reconciliation);
   if (staged.kind !== 'Staged') throw new Error('mismatch');
   const journal = deps.journal.applyPreparedEffects(tx, reflection, staged.mapping);
+  const closeJournal = closeReview?.kind === 'Prepared' ? deps.journal.applyPreparedEffects(tx, closeReview, staged.mapping) : undefined;
   const committed = await deps.persistence.commit(tx.close());
   if (committed.kind === 'Conflict') return { kind: 'Conflict', changed: [committed.binding] };
   if (committed.kind === 'RuntimeNotWritable') return committed;
@@ -279,6 +410,7 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   if (beforeDerivation.kind !== 'Derived') throw new Error('incoherent');
   // Exactly one outcome: the completed Entry, the explicit decline, or the deferred Debt.
   const { outcome, ref } = reflectionOutcome(journal);
+  const close = closeJournal && reflectionOutcome(closeJournal);
   return {
     kind: 'Recorded',
     receipt: {
@@ -291,9 +423,12 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
       deviationReconciliation: reconciliationOf(derived.reconciliation.deviationActions, trade.recordedDeviations ?? [], staged.mapping),
       repairs: staged.repairs ?? [],
       entryChanges: entryChangesOf(beforeDerivation, derivation),
+      lotMatchChanges: lotMatchChangesOf(beforeDerivation, derivation),
+      realizedToDate: { before: beforeDerivation.realizedToDate, after: derivation.realizedToDate },
       reflection: ref,
+      ...(close && { closeReview: close.ref }),
     },
-    postCommit: { trade, derivation, reflection: outcome },
+    postCommit: { trade, derivation, reflection: outcome, ...(close && { closeReview: close.outcome }) },
     // The Open list reorders by Last Activity; the list the Trade left loses it.
     affected: [trade.storedLifecycle, ...(before === trade.storedLifecycle ? [] : [before])].map((lifecycle) => ({ scope: 'TradeList', lifecycle })),
   };

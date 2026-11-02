@@ -50,9 +50,10 @@ describe('I2.7 rejections write nothing', () => {
     expect(issues).toHaveLength(6);
     expect(await dumpAll(d.factory)).toEqual(before);
 
-    // A Sell is outside D2's installed variant (A18).
-    const sell = await positionChange(app, tradeId, [{ ...(await buy(app, tradeId, PC1)), action: 'Sell' }], await complete(app));
-    expect(await app.TradeWorkflows.recordPositionChange(sell)).toEqual({ kind: 'VariantNotInstalled', variants: ['Sell'] });
+    // A Buy mixed with a Sell is outside the installed variant (D2 A18, D6 A76).
+    const member = await buy(app, tradeId, PC1);
+    const mixed = await positionChange(app, tradeId, [member, { ...member, action: 'Sell' }], await complete(app));
+    expect(await app.TradeWorkflows.recordPositionChange(mixed)).toEqual({ kind: 'VariantNotInstalled', variants: ['MixedActions'] });
     expect(await dumpAll(d.factory)).toEqual(before);
 
     // The same valid command twice: the first is accepted, the repeat carries a stale FactRevision.

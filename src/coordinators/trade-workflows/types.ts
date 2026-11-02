@@ -4,6 +4,7 @@ import type { DerivedTradeState, LifecycleState, TradeAnalysisRecord } from '../
 import type { EntryProjection, Journal } from '../../modules/journal/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { TradeRecord } from '../../modules/trade-record/index.ts';
+import type { Rational } from '../../domain/values/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 
 // Values shared by every Trade Workflows operation.
@@ -41,5 +42,9 @@ export interface WorkflowIssue {
   // The index of the command member the issue belongs to, for issues about one member.
   readonly member?: number;
   readonly field?: string;
+  // The recorded fact an issue is about when it is not one of the command's members.
+  readonly factId?: string;
   readonly code: string;
+  // The quantity open at the point a Sell exceeds it (ExceedsOpenQuantity, P22).
+  readonly available?: Rational;
 }

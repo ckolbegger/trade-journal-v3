@@ -34,6 +34,7 @@ export type { ConfirmPlanCommand, ConfirmPlanResult, TradeMutationSuccess, Workf
 export type {
   DeviationReconciliationItem,
   EntryChange,
+  LotMatchChange,
   PositionChangeCommand,
   PositionChangeMember,
   PositionChangeResult,
