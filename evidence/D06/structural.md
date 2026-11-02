@@ -469,3 +469,89 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.11 Daily Review: `open`
 
 Base commit (for `browser-auto`): `85885d28`.
+
+Commit `bb02208d` (T6.11). It covers 3 planned cases, plus 3 domain cases under "owed-group order (A89)" in `classify-due.test.ts`.
+
+**First-run pass, flagged for the user: case 1** ("should walk T-N in the Tuesday Review although it is now Closed").
+- T6.6's A88 extension and the existing derive-at-cutoff filter already built this behavior.
+- Mutation check: `eligibleTrades` was changed to drop stored-Closed Trades. The case then failed with `AssertionError: expected undefined to be defined`. The mutation was reverted, and `git diff -- src` came back empty.
+
+**Domain cases, flagged for the user.** `compareOwed` and `owedStandingOf` were written for case 2's green, and their tests were added afterwards. Two mutation checks were run on them:
+- Dropping the due-first rule failed the tests.
+- Comparing anchors as text failed the tests.
+
+The first version of the tests survived the due-first mutation, so a hand-built standing case was added.
+
+**Cases 2 and 3.** Both had genuine reds. Case 2's green kept a one-line stub of the old early `Empty` return, so that case 3 could still go red; case 3's green removed it.
+
+**Shape of the owed group.**
+- `owed: OwedReflectionsTrade[]` is a top-level field on `Ready` and `Empty`. It is not a `ReviewFamily`.
+- Each entry is `{ tradeId, underlying, lifecycle, owed: OwedReflectionItem[], progress }`.
+- `OwedReflectionItem` is `{ debtId, entryTypeKey, dueAnchor, classification }`.
+- Each owed Trade costs one `getRecord` Summary.
+
+**When `open` returns `Empty`.**
+- `Empty` now carries a binding and settles through `coherently`.
+- `Empty` is returned only when nothing is walked and nothing is due.
+- A due owed reflection with an empty walk returns `Ready`, `Incomplete` with `ReflectionDue`.
+
+**Order.** `compareOwed` sorts due first, then by the oldest owed anchor as an instant, then by Trade identity.
+
+**Other changes.**
+- `tests/support/closed-trade-review-fixture.ts` is the fixture builder, which T6.12 and T6.13 reuse. Its Monday state exists only at clock Monday 17:00, before Tuesday's facts are recorded.
+- UI test files gained `owed: []` lines because the field is required. No UI source changed.
+- `src/app/types.ts` re-exports the new types. That puts the run on the full tier under P55.
+
+### ocr review of `bb02208d`
+
+Session `8d72b4e4-425f-4092-b605-69efd920b3aa`, 8 files reviewed (9 excluded), 2 comments. Raw output: [ocr/T6.11-bb02208d.json](ocr/T6.11-bb02208d.json).
+
+| # | Severity | Location | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | medium | `daily-review.ts:422` (`nextTaskOf`, line 169) | `nextTaskOf` ignores the owed group, so saving the last walked Action can return `Incomplete` with `nextStep: Done` while an owed reflection outside the walk is still due. | **Covered by planned scope, not a bug task.** T6.13's planned case expects T-M's card as the next step after the last walked Action (plan, near line 374). T6.13's brief names this finding. Listed for the final report. |
+| 2 | low | `journal-debt/index.ts:33` | `compareOwed` ends in a nested ternary, which the coding standard prohibits. | **Valid → bug task T6.11-B1.** |
+
+The reviewer was asked four questions directly. It found no defect in any of them:
+- **Walked and owed Trades are disjoint by construction.**
+- **A not-yet-due reflection never blocks Complete.**
+- **Every owed Trade's `factRevision` and Debts are in the binding**, and `coherently` compares `contentRevision` around the whole assembly. The group reads are separate `getRecord` calls guarded by that retry, the same way the rest of `assemble` already works.
+- **Per-Trade work is bounded** to one `getRecord` per owed Trade.
+
+The reviewer also raised a minor point: the comment on `OwedReflectionsTrade.owed` says "in due-anchor order", but the items keep the Journal query's order. T6.11-B1 checks this.
+
+### T6.11-B1 `compareOwed` refactor and owed-item order
+
+From ocr finding 2 and the reviewer's minor note. Commit `8f8840a2`.
+
+**Refactor.** `compareOwed` no longer ends in a nested ternary. The domain tests passed before and after: 7 and 7.
+
+**Owed-item order.** The comment said the items were in due-anchor order, and that was not guaranteed.
+- Journal's `byOutstandingDue` index orders due anchors as text. `recordPositionChange` checks `economicTime` with `Date.parse` only, so a sub-second or offset anchor sorts wrongly as text.
+- The new case is "should list the reflections one Trade owes in due-anchor order as instants, a later anchor whose text sorts first coming last".
+  - First attempt: it read `Ready` where the result is `Empty`. That was a fixture error and does not count as a red.
+  - Genuine red: text order.
+  - Green.
+- `owedGroup` now sorts each Trade's items with the new `compareDueAnchors`, which compares instants.
+
+**Pre-existing exposure, not fixed, listed for the final report.**
+- The Walked card path in `daily-review.ts` (around line 456) takes the Journal query's text order too.
+- Any other consumer of `byOutstandingDue` that needs instant order has the same exposure, because `economicTime` is not normalized to one UTC form when recorded.
+
+ocr review of `8f8840a2`: session `901078de-b9f6-4955-8297-ba5aa8680304`, 2 files reviewed, **no findings**. Raw output: [ocr/T6.11-B1-8f8840a2.json](ocr/T6.11-B1-8f8840a2.json).
+
+### Cumulative run after T6.11
+
+Label `t6.11-review-open`, at `8f8840a2` plus uncommitted evidence (2026-11-01 21:25 EST). Outputs in `suite-runs/t6.11-review-open-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 88 files, 1108 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**. Printed reason: "first matching path since 85885d28: src/app/types.ts". 147 passed (6.6 m) |
+| Static and verify checks | 11 of 12 exit 0. `verify:capacity` failed, which is expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.12 Daily Review: `getTrade` card kinds
+
+Base commit (for `browser-auto`): `8f8840a2`.
