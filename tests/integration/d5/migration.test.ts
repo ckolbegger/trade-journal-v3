@@ -28,7 +28,7 @@ describe('I5.1 migrate earlier fixtures', () => {
       const opened = await app.Workspace.initialize({});
       if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
       expect(opened.receipt.migration).toEqual(
-        expect.objectContaining({ fromVersion: version, toVersion: 4, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
+        expect.objectContaining({ fromVersion: version, toVersion: 5, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
       expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 4, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.seeds.journal.additions).toContain('source.trade-detail');
@@ -36,7 +36,7 @@ describe('I5.1 migrate earlier fixtures', () => {
 
       const again = await restart(app, d);
       const status = await again.Workspace.getStatus();
-      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([4, newDatabase]);
+      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([5, newDatabase]);
 
       // A73: every earlier field equals the fixture's snapshot, and every Debt list and count is empty.
       const asOf = fixtureDump(version).asOf;
@@ -86,7 +86,7 @@ describe('I5.2 migration failure and retry', () => {
     // The cause is removed, then Retry is initialize again.
     await rawUpdate(d.factory, source, 'journalEntries', original.id, (entry) => ({ ...entry, versions: original.versions }));
     const retried = await app.Workspace.initialize({});
-    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 3, toVersion: 4 }));
+    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 3, toVersion: 5 }));
     const again = await restart(app, d);
     expect((await again.Workspace.getStatus()).kind).toBe('Ready');
   }, 60_000);

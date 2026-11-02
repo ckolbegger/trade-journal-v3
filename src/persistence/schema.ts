@@ -6,7 +6,7 @@ export const WORKSPACE_PREFIX = 'tj-ws-';
 export const POINTER_KEY = 'current';
 
 // The Workspace schema this release reads and writes.
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export function upgradeRoot(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
@@ -80,6 +80,9 @@ export function createWorkspaceIndexes(store: (name: WorkspaceStore) => IDBObjec
   store('trades').createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
   // The Open list, most recent activity first: `activityDesc` is a descending sort key (D2 A28).
   store('trades').createIndex('byLifecycleActivity', ['lifecycle', 'activityDesc', 'tradeId']);
+  // The Closed list, most recent Terminal Time first: sparse, since `terminalDesc` (a descending sort
+  // key) exists only on Closed Trades (D6 A87).
+  store('trades').createIndex('byLifecycleTerminal', ['lifecycle', 'terminalDesc', 'tradeId']);
   // Stale context and gap enumeration read one Instrument's observations by date (D4 A38).
   store('observations').createIndex('byInstrumentDate', ['instrumentKey', 'tradingDate']);
 }

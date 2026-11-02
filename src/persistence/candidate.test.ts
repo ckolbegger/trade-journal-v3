@@ -48,7 +48,7 @@ describe('schema v2 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 4 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 5 }));
     const db = await rawOpen(created.databaseName);
     const stores = Array.from(db.objectStoreNames);
     const tx = db.transaction(stores);
@@ -61,7 +61,7 @@ describe('schema v2 layout', () => {
     const declines = tx.objectStore('journalDeclines');
     db.close();
 
-    expect(meta).toEqual({ key: 'schema', schemaVersion: 4 });
+    expect(meta).toEqual({ key: 'schema', schemaVersion: 5 });
     expect(stores).toEqual(expect.arrayContaining(['journalDeclines', 'journalObligations']));
     expect(index.keyPath).toEqual(['lifecycle', 'activityDesc', 'tradeId']);
     expect(obligations.keyPath).toBe('obligationKey');
@@ -204,7 +204,7 @@ describe('candidate and activation', () => {
     expect(await rawGetAll(candidate, 'journalObligations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'schema', schemaVersion: 4 },
+      { key: 'schema', schemaVersion: 5 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY, copied: true, revision: 1 },
       { key: 'settings', timeZone: 'America/New_York', copied: true, revision: 1 },
     ]);

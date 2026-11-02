@@ -65,7 +65,7 @@ describe('schema v4 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 4 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 5 }));
     const db = await rawOpen(created.databaseName);
     const debts = db.transaction('journalDebts').objectStore('journalDebts');
     const keyPath = debts.keyPath;
@@ -76,7 +76,7 @@ describe('schema v4 layout', () => {
 
     expect(keyPath).toBe('debtId');
     expect(shape).toEqual({ due: [['outstandingDue', 'debtId'], false], anchor: ['anchorTradeId', false] });
-    expect(await rawGetAll(created.databaseName, 'meta')).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 4 }]));
+    expect(await rawGetAll(created.databaseName, 'meta')).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 5 }]));
   });
 });
 
@@ -129,11 +129,12 @@ describe('v3 → v4 transform', () => {
 
     expect(counts).toEqual({ meta: 1, catalog: 1, trades: 1, journalEntries: 1, journalDeclines: 1, observations: 1 });
     for (const { store, value } of V3_RECORDS.filter((r) => r.store !== 'meta')) {
-      expect(await rawGetAll(candidate, store)).toEqual([{ ...value, revision: 1 }]);
+      // Later steps in the chain give each Trade its empty Close Reason fact list (v4→v5).
+      expect(await rawGetAll(candidate, store)).toEqual([{ ...value, ...(store === 'trades' ? { closeReasonFacts: [] } : {}), revision: 1 }]);
     }
     expect(await rawGetAll(candidate, 'journalDebts')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual(
-      expect.arrayContaining([{ key: 'schema', schemaVersion: 4 }, { key: 'settings', timeZone: 'America/New_York', revision: 1 }]),
+      expect.arrayContaining([{ key: 'schema', schemaVersion: 5 }, { key: 'settings', timeZone: 'America/New_York', revision: 1 }]),
     );
 
     // A v1 Workspace passes through v1→v2, v2→v3, and v3→v4 in one candidate.
@@ -142,7 +143,9 @@ describe('v3 → v4 transform', () => {
     const q = persistence('n');
     const { databaseName: chained } = await q.createCandidate();
     await q.copySnapshot('tj-ws-v1', chained, migrationChain(1));
-    expect(await rawGetAll(chained, 'trades')).toEqual([{ tradeId: 'trade-9', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z', revision: 1 }]);
+    expect(await rawGetAll(chained, 'trades')).toEqual([
+      { tradeId: 'trade-9', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z', closeReasonFacts: [], revision: 1 },
+    ]);
     expect(await rawGetAll(chained, 'journalDebts')).toEqual([]);
     const names = (await factory.databases()).map((d) => d.name);
     expect(names.filter((n) => n?.startsWith('tj-ws-')).sort()).toEqual([candidate, chained, 'tj-ws-v1', 'tj-ws-v3'].sort());

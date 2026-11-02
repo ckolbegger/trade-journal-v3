@@ -3,9 +3,10 @@ import { SCHEMA_VERSION } from '../schema.ts';
 import { v1ToV2 } from './v1-to-v2.ts';
 import { v2ToV3 } from './v2-to-v3.ts';
 import { v3ToV4 } from './v3-to-v4.ts';
+import { v4ToV5 } from './v4-to-v5.ts';
 
 // Each schema's per-record transform to the next one, keyed by the schema it reads.
-const STEPS: Readonly<Record<number, RecordTransform>> = { 1: v1ToV2, 2: v2ToV3, 3: v3ToV4 };
+const STEPS: Readonly<Record<number, RecordTransform>> = { 1: v1ToV2, 2: v2ToV3, 3: v3ToV4, 4: v4ToV5 };
 
 // The per-record transform chain from a supported older schema to the current one.
 export function migrationChain(fromVersion: number): RecordTransform {

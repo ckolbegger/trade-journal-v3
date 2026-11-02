@@ -90,11 +90,11 @@ describe('root inspection', () => {
 
   it('should report KnownWorkspace with database name and schema version when the pointer names a database that opens at a supported version', async () => {
     await seedRoot('tj-ws-a');
-    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 4 });
+    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 5 });
     expect(await persistence().inspectRoot()).toEqual({
       kind: 'KnownWorkspace',
       databaseName: 'tj-ws-a',
-      schemaVersion: 4,
+      schemaVersion: 5,
       deletedOrphans: [],
     });
   });
@@ -149,13 +149,13 @@ describe('root inspection', () => {
 
   it('should delete an orphaned candidate database (candidate prefix, not named by the pointer) and list it in the inspection receipt', async () => {
     await seedRoot('tj-ws-a');
-    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 4 });
-    await seedWorkspace('tj-ws-orphan', { key: 'schema', schemaVersion: 4 });
+    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 5 });
+    await seedWorkspace('tj-ws-orphan', { key: 'schema', schemaVersion: 5 });
     await seedWorkspace('unrelated-db');
     expect(await persistence().inspectRoot()).toEqual({
       kind: 'KnownWorkspace',
       databaseName: 'tj-ws-a',
-      schemaVersion: 4,
+      schemaVersion: 5,
       deletedOrphans: ['tj-ws-orphan'],
     });
     expect((await factory.databases()).map((d) => d.name).sort()).toEqual(['tj-root', 'tj-ws-a', 'unrelated-db']);
@@ -500,8 +500,9 @@ describe('connection lifecycle and private-state rebuild (D1 section 6.1)', () =
 
     await rebuildPrivateState(factory, created.databaseName);
 
-    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byAnchorTrade', 'byInstrumentDate', 'byLifecycle', 'byLifecycleActivity', 'byObligation', 'byOutstandingDue']);
-    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byAnchorTrade', 'byInstrumentDate', 'byLifecycle', 'byLifecycleActivity', 'byObligation', 'byOutstandingDue']);
+    const indexNames = ['byAnchorTrade', 'byAnchorTrade', 'byAnchorTrade', 'byInstrumentDate', 'byLifecycle', 'byLifecycleActivity', 'byLifecycleTerminal', 'byObligation', 'byOutstandingDue'];
+    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(indexNames);
+    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(indexNames);
     const db = await new Promise<IDBDatabase>((resolve) => {
       const request = factory.open(created.databaseName);
       request.onsuccess = () => resolve(request.result);

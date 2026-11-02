@@ -55,7 +55,7 @@ describe('schema v3 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 4 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 5 }));
     const db = await rawOpen(created.databaseName);
     const observations = db.transaction('observations').objectStore('observations');
     const keyPath = observations.keyPath;
@@ -70,7 +70,7 @@ describe('schema v3 layout', () => {
     expect(indexUnique).toBe(false);
     expect(meta).toEqual(
       expect.arrayContaining([
-        { key: 'schema', schemaVersion: 4 },
+        { key: 'schema', schemaVersion: 5 },
         { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
       ]),
     );
@@ -125,12 +125,13 @@ describe('v2 → v3 transform', () => {
 
     expect(counts).toEqual({ meta: 1, catalog: 1, trades: 1, journalEntries: 1, journalDeclines: 1 });
     for (const { store, value } of V2_RECORDS.filter((r) => r.store !== 'meta')) {
-      expect(await rawGetAll(candidate, store)).toEqual([{ ...value, revision: 1 }]);
+      // Later steps in the chain give each Trade its empty Close Reason fact list (v4→v5).
+      expect(await rawGetAll(candidate, store)).toEqual([{ ...value, ...(store === 'trades' ? { closeReasonFacts: [] } : {}), revision: 1 }]);
     }
     expect(await rawGetAll(candidate, 'observations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'schema', schemaVersion: 4 },
+      { key: 'schema', schemaVersion: 5 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
       { key: 'settings', timeZone: 'America/New_York', revision: 1 },
     ]);
@@ -139,7 +140,7 @@ describe('v2 → v3 transform', () => {
   it('should drop every private Trade field, activityDesc and exposureStart, in the v2 to v3 transform', () => {
     const value = { tradeId: 'trade-1', lifecycle: 'Open', facts: [], activityDesc: 'stale', exposureStart: '2026-10-09T15:00:00Z' };
     const out = migrationChain(2)({ store: 'trades', value });
-    expect(out).toEqual({ store: 'trades', value: { tradeId: 'trade-1', lifecycle: 'Open', facts: [] } });
+    expect(out).toEqual({ store: 'trades', value: { tradeId: 'trade-1', lifecycle: 'Open', facts: [], closeReasonFacts: [] } });
     expect(Object.keys(out.value)).not.toContain('activityDesc');
     expect(Object.keys(out.value)).not.toContain('exposureStart');
   });
@@ -155,7 +156,7 @@ describe('v2 → v3 transform', () => {
 
     // v1→v2 dropped the private key; v2→v3 left the record otherwise as it was; one candidate only.
     expect(await rawGetAll(candidate, 'trades')).toEqual([
-      { tradeId: 'trade-1', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z', revision: 1 },
+      { tradeId: 'trade-1', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z', closeReasonFacts: [], revision: 1 },
     ]);
     expect(await rawGetAll(candidate, 'catalog')).toHaveLength(1);
     expect(await rawGetAll(candidate, 'observations')).toEqual([]);

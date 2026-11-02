@@ -36,6 +36,13 @@ function recomputePrivateTradeFields(trades: IDBObjectStore): void {
     if (typeof trade['lastActivity'] === 'string') trade['activityDesc'] = activityDescOf(trade['lastActivity']);
     const exposureStart = exposureStartOf(trade['facts']);
     if (exposureStart !== undefined) trade['exposureStart'] = exposureStart;
+    delete trade['terminalTime'];
+    delete trade['terminalDesc'];
+    const terminalTime = trade['lifecycle'] === 'Closed' ? terminalTimeOf(trade['facts']) : undefined;
+    if (terminalTime !== undefined) {
+      trade['terminalTime'] = terminalTime;
+      trade['terminalDesc'] = activityDescOf(terminalTime);
+    }
     cursor.update(trade);
     cursor.continue();
   };
@@ -83,6 +90,16 @@ function exposureStartOf(facts: unknown): string | undefined {
     .filter((fact) => fact.kind === 'Execution')
     .map((fact) => fact.versions[fact.versions.length - 1]!.value.economicTime);
   return times.sort((a, b) => Temporal.Instant.compare(a, b))[0];
+}
+
+// A Closed Trade's Terminal Time (D6 A87): the Economic Time of its terminal Position Change, which
+// is the Trade's last fact (P22), so the latest among its Position Changes at their latest versions;
+// undefined when it has none.
+function terminalTimeOf(facts: unknown): string | undefined {
+  const times = ((facts as readonly StoredFact[] | undefined) ?? [])
+    .filter((fact) => fact.kind === 'PositionChange')
+    .map((fact) => fact.versions[fact.versions.length - 1]!.value.economicTime);
+  return times.sort((a, b) => Temporal.Instant.compare(b, a))[0];
 }
 
 // The Journal obligation index (D2 A28): one record per obligation key naming its current outcome,
