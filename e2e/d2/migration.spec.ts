@@ -204,7 +204,10 @@ test.describe('B2.6 kill during migration (faults build)', () => {
       expect(current).not.toBe(rootOf(before).current);
       expect(candidates).toEqual([]);
       expect(workspaceNames(after)).toEqual([current]);
-      expect(authoritative(after[current]!)).toEqual(authoritative(before[rootOf(before).current]!));
+      // The faults build is the current schema: the v5 transform adds an empty closeReasonFacts to each Trade.
+      const expected = authoritative(before[rootOf(before).current]!);
+      expected['trades'] = (expected['trades'] as object[]).map((trade) => ({ ...trade, closeReasonFacts: [] }));
+      expect(authoritative(after[current]!)).toEqual(expected);
     } finally {
       await relaunched.kill();
     }

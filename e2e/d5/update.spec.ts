@@ -1,10 +1,11 @@
+import { SCHEMA_VERSION } from '../../src/persistence/schema.ts';
 import {
   actionEntriesOf, AT_10, cardHeader, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry,
   reflectionsOf, reloadFromNotice, rootOf, saveAction, SECOND_PLAN, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf,
 } from './support.ts';
 
 test.describe('B5.6 Update from D4 with data', () => {
-  test('should show Updating your journal, keep two Open Trades with their Actions, list a new deferred reflection as due, show schema 4 in About, and point to the new database with the old one gone', async ({ server, profile }) => {
+  test('should show Updating your journal, keep two Open Trades with their Actions, list a new deferred reflection as due, show the current schema in About, and point to the new database with the old one gone', async ({ server, profile }) => {
     server.use('dist-releases/d4');
     const context = await launchAt(profile, MONDAY_1700);
     const updating = await watchUpdatingAcrossDocuments(context);
@@ -56,10 +57,10 @@ test.describe('B5.6 Update from D4 with data', () => {
     await expect(tradeCard(page, 'XYZ')).toBeVisible();
     await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
 
-    // About: the d5 release at schema 4.
+    // About: the d5 release (built from the current source) at the current schema.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();
     await expect(page.locator('.identity')).toHaveText(identity('d5'));
-    await expect(page.locator('dt:has-text("Schema version") + dd')).toHaveText('4');
+    await expect(page.locator('dt:has-text("Schema version") + dd')).toHaveText(String(SCHEMA_VERSION));
 
     const after = await probe(page);
     const { current, candidates } = rootOf(after);
