@@ -90,6 +90,7 @@ function tradeReview(tradeId: string, underlying: string, over: Partial<DailyTra
   return {
     tradeId,
     underlying,
+    lifecycle: 'Open',
     attention: item(tradeId, underlying),
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     evaluation: evaluation(),

@@ -99,6 +99,7 @@ function tradeReview(item: WalkedTrade, over: Partial<DailyTradeReview> = {}): D
   return {
     tradeId: item.tradeId,
     underlying: item.underlying,
+    lifecycle: 'Open',
     attention: item,
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     reflections: [],

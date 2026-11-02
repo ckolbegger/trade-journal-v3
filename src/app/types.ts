@@ -150,6 +150,10 @@ export type {
   // The Trades outside the walk with a reflection owed, after it (D6 P20, A89).
   OwedReflectionItem,
   OwedReflectionsTrade,
+  // The card of one such Trade (D6 A90) and the exit route of a walked card (A94).
+  OwedReflectionsCard,
+  OwedTradeSummary,
+  ExitRoute,
   RangePosition,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
   SliderFigures as SliderEvaluation,

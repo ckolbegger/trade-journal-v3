@@ -1,10 +1,10 @@
 import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
-import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
-import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
+import type { ReferenceCatalog, ResolvedReference } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
@@ -21,7 +21,9 @@ import type {
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
   OwedReflection,
+  OwedReflectionsCard,
   OwedReflectionsTrade,
+  OwedTradeSummary,
   CardProgress,
   PanelProgress,
   PostMarksReview,
@@ -154,6 +156,7 @@ type TradePass =
   | { readonly kind: 'Expired' }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] }
   | { readonly kind: 'ReviewChanged' }
+  | { readonly kind: 'ReflectionsOwed'; readonly reviewDate: string; readonly cutoff: string; readonly card: OwedReflectionsCard }
   // The save binding still lacks the Workspace's database name: that is read once the Workspace is settled.
   | { readonly kind: 'Ready'; readonly review: Omit<Extract<GetDailyTradeReviewResult, { kind: 'Ready' }>, 'kind' | 'trade'> & { readonly trade: Omit<DailyTradeReview, 'saveBinding'> & { readonly saveBinding: Omit<TradeSaveBinding, 'databaseName'> } } };
 
@@ -197,6 +200,23 @@ function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade,
   const held = openLongStockSummary(derivation);
   const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, evaluation, integrity.findings) };
   return { item, evaluation };
+}
+
+// The Trade's summary on an owed-reflection card, from all its facts: Closed with its realized figures and Close Reason,
+// otherwise Open with the Position it holds (A90).
+function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analysis: TradeAnalysisRecord, closeReason?: Pick<ResolvedReference, 'id' | 'label'>): OwedTradeSummary {
+  if (lifecycle !== 'Closed') {
+    const position = openLongStockSummary(state);
+    return { kind: 'Open', ...(position && { position }), entryResolution: state.entryResolution };
+  }
+  return {
+    kind: 'Closed',
+    realizedPnl: state.realizedToDate,
+    realizedR: state.realizedR,
+    terminalDisposition: state.terminalDisposition,
+    ...(closeReason && { closeReason: { id: closeReason.id, label: closeReason.label } }),
+    ...(analysis.terminalTime && { terminalTime: analysis.terminalTime }),
+  };
 }
 
 // What replaying the Trade yields at the Review-date frame.
@@ -426,6 +446,95 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
+  // The same Review-date frames request as the overview's recovery, so its snapshot is comparable.
+  async function reviewFrames(eligible: readonly EligibleTrade[], reviewDate: string, binding: ReviewBinding) {
+    const instruments = [...observationNeeds(eligible).earliest.keys()];
+    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
+    if (frames.kind === 'Rejected') return frames;
+    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
+    if (frames.snapshotId !== binding.marketDataSnapshotId) return { kind: 'ReviewChanged' as const };
+    return frames;
+  }
+
+  // The labels a card shows; a reference the Catalog cannot resolve leaves them blank.
+  async function labelsOf(summary: BrowseRecord['summary'], closeReasonId?: string) {
+    const labels = await deps.catalog.resolve([
+      { name: 'account', kind: 'Account', id: summary.accountId, mode: 'DisplayOnly' },
+      { name: 'strategy', kind: 'Strategy', id: summary.strategyId, mode: 'DisplayOnly' },
+      ...(closeReasonId === undefined ? [] : [{ name: 'closeReason', kind: 'CloseReason' as const, id: closeReasonId, mode: 'DisplayOnly' as const }]),
+    ]);
+    const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
+    return {
+      labels: { strategy: resolved['strategy']?.label ?? '', account: resolved['account']?.label ?? '', institution: resolved['account']?.institution?.label ?? '' },
+      closeReason: resolved['closeReason'],
+    };
+  }
+
+  // The Trade's Outstanding Debt as the overview listed it; undefined when a resolution since has changed the list.
+  async function boundDebts(tradeId: string, binding: ReviewBinding): Promise<DebtProjection[] | undefined> {
+    const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts.filter((debt) => debt.anchor.tradeId === tradeId);
+    const bound = binding.outstandingDebts[tradeId] ?? [];
+    if (outstanding.length !== bound.length || outstanding.some((debt, i) => debt.debtId !== bound[i])) return undefined;
+    return outstanding;
+  }
+
+  // Each Debt as a form: its snapshot definition, the Position Change it follows, and how it is classified. In due-anchor order,
+  // anchors compared as instants (A68, A89).
+  async function reflectionsOf(debts: readonly DebtProjection[], positionChanges: TradeAnalysisRecord['positionChanges'], closes: SessionCloses): Promise<OwedReflection[]> {
+    const reflections: OwedReflection[] = [];
+    for (const debt of debts.toSorted((a, b) => compareDueAnchors(a.dueAnchor, b.dueAnchor))) {
+      const definition = await deps.journal.getDefinitions({ revision: debt.definitionId });
+      if (definition.kind !== 'Found') throw new Error(`no definition ${debt.definitionId}`);
+      const positionChange = positionChanges.find((pc) => pc.factId === debt.origin.factId);
+      reflections.push({
+        debtId: debt.debtId,
+        definition: definition.definition,
+        economicTime: debt.momentTime,
+        executions: positionChange?.executions ?? [],
+        classification: classifyDue(debt.dueAnchor, closes),
+        saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
+      });
+    }
+    return reflections;
+  }
+
+  // The card of a Trade outside the walk with an Outstanding reflection (A90): bound like a walked card, but with no evaluation.
+  async function assembleOwedCard(request: GetDailyTradeReviewRequest, eligible: readonly EligibleTrade[], reviewDate: string, cutoff: string): Promise<TradePass> {
+    const { tradeId, binding } = request;
+    // A Trade the overview did not list as owing a reflection is no card of this Review.
+    if ((binding.outstandingDebts[tradeId] ?? []).length === 0) return { kind: 'ReviewChanged' };
+    const [stored, input] = await Promise.all([
+      deps.tradeRecord.getRecord({ tradeId, projection: 'Summary' }),
+      deps.tradeRecord.getRecord({ tradeId, projection: 'AnalysisInput' }),
+    ]);
+    if (stored.kind !== 'Found' || input.kind !== 'Found') return { kind: 'ReviewChanged' };
+    const summary = stored.projection as BrowseRecord['summary'];
+    const analysis = input.projection as TradeAnalysisRecord;
+    if (input.factRevision !== binding.factRevisions[tradeId]) return { kind: 'ReviewChanged' };
+    const frames = await reviewFrames(eligible, reviewDate, binding);
+    if (frames.kind !== 'Frames') return frames;
+    const outstanding = await boundDebts(tradeId, binding);
+    if (!outstanding) return { kind: 'ReviewChanged' };
+    const reflections = await reflectionsOf(outstanding, analysis.positionChanges, { previousClose: frames.previousCloseInstant, close: cutoff });
+    const { labels, closeReason } = await labelsOf(summary, analysis.closeReason?.closeReasonId);
+    const state = derive({ record: analysis });
+    const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
+    return {
+      kind: 'ReflectionsOwed',
+      reviewDate,
+      cutoff,
+      card: {
+        tradeId,
+        underlying: summary.underlying,
+        lifecycle: summary.lifecycle,
+        labels,
+        ...(state.kind === 'Derived' && { summary: owedSummary(summary.lifecycle, state, analysis, closeReason) }),
+        reflections,
+        progress: owedCardProgress({ due, later: reflections.length - due }),
+      },
+    };
+  }
+
   // One pass over the module reads for one Trade of an overview.
   async function assembleTrade(request: GetDailyTradeReviewRequest): Promise<TradePass> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: request.reviewDate } });
@@ -435,44 +544,23 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const eligible = await eligibleTrades(cutoff, reviewDate);
     if (!eligible) return { kind: 'Expired' };
     const entry = eligible.find(({ analysis }) => analysis.tradeId === request.tradeId);
-    if (!entry) return { kind: 'ReviewChanged' };
+    if (!entry) return assembleOwedCard(request, eligible, reviewDate, cutoff);
     const { summary, analysis } = entry;
     if (analysis.factRevision !== request.binding.factRevisions[analysis.tradeId]) return { kind: 'ReviewChanged' };
-    // The same request as the overview's recovery, so its snapshot is comparable.
-    const instruments = [...observationNeeds(eligible).earliest.keys()];
-    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
-    if (frames.kind === 'Rejected') return frames;
-    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
-    if (frames.snapshotId !== request.binding.marketDataSnapshotId) return { kind: 'ReviewChanged' };
-    const labels = await deps.catalog.resolve([
-      { name: 'account', kind: 'Account', id: summary.accountId, mode: 'DisplayOnly' },
-      { name: 'strategy', kind: 'Strategy', id: summary.strategyId, mode: 'DisplayOnly' },
-    ]);
-    const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
+    const frames = await reviewFrames(eligible, reviewDate, request.binding);
+    if (frames.kind !== 'Frames') return frames;
+    const { labels } = await labelsOf(summary);
     const { item, evaluation } = reviewItem(entry, frames.frames);
     // Facts that cannot be replayed have no figures.
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
-    // The Trade's Outstanding Debt in anchor order, each classified against the closes around the Review Date (A63).
-    const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts.filter((debt) => debt.anchor.tradeId === analysis.tradeId);
-    // A resolution since the overview changes the Trade's list.
-    const bound = request.binding.outstandingDebts[analysis.tradeId] ?? [];
-    if (outstanding.length !== bound.length || outstanding.some((debt, i) => debt.debtId !== bound[i])) return { kind: 'ReviewChanged' };
-    const reflections: OwedReflection[] = [];
-    for (const debt of outstanding) {
-      const definition = await deps.journal.getDefinitions({ revision: debt.definitionId });
-      if (definition.kind !== 'Found') throw new Error(`no definition ${debt.definitionId}`);
-      const positionChange = analysis.positionChanges.find((pc) => pc.factId === debt.origin.factId);
-      const classification = classifyDue(debt.dueAnchor, { previousClose: frames.previousCloseInstant, close: cutoff });
-      reflections.push({
-        debtId: debt.debtId,
-        definition: definition.definition,
-        economicTime: debt.momentTime,
-        executions: positionChange?.executions ?? [],
-        classification,
-        saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
-      });
-    }
+    // The exit route names the open quantity the Trade holds now, which differs from the cutoff's for a Trade sold after the close (A91, A94).
+    const remaining = entry.integrity.kind === 'Derived' ? openLongStockSummary(entry.integrity)?.quantity : undefined;
+    const exitRoute = remaining && { remainingQuantity: remaining };
+    // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
+    const outstanding = await boundDebts(analysis.tradeId, request.binding);
+    if (!outstanding) return { kind: 'ReviewChanged' };
+    const reflections = await reflectionsOf(outstanding, analysis.positionChanges, { previousClose: frames.previousCloseInstant, close: cutoff });
     // The same counts the overview's walked item holds: this Trade's Review-date rows, its Outstanding Debt, and its Action.
     const held = new Set(observationNeeds([entry]).requirements.map((r) => r.instrument.symbol));
     const rows = frames.frames.filter((frame) => held.has(frame.instrumentKey));
@@ -495,12 +583,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         trade: {
           tradeId: analysis.tradeId,
           underlying: summary.underlying,
+          lifecycle: summary.lifecycle,
+          ...(exitRoute && { exitRoute }),
           attention: item,
-          labels: {
-            strategy: resolved['strategy']?.label ?? '',
-            account: resolved['account']?.label ?? '',
-            institution: resolved['account']?.institution?.label ?? '',
-          },
+          labels,
           ...figures,
           reflections,
           progress,
@@ -526,12 +612,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     coherently<GetDailyTradeReviewResult | { readonly kind: 'Moved' }>(async () => {
       const pass = await assembleTrade(request);
       if (pass.kind === 'Expired') return { retry: true };
-      if (pass.kind !== 'Ready') return { done: pass };
+      if (pass.kind === 'Rejected' || pass.kind === 'ReviewChanged') return { done: pass };
       // The overview's Workspace is the one this read must be in; its content revision moves with every write.
       return {
         settle: ({ workspace }) => {
           if (workspace.databaseName !== request.binding.workspace.databaseName) return { kind: 'ReviewChanged' };
           if (atRevision !== undefined && workspace.contentRevision !== atRevision) return { kind: 'Moved' };
+          if (pass.kind === 'ReflectionsOwed') return pass;
           return { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } };
         },
       };

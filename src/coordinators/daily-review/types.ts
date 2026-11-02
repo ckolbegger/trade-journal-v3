@@ -1,7 +1,7 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -247,10 +247,20 @@ export interface OwedReflection {
   readonly saveBinding: ReflectionSaveBinding;
 }
 
+// Where a walked Trade's card offers to record an exit (A94): the Trade still holds this quantity now. A Trade closed after
+// the cutoff has none, although the card describes the Position it held at the close (A91).
+export interface ExitRoute {
+  readonly remainingQuantity: Rational;
+}
+
 export interface DailyTradeReview {
   readonly tradeId: string;
   readonly underlying: string;
+  // The Trade's stored lifecycle now, which differs from the cutoff's for a Trade closed after the close (A91).
+  readonly lifecycle: LifecycleState;
   readonly summary?: TradeSummary;
+  // Present only while the Trade holds an open quantity now (A94).
+  readonly exitRoute?: ExitRoute;
   // The Trade's band and reasons, as the overview lists them.
   readonly attention: ReviewTradeItem;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
@@ -271,8 +281,38 @@ export interface DailyTradeReview {
   readonly saveBinding: TradeSaveBinding;
 }
 
+// A Trade summary for its lifecycle on an owed-reflection card, derived from all the Trade's facts, with no cutoff (A90).
+// Absent when the facts cannot be replayed.
+export type OwedTradeSummary =
+  | {
+      readonly kind: 'Closed';
+      readonly realizedPnl: Rational;
+      readonly realizedR: CalculationResult<Rational, 'NotClosed'>;
+      readonly terminalDisposition: TerminalDisposition;
+      // The label the Catalog gives the Close Reason; absent when the Trade was closed without one.
+      readonly closeReason?: { readonly id: string; readonly label: string };
+      readonly terminalTime?: Instant;
+    }
+  | { readonly kind: 'Open'; readonly position?: TradeSummary; readonly entryResolution: EntryResolution };
+
+// A card of the group after the walk (A90): the Trade's summary and its Outstanding reflections, due or not, and nothing
+// else. It has no Action form, evaluation, or Mark frame, and its progress has the Reflections panel alone.
+export interface OwedReflectionsCard {
+  readonly tradeId: string;
+  readonly underlying: string;
+  readonly lifecycle: LifecycleState;
+  readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
+  readonly summary?: OwedTradeSummary;
+  // The Trade's Outstanding reflections in due-anchor order, each with its snapshot form and save binding.
+  readonly reflections: readonly OwedReflection[];
+  readonly progress: CardProgress;
+}
+
 export type GetDailyTradeReviewResult =
+  // A card of the walk (kind `Walked`).
   | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly trade: DailyTradeReview }
+  // A card of the owed-reflection group (kind `ReflectionsOwed`).
+  | { readonly kind: 'ReflectionsOwed'; readonly reviewDate: string; readonly cutoff: Instant; readonly card: OwedReflectionsCard }
   // The Trade's facts or the Review-date evidence no longer match the overview's binding (A46, AC-REV-005).
   | { readonly kind: 'ReviewChanged' }
   | { readonly kind: 'ChangedDuringAssembly' }

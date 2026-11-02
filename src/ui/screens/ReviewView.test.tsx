@@ -99,6 +99,7 @@ function tradeFor(tradeId: string, underlying: string, reviewDate: string): Dail
   return {
     tradeId,
     underlying,
+    lifecycle: 'Open',
     attention: tradeItem(tradeId, underlying),
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     reflections: [],
