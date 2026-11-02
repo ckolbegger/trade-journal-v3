@@ -289,8 +289,11 @@ export type OwedTradeSummary =
       readonly realizedPnl: Rational;
       readonly realizedR: CalculationResult<Rational, 'NotClosed'>;
       readonly terminalDisposition: TerminalDisposition;
-      // The label the Catalog gives the Close Reason; absent when the Trade was closed without one.
+      // The Close Reason the Trade was closed with; absent only when it was closed without one. The label is blank when the
+      // Catalog cannot resolve the identity.
       readonly closeReason?: { readonly id: string; readonly label: string };
+      // The current outcome of the Trade's Close Review obligation: a completed Entry, a decline, or the Debt still owed.
+      readonly closeReviewOutcome?: ObligationOutcome;
       readonly terminalTime?: Instant;
     }
   | { readonly kind: 'Open'; readonly position?: TradeSummary; readonly entryResolution: EntryResolution };

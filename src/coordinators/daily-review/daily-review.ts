@@ -2,9 +2,9 @@ import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
-import type { DebtProjection, Journal } from '../../modules/journal/index.ts';
+import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
-import type { ReferenceCatalog, ResolvedReference } from '../../modules/reference-catalog/index.ts';
+import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
@@ -151,6 +151,9 @@ type Pass =
       readonly nextTask: NextTask;
     };
 
+// The Close Review Entry Type's label, which names its item in the Journal's Trade narrative (manifest, entry-type.close-review).
+const CLOSE_REVIEW_ENTRY_TYPE = 'Close Review';
+
 // What one Trade pass returns before its binding is checked against the Workspace.
 type TradePass =
   | { readonly kind: 'Expired' }
@@ -204,7 +207,7 @@ function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade,
 
 // The Trade's summary on an owed-reflection card, from all its facts: Closed with its realized figures and Close Reason,
 // otherwise Open with the Position it holds (A90).
-function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analysis: TradeAnalysisRecord, closeReason?: Pick<ResolvedReference, 'id' | 'label'>): OwedTradeSummary {
+function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analysis: TradeAnalysisRecord, closeReason?: { id: string; label: string }, closeReviewOutcome?: ObligationOutcome): OwedTradeSummary {
   if (lifecycle !== 'Closed') {
     const position = openLongStockSummary(state);
     return { kind: 'Open', ...(position && { position }), entryResolution: state.entryResolution };
@@ -214,7 +217,8 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
     realizedPnl: state.realizedToDate,
     realizedR: state.realizedR,
     terminalDisposition: state.terminalDisposition,
-    ...(closeReason && { closeReason: { id: closeReason.id, label: closeReason.label } }),
+    ...(closeReason && { closeReason }),
+    ...(closeReviewOutcome && { closeReviewOutcome }),
     ...(analysis.terminalTime && { terminalTime: analysis.terminalTime }),
   };
 }
@@ -457,17 +461,21 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   // The labels a card shows; a reference the Catalog cannot resolve leaves them blank.
-  async function labelsOf(summary: BrowseRecord['summary'], closeReasonId?: string) {
+  async function labelsOf(summary: BrowseRecord['summary']) {
     const labels = await deps.catalog.resolve([
       { name: 'account', kind: 'Account', id: summary.accountId, mode: 'DisplayOnly' },
       { name: 'strategy', kind: 'Strategy', id: summary.strategyId, mode: 'DisplayOnly' },
-      ...(closeReasonId === undefined ? [] : [{ name: 'closeReason', kind: 'CloseReason' as const, id: closeReasonId, mode: 'DisplayOnly' as const }]),
     ]);
     const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
-    return {
-      labels: { strategy: resolved['strategy']?.label ?? '', account: resolved['account']?.label ?? '', institution: resolved['account']?.institution?.label ?? '' },
-      closeReason: resolved['closeReason'],
-    };
+    return { strategy: resolved['strategy']?.label ?? '', account: resolved['account']?.label ?? '', institution: resolved['account']?.institution?.label ?? '' };
+  }
+
+  // The Close Reason the Trade was closed with. It is resolved on its own, since the Catalog answers Unresolved for a whole
+  // request when any reference in it fails: the identity stays with a blank label, and the other labels are unaffected.
+  async function closeReasonOf(closeReasonId: string | undefined): Promise<{ id: string; label: string } | undefined> {
+    if (closeReasonId === undefined) return undefined;
+    const found = await deps.catalog.resolve([{ name: 'closeReason', kind: 'CloseReason', id: closeReasonId, mode: 'DisplayOnly' }]);
+    return { id: closeReasonId, label: found.kind === 'Resolved' ? (found.resolved['closeReason']?.label ?? '') : '' };
   }
 
   // The Trade's Outstanding Debt as the overview listed it; undefined when a resolution since has changed the list.
@@ -476,6 +484,14 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const bound = binding.outstandingDebts[tradeId] ?? [];
     if (outstanding.length !== bound.length || outstanding.some((debt, i) => debt.debtId !== bound[i])) return undefined;
     return outstanding;
+  }
+
+  // The current outcome of a Trade's Close Review obligation: the Trade narrative holds one item per obligation, and the
+  // Close Review's is the one labelled with its Entry Type. One bounded read of this Trade.
+  async function closeReviewOutcomeOf(tradeId: string): Promise<ObligationOutcome | undefined> {
+    const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId });
+    const item = items.find((candidate) => candidate.entryType === CLOSE_REVIEW_ENTRY_TYPE);
+    return item && { kind: item.kind, id: item.id };
   }
 
   // Each Debt as a form: its snapshot definition, the Position Change it follows, and how it is classified. In due-anchor order,
@@ -516,8 +532,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const outstanding = await boundDebts(tradeId, binding);
     if (!outstanding) return { kind: 'ReviewChanged' };
     const reflections = await reflectionsOf(outstanding, analysis.positionChanges, { previousClose: frames.previousCloseInstant, close: cutoff });
-    const { labels, closeReason } = await labelsOf(summary, analysis.closeReason?.closeReasonId);
+    const labels = await labelsOf(summary);
+    const closeReason = await closeReasonOf(analysis.closeReason?.closeReasonId);
     const state = derive({ record: analysis });
+    const closeReviewOutcome = summary.lifecycle === 'Closed' ? await closeReviewOutcomeOf(tradeId) : undefined;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
     return {
       kind: 'ReflectionsOwed',
@@ -528,7 +546,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         underlying: summary.underlying,
         lifecycle: summary.lifecycle,
         labels,
-        ...(state.kind === 'Derived' && { summary: owedSummary(summary.lifecycle, state, analysis, closeReason) }),
+        ...(state.kind === 'Derived' && { summary: owedSummary(summary.lifecycle, state, analysis, closeReason, closeReviewOutcome) }),
         reflections,
         progress: owedCardProgress({ due, later: reflections.length - due }),
       },
@@ -549,7 +567,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (analysis.factRevision !== request.binding.factRevisions[analysis.tradeId]) return { kind: 'ReviewChanged' };
     const frames = await reviewFrames(eligible, reviewDate, request.binding);
     if (frames.kind !== 'Frames') return frames;
-    const { labels } = await labelsOf(summary);
+    const labels = await labelsOf(summary);
     const { item, evaluation } = reviewItem(entry, frames.frames);
     // Facts that cannot be replayed have no figures.
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};

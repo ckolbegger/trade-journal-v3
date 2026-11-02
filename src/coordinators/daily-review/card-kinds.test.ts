@@ -3,6 +3,7 @@ import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/in
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import { reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import { closedTradeReviewFixture, TUESDAY_1700 } from '../../../tests/support/closed-trade-review-fixture.ts';
+import { rawEditTrade, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import type { GetDailyTradeReviewResult, OpenDailyReviewResult } from './index.ts';
 
 const decimal = (text: string): Rational => {
@@ -20,6 +21,16 @@ function owedCard(result: GetDailyTradeReviewResult) {
   if (result.kind !== 'ReflectionsOwed') throw new Error(`expected ReflectionsOwed, got ${result.kind}`);
   return result.card;
 }
+
+// Tuesday's Review with or without a walk, and the card of one Trade of it.
+async function openTuesday(stack: ReviewStack) {
+  const review = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 });
+  if (review.kind !== 'Ready' && review.kind !== 'Empty') throw new Error(`expected Ready or Empty, got ${review.kind}`);
+  return review;
+}
+
+const cardOf = (stack: ReviewStack, review: Awaited<ReturnType<typeof openTuesday>>, tradeId: string) =>
+  stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding });
 
 function walkedCard(result: GetDailyTradeReviewResult) {
   if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
@@ -56,6 +67,7 @@ describe('owed-reflection cards (A90)', () => {
       realizedR: derivedM.realizedR,
       terminalDisposition: { kind: 'Value', value: [{ mechanism: 'Executions', quantity: Rational.of(100n) }] },
       closeReason: { id: closeReason.id, label: closeReason.label },
+      closeReviewOutcome: { kind: 'Debt', id: debtOf('M').debtId },
       terminalTime: '2026-10-12T19:00:00Z',
     });
     expect(derivedM.realizedR.kind).toBe('Value');
@@ -99,6 +111,108 @@ describe('owed-reflection cards (A90)', () => {
     for (const card of [m, q]) {
       for (const key of ['form', 'evaluation', 'frame', 'datedLastClose', 'attention']) expect(card).not.toHaveProperty(key);
     }
+  }, 60_000);
+});
+
+// A Trade bought and sold after the Tuesday close, so it is outside the walk. Its Close Review is completed and the
+// exit's own Position Change Reflection is deferred, so it is owed on its own account.
+async function closedWithCompletedCloseReview(stack: ReviewStack) {
+  const closeReview = await stack.journal.getDefinitions({ latestFor: 'entry-type.close-review' });
+  const reasons = await stack.catalog.query({ family: 'CloseReason' });
+  if (closeReview.kind !== 'Found' || reasons.kind !== 'Page') throw new Error('no Close Review seed');
+  const trade = await stack.confirm({ shares: '100', symbol: 'RST', entry: '10.00', stop: '9.00', target: '12.00', planTime: '2026-10-13T13:00:00Z' });
+  await stack.fill(trade, '2026-10-13T20:10:00Z', '100', '10.00');
+  const current = await stack.tradeRecord.getRecord({ tradeId: trade.tradeId, projection: 'AnalysisInput' });
+  if (current.kind !== 'Found') throw new Error('no Trade');
+  const result = await stack.tradeWorkflows.recordPositionChange({
+    originTradeId: trade.tradeId,
+    trades: [{ tradeId: trade.tradeId, expectedFactRevision: current.factRevision }],
+    members: [
+      {
+        kind: 'Execution',
+        tradeId: trade.tradeId,
+        action: 'Sell',
+        instrument: { kind: 'Stock', symbol: 'RST' },
+        intent: { kind: 'ServesPlannedLeg', plannedLegId: trade.plan.legs[0]!.factId },
+        quantity: '100',
+        price: '11.00',
+        fee: '0.60',
+        economicTime: '2026-10-13T20:30:00Z',
+      },
+    ],
+    reflection: { kind: 'Defer' },
+    closeReasonId: reasons.items[0]!.id,
+    closeReview: {
+      kind: 'Complete',
+      form: {
+        definitionId: closeReview.definition.id,
+        answers: { 'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' } },
+      },
+    },
+  });
+  if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+  return { tradeId: trade.tradeId, closeReviewEntryId: result.receipt.closeReview!.id };
+}
+
+describe('Close Review outcome of an owed card (A90)', () => {
+  it('should carry the Close Review outcome in the Closed summary of an owed card', async () => {
+    const { stack, trades, debts } = await closedTradeReviewFixture({ only: ['M'] });
+    const completed = await closedWithCompletedCloseReview(stack);
+    const review = await openTuesday(stack);
+    const closedSummary = async (tradeId: string) => {
+      const card = owedCard(await cardOf(stack, review, tradeId));
+      if (card.summary?.kind !== 'Closed') throw new Error('expected a Closed summary');
+      return card.summary;
+    };
+
+    // T-M's Close Review was deferred: its outcome is that Debt.
+    expect((await closedSummary(trades.M!)).closeReviewOutcome).toEqual({ kind: 'Debt', id: debts.find((debt) => debt.anchor.tradeId === trades.M)!.debtId });
+    // The other Trade's Close Review is complete; only its exit's reflection is owed.
+    expect((await closedSummary(completed.tradeId)).closeReviewOutcome).toEqual({ kind: 'Entry', id: completed.closeReviewEntryId });
+  }, 60_000);
+});
+
+describe('Close Reason of an owed card (A90)', () => {
+  it('should keep an owed card Close Reason identity and the account and strategy labels when the Close Reason cannot be resolved', async () => {
+    const { stack, trades } = await closedTradeReviewFixture({ only: ['M'] });
+    const before = owedCard(await cardOf(stack, await openTuesday(stack), trades.M!));
+    if (before.summary?.kind !== 'Closed' || before.summary.closeReason === undefined) throw new Error('expected a Closed summary with a Close Reason');
+    expect(before.labels.account).not.toBe('');
+
+    // The stored Close Reason now names a Catalog record that does not exist.
+    type StoredCloseReason = { versions: { value: Record<string, unknown> }[] };
+    await rawEditTrade(stack, trades.M!, (trade) => ({
+      ...trade,
+      closeReasonFacts: (trade['closeReasonFacts'] as StoredCloseReason[]).map((fact) => ({
+        ...fact,
+        versions: fact.versions.map((version) => ({ ...version, value: { ...version.value, closeReasonId: 'close-reason-gone' } })),
+      })),
+    }));
+    const card = owedCard(await cardOf(stack, await openTuesday(stack), trades.M!));
+
+    expect(card.labels).toEqual(before.labels);
+    expect(card.summary).toEqual(expect.objectContaining({ kind: 'Closed', closeReason: { id: 'close-reason-gone', label: '' } }));
+  }, 60_000);
+});
+
+describe('binding of an owed card (A46, A90)', () => {
+  it('should return ReviewChanged for an owed card when its Trade facts or Outstanding Debts change after open', async () => {
+    const { stack, trades, debts } = await closedTradeReviewFixture({ only: ['M'] });
+    const getCard = (review: Awaited<ReturnType<typeof openTuesday>>) => cardOf(stack, review, trades.M!);
+
+    // The Trade's facts change after open.
+    const first = await openTuesday(stack);
+    expect((await getCard(first)).kind).toBe('ReflectionsOwed');
+    await rawEditTrade(stack, trades.M!, (trade) => ({ ...trade, factRevision: (trade['factRevision'] as number) + 1 }));
+    expect(await getCard(first)).toEqual({ kind: 'ReviewChanged' });
+
+    // Its Outstanding Debt is resolved after a later open.
+    const second = await openTuesday(stack);
+    expect((await getCard(second)).kind).toBe('ReflectionsOwed');
+    const debt = debts.find((candidate) => candidate.anchor.tradeId === trades.M)!;
+    const declined = await stack.journal.save({ intention: 'ResolveDebt', debtId: debt.debtId, expectedDebtRevision: debt.revision, resolution: { kind: 'Decline' } });
+    expect(declined.kind).toBe('Saved');
+    expect(await getCard(second)).toEqual({ kind: 'ReviewChanged' });
   }, 60_000);
 });
 
