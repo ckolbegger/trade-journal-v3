@@ -76,6 +76,26 @@ describe('Trades with owed reflections (P19, P20, A89)', () => {
     ]);
   }, 60_000);
 
+  it('should list the reflections one Trade owes in due-anchor order as instants, a later anchor whose text sorts first coming last', async () => {
+    const { stack } = await closedTradeReviewFixture({ only: [] });
+    const trade = await stack.confirm({ shares: '100', symbol: 'QST', entry: '10.00', stop: '9.00', target: '12.00', planTime: '2026-10-13T13:00:00Z' });
+    // Both buys come after the Tuesday cutoff, so the Trade is outside the walk. The text of the later anchor sorts before the earlier one
+    // ('.' before 'Z'), so the Journal's index returns the later Debt first.
+    const earlier = '2026-10-13T20:10:00Z';
+    const later = '2026-10-13T20:10:00.500Z';
+    await stack.fill(trade, earlier, '50', '10.00', { kind: 'Defer' });
+    await stack.fill(trade, later, '50', '10.00', { kind: 'Defer' });
+    const indexOrder = (await stack.journal.query({ scope: 'OutstandingDebt' })).debts.map((debt) => debt.dueAnchor);
+    expect(indexOrder).toEqual([later, earlier]);
+
+    // Neither reflection is due yet, so no Trade is walked and the Review is Empty with the owed group attached.
+    const review = await openAt(stack, TUESDAY_1700);
+    if (review.kind !== 'Empty') throw new Error(`expected Empty, got ${review.kind}`);
+
+    expect(review.owed).toHaveLength(1);
+    expect(review.owed[0]!.owed.map((reflection) => reflection.dueAnchor)).toEqual([earlier, later]);
+  }, 60_000);
+
   it('should return Empty with the owed group attached when no Trade was eligible and no reflection is due, from a Workspace holding only T-L in the Tuesday Review', async () => {
     const { stack, trades, debts } = await closedTradeReviewFixture({ only: ['L'] });
     const opened = await openAt(stack, TUESDAY_1700);

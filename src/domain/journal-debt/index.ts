@@ -25,12 +25,19 @@ export function owedStandingOf(tradeId: string, dueAnchors: readonly Instant[], 
   return { tradeId, hasDue: dueAnchors.some((anchor) => classifyDue(anchor, closes) === 'Due'), oldestAnchor: oldest };
 }
 
+// Due anchors compared as instants, not as text: the Journal's index orders their text, which differs for anchors written
+// with a fraction of a second or an offset.
+export function compareDueAnchors(a: Instant, b: Instant): number {
+  return Temporal.Instant.compare(Temporal.Instant.from(a), Temporal.Instant.from(b));
+}
+
 // The group's order: Trades with a due reflection first, then by oldest owed anchor, then Trade identity (P20, A89).
 export function compareOwed(a: OwedStanding, b: OwedStanding): number {
   if (a.hasDue !== b.hasDue) return a.hasDue ? -1 : 1;
-  const anchors = Temporal.Instant.compare(Temporal.Instant.from(a.oldestAnchor), Temporal.Instant.from(b.oldestAnchor));
+  const anchors = compareDueAnchors(a.oldestAnchor, b.oldestAnchor);
   if (anchors !== 0) return anchors;
-  return a.tradeId < b.tradeId ? -1 : a.tradeId > b.tradeId ? 1 : 0;
+  if (a.tradeId === b.tradeId) return 0;
+  return a.tradeId < b.tradeId ? -1 : 1;
 }
 
 export function classifyDue(dueAnchor: Instant, closes: SessionCloses): DueClassification;

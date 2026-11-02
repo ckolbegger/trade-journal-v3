@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
-import { classifyDue, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
+import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
@@ -289,7 +289,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         const stored = await deps.tradeRecord.getRecord({ tradeId, projection: 'Summary' });
         if (stored.kind !== 'Found') return [];
         const summary = stored.projection as BrowseRecord['summary'];
-        const owed = debts.map(({ debtId, entryTypeKey, dueAnchor }) => ({ debtId, entryTypeKey, dueAnchor, classification: classifyDue(dueAnchor, closes) }));
+        const owed = debts.toSorted((a, b) => compareDueAnchors(a.dueAnchor, b.dueAnchor)).map(({ debtId, entryTypeKey, dueAnchor }) => ({ debtId, entryTypeKey, dueAnchor, classification: classifyDue(dueAnchor, closes) }));
         const due = owed.filter(({ classification }) => classification === 'Due').length;
         const trade: OwedReflectionsTrade = { tradeId, underlying: summary.underlying, lifecycle: summary.lifecycle, owed, progress: owedCardProgress({ due, later: owed.length - due }) };
         return [{ trade, factRevision: stored.factRevision, standing: owedStandingOf(tradeId, debts.map(({ dueAnchor }) => dueAnchor), closes) }];
