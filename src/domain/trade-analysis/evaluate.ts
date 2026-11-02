@@ -167,8 +167,8 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const quantity = sum(lots.map((l) => l.quantity));
   const cost = sum(lots.map((l) => l.quantity.mul(l.price)));
   const openingFees = sum(lots.map((l) => l.unconsumedOpeningFee));
-  // No disposals exist before D6, so nothing is realized yet.
-  const realized = ZERO;
+  // Realized at the cutoff by derive: a Value that does not depend on the Mark (A92).
+  const realized = state.realizedToDate;
   // Before D17 a Trade has its Plan's single original Stop (D1 A1).
   const stop = decimal(state.baseline.stopBasis[0]!.condition.price);
   const target = decimal(state.baseline.targetBasis[0]!.condition.price);
@@ -271,7 +271,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     realizedToDate: current(realized),
     currentMarkedPnl: marked(currentMarked),
     currentMarkedPnlInPlanR: marked((mark) => currentMarked(mark).div(state.baseline.oneR)),
-    incurredFees: current(state.fees.incurredOpening),
+    incurredFees: current(state.fees.incurred),
     ongoingRiskToStop,
     worstCaseOngoingRisk: marked((mark) => quantity.mul(mark)),
     incrementalRewardToTarget,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type CalculationResult, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
 import { evaluate, type ObservationFrame } from './evaluate.ts';
-import { execution, PC1, PC2, PC3, positionChange, referenceRecord } from './reference-trade.ts';
+import { execution, PC1, PC2, PC3, positionChange, referenceRecord, X1 } from './reference-trade.ts';
 
 const XYZ = { kind: 'Stock', symbol: 'XYZ' } as const;
 // Monday 2026-10-12 closes at 16:00 America/New_York, which is 20:00Z.
@@ -60,6 +60,25 @@ describe('Mark-to-Market valuation (after PC2, Mark 52.00 for 2026-10-12)', () =
 
 // Tuesday 2026-10-13 closes at 20:00Z.
 const TUESDAY_CLOSE = '2026-10-13T20:00:00Z';
+
+describe('realized-to-date in current figures (A92)', () => {
+  const evaluation = evaluate({
+    state: derivedState(referenceRecord([PC1, PC2, X1])),
+    frame: availableFrame('52.50', '2026-10-13', TUESDAY_CLOSE),
+  });
+
+  it('should return realized-to-date 55.90, remaining-open marked P&L 158.50, Current Marked Trade P&L 214.40 at 536/625 R, incurred fees 2.60, and on the remaining 70 shares Ongoing Risk to Stop 350.00, Worst-Case 3675.00, and Incremental Reward to Target 245.00', () => {
+    expect(exact(evaluation.openQuantity)).toBe(q(70n));
+    expect(exact(evaluation.realizedToDate)).toBe(q(5590n, 100n));
+    expect(exact(evaluation.remainingOpenPnl)).toBe(q(15850n, 100n));
+    expect(exact(evaluation.currentMarkedPnl)).toBe(q(21440n, 100n));
+    expect(exact(evaluation.currentMarkedPnlInPlanR)).toBe(q(536n, 625n));
+    expect(exact(evaluation.incurredFees)).toBe(q(260n, 100n));
+    expect(exact(evaluation.ongoingRiskToStop)).toBe(q(350n));
+    expect(exact(evaluation.worstCaseOngoingRisk)).toBe(q(3675n));
+    expect(exact(evaluation.incrementalRewardToTarget)).toBe(q(245n));
+  });
+});
 
 function missingFrame(stale?: { price: string }): ObservationFrame {
   return {
