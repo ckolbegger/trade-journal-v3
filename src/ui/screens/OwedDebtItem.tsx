@@ -7,7 +7,7 @@ import { localTime } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult } from './DebtForm.tsx';
 
-// An Outstanding Debt in a Trade's narrative: "Reflection owed" beside its Position Change, with its
+// An Outstanding Debt in a Trade's narrative: its Entry Type and "Reflection owed" beside its Position Change, with its
 // due status as text (absent outside session-policy coverage) and, while Writable, the ways to resolve it.
 // Reflect now and Decline both open the same form, loaded at the Debt's snapshot revision; the form has
 // its own Decline, with the optional reason.
@@ -102,6 +102,7 @@ export function OwedDebtItem({
   return (
     <li>
       <h3>
+        <Badge tone="neutral">{debt.entryType}</Badge>
         {settled ? <Badge tone="info">{settled.label}</Badge> : <Badge tone="warning">Reflection owed</Badge>}
       </h3>
       <p>

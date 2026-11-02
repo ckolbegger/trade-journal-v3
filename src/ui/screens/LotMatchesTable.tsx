@@ -17,19 +17,22 @@ export function LotMatchesTable({
   executions,
   timeZone,
   caption,
+  describedBy,
 }: {
   readonly rows: readonly LotMatchRow[];
   readonly executions: readonly ExecutionFact[];
   readonly timeZone: string;
   // Names the table where its section does not (the Detail's scroll region).
   readonly caption?: string;
+  // The id of a note that describes the table, so a screen reader announces it with the table.
+  readonly describedBy?: string;
 }) {
   const at = (executionId: string) => {
     const execution = executions.find((e) => e.factId === executionId)!;
     return `${price(execution.price)} on ${localTime(execution.economicTime, timeZone)}`;
   };
   return (
-    <table>
+    <table aria-describedby={describedBy}>
       {caption !== undefined && <caption>{caption}</caption>}
       <thead>
         <tr>

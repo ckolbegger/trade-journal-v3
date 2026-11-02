@@ -407,10 +407,11 @@ function LotMatchesSection({ view, timeZone }: { readonly view: OpenTradeDetail;
   return (
     <section className="card" aria-labelledby="lot-matches-heading">
       <h2 id="lot-matches-heading">Lot Matches</h2>
-      <p>Each match’s amount is rounded to the cent for display.</p>
+      <p id="lot-matches-note">Each match’s amount is rounded to the cent for display.</p>
       <div className="table-scroll" role="region" aria-label="Matched lots" tabIndex={0}>
         <LotMatchesTable
           caption="Lot Matches"
+          describedBy="lot-matches-note"
           rows={view.lotMatches}
           executions={view.positionChanges.flatMap((change) => change.executions)}
           timeZone={timeZone}

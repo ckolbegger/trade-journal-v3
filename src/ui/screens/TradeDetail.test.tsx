@@ -1418,7 +1418,49 @@ describe('Closed Trade Detail', () => {
   });
 });
 
+describe('Closed Trade Detail owed Debts (T6.19-B1)', () => {
+  const owed = (id: string, entryType: string, entryTypeKey: string, source: string, momentTime: string, positionChangeId: string): TradeDetailDebt => ({
+    kind: 'Debt',
+    id,
+    entryType,
+    entryTypeKey,
+    source,
+    anchor: { kind: 'Trade', tradeId: 'trade-1' },
+    momentTime,
+    positionChangeId,
+    definitionId: `def-${id}`,
+    dueAnchor: '2026-10-14T20:00:00Z',
+    revision: `${id}-rev-1`,
+    dueStatus: 'DueInNextReview',
+  });
+
+  it('should tell a deferred Close Review from a deferred Position Change Reflection by naming each Entry Type on its owed item', async () => {
+    const journal = [
+      owed('debt-pcr', 'Position Change Reflection', 'entry-type.position-change-reflection', 'Position Change', '2026-10-13T18:00:00Z', 'pc-x2'),
+      owed('debt-close', 'Close Review', 'entry-type.close-review', 'Trade close', '2026-10-13T18:00:00Z', 'pc-x2'),
+    ];
+    renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: { id: 'cr-1', label: 'Target reached' }, journal }), true);
+    const region = await screen.findByRole('region', { name: 'Journal (2)' });
+    const [reflection, closeReview] = within(region).getAllByRole('listitem') as [HTMLElement, HTMLElement];
+    expect(within(reflection).getByText('Position Change Reflection', { selector: '.badge' })).toBeTruthy();
+    expect(within(reflection).queryByText('Close Review')).toBeNull();
+    expect(within(closeReview).getByText('Close Review', { selector: '.badge' })).toBeTruthy();
+    expect(within(closeReview).queryByText('Position Change Reflection')).toBeNull();
+    // Both still read as owed, beside the moment they belong to.
+    for (const item of [reflection, closeReview]) {
+      expect(within(item).getByText('Reflection owed')).toBeTruthy();
+      expect(item.textContent).toContain('Position Change at 2026-10-13 14:00');
+    }
+  });
+});
+
 describe('Open Trade Detail after a partial exit', () => {
+  it('should describe the Lot Matches table by the note that amounts are rounded for display', async () => {
+    renderView(openDetailOf([PC1, PC2, X1]), true);
+    const section = await screen.findByRole('region', { name: 'Lot Matches' });
+    expect(within(section).getByRole('table', { name: 'Lot Matches', description: 'Each match’s amount is rounded to the cent for display.' })).toBeTruthy();
+  });
+
   it('should show realized to date, the Lot Matches table with a note that per-match amounts are rounded for display, and Record exit beside Record entry only while Writable', async () => {
     renderView(openDetailOf([PC1, PC2, X1]), true);
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
