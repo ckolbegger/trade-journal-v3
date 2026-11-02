@@ -275,6 +275,7 @@ const sameCutoff = (a: Instant | undefined, b: Instant | undefined) =>
 
 // The benchmarked maximum Open book, shown as one page (D2 A32).
 const OPEN_PAGE_SIZE = 200;
+const CLOSED_PAGE_SIZE = 50;
 
 // Every Trade commit rewrites this meta record, so the persistence write stamp on it is the
 // Trade-section revision: any Trade commit changes it, and no other commit does.
@@ -423,9 +424,16 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       // Open Trades are listed by Last Activity descending and Closed Trades by Terminal Time
       // descending, each the private key's index order, one bounded index read per page resuming
       // after the previous page's last key (D2 A28, A32; D6 A87, A95).
-      const keyedIndex = query.lifecycle === 'Open' ? 'byLifecycleActivity' : query.lifecycle === 'Closed' ? 'byLifecycleTerminal' : undefined;
+      let keyedIndex: 'byLifecycleActivity' | 'byLifecycleTerminal' | undefined;
+      let pageSize = query.pageSize ?? 50;
+      if (query.lifecycle === 'Open') {
+        keyedIndex = 'byLifecycleActivity';
+        pageSize = Math.min(query.pageSize ?? OPEN_PAGE_SIZE, OPEN_PAGE_SIZE);
+      } else if (query.lifecycle === 'Closed') {
+        keyedIndex = 'byLifecycleTerminal';
+        pageSize = Math.min(query.pageSize ?? CLOSED_PAGE_SIZE, CLOSED_PAGE_SIZE);
+      }
       const keyed = keyedIndex !== undefined;
-      const pageSize = query.lifecycle === 'Open' ? Math.min(query.pageSize ?? OPEN_PAGE_SIZE, OPEN_PAGE_SIZE) : (query.pageSize ?? 50);
       const all = IDBKeyRange.bound([query.lifecycle], [query.lifecycle, []]);
       type Stored = TradeDocument & { activityDesc?: string; exposureStart?: string };
       const { value, binding } = await deps.persistence.readSnapshot(['trades', 'meta'], async (tx) => {
@@ -503,9 +511,12 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       // Confirmation creates a Planned Trade; a Position Change leaves the Trade Open, or Closed when
       // its Sells leave the Position flat (D2 A18, D6 A87). Trade Analysis decides which.
       const lifecycles: readonly LifecycleState[] = prepared.before ? ['Open', 'Closed'] : ['Planned'];
+      // A Close Reason names the terminal Position Change, so an Open expectation cannot add one (A85).
+      const addsCloseReason = (prepared.candidate.closeReasonFacts?.length ?? 0) > (prepared.before?.closeReasonFacts?.length ?? 0);
       if (
         reconciliation.candidateDigest !== prepared.digest ||
         !lifecycles.includes(reconciliation.expectedLifecycle) ||
+        (reconciliation.expectedLifecycle === 'Open' && addsCloseReason) ||
         !actionsMatch(prepared, reconciliation.deviationActions ?? [])
       ) {
         return { kind: 'ReconciliationMismatch' };

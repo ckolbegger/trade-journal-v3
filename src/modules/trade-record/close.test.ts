@@ -212,6 +212,18 @@ describe('applyPreparedChange', () => {
     expect(writes.writes.map((w) => w.store).sort()).toEqual(['meta', 'trades']);
     expect(Object.keys(afterX2.stored!).filter((key) => /lot|match/i.test(key))).toEqual([]);
   });
+
+  it('should return ReconciliationMismatch when the reconciliation expects Open but the candidate adds a Close Reason fact', async () => {
+    const { record } = await tradeRecord([tradeAfter('trade-1', [PC1, PC2])]);
+    const prepared = await record.prepareChange(sell(X2, 4, CLOSE_REASON));
+    if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
+    const tx = beginSemanticTransaction();
+
+    const result = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [], exposureStart: PC1[0]!.economicTime });
+
+    expect(result.kind).toBe('ReconciliationMismatch');
+    expect(tx.close().writes).toEqual([]);
+  });
 });
 
 describe('queryRecords: CurrentState Closed', () => {
@@ -251,6 +263,17 @@ describe('queryRecords: CurrentState Closed', () => {
     expect(indexGetAll.mock.contexts.map((index) => (index as IDBIndex).name)).toEqual(['byLifecycleTerminal']);
     expect(idsOf(second)).toEqual(expected.slice(50));
     expect(second.kind === 'Page' && second.nextCursor).toBeUndefined();
+  });
+
+  it('should read at most 50 Closed Trades per page even when a larger page size is requested', async () => {
+    const closes = Array.from({ length: 55 }, (_, i) => ({ tradeId: `trade-${String(i).padStart(3, '0')}`, time: `2026-10-13T18:${String(i).padStart(2, '0')}:00Z` }));
+    const { record, persistence } = await tradeRecord(closes.map((c) => tradeAfter(c.tradeId, [PC1, PC2])));
+    await closeTrades(record, persistence, closes);
+
+    const page = await record.queryRecords({ lifecycle: 'Closed', projection: 'Summary', pageSize: 500 });
+    if (page.kind !== 'Page') throw new Error(`expected a page, got ${page.kind}`);
+    expect(page.items).toHaveLength(50);
+    expect(page.nextCursor).toBeDefined();
   });
 });
 
