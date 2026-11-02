@@ -164,3 +164,59 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.5 Persistence: schema v5 and the `v4→v5` transform
 
 Base commit (for `browser-auto`): `31bac344`.
+
+Commit `830cfc28` (T6.5, 3 cases red then green, no first-run pass).
+- **Changes:** `SCHEMA_VERSION` is now 5. A sparse `byLifecycleTerminal` index on `['lifecycle', 'terminalDesc', 'tradeId']` was added. `v4ToV5` strips private fields and adds `closeReasonFacts: []`. `terminalTime` and `terminalDesc` are private fields. The rebuild recomputes both for a Closed Trade from its latest Position Change Economic Time; `terminalDesc` uses `activityDesc`'s nine's-complement encoding.
+- **Version pins:** raising the shared constant meant bumping the version pins in existing persistence, Workspace and d2/d4/d5 integration tests. It changed tests only, as D5's T5.1 and T5.1-S1 (`fc2dfd78`) did. One describe was renamed: "migration to the current schema, from v1 through v3". No Workspace production code changed, which leaves T6.15 with only its planned migration case.
+- **Close Reason field:** the implementer asked whether Close Reason facts belong in the Trade's single `facts` array. T6.5's planned case says each Trade document gets "an empty Close Reason fact list", so the separate `closeReasonFacts` list follows the plan as written. A85's "next Recorded Sequence" is shared with the members, whichever list holds the fact. T6.6 builds on `closeReasonFacts`.
+- **Browser tier:** the commit touches `src/persistence/`, so P55 puts this task's run on the full tier.
+
+### ocr review of `830cfc28`
+
+Session `f05f1aa0-b3d5-49cf-8ceb-ad474a26dead`, 5 files reviewed (14 test and evidence files excluded), **no findings**. Raw output: [ocr/T6.5-830cfc28.json](ocr/T6.5-830cfc28.json).
+
+### Cumulative run after T6.5 (first)
+
+Label `t6.5-schema-v5`, at `830cfc28` plus uncommitted evidence (2026-11-01 19:25 EST). Outputs in `suite-runs/t6.5-schema-v5-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 84 files: 1071 passed, **1 failed** |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since 31bac344: src/persistence/candidate.test.ts": 145 passed, **2 failed** (6.8 m) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed |
+
+Failures:
+- **`src/ui/screens/TradeList.test.tsx:133`** (`expect(marks('tj:open-list-ready')).toBe(2)` got 1). This is the load-dependent flake carried from D5, and the handoff says to rerun it once alone. Rerun alone in the main session (`npx vitest run src/ui/screens/TradeList.test.tsx -t "should render distinct Loading"`), it passed (2 passed, 21 skipped). Recorded as a recurrence, not a defect.
+- **`e2e/d2/migration.spec.ts:170`** (B2.6) expected the pre-update Trades without the v5 transform's `closeReasonFacts: []`. **`e2e/d5/update.spec.ts:62`** (B5.6) expected About's Schema version "4" and found "5". Both are browser pins that T6.5's version bump missed, so they go to bug task T6.5-B1. Neither needs a production change.
+- **`verify:capacity`**: `FAIL basis measured at schema version 4, current is 5: run measure:capacity`. **Expected until T6.22**, which recomputes the capacity basis for schema 5. D5 carried the same failure from T5.1 until T5.19.
+
+### T6.5-B1 Browser cases pinned to schema 4
+
+Commit `5867480c`, test-only. Each case was run alone after `npm run build:faults && npm run build:releases`, red and then green.
+- **B2.6** builds its expectation live through `authoritative(...)` from the D1 records. The case now adds `closeReasonFacts: []` to each Trade after that call. The shared helper is unchanged, because B2.5 migrates only to the d2 release.
+- **B5.6** reads its About pin from `SCHEMA_VERSION` (`src/persistence/schema.ts`). The case is renamed "show the current schema in About".
+- **Other pins:** a grep of `e2e/` found none that the version bump breaks. `e2e/d4/update.spec.ts:40` pins "3" against d4 and B2.3 pins "2" against d2, so neither is affected.
+
+ocr review of `5867480c`, using the relocated procedure for test-only commits: the scratch clone's commit `d96623aa` puts the specs under `src/itg/d06/`. Session `24abbb7b-3533-44d2-a1fa-c087ef9fbdd3`, 2 files reviewed, **no findings**. Raw output: [ocr/T6.5-B1-5867480c.json](ocr/T6.5-B1-5867480c.json).
+
+### Cumulative run after T6.5-B1
+
+Label `t6.5-b1-schema-pins`, at `5867480c` plus uncommitted evidence (2026-11-01 19:37 EST). Outputs in `suite-runs/t6.5-b1-schema-pins-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 84 files: 1071 passed, **1 failed** (flake, see below) |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since 31bac344: e2e/d2/migration.spec.ts": 147 passed (6.6 m) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed, expected until T6.22 |
+
+Failures:
+- **`src/ui/screens/PositionChangeForm.test.tsx`**, "focus after navigation > should move focus to the Record entry heading when the form finishes loading": focus was on `<body>` instead of the `<h1>`. This is new, not carried from D5. Rerun in the main session, it passed alone (`-t "should move focus to the Record entry heading when the form finishes loading"`: 1 passed, 50 skipped) and with its whole file (51 passed). T6.5 and T6.5-B1 changed no UI code, so it is recorded as a load-dependent flake and flagged for the final report. If it fails a later run, it gets a bug task.
+- **`verify:capacity`**: `FAIL basis measured at schema version 4, current is 5: run measure:capacity`, expected until T6.22.
+
+T6.5's two browser failures from the first run now pass, and the TradeList flake did not recur.
+
+## T6.6 Trade Record: close facts, Closed index, queries
+
+Base commit (for `browser-auto`): `5867480c`.
