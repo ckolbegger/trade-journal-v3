@@ -1,0 +1,160 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 116195,
+    "input_tokens": 115096,
+    "output_tokens": 1099,
+    "cache_read_tokens": 23040,
+    "elapsed": "27s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_search": 10,
+      "file_find": 2,
+      "file_read": 10,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Application composition, routing, and types",
+      "files": [
+        "src/app/compose.ts",
+        "src/app/routes.ts",
+        "src/app/types.ts"
+      ]
+    },
+    {
+      "label": "Trade-view coordination and summary model",
+      "files": [
+        "src/coordinators/trade-views/index.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/trade-summary.ts"
+      ]
+    },
+    {
+      "label": "Workspace capabilities",
+      "files": [
+        "src/coordinators/workspace/capabilities.ts"
+      ]
+    }
+  ],
+  "session_id": "cf64e416-b178-4878-bf3d-f6298228e32d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cf64e416-b178-4878-bf3d-f6298228e32d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "859efda8",
+      "resolved_base": "36a559095d8bb3cb140e7bf4d7eb472198a4beb6",
+      "resolved_head": "859efda89dfa83734bc1d6199d2a4a2e32361e05",
+      "exact_range": "36a559095d8bb3cb140e7bf4d7eb472198a4beb6..859efda89dfa83734bc1d6199d2a4a2e32361e05",
+      "source_artifact_sha256": "84f263c1ecfa58ff7a89333f9de2e58d7fe86c6672312604a389abe974927668"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "b1239ef6f91c91ed8b874660c4504b7e641fb78d1b7d5e52a5582c2ceb00b145"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "9a7b395dee834387107486da079f0ca68950e19be004aaf14b35b9d1a9b453f5"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "790798295f93ff3db01f71ad341bb8da52b3d06b60b49bbf80ae74d3b02d1333"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "397dc5a93c075709140aeccd4240520ee4e13e215666d7ad5c609f5028b078e6"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "b403535be379b65fadc0aef409b30f86da69693b3cda0fc21dfd12a3a8f9f28c"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "fc405585eba138d5013c4799295a959c6b188f30080ad3dd74a0d46c0431c9f3"
+        },
+        {
+          "item_id": "e1a567450c0cd49c69ea52a4be90b7e4bd9dbca93de4e2f0dd0cb23f27c9a235",
+          "path": "src/domain/trade-summary.ts",
+          "fingerprint": "75807de960c002cf6dfcaa2adaac1c09cafe0b194cfc18b664427d53b6b70ecb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "b1239ef6f91c91ed8b874660c4504b7e641fb78d1b7d5e52a5582c2ceb00b145"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "9a7b395dee834387107486da079f0ca68950e19be004aaf14b35b9d1a9b453f5"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "790798295f93ff3db01f71ad341bb8da52b3d06b60b49bbf80ae74d3b02d1333"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "397dc5a93c075709140aeccd4240520ee4e13e215666d7ad5c609f5028b078e6"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "b403535be379b65fadc0aef409b30f86da69693b3cda0fc21dfd12a3a8f9f28c"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "fc405585eba138d5013c4799295a959c6b188f30080ad3dd74a0d46c0431c9f3"
+        },
+        {
+          "item_id": "e1a567450c0cd49c69ea52a4be90b7e4bd9dbca93de4e2f0dd0cb23f27c9a235",
+          "path": "src/domain/trade-summary.ts",
+          "fingerprint": "75807de960c002cf6dfcaa2adaac1c09cafe0b194cfc18b664427d53b6b70ecb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 26882
+  }
+}

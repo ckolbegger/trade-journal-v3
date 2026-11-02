@@ -1,0 +1,80 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 39040,
+    "input_tokens": 38653,
+    "output_tokens": 387,
+    "cache_read_tokens": 9600,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/d06/migration.ts",
+      "files": [
+        "src/itg/d06/migration.ts"
+      ]
+    }
+  ],
+  "session_id": "61f0c2c4-b2ee-4d68-9b82-0392be114c60",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "61f0c2c4-b2ee-4d68-9b82-0392be114c60",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "95a4f4ca",
+      "resolved_base": "c5ab433ea1efbdebadab4bb9f5e85d05b83e8b73",
+      "resolved_head": "95a4f4ca2c30c2ba77e11eafb13b029571f59597",
+      "exact_range": "c5ab433ea1efbdebadab4bb9f5e85d05b83e8b73..95a4f4ca2c30c2ba77e11eafb13b029571f59597",
+      "source_artifact_sha256": "58d7b2159a4f4c022a64ec6576847f931628902c58a6c9fe63b28d0a62440dce"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b97467bf2d5d0305f8e7c46f54b531915a7caa36b812ba7075ba6ec966e7276f",
+          "path": "src/itg/d06/migration.ts",
+          "fingerprint": "a5bd126d5253c1d0da9d3bace391f689b454c7c0e0b5c097fe7137fac52a5eef"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b97467bf2d5d0305f8e7c46f54b531915a7caa36b812ba7075ba6ec966e7276f",
+          "path": "src/itg/d06/migration.ts",
+          "fingerprint": "a5bd126d5253c1d0da9d3bace391f689b454c7c0e0b5c097fe7137fac52a5eef"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21553
+  }
+}

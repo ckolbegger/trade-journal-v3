@@ -871,3 +871,106 @@ No reruns were needed.
 ## T6.16 Installed Capability Manifest and composition root for D6
 
 Base commit (for `browser-auto`): `bcdbb0f1`.
+
+Commit `859efda8` (T6.16). Output of `verify:capabilities`: `OK: 19 operations, 10 variant-qualified, 8 routes, 4 Entry Types, schema 5`. The operation count stays at 19 because D6 adds variants only, no new facade operation.
+
+**Manifest.**
+- `recordPositionChange`: adds `Reduce`, `Close`, `Sell`, `CloseReason`, `CloseReviewComplete`, `CloseReviewDecline` and `CloseReviewDefer`.
+- `browseTrades` and `getTradeDetail`: add `Closed`.
+- `ReferenceCatalog.query` and `resolve`: add `CloseReason`.
+- `DailyReview.open`: adds `OwedReflectionGroup`.
+- `DailyReview.getTrade`: adds `ReflectionsOwed`.
+- `entryTypes`: adds `entry-type.close-review`.
+- `DailyReview.getDebt` stays absent (P20).
+
+The plan names no variant strings, so the subagent took them from the plan's wording.
+
+**Not in the manifest, recorded for the final report.** No deviation: D5 followed the same precedent. Its T5.13 row named the Trade Detail Source and the Market Data frames, and neither is a manifest field.
+- `queryRecords` is a Trade Record module operation, not a facade one.
+- The Trade Close Source has no manifest field, because the manifest has no Sources list.
+
+**Routes.** These make the new variants reachable.
+- `trades`: `Closed`.
+- `trade-detail`: `Closed`.
+- `record-entry`: the seven `recordPositionChange` variants. It also now requires Catalog `query` and `resolve`.
+- `review`: `OwedReflectionGroup` and `ReflectionsOwed`.
+
+There is no new route. The exit form uses `record-entry`; if T6.17 gives it its own route, the variants must move there with it.
+
+**Gap.** `verify:capabilities` checks variants only for operations whose route declares variants. Catalog `CloseReason` is therefore not machine-checked, so T6.17 must call `ReferenceCatalog.query({ family: 'CloseReason' })`.
+
+**Facade and types.**
+- `browseTrades` is generic over Planned, Open and Closed. There are no casts.
+- `TradeLifecycle` includes Closed.
+- `src/app/types.ts` re-exports `ClosedTradeItem`, `IncoherentClosedTradeItem`, `ClosedTradeDetail`, `ClosedCurrentEvaluation`, `LotMatchView`, `FeeReconciliation`, `CloseReasonLabel`, `TradeSummary`, `LotMatch`, `DispositionMechanism`, `TerminalDisposition` and `CloseReasonRecord`.
+
+**Trade Summary (decision 48).** It went red, then green, in two cases:
+- "should give a Closed item the entered quantity at its average entry price as its Trade Summary". Red: the item had no `summary`.
+- "should give a Closed Detail the same Trade Summary, although it holds no Open Lot". Red: `expected undefined to deeply equal { kind: 'Stock', … }`.
+
+`closedLongStockSummary` in `src/domain/trade-summary.ts` sums every Buy. For T-A that is 100 @ 50.18. `ClosedTradeItem.summary?` is absent on incoherent items. There was no first-run pass.
+
+**Checks and tier.** typecheck, tsc6, lint and lint:deps pass. 664 unit tests pass in the affected folders, and integration passes at 117. `src/app/` changed, so the browser stage runs at full tier (P55).
+
+**ocr review of `859efda8`** (`evidence/D06/ocr/T6.16-859efda8.json`): 7 files, 0 comments. There are no findings.
+
+The reviewer also checked the following:
+- **Manifest scope:** nothing beyond D6, and `getDebt` stays absent.
+- **Trade Summary:** exact `Rational` arithmetic, with fees excluded as in `openLongStockSummary`.
+- **Facade:** forwards everything with no loss.
+- **Planned and Open:** unchanged.
+
+**Note:** `OwedReflectionGroup`, like D5's `GapTrades`, is a manifest label with no code path of that name.
+
+**Cumulative run `t6.16-manifest-composition`**, HEAD `859efda8`, 2026-11-01. The browser tier was **full**, set by the first full-tier path changed since `bcdbb0f1`, `src/app/compose.ts`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 91 files, 1134 tests passed | `suite-runs/t6.16-manifest-composition-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.16-manifest-composition-integration.txt` |
+| Browser (Chromium, full) | **1 failed**, 146 passed (6.6 min) | `suite-runs/t6.16-manifest-composition-browser.txt` |
+| Static and verification (12) | 11 of 12. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.16-manifest-composition-checks.txt` |
+
+**Failure: B2.6**, `e2e/d2/migration.spec.ts:170`, "should complete the migration on relaunch without faults, with the pre-update data and no candidate database".
+- **Where:** the assertion at line 210 fails.
+- **Why:** the migrated Workspace now holds the four seeded Close Reasons. The test's `expected` adds only `closeReasonFacts: []` to each Trade.
+- **Cause:** T6.15 made the migration to schema 5 seed the D6 Catalog manifest. T6.15's own run was task tier, which does not include B2.6, so this first showed in this full-tier run.
+- **Classification:** deterministic, not a flake, so it was not rerun alone.
+- **Outcome:** bug task **T6.15-B1**.
+
+### T6.15-B1 B2.6 expects the Close Reasons the schema-5 migration seeds
+
+Commit `1cc9ee0b` changes `e2e/d2/migration.spec.ts` only, which is test-only.
+
+**Red, then green.** Before the change, `npx playwright test e2e/d2/migration.spec.ts` gave 1 failed and 3 passed. The diff was `Received + 48`, which is the four Close Reason records. After the change it gave 4 passed (16.5s).
+
+**Fix.**
+- **What the check compares.** `authoritative` compares only `catalog`, `trades` and `journalEntries`, which is why D5's Journal seeds never broke it.
+- **New expectation.** It splits off the migrated `CloseReason` records and checks each one against `D6_CATALOG_MANIFEST.closeReasons`: product key, label, origin `Seeded`, policy, revision 1, `seedOrder` equal to the manifest index, and any id. It then compares the remaining records to the D1 data.
+- **Migration output.** The four seeds, once each, with no extras.
+
+**Other specs checked.** B2.5 migrates to schema 2. B2.3 and B2.4 compare only store and index shapes. The D4 and D5 update specs assert through the UI. None needed a change.
+
+**ocr review of `1cc9ee0b`** (`evidence/D06/ocr/T6.15-B1-1cc9ee0b.json`; relocated, because the commit is test-only: the spec was moved to `src/itg/d06/` in a scratch clone): 1 file, 0 comments, no findings.
+
+The reviewer's reading:
+- **Catches a wrong migration:** a duplicate, a missing reason, a wrong `seedOrder`, an altered D1 record, or an extra record.
+- **Manifest dependence:** the expected product keys and labels come from the same manifest the migration seeds from, so this test cannot catch an edit to the manifest itself. It does not need to: `close-reasons.test.ts` pins the literal keys and labels in seed order.
+- **Gap (minor):** `expect.any(String)` does not require the ids to be unique. The old assertion did not check that either.
+
+**Cumulative run `t6.15-b1-b26-seeds`** at HEAD `1cc9ee0b`, 2026-11-01. This run closes T6.16 and T6.15-B1.
+- **Browser tier:** full. The first full-tier path changed since `bcdbb0f1` was `e2e/d2/migration.spec.ts`.
+- **Ports:** 5175, 9341 and 9342 were free before and after the run.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 91 files, 1134 tests passed | `suite-runs/t6.15-b1-b26-seeds-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.15-b1-b26-seeds-integration.txt` |
+| Browser (Chromium, full) | 147 passed in 6.5 min | `suite-runs/t6.15-b1-b26-seeds-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.15-b1-b26-seeds-checks.txt` |
+
+No reruns were needed.
+
+## T6.17 UI: exit form
+
+Base commit (for `browser-auto`): `1cc9ee0b`.
