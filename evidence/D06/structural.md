@@ -346,3 +346,60 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.9 Section validators: Trade Record and Catalog
 
 Base commit (for `browser-auto`): `78e5b177`.
+
+Commit `433acc1c` (T6.9, 2 cases red then green, no first-run pass).
+- **Trade Record validator.** It now reports four issues: `CloseReasonOnNonTerminalChange`, `MultipleCloseReasons`, `MissingCloseReason` and `UnknownCloseReason`.
+  - The terminal change comes from the validator's existing self-derivation: the last fact's Position Change, when `expectedLifecycle` is Closed. A Trade with `IncoherentFacts` skips these checks.
+  - `TradeSectionReferences` gains `closeReasonIds`.
+- **Catalog validator.**
+  - It reports `SeededRecordInactive` and `LabelNotDistinguishable` for Close Reasons. The Catalog validator did not have these checks before, even for Strategies; they are new and apply to Close Reasons only.
+  - It reports `UnknownSeedKey` for an unseeded Close Reason key. That assertion goes beyond the plan's wording and has its own red.
+- **Catalog case's first red.** It was a `TypeError` (`closeReasonIds is not iterable`), a runtime failure caused by the missing reference set.
+- **Edits outside the validators.**
+  - `migration.ts` forwards the new reference set. T6.15 still owns the switch to D6's manifest.
+  - `src/ui/readiness-copy.ts` gains six plain strings, because its exhaustive `Record<MigrationIssue['code'], string>` would otherwise fail `typecheck`. T5.5 and T5.5-B2 made the same kind of edit.
+- **Browser tier.** The commit touches `src/ui/`, so P55 puts this run on the full tier.
+
+### ocr review of `433acc1c`
+
+Session `5a82717a-85d7-4ffe-9d9f-ac8755d1f32e`, 4 files reviewed, 2 comments. Raw output: [ocr/T6.9-433acc1c.json](ocr/T6.9-433acc1c.json).
+
+| # | Severity | Location | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | medium | `trade-record/section.ts:85` (loop 56–59) | Close Reason fact identities are left out of the shared `DuplicateFactIdentity` check, which visits only `document.facts`. | **Valid → bug task T6.9-B1.** A85 makes the Close Reason a Trade fact identity. |
+| 2 | medium | `reference-catalog/section.ts:26` | `knownKeys` merges Strategy and Close Reason product keys, so a key from the wrong family passes `UnknownSeedKey`. | **Valid → T6.9-B1.** Keep one key set per kind. |
+
+The reviewer was also asked three direct questions. All three answers found no defect:
+- A coherent Closed Trade with one Close Reason on its terminal change is not reported.
+- An Open Trade reports nothing spurious.
+- `terminalTime` is never reported.
+
+### T6.9-B1 Close Reason identities and per-kind product keys
+
+This bug task comes from ocr findings 1 and 2. It is commit `f7d911b0`, with 2 cases, each run red then green.
+
+- "should report DuplicateFactIdentity when a Close Reason fact reuses another fact identity"
+  - Red: `[]` was returned instead of the two issues. The first logged red row is void: it ran before the edit applied, so it ran nothing. A note in the refactor row records this.
+  - The fix iterates `[...document.facts, ...(document.closeReasonFacts ?? [])]`.
+- "should report UnknownSeedKey for a Close Reason carrying a Strategy product key and a Strategy carrying a Close Reason product key"
+  - Red: `[]` was returned instead of two issues.
+  - The fix keeps one product-key set per kind.
+
+ocr review of `f7d911b0`: session `0ada0049-927d-4bc7-a0b0-0469f174ee48`, 2 files reviewed, **no findings**. Raw output: [ocr/T6.9-B1-f7d911b0.json](ocr/T6.9-B1-f7d911b0.json).
+
+### Cumulative run after T6.9
+
+Label `t6.9-section-validators`, at `f7d911b0` plus uncommitted evidence (2026-11-01 20:29 EST). Outputs in `suite-runs/t6.9-section-validators-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 87 files, 1091 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since 78e5b177: src/ui/readiness-copy.ts": 147 passed (6.6 m) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed, as expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.10 Trade Workflows: `recordPositionChange` (reduce and close)
+
+Base commit (for `browser-auto`): `f7d911b0`.

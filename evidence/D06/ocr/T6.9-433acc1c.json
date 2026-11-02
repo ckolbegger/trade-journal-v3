@@ -1,0 +1,142 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 146289,
+    "input_tokens": 144717,
+    "output_tokens": 1572,
+    "cache_read_tokens": 21120,
+    "elapsed": "1m2s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 16,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/trade-record/section.ts",
+      "content": "Close Reason fact identities are never included in the section-wide `factIds` set; that check still visits only `document.facts`. Consequently, a single otherwise valid Close Reason can reuse a Position Change/Execution identity, or another Trade's Close Reason identity, without producing `DuplicateFactIdentity`. Include `closeReasonFacts` in the shared identity-validation pass (independently of whether derivation succeeds), and add coverage for both collision cases.",
+      "existing_code": "  for (const { factId, versions } of facts) {",
+      "start_line": 85,
+      "end_line": 85,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/reference-catalog/section.ts",
+      "content": "Keep the known product keys scoped to their Catalog kind. Combining both families allows a Strategy with `productKey: 'close-reason.target-reached'` (or a Close Reason with `strategy.long-stock`) to pass validation, even though its own seed manifest does not define that key. This also weakens the existing Strategy validation. Use separate key sets and select the appropriate set based on `record.kind`.",
+      "existing_code": "  const knownKeys = new Set([...manifest.strategies, ...(manifest.closeReasons ?? [])].map((s) =\u003e s.productKey));",
+      "start_line": 26,
+      "end_line": 26,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Section readiness messaging",
+      "files": [
+        "src/modules/reference-catalog/section.ts",
+        "src/modules/trade-record/section.ts",
+        "src/ui/readiness-copy.ts"
+      ]
+    },
+    {
+      "label": "Workspace migration update",
+      "files": [
+        "src/coordinators/workspace/migration.ts"
+      ]
+    }
+  ],
+  "session_id": "5a82717a-85d7-4ffe-9d9f-ac8755d1f32e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5a82717a-85d7-4ffe-9d9f-ac8755d1f32e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "433acc1c",
+      "resolved_base": "66593cc484d55abd696cd6bd1b6feea8f7012684",
+      "resolved_head": "433acc1c741816e1fd227e3d7a15642178dcdd21",
+      "exact_range": "66593cc484d55abd696cd6bd1b6feea8f7012684..433acc1c741816e1fd227e3d7a15642178dcdd21",
+      "source_artifact_sha256": "542131ceb8afdcf7b0aef1981912afea024a49772f495f596e59c2d625ad0bc6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1cd4b927b8c58c8513dd4947971e640ee676f66a0693b882176cc745a5f58ab9",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "346e181f1649ebf92117d5490d6c3b0c48dfc91adffe17753c2f7c2695c0f2c9"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "c74e80e52dc6c611416629f9f55df6754d2b1ef4f4b227ab9f96e08d4ec53903"
+        },
+        {
+          "item_id": "6edd97af97a6a2d4cdf5833905151124e060ab02c7e100649eec85bb77f4d3a3",
+          "path": "src/modules/trade-record/section.ts",
+          "fingerprint": "a31eaa02d93f9b633894e74ade60958955eea70322e91dc3b013db604f30a252"
+        },
+        {
+          "item_id": "98f172cbe53f7d508cddb1ceb440b3e1e416db844a6362e28f4c3dc1dfacf214",
+          "path": "src/modules/reference-catalog/section.ts",
+          "fingerprint": "6a028c1051afa02567344597f88fd2daaf02d8b928d9f61a1ca708210a2ac807"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1cd4b927b8c58c8513dd4947971e640ee676f66a0693b882176cc745a5f58ab9",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "346e181f1649ebf92117d5490d6c3b0c48dfc91adffe17753c2f7c2695c0f2c9"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "c74e80e52dc6c611416629f9f55df6754d2b1ef4f4b227ab9f96e08d4ec53903"
+        },
+        {
+          "item_id": "6edd97af97a6a2d4cdf5833905151124e060ab02c7e100649eec85bb77f4d3a3",
+          "path": "src/modules/trade-record/section.ts",
+          "fingerprint": "a31eaa02d93f9b633894e74ade60958955eea70322e91dc3b013db604f30a252"
+        },
+        {
+          "item_id": "98f172cbe53f7d508cddb1ceb440b3e1e416db844a6362e28f4c3dc1dfacf214",
+          "path": "src/modules/reference-catalog/section.ts",
+          "fingerprint": "6a028c1051afa02567344597f88fd2daaf02d8b928d9f61a1ca708210a2ac807"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 62148
+  }
+}
