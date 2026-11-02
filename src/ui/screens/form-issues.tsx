@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { EntryDefinitionRecord } from '../../app/types.ts';
+import { SectionHeading } from './heading-level.tsx';
 import type { FieldIssue } from './plan-issues.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Answers } from './ReflectionPrompts.tsx';
@@ -23,7 +24,7 @@ export function IssueSummary({ id, heading, issues: submitted, corrected = () =>
   if (issues.length === 0) return null;
   return (
     <section ref={ref} tabIndex={-1} className="banner warning" aria-labelledby={id}>
-      <h2 id={id}>{heading}</h2>
+      <SectionHeading id={id}>{heading}</SectionHeading>
       <ul>
         {issues.map((issue) => (
           <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>

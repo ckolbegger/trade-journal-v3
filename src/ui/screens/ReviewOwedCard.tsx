@@ -4,7 +4,7 @@ import type { OwedReflectionsCard, OwedReflectionsTrade, OwedTradeSummary, PostS
 import { Badge } from '../Badge.tsx';
 import { calculation, closedViaSale, signed } from '../figures.ts';
 import { money, rMultiple, tradeSummary } from '../format.ts';
-import { panelOf, plural, reflectionsStatus } from './ReviewCard.tsx';
+import { panelOf, plural, reflectionsStatus, type Go } from './ReviewCard.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 
 // What the open owed card shows while its Trade is read, or when it could not be.
@@ -69,6 +69,8 @@ export interface OwedCardProps {
   readonly detail: OwedDetail | undefined;
   // A count that grows each time the trader asks for this card: it scrolls into view and takes focus on its header.
   readonly reveal: number;
+  // Where a link into the Review sends this card (A161): its Reflections panel is the one it has to open.
+  readonly go: Go;
   // The trader tried to leave while the card holds an entered value (A156).
   readonly holdMessage: boolean;
   readonly onToggle: () => void;
@@ -77,7 +79,7 @@ export interface OwedCardProps {
 }
 
 // One Trade of the group after the walk (P20): a position card with a Reflections panel and no Action panel (D5R, section 9).
-export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, holdMessage, onToggle, onReflectionResolved, onEntryDirty }: OwedCardProps) {
+export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, go, holdMessage, onToggle, onReflectionResolved, onEntryDirty }: OwedCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -101,7 +103,7 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
           <p>We couldn’t load this Trade. Nothing was changed.</p>
         </div>
       )}
-      {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} onReflectionResolved={onReflectionResolved} onEntryDirty={onEntryDirty} />}
+      {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} go={go} onReflectionResolved={onReflectionResolved} onEntryDirty={onEntryDirty} />}
     </li>
   );
 }
@@ -111,13 +113,28 @@ interface OwedBodyProps {
   readonly card: OwedReflectionsCard;
   readonly progress: OwedReflectionsTrade['progress'];
   readonly reviewDate: string;
+  readonly go: Go;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
 }
 
-function OwedBody({ facade, card, progress, reviewDate, onReflectionResolved, onEntryDirty }: OwedBodyProps) {
+function OwedBody({ facade, card, progress, reviewDate, go, onReflectionResolved, onEntryDirty }: OwedBodyProps) {
   const uid = useId();
   const [open, setOpen] = useState(true);
+  // A link to a card that is already open opens its Reflections panel again, if the trader has closed it, and takes focus (A161).
+  const panelButton = useRef<HTMLButtonElement>(null);
+  const [focusPanel, setFocusPanel] = useState<object>();
+  const [handledGo, setHandledGo] = useState(go.count);
+  if (go.count !== handledGo) {
+    setHandledGo(go.count);
+    if (go.panel === 'Reflections') {
+      setOpen(true);
+      setFocusPanel({});
+    }
+  }
+  useEffect(() => {
+    if (focusPanel) panelButton.current?.focus();
+  }, [focusPanel]);
   const { dueNow: due, later } = panelOf(progress, 'Reflections');
   const owed = due + later;
   return (
@@ -128,7 +145,7 @@ function OwedBody({ facade, card, progress, reviewDate, onReflectionResolved, on
       <Summary card={card} />
       <div className="review-panel">
         <h4>
-          <button type="button" aria-expanded={open} aria-controls={`${uid}-Reflections`} onClick={() => setOpen(!open)}>
+          <button type="button" ref={panelButton} aria-expanded={open} aria-controls={`${uid}-Reflections`} onClick={() => setOpen(!open)}>
             <span className="review-panel-name">Reflections</span> <span className="review-panel-summary">{owed > 0 ? `${owed} owed, ${due} due now` : 'None owed'}</span> <Badge tone="neutral">{reflectionsStatus(due, owed)}</Badge>
           </button>
         </h4>

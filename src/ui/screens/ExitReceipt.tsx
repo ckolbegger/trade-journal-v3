@@ -5,8 +5,8 @@ import { Rational } from '../../domain/values/index.ts';
 import { Badge } from '../Badge.tsx';
 import { calculation, closedViaSale, signed } from '../figures.ts';
 import { decimalMoney as price, localTime, money, quantity, rMultiple } from '../format.ts';
-import { PageTitle } from '../PageTitle.tsx';
 import type { CloseReasonOption } from './ClosingTheTrade.tsx';
+import { FormTitle, SectionHeading } from './heading-level.tsx';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { reflectionMessage } from './PositionChangeReceipt.tsx';
 
@@ -18,7 +18,7 @@ export interface ExitReceiptProps {
   // The Close Reasons the form offered, to name the one the result holds by identity.
   readonly closeReasons: readonly CloseReasonOption[];
   // Where a host shows the receipt inside its own page (the Review's card, A94): this follows it in place of the link back to
-  // the Trade, and its heading is the host's panel heading, not the page's.
+  // the Trade. Its heading levels are the host's, through the form that shows it.
   readonly after?: ReactNode;
 }
 
@@ -64,19 +64,13 @@ export function ExitReceipt({ result, timeZone, closeReasons, after }: ExitRecei
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
-      {after === undefined ? (
-        <PageTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
-          Exit recorded
-        </PageTitle>
-      ) : (
-        <h5 id="receipt-heading" ref={headingRef} tabIndex={-1}>
-          Exit recorded
-        </h5>
-      )}
+      <FormTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
+        Exit recorded
+      </FormTitle>
       <section aria-labelledby="saved-change-heading">
-        <h2 id="saved-change-heading">
+        <SectionHeading id="saved-change-heading">
           Position Change at <span className="nowrap">{localTime(saved.economicTime, timeZone)}</span>
-        </h2>
+        </SectionHeading>
         <ul className="executions">
           {saved.executions.map((e) => (
             <li key={e.factId} className="execution-line">
@@ -88,7 +82,7 @@ export function ExitReceipt({ result, timeZone, closeReasons, after }: ExitRecei
         </ul>
       </section>
       <section aria-labelledby="lot-matches-heading">
-        <h2 id="lot-matches-heading">Lot Matches</h2>
+        <SectionHeading id="lot-matches-heading">Lot Matches</SectionHeading>
         <LotMatchesTable
           rows={derivation.lotMatches.map((match, index) => ({ ...match, realized: derivation.lotMatchResults[index]!.realized }))}
           executions={trade.positionChanges.flatMap((c) => c.executions)}
@@ -97,7 +91,7 @@ export function ExitReceipt({ result, timeZone, closeReasons, after }: ExitRecei
       </section>
       {disclosed && (
         <section aria-labelledby="changed-matches-heading">
-          <h2 id="changed-matches-heading">Changed Lot Matches</h2>
+          <SectionHeading id="changed-matches-heading">Changed Lot Matches</SectionHeading>
           <p>This exit is dated before a later recorded change, so the sales are matched to the purchases again in order. The matches that changed:</p>
           <table>
             <thead>
@@ -130,7 +124,7 @@ export function ExitReceipt({ result, timeZone, closeReasons, after }: ExitRecei
         </section>
       )}
       <section aria-labelledby="exit-result-heading">
-        <h2 id="exit-result-heading">Result</h2>
+        <SectionHeading id="exit-result-heading">Result</SectionHeading>
         <dl>
           <dt>Lifecycle</dt>
           <dd>{trade.storedLifecycle}</dd>

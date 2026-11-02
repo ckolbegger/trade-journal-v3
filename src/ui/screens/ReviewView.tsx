@@ -199,6 +199,7 @@ function linkedCard(held: Held, params: URLSearchParams): LinkedCard | undefined
 }
 
 type MarksSaved = Extract<SaveReviewMarksResult, { kind: 'MarksSaved' }>;
+type OpenEmpty = Extract<OpenDailyReviewResult, { kind: 'Empty' }>;
 
 type ViewState =
   | { readonly kind: 'Loading' }
@@ -220,9 +221,11 @@ const heldEmpty = ({ reviewDate, cutoff, owed, binding }: Extract<OpenDailyRevie
 
 // A Ready Review: its status, then one card per walked Trade in the overview's attention order (A150), then the owed-reflection
 // group (P20). An Empty Review shows its message in place of the status and the walk.
-function ReadyReview({ facade, now, initial, empty = false, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly empty?: boolean; readonly onDirtyChange: (dirty: boolean) => void }) {
+function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly empty?: boolean; readonly onDirtyChange: (dirty: boolean) => void }) {
   // The held Review (A171): each result is folded into it; the ref holds the latest, so a read never uses an older binding.
   const [heldReview, setHeldReview] = useState<Held>({ review: initial, standings: {} });
+  // Whether the Review held is an Empty one: a Review read again can be either.
+  const [empty, setEmpty] = useState(initiallyEmpty);
   const review = heldReview.review;
   const latest = useRef(heldReview);
   const apply = (result: HeldResult) => {
@@ -283,34 +286,51 @@ function ReadyReview({ facade, now, initial, empty = false, onDirtyChange }: { r
   const openId = shown?.tradeId;
   // The Review asked for again, one at a time: a request made while one is in flight shares its answer, so two quick saves
   // are both refreshed. Undefined when it could not be produced.
-  const inFlight = useRef<Promise<Ready | undefined>>(undefined);
-  const reopen = (): Promise<Ready | undefined> => {
+  // A Ready or an Empty Review is a Review: the screen holds either, as it does when it first opens. Any other result is a failure.
+  const inFlight = useRef<Promise<Ready | OpenEmpty | undefined>>(undefined);
+  const reopen = (): Promise<Ready | OpenEmpty | undefined> => {
     if (inFlight.current) return inFlight.current;
     const asking = facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() })
       .catch(() => undefined)
       .then((result) => {
         inFlight.current = undefined;
-        return result?.kind === 'Ready' ? result : undefined;
+        return result?.kind === 'Ready' || result?.kind === 'Empty' ? result : undefined;
       });
     inFlight.current = asking;
     return asking;
   };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
   // The opening the refresh belongs to: the one the save was entered under, or the one shown when it is asked for.
+  // Every valid result is followed as the first opening follows it: an Empty or a different Review replaces the held one, and a Trade
+  // the new Review holds shows as the card it now is (walked or owed). A Trade it no longer holds closes its card. Only a Review or a
+  // Trade that cannot be read is a failure.
   const refreshTrade = async (tradeId: string, request = selection.current): Promise<boolean> => {
     // A card opened while the Review is being asked for waits for it, so it is read under the binding it returns.
     const asking = reopen().then((next) => {
-      if (next) apply({ kind: 'Opened', review: next });
+      if (next) {
+        apply({ kind: 'Opened', review: next.kind === 'Ready' ? next : heldEmpty(next) });
+        setEmpty(next.kind === 'Empty');
+      }
       return next;
     });
     refreshing.current = asking;
     const result = await asking;
     if (refreshing.current === asking) refreshing.current = undefined;
     if (!result) return false;
+    const held = latest.current.review;
+    if (!walkedTrades(held).some((t) => t.tradeId === tradeId) && !held.owed.some((t) => t.tradeId === tradeId)) {
+      setStale(undefined);
+      if (selection.current === request) collapse();
+      return true;
+    }
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
-    if (trade?.kind !== 'Ready') return false;
+    if (trade?.kind !== 'Ready' && trade?.kind !== 'ReflectionsOwed') return false;
     setStale(undefined);
     if (selection.current !== request) return true;
+    if (trade.kind === 'ReflectionsOwed') {
+      setShown({ tradeId, opening: request, detail: { card: trade.card } });
+      return true;
+    }
     // An Action belongs to one Review Date: the form is keyed by it, so the old date's draft is dropped, and the trader is told.
     // The date the shown form was opened under, not the overview's: a failed read can leave the two apart.
     const shownDate = typeof shown?.detail === 'object' && 'trade' in shown.detail ? shown.detail.trade.saveBinding.reviewDate : undefined;
@@ -506,6 +526,7 @@ function ReadyReview({ facade, now, initial, empty = false, onDirtyChange }: { r
                 expanded={trade.tradeId === openId}
                 detail={trade.tradeId === openId ? owedDetail(shown?.detail) : undefined}
                 reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
+                go={go.tradeId === trade.tradeId ? go.go : NO_GO}
                 holdMessage={refused && trade.tradeId === openId}
                 onToggle={() => toggle(trade.tradeId)}
                 onReflectionResolved={reflectionResolved}

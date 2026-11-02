@@ -90,6 +90,13 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
     item.current?.scrollIntoView?.({ block: 'start' });
     header.current?.focus({ preventScroll: true });
   }, [reveal]);
+  // The exit's receipt goes when Refresh Review reads the Review again, so focus moves to the Action panel's header, which stays
+  // whether or not Record the exit is offered again. The header is the card's, so a body that is replaced does not lose the move.
+  const actionHeader = useRef<HTMLButtonElement | null>(null);
+  const [refreshed, setRefreshed] = useState(0);
+  useEffect(() => {
+    if (refreshed > 0) actionHeader.current?.focus();
+  }, [refreshed]);
   // The press scrolled while the body was still loading and the page short, so the browser clamped the position: once the body
   // is there, the card is brought to the top again, so its header and first input are in view.
   const bodyShown = expanded && typeof detail === 'object';
@@ -143,6 +150,8 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
           onSaved={onSaved}
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
+          actionHeader={actionHeader}
+          onRefreshed={() => setRefreshed((count) => count + 1)}
           onMarkSaved={onMarkSaved}
           onSaveMarks={onSaveMarks}
           outOfDate={outOfDate}
@@ -171,6 +180,9 @@ interface CardBodyProps {
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
+  // The card's own handle on its Action panel's header, and the exit form's report that the Review was read again.
+  readonly actionHeader: { current: HTMLButtonElement | null };
+  readonly onRefreshed: () => void;
   readonly onMarkSaved: () => void;
   readonly onSaveMarks: CardMarksProps['onSaveMarks'];
   readonly outOfDate: boolean;
@@ -227,7 +239,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, now, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, now, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, actionHeader, onRefreshed, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress, marks);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -298,7 +310,13 @@ function CardBody({ facade, now, trade, progress, name, advance, go, marks, held
       {PANELS.map((name) => (
         <div key={name} className="review-panel">
           <h4>
-            <button type="button" ref={(button) => void (panelButtons.current[name] = button)} aria-expanded={open === name} aria-controls={`${uid}-${name}`} onClick={() => setOpen(name)}>
+            <button
+              type="button"
+              ref={(button) => {
+                panelButtons.current[name] = button;
+                if (name === 'Action') actionHeader.current = button;
+              }}
+              aria-expanded={open === name} aria-controls={`${uid}-${name}`} onClick={() => setOpen(name)}>
               <span className="review-panel-name">{name}</span> <span className="review-panel-summary">{headers[name].summary}</span> <Badge tone="neutral">{headers[name].status}</Badge>
             </button>
           </h4>
@@ -309,7 +327,7 @@ function CardBody({ facade, now, trade, progress, name, advance, go, marks, held
               <>
                 <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />
                 {/* An Exit Action is saved: the exit itself is a Trade Workflows save, recorded from here (A94). */}
-                {trade.form.kind === 'Saved' && trade.form.action.action === 'Exit' && <RecordExit facade={facade} tradeId={trade.tradeId} route={trade.exitRoute} now={now} onEntryDirty={onEntryDirty} onRefresh={onRefresh} />}
+                {trade.form.kind === 'Saved' && trade.form.action.action === 'Exit' && <RecordExit facade={facade} tradeId={trade.tradeId} route={trade.exitRoute} now={now} onEntryDirty={onEntryDirty} onRefresh={onRefresh} onRefreshed={onRefreshed} />}
               </>
             )}
           </div>

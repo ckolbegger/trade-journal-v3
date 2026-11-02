@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
-import { partialExitResult } from '../../../tests/support/exit-result-fixtures.ts';
+import { closedExitResult, partialExitResult } from '../../../tests/support/exit-result-fixtures.ts';
 import { reflectionDefinition, withExitForm } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, WalkedTrade } from '../../app/types.ts';
@@ -378,5 +378,120 @@ describe('Exit link (A94)', () => {
       expect(within(other).queryByRole('button', { name: 'Record the exit' })).toBeNull();
       cleanup();
     }
+  });
+
+  // Records a partial exit of 30 shares from the open card and waits for the receipt.
+  const refreshCase = async () => {
+    const user = userEvent.setup();
+    let remaining = 100n;
+    const facade = exitFacade('Exit', () => remaining);
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockImplementation(() => {
+      remaining = 70n;
+      return Promise.resolve(partialExitResult() as never);
+    });
+    renderReview(facade);
+    const card = await openAction(user);
+    await user.click(within(card).getByRole('button', { name: 'Record the exit' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '30'], ['Price', '52.00'], ['Fee', '0.60']] as const) await user.type(within(row).getByLabelText(label), value);
+    await user.click(within(card).getByRole('button', { name: 'Save exit' }));
+    await within(card).findByRole('heading', { name: 'Exit recorded' });
+    return { user, facade, card };
+  };
+
+  // T6.20-B1, item 2: Refresh Review follows every valid result of the Review, as its first opening does.
+  it('should replace the held Review with the Empty one that Refresh Review reads, with no refresh error', async () => {
+    const { user, facade } = await refreshCase();
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(empty());
+
+    await user.click(screen.getByRole('button', { name: 'Refresh Review' }));
+
+    // The new session has nothing to walk: the Empty message and the owed group stand in place of the card and the status.
+    expect(await screen.findByText("No Trades were open at this session's close")).toBeTruthy();
+    expect(screen.queryByText(/We couldn’t refresh the Review/)).toBeNull();
+    expect(screen.queryByRole('list', { name: 'Positions' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    expect(within(screen.getByRole('list', { name: GROUP })).getAllByRole('button', { name: /^Review / })).toHaveLength(2);
+  });
+
+  it('should show the owed card when the Trade Refresh Review reads is now one of the owed group', async () => {
+    const { user, facade } = await refreshCase();
+    const owedCard: OwedReflectionsCard = { ...CLOSED_CARD, tradeId: 't-w', underlying: 'XYZ', reflections: [reflection('d-exit', 'Due', '2026-10-13T14:05:00Z')] };
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(ready({ families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [] }], owed: [owedTrade(owedCard)] }));
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ reviewDate }) => Promise.resolve({ kind: 'ReflectionsOwed', reviewDate, cutoff: CUTOFF, card: owedCard }));
+
+    await user.click(screen.getByRole('button', { name: 'Refresh Review' }));
+
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+    expect(within(card).getByRole('region', { name: 'Reflections' })).toBeTruthy();
+    expect(within(card).queryByRole('button', { name: 'Record the exit' })).toBeNull();
+    expect(screen.queryByText(/We couldn’t refresh the Review/)).toBeNull();
+  });
+
+  it('should still say the Review could not be refreshed when the Review cannot be read, and keep the receipt', async () => {
+    const { user, facade } = await refreshCase();
+    for (const failure of [() => Promise.reject(new Error('down')), () => Promise.resolve({ kind: 'ChangedDuringAssembly' } as const)]) {
+      vi.mocked(facade.DailyReview.open).mockImplementation(failure);
+      await user.click(screen.getByRole('button', { name: 'Refresh Review' }));
+      expect(await screen.findByText('We couldn’t refresh the Review. Nothing was changed.')).toBeTruthy();
+      expect(screen.getByRole('heading', { name: 'Exit recorded' })).toBeTruthy();
+    }
+  });
+
+  // T6.20-B1, item 4: the receipt goes when the Review is read again, so focus must not fall to the page.
+  it('should move focus to the Action panel header when Refresh Review succeeds, and keep it on Refresh Review when it fails', async () => {
+    const { user, facade, card } = await refreshCase();
+    const refresh = screen.getByRole('button', { name: 'Refresh Review' });
+    vi.mocked(facade.DailyReview.open).mockRejectedValueOnce(new Error('down'));
+    await user.click(refresh);
+    expect(await within(card).findByText('We couldn’t refresh the Review. Nothing was changed.')).toBeTruthy();
+    expect(document.activeElement).toBe(refresh);
+
+    await user.click(refresh);
+    // The Trade still holds shares, so the exit is offered again, and focus is still on the panel's header.
+    expect(await within(card).findByRole('button', { name: 'Record the exit' })).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(within(card).getByRole('button', { name: /^Action\b/ })));
+  });
+
+  it('should move focus to the Action panel header after a closing exit leaves no Record the exit button', async () => {
+    const user = userEvent.setup();
+    let remaining = 100n;
+    const facade = exitFacade('Exit', () => remaining);
+    renderReview(facade);
+    const card = await openAction(user);
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockImplementation(() => {
+      remaining = 0n;
+      return Promise.resolve(closedExitResult() as never);
+    });
+    await user.click(within(card).getByRole('button', { name: 'Record the exit' }));
+    const row = await within(card).findByRole('group', { name: 'Execution 1' });
+    for (const [label, value] of [['Quantity', '100'], ['Price', '53.00'], ['Fee', '1.00']] as const) await user.type(within(row).getByLabelText(label), value);
+    await user.click(within(card).getByRole('radio', { name: 'Target Reached' }));
+    await user.click(within(card).getByRole('button', { name: 'Save exit' }));
+    await user.click(await within(card).findByRole('button', { name: 'Refresh Review' }));
+
+    await waitFor(() => expect(within(card).queryByRole('heading', { name: 'Exit recorded' })).toBeNull());
+    expect(within(card).queryByRole('button', { name: 'Record the exit' })).toBeNull();
+    expect(document.activeElement).toBe(within(card).getByRole('button', { name: /^Action\b/ }));
+  });
+});
+
+describe('owed card links (T6.20-B1)', () => {
+  // Item 3: the Reflection due blocker names the open owed card's Reflections panel, which the trader has collapsed.
+  it('should reopen the Reflections panel the trader collapsed when a Reflection due blocker links to the open owed card', async () => {
+    const user = userEvent.setup();
+    renderReview(reviewFacade(ready()));
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    const panel = within(card).getByRole('button', { name: /^Reflections/ });
+    await user.click(panel);
+    expect(panel.getAttribute('aria-expanded')).toBe('false');
+
+    const blockers = within(screen.getByRole('region', { name: 'Review status' })).getByRole('list', { name: 'Blockers' });
+    await user.click(within(blockers).getByRole('link', { name: 'ABC' }));
+
+    expect(panel.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(panel);
+    expect(within(card).getByRole('button', { name: /^Reflect on/ })).toBeTruthy();
   });
 });

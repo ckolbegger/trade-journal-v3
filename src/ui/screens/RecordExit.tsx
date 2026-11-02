@@ -14,12 +14,14 @@ export interface RecordExitProps {
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
   // Asks for the Review and this Trade again (Refresh Review calls `open`, D4 A48); true once the Trade carries a fresh binding.
   readonly onRefresh: () => Promise<boolean>;
+  // The Review was read again and this form is gone: the host takes the focus the receipt held.
+  readonly onRefreshed: () => void;
 }
 
 // Record the exit, in the card's Action panel once an Exit Action is saved (A94). The exit form opens in place over the Review,
 // with nothing prefilled but the Trade; after its Save the recorded exit shows from the result, and Refresh Review reads the
 // Review again, because the exit is a Trade Workflows save, not a Review save.
-export function RecordExit({ facade, tradeId, route, now, onEntryDirty, onRefresh }: RecordExitProps) {
+export function RecordExit({ facade, tradeId, route, now, onEntryDirty, onRefresh, onRefreshed }: RecordExitProps) {
   const { writable, timeZone = 'UTC' } = useRuntime();
   const [open, setOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,8 +31,10 @@ export function RecordExit({ facade, tradeId, route, now, onEntryDirty, onRefres
     setRefreshing(true);
     setFailed(false);
     try {
-      if (await onRefresh()) setOpen(false);
-      else setFailed(true);
+      if (await onRefresh()) {
+        setOpen(false);
+        onRefreshed();
+      } else setFailed(true);
     } finally {
       setRefreshing(false);
     }
@@ -48,7 +52,7 @@ export function RecordExit({ facade, tradeId, route, now, onEntryDirty, onRefres
         </button>
       </>
     );
-    return <PositionChangeForm facade={facade} timeZone={timeZone} now={now} onDirtyChange={dirty} host={{ tradeId, onLeave: () => setOpen(false), afterRecorded }} />;
+    return <PositionChangeForm facade={facade} timeZone={timeZone} now={now} onDirtyChange={dirty} host={{ tradeId, titleLevel: 5, onLeave: () => setOpen(false), afterRecorded }} />;
   }
   if (route === undefined || !writable) return null;
   return (
