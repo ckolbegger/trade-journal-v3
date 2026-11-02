@@ -92,8 +92,8 @@ export async function createApplication(deps: ApplicationDeps) {
       recordPositionChange: (command: PositionChangeCommand) => tradeWorkflows.recordPositionChange(command),
     },
     TradeViewsAndReporting: {
-      // Generic in the lifecycle, so the Planned and Open forms are both typed (T2.11).
-      browseTrades: <L extends 'Planned' | 'Open'>(request: TradeBrowseRequest<L>) => tradeViews.browseTrades(request),
+      // Generic in the lifecycle, so the Planned, Open and Closed forms are each typed (T2.11, T6.16).
+      browseTrades: <L extends 'Planned' | 'Open' | 'Closed'>(request: TradeBrowseRequest<L>) => tradeViews.browseTrades(request),
       getTradeDetail: (request: TradeDetailRequest) => tradeViews.getTradeDetail(request),
     },
     // Market Data mutates only through the guard; queries and recovery read. DailyReview.save is

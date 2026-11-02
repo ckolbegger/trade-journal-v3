@@ -29,7 +29,12 @@ export type MigrationBlockedStatus = Extract<WorkspaceStatus, { readonly kind: '
 export type IntegrityBlockedStatus = Extract<WorkspaceStatus, { readonly kind: 'IntegrityBlocked' }>;
 export type IntegrityBlockedReason = NonNullable<IntegrityBlockedStatus['reason']>;
 
-// Trade Workflows: confirmPlan (D1) and recordPositionChange (D2).
+// Reference Catalog: the Close Reason family the exit form lists (D6).
+export type { CloseReasonRecord } from '../modules/reference-catalog/index.ts';
+
+// Trade Workflows: confirmPlan (D1) and recordPositionChange (D2; D6: Sells, the Close Reason and the
+// Close Review through `closeReasonId` and `closeReview` on the command and `closeReview`, `lotMatchChanges`
+// and `realizedToDate` on the receipt).
 export type { ConfirmPlanCommand, ConfirmPlanResult, TradeMutationSuccess, WorkflowIssue } from '../coordinators/trade-workflows/index.ts';
 export type {
   DeviationReconciliationItem,
@@ -42,8 +47,18 @@ export type {
   UninstalledVariant,
 } from '../coordinators/trade-workflows/index.ts';
 
-// Trade Views and Reporting: the Planned and Open lists and Trade Detail.
+// Trade Views and Reporting: the Planned, Open and Closed lists and Trade Detail.
 export type {
+  // D6: the Closed list and Detail (A95, A96), the Lot Matches and fee reconciliation Open and Closed Detail carry,
+  // and the Trade Summary (decision 48) a Closed item and Detail describe what was traded by.
+  CloseReasonLabel,
+  ClosedCurrentEvaluation,
+  ClosedTradeDetail,
+  ClosedTradeItem,
+  FeeReconciliation,
+  IncoherentClosedTradeItem,
+  LotMatchView,
+  TradeSummary,
   IncoherentFactFinding,
   IncoherentOpenTradeItem,
   IncoherentPlannedTradeItem,
@@ -63,7 +78,7 @@ export type {
   ViewBinding,
 } from '../coordinators/trade-views/index.ts';
 // The lifecycles this release lists and details.
-export type TradeLifecycle = 'Planned' | 'Open';
+export type TradeLifecycle = 'Planned' | 'Open' | 'Closed';
 
 // Journal: definitions, answers, dispositions, and the Trade narrative with declines.
 export type {
@@ -93,6 +108,10 @@ export type {
 // Trade Analysis results carried by the Open views and the Position Change receipt.
 export type {
   CalculationResult,
+  // D6: how a Closed Trade's exposure ended (never the Close Reason, A84) and each Lot Match's shape.
+  DispositionMechanism,
+  LotMatch,
+  TerminalDisposition,
   EntryFlag,
   EntryQuality,
   EntryQualityFigures,

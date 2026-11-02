@@ -349,3 +349,30 @@ describe('getTradeDetail: Open after a partial exit', () => {
     expect(detail.current.evaluation.currentMarkedPnl).toEqual(value(money('214.40')));
   });
 });
+
+describe('Trade Summary on Closed items and Details (decision 48)', () => {
+  // Buy 60 @ 50.10 and Buy 40 @ 50.30: 5018.00 over 100 shares, "Long 100 shares @ $50.18".
+  const entered = { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: money('50.18') };
+
+  it('should give a Closed item the entered quantity at its average entry price as its Trade Summary', async () => {
+    const t = await tradeA();
+    await t.x1();
+    await t.x2();
+
+    const result = await createTradeViews({ ...t.stack, marketData: noMarketData }).browseTrades({ lifecycle: 'Closed' });
+    if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+
+    expect(result.view.items).toEqual([expect.objectContaining({ tradeId: t.trade.tradeId, summary: entered })]);
+  });
+
+  it('should give a Closed Detail the same Trade Summary, although it holds no Open Lot', async () => {
+    const t = await tradeA();
+    await t.x1();
+    await t.x2();
+
+    const result = await createTradeViews(t.stack).getTradeDetail({ tradeId: t.trade.tradeId });
+    if (result.kind !== 'Ready' || !('terminalDisposition' in result.view)) throw new Error('expected the Closed form of Detail');
+
+    expect(result.view.summary).toEqual(entered);
+  });
+});

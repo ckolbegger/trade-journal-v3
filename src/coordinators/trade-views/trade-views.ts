@@ -22,7 +22,7 @@ import {
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
-import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
+import { closedLongStockSummary, openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
@@ -153,6 +153,8 @@ export interface ClosedTradeItem {
   readonly strategy: string;
   readonly account: string;
   readonly institution: string;
+  // What was traded: the entered quantity at its average entry price (decision 48); absent without a replay.
+  readonly summary?: TradeSummary;
   // Net of every fee (A80), a BigInt rational.
   readonly netRealizedPnl: Rational;
   readonly realizedR: DerivedTradeState['realizedR'];
@@ -172,7 +174,7 @@ export interface ClosedTradeItem {
 
 // A Closed Trade whose recorded facts cannot be replayed (AC-LIFE-003): its realized figures are unavailable
 // rather than shown as numbers, and its records disagree.
-export interface IncoherentClosedTradeItem extends Omit<ClosedTradeItem, 'netRealizedPnl' | 'realizedR' | 'terminalDisposition' | 'integrity'> {
+export interface IncoherentClosedTradeItem extends Omit<ClosedTradeItem, 'summary' | 'netRealizedPnl' | 'realizedR' | 'terminalDisposition' | 'integrity'> {
   readonly integrity: 'Disagrees';
 }
 
@@ -473,6 +475,7 @@ function closedItem(summary: RecordSummary, analysis: TradeAnalysisRecord, deriv
     tradeId: summary.tradeId,
     underlying: summary.underlying,
     ...labels,
+    ...optional('summary', closedLongStockSummary(derived)),
     netRealizedPnl: derived.realizedToDate,
     realizedR: derived.realizedR,
     terminalDisposition: derived.terminalDisposition,
@@ -554,6 +557,8 @@ function closedCurrent(analysis: TradeAnalysisRecord, derived: DerivedTradeState
 function closedDetail(open: Omit<OpenTradeDetail, 'current'>, current: ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
   return {
     ...open,
+    // The entered quantity, since no Lot is open (decision 48).
+    ...optional('summary', closedLongStockSummary(derived)),
     current,
     terminalDisposition: derived.terminalDisposition,
     ...optional('closeReason', closeReason),

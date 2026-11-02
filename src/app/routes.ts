@@ -19,9 +19,9 @@ export const ROUTES = [
     id: 'trades',
     path: '/',
     label: 'Trades',
-    // The Open (default) and Planned tabs (D2 A32).
+    // The Open (default), Planned (D2 A32) and Closed (D6 A95) tabs.
     requires: ['TradeViewsAndReporting.browseTrades'],
-    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'CurrentEvaluation'] },
+    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'Closed', 'CurrentEvaluation'] },
     navigation: true,
     readOnly: true,
   },
@@ -41,8 +41,9 @@ export const ROUTES = [
     ],
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
-      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades'],
-      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow'],
+      // D6 P20, A89, A90: the group of Trades outside the walk with a reflection owed, and its cards.
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup'],
+      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed'],
       'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
       'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
@@ -57,7 +58,7 @@ export const ROUTES = [
     // D5 P17: Debt status, and answering or declining an owed reflection here (Source Trade Detail).
     requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query', 'Journal.save'],
     variants: {
-      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt'],
+      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt'],
       'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
       'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
     },
@@ -66,13 +67,35 @@ export const ROUTES = [
   },
   {
     // "Record entry" on Planned and Open Trade Detail: one Position Change with its Position Change
-    // Reflection, completed or declined (D2 A33).
+    // Reflection, completed or declined (D2 A33). D6 A93: the same destination records an exit (a Sell),
+    // choosing a Close Reason and a Close Review when the entered quantities close the Trade.
     id: 'record-entry',
     path: '/trades/:tradeId/record-entry',
     label: 'Record entry',
-    requires: ['TradeWorkflows.recordPositionChange', 'TradeViewsAndReporting.getTradeDetail', 'Journal.getDefinitions'],
+    requires: [
+      'TradeWorkflows.recordPositionChange',
+      'TradeViewsAndReporting.getTradeDetail',
+      'Journal.getDefinitions',
+      'ReferenceCatalog.query',
+      'ReferenceCatalog.resolve',
+    ],
     variants: {
-      'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline', 'Defer'],
+      'TradeWorkflows.recordPositionChange': [
+        'Opening',
+        'Increase',
+        'Stock',
+        'SingleTrade',
+        'Complete',
+        'Decline',
+        'Defer',
+        'Reduce',
+        'Close',
+        'Sell',
+        'CloseReason',
+        'CloseReviewComplete',
+        'CloseReviewDecline',
+        'CloseReviewDefer',
+      ],
     },
     navigation: false,
     readOnly: false,

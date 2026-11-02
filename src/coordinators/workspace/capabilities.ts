@@ -29,8 +29,9 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'Workspace.getStatus': [],
   'Workspace.requestDurability': [],
   'ReferenceCatalog.save': ['CreateInstitution', 'CreateAccount'],
-  'ReferenceCatalog.query': ['Institution', 'Account', 'Strategy'],
-  'ReferenceCatalog.resolve': ['NewSelection', 'DisplayOnly'],
+  // D6: the four Close Reasons are a Catalog family, listed and resolved like Strategies.
+  'ReferenceCatalog.query': ['Institution', 'Account', 'Strategy', 'CloseReason'],
+  'ReferenceCatalog.resolve': ['NewSelection', 'DisplayOnly', 'CloseReason'],
   'Journal.getDefinitions': [],
   // D5: every Outstanding Debt, besides the Trade narrative (which now carries Debt).
   'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
@@ -39,10 +40,29 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'TradeWorkflows.confirmPlan': ['LongStock'],
   // D2 A18: opening and increase Buys of a Stock serving its Planned Leg, every member in one
   // Trade, with the Position Change Reflection completed or declined. D5: or deferred.
-  'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline', 'Defer'],
+  // D6: a Sell reduces or closes the Position; the exit that leaves nothing open carries a Close Reason
+  // and a Close Review (Source Trade Close), completed, declined or deferred. The Trade Close Source is
+  // reached only through these three Close Review variants.
+  'TradeWorkflows.recordPositionChange': [
+    'Opening',
+    'Increase',
+    'Stock',
+    'SingleTrade',
+    'Complete',
+    'Decline',
+    'Defer',
+    'Reduce',
+    'Close',
+    'Sell',
+    'CloseReason',
+    'CloseReviewComplete',
+    'CloseReviewDecline',
+    'CloseReviewDefer',
+  ],
   // D4: the Open list and Detail carry the current evaluation. D5: Detail carries Debt status and actions.
-  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'CurrentEvaluation'],
-  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt'],
+  // D6: the Closed list and Detail, which need no Mark.
+  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation'],
+  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt'],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
   'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
@@ -54,8 +74,10 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // baseline and Reward : risk now (only the Review presents it, P40, A158); SaveReviewMarks saves one
   // card's Marks in one commit. Market Data's prepare and apply pair is an internal seam of that save and
   // is not an operation (P37).
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades'],
-  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow'],
+  // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
+  // ReflectionsOwed kind; there is still no DailyReview.getDebt.
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup'],
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed'],
   'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
 };
 
@@ -65,7 +87,12 @@ export function installedCapabilities(releaseId: string, sessionPolicy: SessionP
     sessionPolicy,
     operations: OPERATIONS,
     strategies: ['strategy.long-stock'],
-    entryTypes: ['entry-type.plan-reflection', 'entry-type.position-change-reflection', 'entry-type.daily-trade-review'],
+    entryTypes: [
+      'entry-type.plan-reflection',
+      'entry-type.position-change-reflection',
+      'entry-type.daily-trade-review',
+      'entry-type.close-review',
+    ],
     schemaVersion: SCHEMA_VERSION,
     backupSchemaRange: null,
     providerAdapters: [],
