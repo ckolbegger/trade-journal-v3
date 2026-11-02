@@ -816,3 +816,58 @@ No reruns were needed, and neither known flake failed.
 ## T6.15 Workspace: migration to schema 5
 
 Base commit (for `browser-auto`): `35173c17`.
+
+Commit `bcdbb0f1` (T6.15): one planned case, no first-run pass.
+
+**Red.** Expected `{ kind: 'Opened', … }` to deeply equal `{ kind: 'Opened', … }`: the receipt carried Catalog manifest 1 with no additions, and Journal manifest 4.
+- One green attempt failed because the test counted 7 `meta` records for v4 where the real count is 5. It was a test fixture error. No production change came from it.
+
+**What the case checks.**
+- v1, v2, v3 and v4 each migrate to Ready at schema 5.
+- **The receipt** names from and to, per-store counts, and the additions:
+  - Catalog `{ manifestVersion: 2, additions: [the four close-reason keys] }`.
+  - Journal `{ manifestVersion: 5, … }`. From v4 its additions are exactly `['entry-type.close-review', 'source.trade-close']`.
+- **The stored data** holds the four Close Reasons in seed order, the Close Review type with its revision-1 definition, and `source.trade-close`.
+- **A second `initialize`** adds nothing and leaves the dump unchanged.
+
+**What changed.**
+- `migration.ts` and `workspace.ts` now seed and validate with `D6_CATALOG_MANIFEST` and `D5_JOURNAL_MANIFEST`.
+- No type changed. The failure and Retry machinery (AC-REST-004) is unchanged except for the manifests it validates against.
+
+**Pins updated.** Earlier deliverables' tests pinned the old manifest versions, type and definition counts, or addition lists. They were updated to the new manifests:
+- `workspace.test.ts`
+- `tests/integration/d1/initialize.test.ts`
+- `tests/integration/d2/{migration,seed}.test.ts`
+- `tests/integration/d4/{migration,seed}.test.ts`
+- `tests/integration/d5/{migration,seed}.test.ts`
+
+**Checks.** No `e2e` file pins a manifest. The unit suite passed (92 files, 1133 tests) and the integration suite passed (60 files, 117 tests).
+
+**Receipt and definitions.** The receipt lists product keys only, so the Close Review definition, which has no product key, is not named in it. ocr was asked to check that against the plan's wording, "the Close Review type, definition, and Trade Close Source".
+
+**Tier.** No `src/ui`, `src/app` or `src/persistence` path changed, so the run is on the task tier.
+
+**ocr review of `bcdbb0f1`** (`evidence/D06/ocr/T6.15-bcdbb0f1.json`): 2 files, 0 comments, no findings.
+
+**The reviewer's answers to the three checks:**
+1. **Receipt and definitions.** The receipt follows D5's precedent. T5.12 (`b27f1e19`) named `entry-type.daily-trade-review` and `source.trade-detail` by product key and wrote the definition silently.
+   - The plan's "type, definition, and Trade Close Source" is met by the type's key, plus the test's assertion that one revision-1 Close Review definition is stored.
+2. **Failure path (AC-REST-004).** No defect.
+   - Seeds are written to the candidate before validation, so sources from v1 to v4 validate against `D6_CATALOG_MANIFEST`.
+   - The existing block, Retry and Activate-abort tests pass at schema 5.
+3. **Second launch.** It adds nothing, whether the Workspace was migrated or fresh.
+
+**Cumulative run `t6.15-migration-v5`**: HEAD `bcdbb0f1`, 2026-11-01. The browser stage ran on the task tier, because no path changed since `35173c17` is on the full-tier list.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 91 files, 1132 tests passed | `suite-runs/t6.15-migration-v5-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.15-migration-v5-integration.txt` |
+| Browser (Chromium, `@every-task`) | 5 passed (10.0s) | `suite-runs/t6.15-migration-v5-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. `verify:fixtures` and `verify:releases` passed with the new manifests. | `suite-runs/t6.15-migration-v5-checks.txt` |
+
+No reruns were needed.
+
+## T6.16 Installed Capability Manifest and composition root for D6
+
+Base commit (for `browser-auto`): `bcdbb0f1`.
