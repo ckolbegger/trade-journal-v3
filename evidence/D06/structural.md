@@ -306,3 +306,43 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.8 Journal: Close Review
 
 Base commit (for `browser-auto`): `803381da`.
+
+Commit `78e5b177` (T6.8, 6 cases red then green). Two cases first ran against code written ahead of their red:
+- **Contract case.** The prompts were already written. They were emptied to get a genuine red, then restored.
+- **Outstanding Debt case.** Defer was already generalized, so the first run passed. Defer was reverted to Position Change Reflection only, giving a genuine red, then restored.
+
+So no first-run pass stands.
+
+What the commit adds:
+- **Manifest.** `D5_JOURNAL_MANIFEST` is manifest version 5. It adds Entry Type `entry-type.close-review` and Source `source.trade-close`.
+- **Prompts.** `prompt.close-review.take-again`, `.what-worked` and `.key-lesson`. Option ids are `option.close-review.take-again.{yes-as-planned|yes-with-changes|no|unsure}`.
+- **Request type.** `CloseReviewRequest` takes a Trade anchor, the terminal Position Change as origin, and `momentTime`. The obligation key is stored as `CloseReview:<tradeId>`, in the existing string key style.
+- **Shared paths.** Decline, Defer (`OneSessionGrace`, due anchor = moment time) and the resolution core now accept both obligation kinds. The resolution key is chosen from the Debt's Entry Type.
+- **Resolution decline.** It is generalized too, but no planned case covers it.
+
+The `prepareEffects` overload for `CloseReviewRequest` must come before the Position Change Reflection one. Two existing tests read `Parameters<Journal['prepareEffects']>[0]`, which resolves to the last overload.
+
+### ocr review of `78e5b177`
+
+Session `ec0ce8ae-f20a-4c67-836d-ff420b6a45f6`, 4 files reviewed (test file and `tdd-log.md` excluded), **no findings**. Raw output: [ocr/T6.8-78e5b177.json](ocr/T6.8-78e5b177.json). The reviewer was asked two questions directly, and both answers found no defect:
+- Every Position Change Reflection path is unchanged.
+- A Close Review Debt resolves under `CloseReview:<tradeId>`, the key taken from `debt.anchor.tradeId`, and against its snapshotted `definitionId`.
+
+The reviewer also noted, without calling it a defect, that `ResolveDebt` picks the key with one `entryTypeKey` equality. A future Entry Type that carries a Debt would therefore fall through to the Position Change Reflection key.
+
+### Cumulative run after T6.8
+
+Label `t6.8-close-review`, at `78e5b177` plus uncommitted evidence (2026-11-01 20:18 EST). Outputs in `suite-runs/t6.8-close-review-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 87 files, 1087 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **task tier**, printed reason "no changed path since 803381da is on the full-tier list": 5 passed (10.0 s) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed, expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.9 Section validators: Trade Record and Catalog
+
+Base commit (for `browser-auto`): `78e5b177`.
