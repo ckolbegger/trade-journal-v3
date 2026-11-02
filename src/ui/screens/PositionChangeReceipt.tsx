@@ -30,7 +30,7 @@ function repairText(finding: IntegrityFinding): string {
 type Reflection = Recorded['postCommit']['reflection'];
 
 // A deferred reflection is not a message of its own: the saved Position Change shows it as owed.
-function reflectionMessage(reflection: Reflection): string | undefined {
+export function reflectionMessage(reflection: Reflection): string | undefined {
   switch (reflection.kind) {
     case 'Entry':
       return 'Reflection saved.';

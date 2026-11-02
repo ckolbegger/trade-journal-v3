@@ -2,8 +2,10 @@
 // loads: the Reference Trade's confirmed Plan (100 XYZ, entry 50, Stop 47.50, Target 56).
 import { vi } from 'vitest';
 import type { PlannedTradeDetail } from '../../src/app/types.ts';
-import { D2_JOURNAL_MANIFEST } from '../../src/modules/journal/index.ts';
+import { D2_JOURNAL_MANIFEST, D5_JOURNAL_MANIFEST } from '../../src/modules/journal/index.ts';
+import { D6_CATALOG_MANIFEST } from '../../src/modules/reference-catalog/index.ts';
 import { facadeDouble } from './facade-double.ts';
+import { openDetailOf, PC1, PC2 } from './open-detail-fixtures.ts';
 
 export const reflectionDefinition = {
   id: 'def-pcr-1',
@@ -29,6 +31,43 @@ export const plannedDetail = {
   labels: { strategy: 'Long Stock', account: 'Taxable', institution: 'Fidelity' },
   journal: [],
 } as unknown as PlannedTradeDetail;
+
+// The Close Review definition the exit form loads (D5 manifest, "Initial Entry Definitions").
+export const closeReviewDefinition = {
+  id: 'def-cr-1',
+  entryTypeKey: 'entry-type.close-review',
+  revisionNumber: 1,
+  prompts: D5_JOURNAL_MANIFEST.entryTypes.find((t) => t.productKey === 'entry-type.close-review')!.prompts,
+};
+
+// The four seeded Close Reasons as ReferenceCatalog.query returns them, in seed order.
+export const closeReasonRecords = D6_CATALOG_MANIFEST.closeReasons!.map((reason, seedOrder) => ({
+  id: `cr-${seedOrder + 1}`,
+  kind: 'CloseReason',
+  productKey: reason.productKey,
+  label: reason.label,
+  active: true,
+  seedOrder,
+}));
+
+// A facade double for the exit form: an Open Trade of 100 shares, both reflection definitions, and
+// the Close Reason family.
+export function exitFormFacade(detail: unknown = openDetailOf([PC1, PC2])) {
+  const facade = facadeDouble();
+  vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+    kind: 'Ready',
+    view: detail,
+    binding: { databaseName: 'tj-ws-1', contentRevision: 7 },
+  } as never);
+  vi.mocked(facade.Journal.getDefinitions).mockImplementation((request) =>
+    Promise.resolve({
+      kind: 'Found',
+      definition: ('latestFor' in request && request.latestFor === 'entry-type.close-review' ? closeReviewDefinition : reflectionDefinition) as never,
+    }),
+  );
+  vi.mocked(facade.ReferenceCatalog.query).mockResolvedValue({ kind: 'Page', items: closeReasonRecords, snapshot: { catalogRevision: 2 } } as never);
+  return facade;
+}
 
 export function positionChangeFormFacade() {
   const facade = facadeDouble();
