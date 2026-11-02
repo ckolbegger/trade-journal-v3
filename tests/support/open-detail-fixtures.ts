@@ -14,6 +14,7 @@ import { derive, evaluate, type TradeAnalysisRecord } from '../../src/domain/tra
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
 import { datedLineOf, observationFrame } from '../../src/coordinators/valuation.ts';
+import { feeReconciliationOf, lotMatchViews } from '../../src/coordinators/trade-views/index.ts';
 import type { MarkFrame } from '../../src/modules/market-data/index.ts';
 
 export { execution, PC1, PC2, PC3, positionChange } from '../../src/domain/trade-analysis/reference-trade.ts';
@@ -76,6 +77,9 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     baseline: derived.baseline,
     summary: openSummary(derived.positions),
     positions: derived.positions,
+    lotMatches: lotMatchViews(derived),
+    realizedToDate: derived.realizedToDate,
+    feeReconciliation: feeReconciliationOf(derived),
     netCost: derived.netCost,
     lastActivity: positionChanges.at(-1)?.economicTime ?? record.plan.economicTime,
     fees: derived.fees,

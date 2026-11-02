@@ -12,6 +12,8 @@ import {
   type IntegrityFinding,
   type LegFulfillment,
   type LifecycleAgreement,
+  type LotMatch,
+  type LotMatchResult,
   type PositionChangeFact,
   type TradeEvaluation,
   type RecordedDeviation,
@@ -39,7 +41,7 @@ export interface TradeViewsDeps {
   readonly clock: Clock;
 }
 
-export interface TradeBrowseRequest<L extends 'Planned' | 'Open' = 'Planned' | 'Open'> {
+export interface TradeBrowseRequest<L extends 'Planned' | 'Open' | 'Closed' = 'Planned' | 'Open'> {
   readonly lifecycle: L;
   readonly cursor?: string;
 }
@@ -138,11 +140,49 @@ export interface IncoherentPlannedTradeItem extends Omit<
   readonly integrity: 'Disagrees';
 }
 
-export type TradeBrowseItem<L extends 'Planned' | 'Open'> = L extends 'Open'
-  ? OpenTradeItem | IncoherentOpenTradeItem
-  : PlannedTradeItem | IncoherentPlannedTradeItem;
+// A Close Reason as the Catalog labels it now; an identity the Catalog cannot resolve keeps a blank label.
+export interface CloseReasonLabel {
+  readonly id: string;
+  readonly label: string;
+}
 
-export interface TradeBrowseView<L extends 'Planned' | 'Open'> {
+// One Closed Trade as the list presents it (A95): its final figures from the facts alone, no Market Data.
+export interface ClosedTradeItem {
+  readonly tradeId: string;
+  readonly underlying: string;
+  readonly strategy: string;
+  readonly account: string;
+  readonly institution: string;
+  // Net of every fee (A80), a BigInt rational.
+  readonly netRealizedPnl: Rational;
+  readonly realizedR: DerivedTradeState['realizedR'];
+  // How the exposure ended, never the Close Reason (A84).
+  readonly terminalDisposition: DerivedTradeState['terminalDisposition'];
+  // Absent when the Trade carries none.
+  readonly closeReason?: CloseReasonLabel;
+  // The terminal Position Change's Economic Time.
+  readonly terminalTime: string;
+  // Active recorded Deviation occurrences.
+  readonly deviationCount: number;
+  // Whether any reflection (an exit's or the Close Review) is an Outstanding Debt.
+  readonly reflectionOwed: boolean;
+  // Whether stored and expected records agree; a disagreement is surfaced, never repaired.
+  readonly integrity: 'Agrees' | 'Disagrees';
+}
+
+// A Closed Trade whose recorded facts cannot be replayed (AC-LIFE-003): its realized figures are unavailable
+// rather than shown as numbers, and its records disagree.
+export interface IncoherentClosedTradeItem extends Omit<ClosedTradeItem, 'netRealizedPnl' | 'realizedR' | 'terminalDisposition' | 'integrity'> {
+  readonly integrity: 'Disagrees';
+}
+
+export type TradeBrowseItem<L extends 'Planned' | 'Open' | 'Closed'> = L extends 'Open'
+  ? OpenTradeItem | IncoherentOpenTradeItem
+  : L extends 'Closed'
+    ? ClosedTradeItem | IncoherentClosedTradeItem
+    : PlannedTradeItem | IncoherentPlannedTradeItem;
+
+export interface TradeBrowseView<L extends 'Planned' | 'Open' | 'Closed'> {
   readonly items: readonly TradeBrowseItem<L>[];
   readonly nextCursor?: string;
 }
@@ -224,12 +264,33 @@ export interface TradeDetailDebt extends NarrativeDebt {
 
 export type TradeDetailNarrativeItem = NarrativeItem | TradeDetailDebt;
 
+// A derived Lot Match with its Calculation Results (A78, A80): exact rationals, which the display rounds to cents.
+export type LotMatchView = LotMatch & Pick<LotMatchResult, 'disposedAt' | 'allocatedOpeningFee' | 'allocatedDisposalFee' | 'realized'>;
+
+// How the Trade's fees reconcile (A80). Incurred fees are the plain sum of the Execution fees; each opening fee is
+// allocated to Lot Matches in proportion to matched quantity, and the unconsumed remainder stays on the Open Lots;
+// each disposal fee is allocated across its Execution's Lot Matches. Nothing is subtracted twice:
+// allocatedOpening + unconsumedOpening = incurredOpening, and allocatedDisposal = incurredDisposal.
+export interface FeeReconciliation {
+  readonly incurred: Rational;
+  readonly incurredOpening: Rational;
+  readonly incurredDisposal: Rational;
+  readonly allocatedOpening: Rational;
+  readonly allocatedDisposal: Rational;
+  readonly unconsumedOpening: Rational;
+}
+
 // The Open form of Trade Detail (D2): the Planned form's Plan, lifecycle, Baseline, and labels, plus
 // the derived Position and entry, the recorded Deviations, any integrity findings, and the whole
-// narrative with declines. No valuation, Marks, or risk (D4).
+// narrative with declines. D6 adds the Lot Matches, realized-to-date, and the fee reconciliation; the
+// valuation includes realized-to-date (D4, A92).
 export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
-  // Signed net quantity and Open Lots per Instrument.
+  // Signed net quantity and Open Lots per Instrument; each Lot carries its unconsumed opening fee.
   readonly positions: readonly InstrumentPosition[];
+  readonly lotMatches: readonly LotMatchView[];
+  // The sum of the Lot Matches' realized amounts, independent of any Mark (A92).
+  readonly realizedToDate: Rational;
+  readonly feeReconciliation: FeeReconciliation;
   readonly fees: DerivedTradeState['fees'];
   readonly netCost: DerivedTradeState['netCost'];
   // The latest activity on the Trade, as its Open list item carries it (it orders that list).
@@ -248,6 +309,19 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly current: OpenCurrentEvaluation;
 }
 
+// The Closed form of Trade Detail (D6): the Open form's Plan, lifecycle, Position Changes, Lot Matches, fee
+// reconciliation, entry record, and narrative (the Close Review among it), plus how the exposure ended (Terminal
+// Disposition) apart from why the trader closed (Close Reason), the terminal time, and Realized R. Its
+// `realizedToDate` is the net realized P&L. The valuation needs no Mark: a Closed Trade has no current figures
+// (A92), and `positions` holds no Open Lot.
+export interface ClosedTradeDetail extends OpenTradeDetail {
+  readonly terminalDisposition: DerivedTradeState['terminalDisposition'];
+  readonly closeReason?: CloseReasonLabel;
+  // The terminal Position Change's Economic Time.
+  readonly terminalTime: string;
+  readonly realizedR: DerivedTradeState['realizedR'];
+}
+
 // A recorded fact that cannot be replayed, named with the reason (AC-LIFE-003).
 export type IncoherentFactFinding = IncoherentFacts['findings'][number];
 
@@ -264,12 +338,12 @@ export interface IncoherentTradeDetail extends Omit<PlannedTradeDetail, 'journal
   readonly journal: readonly TradeDetailNarrativeItem[];
 }
 
-export type TradeDetailView = PlannedTradeDetail | OpenTradeDetail | IncoherentTradeDetail;
+export type TradeDetailView = PlannedTradeDetail | OpenTradeDetail | ClosedTradeDetail | IncoherentTradeDetail;
 
 export interface TradeViews {
   // Generic in the lifecycle, so each caller receives its lifecycle's item form, and a caller
   // holding either lifecycle (a tab switch) receives the union.
-  browseTrades<L extends 'Planned' | 'Open'>(request: TradeBrowseRequest<L>): Promise<ReadViewResult<TradeBrowseView<L>>>;
+  browseTrades<L extends 'Planned' | 'Open' | 'Closed'>(request: TradeBrowseRequest<L>): Promise<ReadViewResult<TradeBrowseView<L>>>;
   getTradeDetail(request: TradeDetailRequest): Promise<ReadViewResult<TradeDetailView>>;
 }
 
@@ -374,6 +448,42 @@ function incoherentItem(summary: RecordSummary, analysis: TradeAnalysisRecord, l
   };
 }
 
+// The terminal time of a Closed Trade: derived from its facts, else the stored key the Closed index holds it by.
+function terminalTimeOf(analysis: TradeAnalysisRecord, derived: DerivedTradeState | undefined): string {
+  const terminalTime = derived?.terminalTime ?? analysis.terminalTime;
+  if (terminalTime === undefined || terminalTime === null) throw new Error(`Closed Trade ${analysis.tradeId} has no terminal time`);
+  return terminalTime;
+}
+
+function closedItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, closeReason: CloseReasonLabel | undefined, reflectionOwed: boolean): ClosedTradeItem {
+  return {
+    tradeId: summary.tradeId,
+    underlying: summary.underlying,
+    ...labels,
+    netRealizedPnl: derived.realizedToDate,
+    realizedR: derived.realizedR,
+    terminalDisposition: derived.terminalDisposition,
+    ...optional('closeReason', closeReason),
+    terminalTime: terminalTimeOf(analysis, derived),
+    deviationCount: activeDeviations(analysis),
+    reflectionOwed,
+    integrity: derived.findings.length === 0 ? 'Agrees' : 'Disagrees',
+  };
+}
+
+function incoherentClosedItem(summary: RecordSummary, analysis: TradeAnalysisRecord, labels: Labels, closeReason: CloseReasonLabel | undefined, reflectionOwed: boolean): IncoherentClosedTradeItem {
+  return {
+    tradeId: summary.tradeId,
+    underlying: summary.underlying,
+    ...labels,
+    ...optional('closeReason', closeReason),
+    terminalTime: terminalTimeOf(analysis, undefined),
+    deviationCount: activeDeviations(analysis),
+    reflectionOwed,
+    integrity: 'Disagrees',
+  };
+}
+
 // Position Changes and their Executions in the Fact Order Trade Analysis replayed them in.
 function inFactOrder(analysis: TradeAnalysisRecord, derived: DerivedTradeState): PositionChangeFact[] {
   const rank = new Map(derived.facts.map((fact, i) => [fact.factId, i]));
@@ -396,6 +506,37 @@ function withDueStatus(narrative: readonly TradeNarrativeItem[], frame: CurrentF
   });
 }
 
+// Each Lot Match joined to its results, which Trade Analysis returns in the same order (A81).
+export const lotMatchViews = (derived: DerivedTradeState): LotMatchView[] =>
+  derived.lotMatches.map((match, i) => {
+    const { disposedAt, allocatedOpeningFee, allocatedDisposalFee, realized } = derived.lotMatchResults[i]!;
+    return { ...match, disposedAt, allocatedOpeningFee, allocatedDisposalFee, realized };
+  });
+
+// The allocated fees are Values for every Long Stock Lot Match (A80).
+const allocated = (results: readonly CalculationResult<Rational>[]) => sum(results.flatMap((r) => (r.kind === 'Value' ? [r.value] : [])));
+
+export function feeReconciliationOf(derived: DerivedTradeState): FeeReconciliation {
+  return {
+    incurred: derived.fees.incurred,
+    incurredOpening: derived.fees.incurredOpening,
+    incurredDisposal: derived.fees.incurred.sub(derived.fees.incurredOpening),
+    allocatedOpening: allocated(derived.lotMatchResults.map((r) => r.allocatedOpeningFee)),
+    allocatedDisposal: allocated(derived.lotMatchResults.map((r) => r.allocatedDisposalFee)),
+    unconsumedOpening: sum(derived.positions.flatMap((p) => p.openLots.map((lot) => lot.unconsumedOpeningFee))),
+  };
+}
+
+function closedDetail(open: OpenTradeDetail, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
+  return {
+    ...open,
+    terminalDisposition: derived.terminalDisposition,
+    ...optional('closeReason', closeReason),
+    terminalTime: terminalTimeOf(analysis, derived),
+    realizedR: derived.realizedR,
+  };
+}
+
 function openDetail(
   planned: Omit<PlannedTradeDetail, 'journal'>,
   analysis: TradeAnalysisRecord,
@@ -407,6 +548,9 @@ function openDetail(
   return {
     ...planned,
     positions: derived.positions,
+    lotMatches: lotMatchViews(derived),
+    realizedToDate: derived.realizedToDate,
+    feeReconciliation: feeReconciliationOf(derived),
     ...optional('summary', openLongStockSummary(derived)),
     netCost: derived.netCost,
     lastActivity,
@@ -456,6 +600,24 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     if (!('resolution' in frame) || frame.resolution.kind !== 'Available') return undefined;
     const { source, revisionId, revisionNumber, price, savedAt, correctionReason } = frame.resolution.mark;
     return { source, revisionId, revisionNumber, price, savedAt, ...(correctionReason !== undefined && { correctionReason }) };
+  }
+
+  // The Close Reason labels of the given Trades, each resolved in its own call so that an identity the Catalog
+  // cannot resolve blanks no other label (T6.12-B1).
+  async function closeReasonOf(id: string): Promise<CloseReasonLabel> {
+    const found = await deps.catalog.resolve([{ name: 'closeReason', kind: 'CloseReason', id, mode: 'DisplayOnly' }]);
+    return { id, label: found.kind === 'Resolved' ? (found.resolved['closeReason']?.label ?? '') : '' };
+  }
+
+  async function closeReasonsOf(analyses: readonly TradeAnalysisRecord[]): Promise<Map<string, CloseReasonLabel>> {
+    const ids = [...new Set(analyses.flatMap((a) => (a.closeReason ? [a.closeReason.closeReasonId] : [])))];
+    return new Map(await Promise.all(ids.map(async (id): Promise<[string, CloseReasonLabel]> => [id, await closeReasonOf(id)])));
+  }
+
+  // The Trades with any Outstanding Debt, from one read of the Debt index.
+  async function tradesWithOutstandingDebt(): Promise<Set<string>> {
+    const { debts } = await deps.journal.query({ scope: 'OutstandingDebt' });
+    return new Set(debts.map((debt) => debt.anchor.tradeId));
   }
 
   // Module reads are separate transactions, so a view is accepted only if the Workspace binding
@@ -549,18 +711,23 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           evaluation,
           ...optional('datedLine', datedLine),
         };
-        const view: TradeDetailView = openDetail(planned, analysis, derived, withDueStatus(narrative, frame), s.lastActivity ?? s.planTime, current);
+        const open = openDetail(planned, analysis, derived, withDueStatus(narrative, frame), s.lastActivity ?? s.planTime, current);
+        // A stored Closed Trade takes the Closed form; its figures come from the facts, and no Mark is required (A92).
+        const view: TradeDetailView =
+          analysis.storedLifecycle === 'Closed'
+            ? closedDetail(open, analysis, derived, analysis.closeReason && (await closeReasonOf(analysis.closeReason.closeReasonId)))
+            : open;
         return { binding, view, ...optional('marketDataSnapshotId', snapshotId) };
       });
     },
 
-    browseTrades<L extends 'Planned' | 'Open'>(request: TradeBrowseRequest<L>) {
+    browseTrades<L extends 'Planned' | 'Open' | 'Closed'>(request: TradeBrowseRequest<L>) {
       return coherent<TradeBrowseView<L>>(async () => {
         const page = await deps.tradeRecord.queryRecords({
           lifecycle: request.lifecycle,
           projection: 'Browse',
-          // Planned keeps pages of 50; Trade Record pages the Open book by its maximum of 200 (D2 A32).
-          ...(request.lifecycle === 'Planned' && { pageSize: BROWSE_PAGE_SIZE }),
+          // Planned and Closed keep pages of 50; Trade Record pages the Open book by its maximum of 200 (D2 A32).
+          ...(request.lifecycle !== 'Open' && { pageSize: BROWSE_PAGE_SIZE }),
           cursor: request.cursor,
         });
         // A cursor is valid only until the next commit.
@@ -586,7 +753,16 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           request.lifecycle === 'Open'
             ? await currentFrames(derivations.flatMap(({ analysis, derived }) => (derived.kind === 'Derived' ? [analysis.plan.underlying] : [])))
             : { frames: [] };
+        // A Closed page reads no Market Data: Close Reason labels, and the Trades with an Outstanding reflection.
+        const closeReasons = request.lifecycle === 'Closed' ? await closeReasonsOf(records.map((r) => r.analysis)) : new Map<string, CloseReasonLabel>();
+        const owed = request.lifecycle === 'Closed' ? await tradesWithOutstandingDebt() : new Set<string>();
         const items = derivations.map(({ summary, analysis, derived }) => {
+          if (request.lifecycle === 'Closed') {
+            const closeReason = analysis.closeReason && closeReasons.get(analysis.closeReason.closeReasonId);
+            return derived.kind === 'Derived'
+              ? closedItem(summary, analysis, derived, labelsOf(summary), closeReason, owed.has(summary.tradeId))
+              : incoherentClosedItem(summary, analysis, labelsOf(summary), closeReason, owed.has(summary.tradeId));
+          }
           if (request.lifecycle === 'Open') {
             if (derived.kind !== 'Derived') return incoherentItem(summary, analysis, labelsOf(summary));
             const frame = frames.find((f) => !('instrumentKey' in f) || f.instrumentKey === analysis.plan.underlying);
