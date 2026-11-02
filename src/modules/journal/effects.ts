@@ -311,6 +311,8 @@ export interface NarrativeSettledDebt {
 export interface NarrativeEntry {
   readonly id: string;
   readonly entryType: string;
+  // The stable Entry Type identity (its product key); the label above may change.
+  readonly entryTypeKey: string;
   readonly source: string;
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: Instant;
@@ -331,6 +333,7 @@ export interface NarrativeDecline {
   readonly kind: 'Decline';
   readonly id: string;
   readonly entryType: string;
+  readonly entryTypeKey: string;
   readonly source: string;
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: Instant;
@@ -349,6 +352,7 @@ export interface NarrativeDebt {
   // The Debt identity.
   readonly id: string;
   readonly entryType: string;
+  readonly entryTypeKey: string;
   readonly source: string;
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: Instant;

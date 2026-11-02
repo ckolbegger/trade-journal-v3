@@ -304,6 +304,7 @@ function narrativeEntry(
   return {
     id: entry.id,
     entryType: labels.get(entry.entryTypeKey) ?? entry.entryTypeKey,
+    entryTypeKey: entry.entryTypeKey,
     source: labels.get(entry.sourceKey) ?? entry.sourceKey,
     anchor: entry.anchor,
     momentTime: entry.momentTime,
@@ -687,6 +688,7 @@ export function createJournal(deps: JournalDeps): Journal {
               kind: 'Debt',
               id: debt.debtId,
               entryType: label(debt.entryTypeKey),
+              entryTypeKey: debt.entryTypeKey,
               source: label(debt.sourceKey),
               anchor: debt.anchor,
               momentTime: debt.momentTime,
@@ -701,6 +703,7 @@ export function createJournal(deps: JournalDeps): Journal {
             kind: 'Decline',
             id: decline.id,
             entryType: label(decline.entryTypeKey),
+            entryTypeKey: decline.entryTypeKey,
             source: label(decline.sourceKey),
             anchor: decline.anchor,
             momentTime: decline.momentTime,

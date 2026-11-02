@@ -151,9 +151,6 @@ type Pass =
       readonly nextTask: NextTask;
     };
 
-// The Close Review Entry Type's label, which names its item in the Journal's Trade narrative (manifest, entry-type.close-review).
-const CLOSE_REVIEW_ENTRY_TYPE = 'Close Review';
-
 // What one Trade pass returns before its binding is checked against the Workspace.
 type TradePass =
   | { readonly kind: 'Expired' }
@@ -487,10 +484,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   // The current outcome of a Trade's Close Review obligation: the Trade narrative holds one item per obligation, and the
-  // Close Review's is the one labelled with its Entry Type. One bounded read of this Trade.
+  // Close Review's is the one carrying its Entry Type key, never its label. One bounded read of this Trade.
   async function closeReviewOutcomeOf(tradeId: string): Promise<ObligationOutcome | undefined> {
     const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId });
-    const item = items.find((candidate) => candidate.entryType === CLOSE_REVIEW_ENTRY_TYPE);
+    const item = items.find((candidate) => candidate.entryTypeKey === 'entry-type.close-review');
     return item && { kind: item.kind, id: item.id };
   }
 

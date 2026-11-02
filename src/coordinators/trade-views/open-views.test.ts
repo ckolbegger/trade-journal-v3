@@ -297,7 +297,7 @@ describe('getTradeDetail: Open', () => {
     expect(Object.keys(result.view).sort()).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'plan', 'summary', 'tradeId']);
     expect(result.view.lifecycle).toEqual({ stored: 'Planned', agreement: { kind: 'Agrees' } });
     expect(result.view.journal).toHaveLength(1);
-    expect(Object.keys(result.view.journal[0]!).sort()).toEqual(['anchor', 'authoredTime', 'entryType', 'id', 'momentTime', 'responses', 'source']);
+    expect(Object.keys(result.view.journal[0]!).sort()).toEqual(['anchor', 'authoredTime', 'entryType', 'entryTypeKey', 'id', 'momentTime', 'responses', 'source']);
   });
 });
 

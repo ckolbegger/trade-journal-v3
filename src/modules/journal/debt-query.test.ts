@@ -116,6 +116,7 @@ describe('query: Trade narrative (A69)', () => {
         kind: 'Debt',
         id: debts['D-7'].debtId,
         entryType: 'Position Change Reflection',
+        entryTypeKey: 'entry-type.position-change-reflection',
         source: 'Position Change',
         anchor: { kind: 'Trade', tradeId: 'trade-A' },
         momentTime: '2026-10-13T14:00:00Z',
@@ -126,5 +127,21 @@ describe('query: Trade narrative (A69)', () => {
       },
     ]);
     expect(requests.filter((r) => r.store === 'journalDebts')).toEqual([{ on: 'index', store: 'journalDebts', index: 'byAnchorTrade', method: 'getAll' }]);
+  });
+
+  it('should carry the stable Entry Type key on every item of the Trade narrative: an Entry, a decline, and a Debt', async () => {
+    const { journal, debts } = await fixture();
+    const d2 = debts['D-2'];
+    const d1 = debts['D-1'];
+    expect((await journal.save({ intention: 'ResolveDebt', debtId: d2.debtId, expectedDebtRevision: d2.revision, resolution: { kind: 'Decline', reason: 'No view at the time.' } })).kind).toBe('Saved');
+    expect((await journal.save({ intention: 'ResolveDebt', debtId: d1.debtId, expectedDebtRevision: d1.revision, resolution: { kind: 'Answer', form: { definitionId: DEFINITION, answers } } })).kind).toBe('Saved');
+
+    const { items } = await journal.query({ scope: 'TradeNarrative', tradeId: 'trade-A' });
+
+    expect(items.map((item) => [item.kind, item.entryTypeKey])).toEqual([
+      ['Entry', 'entry-type.position-change-reflection'],
+      ['Decline', 'entry-type.position-change-reflection'],
+      ['Debt', 'entry-type.position-change-reflection'],
+    ]);
   });
 });

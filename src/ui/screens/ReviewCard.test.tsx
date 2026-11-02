@@ -1098,6 +1098,7 @@ function savedAction(action: string, intent?: string, entryRevision = 1, extra: 
   return {
     id: 'e1',
     entryType: 'Daily Trade Review',
+    entryTypeKey: 'entry-type.daily-trade-review',
     source: 'Daily Review',
     anchor: { kind: 'Trade', tradeId: 't1' },
     momentTime: '2026-10-12T20:00:00Z',

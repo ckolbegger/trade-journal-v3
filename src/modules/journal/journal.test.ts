@@ -411,6 +411,7 @@ describe('query: Trade narrative', () => {
       kind: 'Entry',
       id: 'e-c',
       entryType: 'Plan Reflection',
+      entryTypeKey: 'entry-type.plan-reflection',
       source: 'Plan Confirmation',
       anchor: { kind: 'Trade', tradeId: 'trade-1' },
       momentTime: '2026-10-11T13:30:00Z',

@@ -172,6 +172,45 @@ describe('Close Review outcome of an owed card (A90)', () => {
   }, 60_000);
 });
 
+// The stored Close Review Entry Type now carries another label; its product key is unchanged.
+async function relabelCloseReviewEntryType(stack: ReviewStack, label: string): Promise<void> {
+  const open = (name: string) =>
+    new Promise<IDBDatabase>((resolve, reject) => {
+      const request = stack.factory.open(name);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error('open failed'));
+    });
+  const root = await open('tj-root');
+  const pointer = await new Promise<{ databaseName: string }>((resolve) => {
+    const get = root.transaction('pointer').objectStore('pointer').get('current');
+    get.onsuccess = () => resolve(get.result as { databaseName: string });
+  });
+  root.close();
+  const db = await open(pointer.databaseName);
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('journalTypes', 'readwrite');
+    const store = tx.objectStore('journalTypes');
+    const get = store.get('entry-type.close-review');
+    get.onsuccess = () => store.put({ ...(get.result as Record<string, unknown>), label });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error('update failed'));
+  });
+  db.close();
+}
+
+describe('Close Review outcome by Entry Type key (A90)', () => {
+  it('should find the Close Review outcome by its Entry Type key when the Entry Type label differs', async () => {
+    const { stack } = await closedTradeReviewFixture({ only: ['M'] });
+    const completed = await closedWithCompletedCloseReview(stack);
+    await relabelCloseReviewEntryType(stack, 'Closing Reflection');
+    const review = await openTuesday(stack);
+
+    const card = owedCard(await cardOf(stack, review, completed.tradeId));
+
+    expect(card.summary).toEqual(expect.objectContaining({ kind: 'Closed', closeReviewOutcome: { kind: 'Entry', id: completed.closeReviewEntryId } }));
+  }, 60_000);
+});
+
 describe('Close Reason of an owed card (A90)', () => {
   it('should keep an owed card Close Reason identity and the account and strategy labels when the Close Reason cannot be resolved', async () => {
     const { stack, trades } = await closedTradeReviewFixture({ only: ['M'] });

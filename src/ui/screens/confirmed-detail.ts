@@ -31,6 +31,7 @@ export function confirmedDetail(
       {
         id: entry.id,
         entryType: 'Plan Reflection',
+        entryTypeKey: 'entry-type.plan-reflection',
         source: 'Plan Confirmation',
         anchor: entry.anchor,
         momentTime: entry.momentTime,

@@ -42,6 +42,7 @@ export const plannedDetail = {
     {
       id: 'e-1',
       entryType: 'Plan Reflection',
+      entryTypeKey: 'entry-type.plan-reflection',
       source: 'Plan Confirmation',
       anchor: { kind: 'Trade', tradeId: 'trade-1' },
       momentTime: '2026-10-12T13:30:00Z',
