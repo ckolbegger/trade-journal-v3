@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 142930,
+    "input_tokens": 141319,
+    "output_tokens": 1611,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m23s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "The optional debt-status lookup still makes Closed Detail fail if `marketData.query` throws or rejects (for example, when its observations snapshot cannot be read). Only returned non-Frames results are handled here; `coherent()` does not catch the rejection, so a Closed Trade with outstanding Debt cannot be displayed despite all its facts being available. Catch failures within this optional lookup and return `undefined`, allowing the Detail to be returned without a due status.",
+      "existing_code": "    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments: [symbol] });",
+      "start_line": 626,
+      "end_line": 626,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/index.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "33a50437-7353-42a0-96e4-3342496ece56",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "33a50437-7353-42a0-96e4-3342496ece56",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e7b8494b",
+      "resolved_base": "83e5f4413397a5de7a75ad1175b823436cf30d5f",
+      "resolved_head": "e7b8494bea656456a683cf44674a9d43d339660e",
+      "exact_range": "83e5f4413397a5de7a75ad1175b823436cf30d5f..e7b8494bea656456a683cf44674a9d43d339660e",
+      "source_artifact_sha256": "fc8d94fdb6d773beb0a4974251f27b7321a5bacac5c0b1c01adb2208123d6e50"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "67541c7ca17acb8126bf70980e2febaeaafd8ece6d2242a1be0d23b33574b36e"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "8e5b40ab443c9367f2d4386a67777ddcb161f5aeb055c7262bedadc53186b494"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "67541c7ca17acb8126bf70980e2febaeaafd8ece6d2242a1be0d23b33574b36e"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "8e5b40ab443c9367f2d4386a67777ddcb161f5aeb055c7262bedadc53186b494"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 83432
+  }
+}

@@ -701,3 +701,118 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.14 Trade Views: Closed list and Detail; Open Detail with Lot Matches
 
 Base commit (for `browser-auto`): `14a17f7a`.
+
+Commit `83e5f441` (T6.14): 3 planned cases plus 2 extra cases.
+
+**Cases.**
+- **Planned cases.** Red, then green.
+  - Closed list: the Closed lifecycle fell through to the Planned builder.
+  - Closed Detail: first red was a Market Data read in the Closed form. After the redesign, the second red was a missing `realizedToDate`.
+  - Open after X1: `lotMatches` was missing.
+- **Extra: Closed row whose facts cannot be replayed.** Red, then green.
+- **Extra: "should still show the other labels when the Close Reason is unknown to the Catalog".** **First-run pass, flagged for the user.** The planned Closed Detail case had already built a separate Close Reason resolve.
+  - Mutation check: the Close Reason was folded into the Account and Strategy resolve. The case failed with `expected { strategy: '', account: '', … }`, and the code was restored.
+
+**Closed list.**
+- `browseTrades<'Closed'>` returns `ClosedTradeItem`: `underlying`, labels, `netRealizedPnl`, `realizedR`, `terminalDisposition`, `closeReason?`, `terminalTime`, `deviationCount`, `reflectionOwed` and `integrity`. There is also an `IncoherentClosedTradeItem` variant.
+- No Market Data is read.
+- Each distinct Close Reason is resolved in its own call.
+
+**Detail.**
+- `OpenTradeDetail` gains `lotMatches`, `realizedToDate` and `feeReconciliation` (`incurred`, `incurredOpening`, `incurredDisposal`, `allocatedOpening`, `allocatedDisposal`, `unconsumedOpening`).
+- `ClosedTradeDetail extends OpenTradeDetail` and adds `terminalDisposition`, `closeReason?`, `terminalTime` and `realizedR`. For a Closed Trade, `realizedToDate` is the net realized P&L.
+- The Closed form takes the Open assembly path, so it still calls Market Data `ResolveFrames`, with evaluation `NotApplicable(NoRemainingPosition)` and no Mark required. ocr was asked whether that frames read can block a Closed Detail.
+
+**Supporting changes.** `trade-summary.test.ts` and `tests/support/open-detail-fixtures.ts` gained the new required fields. `src/ui/` and `src/app/` are untouched, so this run is on the task tier.
+
+**ocr review of `83e5f441`** (`evidence/D06/ocr/T6.14-83e5f441.json`; 3 files, 1 comment, plus one extra finding from the reviewer's own check):
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| high | `trade-views.ts:702-719` | Closed Detail resolves the current frames and builds the Open evaluation before taking the Closed branch. A Market Data result that is neither `Frames` nor a `SessionPolicyCoverage` rejection throws, and a saved Mark is copied into `current.mark`. | Valid. A92 says a Closed Trade "requires no Mark" and has no current figures. | Bug task T6.14-B1 |
+| low | `trade-views.ts:451-455` | A stored-Closed Trade whose facts replay as Open or Planned takes the Closed form. `terminalTimeOf` throws when there is no terminal key. | Doubtful. This is the A96 disagreement in reverse, which reads should surface rather than throw on. | Bug task T6.14-B2 |
+
+**Reviewer's answers to the three checks:**
+- **Uncovered calendar date:** handled by the coverage fallback.
+- **Missing Mark:** does not change the result.
+- **Fee reconciliation:** exact in BigInt rationals for coherent facts.
+  - **Disposal fees:** a Sell larger than the open quantity would leave fee unallocated. Not a finding: such facts are incoherent (`ExceedsOpenQuantity`, T6.2), are rejected by P22 at write, and are reported as incoherent rather than reconciled.
+- **Closed list:** order and pages of 50 are correct.
+- **`reflectionOwed`:** read in one Journal query per page.
+
+### T6.14-B1 Closed Detail reads no Market Data and requires no Mark
+
+Commit `e7b8494b`. Three red tests were added to `closed-views.test.ts`. None passed on first run.
+1. **"should return the Closed Detail with its Closed fields when Market Data rejects the frames for a reason other than coverage"**
+   - Red: `Error: Market Data returned Rejected for the current frames`.
+2. **"should show no saved Mark, no Expected Mark Date, and no Market Data snapshot in the Closed Detail"**
+   - Red: `expected { … } to not have property "mark"`.
+3. **"should classify the Outstanding Debt of a Closed Trade when Market Data answers and leave it without a due status when it does not"**
+   - Red: the same frames error as test 1.
+
+**Fix.**
+- **Branching.** A stored-Closed Trade branches to the Closed form before `currentFrames`.
+- **What it no longer carries.** No Mark, Expected Mark Date, mark resolution, dated line, or `marketDataSnapshotId` binding.
+- **Evaluation.** `evaluateCurrent` on a `{ date }` frame, dated at the Trade's terminal time, gives `NotApplicable(NoRemainingPosition)`. Its coverage reads `NotCovered`, which means nothing for a Closed Trade. T6.19 must render the Closed fields, not a valuation from `current`.
+- **Type.** `ClosedTradeDetail.current` is the new exported `ClosedCurrentEvaluation`. It has `{ coverage, evaluation }`, and its Mark fields are typed `?: never`. It still extends `OpenTradeDetail`, because `TradeDetail.tsx` passes the Closed form to `OpenSections`.
+- **Open path.** Refactored only: `openDetail` became `detailWithoutValuation`, and `withDueStatus` now takes `SessionCloses | undefined`.
+
+**Recorded for the final report, not a deviation.**
+- A Closed Detail whose narrative has an Outstanding Debt still asks Market Data, through `sessionCloses(symbol)`. It reads only the two session closes, for the Debt's due status (A86, decision 56, C5R2.1), and never the Mark.
+- An answer other than `Frames` leaves the Debt with no due status.
+- This meets the plan's "no Mark requirement" and A92. A95's "reading no Market Data" applies to the Closed list, which still reads none.
+
+**ocr review of `e7b8494b`** (`evidence/D06/ocr/T6.14-B1-e7b8494b.json`; 2 files, 1 comment):
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `trade-views.ts:626` | `sessionCloses` does not catch a thrown `marketData.query`, so a Closed Trade with a Debt fails on an infrastructure fault. | Wrong as a defect. Every port read in `trade-views.ts` lets a thrown error propagate as an infrastructure fault: the Trade Analysis, Journal and Catalog reads, and Market Data on the Open path. None of them catches. The B1 defect was a *returned* rejection, which is now handled. Catching only this read would break that consistency. | Dismissed |
+
+**The reviewer's answers:**
+- **Open Detail:** unchanged by the refactor.
+- **Closed Detail and the Mark:** a Closed Detail cannot show a Mark. It makes no Market Data query when the Trade has no Debt.
+- **Closed `current`:** internally consistent.
+
+**Minor observations, recorded only:**
+- The Debt's due-status read is not part of the binding.
+- The Closed evaluation's `valuationDate` is the UTC date slice of `terminalTime`, which can differ by a day from the exchange date for an after-hours exit. No figure depends on it. Noted for T6.19, which must not render it.
+
+### T6.14-B2 A stored-Closed Trade whose facts replay as Open surfaces LifecycleDisagreement
+
+Commit `35173c17`.
+
+**Test.** "should return Ready with the LifecycleDisagreement and the integrity finding, without throwing, and leave the content revision unchanged".
+- The fixture uses `tradeA()` with only its Buys, then `rawEditTrade` stores Closed with no terminal key.
+- Red: `Error: Closed Trade id-0013 has no terminal time`.
+- After the fixture changed, the subagent reverted the fix to confirm the test still fails.
+- No first-run pass.
+
+**Fix.** The Closed form now requires both a stored Closed lifecycle and an expected Closed lifecycle. A disagreeing Trade falls through to the Open form, which already carries `lifecycle.agreement` and `findings`.
+- This follows the existing rule: Planned only when both are Planned, otherwise the Open form. The reverse case, stored Open with expected Closed, already took the Open form.
+
+**List.** No change needed.
+- A stored-Closed record with no `terminalDesc` is not in the sparse `byLifecycleTerminal` index, so the Closed list omits it without error.
+- With the key present, the record is listed with `integrity: 'Disagrees'`.
+- **Recorded for the final report:** a stored-Closed record with no terminal key appears in no list until a migration or Restore. This matches A96.
+
+**ocr review of `35173c17`** (`evidence/D06/ocr/T6.14-B2-35173c17.json`): 1 file, 0 comments, no findings.
+
+The reviewer's own reading:
+- **Disagreement directions.** Stored Closed with expected Planned, and stored Open with expected Closed, both take the Open form. Neither is covered by a test.
+- **Incoherent facts.** These return the incoherent form before the Closed branch is reached.
+- **Closed list.** It can throw only for a record that has `terminalDesc` but no `terminalTime`. Only hand-tampered data can produce that, because the writer and `rebuild.ts` always set both together.
+
+**Cumulative run `t6.14-trade-views`**, at HEAD `35173c17`, on 2026-11-01. Browser tier: task, because no path changed since `14a17f7a` is on the full-tier list.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 91 files, 1131 tests passed | `suite-runs/t6.14-trade-views-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.14-trade-views-integration.txt` |
+| Browser (Chromium, `@every-task`) | 5 passed (12.2s) | `suite-runs/t6.14-trade-views-browser.txt` |
+| Static and verification (12 commands) | 11 of 12 pass. `verify:capacity` fails as expected until T6.22 (schema version 4 basis, current is 5). | `suite-runs/t6.14-trade-views-checks.txt` |
+
+No reruns were needed, and neither known flake failed.
+
+## T6.15 Workspace: migration to schema 5
+
+Base commit (for `browser-auto`): `35173c17`.
