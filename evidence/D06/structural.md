@@ -1345,3 +1345,224 @@ Ports 5175, 9341 and 9342 were free before and after the run.
 ## T6.20 UI: Review owed-reflection cards, Exit link
 
 Base commit (for `browser-auto`): `52b9e40e`.
+
+Commit `e965c569` (T6.20).
+- **New files:** `ReviewOwedCard.tsx`, `RecordExit.tsx` and `ReviewOwed.test.tsx`.
+- **Changed:** `ReviewView`, `ReviewCard`, `held-review.ts`, `PositionChangeForm` (optional `host`), `ExitReceipt` (optional `after`), and the form facade (`withExitForm`).
+
+**Cases.** The plan's group case was split into 1a (after the walk) and 1b (inside the Empty view). Both were red, then green.
+- **Case 2: first-run pass, flagged for the user.** The owed card already mounted `ReviewReflections` with `DebtForm`. Mutation check: `reviewDate=""` failed the `ResolveReviewDebt` call.
+- **Case 3 (A94):** red on `button "Record the exit"`, then green. It also checks four things:
+  - Refresh Review calls `open` again.
+  - The exit is offered again with 70 shares still open.
+  - The Review address is untouched.
+  - Hold, and an Exit with nothing open, offer no exit.
+- **Extra cases, flagged for the user:**
+  - `held-review` folds owed progress into `review.owed`.
+  - The `OwedTrade` next step opens the owed card.
+  - The Reflection due blocker names the owed Trade's Underlying and links to its card, and `?trade=` opens it.
+
+**"In context".** The form is hosted inline in the walked card's Action panel, below a saved Exit Action.
+- **What it needs:** `trade.exitRoute`, and a shell that is Writable.
+- **`host` prop on `PositionChangeForm`.** It forces exit mode on the given Trade, uses an h5 title and a Close button, and makes no `replaceState` call.
+- **After the save.** The receipt's "Refresh Review" calls `open`, then `getTrade`.
+
+**Open points for the user and for ocr, from the subagent's report:**
+- **Exit not offered at save.** After an Exit Action is saved, D5's behaviour still moves the Review to the next card. The trader reaches Record the exit by reopening the card. (A94: "once an Exit Action is saved … its card offers Record the exit".)
+- **Heading levels.** The hosted form's section headings stay h2 inside an h4 panel.
+- **Focus after Refresh Review.** It falls to `body`.
+- **Route declarations.** The `review` route in `src/app/routes.ts` does not declare `recordPositionChange` (Sell, Close and the other variants), `getTradeDetail`, `Journal.getDefinitions` or `ReferenceCatalog.query`, although the Review now hosts the exit form.
+- **Auto-open on load.** It extends to the owed group: the first card not done opens, in walk order and then group order.
+- **Empty view with an owed group.** It is held as a Ready Review with `families: []` and a placeholder Complete.
+
+**Copy.** The plan supplies "Trades with owed reflections", "Record the exit", "Refresh Review" and "Closed via sale of N shares". All other copy is placeholder and is listed in the subagent's report.
+
+**Checks.** typecheck, tsc6, lint, lint:deps and `verify:capabilities` pass. `src/ui` has 461 tests. One `TradeList` `tj:open-list-ready` failure, a known flake, passed on rerun.
+
+**ocr review of `e965c569`** (`evidence/D06/ocr/T6.20-e965c569.json`): 8 files reviewed, 4 ocr comments, plus the reviewer's answers to the eight checks.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `PositionChangeForm.tsx:298` | The hosted load-error branch has only Retry, and offers no Close. | Valid (low in practice) | T6.20-B1 |
+| medium | `ReviewCard.tsx:312` | `refreshTrade` accepts only a Ready `open`/`getTrade` result, so Refresh Review fails on any other valid result. | Doubtful | T6.20-B1 |
+| medium | `ReviewOwedCard.tsx:120` | `OwedCard` never receives `go`, so a "Reflection due" link to an already-open owed card does not reopen its collapsed panel. | Valid (low) | T6.20-B1 |
+| low | `ReviewView.tsx:268` | Nested ternary. | Wrong as a defect: the user declined `no-nested-ternary` (`plan/D05R-card-identity-handoff.md:72`). | Dismissed |
+| (check 4) | `RecordExit.tsx` | Focus falls to `body` after Refresh Review unmounts the receipt. This conflicts with AC-UI-002's keyboard goal. | Valid | T6.20-B1 |
+| (check 5) | hosted form | The hosted title is h5, but the form's sections stay h2 inside an h4 panel, so the outline is wrong. | Valid (low) | T6.20-B1 |
+| (check 6) | `src/app/routes.ts` | The `review` route does not declare `recordPositionChange` (Sell and Close variants), `getTradeDetail`, `Journal.getDefinitions` or `ReferenceCatalog.query`, though the Review now reaches them. | Valid (low). `verify:capabilities` passes only because `record-entry` declares them. | T6.20-B1 |
+| (check 7) | `saved()` | After an Exit Action is saved, the Review advances (D5R), so Record the exit is reached only by reopening the card. | Not a code defect. A94 ("its card offers Record the exit") and the planned case are met. Staying on the card would change D5R's agreed save-and-advance behaviour, so it would be a plan amendment. | **Question for the user**, final report |
+
+**Other observations.**
+- **Check 1.** Progress comes only from `CardProgress`. The one exception is `owed = due + later` in `OwedBody`, which the walked card already had.
+- **Check 2.** Completion is copied straight from the save result.
+- **Check 3.** `host` leaves the routed forms unchanged.
+- **Check 8.** The Empty view's placeholder Complete reaches only `Status`, which is skipped. It cannot leak, though it would be fragile if a later change used it. Recorded only.
+
+### T6.20-B1 Hosted exit closes on error; Refresh Review handles every result and keeps focus; owed cards honour links; hosted headings nest; Review route declares the exit operations
+
+Commit `a7be6c70`. 13 files changed, including the new `heading-level.tsx` and `src/app/routes.ts`. 9 new tests; `src/ui` and `src/app` now pass 470 tests.
+
+**Red tests, one or more per item:**
+1. **Close in hosted loading and load-error states.** Red: `Unable to find … button "Close"`.
+2. **Refresh Review handles every result.** Two reds:
+   - Empty: `Unable to find … No Trades were open…`.
+   - Now owed: `Unable to find … region "XYZ review"`.
+3. **Owed-card `go` reopens a collapsed panel.** Red: `expected 'false' to be 'true'`.
+4. **Focus after Refresh Review.** Two reds: Open, and after a closing exit. Both failed with `expected <body> to be <button …>`.
+5. **Hosted headings.** Title at h5, sections at h6. Red: `Unable to find … heading "Exit"`.
+6. **Route declarations.** Declarative only, no red test.
+
+**First-run passes (flagged for the user, all mutation-checked).** These tests protect behaviour that already worked:
+- **Routed headings stay at h1 and h2.** Mutation: "Exit" changed to h3.
+- **Real refresh failure keeps its message.** Mutation: `refreshTrade` returned true.
+- **Focus stays put on refresh failure.** Mutation: `onRefreshed` called on failure.
+
+**Choices.**
+- **Item 2.** `refreshTrade` folds a Ready or Empty `open` result into the held Review, then looks up the Trade in it:
+  - **Walked:** the card is replaced, as before.
+  - **Owed:** the owed card is shown.
+  - **Neither** (rollover or Empty): the card collapses with no error.
+
+  Rejected, ChangedDuringAssembly, and any `getTrade` result other than Ready or ReflectionsOwed still show "We couldn’t refresh the Review."
+- **Item 4.** Focus goes to the Action panel header through a `ReviewCard`-owned ref and a `refreshed` counter. `RecordExit` calls `onRefreshed()` only on success.
+- **Item 5.** `PositionChangeFormHost` gains a required `titleLevel`, and `RecordExit` passes 5. `FormTitle` and `SectionHeading` in `heading-level.tsx` render routed headings at h1/h2 and hosted ones at titleLevel/titleLevel+1. This covers `PositionChangeForm`, `ClosingTheTrade`, `IssueSummary` and `ExitReceipt`. `PlanForm`'s `IssueSummary` stays at h2.
+- **Item 6.** `review` now requires `recordPositionChange`, `getTradeDetail`, `Journal.getDefinitions` and `ReferenceCatalog.query`.
+  - It presents the exit subset of the variants: Stock, SingleTrade, Complete, Decline, Defer, Reduce, Close, Sell, CloseReason and the three CloseReview variants.
+  - `verify:capabilities` reports: `OK: 19 operations, 10 variant-qualified, 8 routes, 4 Entry Types, schema 5`. The release hash is unchanged, because routes are not part of it.
+
+**Copy.** Nothing new except that "Close" now also appears in the hosted loading and error states.
+
+**Checks.** typecheck, tsc6, lint, lint:deps and `verify:capabilities` all pass.
+
+**ocr review of `a7be6c70`** (`evidence/D06/ocr/T6.20-B1-a7be6c70.json`): ocr reviewed 10 files and left 2 comments. The reviewer's own reading added two more items.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `ReviewCard.tsx:97` | The focus move after Refresh Review does nothing when the refreshed Trade leaves the walk (Empty result, Trade gone, or now owed), because `ReviewCard` unmounts. The owed card that replaces it takes no focus. | Valid. Closing the Trade is the usual reason it leaves the walk, so this is the common path after an exit. | T6.20-B2 |
+| medium | `ReviewView.tsx:327` | If `getTrade` fails after `open` succeeds and the Trade has moved to the owed group, the expanded `OwedCard` renders no body, no failure message and no retry. | Valid, narrow | T6.20-B2 |
+| (reviewer) | `ReviewView.tsx` `saved()` | When other drafts are held, the `afterSave` message ("Save or discard what you entered for X…") stays on screen after the refresh collapses its card. | Valid, minor | T6.20-B2 |
+| (reviewer) | `refreshTrade` collapse path | When the Trade leaves the Review, or the Review goes Empty, the card's Mark or reflection drafts are dropped silently. Unlike a change of date, this path shows no notice. | Doubtful, minor | T6.20-B2 |
+
+**Reviewer's answers to the other checks:**
+- **Spurious focus moves:** none.
+- **Heading levels:** correct, including `PlanForm` and the routed entry form. `HostedTitleLevel` 1–5 cannot produce an h7.
+- **Route declarations:** they match what the hosted form submits and over-declare nothing.
+- **Regressions:** none in the walked-card save or the existing refresh paths.
+
+**Cumulative run `t6.20-review-owed-exit`**: HEAD `a7be6c70`, 2026-11-02. Browser tier: full, because `src/app/routes.ts` changed since `52b9e40e`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1177 tests passed | `suite-runs/t6.20-review-owed-exit-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.20-review-owed-exit-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.20-review-owed-exit-browser.txt` |
+| Static and verification (12) | 11 of 12 pass. `verify:capacity` fails, as expected until T6.22. | `suite-runs/t6.20-review-owed-exit-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run. T6.20-B2 follows.
+
+### T6.20-B2 Refresh Review keeps focus and failures visible when the Trade leaves the walk, and clears or explains what the removed card held
+
+Commit `8da2ba8b`. Files: `ReviewView.tsx`, `ReviewCard.tsx`, `ReviewOwedCard.tsx`, `ReviewOwed.test.tsx`, `ReviewCards.test.tsx`. This is the second round on T6.20.
+
+**Four items.** Each one failed red, then passed green:
+1. **Focus after the Trade leaves the walk.** Focus goes to:
+   - the owed card header, when the Trade is now owed (through `reveal`);
+   - the Empty message, when the Review is Empty;
+   - the Review status, when the Trade has left the Review.
+   - Red: `expected <body> to be <p>`.
+2. **Owed read failure.** The owed card's load-failure state now has a Retry, and focus goes to its header.
+   - Red: `Unable to find … We couldn’t load this Trade.`
+   - The Retry also appears on an owed card that fails on first load.
+3. **Stale `afterSave`.** When the refresh moves or removes the card, the message is cleared, or replaced by item 4's notice.
+   - Red: `expected <p role="status"> to be null`.
+4. **Drafts lost on collapse.** A polite status notice now names what was not kept.
+   - Red: the old "The Action is saved…" text.
+
+**Run notes.**
+- One red run was invalid: a leftover reveal count from a key press was taking focus. The test was fixed to open the card on load instead, and was rerun until it went red.
+- No first-run passes.
+
+**New copy (placeholders).**
+- "<name> is no longer in this Review, so what you entered for it was not kept."
+- "<name> is now in Trades with owed reflections, so what you entered for it was not kept." This one goes beyond the brief and is flagged.
+- "Retry", on the owed card.
+
+**Props.** `ReviewCardProps.onExitRefreshed` and `OwedCardProps.onRetry` are now required. `EmptyReview` and `Status` take a `landing` ref.
+
+**Checks.** typecheck, tsc6, lint, lint:deps and `verify:capabilities` all pass. `src/ui` and `src/app`: 474 tests.
+
+**ocr review of `8da2ba8b`** (`evidence/D06/ocr/T6.20-B2-8da2ba8b.json`): ocr reviewed 3 files and made 0 comments. The reviewer's own reading of the code found three narrow items.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| low | `ReviewView.tsx:318` (`drafted`), `MarkEntry.tsx:132-136`, `CardMarks.tsx:129-132` | After a single-Mark save, the Mark's own draft id is still held when `markSaved` calls `refreshTrade`. If that refresh also removes or moves the Trade, the notice says "was not kept" for a Mark that was saved. | Valid, narrow | T6.20-B3 |
+| low | `ReviewView.tsx:318` | `action:<tradeId>` is excluded for every caller. An unsaved Action draft is therefore never reported as lost on a Mark-save or conflict refresh that removes the Trade. | Valid, narrow | T6.20-B3 |
+| low | `ReviewView.tsx:116-117`, `ReviewOwedCard.tsx:106-108` | Retry calls `select`, which clears `afterSave`, so the "was not kept" notice disappears on Retry. | Valid, minor | T6.20-B3 (third round on T6.20) |
+
+**Reviewer's answers to the other checks:**
+- **No spurious focus moves.** Each move is guarded by `selection.current === request`, and `placed` is reset on each refresh.
+- **Retry focus.** Retry on a first-load failure lands focus correctly.
+- **No regressions** in the walked-card refresh, the "Review moved" notice or the Empty view.
+
+**Minor note (recorded only):** the Status section now has `tabIndex={-1}`, so it may show a focus outline.
+
+**Cumulative run `t6.20-b2-refresh-followups`**, HEAD `8da2ba8b`, 2026-11-02. Browser tier: full.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1181 tests passed | `suite-runs/t6.20-b2-refresh-followups-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.20-b2-refresh-followups-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.20-b2-refresh-followups-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.20-b2-refresh-followups-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run.
+
+### T6.20-B3 The not-kept notice counts only unsaved drafts and survives Retry
+
+Commit `8d2da0d9`. Files: `ReviewView.tsx`, `ReviewCard.tsx`, `CardMarks.tsx`, `ReviewCards.test.tsx`. This is the third and last round of bug tasks on T6.20.
+
+**Red tests**, one per item:
+1. "should not say a Mark was not kept when the Mark just saved is all the removed card held". Red: `expected <p role="status"> to be null`.
+2. "should say what was not kept when a Mark is saved on a card that also held an unsaved Action edit, and the refresh removes the card". Red: `Unable to find role="status"`.
+   - Its first run was green for the wrong reason: the Mark was still dirty, which is item 1's defect.
+   - The test turned genuinely red once item 1 was fixed.
+   - This is recorded in the log and is not a first-run pass.
+3. "should keep the not kept notice when Retry opens the owed card the Trade moved to". Red: the notice was missing after Retry.
+
+**Mechanism.**
+- `refreshTrade(tradeId, request, savedDrafts = [])` counts each id in `dirty.current` that is not in `savedDrafts`. The hardcoded `action:<id>` exclusion is gone.
+- Each caller passes only the drafts it has just saved:
+  - `saved()` passes `[action:<id>]`.
+  - `markSaved(draftId)` passes `[draftId]`. `onMarkSaved` now takes the row id.
+  - A new `onExitRefresh` passes `[action:<id>]` for `RecordExit`.
+  - The conflict and Action-form `onRefresh` pass none.
+- `select(…, keepNotice)` keeps `afterSave` only for the owed card's Retry.
+
+**Not tested directly:** the conflict-refresh path. It takes the same no-saved-ids route as the Mark-save path in test 2.
+
+**Checks:** `src/ui` and `src/app` pass 477 tests. typecheck, tsc6, lint and lint:deps all pass.
+
+**ocr review of `8d2da0d9`** (`evidence/D06/ocr/T6.20-B3-8d2da0d9.json`): ocr reviewed 3 files and made 0 comments. The reviewer's own reading of the code found one remaining gap.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| low | `ReviewView.tsx` `onExitRefresh` | `onExitRefresh` always excludes `action:<id>`. A trader can press Change on the saved Exit Action and type edits while the exit form is open; this is reachable because `ActionForm`'s Change is local state, and `trade.form` stays `Saved`, so `RecordExit` stays mounted (`ReviewCard.tsx:339`). If they then save the exit and press Refresh Review and the Trade leaves the walk, the unsaved Action edits are dropped with no "not kept" notice. | Valid, low, edge case. Not a regression: B2 also excluded it. This is the one place B3's item 2 is not fully closed. | **Stop condition: a finding remains after the third round of bug tasks on T6.20. Raised with the user.** |
+
+**The reviewer's answers to the other checks:**
+- Each other caller passes exactly what it saved.
+- Bulk Save Marks does not go through `refreshTrade`.
+- `select` is otherwise unchanged.
+- There are no regressions in focus, the "Review moved" notice, or the walked-card refresh.
+
+**Cumulative run `t6.20-b3-notice-accuracy`**: at HEAD `8d2da0d9`, on 2026-11-02. The browser tier was full.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1184 tests passed | `suite-runs/t6.20-b3-notice-accuracy-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.20-b3-notice-accuracy-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.20-b3-notice-accuracy-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.20-b3-notice-accuracy-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run.
+
+**Status: stopped for the user (handoff section 5, condition 5).** After the third round of bug tasks, one low finding remains on T6.20: the exit refresh does not report unsaved Exit Action edits. Also open, from T6.20's ocr check 7: whether Record the exit should be offered as soon as an Exit Action is saved.

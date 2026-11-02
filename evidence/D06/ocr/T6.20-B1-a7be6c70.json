@@ -1,0 +1,212 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 2,
+    "total_tokens": 269575,
+    "input_tokens": 266963,
+    "output_tokens": 2612,
+    "cache_read_tokens": 52352,
+    "elapsed": "1m33s"
+  },
+  "tool_calls": {
+    "total": 31,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 25,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Handle a failed Trade read after a walked-to-owed transition. The preceding `apply` already removes the ReviewCard (including its receipt and local refresh-error state). If `getTrade` then rejects or returns a non-ready result, this return leaves the owed card expanded with undefined detail, and the unmounted RecordExit cannot display the failure or offer Refresh Review again. Preserve the receipt until the read succeeds, or expose an error and retry on the replacement card.",
+      "existing_code": "    if (trade?.kind !== 'Ready' \u0026\u0026 trade?.kind !== 'ReflectionsOwed') return false;",
+      "start_line": 327,
+      "end_line": 327,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "This focus recovery only works while the refreshed Trade remains a walked card. The newly supported Empty/removed-Trade and ReflectionsOwed results unmount ReviewCard, so `onRefreshed` updates an unmounted component and the focused receipt button disappears without a replacement focus target (especially when this card was opened automatically and `reveal` is zero). Handle refresh focus at the surviving ReviewView level, targeting the replacement owed header or a review heading when the card disappears.",
+      "existing_code": "  useEffect(() =\u003e {\n    if (refreshed \u003e 0) actionHeader.current?.focus();\n  }, [refreshed]);",
+      "start_line": 97,
+      "end_line": 99,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Routing and shared screen accessibility helpers",
+      "files": [
+        "src/app/routes.ts",
+        "src/ui/screens/form-issues.tsx",
+        "src/ui/screens/heading-level.tsx"
+      ]
+    },
+    {
+      "label": "Position change and trade exit workflow",
+      "files": [
+        "src/ui/screens/ClosingTheTrade.tsx",
+        "src/ui/screens/ExitReceipt.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/RecordExit.tsx"
+      ]
+    },
+    {
+      "label": "Trade review view and cards",
+      "files": [
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "90e015a0-f6a1-492d-b59e-46463ffaf6b4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "90e015a0-f6a1-492d-b59e-46463ffaf6b4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a7be6c70",
+      "resolved_base": "e965c56911a351266356fbe57244947927828478",
+      "resolved_head": "a7be6c70321b5bc1fb7d4cb6863808c4211b492c",
+      "exact_range": "e965c56911a351266356fbe57244947927828478..a7be6c70321b5bc1fb7d4cb6863808c4211b492c",
+      "source_artifact_sha256": "d5849015a003c55b1738535242ccce5b4d4e5bd5854d33e73d5a8ff602824251"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "f513ff628d1082bd5dc57c9eb965483201ac94f3853427b5b1177e1caa035f8e"
+        },
+        {
+          "item_id": "23b4ea1a07e158a701054813e0b1bd9f85d28bcdf751dd699acc654c53461dfd",
+          "path": "src/ui/screens/RecordExit.tsx",
+          "fingerprint": "9512f517b1590f498dd82c725de3090f839e7088ec130978a2f78894a8fe67e2"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "7d3bb1de9e6412c14a7b959f94085367aa5fe4399ac48e268ee3cc1af33b71cb"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "d419eaf33b941740cdefe4b3977726551a3c56523a814e549fc43b5260954615"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "15e7a371628b266e09193dae22ebbc2a4bdcffdea3a2d721e9a1b49c8fcd1526"
+        },
+        {
+          "item_id": "6a87f2d2fe665c1b9f82975a7361db0ca3ea766350ff38440a1f8a76024a09bb",
+          "path": "src/ui/screens/form-issues.tsx",
+          "fingerprint": "2c04220d34da37f6abda460de8f43a6fe8829bf589cdb86f7f42b4a2a6cf40ea"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "679b9302b941cc0ba7e5b2678e2431452fefad9e27260b9c4f6fe38be01b5761"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "3bf4b77ab29029a9cad3ba6006b4b6beb45703813eca1c49a5d3db75459c7bac"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "c74353f22a65eec2956c971fb96d170ede3a6be6a0ea7e7a64ce7d2da7961744"
+        },
+        {
+          "item_id": "f7bcfa2be3987b5acb6356090dffb564c2c7d659b43cfbe58c79ff4dd330a4c7",
+          "path": "src/ui/screens/heading-level.tsx",
+          "fingerprint": "c5069d6bbb9654f1ce7b448724a37560af5073c0d7b0ac54231692f0fdd9c849"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "f513ff628d1082bd5dc57c9eb965483201ac94f3853427b5b1177e1caa035f8e"
+        },
+        {
+          "item_id": "23b4ea1a07e158a701054813e0b1bd9f85d28bcdf751dd699acc654c53461dfd",
+          "path": "src/ui/screens/RecordExit.tsx",
+          "fingerprint": "9512f517b1590f498dd82c725de3090f839e7088ec130978a2f78894a8fe67e2"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "7d3bb1de9e6412c14a7b959f94085367aa5fe4399ac48e268ee3cc1af33b71cb"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "d419eaf33b941740cdefe4b3977726551a3c56523a814e549fc43b5260954615"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "15e7a371628b266e09193dae22ebbc2a4bdcffdea3a2d721e9a1b49c8fcd1526"
+        },
+        {
+          "item_id": "6a87f2d2fe665c1b9f82975a7361db0ca3ea766350ff38440a1f8a76024a09bb",
+          "path": "src/ui/screens/form-issues.tsx",
+          "fingerprint": "2c04220d34da37f6abda460de8f43a6fe8829bf589cdb86f7f42b4a2a6cf40ea"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "679b9302b941cc0ba7e5b2678e2431452fefad9e27260b9c4f6fe38be01b5761"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "3bf4b77ab29029a9cad3ba6006b4b6beb45703813eca1c49a5d3db75459c7bac"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "c74353f22a65eec2956c971fb96d170ede3a6be6a0ea7e7a64ce7d2da7961744"
+        },
+        {
+          "item_id": "f7bcfa2be3987b5acb6356090dffb564c2c7d659b43cfbe58c79ff4dd330a4c7",
+          "path": "src/ui/screens/heading-level.tsx",
+          "fingerprint": "c5069d6bbb9654f1ce7b448724a37560af5073c0d7b0ac54231692f0fdd9c849"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 93015
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 4,
+    "total_tokens": 544711,
+    "input_tokens": 539367,
+    "output_tokens": 5344,
+    "cache_read_tokens": 66176,
+    "elapsed": "2m31s"
+  },
+  "tool_calls": {
+    "total": 41,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 8,
+      "file_read": 27,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PositionChangeForm.tsx",
+      "content": "The load-error branch offers only Retry and never invokes the host's leave action. RecordExit supplies no independent Close control while the form is open, so a failed Trade/definition/catalog read leaves the embedded panel without a way to dismiss the form and return to “Record the exit.” Add a hosted Close button here (using `host.onLeave` or the `leave` helper), as in the other unavailable-form branches.",
+      "existing_code": "        \u003cHeading hosted={hosted}\u003e{title}\u003c/Heading\u003e",
+      "start_line": 298,
+      "end_line": 298,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "The exit receipt's Refresh Review now uses refreshTrade, but that handler only accepts Ready from both open and getTrade. If the latest completed session advances after the exit, the closed trade can move into the owed group (getTrade returns ReflectionsOwed), or open can return Empty. Refresh then reports failure despite successful reads; in the owed-group case it also updates the overview without replacing the walked detail, leaving the expanded owed card blank. Extend the refresh path to handle Empty reviews and ReflectionsOwed details before wiring it to this workflow.",
+      "existing_code": "                {trade.form.kind === 'Saved' \u0026\u0026 trade.form.action.action === 'Exit' \u0026\u0026 \u003cRecordExit facade={facade} tradeId={trade.tradeId} route={trade.exitRoute} now={now} onEntryDirty={onEntryDirty} onRefresh={onRefresh} /\u003e}",
+      "start_line": 312,
+      "end_line": 312,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This introduces a nested ternary, which the supplied checklist explicitly prohibits. Use an if/else or switch on result.kind to select the walked detail, owed detail, or Unavailable state.",
+      "existing_code": "      const detail = result?.kind === 'Ready' ? { trade: result.trade } : result?.kind === 'ReflectionsOwed' ? { card: result.card } : 'Unavailable';",
+      "start_line": 268,
+      "end_line": 268,
+      "category": "style",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/ReviewOwedCard.tsx",
+      "content": "The owed card never receives or handles the parent's `go` signal. If its Reflections panel is collapsed and a changed search parameter links to this already-open trade, `openCard` only updates `go`, so the target panel stays hidden (unlike walked cards, which reopen and focus the requested panel). Pass the navigation signal through OwedCard and reopen/focus Reflections when a new link targets it.",
+      "existing_code": "  const [open, setOpen] = useState(true);",
+      "start_line": 120,
+      "end_line": 120,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Exit recording and receipt flow",
+      "files": [
+        "src/ui/screens/ExitReceipt.tsx",
+        "src/ui/screens/RecordExit.tsx"
+      ]
+    },
+    {
+      "label": "Position change form and test support",
+      "files": [
+        "src/ui/screens/PositionChangeForm.tsx",
+        "tests/support/position-change-form-facade.ts"
+      ]
+    },
+    {
+      "label": "Review cards, owed amounts, and review state",
+      "files": [
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewOwedCard.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/held-review.ts"
+      ]
+    }
+  ],
+  "session_id": "b6b68fd5-28a8-4e78-bddf-cd694486c59c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b6b68fd5-28a8-4e78-bddf-cd694486c59c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e965c569",
+      "resolved_base": "3f1750d81c1efea7e378e6c13b70bb19fe858e91",
+      "resolved_head": "e965c56911a351266356fbe57244947927828478",
+      "exact_range": "3f1750d81c1efea7e378e6c13b70bb19fe858e91..e965c56911a351266356fbe57244947927828478",
+      "source_artifact_sha256": "d71a7f58389110b70f0f2ff7a451080a4ccb463ea484ba68719d4a82ef95e879"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "23b4ea1a07e158a701054813e0b1bd9f85d28bcdf751dd699acc654c53461dfd",
+          "path": "src/ui/screens/RecordExit.tsx",
+          "fingerprint": "cc019f99c03cccd4097241c60a75a629d216755129f7794519a0014640b9c6ba"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "e9653dd0dfebc2e84ceaea07fb9a1802cd3ee9564c51db2e282480725a565623"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "373ac8a4186a6268cefe00eaf4fe05f3e0ac01478f1ef888d2f92dff244cc195"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "fecc0007a038acb6f26d8f439ae5c82e11f6ebc0773074cd570c748007bb379c"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "95a64c42f62ad7516b816cc2fe1aca66d221883f311f0bd8f3a38b50f78e42d9"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "ec82c9427f73d457c45d11fd8c3da4879509ca15044e603d6e243f207f0c5235"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "68615e900ffd05a39e66b1fe85545ae9bbd87556ff5a108f19696aa67b2b2480"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "2934f4e425f2f14ca917819fe2c826d0cf0b8ffeb0d1f51c90c71e88f6bd2ad4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "23b4ea1a07e158a701054813e0b1bd9f85d28bcdf751dd699acc654c53461dfd",
+          "path": "src/ui/screens/RecordExit.tsx",
+          "fingerprint": "cc019f99c03cccd4097241c60a75a629d216755129f7794519a0014640b9c6ba"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "e9653dd0dfebc2e84ceaea07fb9a1802cd3ee9564c51db2e282480725a565623"
+        },
+        {
+          "item_id": "658cacd7d8755bc419d3c8b2dc3f0b93468308fa9e366c831087e003312a3c83",
+          "path": "src/ui/screens/ReviewOwedCard.tsx",
+          "fingerprint": "373ac8a4186a6268cefe00eaf4fe05f3e0ac01478f1ef888d2f92dff244cc195"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "fecc0007a038acb6f26d8f439ae5c82e11f6ebc0773074cd570c748007bb379c"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "95a64c42f62ad7516b816cc2fe1aca66d221883f311f0bd8f3a38b50f78e42d9"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "ec82c9427f73d457c45d11fd8c3da4879509ca15044e603d6e243f207f0c5235"
+        },
+        {
+          "item_id": "e4585caac4b0577b3e56fe1675a2cf27c444828f875d4864090c87449d13094a",
+          "path": "src/ui/screens/held-review.ts",
+          "fingerprint": "68615e900ffd05a39e66b1fe85545ae9bbd87556ff5a108f19696aa67b2b2480"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "2934f4e425f2f14ca917819fe2c826d0cf0b8ffeb0d1f51c90c71e88f6bd2ad4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 150715
+  }
+}
