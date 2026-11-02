@@ -700,6 +700,13 @@ const quantityOf = (d: ExpectedDeviation): Rational => (d.form === 'Excess' ? d.
 const recordedQuantityOf = (v: RecordedDeviationVersion): Rational =>
   decimal(v.form === 'Excess' ? v.quantityAbovePlan : v.quantityBelowPlan);
 
+// Whether a recorded version still holds what the facts imply. An Excess occurrence's cause is in
+// its fingerprint, so only its quantity can move. A Shortfall's fingerprint has no cause, so its
+// cause and Economic Time must match too (A83).
+const holdsExpected = (v: RecordedDeviationVersion, d: ExpectedDeviation): boolean =>
+  recordedQuantityOf(v).compare(quantityOf(d)) === 0 &&
+  (d.form === 'Excess' || (v.causingPositionChangeId === d.causingPositionChangeId && v.economicTime === d.economicTime));
+
 // Pairs each expected occurrence with the recorded one of the same fingerprint, and returns the
 // recorded occurrences left unpaired.
 function matchOccurrences(expected: readonly ExpectedDeviation[], recorded: readonly RecordedDeviation[]) {
@@ -739,7 +746,7 @@ function deviationFindings(expected: readonly ExpectedDeviation[], recorded: rea
       continue;
     }
     const stored = recordedQuantityOf(match.version);
-    if (stored.compare(quantityOf(occurrence)) !== 0)
+    if (!holdsExpected(match.version, occurrence))
       findings.push({
         kind: 'DeviationQuantityDisagreement',
         fingerprint: occurrence.fingerprint,
@@ -764,8 +771,7 @@ function deviationActions(expected: readonly ExpectedDeviation[], recorded: read
   return [
     ...pairs.map(({ occurrence, match }): DeviationAction => {
       if (!match) return { kind: 'Create', occurrence };
-      const unchanged =
-        match.version.status === 'Active' && recordedQuantityOf(match.version).compare(quantityOf(occurrence)) === 0;
+      const unchanged = match.version.status === 'Active' && holdsExpected(match.version, occurrence);
       return unchanged
         ? {
             kind: 'Retain',

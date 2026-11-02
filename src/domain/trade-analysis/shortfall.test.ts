@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
-import { derive, type CalculationResult, type DerivedTradeState, type EntryQualityFigures, type TradeAnalysisRecord } from './index.ts';
-import { PC1, PC2, referenceRecord, X1 as XS } from './reference-trade.ts';
+import { derive, type CalculationResult, type DerivedTradeState, type EntryQualityFigures, type RecordedDeviation, type TradeAnalysisRecord } from './index.ts';
+import { PC1, PC2, positionChange, referenceRecord, sellExecution, X1 as XS } from './reference-trade.ts';
 
 // The derived state of a coherent record.
 function derivedState(record: TradeAnalysisRecord): DerivedTradeState {
@@ -73,5 +73,59 @@ describe('Entry Size shortfall A83 AC-POS-005', () => {
     expect(candidate.reconciliation?.deviationActions.map((a) => a.kind)).toEqual(['Create']);
     // A complete Trade has no Shortfall.
     expect(derivedState(referenceRecord([PC1, PC2, XS])).deviations).toEqual([]);
+  });
+
+  // T-S's record holds a Shortfall of 40 caused by XS. A Sell of 30 dated Monday 10:30 is then
+  // recorded: the cut moves to it while the entered quantity (60) and the Shortfall (40) stay.
+  const earlySell = positionChange('pc-xe', 9, [sellExecution('ex-xe', '2026-10-12T14:30:00Z', 10, '30', '51.50', '0.60')]);
+  const recordedShortfall: RecordedDeviation = {
+    occurrenceId: 'dev-s',
+    versions: [
+      {
+        fingerprint: { tradeId: 'trade-1', plannedLegId: 'leg-1', form: 'Shortfall' },
+        type: 'EntrySize',
+        form: 'Shortfall',
+        quantityBelowPlan: '40',
+        causingPositionChangeId: 'pc-x1',
+        economicTime: '2026-10-13T14:00:00Z',
+        status: 'Active',
+      },
+    ],
+  };
+  const movedCutExpected = {
+    fingerprint: { tradeId: 'trade-1', plannedLegId: 'leg-1', form: 'Shortfall' },
+    type: 'EntrySize',
+    form: 'Shortfall',
+    quantityBelowPlan: Rational.of(40n),
+    causingPositionChangeId: 'pc-xe',
+    economicTime: '2026-10-12T14:30:00Z',
+  };
+
+  it('should append a new Shortfall version naming the earlier-dated Sell and its Economic Time when the cutoff moves without changing the entered quantity', () => {
+    const before: TradeAnalysisRecord = { ...T_S, recordedDeviations: [recordedShortfall] };
+    const candidate: TradeAnalysisRecord = { ...referenceRecord([PC1, XS, earlySell]), recordedDeviations: [recordedShortfall] };
+    const result = derive({ record: candidate, candidate: { digest: 'a'.repeat(64), before } });
+    if (result.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(result)}`);
+    expect(result.deviations).toEqual([movedCutExpected]);
+    expect(result.reconciliation?.deviationActions).toEqual([{ kind: 'NewVersion', occurrenceId: 'dev-s', occurrence: movedCutExpected }]);
+  });
+
+  it('should report the stored Shortfall as disagreeing when its cause and Economic Time are stale although its quantity matches', () => {
+    const record: TradeAnalysisRecord = { ...referenceRecord([PC1, XS, earlySell], 'Closed'), recordedDeviations: [recordedShortfall] };
+    expect(derivedState(record).findings).toEqual([
+      {
+        kind: 'DeviationQuantityDisagreement',
+        fingerprint: movedCutExpected.fingerprint,
+        occurrenceId: 'dev-s',
+        recorded: Rational.of(40n),
+        expected: Rational.of(40n),
+      },
+    ]);
+    // A record whose Shortfall names the current cause and time has no finding.
+    const current: RecordedDeviation = {
+      occurrenceId: 'dev-s',
+      versions: [{ ...recordedShortfall.versions[0]!, causingPositionChangeId: 'pc-xe', economicTime: '2026-10-12T14:30:00Z' }],
+    };
+    expect(derivedState({ ...record, recordedDeviations: [current] }).findings).toEqual([]);
   });
 });
