@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
@@ -17,7 +17,16 @@ export interface TradeListProps {
 const LIFECYCLES = ['Open', 'Planned', 'Closed'] as const;
 type Lifecycle = (typeof LIFECYCLES)[number];
 
-type ListState = { readonly kind: 'Loading' } | { readonly kind: 'Ready'; readonly items: readonly unknown[] } | { readonly kind: 'Error' };
+// The Closed list pages by 50 (A95): its Ready state keeps the cursor of the next page and how the last
+// "Show more" went. Open and Planned do not page.
+type Paging =
+  | { readonly kind: 'Loading' }
+  | { readonly kind: 'Failed' }
+  | { readonly kind: 'Refreshed' }
+  // The index of the first row the last page added.
+  | { readonly kind: 'Appended'; readonly from: number };
+type ReadyState = { readonly kind: 'Ready'; readonly items: readonly unknown[]; readonly nextCursor?: string; readonly paging?: Paging };
+type ListState = { readonly kind: 'Loading' } | ReadyState | { readonly kind: 'Error' };
 
 // The Trades view: lifecycle tabs over one list each, with Loading, Ready, Empty, and Error kept
 // distinct: never a false Empty while loading or after a failure. The selected tab lives in the
@@ -39,7 +48,7 @@ export function TradeList({ facade }: TradeListProps) {
       if (current) setSettled({ key, state });
     };
     facade.TradeViewsAndReporting.browseTrades({ lifecycle }).then(
-      (result) => settle(result.kind === 'Ready' ? { kind: 'Ready', items: result.view.items } : { kind: 'Error' }),
+      (result) => settle(result.kind === 'Ready' ? { kind: 'Ready', items: result.view.items, ...(result.view.nextCursor ? { nextCursor: result.view.nextCursor } : {}) } : { kind: 'Error' }),
       () => settle({ kind: 'Error' }),
     );
     return () => {
@@ -48,6 +57,29 @@ export function TradeList({ facade }: TradeListProps) {
   }, [facade, lifecycle, key]);
 
   const state: ListState = settled?.key === key ? settled.state : { kind: 'Loading' };
+  // Closed only. A page is shown only for the request that asked for it: the key changes with a tab
+  // switch or a full Retry, so a late page for an earlier key finds nothing to change.
+  const showMore = (cursor: string) => {
+    const change = (to: (ready: ReadyState) => ReadyState) => setSettled((now) => (now?.key === key && now.state.kind === 'Ready' ? { key, state: to(now.state) } : now));
+    const failed = () => change((ready) => ({ ...ready, paging: { kind: 'Failed' } }));
+    change((ready) => ({ ...ready, paging: { kind: 'Loading' } }));
+    const browse = facade.TradeViewsAndReporting.browseTrades;
+    browse({ lifecycle: 'Closed', cursor })
+      .then(async (result) => {
+        // A commit since the first page ends its cursors (trade-record): start again from page one.
+        const refreshed = result.kind === 'Rejected' && result.reason === 'CursorExpired';
+        const page = refreshed ? await browse({ lifecycle: 'Closed' }) : result;
+        if (page.kind !== 'Ready') return failed();
+        const { items, nextCursor } = page.view;
+        change((ready) => ({
+          kind: 'Ready',
+          items: refreshed ? items : [...ready.items, ...items],
+          ...(nextCursor ? { nextCursor } : {}),
+          paging: refreshed ? { kind: 'Refreshed' } : { kind: 'Appended', from: ready.items.length },
+        }));
+      })
+      .catch(failed);
+  };
   // Every switch asks again: a page shown earlier is never presented as current.
   const select = (next: Lifecycle) => setParams(next === 'Open' ? {} : { lifecycle: next }, { replace: true });
   // The tablist pattern: one tab stop, with the arrow, Home, and End keys moving between tabs.
@@ -84,7 +116,7 @@ export function TradeList({ facade }: TradeListProps) {
       <div role="tabpanel" id={`panel-${lifecycle}`} aria-labelledby={`tab-${lifecycle}`}>
         {lifecycle === 'Open' && <OpenList state={state} retry={() => setAttempt((n) => n + 1)} showPlanned={() => select('Planned')} />}
         {lifecycle === 'Planned' && <PlannedList state={state} retry={() => setAttempt((n) => n + 1)} />}
-        {lifecycle === 'Closed' && <ClosedList state={state} retry={() => setAttempt((n) => n + 1)} />}
+        {lifecycle === 'Closed' && <ClosedList state={state} retry={() => setAttempt((n) => n + 1)} showMore={showMore} />}
       </div>
     </section>
   );
@@ -288,9 +320,16 @@ function TradeCell({
 const GAIN_LOSS = signed(money);
 const R_MULTIPLE = signed(rMultiple);
 
-// The read model pages by 50; this shows the first page, as the Open and Planned lists do (neither pages).
-function ClosedList({ state, retry }: ListProps) {
+// The read model pages by 50 (A95): "Show more closed trades" appends the next page while a cursor remains.
+function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore: (cursor: string) => void }) {
   const { timeZone } = useRuntime();
+  const rows = useRef<HTMLTableSectionElement>(null);
+  const appendedFrom = state.kind === 'Ready' && state.paging?.kind === 'Appended' ? state.paging.from : undefined;
+  const buttonGone = state.kind === 'Ready' && !state.nextCursor;
+  useEffect(() => {
+    // The button the trader pressed is gone: focus goes to the first new row, not to the page start.
+    if (appendedFrom !== undefined && buttonGone) rows.current?.rows[appendedFrom]?.querySelector('a')?.focus();
+  }, [appendedFrom, buttonGone]);
   if (state.kind === 'Loading') return <p role="status">Loading closed trades…</p>;
   if (state.kind === 'Error') {
     return (
@@ -310,7 +349,18 @@ function ClosedList({ state, retry }: ListProps) {
       </section>
     );
   }
-  return (
+  const { nextCursor, paging } = state;
+  const added = paging?.kind === 'Appended' ? items.length - paging.from : 0;
+  const message =
+    paging?.kind === 'Failed'
+      ? 'We couldn’t load more closed trades. Nothing was changed.'
+      : paging?.kind === 'Refreshed'
+        ? 'The list was refreshed because your journal changed. Showing from the first page.'
+        : paging?.kind === 'Appended'
+          ? `${added} more closed ${added === 1 ? 'trade' : 'trades'} shown.`
+          : '';
+  const loading = paging?.kind === 'Loading';
+  const table = (
     // The columns scroll inside their own focusable region on a narrow screen (Underlying pinned), never the page.
     <div className="table-scroll" role="region" aria-label="Closed Trades" tabIndex={0}>
       <table className="trades">
@@ -331,7 +381,7 @@ function ClosedList({ state, retry }: ListProps) {
             <th scope="col">Account</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody ref={rows}>
           {items.map((item) => {
             // Facts that cannot be replayed leave the realized figures and disposition unavailable, never a number.
             const derived = 'netRealizedPnl' in item ? item : undefined;
@@ -377,6 +427,22 @@ function ClosedList({ state, retry }: ListProps) {
         </tbody>
       </table>
     </div>
+  );
+  return (
+    <>
+      {table}
+      {(nextCursor || message) && (
+        <div className="paging">
+          <p role="status">{message}</p>
+          {nextCursor && (
+            // aria-disabled, not disabled, so the pressed button keeps focus while its page loads.
+            <button type="button" className="pill secondary" aria-busy={loading} aria-disabled={loading} onClick={() => !loading && showMore(nextCursor)}>
+              {loading ? 'Loading more closed trades…' : paging?.kind === 'Failed' ? 'Retry' : 'Show more closed trades'}
+            </button>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 

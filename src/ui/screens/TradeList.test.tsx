@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -319,6 +319,105 @@ describe('Closed list (A95)', () => {
     renderClosed(facade, null);
     const table = await screen.findByRole('table', { name: 'Closed Trades' });
     expect(within(within(table).getAllByRole('row')[1]!).getAllByRole('cell')[6]!.textContent).toBe('Not available');
+  });
+});
+
+describe('Closed list paging (T6.18-B1)', () => {
+  const closedAt = (id: string) => ({ ...closedItem, tradeId: id, underlying: id.toUpperCase() });
+  const page = (ids: readonly string[], nextCursor?: string) => ({ kind: 'Ready', view: { items: ids.map(closedAt), ...(nextCursor ? { nextCursor } : {}) }, binding: {} }) as never;
+  const symbols = () => within(screen.getByRole('table', { name: 'Closed Trades' })).getAllByRole('link').map((l) => l.textContent);
+  const deferred = () => {
+    let resolve!: (value: never) => void;
+    const promise = new Promise<never>((res) => {
+      resolve = res;
+    });
+    return { promise, resolve };
+  };
+
+  it('should append the next page in order with Show more closed trades, ask with the cursor, hold the rows and the button busy while it loads, and drop the button when no cursor remains', async () => {
+    const facade = facadeDouble();
+    const browse = vi.mocked(facade.TradeViewsAndReporting.browseTrades);
+    const second = deferred();
+    browse.mockResolvedValueOnce(page(['aaa', 'bbb'], 'cursor-1')).mockReturnValueOnce(second.promise);
+    renderClosed(facade);
+    await screen.findByRole('table', { name: 'Closed Trades' });
+    expect(symbols()).toEqual(['AAA', 'BBB']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show more closed trades' }));
+    expect(browse.mock.calls.map(([request]) => request)).toEqual([{ lifecycle: 'Closed' }, { lifecycle: 'Closed', cursor: 'cursor-1' }]);
+    // The rows stay, the button shows it is busy and cannot be pressed twice.
+    expect(symbols()).toEqual(['AAA', 'BBB']);
+    const busy = screen.getByRole('button', { name: 'Loading more closed trades…' });
+    expect(busy.getAttribute('aria-busy')).toBe('true');
+    fireEvent.click(busy);
+    expect(browse).toHaveBeenCalledTimes(2);
+
+    second.resolve(page(['ccc', 'ddd']));
+    expect(await screen.findByText('2 more closed trades shown.')).toBeTruthy();
+    expect(symbols()).toEqual(['AAA', 'BBB', 'CCC', 'DDD']);
+    expect(screen.queryByRole('button', { name: /closed trades/i })).toBeNull();
+    // With the button gone, focus moves to the first new row.
+    expect(document.activeElement).toBe(screen.getByRole('link', { name: 'CCC' }));
+  });
+
+  it('should reload from the first page and say the list was refreshed when the cursor has expired, never the generic error', async () => {
+    const facade = facadeDouble();
+    const browse = vi.mocked(facade.TradeViewsAndReporting.browseTrades);
+    browse
+      .mockResolvedValueOnce(page(['aaa'], 'cursor-1'))
+      .mockResolvedValueOnce({ kind: 'Rejected', reason: 'CursorExpired' })
+      .mockResolvedValueOnce(page(['new', 'aaa'], 'cursor-2'))
+      .mockReturnValueOnce(new Promise(() => undefined));
+    renderClosed(facade);
+    await screen.findByRole('table', { name: 'Closed Trades' });
+    fireEvent.click(screen.getByRole('button', { name: 'Show more closed trades' }));
+    expect(await screen.findByText('The list was refreshed because your journal changed. Showing from the first page.')).toBeTruthy();
+    expect(browse.mock.calls.map(([request]) => request)).toEqual([{ lifecycle: 'Closed' }, { lifecycle: 'Closed', cursor: 'cursor-1' }, { lifecycle: 'Closed' }]);
+    expect(symbols()).toEqual(['NEW', 'AAA']);
+    expect(screen.queryByText(/couldn’t load/i)).toBeNull();
+    // The new first page's own cursor leads on.
+    fireEvent.click(screen.getByRole('button', { name: 'Show more closed trades' }));
+    expect(browse).toHaveBeenLastCalledWith({ lifecycle: 'Closed', cursor: 'cursor-2' });
+  });
+
+  it('should keep the loaded rows and show the failure beside a Retry when a next page fails, then append it on Retry', async () => {
+    const facade = facadeDouble();
+    const browse = vi.mocked(facade.TradeViewsAndReporting.browseTrades);
+    browse.mockResolvedValueOnce(page(['aaa'], 'cursor-1')).mockRejectedValueOnce(new Error('storage')).mockResolvedValueOnce(page(['bbb']));
+    renderClosed(facade);
+    await screen.findByRole('table', { name: 'Closed Trades' });
+    fireEvent.click(screen.getByRole('button', { name: 'Show more closed trades' }));
+    expect(await screen.findByText('We couldn’t load more closed trades. Nothing was changed.')).toBeTruthy();
+    expect(symbols()).toEqual(['AAA']);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText('1 more closed trade shown.')).toBeTruthy();
+    expect(browse.mock.calls.map(([request]) => request)).toEqual([{ lifecycle: 'Closed' }, { lifecycle: 'Closed', cursor: 'cursor-1' }, { lifecycle: 'Closed', cursor: 'cursor-1' }]);
+    expect(symbols()).toEqual(['AAA', 'BBB']);
+  });
+
+  it('should discard a late next page after a tab switch, and start again from the first page on return', async () => {
+    const facade = facadeDouble();
+    const browse = vi.mocked(facade.TradeViewsAndReporting.browseTrades);
+    const late = deferred();
+    browse
+      .mockResolvedValueOnce(page(['aaa'], 'cursor-1'))
+      .mockReturnValueOnce(late.promise)
+      .mockResolvedValueOnce(readyPage([]))
+      .mockResolvedValueOnce(page(['aaa'], 'cursor-1'));
+    renderClosed(facade);
+    await screen.findByRole('table', { name: 'Closed Trades' });
+    fireEvent.click(screen.getByRole('button', { name: 'Show more closed trades' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Planned' }));
+    await screen.findByText(/no planned trades yet/i);
+    fireEvent.click(screen.getByRole('tab', { name: 'Closed' }));
+    await screen.findByRole('table', { name: 'Closed Trades' });
+    await act(() => {
+      late.resolve(page(['zzz']));
+      return Promise.resolve();
+    });
+    expect(symbols()).toEqual(['AAA']);
+    expect(browse.mock.calls[3]![0]).toEqual({ lifecycle: 'Closed' });
+    expect(screen.getByRole('button', { name: 'Show more closed trades' })).toBeTruthy();
   });
 });
 
