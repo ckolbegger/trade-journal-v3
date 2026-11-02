@@ -273,3 +273,36 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.7 Reference Catalog: Close Reasons
 
 Base commit (for `browser-auto`): `23041481`.
+
+Commit `803381da` (T6.7). Both cases went red, then green, with no first-run pass. Before the first red, the `D6_CATALOG_MANIFEST` constant and the optional `closeReasons` manifest type were added, so the red came from the missing behavior rather than an undefined import.
+
+- **Close Reason family.** `CatalogKind` gains `CloseReason`. `CloseReasonRecord` carries `productKey`, `policy: 'SeededValuesRemainSelectable'`, an optional `role` (absent in D6) and `seedOrder`. Manifest v2 adds four product keys:
+  - `close-reason.target-reached`
+  - `close-reason.stop-triggered`
+  - `close-reason.thesis-invalidated`
+  - `close-reason.time-based-exit`
+- **Query order (plan and spec disagree).** The plan's case lists the selectable Close Reasons "in seed order". `specs/design/reference-catalog.md` says `query` returns "deterministic label/identity order". The implementation follows the plan: Close Reasons sort by `seedOrder`, then label, then identity, and the other families are unchanged. This is not a plan deviation, since the plan is met as written. The disagreement is listed for the final report.
+- **Test support edit.** `tests/support/plan-form-facade.ts` needed `CloseReason: []`, because widening `CatalogKind` broke an exhaustive record.
+- **For T6.15.** `workspace.ts` and `migration.ts` still seed and validate against `D1_CATALOG_MANIFEST`.
+- **For T6.9.** `section.ts` ignores `CloseReason` records.
+
+### ocr review of `803381da`
+
+Session `48b6a882-c615-4eae-a121-222072d0c156`, 5 files reviewed (the test file and `tdd-log.md` excluded), **no findings**. Raw output: [ocr/T6.7-803381da.json](ocr/T6.7-803381da.json).
+
+### Cumulative run after T6.7
+
+Label `t6.7-close-reasons`, at `803381da` plus uncommitted evidence (2026-11-01 20:09 EST). Outputs in `suite-runs/t6.7-close-reasons-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 86 files, 1081 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **Task tier.** Printed reason: "no changed path since 23041481 is on the full-tier list". 5 passed (9.9 s). |
+| Static and verify checks | 11 of 12 exit 0. `verify:capacity` failed, as expected until T6.22. |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.8 Journal: Close Review
+
+Base commit (for `browser-auto`): `803381da`.

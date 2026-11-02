@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 26563,
+    "input_tokens": 26303,
+    "output_tokens": 260,
+    "cache_read_tokens": 5760,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Reference catalog updates and plan form test support",
+      "files": [
+        "src/modules/reference-catalog/catalog.ts",
+        "src/modules/reference-catalog/index.ts",
+        "src/modules/reference-catalog/manifest.ts",
+        "src/modules/reference-catalog/records.ts",
+        "tests/support/plan-form-facade.ts"
+      ]
+    }
+  ],
+  "session_id": "48b6a882-c615-4eae-a121-222072d0c156",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "48b6a882-c615-4eae-a121-222072d0c156",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "803381da",
+      "resolved_base": "afdb5b210412106dbb53a1bf6a9bd8af91c7d37f",
+      "resolved_head": "803381da643d61ee7cf1f82c6d1d61f6a69070c4",
+      "exact_range": "afdb5b210412106dbb53a1bf6a9bd8af91c7d37f..803381da643d61ee7cf1f82c6d1d61f6a69070c4",
+      "source_artifact_sha256": "98830cec5352865768cfa9e9c1edfcbc96879ef306db1165187e6284523c1e41"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "40f734e57a929cdb70d991d5e15c3eaf925282baa2f07ff089e305beb5e2bf2b",
+          "path": "tests/support/plan-form-facade.ts",
+          "fingerprint": "63c5d0d1bc51fb2b20cbe5ac5f351076e2d60e03cc9807c8932df56042ea5d3c"
+        },
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "cd58c81f6041a208db0c08216ce5da3105aadf54c97fa2771f5ff656861f1cbb"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "b12c9d92558a8492cc7a21a0ab28cdb3fd4c8334e7141ec164be81c84421e04a"
+        },
+        {
+          "item_id": "d7e76756a4115c48e4fb7775c3fc65d4f00bdf868a436e5cfa825ddf5235ab20",
+          "path": "src/modules/reference-catalog/manifest.ts",
+          "fingerprint": "00b3ec1bd79b39adcbc583695b3c05ca1278eee400924088699f230891868a03"
+        },
+        {
+          "item_id": "fb378b12df5e0d8a8dc4c2a2507b373eb459413ac42d6910b10939ceee43b0cb",
+          "path": "src/modules/reference-catalog/records.ts",
+          "fingerprint": "ea9e9e2c277c2d0bb16be6c4efc1eff2ed48981349d953bb745db688248532fd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "40f734e57a929cdb70d991d5e15c3eaf925282baa2f07ff089e305beb5e2bf2b",
+          "path": "tests/support/plan-form-facade.ts",
+          "fingerprint": "63c5d0d1bc51fb2b20cbe5ac5f351076e2d60e03cc9807c8932df56042ea5d3c"
+        },
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "cd58c81f6041a208db0c08216ce5da3105aadf54c97fa2771f5ff656861f1cbb"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "b12c9d92558a8492cc7a21a0ab28cdb3fd4c8334e7141ec164be81c84421e04a"
+        },
+        {
+          "item_id": "d7e76756a4115c48e4fb7775c3fc65d4f00bdf868a436e5cfa825ddf5235ab20",
+          "path": "src/modules/reference-catalog/manifest.ts",
+          "fingerprint": "00b3ec1bd79b39adcbc583695b3c05ca1278eee400924088699f230891868a03"
+        },
+        {
+          "item_id": "fb378b12df5e0d8a8dc4c2a2507b373eb459413ac42d6910b10939ceee43b0cb",
+          "path": "src/modules/reference-catalog/records.ts",
+          "fingerprint": "ea9e9e2c277c2d0bb16be6c4efc1eff2ed48981349d953bb745db688248532fd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 19642
+  }
+}
