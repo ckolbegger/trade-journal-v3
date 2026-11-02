@@ -813,6 +813,31 @@ describe('position paths P22', () => {
     );
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });
+
+  it('should return IntegrityDisagreement, not P22 issues, when the stored Trade is already path-incoherent', async () => {
+    const ref = await exitReference();
+    const entered = await enter(ref);
+    const x1 = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, entered, [sell(ref, X1_TIME, '30', '52.00', '0.60')]));
+    if (x1.kind !== 'Recorded') throw new Error(`expected Recorded, got ${x1.kind}`);
+    // The stored Sell is rewritten to 150 shares against 100 open, as corruption or an import would leave it.
+    const sellId = x1.receipt.createdFactIds[1]!;
+    type StoredFact = { factId: string; versions: { value: Record<string, unknown> }[] };
+    await rewriteTrade(ref, (document) => ({
+      ...document,
+      facts: (document['facts'] as StoredFact[]).map((fact) =>
+        fact.factId === sellId ? { ...fact, versions: fact.versions.map((v) => ({ ...v, value: { ...v.value, quantity: '150' } })) } : fact,
+      ),
+    }));
+    const before = await dumpAll(ref.stack.factory);
+    // The change itself is sound: a later Sell of 10. Its own path is not what is wrong.
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, x1.receipt.factRevision, [sell(ref, '2026-10-13T15:00:00Z', '10', '52.00', '0.10')]));
+    expect(result).toEqual({
+      kind: 'IntegrityDisagreement',
+      tradeId: ref.trade.tradeId,
+      findings: [{ factId: sellId, reason: 'ExceedsOpenQuantity', available: Rational.of(100n) }],
+    });
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+  });
 });
 
 describe('earlier-dated exit P23', () => {

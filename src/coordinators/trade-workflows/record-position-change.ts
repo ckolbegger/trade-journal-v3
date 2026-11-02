@@ -360,10 +360,15 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   ];
   if (reflection.kind === 'Rejected') issues.push(...journalIssues(reflection.issues));
   // Values that do not parse cannot be replayed, so the candidate is analysed only when every member is valid.
-  const derived = issues.some((i) => i.source === 'TradeWorkflows')
+  const candidateDerived = issues.some((i) => i.source === 'TradeWorkflows')
     ? undefined
     : derive({ record: prepared.analysisInput, candidate: { digest: prepared.digest, before: prepared.beforeAnalysisInput! } });
-  if (derived?.kind === 'IncoherentFacts') {
+  // Findings the stored Trade already has are its facts, not this change's fault (P7), so they stay an
+  // IntegrityDisagreement; the change's own path findings are the candidate's only when the before-state is coherent.
+  const storedDerived = candidateDerived?.kind === 'IncoherentFacts' ? derive({ record: prepared.beforeAnalysisInput! }) : undefined;
+  const storedIncoherent = storedDerived?.kind === 'IncoherentFacts';
+  const derived = storedIncoherent ? storedDerived : candidateDerived;
+  if (derived?.kind === 'IncoherentFacts' && !storedIncoherent) {
     issues.push(...positionPathIssues(derived.findings, positionChange.versions[0]!.value.memberIds));
   }
   const closeRequirement = derived?.kind === 'Derived' ? derived.reconciliation?.closeRequirement : undefined;
