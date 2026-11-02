@@ -21,7 +21,7 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
-import { classifyDue, type DueClassification } from '../../domain/journal-debt/index.ts';
+import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
@@ -309,12 +309,25 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly current: OpenCurrentEvaluation;
 }
 
+// The Closed form's valuation: the evaluation and its coverage only. A Closed Trade has no current figures
+// (A92), so there is no Expected Mark Date, Mark resolution, Mark, or dated line, and every figure that
+// depends on a Mark is NotApplicable(NoRemainingPosition). The evaluation is dated at the terminal time and
+// its `coverage` is not meaningful.
+export interface ClosedCurrentEvaluation extends Pick<OpenCurrentEvaluation, 'coverage' | 'evaluation'> {
+  // Declared so a reader of either form of `current` can name them; a Closed Detail never has them.
+  readonly expectedMarkDate?: never;
+  readonly markResolution?: never;
+  readonly mark?: never;
+  readonly datedLine?: never;
+}
+
 // The Closed form of Trade Detail (D6): the Open form's Plan, lifecycle, Position Changes, Lot Matches, fee
 // reconciliation, entry record, and narrative (the Close Review among it), plus how the exposure ended (Terminal
 // Disposition) apart from why the trader closed (Close Reason), the terminal time, and Realized R. Its
-// `realizedToDate` is the net realized P&L. The valuation needs no Mark: a Closed Trade has no current figures
-// (A92), and `positions` holds no Open Lot.
+// `realizedToDate` is the net realized P&L. It is built from the facts alone and reads no Mark (A92); its
+// `positions` holds no Open Lot.
 export interface ClosedTradeDetail extends OpenTradeDetail {
+  readonly current: ClosedCurrentEvaluation;
   readonly terminalDisposition: DerivedTradeState['terminalDisposition'];
   readonly closeReason?: CloseReasonLabel;
   // The terminal Position Change's Economic Time.
@@ -494,14 +507,18 @@ function inFactOrder(analysis: TradeAnalysisRecord, derived: DerivedTradeState):
     .map((pc) => ({ ...pc, executions: [...pc.executions].sort(byRank) }));
 }
 
+// The closes around the Expected Mark Date, as its frame carries them (A75); none outside session-policy coverage.
+const closesOf = (frame: CurrentFrame): SessionCloses | undefined =>
+  'resolution' in frame ? { previousClose: frame.previousCloseInstant, close: frame.closeInstant } : undefined;
+
 // Each Outstanding Debt's due status against the Expected Mark Date E (A69): Due when its anchor is at
 // or before the close of the session before E, in the next Review when it is at or before E's close,
-// otherwise in the Review after next. Both closes come from the frame (A75). Outside session-policy
-// coverage there is no frame, and a Debt carries no status (decision 56).
-function withDueStatus(narrative: readonly TradeNarrativeItem[], frame: CurrentFrame): TradeDetailNarrativeItem[] {
+// otherwise in the Review after next. Both closes come from the frame (A75). Without closes (outside
+// session-policy coverage, or when Market Data has none to give) a Debt carries no status (decision 56).
+function withDueStatus(narrative: readonly TradeNarrativeItem[], closes: SessionCloses | undefined): TradeDetailNarrativeItem[] {
   return narrative.map((item): TradeDetailNarrativeItem => {
     if (item.kind !== 'Debt') return item;
-    const dueStatus = classifyDue(item.dueAnchor, 'resolution' in frame ? { previousClose: frame.previousCloseInstant, close: frame.closeInstant } : undefined);
+    const dueStatus = classifyDue(item.dueAnchor, closes);
     return dueStatus === undefined ? item : { ...item, dueStatus };
   });
 }
@@ -527,9 +544,17 @@ export function feeReconciliationOf(derived: DerivedTradeState): FeeReconciliati
   };
 }
 
-function closedDetail(open: OpenTradeDetail, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
+// A Closed Trade holds no Lot, so every Mark-dependent figure is NotApplicable(NoRemainingPosition) whatever the date:
+// it is evaluated at its terminal date, with no frame and no Mark (A92).
+function closedCurrent(analysis: TradeAnalysisRecord, derived: DerivedTradeState): ClosedCurrentEvaluation {
+  const evaluation = evaluateCurrent(derived, analysis, { date: terminalTimeOf(analysis, derived).slice(0, 10) });
+  return { coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }], evaluation };
+}
+
+function closedDetail(open: Omit<OpenTradeDetail, 'current'>, current: ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
   return {
     ...open,
+    current,
     terminalDisposition: derived.terminalDisposition,
     ...optional('closeReason', closeReason),
     terminalTime: terminalTimeOf(analysis, derived),
@@ -537,14 +562,14 @@ function closedDetail(open: OpenTradeDetail, analysis: TradeAnalysisRecord, deri
   };
 }
 
-function openDetail(
+// The Open form without its valuation, which the Open and Closed forms each supply.
+function detailWithoutValuation(
   planned: Omit<PlannedTradeDetail, 'journal'>,
   analysis: TradeAnalysisRecord,
   derived: DerivedTradeState,
   narrative: readonly TradeDetailNarrativeItem[],
   lastActivity: string,
-  current: OpenCurrentEvaluation,
-): OpenTradeDetail {
+): Omit<OpenTradeDetail, 'current'> {
   return {
     ...planned,
     positions: derived.positions,
@@ -563,7 +588,6 @@ function openDetail(
     deviations: analysis.recordedDeviations ?? [],
     findings: derived.findings,
     journal: narrative,
-    current,
   };
 }
 
@@ -593,6 +617,15 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     if (date !== undefined) return { frames: instruments.map(() => ({ date })) };
     if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the current frames`);
     return { frames: result.frames, snapshotId: result.snapshotId };
+  }
+
+  // The closes around the Expected Mark Date, for the due status of a Closed Trade's Debt. Market Data gives them
+  // on the Instrument's frame; the frame's Mark is not read. Anything but frames, coverage rejections included,
+  // leaves no closes, and the Debt carries no status (decision 56): a Closed Detail does not depend on Market Data.
+  async function sessionCloses(symbol: string): Promise<SessionCloses | undefined> {
+    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments: [symbol] });
+    const frame = result.kind === 'Frames' ? result.frames[0] : undefined;
+    return frame && closesOf(frame);
   }
 
   // The effective Mark revision's provenance, as Market Data describes it on the frame.
@@ -699,6 +732,15 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           const view: TradeDetailView = { ...planned, summary: plannedLongStockSummary(analysis.plan.legs), journal: narrative.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
           return { binding, view };
         }
+        const lastActivity = s.lastActivity ?? s.planTime;
+        // A stored Closed Trade takes the Closed form before any frame is read: its figures come from the facts
+        // alone and no Mark is required (A92).
+        if (analysis.storedLifecycle === 'Closed') {
+          const closeReason = analysis.closeReason && (await closeReasonOf(analysis.closeReason.closeReasonId));
+          const closes = narrative.some((item) => item.kind === 'Debt') ? await sessionCloses(analysis.plan.underlying) : undefined;
+          const view = closedDetail(detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity), closedCurrent(analysis, derived), analysis, derived, closeReason);
+          return { binding, view };
+        }
         const { frames, snapshotId } = await currentFrames([analysis.plan.underlying]);
         const frame = frames[0]!;
         const evaluation = evaluateCurrent(derived, analysis, frame);
@@ -711,12 +753,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           evaluation,
           ...optional('datedLine', datedLine),
         };
-        const open = openDetail(planned, analysis, derived, withDueStatus(narrative, frame), s.lastActivity ?? s.planTime, current);
-        // A stored Closed Trade takes the Closed form; its figures come from the facts, and no Mark is required (A92).
-        const view: TradeDetailView =
-          analysis.storedLifecycle === 'Closed'
-            ? closedDetail(open, analysis, derived, analysis.closeReason && (await closeReasonOf(analysis.closeReason.closeReasonId)))
-            : open;
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closesOf(frame)), lastActivity), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotId) };
       });
     },
