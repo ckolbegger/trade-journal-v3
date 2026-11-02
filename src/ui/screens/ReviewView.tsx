@@ -129,9 +129,13 @@ function tradeLabels(trades: readonly WalkedTrade[], owed: readonly OwedReflecti
   };
 }
 
-function Status({ review, completion, name, openCard }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard }) {
+// The element that takes the focus when the Trade a card held has left the Review (a refresh after a closing exit); the Review status
+// or the Empty message, whichever the Review shows.
+type Landing = (element: HTMLElement | null) => void;
+
+function Status({ review, completion, name, openCard, landing }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard; readonly landing: Landing }) {
   return (
-    <section className="card" aria-label="Review status">
+    <section className="card" aria-label="Review status" tabIndex={-1} ref={landing}>
       <ReviewDate date={review.reviewDate} />
       <p>
         <strong>{COMPLETION_TEXT[completion.kind]}</strong>
@@ -207,11 +211,11 @@ type ViewState =
   | { readonly kind: 'Empty'; readonly review: Extract<OpenDailyReviewResult, { kind: 'Empty' }> }
   | { readonly kind: 'Error' };
 
-function EmptyReview({ date }: { readonly date: string }) {
+function EmptyReview({ date, landing }: { readonly date: string; readonly landing?: Landing }) {
   return (
     <section className="card empty">
       <ReviewDate date={date} />
-      <p>No Trades were open at this session's close</p>
+      <p tabIndex={-1} ref={landing}>No Trades were open at this session's close</p>
     </section>
   );
 }
@@ -304,7 +308,15 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // Every valid result is followed as the first opening follows it: an Empty or a different Review replaces the held one, and a Trade
   // the new Review holds shows as the card it now is (walked or owed). A Trade it no longer holds closes its card. Only a Review or a
   // Trade that cannot be read is a failure.
+  // Where the refresh left the Trade of the card that was shown: Refresh Review's exit form reads it to place the focus that its own
+  // card, now gone, can no longer take.
+  const placed = useRef<'owed' | 'gone'>(undefined);
   const refreshTrade = async (tradeId: string, request = selection.current): Promise<boolean> => {
+    // What the card holds is read before the new Review is applied, since a card that is removed drops its entries as it goes.
+    const label = name(tradeId);
+    const drafted = [...dirty.current].some((id) => id !== `action:${tradeId}`);
+    const wasOwed = latest.current.review.owed.some((t) => t.tradeId === tradeId);
+    placed.current = undefined;
     // A card opened while the Review is being asked for waits for it, so it is read under the binding it returns.
     const asking = reopen().then((next) => {
       if (next) {
@@ -320,10 +332,26 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     const held = latest.current.review;
     if (!walkedTrades(held).some((t) => t.tradeId === tradeId) && !held.owed.some((t) => t.tradeId === tradeId)) {
       setStale(undefined);
-      if (selection.current === request) collapse();
+      if (selection.current === request) {
+        collapse();
+        placed.current = 'gone';
+        // Any message about this card (an Action saved, a draft to save or discard) has no card to act on now.
+        setAfterSave(drafted ? `${label} is no longer in this Review, so what you entered for it was not kept.` : undefined);
+      }
       return true;
     }
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
+    // The Trade has moved from the walk to the owed group: its owed card replaces the walked one, with none of its drafts.
+    if (selection.current === request && !wasOwed && latest.current.review.owed.some((t) => t.tradeId === tradeId)) {
+      placed.current = 'owed';
+      setAfterSave(drafted ? `${label} is now in Trades with owed reflections, so what you entered for it was not kept.` : undefined);
+      // The owed card has no body to show without the Trade, so it says so and offers Retry. The button that was pressed went with the
+      // walked card, and the exit form does not report a refresh that failed, so the focus goes to the owed card here.
+      if (trade?.kind !== 'Ready' && trade?.kind !== 'ReflectionsOwed') {
+        setShown({ tradeId, opening: request, detail: 'Unavailable' });
+        setReveal((current) => ({ tradeId, count: current.count + 1 }));
+      }
+    }
     if (trade?.kind !== 'Ready' && trade?.kind !== 'ReflectionsOwed') return false;
     setStale(undefined);
     if (selection.current !== request) return true;
@@ -384,6 +412,20 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
       show(next.card.tradeId, { card: next.card });
     } else collapse();
     setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
+  };
+  // Refresh Review's exit form finished, and the card that held it may be gone with the Trade it showed: the focus goes to the owed card
+  // the Trade is now in, else to the Review status or the Empty message. A Trade that is still walked keeps its own card's move.
+  const [leftWalk, setLeftWalk] = useState(0);
+  const landed = useRef<HTMLElement | null>(null);
+  const landing = useCallback<Landing>((element) => {
+    landed.current = element;
+  }, []);
+  useEffect(() => {
+    if (leftWalk > 0) landed.current?.focus();
+  }, [leftWalk]);
+  const exitRefreshed = (tradeId: string) => {
+    if (placed.current === 'owed') setReveal((current) => ({ tradeId, count: current.count + 1 }));
+    else if (placed.current === 'gone') setLeftWalk((count) => count + 1);
   };
   // A resolved reflection leaves the card open to show it resolved, so only the overview's completion and binding follow the result.
   const reflectionResolved = (post: PostSaveReview) => apply({ kind: 'DebtResolved', review: post });
@@ -473,7 +515,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   }, [firstId, read]);
   return (
     <>
-      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} />}
+      {empty ? <EmptyReview date={review.reviewDate} landing={landing} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} landing={landing} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
@@ -502,6 +544,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId)}
+                onExitRefreshed={() => exitRefreshed(trade.tradeId)}
                 onMarkSaved={markSaved}
                 onSaveMarks={saveMarks}
                 outOfDate={stale === trade.tradeId}
@@ -529,6 +572,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 go={go.tradeId === trade.tradeId ? go.go : NO_GO}
                 holdMessage={refused && trade.tradeId === openId}
                 onToggle={() => toggle(trade.tradeId)}
+                onRetry={() => void select(trade.tradeId, true)}
                 onReflectionResolved={reflectionResolved}
                 onEntryDirty={onEntryDirty}
               />

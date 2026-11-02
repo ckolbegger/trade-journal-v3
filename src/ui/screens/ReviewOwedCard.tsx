@@ -74,12 +74,14 @@ export interface OwedCardProps {
   // The trader tried to leave while the card holds an entered value (A156).
   readonly holdMessage: boolean;
   readonly onToggle: () => void;
+  // Reads the Trade again when it could not be read.
+  readonly onRetry: () => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onEntryDirty: (id: string, dirty: boolean) => void;
 }
 
 // One Trade of the group after the walk (P20): a position card with a Reflections panel and no Action panel (D5R, section 9).
-export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, go, holdMessage, onToggle, onReflectionResolved, onEntryDirty }: OwedCardProps) {
+export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, go, holdMessage, onToggle, onRetry, onReflectionResolved, onEntryDirty }: OwedCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -101,6 +103,9 @@ export function OwedCard({ facade, trade, reviewDate, expanded, detail, reveal, 
       {expanded && detail === 'Unavailable' && (
         <div role="alert" className="banner warning">
           <p>We couldn’t load this Trade. Nothing was changed.</p>
+          <button type="button" className="pill secondary" onClick={onRetry}>
+            Retry
+          </button>
         </div>
       )}
       {expanded && typeof detail === 'object' && <OwedBody facade={facade} card={detail.card} progress={trade.progress} reviewDate={reviewDate} go={go} onReflectionResolved={onReflectionResolved} onEntryDirty={onEntryDirty} />}

@@ -70,6 +70,8 @@ export interface ReviewCardProps {
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
+  // Refresh Review's exit form finished: the Review's own move of the focus, for a Trade that has left this card.
+  readonly onExitRefreshed: () => void;
   readonly onMarkSaved: () => void;
   readonly onSaveMarks: CardMarksProps['onSaveMarks'];
   // The Marks were saved but the figures were not read under them: the card says so and offers Refresh.
@@ -82,7 +84,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onExitRefreshed, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -151,7 +153,10 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
           actionHeader={actionHeader}
-          onRefreshed={() => setRefreshed((count) => count + 1)}
+          onRefreshed={() => {
+            setRefreshed((count) => count + 1);
+            onExitRefreshed();
+          }}
           onMarkSaved={onMarkSaved}
           onSaveMarks={onSaveMarks}
           outOfDate={outOfDate}

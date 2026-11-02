@@ -5,12 +5,12 @@ import { MemoryRouter, useNavigate } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflection, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
+import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
-import { cardProgress } from '../../../tests/support/card-progress.ts';
+import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
 
 afterEach(cleanup);
 
@@ -987,6 +987,59 @@ describe('Trade names in messages and blockers (decision 68)', () => {
 
     expect((await screen.findByRole('status')).textContent).toBe(`The Action is saved. Save or discard what you entered for ${NAME_F} to go on.`);
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true', 'false', 'false']);
+  });
+
+  // T6.20-B2, items 3 and 4: an Action is saved on a card that holds a Mark draft, and the Review read again no longer walks the Trade.
+  async function savedOnHeldCard(refreshed: OpenDailyReviewResult, owedCard?: OwedReflectionsCard) {
+    const user = userEvent.setup();
+    const facade = cardFacade(namedReview());
+    const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: {} as never, review: post });
+    renderReview(facade, { at: '/review?trade=t-f' });
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1));
+    const card = (await screen.findAllByRole('listitem')).find((li) => li.getAttribute('data-trade-id') === 't-f')!;
+    await showPanel(user, card, 'Marks');
+    const entry = within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
+    await user.click(within(entry).getByRole('button', { name: 'Correct' }));
+    await user.type(within(entry).getByLabelText('Price'), '53.00');
+    await showPanel(user, card, 'Action');
+    vi.mocked(facade.DailyReview.open).mockResolvedValue(refreshed);
+    if (owedCard) vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: CUTOFF, card: owedCard });
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: `${NAME_F} review` })).toBeNull());
+  }
+  const withoutF = (over: Partial<Ready> = {}): Ready => namedReview({ families: [review().families[0]!, { family: 'Trades', trades: named.filter((t) => t.tradeId !== 't-f') }], ...over });
+  const OWED_F: OwedReflectionsCard = {
+    tradeId: 't-f',
+    underlying: 'XYZ',
+    lifecycle: 'Closed',
+    labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
+    reflections: [],
+    progress: reflectionsOwedProgress(1, 0),
+  };
+  const owedF: OwedReflectionsTrade = { tradeId: 't-f', underlying: 'XYZ', lifecycle: 'Closed', owed: [], progress: OWED_F.progress };
+
+  it('should not keep the Action is saved message after the refresh finds the Trade gone from the walk', async () => {
+    await savedOnHeldCard(withoutF());
+    expect(screen.queryByText(/The Action is saved/)).toBeNull();
+    cleanup();
+
+    await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F);
+    expect(screen.queryByText(/The Action is saved/)).toBeNull();
+  });
+
+  it('should say what was not kept when the refresh removes a card that held drafts from the Review, or leaves the Review Empty', async () => {
+    await savedOnHeldCard(withoutF());
+    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is no longer in this Review, so what you entered for it was not kept.`);
+    cleanup();
+
+    await savedOnHeldCard({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: CUTOFF, owed: [], binding });
+    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is no longer in this Review, so what you entered for it was not kept.`);
+    cleanup();
+
+    // A Trade that moved to the owed group is still in the Review, but its card is a new one with none of the drafts.
+    await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F);
+    expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`);
   });
 
   it('should label the open card body with the Trade name then review, and with the Underlying then review for a Trade with no summary', async () => {
