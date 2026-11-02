@@ -403,3 +403,69 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.10 Trade Workflows: `recordPositionChange` (reduce and close)
 
 Base commit (for `browser-auto`): `f7d911b0`.
+
+Commit `ceb38daf` (T6.10): 8 planned cases plus one extra (6b, which checks that a recorded Sell left short is named by `factId` and `available`). Every case went red then green, with no first-run pass.
+
+**Command.** `PositionChangeCommand` gains `closeReasonId?` and `closeReview?` (a `ReflectionDisposition`).
+
+**Rejections.** All issues come back as `Rejected` with `issues`, and nothing is written:
+- `CloseReasonRequired` and `CloseReviewDispositionRequired` for `TerminalWithAgency`, and the two `NotApplicable` issues for `NotTerminal`.
+- Catalog `UnknownReference` and `WrongKind`.
+- P22's `ExceedsOpenQuantity` and `FlatBeforeLaterFacts`, from Trade Analysis.
+- `TradeClosed`, checked on the stored lifecycle right after `prepareChange`.
+
+**Issue gating.** When there are member-field issues, analysis is skipped, so the analysis issues are not reported. Journal issues do not stop analysis.
+
+**Receipt.** It gains `closeReview?`, `lotMatchChanges` (Created, Revised and Superseded, with quantity before and after) and `realizedToDate {before, after}`.
+
+**Variant.** `UninstalledVariant` replaces `'Sell'` with `'MixedActions'`. A76 says a Buy mixed with a Sell returns `VariantNotInstalled`. Three tests that sent a lone Sell now send a mix: two in `record-position-change.test.ts` and `tests/integration/d2/rejections.test.ts:55`.
+
+**Journal.** The two obligations are prepared with two `prepareEffects` calls and applied with two `applyPreparedEffects` calls in one transaction. ocr was asked about counter collisions.
+
+**Other files.** `src/app/types.ts` re-exports `LotMatchChange`. This is on P55's full-tier list (`src/app/`), so this task's run is full tier. The test helper `exitReference()` seeds Catalog v2 and Journal v5 itself until T6.15.
+
+### ocr review of `ceb38daf`
+
+Session `e0cb1f19-1467-4c90-9b41-746b6a154cca`, 4 files reviewed (2 test files and `tdd-log.md` excluded), 2 comments. Raw output: [ocr/T6.10-ceb38daf.json](ocr/T6.10-ceb38daf.json).
+
+| # | Severity | Location | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | medium | `record-position-change.ts:336` | `TradeClosed` reads the stored lifecycle, so a stale stored `Closed` over Open facts is rejected rather than repaired (P7). | **Wrong, dismissed.** T6.10's planned case says to reject "any Position Change on a Trade whose stored lifecycle is Closed with TradeClosed and write nothing", and P22 agrees. A96 discusses only the reverse disagreement, stored Open over flat facts. Repairing here would contradict the planned case. Listed for the final report as an edge the plan does not discuss: stored Closed over Open facts, reachable only by corruption or import. |
+| 2 | medium | `record-position-change.ts:366–368` | When the stored before-state is already path-incoherent and the candidate is coherent, `derive` returns the before-state's findings (`derive.ts` around line 877). The workflow then reports them as P22 issues in `Rejected`, where it used to return `IntegrityDisagreement`. | **Doubtful → bug task T6.10-B1.** It is reachable only through corruption or import. Before T6.10 this state gave `IntegrityDisagreement`, and that is still the truthful answer for a stored book the trader cannot fix through a Position Change. |
+
+The reviewer was asked three questions directly:
+- **Two `applyPreparedEffects` calls.** No defect. Ids come from the shared `deps.ids.next()` and the obligation keys differ. Both calls stage the same `journal@n` check and the same `n+1` put, so the counter advances once, and a concurrent move makes the result a counter-only `Conflict`. `retryCounterConflict` re-prepares both.
+- **Issue gating.** Nothing is committed with issues. When there are member-field issues, the close-requirement, Catalog and Close Review form issues are not reported alongside them. That cannot be avoided, because whether the change is terminal needs `derive`, and `derive` cannot run on unparsable values. Listed for the final report.
+- **`TradeClosed`.** It is checked before analysis or any write, for Buys and Sells alike. A `VariantNotInstalled` or a stale-revision `Conflict` returns first.
+
+### T6.10-B1 An already-incoherent stored book returns IntegrityDisagreement
+
+This is ocr finding 2, fixed in commit `85885d28` with 1 case, run red then green.
+
+- **Case:** "should return IntegrityDisagreement, not P22 issues, when the stored Trade is already path-incoherent". The stored X1 Sell is rewritten to 150 against 100 open, and then a sound Sell of 10 is recorded.
+  - Red: `Rejected`.
+  - Green: `IntegrityDisagreement`, with the stored Sell's `ExceedsOpenQuantity` (available 100) and no writes.
+- **Why a second derive.** `derive` alone cannot tell inherited incoherence from candidate-introduced incoherence. So when the candidate is `IncoherentFacts`, the workflow also derives the before-state alone, which costs one extra `derive` on that path only.
+- **Behavior now.** P22 issues are still returned when the before-state is coherent, which covers case 6b. `src/domain/trade-analysis/` is unchanged.
+
+ocr review of `85885d28`: session `dba8e357-f948-4208-a517-b220b9c64c40`, 1 file reviewed, **no findings**. Raw output: [ocr/T6.10-B1-85885d28.json](ocr/T6.10-B1-85885d28.json).
+- A candidate-introduced P22 issue is still reported as `Rejected`; a coherent before-state sends it through `positionPathIssues`.
+- The extra `derive` runs only on the incoherent path.
+- The reviewer noted one pre-existing ordering, not as a defect: a command with Journal issues over an already-incoherent stored Trade returns `Rejected` rather than `IntegrityDisagreement`. Nothing is written either way.
+
+### Cumulative run after T6.10
+
+Label `t6.10-record-exit`, at `85885d28` plus uncommitted evidence (2026-11-01 20:57–21:04 EST). Outputs in `suite-runs/t6.10-record-exit-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 87 files, 1101 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since f7d911b0: src/app/types.ts": 147 passed (6.6 m) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed, expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.11 Daily Review: `open`
+
+Base commit (for `browser-auto`): `85885d28`.

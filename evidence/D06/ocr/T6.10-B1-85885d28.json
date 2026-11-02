@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 25844,
+    "input_tokens": 25682,
+    "output_tokens": 162,
+    "cache_read_tokens": 7680,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/coordinators/trade-workflows/record-position-change.ts",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change.ts"
+      ]
+    }
+  ],
+  "session_id": "dba8e357-f948-4208-a517-b220b9c64c40",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dba8e357-f948-4208-a517-b220b9c64c40",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "85885d28",
+      "resolved_base": "ceb38daf84e3ab9d10d51fa61f8033edb7287d4f",
+      "resolved_head": "85885d2810192356dd27669e671adddbd983636c",
+      "exact_range": "ceb38daf84e3ab9d10d51fa61f8033edb7287d4f..85885d2810192356dd27669e671adddbd983636c",
+      "source_artifact_sha256": "28f6b73aa0c69d737f6e9baba736f2728684861f3b45aad0548a6a0948a6915a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "6eddae5a4c3c7c80b6cba706f97f96028c663caf9c0ecbaa3425ab2acd227fbb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "6eddae5a4c3c7c80b6cba706f97f96028c663caf9c0ecbaa3425ab2acd227fbb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 15030
+  }
+}
