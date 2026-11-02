@@ -9,6 +9,7 @@ import {
   type AccountRecord,
   type CatalogKind,
   type InstitutionRecord,
+  type CloseReasonRecord,
   type StrategyRecord,
 } from './records.ts';
 
@@ -33,7 +34,7 @@ export type SeedCatalogResult =
   | RuntimeNotWritable;
 
 export type PreparedSeed =
-  | { readonly kind: 'Additions'; readonly records: readonly StrategyRecord[] }
+  | { readonly kind: 'Additions'; readonly records: readonly (StrategyRecord | CloseReasonRecord)[] }
   | { readonly kind: 'SeedConflict'; readonly productKey: string };
 
 interface CatalogMeta {
@@ -150,7 +151,33 @@ export function prepareSeed(existing: readonly CatalogRecord[], manifest: Catalo
       productKey: seed.productKey,
       shape: seed.shape,
     }));
-  return { kind: 'Additions', records };
+  const presentCloseReasons = new Set(existing.flatMap((r) => (r.kind === 'CloseReason' ? [r.productKey] : [])));
+  const closeReasons = (manifest.closeReasons ?? []).flatMap((seed, seedOrder): CloseReasonRecord[] =>
+    presentCloseReasons.has(seed.productKey)
+      ? []
+      : [
+          {
+            id: ids.next(),
+            kind: 'CloseReason',
+            label: seed.label,
+            normalizedLabel: normalizeLabel(seed.label),
+            active: true,
+            origin: 'Seeded',
+            recordRevision: 1,
+            productKey: seed.productKey,
+            policy: 'SeededValuesRemainSelectable',
+            seedOrder,
+          },
+        ],
+  );
+  return { kind: 'Additions', records: [...records, ...closeReasons] };
+}
+
+// Close Reasons are listed in seed order; every family otherwise orders by normalized label, then identity.
+function compareForSelection(a: CatalogRecord, b: CatalogRecord): number {
+  if (a.kind === 'CloseReason' && b.kind === 'CloseReason' && a.seedOrder !== b.seedOrder) return a.seedOrder - b.seedOrder;
+  if (a.normalizedLabel !== b.normalizedLabel) return a.normalizedLabel < b.normalizedLabel ? -1 : 1;
+  return a.id < b.id ? -1 : 1;
 }
 
 // Rechecked inside the commit: label distinctness was judged against this Catalog revision.
@@ -232,9 +259,7 @@ export function createReferenceCatalog(deps: ReferenceCatalogDeps): ReferenceCat
       const pageSize = request.pageSize ?? 50;
       const items = selectable(current.records)
         .filter((r) => r.kind === request.family)
-        .sort((a, b) =>
-          a.normalizedLabel !== b.normalizedLabel ? (a.normalizedLabel < b.normalizedLabel ? -1 : 1) : a.id < b.id ? -1 : 1,
-        );
+        .sort(compareForSelection);
       const page = items.slice(start, start + pageSize);
       const snapshot = { catalogRevision: current.catalogRevision };
       const end = start + page.length;

@@ -23,6 +23,8 @@ export function planFormFacade() {
       { id: 'strat-cc', kind: 'Strategy', label: 'Covered Call', productKey: 'strategy.covered-call', recordRevision: 1 },
       { id: 'strat-ls', kind: 'Strategy', label: 'Long Stock', productKey: 'strategy.long-stock', recordRevision: 1 },
     ],
+    // The Plan form never loads Close Reasons; the key only completes the family record.
+    CloseReason: [],
   };
   vi.mocked(facade.ReferenceCatalog.query).mockImplementation((request) =>
     Promise.resolve({ kind: 'Page', items: families[request.family] as never, snapshot: { catalogRevision: 5 } }),
