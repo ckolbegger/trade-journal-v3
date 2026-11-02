@@ -277,8 +277,9 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     },
     [facade],
   );
-  const select = async (tradeId: string, pressed = false) => {
-    setAfterSave(undefined);
+  // `keepNotice`: Retry opens the card again without clearing the notice that said what the refresh did not keep.
+  const select = async (tradeId: string, pressed = false, keepNotice = false) => {
+    if (!keepNotice) setAfterSave(undefined);
     if (pressed) setReveal((current) => ({ tradeId, count: current.count + 1 }));
     await read(tradeId, show(tradeId, 'Loading'));
   };
@@ -311,10 +312,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   // Where the refresh left the Trade of the card that was shown: Refresh Review's exit form reads it to place the focus that its own
   // card, now gone, can no longer take.
   const placed = useRef<'owed' | 'gone'>(undefined);
-  const refreshTrade = async (tradeId: string, request = selection.current): Promise<boolean> => {
+  const refreshTrade = async (tradeId: string, request = selection.current, savedDrafts: readonly string[] = []): Promise<boolean> => {
     // What the card holds is read before the new Review is applied, since a card that is removed drops its entries as it goes.
+    // The caller names the drafts it has just saved: they are not lost, though their entries have not reported themselves clean yet.
     const label = name(tradeId);
-    const drafted = [...dirty.current].some((id) => id !== `action:${tradeId}`);
+    const drafted = [...dirty.current].some((id) => !savedDrafts.includes(id));
     const wasOwed = latest.current.review.owed.some((t) => t.tradeId === tradeId);
     placed.current = undefined;
     // A card opened while the Review is being asked for waits for it, so it is read under the binding it returns.
@@ -375,7 +377,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
     if (open &&openId !== undefined && [...dirty.current].some((id) => id !== `action:${openId}`)) {
       apply({ kind: 'ActionSaved', review: post });
       setAfterSave(`The Action is saved. Save or discard what you entered for ${name(openId)} to go on.`);
-      void refreshTrade(openId, opening).then((ok) => setFailed(!ok));
+      void refreshTrade(openId, opening, [`action:${openId}`]).then((ok) => setFailed(!ok));
       return;
     }
     if (post.kind !== 'Ready') {
@@ -477,11 +479,11 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
   });
   // A saved Mark changes what the card's figures and the Action's binding are read at: the Review and the card are read again.
   const [rereading, setRereading] = useState(false);
-  const markSaved = () => {
+  const markSaved = (draftId: string) => {
     if (openId === undefined || shown === undefined) return;
     setRereading(true);
     // The opening is this render's: a Mark saved here finishes after another card opened, and must not replace it.
-    void refreshTrade(openId, shown.opening).then((ok) => {
+    void refreshTrade(openId, shown.opening, [draftId]).then((ok) => {
       setFailed(!ok);
       setRereading(false);
     });
@@ -544,6 +546,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 onSaved={(result) => saved(result, shown?.opening ?? -1)}
                 onReflectionResolved={reflectionResolved}
                 onRefresh={() => refreshTrade(trade.tradeId)}
+                onExitRefresh={() => refreshTrade(trade.tradeId, undefined, [`action:${trade.tradeId}`])}
                 onExitRefreshed={() => exitRefreshed(trade.tradeId)}
                 onMarkSaved={markSaved}
                 onSaveMarks={saveMarks}
@@ -572,7 +575,7 @@ function ReadyReview({ facade, now, initial, empty: initiallyEmpty = false, onDi
                 go={go.tradeId === trade.tradeId ? go.go : NO_GO}
                 holdMessage={refused && trade.tradeId === openId}
                 onToggle={() => toggle(trade.tradeId)}
-                onRetry={() => void select(trade.tradeId, true)}
+                onRetry={() => void select(trade.tradeId, true, true)}
                 onReflectionResolved={reflectionResolved}
                 onEntryDirty={onEntryDirty}
               />

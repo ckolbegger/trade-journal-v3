@@ -45,7 +45,8 @@ interface Panel {
   // A per-row save reaches the held Review through the fold (P51).
   readonly onResult: (result: HeldResult) => void;
   readonly onEntryDirty: EntryDirty;
-  readonly onMarkSaved: () => void;
+  // The saved Mark's draft id: once saved it is no longer an unsaved draft.
+  readonly onMarkSaved: (draftId: string) => void;
   // Enter in a price moves on to the next price, and from the last to Save Marks (A153).
   readonly onPriceEnter: (price: HTMLInputElement) => void;
 }
@@ -129,7 +130,7 @@ function KeyRow({ panel, instrumentKey, tradingDate, resolution, resolutionRevis
   const now = panel.standing({ instrumentKey, tradingDate }, { resolution, revision: resolutionRevision });
   const saved: MarkEntryProps['onSaved'] = ({ resolution: next, resolutionRevision: revision }) => {
     panel.onResult({ kind: 'MarkSaved', key: { instrumentKey, tradingDate }, resolution: next, resolutionRevision: revision });
-    panel.onMarkSaved();
+    panel.onMarkSaved(id);
   };
   return (
     <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
@@ -256,7 +257,7 @@ export interface CardMarksProps {
   // A Trade's summary line, or its Underlying when it has none.
   readonly tradeLine: (tradeId: string) => string;
   readonly onEntryDirty: EntryDirty;
-  readonly onMarkSaved: () => void;
+  readonly onMarkSaved: (draftId: string) => void;
   // Saves the drafts as one command (P37); the host applies a saved result to the Review.
   readonly onSaveMarks: (entries: readonly MarketDataPrepareEntry[]) => Promise<SaveReviewMarksResult>;
   // The Marks are saved but the figures were not read under them (A157).

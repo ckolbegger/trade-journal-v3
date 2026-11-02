@@ -396,6 +396,40 @@ describe('after a per-row Mark save', () => {
     expect(headers()[1]!.textContent).not.toContain('Mark ·');
     expect(headers()[0]!.getAttribute('aria-expanded')).toBe('true');
   });
+
+  // T6.20-B3, items 1 and 2: a saved Mark removes its Trade from the walk. Only what is still unsaved was lost.
+  const withoutB = () => review({ completion: incomplete(...actionMissing('t-c', 't-f', 't-a', 't-e')), families: [{ family: 'Marks', today: [], earlier: [] }, { family: 'Trades', trades: [TC, TF, TA, TE] }] });
+  const NOT_KEPT = /is no longer in this Review, so what you entered for it was not kept\./;
+
+  it('should not say a Mark was not kept when the Mark just saved is all the removed card held', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(withoutB());
+    vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+
+    await correctAbc(user, card);
+
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull());
+    expect(screen.queryByText(NOT_KEPT)).toBeNull();
+  });
+
+  it('should say what was not kept when a Mark is saved on a card that also held an unsaved Action edit, and the refresh removes the card', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(withoutB());
+    vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
+    renderReview(facade);
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await showPanel(user, card, 'Action');
+    await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
+
+    await correctAbc(user, card);
+
+    expect((await screen.findByRole('status')).textContent).toMatch(NOT_KEPT);
+    expect(screen.queryByRole('region', { name: 'ABC review' })).toBeNull();
+  });
 });
 
 describe('card order follows the newest Review (A150, decision 64)', () => {
@@ -990,7 +1024,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
   });
 
   // T6.20-B2, items 3 and 4: an Action is saved on a card that holds a Mark draft, and the Review read again no longer walks the Trade.
-  async function savedOnHeldCard(refreshed: OpenDailyReviewResult, owedCard?: OwedReflectionsCard) {
+  async function savedOnHeldCard(refreshed: OpenDailyReviewResult, owedCard?: OwedReflectionsCard, unreadable = false) {
     const user = userEvent.setup();
     const facade = cardFacade(namedReview());
     const post = { kind: 'Ready', cards: [], progress: { tradesWithAction: 1, tradesEligible: 5 }, completion: MONDAY_COMPLETION, nextStep: { kind: 'Trade', trade: tradeReview(TA) }, binding } as const;
@@ -1005,8 +1039,11 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     await showPanel(user, card, 'Action');
     vi.mocked(facade.DailyReview.open).mockResolvedValue(refreshed);
     if (owedCard) vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: '2026-10-12', cutoff: CUTOFF, card: owedCard });
+    // The first read of the Trade as it now is fails, so its owed card offers Retry.
+    if (unreadable) vi.mocked(facade.DailyReview.getTrade).mockRejectedValueOnce(new Error('down'));
     await user.click(within(card).getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.queryByRole('region', { name: `${NAME_F} review` })).toBeNull());
+    return { user };
   }
   const withoutF = (over: Partial<Ready> = {}): Ready => namedReview({ families: [review().families[0]!, { family: 'Trades', trades: named.filter((t) => t.tradeId !== 't-f') }], ...over });
   const OWED_F: OwedReflectionsCard = {
@@ -1040,6 +1077,18 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     // A Trade that moved to the owed group is still in the Review, but its card is a new one with none of the drafts.
     await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F);
     expect((await screen.findByRole('status')).textContent).toBe(`${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`);
+  });
+
+  // T6.20-B3, item 3.
+  it('should keep the not kept notice when Retry opens the owed card the Trade moved to', async () => {
+    const { user } = await savedOnHeldCard(withoutF({ owed: [owedF] }), OWED_F, true);
+    const notice = `${NAME_F} is now in Trades with owed reflections, so what you entered for it was not kept.`;
+    expect(await screen.findByText(notice)).toBeTruthy();
+
+    await user.click(await screen.findByRole('button', { name: 'Retry' }));
+
+    expect(await screen.findByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(screen.getByText(notice)).toBeTruthy();
   });
 
   it('should label the open card body with the Trade name then review, and with the Underlying then review for a Trade with no summary', async () => {
