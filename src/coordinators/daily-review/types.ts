@@ -365,11 +365,13 @@ export interface ReviewProgress {
 }
 
 // The first obligation still open, in the normative family order: a Missing Review-date Mark, then
-// the first Trade of the walk without an Action (with the form to answer, as `getTrade` returns it),
-// then nothing, and completion says why.
+// the first card of the walk that is not done (with the form to answer, as `getTrade` returns it), then
+// the first card of the owed-reflection group that is not done, then nothing, and completion says why.
 export type ReviewNextStep =
   | { readonly kind: 'Mark'; readonly row: MarkRow }
   | { readonly kind: 'Trade'; readonly trade: DailyTradeReview }
+  // After the walk, the first card of the owed-reflection group that is not done (A90).
+  | { readonly kind: 'OwedTrade'; readonly card: OwedReflectionsCard }
   | { readonly kind: 'Done' };
 
 // The Review under the facts the save left: derived like `open`, with a binding for the next reads.
@@ -399,6 +401,7 @@ export interface SavedMark {
 export type MarksNextStep =
   | { readonly kind: 'Mark'; readonly row: MarkRow; readonly trade: DailyTradeReview }
   | { readonly kind: 'Trade'; readonly trade: DailyTradeReview }
+  | { readonly kind: 'OwedTrade'; readonly card: OwedReflectionsCard }
   | { readonly kind: 'Done' };
 
 // The Review under the Marks a save left, rendered by the screen with no further read (P38, A157).

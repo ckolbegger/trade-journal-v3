@@ -127,7 +127,7 @@ function owedCardProgress(reflections: ReflectionCounts): CardProgress {
 }
 
 // The first obligation still open; a Trade is completed with its form after the read.
-type NextTask = Exclude<ReviewNextStep, { readonly kind: 'Trade' }> | { readonly kind: 'Trade'; readonly tradeId: string };
+type NextTask = Exclude<ReviewNextStep, { readonly kind: 'Trade' | 'OwedTrade' }> | { readonly kind: 'Trade'; readonly tradeId: string } | { readonly kind: 'OwedTrade'; readonly tradeId: string };
 
 type ReadyReview = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
@@ -168,13 +168,16 @@ type Attempt<R> =
   | { readonly settle: (binding: { workspace: WorkspaceSnapshotBinding; catalogRevision: number; journalRevision: number }) => R };
 
 // Marks come first, then the first Trade of the walk that is not done: its Action is saved and it owes no due
-// reflection (A68). The walk starts from the Trade just saved when there is one, and wraps around.
-function nextTaskOf(today: readonly MarkRow[], walkOrder: readonly string[], actions: Readonly<Record<string, unknown>>, dueTrades: ReadonlySet<string>, from?: string): NextTask {
+// reflection (A68). The walk starts from the Trade just saved when there is one, and wraps around. Then the first card
+// of the owed-reflection group, in its order, that is not done (A90).
+function nextTaskOf(today: readonly MarkRow[], walkOrder: readonly string[], actions: Readonly<Record<string, unknown>>, dueTrades: ReadonlySet<string>, owed: readonly OwedReflectionsTrade[], from?: string): NextTask {
   const mark = today.find((row) => row.task === 'Manual');
   if (mark) return { kind: 'Mark', row: mark };
   const start = Math.max(0, from === undefined ? 0 : walkOrder.indexOf(from));
   const tradeId = [...walkOrder.slice(start), ...walkOrder.slice(0, start)].find((id) => !(id in actions) || dueTrades.has(id));
-  return tradeId === undefined ? { kind: 'Done' } : { kind: 'Trade', tradeId };
+  if (tradeId !== undefined) return { kind: 'Trade', tradeId };
+  const owedTrade = owed.find(({ progress }) => !progress.done);
+  return owedTrade === undefined ? { kind: 'Done' } : { kind: 'OwedTrade', tradeId: owedTrade.tradeId };
 }
 
 export interface DailyReview {
@@ -442,7 +445,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       kind: 'Ready',
       review: { reviewDate, cutoff, families, owed: group.trades, completion },
       evidence,
-      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => dueDebtIds(item.tradeId).length > 0).map((item) => item.tradeId)), from),
+      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => dueDebtIds(item.tradeId).length > 0).map((item) => item.tradeId)), group.trades, from),
       progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
     };
   }
@@ -740,7 +743,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // The Review under the facts the save left, read like `open`. A Review that is no longer Ready
   // (the Trade left the eligible set) is for the trader to open afresh.
   // Review-date frames only, no recovery or gap scan (P38). `trades` is the walk in attention order.
-  type ReadAfterSave = Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep' | 'cards'> & { readonly nextTask: NextTask; readonly trades: readonly WalkedTrade[] };
+  type ReadAfterSave = Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep' | 'cards'> & { readonly nextTask: NextTask; readonly trades: readonly WalkedTrade[]; readonly owed: readonly OwedReflectionsTrade[] };
   async function readAfterSave(reviewDate: string, from?: string) {
     return coherently<ReadAfterSave | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
       const pass = await assemble({ kind: 'Review', reviewDate }, false, from);
@@ -754,6 +757,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           completion: pass.review.completion,
           nextTask: pass.nextTask,
           trades: walk?.family === 'Trades' ? walk.trades : [],
+          owed: pass.review.owed,
           binding: { ...binding, ...pass.evidence },
         }),
       };
@@ -765,12 +769,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const read = await readAfterSave(reviewDate, from);
       if (read.kind !== 'Ready') return read;
       const { nextTask } = read;
-      // The Trade the save resolved, when it is walked (A165).
-      const cards = read.trades.filter((trade) => trade.tradeId === from).map(({ tradeId, progress }) => ({ tradeId, progress }));
+      // The Trade the save resolved: walked, or owing a reflection outside the walk. A Trade that is neither has just
+      // answered its last reflection, so it has left the group and its card is done (A165, A90).
+      const listed = [...read.trades, ...read.owed].filter((trade) => trade.tradeId === from).map(({ tradeId, progress }) => ({ tradeId, progress }));
+      const cards = listed.length > 0 || from === undefined ? listed : [{ tradeId: from, progress: owedCardProgress({ due: 0, later: 0 }) }];
       const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, cards };
-      if (nextTask.kind !== 'Trade') return { ...review, nextStep: nextTask };
+      if (nextTask.kind !== 'Trade' && nextTask.kind !== 'OwedTrade') return { ...review, nextStep: nextTask };
       const next = await readTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding }, read.binding.workspace.contentRevision);
       if (next.kind === 'Moved') return undefined;
+      if (next.kind === 'ReflectionsOwed') return { ...review, nextStep: { kind: 'OwedTrade', card: next.card } };
       if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
       return { ...review, nextStep: { kind: 'Trade', trade: next.trade } };
     });
@@ -788,6 +795,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const { nextTask } = read;
       const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, trades: read.trades, trade: card.trade };
       if (nextTask.kind === 'Done') return { ...review, nextStep: nextTask };
+      if (nextTask.kind === 'OwedTrade') {
+        const owed = await readTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding }, revision);
+        if (owed.kind === 'Moved') return undefined;
+        if (owed.kind !== 'ReflectionsOwed') return { kind: 'ChangedDuringAssembly' };
+        return { ...review, nextStep: { kind: 'OwedTrade', card: owed.card } };
+      }
       // A Missing Mark is shown on the first card of the walk that holds its Instrument (P36).
       const nextId = nextTask.kind === 'Mark' ? read.trades.find(({ tradeId: id }) => nextTask.row.trades.includes(id))?.tradeId ?? tradeId : nextTask.tradeId;
       const next = nextId === tradeId ? card : await readTrade({ reviewDate, tradeId: nextId, binding: read.binding }, revision);

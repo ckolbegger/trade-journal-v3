@@ -1,4 +1,4 @@
-import type { DailyTradeReview, ExpectedResolutionRevision, MarkResolution, ObservationKey, OpenDailyReviewResult, PostMarksReview, PostSaveReview, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
+import type { DailyTradeReview, ExpectedResolutionRevision, MarkResolution, ObservationKey, OpenDailyReviewResult, OwedReflectionsCard, PostMarksReview, PostSaveReview, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
 
 export type Ready = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
@@ -95,6 +95,8 @@ export type NextCard =
   | { readonly kind: 'Mark'; readonly tradeId: string; readonly instrumentKey: string }
   | { readonly kind: 'MarkNotHeld' }
   | { readonly kind: 'Trade'; readonly trade: DailyTradeReview }
+  // The owed-reflection card to open next; the screen opens it in T6.20.
+  | { readonly kind: 'OwedTrade'; readonly card: OwedReflectionsCard }
   | { readonly kind: 'Done' };
 
 const walkedOf = (review: Ready): readonly WalkedTrade[] => review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
@@ -102,6 +104,7 @@ const walkedOf = (review: Ready): readonly WalkedTrade[] => review.families.flat
 // A Mark step opens the first card, in the held order, whose Trade is in the row, on that Instrument's row.
 export function nextCard(held: Held, next: ReviewNextStep): NextCard {
   if (next.kind === 'Trade') return { kind: 'Trade', trade: next.trade };
+  if (next.kind === 'OwedTrade') return { kind: 'OwedTrade', card: next.card };
   if (next.kind === 'Done') return { kind: 'Done' };
   const holder = walkedOf(held.review).find((t) => next.row.trades.includes(t.tradeId));
   return holder ? { kind: 'Mark', tradeId: holder.tradeId, instrumentKey: next.row.instrumentKey } : { kind: 'MarkNotHeld' };
