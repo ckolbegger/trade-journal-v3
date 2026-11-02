@@ -137,3 +137,35 @@ export const D4_JOURNAL_MANIFEST: JournalSeedManifest = {
   entryTypes: D3_JOURNAL_MANIFEST.entryTypes,
   sources: [...D3_JOURNAL_MANIFEST.sources, { productKey: 'source.trade-detail', label: 'Trade Detail' }],
 };
+
+const TAKE_AGAIN_OPTIONS = [
+  ['yes-as-planned', 'Yes, as planned'],
+  ['yes-with-changes', 'Yes, with changes'],
+  ['no', 'No'],
+  ['unsure', 'Unsure'],
+] as const;
+
+// D6 adds the Close Review Entry Type and the Trade Close Source (D6 A86).
+export const D5_JOURNAL_MANIFEST: JournalSeedManifest = {
+  version: 5,
+  entryTypes: [
+    ...D4_JOURNAL_MANIFEST.entryTypes,
+    {
+      productKey: 'entry-type.close-review',
+      label: 'Close Review',
+      // The exact initial definition from the Journal contract, "Initial Entry Definitions".
+      prompts: [
+        {
+          id: 'prompt.close-review.take-again',
+          kind: 'SingleSelect',
+          text: 'Would you take this Trade again under similar conditions?',
+          required: true,
+          options: TAKE_AGAIN_OPTIONS.map(([slug, label]) => ({ id: `option.close-review.take-again.${slug}`, label })),
+        },
+        { id: 'prompt.close-review.what-worked', kind: 'Text', text: 'What worked, and what did not?', required: false },
+        { id: 'prompt.close-review.key-lesson', kind: 'Text', text: 'What is the key lesson?', required: false },
+      ],
+    },
+  ],
+  sources: [...D4_JOURNAL_MANIFEST.sources, { productKey: 'source.trade-close', label: 'Trade Close' }],
+};

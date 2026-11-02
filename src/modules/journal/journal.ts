@@ -5,6 +5,7 @@ import { beginSemanticTransaction, requireOpen, type BindingCheck, type IdGenera
 import type {
   AnswerInput,
   CandidateRef,
+  CloseReviewRequest,
   DailyAction,
   DailyTradeReviewRequest,
   DebtProjection,
@@ -113,6 +114,8 @@ export interface Journal {
   // Validates a workflow's Journal obligation and prepares its outcome without writing.
   prepareEffects(request: PlanReflectionRequest): Promise<PreparePlanReflectionResult>;
   prepareEffects(request: DailyTradeReviewRequest): Promise<PrepareJournalEffectsResult>;
+  prepareEffects(request: CloseReviewRequest): Promise<PrepareJournalEffectsResult>;
+  // Last, so `Parameters<Journal['prepareEffects']>[0]` stays the Position Change Reflection request for existing tests.
   prepareEffects(request: PositionChangeReflectionRequest): Promise<PrepareJournalEffectsResult>;
   // Stages prepared outcomes in the coordinator's semantic transaction, mapping candidate
   // references through Trade Record's durable identities; assigns Entry identities.
@@ -347,6 +350,7 @@ const MAX_DECLINE_REASON = 500;
 const OBLIGATIONS = {
   PlanReflection: { entryTypeKey: 'entry-type.plan-reflection', sourceKey: 'source.plan-confirmation' },
   PositionChangeReflection: { entryTypeKey: 'entry-type.position-change-reflection', sourceKey: 'source.position-change' },
+  CloseReview: { entryTypeKey: 'entry-type.close-review', sourceKey: 'source.trade-close' },
   DailyTradeReview: { entryTypeKey: 'entry-type.daily-trade-review', sourceKey: 'source.daily-review' },
 } as const;
 
@@ -359,14 +363,16 @@ export function createJournal(deps: JournalDeps): Journal {
       return prepareResolution({ intention: 'ResolveDebt', debtId, expectedDebtRevision, resolution }, 'source.daily-review');
     }
     const { disposition } = request;
-    // Plan Reflection requires completion now; Position Change Reflection may also be declined.
-    // Defer is installed for the Position Change Reflection only (D5 A66).
-    const declining = disposition.kind === 'Decline' && request.obligation === 'PositionChangeReflection';
-    const deferring = disposition.kind === 'Defer' && request.obligation === 'PositionChangeReflection';
+    // Plan Reflection requires completion now; the Position Change Reflection and the Close Review
+    // may also be declined or deferred (D5 A66, D6 A86).
+    const optional = request.obligation === 'PositionChangeReflection' || request.obligation === 'CloseReview';
+    const declining = disposition.kind === 'Decline' && optional;
+    const deferring = disposition.kind === 'Defer' && optional;
     if (disposition.kind !== 'Complete' && !declining && !deferring) return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
     const { entryTypeKey, sourceKey } = OBLIGATIONS[request.obligation];
     const obligationKeyOf = (): JournalObligationKey => {
       if (request.obligation === 'PlanReflection') return { entryType: 'PlanReflection', trade: request.anchor.ref };
+      if (request.obligation === 'CloseReview') return { entryType: 'CloseReview', trade: request.anchor.ref };
       if (request.obligation === 'DailyTradeReview') {
         return { entryType: 'DailyTradeReview', trade: request.anchor.ref, reviewDate: request.origin.reviewDate };
       }
@@ -425,7 +431,7 @@ export function createJournal(deps: JournalDeps): Journal {
     if (!definition || definition.id !== shown) {
       return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
     }
-    if (disposition.kind === 'Decline' && request.obligation === 'PositionChangeReflection') {
+    if (disposition.kind === 'Decline' && optional) {
       if ([...(disposition.reason ?? '')].length > MAX_DECLINE_REASON) return { kind: 'Rejected', issues: [{ code: 'ReasonTooLong' }] };
       return {
         kind: 'Prepared',
@@ -556,7 +562,11 @@ export function createJournal(deps: JournalDeps): Journal {
       entryTypeKey: debt.entryTypeKey,
       definitionId: debt.definitionId,
       sourceKey,
-      obligationKey: { entryType: 'PositionChangeReflection', positionChange: debt.origin.factId } as const,
+      // The Debt's own key: a Close Review is keyed by its Trade, a Position Change Reflection by its change.
+      obligationKey:
+        debt.entryTypeKey === OBLIGATIONS.CloseReview.entryTypeKey
+          ? ({ entryType: 'CloseReview', trade: debt.anchor.tradeId } as const)
+          : ({ entryType: 'PositionChangeReflection', positionChange: debt.origin.factId } as const),
       anchor: { kind: 'Trade', ref: debt.anchor.tradeId } as const,
       origin: { kind: 'PositionChange', ref: debt.origin.factId } as const,
       momentTime: debt.momentTime,
@@ -715,6 +725,7 @@ export function createJournal(deps: JournalDeps): Journal {
       const keyOf = (key: JournalObligationKey): string | string[] => {
         if (key.entryType === 'DailyTradeReview') return ['DailyTradeReview', key.reviewDate, durable(key.trade)];
         if (key.entryType === 'PlanReflection') return `PlanReflection:${durable(key.trade)}`;
+        if (key.entryType === 'CloseReview') return `CloseReview:${durable(key.trade)}`;
         return `PositionChangeReflection:${durable(key.positionChange)}`;
       };
       // Each outcome is staged with its obligation record; `add` fails the whole transaction when

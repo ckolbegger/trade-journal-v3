@@ -38,6 +38,16 @@ export interface PositionChangeReflectionRequest {
   readonly momentTime: Instant;
 }
 
+// The reflection owed for one Trade that has closed (D6 A86). The origin names the terminal
+// Position Change; the moment time is that change's Economic Time.
+export interface CloseReviewRequest {
+  readonly obligation: 'CloseReview';
+  readonly disposition: ReflectionDisposition;
+  readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
+  readonly origin: { readonly kind: 'PositionChange'; readonly ref: CandidateRef };
+  readonly momentTime: Instant;
+}
+
 // The Action recorded for one Trade at one Review Date (Journal, "Daily Trade Review"). The Trade
 // is already durable; the origin names the (Trade, Review Date) checkpoint; the moment time is
 // the Review cutoff. Only CompleteNow is allowed.
@@ -51,7 +61,7 @@ export interface DailyTradeReviewRequest {
   readonly expectedEntryRevision?: number;
 }
 
-export type JournalEffectRequest = PlanReflectionRequest | PositionChangeReflectionRequest | DailyTradeReviewRequest;
+export type JournalEffectRequest = PlanReflectionRequest | PositionChangeReflectionRequest | CloseReviewRequest | DailyTradeReviewRequest;
 
 // How an Outstanding Debt is resolved (D5 A64): answered against its snapshot revision, or declined.
 export type DebtResolution =
@@ -84,6 +94,7 @@ export interface ResolveDebtRequest {
 export type JournalObligationKey =
   | { readonly entryType: 'PlanReflection'; readonly trade: CandidateRef }
   | { readonly entryType: 'PositionChangeReflection'; readonly positionChange: CandidateRef }
+  | { readonly entryType: 'CloseReview'; readonly trade: CandidateRef }
   | { readonly entryType: 'DailyTradeReview'; readonly trade: CandidateRef; readonly reviewDate: string };
 
 // A saved answer: "optional" means Unanswered is a valid value; it never means declined.
