@@ -623,17 +623,27 @@ function DeviationsSection({ view, timeZone }: { readonly view: OpenTradeDetail;
 // beside the expected one. A read surfaces the disagreement and never repairs it.
 function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
   const timeOf = (positionChangeId: string) => changeTime(view, positionChangeId, timeZone);
-  const recorded = (occurrenceId: string) => view.deviations.find((d) => d.occurrenceId === occurrenceId)?.versions.at(-1)?.quantityAbovePlan;
+  const recordedVersion = (occurrenceId: string) => view.deviations.find((d) => d.occurrenceId === occurrenceId)?.versions.at(-1);
+  // A Shortfall's fingerprint has no cause, so its time is its own causing Position Change's, or
+  // its Economic Time when that change is not among the recorded ones.
+  const shortfallTime = (cause: { readonly causingPositionChangeId: string; readonly economicTime: string } | undefined) =>
+    localTime(view.positionChanges.find((c) => c.factId === cause?.causingPositionChangeId)?.economicTime ?? cause?.economicTime ?? '', timeZone);
   const row = (finding: IntegrityFinding): readonly [string, string, string] => {
     if (finding.kind === 'LifecycleDisagreement') return ['Lifecycle', finding.stored, finding.expected];
-    const record = `Entry Size Deviation, Position Change at ${timeOf(finding.fingerprint.positionChangeId ?? '')}`;
+    const shortfall = finding.fingerprint.form === 'Shortfall';
+    const stored = finding.kind === 'DeviationMissing' ? finding.expected : recordedVersion(finding.occurrenceId);
+    const at = shortfall ? shortfallTime(stored) : timeOf(finding.fingerprint.positionChangeId ?? '');
+    const record = `Entry Size Deviation, Position Change at ${at}`;
+    const shares = (amount: string) => `${amount} shares${shortfall ? ' below plan' : ''}`;
     switch (finding.kind) {
       case 'DeviationMissing':
-        return [record, 'None', `${quantity(finding.expected.quantityAbovePlan ?? finding.expected.quantityBelowPlan)} shares`];
+        return [record, 'None', shares(quantity(finding.expected.quantityAbovePlan ?? finding.expected.quantityBelowPlan))];
       case 'DeviationQuantityDisagreement':
-        return [record, `${quantity(finding.recorded)} shares`, `${quantity(finding.expected)} shares`];
-      case 'DeviationUnexpected':
-        return [record, `${recorded(finding.occurrenceId) ?? ''} shares`, 'None'];
+        return [record, shares(quantity(finding.recorded)), shares(quantity(finding.expected))];
+      case 'DeviationUnexpected': {
+        const version = recordedVersion(finding.occurrenceId);
+        return [record, shares(version?.quantityAbovePlan ?? version?.quantityBelowPlan ?? ''), 'None'];
+      }
     }
   };
   return (

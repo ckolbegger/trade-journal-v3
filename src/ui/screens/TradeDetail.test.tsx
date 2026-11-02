@@ -21,7 +21,7 @@ import {
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DueClassification, NarrativeItem, RecordedDeviationVersion, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
+import type { DueClassification, IntegrityFinding, NarrativeItem, RecordedDeviation, RecordedDeviationVersion, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -271,6 +271,33 @@ describe('Open Trade Detail', () => {
         }),
       ),
     ).toEqual([['Entry Size Deviation, Position Change at 2026-10-12 14:00', '15 shares', '20 shares']]);
+  });
+
+  it('should render a Shortfall integrity finding with its quantity below plan and its causing change time without throwing', async () => {
+    const fingerprint = { tradeId: 'trade-1', plannedLegId: 'leg-1', form: 'Shortfall' } as const;
+    const shortfall = {
+      fingerprint,
+      type: 'EntrySize',
+      form: 'Shortfall',
+      quantityBelowPlan: '30',
+      causingPositionChangeId: 'pc-3',
+      economicTime: '2026-10-12T18:00:00Z',
+      status: 'Active',
+    } as const;
+    const recordedShortfall: RecordedDeviation = { occurrenceId: 'dev-2', versions: [shortfall] };
+    const base = openDetailOf([PC1, PC2, PC3], { recordedDeviations: [recordedShortfall] });
+    const findings: IntegrityFinding[] = [
+      { kind: 'DeviationMissing', fingerprint, expected: { ...shortfall, quantityBelowPlan: Rational.of(30n) } },
+      { kind: 'DeviationQuantityDisagreement', fingerprint, occurrenceId: 'dev-2', recorded: Rational.of(30n), expected: Rational.of(25n) },
+      { kind: 'DeviationUnexpected', fingerprint, occurrenceId: 'dev-2' },
+    ];
+    renderView({ ...base, findings });
+    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    expect(rowsOf(within(panel).getByRole('table', { name: 'Stored versus expected' }))).toEqual([
+      ['Entry Size Deviation, Position Change at 2026-10-12 14:00', 'None', '30 shares below plan'],
+      ['Entry Size Deviation, Position Change at 2026-10-12 14:00', '30 shares below plan', '25 shares below plan'],
+      ['Entry Size Deviation, Position Change at 2026-10-12 14:00', '30 shares below plan', 'None'],
+    ]);
   });
 
   it('should show the Records disagree region naming each fact that cannot be replayed, with the Plan, recorded Position Changes and Journal but no derived figures, when the facts are incoherent', async () => {
