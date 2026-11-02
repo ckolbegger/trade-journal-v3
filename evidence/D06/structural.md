@@ -1261,3 +1261,87 @@ After the run, nothing was listening on ports 5175, 9341 or 9342.
 ## T6.19 UI: Trade Detail closing additions
 
 Base commit (for `browser-auto`): `9ce6b75d`.
+
+Commit `c0e5b597` (T6.19).
+
+**Cases.** Both cases went red and then green.
+- **Closed Trade Detail.** Red: `Unable to find … region "Result"`.
+- **Open after a partial exit.** Red: `Unable to find … region "Lot Matches"`. The Open additions had been written early. They were removed to get the red and then put back.
+
+**Assertions that passed before their case, mutation-checked and flagged.**
+- **Close Review in the narrative.** The existing `JournalSection` already rendered it. Omitting the section failed with `Unable to find … "Journal (1)"`.
+- **Open "Realized to date".** D4's Valuation section already showed it. Renaming the term failed.
+
+**What changed.**
+- **New shared table.** `LotMatchesTable.tsx` is used by both `TradeDetail` and `ExitReceipt`. `figures.ts` gains `closedViaSale(mechanisms)`.
+- **`EXIT_ACTION`.** It moved to `TradeDetail.tsx` to avoid an import cycle, and `PositionChangeForm` re-exports it.
+- **Closed form.**
+  - It adds a "Result" section (Realized P&L, Realized R, Terminal Disposition, Close Reason), "Lot Matches" with the rounding note, and "Fee reconciliation" (six terms from the read model, formatted with `money()` only).
+  - It omits Valuation, the dated line, At entry, Risk and reward, the Open Lots, Record entry and Record exit. It never reads `current`.
+- **Record exit.** A pill link to `/trades/:id/record-entry?action=Sell`. It appears only while Writable, on an Open form.
+
+**Flagged for the user.**
+- **Fee reconciliation on Open.** It also shows on an Open Detail that has Lot Matches. The plan lists it for Closed only.
+- **Close Review debt label (gap).** A Close Review Debt on Detail is labelled by `OwedDebtItem` as "Reflection owed / Position Change at …", not as a Close Review.
+- **Placeholders left untouched.** The T6.2 and T6.3-B2 placeholders stay as they were. `RecordEntryUnavailable` wording is left for T6.27.
+
+**Copy.** All strings are placeholders except "Closed via sale of N shares". The subagent's report lists each one.
+
+**Checks.** typecheck, tsc6, lint, lint:deps and `verify:capabilities` pass, and `src/ui` passes 452 tests. `src/ui` changed, so the run is full tier.
+
+**ocr review of `c0e5b597`** (`evidence/D06/ocr/T6.19-c0e5b597.json`): 7 files, 0 ocr comments. The reviewer added one finding of their own after checking the code.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| low | `OwedDebtItem.tsx:~104-110` | `OwedDebtItem` always shows "Reflection owed" and "Position Change at …". It ignores `NarrativeDebt.entryType` and `entryTypeKey`, so a Close Review Debt looks the same as a Position Change Reflection Debt. When both are deferred, the Closed Detail shows two identical items. | Valid. The label predates T6.19, but T6.19 is the first screen to render a Close Review Debt. | T6.19-B1 |
+| (note) | `TradeDetail.tsx` Lot Matches | The rounding note is not tied to the table with `aria-describedby`. | Doubtful: a small gap, not against the plan. It is cheap to fix and on the critic's accessibility path. | T6.19-B1 |
+
+**Reviewer's answers to the six checks:**
+- **Closed form:** it never reads `current`.
+- **Record exit:** visible only while Writable, on an Open form.
+- **Record entry:** hidden on Closed.
+- **Fees:** each comes from the read model through `money()`.
+- **Headings and numerals:** both correct.
+- **Regressions:** none unintended. The `ExitReceipt` Quantity and Realized headers are now right-aligned, which looks deliberate.
+
+### T6.19-B1 Owed Debts name their Entry Type; Lot Matches table described by its rounding note
+
+Commit `52b9e40e`, touching `OwedDebtItem.tsx`, `LotMatchesTable.tsx`, `TradeDetail.tsx` and `TradeDetail.test.tsx`.
+
+**1. Owed items name their Entry Type.**
+- Red test: "should tell a deferred Close Review from a deferred Position Change Reflection by naming each Entry Type on its owed item". It failed with `Unable to find … text: Position Change Reflection … '.badge'`.
+- Fix: `OwedDebtItem` now renders `<Badge tone="neutral">{debt.entryType}</Badge>` before the owed or settled Badge, the same badge resolved items use. "Reflection owed" and "Position Change at …" are kept; no copy for them is fixed in the spec.
+- Scope: `TradeDetail`'s `JournalSection` is the only caller, and the Review does not use this component. No caller tests changed.
+
+**2. Rounding note.**
+- Red test: "should describe the Lot Matches table by the note that amounts are rounded for display". It failed because no table had that accessible description.
+- Fix: the note has `id="lot-matches-note"`, and `LotMatchesTable` takes an optional `describedBy` and renders it as `aria-describedby`.
+
+**Result.** No first-run pass and no new copy strings. `src/ui`: 454 tests pass.
+
+**ocr review of `52b9e40e`** (`evidence/D06/ocr/T6.19-B1-52b9e40e.json`): 3 files, 0 comments, no findings.
+
+**The reviewer's own reading:**
+- **Heading order.** The heading reads the Entry Type, then the owed or settled label. That matches the resolved-entry heading.
+- **`entryType`.** It is a required string, and it falls back to the raw key.
+- **`lot-matches-note`.** It is unique.
+- **No regressions.** Open and Planned are unchanged.
+
+**Minor observations, recorded only:**
+- **Duplicate headings.** Two owed Position Change Reflections still share a heading name. This was already true before the change, and only the "Position Change at …" line tells them apart.
+- **Shared heading id.** `ExitReceipt` and Trade Detail both use `id="lot-matches-heading"`, but the two are never mounted together.
+
+**Cumulative run `t6.19-trade-detail`** at HEAD `52b9e40e`, on 2026-11-02. Browser tier: full. The first full-tier path that changed since `9ce6b75d` is `src/ui/figures.ts`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 92 files, 1161 tests passed | `suite-runs/t6.19-trade-detail-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.19-trade-detail-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.19-trade-detail-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.19-trade-detail-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run.
+
+## T6.20 UI: Review owed-reflection cards, Exit link
+
+Base commit (for `browser-auto`): `52b9e40e`.

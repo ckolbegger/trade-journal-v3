@@ -1,0 +1,148 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 114367,
+    "input_tokens": 112787,
+    "output_tokens": 1580,
+    "cache_read_tokens": 22016,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade and position detail UI, lot matches, and supporting fixtures",
+      "files": [
+        "src/ui/figures.ts",
+        "src/ui/screens/ExitReceipt.tsx",
+        "src/ui/screens/LotMatchesTable.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/closed-detail-fixtures.ts",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "0190e833-be81-4d75-b7eb-6bddc6dc2081",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0190e833-be81-4d75-b7eb-6bddc6dc2081",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c0e5b597",
+      "resolved_base": "189f38834430e79695490aa444e014d1a6e2c977",
+      "resolved_head": "c0e5b5975eee7820eca1f2223f38766248ddf9af",
+      "exact_range": "189f38834430e79695490aa444e014d1a6e2c977..c0e5b5975eee7820eca1f2223f38766248ddf9af",
+      "source_artifact_sha256": "33d8c317c2a7bb219e71225a05f8f2a191c4316781adf30430c13b087ea4f63b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "3c44048f179bfbf63a8c55e0b63b042a0de90424120fe219a50a558fbf1f1f5f"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "fedfe6ea6544d5c587bce2f1b61f7e82f1c99e60739152f5506ea47358129df9"
+        },
+        {
+          "item_id": "597b17956760f70e961ccb918d2ad7049b86d6e106ccccc4693b439abe960c52",
+          "path": "tests/support/closed-detail-fixtures.ts",
+          "fingerprint": "6c26db726722de2d6df4fc00fca14fd4d14174e7b77d307d02f71dc9eaa4d92e"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "c5344b3a723184f10fb8c93f48ba681892f6c08ade028853a55364b10871bd5d"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "d4ce53ba899d55c0d1ac49b84bb94f8fa2c5e9fdda6a57c68891def243036d94"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "d71215d03394384ce8887abe5fd52aca2c8c8baf9d2675504b6e8ae53a3ee769"
+        },
+        {
+          "item_id": "e2f2d46d15c2f4fab0b22f66b91a79dcb7f58fdd53703a93878b0eb1564bb4e8",
+          "path": "src/ui/screens/LotMatchesTable.tsx",
+          "fingerprint": "95e82c3fae617a623e90b97473bf7761939eb6063783024faef40701335d90ca"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "3c44048f179bfbf63a8c55e0b63b042a0de90424120fe219a50a558fbf1f1f5f"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "fedfe6ea6544d5c587bce2f1b61f7e82f1c99e60739152f5506ea47358129df9"
+        },
+        {
+          "item_id": "597b17956760f70e961ccb918d2ad7049b86d6e106ccccc4693b439abe960c52",
+          "path": "tests/support/closed-detail-fixtures.ts",
+          "fingerprint": "6c26db726722de2d6df4fc00fca14fd4d14174e7b77d307d02f71dc9eaa4d92e"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "c5344b3a723184f10fb8c93f48ba681892f6c08ade028853a55364b10871bd5d"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "d4ce53ba899d55c0d1ac49b84bb94f8fa2c5e9fdda6a57c68891def243036d94"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "d71215d03394384ce8887abe5fd52aca2c8c8baf9d2675504b6e8ae53a3ee769"
+        },
+        {
+          "item_id": "e2f2d46d15c2f4fab0b22f66b91a79dcb7f58fdd53703a93878b0eb1564bb4e8",
+          "path": "src/ui/screens/LotMatchesTable.tsx",
+          "fingerprint": "95e82c3fae617a623e90b97473bf7761939eb6063783024faef40701335d90ca"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 69861
+  }
+}
