@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { D6_CATALOG_MANIFEST } from '../../src/modules/reference-catalog/manifest.ts';
 import {
   BASE_URL,
   checkForUpdate,
@@ -204,10 +205,32 @@ test.describe('B2.6 kill during migration (faults build)', () => {
       expect(current).not.toBe(rootOf(before).current);
       expect(candidates).toEqual([]);
       expect(workspaceNames(after)).toEqual([current]);
-      // The faults build is the current schema: the v5 transform adds an empty closeReasonFacts to each Trade.
+      // The faults build is the current schema, so its migration to schema 5 adds two things to the
+      // authoritative stores: an empty closeReasonFacts on each Trade, and the four seeded Close
+      // Reason Catalog records (random ids, in seed order). Journal seed additions (the Close Review
+      // type and Source) land in journalTypes and journalDefinitions, which are not authoritative.
+      // Everything else must equal the D1 data.
       const expected = authoritative(before[rootOf(before).current]!);
       expected['trades'] = (expected['trades'] as object[]).map((trade) => ({ ...trade, closeReasonFacts: [] }));
-      expect(authoritative(after[current]!)).toEqual(expected);
+      const migrated = authoritative(after[current]!);
+      const catalog = migrated['catalog'] as { kind: string; seedOrder?: number }[];
+      migrated['catalog'] = catalog.filter((record) => record.kind !== 'CloseReason');
+      const closeReasons = catalog.filter((record) => record.kind === 'CloseReason').sort((a, b) => a.seedOrder! - b.seedOrder!);
+      expect(closeReasons).toEqual(
+        D6_CATALOG_MANIFEST.closeReasons!.map(({ productKey, label }, seedOrder) => ({
+          id: expect.any(String),
+          kind: 'CloseReason',
+          productKey,
+          label,
+          normalizedLabel: label.toLowerCase(),
+          origin: 'Seeded',
+          policy: 'SeededValuesRemainSelectable',
+          active: true,
+          recordRevision: 1,
+          seedOrder,
+        })),
+      );
+      expect(migrated).toEqual(expected);
     } finally {
       await relaunched.kill();
     }
