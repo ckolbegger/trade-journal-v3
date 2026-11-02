@@ -555,3 +555,88 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.12 Daily Review: `getTrade` card kinds
 
 Base commit (for `browser-auto`): `8f8840a2`.
+
+Commit `b8108e30` (T6.12): 2 planned cases plus 2 extra cases for due-anchor order (owed card and Walked card), each red then green, no first-run pass. Two pieces of code were written before their red and removed to get a genuine red, then restored, with a note row in `tdd-log.md`:
+- the Walked card's `lifecycle` and `exitRoute`;
+- the `toSorted` in `reflectionsOf`.
+
+Changes:
+- `getTrade` returns a new kind, `{ kind: 'ReflectionsOwed', reviewDate, cutoff, card: OwedReflectionsCard }`, for a non-eligible Trade with Outstanding Debts in the binding. It reads the Trade twice with `getRecord` (Summary and AnalysisInput). `OwedTradeSummary` is either Closed (realized P&L, Realized R, Terminal Disposition, Close Reason id and label, terminal time) or Open (position, Entry Resolution).
+- Walked cards gain `lifecycle` (stored) and `exitRoute?: { remainingQuantity }`, which is present only while the Trade is currently Open. T-N, sold after the close, has none.
+- Both kinds sort reflections with `compareDueAnchors`. The Walked card previously used Journal's text order.
+- Four UI test builders gained `lifecycle: 'Open'`, because the new field is required. `src/app/types.ts` re-exports the new types, which puts this task on the full tier.
+
+**Gap found in the main session's reading:** A90 lists "Close Review outcome" in a `ReflectionsOwed` card's Closed summary, and T6.12 left it out because its planned case does not name it. A90 is part of the plan, so it is fixed in a bug task, not deferred.
+
+### ocr review of `b8108e30`
+
+Session `e87a3383-8f4c-4dbc-b446-792945f5e424`, 4 files reviewed, **no ocr comments**. Raw output: [ocr/T6.12-b8108e30.json](ocr/T6.12-b8108e30.json). The reviewer also answered three questions directly:
+
+| # | Question or point | Outcome |
+|---|---|---|
+| 1 | Is the owed card bound the way the walked card is? | **Yes.** FactRevision, the Market Data snapshot and the Debt list are each compared, and the whole pass runs inside `coherently`. No test has an owed card return `ReviewChanged`. **That test goes into T6.12-B1.** |
+| 2 | Do the Closed summary's realized P&L and Realized R equal `derive`'s values? | **Yes.** The branch follows the stored lifecycle, and the type allows that. |
+| 3 | `labelsOf` resolves account, Strategy and Close Reason in one Catalog call, so one unknown reference blanks all three labels. `closeReason` is also omitted when it fails to resolve, which makes a failed lookup look the same as "closed without one". | **Doubtful → T6.12-B1.** The Close Reason is to be resolved on its own, keeping the id when the label is missing. |
+
+T6.12-B1 also carries the A90 gap recorded above: the Close Review outcome is missing from the Closed summary.
+
+### T6.12-B1 Owed card: Close Review outcome, Close Reason resolution, binding test
+
+Commit `0f0f4769`, three cases. It covers the A90 gap and ocr points 1 and 3.
+
+1. **"should carry the Close Review outcome in the Closed summary of an owed card".**
+   - Red: `undefined`. Green afterwards.
+   - It covers T-M's Debt and an inline Closed Trade whose Close Review is completed, which gives an Entry.
+   - The outcome is read with Journal's `TradeNarrative` query and picked by the Entry Type label `'Close Review'`. ocr was asked whether this label matching is a defect.
+2. **"should keep an owed card Close Reason identity and the account and strategy labels when the Close Reason cannot be resolved".**
+   - Red: all labels blank. Green afterwards.
+3. **"should return ReviewChanged for an owed card when its Trade facts or Outstanding Debts change after open".**
+   - **First-run pass, flagged for the user.** T6.12 had already built the behavior.
+   - Mutation check: the owed card's FactRevision comparison was removed, and the case failed with `expected { kind: 'ReflectionsOwed', … } to deeply equal { kind: 'ReviewChanged' }`. The comparison was then restored.
+
+ocr review of `0f0f4769`: session `a2f0f43c-6dc4-4709-bcbd-e63a9735e346`, 2 files reviewed, 1 comment. Raw output: [ocr/T6.12-B1-0f0f4769.json](ocr/T6.12-B1-0f0f4769.json).
+
+| # | Severity | Location | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | medium | `daily-review.ts:493` | The Close Review narrative item is found by its display label `'Close Review'`, not a stable Entry Type identity. If the label drifts, `closeReviewOutcome` is dropped silently. | **Valid → bug task T6.12-B2** (second round on T6.12). `TradeNarrativeItem` exposes only the label. |
+
+The reviewer was also asked two questions:
+- **A89 per-history work:** no violation. There is one bounded query per owed Closed card fetched, made in `getTrade` only.
+- **Decline outcome:** cannot be misreported.
+
+### T6.12-B2 The owed card finds its Close Review outcome by Entry Type key
+
+This fixes T6.12-B1's ocr finding. Commit `dde2eb54` has 2 cases, each red then green, with no first-run pass.
+
+1. **Journal:** "should carry the stable Entry Type key on every item of the Trade narrative: an Entry, a decline, and a Debt". The red was `entryTypeKey` `undefined` on all three items.
+2. **Daily Review:** "should find the Close Review outcome by its Entry Type key when the Entry Type label differs". The stored Entry Type was relabelled "Closing Reflection". The red was a missing `closeReviewOutcome`.
+
+`entryTypeKey` is now required on Journal's narrative items. `closeReviewOutcomeOf` matches on `'entry-type.close-review'`, and the label constant is gone.
+
+Because the field is required, several places needed one-line additions:
+- `src/ui/screens/confirmed-detail.ts`, which builds a Plan Reflection narrative item. That puts this task's run on the full tier.
+- The narrative-item fixtures in `TradeDetail.test.tsx`, `ReviewCard.test.tsx`, `tests/support/open-detail-fixtures.ts` and `views-fixtures.ts`.
+- Exact-item expectations in three Journal tests and a key-list check in `trade-views/open-views.test.ts`.
+
+ocr review of `dde2eb54`: session `7d494652-bc90-43be-9a39-474b9caa409b`, 6 files reviewed, **no findings**. Raw output: [ocr/T6.12-B2-dde2eb54.json](ocr/T6.12-B2-dde2eb54.json).
+
+The two checks asked of the reviewer both found no defect:
+- Every Journal path that builds a narrative item fills `entryTypeKey` from the stored key.
+- `'entry-type.plan-reflection'` matches `manifest.ts` line 20.
+
+### Cumulative run after T6.12
+
+Label `t6.12-card-kinds`, at `dde2eb54` plus uncommitted evidence (2026-11-01 22:04 EST). Outputs in `suite-runs/t6.12-card-kinds-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 89 files, 1117 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **full tier**, printed reason "first matching path since 8f8840a2: src/app/types.ts": 147 passed (6.8 m) |
+| Static and verify checks | 11 of 12 exit 0; `verify:capacity` failed, expected until T6.22 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.13 Daily Review: `save` across the walk and the group
+
+Base commit (for `browser-auto`): `dde2eb54`.

@@ -1,0 +1,137 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 30834,
+    "input_tokens": 30343,
+    "output_tokens": 491,
+    "cache_read_tokens": 5760,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Journal daily-review and confirmed-detail flow with supporting fixtures",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts",
+        "src/ui/screens/confirmed-detail.ts",
+        "tests/support/open-detail-fixtures.ts",
+        "tests/support/views-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "7d494652-bc90-43be-9a39-474b9caa409b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7d494652-bc90-43be-9a39-474b9caa409b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "dde2eb54",
+      "resolved_base": "0f0f4769b110d4a06269589fea822a7e2d57d734",
+      "resolved_head": "dde2eb54fb96eada170a88438289358d6f71ec2e",
+      "exact_range": "0f0f4769b110d4a06269589fea822a7e2d57d734..dde2eb54fb96eada170a88438289358d6f71ec2e",
+      "source_artifact_sha256": "59d112e278d4640b7c3e3c27576bf1e14b0acbec14e3418cc8e2c265386f960a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "0945edbe5503b07b53286d2a05cf5e5847a411a07be993f636a045ee03098a9a"
+        },
+        {
+          "item_id": "67201c3e7eac47a79144c7c6bfcf860fc1e60bd550cc6c28713835a7875a4dad",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "fd10ac793a0035bb80d3d7795a716e304cca63ece319ca690e9f0b7190e59df5"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "b31f0d2b78c8cfa6578783db078507ce7d6b27ef1cd902804735627ff5bc314e"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "bb05a2299dc3724b582e828e04151943d2d1785e53468963aa60e8d3d9d7895b"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "871b58e0fefdaf1ded67a9d167e3561cd0412939885ff55ff3708b40dd060ce9"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "9ed30939a417bc6f623abad44f8ac30b2dc0ba607113d792d97789b8671c3c32"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "0945edbe5503b07b53286d2a05cf5e5847a411a07be993f636a045ee03098a9a"
+        },
+        {
+          "item_id": "67201c3e7eac47a79144c7c6bfcf860fc1e60bd550cc6c28713835a7875a4dad",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "fd10ac793a0035bb80d3d7795a716e304cca63ece319ca690e9f0b7190e59df5"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "b31f0d2b78c8cfa6578783db078507ce7d6b27ef1cd902804735627ff5bc314e"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "bb05a2299dc3724b582e828e04151943d2d1785e53468963aa60e8d3d9d7895b"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "871b58e0fefdaf1ded67a9d167e3561cd0412939885ff55ff3708b40dd060ce9"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "9ed30939a417bc6f623abad44f8ac30b2dc0ba607113d792d97789b8671c3c32"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 20622
+  }
+}
