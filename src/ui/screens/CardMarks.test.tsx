@@ -79,6 +79,7 @@ function review(over: Partial<Ready> = {}): Ready {
       { family: 'Marks', today: [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: [xyzGap] },
       { family: 'Trades', trades: WALK },
     ],
+    owed: [],
     completion: OWING,
     binding,
     ...over,

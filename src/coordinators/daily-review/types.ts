@@ -1,7 +1,7 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { ExecutionFact, IncoherentFacts, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -79,8 +79,9 @@ export type PanelProgress =
   | { readonly panel: 'Reflections'; readonly done: boolean; readonly dueNow: number; readonly later: number }
   | { readonly panel: 'Action'; readonly done: boolean; readonly owed: boolean };
 
+// A `Walked` card has every panel; a `ReflectionsOwed` card (A90) has the Reflections panel alone.
 export interface CardProgress {
-  readonly kind: 'Walked';
+  readonly kind: 'Walked' | 'ReflectionsOwed';
   readonly panels: readonly PanelProgress[];
   // Every panel is done (A150).
   readonly done: boolean;
@@ -98,6 +99,27 @@ export interface WalkedTrade extends ReviewTradeItem {
   // The figures the card's slider describes (P39, A150): the same evaluation results `getTrade` returns, unformatted.
   // Absent when the Trade's facts cannot be replayed.
   readonly figures?: SliderFigures;
+}
+
+// One Outstanding reflection of a Trade outside the walk: which obligation it answers (the Debt's Entry Type) and how
+// `classifyDue` reads its due anchor in this Review (A86).
+export interface OwedReflectionItem {
+  readonly debtId: string;
+  readonly entryTypeKey: string;
+  readonly dueAnchor: Instant;
+  readonly classification: DueClassification;
+}
+
+// A Trade outside the walk with at least one Outstanding reflection, due or not (P20, A89). Its card has the
+// Reflections panel alone; `getTrade` returns the card's content (T6.12).
+export interface OwedReflectionsTrade {
+  readonly tradeId: string;
+  readonly underlying: string;
+  // The Trade's stored lifecycle: Closed for a Trade closed before the cutoff, Open for one that opened after it.
+  readonly lifecycle: LifecycleState;
+  // The Trade's Outstanding reflections in due-anchor order.
+  readonly owed: readonly OwedReflectionItem[];
+  readonly progress: CardProgress;
 }
 
 // One Instrument needing the Review-date Mark, with the eligible Trades that hold it. The task is
@@ -164,16 +186,18 @@ export interface ReviewBinding {
   readonly catalogRevision: number;
   readonly journalRevision: number;
   readonly marketDataSnapshotId: string;
-  // The FactRevision of each eligible Trade, by Trade identity.
+  // The FactRevision of each eligible Trade and each Trade of the owed-reflection group, by Trade identity.
   readonly factRevisions: Readonly<Record<string, number>>;
-  // The Outstanding Debt of each eligible Trade that has any, in anchor order: a resolution elsewhere changes a Trade's list (A68).
+  // The Outstanding Debt of each eligible Trade and each Trade of the owed-reflection group that has any, in anchor order: a resolution elsewhere changes a Trade's list (A68).
   readonly outstandingDebts: Readonly<Record<string, readonly string[]>>;
 }
 
 export type OpenDailyReviewResult =
-  // No Trade is eligible and no other task is required.
-  | { readonly kind: 'Empty'; readonly reviewDate: string; readonly cutoff: Instant }
-  | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly families: readonly ReviewFamily[]; readonly completion: ReviewCompletion; readonly binding: ReviewBinding }
+  // No Trade is eligible and no reflection is due. Trades with a reflection owed later are still listed, with the
+  // binding their cards are opened against (A90).
+  | { readonly kind: 'Empty'; readonly reviewDate: string; readonly cutoff: Instant; readonly owed: readonly OwedReflectionsTrade[]; readonly binding: ReviewBinding }
+  // `owed` is the group after the walk: due-reflection Trades first, then oldest owed anchor, then Trade identity (A89).
+  | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly families: readonly ReviewFamily[]; readonly owed: readonly OwedReflectionsTrade[]; readonly completion: ReviewCompletion; readonly binding: ReviewBinding }
   // Writes kept landing between the read phases; nothing incoherent is returned (A46).
   | { readonly kind: 'ChangedDuringAssembly' }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };

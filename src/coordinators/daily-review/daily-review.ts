@@ -1,8 +1,8 @@
 import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
-import { classifyDue } from '../../domain/journal-debt/index.ts';
-import type { Journal } from '../../modules/journal/index.ts';
+import { classifyDue, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
+import type { DebtProjection, Journal } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
@@ -21,6 +21,7 @@ import type {
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
   OwedReflection,
+  OwedReflectionsTrade,
   CardProgress,
   PanelProgress,
   PostMarksReview,
@@ -103,14 +104,24 @@ function outstandingDebtsOf(debts: readonly { readonly debtId: string; readonly 
   return byTrade;
 }
 
+type ReflectionCounts = { readonly due: number; readonly later: number };
+
+const reflectionsPanel = (reflections: ReflectionCounts): PanelProgress => ({ panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later });
+
 // A card's panels in work order; it is done when every panel is (A164).
-function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: { readonly due: number; readonly later: number }, owed: boolean): CardProgress {
+function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: ReflectionCounts, owed: boolean): CardProgress {
   const panels: PanelProgress[] = [
     { panel: 'Marks', done: marks.needed === 0, resolved: marks.resolved, needed: marks.needed },
-    { panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later },
+    reflectionsPanel(reflections),
     { panel: 'Action', done: !owed, owed },
   ];
   return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };
+}
+
+// An owed-reflection card has the Reflections panel alone, and is done when that panel is (A90).
+function owedCardProgress(reflections: ReflectionCounts): CardProgress {
+  const panels = [reflectionsPanel(reflections)];
+  return { kind: 'ReflectionsOwed', panels, done: panels.every((panel) => panel.done) };
 }
 
 // The first obligation still open; a Trade is completed with its form after the read.
@@ -120,7 +131,13 @@ type ReadyReview = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
 // What one pass returns before its binding is checked against the Workspace.
 type Pass =
-  | { readonly kind: 'Empty'; readonly reviewDate: string; readonly cutoff: string }
+  | {
+      readonly kind: 'Empty';
+      readonly reviewDate: string;
+      readonly cutoff: string;
+      readonly owed: readonly OwedReflectionsTrade[];
+      readonly evidence: Pick<ReviewBinding, 'marketDataSnapshotId' | 'factRevisions' | 'outstandingDebts'>;
+    }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] }
   | { readonly kind: 'Expired' }
   | {
@@ -260,6 +277,28 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'Recovered' as const, frames: frames.frames, previousCloseInstant: frames.previousCloseInstant, resolutions: frames.frames.map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate, resolutionRevision: frames.resolutionRevisions[instrumentKey] ?? ('None' as const) })), gaps: [], snapshotId: frames.snapshotId };
   }
 
+  // The Trades outside the walk with an Outstanding reflection, due or not (P20, A89), in the group's order. Each is one
+  // `getRecord` by identity, so the reads are bounded by the Trades that have Debt, never by Trade count or history.
+  async function owedGroup(outstanding: readonly DebtProjection[], walked: ReadonlySet<string>, closes: SessionCloses) {
+    const debtsByTrade = new Map<string, DebtProjection[]>();
+    for (const debt of outstanding) {
+      if (!walked.has(debt.anchor.tradeId)) debtsByTrade.set(debt.anchor.tradeId, [...(debtsByTrade.get(debt.anchor.tradeId) ?? []), debt]);
+    }
+    const found = await Promise.all(
+      [...debtsByTrade].map(async ([tradeId, debts]) => {
+        const stored = await deps.tradeRecord.getRecord({ tradeId, projection: 'Summary' });
+        if (stored.kind !== 'Found') return [];
+        const summary = stored.projection as BrowseRecord['summary'];
+        const owed = debts.map(({ debtId, entryTypeKey, dueAnchor }) => ({ debtId, entryTypeKey, dueAnchor, classification: classifyDue(dueAnchor, closes) }));
+        const due = owed.filter(({ classification }) => classification === 'Due').length;
+        const trade: OwedReflectionsTrade = { tradeId, underlying: summary.underlying, lifecycle: summary.lifecycle, owed, progress: owedCardProgress({ due, later: owed.length - due }) };
+        return [{ trade, factRevision: stored.factRevision, standing: owedStandingOf(tradeId, debts.map(({ dueAnchor }) => dueAnchor), closes) }];
+      }),
+    );
+    const ordered = found.flat().sort((a, b) => compareOwed(a.standing, b.standing));
+    return { trades: ordered.map(({ trade }) => trade), factRevisions: Object.fromEntries(ordered.map(({ trade, factRevision }) => [trade.tradeId, factRevision])) };
+  }
+
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
   // `withGaps` false skips the historical Mark-gap scan: the frames and snapshot are the ones `recover` gives, the gaps are left empty.
   // `from` is the Trade a save just resolved: the next step is looked for from it.
@@ -270,10 +309,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
     const derivations = await eligibleTrades(cutoff, reviewDate);
     if (!derivations) return { kind: 'Expired' };
-    if (derivations.length === 0) return { kind: 'Empty', reviewDate, cutoff };
     const { requirements, earliest } = observationNeeds(derivations);
     const instruments = [...earliest].map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure }));
-    const recovered = withGaps
+    // With no walked Trade there is no Instrument to scan for gaps; the frames call still gives the previous close the owed group needs.
+    const recovered = withGaps && derivations.length > 0
       ? await deps.marketData.recover({ context: { kind: 'Review', reviewDate }, instruments })
       : await framesOnly(reviewDate, instruments.map((i) => i.instrumentKey));
     if (recovered.kind === 'Rejected') throw new Error('Market Data rejected the Review recovery request');
@@ -314,6 +353,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const previousClose = recovered.previousCloseInstant;
     const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;
     const closes = { previousClose, close: cutoff };
+    const walkedIds = derivations.map(({ analysis }) => analysis.tradeId);
+    const group = await owedGroup(outstanding, new Set(walkedIds), closes);
+    const evidence = {
+      marketDataSnapshotId: recovered.snapshotId,
+      factRevisions: { ...Object.fromEntries(derivations.map(({ analysis }) => [analysis.tradeId, analysis.factRevision])), ...group.factRevisions },
+      outstandingDebts: outstandingDebtsOf(outstanding, [...walkedIds, ...group.trades.map(({ tradeId }) => tradeId)]),
+    };
+    // Empty means no Trade to walk and no other required task: a due reflection of a Trade outside the walk is one (AC-REV-006).
+    if (derivations.length === 0 && group.trades.every(({ progress }) => progress.done)) return { kind: 'Empty', reviewDate, cutoff, owed: group.trades, evidence };
     const dueDebtIds = (tradeId: string) =>
       outstanding.filter((debt) => debt.anchor.tradeId === tradeId && classifyDue(debt.dueAnchor, closes) === 'Due').map((debt) => debt.debtId);
     const reflectionsOf = (tradeId: string) => {
@@ -349,6 +397,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         ...(item.tradeId in actions.actions ? [] : [{ code: 'ActionMissing' as const, tradeId: item.tradeId }]),
         ...(dueDebtIds(item.tradeId).length > 0 ? [{ code: 'ReflectionDue' as const, tradeId: item.tradeId, debtIds: dueDebtIds(item.tradeId) }] : []),
       ]),
+      // Then the owed-reflection group, in its order (P20).
+      ...group.trades.flatMap(({ tradeId, owed }): IncompleteReason[] => {
+        const debtIds = owed.filter((reflection) => reflection.classification === 'Due').map((reflection) => reflection.debtId);
+        return debtIds.length > 0 ? [{ code: 'ReflectionDue', tradeId, debtIds }] : [];
+      }),
     ];
     const acknowledged = today.filter((row) => row.resolution.kind === 'AcknowledgedUnavailable');
     const affected = ranked.filter(({ item }) => acknowledged.some((row) => row.trades.includes(item.tradeId)));
@@ -366,15 +419,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
     return {
       kind: 'Ready',
-      review: { reviewDate, cutoff, families, completion },
-      evidence: {
-        marketDataSnapshotId: recovered.snapshotId,
-        factRevisions: Object.fromEntries(derivations.map(({ analysis }) => [analysis.tradeId, analysis.factRevision])),
-        outstandingDebts: outstandingDebtsOf(
-          outstanding,
-          derivations.map(({ analysis }) => analysis.tradeId),
-        ),
-      },
+      review: { reviewDate, cutoff, families, owed: group.trades, completion },
+      evidence,
       nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => dueDebtIds(item.tradeId).length > 0).map((item) => item.tradeId)), from),
       progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
     };
@@ -717,6 +763,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       coherently<OpenDailyReviewResult>(async () => {
         const pass = await assemble({ kind: 'Current', asOf: request.asOf });
         if (pass.kind === 'Expired') return { retry: true };
+        if (pass.kind === 'Empty') {
+          const { reviewDate, cutoff, owed, evidence } = pass;
+          return { settle: (binding) => ({ kind: 'Empty', reviewDate, cutoff, owed, binding: { ...binding, ...evidence } }) };
+        }
         if (pass.kind !== 'Ready') return { done: pass };
         return { settle: (binding) => ({ kind: 'Ready', ...pass.review, binding: { ...binding, ...pass.evidence } }) };
       }),

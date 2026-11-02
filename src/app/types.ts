@@ -147,6 +147,9 @@ export type {
   OpenDailyReviewResult,
   // Owed reflections inside the walk (D5 P17, A68) and their resolution.
   OwedReflection,
+  // The Trades outside the walk with a reflection owed, after it (D6 P20, A89).
+  OwedReflectionItem,
+  OwedReflectionsTrade,
   RangePosition,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
   SliderFigures as SliderEvaluation,

@@ -97,6 +97,7 @@ function review(over: Partial<Ready> = {}): Ready {
       { family: 'Marks', today: [markRow('ABC', ['t-b'], available('27.50')), markRow('DEF', ['t-c']), markRow('XYZ', ['t-f', 't-a'], available('52.00')), markRow('JKL', ['t-e'], available('21.00'))], earlier: [] },
       { family: 'Trades', trades: WALK },
     ],
+    owed: [],
     completion: MONDAY_COMPLETION,
     binding,
     ...over,

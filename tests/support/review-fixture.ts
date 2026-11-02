@@ -144,7 +144,7 @@ export async function reviewStack(now = MONDAY_1700) {
     if (committed.kind !== 'Committed') throw new Error(`expected Committed, got ${committed.kind}`);
   };
 
-  return { ...stack, factory, marketData, dailyReview, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
+  return { ...stack, factory, marketData, dailyReview, reflection, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
 }
 
 export type ReviewStack = Awaited<ReturnType<typeof reviewStack>>;

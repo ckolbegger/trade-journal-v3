@@ -74,6 +74,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
         })),
       },
     ],
+    owed: [],
     completion,
     binding,
   };
@@ -234,7 +235,7 @@ describe('overview', () => {
     expect(screen.queryByText("No Trades were open at this session's close")).toBeNull();
     expect(screen.queryByRole('region', { name: 'Review status' })).toBeNull();
 
-    settle({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: CUTOFF });
+    settle({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: CUTOFF, owed: [], binding });
     expect(await screen.findByText("No Trades were open at this session's close")).toBeTruthy();
     expect(screen.getByText('Mon Oct 12')).toBeTruthy();
     expect(screen.queryByRole('status')).toBeNull();

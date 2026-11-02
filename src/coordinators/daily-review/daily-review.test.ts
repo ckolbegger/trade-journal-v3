@@ -34,7 +34,7 @@ describe('date and eligibility (P9, P15, A55)', () => {
     // Every Trade was first filled after Friday's close, so none is eligible then.
     const quarterPast = await reviewStack(MONDAY_1615);
     await fiveTradeFixture(quarterPast, { withoutMarks: true });
-    expect(await open(quarterPast, MONDAY_1615)).toEqual({ kind: 'Empty', reviewDate: '2026-10-09', cutoff: '2026-10-09T20:00:00Z' });
+    expect(await open(quarterPast, MONDAY_1615)).toEqual({ kind: 'Empty', reviewDate: '2026-10-09', cutoff: '2026-10-09T20:00:00Z', owed: [], binding: expect.any(Object) as unknown });
   }, 30_000);
 
   it('should exclude a Trade the index selects whose facts are not Open at the cutoff', async () => {
@@ -59,7 +59,7 @@ describe('date and eligibility (P9, P15, A55)', () => {
     await stack.fill(late, '2026-10-12T20:05:00Z', '100', '30.00');
     await rawEditTrade(stack, late.tradeId, (trade) => ({ ...trade, exposureStart: TEN_AM }));
 
-    expect(await open(stack, MONDAY_1700)).toEqual({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: MONDAY_CUTOFF });
+    expect(await open(stack, MONDAY_1700)).toEqual({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: MONDAY_CUTOFF, owed: [], binding: expect.any(Object) as unknown });
   });
 });
 
@@ -103,7 +103,7 @@ describe('empty Review', () => {
     const stack = await reviewStack(MONDAY_1700);
     // A Planned Trade has no exposure, so it is never eligible.
     await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
-    expect(await open(stack, MONDAY_1700)).toEqual({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: MONDAY_CUTOFF });
+    expect(await open(stack, MONDAY_1700)).toEqual({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: MONDAY_CUTOFF, owed: [], binding: expect.any(Object) as unknown });
   });
 });
 

@@ -46,6 +46,7 @@ function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = 
       { family: 'Marks', today: [], earlier: [] },
       { family: 'Trades', trades: trades.map((t) => ({ ...t, progress: cardProgress(0, 0, { resolved: 0, owed: missing.includes(t.tradeId) }) })) },
     ],
+    owed: [],
     completion: missing.length > 0 ? { kind: 'Incomplete', reasons: missing.map((tradeId) => ({ code: 'ActionMissing' as const, tradeId })) } : { kind: 'Complete' },
     binding,
     ...over,

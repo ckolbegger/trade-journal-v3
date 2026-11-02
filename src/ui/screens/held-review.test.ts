@@ -62,6 +62,7 @@ function review(over: { readonly trades?: readonly WalkedTrade[]; readonly earli
       { family: 'Marks', today: over.today ?? [missingRow('XYZ', ['t-a', 't-f']), missingRow('DEF', ['t-c'])], earlier: over.earlier ?? [xyzGap] },
       { family: 'Trades', trades: over.trades ?? [TA, TF, TC] },
     ],
+    owed: [],
     completion: over.completion ?? OWING,
     binding: over.binding ?? binding,
   };
