@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ExpectedDeviation, RecordedDeviation } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { recordSourceOf } from '../../../tests/support/record-source.ts';
-import { validateSection, type ExecutionFactValue, type TradeDocument, type TradeFact } from './index.ts';
+import { validateSection, type CloseReasonFact, type ExecutionFactValue, type TradeDocument, type TradeFact } from './index.ts';
 
 // D2's reference Trade (breakdown, section 4): 100 shares, entry 50, Stop 47.50, Target 56,
 // confirmed 2026-10-12 09:00 America/New_York.
@@ -101,7 +101,11 @@ function pc3Excess(tradeId: string, quantityAbovePlan = '20'): RecordedDeviation
   };
 }
 
-const references = { accountIds: new Set(['acct-1', 'acct-2']), anchorTradeIds: new Set(['trade-1', 'trade-2', 'trade-3']) };
+const references = {
+  accountIds: new Set(['acct-1', 'acct-2']),
+  anchorTradeIds: new Set(['trade-1', 'trade-2', 'trade-3']),
+  closeReasonIds: new Set(['cr-1', 'cr-2']),
+};
 
 describe('Trade Record section', () => {
   it('should accept Planned and Open Trades with single-version fact lists', async () => {
@@ -124,7 +128,7 @@ describe('Trade Record section', () => {
     const trades = [trade('trade-1', [], { accountId: 'acct-missing' }), reused, duplicate];
 
     const result = await validateSection(recordSourceOf({ trades }), {
-      accountIds: references.accountIds,
+      ...references,
       anchorTradeIds: new Set(['trade-1', 'trade-2', 'trade-3', 'trade-gone']),
     });
 
@@ -201,6 +205,53 @@ describe('Trade Record section', () => {
     expect(result.issues).toEqual([
       { code: 'IncoherentFacts', tradeId: 'trade-2', findings: [{ factId: 'trade-2:ex-2-1', reason: 'UnknownPlannedLeg' }] },
     ]);
+    expect(result.repairs).toEqual([]);
+  });
+});
+
+// Sell on 2026-10-13 10:00 (America/New_York): 100 shares leaves the Position flat, 30 does not.
+const sell = (tradeId: string, quantity: string): ExecutionFactValue[] => [
+  { ...buy(tradeId, '2026-10-13T14:00:00Z', quantity, '52.00'), action: 'Sell' },
+];
+
+// A Close Reason fact naming the Catalog identity and a Position Change, after the facts' sequences.
+function closeReason(tradeId: string, n: number, closeReasonId: string, positionChangeId: string): CloseReasonFact {
+  return {
+    factId: `${tradeId}:cr-${n}`,
+    kind: 'CloseReason',
+    recordedSequence: 100 + n,
+    versions: [{ versionNumber: 1, value: { closeReasonId, terminalPositionChangeId: positionChangeId } }],
+  };
+}
+
+// PC1 and PC2 open 100 shares; PC3 sells them all (Closed) or only 30 (still Open).
+function closing(tradeId: string, closeReasonFacts: readonly CloseReasonFact[], closes = true): TradeDocument {
+  const changes = [PC1(tradeId), PC2(tradeId), sell(tradeId, closes ? '100' : '30')];
+  return { ...trade(tradeId, changes, { lifecycle: closes ? 'Closed' : 'Open' }), ...(closeReasonFacts.length > 0 && { closeReasonFacts }) };
+}
+
+describe('Trade Record section, closing', () => {
+  it('should accept Closed Trades whose lifecycle and Close Reason agree with their facts, and report a Close Reason fact on a non-terminal Position Change, two Close Reason facts, a Closed Trade with Executions and no Close Reason, and a Close Reason naming an unknown Catalog identity', async () => {
+    const accepted = closing('trade-1', [closeReason('trade-1', 1, 'cr-1', 'trade-1:pc-3')]);
+    // Still Open, so no Position Change is terminal.
+    const openWithReason = closing('trade-2', [closeReason('trade-2', 1, 'cr-1', 'trade-2:pc-3')], false);
+    // Closed, but the fact names the first Position Change.
+    const earlier = closing('trade-3', [closeReason('trade-3', 1, 'cr-1', 'trade-3:pc-1')]);
+    const twice = closing('trade-4', [closeReason('trade-4', 1, 'cr-1', 'trade-4:pc-3'), closeReason('trade-4', 2, 'cr-2', 'trade-4:pc-3')]);
+    const missing = closing('trade-5', []);
+    const unknown = closing('trade-6', [closeReason('trade-6', 1, 'cr-gone', 'trade-6:pc-3')]);
+    const trades = [trade('trade-0'), accepted, openWithReason, earlier, twice, missing, unknown];
+
+    const result = await validateSection(recordSourceOf({ trades }), { ...references, anchorTradeIds: new Set() });
+
+    expect(result.issues).toEqual([
+      { code: 'CloseReasonOnNonTerminalChange', tradeId: 'trade-2', factId: 'trade-2:cr-1', positionChangeId: 'trade-2:pc-3' },
+      { code: 'CloseReasonOnNonTerminalChange', tradeId: 'trade-3', factId: 'trade-3:cr-1', positionChangeId: 'trade-3:pc-1' },
+      { code: 'MultipleCloseReasons', tradeId: 'trade-4', factIds: ['trade-4:cr-1', 'trade-4:cr-2'] },
+      { code: 'MissingCloseReason', tradeId: 'trade-5' },
+      { code: 'UnknownCloseReason', tradeId: 'trade-6', factId: 'trade-6:cr-1', closeReasonId: 'cr-gone' },
+    ]);
+    // No fixture carries terminalTime, and its absence is never a finding (A96).
     expect(result.repairs).toEqual([]);
   });
 });

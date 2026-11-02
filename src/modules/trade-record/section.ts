@@ -1,5 +1,5 @@
 import { sha256Hex } from '../../delivery/inventory.ts';
-import { derive, type DeviationAction, type IncoherentFacts, type IntegrityFinding, type LifecycleState } from '../../domain/trade-analysis/index.ts';
+import { derive, type DerivationResult, type DerivedTradeState, type DeviationAction, type IncoherentFacts, type IntegrityFinding, type LifecycleState } from '../../domain/trade-analysis/index.ts';
 import type { RecordSource } from '../../persistence/index.ts';
 import { canonicalJson } from './canonical.ts';
 import { analysisInputOf } from './trade-record.ts';
@@ -10,12 +10,19 @@ import type { TradeDocument } from './records.ts';
 export interface TradeSectionReferences {
   readonly accountIds: ReadonlySet<string>;
   readonly anchorTradeIds: ReadonlySet<string>;
+  readonly closeReasonIds: ReadonlySet<string>;
 }
 
 export type TradeSectionIssue =
   | { readonly code: 'UnknownAccount'; readonly tradeId: string; readonly accountId: string }
   | { readonly code: 'DuplicateFactIdentity'; readonly tradeId: string; readonly factId: string }
   | { readonly code: 'UnknownAnchorTrade'; readonly tradeId: string }
+  // A Close Reason fact names a Position Change that is not the Closed Trade's terminal one (D6 A85).
+  | { readonly code: 'CloseReasonOnNonTerminalChange'; readonly tradeId: string; readonly factId: string; readonly positionChangeId: string }
+  | { readonly code: 'MultipleCloseReasons'; readonly tradeId: string; readonly factIds: readonly string[] }
+  // A Trade whose facts leave it Closed has Executions, so its terminal change needs a Close Reason.
+  | { readonly code: 'MissingCloseReason'; readonly tradeId: string }
+  | { readonly code: 'UnknownCloseReason'; readonly tradeId: string; readonly factId: string; readonly closeReasonId: string }
   | { readonly code: 'IncoherentFacts'; readonly tradeId: string; readonly findings: IncoherentFacts['findings'] };
 
 // Stored lifecycle or recorded Deviations that disagree with coherent facts (P7): each finding
@@ -51,9 +58,13 @@ export async function validateSection(source: RecordSource, references: TradeSec
         if (factIds.has(factId)) issues.push({ code: 'DuplicateFactIdentity', tradeId, factId });
         factIds.add(factId);
       }
-      const verdict = await agreementOf(document);
+      const record = analysisInputOf(document);
+      const derived = derive({ record, candidate: { digest: await sha256Hex(canonicalJson(document)), before: record } });
+      const verdict = agreementOf(document, derived);
       if (verdict?.code === 'IncoherentFacts') issues.push(verdict);
       else if (verdict) repairs.push(verdict);
+      // Facts that cannot be replayed have no terminal Position Change to judge Close Reasons against.
+      if (derived.kind === 'Derived') issues.push(...closeReasonIssuesOf(document, derived, references.closeReasonIds));
     }
   }
   for (const tradeId of references.anchorTradeIds) {
@@ -62,13 +73,30 @@ export async function validateSection(source: RecordSource, references: TradeSec
   return { issues, repairs };
 }
 
+// A Closed Trade's Close Reason must agree with its facts (D6 A85): exactly one fact, naming the
+// terminal Position Change (the last in Fact Order of the replayed facts, which Trade Analysis
+// derives) and a Catalog identity that exists. Lifecycle and `terminalTime` agreement belong to
+// the stored-state repairs and the private index (A96), not here.
+function closeReasonIssuesOf(document: TradeDocument, derived: DerivedTradeState, closeReasonIds: ReadonlySet<string>): TradeSectionIssue[] {
+  const { tradeId } = document;
+  const facts = document.closeReasonFacts ?? [];
+  const terminalId = derived.expectedLifecycle === 'Closed' ? derived.facts.at(-1)?.positionChangeId : undefined;
+  const issues: TradeSectionIssue[] = [];
+  for (const { factId, versions } of facts) {
+    const { closeReasonId, terminalPositionChangeId } = versions.at(-1)!.value;
+    if (terminalPositionChangeId !== terminalId) issues.push({ code: 'CloseReasonOnNonTerminalChange', tradeId, factId, positionChangeId: terminalPositionChangeId });
+    if (!closeReasonIds.has(closeReasonId)) issues.push({ code: 'UnknownCloseReason', tradeId, factId, closeReasonId });
+  }
+  if (facts.length > 1) issues.push({ code: 'MultipleCloseReasons', tradeId, factIds: facts.map((f) => f.factId) });
+  if (facts.length === 0 && terminalId !== undefined) issues.push({ code: 'MissingCloseReason', tradeId });
+  return issues;
+}
+
 // Trade Analysis judges the stored lifecycle and recorded Deviations against the Trade's own facts
 // (P7): a disagreement with coherent facts is a repair, facts that cannot be replayed an issue.
 // The Trade is derived as a candidate of itself, so the reconciliation names the Deviation actions
 // that bring its recorded occurrences to the expected ones.
-async function agreementOf(document: TradeDocument): Promise<TradeSectionRepair | Extract<TradeSectionIssue, { code: 'IncoherentFacts' }> | undefined> {
-  const record = analysisInputOf(document);
-  const derived = derive({ record, candidate: { digest: await sha256Hex(canonicalJson(document)), before: record } });
+function agreementOf(document: TradeDocument, derived: DerivationResult): TradeSectionRepair | Extract<TradeSectionIssue, { code: 'IncoherentFacts' }> | undefined {
   if (derived.kind === 'IncoherentFacts') return { code: 'IncoherentFacts', tradeId: document.tradeId, findings: derived.findings };
   if (derived.findings.length === 0) return undefined;
   return {

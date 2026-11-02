@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { recordSourceOf } from '../../../tests/support/record-source.ts';
 import { sequentialIds } from '../../../tests/support/workspace.ts';
-import { D1_CATALOG_MANIFEST, prepareSeed, validateSection, type AccountRecord, type CatalogRecord, type InstitutionRecord } from './index.ts';
+import {
+  D1_CATALOG_MANIFEST,
+  D6_CATALOG_MANIFEST,
+  prepareSeed,
+  validateSection,
+  type AccountRecord,
+  type CatalogRecord,
+  type CloseReasonRecord,
+  type InstitutionRecord,
+} from './index.ts';
 
 function institution(id: string, label: string): InstitutionRecord {
   return { id, kind: 'Institution', label, normalizedLabel: label.toLowerCase(), active: true, origin: 'Trader', recordRevision: 1 };
@@ -55,5 +64,49 @@ describe('Catalog section', () => {
       { code: 'MissingParent', id: 'acct-4', parentId: 'inst-missing' },
     ]);
     expect(result.repairs).toEqual([]);
+  });
+});
+
+describe('Catalog section, Close Reasons', () => {
+  function d6Catalog(): CatalogRecord[] {
+    const seed = prepareSeed([], D6_CATALOG_MANIFEST, sequentialIds('seed'));
+    if (seed.kind !== 'Additions') throw new Error('seed conflict');
+    return [...seed.records, institution('inst-1', 'Broker A'), account('acct-1', 'inst-1', 'Margin')];
+  }
+  const reason = (records: readonly CatalogRecord[], productKey: string) =>
+    records.find((r): r is CloseReasonRecord => r.kind === 'CloseReason' && r.productKey === productKey)!;
+
+  it('should report a seeded Close Reason that is inactive, and a Close Reason whose label is not distinguishable from another Close Reason', async () => {
+    const clean = d6Catalog();
+    const accepted = await validateSection(recordSourceOf({ catalog: clean }), D6_CATALOG_MANIFEST);
+
+    expect(accepted.issues).toEqual([]);
+    // Workspace closes the Trade section's Close Reason references against these.
+    expect([...accepted.references.closeReasonIds]).toEqual(
+      clean.filter((r) => r.kind === 'CloseReason').map((r) => r.id),
+    );
+
+    const target = reason(clean, 'close-reason.target-reached');
+    const stop = reason(clean, 'close-reason.stop-triggered');
+    const thesis = reason(clean, 'close-reason.thesis-invalidated');
+    const records = clean.map((r) => {
+      if (r.id === target.id) return { ...target, active: false };
+      // Stop Triggered's label now reads as Thesis Invalidated's, after case and spacing.
+      if (r.id === stop.id) return { ...stop, label: ' thesis   INVALIDATED', normalizedLabel: 'thesis invalidated' };
+      return r;
+    });
+    const result = await validateSection(recordSourceOf({ catalog: records }), D6_CATALOG_MANIFEST);
+
+    expect(result.issues).toEqual([
+      { code: 'SeededRecordInactive', id: target.id, productKey: 'close-reason.target-reached' },
+      { code: 'LabelNotDistinguishable', id: thesis.id, otherId: stop.id },
+    ]);
+    expect(result.repairs).toEqual([]);
+
+    // A Close Reason under a product key this release's manifest does not seed, as Rolled is not before D21.
+    const unseeded = { ...thesis, id: 'seed-9', productKey: 'close-reason.rolled', label: 'Rolled', normalizedLabel: 'rolled' };
+    const unknown = await validateSection(recordSourceOf({ catalog: [...clean, unseeded] }), D6_CATALOG_MANIFEST);
+
+    expect(unknown.issues).toEqual([{ code: 'UnknownSeedKey', id: 'seed-9', productKey: 'close-reason.rolled' }]);
   });
 });

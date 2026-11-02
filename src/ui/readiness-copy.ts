@@ -33,6 +33,12 @@ const MIGRATION_ISSUES: Record<MigrationIssue['code'], string> = {
   DuplicateFactIdentity: 'A Trade records the same fact identity twice.',
   UnknownAnchorTrade: 'A reflection belongs to a Trade that does not exist.',
   IncoherentFacts: "A Trade's recorded facts cannot be replayed.",
+  CloseReasonOnNonTerminalChange: "A Trade's close reason is attached to a position change that does not end the position.",
+  MultipleCloseReasons: 'A Trade records more than one close reason.',
+  MissingCloseReason: 'A closed Trade records no close reason.',
+  UnknownCloseReason: 'A Trade names a close reason that does not exist.',
+  SeededRecordInactive: 'A default close reason has been turned off.',
+  LabelNotDistinguishable: 'Two close reasons have labels that read the same.',
   ActivationFailed: 'The final step that makes the converted copy your journal could not be saved.',
 };
 

@@ -143,7 +143,7 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   // Validate: each module judges its own section; Trade Record derives every Trade.
   const catalog = await validateCatalog(records, D1_CATALOG_MANIFEST);
   const journal = await validateJournal(records);
-  const trades = await validateTrades(records, { accountIds: catalog.references.accountIds, anchorTradeIds: journal.references.anchorTradeIds });
+  const trades = await validateTrades(records, { ...catalog.references, anchorTradeIds: journal.references.anchorTradeIds });
   const found = [...catalog.issues, ...journal.issues, ...trades.issues];
   // Failure discards the candidate; the old database is left exactly as it was.
   const block = async (stage: MigrationStage, issues: readonly MigrationIssue[]): Promise<MigrationBlocked> => {
