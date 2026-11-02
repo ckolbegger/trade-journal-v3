@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
   CalculationResult,
+  ClosedTradeDetail,
   ExecutionFact,
   IncoherentFactFinding,
   IncoherentTradeDetail,
@@ -23,7 +24,8 @@ import { TradeText } from '../TradeText.tsx';
 import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
-import { calculation, dollarsAndR, pnlText, signed } from '../figures.ts';
+import { calculation, closedViaSale, dollarsAndR, pnlText, signed } from '../figures.ts';
+import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
 
 export interface TradeDetailProps {
@@ -35,6 +37,10 @@ export interface TradeDetailProps {
 
 // Why an incoherent Trade offers no Record entry; the entry route shows the same words.
 export const INCOHERENT_ENTRY_NOTE = 'New entries cannot be recorded for this Trade until its records agree.';
+
+// The query parameter that opens the entry form as an exit: `/trades/:tradeId/record-entry?action=Sell`.
+// Defined here, which the form already imports from, so the two screens do not import each other.
+export const EXIT_ACTION = 'Sell';
 
 type DetailState =
   | { readonly kind: 'Loading' }
@@ -121,6 +127,7 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
   const stop = view.plan.stops[0];
   const target = view.plan.targets[0];
   const entry = view.journal[0];
+  const closed = 'terminalDisposition' in view;
   return (
     <article className="trade-detail">
       <header>
@@ -131,9 +138,15 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
         </p>
         {/* Recording an entry is an authoritative write, offered only while the runtime is Writable and
             the Trade's facts can be replayed; on incoherent facts it could only fail. */}
-        {writable && !('recordedPositionChanges' in view) && (
+        {writable && !('recordedPositionChanges' in view) && !closed && (
           <Link className="pill primary" to={`/trades/${view.tradeId}/record-entry`}>
             Record entry
+          </Link>
+        )}
+        {/* An exit needs a Position to sell: the Open form only (the Closed form has none to record against). */}
+        {writable && 'positionChanges' in view && !closed && (
+          <Link className="pill secondary" to={`/trades/${view.tradeId}/record-entry?action=${EXIT_ACTION}`}>
+            Record exit
           </Link>
         )}
       </header>
@@ -161,7 +174,12 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
           </dl>
         </section>
       )}
-      {'positionChanges' in view && <OpenSections facade={facade} view={view} timeZone={timeZone} onDirtyChange={onDirtyChange} />}
+      {'positionChanges' in view &&
+        ('terminalDisposition' in view ? (
+          <ClosedSections facade={facade} view={view} timeZone={timeZone} onDirtyChange={onDirtyChange} />
+        ) : (
+          <OpenSections facade={facade} view={view} timeZone={timeZone} onDirtyChange={onDirtyChange} />
+        ))}
       {'recordedPositionChanges' in view && (
         <>
           <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
@@ -209,7 +227,10 @@ function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDe
         {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
         {'positionChanges' in view && (
           <>
-            <Figure term="Quantity">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg?.quantity ?? ''} shares`}</Figure>
+            {/* A Closed Trade holds no shares, so its quantity against the plan would read as none. */}
+            {!('terminalDisposition' in view) && (
+              <Figure term="Quantity">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg?.quantity ?? ''} shares`}</Figure>
+            )}
             <Figure term="Entry" plain>{view.entryStatus}</Figure>
             <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
           </>
@@ -379,6 +400,85 @@ function RiskRewardSection({ evaluation, baseline }: { readonly evaluation: Open
   );
 }
 
+// The derived Lot Matches, once any sale has been recorded. Amounts are the exact rationals the read
+// model carries, rounded to cents only here, for display (A80).
+function LotMatchesSection({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
+  if (view.lotMatches.length === 0) return null;
+  return (
+    <section className="card" aria-labelledby="lot-matches-heading">
+      <h2 id="lot-matches-heading">Lot Matches</h2>
+      <p>Each match’s amount is rounded to the cent for display.</p>
+      <div className="table-scroll" role="region" aria-label="Matched lots" tabIndex={0}>
+        <LotMatchesTable
+          caption="Lot Matches"
+          rows={view.lotMatches}
+          executions={view.positionChanges.flatMap((change) => change.executions)}
+          timeZone={timeZone}
+        />
+      </div>
+    </section>
+  );
+}
+
+// How the Trade's fees reconcile, as the read model states them (A80): the plain sum incurred, and where
+// each opening and disposal fee went. Shown once a sale has been matched.
+function FeeReconciliationSection({ view }: { readonly view: OpenTradeDetail }) {
+  if (view.lotMatches.length === 0) return null;
+  const { feeReconciliation: fees } = view;
+  return (
+    <section className="card" aria-labelledby="fee-reconciliation-heading">
+      <h2 id="fee-reconciliation-heading">Fee reconciliation</h2>
+      <dl className="figure-grid">
+        <Figure term="Incurred fees">{money(fees.incurred)}</Figure>
+        <Figure term="Opening fees incurred">{money(fees.incurredOpening)}</Figure>
+        <Figure term="Opening fees allocated to Lot Matches">{money(fees.allocatedOpening)}</Figure>
+        <Figure term="Opening fees unconsumed">{money(fees.unconsumedOpening)}</Figure>
+        <Figure term="Disposal fees incurred">{money(fees.incurredDisposal)}</Figure>
+        <Figure term="Disposal fees allocated to Lot Matches">{money(fees.allocatedDisposal)}</Figure>
+      </dl>
+    </section>
+  );
+}
+
+// "Closed via sale of 100 shares": how the exposure ended, with the Close Reason (why the trader closed)
+// as its own field. Realized figures are the read model's, with no Mark behind them (A92).
+function ClosedResultSection({ view }: { readonly view: ClosedTradeDetail }) {
+  return (
+    <section className="card" aria-labelledby="result-heading">
+      <h2 id="result-heading">Result</h2>
+      <dl className="figure-grid">
+        <Figure term="Realized P&L">{signed(money)(view.realizedToDate)}</Figure>
+        <Figure term="Realized R">{calculation(view.realizedR, signed(rMultiple))}</Figure>
+        <Figure term="Terminal Disposition" plain>
+          {calculation(view.terminalDisposition, closedViaSale)}
+        </Figure>
+        {view.closeReason && (
+          <Figure term="Close Reason" plain>
+            {view.closeReason.label}
+          </Figure>
+        )}
+      </dl>
+    </section>
+  );
+}
+
+// The Closed form: how the Trade ended and what it realized, and its record. It shows no valuation, Mark,
+// Expected Mark Date, risk, or Open Lot, since none remains to value (A92).
+function ClosedSections({ facade, view, timeZone, onDirtyChange }: { readonly facade: UiFacade; readonly view: ClosedTradeDetail; readonly timeZone: string; readonly onDirtyChange?: (dirty: boolean) => void }) {
+  return (
+    <>
+      <ClosedResultSection view={view} />
+      <LotMatchesSection view={view} timeZone={timeZone} />
+      <FeeReconciliationSection view={view} />
+      <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
+      <EntryQualitySection view={view} timeZone={timeZone} />
+      <FulfillmentSection view={view} />
+      <DeviationsSection view={view} timeZone={timeZone} />
+      <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} onDirtyChange={onDirtyChange} />
+    </>
+  );
+}
+
 // The Open form's derived Position and its recorded Position Changes (D2).
 function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly facade: UiFacade; readonly view: OpenTradeDetail; readonly timeZone: string; readonly onDirtyChange?: (dirty: boolean) => void }) {
   const executions = view.positionChanges.flatMap((change) => change.executions);
@@ -429,6 +529,8 @@ function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly faca
           </table>
         </div>
       </section>
+      <LotMatchesSection view={view} timeZone={timeZone} />
+      <FeeReconciliationSection view={view} />
       <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />

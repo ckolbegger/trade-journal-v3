@@ -17,7 +17,10 @@ import {
   PC3,
   pc3Excess,
   positionChange,
+  X1,
+  X2,
 } from '../../../tests/support/open-detail-fixtures.ts';
+import { closedDetailOf, closeReviewEntry } from '../../../tests/support/closed-detail-fixtures.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -1369,5 +1372,75 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     });
     expect(report).toHaveBeenLastCalledWith({ kind: 'RuntimeNotWritable' });
     expect(screen.getByRole('form', { name: 'Reflection' })).toBeTruthy();
+  });
+});
+
+describe('Closed Trade Detail', () => {
+  const CLOSE_REASON = { id: 'cr-1', label: 'Target reached' };
+
+  it('should show lifecycle Closed as text, Closed via sale of 100 shares and the Close Reason as separately labelled fields, realized P&L and Realized R, the fee reconciliation, a Lot Matches table, and the Close Review in the narrative, with no Record entry or Record exit', async () => {
+    renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: CLOSE_REASON, journal: [closeReviewEntry] }), true);
+    expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
+    expect(screen.getByText('Closed', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Summary' }).querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.18');
+
+    const result = screen.getByRole('region', { name: 'Result' });
+    expect(termValue(result, 'Terminal Disposition')).toBe('Closed via sale of 100 shares');
+    expect(termValue(result, 'Close Reason')).toBe('Target reached');
+    expect(termValue(result, 'Realized P&L')).toBe('+$248.00');
+    expect(termValue(result, 'Realized R')).toBe('+0.99R');
+
+    const fees = screen.getByRole('region', { name: 'Fee reconciliation' });
+    expect(termValue(fees, 'Incurred fees')).toBe('$4.00');
+    expect(termValue(fees, 'Opening fees incurred')).toBe('$2.00');
+    expect(termValue(fees, 'Opening fees allocated to Lot Matches')).toBe('$2.00');
+    expect(termValue(fees, 'Opening fees unconsumed')).toBe('$0.00');
+    expect(termValue(fees, 'Disposal fees incurred')).toBe('$2.00');
+    expect(termValue(fees, 'Disposal fees allocated to Lot Matches')).toBe('$2.00');
+
+    const matches = within(screen.getByRole('region', { name: 'Lot Matches' })).getByRole('table', { name: 'Lot Matches' });
+    expect(rowsOf(matches)).toEqual([
+      ['$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90'],
+      ['$50.10 on 2026-10-12 10:00', '$53.00 on 2026-10-13 14:00', '30', '+$85.90'],
+      ['$50.30 on 2026-10-12 11:00', '$53.00 on 2026-10-13 14:00', '20', '+$53.10'],
+      ['$50.30 on 2026-10-12 11:00', '$53.00 on 2026-10-13 14:00', '20', '+$53.10'],
+    ]);
+
+    const journal = screen.getByRole('region', { name: 'Journal (1)' });
+    expect(within(journal).getByText('Close Review', { selector: '.badge' })).toBeTruthy();
+    expect(within(journal).getByText('Holding to the target paid.')).toBeTruthy();
+
+    // No Open-only section, Mark, or Expected Mark Date; no way to record another entry or exit.
+    for (const name of ['Valuation', 'Risk and reward', 'Position']) expect(screen.queryByRole('region', { name })).toBeNull();
+    for (const text of ['Expected Mark Date', 'Mark', 'Open P&L']) expect(screen.queryByText(text)).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
+  });
+});
+
+describe('Open Trade Detail after a partial exit', () => {
+  it('should show realized to date, the Lot Matches table with a note that per-match amounts are rounded for display, and Record exit beside Record entry only while Writable', async () => {
+    renderView(openDetailOf([PC1, PC2, X1]), true);
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(valuation, 'Realized to date')).toBe('+$55.90');
+
+    const section = screen.getByRole('region', { name: 'Lot Matches' });
+    expect(rowsOf(within(section).getByRole('table', { name: 'Lot Matches' }))).toEqual([['$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
+    expect(within(section).getByText('Each match’s amount is rounded to the cent for display.')).toBeTruthy();
+
+    const exit = screen.getByRole('link', { name: 'Record exit' });
+    expect(exit.getAttribute('href')).toBe('/trades/trade-1/record-entry?action=Sell');
+    expect(screen.getByRole('link', { name: 'Record entry' }).parentElement).toBe(exit.parentElement);
+    cleanup();
+
+    renderView(openDetailOf([PC1, PC2, X1]), false);
+    await screen.findByRole('heading', { name: 'XYZ', level: 1 });
+    expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
+    cleanup();
+
+    // Nothing to exit before an entry: a Planned Detail offers Record entry alone.
+    renderView(plannedDetail, true);
+    await screen.findByRole('link', { name: 'Record entry' });
+    expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
   });
 });

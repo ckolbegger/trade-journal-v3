@@ -3,10 +3,11 @@ import { Link } from 'react-router';
 import type { PositionChangeResult } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { Badge } from '../Badge.tsx';
-import { calculation, signed } from '../figures.ts';
+import { calculation, closedViaSale, signed } from '../figures.ts';
 import { decimalMoney as price, localTime, money, quantity, rMultiple } from '../format.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import type { CloseReasonOption } from './ClosingTheTrade.tsx';
+import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { reflectionMessage } from './PositionChangeReceipt.tsx';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
@@ -57,8 +58,6 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
   const { lotMatchChanges, realizedToDate } = receipt;
   const disclosed = lotMatchChanges.some((c) => c.kind !== 'Created' || !ownExecutions.has(c.disposingExecutionId));
   const matchQuantity = (amount: Rational | null) => (amount === null ? '—' : quantity(amount));
-  const disposition = (mechanisms: readonly { readonly quantity: Rational }[]) =>
-    `Closed via sale of ${quantity(mechanisms.reduce((total, m) => total.add(m.quantity), Rational.of(0n)))} shares`;
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
@@ -81,26 +80,11 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
       </section>
       <section aria-labelledby="lot-matches-heading">
         <h2 id="lot-matches-heading">Lot Matches</h2>
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Bought</th>
-              <th scope="col">Sold</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Realized</th>
-            </tr>
-          </thead>
-          <tbody>
-            {derivation.lotMatches.map((match, index) => (
-              <tr key={`${match.openingExecutionId}|${match.disposingExecutionId}`}>
-                <td>{at(match.openingExecutionId)}</td>
-                <td>{at(match.disposingExecutionId)}</td>
-                <td className="number">{quantity(match.quantity)}</td>
-                <td className="number">{calculation(derivation.lotMatchResults[index]!.realized, signed(money))}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <LotMatchesTable
+          rows={derivation.lotMatches.map((match, index) => ({ ...match, realized: derivation.lotMatchResults[index]!.realized }))}
+          executions={trade.positionChanges.flatMap((c) => c.executions)}
+          timeZone={timeZone}
+        />
       </section>
       {disclosed && (
         <section aria-labelledby="changed-matches-heading">
@@ -148,7 +132,7 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
               <dt>Realized R</dt>
               <dd className="number">{calculation(derivation.realizedR, signed(rMultiple))}</dd>
               <dt>Terminal Disposition</dt>
-              <dd>{calculation(derivation.terminalDisposition, disposition)}</dd>
+              <dd>{calculation(derivation.terminalDisposition, closedViaSale)}</dd>
               {closeReason !== undefined && (
                 <>
                   <dt>Close Reason</dt>

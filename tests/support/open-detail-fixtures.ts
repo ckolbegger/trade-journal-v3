@@ -17,7 +17,7 @@ import { datedLineOf, observationFrame } from '../../src/coordinators/valuation.
 import { feeReconciliationOf, lotMatchViews } from '../../src/coordinators/trade-views/index.ts';
 import type { MarkFrame } from '../../src/modules/market-data/index.ts';
 
-export { execution, PC1, PC2, PC3, positionChange } from '../../src/domain/trade-analysis/reference-trade.ts';
+export { execution, PC1, PC2, PC3, positionChange, X1, X2 } from '../../src/domain/trade-analysis/reference-trade.ts';
 
 // The recorded Entry Size (Excess) occurrence PC3 causes: 20 shares above the planned 100.
 export const pc3Excess: RecordedDeviation = {

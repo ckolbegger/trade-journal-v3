@@ -22,7 +22,7 @@ import { ExitReceipt } from './ExitReceipt.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 import { ChoiceGroup, dispositionOf, type Choice } from './reflection-choice.tsx';
 import { LOCAL_TIME_CODES, minuteOf } from './local-time.ts';
-import { INCOHERENT_ENTRY_NOTE } from './TradeDetail.tsx';
+import { EXIT_ACTION, INCOHERENT_ENTRY_NOTE } from './TradeDetail.tsx';
 
 export interface PositionChangeFormProps {
   readonly facade: UiFacade;
@@ -50,8 +50,7 @@ type EditableField = 'quantity' | 'price' | 'fee' | 'time';
 // At most 20 Executions per Position Change (D2 A18).
 const MAX_ROWS = 20;
 
-// The query parameter that opens the form as an exit: `/trades/:tradeId/record-entry?action=Sell`.
-export const EXIT_ACTION = 'Sell';
+export { EXIT_ACTION };
 
 // One Position Change on the Trade's single Planned Leg: Buy rows of the Plan's Stock (D2 A18, A33),
 // or, opened with `?action=Sell`, Sell rows that exit it (D6 A93).

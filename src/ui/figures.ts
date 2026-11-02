@@ -1,8 +1,12 @@
 import type { CalculationResult } from '../app/types.ts';
 import { Rational } from '../domain/values/index.ts';
-import { money, rMultiple, shortDate } from './format.ts';
+import { money, quantity, rMultiple, shortDate } from './format.ts';
 
 const ZERO = Rational.of(0n);
+
+// How a Closed Trade's exposure ended: the quantity its mechanisms disposed ("Closed via sale of 100 shares").
+export const closedViaSale = (mechanisms: readonly { readonly quantity: Rational }[]): string =>
+  `Closed via sale of ${quantity(mechanisms.reduce((total, m) => total.add(m.quantity), ZERO))} shares`;
 // A gain carries a plus sign; a loss carries the minus the formats already give.
 export const signed = (format: (value: Rational) => string) => (value: Rational): string => (value.compare(ZERO) > 0 ? `+${format(value)}` : format(value));
 
