@@ -135,3 +135,32 @@ Ports 5175, 9341 and 9342 free before and after.
 ## T6.4 Trade Analysis: `evaluate` with realized-to-date
 
 Base commit (for `browser-auto`): `45ef7c32`.
+
+Commit `31bac344` (T6.4, 1 case red then green, no first-run pass).
+- Red: `expected '0/1' to be '559/10'`, because realized-to-date was hard-coded to 0.
+- The fix is two lines in `evaluate.ts`: `state.realizedToDate`, and `state.fees.incurred` in place of `fees.incurredOpening`.
+- Marked P&L, risk, reward, worst case and Overrun already used `openLots`.
+- `AwaitingClose` already filters remaining Lots by their opening Execution's time and never counts Sells (A92 with A54). No change was needed. Only a deleted scratch check covered it, so I6.10 is the first test that proves it.
+- Realized-to-date does not depend on the Mark: its only condition is "no remaining Lots". For a Closed Trade it gives `NotApplicable(NoRemainingPosition)`, as A92 says. A consumer wanting a Closed Trade's realized figure reads `derive`'s `realizedToDate` or `realizedR`.
+- No production path under the full-tier list changed, so P55 puts this run on the task tier.
+
+### ocr review of `31bac344`
+
+Session `b179f9e8-4f74-4066-a8a4-af0b16737f52`, 1 file reviewed (`evaluate.test.ts` and `tdd-log.md` excluded), **no findings**. ocr warned that the background file was over its recommended 2,000 characters (2,252); the run continued. Raw output: [ocr/T6.4-31bac344.json](ocr/T6.4-31bac344.json).
+
+### Cumulative run after T6.4
+
+Label `t6.4-evaluate-realized`, at `31bac344` plus uncommitted evidence (2026-11-01 19:15 EST). Outputs in `suite-runs/t6.4-evaluate-realized-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit | 83 files, 1069 tests passed |
+| Node integration | 60 files, 117 tests passed |
+| Browser (Chromium) | **task tier**, printed reason "no changed path since 45ef7c32 is on the full-tier list"; no `e2e/d6` yet, so only `@every-task`: 5 passed (12.2 s) |
+| Static and verify checks | 12 of 12 exit 0 |
+
+Ports 5175, 9341 and 9342 free before and after.
+
+## T6.5 Persistence: schema v5 and the `v4→v5` transform
+
+Base commit (for `browser-auto`): `31bac344`.
