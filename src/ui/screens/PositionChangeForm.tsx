@@ -100,10 +100,18 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
   // The values the issues were reported against, to tell which the trader has since corrected.
   const [reported, setReported] = useState<
-    { readonly rows: readonly Row[]; readonly answers: Answers; readonly closeReasonId: string; readonly closeAnswers: Answers } | undefined
+    | {
+        readonly rows: readonly Row[];
+        readonly answers: Answers;
+        readonly closeReasonId: string;
+        readonly closeChoice: Choice;
+        readonly closeAnswers: Answers;
+      }
+    | undefined
   >();
-  // The workflow found the exit terminal, so the section stays whatever the quantities show (A93).
-  const [closingRequired, setClosingRequired] = useState(false);
+  // The workflow found the exit terminal at this entered total, so the section shows whatever the
+  // open quantity suggests (A93); another total is a different exit, which the workflow has not judged.
+  const [closingRequiredAt, setClosingRequiredAt] = useState<Rational | undefined>();
   const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
   // The Trade changed after the form loaded: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
@@ -125,7 +133,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       setCloseDeclineReason('');
       setIssues([]);
       setReported(undefined);
-      setClosingRequired(false);
+      setClosingRequiredAt(undefined);
       setConflict(false);
       setReloaded(false);
       setReloadFailed(false);
@@ -284,7 +292,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const openQuantity = 'positions' in view ? sum(view.positions.map((p) => p.quantity)) : Rational.of(0n);
   const entered = sum(rows.flatMap((r) => positiveDecimal(r.quantity) ?? []));
   const hasPosition = openQuantity.compare(Rational.of(0n)) > 0;
-  const showClosing = exit && (closingRequired || (hasPosition && entered.equals(openQuantity)));
+  const showClosing = exit && (closingRequiredAt?.equals(entered) === true || (hasPosition && entered.equals(openQuantity)));
   // Detail offers the exit only while a Position is open; the route can still be opened by hand.
   if (exit && !hasPosition) {
     return (
@@ -319,7 +327,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     const instants = times.flatMap((time) => (time.ok ? [time.instant] : []));
     if (timeIssues.length > 0) {
       setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, closeDefinition));
-      setReported({ rows, answers, closeReasonId, closeAnswers });
+      setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
       return;
     }
     const members = rows.map(
@@ -355,13 +363,13 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     setReloaded(false);
     setReloadFailed(false);
     setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, closeDefinition) : []);
-    setReported({ rows, answers, closeReasonId, closeAnswers });
+    setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
     if (result.kind === 'Rejected') {
       // The workflow decides whether the exit is terminal: what it requires shows the section, and
       // what it finds not applicable takes the section away again.
       const codes = result.issues.map((issue) => issue.code);
-      if (codes.some((code) => code === 'CloseReasonRequired' || code === 'CloseReviewDispositionRequired')) setClosingRequired(true);
-      else if (codes.some((code) => code === 'CloseReasonNotApplicable' || code === 'CloseReviewNotApplicable')) setClosingRequired(false);
+      if (codes.some((code) => code === 'CloseReasonRequired' || code === 'CloseReviewDispositionRequired')) setClosingRequiredAt(entered);
+      else if (codes.some((code) => code === 'CloseReasonNotApplicable' || code === 'CloseReviewNotApplicable')) setClosingRequiredAt(undefined);
     }
     if (result.kind === 'Recorded') {
       setRecorded(result);
@@ -389,6 +397,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       return false;
     }
     if (issue.field === 'closeReasonId') return closeReasonId !== '' && closeReasonId !== reported.closeReasonId;
+    if (issue.field === 'closeReview') return closeChoice !== reported.closeChoice;
     if (closeDefinition?.prompts.some((p) => p.id === issue.field)) return answerChanged(reported.closeAnswers, closeAnswers, issue.field);
     return definition.prompts.some((p) => p.id === issue.field) && answerChanged(reported.answers, answers, issue.field);
   };

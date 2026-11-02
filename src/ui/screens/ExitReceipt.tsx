@@ -50,6 +50,13 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
     const execution = executions.get(executionId)!;
     return `${price(execution.price)} on ${localTime(execution.economicTime, timeZone)}`;
   };
+  // An earlier-dated exit (P23) changes matches of other exits: a match that was revised or removed
+  // always belonged to an earlier derivation, and a created one belongs to another exit when its
+  // disposing Execution is not one of this Position Change's. A plain exit only creates its own.
+  const ownExecutions = new Set(saved.executions.map((e) => e.factId));
+  const { lotMatchChanges, realizedToDate } = receipt;
+  const disclosed = lotMatchChanges.some((c) => c.kind !== 'Created' || !ownExecutions.has(c.disposingExecutionId));
+  const matchQuantity = (amount: Rational | null) => (amount === null ? '—' : quantity(amount));
   const disposition = (mechanisms: readonly { readonly quantity: Rational }[]) =>
     `Closed via sale of ${quantity(mechanisms.reduce((total, m) => total.add(m.quantity), Rational.of(0n)))} shares`;
 
@@ -95,6 +102,40 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
           </tbody>
         </table>
       </section>
+      {disclosed && (
+        <section aria-labelledby="changed-matches-heading">
+          <h2 id="changed-matches-heading">Changed Lot Matches</h2>
+          <p>This exit is dated before a later recorded change, so the sales are matched to the purchases again in order. The matches that changed:</p>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Change</th>
+                <th scope="col">Bought</th>
+                <th scope="col">Sold</th>
+                <th scope="col">Quantity before</th>
+                <th scope="col">Quantity after</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lotMatchChanges.map((change) => (
+                <tr key={`${change.openingExecutionId}|${change.disposingExecutionId}`}>
+                  <td>{change.kind}</td>
+                  <td>{at(change.openingExecutionId)}</td>
+                  <td>{at(change.disposingExecutionId)}</td>
+                  <td className="number">{matchQuantity(change.quantity.before)}</td>
+                  <td className="number">{matchQuantity(change.quantity.after)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <dl>
+            <dt>Realized to date before</dt>
+            <dd className="number">{signed(money)(realizedToDate.before)}</dd>
+            <dt>Realized to date after</dt>
+            <dd className="number">{signed(money)(realizedToDate.after)}</dd>
+          </dl>
+        </section>
+      )}
       <section aria-labelledby="exit-result-heading">
         <h2 id="exit-result-heading">Result</h2>
         <dl>

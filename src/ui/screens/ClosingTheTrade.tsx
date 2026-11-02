@@ -43,7 +43,7 @@ export function ClosingTheTrade(props: ClosingTheTradeProps) {
         ))}
       </fieldset>
       {fieldError('closeReasonId')}
-      <ChoiceGroup legend="Close Review" name="close-review-disposition" value={choice} onChange={props.onChoice} />
+      <ChoiceGroup legend="Close Review" name="close-review-disposition" value={choice} onChange={props.onChoice} describedBy={describedBy('closeReview')} />
       {fieldError('closeReview')}
       {choice === 'decline' && (
         <div className="field">

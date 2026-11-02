@@ -1,7 +1,7 @@
 // Results of recordPositionChange for T-A's exits (D6 breakdown, section 4), with the engine's own
 // derivation, so the exit receipt's figures are the ones the workflow would return.
 import { derive, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
-import { PC1, PC2, referenceRecord, X1, X2 } from '../../src/domain/trade-analysis/reference-trade.ts';
+import { PC1, PC2, positionChange, referenceRecord, sellExecution, X1, X2 } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 
 function derived(record: TradeAnalysisRecord) {
@@ -51,7 +51,38 @@ export function partialExitResult() {
   const closed = closedExitResult();
   return {
     ...closed,
-    receipt: { ...closed.receipt, createdFactIds: ['pc-x1', 'ex-x1'], lifecycleTransitions: [] },
+    receipt: {
+      ...closed.receipt,
+      createdFactIds: ['pc-x1', 'ex-x1'],
+      lifecycleTransitions: [],
+      // A plain exit only creates the matches of its own Sell.
+      lotMatchChanges: [{ kind: 'Created', openingExecutionId: 'ex-1', disposingExecutionId: 'ex-x1', quantity: { before: null, after: Rational.of(30n) } }],
+      realizedToDate: { before: Rational.of(0n), after: derived(record).realizedToDate },
+    },
     postCommit: { trade: record, derivation: derived(record), reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } } },
+  };
+}
+
+// I6.8's 60-share example: X1 (30 shares, 10:00) is recorded, then X0 sells 60 shares dated 09:45 the
+// same day. FIFO now matches X0 <- PC1 60 and X1 <- PC2 30, replacing X1 <- PC1 30. The Trade stays
+// Open with 10 shares, and the figures before and after are the engine's own derivations.
+export function earlierDatedExitResult() {
+  const before = referenceRecord([PC1, PC2, X1], 'Open');
+  const x0 = positionChange('pc-x0', 11, [sellExecution('ex-x0', '2026-10-13T13:45:00Z', 12, '60', '51.50', '0.80')]);
+  const after = referenceRecord([PC1, PC2, x0, X1], 'Open');
+  const partial = partialExitResult();
+  return {
+    ...partial,
+    receipt: {
+      ...partial.receipt,
+      createdFactIds: ['pc-x0', 'ex-x0'],
+      lotMatchChanges: [
+        { kind: 'Superseded', openingExecutionId: 'ex-1', disposingExecutionId: 'ex-x1', quantity: { before: Rational.of(30n), after: null } },
+        { kind: 'Created', openingExecutionId: 'ex-1', disposingExecutionId: 'ex-x0', quantity: { before: null, after: Rational.of(60n) } },
+        { kind: 'Created', openingExecutionId: 'ex-2', disposingExecutionId: 'ex-x1', quantity: { before: null, after: Rational.of(30n) } },
+      ],
+      realizedToDate: { before: derived(before).realizedToDate, after: derived(after).realizedToDate },
+    },
+    postCommit: { ...partial.postCommit, trade: after, derivation: derived(after) },
   };
 }

@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { closedExitResult, partialExitResult } from '../../../tests/support/exit-result-fixtures.ts';
+import { closedExitResult, earlierDatedExitResult, partialExitResult } from '../../../tests/support/exit-result-fixtures.ts';
 import { exitFormFacade, plannedDetail } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -247,6 +247,69 @@ describe('submission', () => {
     expect(closing.getByRole('radio', { name: 'Target Reached' })).toHaveProperty('checked', true);
   });
 
+  // T6.17-B1, item 2 (ocr, Doubtful): the workflow's verdict is about the quantities it was given.
+  it('should hide a section the workflow required once the quantities no longer total the open quantity, submit nothing for it, and keep its values', async () => {
+    const facade = renderExitForm();
+    const required = [
+      { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' },
+      { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
+    ];
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ ...rejected, issues: required } as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    const lastCommand = () => vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.lastCall![0] as unknown as Record<string, unknown>;
+    const closing = () => screen.queryByRole('region', { name: 'Closing the Trade' });
+    // 60 of the 100 shares: the workflow finds the exit terminal and the section shows.
+    await fillRow(user, 1, '60');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    await user.click(within(await screen.findByRole('region', { name: 'Closing the Trade' })).getByRole('radio', { name: 'Stop Triggered' }));
+    await user.click(within(closing()!).getByRole('radio', { name: 'Reflect later' }));
+
+    // Fewer shares than before: the verdict about 60 no longer applies, so the section goes.
+    await user.clear(within(rowOf(1)).getByLabelText('Quantity'));
+    await user.type(within(rowOf(1)).getByLabelText('Quantity'), '50');
+    expect(closing()).toBeNull();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect(lastCommand()).toHaveProperty('members', [sell('50')]);
+    expect(lastCommand()).not.toHaveProperty('closeReasonId');
+    expect(lastCommand()).not.toHaveProperty('closeReview');
+
+    // Back to the quantity the workflow judged: the section returns with the values kept.
+    await user.clear(within(rowOf(1)).getByLabelText('Quantity'));
+    await user.type(within(rowOf(1)).getByLabelText('Quantity'), '60');
+    expect(within(closing()!).getByRole('radio', { name: 'Stop Triggered' })).toHaveProperty('checked', true);
+    expect(within(closing()!).getByRole('radio', { name: 'Reflect later' })).toHaveProperty('checked', true);
+  });
+
+  // T6.17-B1, item 3 (ocr, Valid minor): the Close Review group is tied to its issue like the Close Reason group.
+  it('should tie the Close Review issue to its group and clear it once the disposition changes', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
+      ...rejected,
+      issues: [{ source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' }],
+    } as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '100');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+
+    expect(await screen.findByRole('region', { name: 'This exit can’t be saved yet' })).toBeTruthy();
+    const closing = within(screen.getByRole('region', { name: 'Closing the Trade' }));
+    const review = closing.getByRole('radiogroup', { name: 'Close Review' });
+    expect(review.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(review.getAttribute('aria-describedby')!)!.textContent).toBe('Choose how to meet the Close Review.');
+    // The Close Reason group has no issue, and the exit's reflection group keeps its own markup.
+    expect(closing.getByRole('radiogroup', { name: 'Close Reason' }).getAttribute('aria-describedby')).toBeNull();
+    expect(screen.getByRole('radiogroup', { name: 'Reflection' }).getAttribute('aria-describedby')).toBeNull();
+
+    // Choosing a disposition answers the issue: the summary and the message go.
+    await user.click(closing.getByRole('radio', { name: 'Reflect later' }));
+    expect(screen.queryByRole('region', { name: 'This exit can’t be saved yet' })).toBeNull();
+    expect(closing.queryByText('Choose how to meet the Close Review.')).toBeNull();
+    expect(closing.getByRole('radiogroup', { name: 'Close Review' }).getAttribute('aria-describedby')).toBeNull();
+  });
+
   it('should render the saved exit from the result alone: Lot Matches, realized P&L, lifecycle Closed, Terminal Disposition, Close Reason, and both reflection outcomes', async () => {
     const facade = renderExitForm();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(closedExitResult() as never);
@@ -283,6 +346,43 @@ describe('submission', () => {
     expect(within(result).getByText('Reflection saved.')).toBeTruthy();
     expect(within(result).getByText('Close Review declined: Nothing to add.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Back to the Trade' }).getAttribute('href')).toBe('/trades/trade-1');
+  });
+
+  // T6.17-B1, item 1 (P23, C6.6): I6.8's 60-share example.
+  it('should disclose the Lot Matches an earlier-dated exit changed, with the realized P&L before and after', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(earlierDatedExitResult() as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '60');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Exit recorded' })).toBeTruthy();
+    const changed = within(screen.getByRole('region', { name: 'Changed Lot Matches' }));
+    const cells = changed.getAllByRole('row').slice(1).map((r) => within(r).getAllByRole('cell').map((c) => c.textContent));
+    expect(cells).toEqual([
+      ['Superseded', '$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '—'],
+      ['Created', '$50.10 on 2026-10-12 10:00', '$51.50 on 2026-10-13 09:45', '—', '60'],
+      ['Created', '$50.30 on 2026-10-12 11:00', '$52.00 on 2026-10-13 10:00', '—', '30'],
+    ]);
+    const figures = Object.fromEntries(changed.getAllByRole('term').map((term) => [term.textContent, term.nextElementSibling!.textContent]));
+    expect(figures).toEqual({ 'Realized to date before': '+$55.90', 'Realized to date after': '+$131.85' });
+    // The Lot Matches table above still lists the matches the Trade now has.
+    expect(within(screen.getByRole('region', { name: 'Lot Matches' })).getAllByRole('row')).toHaveLength(3);
+  });
+
+  // T6.17-B1, item 1: a plain exit's own Created matches are not a disclosure.
+  it('should not disclose changed Lot Matches for an exit that only created its own', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(partialExitResult() as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '30');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Exit recorded' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Lot Matches' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'Changed Lot Matches' })).toBeNull();
   });
 
   // Not in the breakdown: a partial exit keeps the Trade Open, asks for no Close Reason, and shows no closing fields.

@@ -27,12 +27,14 @@ export interface ChoiceGroupProps {
   readonly name: string;
   readonly value: Choice;
   readonly onChange: (choice: Choice) => void;
+  // Ties the group to an issue message beside it (aria-invalid and aria-describedby), when it has one.
+  readonly describedBy?: object;
 }
 
 // One reflection's disposition as a radio group in a labelled fieldset.
-export function ChoiceGroup({ legend, name, value, onChange }: ChoiceGroupProps) {
+export function ChoiceGroup({ legend, name, value, onChange, describedBy }: ChoiceGroupProps) {
   return (
-    <fieldset role="radiogroup" aria-labelledby={`${name}-legend`} className="choices">
+    <fieldset role="radiogroup" aria-labelledby={`${name}-legend`} className="choices" {...describedBy}>
       <legend id={`${name}-legend`}>{legend}</legend>
       {CHOICES.map(([choice, label]) => (
         <label key={choice} className="chip">
