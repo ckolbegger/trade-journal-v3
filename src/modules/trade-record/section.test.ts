@@ -254,4 +254,20 @@ describe('Trade Record section, closing', () => {
     // No fixture carries terminalTime, and its absence is never a finding (A96).
     expect(result.repairs).toEqual([]);
   });
+
+  it('should report DuplicateFactIdentity when a Close Reason fact reuses another fact identity', async () => {
+    const first = closing('trade-1', [closeReason('trade-1', 1, 'cr-1', 'trade-1:pc-3')]);
+    // trade-2's Close Reason reuses trade-1's Close Reason identity, in a later batch.
+    const otherTrade = closing('trade-2', [{ ...closeReason('trade-2', 1, 'cr-1', 'trade-2:pc-3'), factId: 'trade-1:cr-1' }]);
+    // trade-3's Close Reason reuses its own Position Change identity.
+    const ownChange = closing('trade-3', [{ ...closeReason('trade-3', 1, 'cr-1', 'trade-3:pc-3'), factId: 'trade-3:pc-3' }]);
+
+    const result = await validateSection(recordSourceOf({ trades: [first, otherTrade, ownChange] }), { ...references, anchorTradeIds: new Set() });
+
+    expect(result.issues).toEqual([
+      { code: 'DuplicateFactIdentity', tradeId: 'trade-2', factId: 'trade-1:cr-1' },
+      { code: 'DuplicateFactIdentity', tradeId: 'trade-3', factId: 'trade-3:pc-3' },
+    ]);
+    expect(result.repairs).toEqual([]);
+  });
 });

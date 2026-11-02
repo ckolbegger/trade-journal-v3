@@ -54,7 +54,8 @@ export async function validateSection(source: RecordSource, references: TradeSec
       const { tradeId } = document;
       tradeIds.add(tradeId);
       if (!references.accountIds.has(document.accountId)) issues.push({ code: 'UnknownAccount', tradeId, accountId: document.accountId });
-      for (const { factId } of document.facts) {
+      // A Close Reason is a Trade fact identity too (D6 A85).
+      for (const { factId } of [...document.facts, ...(document.closeReasonFacts ?? [])]) {
         if (factIds.has(factId)) issues.push({ code: 'DuplicateFactIdentity', tradeId, factId });
         factIds.add(factId);
       }

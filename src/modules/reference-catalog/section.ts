@@ -23,7 +23,11 @@ export interface CatalogSectionValidation {
 // A140): identities are unique, every Account's Institution is present, and every seeded record
 // carries a product key this release's manifest knows.
 export async function validateSection(source: RecordSource, manifest: CatalogSeedManifest): Promise<CatalogSectionValidation> {
-  const knownKeys = new Set([...manifest.strategies, ...(manifest.closeReasons ?? [])].map((s) => s.productKey));
+  // One key set per kind: a record's key must come from its own family's manifest list.
+  const knownKeys = {
+    Strategy: new Set(manifest.strategies.map((s) => s.productKey)),
+    CloseReason: new Set((manifest.closeReasons ?? []).map((s) => s.productKey)),
+  };
   const ids = new Set<string>();
   const institutionIds = new Set<string>();
   const accountIds = new Set<string>();
@@ -42,7 +46,7 @@ export async function validateSection(source: RecordSource, manifest: CatalogSee
         accountIds.add(record.id);
         parents.set(record.id, record.institutionId);
       }
-      if ((record.kind === 'Strategy' || record.kind === 'CloseReason') && !knownKeys.has(record.productKey)) {
+      if ((record.kind === 'Strategy' || record.kind === 'CloseReason') && !knownKeys[record.kind].has(record.productKey)) {
         issues.push({ code: 'UnknownSeedKey', id: record.id, productKey: record.productKey });
       }
       if (record.kind === 'CloseReason') {

@@ -109,4 +109,23 @@ describe('Catalog section, Close Reasons', () => {
 
     expect(unknown.issues).toEqual([{ code: 'UnknownSeedKey', id: 'seed-9', productKey: 'close-reason.rolled' }]);
   });
+
+  it('should report UnknownSeedKey for a Close Reason carrying a Strategy product key and a Strategy carrying a Close Reason product key', async () => {
+    const clean = d6Catalog();
+    const strategy = clean.find((r) => r.kind === 'Strategy')!;
+    const thesis = reason(clean, 'close-reason.thesis-invalidated');
+    // Each key is in the manifest, but under the other family's list.
+    const records = clean.map((r) => {
+      if (r.id === strategy.id) return { ...strategy, productKey: 'close-reason.target-reached' };
+      if (r.id === thesis.id) return { ...thesis, productKey: 'strategy.long-stock' };
+      return r;
+    });
+
+    const result = await validateSection(recordSourceOf({ catalog: records }), D6_CATALOG_MANIFEST);
+
+    expect(result.issues).toEqual([
+      { code: 'UnknownSeedKey', id: strategy.id, productKey: 'close-reason.target-reached' },
+      { code: 'UnknownSeedKey', id: thesis.id, productKey: 'strategy.long-stock' },
+    ]);
+  });
 });
