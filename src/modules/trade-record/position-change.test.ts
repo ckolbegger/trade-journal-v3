@@ -672,7 +672,7 @@ describe('queryRecords: StateAtEconomicCutoff Open (A55)', () => {
     expect((await record.queryRecords({ ...base, cutoff, cursor: withCutoff.nextCursor })).kind).toBe('Page');
   });
 
-  it('should read each page with one lifecycle-index getAll and return AnalysisInput for the page from one read snapshot', async () => {
+  it('should read each page with one lifecycle-index getAll plus the Closed-after-cutoff getAll of A88, and return AnalysisInput for the page from one read snapshot', async () => {
     const tradeIds = ['trade-a', 'trade-b', 'trade-c'];
     const { record, persistence } = await tradeRecord(tradeIds.map(plannedDocument));
     const at = (tradeId: string, time: string) => ({ tradeId, executions: [buy(time, '10', '50.10', tradeId)], exposureStart: time });
@@ -686,7 +686,8 @@ describe('queryRecords: StateAtEconomicCutoff Open (A55)', () => {
     ];
     const storeGet = vi.spyOn(FakeIDBObjectStore.prototype, 'get');
     const page = await record.queryRecords({ lifecycle: 'Open', projection: 'AnalysisInput', cutoff: '2026-10-12T15:00:00Z' });
-    expect(indexGetAll).toHaveBeenCalledTimes(1);
+    // A55's read of the Open index, and since D6 the one byLifecycleTerminal read of A88.
+    expect(indexGetAll.mock.contexts.map((index) => (index as IDBIndex).name)).toEqual(['byLifecycleActivity', 'byLifecycleTerminal']);
     expect(storeGet.mock.contexts.map((store) => (store as IDBObjectStore).name)).toEqual(storeGet.mock.calls.map(() => 'meta'));
     for (const spy of otherReads) expect(spy).not.toHaveBeenCalled();
     vi.restoreAllMocks();

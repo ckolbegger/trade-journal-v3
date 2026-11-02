@@ -45,6 +45,16 @@ export interface TradeAnalysisRecord {
   readonly positionChanges: readonly PositionChangeFact[];
   // Recorded Deviation occurrences, authoritative in Trade Record; absent means none recorded.
   readonly recordedDeviations?: readonly RecordedDeviation[];
+  // The Close Reason a terminal Position Change was recorded with (D6 A85); absent while no fact
+  // has one.
+  readonly closeReason?: {
+    readonly factId: string;
+    readonly recordedSequence: number;
+    readonly closeReasonId: string;
+    readonly terminalPositionChangeId: string;
+  };
+  // The stored Terminal Time of a Closed Trade: the terminal Position Change's Economic Time (A87).
+  readonly terminalTime?: Instant;
 }
 
 // A prepared candidate's canonical digest and the before-state record: the reconciliation is bound

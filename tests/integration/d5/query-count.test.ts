@@ -149,6 +149,7 @@ describe('T5.22 query count: the Review open and Trade Detail read Debt', () => 
     // D4's reads, unchanged (the same list as D4's query-count test).
     expect(on(review.requests, 'trades', 'observations', 'journalObligations')).toEqual([
       { on: 'index', store: 'trades', index: 'byLifecycleActivity', method: 'getAll', count: 201 },
+      { on: 'index', store: 'trades', index: 'byLifecycleTerminal', method: 'getAll' },
       { on: 'store', store: 'observations', method: 'getAll' },
       ...MISSING.map(() => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' })),
       ...Array.from({ length: instruments }, () => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' })),

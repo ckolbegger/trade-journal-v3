@@ -138,6 +138,8 @@ describe('T4.31 query count: the Open page and the Review open', () => {
     const reviewReads = on(small.review.requests, 'trades', 'observations', 'journalObligations');
     expect(reviewReads).toEqual([
       { on: 'index', store: 'trades', index: 'byLifecycleActivity', method: 'getAll', count: 201 },
+      // D6 A88: the Trades closed after the cutoff, one getAll over the terminal times after it.
+      { on: 'index', store: 'trades', index: 'byLifecycleTerminal', method: 'getAll' },
       { on: 'store', store: 'observations', method: 'getAll' },
       ...MISSING.map(() => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' })),
       ...Array.from({ length: instruments }, () => ({ on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'getAll' })),

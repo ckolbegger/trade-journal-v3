@@ -26,7 +26,7 @@ import {
 import type { Instant } from '../../domain/time/index.ts';
 import { formatDecimal, type Rational } from '../../domain/values/index.ts';
 import { canonicalJson } from './canonical.ts';
-import type { ConfirmPlanChange, PlanFactValue, PositionChangeChange, PositionChangeFactValue, TradeDocument, TradeFact } from './records.ts';
+import type { CloseReasonFact, ConfirmPlanChange, PlanFactValue, PositionChangeChange, PositionChangeFactValue, TradeDocument, TradeFact } from './records.ts';
 
 // A stored decimal string: exact, since quantities carry at most 6 fractional digits (D1 A9).
 const decimalText = (value: Rational) => formatDecimal(value, 6).replace(/\.?0+$/, '');
@@ -37,6 +37,8 @@ function storedDocument(value: Record<string, unknown>): TradeDocument {
   delete document['revision'];
   delete document['activityDesc'];
   delete document['exposureStart'];
+  delete document['terminalTime'];
+  delete document['terminalDesc'];
   return document as unknown as TradeDocument;
 }
 
@@ -74,6 +76,7 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
   const targets: (ConditionInput & { factId: string })[] = [];
   const changes: { factId: string; recordedSequence: number; value: PositionChangeFactValue }[] = [];
   const executions = new Map<string, ExecutionFact>();
+  const closeReason = document.closeReasonFacts?.at(-1);
   for (const fact of document.facts) {
     const { factId, recordedSequence } = fact;
     if (fact.kind === 'Plan') plan = effective(fact);
@@ -96,6 +99,9 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
     })),
     // Recorded occurrences with their version lists, authoritative here (D2 A26).
     ...(document.deviations && { recordedDeviations: document.deviations }),
+    // The effective Close Reason and the stored Terminal Time of a Closed Trade (D6 A85, A87).
+    ...(closeReason && { closeReason: { factId: closeReason.factId, recordedSequence: closeReason.recordedSequence, ...effective(closeReason) } }),
+    ...(document.terminalTime && { terminalTime: document.terminalTime }),
   };
 }
 
@@ -321,11 +327,24 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
         (value, i): TradeFact => ({ factId: memberIds[i]!, kind: 'Execution', recordedSequence: counter + 2 + i, versions: [{ versionNumber: 1, value }] }),
       ),
     ];
+    const afterMembers = counter + 1 + change.executions.length;
+    // A terminal change's Close Reason takes the next Recorded Sequence after its members (A85).
+    const closeReasonFacts: CloseReasonFact[] = change.closeReasonId === undefined
+      ? []
+      : [
+          {
+            factId: 'candidate:close-reason-1',
+            kind: 'CloseReason',
+            recordedSequence: afterMembers + 1,
+            versions: [{ versionNumber: 1, value: { closeReasonId: change.closeReasonId, terminalPositionChangeId: 'candidate:pc-1' } }],
+          },
+        ];
     const candidate: TradeDocument = {
       ...before,
       factRevision: before.factRevision + 1,
       facts: [...before.facts, ...added],
-      recordedSequenceCounter: counter + 1 + change.executions.length,
+      ...(closeReasonFacts.length > 0 && { closeReasonFacts: [...(before.closeReasonFacts ?? []), ...closeReasonFacts] }),
+      recordedSequenceCounter: afterMembers + closeReasonFacts.length,
       // Last Activity: the latest Economic Time among the Plan and the Position Changes (D2 A27).
       lastActivity: [before.lastActivity ?? before.planTime, economicTime].sort(compareInstants)[1],
     };
@@ -359,8 +378,25 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
         versions: fact.versions.map((v) => ({ ...v, value: { ...v.value, memberIds: v.value.memberIds.map(durable) } })),
       };
     });
+    for (const fact of (candidate.closeReasonFacts ?? []).slice((before.closeReasonFacts ?? []).length)) mapping[fact.factId] = deps.ids.next();
+    const closeReasonFacts = candidate.closeReasonFacts?.map(
+      (fact): CloseReasonFact => ({
+        ...fact,
+        factId: durable(fact.factId),
+        versions: fact.versions.map((v) => ({ ...v, value: { ...v.value, terminalPositionChangeId: durable(v.value.terminalPositionChangeId) } })),
+      }),
+    );
     const deviations = applyDeviationActions(before.deviations ?? [], deviationActions, deps.ids, durable);
-    const document: TradeDocument = { ...candidate, lifecycle: expectedLifecycle, facts, deviations };
+    const document: TradeDocument = { ...candidate, lifecycle: expectedLifecycle, facts, deviations, ...(closeReasonFacts && { closeReasonFacts }) };
+    // A Closed Trade's private Terminal Time is its terminal Position Change's Economic Time, the
+    // latest one (P22), with its descending sort key; any other lifecycle holds neither (D6 A87).
+    const terminalTime =
+      expectedLifecycle === 'Closed'
+        ? facts
+            .flatMap((f) => (f.kind === 'PositionChange' ? [effective(f).economicTime] : []))
+            .sort(compareInstants)
+            .at(-1)
+        : undefined;
     // Applies only to the FactRevision it was prepared from.
     tx.require({
       name: `trade:${before.tradeId}`,
@@ -370,44 +406,63 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     });
     // The stored lifecycle and the private Last Activity sort key place the Trade in the lifecycle
     // indexes in the same commit.
-    tx.stage({ op: 'put', store: 'trades', value: { ...document, activityDesc: activityDescOf(document.lastActivity!), ...(exposureStart && { exposureStart }) } });
+    const stored = {
+      ...document,
+      activityDesc: activityDescOf(document.lastActivity!),
+      ...(exposureStart && { exposureStart }),
+      ...(terminalTime && { terminalTime, terminalDesc: activityDescOf(terminalTime) }),
+    };
+    tx.stage({ op: 'put', store: 'trades', value: stored });
     touchTradeSection(tx);
-    return { kind: 'Staged', mapping, projection: analysisInputOf(document) };
+    return { kind: 'Staged', mapping, projection: analysisInputOf(stored) };
   }
 
   return {
     async queryRecords(query) {
       const cursor = query.cursor ? (JSON.parse(query.cursor) as TradeCursor) : undefined;
-      // Open Trades are listed by Last Activity descending, which is the private key's index order,
-      // one bounded index read per page resuming after the previous page's last key (D2 A28, A32).
-      const byActivity = query.lifecycle === 'Open';
-      const pageSize = byActivity ? Math.min(query.pageSize ?? OPEN_PAGE_SIZE, OPEN_PAGE_SIZE) : (query.pageSize ?? 50);
+      // Open Trades are listed by Last Activity descending and Closed Trades by Terminal Time
+      // descending, each the private key's index order, one bounded index read per page resuming
+      // after the previous page's last key (D2 A28, A32; D6 A87, A95).
+      const keyedIndex = query.lifecycle === 'Open' ? 'byLifecycleActivity' : query.lifecycle === 'Closed' ? 'byLifecycleTerminal' : undefined;
+      const keyed = keyedIndex !== undefined;
+      const pageSize = query.lifecycle === 'Open' ? Math.min(query.pageSize ?? OPEN_PAGE_SIZE, OPEN_PAGE_SIZE) : (query.pageSize ?? 50);
       const all = IDBKeyRange.bound([query.lifecycle], [query.lifecycle, []]);
-      const { value, binding } = await deps.persistence.readSnapshot(['trades', 'meta'], async (tx) => ({
-        tradeRevision: await tradeSectionRevision(tx),
-        documents: (byActivity
+      type Stored = TradeDocument & { activityDesc?: string; exposureStart?: string };
+      const { value, binding } = await deps.persistence.readSnapshot(['trades', 'meta'], async (tx) => {
+        const documents = (keyedIndex
           ? // One more than a page shows whether another page follows.
-            await tx.getAllFromIndex(
-              'trades',
-              'byLifecycleActivity',
-              cursor?.after ? IDBKeyRange.bound(cursor.after, [query.lifecycle, []], true) : all,
-              pageSize + 1,
-            )
-          : await tx.getAllFromIndex('trades', 'byLifecycle', all)) as unknown as (TradeDocument & { activityDesc?: string; exposureStart?: string })[],
-      }));
-      const { tradeRevision, documents } = value;
+            await tx.getAllFromIndex('trades', keyedIndex, cursor?.after ? IDBKeyRange.bound(cursor.after, [query.lifecycle, []], true) : all, pageSize + 1)
+          : await tx.getAllFromIndex('trades', 'byLifecycle', all)) as unknown as Stored[];
+        // StateAtEconomicCutoff Open also holds Trades closed after the cutoff (D6 A88): one more
+        // read over the terminal times after it, which `terminalDesc` orders before the cutoff's key.
+        // For the latest Review that is only the closes since its session.
+        const closedAfter =
+          query.lifecycle === 'Open' && query.cutoff !== undefined
+            ? ((await tx.getAllFromIndex('trades', 'byLifecycleTerminal', IDBKeyRange.bound(['Closed', ''], ['Closed', activityDescOf(query.cutoff)], false, true))) as unknown as Stored[])
+            : [];
+        return { tradeRevision: await tradeSectionRevision(tx), documents, closedAfter };
+      });
+      const { tradeRevision, closedAfter } = value;
+      // Merge by the Open list's order, resuming after the cursor's key like the Open read does.
+      const after = cursor?.after;
+      const documents =
+        closedAfter.length === 0
+          ? value.documents
+          : [...value.documents, ...closedAfter.filter((d) => after === undefined || d.activityDesc! > after[1] || (d.activityDesc === after[1] && d.tradeId > after[2]))].sort((a, b) =>
+              a.activityDesc! !== b.activityDesc! ? (a.activityDesc! < b.activityDesc! ? -1 : 1) : a.tradeId < b.tradeId ? -1 : a.tradeId > b.tradeId ? 1 : 0,
+            );
       if (
         cursor &&
         (cursor.databaseName !== binding.databaseName || cursor.tradeRevision !== tradeRevision || cursor.lifecycle !== query.lifecycle || !sameCutoff(cursor.cutoff, query.cutoff))
       ) {
         return { kind: 'CursorExpired' };
       }
-      if (!byActivity) {
+      if (!keyed) {
         documents.sort((a, b) =>
           a.planTime !== b.planTime ? (a.planTime < b.planTime ? 1 : -1) : a.tradeId < b.tradeId ? -1 : a.tradeId > b.tradeId ? 1 : 0,
         );
       }
-      const start = byActivity ? 0 : (cursor?.offset ?? 0);
+      const start = keyed ? 0 : (cursor?.offset ?? 0);
       const end = start + pageSize;
       // One batch from one snapshot: no per-Trade loads.
       const eligible = (d: TradeDocument & { exposureStart?: string }) =>
@@ -427,7 +482,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
         tradeRevision,
         lifecycle: query.lifecycle,
         ...(query.cutoff !== undefined && { cutoff: query.cutoff }),
-        ...(byActivity ? { after: [query.lifecycle, last.activityDesc!, last.tradeId] } : { offset: end }),
+        ...(keyed ? { after: [query.lifecycle, (query.lifecycle === 'Closed' ? last.terminalDesc : last.activityDesc)!, last.tradeId] } : { offset: end }),
       };
       return { kind: 'Page', items, binding, nextCursor: JSON.stringify(next) };
     },
@@ -445,12 +500,12 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
 
     applyPreparedChange(tx, prepared, reconciliation) {
       requireOpen(tx);
-      // Confirmation creates a Planned Trade; a Position Change of opening Buys leaves exposure, so the
-      // Trade it applies to is Open (D2 A18). Trade Analysis must agree.
-      const lifecycle: LifecycleState = prepared.before ? 'Open' : 'Planned';
+      // Confirmation creates a Planned Trade; a Position Change leaves the Trade Open, or Closed when
+      // its Sells leave the Position flat (D2 A18, D6 A87). Trade Analysis decides which.
+      const lifecycles: readonly LifecycleState[] = prepared.before ? ['Open', 'Closed'] : ['Planned'];
       if (
         reconciliation.candidateDigest !== prepared.digest ||
-        reconciliation.expectedLifecycle !== lifecycle ||
+        !lifecycles.includes(reconciliation.expectedLifecycle) ||
         !actionsMatch(prepared, reconciliation.deviationActions ?? [])
       ) {
         return { kind: 'ReconciliationMismatch' };

@@ -41,6 +41,22 @@ export type TradeFact = FactValue extends infer V
     : never
   : never;
 
+// The Close Reason a terminal Position Change was recorded with (D6 A85): the Catalog identity and
+// the terminal Position Change's fact identity.
+export interface CloseReasonFactValue {
+  readonly closeReasonId: string;
+  readonly terminalPositionChangeId: string;
+}
+
+// A Trade fact identity with a single-version list (decision 11). It lives in the Trade's separate
+// Close Reason list, but takes its Recorded Sequence from the Trade's single counter.
+export interface CloseReasonFact {
+  readonly factId: string;
+  readonly kind: 'CloseReason';
+  readonly recordedSequence: number;
+  readonly versions: readonly { readonly versionNumber: number; readonly value: CloseReasonFactValue }[];
+}
+
 // One Trade's stored document: its facts plus the stored, indexed Lifecycle State.
 export interface TradeDocument {
   readonly tradeId: string;
@@ -58,6 +74,13 @@ export interface TradeDocument {
   readonly lastActivity?: Instant;
   // Recorded Deviation occurrences, each a stable identity with its version list (D2 A26).
   readonly deviations?: readonly RecordedDeviation[];
+  // Close Reason facts, kept apart from `facts` (D6 A85, A87); absent means none, as in a Trade
+  // confirmed at schema 5 and never closed.
+  readonly closeReasonFacts?: readonly CloseReasonFact[];
+  // Private index fields, present only on a stored Closed Trade (D6 A87): the terminal Position
+  // Change's Economic Time and its descending sort key. A prepared candidate never carries them.
+  readonly terminalTime?: Instant;
+  readonly terminalDesc?: string;
 }
 
 export interface ConfirmPlanChange {
@@ -77,4 +100,7 @@ export interface PositionChangeChange {
   readonly tradeId: string;
   readonly expectedFactRevision: number;
   readonly executions: readonly ExecutionFactValue[];
+  // The Catalog identity of the Close Reason, supplied by the workflow when the change is terminal
+  // (D6 A85); Trade Record stores what it is given and does not require it.
+  readonly closeReasonId?: string;
 }
