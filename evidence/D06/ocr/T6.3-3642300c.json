@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 199986,
+    "input_tokens": 197760,
+    "output_tokens": 2226,
+    "cache_read_tokens": 38656,
+    "elapsed": "1m50s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "A Shortfall keeps the same fingerprint when an earlier-dated Sell moves its cutoff. If no Buy lies between the old and new cutoffs, its quantity is unchanged, so this returns Retain and leaves the recorded causingPositionChangeId and economicTime pointing to the old Sell. Include cause and Economic Time in the unchanged comparison so this case appends a NewVersion; add a regression with two cutoff Sells and unchanged entered quantity.",
+      "existing_code": "        match.version.status === 'Active' \u0026\u0026 recordedQuantityOf(match.version).compare(quantityOf(occurrence)) === 0;",
+      "start_line": 768,
+      "end_line": 768,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "Every Shortfall fingerprint lacks positionChangeId, so a Shortfall integrity finding calls timeOf(''). changeTime forwards that empty string to localTime, whose Temporal.Instant.from('') throws. Consequently a missing, unexpected, or quantity-mismatched Shortfall crashes the Trade Detail render instead of displaying the integrity panel. Identify Shortfalls by their leg, or resolve the causingPositionChangeId from the expected/recorded version before formatting a timestamp. Also select quantityBelowPlan in the recorded helper for unexpected Shortfalls.",
+      "existing_code": "    const record = `Entry Size Deviation, Position Change at ${timeOf(finding.fingerprint.positionChangeId ?? '')}`;",
+      "start_line": 629,
+      "end_line": 629,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade analysis derivation and position-change recording integration",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change.ts",
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/index.ts",
+        "src/modules/trade-record/trade-record.ts",
+        "src/ui/screens/TradeDetail.tsx"
+      ]
+    }
+  ],
+  "session_id": "6c1fdd26-e3de-40b1-8d13-f64bd45d63ec",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6c1fdd26-e3de-40b1-8d13-f64bd45d63ec",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3642300c",
+      "resolved_base": "c0117f945a8ab254512f5d9f775c1d51eb57b650",
+      "resolved_head": "3642300c30a6b6c7ca7cec8161ee0f5d34d6c57a",
+      "exact_range": "c0117f945a8ab254512f5d9f775c1d51eb57b650..3642300c30a6b6c7ca7cec8161ee0f5d34d6c57a",
+      "source_artifact_sha256": "0becb9352560df953a4a4e3ad2713daae0dd6cd8e67a0b9031a1580bcfe98e02"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "19413501e61fa04d5276bd3cad9e7555a0145c7651520cdaefbd2f79b1bbe8bd"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "f25fb2a1ea6b507f7d8e2d4d4ff6bab61cde33c9e85122dd787d676d88ba5eba"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "66a345bb4cd5b20297a1754de371bae00a32a00e436fa20c04f8263439c787a2"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "ef49cb6f78b9922193c450691724caba179396f7ba00080ddb1ae4207ad2702f"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "c0b9cd752d6915185b61f140da8324088572d0d9f9f3acdebd1c24ebc7fa1949"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "19413501e61fa04d5276bd3cad9e7555a0145c7651520cdaefbd2f79b1bbe8bd"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "f25fb2a1ea6b507f7d8e2d4d4ff6bab61cde33c9e85122dd787d676d88ba5eba"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "66a345bb4cd5b20297a1754de371bae00a32a00e436fa20c04f8263439c787a2"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "ef49cb6f78b9922193c450691724caba179396f7ba00080ddb1ae4207ad2702f"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "c0b9cd752d6915185b61f140da8324088572d0d9f9f3acdebd1c24ebc7fa1949"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 109853
+  }
+}
