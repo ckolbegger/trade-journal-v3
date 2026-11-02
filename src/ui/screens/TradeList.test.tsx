@@ -343,7 +343,9 @@ describe('Closed list paging (T6.18-B1)', () => {
     await screen.findByRole('table', { name: 'Closed Trades' });
     expect(symbols()).toEqual(['AAA', 'BBB']);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show more closed trades' }));
+    const more = screen.getByRole('button', { name: 'Show more closed trades' });
+    more.focus();
+    fireEvent.click(more);
     expect(browse.mock.calls.map(([request]) => request)).toEqual([{ lifecycle: 'Closed' }, { lifecycle: 'Closed', cursor: 'cursor-1' }]);
     // The rows stay, the button shows it is busy and cannot be pressed twice.
     expect(symbols()).toEqual(['AAA', 'BBB']);
@@ -467,6 +469,28 @@ describe('Closed list paging (T6.18-B1)', () => {
     expect(await screen.findByText('2 more closed trades shown.')).toBeTruthy();
     expect(symbols()).toEqual(['AAA', 'BBB', 'CCC', 'DDD']);
     expect(document.activeElement).toBe(planned);
+  });
+
+  it('should leave focus on the page when the trader clicked blank space while the final page loaded, since the Show more button no longer held it', async () => {
+    const facade = facadeDouble();
+    const browse = vi.mocked(facade.TradeViewsAndReporting.browseTrades);
+    const second = deferred();
+    browse.mockResolvedValueOnce(page(['aaa', 'bbb'], 'cursor-1')).mockReturnValueOnce(second.promise);
+    renderClosed(facade);
+    await screen.findByRole('table', { name: 'Closed Trades' });
+    const button = screen.getByRole('button', { name: 'Show more closed trades' });
+    button.focus();
+    fireEvent.click(button);
+    // A click on blank, non-focusable space leaves focus on the page.
+    button.blur();
+    expect(document.activeElement).toBe(document.body);
+    await act(() => {
+      second.resolve(page(['ccc', 'ddd']));
+      return Promise.resolve();
+    });
+    expect(await screen.findByText('2 more closed trades shown.')).toBeTruthy();
+    expect(symbols()).toEqual(['AAA', 'BBB', 'CCC', 'DDD']);
+    expect(document.activeElement).toBe(document.body);
   });
 });
 

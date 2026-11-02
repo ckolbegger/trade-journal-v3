@@ -22,9 +22,10 @@ type Lifecycle = (typeof LIFECYCLES)[number];
 type Paging =
   | { readonly kind: 'Loading' }
   | { readonly kind: 'Failed' }
-  | { readonly kind: 'Refreshed' }
+  // `focused`: the Show more button held focus when the page arrived, before it could be removed.
+  | { readonly kind: 'Refreshed'; readonly focused: boolean }
   // The index of the first row the last page added.
-  | { readonly kind: 'Appended'; readonly from: number };
+  | { readonly kind: 'Appended'; readonly from: number; readonly focused: boolean };
 type ReadyState = { readonly kind: 'Ready'; readonly items: readonly unknown[]; readonly nextCursor?: string; readonly paging?: Paging };
 type ListState = { readonly kind: 'Loading' } | ReadyState | { readonly kind: 'Error' };
 
@@ -59,7 +60,7 @@ export function TradeList({ facade }: TradeListProps) {
   const state: ListState = settled?.key === key ? settled.state : { kind: 'Loading' };
   // Closed only. A page is shown only for the request that asked for it: the key changes with a tab
   // switch or a full Retry, so a late page for an earlier key finds nothing to change.
-  const showMore = (cursor: string) => {
+  const showMore = (cursor: string, holdsFocus: () => boolean) => {
     const change = (to: (ready: ReadyState) => ReadyState) => setSettled((now) => (now?.key === key && now.state.kind === 'Ready' ? { key, state: to(now.state) } : now));
     const failed = () => change((ready) => ({ ...ready, paging: { kind: 'Failed' } }));
     change((ready) => ({ ...ready, paging: { kind: 'Loading' } }));
@@ -71,11 +72,13 @@ export function TradeList({ facade }: TradeListProps) {
         const page = refreshed ? await browse({ lifecycle: 'Closed' }) : result;
         if (page.kind !== 'Ready') return failed();
         const { items, nextCursor } = page.view;
+        // Asked before the update, while the pressed button is still on the page.
+        const focused = holdsFocus();
         change((ready) => ({
           kind: 'Ready',
           items: refreshed ? items : [...ready.items, ...items],
           ...(nextCursor ? { nextCursor } : {}),
-          paging: refreshed ? { kind: 'Refreshed' } : { kind: 'Appended', from: ready.items.length },
+          paging: refreshed ? { kind: 'Refreshed', focused } : { kind: 'Appended', from: ready.items.length, focused },
         }));
       })
       .catch(failed);
@@ -321,23 +324,26 @@ const GAIN_LOSS = signed(money);
 const R_MULTIPLE = signed(rMultiple);
 
 // The read model pages by 50 (A95): "Show more closed trades" appends the next page while a cursor remains.
-function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore: (cursor: string) => void }) {
+function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore: (cursor: string, holdsFocus: () => boolean) => void }) {
   const { timeZone } = useRuntime();
   const rows = useRef<HTMLTableSectionElement>(null);
+  const moreButton = useRef<HTMLButtonElement>(null);
   const statusLine = useRef<HTMLParagraphElement>(null);
   const emptyMessage = useRef<HTMLParagraphElement>(null);
   const appendedFrom = state.kind === 'Ready' && state.paging?.kind === 'Appended' ? state.paging.from : undefined;
   const refreshed = state.kind === 'Ready' && state.paging?.kind === 'Refreshed';
+  // Focus on the page (body) does not prove the button held it, so the page's arrival recorded that.
+  const buttonHadFocus = state.kind === 'Ready' && (state.paging?.kind === 'Appended' || state.paging?.kind === 'Refreshed') && state.paging.focused;
   const buttonGone = state.kind === 'Ready' && !state.nextCursor;
   useEffect(() => {
-    // Focus moves only when the pressed button was removed, leaving it on the page (body); a trader who
-    // moved on while the page loaded keeps the focus they chose.
-    if (!buttonGone || document.activeElement !== document.body) return;
+    // Focus moves only when the button that held it was removed; a trader who moved on while the page
+    // loaded, or whose focus was never on the button, keeps where they are.
+    if (!buttonGone || !buttonHadFocus) return;
     // The button is gone: focus goes to the first new row, not to the page start. After a refresh the
     // old position means nothing, so it goes to the refreshed status line, or to the empty message.
     if (appendedFrom !== undefined) rows.current?.rows[appendedFrom]?.querySelector('a')?.focus();
     else if (refreshed) (statusLine.current ?? emptyMessage.current)?.focus();
-  }, [appendedFrom, refreshed, buttonGone]);
+  }, [appendedFrom, refreshed, buttonGone, buttonHadFocus]);
   if (state.kind === 'Loading') return <p role="status">Loading closed trades…</p>;
   if (state.kind === 'Error') {
     return (
@@ -448,7 +454,14 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
           </p>
           {nextCursor && (
             // aria-disabled, not disabled, so the pressed button keeps focus while its page loads.
-            <button type="button" className="pill secondary" aria-busy={loading} aria-disabled={loading} onClick={() => !loading && showMore(nextCursor)}>
+            <button
+              type="button"
+              className="pill secondary"
+              ref={moreButton}
+              aria-busy={loading}
+              aria-disabled={loading}
+              onClick={() => !loading && showMore(nextCursor, () => moreButton.current === document.activeElement)}
+            >
               {loading ? 'Loading more closed trades…' : paging?.kind === 'Failed' ? 'Retry' : 'Show more closed trades'}
             </button>
           )}
