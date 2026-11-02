@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom';
 import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
+import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import type { EntryDirty } from './CardMarks.tsx';
 import { fold, marksOf, nextCard, type Held, type HeldResult } from './held-review.ts';
 import { NO_GO, PANELS, ReviewCard, type CardDetail, type Go, type PanelName } from './ReviewCard.tsx';
+import { OwedCard, type OwedDetail } from './ReviewOwedCard.tsx';
 
 export interface ReviewViewProps {
   readonly facade: UiFacade;
@@ -113,12 +114,13 @@ const marksFirst = (reasons: readonly IncompleteReason[]): IncompleteReason[] =>
 
 // How the Review names a Trade it holds, from one lookup over its walked Trades: `name` in a sentence (A150, "XYZ (Long 100
 // shares @ $50.18)"), and `line` for "also held by", the summary line alone (decision 67). The Trade id stands for one it does not hold.
-function tradeLabels(trades: readonly WalkedTrade[]) {
+function tradeLabels(trades: readonly WalkedTrade[], owed: readonly OwedReflectionsTrade[]) {
   const find = (tradeId: string) => trades.find((t) => t.tradeId === tradeId);
   return {
+    // A Trade of the owed group has no summary line to read, so its Underlying names it.
     name: (tradeId: string) => {
       const found = find(tradeId);
-      return found ? tradeName(found) : tradeId;
+      return found ? tradeName(found) : (owed.find((t) => t.tradeId === tradeId)?.underlying ?? tradeId);
     },
     line: (tradeId: string) => {
       const found = find(tradeId);
@@ -156,8 +158,12 @@ function Status({ review, completion, name, openCard }: { readonly review: Ready
 interface Shown {
   readonly tradeId: string;
   readonly opening: number;
-  readonly detail: CardDetail;
+  readonly detail: CardDetail | OwedDetail;
 }
+
+// A walked card's detail; an owed card's is its own (the two sets of Trades never overlap).
+const walkedDetail = (detail: Shown['detail'] | undefined): CardDetail | undefined => (typeof detail === 'object' && 'card' in detail ? undefined : detail);
+const owedDetail = (detail: Shown['detail'] | undefined): OwedDetail | undefined => (typeof detail === 'object' && 'trade' in detail ? undefined : detail);
 
 const AFTER_SAVE = {
   Done: 'Every Trade has an Action.',
@@ -178,6 +184,8 @@ function linkedCard(held: Held, params: URLSearchParams): LinkedCard | undefined
   const review = held.review;
   const instrument = params.get('instrument');
   const wanted = params.get('trade');
+  // An owed Trade has a Reflections panel alone, which is the one panel that opens.
+  if (wanted !== null && review.owed.some((t) => t.tradeId === wanted)) return { tradeId: wanted, panel: 'Reflections' };
   if (wanted !== null && walkedTrades(review).some((t) => t.tradeId === wanted)) {
     const marks = marksOf(held, wanted);
     const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
@@ -195,11 +203,24 @@ type MarksSaved = Extract<SaveReviewMarksResult, { kind: 'MarksSaved' }>;
 type ViewState =
   | { readonly kind: 'Loading' }
   | { readonly kind: 'Ready'; readonly review: Ready }
-  | { readonly kind: 'Empty'; readonly reviewDate: string }
+  | { readonly kind: 'Empty'; readonly review: Extract<OpenDailyReviewResult, { kind: 'Empty' }> }
   | { readonly kind: 'Error' };
 
-// A Ready Review: its status, then one card per walked Trade in the overview's attention order (A150).
-function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly onDirtyChange: (dirty: boolean) => void }) {
+function EmptyReview({ date }: { readonly date: string }) {
+  return (
+    <section className="card empty">
+      <ReviewDate date={date} />
+      <p>No Trades were open at this session's close</p>
+    </section>
+  );
+}
+
+// An Empty Review as the screen holds it: nothing walked and nothing to complete, with the group of Trades whose reflections are owed (A90).
+const heldEmpty = ({ reviewDate, cutoff, owed, binding }: Extract<OpenDailyReviewResult, { kind: 'Empty' }>): Ready => ({ kind: 'Ready', reviewDate, cutoff, families: [], owed, completion: { kind: 'Complete' }, binding });
+
+// A Ready Review: its status, then one card per walked Trade in the overview's attention order (A150), then the owed-reflection
+// group (P20). An Empty Review shows its message in place of the status and the walk.
+function ReadyReview({ facade, now, initial, empty = false, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly empty?: boolean; readonly onDirtyChange: (dirty: boolean) => void }) {
   // The held Review (A171): each result is folded into it; the ref holds the latest, so a read never uses an older binding.
   const [heldReview, setHeldReview] = useState<Held>({ review: initial, standings: {} });
   const review = heldReview.review;
@@ -210,18 +231,19 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   };
   // The cards follow the newest Review the screen holds (A150, decision 64): a refreshed Review re-sorts them.
   const trades = walkedTrades(review);
-  const { name, line: tradeLine } = tradeLabels(trades);
+  const { name, line: tradeLine } = tradeLabels(trades, review.owed);
   // A link into the Review names the card that opens on load (A161): the first holding ?instrument=, on its Marks panel with
   // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
   const [params] = useSearchParams();
   const [link] = useState(() => linkedCard(heldReview, params));
-  const [firstId] = useState(() => link?.tradeId ?? walkedTrades(initial).find((t) => !t.progress.done)?.tradeId);
+  // The first card not done, in walk order and then group order (A90), opens when nothing else is named.
+  const [firstId] = useState(() => link?.tradeId ?? [...walkedTrades(initial), ...initial.owed].find((t) => !t.progress.done)?.tradeId);
   // The link the open card is to answer, and the card it is for.
   const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, count: 1 } : NO_GO });
   const [shown, setShown] = useState<Shown | undefined>(firstId === undefined ? undefined : { tradeId: firstId, opening: 0, detail: 'Loading' });
   // A count of the changes to what is open; each opening carries the count it was shown at, so a result for an earlier opening is not applied.
   const selection = useRef(0);
-  const show = (tradeId: string, detail: CardDetail): number => {
+  const show = (tradeId: string, detail: Shown['detail']): number => {
     selection.current += 1;
     setShown({ tradeId, opening: selection.current, detail });
     return selection.current;
@@ -243,7 +265,8 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
       await refreshing.current;
       const from = latest.current.review;
       const result = await facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
-      if (selection.current === request) setShown({ tradeId, opening: request, detail: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });
+      const detail = result?.kind === 'Ready' ? { trade: result.trade } : result?.kind === 'ReflectionsOwed' ? { card: result.card } : 'Unavailable';
+      if (selection.current === request) setShown({ tradeId, opening: request, detail });
     },
     [facade],
   );
@@ -290,7 +313,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     if (selection.current !== request) return true;
     // An Action belongs to one Review Date: the form is keyed by it, so the old date's draft is dropped, and the trader is told.
     // The date the shown form was opened under, not the overview's: a failed read can leave the two apart.
-    const shownDate = typeof shown?.detail === 'object' ? shown.detail.trade.saveBinding.reviewDate : undefined;
+    const shownDate = typeof shown?.detail === 'object' && 'trade' in shown.detail ? shown.detail.trade.saveBinding.reviewDate : undefined;
     if (shownDate !== undefined && trade.trade.saveBinding.reviewDate !== shownDate) setAfterSave(`The Review moved to ${shortDate(result.reviewDate)}. This Trade’s form starts afresh for that date.`);
     setShown({ tradeId, opening: request, detail: { trade: trade.trade } });
     return true;
@@ -335,6 +358,10 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     if (next.kind === 'Trade') {
       setReveal((current) => ({ tradeId: next.trade.tradeId, count: current.count + 1 }));
       show(next.trade.tradeId, { trade: next.trade });
+    } else if (next.kind === 'OwedTrade') {
+      // The first owed card not done follows the walk (A90): it opens from the step's card, as the next walked Trade does.
+      setReveal((current) => ({ tradeId: next.card.tradeId, count: current.count + 1 }));
+      show(next.card.tradeId, { card: next.card });
     } else collapse();
     setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'MarkNotHeld' ? AFTER_SAVE.Mark : undefined);
   };
@@ -426,41 +453,68 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   }, [firstId, read]);
   return (
     <>
-      <Status review={review} completion={review.completion} name={name} openCard={openCard} />
+      {empty ? <EmptyReview date={review.reviewDate} /> : <Status review={review} completion={review.completion} name={name} openCard={openCard} />}
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
         </div>
       )}
-      <p>Stop ◂ ▸ Target</p>
-      <ol aria-label="Positions" className="review-cards">
-        {trades.map((trade) => (
-          <ReviewCard
-            key={trade.tradeId}
-            facade={facade}
-            trade={trade}
-            expanded={trade.tradeId === openId}
-            detail={trade.tradeId === openId ? shown?.detail : undefined}
-            reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
-            advance={advance.tradeId === trade.tradeId ? advance.count : 0}
-            go={go.tradeId === trade.tradeId ? go.go : NO_GO}
-            marks={marksOf(heldReview, trade.tradeId)}
-            held={heldReview}
-            onResult={apply}
-            tradeLine={tradeLine}
-            onToggle={() => toggle(trade.tradeId)}
-            onSaved={(result) => saved(result, shown?.opening ?? -1)}
-            onReflectionResolved={reflectionResolved}
-            onRefresh={() => refreshTrade(trade.tradeId)}
-            onMarkSaved={markSaved}
-            onSaveMarks={saveMarks}
-            outOfDate={stale === trade.tradeId}
-            holdMessage={refused && trade.tradeId === openId}
-            pending={rereading}
-            onEntryDirty={onEntryDirty}
-          />
-        ))}
-      </ol>
+      {!empty && (
+        <>
+          <p>Stop ◂ ▸ Target</p>
+          <ol aria-label="Positions" className="review-cards">
+            {trades.map((trade) => (
+              <ReviewCard
+                key={trade.tradeId}
+                facade={facade}
+                now={now}
+                trade={trade}
+                expanded={trade.tradeId === openId}
+                detail={trade.tradeId === openId ? walkedDetail(shown?.detail) : undefined}
+                reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
+                advance={advance.tradeId === trade.tradeId ? advance.count : 0}
+                go={go.tradeId === trade.tradeId ? go.go : NO_GO}
+                marks={marksOf(heldReview, trade.tradeId)}
+                held={heldReview}
+                onResult={apply}
+                tradeLine={tradeLine}
+                onToggle={() => toggle(trade.tradeId)}
+                onSaved={(result) => saved(result, shown?.opening ?? -1)}
+                onReflectionResolved={reflectionResolved}
+                onRefresh={() => refreshTrade(trade.tradeId)}
+                onMarkSaved={markSaved}
+                onSaveMarks={saveMarks}
+                outOfDate={stale === trade.tradeId}
+                holdMessage={refused && trade.tradeId === openId}
+                pending={rereading}
+                onEntryDirty={onEntryDirty}
+              />
+            ))}
+          </ol>
+        </>
+      )}
+      {review.owed.length > 0 && (
+        <section aria-labelledby="owed-group-heading">
+          <h2 id="owed-group-heading">Trades with owed reflections</h2>
+          <ol aria-labelledby="owed-group-heading" className="review-cards">
+            {review.owed.map((trade) => (
+              <OwedCard
+                key={trade.tradeId}
+                facade={facade}
+                trade={trade}
+                reviewDate={review.reviewDate}
+                expanded={trade.tradeId === openId}
+                detail={trade.tradeId === openId ? owedDetail(shown?.detail) : undefined}
+                reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
+                holdMessage={refused && trade.tradeId === openId}
+                onToggle={() => toggle(trade.tradeId)}
+                onReflectionResolved={reflectionResolved}
+                onEntryDirty={onEntryDirty}
+              />
+            ))}
+          </ol>
+        </section>
+      )}
       {afterSave && <p role="status">{afterSave}</p>}
     </>
   );
@@ -477,7 +531,7 @@ export function ReviewView({ facade, now, onDirtyChange }: ReviewViewProps) {
       if (current) setSettled({ attempt, state });
     };
     facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() }).then(
-      (result) => settle(result.kind === 'Ready' ? { kind: 'Ready', review: result } : result.kind === 'Empty' ? { kind: 'Empty', reviewDate: result.reviewDate } : { kind: 'Error' }),
+      (result) => settle(result.kind === 'Ready' ? { kind: 'Ready', review: result } : result.kind === 'Empty' ? { kind: 'Empty', review: result } : { kind: 'Error' }),
       () => settle({ kind: 'Error' }),
     );
     return () => {
@@ -498,12 +552,7 @@ export function ReviewView({ facade, now, onDirtyChange }: ReviewViewProps) {
           </button>
         </section>
       )}
-      {state.kind === 'Empty' && (
-        <section className="card empty">
-          <ReviewDate date={state.reviewDate} />
-          <p>No Trades were open at this session's close</p>
-        </section>
-      )}
+      {state.kind === 'Empty' && (state.review.owed.length === 0 ? <EmptyReview date={state.review.reviewDate} /> : <ReadyReview facade={facade} now={now} initial={heldEmpty(state.review)} empty onDirtyChange={onDirtyChange} />)}
       {state.kind === 'Ready' && <ReadyReview facade={facade} now={now} initial={state.review} onDirtyChange={onDirtyChange} />}
     </section>
   );

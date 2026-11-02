@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { PositionChangeResult } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -17,6 +17,9 @@ export interface ExitReceiptProps {
   readonly timeZone: string;
   // The Close Reasons the form offered, to name the one the result holds by identity.
   readonly closeReasons: readonly CloseReasonOption[];
+  // Where a host shows the receipt inside its own page (the Review's card, A94): this follows it in place of the link back to
+  // the Trade, and its heading is the host's panel heading, not the page's.
+  readonly after?: ReactNode;
 }
 
 // A Close Review is not a reflection on the exit: its words name it.
@@ -34,7 +37,7 @@ function closeReviewMessage(outcome: NonNullable<Recorded['postCommit']['closeRe
 // The saved exit, rendered from the command's post-commit result alone (AC-RESP-001): the Position
 // Change, the derived Lot Matches, the realized figures, and, when the exit closed the Trade, its
 // Terminal Disposition and Close Reason, with the outcome of each reflection.
-export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps) {
+export function ExitReceipt({ result, timeZone, closeReasons, after }: ExitReceiptProps) {
   // The receipt replaces the form in place, so focus moves to its heading when it appears.
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => headingRef.current?.focus(), []);
@@ -61,9 +64,15 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
-      <PageTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
-        Exit recorded
-      </PageTitle>
+      {after === undefined ? (
+        <PageTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
+          Exit recorded
+        </PageTitle>
+      ) : (
+        <h5 id="receipt-heading" ref={headingRef} tabIndex={-1}>
+          Exit recorded
+        </h5>
+      )}
       <section aria-labelledby="saved-change-heading">
         <h2 id="saved-change-heading">
           Position Change at <span className="nowrap">{localTime(saved.economicTime, timeZone)}</span>
@@ -147,9 +156,11 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
         {closeMessage && <p>{closeMessage}</p>}
         {closeReview?.kind === 'Debt' && <Badge tone="warning">Close Review owed</Badge>}
       </section>
-      <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>
-        Back to the Trade
-      </Link>
+      {after ?? (
+        <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>
+          Back to the Trade
+        </Link>
+      )}
     </section>
   );
 }

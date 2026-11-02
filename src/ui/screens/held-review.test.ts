@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cardProgress } from '../../../tests/support/card-progress.ts';
-import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, PostMarksReview, PostSaveReview, ReviewBinding, ReviewCompletion, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
+import { cardProgress, reflectionsOwedProgress } from '../../../tests/support/card-progress.ts';
+import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflectionsTrade, PostMarksReview, PostSaveReview, ReviewBinding, ReviewCompletion, ReviewNextStep, SavedMark, WalkedTrade } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { fold, marksOf, nextCard, standing, type Held, type Standing } from './held-review.ts';
 
@@ -174,8 +174,31 @@ describe('fold with progress (A165, A171)', () => {
   });
 });
 
+describe('fold with owed progress (A165, T6.13)', () => {
+  const owedTrade = (tradeId: string, dueNow: number): OwedReflectionsTrade => ({ tradeId, underlying: 'ABC', lifecycle: 'Closed', owed: [], progress: reflectionsOwedProgress(dueNow, 0) });
+
+  it('should replace an owed Trade progress with the one an ActionSaved or DebtResolved Review cards carry, and leave the other owed Trades and the walked ones as held', () => {
+    const base = held();
+    const before: Held = { ...base, review: { ...base.review, owed: [owedTrade('t-x', 1), owedTrade('t-y', 2)] } };
+    const answered = reflectionsOwedProgress(0, 0);
+    const owedProgress = (r: Ready) => r.owed.map((t) => [t.tradeId, t.progress] as const);
+
+    for (const kind of ['ActionSaved', 'DebtResolved'] as const) {
+      const post: PostSaveReview = { kind: 'Ready', cards: [{ tradeId: 't-x', progress: answered }, { tradeId: 't-z', progress: answered }], progress: { tradesWithAction: 1, tradesEligible: 3 }, completion: OWING, nextStep: { kind: 'Done' }, binding: newBinding };
+
+      const next = fold(before, { kind, review: post });
+
+      expect(owedProgress(next.review)).toEqual([
+        ['t-x', answered],
+        ['t-y', reflectionsOwedProgress(2, 0)],
+      ]);
+      expect(tradeIds(next.review)).toEqual(['t-a', 't-f', 't-c']);
+    }
+  });
+});
+
 describe('standing (A172)', () => {
-  const key = (instrumentKey: string, tradingDate: string) => ({ instrumentKey, tradingDate });
+  const key =(instrumentKey: string, tradingDate: string) => ({ instrumentKey, tradingDate });
 
   it('should return a key resolution and revision from MarkSaved, and from each moved key of MarksConflict', () => {
     const corrected = available('50.00', 2);

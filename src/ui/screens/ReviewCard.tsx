@@ -8,14 +8,15 @@ import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { CardFigures } from './CardFigures.tsx';
 import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import type { CardMarkRows } from './held-review.ts';
+import { RecordExit } from './RecordExit.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
 import { StopTargetSlider } from './StopTargetSlider.tsx';
 
-const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+export const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
 // A card's panel progress by name: the record has all three on a walked card (A164).
-function panelOf<P extends PanelProgress['panel']>(progress: CardProgress, panel: P): Extract<PanelProgress, { panel: P }> {
+export function panelOf<P extends PanelProgress['panel']>(progress: CardProgress, panel: P): Extract<PanelProgress, { panel: P }> {
   return progress.panels.find((p): p is Extract<PanelProgress, { panel: P }> => p.panel === panel)!;
 }
 
@@ -51,6 +52,8 @@ export type CardDetail = 'Loading' | 'Unavailable' | { readonly trade: DailyTrad
 
 export interface ReviewCardProps {
   readonly facade: UiFacade;
+  // The current instant: the exit form in the Action panel defaults its Economic Time from it.
+  readonly now: () => string;
   readonly trade: WalkedTrade;
   readonly expanded: boolean;
   readonly detail: CardDetail | undefined;
@@ -79,7 +82,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -127,6 +130,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
         <CardBody
           key={`${detail.trade.tradeId}:${detail.trade.saveBinding.reviewDate}`}
           facade={facade}
+          now={now}
           trade={detail.trade}
           progress={trade.progress}
           name={tradeName(trade)}
@@ -152,6 +156,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
 
 interface CardBodyProps {
   readonly facade: UiFacade;
+  readonly now: () => string;
   readonly trade: DailyTradeReview;
   // The newest progress the screen holds for this Trade (A165): the panels word it.
   readonly progress: CardProgress;
@@ -188,7 +193,7 @@ function marksStatus(needed: number, rows: number, earlier: number): string {
 }
 
 // Owed counts the reflections still outstanding, so one answered or declined in this view is no longer owed (P46).
-function reflectionsStatus(due: number, owed: number): string {
+export function reflectionsStatus(due: number, owed: number): string {
   if (due > 0) return `${due} due`;
   if (owed > 0) return 'Not due';
   return 'None';
@@ -222,7 +227,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, now, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress, marks);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -300,7 +305,13 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
-            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
+            {name === 'Action' && (
+              <>
+                <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />
+                {/* An Exit Action is saved: the exit itself is a Trade Workflows save, recorded from here (A94). */}
+                {trade.form.kind === 'Saved' && trade.form.action.action === 'Exit' && <RecordExit facade={facade} tradeId={trade.tradeId} route={trade.exitRoute} now={now} onEntryDirty={onEntryDirty} onRefresh={onRefresh} />}
+              </>
+            )}
           </div>
         </div>
       ))}
