@@ -324,12 +324,20 @@ const R_MULTIPLE = signed(rMultiple);
 function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore: (cursor: string) => void }) {
   const { timeZone } = useRuntime();
   const rows = useRef<HTMLTableSectionElement>(null);
+  const statusLine = useRef<HTMLParagraphElement>(null);
+  const emptyMessage = useRef<HTMLParagraphElement>(null);
   const appendedFrom = state.kind === 'Ready' && state.paging?.kind === 'Appended' ? state.paging.from : undefined;
+  const refreshed = state.kind === 'Ready' && state.paging?.kind === 'Refreshed';
   const buttonGone = state.kind === 'Ready' && !state.nextCursor;
   useEffect(() => {
-    // The button the trader pressed is gone: focus goes to the first new row, not to the page start.
-    if (appendedFrom !== undefined && buttonGone) rows.current?.rows[appendedFrom]?.querySelector('a')?.focus();
-  }, [appendedFrom, buttonGone]);
+    // Focus moves only when the pressed button was removed, leaving it on the page (body); a trader who
+    // moved on while the page loaded keeps the focus they chose.
+    if (!buttonGone || document.activeElement !== document.body) return;
+    // The button is gone: focus goes to the first new row, not to the page start. After a refresh the
+    // old position means nothing, so it goes to the refreshed status line, or to the empty message.
+    if (appendedFrom !== undefined) rows.current?.rows[appendedFrom]?.querySelector('a')?.focus();
+    else if (refreshed) (statusLine.current ?? emptyMessage.current)?.focus();
+  }, [appendedFrom, refreshed, buttonGone]);
   if (state.kind === 'Loading') return <p role="status">Loading closed trades…</p>;
   if (state.kind === 'Error') {
     return (
@@ -345,7 +353,9 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
   if (items.length === 0) {
     return (
       <section className="card empty">
-        <p>No closed trades yet. A Trade appears here once its exit is recorded.</p>
+        <p tabIndex={-1} ref={emptyMessage}>
+          No closed trades yet. A Trade appears here once its exit is recorded.
+        </p>
       </section>
     );
   }
@@ -433,7 +443,9 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
       {table}
       {(nextCursor || message) && (
         <div className="paging">
-          <p role="status">{message}</p>
+          <p role="status" tabIndex={-1} ref={statusLine}>
+            {message}
+          </p>
           {nextCursor && (
             // aria-disabled, not disabled, so the pressed button keeps focus while its page loads.
             <button type="button" className="pill secondary" aria-busy={loading} aria-disabled={loading} onClick={() => !loading && showMore(nextCursor)}>
