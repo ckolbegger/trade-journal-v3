@@ -8,7 +8,10 @@ import type { Application } from '../../../src/app/compose.ts';
 import type { PositionChangeCommand, PositionChangeMember } from '../../../src/coordinators/trade-workflows/index.ts';
 import type { ReflectionDisposition } from '../../../src/modules/journal/index.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
-import { buy, complete, device, type Device, type Fill, type MutableDump, positionChange } from '../d5/support.ts';
+import {
+  buy, complete, confirmReference, device, type Device, type Fill, type MutableDump, MONDAY_1700, onboarded, PC1, PC1_TIME, PC2, planStock, positionChange, record, recordDeferred, restart, saveAction, saveMark,
+  TUESDAY_1700,
+} from '../d5/support.ts';
 
 export * from '../d5/support.ts';
 
@@ -119,4 +122,89 @@ export interface StoredTradeDoc {
   readonly terminalDesc?: string;
   readonly closeReasonFacts: { readonly factId: string; readonly kind: string; readonly versions: { readonly value: { readonly closeReasonId: string; readonly terminalPositionChangeId: string } }[] }[];
   readonly facts: { readonly factId: string; readonly kind: string; readonly versions: unknown[] }[];
+}
+
+// --- The Closed-Trade Review scenario through the facade (section 4, T6.11) ---
+
+export const MONDAY_DATE = '2026-10-12';
+export const TUESDAY_DATE = '2026-10-13';
+const MONDAY_NOON = '2026-10-12T16:00:00Z';
+const MONDAY_1500 = '2026-10-12T19:00:00Z';
+const TUESDAY_PLAN = '2026-10-13T13:00:00Z';
+const TUESDAY_1100 = '2026-10-13T15:00:00Z';
+const TUESDAY_1500 = '2026-10-13T19:00:00Z';
+const TUESDAY_1610 = '2026-10-13T20:10:00Z';
+const TUESDAY_1630 = '2026-10-13T20:30:00Z';
+
+export type ScenarioName = 'A' | 'K' | 'L' | 'M' | 'N' | 'P' | 'Q';
+export type ScenarioTrades = Readonly<Record<ScenarioName, string>>;
+
+export interface ClosedScenario {
+  // The Tuesday 17:00 device and its application; every Mark and Action Tuesday's Review needs is saved.
+  readonly d: Device;
+  readonly app: Application;
+  readonly trades: ScenarioTrades;
+}
+
+// Long Stock, 100 shares bought at 10:00 unless stated, every exit a Sell of the whole Position (T-A's X1 sells 30),
+// every exit's own Position Change Reflection completed. `onMonday` runs once Monday's facts are recorded, the clock
+// at Monday 17:00. The Marks and Actions of the Trades the Monday Review walks (T-A, T-K, T-N) are then saved, and
+// Tuesday's facts recorded on a Tuesday 17:00 clock, followed by the Marks and Actions of Tuesday's walk (T-A, T-N).
+export async function closedScenario(onMonday?: (app: Application, d: Device, trades: Partial<Record<ScenarioName, string>>) => Promise<void>): Promise<ClosedScenario> {
+  const monday = await device(undefined, MONDAY_1700);
+  let app = await onboarded(monday);
+  const reason = await closeReasonId(app, 'Target Reached');
+  const closing = async () => ({ closeReasonId: reason, closeReview: await closeReviewDisposition(app, 'Complete') });
+  const deferring = async () => ({ closeReasonId: reason, closeReview: await closeReviewDisposition(app, 'Defer') });
+  const buyAt = (price: string, economicTime: string): Fill => ({ quantity: '100', price, economicTime });
+  const sellAt = (price: string, economicTime: string): Fill => ({ quantity: '100', price, economicTime, fee: '0.60' });
+  const stock = (symbol: string, entry: string, stop: string, target: string, planTime?: string) => planStock(app, symbol, entry, stop, target, '100', planTime);
+
+  // Monday.
+  const trades: Partial<Record<ScenarioName, string>> = {};
+  const a = (trades.A = await confirmReference(app));
+  await record(app, a, PC1);
+  await record(app, a, PC2);
+  const k = (trades.K = await stock('KLM', '20.00', '19.00', '25.00'));
+  const m = (trades.M = await stock('MNP', '40.00', '38.00', '46.00'));
+  const n = (trades.N = await stock('NOP', '25.00', '23.00', '30.00'));
+  const p = (trades.P = await stock('PQR', '15.00', '14.00', '18.00'));
+  for (const [tradeId, entry] of [[k, '20.00'], [m, '40.00'], [n, '25.00'], [p, '15.00']] as const) await record(app, tradeId, buyAt(entry, PC1_TIME));
+  await recordExit(app, p, [sellAt('16.00', MONDAY_NOON)], await closing());
+  await recordExit(app, m, [sellAt('41.00', MONDAY_1500)], await deferring());
+  await onMonday?.(app, monday, trades);
+  for (const [tradeId, symbol, price] of [[a, 'XYZ', '51.00'], [k, 'KLM', '20.50'], [n, 'NOP', '25.50']] as const) {
+    await saveMark(app, symbol, MONDAY_DATE, price);
+    await saveAction(app, monday, tradeId);
+  }
+
+  // Tuesday.
+  const tuesday: Device = { ...monday, now: TUESDAY_1700 };
+  app = await restart(app, tuesday);
+  await recordExit(app, a, [{ quantity: '30', price: '52.00', economicTime: TUESDAY_1000, fee: '0.60' }]);
+  await recordExit(app, k, [sellAt('21.00', TUESDAY_1100)], await closing());
+  const l = (trades.L = await stock('LMN', '30.00', '28.00', '36.00', TUESDAY_PLAN));
+  await record(app, l, buyAt('30.00', TUESDAY_1000));
+  await recordExit(app, l, [sellAt('31.00', TUESDAY_1500)], await deferring());
+  await recordExit(app, n, [sellAt('26.00', TUESDAY_1630)], await closing());
+  const q = (trades.Q = await stock('QST', '10.00', '9.00', '12.00', TUESDAY_PLAN));
+  await recordDeferred(app, q, buyAt('10.00', TUESDAY_1610));
+  for (const [tradeId, symbol, price] of [[a, 'XYZ', '52.00'], [n, 'NOP', '26.00']] as const) {
+    await saveMark(app, symbol, TUESDAY_DATE, price);
+    await saveAction(app, tuesday, tradeId);
+  }
+  return { d: tuesday, app, trades: trades as ScenarioTrades };
+}
+
+// The Review `open` returns at `asOf` (Ready or Empty).
+export async function reviewAt(app: Application, asOf: string) {
+  const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
+  if (opened.kind !== 'Ready' && opened.kind !== 'Empty') throw new Error(`DailyReview.open: ${opened.kind}`);
+  return opened;
+}
+
+// The Trades the Review walks, in walk order.
+export function walkedIds(opened: Awaited<ReturnType<typeof reviewAt>>): string[] {
+  if (opened.kind !== 'Ready') return [];
+  return opened.families.flatMap((family) => (family.family === 'Trades' ? family.trades.map((t) => t.tradeId) : []));
 }
