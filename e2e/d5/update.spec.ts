@@ -1,10 +1,9 @@
-import { SCHEMA_VERSION } from '../../src/persistence/schema.ts';
 import {
   actionEntriesOf, AT_10, cardHeader, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry,
   reflectionsOf, reloadFromNotice, rootOf, saveAction, SECOND_PLAN, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf,
 } from './support.ts';
 
-test.describe('B5.6 Update from D4 with data', () => {
+test.describe('B5.6 Update from D4 with data', { tag: '@release-history' }, () => {
   test('should show Updating your journal, keep two Open Trades with their Actions, list a new deferred reflection as due, show the current schema in About, and point to the new database with the old one gone', async ({ server, profile }) => {
     server.use('dist-releases/d4');
     const context = await launchAt(profile, MONDAY_1700);
@@ -32,7 +31,7 @@ test.describe('B5.6 Update from D4 with data', () => {
     expect(workspaceNames(before)).toEqual([oldDatabase]);
     expect(actionEntriesOf(workspaceOf(before)!)).toHaveLength(2);
 
-    server.use('dist-releases/d5');
+    server.use('dist-releases/d5r2');
     expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
     await reloadFromNotice(page);
     await expect.poll(() => updating.seen(), { timeout: 3000 }).toBe(true);
@@ -57,10 +56,11 @@ test.describe('B5.6 Update from D4 with data', () => {
     await expect(tradeCard(page, 'XYZ')).toBeVisible();
     await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
 
-    // About: the d5 release (built from the current source) at the current schema.
+    // About: the d5r2 release (built from its tag, T6.21) at its own schema, 4: the update runs
+    // from the d4 tag (schema 3) to the d5r2 tag, so neither end is the current source.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();
-    await expect(page.locator('.identity')).toHaveText(identity('d5'));
-    await expect(page.locator('dt:has-text("Schema version") + dd')).toHaveText(String(SCHEMA_VERSION));
+    await expect(page.locator('.identity')).toHaveText(identity('d5r2'));
+    await expect(page.locator('dt:has-text("Schema version") + dd')).toHaveText('4');
 
     const after = await probe(page);
     const { current, candidates } = rootOf(after);

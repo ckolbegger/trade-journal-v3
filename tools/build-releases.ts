@@ -3,7 +3,9 @@
 // after the build and its inventory left unchanged.
 // D2 T2.17: d1 is built from the tag claude-opus-5.5-d1 (A34). D4 T4.27: d2 is likewise built from
 // the tag claude-opus-5.5-d2 (A50). D5 T5.18: d4 is built from the tag claude-opus-5.5-d4 (A72) and
-// d5 is the current source; d5 carries a build label like v1.
+// the current source is built as a labelled release like v1. D6 T6.21 (A97, decision 70): d5r2 is
+// built from the tag claude-opus-5.5-d5r2, the last release before D6, and the current source moves
+// from d5 to d6; no d5 folder remains.
 import { execFileSync } from 'node:child_process';
 import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -13,16 +15,17 @@ import type { OfflineReleaseInventory } from '../src/delivery/inventory.ts';
 import { INVENTORY_FILE } from './release.ts';
 
 export const RELEASES_DIR = path.resolve('dist-releases');
-export const RELEASES = ['v1', 'v2', 'v2-corrupt', 'd1', 'd2', 'd4', 'd5'] as const;
+export const RELEASES = ['v1', 'v2', 'v2-corrupt', 'd1', 'd2', 'd4', 'd5r2', 'd6'] as const;
 export type ReleaseName = (typeof RELEASES)[number];
 
 // A34, A50: the tags the previous releases are built from. Git tags are shared by every worktree,
 // so the tags are implementation-specific. D1_RELEASE_TAG builds d1; PREVIOUS_RELEASE_TAG, the
-// release immediately before the current source, builds d2 (A50) and d4 (D5 A72).
+// release immediately before the current source, builds d2 (A50), d4 (D5 A72) and, as the tag claude-opus-5.5-d5r2, d5r2 (D6 A97).
 export const D1_RELEASE_TAG = 'claude-opus-5.5-d1';
 export const D2_RELEASE_TAG = 'claude-opus-5.5-d2';
-export const PREVIOUS_RELEASE_TAG = 'claude-opus-5.5-d4';
-const TAGGED_RELEASES = { d1: D1_RELEASE_TAG, d2: D2_RELEASE_TAG, d4: PREVIOUS_RELEASE_TAG } as const;
+export const D4_RELEASE_TAG = 'claude-opus-5.5-d4';
+export const PREVIOUS_RELEASE_TAG = 'claude-opus-5.5-d5r2';
+const TAGGED_RELEASES = { d1: D1_RELEASE_TAG, d2: D2_RELEASE_TAG, d4: D4_RELEASE_TAG, d5r2: PREVIOUS_RELEASE_TAG } as const;
 
 // The asset v2-corrupt alters: the stylesheet, so the altered release still parses as a page.
 export async function corruptedAsset(dir: string): Promise<string> {
@@ -32,7 +35,7 @@ export async function corruptedAsset(dir: string): Promise<string> {
   return asset.path;
 }
 
-async function buildLabelled(label: 'v1' | 'v2' | 'd5') {
+async function buildLabelled(label: 'v1' | 'v2' | 'd6') {
   process.env.TJ_BUILD_LABEL = label;
   await build({ logLevel: 'warn', build: { outDir: path.join(RELEASES_DIR, label), emptyOutDir: true } });
 }
@@ -87,6 +90,7 @@ if (import.meta.main) {
   await cp(await buildTaggedRelease('d1'), path.join(RELEASES_DIR, 'd1'), { recursive: true });
   await cp(await buildTaggedRelease('d2'), path.join(RELEASES_DIR, 'd2'), { recursive: true });
   await cp(await buildTaggedRelease('d4'), path.join(RELEASES_DIR, 'd4'), { recursive: true });
-  await buildLabelled('d5');
+  await cp(await buildTaggedRelease('d5r2'), path.join(RELEASES_DIR, 'd5r2'), { recursive: true });
+  await buildLabelled('d6');
   console.log(`build:releases OK: ${RELEASES.join(', ')} in ${RELEASES_DIR}; v2-corrupt alters ${altered}`);
 }
