@@ -1092,6 +1092,29 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     expect(screen.getByText(notice)).toBeTruthy();
   });
 
+  it('should show Closed after this session close with the current lifecycle on a walked card whose Trade closed after the cutoff, and not on an Open one', async () => {
+    const user = userEvent.setup();
+    const overview = review();
+    const facade = cardFacade(overview);
+    const walked = overview.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ tradeId }) => {
+      const found = walked.find((t) => t.tradeId === tradeId)!;
+      const lifecycle = tradeId === walked[0]!.tradeId ? 'Closed' : 'Open';
+      return Promise.resolve({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: CUTOFF, trade: tradeReview(found, { lifecycle }) });
+    });
+    renderReview(facade);
+
+    const closed = await screen.findByRole('region', { name: /review$/ });
+    expect(within(closed).getByText("Closed after this session's close")).toBeTruthy();
+    expect(within(closed).getByText('Closed', { selector: '.review-card-lifecycle' })).toBeTruthy();
+    expect(within(closed).getByRole('button', { name: /Action/ })).toBeTruthy();
+
+    await user.click(headers()[1]!);
+    const open = await screen.findByRole('region', { name: /review$/ });
+    expect(within(open).queryByText("Closed after this session's close")).toBeNull();
+    expect(within(open).queryByText('Closed', { selector: '.review-card-lifecycle' })).toBeNull();
+  });
+
   it('should label the open card body with the Trade name then review, and with the Underlying then review for a Trade with no summary', async () => {
     const user = userEvent.setup();
     const noSummary = { ...TA, underlying: 'XYZ', summary: undefined };

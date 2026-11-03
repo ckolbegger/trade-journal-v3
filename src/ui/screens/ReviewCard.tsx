@@ -285,6 +285,12 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
       <p>
         {trade.labels.strategy} · {trade.labels.account} · {trade.labels.institution}
       </p>
+      {/* A Trade closed after the cutoff is evaluated at the cutoff but is no longer Open (A91). */}
+      {trade.lifecycle === 'Closed' && (
+        <p>
+          <span>Closed after this session&apos;s close</span> · <span className="review-card-lifecycle">{trade.lifecycle}</span>
+        </p>
+      )}
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis)}</p>
       ))}
