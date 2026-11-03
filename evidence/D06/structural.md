@@ -2094,3 +2094,29 @@ The critic 3 gate run, at the final code, will cover R1 in a complete cumulative
 | Browser (Chromium, full) | 162 passed (7.6 min) | `suite-runs/t6.25-b3-browser.txt` |
 | Release history | 4 passed | `suite-runs/t6.25-b3-browser.txt` |
 | Checks | 12 of 12 | `suite-runs/t6.25-b3-checks.txt` |
+
+## Critic 3 and T6.28-B5
+
+**Critic 3** (`critic-3.md`), at `cd682233`, after decision 75. It is the first critic on the code with both stale-index fixes. The cumulative run `t6.25-b3`, at `16da03d6` with only evidence docs committed since, served as its gate run. **FAIL:** C6.1 to C6.10 all passed, with one narrow-layout defect.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 3 | `cd682233` | v2, plus notes on `build:releases` and the background generation | 177,704 | 61 | 11 min 23 s | 1 moderate (fixed as T6.28-B5) |
+
+- **Defect 1:** the exit receipt scrolls the page sideways at 375 px and 320 px. Root cause: T6.28-B4 (`4f739a84`) made the shared `LotMatchesTable` cells no-wrap. Trade Detail holds that table in a scroll region, but the receipt did not, and B4's test checked Detail only.
+- **T6.28-B5 `dbd90a52`:** the receipt's Lot Matches table goes in a "Matched lots" region with the "Lot Matches" caption, as on Detail. The Changed Lot Matches table, which overflowed on its own at 320 px, goes in a "Changed matched lots" region and is named "Changed Lot Matches".
+  - **Test:** a new case in `e2e/d6/responsive-a11y.spec.ts` covers a partial exit's receipt and an earlier-dated exit's receipt. At 375 px and 320 px it checks for no page-level sideways scroll and finds each table by name.
+  - **Red:** `Partial exit receipt at 375 px: page scrollWidth, Expected: <= 375, Received: 612`. For the Changed table, removing only its region gave `Earlier-dated exit receipt at 320 px: … Expected: <= 0, Received: 41`.
+  - No first-run passes.
+  - **Note:** `accessibleAtBothWidths` runs axe only, at 1280 px and 390 px, so it never checks page-level sideways scroll.
+- **ocr** (`ocr/T6.28-B5-dbd90a52.json`): 0 comments.
+
+**Gate run `t6.28-b5-gate`**: at HEAD `dbd90a52`, full tier. The faults build and `dist-releases/d6` were rebuilt without `build:releases`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,188 passed | `suite-runs/t6.28-b5-gate-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.28-b5-gate-integration.txt` |
+| Browser (Chromium, full) | 163 passed (8.0 min) | `suite-runs/t6.28-b5-gate-browser.txt` |
+| Release history | 4 passed | `suite-runs/t6.28-b5-gate-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.28-b5-gate-checks.txt` |
