@@ -1628,3 +1628,46 @@ Ports 5175, 9341 and 9342 were free before and after the run.
 - **Measurement:** `measureClosePhase` in `tools/capacity/measure-page.ts` closes 2,000 Trades through the facade in 10 rounds of 200, with 1-3 entry and 1-3 exit Position Changes each (4,000 exits, 7,500 Sell Executions), a Close Reason (30/35/15/20) and the section 1.4 Close Review split (1,300 completed, 300 declined, 360 deferred then answered, 32 deferred then declined, 8 Outstanding). `tools/capacity/profile.ts` drops the Close Review allowance and prices 50,000 entry and 50,000 exit Position Changes and 100,000 entry and 100,000 exit Executions.
 - **Verification (exact):** `npm run measure:capacity` printed "measure:capacity OK: M 916515264 bytes, required quota 2749545792 bytes" (7.0 minutes). `npm run verify:capacity` printed "verify:capacity OK: required quota 2749545792 = 3 × 916515264, schema 5".
 - **Measured bytes per record (chromium):** exit Position Change 1,155.7 (entry 485.7), exit Execution 611.4 (entry 380.3), Close Review completed 1,879.7, declined 1,202.3, deferred then answered 3,369.6, deferred then declined 2,751.4, Outstanding 1,512.1. The replaced Close Review allowance was 1,200 JSON bytes x overhead for all 24,700.
+
+**ocr review of `7cf70001`** (`evidence/D06/ocr/T6.22-7cf70001.json`, relocated): 7 files reviewed, 7 comments. The reviewer also checked the projection arithmetic by hand and found no defect. The entry/exit split sums to 100,000 Position Changes and 200,000 Executions, and the Close Review counts sum to 24,700.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| high (×3) | relocated `capacity-close-phase.ts`, `d4`/`d5`/`d6` `capacity-profile` imports | Import paths don't resolve | Wrong: a relocation artifact; the real paths resolve | Dismissed |
+| medium | `tools/capacity/profile.ts:146` | A kept engine measurement from before schema 5 lacks the Close-phase fields, so `project()` gives NaN | Doubtful: the mechanism is real, but the committed basis can't trigger it | Bug task T6.22-B1 |
+| low | `tools/capacity/measure-page.ts:~541` | Nested ternary | Valid, style only | Dismissed: the user declined `no-nested-ternary` (`plan/D05R-card-identity-handoff.md:72`) |
+| low | `tools/capacity/measure-page.ts:~512` | The Close phase's `times` is written but never read | Valid: dead code | Bug task T6.22-B1 |
+
+**B5.6 title (`a15cc742`, at the user's direction, 2026-11-02):** "show the current schema in About" now reads "show schema 4 in About". It matches what the test checks since T6.21 and D5's B5.6 row ("About shows schema 4").
+
+**Cumulative run `t6.22-capacity`**: run at HEAD `a15cc742` (T6.22 plus the B5.6 title), on 2026-11-02, with the full browser tier. The runner's final report was not delivered, so the results below come from the output files.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1174 tests passed | `suite-runs/t6.22-capacity-unit.txt` |
+| Node integration | 61 files, 121 tests passed | `suite-runs/t6.22-capacity-integration.txt` |
+| Browser (Chromium, full) | 146 passed (6.7 min) | `suite-runs/t6.22-capacity-browser.txt` |
+| Static and verification (12) | 12 of 12 passed; `verify:capacity` OK at schema 5 | `suite-runs/t6.22-capacity-checks.txt` |
+
+The whole run took about 8.5 minutes from start to finish.
+
+### T6.22-B1: reject an older-schema measurement; drop the unused `times`
+
+**Commit `d9fd73aa`.** `project()` now throws if the projected total isn't finite, and the error names the engine and says to run `measure:capacity`. The subagent chose this over a schema check in `measure-capacity.ts`, because `EngineMeasurement` carries no schema field. The Close phase's `times` array is removed.
+
+- **Red:** "should reject an engine measurement taken before schema 5 that lacks the Close phase figures" (`tests/integration/d6/capacity-profile.test.ts`) failed with `AssertionError: expected [Function] to throw an error`.
+- **Green:** the same case then passed.
+- **Basis unchanged:** `git diff src/delivery/capacity-basis.json` is empty, and `verify:capacity` reports OK.
+
+**ocr review of `d9fd73aa`** (`evidence/D06/ocr/T6.22-B1-d9fd73aa.json`, relocated): 3 files reviewed, 0 comments.
+
+**Cumulative run `t6.22-b1-capacity-guard`**: run at HEAD `d9fd73aa` on 2026-11-02, with the task browser tier (no full-tier path changed since `a15cc742`).
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1174 tests passed | `suite-runs/t6.22-b1-capacity-guard-unit.txt` |
+| Node integration | 61 files, 122 tests passed | `suite-runs/t6.22-b1-capacity-guard-integration.txt` |
+| Browser (Chromium, task) | 5 passed (12.5 s) | `suite-runs/t6.22-b1-capacity-guard-browser.txt` |
+| Static and verification (12) | 12 of 12 passed | `suite-runs/t6.22-b1-capacity-guard-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after both runs.

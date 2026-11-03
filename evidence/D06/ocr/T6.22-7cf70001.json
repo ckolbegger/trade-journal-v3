@@ -1,0 +1,222 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 7 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 7,
+    "total_tokens": 351919,
+    "input_tokens": 347262,
+    "output_tokens": 4657,
+    "cache_read_tokens": 26880,
+    "elapsed": "2m20s"
+  },
+  "tool_calls": {
+    "total": 35,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 10,
+      "file_find": 4,
+      "file_read": 17,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d06/support/capacity-close-phase.ts",
+      "content": "This resolves to `src/itg/tools/capacity/profile.ts`, which does not exist. The Close-phase `EngineMeasurement` is defined in `src/itg/d06/tools/profile.ts`; import it from `../tools/profile.ts` so this helper can type-check.",
+      "suggestion_code": "import type { EngineMeasurement } from '../tools/profile.ts';",
+      "existing_code": "import type { EngineMeasurement } from '../../tools/capacity/profile.ts';",
+      "start_line": 1,
+      "end_line": 1,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d06/tests/d4-capacity-profile.ts",
+      "content": "This resolves to `src/itg/support/capacity-close-phase.ts`, but the new helper is in `src/itg/d06/support`. Use `../support/capacity-close-phase.ts`; otherwise this test suite fails module resolution during collection.",
+      "suggestion_code": "import { NO_CLOSE_PHASE } from '../support/capacity-close-phase.ts';",
+      "existing_code": "import { NO_CLOSE_PHASE } from '../../support/capacity-close-phase.ts';",
+      "start_line": 3,
+      "end_line": 3,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d06/tests/d5-capacity-profile.ts",
+      "content": "This resolves to `src/itg/support/capacity-close-phase.ts`, but the helper exists only under `src/itg/d06/support`. Use `../support/capacity-close-phase.ts` to avoid a module-not-found failure when collecting this suite.",
+      "suggestion_code": "import { NO_CLOSE_PHASE } from '../support/capacity-close-phase.ts';",
+      "existing_code": "import { NO_CLOSE_PHASE } from '../../support/capacity-close-phase.ts';",
+      "start_line": 3,
+      "end_line": 3,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d06/tests/d6-capacity-profile.ts",
+      "content": "This import resolves to the nonexistent `src/tools/capacity/profile.ts`. The updated projection with the Close-phase fields and mature counts is in `src/itg/d06/tools/profile.ts`, so use `../tools/profile.ts`. Importing the root `tools/capacity/profile.ts` instead would also be incorrect because that module still has the older profile.",
+      "suggestion_code": "import { ALLOWANCES, MEASURED, project, type EngineMeasurement } from '../tools/profile.ts';",
+      "existing_code": "import { ALLOWANCES, MEASURED, project, type EngineMeasurement } from '../../../tools/capacity/profile.ts';",
+      "start_line": 2,
+      "end_line": 2,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d06/tools/profile.ts",
+      "content": "The persisted capacity basis still contains schema-4 measurements without these Close-phase fields, while measure-capacity.ts retains measurements for engines not requested in the current run. For example, measuring only firefox against the existing chromium basis leaves the old chromium record first; project() returns NaN for it, and largestProjection() retains that NaN result, which is written as null in JSON. Reject or discard incompatible cached measurements (and require remeasurement), or migrate/regenerate the basis together with this contract change.",
+      "existing_code": "    MEASURED.positionChangeExits * m.bytesPerExitPositionChange +",
+      "start_line": 146,
+      "end_line": 146,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d06/tools/measure-page.ts",
+      "content": "This nested ternary violates the review checklist's prohibition on nested ternaries. Use explicit branches or a disposition helper for Complete, Decline, and Defer; apply the same approach to the nested settling-outcome and bucket selections below.",
+      "existing_code": "            : slot \u003c CLOSE_DECLINED_BELOW\n              ? { kind: 'Decline' as const, definitionId: closeReviewDefinitionId, ...(n % 2 === 0 \u0026\u0026 { reason: 'Nothing new to learn from this one.' }) }\n              : { kind: 'Defer' as const };",
+      "start_line": 541,
+      "end_line": 543,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/itg/d06/tools/measure-page.ts",
+      "content": "The Close phase's times array is only appended to and is never read. Unlike the Debt phase, this phase resolves the single reflection directly from the card, so remove the unused array and this push unless terminal timestamps are intended for an additional validation.",
+      "existing_code": "          if (terminal \u0026\u0026 j === fillsOf(k) - 1) times.push(economicTime);",
+      "start_line": 512,
+      "end_line": 512,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Capacity profiling phases and integration tests",
+      "files": [
+        "src/itg/d06/support/capacity-close-phase.ts",
+        "src/itg/d06/tests/d4-capacity-profile.ts",
+        "src/itg/d06/tests/d5-capacity-profile.ts",
+        "src/itg/d06/tests/d6-capacity-profile.ts"
+      ]
+    },
+    {
+      "label": "Capacity and page measurement tooling",
+      "files": [
+        "src/itg/d06/tools/measure-capacity.ts",
+        "src/itg/d06/tools/measure-page.ts",
+        "src/itg/d06/tools/profile.ts"
+      ]
+    }
+  ],
+  "session_id": "53abb8a0-6e11-4179-b121-ae7222c093cf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "53abb8a0-6e11-4179-b121-ae7222c093cf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "9851d381c37b371b1a6e2a69a1d5e7b67a6eff44",
+      "resolved_head": "358ff7fb4198f84e2cf6fdcec9e5a3d0e8e14d3b",
+      "exact_range": "9851d381c37b371b1a6e2a69a1d5e7b67a6eff44..358ff7fb4198f84e2cf6fdcec9e5a3d0e8e14d3b",
+      "source_artifact_sha256": "2bc7f1a4e0ae7a194a448d0a00fb38cb44d52d5b2e7d55aaf90bc45327417b73"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0e23a41ff23d09aff793de1d8df302326d52f29e51563d5e51de2c6cdb9f9735",
+          "path": "src/itg/d06/tools/measure-page.ts",
+          "fingerprint": "efefe9b230802c594aa9c52624e4896cd243957de3a281781ab6b777b177a384"
+        },
+        {
+          "item_id": "2d3771833394c8b19ee9fd4e3bb54b8ecc240208eaa310853fd2f70159ead0cf",
+          "path": "src/itg/d06/tests/d4-capacity-profile.ts",
+          "fingerprint": "1f65fc8840537fba605ab5a365675d3cc1a0ca426ba13abf7ec599ebfe5b1a6f"
+        },
+        {
+          "item_id": "368bf7c72a6999ee6d7b5ff286289b0d3104a1cca9b52079157955cb9c568b6e",
+          "path": "src/itg/d06/tools/measure-capacity.ts",
+          "fingerprint": "1b532ee15ec1672bdb04e06b43d39fc801a77c923aa82f1445014229389cdd1d"
+        },
+        {
+          "item_id": "712bbb068c670ac327e25232fc46c78cdc7e2e5cb27618ce6e8fecb441463950",
+          "path": "src/itg/d06/support/capacity-close-phase.ts",
+          "fingerprint": "3f96efa8e7a40535a442fdd540766c6daa0999e5da86686df7c743e018df11cf"
+        },
+        {
+          "item_id": "b708fdc54834377eb1b8da6c147867e144f11563b6c5caad28e86014cd0d477d",
+          "path": "src/itg/d06/tests/d6-capacity-profile.ts",
+          "fingerprint": "80c08fd3ac9130da0a72b649e02504994b8eefe0fed3100a6ae6f5b76e42eaa1"
+        },
+        {
+          "item_id": "d69fd62533109a3221d7aed1e8dfc75e7990769a49222d5a26d3ad3c22becbea",
+          "path": "src/itg/d06/tools/profile.ts",
+          "fingerprint": "675f0ede1ccd4b80366718d9c99fbab206cc16e9471524e63171e30911f55567"
+        },
+        {
+          "item_id": "dc9bc9b8b217e18727bd0b292f5f4e9b37ccbebc894674ea2c793c24f690057b",
+          "path": "src/itg/d06/tests/d5-capacity-profile.ts",
+          "fingerprint": "fa1ca4332f7fc460f2ef5d47137ea8b39259cd5fd4f810ba4e3f570f8e68ae8a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0e23a41ff23d09aff793de1d8df302326d52f29e51563d5e51de2c6cdb9f9735",
+          "path": "src/itg/d06/tools/measure-page.ts",
+          "fingerprint": "efefe9b230802c594aa9c52624e4896cd243957de3a281781ab6b777b177a384"
+        },
+        {
+          "item_id": "2d3771833394c8b19ee9fd4e3bb54b8ecc240208eaa310853fd2f70159ead0cf",
+          "path": "src/itg/d06/tests/d4-capacity-profile.ts",
+          "fingerprint": "1f65fc8840537fba605ab5a365675d3cc1a0ca426ba13abf7ec599ebfe5b1a6f"
+        },
+        {
+          "item_id": "368bf7c72a6999ee6d7b5ff286289b0d3104a1cca9b52079157955cb9c568b6e",
+          "path": "src/itg/d06/tools/measure-capacity.ts",
+          "fingerprint": "1b532ee15ec1672bdb04e06b43d39fc801a77c923aa82f1445014229389cdd1d"
+        },
+        {
+          "item_id": "712bbb068c670ac327e25232fc46c78cdc7e2e5cb27618ce6e8fecb441463950",
+          "path": "src/itg/d06/support/capacity-close-phase.ts",
+          "fingerprint": "3f96efa8e7a40535a442fdd540766c6daa0999e5da86686df7c743e018df11cf"
+        },
+        {
+          "item_id": "b708fdc54834377eb1b8da6c147867e144f11563b6c5caad28e86014cd0d477d",
+          "path": "src/itg/d06/tests/d6-capacity-profile.ts",
+          "fingerprint": "80c08fd3ac9130da0a72b649e02504994b8eefe0fed3100a6ae6f5b76e42eaa1"
+        },
+        {
+          "item_id": "d69fd62533109a3221d7aed1e8dfc75e7990769a49222d5a26d3ad3c22becbea",
+          "path": "src/itg/d06/tools/profile.ts",
+          "fingerprint": "675f0ede1ccd4b80366718d9c99fbab206cc16e9471524e63171e30911f55567"
+        },
+        {
+          "item_id": "dc9bc9b8b217e18727bd0b292f5f4e9b37ccbebc894674ea2c793c24f690057b",
+          "path": "src/itg/d06/tests/d5-capacity-profile.ts",
+          "fingerprint": "fa1ca4332f7fc460f2ef5d47137ea8b39259cd5fd4f810ba4e3f570f8e68ae8a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 140493
+  }
+}
