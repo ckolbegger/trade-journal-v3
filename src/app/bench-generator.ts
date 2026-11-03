@@ -160,7 +160,7 @@ interface Schedule {
 // planned in a session, entered over the next 1–3 sessions, held, and exited over 1–3 sessions, one Position
 // Change a session. Nothing is planned in the last sessions, and no Position Change is in the last one, so the
 // reflections left Outstanding are all due at the as-of Review.
-export function schedule(days: readonly number[], profile: ReturnType<typeof benchScale>): Schedule {
+export function schedule(days: readonly number[], profile: ReturnType<typeof benchScale>, sessionCloses: readonly number[]): Schedule {
   const planSessions = days.length - BENCH_TAIL_SESSIONS;
   if (planSessions < 1) throw new Error(`${days.length} sessions are too few`);
   const { trades, closedTrades, openTrades } = profile;
@@ -178,8 +178,11 @@ export function schedule(days: readonly number[], profile: ReturnType<typeof ben
     const planned = plannedQuantity(index);
     const change = (sessionIndex: number, side: 'Buy' | 'Sell', quantities: readonly number[], terminal: boolean) => {
       if (sessionIndex > days.length - 2) throw new Error(`Trade ${index}: a Position Change in session ${sessionIndex}, after the last but one`);
-      // Within regular hours in both UTC offsets, and a different minute for most Trades.
-      unsorted.push({ kind: 'PositionChange', time: days[sessionIndex]! + (14 * 60 + 30 + (index % 300)) * MINUTE, index, side, quantities, terminal });
+      // Within regular hours in both UTC offsets, and a different minute for most Trades: up to 300 minutes
+      // after 14:30Z, but at least a minute before that session's own close (an early close is at 17:00Z or 18:00Z).
+      const minutesToClose = Math.floor((sessionCloses[sessionIndex]! - days[sessionIndex]!) / MINUTE) - (14 * 60 + 30);
+      const spread = Math.min(300, minutesToClose - 1);
+      unsorted.push({ kind: 'PositionChange', time: days[sessionIndex]! + (14 * 60 + 30 + (index % spread)) * MINUTE, index, side, quantities, terminal });
     };
     if (index < closedTrades) {
       const entries = Array.from({ length: PATTERN[index % PATTERN.length]! }, () => PATTERN[fillSequence++ % PATTERN.length]!);
@@ -678,6 +681,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
     const { events, positionChanges: positionChangeTotal, closes: closeTotal, executions: executionTotal } = schedule(
       sessions.map((session) => Date.parse(session.date)),
       profile,
+      sessions.map((session) => Date.parse(session.close)),
     );
     if (closeTotal !== profile.closedTrades) throw new Error(`${closeTotal} closes scheduled for ${profile.closedTrades} Closed Trades`);
     const reflectionPlan = dispositionsFor(positionChangeTotal, BENCH_SEED);

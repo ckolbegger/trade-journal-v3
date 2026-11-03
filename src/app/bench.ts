@@ -6,8 +6,9 @@
 // deferred reflections resolved in the Review where they fall due.
 // Version 4 (D6 T6.24): the book turns over (plan section 1.4 at D6): 24,700 Trades are planned, entered and
 // closed with a Close Reason and a Close Review, 200 stay Open and 100 stay Planned.
-export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v4';
-export const BENCH_GENERATOR_VERSION = 4;
+// Version 5 (T6.24-B2): every Position Change falls before its own session's close, early-close days included.
+export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v5';
+export const BENCH_GENERATOR_VERSION = 5;
 export const BENCH_SEED = 20211011;
 // The generator's clock starts here and only moves forward with the generated Economic Times.
 // Every simulated session is inside session-policy coverage (decision 51).
