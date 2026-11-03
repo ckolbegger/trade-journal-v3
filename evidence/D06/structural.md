@@ -2120,3 +2120,16 @@ The critic 3 gate run, at the final code, will cover R1 in a complete cumulative
 | Browser (Chromium, full) | 163 passed (8.0 min) | `suite-runs/t6.28-b5-gate-browser.txt` |
 | Release history | 4 passed | `suite-runs/t6.28-b5-gate-browser.txt` |
 | Checks | 12 of 12 | `suite-runs/t6.28-b5-gate-checks.txt` |
+
+## Critic 4: the T6.28 gate passes
+
+**Critic 4** (`critic-4.md`) ran at `097d1cd9`, after T6.28-B5. Its gate run is `t6.28-b5-gate`, at `dbd90a52`; only evidence docs were committed between the two. It passed C6.1–C6.7, C6.9, C6.10 and the narrow-layout checks, including both exit receipts, and found no defects.
+
+**C6.8 was not run by critic 4:** the permission system refused `npm run serve:releases` three times. The user added the allow rule `Bash(npm run serve:releases:*)` to their local settings, and a fresh critic ran C6.8 alone at the same commit (`critic-4-c6.8.md`). **PASS, no defects.**
+
+**The T6.28 browser-critic gate passes at `097d1cd9`:** every flow C6.1 to C6.10 passes.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 4 | `097d1cd9` | v2, as critic 3 | 183,621 | 94 | 13 min 32 s | none (C6.8 not run) |
+| 4, C6.8 | `097d1cd9` | critic 4's, limited to C6.8 | 87,058 | 21 | 3 min 1 s | none |
