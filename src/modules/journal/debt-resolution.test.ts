@@ -461,3 +461,61 @@ describe('applyPreparedEffects: several Debt resolutions in one batch', () => {
     );
   });
 });
+
+describe('applyPreparedEffects: vacated byOutstandingDue keys (T6.25-B3)', () => {
+  const vacates = (tx: ReturnType<typeof beginSemanticTransaction>) => tx.close().writes.filter((w) => w.op === 'vacateIndexKey');
+  const vacate = (debtId: string) => ({ op: 'vacateIndexKey', store: 'journalDebts', index: 'byOutstandingDue', key: [PC1_TIME, debtId] });
+
+  async function resolveWith(resolution: Record<string, unknown>) {
+    const setup = await withDebt();
+    const prepared = await setup.journal.prepareEffects({
+      obligation: 'ResolveDebt',
+      debtId: setup.debt.debtId,
+      expectedDebtRevision: setup.debt.revision,
+      resolution,
+    } as never);
+    if (prepared.kind !== 'Prepared') throw new Error('expected Prepared');
+    return { setup, prepared };
+  }
+
+  it('should stage a vacate of the old byOutstandingDue key after the put when a settled Debt leaves the index', async () => {
+    const { setup, prepared } = await resolveWith({ kind: 'Answer', form: { definitionId: DEFINITION, answers } });
+    const tx = beginSemanticTransaction();
+    setup.journal.applyPreparedEffects(tx, prepared, {});
+    const { writes } = tx.close();
+    const putAt = writes.findIndex((w) => w.op === 'put' && w.store === 'journalDebts');
+    expect(writes[putAt + 1]).toEqual(vacate(setup.debt.debtId));
+    expect(writes.filter((w) => w.op === 'vacateIndexKey')).toEqual([vacate(setup.debt.debtId)]);
+  });
+
+  it('should stage a vacate of the old byOutstandingDue key when a Debt is declined', async () => {
+    const { setup, prepared } = await resolveWith({ kind: 'Decline' });
+    const tx = beginSemanticTransaction();
+    setup.journal.applyPreparedEffects(tx, prepared, {});
+    expect(vacates(tx)).toEqual([vacate(setup.debt.debtId)]);
+  });
+
+  it('should stage no vacate for a new Debt, which has no earlier index entry', async () => {
+    const setup = await withDebt();
+    const deferred = await setup.journal.prepareEffects({
+      obligation: 'PositionChangeReflection',
+      disposition: { kind: 'Defer' },
+      anchor: { kind: 'Trade', ref: 'trade-1' },
+      origin: { kind: 'PositionChange', ref: 'candidate:pc-2' },
+      momentTime: PC1_TIME,
+    });
+    if (deferred.kind !== 'Prepared') throw new Error('expected Prepared');
+    const tx = beginSemanticTransaction();
+    setup.journal.applyPreparedEffects(tx, deferred, { 'candidate:pc-2': 'pc-2' });
+    expect(vacates(tx)).toEqual([]);
+  });
+
+  it('should stage no vacate when the Debt before the write held no outstandingDue key', async () => {
+    const { setup, prepared } = await resolveWith({ kind: 'Decline' });
+    const resolutions = prepared.effects.debtResolutions!;
+    const current = withoutDue(resolutions[0]!.current);
+    const tx = beginSemanticTransaction();
+    setup.journal.applyPreparedEffects(tx, { ...prepared, effects: { ...prepared.effects, debtResolutions: [{ ...resolutions[0]!, current }] } }, {});
+    expect(vacates(tx)).toEqual([]);
+  });
+});

@@ -871,6 +871,10 @@ export function createJournal(deps: JournalDeps): Journal {
           verify: (stored) => (stored?.['versions'] as StoredDebt['versions'] | undefined)?.at(-1)?.versionId === resolution.expectedRevision,
         });
         tx.stage({ op: 'put', store: 'journalDebts', value: { ...rest, versions: [...current.versions, version] } });
+        // Chromium keeps the old index entry until a read-write cursor visits it, so the key the write drops is vacated (decision 75).
+        if (current.outstandingDue !== undefined) {
+          tx.stage({ op: 'vacateIndexKey', store: 'journalDebts', index: 'byOutstandingDue', key: [current.outstandingDue, current.debtId] });
+        }
         return {
           debtId: current.debtId,
           obligationKey: current.obligationKey,
