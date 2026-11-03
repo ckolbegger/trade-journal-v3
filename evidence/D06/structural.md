@@ -1566,3 +1566,33 @@ Commit `8d2da0d9`. Files: `ReviewView.tsx`, `ReviewCard.tsx`, `CardMarks.tsx`, `
 Ports 5175, 9341 and 9342 were free before and after the run.
 
 **Status: stopped for the user (handoff section 5, condition 5).** After the third round of bug tasks, one low finding remains on T6.20: the exit refresh does not report unsaved Exit Action edits. Also open, from T6.20's ocr check 7: whether Record the exit should be offered as soon as an Exit Action is saved.
+
+## T6.20-R1: the Review records Exit intent only (decision 72, revision 32)
+
+**The user's decision (2026-11-02), settling the stop above:** an Action records intent; it does not perform the action. A94 is withdrawn by plan revision 32, decision 72 (`56ad8487`, tag `claude-opus-5.5-plan-r32`). The Review no longer offers Record the exit or hosts the exit form. The exit is recorded from Trade Detail's Record exit. The remaining T6.20-B3 finding goes with the removed code. The user's proposed Deviation, an Exit Action not carried out by the next market session, is an open issue for D12 and is not built in D6.
+
+**Commit `26059022`** (`fix(ui): T6.20-R1 …`):
+- **Removed:** `RecordExit.tsx` and `heading-level.tsx`. `PositionChangeForm.tsx`, `ExitReceipt.tsx`, `ClosingTheTrade.tsx`, `form-issues.tsx`, `src/app/routes.ts`, `PositionChangeFormExit.test.tsx` and `tests/support/position-change-form-facade.ts` are back to their text before T6.20 (`git diff e965c569^` is empty for each). The exit-refresh focus plumbing is gone from `ReviewCard` and `ReviewView`, and `exitRoute` and `ExitRoute` are gone from the Daily Review coordinator and `src/app/types.ts`.
+- **Kept:** the owed-reflection cards, the held-Review owed fold and the OwedTrade next step. `refreshTrade(tradeId, request, savedDrafts)` and its not-kept notices stay, because Mark and Action saves call it. `select(…, keepNotice)` stays for the owed Retry.
+- **Red/green:**
+  - The new case, "Exit Action records intent only (decision 72)" (`ReviewOwed.test.tsx`), first failed on the Record the exit button.
+  - The amended T6.12 walked-cards case first failed on T-A's `exitRoute`.
+  - Both are green.
+- **Removed tests (11):** the 8 in "Exit link (A94)" and 3 hosted-form tests in `PositionChangeFormExit.test.tsx`. They are listed in the tdd-log.
+- **`verify:capabilities`:** unchanged: 19 operations, 10 variant-qualified, 8 routes and 4 Entry Types, at schema 5. Other routes still declare the four operations that were dropped from the `review` route.
+- **Flagged:**
+  - The `setReveal` that focuses an owed card it cannot read after a Mark or Action refresh no longer has a test that tells it apart. Its only test was on the exit path, and a card opened by link or press focuses itself anyway.
+  - Focus that lands on the Review status or the Empty message after a refresh removes the card was wired only to the exit path, so it went with it.
+
+**ocr review of `26059022`** (`evidence/D06/ocr/T6.20-R1-26059022.json`): ocr reviewed 12 files and made 0 comments. The reviewer's own search of `src`, `tests` and `e2e` found nothing left that refers to the removed code. The only matches are negative assertions.
+
+**Cumulative run `t6.20-r1-exit-intent`**: at HEAD `26059022`, on 2026-11-02. The browser tier was full.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1174 tests passed | `suite-runs/t6.20-r1-exit-intent-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.20-r1-exit-intent-integration.txt` |
+| Browser (Chromium, full) | 147 passed (6.6 min) | `suite-runs/t6.20-r1-exit-intent-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.20-r1-exit-intent-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run. T6.20 is complete. T6.21 starts from the commit that records these results.

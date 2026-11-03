@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 0,
+    "total_tokens": 186360,
+    "input_tokens": 183994,
+    "output_tokens": 2366,
+    "cache_read_tokens": 20352,
+    "elapsed": "49s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 11,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review coordination, navigation, and review screens",
+      "files": [
+        "src/app/routes.ts",
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "Position changes, trade closing, and form validation",
+      "files": [
+        "src/ui/screens/ClosingTheTrade.tsx",
+        "src/ui/screens/ExitReceipt.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/form-issues.tsx",
+        "tests/support/position-change-form-facade.ts"
+      ]
+    }
+  ],
+  "session_id": "94deda18-0679-49f7-89f9-f05ec5b2da64",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "94deda18-0679-49f7-89f9-f05ec5b2da64",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "26059022",
+      "resolved_base": "56ad848787070e4ff25aa6712001f4a3d9685392",
+      "resolved_head": "2605902245f01b4e4d8f7a5859962c62c6de5807",
+      "exact_range": "56ad848787070e4ff25aa6712001f4a3d9685392..2605902245f01b4e4d8f7a5859962c62c6de5807",
+      "source_artifact_sha256": "c25ca645620390b1d88c87f45f6c5518c9aa76cef48e5cb668ffe45a1cc8dc3e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "26096cfa353295e87e6c3eaf1fee649bdbef48f6d1633501a76f8de38d18d88b"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "48a117c9ba0cd6eb197c63926729e1551b0d6221a411dc5162037e37bda6ac63"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "fc93f654fa95859a03de3610b57f882c4ace9d99cb65a78d3dadcd78d9f0dbbe"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "92fce56d35689b988904969556ebea41905ea01ef7f84a3323aed7be341b714f"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "ad99906f056459089abfa6b4868e0fe1ba9077915fd46b9334d786f63882567f"
+        },
+        {
+          "item_id": "6a87f2d2fe665c1b9f82975a7361db0ca3ea766350ff38440a1f8a76024a09bb",
+          "path": "src/ui/screens/form-issues.tsx",
+          "fingerprint": "34583a4c40335a9657838278b86c762c48773fac4fb5589a470d0b1e35740b17"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "a78e588f783fe346781e60e04b17d4e3bf57611e703772eb2e8aeaff4529b545"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "a146dfeefc891db296549233bf2baa1992ac7467fcec33b4a416380830d8565b"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "7a8699874da175446d4e2ceca68042a3cee574a7e5c04e1d39d12c14333b8c9f"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "677ed304194bd97cc8b8ce2cfe3c64adeeeb519dc4077223e16a3fdcca573409"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "b843044030e4224dcece617f62cb0ecbbfb8da12c7f3bf7d012becffe980dbab"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "96c097aa1dde8406e78dd5e30bf47ef391f04d8ce003205a0b37e280769e7687"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "26096cfa353295e87e6c3eaf1fee649bdbef48f6d1633501a76f8de38d18d88b"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "48a117c9ba0cd6eb197c63926729e1551b0d6221a411dc5162037e37bda6ac63"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "fc93f654fa95859a03de3610b57f882c4ace9d99cb65a78d3dadcd78d9f0dbbe"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "92fce56d35689b988904969556ebea41905ea01ef7f84a3323aed7be341b714f"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "ad99906f056459089abfa6b4868e0fe1ba9077915fd46b9334d786f63882567f"
+        },
+        {
+          "item_id": "6a87f2d2fe665c1b9f82975a7361db0ca3ea766350ff38440a1f8a76024a09bb",
+          "path": "src/ui/screens/form-issues.tsx",
+          "fingerprint": "34583a4c40335a9657838278b86c762c48773fac4fb5589a470d0b1e35740b17"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "a78e588f783fe346781e60e04b17d4e3bf57611e703772eb2e8aeaff4529b545"
+        },
+        {
+          "item_id": "7fb17753390b86fe1b6b3f3e7ac2efb28db4e5172fa45c2cc1966309cca2392a",
+          "path": "tests/support/position-change-form-facade.ts",
+          "fingerprint": "a146dfeefc891db296549233bf2baa1992ac7467fcec33b4a416380830d8565b"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "7a8699874da175446d4e2ceca68042a3cee574a7e5c04e1d39d12c14333b8c9f"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "677ed304194bd97cc8b8ce2cfe3c64adeeeb519dc4077223e16a3fdcca573409"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "b843044030e4224dcece617f62cb0ecbbfb8da12c7f3bf7d012becffe980dbab"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "96c097aa1dde8406e78dd5e30bf47ef391f04d8ce003205a0b37e280769e7687"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 49376
+  }
+}
