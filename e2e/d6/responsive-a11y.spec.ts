@@ -284,4 +284,50 @@ test.describe('B6.12 Responsive and accessible', () => {
     }
     await context.close();
   });
+
+  // T6.28-B5: the receipt's Lot Matches tables keep their nowrap cells (B4) inside focusable scroll regions, as Trade Detail does.
+  test('should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
+    await setup.close();
+    const context = await launchAt(profile, TUESDAY_1405);
+    const page = await firstPage(context);
+    await page.goto('/');
+    await openTradeFromOpenList(page, 'XYZ');
+
+    const expectReflowed = async (state: string): Promise<void> => {
+      for (const width of [375, 320]) {
+        await page.setViewportSize({ width, height: 844 });
+        // Polled: the layout settles a moment after the viewport changes.
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), { message: `${state} at ${width} px: page scrollWidth beyond the viewport` })
+          .toBeLessThanOrEqual(0);
+        await expect(page.getByRole('table', { name: 'Lot Matches', exact: true }), `${state} at ${width} px`).toBeVisible();
+      }
+    };
+    const recordExit = async (quantity: string, time: string): Promise<void> => {
+      await openExitForm(page);
+      await fillRows(page, [sell(quantity, '53.00', '0.50', time)]);
+      await answerIn(exitReflection(page));
+      await page.getByRole('button', { name: 'Save exit' }).click();
+      await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    };
+
+    await recordExit('70', TUESDAY_1000_LOCAL);
+    await expectReflowed('Partial exit receipt');
+    await page.setViewportSize(WIDE);
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(2);
+
+    // An exit dated before it: the sales are matched again, and the changed matches are disclosed.
+    await recordExit('20', '2026-10-13T09:45');
+    await expect(page.getByRole('heading', { name: 'Changed Lot Matches', level: 2 })).toBeVisible();
+    await expectReflowed('Earlier-dated exit receipt');
+    for (const width of [375, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect(page.getByRole('table', { name: 'Changed Lot Matches' })).toBeVisible();
+    }
+    await context.close();
+  });
 });

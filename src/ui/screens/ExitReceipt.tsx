@@ -80,38 +80,43 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
       </section>
       <section aria-labelledby="lot-matches-heading">
         <h2 id="lot-matches-heading">Lot Matches</h2>
-        <LotMatchesTable
-          rows={derivation.lotMatches.map((match, index) => ({ ...match, realized: derivation.lotMatchResults[index]!.realized }))}
-          executions={trade.positionChanges.flatMap((c) => c.executions)}
-          timeZone={timeZone}
-        />
+        <div className="table-scroll" role="region" aria-label="Matched lots" tabIndex={0}>
+          <LotMatchesTable
+            caption="Lot Matches"
+            rows={derivation.lotMatches.map((match, index) => ({ ...match, realized: derivation.lotMatchResults[index]!.realized }))}
+            executions={trade.positionChanges.flatMap((c) => c.executions)}
+            timeZone={timeZone}
+          />
+        </div>
       </section>
       {disclosed && (
         <section aria-labelledby="changed-matches-heading">
           <h2 id="changed-matches-heading">Changed Lot Matches</h2>
           <p>This exit is dated before a later recorded change, so the sales are matched to the purchases again in order. The matches that changed:</p>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Change</th>
-                <th scope="col">Bought</th>
-                <th scope="col">Sold</th>
-                <th scope="col">Quantity before</th>
-                <th scope="col">Quantity after</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lotMatchChanges.map((change) => (
-                <tr key={`${change.openingExecutionId}|${change.disposingExecutionId}`}>
-                  <td>{change.kind}</td>
-                  <td>{at(change.openingExecutionId)}</td>
-                  <td>{at(change.disposingExecutionId)}</td>
-                  <td className="number">{matchQuantity(change.quantity.before)}</td>
-                  <td className="number">{matchQuantity(change.quantity.after)}</td>
+          <div className="table-scroll" role="region" aria-label="Changed matched lots" tabIndex={0}>
+            <table aria-label="Changed Lot Matches">
+              <thead>
+                <tr>
+                  <th scope="col">Change</th>
+                  <th scope="col">Bought</th>
+                  <th scope="col">Sold</th>
+                  <th scope="col">Quantity before</th>
+                  <th scope="col">Quantity after</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {lotMatchChanges.map((change) => (
+                  <tr key={`${change.openingExecutionId}|${change.disposingExecutionId}`}>
+                    <td>{change.kind}</td>
+                    <td>{at(change.openingExecutionId)}</td>
+                    <td>{at(change.disposingExecutionId)}</td>
+                    <td className="number">{matchQuantity(change.quantity.before)}</td>
+                    <td className="number">{matchQuantity(change.quantity.after)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <dl>
             <dt>Realized to date before</dt>
             <dd className="number">{signed(money)(realizedToDate.before)}</dd>
