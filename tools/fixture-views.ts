@@ -49,11 +49,12 @@ export function debtViolations(views: unknown, hasOpenTrades: boolean): string[]
 // D6 A98 (extends A73): a Workspace migrated from schema 1 to 4 has no exit, Close Reason, Close Review or
 // Closed Trade. Its Closed list is Empty, every derived Lot Match list is empty and realized-to-date is 0.
 // A missing list is a violation, not a pass.
-export function closeViolations(views: unknown): string[] {
+export function closeViolations(views: unknown, hasOpenTrades: boolean): string[] {
   const { closed, details, debts } = views as {
     closed?: unknown[];
     details?: {
       tradeId: string;
+      lifecycle?: { stored?: string };
       closeReason?: unknown;
       terminalTime?: unknown;
       lotMatches?: unknown[];
@@ -66,14 +67,24 @@ export function closeViolations(views: unknown): string[] {
   const out: string[] = [];
   if (!Array.isArray(closed) || closed.length > 0) out.push(`closed list (${Array.isArray(closed) ? closed.length : 'missing'})`);
   if (!Array.isArray(details)) out.push('details (missing)');
+  let openDetails = 0;
   for (const detail of details ?? []) {
     if (detail.closeReason !== undefined || detail.terminalTime !== undefined) out.push(`${detail.tradeId} Close Reason or terminal time`);
+    if (!Array.isArray(detail.journal)) out.push(`${detail.tradeId}.journal (missing)`);
     if ((detail.positionChanges ?? []).some((change) => (change.executions ?? []).some((e) => e.action === 'Sell'))) out.push(`${detail.tradeId} exit`);
     if ((detail.journal ?? []).some((item) => item.entryTypeKey === 'entry-type.close-review')) out.push(`${detail.tradeId} Close Review`);
-    // Only a Trade with positions carries Lot Matches: there the derived list is empty and realized is exactly zero.
-    if (detail.lotMatches !== undefined && detail.lotMatches.length > 0) out.push(`${detail.tradeId} Lot Matches (${detail.lotMatches.length})`);
-    if (detail.realizedToDate !== undefined && detail.realizedToDate !== '0/1') out.push(`${detail.tradeId} realized-to-date (${JSON.stringify(detail.realizedToDate)})`);
+    // Only an Open Trade carries positions, so only it carries Lot Matches and position changes: the derived
+    // list is empty and realized is exactly zero. A Planned Trade's detail has none of them.
+    if (detail.lifecycle?.stored !== 'Open') continue;
+    openDetails += 1;
+    if (!Array.isArray(detail.positionChanges)) out.push(`${detail.tradeId}.positionChanges (missing)`);
+    if (!Array.isArray(detail.lotMatches)) out.push(`${detail.tradeId} Lot Matches (missing)`);
+    else if (detail.lotMatches.length > 0) out.push(`${detail.tradeId} Lot Matches (${detail.lotMatches.length})`);
+    if (detail.realizedToDate === undefined) out.push(`${detail.tradeId} realized-to-date (missing)`);
+    else if (detail.realizedToDate !== '0/1') out.push(`${detail.tradeId} realized-to-date (${JSON.stringify(detail.realizedToDate)})`);
   }
+  // Where Open Trades exist, the checks above would pass unchecked on a view that holds none.
+  if (hasOpenTrades && openDetails === 0) out.push('details (no Open Trades to check)');
   if ((debts ?? []).some((debt) => debt.entryTypeKey === 'entry-type.close-review')) out.push('Close Review Debt');
   return out;
 }

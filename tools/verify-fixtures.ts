@@ -107,7 +107,7 @@ for (const name of fixtures) {
     }
   }
   if (dump.schemaVersion < 5) {
-    const closeViolation = closeViolations({ ...(views as object), ...(await closedViewsOf(app) as object) });
+    const closeViolation = closeViolations({ ...(views as object), ...(await closedViewsOf(app) as object) }, dump.schemaVersion >= 2);
     if (closeViolation.length > 0) {
       problems.push(`${name}: not free of exits and closes after migration: ${closeViolation.join(', ')}`);
       continue;
