@@ -1,44 +1,24 @@
 # D6 benchmark run (AC-PERF-001)
 
-Written by `npm run bench:run` (T2.21, extended by T4.31, T5.22, T5R.13 and T6.25) on 2026-11-03T14:27:23.714Z, at commit 2120a29f4b2dc6a04c036838ccc207cd4d875661 plus uncommitted changes to src, tools, bench or package.json.
+Written by `npm run bench:run` (T2.21, extended by T4.31, T5.22, T5R.13 and T6.25) on 2026-11-03T21:56:54.321Z, at commit b6a7acea1fb540a02eae39219621f6f3817a2b79 plus uncommitted changes to src, tools, bench or package.json.
 
 ## Result
 
 | Measure | Runs | Nearest-rank p95 (29th of 30) | Budget | Result |
 |---|---|---|---|---|
-| Cold start to `tj:interactive` | 30 | 252.7 ms | 2,500 ms | pass |
-| Warm Planned-to-Open switch to `tj:open-list-ready` | 30 | 208.7 ms | 1,500 ms | pass |
+| Cold start to `tj:interactive` | 30 | 105.5 ms | 2,500 ms | pass |
+| Warm Planned-to-Open switch to `tj:open-list-ready` | 30 | 46.0 ms | 1,500 ms | pass |
 
-**PARTIAL DATASET (user decision of 2026-11-03).** Generation (generator 5) was stopped by SIGTERM at session 784 of 1,255 (2027-02-17) because a Review save grows with the stored history. This run is on that snapshot (`.cache/bench/partial-v5-s775/profile`, untouched; the run uses a copy with the service worker and caches stripped, `.cache/bench/partial-v5-s775/run-profile`). The as-of instant is the last session's close plus 35 minutes, 2027-02-17T21:35:00Z, derived from the stored Review Actions. The last session's Review is incomplete: 18 of its 99 walked Trades have their Action. The AC-PERF-001 D6 row is therefore partial, not covered, until a full rerun.
-
-| Record kind | Plan section 1.4 at D6 | This partial dataset |
-|---|---|---|
-| Sessions | 1,255 | 784 |
-| Trades | 25,000 | 15,743 |
-| Closed | 24,700 | 15,624 |
-| Open | 200 | 99 |
-| Planned | 100 | 20 |
-| Position Changes | about 100,000 | 62,683 |
-| Executions | about 200,000 | 125,340 |
-| Close Reasons | 24,700 | 15,624 |
-| Position Change Reflection outcomes (entries + declines) | about 100,000 | 62,648 |
-| Close Review outcomes (entries + declines) | 24,700 | 15,618 |
-| Marks (revisions) | about 190,000 | 118,776 |
-| Daily Trade Review Actions | about 126,000 | 78,317 |
-| Debts (Outstanding) | not counted in section 1.4 | 15,485 (41) |
-
-How the expectations were fixed (the generator wrote none for this snapshot): the counts, the Open Trades' Underlyings, the Missing Instruments (0: every Instrument has the as-of Mark, as the generator saves them all before its last session), the first Closed page, and the membership of the Review's walk (Trades open at the close) and owed group (Trades outside the walk with an Outstanding Debt) come from the stored records. The stored records do not fix the Open rows' figures, the walk's attention-ranked order or which reflections are due, so those come from the first render, which every later render must equal. The Action saves (5 warm and 3 cold) are edits of a saved Action, as in a full dataset, wherever the part-way Review had saved one; the rest are first saves of an Action: XOM, NFLX, AMZN. No Save Marks timing is possible, because no Instrument is missing its as-of Mark.
-
-Open list compared with its first render (the baseline, which was checked against the stored Open Trades' Underlyings): before the runs 99 rows equal, after the runs 99 rows equal, and each of the 30 cold starts rendered the same 99 rows (figures included). The 0 Missing Instruments on the as-of date () have rows in that list, each showing `Mark missing` in P&L (and no other row does).
+Open list compared with `bench/expected-open-rows.json`: before the runs 200 rows equal, after the runs 200 rows equal, and each of the 30 cold starts rendered the same 200 rows (figures included). The 10 Missing Instruments on the as-of date (ABBV, AVGO, CAT, QAM, QBB, QBQ, QCF, QCU, QDJ, QDY) have rows in that list, each showing `Mark missing` in P&L (and no other row does).
 
 ## As-of Review's due reflections (T5.22)
 
-The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (X names the Trade in full; the harness compares its underlying symbol) (Review Date 2027-02-17). In the partial dataset the stored data does not say which reflections are due (the rule is one session of grace), so the first render sets the expected values after checking that every Trade it names holds an Outstanding Debt in the stored data; every later render must equal it. A difference fails the run.
+The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (X names the Trade in full; the harness compares its underlying symbol) (Review Date 2028-12-29). The expected values are `asOfDueReflections` and the Trades of `outstandingDebts` in `bench/dataset.json` (the Outstanding Debts are from 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-27 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-28 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-29 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-11-30 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-01 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-04 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-05 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-06 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-07 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-08 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-11 and 2028-12-12 and 2028-12-12 and 2028-12-12 and 2028-12-12 and 2028-12-12, both due at the as-of Review, decision 58). A difference fails the run.
 
 | When | Due reflections listed (by Trade) | Expected | Result | Time from the click on Review to its status (disclosed, not gated) |
 |---|---|---|---|---|
-| before the runs | 19 (ABBV 2, MA 1, KO 1, TXN 1, CSCO 1, PG 1, NKE 1, JPM 1, UNH 1, CVX 1, ORCL 2, BA 2, AAPL 1, V 1, PEP 1, CAT 1) | 19 (ABBV 2, MA 1, KO 1, TXN 1, CSCO 1, PG 1, NKE 1, JPM 1, UNH 1, CVX 1, ORCL 2, BA 2, AAPL 1, V 1, PEP 1, CAT 1) | equal | 295 ms |
-| after the runs | 19 (ABBV 2, MA 1, KO 1, TXN 1, CSCO 1, PG 1, NKE 1, JPM 1, UNH 1, CVX 1, ORCL 2, BA 2, AAPL 1, V 1, PEP 1, CAT 1) | 19 (ABBV 2, MA 1, KO 1, TXN 1, CSCO 1, PG 1, NKE 1, JPM 1, UNH 1, CVX 1, ORCL 2, BA 2, AAPL 1, V 1, PEP 1, CAT 1) | equal | 296 ms |
+| before the runs | 496 (QAI 4, QAE 4, QAA 4, QAJ 4, QAH 4, QAF 4, QAD 4, QAB 4, GS 8, MCD 5, DIS 7, AMD 6, PEP 4, CVX 5, UNH 5, QAC 4, DE 8, NKE 6, QCOM 7, INTC 7, ORCL 3, ADBE 7, MRK 4, LLY 7, XOM 7, MA 5, KO 6, COST 7, GOOGL 5, AAPL 7, QEC 3, V 6, CSCO 8, NFLX 10, META 8, AMZN 5, MSFT 9, QEF 2, QED 2, QEB 2, QDX 2, QDQ 3, QDM 3, QDI 3, QDE 3, TSLA 7, QEE 1, QDW 1, QDV 2, QDT 2, QDR 2, QDN 2, QDL 2, QDH 2, QDF 2, QDD 2, QDA 3, QCW 3, QCO 3, QCK 3, QDS 1, QDO 1, QDC 1, QCZ 2, QCX 2, QCV 2, QCT 2, QCP 2, QCL 2, QCJ 2, QCG 3, QCC 3, QCY 1, QCQ 1, QCH 2, QCD 2, QCB 2, QBX 2, QBV 2, QBR 2, QBP 2, QBM 3, QBI 3, QBE 3, QAW 3, QCE 1, QCA 1, QBW 1, QBS 1, QBN 2, QBL 2, QBJ 2, QBH 2, QBD 2, QAZ 2, QAX 2, QAS 3, QAO 3, QAK 3, QAG 4, QBK 1, QBC 1, QAY 1, QAU 1, QAT 2, QAR 2, QAP 2, QAL 2, CRM 7, BA 4, WMT 5, TXN 5, PFE 7, HD 8, PG 8, QDZ 2, QDU 3, NVDA 6, QDP 2, QCS 3, QDK 1, QDG 1, QDB 2, QCR 2, QCN 2, QBY 3, QBU 3, QCM 1, QBZ 2, QBT 2, QBA 3, QBO 1, QBF 2, QAV 2, QBG 1, CAT 8, QDY 3, ABBV 6, AVGO 4, QDJ 2, QBQ 3, QCU 1, QCF 2, QBB 2, QAM 1, QEA 1, QCI 1, QAN 2, JPM 9, QAQ 1) | 496 (COST 7, NFLX 10, KO 6, PG 8, XOM 7, AMD 6, TXN 5, GS 8, TSLA 7, CRM 7, INTC 7, DE 8, MSFT 9, CSCO 8, JPM 9, CVX 5, LLY 7, MRK 4, QCOM 7, WMT 5, DIS 7, MCD 5, AAPL 7, AMZN 5, PFE 7, MA 5, NVDA 6, META 8, V 6, HD 8, ABBV 6, ADBE 7, NKE 6, CAT 8, GOOGL 5, AVGO 4, UNH 5, PEP 4, ORCL 3, BA 4, QAA 4, QAB 4, QAC 4, QAD 4, QAE 4, QAF 4, QAG 4, QAH 4, QAI 4, QAJ 4, QAK 3, QAL 2, QAM 1, QAN 2, QAO 3, QAP 2, QAQ 1, QAR 2, QAS 3, QAT 2, QAU 1, QAV 2, QAW 3, QAX 2, QAY 1, QAZ 2, QBA 3, QBB 2, QBC 1, QBD 2, QBE 3, QBF 2, QBG 1, QBH 2, QBI 3, QBJ 2, QBK 1, QBL 2, QBM 3, QBN 2, QBO 1, QBP 2, QBQ 3, QBR 2, QBS 1, QBT 2, QBU 3, QBV 2, QBW 1, QBX 2, QBY 3, QBZ 2, QCA 1, QCB 2, QCC 3, QCD 2, QCE 1, QCF 2, QCG 3, QCH 2, QCI 1, QCJ 2, QCK 3, QCL 2, QCM 1, QCN 2, QCO 3, QCP 2, QCQ 1, QCR 2, QCS 3, QCT 2, QCU 1, QCV 2, QCW 3, QCX 2, QCY 1, QCZ 2, QDA 3, QDB 2, QDC 1, QDD 2, QDE 3, QDF 2, QDG 1, QDH 2, QDI 3, QDJ 2, QDK 1, QDL 2, QDM 3, QDN 2, QDO 1, QDP 2, QDQ 3, QDR 2, QDS 1, QDT 2, QDU 3, QDV 2, QDW 1, QDX 2, QDY 3, QDZ 2, QEA 1, QEB 2, QEC 3, QED 2, QEE 1, QEF 2) | equal | 209 ms |
+| after the runs | 496 (QAI 4, QAE 4, QAA 4, QAJ 4, QAH 4, QAF 4, QAD 4, QAB 4, GS 8, MCD 5, DIS 7, AMD 6, PEP 4, CVX 5, UNH 5, QAC 4, DE 8, NKE 6, QCOM 7, INTC 7, ORCL 3, ADBE 7, MRK 4, LLY 7, XOM 7, MA 5, KO 6, COST 7, GOOGL 5, AAPL 7, QEC 3, V 6, CSCO 8, NFLX 10, META 8, AMZN 5, MSFT 9, QEF 2, QED 2, QEB 2, QDX 2, QDQ 3, QDM 3, QDI 3, QDE 3, TSLA 7, QEE 1, QDW 1, QDV 2, QDT 2, QDR 2, QDN 2, QDL 2, QDH 2, QDF 2, QDD 2, QDA 3, QCW 3, QCO 3, QCK 3, QDS 1, QDO 1, QDC 1, QCZ 2, QCX 2, QCV 2, QCT 2, QCP 2, QCL 2, QCJ 2, QCG 3, QCC 3, QCY 1, QCQ 1, QCH 2, QCD 2, QCB 2, QBX 2, QBV 2, QBR 2, QBP 2, QBM 3, QBI 3, QBE 3, QAW 3, QCE 1, QCA 1, QBW 1, QBS 1, QBN 2, QBL 2, QBJ 2, QBH 2, QBD 2, QAZ 2, QAX 2, QAS 3, QAO 3, QAK 3, QAG 4, QBK 1, QBC 1, QAY 1, QAU 1, QAT 2, QAR 2, QAP 2, QAL 2, CRM 7, BA 4, WMT 5, TXN 5, PFE 7, HD 8, PG 8, QDZ 2, QDU 3, NVDA 6, QDP 2, QCS 3, QDK 1, QDG 1, QDB 2, QCR 2, QCN 2, QBY 3, QBU 3, QCM 1, QBZ 2, QBT 2, QBA 3, QBO 1, QBF 2, QAV 2, QBG 1, CAT 8, QDY 3, ABBV 6, AVGO 4, QDJ 2, QBQ 3, QCU 1, QCF 2, QBB 2, QAM 1, QEA 1, QCI 1, QAN 2, JPM 9, QAQ 1) | 496 (COST 7, NFLX 10, KO 6, PG 8, XOM 7, AMD 6, TXN 5, GS 8, TSLA 7, CRM 7, INTC 7, DE 8, MSFT 9, CSCO 8, JPM 9, CVX 5, LLY 7, MRK 4, QCOM 7, WMT 5, DIS 7, MCD 5, AAPL 7, AMZN 5, PFE 7, MA 5, NVDA 6, META 8, V 6, HD 8, ABBV 6, ADBE 7, NKE 6, CAT 8, GOOGL 5, AVGO 4, UNH 5, PEP 4, ORCL 3, BA 4, QAA 4, QAB 4, QAC 4, QAD 4, QAE 4, QAF 4, QAG 4, QAH 4, QAI 4, QAJ 4, QAK 3, QAL 2, QAM 1, QAN 2, QAO 3, QAP 2, QAQ 1, QAR 2, QAS 3, QAT 2, QAU 1, QAV 2, QAW 3, QAX 2, QAY 1, QAZ 2, QBA 3, QBB 2, QBC 1, QBD 2, QBE 3, QBF 2, QBG 1, QBH 2, QBI 3, QBJ 2, QBK 1, QBL 2, QBM 3, QBN 2, QBO 1, QBP 2, QBQ 3, QBR 2, QBS 1, QBT 2, QBU 3, QBV 2, QBW 1, QBX 2, QBY 3, QBZ 2, QCA 1, QCB 2, QCC 3, QCD 2, QCE 1, QCF 2, QCG 3, QCH 2, QCI 1, QCJ 2, QCK 3, QCL 2, QCM 1, QCN 2, QCO 3, QCP 2, QCQ 1, QCR 2, QCS 3, QCT 2, QCU 1, QCV 2, QCW 3, QCX 2, QCY 1, QCZ 2, QDA 3, QDB 2, QDC 1, QDD 2, QDE 3, QDF 2, QDG 1, QDH 2, QDI 3, QDJ 2, QDK 1, QDL 2, QDM 3, QDN 2, QDO 1, QDP 2, QDQ 3, QDR 2, QDS 1, QDT 2, QDU 3, QDV 2, QDW 1, QDX 2, QDY 3, QDZ 2, QEA 1, QEB 2, QEC 3, QED 2, QEE 1, QEF 2) | equal | 214 ms |
 
 ## Card timings (T5R.13, disclosed, not gated)
 
@@ -46,24 +26,24 @@ Each is the time from the pointer press to the rendered result, on the mature da
 
 | Measure | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Open the first card (press on Review to the first card's content: `open` plus one `getTrade`) | 10 | 517.7 ms | 531.3 ms | 508.5 ms | 531.3 ms |
-| Save Marks of one card's Marks (press on Save Marks to the card's drafts cleared) | 0 | none | none | none | none |
-| Trade Action save (press on Save in the Action form to the form replaced by the result) | 5 | 682.2 ms | 688.5 ms | 681.0 ms | 688.5 ms |
+| Open the first card (press on Review to the first card's content: `open` plus one `getTrade`) | 10 | 131.5 ms | 146.9 ms | 129.9 ms | 146.9 ms |
+| Save Marks of one card's Marks (press on Save Marks to the card's drafts cleared) | 5 | 106.0 ms | 108.6 ms | 102.8 ms | 108.6 ms |
+| Trade Action save (press on Save in the Action form to the form replaced by the result) | 5 | 105.3 ms | 108.7 ms | 104.5 ms | 108.7 ms |
 
-- **Against D5 and D5R2:** D5 measured the cold start at 104.8 ms and the warm switch at 43.6 ms (p95), D5R2 96.2 ms and 47.3 ms on the same generator-3 dataset; this run's are 252.7 ms and 208.7 ms. D5 timed the press on Review to the Review's status at 2342 ms before its runs and 2225 ms after (single measurements); opening the first card here, which adds the first Trade's `getTrade`, takes a median of 517.7 ms.
+- **Against D5 and D5R2:** D5 measured the cold start at 104.8 ms and the warm switch at 43.6 ms (p95), D5R2 96.2 ms and 47.3 ms on the same generator-3 dataset; this run's are 105.5 ms and 46.0 ms. D5 timed the press on Review to the Review's status at 2342 ms before its runs and 2225 ms after (single measurements); opening the first card here, which adds the first Trade's `getTrade`, takes a median of 131.5 ms.
 - **Tech debt item 3** (the Review's open cost grows with history) is measured here, not fixed: D5R takes the save path off it (P38) but not the first `open` of each Review, and the open-the-first-card timing is its baseline.
-- **The saves** are timed on cards of the cached profile's copy: ; and a Hold Action on QCOM, GS, DE, AMD, MRK. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. The partial dataset's last Review is incomplete, so an Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save) except on XOM, NFLX, AMZN, where the Action was not saved yet and the save is the first one (Hold, an Intent of "bench edit", Save). Each is a `SaveTradeAction` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
-- **Raw timings (ms, in run order):** open the first card 518.3, 514.7, 513.6, 518.8, 508.5, 516.5, 524.6, 517.1, 525.7, 531.3; Save Marks ; Trade Action save 681.0, 688.5, 681.0, 682.2, 688.0.
+- **The saves** are timed on cards of the cached profile's copy: Save Marks on ABBV, Save Marks on AVGO, Save Marks on CAT, Save Marks on QAM, Save Marks on QBB; and a Hold Action on TXN 690eb1e7, INTC e6db4292, ORCL 83db8fd5, ADBE 051acc35, MRK bae946f6. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. The dataset holds an Action for every Trade on the Review Date, so each Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save): each is a `SaveTradeAction` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
+- **Raw timings (ms, in run order):** open the first card 146.9, 132.4, 132.9, 131.4, 129.9, 131.5, 131.4, 131.4, 131.3, 136.3; Save Marks 108.6, 105.7, 107.4, 102.8, 106.0; Trade Action save 107.2, 108.7, 104.5, 104.8, 105.3.
 - **Method:** a MutationObserver in the page reads the real clock on the first DOM change after which the result holds (the card's content shown with no card still loading; the card's Save Marks counting no drafts; the card's Action form gone with no card still loading), and a capture-phase pointer press records the start on the same clock.
 
 ## Closed page, Review walk and owed group (T6.25)
 
 - **Closed page.** The generator records no Closed page, so the expected first page is derived from the stored data: the first 50 Closed Trades of the profile's `byLifecycleTerminal` index (terminal time descending), read raw in the page before any timed run. Each rendered row (its Trade from the link, Underlying and Close date in America/New_York) must equal the stored Trade's, in order, before the runs (50 rows equal) and after them (50 rows equal), and at each of the 10 renders below. Realized figures, Disposition and Close Reason are not compared (the stored Trade does not hold them).
-- **Review walk and owed group.** The as-of Review's cards must equal the stored data's members (the walk is the Trades open at the close, the owed group the Trades outside it with an Outstanding Debt, each by Trade and Underlying), and the order of the first render in every later render, each by its Trade (`data-trade-id`) and Underlying:before the runs 99 walked and 18 owed cards equal; after the runs 99 walked and 18 owed cards equal. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
+- **Review walk and owed group.** The as-of Review's cards must equal `asOfReview` in `bench/dataset.json`, in order, each by its Trade (`data-trade-id`) and Underlying (the walked Trades' Underlyings are read from the stored Trades, the owed group's are the dataset's):before the runs 200 walked and 99 owed cards equal; after the runs 200 walked and 99 owed cards equal. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
 
 | Measure (disclosed, not gated) | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Closed tab to its first page (50 rows; press on Trades, then Closed, to the last row rendered) | 10 | 330.5 ms | 332.0 ms | 326.0 ms | 332.0 ms |
+| Closed tab to its first page (50 rows; press on Trades, then Closed, to the last row rendered) | 10 | 98.5 ms | 144.0 ms | 89.0 ms | 144.0 ms |
 
 ## Daily Trade Review Action save (requested measurement, disclosed, not gated; not in the plan's T6.25 row)
 
@@ -71,16 +51,16 @@ A single Action save on a card of the as-of Review (Change, Hold, an Intent, Sav
 
 | Save | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Warm | 5 | 682.2 ms | 688.5 ms | 681.0 ms | 688.5 ms |
-| Cold | 3 | 692.2 ms | 694.5 ms | 689.1 ms | 694.5 ms |
+| Warm | 5 | 105.3 ms | 108.7 ms | 104.5 ms | 108.7 ms |
+| Cold | 3 | 118.9 ms | 124.8 ms | 116.9 ms | 124.8 ms |
 
-Raw (ms): warm 681.0, 688.5, 681.0, 682.2, 688.0; cold XOM 689.1, NFLX 694.5, AMZN 692.2; closed page renders 330.0, 331.0, 331.0, 329.0, 331.0, 330.0, 332.0, 329.0, 331.0, 326.0.
+Raw (ms): warm 107.2, 108.7, 104.5, 104.8, 105.3; cold LLY 994a2d8b 118.9, XOM 3bf46b81 124.8, CSCO cfbec662 116.9; closed page renders 99.0, 144.0, 102.0, 98.0, 98.0, 99.0, 89.0, 98.0, 91.0, 99.0.
 
 ## Method
 
 - Playwright's clock also swaps `window.performance` for a fake that records no marks, so the harness keeps the real object before the pin and points the fake's `mark` at it; `performance.now` and timers are the real ones.
-- `Date` is pinned to the dataset's as-of instant (2027-02-17T21:35:00.000Z, A52) with Playwright `context.clock.setFixedTime`, and native `Temporal.Now.instant` (the application's clock) is pointed at it (T4.31-B1); every comparison first checks both read the as-of instant and that exactly the Missing Instruments' rows show `Mark missing`. Timers and `performance.now` are real, and the build is production.
-- A copy of the partial dataset's run profile (`.cache/bench/partial-v5-s775/run-profile`, a copy of the snapshot with the service worker and caches stripped; generator 5, schema 5) per run of the harness; the cached profile itself is never opened.
+- `Date` is pinned to the dataset's as-of instant (2028-12-29T21:35:00.000Z, A52) with Playwright `context.clock.setFixedTime`, and native `Temporal.Now.instant` (the application's clock) is pointed at it (T4.31-B1); every comparison first checks both read the as-of instant and that exactly the Missing Instruments' rows show `Mark missing`. Timers and `performance.now` are real, and the build is production.
+- A copy of the cached profile (`.cache/bench/profile`, generator 5, schema 5) per run of the harness; the cached profile itself is never opened.
 - The production build (`dist/`) served by the release harness server at http://localhost:5181, the origin the profile's IndexedDB belongs to.
 - One warm-up launch, online, installs the service worker and is excluded. The server is then stopped and every later launch is offline (Playwright `offline: true`), so the app loads from the service worker and IndexedDB only.
 - Cold start: the Chromium process is launched on the profile, navigates to the origin, and the time is the `tj:interactive` mark's `startTime` (from navigation start; readiness Writable and the Open list fully rendered with every row's figures, each run's rendered list compared with the expected rows afterwards); the process is then closed. The time from the call that launches the browser process to the same mark is recorded beside it for disclosure and is not gated.
@@ -90,42 +70,42 @@ Raw (ms): warm 681.0, 688.5, 681.0, 682.2, 688.0; cold XOM 689.1, NFLX 694.5, AM
 
 | Run | Cold (navigation start to mark) | Cold, disclosed: process launch to mark | Warm |
 |---|---|---|---|
-| 1 | 252.2 | 321.7 | 207.9 |
-| 2 | 247.2 | 317.4 | 207.5 |
-| 3 | 246.2 | 314.7 | 203.4 |
-| 4 | 249.1 | 319.2 | 203.0 |
-| 5 | 250.9 | 321.7 | 208.7 |
-| 6 | 251.4 | 321.3 | 200.6 |
-| 7 | 247.0 | 317.1 | 205.4 |
-| 8 | 251.1 | 320.9 | 203.8 |
-| 9 | 249.0 | 318.4 | 203.4 |
-| 10 | 250.4 | 318.6 | 208.0 |
-| 11 | 251.2 | 320.7 | 207.4 |
-| 12 | 252.2 | 321.2 | 200.7 |
-| 13 | 249.1 | 317.5 | 211.2 |
-| 14 | 248.2 | 318.2 | 200.0 |
-| 15 | 247.8 | 316.6 | 200.2 |
-| 16 | 249.8 | 318.6 | 205.6 |
-| 17 | 250.7 | 319.2 | 204.2 |
-| 18 | 247.3 | 316.0 | 207.4 |
-| 19 | 250.3 | 319.5 | 199.6 |
-| 20 | 252.7 | 322.4 | 203.7 |
-| 21 | 250.3 | 318.3 | 201.5 |
-| 22 | 254.7 | 323.7 | 205.4 |
-| 23 | 250.3 | 319.9 | 203.8 |
-| 24 | 251.3 | 320.4 | 205.8 |
-| 25 | 251.3 | 318.3 | 204.5 |
-| 26 | 252.6 | 320.7 | 203.4 |
-| 27 | 252.7 | 321.5 | 203.4 |
-| 28 | 250.9 | 320.2 | 204.7 |
-| 29 | 249.3 | 323.4 | 202.1 |
-| 30 | 248.9 | 317.0 | 208.2 |
+| 1 | 102.5 | 173.4 | 40.5 |
+| 2 | 102.6 | 172.9 | 39.2 |
+| 3 | 92.9 | 163.3 | 37.6 |
+| 4 | 103.7 | 173.4 | 36.3 |
+| 5 | 102.5 | 173.6 | 50.2 |
+| 6 | 93.4 | 162.4 | 44.5 |
+| 7 | 103.0 | 173.2 | 43.7 |
+| 8 | 91.8 | 161.1 | 38.1 |
+| 9 | 94.7 | 163.7 | 44.2 |
+| 10 | 104.7 | 173.3 | 44.5 |
+| 11 | 103.5 | 173.1 | 45.1 |
+| 12 | 103.2 | 172.2 | 44.6 |
+| 13 | 94.1 | 165.0 | 44.3 |
+| 14 | 91.5 | 162.2 | 43.2 |
+| 15 | 105.0 | 174.1 | 43.1 |
+| 16 | 92.1 | 160.2 | 45.2 |
+| 17 | 105.8 | 175.4 | 38.0 |
+| 18 | 90.2 | 163.7 | 37.2 |
+| 19 | 94.7 | 163.9 | 36.8 |
+| 20 | 105.5 | 177.7 | 37.5 |
+| 21 | 103.0 | 180.9 | 44.0 |
+| 22 | 92.3 | 161.2 | 38.2 |
+| 23 | 94.5 | 163.3 | 44.9 |
+| 24 | 104.4 | 175.0 | 36.5 |
+| 25 | 91.6 | 160.9 | 37.0 |
+| 26 | 96.2 | 167.1 | 42.3 |
+| 27 | 102.0 | 172.3 | 45.4 |
+| 28 | 92.1 | 161.7 | 44.0 |
+| 29 | 103.5 | 171.4 | 38.2 |
+| 30 | 92.0 | 161.5 | 46.0 |
 
-Sorted cold: 246.2, 247.0, 247.2, 247.3, 247.8, 248.2, 248.9, 249.0, 249.1, 249.1, 249.3, 249.8, 250.3, 250.3, 250.3, 250.4, 250.7, 250.9, 250.9, 251.1, 251.2, 251.3, 251.3, 251.4, 252.2, 252.2, 252.6, 252.7, 252.7, 254.7
+Sorted cold: 90.2, 91.5, 91.6, 91.8, 92.0, 92.1, 92.1, 92.3, 92.9, 93.4, 94.1, 94.5, 94.7, 94.7, 96.2, 102.0, 102.5, 102.5, 102.6, 103.0, 103.0, 103.2, 103.5, 103.5, 103.7, 104.4, 104.7, 105.0, 105.5, 105.8
 
-Process launch to mark (not gated): p95 323.4 ms.
+Process launch to mark (not gated): p95 177.7 ms.
 
-Sorted warm: 199.6, 200.0, 200.2, 200.6, 200.7, 201.5, 202.1, 203.0, 203.4, 203.4, 203.4, 203.4, 203.7, 203.8, 203.8, 204.2, 204.5, 204.7, 205.4, 205.4, 205.6, 205.8, 207.4, 207.4, 207.5, 207.9, 208.0, 208.2, 208.7, 211.2
+Sorted warm: 36.3, 36.5, 36.8, 37.0, 37.2, 37.5, 37.6, 38.0, 38.1, 38.2, 38.2, 39.2, 40.5, 42.3, 43.1, 43.2, 43.7, 44.0, 44.0, 44.2, 44.3, 44.5, 44.5, 44.6, 44.9, 45.1, 45.2, 45.4, 46.0, 50.2
 
 ## Environment
 
@@ -140,315 +120,5025 @@ Sorted warm: 199.6, 200.0, 200.2, 200.6, 200.7, 201.5, 202.1, 203.0, 203.4, 203.
 
 ```json
 {
-  "partial": true,
-  "sessions": 784,
   "generatorVersion": 5,
   "schemaVersion": 5,
+  "seed": 20211011,
+  "clockStart": "2024-01-02T13:00:00Z",
   "timeZone": "America/New_York",
   "origin": "http://localhost:5181",
-  "asOf": "2027-02-17T21:35:00Z",
-  "reviewDate": "2027-02-17",
-  "cutoff": "2027-02-17T21:00:00Z",
-  "missingInstruments": [],
+  "buildDir": "dist-bench",
+  "benchRelease": "75a77f0526694158639fa1e50b88f4e25481ca07ac056ed3e2d0bd2783407f7e",
+  "asOf": "2028-12-29T21:35:00Z",
+  "reviewDate": "2028-12-29",
+  "missingInstruments": [
+    "ABBV",
+    "AVGO",
+    "CAT",
+    "QAM",
+    "QBB",
+    "QBQ",
+    "QCF",
+    "QCU",
+    "QDJ",
+    "QDY"
+  ],
   "counts": {
-    "trades": 15743,
-    "openTrades": 99,
-    "plannedTrades": 20,
-    "closedTrades": 15624,
-    "positionChanges": 62683,
-    "executions": 125340,
-    "closeReasons": 15624,
-    "sessions": 784,
-    "marks": 118776,
-    "markCorrections": 1176,
-    "actions": 78317,
-    "editedActions": 1567,
-    "planReflectionEntries": 15743,
-    "positionChangeReflectionEntries": 52323,
-    "positionChangeReflectionDeclines": 10325,
-    "closeReviewEntries": 12977,
-    "closeReviewDeclines": 2641,
-    "debts": 15485,
-    "debtsSettled": 14172,
-    "debtsDeclined": 1272,
-    "debtsOutstanding": 41
+    "trades": 25000,
+    "openTrades": 200,
+    "plannedTrades": 100,
+    "positionChanges": 99200,
+    "executions": 198400,
+    "planReflectionEntries": 25000,
+    "positionChangeReflectionEntries": 82336,
+    "positionChangeReflectionDeclines": 16467,
+    "institutions": 3,
+    "accounts": 6,
+    "strategies": 1,
+    "sessions": 1255,
+    "openInstruments": 150,
+    "sharedInstruments": 50,
+    "marks": 188240,
+    "markCorrections": 1882,
+    "acknowledgments": 0,
+    "actions": 127397,
+    "editedActions": 2548,
+    "debts": 24780,
+    "debtsSettled": 22302,
+    "debtsDeclined": 1982,
+    "debtsOutstanding": 496,
+    "closedTrades": 24700,
+    "closeReasons": {
+      "Thesis Invalidated": 3705,
+      "Target Reached": 7410,
+      "Time-Based Exit": 4940,
+      "Stop Triggered": 8645
+    },
+    "closeReviewEntries": 20501,
+    "closeReviewDeclines": 4100,
+    "closeReviewDebts": 4940,
+    "closeReviewDebtsSettled": 4446,
+    "closeReviewDebtsDeclined": 395,
+    "closeReviewDebtsOutstanding": 99
   },
-  "walkIdentities": [
-    "000b64f8-1e81-4b1a-9a00-30fe15487f3b DE",
-    "01239b29-03cf-4d61-9e09-209c4b7bc09b MRK",
-    "03416653-807e-4f67-a7d6-b1c88f497da0 GOOGL",
-    "04370444-0b9f-4a33-b44b-3e8e0e9a4fb4 META",
-    "04d41c4c-2bea-4f38-be20-17b93c8daebc TXN",
-    "058fff4c-7894-49c5-93ba-893a85e9c095 LLY",
-    "09fba59d-0a28-486a-913f-1e71be2845ce DE",
-    "0fe88ffd-ba04-4812-9043-916e428d73a0 NVDA",
-    "106ec3c8-00d5-4e0c-8c17-3954f013bf26 QCOM",
-    "10ebefa8-50fa-4c32-9fb3-b026de184a6d MSFT",
-    "1626de85-0b59-4c60-8ce9-02d82f35e2bb MSFT",
-    "193dc45e-acb6-43c6-a065-0eba9983ab48 ABBV",
-    "1a01537d-45ee-42ea-9f66-acd57b93a69a XOM",
-    "1a9c12b7-1aa2-4c14-8bc1-332e8078e41b HD",
-    "1db4f31b-1265-4a33-8e66-7c455651ff6a PEP",
-    "1f0de342-b2db-43cb-bc73-9be365fb024e NVDA",
-    "203fc6f8-753f-4793-9d24-3e0cadabd267 INTC",
-    "207227ed-da0e-4f9d-9330-74f67bc931c9 AAPL",
-    "20797462-11a1-4292-a9bd-9bcd1f76c6ef BA",
-    "20ba27c0-0db1-44a8-bcfe-d9dc81cbc0eb QCOM",
-    "2574589d-0c85-4188-a2f2-6445277d12c7 AAPL",
-    "2844448e-615c-411e-bfe7-88500da344cf ORCL",
-    "28814f0c-f4ba-437c-8c9e-7e69304a823a DIS",
-    "28899ab1-49fa-4a31-a3fc-06d09283b68b MA",
-    "2902ec90-e601-4d51-a0d7-904f4fbf3725 UNH",
-    "2aaf73ca-c1f8-43fc-8017-30cbb2cfde45 DE",
-    "2b4dff08-03e6-4cf2-9c84-1827bc25d399 WMT",
-    "2c564743-c6f1-4d81-821c-8141474739b1 NFLX",
-    "3050b5c3-0dc1-47dd-b020-3f3e00273fde PFE",
-    "32695447-29b7-4233-946e-e71346eef38c DIS",
-    "3656c2dc-da97-42b5-9d89-df5fea5a6289 JPM",
-    "374502ef-b6b7-4344-9743-07ea3b37039b ABBV",
-    "3916e0fc-1387-436c-ad38-fbdd581da616 MRK",
-    "39d650ca-9755-4d11-8c7d-6e7425fe0cb2 MSFT",
-    "3b310732-52a9-45d7-9551-7cd515977aac CRM",
-    "3b89d100-9fb5-479d-9857-2ceb2513df92 AVGO",
-    "3e1df6d6-477b-490b-8b27-4b3935ebe85b V",
-    "41d64ecc-ee45-4d30-bc3c-8f5785032c38 NVDA",
-    "43f01c0b-c8ae-4631-9c83-561af704ff29 INTC",
-    "47cab6ec-4fb7-4618-8196-6cbf1a9b2e9c CSCO",
-    "48fdf2cf-f546-43a0-a348-c414004066d6 CSCO",
-    "4bb6fac4-d064-4f9d-ade7-0ec53bee4be3 CRM",
-    "516c94c3-851b-45e8-a459-89fedd1dc8b9 CAT",
-    "5893cf60-62ed-46eb-9602-ba25b7e23113 LLY",
-    "5a5c101e-59cd-4648-8723-4124bfda96db NKE",
-    "5e648ceb-9035-4094-8a86-8e344a26fd0f CAT",
-    "5f530f2f-09a1-40df-8d09-e4ade7d81513 CRM",
-    "60d199b2-1686-4601-a0f2-2d5ef6c80ef6 COST",
-    "6131ef51-81ad-4781-8982-5af1b9fc10b8 WMT",
-    "6739430a-a44c-4eb1-b933-147f84de28cf TSLA",
-    "696461b1-eeba-40c1-abbb-3407005547c0 GOOGL",
-    "6e497ea7-3790-4e91-9eb4-32c0bebfc632 HD",
-    "6fc5995f-0445-4940-acb9-9d817a060e09 GS",
-    "73e24b03-73a8-40d6-bb44-7677de430da8 PFE",
-    "73fd4d4f-4f7c-4c83-a64f-c73fe66650ed GS",
-    "7675542b-cbc7-46d9-a150-6b73ca2c1b07 BA",
-    "77d054d4-dc0f-4a1f-a14b-bd737e7ec462 AMZN",
-    "7805b052-b504-4bdd-bb33-a56d983127c7 NFLX",
-    "812e3050-a053-4556-b233-ee9b4c318fc1 CVX",
-    "832ae680-5ae4-4a66-9bec-bba59963839e XOM",
-    "83b40d8c-3bb9-47c5-ac64-b600022b32f9 META",
-    "89fe7a58-0a1b-4b0a-afe3-d67bd5882ee9 DIS",
-    "8ad4c5fa-dc64-4412-be64-dbad81dd0de1 MRK",
-    "8dcdc614-9ba5-4a7d-be52-49ee7590e63f QCOM",
-    "973de504-41a2-49b2-a242-22344b17dda4 TXN",
-    "9c76840d-6e36-4d16-9e5f-5ecc944e9bfa NKE",
-    "9daea44b-8e6d-4f02-9520-1c8e81c02905 ABBV",
-    "a2e3f7b1-24ca-4643-8e30-c80d7d807af6 DIS",
-    "a628cf17-15a0-4d9c-ad2a-766d4d8b3e4f ORCL",
-    "aa7798a6-bc6a-4365-b635-c33fca5cc74e TSLA",
-    "aa9fe3d6-3eff-43d2-ab9c-e2f7dd6eefc7 AMD",
-    "af9d30e1-17e2-458a-aad4-5fb6659f103c AMZN",
-    "b0644367-924a-4dd8-a048-dc014bc4a27f UNH",
-    "b3d306fb-420d-4304-baba-1deef79804a9 INTC",
-    "b5e2ec61-39bc-4fbd-be04-0bd4443148b6 PG",
-    "b86d6c8e-f2ee-4a5d-9665-31c9cc9f3d26 KO",
-    "b977839f-0be3-49ea-86b2-5a0f7d3af858 QCOM",
-    "bb717c4f-f0fb-4dec-8832-225b42606679 PG",
-    "bb9ba147-dd61-4e2d-ae69-6f4a39d392b3 JPM",
-    "bc383cd2-d1c6-4a25-98c2-89c43527bc85 PEP",
-    "bcf4ed69-7ff1-4818-8c8e-9df635995692 V",
-    "bcfa719d-2e2b-47fe-bc4c-ccf9abc4a942 AMD",
-    "cb6f03bc-4a10-4d64-8aeb-850829a0c76b V",
-    "cd4e8af6-4f05-4452-8133-597a3b8865c9 ADBE",
-    "d35afadc-228e-4c0e-9a66-ac63740cbfdb HD",
-    "d761a866-6ba1-42c2-a207-5c99dacba205 MCD",
-    "e3a54e17-9025-407e-9863-0c6f84bd8815 ADBE",
-    "e400bd12-692e-4cd2-bd12-5d89c074c05c MA",
-    "e5e707f4-149b-466a-91d4-3c0aded26d1c ADBE",
-    "ec60a423-a021-4de3-96ad-4c5c10b84660 CSCO",
-    "efcfd621-b9a4-497b-b5ce-18da8f6f762e WMT",
-    "f327df4a-20b1-4bc8-8d7c-8841dff2496d CAT",
-    "f507d1f3-8196-48a2-b14d-46fcf312e6f2 MCD",
-    "f7d8c06f-cd67-4470-82f2-e1c71e001e11 NVDA",
-    "fb1b1f28-1727-49c6-8d20-34bd6a499d9b NKE",
-    "fcd41371-a174-4fc3-9abb-e4c837dfdf20 MCD",
-    "fce29ec1-4f03-4248-90ae-3d1e9a4c846a JPM",
-    "fe5dbb70-207f-4aee-8491-0521c095571c AVGO",
-    "fe66a7d3-bbf3-4e43-b903-ec8d097c79f2 META"
+  "actionsByChoice": {
+    "Exit": 6370,
+    "Roll": 6370,
+    "Adjust": 6370,
+    "Hold": 108287
+  },
+  "dispositions": {
+    "complete": 64480,
+    "declined": 14880,
+    "answered": 17856,
+    "declinedLater": 1587,
+    "outstanding": 397
+  },
+  "closeReviewDispositions": {
+    "complete": 16055,
+    "declined": 3705,
+    "answered": 4446,
+    "declinedLater": 395,
+    "outstanding": 99
+  },
+  "asOfReview": {
+    "walk": [
+      "6d0e6be6-87ad-444a-8048-fc7498f042b0",
+      "56486268-b97d-4321-88ec-6f729f946fab",
+      "f4984cb9-dac5-4ee4-a130-f8fc67ddaa32",
+      "7e4c11e8-ed06-405d-81a9-ef011665a7fe",
+      "a7070d16-1ff5-4e36-912d-658d09737831",
+      "705abfb0-40f0-4660-a5d0-aaf23124f6ba",
+      "b6f86080-675c-4d3d-abff-e616442cae0f",
+      "3e5edff2-8557-49f8-a5c8-cef2e184c800",
+      "04bc43b2-b10b-4848-b7ab-60e4e22f40cd",
+      "0cb36571-9fdd-4bf1-ab67-06d89c87c2c1",
+      "a941605e-4764-4ee0-afff-c717be57085d",
+      "2f020418-4239-47b8-9d06-9c8d44e50b8e",
+      "8b6ad33c-2da9-476c-a106-c217ba4396c5",
+      "07bbd6a6-4eae-4e47-8082-5d5df7a40273",
+      "9cead540-38d9-4cf9-9667-7836e411d785",
+      "05196fd6-ec9b-4ae4-bf13-bf38bb469683",
+      "98a21a86-8ac3-42e3-bdf1-652958673d08",
+      "ad7d91ee-5861-47a6-9a39-9f0f57109802",
+      "21ed0f2d-29aa-4702-9eb0-5787b14a0a99",
+      "68e2f5ea-a016-4266-b67c-bac2204a467f",
+      "5350a3be-f8bb-4b20-a913-3e1338102711",
+      "7d9e807e-a2f4-4aa5-8d7c-a0f49bc5f50a",
+      "6f29e26a-8050-4320-87da-3f4d24c476a6",
+      "75cb66fc-e04a-4b3c-b053-f6d4f9b38cc3",
+      "1dee053a-57ac-4dbd-a8d8-e94ff4629d55",
+      "055ff8fc-fc56-4072-9013-0e8684963c91",
+      "cd0820f8-a43b-4c39-a9e2-ae6abc895a55",
+      "75a390f7-33af-4ac9-87e3-1799dd51cc94",
+      "5edb2c04-f57e-4c49-8319-8c26b87610cb",
+      "86bcae62-f13a-4f86-aae9-0049e6856875",
+      "9ec2a361-fc89-423e-bdab-4015a9268843",
+      "50e2d885-1750-4cd5-ab6f-3be81f76feb0",
+      "5063cdc0-224f-4a36-a918-fa37ac3c8627",
+      "5d66e810-4be0-4a19-a6a2-cceb9f51a5fb",
+      "a8a972bd-2049-4265-86b6-71bc794a4a42",
+      "cc2eaf7d-92a5-4e14-962b-3b67b34df188",
+      "4d117b0a-1778-4a5e-9ca8-b9f4dd51ea0b",
+      "c65a8061-28f6-472c-807c-236bb02e8947",
+      "32887d8d-792f-445b-8e41-1651df6676ea",
+      "b072917e-e18b-4f32-a0e8-1e2d2830aa70",
+      "db91a839-d74d-42a6-a22a-3eac028ef074",
+      "eb7f21b8-0c90-4201-84cd-d2e1db62642b",
+      "8d0ce472-410d-4b4a-a999-1b53bc9ce066",
+      "386471a5-1139-4c90-9176-f5e0ce392c5f",
+      "9d241964-da43-44a0-9a05-0ed82b5f5133",
+      "b774b8da-8534-4bf3-9d77-050432b6c88c",
+      "a8036daa-5f33-4916-8e4b-45d02340eb56",
+      "a01c0ad6-02c6-4109-8d48-af16f5df711c",
+      "ea0757e4-cbcc-40af-bb63-a559d9168c3d",
+      "2295ca7e-78b3-4af3-bee4-9c5bc195238e",
+      "4c09b3e6-a3e3-4ae6-abf7-d80ca5361892",
+      "f4e36953-82db-4cd3-81a8-07a270493b61",
+      "bb0e8cb1-c0b0-477e-b20c-3d101e3dc0ed",
+      "bf8bacf0-bf04-454f-9bed-3145d5588ce0",
+      "9b17e6b8-3583-4e1b-8af5-ee8b1a0a3952",
+      "1ede05cd-224c-4279-86c6-d56a7d3ef05e",
+      "3f945192-6d35-436e-ad68-94043928a1ed",
+      "373b5e70-3cb2-405a-8080-c7cba19af0d2",
+      "4112b397-d5f0-4528-a766-e1922e615834",
+      "b0dcb11d-9056-4573-99cc-6df22d2b28d2",
+      "ce0c15b7-f2bd-40a4-995f-51340e192f09",
+      "b94ad4b1-b5f1-4200-a094-625510b1ff8e",
+      "831f84aa-43eb-4486-8f81-0897de595117",
+      "f380c6fc-6f91-46af-9c53-b118f6f2cf5c",
+      "c676eeb0-3792-4927-89e4-a01bf7871842",
+      "1ed9ae1c-375c-418b-8223-1b599097ca3f",
+      "385fb132-e9af-47c1-97dc-e94fbb4f3916",
+      "19712783-0d5c-41cc-bef7-d8cbfc7f19ea",
+      "4c828a1c-b9af-4adc-bafb-ff715e01b7df",
+      "09dda76c-51ed-4094-af8c-83f4b73505b4",
+      "5f5f9e9a-5510-4b3e-9ea7-accc8dd2b149",
+      "a6a059e7-2d97-4fc5-a565-f0a462948c2e",
+      "eab0b3ae-fe15-4b58-8a6f-0ff8f48171ec",
+      "baa7e059-49e7-4c04-8c7f-dd739dcf372d",
+      "d93ad590-0c10-4f8b-82cf-6343c2f013b4",
+      "c2e43a45-fa67-4d47-9395-74604ea9a491",
+      "da5256bd-b552-4d06-8817-12b67353d87a",
+      "f8941590-4bcc-4958-bd3a-90ab92e41c79",
+      "26929675-2a74-4f95-b30b-5694c22cb539",
+      "ee1cc989-9271-4e7d-8e95-24a4a8d1cd8c",
+      "bf8b7534-4325-42ab-a35f-1231e0e9dada",
+      "d671a4b9-b5d2-4d42-85db-50ea1e8bde49",
+      "92682410-5445-4f5d-af82-77ba66ab0f6c",
+      "4e2ea8fa-573f-4250-9d3a-e6886be76295",
+      "aac38536-1484-4d49-b6e7-9a0145452d3a",
+      "4a7e7a44-0494-4445-a91e-bfdd696caeb8",
+      "61b1648f-17f2-4e32-bbd7-a8edb03db40c",
+      "be262ffe-8289-4d8b-bec5-727516cc1361",
+      "59e3b8b5-e794-4f12-b06c-650f2bf639f6",
+      "fce655f1-cf3e-4a40-a383-ade89e0159b4",
+      "29391053-dc94-4f05-810b-1a444e8bba23",
+      "01d2abb3-aa7f-4fb7-8b7a-c9a5d1b48f6e",
+      "e9790800-4173-4e1a-a466-e07c1c96fc1d",
+      "795de234-792b-443c-8d56-adaad02b04ed",
+      "25acf7e5-8776-4c4f-82dd-a835eac04d61",
+      "00dd4227-d147-4634-a8f6-ebcc288b6beb",
+      "41ccab0f-5bea-4079-ba3e-883a0c95c5d0",
+      "a71be62b-8320-4eed-9768-e80f26c289cf",
+      "a1970af6-4dbd-47b5-9622-b6b44bc55bc9",
+      "01609c45-8249-4347-87ea-856c0d07703a",
+      "2998c3fc-0968-4b13-b845-69503089ca94",
+      "5e47448a-0078-4e11-98cb-3cdff6bf975e",
+      "7a99821d-3873-45ef-bc00-8a65bc3588e4",
+      "291f0ee5-8a7d-4704-9c55-4d21db6f30c9",
+      "fb2be8a0-892d-44b7-9773-89055a3f12dc",
+      "be287d10-0b4b-411a-9349-8e9b3f027247",
+      "3e66aa1d-e780-4cf2-8edc-9c09da6b9341",
+      "67c6284b-fad8-4da4-8468-e9b2bb006231",
+      "78d52687-6fa5-4e1f-ad9c-70163e6f4bbc",
+      "764e49d3-7534-4251-84f8-594118983e44",
+      "26dd0e12-9ede-4351-b414-9cdb97fc4a3c",
+      "e76f7705-875f-4cb9-9306-1cebd3ed0f24",
+      "eb4a17ad-2b30-4293-b124-15763b18de24",
+      "b33a8fc3-df75-463f-b06a-8280d14557e4",
+      "d1f6c4b7-4902-4629-807f-43602e56959f",
+      "aa87ffdb-5ef9-4d29-ae90-1cf566a382c3",
+      "23331790-ceee-4a01-bdf1-28722317aa51",
+      "3ee54782-e987-46d1-af39-66b40af7a9f6",
+      "19857063-fa8e-49f4-9a2c-5439d4f14bad",
+      "76e73f77-fec7-4bf6-80d7-199278355c93",
+      "87bfdace-6266-4e5f-bc9c-c218f5ca305f",
+      "690eb1e7-2eef-4bce-898e-49d3c403a554",
+      "e6db4292-940b-4e75-b615-afc1616010d5",
+      "83db8fd5-0d01-4a07-a54f-627c92b083eb",
+      "051acc35-9a3f-418b-a164-d7da07b812ab",
+      "bae946f6-dad8-42a2-be49-15ac14ffcb89",
+      "994a2d8b-390d-4e69-a530-8c6be8156792",
+      "3bf46b81-4838-4152-96ba-24de30433bdc",
+      "cfbec662-e8b1-429f-8ed2-4f44b4508dc6",
+      "8d54df8f-531e-4c36-83e4-c4134cee89bc",
+      "b8b6a62b-0b05-4978-8b3e-d6bf6a7ff797",
+      "1f0f3a4a-c12a-447d-80a9-e3bcde93c9d0",
+      "4986edc0-fbb4-4e37-b03c-45f715799b32",
+      "2c2ebfff-fee2-457f-a658-5351aff65817",
+      "28b14532-0a95-49b5-9f2f-2da9524c73ce",
+      "2a1e9e5d-65a3-4568-9525-1dad247d215f",
+      "6d6d0546-4ba7-4ab4-89d5-857f3a6d7645",
+      "1464708d-4251-41ce-8d4e-d2b5ff61cb53",
+      "e93dd768-53a9-4b50-9f49-bb28046ed64c",
+      "6893bf2e-25db-42e9-a451-c5003f18bd4f",
+      "cdbf3fb9-1640-478f-ba88-834a3a777d3a",
+      "07ae3a0a-90f0-4758-89e3-3ea8a9776e77",
+      "e7e0e9fa-615d-4028-9325-e500cbb2fc9b",
+      "53e3a3a9-dedd-4eb8-8115-89092cf49219",
+      "9f81aba2-a000-4284-8320-097ddd984eed",
+      "cc91bb7e-1476-4e8d-aa2e-5f1bc4755236",
+      "59576188-b0bf-415f-9b44-4c199123e197",
+      "7b528bee-ee94-494a-b20e-b35ffe8da715",
+      "f5e0c056-75f3-413b-9f58-960886badb17",
+      "20fe2278-51aa-4f14-9325-d1e28bb975e9",
+      "23833269-b30f-44bf-88e4-71ab3b9d4053",
+      "92f2df3f-1a2f-4c3c-8ea8-27550416b918",
+      "c08a1078-b890-4ada-b5c1-1e17df6b54ea",
+      "9f366684-0a9f-484b-8b0e-4866b270dd71",
+      "d018b90a-43d8-4f59-a5ae-1fbe5e592c4d",
+      "68e9e2c4-5bc0-40e7-99e9-bca0f11430f9",
+      "78e49a1b-68f5-4d58-b425-8984e55009e0",
+      "349560bb-e20c-49f8-828a-91afd25b25f0",
+      "ec1e232f-ef28-4639-8ac2-2ef6498ed04a",
+      "6688e475-5980-4bb4-aed4-92e703d8f2dc",
+      "cf0bc288-831a-4505-bb24-244917d81d17",
+      "696d5f8a-b6e3-4ff5-8595-2f815dea43ad",
+      "198b4dbd-f50a-4e32-8adf-67aed98a6366",
+      "b3bf7708-55c2-4f9b-983d-8c263dc23dac",
+      "4e360fc3-cead-4422-bb20-b35f626e7481",
+      "72a0d32e-2b43-4aa2-8975-0a7490603f1c",
+      "9aeec8fa-c427-41b2-8209-d5b172d7f2b5",
+      "6123e86b-466f-4cc1-8c3e-88d28856e144",
+      "edf4c23f-0d09-4765-b2e5-469f163f9669",
+      "52736390-e140-4d50-9175-5cfe5011f847",
+      "b427f0bb-d7e7-4895-8cd3-5ce461fa8db5",
+      "fed25b83-e31e-4aed-bc66-9ee97b97be37",
+      "28978c2b-5329-48dd-acb0-f498bda7fbfd",
+      "3288fcd4-4b99-44a5-b8f2-b766685cc47f",
+      "61cd2f65-901b-4159-8a79-67717c27a6ff",
+      "f027c719-8dc8-4716-a752-81ed02fe98e6",
+      "23ae847a-b739-43a5-94a2-e42bcaca36c0",
+      "aa533104-cc14-4f6b-9bd9-2236eeec8073",
+      "5a1fde1a-2147-4903-aee4-2eee54c6ddae",
+      "88ff998f-4ea4-450f-bc62-954476dec90c",
+      "b0535d04-1219-4f7f-a607-1f93b92948b1",
+      "a73a40d3-c921-4ff8-8751-9091e36c9feb",
+      "66e57cae-4dc2-4caa-9afd-eaf2617e6f25",
+      "885a7a10-3e20-4d5a-b4fa-142b34b57393",
+      "63725f2a-0663-429d-bf37-b8f6af1b65a5",
+      "3266b444-f019-4443-a60c-3b65033b0a40",
+      "2b689646-8560-40f6-8b30-849441ea8b3a",
+      "c1db06fa-30b4-466f-a807-627958970b88",
+      "af0de0be-9a01-4e1b-85ac-2bc962ae69bb",
+      "2d4b89d1-ffc1-4965-96e3-b78014b806d5",
+      "5dd1f874-90cf-43ee-9b15-ccc1ef273b2f",
+      "15f9cd20-b223-476b-a7ed-1a05b42220e0",
+      "92a4eaba-2a42-4e8a-a7b8-59d77c865e4f",
+      "80ed4710-7047-4ddc-bca0-d958cdee7d5d",
+      "1ab7f42e-c8ff-44b0-9cea-49adf38e0836",
+      "464e41de-b754-48d7-8e9d-c4c36a6af783",
+      "977a75ee-4ba6-4c1f-992f-e1efb1b7fdb8",
+      "05509cd1-ca92-405d-b6cd-6646a5f4a282",
+      "62d5d77d-2210-4eb0-b5ce-a58f9538d21c",
+      "ced2abe8-7adf-44e9-b8a4-453d77de106e"
+    ],
+    "owedGroup": [
+      {
+        "tradeId": "efa2095e-e5b4-4c6e-be3a-f28c1d039531",
+        "underlying": "COST",
+        "debtIds": [
+          "636e6ed6-58ea-4307-83fd-46d87282ddb2"
+        ]
+      },
+      {
+        "tradeId": "ac40c31c-dedb-47e4-80d6-e86744674161",
+        "underlying": "NFLX",
+        "debtIds": [
+          "7d3cbc6a-a315-46de-bef4-a78ee86f6f60"
+        ]
+      },
+      {
+        "tradeId": "1f59a265-45eb-41fa-9df2-058b7d2ca62a",
+        "underlying": "KO",
+        "debtIds": [
+          "93677152-b12e-4262-aee0-5b5c1ccf6de2"
+        ]
+      },
+      {
+        "tradeId": "04f42daf-2e52-4765-92a0-42f38e6c3cd5",
+        "underlying": "PG",
+        "debtIds": [
+          "91540158-96a6-4b1c-979a-8a8c981651d4"
+        ]
+      },
+      {
+        "tradeId": "5f0eae08-6807-419b-a111-f82d903bc592",
+        "underlying": "XOM",
+        "debtIds": [
+          "9ed6c778-3fd6-405f-9346-bf7c2a675194"
+        ]
+      },
+      {
+        "tradeId": "3cabe2be-6c97-4080-ba50-06f94abd9a6e",
+        "underlying": "AMD",
+        "debtIds": [
+          "9cc3ed06-5cda-4347-ac7c-3a68d91ba151"
+        ]
+      },
+      {
+        "tradeId": "2063e7b0-4569-469e-81bf-1353611e9a35",
+        "underlying": "TXN",
+        "debtIds": [
+          "950342f7-c2b1-4daf-98c1-9e110146e314"
+        ]
+      },
+      {
+        "tradeId": "bbbc85a6-f9f5-4d11-9c57-e087ff45b06d",
+        "underlying": "GS",
+        "debtIds": [
+          "3dddcb71-2ba5-4dce-9bb8-6f57e6f9ced0"
+        ]
+      },
+      {
+        "tradeId": "08dacc17-fb3a-413c-8ca8-f0a277033b10",
+        "underlying": "COST",
+        "debtIds": [
+          "5f1c0875-ae8a-47a3-bcb3-87e2a3ba9bca"
+        ]
+      },
+      {
+        "tradeId": "97c64a02-8f28-4efa-9aeb-73d1e356637e",
+        "underlying": "KO",
+        "debtIds": [
+          "85bb0ed8-4ee6-4ffa-973b-12d9b613ed18"
+        ]
+      },
+      {
+        "tradeId": "49261d2c-3e14-4f30-a371-8a722d0147a7",
+        "underlying": "TSLA",
+        "debtIds": [
+          "dfeef45a-54ef-423b-8118-ffdb9f4a6469"
+        ]
+      },
+      {
+        "tradeId": "d6559d10-1c4e-473d-988f-e9c254a18142",
+        "underlying": "NFLX",
+        "debtIds": [
+          "7e168df6-b531-470a-93bd-676280d37b3d"
+        ]
+      },
+      {
+        "tradeId": "1fcdbc90-1ea7-450b-aeab-7e49fd74889e",
+        "underlying": "PG",
+        "debtIds": [
+          "ea37cf0d-0004-42b4-9ad5-e8e9c4b91094"
+        ]
+      },
+      {
+        "tradeId": "0e300741-d91e-4ad4-98a9-eb8891f2e7b9",
+        "underlying": "CRM",
+        "debtIds": [
+          "ecf3205c-7183-4468-8ec7-6f7d205b27dd"
+        ]
+      },
+      {
+        "tradeId": "6b99dce5-cd79-44f9-8784-b32b3dcb5eeb",
+        "underlying": "INTC",
+        "debtIds": [
+          "fd2bd039-dc65-48b6-9036-d183f5a69a51"
+        ]
+      },
+      {
+        "tradeId": "b2d68f39-185f-4e9d-b850-3d3f1622bc7c",
+        "underlying": "DE",
+        "debtIds": [
+          "df197e24-4e28-4fb5-a306-843b50aa0195"
+        ]
+      },
+      {
+        "tradeId": "4b097582-97be-43e2-a548-02decddc4b45",
+        "underlying": "GS",
+        "debtIds": [
+          "a568640e-1252-493b-bcd4-2cd60717293e"
+        ]
+      },
+      {
+        "tradeId": "feb5aa40-0516-4cde-87f2-36fc4187eaa2",
+        "underlying": "MSFT",
+        "debtIds": [
+          "2708639b-1c81-48bd-a3af-1f1b7ec0f769"
+        ]
+      },
+      {
+        "tradeId": "dd3f1319-fcce-427f-a3f2-186189cf0fb1",
+        "underlying": "CSCO",
+        "debtIds": [
+          "b2ea90cd-e6aa-4e7a-8540-49a6011f0019"
+        ]
+      },
+      {
+        "tradeId": "f7470eed-5834-4844-b8ee-a460127938c7",
+        "underlying": "JPM",
+        "debtIds": [
+          "b440ccec-6922-494e-8c93-624c237b0a28"
+        ]
+      },
+      {
+        "tradeId": "6ddaa30f-aa8f-4708-8c9a-378857e50a34",
+        "underlying": "CVX",
+        "debtIds": [
+          "96094177-51d3-4e3b-8892-30f8ad89de37"
+        ]
+      },
+      {
+        "tradeId": "89c153e5-7215-49dd-b9ec-f38794d817b2",
+        "underlying": "LLY",
+        "debtIds": [
+          "b6f32f77-5257-4677-89e8-01ddbd4ae4c8"
+        ]
+      },
+      {
+        "tradeId": "34819d3d-9ceb-4755-902e-39f14c7eacca",
+        "underlying": "MRK",
+        "debtIds": [
+          "b7d56083-bf48-43d0-94a3-9417f2dfe974"
+        ]
+      },
+      {
+        "tradeId": "eb3c85e1-0a7d-495c-b132-6969384ed5f9",
+        "underlying": "QCOM",
+        "debtIds": [
+          "3175d2fd-7abc-46fd-8309-a6f33dc836e0"
+        ]
+      },
+      {
+        "tradeId": "d609032a-9e63-4ee0-ba5c-1440cf478b83",
+        "underlying": "WMT",
+        "debtIds": [
+          "1bf0c87f-6069-40dd-898e-b9968ee932d0"
+        ]
+      },
+      {
+        "tradeId": "85a7c4b8-002d-4c09-b242-746f6296d08c",
+        "underlying": "DIS",
+        "debtIds": [
+          "1b9822b9-bb47-4eb6-915e-fad765d1364d"
+        ]
+      },
+      {
+        "tradeId": "0f60867f-4b84-4982-9647-e4f37b67f234",
+        "underlying": "MCD",
+        "debtIds": [
+          "ac0d5039-1a82-47e1-8467-a56446d102d2"
+        ]
+      },
+      {
+        "tradeId": "ec2e939c-2d8d-4ea9-ab90-c32f7c23dae1",
+        "underlying": "AAPL",
+        "debtIds": [
+          "fb8b4916-2735-4b49-b911-dc29ebbe4598"
+        ]
+      },
+      {
+        "tradeId": "5121dd33-0956-4504-b837-41bf1b537054",
+        "underlying": "AMZN",
+        "debtIds": [
+          "9ba7debe-abd4-43e6-8744-1a82df0962be"
+        ]
+      },
+      {
+        "tradeId": "d4b80fb7-7ab6-47d3-a8c3-1683bc5f96e6",
+        "underlying": "PFE",
+        "debtIds": [
+          "00d23e60-d712-4bb1-a625-1235590830ae"
+        ]
+      },
+      {
+        "tradeId": "fb39510b-09cc-4a35-a679-1e2d4d49cd1d",
+        "underlying": "MA",
+        "debtIds": [
+          "77a8b599-4095-4851-a2e5-7a440a155d09"
+        ]
+      },
+      {
+        "tradeId": "44ba7062-631e-4883-a1ca-991569e75187",
+        "underlying": "CVX",
+        "debtIds": [
+          "e5b1fe50-f766-4050-8aa4-e12fd29cf10e"
+        ]
+      },
+      {
+        "tradeId": "cec8482c-8a9c-4b80-aaec-af2d2aefccdd",
+        "underlying": "MRK",
+        "debtIds": [
+          "a29df083-7df8-48b6-bef9-c9dacc159eaf"
+        ]
+      },
+      {
+        "tradeId": "0d747695-0b79-4b4b-8e61-3944aac68204",
+        "underlying": "WMT",
+        "debtIds": [
+          "1b2e9cd4-6dcf-4e18-b6eb-b023f3c1d2e0"
+        ]
+      },
+      {
+        "tradeId": "a9b5b1ba-2f54-46bd-b9f1-2c547baf0cec",
+        "underlying": "MCD",
+        "debtIds": [
+          "e727f734-f76f-46da-80e2-21639ed4c80d"
+        ]
+      },
+      {
+        "tradeId": "c7798037-a473-4e68-922b-a1c8e679f39c",
+        "underlying": "LLY",
+        "debtIds": [
+          "faa0a316-a653-4de0-82cb-a722a464d596"
+        ]
+      },
+      {
+        "tradeId": "dd0b27a0-1b10-4eb1-b157-a57b9f39245e",
+        "underlying": "QCOM",
+        "debtIds": [
+          "98e05613-f5e9-45a4-824a-3a82c330adf3"
+        ]
+      },
+      {
+        "tradeId": "fe310ff4-516e-4f3f-9a5d-c9579806b0b0",
+        "underlying": "DIS",
+        "debtIds": [
+          "03d939f9-f4c7-4021-964f-640058a15248"
+        ]
+      },
+      {
+        "tradeId": "cead2b12-e292-49d1-9320-d6df5567da98",
+        "underlying": "NVDA",
+        "debtIds": [
+          "d083f09d-e13f-40f0-95e5-7d0689bb3877"
+        ]
+      },
+      {
+        "tradeId": "decabc25-bb01-4334-a05a-c2e4d1f433e3",
+        "underlying": "META",
+        "debtIds": [
+          "b51f99fc-f1dc-484f-a6c4-f53673d2fcef"
+        ]
+      },
+      {
+        "tradeId": "a39ee79a-bdd0-455f-ab93-074de3b70446",
+        "underlying": "V",
+        "debtIds": [
+          "044619f6-366b-45ae-bc6f-cb7de78cc3fb"
+        ]
+      },
+      {
+        "tradeId": "dbf316e7-125d-4d3d-8575-d02aa1710d84",
+        "underlying": "HD",
+        "debtIds": [
+          "f5210497-d7b0-4a38-949e-e8939f30c4e3"
+        ]
+      },
+      {
+        "tradeId": "63770464-f4cc-4b56-a3fa-9f55edf54f20",
+        "underlying": "ABBV",
+        "debtIds": [
+          "e8ec96af-bda0-43a5-8e2e-76150ffbdeca"
+        ]
+      },
+      {
+        "tradeId": "f1b466e6-cdae-47f7-906f-c708dd6b7895",
+        "underlying": "ADBE",
+        "debtIds": [
+          "ab5761e0-f5e8-4e0d-a3f6-cd025f288ede"
+        ]
+      },
+      {
+        "tradeId": "452e6722-9619-482c-af88-66cc03db2141",
+        "underlying": "NKE",
+        "debtIds": [
+          "2903c99f-0c5c-4821-ab62-67a082c11f16"
+        ]
+      },
+      {
+        "tradeId": "fbc68e67-d9e8-4d63-b458-6d3bb9943a0c",
+        "underlying": "CAT",
+        "debtIds": [
+          "c8949b00-4928-4859-b8a7-9b266a739857"
+        ]
+      },
+      {
+        "tradeId": "9571b320-65e0-4a42-a0ac-55962d2859df",
+        "underlying": "NVDA",
+        "debtIds": [
+          "57ce1a51-5a51-41a6-a2d3-e9437edc880b"
+        ]
+      },
+      {
+        "tradeId": "b3ec21f0-f69b-49e4-ba9d-4f7e3497cd36",
+        "underlying": "GOOGL",
+        "debtIds": [
+          "24c2f40f-c60b-4e42-8a8f-868ab2313b92"
+        ]
+      },
+      {
+        "tradeId": "f6e368c3-cf7b-43e8-9e34-8efd74a75852",
+        "underlying": "META",
+        "debtIds": [
+          "4332c9b7-d5d2-469a-a900-cc97a617d630"
+        ]
+      },
+      {
+        "tradeId": "27fe68c4-6bbe-4330-acae-5012b5e75564",
+        "underlying": "AVGO",
+        "debtIds": [
+          "95b1b0e3-dddd-4397-befc-eb979287a70b"
+        ]
+      },
+      {
+        "tradeId": "f77385f1-4921-4ca3-bdff-67d3f850cf77",
+        "underlying": "V",
+        "debtIds": [
+          "663e1cf2-384d-41eb-8a7a-00718cc0e733"
+        ]
+      },
+      {
+        "tradeId": "90c9259c-812b-471b-b179-9c947a04bf6b",
+        "underlying": "UNH",
+        "debtIds": [
+          "7fd2b0bb-8108-42f7-ab41-72475a98ae7d"
+        ]
+      },
+      {
+        "tradeId": "e57d44cd-74d0-4480-a941-efef2ca1c63f",
+        "underlying": "HD",
+        "debtIds": [
+          "9e083141-c76d-4256-9b90-67498f537bcf"
+        ]
+      },
+      {
+        "tradeId": "457cedc8-9c44-4dec-bf41-3d30063942b6",
+        "underlying": "PEP",
+        "debtIds": [
+          "5fd26b38-ab38-46a8-95b6-041533cff090"
+        ]
+      },
+      {
+        "tradeId": "1778f695-9197-4b0a-9d3a-8798fb89c20a",
+        "underlying": "ORCL",
+        "debtIds": [
+          "cfb2ec0b-7204-4fdf-8383-8309bcec4594"
+        ]
+      },
+      {
+        "tradeId": "808c98cd-9797-4570-a522-c52a27eb0cbe",
+        "underlying": "BA",
+        "debtIds": [
+          "9f725a39-f356-440d-87b4-d39722b1fa6b"
+        ]
+      },
+      {
+        "tradeId": "cfb405ba-e400-464b-92cb-9689060fbd65",
+        "underlying": "GOOGL",
+        "debtIds": [
+          "6d5abf6b-7810-43b9-9db3-b3c08cf8973a"
+        ]
+      },
+      {
+        "tradeId": "c7d06186-82d7-4125-823d-d6df39826cb7",
+        "underlying": "AVGO",
+        "debtIds": [
+          "04d967f8-5e2d-4c21-9b07-cd3d6faaee26"
+        ]
+      },
+      {
+        "tradeId": "7d403a29-d1a6-481d-a9a0-53549efd1b23",
+        "underlying": "UNH",
+        "debtIds": [
+          "de5654c2-06a6-4a55-8dfe-6beb6c70d7de"
+        ]
+      },
+      {
+        "tradeId": "2ecaad63-c1c1-414f-92db-584d03d01afa",
+        "underlying": "CRM",
+        "debtIds": [
+          "916f8c3a-a258-47a5-bc3b-1a08cc6e1ac6",
+          "c5354ca6-54d4-4973-8994-31dfea545f05"
+        ]
+      },
+      {
+        "tradeId": "6e1ea06e-db56-40c4-bca0-36203d6c744b",
+        "underlying": "INTC",
+        "debtIds": [
+          "a3f69cf2-59d7-4a89-8f41-55da2e7dcb14",
+          "be457925-e522-456f-a5aa-da1973325fe4"
+        ]
+      },
+      {
+        "tradeId": "7c2de2c7-377a-4b55-9c81-cead1e8343ae",
+        "underlying": "DE",
+        "debtIds": [
+          "5919a5f3-cfc1-47ec-a28f-980d655e38b0",
+          "d5b4e393-7058-495c-bba8-ab6f188275b0"
+        ]
+      },
+      {
+        "tradeId": "e5c21cbb-20da-4cf9-ade3-27dbce5632c1",
+        "underlying": "MSFT",
+        "debtIds": [
+          "a3bc63a4-5453-49e4-ac53-e36ce07e9719",
+          "8d6f03a2-6471-424d-af3d-e72442625429",
+          "d951f480-1190-4be6-b4f5-5e847bc1a5b2"
+        ]
+      },
+      {
+        "tradeId": "7c8b9198-7198-45df-9e5c-c7275f195949",
+        "underlying": "TSLA",
+        "debtIds": [
+          "1063844c-95e9-48a8-9573-1e08cba3f21e",
+          "b9e32107-405e-4a81-b3c6-d12c3c2593c8"
+        ]
+      },
+      {
+        "tradeId": "8d4d0983-3fac-4496-ac25-8ad49f3ebd64",
+        "underlying": "NFLX",
+        "debtIds": [
+          "34d4ac14-e5e8-49c2-87dd-c3090ee7ef5e",
+          "66982c21-1174-4373-8119-4ad0566fbc29"
+        ]
+      },
+      {
+        "tradeId": "da861e08-6017-4e78-bb7c-696d0a304ffd",
+        "underlying": "CSCO",
+        "debtIds": [
+          "720cda8b-3fb6-486f-b162-3c28d1670ba1",
+          "8f512cfc-451e-476f-8a0b-68cdda8d09cc",
+          "f82bbfeb-a0ef-4d48-ba2c-c3f5689ccf11"
+        ]
+      },
+      {
+        "tradeId": "971e5e7a-c3bd-4804-8bce-883f50926796",
+        "underlying": "JPM",
+        "debtIds": [
+          "e32a6757-b295-417a-9974-4480579c51f2",
+          "0d1a84b7-8308-43a9-baf5-ec8e559a3435",
+          "e7749bb8-07c9-46d3-a3cb-6ccc2ff0b2ea"
+        ]
+      },
+      {
+        "tradeId": "6e3330d5-768d-475f-941c-9553983c7014",
+        "underlying": "PG",
+        "debtIds": [
+          "97eb0fbd-7665-42b1-9283-7d000b778d1a",
+          "9aaeae7c-15f0-46c7-8cbf-48d937828702"
+        ]
+      },
+      {
+        "tradeId": "125097af-d5c4-48fc-b2d6-a9adc3e0e404",
+        "underlying": "XOM",
+        "debtIds": [
+          "2ccabbee-fe65-4727-b006-e7dc20907073",
+          "803decdb-8021-44ba-9c93-5818dc496408"
+        ]
+      },
+      {
+        "tradeId": "eb37a78e-3b88-402a-baaa-5b6ca78fb4a7",
+        "underlying": "LLY",
+        "debtIds": [
+          "67e83a41-9fe6-4b5a-9381-d9d6205a8753",
+          "657d3b98-8b38-44b2-9fbc-de59021808f8",
+          "67c2ca05-f299-49b3-8fbd-eb6e5f58acb2"
+        ]
+      },
+      {
+        "tradeId": "a269c01a-3498-461b-b4a2-aaa1b7b875f2",
+        "underlying": "ADBE",
+        "debtIds": [
+          "c85a6272-41ce-44db-9b77-65e0bea18e27",
+          "0ab8cc54-b9f9-4c91-af25-9beea28d2828",
+          "67bb8285-b844-4777-869e-08c778402a82",
+          "7e2a34e6-6804-4322-80d8-b7be0a48dc98"
+        ]
+      },
+      {
+        "tradeId": "116d16ce-c373-4c50-8f9f-d51a3f95c5e5",
+        "underlying": "CRM",
+        "debtIds": [
+          "48d41dc5-435f-413e-979f-5a2dddf1f767",
+          "52c13c87-91f1-46be-ab73-112f44814b0b"
+        ]
+      },
+      {
+        "tradeId": "01212442-26dc-45a8-8a85-a37085614060",
+        "underlying": "AMD",
+        "debtIds": [
+          "4e39546f-8ab1-42e6-94f8-959474450a35",
+          "ea66ef1d-b33f-44da-a177-0c17ac614418"
+        ]
+      },
+      {
+        "tradeId": "19662c81-e2be-4b9e-afa9-2d4db551e1ce",
+        "underlying": "INTC",
+        "debtIds": [
+          "0d4518bb-f25c-4060-b2eb-1d2a0a0c6244",
+          "aeb5659e-0194-4e2b-9040-07abebed5282"
+        ]
+      },
+      {
+        "tradeId": "2a24f58b-2397-4114-90ac-08d5eac323a1",
+        "underlying": "QCOM",
+        "debtIds": [
+          "4ebfe314-f5cd-4e68-b660-6a435c03aa8e",
+          "c846d371-ea11-49ef-b4f9-bbe86520195a",
+          "f170a784-533f-4490-8e58-e377a1539894"
+        ]
+      },
+      {
+        "tradeId": "afb8a979-bc4a-4cb1-879c-05621db08199",
+        "underlying": "TXN",
+        "debtIds": [
+          "e81b36f5-a3cf-4113-b34c-213711345e37",
+          "fdd11ab6-6e09-47ac-ac2c-2ffc1125a7ef"
+        ]
+      },
+      {
+        "tradeId": "77403893-444f-4244-826b-1ef3420dd889",
+        "underlying": "DIS",
+        "debtIds": [
+          "b01cda59-6029-47cb-8788-5b54ce05aeca",
+          "70ff6365-6374-4547-8a19-05ff4a166d64",
+          "adbe6151-7a9c-40d0-9efb-0663f80dfd80"
+        ]
+      },
+      {
+        "tradeId": "1b9214dc-c1fa-4bfa-a1de-6e551426dc86",
+        "underlying": "CAT",
+        "debtIds": [
+          "5a5e23b9-b642-4b94-bc87-2748592560a6",
+          "0e039276-1121-498a-928f-8cfeb139031c",
+          "0f897317-b4af-414a-a6d4-15a6ba4095d9",
+          "f4f1eb36-959f-4d56-9984-b295c7c34e7a"
+        ]
+      },
+      {
+        "tradeId": "a756c88a-b22d-4106-814e-88e77c34fbf5",
+        "underlying": "DE",
+        "debtIds": [
+          "1c79253e-9f36-4af1-9d6a-953bdd58cdcd",
+          "dcf375c7-5612-4fa5-b23e-5d4f8a434e66"
+        ]
+      },
+      {
+        "tradeId": "b0238a34-bd5e-48ff-884c-7a4aa3936055",
+        "underlying": "GS",
+        "debtIds": [
+          "a81e92de-ade7-42e7-926d-cda12ba8ad13",
+          "e359223a-2244-4b67-ba93-4361063c448c"
+        ]
+      },
+      {
+        "tradeId": "e41ba099-3446-4474-9936-530e292fa453",
+        "underlying": "AAPL",
+        "debtIds": [
+          "4d29959a-763d-4acd-a1ee-329415406df5",
+          "019f2ae4-5570-4cf4-a387-f745315acf84",
+          "48b8754a-e538-459c-b63d-69566887b8cf"
+        ]
+      },
+      {
+        "tradeId": "0291042e-cde2-4e2b-ac57-d87f419e8bda",
+        "underlying": "MSFT",
+        "debtIds": [
+          "512f2937-802f-470c-8865-1f62382802ed",
+          "0b659946-e7f8-4226-8856-889590ab489f",
+          "ba3ab266-7085-4bc3-81ea-d124a7705a4d"
+        ]
+      },
+      {
+        "tradeId": "70ca4f2b-69b2-4fbc-ae26-565a04d14403",
+        "underlying": "META",
+        "debtIds": [
+          "23e7f9fb-c25c-451d-8744-ff000e0a034a",
+          "c050da51-43e2-405c-ac76-55bc15f0137d",
+          "6f56e0a9-f1df-477d-a2c5-a34f17c39170",
+          "90b41d5d-5b39-4b7c-9705-dc31d92d583d"
+        ]
+      },
+      {
+        "tradeId": "c691f24a-3cd5-4d0e-9f45-960c85679760",
+        "underlying": "COST",
+        "debtIds": [
+          "06bff903-517a-426e-89da-da642ef85212",
+          "54d7ec96-4aab-4a44-95e7-27d4f55c805b"
+        ]
+      },
+      {
+        "tradeId": "601b11c6-2df7-4b65-8ea7-cb41b98a2d77",
+        "underlying": "CSCO",
+        "debtIds": [
+          "8bf6cc45-5f80-40c4-b81b-14b1e54e550b",
+          "075567eb-1250-4244-9abb-ec4d127f5e99",
+          "b66e7307-7d01-4eab-a629-a4ff8f393ca0"
+        ]
+      },
+      {
+        "tradeId": "f4a0173b-822d-4289-9cb7-1cb107f67dde",
+        "underlying": "KO",
+        "debtIds": [
+          "45b0f5b2-ed2c-411a-ae18-4d4ff47cd423",
+          "b0320b28-eb8d-4b09-b9cc-fae5ecf78a7b"
+        ]
+      },
+      {
+        "tradeId": "80dd7a34-c7ac-4dd4-9e2a-bb8717895c14",
+        "underlying": "PFE",
+        "debtIds": [
+          "5e868146-2a55-4855-98dd-039754f307df",
+          "3f717161-b4ca-4af8-80fb-92c77c42d435",
+          "d68c5528-8ad1-4e0d-a94f-c84174a61a2e"
+        ]
+      },
+      {
+        "tradeId": "c8b1292c-03c2-4c97-8988-9892371e59f2",
+        "underlying": "JPM",
+        "debtIds": [
+          "d3ad7e3d-1712-419a-a994-08abc0a0a1b9",
+          "3af92c8e-583f-44cd-aefd-0c9db2aef39a",
+          "65c58ade-171d-4939-b524-f5fce7161239"
+        ]
+      },
+      {
+        "tradeId": "7b91343a-c712-4606-ab37-6a2ee476e200",
+        "underlying": "HD",
+        "debtIds": [
+          "07f2869c-bd8c-479d-b9d1-23a85a5e4005",
+          "83e89caa-4e57-4514-847d-0c6a56a467b7",
+          "292e3077-b0bb-423f-9058-6d0e21203467",
+          "7a574e89-5494-4b5e-bbd4-7c99ef83db96"
+        ]
+      },
+      {
+        "tradeId": "b820d47f-4805-4471-a7ed-5d3496828498",
+        "underlying": "XOM",
+        "debtIds": [
+          "790d0bb5-5b8c-4b0c-b62a-437f3af5aa13",
+          "f5e4170f-93fd-4440-b4b9-92448695335c"
+        ]
+      },
+      {
+        "tradeId": "af83d444-ac14-4d8a-8f48-dccc4f2113a6",
+        "underlying": "ABBV",
+        "debtIds": [
+          "0717962c-5158-4d3d-8c0a-6132b3131fa5",
+          "34dd08c5-c08b-42a8-abd6-4f7137cdfbad",
+          "6339c08f-d0df-42df-83f2-bfa4ca744d32"
+        ]
+      },
+      {
+        "tradeId": "1212a03b-c813-4c75-b3c6-e2a53eb86bf4",
+        "underlying": "NKE",
+        "debtIds": [
+          "62707534-cd3e-4ce7-a426-21f5eed55b25",
+          "1d537bf1-8a09-4e38-b585-11c651856d6a",
+          "f89aa353-40c2-4ce0-a70c-b117de959532"
+        ]
+      },
+      {
+        "tradeId": "7a23d8a5-3817-4f2a-a3c1-c2946ed858a3",
+        "underlying": "NVDA",
+        "debtIds": [
+          "dfb12858-7fb3-4c59-aa5e-e96eb016abc8",
+          "54a44ec7-d3f6-4d62-91dd-7de519e332a9",
+          "d3295689-d752-4cd7-bc81-a0676e27ccbd"
+        ]
+      },
+      {
+        "tradeId": "54f174b5-e9c6-4323-942b-fa717259db0e",
+        "underlying": "AMZN",
+        "debtIds": [
+          "026e7bf1-87d0-4f04-88b5-ca5482cc25f9",
+          "3962df9a-f6b4-4ea0-a843-fce489dce0ea"
+        ]
+      },
+      {
+        "tradeId": "84c6f362-7dbf-440c-bc24-03ed3fa9bb83",
+        "underlying": "NFLX",
+        "debtIds": [
+          "8f96ae8d-a638-4e69-be30-15e388c4c907",
+          "2a5dd816-f93f-4451-80d3-7b9d5478caa2",
+          "bd57154a-e487-497d-9da8-2da5785b7b95",
+          "fe6a3db9-7d33-4921-82e0-886efbceea34"
+        ]
+      },
+      {
+        "tradeId": "09b1008c-eda2-471d-b420-780626f316fa",
+        "underlying": "V",
+        "debtIds": [
+          "a803e96a-c902-43a2-8e70-69f7017bcf71",
+          "baef821b-5d49-4fa9-a5ef-52d5137f1612",
+          "bdea94b3-56ee-4a57-8d85-f6f4e25375be"
+        ]
+      },
+      {
+        "tradeId": "a6982d81-58b9-43fd-ab98-358e54e0f315",
+        "underlying": "MA",
+        "debtIds": [
+          "31709d3a-540f-41e5-a05b-fc1898e322f7",
+          "7e72250c-62d4-4c65-99a6-fa703208533a"
+        ]
+      },
+      {
+        "tradeId": "7b1d8dec-915a-4ebe-89b6-6bd83b2f28b4",
+        "underlying": "TSLA",
+        "debtIds": [
+          "56434a70-84a2-4a17-b6d8-bf20ce277387",
+          "a737eb2b-3507-40f4-ad8c-98a647e0470f",
+          "ff2691e4-e840-4880-9812-d0fac322ac13"
+        ]
+      },
+      {
+        "tradeId": "9ccbd109-cefe-42b3-9b6a-17141ed16e67",
+        "underlying": "PG",
+        "debtIds": [
+          "a380c50b-d54e-4b15-8608-0ec11921871d",
+          "77b0a418-b0fd-4c52-9468-2e2fd90f5883",
+          "87a876df-c15b-454c-bc7a-734f44b276f6"
+        ]
+      }
+    ]
+  },
+  "asOfDueReflections": 496,
+  "outstandingDebts": [
+    {
+      "debtId": "636e6ed6-58ea-4307-83fd-46d87282ddb2",
+      "tradeId": "efa2095e-e5b4-4c6e-be3a-f28c1d039531",
+      "underlying": "COST",
+      "kind": "CloseReview",
+      "positionChange": 24601,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "7d3cbc6a-a315-46de-bef4-a78ee86f6f60",
+      "tradeId": "ac40c31c-dedb-47e4-80d6-e86744674161",
+      "underlying": "NFLX",
+      "kind": "CloseReview",
+      "positionChange": 24602,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "93677152-b12e-4262-aee0-5b5c1ccf6de2",
+      "tradeId": "1f59a265-45eb-41fa-9df2-058b7d2ca62a",
+      "underlying": "KO",
+      "kind": "CloseReview",
+      "positionChange": 24603,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "91540158-96a6-4b1c-979a-8a8c981651d4",
+      "tradeId": "04f42daf-2e52-4765-92a0-42f38e6c3cd5",
+      "underlying": "PG",
+      "kind": "CloseReview",
+      "positionChange": 24604,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "9ed6c778-3fd6-405f-9346-bf7c2a675194",
+      "tradeId": "5f0eae08-6807-419b-a111-f82d903bc592",
+      "underlying": "XOM",
+      "kind": "CloseReview",
+      "positionChange": 24605,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "9cc3ed06-5cda-4347-ac7c-3a68d91ba151",
+      "tradeId": "3cabe2be-6c97-4080-ba50-06f94abd9a6e",
+      "underlying": "AMD",
+      "kind": "CloseReview",
+      "positionChange": 24606,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "950342f7-c2b1-4daf-98c1-9e110146e314",
+      "tradeId": "2063e7b0-4569-469e-81bf-1353611e9a35",
+      "underlying": "TXN",
+      "kind": "CloseReview",
+      "positionChange": 24607,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "3dddcb71-2ba5-4dce-9bb8-6f57e6f9ced0",
+      "tradeId": "bbbc85a6-f9f5-4d11-9c57-e087ff45b06d",
+      "underlying": "GS",
+      "kind": "CloseReview",
+      "positionChange": 24608,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "5f1c0875-ae8a-47a3-bcb3-87e2a3ba9bca",
+      "tradeId": "08dacc17-fb3a-413c-8ca8-f0a277033b10",
+      "underlying": "COST",
+      "kind": "CloseReview",
+      "positionChange": 24609,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "85bb0ed8-4ee6-4ffa-973b-12d9b613ed18",
+      "tradeId": "97c64a02-8f28-4efa-9aeb-73d1e356637e",
+      "underlying": "KO",
+      "kind": "CloseReview",
+      "positionChange": 24610,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "dfeef45a-54ef-423b-8118-ffdb9f4a6469",
+      "tradeId": "49261d2c-3e14-4f30-a371-8a722d0147a7",
+      "underlying": "TSLA",
+      "kind": "CloseReview",
+      "positionChange": 24611,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "7e168df6-b531-470a-93bd-676280d37b3d",
+      "tradeId": "d6559d10-1c4e-473d-988f-e9c254a18142",
+      "underlying": "NFLX",
+      "kind": "CloseReview",
+      "positionChange": 24612,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "ea37cf0d-0004-42b4-9ad5-e8e9c4b91094",
+      "tradeId": "1fcdbc90-1ea7-450b-aeab-7e49fd74889e",
+      "underlying": "PG",
+      "kind": "CloseReview",
+      "positionChange": 24613,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "ecf3205c-7183-4468-8ec7-6f7d205b27dd",
+      "tradeId": "0e300741-d91e-4ad4-98a9-eb8891f2e7b9",
+      "underlying": "CRM",
+      "kind": "CloseReview",
+      "positionChange": 24614,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "fd2bd039-dc65-48b6-9036-d183f5a69a51",
+      "tradeId": "6b99dce5-cd79-44f9-8784-b32b3dcb5eeb",
+      "underlying": "INTC",
+      "kind": "CloseReview",
+      "positionChange": 24615,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "df197e24-4e28-4fb5-a306-843b50aa0195",
+      "tradeId": "b2d68f39-185f-4e9d-b850-3d3f1622bc7c",
+      "underlying": "DE",
+      "kind": "CloseReview",
+      "positionChange": 24616,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "a568640e-1252-493b-bcd4-2cd60717293e",
+      "tradeId": "4b097582-97be-43e2-a548-02decddc4b45",
+      "underlying": "GS",
+      "kind": "CloseReview",
+      "positionChange": 24617,
+      "momentDate": "2028-11-27"
+    },
+    {
+      "debtId": "2708639b-1c81-48bd-a3af-1f1b7ec0f769",
+      "tradeId": "feb5aa40-0516-4cde-87f2-36fc4187eaa2",
+      "underlying": "MSFT",
+      "kind": "CloseReview",
+      "positionChange": 24618,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "b2ea90cd-e6aa-4e7a-8540-49a6011f0019",
+      "tradeId": "dd3f1319-fcce-427f-a3f2-186189cf0fb1",
+      "underlying": "CSCO",
+      "kind": "CloseReview",
+      "positionChange": 24619,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "b440ccec-6922-494e-8c93-624c237b0a28",
+      "tradeId": "f7470eed-5834-4844-b8ee-a460127938c7",
+      "underlying": "JPM",
+      "kind": "CloseReview",
+      "positionChange": 24620,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "96094177-51d3-4e3b-8892-30f8ad89de37",
+      "tradeId": "6ddaa30f-aa8f-4708-8c9a-378857e50a34",
+      "underlying": "CVX",
+      "kind": "CloseReview",
+      "positionChange": 24621,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "b6f32f77-5257-4677-89e8-01ddbd4ae4c8",
+      "tradeId": "89c153e5-7215-49dd-b9ec-f38794d817b2",
+      "underlying": "LLY",
+      "kind": "CloseReview",
+      "positionChange": 24622,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "b7d56083-bf48-43d0-94a3-9417f2dfe974",
+      "tradeId": "34819d3d-9ceb-4755-902e-39f14c7eacca",
+      "underlying": "MRK",
+      "kind": "CloseReview",
+      "positionChange": 24623,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "3175d2fd-7abc-46fd-8309-a6f33dc836e0",
+      "tradeId": "eb3c85e1-0a7d-495c-b132-6969384ed5f9",
+      "underlying": "QCOM",
+      "kind": "CloseReview",
+      "positionChange": 24624,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "1bf0c87f-6069-40dd-898e-b9968ee932d0",
+      "tradeId": "d609032a-9e63-4ee0-ba5c-1440cf478b83",
+      "underlying": "WMT",
+      "kind": "CloseReview",
+      "positionChange": 24625,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "1b9822b9-bb47-4eb6-915e-fad765d1364d",
+      "tradeId": "85a7c4b8-002d-4c09-b242-746f6296d08c",
+      "underlying": "DIS",
+      "kind": "CloseReview",
+      "positionChange": 24626,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "ac0d5039-1a82-47e1-8467-a56446d102d2",
+      "tradeId": "0f60867f-4b84-4982-9647-e4f37b67f234",
+      "underlying": "MCD",
+      "kind": "CloseReview",
+      "positionChange": 24627,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "fb8b4916-2735-4b49-b911-dc29ebbe4598",
+      "tradeId": "ec2e939c-2d8d-4ea9-ab90-c32f7c23dae1",
+      "underlying": "AAPL",
+      "kind": "CloseReview",
+      "positionChange": 24628,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "9ba7debe-abd4-43e6-8744-1a82df0962be",
+      "tradeId": "5121dd33-0956-4504-b837-41bf1b537054",
+      "underlying": "AMZN",
+      "kind": "CloseReview",
+      "positionChange": 24629,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "00d23e60-d712-4bb1-a625-1235590830ae",
+      "tradeId": "d4b80fb7-7ab6-47d3-a8c3-1683bc5f96e6",
+      "underlying": "PFE",
+      "kind": "CloseReview",
+      "positionChange": 24630,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "77a8b599-4095-4851-a2e5-7a440a155d09",
+      "tradeId": "fb39510b-09cc-4a35-a679-1e2d4d49cd1d",
+      "underlying": "MA",
+      "kind": "CloseReview",
+      "positionChange": 24631,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "e5b1fe50-f766-4050-8aa4-e12fd29cf10e",
+      "tradeId": "44ba7062-631e-4883-a1ca-991569e75187",
+      "underlying": "CVX",
+      "kind": "CloseReview",
+      "positionChange": 24632,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "a29df083-7df8-48b6-bef9-c9dacc159eaf",
+      "tradeId": "cec8482c-8a9c-4b80-aaec-af2d2aefccdd",
+      "underlying": "MRK",
+      "kind": "CloseReview",
+      "positionChange": 24633,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "1b2e9cd4-6dcf-4e18-b6eb-b023f3c1d2e0",
+      "tradeId": "0d747695-0b79-4b4b-8e61-3944aac68204",
+      "underlying": "WMT",
+      "kind": "CloseReview",
+      "positionChange": 24634,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "e727f734-f76f-46da-80e2-21639ed4c80d",
+      "tradeId": "a9b5b1ba-2f54-46bd-b9f1-2c547baf0cec",
+      "underlying": "MCD",
+      "kind": "CloseReview",
+      "positionChange": 24635,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "faa0a316-a653-4de0-82cb-a722a464d596",
+      "tradeId": "c7798037-a473-4e68-922b-a1c8e679f39c",
+      "underlying": "LLY",
+      "kind": "CloseReview",
+      "positionChange": 24636,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "98e05613-f5e9-45a4-824a-3a82c330adf3",
+      "tradeId": "dd0b27a0-1b10-4eb1-b157-a57b9f39245e",
+      "underlying": "QCOM",
+      "kind": "CloseReview",
+      "positionChange": 24637,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "03d939f9-f4c7-4021-964f-640058a15248",
+      "tradeId": "fe310ff4-516e-4f3f-9a5d-c9579806b0b0",
+      "underlying": "DIS",
+      "kind": "CloseReview",
+      "positionChange": 24638,
+      "momentDate": "2028-11-28"
+    },
+    {
+      "debtId": "d083f09d-e13f-40f0-95e5-7d0689bb3877",
+      "tradeId": "cead2b12-e292-49d1-9320-d6df5567da98",
+      "underlying": "NVDA",
+      "kind": "CloseReview",
+      "positionChange": 24639,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "b51f99fc-f1dc-484f-a6c4-f53673d2fcef",
+      "tradeId": "decabc25-bb01-4334-a05a-c2e4d1f433e3",
+      "underlying": "META",
+      "kind": "CloseReview",
+      "positionChange": 24640,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "044619f6-366b-45ae-bc6f-cb7de78cc3fb",
+      "tradeId": "a39ee79a-bdd0-455f-ab93-074de3b70446",
+      "underlying": "V",
+      "kind": "CloseReview",
+      "positionChange": 24641,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "f5210497-d7b0-4a38-949e-e8939f30c4e3",
+      "tradeId": "dbf316e7-125d-4d3d-8575-d02aa1710d84",
+      "underlying": "HD",
+      "kind": "CloseReview",
+      "positionChange": 24642,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "e8ec96af-bda0-43a5-8e2e-76150ffbdeca",
+      "tradeId": "63770464-f4cc-4b56-a3fa-9f55edf54f20",
+      "underlying": "ABBV",
+      "kind": "CloseReview",
+      "positionChange": 24643,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "ab5761e0-f5e8-4e0d-a3f6-cd025f288ede",
+      "tradeId": "f1b466e6-cdae-47f7-906f-c708dd6b7895",
+      "underlying": "ADBE",
+      "kind": "CloseReview",
+      "positionChange": 24644,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "2903c99f-0c5c-4821-ab62-67a082c11f16",
+      "tradeId": "452e6722-9619-482c-af88-66cc03db2141",
+      "underlying": "NKE",
+      "kind": "CloseReview",
+      "positionChange": 24645,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "c8949b00-4928-4859-b8a7-9b266a739857",
+      "tradeId": "fbc68e67-d9e8-4d63-b458-6d3bb9943a0c",
+      "underlying": "CAT",
+      "kind": "CloseReview",
+      "positionChange": 24646,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "57ce1a51-5a51-41a6-a2d3-e9437edc880b",
+      "tradeId": "9571b320-65e0-4a42-a0ac-55962d2859df",
+      "underlying": "NVDA",
+      "kind": "CloseReview",
+      "positionChange": 24647,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "24c2f40f-c60b-4e42-8a8f-868ab2313b92",
+      "tradeId": "b3ec21f0-f69b-49e4-ba9d-4f7e3497cd36",
+      "underlying": "GOOGL",
+      "kind": "CloseReview",
+      "positionChange": 24648,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "4332c9b7-d5d2-469a-a900-cc97a617d630",
+      "tradeId": "f6e368c3-cf7b-43e8-9e34-8efd74a75852",
+      "underlying": "META",
+      "kind": "CloseReview",
+      "positionChange": 24649,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "95b1b0e3-dddd-4397-befc-eb979287a70b",
+      "tradeId": "27fe68c4-6bbe-4330-acae-5012b5e75564",
+      "underlying": "AVGO",
+      "kind": "CloseReview",
+      "positionChange": 24650,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "663e1cf2-384d-41eb-8a7a-00718cc0e733",
+      "tradeId": "f77385f1-4921-4ca3-bdff-67d3f850cf77",
+      "underlying": "V",
+      "kind": "CloseReview",
+      "positionChange": 24651,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "7fd2b0bb-8108-42f7-ab41-72475a98ae7d",
+      "tradeId": "90c9259c-812b-471b-b179-9c947a04bf6b",
+      "underlying": "UNH",
+      "kind": "CloseReview",
+      "positionChange": 24652,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "9e083141-c76d-4256-9b90-67498f537bcf",
+      "tradeId": "e57d44cd-74d0-4480-a941-efef2ca1c63f",
+      "underlying": "HD",
+      "kind": "CloseReview",
+      "positionChange": 24653,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "5fd26b38-ab38-46a8-95b6-041533cff090",
+      "tradeId": "457cedc8-9c44-4dec-bf41-3d30063942b6",
+      "underlying": "PEP",
+      "kind": "CloseReview",
+      "positionChange": 24654,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "cfb2ec0b-7204-4fdf-8383-8309bcec4594",
+      "tradeId": "1778f695-9197-4b0a-9d3a-8798fb89c20a",
+      "underlying": "ORCL",
+      "kind": "CloseReview",
+      "positionChange": 24655,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "9f725a39-f356-440d-87b4-d39722b1fa6b",
+      "tradeId": "808c98cd-9797-4570-a522-c52a27eb0cbe",
+      "underlying": "BA",
+      "kind": "CloseReview",
+      "positionChange": 24656,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "6d5abf6b-7810-43b9-9db3-b3c08cf8973a",
+      "tradeId": "cfb405ba-e400-464b-92cb-9689060fbd65",
+      "underlying": "GOOGL",
+      "kind": "CloseReview",
+      "positionChange": 24657,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "04d967f8-5e2d-4c21-9b07-cd3d6faaee26",
+      "tradeId": "c7d06186-82d7-4125-823d-d6df39826cb7",
+      "underlying": "AVGO",
+      "kind": "CloseReview",
+      "positionChange": 24658,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "de5654c2-06a6-4a55-8dfe-6beb6c70d7de",
+      "tradeId": "7d403a29-d1a6-481d-a9a0-53549efd1b23",
+      "underlying": "UNH",
+      "kind": "CloseReview",
+      "positionChange": 24659,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "32a25e03-2fa2-44b1-ba88-c55229ac4114",
+      "tradeId": "87bfdace-6266-4e5f-bc9c-c218f5ca305f",
+      "underlying": "MCD",
+      "kind": "PositionChange",
+      "positionChange": 98803,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "a3d77b3a-7a6c-4f18-952c-b734aad507a7",
+      "tradeId": "92a4eaba-2a42-4e8a-a7b8-59d77c865e4f",
+      "underlying": "CAT",
+      "kind": "PositionChange",
+      "positionChange": 98804,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "3f664eca-b4a7-40e7-b3e0-43fa82d261c0",
+      "tradeId": "b33a8fc3-df75-463f-b06a-8280d14557e4",
+      "underlying": "DE",
+      "kind": "PositionChange",
+      "positionChange": 98805,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "bf9b513b-6050-4429-844a-683dc029d56f",
+      "tradeId": "eb4a17ad-2b30-4293-b124-15763b18de24",
+      "underlying": "GS",
+      "kind": "PositionChange",
+      "positionChange": 98806,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "5fc6dbf0-e4d8-4159-801f-c518fdc59983",
+      "tradeId": "76e73f77-fec7-4bf6-80d7-199278355c93",
+      "underlying": "QAA",
+      "kind": "PositionChange",
+      "positionChange": 98807,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "31731165-c3be-4f89-9092-b983b6b56f2e",
+      "tradeId": "e76f7705-875f-4cb9-9306-1cebd3ed0f24",
+      "underlying": "QAB",
+      "kind": "PositionChange",
+      "positionChange": 98808,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "5b2fa533-846b-4fb7-9aa2-71737b886f93",
+      "tradeId": "fed25b83-e31e-4aed-bc66-9ee97b97be37",
+      "underlying": "QAC",
+      "kind": "PositionChange",
+      "positionChange": 98809,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "1f34f34d-9bce-49d7-b712-a2cfd2435e0c",
+      "tradeId": "26dd0e12-9ede-4351-b414-9cdb97fc4a3c",
+      "underlying": "QAD",
+      "kind": "PositionChange",
+      "positionChange": 98810,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "2d3c605a-185b-4bbb-80b9-478b4a94f9e6",
+      "tradeId": "19857063-fa8e-49f4-9a2c-5439d4f14bad",
+      "underlying": "QAE",
+      "kind": "PositionChange",
+      "positionChange": 98811,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "0d464f7b-c271-460f-a7f2-5a49de364ee8",
+      "tradeId": "764e49d3-7534-4251-84f8-594118983e44",
+      "underlying": "QAF",
+      "kind": "PositionChange",
+      "positionChange": 98812,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "24c5759a-dcb8-4fa6-9ee1-e15fe68b65bc",
+      "tradeId": "01609c45-8249-4347-87ea-856c0d07703a",
+      "underlying": "QAG",
+      "kind": "PositionChange",
+      "positionChange": 98813,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "79772c34-6b66-4d2e-882a-a54b81f41217",
+      "tradeId": "3288fcd4-4b99-44a5-b8f2-b766685cc47f",
+      "underlying": "QAH",
+      "kind": "PositionChange",
+      "positionChange": 98814,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "606d0b52-6dbb-4aba-a044-c759b5e8f46a",
+      "tradeId": "3ee54782-e987-46d1-af39-66b40af7a9f6",
+      "underlying": "QAI",
+      "kind": "PositionChange",
+      "positionChange": 98815,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "332ffac8-6109-43fd-aa23-8881e10f7b75",
+      "tradeId": "78d52687-6fa5-4e1f-ad9c-70163e6f4bbc",
+      "underlying": "QAJ",
+      "kind": "PositionChange",
+      "positionChange": 98816,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "ca676dbb-c682-48ed-af61-c504226b970a",
+      "tradeId": "a1970af6-4dbd-47b5-9622-b6b44bc55bc9",
+      "underlying": "QAK",
+      "kind": "PositionChange",
+      "positionChange": 98817,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "47aa1256-f90b-4500-b385-208ae4beffae",
+      "tradeId": "67c6284b-fad8-4da4-8468-e9b2bb006231",
+      "underlying": "QAL",
+      "kind": "PositionChange",
+      "positionChange": 98818,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "c174d8ae-48a3-48f1-ab9b-0a07161eca89",
+      "tradeId": "15f9cd20-b223-476b-a7ed-1a05b42220e0",
+      "underlying": "QAM",
+      "kind": "PositionChange",
+      "positionChange": 98819,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "54a76ef1-5fe3-46b3-a685-19b32e8d6b62",
+      "tradeId": "977a75ee-4ba6-4c1f-992f-e1efb1b7fdb8",
+      "underlying": "QAN",
+      "kind": "PositionChange",
+      "positionChange": 98820,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "5eee4fa7-fa1c-439a-bc2b-0bf6721c03b7",
+      "tradeId": "a71be62b-8320-4eed-9768-e80f26c289cf",
+      "underlying": "QAO",
+      "kind": "PositionChange",
+      "positionChange": 98821,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "0b86758f-73c9-4ba0-ae3d-f0b9b85fe0ba",
+      "tradeId": "3e66aa1d-e780-4cf2-8edc-9c09da6b9341",
+      "underlying": "QAP",
+      "kind": "PositionChange",
+      "positionChange": 98822,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "7dbf4bd5-fe08-4b0e-81b9-9b70abbcdcfc",
+      "tradeId": "62d5d77d-2210-4eb0-b5ce-a58f9538d21c",
+      "underlying": "QAQ",
+      "kind": "PositionChange",
+      "positionChange": 98823,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "6013ef44-fdfd-4405-8563-c1943d36a2e9",
+      "tradeId": "be287d10-0b4b-411a-9349-8e9b3f027247",
+      "underlying": "QAR",
+      "kind": "PositionChange",
+      "positionChange": 98824,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "9877dd59-487d-4942-81b6-48e216c67fd1",
+      "tradeId": "41ccab0f-5bea-4079-ba3e-883a0c95c5d0",
+      "underlying": "QAS",
+      "kind": "PositionChange",
+      "positionChange": 98825,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "2cc28c97-babc-412c-b3af-7d4d3fc295e0",
+      "tradeId": "fb2be8a0-892d-44b7-9773-89055a3f12dc",
+      "underlying": "QAT",
+      "kind": "PositionChange",
+      "positionChange": 98826,
+      "momentDate": "2028-11-29"
+    },
+    {
+      "debtId": "c5354ca6-54d4-4973-8994-31dfea545f05",
+      "tradeId": "2ecaad63-c1c1-414f-92db-584d03d01afa",
+      "underlying": "CRM",
+      "kind": "PositionChange",
+      "positionChange": 98827,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "916f8c3a-a258-47a5-bc3b-1a08cc6e1ac6",
+      "tradeId": "2ecaad63-c1c1-414f-92db-584d03d01afa",
+      "underlying": "CRM",
+      "kind": "CloseReview",
+      "positionChange": 24660,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "be457925-e522-456f-a5aa-da1973325fe4",
+      "tradeId": "6e1ea06e-db56-40c4-bca0-36203d6c744b",
+      "underlying": "INTC",
+      "kind": "PositionChange",
+      "positionChange": 98828,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "a3f69cf2-59d7-4a89-8f41-55da2e7dcb14",
+      "tradeId": "6e1ea06e-db56-40c4-bca0-36203d6c744b",
+      "underlying": "INTC",
+      "kind": "CloseReview",
+      "positionChange": 24661,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "5919a5f3-cfc1-47ec-a28f-980d655e38b0",
+      "tradeId": "7c2de2c7-377a-4b55-9c81-cead1e8343ae",
+      "underlying": "DE",
+      "kind": "PositionChange",
+      "positionChange": 98829,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "d5b4e393-7058-495c-bba8-ab6f188275b0",
+      "tradeId": "7c2de2c7-377a-4b55-9c81-cead1e8343ae",
+      "underlying": "DE",
+      "kind": "CloseReview",
+      "positionChange": 24662,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "a3bc63a4-5453-49e4-ac53-e36ce07e9719",
+      "tradeId": "e5c21cbb-20da-4cf9-ade3-27dbce5632c1",
+      "underlying": "MSFT",
+      "kind": "PositionChange",
+      "positionChange": 98830,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "1063844c-95e9-48a8-9573-1e08cba3f21e",
+      "tradeId": "7c8b9198-7198-45df-9e5c-c7275f195949",
+      "underlying": "TSLA",
+      "kind": "PositionChange",
+      "positionChange": 98831,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "b9e32107-405e-4a81-b3c6-d12c3c2593c8",
+      "tradeId": "7c8b9198-7198-45df-9e5c-c7275f195949",
+      "underlying": "TSLA",
+      "kind": "CloseReview",
+      "positionChange": 24663,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "34d4ac14-e5e8-49c2-87dd-c3090ee7ef5e",
+      "tradeId": "8d4d0983-3fac-4496-ac25-8ad49f3ebd64",
+      "underlying": "NFLX",
+      "kind": "PositionChange",
+      "positionChange": 98832,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "66982c21-1174-4373-8119-4ad0566fbc29",
+      "tradeId": "8d4d0983-3fac-4496-ac25-8ad49f3ebd64",
+      "underlying": "NFLX",
+      "kind": "CloseReview",
+      "positionChange": 24664,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "720cda8b-3fb6-486f-b162-3c28d1670ba1",
+      "tradeId": "da861e08-6017-4e78-bb7c-696d0a304ffd",
+      "underlying": "CSCO",
+      "kind": "PositionChange",
+      "positionChange": 98833,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "e32a6757-b295-417a-9974-4480579c51f2",
+      "tradeId": "971e5e7a-c3bd-4804-8bce-883f50926796",
+      "underlying": "JPM",
+      "kind": "PositionChange",
+      "positionChange": 98834,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "97eb0fbd-7665-42b1-9283-7d000b778d1a",
+      "tradeId": "6e3330d5-768d-475f-941c-9553983c7014",
+      "underlying": "PG",
+      "kind": "PositionChange",
+      "positionChange": 98835,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "9aaeae7c-15f0-46c7-8cbf-48d937828702",
+      "tradeId": "6e3330d5-768d-475f-941c-9553983c7014",
+      "underlying": "PG",
+      "kind": "CloseReview",
+      "positionChange": 24665,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "2ccabbee-fe65-4727-b006-e7dc20907073",
+      "tradeId": "125097af-d5c4-48fc-b2d6-a9adc3e0e404",
+      "underlying": "XOM",
+      "kind": "PositionChange",
+      "positionChange": 98836,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "803decdb-8021-44ba-9c93-5818dc496408",
+      "tradeId": "125097af-d5c4-48fc-b2d6-a9adc3e0e404",
+      "underlying": "XOM",
+      "kind": "CloseReview",
+      "positionChange": 24666,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "67e83a41-9fe6-4b5a-9381-d9d6205a8753",
+      "tradeId": "eb37a78e-3b88-402a-baaa-5b6ca78fb4a7",
+      "underlying": "LLY",
+      "kind": "PositionChange",
+      "positionChange": 98837,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "c85a6272-41ce-44db-9b77-65e0bea18e27",
+      "tradeId": "a269c01a-3498-461b-b4a2-aaa1b7b875f2",
+      "underlying": "ADBE",
+      "kind": "PositionChange",
+      "positionChange": 98838,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "52c13c87-91f1-46be-ab73-112f44814b0b",
+      "tradeId": "116d16ce-c373-4c50-8f9f-d51a3f95c5e5",
+      "underlying": "CRM",
+      "kind": "PositionChange",
+      "positionChange": 98839,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "48d41dc5-435f-413e-979f-5a2dddf1f767",
+      "tradeId": "116d16ce-c373-4c50-8f9f-d51a3f95c5e5",
+      "underlying": "CRM",
+      "kind": "CloseReview",
+      "positionChange": 24667,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "4e39546f-8ab1-42e6-94f8-959474450a35",
+      "tradeId": "01212442-26dc-45a8-8a85-a37085614060",
+      "underlying": "AMD",
+      "kind": "PositionChange",
+      "positionChange": 98840,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "ea66ef1d-b33f-44da-a177-0c17ac614418",
+      "tradeId": "01212442-26dc-45a8-8a85-a37085614060",
+      "underlying": "AMD",
+      "kind": "CloseReview",
+      "positionChange": 24668,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "aeb5659e-0194-4e2b-9040-07abebed5282",
+      "tradeId": "19662c81-e2be-4b9e-afa9-2d4db551e1ce",
+      "underlying": "INTC",
+      "kind": "PositionChange",
+      "positionChange": 98841,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "0d4518bb-f25c-4060-b2eb-1d2a0a0c6244",
+      "tradeId": "19662c81-e2be-4b9e-afa9-2d4db551e1ce",
+      "underlying": "INTC",
+      "kind": "CloseReview",
+      "positionChange": 24669,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "4ebfe314-f5cd-4e68-b660-6a435c03aa8e",
+      "tradeId": "2a24f58b-2397-4114-90ac-08d5eac323a1",
+      "underlying": "QCOM",
+      "kind": "PositionChange",
+      "positionChange": 98842,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "fdd11ab6-6e09-47ac-ac2c-2ffc1125a7ef",
+      "tradeId": "afb8a979-bc4a-4cb1-879c-05621db08199",
+      "underlying": "TXN",
+      "kind": "PositionChange",
+      "positionChange": 98843,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "e81b36f5-a3cf-4113-b34c-213711345e37",
+      "tradeId": "afb8a979-bc4a-4cb1-879c-05621db08199",
+      "underlying": "TXN",
+      "kind": "CloseReview",
+      "positionChange": 24670,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "b01cda59-6029-47cb-8788-5b54ce05aeca",
+      "tradeId": "77403893-444f-4244-826b-1ef3420dd889",
+      "underlying": "DIS",
+      "kind": "PositionChange",
+      "positionChange": 98844,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "5a5e23b9-b642-4b94-bc87-2748592560a6",
+      "tradeId": "1b9214dc-c1fa-4bfa-a1de-6e551426dc86",
+      "underlying": "CAT",
+      "kind": "PositionChange",
+      "positionChange": 98845,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "1c79253e-9f36-4af1-9d6a-953bdd58cdcd",
+      "tradeId": "a756c88a-b22d-4106-814e-88e77c34fbf5",
+      "underlying": "DE",
+      "kind": "PositionChange",
+      "positionChange": 98846,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "dcf375c7-5612-4fa5-b23e-5d4f8a434e66",
+      "tradeId": "a756c88a-b22d-4106-814e-88e77c34fbf5",
+      "underlying": "DE",
+      "kind": "CloseReview",
+      "positionChange": 24671,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "e359223a-2244-4b67-ba93-4361063c448c",
+      "tradeId": "b0238a34-bd5e-48ff-884c-7a4aa3936055",
+      "underlying": "GS",
+      "kind": "PositionChange",
+      "positionChange": 98847,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "a81e92de-ade7-42e7-926d-cda12ba8ad13",
+      "tradeId": "b0238a34-bd5e-48ff-884c-7a4aa3936055",
+      "underlying": "GS",
+      "kind": "CloseReview",
+      "positionChange": 24672,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "4d29959a-763d-4acd-a1ee-329415406df5",
+      "tradeId": "e41ba099-3446-4474-9936-530e292fa453",
+      "underlying": "AAPL",
+      "kind": "PositionChange",
+      "positionChange": 98848,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "512f2937-802f-470c-8865-1f62382802ed",
+      "tradeId": "0291042e-cde2-4e2b-ac57-d87f419e8bda",
+      "underlying": "MSFT",
+      "kind": "PositionChange",
+      "positionChange": 98849,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "23e7f9fb-c25c-451d-8744-ff000e0a034a",
+      "tradeId": "70ca4f2b-69b2-4fbc-ae26-565a04d14403",
+      "underlying": "META",
+      "kind": "PositionChange",
+      "positionChange": 98850,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "06bff903-517a-426e-89da-da642ef85212",
+      "tradeId": "c691f24a-3cd5-4d0e-9f45-960c85679760",
+      "underlying": "COST",
+      "kind": "PositionChange",
+      "positionChange": 98851,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "54d7ec96-4aab-4a44-95e7-27d4f55c805b",
+      "tradeId": "c691f24a-3cd5-4d0e-9f45-960c85679760",
+      "underlying": "COST",
+      "kind": "CloseReview",
+      "positionChange": 24673,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "8bf6cc45-5f80-40c4-b81b-14b1e54e550b",
+      "tradeId": "601b11c6-2df7-4b65-8ea7-cb41b98a2d77",
+      "underlying": "CSCO",
+      "kind": "PositionChange",
+      "positionChange": 98852,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "45b0f5b2-ed2c-411a-ae18-4d4ff47cd423",
+      "tradeId": "f4a0173b-822d-4289-9cb7-1cb107f67dde",
+      "underlying": "KO",
+      "kind": "PositionChange",
+      "positionChange": 98853,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "b0320b28-eb8d-4b09-b9cc-fae5ecf78a7b",
+      "tradeId": "f4a0173b-822d-4289-9cb7-1cb107f67dde",
+      "underlying": "KO",
+      "kind": "CloseReview",
+      "positionChange": 24674,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "5e868146-2a55-4855-98dd-039754f307df",
+      "tradeId": "80dd7a34-c7ac-4dd4-9e2a-bb8717895c14",
+      "underlying": "PFE",
+      "kind": "PositionChange",
+      "positionChange": 98854,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "d3ad7e3d-1712-419a-a994-08abc0a0a1b9",
+      "tradeId": "c8b1292c-03c2-4c97-8988-9892371e59f2",
+      "underlying": "JPM",
+      "kind": "PositionChange",
+      "positionChange": 98855,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "07f2869c-bd8c-479d-b9d1-23a85a5e4005",
+      "tradeId": "7b91343a-c712-4606-ab37-6a2ee476e200",
+      "underlying": "HD",
+      "kind": "PositionChange",
+      "positionChange": 98856,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "790d0bb5-5b8c-4b0c-b62a-437f3af5aa13",
+      "tradeId": "b820d47f-4805-4471-a7ed-5d3496828498",
+      "underlying": "XOM",
+      "kind": "PositionChange",
+      "positionChange": 98857,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "f5e4170f-93fd-4440-b4b9-92448695335c",
+      "tradeId": "b820d47f-4805-4471-a7ed-5d3496828498",
+      "underlying": "XOM",
+      "kind": "CloseReview",
+      "positionChange": 24675,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "fe28dbee-afc7-437f-9d05-720db88055d1",
+      "tradeId": "5dd1f874-90cf-43ee-9b15-ccc1ef273b2f",
+      "underlying": "ABBV",
+      "kind": "PositionChange",
+      "positionChange": 98858,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "853da8ed-1634-489f-b09e-55ec85ead20d",
+      "tradeId": "23331790-ceee-4a01-bdf1-28722317aa51",
+      "underlying": "CRM",
+      "kind": "PositionChange",
+      "positionChange": 98859,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "2d09368a-2eb7-4304-bebe-a7fcb3463bb1",
+      "tradeId": "aa87ffdb-5ef9-4d29-ae90-1cf566a382c3",
+      "underlying": "QCOM",
+      "kind": "PositionChange",
+      "positionChange": 98860,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "6df5ba2f-7352-4f86-97c0-4fc04f05f6b1",
+      "tradeId": "d1f6c4b7-4902-4629-807f-43602e56959f",
+      "underlying": "NKE",
+      "kind": "PositionChange",
+      "positionChange": 98861,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "8e2db4e3-1d55-411b-af00-24712c7f5a55",
+      "tradeId": "b33a8fc3-df75-463f-b06a-8280d14557e4",
+      "underlying": "DE",
+      "kind": "PositionChange",
+      "positionChange": 98862,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "1eee44a5-6ea9-416f-a2b7-b994bfb9b40a",
+      "tradeId": "eb4a17ad-2b30-4293-b124-15763b18de24",
+      "underlying": "GS",
+      "kind": "PositionChange",
+      "positionChange": 98863,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "536288c7-c077-409c-b3f1-085249fcca46",
+      "tradeId": "e76f7705-875f-4cb9-9306-1cebd3ed0f24",
+      "underlying": "QAB",
+      "kind": "PositionChange",
+      "positionChange": 98864,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "96b7fcbd-5242-43de-8aeb-9b4abdec6a37",
+      "tradeId": "fed25b83-e31e-4aed-bc66-9ee97b97be37",
+      "underlying": "QAC",
+      "kind": "PositionChange",
+      "positionChange": 98865,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "72290ee5-990a-4e1e-86ad-86845d466652",
+      "tradeId": "26dd0e12-9ede-4351-b414-9cdb97fc4a3c",
+      "underlying": "QAD",
+      "kind": "PositionChange",
+      "positionChange": 98866,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "8f99b352-35df-4eca-a1b1-0322f48cac3a",
+      "tradeId": "764e49d3-7534-4251-84f8-594118983e44",
+      "underlying": "QAF",
+      "kind": "PositionChange",
+      "positionChange": 98867,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "8249ada7-ca21-4588-8ace-497b2a495a56",
+      "tradeId": "01609c45-8249-4347-87ea-856c0d07703a",
+      "underlying": "QAG",
+      "kind": "PositionChange",
+      "positionChange": 98868,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "9f749990-16fd-480e-b883-c87b2c20ac60",
+      "tradeId": "3288fcd4-4b99-44a5-b8f2-b766685cc47f",
+      "underlying": "QAH",
+      "kind": "PositionChange",
+      "positionChange": 98869,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "27daf38e-1b82-4a68-829e-74cc84555dbe",
+      "tradeId": "78d52687-6fa5-4e1f-ad9c-70163e6f4bbc",
+      "underlying": "QAJ",
+      "kind": "PositionChange",
+      "positionChange": 98870,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "18ac3c7d-1ca9-4d36-9d9c-d06757b6bbbd",
+      "tradeId": "a1970af6-4dbd-47b5-9622-b6b44bc55bc9",
+      "underlying": "QAK",
+      "kind": "PositionChange",
+      "positionChange": 98871,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "e701de23-8903-4ec4-8a1b-b57ecab49231",
+      "tradeId": "67c6284b-fad8-4da4-8468-e9b2bb006231",
+      "underlying": "QAL",
+      "kind": "PositionChange",
+      "positionChange": 98872,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "aff46d96-a857-41af-9c3b-1d65c7811ffc",
+      "tradeId": "977a75ee-4ba6-4c1f-992f-e1efb1b7fdb8",
+      "underlying": "QAN",
+      "kind": "PositionChange",
+      "positionChange": 98873,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "fc53de49-cade-49b1-b702-3e4785f2c75e",
+      "tradeId": "a71be62b-8320-4eed-9768-e80f26c289cf",
+      "underlying": "QAO",
+      "kind": "PositionChange",
+      "positionChange": 98874,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "3339bb30-87a1-4e93-bdca-3c53ffcbb2ba",
+      "tradeId": "3e66aa1d-e780-4cf2-8edc-9c09da6b9341",
+      "underlying": "QAP",
+      "kind": "PositionChange",
+      "positionChange": 98875,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "88775fec-05d6-4698-805d-3907459a76b5",
+      "tradeId": "be287d10-0b4b-411a-9349-8e9b3f027247",
+      "underlying": "QAR",
+      "kind": "PositionChange",
+      "positionChange": 98876,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "5c991667-8cad-4205-a75c-e48f4abe3714",
+      "tradeId": "41ccab0f-5bea-4079-ba3e-883a0c95c5d0",
+      "underlying": "QAS",
+      "kind": "PositionChange",
+      "positionChange": 98877,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "21d9f2c6-e977-435f-97cf-054839679f75",
+      "tradeId": "fb2be8a0-892d-44b7-9773-89055a3f12dc",
+      "underlying": "QAT",
+      "kind": "PositionChange",
+      "positionChange": 98878,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "2985a03f-09c1-4cd8-bc90-10942377ee99",
+      "tradeId": "291f0ee5-8a7d-4704-9c55-4d21db6f30c9",
+      "underlying": "QAU",
+      "kind": "PositionChange",
+      "positionChange": 98879,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "180fcab3-431b-4267-82b7-4204fd78b89c",
+      "tradeId": "b427f0bb-d7e7-4895-8cd3-5ce461fa8db5",
+      "underlying": "QAV",
+      "kind": "PositionChange",
+      "positionChange": 98880,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "b8ffccf3-e067-4e27-be7a-212e9c7709ac",
+      "tradeId": "aac38536-1484-4d49-b6e7-9a0145452d3a",
+      "underlying": "QAW",
+      "kind": "PositionChange",
+      "positionChange": 98881,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "dd13622b-bc4b-47f5-8c70-ad1983d86554",
+      "tradeId": "00dd4227-d147-4634-a8f6-ebcc288b6beb",
+      "underlying": "QAX",
+      "kind": "PositionChange",
+      "positionChange": 98882,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "2a0b3487-6f63-4b2d-9f56-46d1127bea2c",
+      "tradeId": "7a99821d-3873-45ef-bc00-8a65bc3588e4",
+      "underlying": "QAY",
+      "kind": "PositionChange",
+      "positionChange": 98883,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "44bf2c88-fbba-4f07-9d5f-295728e6ff09",
+      "tradeId": "25acf7e5-8776-4c4f-82dd-a835eac04d61",
+      "underlying": "QAZ",
+      "kind": "PositionChange",
+      "positionChange": 98884,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "f624490c-f27f-49e6-a96b-413372fbcd69",
+      "tradeId": "6123e86b-466f-4cc1-8c3e-88d28856e144",
+      "underlying": "QBA",
+      "kind": "PositionChange",
+      "positionChange": 98885,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "b9d21e58-0145-440d-9cfe-1b6b8e0fdc61",
+      "tradeId": "2d4b89d1-ffc1-4965-96e3-b78014b806d5",
+      "underlying": "QBB",
+      "kind": "PositionChange",
+      "positionChange": 98886,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "5344ac89-1a23-419b-80d5-5244b0a3f11e",
+      "tradeId": "5e47448a-0078-4e11-98cb-3cdff6bf975e",
+      "underlying": "QBC",
+      "kind": "PositionChange",
+      "positionChange": 98887,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "4c2cf41e-aa29-4158-b8f4-9b545b826b08",
+      "tradeId": "795de234-792b-443c-8d56-adaad02b04ed",
+      "underlying": "QBD",
+      "kind": "PositionChange",
+      "positionChange": 98888,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "ce694a7c-b6df-4e9f-b653-30348c18c38c",
+      "tradeId": "4e2ea8fa-573f-4250-9d3a-e6886be76295",
+      "underlying": "QBE",
+      "kind": "PositionChange",
+      "positionChange": 98889,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "353073d9-b6e8-4f58-9bdc-f7d13f951764",
+      "tradeId": "52736390-e140-4d50-9175-5cfe5011f847",
+      "underlying": "QBF",
+      "kind": "PositionChange",
+      "positionChange": 98890,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "04e73dc0-ceac-4418-a51d-c57e2ae843c2",
+      "tradeId": "28978c2b-5329-48dd-acb0-f498bda7fbfd",
+      "underlying": "QBG",
+      "kind": "PositionChange",
+      "positionChange": 98891,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "027afb2a-d1e6-45aa-a10b-16c21728607a",
+      "tradeId": "e9790800-4173-4e1a-a466-e07c1c96fc1d",
+      "underlying": "QBH",
+      "kind": "PositionChange",
+      "positionChange": 98892,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "4e05aaba-1ab2-4a8f-b3df-4bee1c473bc2",
+      "tradeId": "92682410-5445-4f5d-af82-77ba66ab0f6c",
+      "underlying": "QBI",
+      "kind": "PositionChange",
+      "positionChange": 98893,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "f20b8076-151b-4883-800e-cded4a086b29",
+      "tradeId": "01d2abb3-aa7f-4fb7-8b7a-c9a5d1b48f6e",
+      "underlying": "QBJ",
+      "kind": "PositionChange",
+      "positionChange": 98894,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "025e0fd1-b0f3-424b-9172-dd88dc7c80f8",
+      "tradeId": "2998c3fc-0968-4b13-b845-69503089ca94",
+      "underlying": "QBK",
+      "kind": "PositionChange",
+      "positionChange": 98895,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "06c92cf9-ab08-4fe6-bc2e-2230fdae2945",
+      "tradeId": "29391053-dc94-4f05-810b-1a444e8bba23",
+      "underlying": "QBL",
+      "kind": "PositionChange",
+      "positionChange": 98896,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "f561d94e-37dd-4193-a713-29661f40d8a5",
+      "tradeId": "d671a4b9-b5d2-4d42-85db-50ea1e8bde49",
+      "underlying": "QBM",
+      "kind": "PositionChange",
+      "positionChange": 98897,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "c56ea9d5-6d9e-4321-a764-48df786408bd",
+      "tradeId": "fce655f1-cf3e-4a40-a383-ade89e0159b4",
+      "underlying": "QBN",
+      "kind": "PositionChange",
+      "positionChange": 98898,
+      "momentDate": "2028-11-30"
+    },
+    {
+      "debtId": "d951f480-1190-4be6-b4f5-5e847bc1a5b2",
+      "tradeId": "e5c21cbb-20da-4cf9-ade3-27dbce5632c1",
+      "underlying": "MSFT",
+      "kind": "PositionChange",
+      "positionChange": 98899,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "8d6f03a2-6471-424d-af3d-e72442625429",
+      "tradeId": "e5c21cbb-20da-4cf9-ade3-27dbce5632c1",
+      "underlying": "MSFT",
+      "kind": "CloseReview",
+      "positionChange": 24676,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "f82bbfeb-a0ef-4d48-ba2c-c3f5689ccf11",
+      "tradeId": "da861e08-6017-4e78-bb7c-696d0a304ffd",
+      "underlying": "CSCO",
+      "kind": "PositionChange",
+      "positionChange": 98900,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "8f512cfc-451e-476f-8a0b-68cdda8d09cc",
+      "tradeId": "da861e08-6017-4e78-bb7c-696d0a304ffd",
+      "underlying": "CSCO",
+      "kind": "CloseReview",
+      "positionChange": 24677,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "0d1a84b7-8308-43a9-baf5-ec8e559a3435",
+      "tradeId": "971e5e7a-c3bd-4804-8bce-883f50926796",
+      "underlying": "JPM",
+      "kind": "PositionChange",
+      "positionChange": 98901,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "e7749bb8-07c9-46d3-a3cb-6ccc2ff0b2ea",
+      "tradeId": "971e5e7a-c3bd-4804-8bce-883f50926796",
+      "underlying": "JPM",
+      "kind": "CloseReview",
+      "positionChange": 24678,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "67c2ca05-f299-49b3-8fbd-eb6e5f58acb2",
+      "tradeId": "eb37a78e-3b88-402a-baaa-5b6ca78fb4a7",
+      "underlying": "LLY",
+      "kind": "PositionChange",
+      "positionChange": 98902,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "657d3b98-8b38-44b2-9fbc-de59021808f8",
+      "tradeId": "eb37a78e-3b88-402a-baaa-5b6ca78fb4a7",
+      "underlying": "LLY",
+      "kind": "CloseReview",
+      "positionChange": 24679,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "0717962c-5158-4d3d-8c0a-6132b3131fa5",
+      "tradeId": "af83d444-ac14-4d8a-8f48-dccc4f2113a6",
+      "underlying": "ABBV",
+      "kind": "PositionChange",
+      "positionChange": 98903,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "0ab8cc54-b9f9-4c91-af25-9beea28d2828",
+      "tradeId": "a269c01a-3498-461b-b4a2-aaa1b7b875f2",
+      "underlying": "ADBE",
+      "kind": "PositionChange",
+      "positionChange": 98904,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "c846d371-ea11-49ef-b4f9-bbe86520195a",
+      "tradeId": "2a24f58b-2397-4114-90ac-08d5eac323a1",
+      "underlying": "QCOM",
+      "kind": "PositionChange",
+      "positionChange": 98905,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "f170a784-533f-4490-8e58-e377a1539894",
+      "tradeId": "2a24f58b-2397-4114-90ac-08d5eac323a1",
+      "underlying": "QCOM",
+      "kind": "CloseReview",
+      "positionChange": 24680,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "adbe6151-7a9c-40d0-9efb-0663f80dfd80",
+      "tradeId": "77403893-444f-4244-826b-1ef3420dd889",
+      "underlying": "DIS",
+      "kind": "PositionChange",
+      "positionChange": 98906,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "70ff6365-6374-4547-8a19-05ff4a166d64",
+      "tradeId": "77403893-444f-4244-826b-1ef3420dd889",
+      "underlying": "DIS",
+      "kind": "CloseReview",
+      "positionChange": 24681,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "62707534-cd3e-4ce7-a426-21f5eed55b25",
+      "tradeId": "1212a03b-c813-4c75-b3c6-e2a53eb86bf4",
+      "underlying": "NKE",
+      "kind": "PositionChange",
+      "positionChange": 98907,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "0e039276-1121-498a-928f-8cfeb139031c",
+      "tradeId": "1b9214dc-c1fa-4bfa-a1de-6e551426dc86",
+      "underlying": "CAT",
+      "kind": "PositionChange",
+      "positionChange": 98908,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "48b8754a-e538-459c-b63d-69566887b8cf",
+      "tradeId": "e41ba099-3446-4474-9936-530e292fa453",
+      "underlying": "AAPL",
+      "kind": "PositionChange",
+      "positionChange": 98909,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "019f2ae4-5570-4cf4-a387-f745315acf84",
+      "tradeId": "e41ba099-3446-4474-9936-530e292fa453",
+      "underlying": "AAPL",
+      "kind": "CloseReview",
+      "positionChange": 24682,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "ba3ab266-7085-4bc3-81ea-d124a7705a4d",
+      "tradeId": "0291042e-cde2-4e2b-ac57-d87f419e8bda",
+      "underlying": "MSFT",
+      "kind": "PositionChange",
+      "positionChange": 98910,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "0b659946-e7f8-4226-8856-889590ab489f",
+      "tradeId": "0291042e-cde2-4e2b-ac57-d87f419e8bda",
+      "underlying": "MSFT",
+      "kind": "CloseReview",
+      "positionChange": 24683,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "dfb12858-7fb3-4c59-aa5e-e96eb016abc8",
+      "tradeId": "7a23d8a5-3817-4f2a-a3c1-c2946ed858a3",
+      "underlying": "NVDA",
+      "kind": "PositionChange",
+      "positionChange": 98911,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "3962df9a-f6b4-4ea0-a843-fce489dce0ea",
+      "tradeId": "54f174b5-e9c6-4323-942b-fa717259db0e",
+      "underlying": "AMZN",
+      "kind": "PositionChange",
+      "positionChange": 98912,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "026e7bf1-87d0-4f04-88b5-ca5482cc25f9",
+      "tradeId": "54f174b5-e9c6-4323-942b-fa717259db0e",
+      "underlying": "AMZN",
+      "kind": "CloseReview",
+      "positionChange": 24684,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "c050da51-43e2-405c-ac76-55bc15f0137d",
+      "tradeId": "70ca4f2b-69b2-4fbc-ae26-565a04d14403",
+      "underlying": "META",
+      "kind": "PositionChange",
+      "positionChange": 98913,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "8f96ae8d-a638-4e69-be30-15e388c4c907",
+      "tradeId": "84c6f362-7dbf-440c-bc24-03ed3fa9bb83",
+      "underlying": "NFLX",
+      "kind": "PositionChange",
+      "positionChange": 98914,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "b66e7307-7d01-4eab-a629-a4ff8f393ca0",
+      "tradeId": "601b11c6-2df7-4b65-8ea7-cb41b98a2d77",
+      "underlying": "CSCO",
+      "kind": "PositionChange",
+      "positionChange": 98915,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "075567eb-1250-4244-9abb-ec4d127f5e99",
+      "tradeId": "601b11c6-2df7-4b65-8ea7-cb41b98a2d77",
+      "underlying": "CSCO",
+      "kind": "CloseReview",
+      "positionChange": 24685,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "d68c5528-8ad1-4e0d-a94f-c84174a61a2e",
+      "tradeId": "80dd7a34-c7ac-4dd4-9e2a-bb8717895c14",
+      "underlying": "PFE",
+      "kind": "PositionChange",
+      "positionChange": 98916,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "3f717161-b4ca-4af8-80fb-92c77c42d435",
+      "tradeId": "80dd7a34-c7ac-4dd4-9e2a-bb8717895c14",
+      "underlying": "PFE",
+      "kind": "CloseReview",
+      "positionChange": 24686,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "65c58ade-171d-4939-b524-f5fce7161239",
+      "tradeId": "c8b1292c-03c2-4c97-8988-9892371e59f2",
+      "underlying": "JPM",
+      "kind": "PositionChange",
+      "positionChange": 98917,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "3af92c8e-583f-44cd-aefd-0c9db2aef39a",
+      "tradeId": "c8b1292c-03c2-4c97-8988-9892371e59f2",
+      "underlying": "JPM",
+      "kind": "CloseReview",
+      "positionChange": 24687,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "a803e96a-c902-43a2-8e70-69f7017bcf71",
+      "tradeId": "09b1008c-eda2-471d-b420-780626f316fa",
+      "underlying": "V",
+      "kind": "PositionChange",
+      "positionChange": 98918,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "31709d3a-540f-41e5-a05b-fc1898e322f7",
+      "tradeId": "a6982d81-58b9-43fd-ab98-358e54e0f315",
+      "underlying": "MA",
+      "kind": "PositionChange",
+      "positionChange": 98919,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "7e72250c-62d4-4c65-99a6-fa703208533a",
+      "tradeId": "a6982d81-58b9-43fd-ab98-358e54e0f315",
+      "underlying": "MA",
+      "kind": "CloseReview",
+      "positionChange": 24688,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "83e89caa-4e57-4514-847d-0c6a56a467b7",
+      "tradeId": "7b91343a-c712-4606-ab37-6a2ee476e200",
+      "underlying": "HD",
+      "kind": "PositionChange",
+      "positionChange": 98920,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "06aedcda-a5b7-41e3-8df1-2edf907c01c8",
+      "tradeId": "fed25b83-e31e-4aed-bc66-9ee97b97be37",
+      "underlying": "QAC",
+      "kind": "PositionChange",
+      "positionChange": 98921,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "8b3b7fb8-e108-4d02-9cb8-694c3e027a65",
+      "tradeId": "01609c45-8249-4347-87ea-856c0d07703a",
+      "underlying": "QAG",
+      "kind": "PositionChange",
+      "positionChange": 98922,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "cf635787-7427-4290-bd5f-4c6a2566ef22",
+      "tradeId": "a1970af6-4dbd-47b5-9622-b6b44bc55bc9",
+      "underlying": "QAK",
+      "kind": "PositionChange",
+      "positionChange": 98923,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "b550f72d-46dc-4a9c-83af-ce67276f54e6",
+      "tradeId": "a71be62b-8320-4eed-9768-e80f26c289cf",
+      "underlying": "QAO",
+      "kind": "PositionChange",
+      "positionChange": 98924,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "df7e993f-8d3c-4490-9f77-cbd8af9fe0d8",
+      "tradeId": "41ccab0f-5bea-4079-ba3e-883a0c95c5d0",
+      "underlying": "QAS",
+      "kind": "PositionChange",
+      "positionChange": 98925,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "9330c61d-9dec-4ec4-b442-5874ec546e47",
+      "tradeId": "b427f0bb-d7e7-4895-8cd3-5ce461fa8db5",
+      "underlying": "QAV",
+      "kind": "PositionChange",
+      "positionChange": 98926,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "8a188e6a-3940-4bba-9ddd-3bec8a66793f",
+      "tradeId": "aac38536-1484-4d49-b6e7-9a0145452d3a",
+      "underlying": "QAW",
+      "kind": "PositionChange",
+      "positionChange": 98927,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "583d1505-f565-470b-8427-c7ce649bf022",
+      "tradeId": "00dd4227-d147-4634-a8f6-ebcc288b6beb",
+      "underlying": "QAX",
+      "kind": "PositionChange",
+      "positionChange": 98928,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "10cf0dce-7da0-44b2-bed9-e500dd1d7f23",
+      "tradeId": "25acf7e5-8776-4c4f-82dd-a835eac04d61",
+      "underlying": "QAZ",
+      "kind": "PositionChange",
+      "positionChange": 98929,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "1fe009b2-6b64-4e33-9b77-afe3ba452851",
+      "tradeId": "6123e86b-466f-4cc1-8c3e-88d28856e144",
+      "underlying": "QBA",
+      "kind": "PositionChange",
+      "positionChange": 98930,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "258a4e16-722d-4792-a414-826ad2b28000",
+      "tradeId": "2d4b89d1-ffc1-4965-96e3-b78014b806d5",
+      "underlying": "QBB",
+      "kind": "PositionChange",
+      "positionChange": 98931,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "f15ed888-268f-4f23-8c3a-78a2efcd66a5",
+      "tradeId": "795de234-792b-443c-8d56-adaad02b04ed",
+      "underlying": "QBD",
+      "kind": "PositionChange",
+      "positionChange": 98932,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "a4be2044-3568-4eda-97c2-c46d6582fb19",
+      "tradeId": "4e2ea8fa-573f-4250-9d3a-e6886be76295",
+      "underlying": "QBE",
+      "kind": "PositionChange",
+      "positionChange": 98933,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "b0476cf6-d609-44f4-8bc4-7f229679236b",
+      "tradeId": "52736390-e140-4d50-9175-5cfe5011f847",
+      "underlying": "QBF",
+      "kind": "PositionChange",
+      "positionChange": 98934,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "274a9e77-78ed-44e2-8519-e6d8a06001cf",
+      "tradeId": "e9790800-4173-4e1a-a466-e07c1c96fc1d",
+      "underlying": "QBH",
+      "kind": "PositionChange",
+      "positionChange": 98935,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "fbfd9947-0994-49cc-99b7-b8cb52d273a3",
+      "tradeId": "92682410-5445-4f5d-af82-77ba66ab0f6c",
+      "underlying": "QBI",
+      "kind": "PositionChange",
+      "positionChange": 98936,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "328d2c37-ed00-4b8e-9c55-c60874a5e717",
+      "tradeId": "01d2abb3-aa7f-4fb7-8b7a-c9a5d1b48f6e",
+      "underlying": "QBJ",
+      "kind": "PositionChange",
+      "positionChange": 98937,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "d48755d9-9aa9-4f08-ad1d-ea6ce9eb8553",
+      "tradeId": "29391053-dc94-4f05-810b-1a444e8bba23",
+      "underlying": "QBL",
+      "kind": "PositionChange",
+      "positionChange": 98938,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "bc752fd6-b7ef-4b8f-a84b-21d6caffc51b",
+      "tradeId": "d671a4b9-b5d2-4d42-85db-50ea1e8bde49",
+      "underlying": "QBM",
+      "kind": "PositionChange",
+      "positionChange": 98939,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "5ab95b32-66fe-484a-a21e-1862aad6ffc4",
+      "tradeId": "fce655f1-cf3e-4a40-a383-ade89e0159b4",
+      "underlying": "QBN",
+      "kind": "PositionChange",
+      "positionChange": 98940,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "ac163347-1fd2-44d3-8a2d-fee777f76d3a",
+      "tradeId": "edf4c23f-0d09-4765-b2e5-469f163f9669",
+      "underlying": "QBO",
+      "kind": "PositionChange",
+      "positionChange": 98941,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "645b507c-2ad5-49f1-a692-472530da195e",
+      "tradeId": "bf8b7534-4325-42ab-a35f-1231e0e9dada",
+      "underlying": "QBP",
+      "kind": "PositionChange",
+      "positionChange": 98942,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "2475e018-9be9-4c54-89c8-79d22789f1e8",
+      "tradeId": "2b689646-8560-40f6-8b30-849441ea8b3a",
+      "underlying": "QBQ",
+      "kind": "PositionChange",
+      "positionChange": 98943,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "a24fcc18-58b3-47b6-9d05-fb5fab2b6127",
+      "tradeId": "ee1cc989-9271-4e7d-8e95-24a4a8d1cd8c",
+      "underlying": "QBR",
+      "kind": "PositionChange",
+      "positionChange": 98944,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "12dd3dfa-9705-41b7-8db4-f3b0b6b627f8",
+      "tradeId": "59e3b8b5-e794-4f12-b06c-650f2bf639f6",
+      "underlying": "QBS",
+      "kind": "PositionChange",
+      "positionChange": 98945,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "02a9f6c7-cc43-4843-b132-590d5d554bb7",
+      "tradeId": "9aeec8fa-c427-41b2-8209-d5b172d7f2b5",
+      "underlying": "QBT",
+      "kind": "PositionChange",
+      "positionChange": 98946,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "fbe9c964-fb66-4c19-9611-59224b167840",
+      "tradeId": "b3bf7708-55c2-4f9b-983d-8c263dc23dac",
+      "underlying": "QBU",
+      "kind": "PositionChange",
+      "positionChange": 98947,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "a7773504-9e34-43de-8026-0b2c4f319b72",
+      "tradeId": "26929675-2a74-4f95-b30b-5694c22cb539",
+      "underlying": "QBV",
+      "kind": "PositionChange",
+      "positionChange": 98948,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "67c530bc-c23c-4ad6-819c-847aee34eabd",
+      "tradeId": "be262ffe-8289-4d8b-bec5-727516cc1361",
+      "underlying": "QBW",
+      "kind": "PositionChange",
+      "positionChange": 98949,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "702f88c0-8201-4a1b-bc36-ecf2555980a1",
+      "tradeId": "f8941590-4bcc-4958-bd3a-90ab92e41c79",
+      "underlying": "QBX",
+      "kind": "PositionChange",
+      "positionChange": 98950,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "3375d0e6-7680-47ce-b437-f975ccdfa034",
+      "tradeId": "198b4dbd-f50a-4e32-8adf-67aed98a6366",
+      "underlying": "QBY",
+      "kind": "PositionChange",
+      "positionChange": 98951,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "78a7c960-759b-4cc0-840f-f048a1f214b1",
+      "tradeId": "72a0d32e-2b43-4aa2-8975-0a7490603f1c",
+      "underlying": "QBZ",
+      "kind": "PositionChange",
+      "positionChange": 98952,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "562d259e-0137-44df-8238-95c1ff86cf5b",
+      "tradeId": "61b1648f-17f2-4e32-bbd7-a8edb03db40c",
+      "underlying": "QCA",
+      "kind": "PositionChange",
+      "positionChange": 98953,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "c3e95464-ac4e-41ff-82ec-0ffb8a41fb4f",
+      "tradeId": "da5256bd-b552-4d06-8817-12b67353d87a",
+      "underlying": "QCB",
+      "kind": "PositionChange",
+      "positionChange": 98954,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "7bf76c2f-546b-49fa-9fda-a8efea2556fb",
+      "tradeId": "a6a059e7-2d97-4fc5-a565-f0a462948c2e",
+      "underlying": "QCC",
+      "kind": "PositionChange",
+      "positionChange": 98955,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "6b1b8d67-f922-4519-bdf3-b34409df811a",
+      "tradeId": "c2e43a45-fa67-4d47-9395-74604ea9a491",
+      "underlying": "QCD",
+      "kind": "PositionChange",
+      "positionChange": 98956,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "8914081c-fedf-4474-af80-2b9ccad7287c",
+      "tradeId": "4a7e7a44-0494-4445-a91e-bfdd696caeb8",
+      "underlying": "QCE",
+      "kind": "PositionChange",
+      "positionChange": 98957,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "42e12dd5-99c1-4401-964c-4f12e44bdfc8",
+      "tradeId": "af0de0be-9a01-4e1b-85ac-2bc962ae69bb",
+      "underlying": "QCF",
+      "kind": "PositionChange",
+      "positionChange": 98958,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "1751d645-9b09-407a-83fc-9d61e5f0879a",
+      "tradeId": "5f5f9e9a-5510-4b3e-9ea7-accc8dd2b149",
+      "underlying": "QCG",
+      "kind": "PositionChange",
+      "positionChange": 98959,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "78f0c041-e4d8-4f85-9436-1e5080294e28",
+      "tradeId": "d93ad590-0c10-4f8b-82cf-6343c2f013b4",
+      "underlying": "QCH",
+      "kind": "PositionChange",
+      "positionChange": 98960,
+      "momentDate": "2028-12-01"
+    },
+    {
+      "debtId": "6339c08f-d0df-42df-83f2-bfa4ca744d32",
+      "tradeId": "af83d444-ac14-4d8a-8f48-dccc4f2113a6",
+      "underlying": "ABBV",
+      "kind": "PositionChange",
+      "positionChange": 98961,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "34dd08c5-c08b-42a8-abd6-4f7137cdfbad",
+      "tradeId": "af83d444-ac14-4d8a-8f48-dccc4f2113a6",
+      "underlying": "ABBV",
+      "kind": "CloseReview",
+      "positionChange": 24689,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "7e2a34e6-6804-4322-80d8-b7be0a48dc98",
+      "tradeId": "a269c01a-3498-461b-b4a2-aaa1b7b875f2",
+      "underlying": "ADBE",
+      "kind": "PositionChange",
+      "positionChange": 98962,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "67bb8285-b844-4777-869e-08c778402a82",
+      "tradeId": "a269c01a-3498-461b-b4a2-aaa1b7b875f2",
+      "underlying": "ADBE",
+      "kind": "CloseReview",
+      "positionChange": 24690,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "f89aa353-40c2-4ce0-a70c-b117de959532",
+      "tradeId": "1212a03b-c813-4c75-b3c6-e2a53eb86bf4",
+      "underlying": "NKE",
+      "kind": "PositionChange",
+      "positionChange": 98963,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "1d537bf1-8a09-4e38-b585-11c651856d6a",
+      "tradeId": "1212a03b-c813-4c75-b3c6-e2a53eb86bf4",
+      "underlying": "NKE",
+      "kind": "CloseReview",
+      "positionChange": 24691,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "0f897317-b4af-414a-a6d4-15a6ba4095d9",
+      "tradeId": "1b9214dc-c1fa-4bfa-a1de-6e551426dc86",
+      "underlying": "CAT",
+      "kind": "PositionChange",
+      "positionChange": 98964,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "f4f1eb36-959f-4d56-9984-b295c7c34e7a",
+      "tradeId": "1b9214dc-c1fa-4bfa-a1de-6e551426dc86",
+      "underlying": "CAT",
+      "kind": "CloseReview",
+      "positionChange": 24692,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "54a44ec7-d3f6-4d62-91dd-7de519e332a9",
+      "tradeId": "7a23d8a5-3817-4f2a-a3c1-c2946ed858a3",
+      "underlying": "NVDA",
+      "kind": "PositionChange",
+      "positionChange": 98965,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "d3295689-d752-4cd7-bc81-a0676e27ccbd",
+      "tradeId": "7a23d8a5-3817-4f2a-a3c1-c2946ed858a3",
+      "underlying": "NVDA",
+      "kind": "CloseReview",
+      "positionChange": 24693,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "6f56e0a9-f1df-477d-a2c5-a34f17c39170",
+      "tradeId": "70ca4f2b-69b2-4fbc-ae26-565a04d14403",
+      "underlying": "META",
+      "kind": "PositionChange",
+      "positionChange": 98966,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "90b41d5d-5b39-4b7c-9705-dc31d92d583d",
+      "tradeId": "70ca4f2b-69b2-4fbc-ae26-565a04d14403",
+      "underlying": "META",
+      "kind": "CloseReview",
+      "positionChange": 24694,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "56434a70-84a2-4a17-b6d8-bf20ce277387",
+      "tradeId": "7b1d8dec-915a-4ebe-89b6-6bd83b2f28b4",
+      "underlying": "TSLA",
+      "kind": "PositionChange",
+      "positionChange": 98967,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "2a5dd816-f93f-4451-80d3-7b9d5478caa2",
+      "tradeId": "84c6f362-7dbf-440c-bc24-03ed3fa9bb83",
+      "underlying": "NFLX",
+      "kind": "PositionChange",
+      "positionChange": 98968,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "bdea94b3-56ee-4a57-8d85-f6f4e25375be",
+      "tradeId": "09b1008c-eda2-471d-b420-780626f316fa",
+      "underlying": "V",
+      "kind": "PositionChange",
+      "positionChange": 98969,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "baef821b-5d49-4fa9-a5ef-52d5137f1612",
+      "tradeId": "09b1008c-eda2-471d-b420-780626f316fa",
+      "underlying": "V",
+      "kind": "CloseReview",
+      "positionChange": 24695,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "292e3077-b0bb-423f-9058-6d0e21203467",
+      "tradeId": "7b91343a-c712-4606-ab37-6a2ee476e200",
+      "underlying": "HD",
+      "kind": "PositionChange",
+      "positionChange": 98970,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "7a574e89-5494-4b5e-bbd4-7c99ef83db96",
+      "tradeId": "7b91343a-c712-4606-ab37-6a2ee476e200",
+      "underlying": "HD",
+      "kind": "CloseReview",
+      "positionChange": 24696,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "a380c50b-d54e-4b15-8608-0ec11921871d",
+      "tradeId": "9ccbd109-cefe-42b3-9b6a-17141ed16e67",
+      "underlying": "PG",
+      "kind": "PositionChange",
+      "positionChange": 98971,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "6c047e46-8a76-4095-95e1-9eb095d5f3b7",
+      "tradeId": "aac38536-1484-4d49-b6e7-9a0145452d3a",
+      "underlying": "QAW",
+      "kind": "PositionChange",
+      "positionChange": 98972,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "50042c83-8597-40c7-8638-9234fc8ae540",
+      "tradeId": "6123e86b-466f-4cc1-8c3e-88d28856e144",
+      "underlying": "QBA",
+      "kind": "PositionChange",
+      "positionChange": 98973,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "4c35c704-05d7-497d-ad69-f2f3191e1cea",
+      "tradeId": "4e2ea8fa-573f-4250-9d3a-e6886be76295",
+      "underlying": "QBE",
+      "kind": "PositionChange",
+      "positionChange": 98974,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "d5f1b9f8-d1a1-4d86-9c89-a1ff6f312c36",
+      "tradeId": "92682410-5445-4f5d-af82-77ba66ab0f6c",
+      "underlying": "QBI",
+      "kind": "PositionChange",
+      "positionChange": 98975,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "4bdedbd7-eb7c-4677-8545-a7e062ec41f8",
+      "tradeId": "d671a4b9-b5d2-4d42-85db-50ea1e8bde49",
+      "underlying": "QBM",
+      "kind": "PositionChange",
+      "positionChange": 98976,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "b106b069-62a8-4a2f-8ef6-86a30341eeb9",
+      "tradeId": "bf8b7534-4325-42ab-a35f-1231e0e9dada",
+      "underlying": "QBP",
+      "kind": "PositionChange",
+      "positionChange": 98977,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "28990b33-3484-4f79-9a15-8265fbfb88f2",
+      "tradeId": "2b689646-8560-40f6-8b30-849441ea8b3a",
+      "underlying": "QBQ",
+      "kind": "PositionChange",
+      "positionChange": 98978,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "0e8dce69-1312-46e4-be49-ba5295ce2d48",
+      "tradeId": "ee1cc989-9271-4e7d-8e95-24a4a8d1cd8c",
+      "underlying": "QBR",
+      "kind": "PositionChange",
+      "positionChange": 98979,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "03d8e811-a915-46d7-98c4-60572e55d3a6",
+      "tradeId": "9aeec8fa-c427-41b2-8209-d5b172d7f2b5",
+      "underlying": "QBT",
+      "kind": "PositionChange",
+      "positionChange": 98980,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "e8d98a6b-79e4-4b02-a4a6-87e2a9382b33",
+      "tradeId": "b3bf7708-55c2-4f9b-983d-8c263dc23dac",
+      "underlying": "QBU",
+      "kind": "PositionChange",
+      "positionChange": 98981,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "e480fb58-1ac9-4e85-94f0-472204a3fdee",
+      "tradeId": "26929675-2a74-4f95-b30b-5694c22cb539",
+      "underlying": "QBV",
+      "kind": "PositionChange",
+      "positionChange": 98982,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "c7f362b6-54d1-4519-9105-9b2c19d0382c",
+      "tradeId": "f8941590-4bcc-4958-bd3a-90ab92e41c79",
+      "underlying": "QBX",
+      "kind": "PositionChange",
+      "positionChange": 98983,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "f006ac06-ffc0-490a-90fc-d0dd43b9160a",
+      "tradeId": "198b4dbd-f50a-4e32-8adf-67aed98a6366",
+      "underlying": "QBY",
+      "kind": "PositionChange",
+      "positionChange": 98984,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "eb38490e-23fc-4a35-a07e-1b4929caf78c",
+      "tradeId": "72a0d32e-2b43-4aa2-8975-0a7490603f1c",
+      "underlying": "QBZ",
+      "kind": "PositionChange",
+      "positionChange": 98985,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "9efe6b38-cd3a-4c74-a6aa-c6fab29ff8f8",
+      "tradeId": "da5256bd-b552-4d06-8817-12b67353d87a",
+      "underlying": "QCB",
+      "kind": "PositionChange",
+      "positionChange": 98986,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "e472e803-819f-49d1-91a3-dfe40784c660",
+      "tradeId": "a6a059e7-2d97-4fc5-a565-f0a462948c2e",
+      "underlying": "QCC",
+      "kind": "PositionChange",
+      "positionChange": 98987,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "8547ce66-3498-4cdd-bf35-f15864de03be",
+      "tradeId": "c2e43a45-fa67-4d47-9395-74604ea9a491",
+      "underlying": "QCD",
+      "kind": "PositionChange",
+      "positionChange": 98988,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "b7145037-b548-488b-bdee-864e2cab78ca",
+      "tradeId": "af0de0be-9a01-4e1b-85ac-2bc962ae69bb",
+      "underlying": "QCF",
+      "kind": "PositionChange",
+      "positionChange": 98989,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "ec2ae80e-e3a2-4b05-84de-9c9e7aa225d4",
+      "tradeId": "5f5f9e9a-5510-4b3e-9ea7-accc8dd2b149",
+      "underlying": "QCG",
+      "kind": "PositionChange",
+      "positionChange": 98990,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "fb63d24a-1de7-41d5-9786-9f3e634757e8",
+      "tradeId": "d93ad590-0c10-4f8b-82cf-6343c2f013b4",
+      "underlying": "QCH",
+      "kind": "PositionChange",
+      "positionChange": 98991,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "891985f2-c657-4bf4-8650-2f2ac6d65a06",
+      "tradeId": "464e41de-b754-48d7-8e9d-c4c36a6af783",
+      "underlying": "QCI",
+      "kind": "PositionChange",
+      "positionChange": 98992,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "6a8422c1-f1ec-4f39-8098-942ecdeb843c",
+      "tradeId": "09dda76c-51ed-4094-af8c-83f4b73505b4",
+      "underlying": "QCJ",
+      "kind": "PositionChange",
+      "positionChange": 98993,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "b2b3b809-f23f-4499-a5e9-291328438a53",
+      "tradeId": "b0dcb11d-9056-4573-99cc-6df22d2b28d2",
+      "underlying": "QCK",
+      "kind": "PositionChange",
+      "positionChange": 98994,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "6a0b3f6d-9fd0-4142-ae39-abdd09882cea",
+      "tradeId": "4c828a1c-b9af-4adc-bafb-ff715e01b7df",
+      "underlying": "QCL",
+      "kind": "PositionChange",
+      "positionChange": 98995,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "3c7433ae-5448-434a-8582-b41e13cd100f",
+      "tradeId": "4e360fc3-cead-4422-bb20-b35f626e7481",
+      "underlying": "QCM",
+      "kind": "PositionChange",
+      "positionChange": 98996,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "e8dd0f08-b742-4ad8-ab6b-9d98ef4d6b19",
+      "tradeId": "696d5f8a-b6e3-4ff5-8595-2f815dea43ad",
+      "underlying": "QCN",
+      "kind": "PositionChange",
+      "positionChange": 98997,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "9205b805-6c28-425b-b54c-a3fa3672782a",
+      "tradeId": "4112b397-d5f0-4528-a766-e1922e615834",
+      "underlying": "QCO",
+      "kind": "PositionChange",
+      "positionChange": 98998,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "e9f23200-47c8-450b-97cd-540bab15c600",
+      "tradeId": "19712783-0d5c-41cc-bef7-d8cbfc7f19ea",
+      "underlying": "QCP",
+      "kind": "PositionChange",
+      "positionChange": 98999,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "30d5402e-ea7c-4964-8597-c4385ffa4c1c",
+      "tradeId": "baa7e059-49e7-4c04-8c7f-dd739dcf372d",
+      "underlying": "QCQ",
+      "kind": "PositionChange",
+      "positionChange": 99000,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "f13c8cef-170f-463a-b558-222d7d12a091",
+      "tradeId": "cf0bc288-831a-4505-bb24-244917d81d17",
+      "underlying": "QCR",
+      "kind": "PositionChange",
+      "positionChange": 99001,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "19ade71f-4d32-4552-b367-67e3539a3b44",
+      "tradeId": "78e49a1b-68f5-4d58-b425-8984e55009e0",
+      "underlying": "QCS",
+      "kind": "PositionChange",
+      "positionChange": 99002,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "fd99ce08-9e7e-495b-b2b2-3be7339709ac",
+      "tradeId": "385fb132-e9af-47c1-97dc-e94fbb4f3916",
+      "underlying": "QCT",
+      "kind": "PositionChange",
+      "positionChange": 99003,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "3d2675a7-9d61-4eea-956e-1f4b121ef0a6",
+      "tradeId": "c1db06fa-30b4-466f-a807-627958970b88",
+      "underlying": "QCU",
+      "kind": "PositionChange",
+      "positionChange": 99004,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "8aabcdc4-60ee-4b8e-bc1e-3570000f50fe",
+      "tradeId": "1ed9ae1c-375c-418b-8223-1b599097ca3f",
+      "underlying": "QCV",
+      "kind": "PositionChange",
+      "positionChange": 99005,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "0c541a1f-106f-437f-9db6-0cdf0ae0bfec",
+      "tradeId": "373b5e70-3cb2-405a-8080-c7cba19af0d2",
+      "underlying": "QCW",
+      "kind": "PositionChange",
+      "positionChange": 99006,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "ce81a73b-3516-4a10-b2d8-5b117dd3c022",
+      "tradeId": "c676eeb0-3792-4927-89e4-a01bf7871842",
+      "underlying": "QCX",
+      "kind": "PositionChange",
+      "positionChange": 99007,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "285a9e5f-2cd3-4247-8330-6d658aebe47a",
+      "tradeId": "eab0b3ae-fe15-4b58-8a6f-0ff8f48171ec",
+      "underlying": "QCY",
+      "kind": "PositionChange",
+      "positionChange": 99008,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "07cfa8fd-4aa4-4b90-a4ec-b05033a7de9f",
+      "tradeId": "f380c6fc-6f91-46af-9c53-b118f6f2cf5c",
+      "underlying": "QCZ",
+      "kind": "PositionChange",
+      "positionChange": 99009,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "241f4cf8-1747-498e-b8c5-7122a855a6be",
+      "tradeId": "3f945192-6d35-436e-ad68-94043928a1ed",
+      "underlying": "QDA",
+      "kind": "PositionChange",
+      "positionChange": 99010,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "8dae32dc-f309-40b3-9c12-9c897594d3cd",
+      "tradeId": "6688e475-5980-4bb4-aed4-92e703d8f2dc",
+      "underlying": "QDB",
+      "kind": "PositionChange",
+      "positionChange": 99011,
+      "momentDate": "2028-12-04"
+    },
+    {
+      "debtId": "ff2691e4-e840-4880-9812-d0fac322ac13",
+      "tradeId": "7b1d8dec-915a-4ebe-89b6-6bd83b2f28b4",
+      "underlying": "TSLA",
+      "kind": "PositionChange",
+      "positionChange": 99012,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "a737eb2b-3507-40f4-ad8c-98a647e0470f",
+      "tradeId": "7b1d8dec-915a-4ebe-89b6-6bd83b2f28b4",
+      "underlying": "TSLA",
+      "kind": "CloseReview",
+      "positionChange": 24697,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "bd57154a-e487-497d-9da8-2da5785b7b95",
+      "tradeId": "84c6f362-7dbf-440c-bc24-03ed3fa9bb83",
+      "underlying": "NFLX",
+      "kind": "PositionChange",
+      "positionChange": 99013,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "fe6a3db9-7d33-4921-82e0-886efbceea34",
+      "tradeId": "84c6f362-7dbf-440c-bc24-03ed3fa9bb83",
+      "underlying": "NFLX",
+      "kind": "CloseReview",
+      "positionChange": 24698,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "87a876df-c15b-454c-bc7a-734f44b276f6",
+      "tradeId": "9ccbd109-cefe-42b3-9b6a-17141ed16e67",
+      "underlying": "PG",
+      "kind": "PositionChange",
+      "positionChange": 99014,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "77b0a418-b0fd-4c52-9468-2e2fd90f5883",
+      "tradeId": "9ccbd109-cefe-42b3-9b6a-17141ed16e67",
+      "underlying": "PG",
+      "kind": "CloseReview",
+      "positionChange": 24699,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "163ef01f-9ac8-4c81-bdaf-cc23156d23d4",
+      "tradeId": "2b689646-8560-40f6-8b30-849441ea8b3a",
+      "underlying": "QBQ",
+      "kind": "PositionChange",
+      "positionChange": 99015,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "26c27e28-1363-46a6-8fa1-389ca94f03ab",
+      "tradeId": "b3bf7708-55c2-4f9b-983d-8c263dc23dac",
+      "underlying": "QBU",
+      "kind": "PositionChange",
+      "positionChange": 99016,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "21ec2612-0d95-476a-853d-4181c2b5d589",
+      "tradeId": "198b4dbd-f50a-4e32-8adf-67aed98a6366",
+      "underlying": "QBY",
+      "kind": "PositionChange",
+      "positionChange": 99017,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "deb84df8-7ddc-41a1-9e81-183e28094176",
+      "tradeId": "a6a059e7-2d97-4fc5-a565-f0a462948c2e",
+      "underlying": "QCC",
+      "kind": "PositionChange",
+      "positionChange": 99018,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "da42e795-27ce-4df1-bd71-4c9ff671f89c",
+      "tradeId": "5f5f9e9a-5510-4b3e-9ea7-accc8dd2b149",
+      "underlying": "QCG",
+      "kind": "PositionChange",
+      "positionChange": 99019,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "bef94da8-dc51-44d2-8de4-413a23b6c0c4",
+      "tradeId": "09dda76c-51ed-4094-af8c-83f4b73505b4",
+      "underlying": "QCJ",
+      "kind": "PositionChange",
+      "positionChange": 99020,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "718e2201-fab8-4bdc-927e-9b4ff77c1f4c",
+      "tradeId": "b0dcb11d-9056-4573-99cc-6df22d2b28d2",
+      "underlying": "QCK",
+      "kind": "PositionChange",
+      "positionChange": 99021,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "d7a146c6-1aa4-4173-8f8b-b86685e4aa33",
+      "tradeId": "4c828a1c-b9af-4adc-bafb-ff715e01b7df",
+      "underlying": "QCL",
+      "kind": "PositionChange",
+      "positionChange": 99022,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "0c6a5432-c1c4-4a0a-abee-ea62930fd8bb",
+      "tradeId": "696d5f8a-b6e3-4ff5-8595-2f815dea43ad",
+      "underlying": "QCN",
+      "kind": "PositionChange",
+      "positionChange": 99023,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "41247ddc-6c3c-4426-9d21-580537301c78",
+      "tradeId": "4112b397-d5f0-4528-a766-e1922e615834",
+      "underlying": "QCO",
+      "kind": "PositionChange",
+      "positionChange": 99024,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "cfe8ff21-5819-4601-a37c-05b10941fe57",
+      "tradeId": "19712783-0d5c-41cc-bef7-d8cbfc7f19ea",
+      "underlying": "QCP",
+      "kind": "PositionChange",
+      "positionChange": 99025,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "04ec82c2-7650-487a-9be2-b6e3cb9eba28",
+      "tradeId": "cf0bc288-831a-4505-bb24-244917d81d17",
+      "underlying": "QCR",
+      "kind": "PositionChange",
+      "positionChange": 99026,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "4d09c241-875d-4b97-8788-28acbcbf5f15",
+      "tradeId": "78e49a1b-68f5-4d58-b425-8984e55009e0",
+      "underlying": "QCS",
+      "kind": "PositionChange",
+      "positionChange": 99027,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "2588ce5a-ca04-4b6c-8fae-3d25dcc708f1",
+      "tradeId": "385fb132-e9af-47c1-97dc-e94fbb4f3916",
+      "underlying": "QCT",
+      "kind": "PositionChange",
+      "positionChange": 99028,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "193c0441-0363-4108-bd10-7eecdce2a2ec",
+      "tradeId": "1ed9ae1c-375c-418b-8223-1b599097ca3f",
+      "underlying": "QCV",
+      "kind": "PositionChange",
+      "positionChange": 99029,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "ac80b521-4e71-4264-9c3a-7bdff63fd50e",
+      "tradeId": "373b5e70-3cb2-405a-8080-c7cba19af0d2",
+      "underlying": "QCW",
+      "kind": "PositionChange",
+      "positionChange": 99030,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "de14b6f1-bfeb-481d-b461-68c69dcdeb47",
+      "tradeId": "c676eeb0-3792-4927-89e4-a01bf7871842",
+      "underlying": "QCX",
+      "kind": "PositionChange",
+      "positionChange": 99031,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "7df2ec9a-13a8-4d8c-8e2c-9855585cebe8",
+      "tradeId": "f380c6fc-6f91-46af-9c53-b118f6f2cf5c",
+      "underlying": "QCZ",
+      "kind": "PositionChange",
+      "positionChange": 99032,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "6041b649-4308-4378-ada9-5c9b2975eda3",
+      "tradeId": "3f945192-6d35-436e-ad68-94043928a1ed",
+      "underlying": "QDA",
+      "kind": "PositionChange",
+      "positionChange": 99033,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "bb6ceb9a-8b06-410c-80bf-4b106fd684df",
+      "tradeId": "6688e475-5980-4bb4-aed4-92e703d8f2dc",
+      "underlying": "QDB",
+      "kind": "PositionChange",
+      "positionChange": 99034,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "0b1d5158-e705-4ed9-bc87-cd67abc05480",
+      "tradeId": "831f84aa-43eb-4486-8f81-0897de595117",
+      "underlying": "QDC",
+      "kind": "PositionChange",
+      "positionChange": 99035,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "dceb0b09-c1d9-4eca-b565-9d230145c710",
+      "tradeId": "1ede05cd-224c-4279-86c6-d56a7d3ef05e",
+      "underlying": "QDD",
+      "kind": "PositionChange",
+      "positionChange": 99036,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "1c9501a8-ff23-471f-93bf-aaa561712abb",
+      "tradeId": "9d241964-da43-44a0-9a05-0ed82b5f5133",
+      "underlying": "QDE",
+      "kind": "PositionChange",
+      "positionChange": 99037,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "36ef4288-3b76-4a10-9afa-2a2cb38a08ed",
+      "tradeId": "9b17e6b8-3583-4e1b-8af5-ee8b1a0a3952",
+      "underlying": "QDF",
+      "kind": "PositionChange",
+      "positionChange": 99038,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "17d3dcc3-0d14-4224-b279-c3ae1efd5b02",
+      "tradeId": "ec1e232f-ef28-4639-8ac2-2ef6498ed04a",
+      "underlying": "QDG",
+      "kind": "PositionChange",
+      "positionChange": 99039,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "b83a14c9-6b06-4c49-b653-ab9d93572bbe",
+      "tradeId": "bf8bacf0-bf04-454f-9bed-3145d5588ce0",
+      "underlying": "QDH",
+      "kind": "PositionChange",
+      "positionChange": 99040,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "b7f76e2f-d783-42fb-8117-996da5955873",
+      "tradeId": "386471a5-1139-4c90-9176-f5e0ce392c5f",
+      "underlying": "QDI",
+      "kind": "PositionChange",
+      "positionChange": 99041,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "90a7c7da-d935-4192-b8c3-07fcc40d81c6",
+      "tradeId": "3266b444-f019-4443-a60c-3b65033b0a40",
+      "underlying": "QDJ",
+      "kind": "PositionChange",
+      "positionChange": 99042,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "4505988c-db70-40ce-b6c0-26050ce8dc65",
+      "tradeId": "349560bb-e20c-49f8-828a-91afd25b25f0",
+      "underlying": "QDK",
+      "kind": "PositionChange",
+      "positionChange": 99043,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "78275a34-77d6-421c-96c5-4ccea3fb7c96",
+      "tradeId": "bb0e8cb1-c0b0-477e-b20c-3d101e3dc0ed",
+      "underlying": "QDL",
+      "kind": "PositionChange",
+      "positionChange": 99044,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "f4a6ec61-1923-4432-83d7-ec0d96deb032",
+      "tradeId": "8d0ce472-410d-4b4a-a999-1b53bc9ce066",
+      "underlying": "QDM",
+      "kind": "PositionChange",
+      "positionChange": 99045,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "3907109a-540e-41eb-92b7-db54e6b3b510",
+      "tradeId": "f4e36953-82db-4cd3-81a8-07a270493b61",
+      "underlying": "QDN",
+      "kind": "PositionChange",
+      "positionChange": 99046,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "5aa7a836-1e83-41eb-80c9-8b4e2fd00d93",
+      "tradeId": "b94ad4b1-b5f1-4200-a094-625510b1ff8e",
+      "underlying": "QDO",
+      "kind": "PositionChange",
+      "positionChange": 99047,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "0942d3be-c715-483e-986e-27809e3227dd",
+      "tradeId": "68e9e2c4-5bc0-40e7-99e9-bca0f11430f9",
+      "underlying": "QDP",
+      "kind": "PositionChange",
+      "positionChange": 99048,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "daaf3e30-b713-47ac-b7af-f0338d5918d3",
+      "tradeId": "eb7f21b8-0c90-4201-84cd-d2e1db62642b",
+      "underlying": "QDQ",
+      "kind": "PositionChange",
+      "positionChange": 99049,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "d37c5fef-bb3b-4747-8b08-2608729d55e1",
+      "tradeId": "4c09b3e6-a3e3-4ae6-abf7-d80ca5361892",
+      "underlying": "QDR",
+      "kind": "PositionChange",
+      "positionChange": 99050,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "cb980e69-38c9-476d-9c03-cc4748014093",
+      "tradeId": "ce0c15b7-f2bd-40a4-995f-51340e192f09",
+      "underlying": "QDS",
+      "kind": "PositionChange",
+      "positionChange": 99051,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "ecf8850b-fd12-43db-8e23-ac8695a6bdf9",
+      "tradeId": "2295ca7e-78b3-4af3-bee4-9c5bc195238e",
+      "underlying": "QDT",
+      "kind": "PositionChange",
+      "positionChange": 99052,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "06445807-026e-48f2-9bab-10e3a95fdb4e",
+      "tradeId": "9f366684-0a9f-484b-8b0e-4866b270dd71",
+      "underlying": "QDU",
+      "kind": "PositionChange",
+      "positionChange": 99053,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "33a76b6e-5c81-4ea0-a877-866737e39731",
+      "tradeId": "ea0757e4-cbcc-40af-bb63-a559d9168c3d",
+      "underlying": "QDV",
+      "kind": "PositionChange",
+      "positionChange": 99054,
+      "momentDate": "2028-12-05"
+    },
+    {
+      "debtId": "dab291ee-c7bd-44d8-b22d-3b4abcac5b1b",
+      "tradeId": "b0dcb11d-9056-4573-99cc-6df22d2b28d2",
+      "underlying": "QCK",
+      "kind": "PositionChange",
+      "positionChange": 99055,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "c6acf9dc-6165-474e-888a-6055eaa27d8a",
+      "tradeId": "4112b397-d5f0-4528-a766-e1922e615834",
+      "underlying": "QCO",
+      "kind": "PositionChange",
+      "positionChange": 99056,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "1d61f922-c4bc-4b27-91e5-435542a52ab8",
+      "tradeId": "78e49a1b-68f5-4d58-b425-8984e55009e0",
+      "underlying": "QCS",
+      "kind": "PositionChange",
+      "positionChange": 99057,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "b967532e-4a0f-48de-baf7-2849bc962400",
+      "tradeId": "373b5e70-3cb2-405a-8080-c7cba19af0d2",
+      "underlying": "QCW",
+      "kind": "PositionChange",
+      "positionChange": 99058,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "cb27c097-6b5d-46d8-a25f-9eebc638b919",
+      "tradeId": "3f945192-6d35-436e-ad68-94043928a1ed",
+      "underlying": "QDA",
+      "kind": "PositionChange",
+      "positionChange": 99059,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "aeef5422-839f-4de2-a2ce-d060458d3e7a",
+      "tradeId": "1ede05cd-224c-4279-86c6-d56a7d3ef05e",
+      "underlying": "QDD",
+      "kind": "PositionChange",
+      "positionChange": 99060,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "17e85fff-5a94-4bd4-bf53-f966c14b9428",
+      "tradeId": "9d241964-da43-44a0-9a05-0ed82b5f5133",
+      "underlying": "QDE",
+      "kind": "PositionChange",
+      "positionChange": 99061,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "2edde6c6-b3a9-4698-91dc-93d0b698abf6",
+      "tradeId": "9b17e6b8-3583-4e1b-8af5-ee8b1a0a3952",
+      "underlying": "QDF",
+      "kind": "PositionChange",
+      "positionChange": 99062,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "8d8e4245-59f6-44db-b6d1-14cbd2a311d2",
+      "tradeId": "bf8bacf0-bf04-454f-9bed-3145d5588ce0",
+      "underlying": "QDH",
+      "kind": "PositionChange",
+      "positionChange": 99063,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "31d92821-6167-4c20-866d-4c11450565ed",
+      "tradeId": "386471a5-1139-4c90-9176-f5e0ce392c5f",
+      "underlying": "QDI",
+      "kind": "PositionChange",
+      "positionChange": 99064,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "a34a164d-14c7-449a-ba66-848357c1ae5a",
+      "tradeId": "3266b444-f019-4443-a60c-3b65033b0a40",
+      "underlying": "QDJ",
+      "kind": "PositionChange",
+      "positionChange": 99065,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "84b7afe9-5bef-4cba-bdff-ac41902993c3",
+      "tradeId": "bb0e8cb1-c0b0-477e-b20c-3d101e3dc0ed",
+      "underlying": "QDL",
+      "kind": "PositionChange",
+      "positionChange": 99066,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "c71ce275-d810-444c-aded-4f1bae91dc0c",
+      "tradeId": "8d0ce472-410d-4b4a-a999-1b53bc9ce066",
+      "underlying": "QDM",
+      "kind": "PositionChange",
+      "positionChange": 99067,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "ddbfffad-50bc-4e1d-a777-23c3548b6807",
+      "tradeId": "f4e36953-82db-4cd3-81a8-07a270493b61",
+      "underlying": "QDN",
+      "kind": "PositionChange",
+      "positionChange": 99068,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "81294010-00e3-4bda-bb2b-0bbad1ff5ddf",
+      "tradeId": "68e9e2c4-5bc0-40e7-99e9-bca0f11430f9",
+      "underlying": "QDP",
+      "kind": "PositionChange",
+      "positionChange": 99069,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "0a27b372-8df0-4033-aff9-c9d37a03c459",
+      "tradeId": "eb7f21b8-0c90-4201-84cd-d2e1db62642b",
+      "underlying": "QDQ",
+      "kind": "PositionChange",
+      "positionChange": 99070,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "6da81789-d61c-45f5-baec-04fef484e72f",
+      "tradeId": "4c09b3e6-a3e3-4ae6-abf7-d80ca5361892",
+      "underlying": "QDR",
+      "kind": "PositionChange",
+      "positionChange": 99071,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "1776b414-3b7a-49f3-8187-739a000b6f00",
+      "tradeId": "2295ca7e-78b3-4af3-bee4-9c5bc195238e",
+      "underlying": "QDT",
+      "kind": "PositionChange",
+      "positionChange": 99072,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "ba1cb423-e72c-4107-a6d1-355357e1be96",
+      "tradeId": "9f366684-0a9f-484b-8b0e-4866b270dd71",
+      "underlying": "QDU",
+      "kind": "PositionChange",
+      "positionChange": 99073,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "a7453ac8-50ca-4b23-b4c5-2c8a03ca2686",
+      "tradeId": "ea0757e4-cbcc-40af-bb63-a559d9168c3d",
+      "underlying": "QDV",
+      "kind": "PositionChange",
+      "positionChange": 99074,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "5dd09d45-a390-4d5a-94a8-c2682c97bd96",
+      "tradeId": "a01c0ad6-02c6-4109-8d48-af16f5df711c",
+      "underlying": "QDW",
+      "kind": "PositionChange",
+      "positionChange": 99075,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "b4ea5198-7c71-479b-8023-e4f90d14beca",
+      "tradeId": "db91a839-d74d-42a6-a22a-3eac028ef074",
+      "underlying": "QDX",
+      "kind": "PositionChange",
+      "positionChange": 99076,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "470e9e57-5859-4e84-b30b-cf9b513189b3",
+      "tradeId": "66e57cae-4dc2-4caa-9afd-eaf2617e6f25",
+      "underlying": "QDY",
+      "kind": "PositionChange",
+      "positionChange": 99077,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "2fa3ef5c-aa80-45a0-acdc-a86be7149899",
+      "tradeId": "c08a1078-b890-4ada-b5c1-1e17df6b54ea",
+      "underlying": "QDZ",
+      "kind": "PositionChange",
+      "positionChange": 99078,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "c69bc615-3afc-4098-9a43-18d3587f2f06",
+      "tradeId": "1ab7f42e-c8ff-44b0-9cea-49adf38e0836",
+      "underlying": "QEA",
+      "kind": "PositionChange",
+      "positionChange": 99079,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "a032cf28-23ac-4a50-97d3-289af3069ca7",
+      "tradeId": "b072917e-e18b-4f32-a0e8-1e2d2830aa70",
+      "underlying": "QEB",
+      "kind": "PositionChange",
+      "positionChange": 99080,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "292ab82c-5d1b-4e25-ab80-25c23d8cef1d",
+      "tradeId": "9ec2a361-fc89-423e-bdab-4015a9268843",
+      "underlying": "QEC",
+      "kind": "PositionChange",
+      "positionChange": 99081,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "9dc2aa26-f703-4fb1-abc6-c5ad5cd0b1d2",
+      "tradeId": "32887d8d-792f-445b-8e41-1651df6676ea",
+      "underlying": "QED",
+      "kind": "PositionChange",
+      "positionChange": 99082,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "5a20cc94-65b8-4703-9e30-7d324f930c21",
+      "tradeId": "a8036daa-5f33-4916-8e4b-45d02340eb56",
+      "underlying": "QEE",
+      "kind": "PositionChange",
+      "positionChange": 99083,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "5361ec71-5d5a-478f-bf93-8df968d05491",
+      "tradeId": "c65a8061-28f6-472c-807c-236bb02e8947",
+      "underlying": "QEF",
+      "kind": "PositionChange",
+      "positionChange": 99084,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "a56a80f7-220d-4343-a36c-f10c5980ccfc",
+      "tradeId": "86bcae62-f13a-4f86-aae9-0049e6856875",
+      "underlying": "AAPL",
+      "kind": "PositionChange",
+      "positionChange": 99085,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "c71ac86f-7792-47d8-8c50-8f06a98e68c6",
+      "tradeId": "4d117b0a-1778-4a5e-9ca8-b9f4dd51ea0b",
+      "underlying": "MSFT",
+      "kind": "PositionChange",
+      "positionChange": 99086,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "72dc90e6-9486-406c-81db-51823f0f3571",
+      "tradeId": "d018b90a-43d8-4f59-a5ae-1fbe5e592c4d",
+      "underlying": "NVDA",
+      "kind": "PositionChange",
+      "positionChange": 99087,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "ae46dffd-efe6-4a83-9c93-a9e1d64596bb",
+      "tradeId": "cc2eaf7d-92a5-4e14-962b-3b67b34df188",
+      "underlying": "AMZN",
+      "kind": "PositionChange",
+      "positionChange": 99088,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "3704d27a-003f-4e02-88ce-3a671e651d7b",
+      "tradeId": "5edb2c04-f57e-4c49-8319-8c26b87610cb",
+      "underlying": "GOOGL",
+      "kind": "PositionChange",
+      "positionChange": 99089,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "83948cdf-2ccd-490d-a256-9ace6c0dc89c",
+      "tradeId": "a8a972bd-2049-4265-86b6-71bc794a4a42",
+      "underlying": "META",
+      "kind": "PositionChange",
+      "positionChange": 99090,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "a0878563-6899-4e00-80de-fec73f67fc15",
+      "tradeId": "b774b8da-8534-4bf3-9d77-050432b6c88c",
+      "underlying": "TSLA",
+      "kind": "PositionChange",
+      "positionChange": 99091,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "291b7274-d623-465c-ae54-1489457c18f7",
+      "tradeId": "63725f2a-0663-429d-bf37-b8f6af1b65a5",
+      "underlying": "AVGO",
+      "kind": "PositionChange",
+      "positionChange": 99092,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "f1702570-8ab7-45a9-8124-ead59e27d01d",
+      "tradeId": "75a390f7-33af-4ac9-87e3-1799dd51cc94",
+      "underlying": "COST",
+      "kind": "PositionChange",
+      "positionChange": 99093,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "1d3deaf2-09d9-490a-9c03-f77242ccddaa",
+      "tradeId": "5d66e810-4be0-4a19-a6a2-cceb9f51a5fb",
+      "underlying": "NFLX",
+      "kind": "PositionChange",
+      "positionChange": 99094,
+      "momentDate": "2028-12-06"
+    },
+    {
+      "debtId": "dc81f3e8-f6e1-423f-8b7a-86724fca3a20",
+      "tradeId": "9d241964-da43-44a0-9a05-0ed82b5f5133",
+      "underlying": "QDE",
+      "kind": "PositionChange",
+      "positionChange": 99095,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "77cc9843-3ba7-417d-8eac-51ffce195214",
+      "tradeId": "386471a5-1139-4c90-9176-f5e0ce392c5f",
+      "underlying": "QDI",
+      "kind": "PositionChange",
+      "positionChange": 99096,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "1b851ae2-0eae-4699-b39a-e97afc32cacd",
+      "tradeId": "8d0ce472-410d-4b4a-a999-1b53bc9ce066",
+      "underlying": "QDM",
+      "kind": "PositionChange",
+      "positionChange": 99097,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "50632ee2-9044-4162-97d6-060d84a7b596",
+      "tradeId": "eb7f21b8-0c90-4201-84cd-d2e1db62642b",
+      "underlying": "QDQ",
+      "kind": "PositionChange",
+      "positionChange": 99098,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "9c2214b4-1a9b-40c6-8da4-ec53cd4ea0aa",
+      "tradeId": "9f366684-0a9f-484b-8b0e-4866b270dd71",
+      "underlying": "QDU",
+      "kind": "PositionChange",
+      "positionChange": 99099,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "db550466-be1a-4419-a22d-688bf90221d6",
+      "tradeId": "db91a839-d74d-42a6-a22a-3eac028ef074",
+      "underlying": "QDX",
+      "kind": "PositionChange",
+      "positionChange": 99100,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "7a3d8255-6dde-40ac-8954-bf496d89bb1e",
+      "tradeId": "66e57cae-4dc2-4caa-9afd-eaf2617e6f25",
+      "underlying": "QDY",
+      "kind": "PositionChange",
+      "positionChange": 99101,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "ec513a75-a44b-44d9-a8b8-9e233a556b6f",
+      "tradeId": "c08a1078-b890-4ada-b5c1-1e17df6b54ea",
+      "underlying": "QDZ",
+      "kind": "PositionChange",
+      "positionChange": 99102,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "601c606b-6b72-41af-8f14-c4ce52f91e10",
+      "tradeId": "b072917e-e18b-4f32-a0e8-1e2d2830aa70",
+      "underlying": "QEB",
+      "kind": "PositionChange",
+      "positionChange": 99103,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "7708429f-d9cc-4a62-9460-5c5473bfcb40",
+      "tradeId": "9ec2a361-fc89-423e-bdab-4015a9268843",
+      "underlying": "QEC",
+      "kind": "PositionChange",
+      "positionChange": 99104,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "b073762c-7dfc-4e16-9961-a6b09aa07106",
+      "tradeId": "32887d8d-792f-445b-8e41-1651df6676ea",
+      "underlying": "QED",
+      "kind": "PositionChange",
+      "positionChange": 99105,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "c784310c-09e2-4be4-bfaf-405fa24ea870",
+      "tradeId": "c65a8061-28f6-472c-807c-236bb02e8947",
+      "underlying": "QEF",
+      "kind": "PositionChange",
+      "positionChange": 99106,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "e172ae88-2b6b-45ed-a9ff-2baf14247aa2",
+      "tradeId": "86bcae62-f13a-4f86-aae9-0049e6856875",
+      "underlying": "AAPL",
+      "kind": "PositionChange",
+      "positionChange": 99107,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "74efa4cc-8919-4950-a2a6-2b3e077cd4bc",
+      "tradeId": "4d117b0a-1778-4a5e-9ca8-b9f4dd51ea0b",
+      "underlying": "MSFT",
+      "kind": "PositionChange",
+      "positionChange": 99108,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "f23d127e-7030-4d44-a384-4f76fc5b3f71",
+      "tradeId": "cc2eaf7d-92a5-4e14-962b-3b67b34df188",
+      "underlying": "AMZN",
+      "kind": "PositionChange",
+      "positionChange": 99109,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "a11206f4-bc58-4ea8-b083-53ffcc2f927d",
+      "tradeId": "5edb2c04-f57e-4c49-8319-8c26b87610cb",
+      "underlying": "GOOGL",
+      "kind": "PositionChange",
+      "positionChange": 99110,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "afa2b390-d855-4827-9678-872565b0b206",
+      "tradeId": "a8a972bd-2049-4265-86b6-71bc794a4a42",
+      "underlying": "META",
+      "kind": "PositionChange",
+      "positionChange": 99111,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "de07a2e7-dd04-4280-9946-bcd0df8b423f",
+      "tradeId": "63725f2a-0663-429d-bf37-b8f6af1b65a5",
+      "underlying": "AVGO",
+      "kind": "PositionChange",
+      "positionChange": 99112,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "83672f5c-72ce-44c3-ad15-63b177974db5",
+      "tradeId": "75a390f7-33af-4ac9-87e3-1799dd51cc94",
+      "underlying": "COST",
+      "kind": "PositionChange",
+      "positionChange": 99113,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "c3472e79-07f8-47f0-920a-8d12c0de9bc5",
+      "tradeId": "5d66e810-4be0-4a19-a6a2-cceb9f51a5fb",
+      "underlying": "NFLX",
+      "kind": "PositionChange",
+      "positionChange": 99114,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "e80e8801-59d5-419a-af9f-42426fe150c0",
+      "tradeId": "5063cdc0-224f-4a36-a918-fa37ac3c8627",
+      "underlying": "CSCO",
+      "kind": "PositionChange",
+      "positionChange": 99115,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "2e32a55f-39a5-4971-8b1c-758b064d558f",
+      "tradeId": "cd0820f8-a43b-4c39-a9e2-ae6abc895a55",
+      "underlying": "KO",
+      "kind": "PositionChange",
+      "positionChange": 99116,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "cdb921e3-69b9-473f-8bae-c332d07c4e00",
+      "tradeId": "7b528bee-ee94-494a-b20e-b35ffe8da715",
+      "underlying": "PFE",
+      "kind": "PositionChange",
+      "positionChange": 99117,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "2e2386f0-71fd-4f0a-b0e7-0175d101dcc7",
+      "tradeId": "05509cd1-ca92-405d-b6cd-6646a5f4a282",
+      "underlying": "JPM",
+      "kind": "PositionChange",
+      "positionChange": 99118,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "61bcb7fb-31fd-4d98-9773-d06e4d423a72",
+      "tradeId": "50e2d885-1750-4cd5-ab6f-3be81f76feb0",
+      "underlying": "V",
+      "kind": "PositionChange",
+      "positionChange": 99119,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "42c94375-961a-401c-976a-d7e77d2e3fad",
+      "tradeId": "055ff8fc-fc56-4072-9013-0e8684963c91",
+      "underlying": "MA",
+      "kind": "PositionChange",
+      "positionChange": 99120,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "d86a6966-e9d9-4813-bc06-c3e06a21f126",
+      "tradeId": "9cead540-38d9-4cf9-9667-7836e411d785",
+      "underlying": "UNH",
+      "kind": "PositionChange",
+      "positionChange": 99121,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "13c8b2cb-b6bd-426f-8ef2-5974e15cec22",
+      "tradeId": "20fe2278-51aa-4f14-9325-d1e28bb975e9",
+      "underlying": "HD",
+      "kind": "PositionChange",
+      "positionChange": 99122,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "0ec77eed-5109-4a2f-a7e3-366e4578c54d",
+      "tradeId": "92f2df3f-1a2f-4c3c-8ea8-27550416b918",
+      "underlying": "PG",
+      "kind": "PositionChange",
+      "positionChange": 99123,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "dc0a14bf-39c7-40a5-bd3c-7e24e245ac0a",
+      "tradeId": "1dee053a-57ac-4dbd-a8d8-e94ff4629d55",
+      "underlying": "XOM",
+      "kind": "PositionChange",
+      "positionChange": 99124,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "62a74c7a-c4c7-490b-a321-15198c74dd19",
+      "tradeId": "07bbd6a6-4eae-4e47-8082-5d5df7a40273",
+      "underlying": "CVX",
+      "kind": "PositionChange",
+      "positionChange": 99125,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "c15c0650-2ade-49df-98c6-4d922d5dbae9",
+      "tradeId": "75cb66fc-e04a-4b3c-b053-f6d4f9b38cc3",
+      "underlying": "LLY",
+      "kind": "PositionChange",
+      "positionChange": 99126,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "3ffeab20-c786-420a-82cc-bc1aaaaafbbf",
+      "tradeId": "885a7a10-3e20-4d5a-b4fa-142b34b57393",
+      "underlying": "ABBV",
+      "kind": "PositionChange",
+      "positionChange": 99127,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "91dade2c-30c2-44f2-bfc1-1fdf2a03b1a3",
+      "tradeId": "6f29e26a-8050-4320-87da-3f4d24c476a6",
+      "underlying": "MRK",
+      "kind": "PositionChange",
+      "positionChange": 99128,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "8a54c0ab-46ec-4ae3-b899-fd73830f2f79",
+      "tradeId": "8b6ad33c-2da9-476c-a106-c217ba4396c5",
+      "underlying": "PEP",
+      "kind": "PositionChange",
+      "positionChange": 99129,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "0b9e32dd-b5f0-45ee-9589-e5ead3bb85e3",
+      "tradeId": "7d9e807e-a2f4-4aa5-8d7c-a0f49bc5f50a",
+      "underlying": "ADBE",
+      "kind": "PositionChange",
+      "positionChange": 99130,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "507d7216-c134-4965-8aa7-faf8319da609",
+      "tradeId": "23833269-b30f-44bf-88e4-71ab3b9d4053",
+      "underlying": "CRM",
+      "kind": "PositionChange",
+      "positionChange": 99131,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "55d583af-d7eb-4561-8f42-687145f43f05",
+      "tradeId": "5350a3be-f8bb-4b20-a913-3e1338102711",
+      "underlying": "ORCL",
+      "kind": "PositionChange",
+      "positionChange": 99132,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "fd0c080b-7167-4b2f-bfb8-fd8b8c8917ca",
+      "tradeId": "2f020418-4239-47b8-9d06-9c8d44e50b8e",
+      "underlying": "AMD",
+      "kind": "PositionChange",
+      "positionChange": 99133,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "d42203d3-4046-43b0-b107-9a23f8de970d",
+      "tradeId": "68e2f5ea-a016-4266-b67c-bac2204a467f",
+      "underlying": "INTC",
+      "kind": "PositionChange",
+      "positionChange": 99134,
+      "momentDate": "2028-12-07"
+    },
+    {
+      "debtId": "6cf2ddba-ea26-4ba5-91fd-08d7d6cd5453",
+      "tradeId": "66e57cae-4dc2-4caa-9afd-eaf2617e6f25",
+      "underlying": "QDY",
+      "kind": "PositionChange",
+      "positionChange": 99135,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "e71dd913-373c-42eb-abed-1d15dbc92099",
+      "tradeId": "9ec2a361-fc89-423e-bdab-4015a9268843",
+      "underlying": "QEC",
+      "kind": "PositionChange",
+      "positionChange": 99136,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "0940f61b-4bfc-434d-b548-a2ab80fee446",
+      "tradeId": "86bcae62-f13a-4f86-aae9-0049e6856875",
+      "underlying": "AAPL",
+      "kind": "PositionChange",
+      "positionChange": 99137,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "3472b6be-37e6-4bfb-a5b4-8651e7bc7b92",
+      "tradeId": "5edb2c04-f57e-4c49-8319-8c26b87610cb",
+      "underlying": "GOOGL",
+      "kind": "PositionChange",
+      "positionChange": 99138,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "3d169fbe-3e56-4c03-b0ed-69232d89cad2",
+      "tradeId": "75a390f7-33af-4ac9-87e3-1799dd51cc94",
+      "underlying": "COST",
+      "kind": "PositionChange",
+      "positionChange": 99139,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "935c8208-77ac-4875-a5d8-5eda77b07c9a",
+      "tradeId": "cd0820f8-a43b-4c39-a9e2-ae6abc895a55",
+      "underlying": "KO",
+      "kind": "PositionChange",
+      "positionChange": 99140,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "2a61ce2f-bcb7-493e-a769-e3d249f12dbc",
+      "tradeId": "7b528bee-ee94-494a-b20e-b35ffe8da715",
+      "underlying": "PFE",
+      "kind": "PositionChange",
+      "positionChange": 99141,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "0ae00b76-72c8-4df9-9c1f-c901430e9d43",
+      "tradeId": "05509cd1-ca92-405d-b6cd-6646a5f4a282",
+      "underlying": "JPM",
+      "kind": "PositionChange",
+      "positionChange": 99142,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "6e08dd99-f572-4677-ac92-8b68d13216a5",
+      "tradeId": "055ff8fc-fc56-4072-9013-0e8684963c91",
+      "underlying": "MA",
+      "kind": "PositionChange",
+      "positionChange": 99143,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "94f1b623-d28f-44d1-8666-9386c99ac667",
+      "tradeId": "9cead540-38d9-4cf9-9667-7836e411d785",
+      "underlying": "UNH",
+      "kind": "PositionChange",
+      "positionChange": 99144,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "d0dfc96f-6fff-4803-86f1-f1dfb61e6067",
+      "tradeId": "20fe2278-51aa-4f14-9325-d1e28bb975e9",
+      "underlying": "HD",
+      "kind": "PositionChange",
+      "positionChange": 99145,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "5f2afde4-fef2-4d6d-9e05-b4be17f1d9d9",
+      "tradeId": "1dee053a-57ac-4dbd-a8d8-e94ff4629d55",
+      "underlying": "XOM",
+      "kind": "PositionChange",
+      "positionChange": 99146,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "9759b350-b81c-4ec0-b926-22599f8d0a4b",
+      "tradeId": "07bbd6a6-4eae-4e47-8082-5d5df7a40273",
+      "underlying": "CVX",
+      "kind": "PositionChange",
+      "positionChange": 99147,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "181dd29a-d987-49c5-82f1-a026ab38f9ad",
+      "tradeId": "75cb66fc-e04a-4b3c-b053-f6d4f9b38cc3",
+      "underlying": "LLY",
+      "kind": "PositionChange",
+      "positionChange": 99148,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "70c8a6d1-06ee-4501-92ad-d9d8c3c88329",
+      "tradeId": "6f29e26a-8050-4320-87da-3f4d24c476a6",
+      "underlying": "MRK",
+      "kind": "PositionChange",
+      "positionChange": 99149,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "42d1dbe6-b83a-4501-8f45-44827bfc921f",
+      "tradeId": "8b6ad33c-2da9-476c-a106-c217ba4396c5",
+      "underlying": "PEP",
+      "kind": "PositionChange",
+      "positionChange": 99150,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "9d0c1f91-bd77-47bb-b098-e3f78ad9dd2f",
+      "tradeId": "7d9e807e-a2f4-4aa5-8d7c-a0f49bc5f50a",
+      "underlying": "ADBE",
+      "kind": "PositionChange",
+      "positionChange": 99151,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "56ee1c6b-6674-4953-84d4-3a861ea0f5ed",
+      "tradeId": "5350a3be-f8bb-4b20-a913-3e1338102711",
+      "underlying": "ORCL",
+      "kind": "PositionChange",
+      "positionChange": 99152,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "9eb0ecd5-6e62-4a39-9372-60148176eb38",
+      "tradeId": "2f020418-4239-47b8-9d06-9c8d44e50b8e",
+      "underlying": "AMD",
+      "kind": "PositionChange",
+      "positionChange": 99153,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "2038b889-18c1-45ff-a468-c54717f8b8e3",
+      "tradeId": "68e2f5ea-a016-4266-b67c-bac2204a467f",
+      "underlying": "INTC",
+      "kind": "PositionChange",
+      "positionChange": 99154,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "8dce2a19-c280-46ea-bf3f-011f86bb6973",
+      "tradeId": "21ed0f2d-29aa-4702-9eb0-5787b14a0a99",
+      "underlying": "QCOM",
+      "kind": "PositionChange",
+      "positionChange": 99155,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "8fcaf93f-4222-4907-b38c-ae81551e4d90",
+      "tradeId": "59576188-b0bf-415f-9b44-4c199123e197",
+      "underlying": "TXN",
+      "kind": "PositionChange",
+      "positionChange": 99156,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "19b9e583-21e7-43a8-abd1-58e83b47a37d",
+      "tradeId": "cc91bb7e-1476-4e8d-aa2e-5f1bc4755236",
+      "underlying": "WMT",
+      "kind": "PositionChange",
+      "positionChange": 99157,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "97fd407b-a2f7-409d-9a4b-3ec86c420bee",
+      "tradeId": "a941605e-4764-4ee0-afff-c717be57085d",
+      "underlying": "DIS",
+      "kind": "PositionChange",
+      "positionChange": 99158,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "69307ea3-2b48-4428-aa95-929132b4be9c",
+      "tradeId": "ad7d91ee-5861-47a6-9a39-9f0f57109802",
+      "underlying": "NKE",
+      "kind": "PositionChange",
+      "positionChange": 99159,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "04c00332-ac89-4778-96de-ef5b473003f1",
+      "tradeId": "0cb36571-9fdd-4bf1-ab67-06d89c87c2c1",
+      "underlying": "MCD",
+      "kind": "PositionChange",
+      "positionChange": 99160,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "444e1ae5-d401-47fe-a75a-edb97e854951",
+      "tradeId": "9f81aba2-a000-4284-8320-097ddd984eed",
+      "underlying": "BA",
+      "kind": "PositionChange",
+      "positionChange": 99161,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "50ee0a41-fb4c-4fb3-9f07-b3ec68e5527e",
+      "tradeId": "a73a40d3-c921-4ff8-8751-9091e36c9feb",
+      "underlying": "CAT",
+      "kind": "PositionChange",
+      "positionChange": 99162,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "28903a88-b908-4b57-bfd9-21e7bd80bc4a",
+      "tradeId": "98a21a86-8ac3-42e3-bdf1-652958673d08",
+      "underlying": "DE",
+      "kind": "PositionChange",
+      "positionChange": 99163,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "6652540c-6083-4686-8c48-32080fcdb19b",
+      "tradeId": "04bc43b2-b10b-4848-b7ab-60e4e22f40cd",
+      "underlying": "GS",
+      "kind": "PositionChange",
+      "positionChange": 99164,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "e424aa6b-b87f-4de1-8eeb-9d4579e889ec",
+      "tradeId": "f4984cb9-dac5-4ee4-a130-f8fc67ddaa32",
+      "underlying": "QAA",
+      "kind": "PositionChange",
+      "positionChange": 99165,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "16282e4b-b714-4d5a-a7cd-eece2f51d16e",
+      "tradeId": "3e5edff2-8557-49f8-a5c8-cef2e184c800",
+      "underlying": "QAB",
+      "kind": "PositionChange",
+      "positionChange": 99166,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "96575375-43b1-4908-bf72-efe47a065435",
+      "tradeId": "05196fd6-ec9b-4ae4-bf13-bf38bb469683",
+      "underlying": "QAC",
+      "kind": "PositionChange",
+      "positionChange": 99167,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "f3d0803c-b161-44dd-b193-d0fcac8f70d1",
+      "tradeId": "b6f86080-675c-4d3d-abff-e616442cae0f",
+      "underlying": "QAD",
+      "kind": "PositionChange",
+      "positionChange": 99168,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "80658a63-fd41-4b68-b8ae-998c48852da7",
+      "tradeId": "56486268-b97d-4321-88ec-6f729f946fab",
+      "underlying": "QAE",
+      "kind": "PositionChange",
+      "positionChange": 99169,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "3ba6e816-2569-4faa-a9e1-816e5ae5b368",
+      "tradeId": "705abfb0-40f0-4660-a5d0-aaf23124f6ba",
+      "underlying": "QAF",
+      "kind": "PositionChange",
+      "positionChange": 99170,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "2bf7f3f2-85ec-4b41-9b18-20a03ebadaaf",
+      "tradeId": "f5e0c056-75f3-413b-9f58-960886badb17",
+      "underlying": "QAG",
+      "kind": "PositionChange",
+      "positionChange": 99171,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "81b9faef-029d-4ce6-9738-2b0610ae6df4",
+      "tradeId": "a7070d16-1ff5-4e36-912d-658d09737831",
+      "underlying": "QAH",
+      "kind": "PositionChange",
+      "positionChange": 99172,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "f5ff141f-a4e8-49f1-84ce-832d1b0a11a4",
+      "tradeId": "6d0e6be6-87ad-444a-8048-fc7498f042b0",
+      "underlying": "QAI",
+      "kind": "PositionChange",
+      "positionChange": 99173,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "173686a4-8001-4e93-8877-271540aa7fe9",
+      "tradeId": "7e4c11e8-ed06-405d-81a9-ef011665a7fe",
+      "underlying": "QAJ",
+      "kind": "PositionChange",
+      "positionChange": 99174,
+      "momentDate": "2028-12-08"
+    },
+    {
+      "debtId": "1caacca5-75b4-41aa-8592-576d9176a25b",
+      "tradeId": "7b528bee-ee94-494a-b20e-b35ffe8da715",
+      "underlying": "PFE",
+      "kind": "PositionChange",
+      "positionChange": 99175,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "3c99e2ab-17f3-44b3-b235-01f147617200",
+      "tradeId": "9cead540-38d9-4cf9-9667-7836e411d785",
+      "underlying": "UNH",
+      "kind": "PositionChange",
+      "positionChange": 99176,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "db8baecb-e66b-4cb3-b599-e2c14906f0cd",
+      "tradeId": "07bbd6a6-4eae-4e47-8082-5d5df7a40273",
+      "underlying": "CVX",
+      "kind": "PositionChange",
+      "positionChange": 99177,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "952d324b-f9ca-4770-b2de-8789badc7838",
+      "tradeId": "8b6ad33c-2da9-476c-a106-c217ba4396c5",
+      "underlying": "PEP",
+      "kind": "PositionChange",
+      "positionChange": 99178,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "d0e4e4bb-ca28-4c73-b64d-18153b476ff7",
+      "tradeId": "2f020418-4239-47b8-9d06-9c8d44e50b8e",
+      "underlying": "AMD",
+      "kind": "PositionChange",
+      "positionChange": 99179,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "0bb01f3a-9459-4bed-a4e8-cb1684872e43",
+      "tradeId": "59576188-b0bf-415f-9b44-4c199123e197",
+      "underlying": "TXN",
+      "kind": "PositionChange",
+      "positionChange": 99180,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "3b1b5a45-0301-48ab-85b5-56f3657deadd",
+      "tradeId": "cc91bb7e-1476-4e8d-aa2e-5f1bc4755236",
+      "underlying": "WMT",
+      "kind": "PositionChange",
+      "positionChange": 99181,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "59690e59-776e-4509-a0ca-77db5eeabbca",
+      "tradeId": "a941605e-4764-4ee0-afff-c717be57085d",
+      "underlying": "DIS",
+      "kind": "PositionChange",
+      "positionChange": 99182,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "dade094d-4575-406d-b477-9126ea4b3f59",
+      "tradeId": "0cb36571-9fdd-4bf1-ab67-06d89c87c2c1",
+      "underlying": "MCD",
+      "kind": "PositionChange",
+      "positionChange": 99183,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "b4261f28-0c00-4689-9e07-ca22e7d775b6",
+      "tradeId": "9f81aba2-a000-4284-8320-097ddd984eed",
+      "underlying": "BA",
+      "kind": "PositionChange",
+      "positionChange": 99184,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "f35ee847-1c38-41c3-b0e3-3248ec9379a1",
+      "tradeId": "a73a40d3-c921-4ff8-8751-9091e36c9feb",
+      "underlying": "CAT",
+      "kind": "PositionChange",
+      "positionChange": 99185,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "bd09b572-497c-4cd2-94e3-8f8329fe28a0",
+      "tradeId": "04bc43b2-b10b-4848-b7ab-60e4e22f40cd",
+      "underlying": "GS",
+      "kind": "PositionChange",
+      "positionChange": 99186,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "e06d6d7a-d2c8-4b28-aea3-40d7c2d49148",
+      "tradeId": "f4984cb9-dac5-4ee4-a130-f8fc67ddaa32",
+      "underlying": "QAA",
+      "kind": "PositionChange",
+      "positionChange": 99187,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "32281365-9d17-42f1-ab60-a5594fc40dd7",
+      "tradeId": "3e5edff2-8557-49f8-a5c8-cef2e184c800",
+      "underlying": "QAB",
+      "kind": "PositionChange",
+      "positionChange": 99188,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "b071a0ac-4ee0-4406-9399-85db758d4d86",
+      "tradeId": "b6f86080-675c-4d3d-abff-e616442cae0f",
+      "underlying": "QAD",
+      "kind": "PositionChange",
+      "positionChange": 99189,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "1525e654-f626-42c3-b72e-3abf362df3ec",
+      "tradeId": "56486268-b97d-4321-88ec-6f729f946fab",
+      "underlying": "QAE",
+      "kind": "PositionChange",
+      "positionChange": 99190,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "6ac99bf4-2eaa-45dc-811e-ad472fe87b3a",
+      "tradeId": "705abfb0-40f0-4660-a5d0-aaf23124f6ba",
+      "underlying": "QAF",
+      "kind": "PositionChange",
+      "positionChange": 99191,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "efec9baf-58ee-409e-bedf-819c23920a5d",
+      "tradeId": "a7070d16-1ff5-4e36-912d-658d09737831",
+      "underlying": "QAH",
+      "kind": "PositionChange",
+      "positionChange": 99192,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "1f3b06a5-8b40-44f2-862d-75ce0ed51db9",
+      "tradeId": "6d0e6be6-87ad-444a-8048-fc7498f042b0",
+      "underlying": "QAI",
+      "kind": "PositionChange",
+      "positionChange": 99193,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "828de053-7d2d-478a-bbaa-81399f2ad769",
+      "tradeId": "7e4c11e8-ed06-405d-81a9-ef011665a7fe",
+      "underlying": "QAJ",
+      "kind": "PositionChange",
+      "positionChange": 99194,
+      "momentDate": "2028-12-11"
+    },
+    {
+      "debtId": "5cac6ae4-c661-4e27-b810-482161921551",
+      "tradeId": "cc91bb7e-1476-4e8d-aa2e-5f1bc4755236",
+      "underlying": "WMT",
+      "kind": "PositionChange",
+      "positionChange": 99195,
+      "momentDate": "2028-12-12"
+    },
+    {
+      "debtId": "7c5dbcd0-10a9-489a-81eb-f7f395d734ec",
+      "tradeId": "9f81aba2-a000-4284-8320-097ddd984eed",
+      "underlying": "BA",
+      "kind": "PositionChange",
+      "positionChange": 99196,
+      "momentDate": "2028-12-12"
+    },
+    {
+      "debtId": "7bf4e77a-388a-4111-a445-0a0c5553213b",
+      "tradeId": "f4984cb9-dac5-4ee4-a130-f8fc67ddaa32",
+      "underlying": "QAA",
+      "kind": "PositionChange",
+      "positionChange": 99197,
+      "momentDate": "2028-12-12"
+    },
+    {
+      "debtId": "9157e5a6-720a-42ef-8dd8-9a2103096f9a",
+      "tradeId": "56486268-b97d-4321-88ec-6f729f946fab",
+      "underlying": "QAE",
+      "kind": "PositionChange",
+      "positionChange": 99198,
+      "momentDate": "2028-12-12"
+    },
+    {
+      "debtId": "78fc0fce-dca8-4051-ae07-d2c5099a6bca",
+      "tradeId": "6d0e6be6-87ad-444a-8048-fc7498f042b0",
+      "underlying": "QAI",
+      "kind": "PositionChange",
+      "positionChange": 99199,
+      "momentDate": "2028-12-12"
+    }
   ],
-  "owedIdentities": [
-    "05076833-e235-4ed8-a45e-2fc8d42fb254 AAPL",
-    "2015e9ec-4446-4116-92ed-c226fc20e438 LLY",
-    "2578fcc1-fb51-43db-b1ce-3ba18b4f8885 INTC",
-    "2c6e90c5-c68c-4891-8961-e2eb7f1c732e PG",
-    "401ec685-938d-49be-9e37-41355839356f UNH",
-    "44c2d2b1-5f93-4247-90d2-683f4d1e5f0d ORCL",
-    "4c8bb287-22cc-41d9-9cad-b162aa5eb84d CVX",
-    "627ecad2-b3a8-4db0-b97e-e1e2dc421b32 TSLA",
-    "7e47dcfb-7d74-45ed-99cf-071652246fa7 CAT",
-    "7fd818db-4787-403f-99ba-19db4893693f PEP",
-    "a55d388b-08a7-4182-bffe-1515d41b81d3 CRM",
-    "b43714f0-b107-43a8-b78a-248ff2f6dec0 BA",
-    "b4568300-ff0d-473a-933d-d79a3998085c CVX",
-    "becf82ef-8d29-47df-a1d7-a765a209d8a3 BA",
-    "cb752f68-22d8-4ed1-b124-d933acc47ae8 KO",
-    "d277bf33-6d5e-41e0-9dbd-ea94e8388cb3 ORCL",
-    "edfcb997-8b31-44be-ba50-822618df2230 V",
-    "f8602eb2-f878-4ebf-935c-405c690be3e8 MSFT"
-  ],
-  "openUnderlyings": [
-    "AAPL",
-    "AAPL",
-    "ABBV",
-    "ABBV",
-    "ABBV",
-    "ADBE",
-    "ADBE",
-    "ADBE",
-    "AMD",
-    "AMD",
-    "AMZN",
-    "AMZN",
-    "AVGO",
-    "AVGO",
-    "BA",
-    "BA",
-    "CAT",
-    "CAT",
-    "CAT",
-    "COST",
-    "CRM",
-    "CRM",
-    "CRM",
-    "CSCO",
-    "CSCO",
-    "CSCO",
-    "CVX",
-    "DE",
-    "DE",
-    "DE",
-    "DIS",
-    "DIS",
-    "DIS",
-    "DIS",
-    "GOOGL",
-    "GOOGL",
-    "GS",
-    "GS",
-    "HD",
-    "HD",
-    "HD",
-    "INTC",
-    "INTC",
-    "INTC",
-    "JPM",
-    "JPM",
-    "JPM",
-    "KO",
-    "LLY",
-    "LLY",
-    "MA",
-    "MA",
-    "MCD",
-    "MCD",
-    "MCD",
-    "META",
-    "META",
-    "META",
-    "MRK",
-    "MRK",
-    "MRK",
-    "MSFT",
-    "MSFT",
-    "MSFT",
-    "NFLX",
-    "NFLX",
-    "NKE",
-    "NKE",
-    "NKE",
-    "NVDA",
-    "NVDA",
-    "NVDA",
-    "NVDA",
-    "ORCL",
-    "ORCL",
-    "PEP",
-    "PEP",
-    "PFE",
-    "PFE",
-    "PG",
-    "PG",
-    "QCOM",
-    "QCOM",
-    "QCOM",
-    "QCOM",
-    "TSLA",
-    "TSLA",
-    "TXN",
-    "TXN",
-    "UNH",
-    "UNH",
-    "V",
-    "V",
-    "V",
-    "WMT",
-    "WMT",
-    "WMT",
-    "XOM",
-    "XOM"
-  ],
-  "actionedTradeIds": [
-    "000b64f8-1e81-4b1a-9a00-30fe15487f3b",
-    "0fe88ffd-ba04-4812-9043-916e428d73a0",
-    "1626de85-0b59-4c60-8ce9-02d82f35e2bb",
-    "207227ed-da0e-4f9d-9330-74f67bc931c9",
-    "28814f0c-f4ba-437c-8c9e-7e69304a823a",
-    "3916e0fc-1387-436c-ad38-fbdd581da616",
-    "6fc5995f-0445-4940-acb9-9d817a060e09",
-    "8dcdc614-9ba5-4a7d-be52-49ee7590e63f",
-    "a2e3f7b1-24ca-4643-8e30-c80d7d807af6",
-    "a628cf17-15a0-4d9c-ad2a-766d4d8b3e4f",
-    "aa9fe3d6-3eff-43d2-ab9c-e2f7dd6eefc7",
-    "b3d306fb-420d-4304-baba-1deef79804a9",
-    "b977839f-0be3-49ea-86b2-5a0f7d3af858",
-    "bc383cd2-d1c6-4a25-98c2-89c43527bc85",
-    "e3a54e17-9025-407e-9863-0c6f84bd8815",
-    "f327df4a-20b1-4bc8-8d7c-8841dff2496d",
-    "fb1b1f28-1727-49c6-8d20-34bd6a499d9b",
-    "fcd41371-a174-4fc3-9abb-e4c837dfdf20"
-  ],
-  "outstandingUnderlyings": [
-    "AAPL",
-    "ABBV",
-    "ADBE",
-    "BA",
-    "CAT",
-    "CRM",
-    "CSCO",
-    "CVX",
-    "DIS",
-    "HD",
-    "INTC",
-    "JPM",
-    "KO",
-    "LLY",
-    "MA",
-    "MCD",
-    "META",
-    "MSFT",
-    "NKE",
-    "NVDA",
-    "ORCL",
-    "PEP",
-    "PFE",
-    "PG",
-    "TSLA",
-    "TXN",
-    "UNH",
-    "V",
-    "WMT"
-  ],
-  "snapshotDir": ".cache/bench/partial-v5-s775/profile",
-  "runProfileDir": ".cache/bench/partial-v5-s775/run-profile",
-  "derivedAt": "2026-11-03T14:21:30.223Z",
+  "generationMs": 4783315,
+  "generatedAt": "2026-11-03T21:48:28.933Z",
   "engine": "chromium 153.0.8010.12",
   "host": {
     "platform": "darwin",
@@ -456,6 +5146,8 @@ Sorted warm: 199.6, 200.0, 200.2, 200.6, 200.7, 201.5, 202.1, 203.0, 203.4, 203.
     "arch": "arm64",
     "cpu": "Apple M4 Max",
     "cores": 16
-  }
+  },
+  "profileDir": ".cache/bench/profile",
+  "expectedOpenRows": "bench/expected-open-rows.json"
 }
 ```

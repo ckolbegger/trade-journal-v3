@@ -2133,3 +2133,38 @@ The critic 3 gate run, at the final code, will cover R1 in a complete cumulative
 |---|---|---|---|---|---|---|
 | 4 | `097d1cd9` | v2, as critic 3 | 183,621 | 94 | 13 min 32 s | none (C6.8 not run) |
 | 4, C6.8 | `097d1cd9` | critic 4's, limited to C6.8 | 87,058 | 21 | 3 min 1 s | none |
+
+## Full generation and the full-dataset benchmark (decisions 74 and 75)
+
+**Smoke generation, 300 sessions, after T6.25-B2 and B3** (`dist-bench` rebuilt and checked to contain both vacates). Flat: per save 27–31 ms, `getTrade` 3–5 s per 25 sessions, `open` about 0.2 s per 25 sessions, against 29 ms rising to 63 ms and 4 s rising to 13 s with B2 alone. Total 1,034 s against 1,621 s, with identical record counts. The first attempt crashed at start with `page.evaluate: Execution context was destroyed` (`tools/bench-generate.ts:86`, as in the B2 smoke run); a retry ran clean.
+
+**Full generation, 1,255 sessions** (generator 5, schema 5), 4,783 s (about 80 min), run beside critic 3 and 4 and the gate runs. Per 25 sessions, save and `getTrade` stayed flat (about 79 s and 5 s) to session 1,225. The last window, 1,226–1,250, was heavier: 3,722 Actions against about 2,510, 54 ms per Action save and 40 s of `getTrade`, while the open book reaches its target of 200 Trades. Counts: 25,000 Trades (24,700 Closed, 200 Open, 100 Planned), 99,200 Position Changes, 198,400 Executions, 188,240 Marks, 127,397 Actions, 24,780 Debts (496 Outstanding).
+
+**T6.25-B4 and R1: the harness timed no Action save.** `bench:run` skipped any card whose Underlying had an Outstanding Debt. At full size 168 of the 200 walked Trades owe one, covering all 150 Underlyings, and the harness found and opened cards by Underlying, so it could reach none of the 32 walked Trades that owe nothing.
+- **T6.25-B4 `699e1f9c`** filtered Debts to walked Trades, on the main session's wrong count that no walked Trade owed one. No effect on the run. ocr (`ocr/T6.25-B4-699e1f9c.json`): 0 comments.
+- **T6.25-B4-R1 `b6a7acea`:** the selector `walkedTradesOwingNothing` picks walked Trades owing nothing, Underlying not Missing, in card order, and the save opens and checks the card by `li[data-trade-id]`. Two unit tests, both red first (`expected [] to deeply equal [ … ]`). On the dataset it finds 31 such Trades. ocr (`ocr/T6.25-B4-R1-b6a7acea.json`): 1 Valid low finding, the cold-save console line missing a space, fixed by T6.25-B4-R2.
+- **T6.25-B4-R2 `0b9704aa`** (structural): adds that space. Verified by typecheck, `tsc6` and lint. ocr (`ocr/T6.25-B4-R2-0b9704aa.json`): 0 comments.
+
+**`bench:run` of record** (`bench.md`, at `b6a7acea`, the third run on the full profile). Replaces the partial run of decision 73.
+
+| Measure | Full dataset | Partial (session 784) | Budget |
+|---|---|---|---|
+| Cold start p95 | 105.5 ms | 252.7 ms | 2,500 ms |
+| Warm switch p95 | 46.0 ms | 208.7 ms | 1,500 ms |
+| Open the first card, median | 131.5 ms | 517.7 ms | not gated |
+| Save Marks, median | 106.0 ms | not measurable | not gated |
+| Action save warm, median / p95 | 105.3 / 108.7 ms | 682.2 / 688.5 ms | not gated |
+| Action save cold, median / p95 | 118.9 / 124.8 ms | none | not gated |
+| Closed tab first page, median | 98.5 ms | | not gated |
+
+The Open list (200 rows), the 496 due reflections, the Review's 200 walked and 99 owed cards and the first Closed page all equalled the dataset before and after the runs. `bench/dataset.json` and `bench/expected-open-rows.json` are the generator's output for this profile.
+
+**Final cumulative run `d6-final`**: at HEAD `b6a7acea`, full tier.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,188 passed | `suite-runs/d6-final-unit.txt` |
+| Node integration | 154 passed | `suite-runs/d6-final-integration.txt` |
+| Browser (Chromium, full) | 163 passed (7.7 min) | `suite-runs/d6-final-browser.txt` |
+| Release history | 4 passed | `suite-runs/d6-final-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/d6-final-checks.txt` |

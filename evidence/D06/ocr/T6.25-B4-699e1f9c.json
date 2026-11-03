@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 35031,
+    "input_tokens": 34707,
+    "output_tokens": 324,
+    "cache_read_tokens": 9344,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/bench-run.ts",
+        "tools/bench/compare.ts"
+      ]
+    }
+  ],
+  "session_id": "f0340fc1-696c-4295-a2c1-903e4c4d8c85",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f0340fc1-696c-4295-a2c1-903e4c4d8c85",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "699e1f9c",
+      "resolved_base": "0358884193803f6c0eb6e1d8b9b1e6b3bf8ee55a",
+      "resolved_head": "699e1f9cc3b8964c6e7f1c0c00166318e34469d6",
+      "exact_range": "0358884193803f6c0eb6e1d8b9b1e6b3bf8ee55a..699e1f9cc3b8964c6e7f1c0c00166318e34469d6",
+      "source_artifact_sha256": "10f73e7b7cdcbc473045bd8fb0c1c88da4e0cd642a3552d9794918a32e1351ce"
+    },
+    "execution": {
+      "ocr_version": "v1.13.5",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829bea598cee2689683e3fc90c6a7bf0c2494c56bb85e76157189cf875986d91",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "c2b1430928c993f2777efbaccdeb8eead9b9c49346d9ac48728467c8a69f2a9a"
+        },
+        {
+          "item_id": "c402bc3e1c4cd52318cc7c9461bf4303b1918b6c131f94e914fd9329d2aff974",
+          "path": "tools/bench/compare.ts",
+          "fingerprint": "df5d39e7a4b8f74424362459c635e13e06c2811e37993a22803ba9022ea3dc8d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "c2b1430928c993f2777efbaccdeb8eead9b9c49346d9ac48728467c8a69f2a9a"
+        },
+        {
+          "item_id": "c402bc3e1c4cd52318cc7c9461bf4303b1918b6c131f94e914fd9329d2aff974",
+          "path": "tools/bench/compare.ts",
+          "fingerprint": "df5d39e7a4b8f74424362459c635e13e06c2811e37993a22803ba9022ea3dc8d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 20680
+  }
+}

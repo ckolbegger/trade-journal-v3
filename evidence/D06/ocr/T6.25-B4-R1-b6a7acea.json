@@ -1,0 +1,106 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 111124,
+    "input_tokens": 109716,
+    "output_tokens": 1408,
+    "cache_read_tokens": 11520,
+    "elapsed": "52s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/bench-run.ts",
+      "content": "The cold-save log is missing a separator between the Trade-id prefix and the duration (for example, `AAPL abcdef12123.4 ms`), making the timing ambiguous. Add a space, as in the warm-save log.",
+      "suggestion_code": "    console.log(`bench:run: cold Trade Action save ${labelOf(saveCard)} ${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);",
+      "existing_code": "    console.log(`bench:run: cold Trade Action save ${labelOf(saveCard)}${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);",
+      "start_line": 555,
+      "end_line": 555,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/bench-run.ts",
+        "tools/bench/compare.ts"
+      ]
+    }
+  ],
+  "session_id": "e22a764f-a89b-4839-b8d9-ac8a0de272df",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e22a764f-a89b-4839-b8d9-ac8a0de272df",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b6a7acea",
+      "resolved_base": "699e1f9cc3b8964c6e7f1c0c00166318e34469d6",
+      "resolved_head": "b6a7acea1fb540a02eae39219621f6f3817a2b79",
+      "exact_range": "699e1f9cc3b8964c6e7f1c0c00166318e34469d6..b6a7acea1fb540a02eae39219621f6f3817a2b79",
+      "source_artifact_sha256": "647556d55291ea0f169944ab6c61096486735f38b6775beaf8a026bb0c8a4788"
+    },
+    "execution": {
+      "ocr_version": "v1.13.5",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829bea598cee2689683e3fc90c6a7bf0c2494c56bb85e76157189cf875986d91",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "fe86694a777a2371c8f33f4bd0bbccdf14ebf0c1637a29c06e9154703a1348b0"
+        },
+        {
+          "item_id": "c402bc3e1c4cd52318cc7c9461bf4303b1918b6c131f94e914fd9329d2aff974",
+          "path": "tools/bench/compare.ts",
+          "fingerprint": "0b1b06091fa921faa6a82cd24be6b923de5ce76c8d166a5df5f11aa1aef04688"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "fe86694a777a2371c8f33f4bd0bbccdf14ebf0c1637a29c06e9154703a1348b0"
+        },
+        {
+          "item_id": "c402bc3e1c4cd52318cc7c9461bf4303b1918b6c131f94e914fd9329d2aff974",
+          "path": "tools/bench/compare.ts",
+          "fingerprint": "0b1b06091fa921faa6a82cd24be6b923de5ce76c8d166a5df5f11aa1aef04688"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 51633
+  }
+}
