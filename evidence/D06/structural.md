@@ -2023,3 +2023,29 @@ The figures come from the critic's completion notice, the harness's own count. B
 | Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|---|
 | 1 | `43bf78b3` | v2 | 189,645 | 80 | 12 min 6 s | 1 medium (Fee reconciliation wrapping, fixed as T6.28-B1) |
+
+- **Critic 2** (`critic-2.md`, at `8317e0dc`): the critic reported **PASS**, with C6.1–C6.10 all passing. It also listed three low-severity defects against spec or plan clauses. Following D5R's precedent, they were fixed before the gate:
+
+  | Defect | Fix | ocr |
+  |---|---|---|
+  | 1. In the Review, owed reflections don't name their Entry Type | **T6.28-B2 `b5ec8a67`.** `OwedReflection.entryType` is filled from one TradeNarrative read per owed card, and each Review reflection row gets an Entry Type heading. **T6.28-B2-R1 `6d97299c`** (test only) narrows B2's exemption in `tests/integration/d5r/query-count.test.ts` to exactly one TradeNarrative read-only snapshot on the Action side. It was mutation-checked: a doubled narrative read fails the test. | `ocr/T6.28-B2-b5ec8a67.json` and `ocr/T6.28-B2-R1-6d97299c.json`: 0 comments. The B2 reviewer judged the original exemption too broad (Valid, low), which R1 fixed. |
+  | 2. A walked card of a Trade closed after the cutoff doesn't say so (A91) | **T6.28-B3 `21181856`.** The card body shows "Closed after this session's close" with the current lifecycle, and the Action form stays. No IndexedDB request was added. | `ocr/T6.28-B3-21181856.json`: 0 comments |
+  | 3. Lot Matches break dates and amounts at 375 px and 320 px | **T6.28-B4 `4f739a84`.** The cells use the existing `nowrap` class (U9, U10b), and a new browser case checks every phrase and amount renders on one line. | `ocr/T6.28-B4-4f739a84.json`: 0 comments |
+
+- **Probe files:** the stale-index probe scripts under `t6.25-partial/probes/` were renamed `.mjs.txt` (`1b535832`), because `eslint .` had picked them up.
+
+**Gate run `t6.28-b4-gate`**: at HEAD `4f739a84`, full tier. The checks stage ran at `01b0c0bc`, which changed docs only.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,178 passed | `suite-runs/t6.28-b4-gate-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.28-b4-gate-integration.txt` |
+| Browser (Chromium, full) | 160 passed (7.5 min) | `suite-runs/t6.28-b4-gate-browser.txt` |
+| Release history | 4 passed | `suite-runs/t6.28-b4-gate-release-history.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.28-b4-gate-checks.txt` |
+
+- **The gate is held** by decision 74 (revision 39) until T6.25-B2 lands. Critic 3 runs on the final code.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 2 | `8317e0dc` | v2 | 182,286 | 87 | 11 min 19 s | 3 low (fixed as T6.28-B2 to B4) |
