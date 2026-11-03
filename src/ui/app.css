@@ -884,6 +884,11 @@ dl.figure-grid dd {
   overflow-wrap: anywhere;
 }
 
+/* A figure breaks only at spaces, never inside a word, so a money amount stays whole and the label beside it wraps instead. */
+dl.figure-grid dd.number {
+  overflow-wrap: normal;
+}
+
 /* Plan Reflection: each answer a prose section under its prompt, divided by a hairline. */
 dl.answers {
   display: block;

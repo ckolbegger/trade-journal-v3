@@ -191,4 +191,54 @@ test.describe('B6.12 Responsive and accessible', () => {
     await expectAccessible(errorPage, 'Closed list, error');
     await failing.close();
   });
+
+  test('should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
+    await setup.close();
+    const context = await launchAt(profile, TUESDAY_1405);
+    const page = await firstPage(context);
+    await page.goto('/');
+    await openTradeFromOpenList(page, 'XYZ');
+    await openExitForm(page);
+    await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
+    await answerIn(exitReflection(page));
+    await page.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
+
+    // Each money amount is one line: its height is under 1.5 line heights.
+    const expectAmountsOnOneLine = async (state: string): Promise<void> => {
+      const wrapped = await page.locator('dl.figure-grid dd.number').evaluateAll((cells) =>
+        cells.flatMap((cell) => {
+          if (!/^[-+−–]?\$[\d,]+\.\d{2}$/.test(cell.textContent ?? '')) return [];
+          const height = cell.getBoundingClientRect().height;
+          const style = getComputedStyle(cell);
+          const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+          return height > lineHeight * 1.5 ? [`${cell.parentElement?.querySelector('dt')?.textContent}: ${cell.textContent} (${height} px high, line ${lineHeight} px)`] : [];
+        }));
+      expect(wrapped, `${state}: amounts that wrap`).toEqual([]);
+    };
+    for (const width of [375, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect(page.getByRole('heading', { name: 'Fee reconciliation' })).toBeVisible();
+      await expectAmountsOnOneLine(`Open Detail at ${width} px`);
+    }
+
+    await page.setViewportSize(WIDE);
+    await openExitForm(page);
+    await fillRows(page, [sell('70', '51.00', '1.00', TUESDAY_1405_LOCAL)]);
+    await closeTheTrade(page, 'later');
+    await page.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await expect(page.getByRole('heading', { name: 'Result' })).toBeVisible(READY);
+    for (const width of [375, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expectAmountsOnOneLine(`Closed Detail at ${width} px`);
+    }
+    await context.close();
+  });
 });
