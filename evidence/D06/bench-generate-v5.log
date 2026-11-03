@@ -1,0 +1,72 @@
+
+> trade-journal-v3@0.0.0 build:bench
+> vite build --mode bench --outDir dist-bench
+
+vite v8.3.4 building client environment for bench...
+transforming...
+✓ 162 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-bench/index.html                            0.50 kB │ gzip:   0.30 kB
+dist-bench/assets/index-PV2JbxLb.css            14.13 kB │ gzip:   3.64 kB
+dist-bench/assets/bench-generator-DfZlADo7.js   22.45 kB │ gzip:   8.15 kB
+dist-bench/assets/index-zMfvHKcr.js            654.68 kB │ gzip: 194.07 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 96ms
+
+> trade-journal-v3@0.0.0 bench:generate
+> node tools/bench-generate.ts
+
+bench:generate: no cached profile; generating for generator 5, schema 5
+bench: session 25 of 1255 (2024-02-06), 89 s, 3750 Marks, 2191 Actions; seconds by phase {"workflows.confirmPlan":1,"events":4,"marks":3,"review":83,"workflows.recordPositionChange":2,"review.open":0,"open":0,"review.getTrade":5,"review.save":77}
+bench: session 50 of 1255 (2024-03-13), 242 s, 7500 Marks, 4703 Actions; seconds by phase {"workflows.confirmPlan":1,"events":8,"marks":5,"review":229,"workflows.recordPositionChange":5,"review.open":1,"open":1,"review.getTrade":14,"review.save":215}
+bench: session 75 of 1255 (2024-04-18), 473 s, 11250 Marks, 7214 Actions; seconds by phase {"workflows.confirmPlan":2,"events":12,"marks":8,"review":453,"workflows.recordPositionChange":9,"review.open":2,"open":2,"review.getTrade":28,"review.save":423}
+bench: session 100 of 1255 (2024-05-23), 768 s, 15000 Marks, 9724 Actions; seconds by phase {"workflows.confirmPlan":3,"events":17,"marks":10,"review":741,"workflows.recordPositionChange":12,"review.open":3,"open":3,"review.getTrade":46,"review.save":693}
+bench: 2500 plans
+bench: session 125 of 1255 (2024-07-01), 1105 s, 18750 Marks, 12233 Actions; seconds by phase {"workflows.confirmPlan":4,"events":21,"marks":13,"review":1071,"workflows.recordPositionChange":15,"review.open":4,"open":4,"review.getTrade":66,"review.save":1001}
+bench: session 150 of 1255 (2024-08-06), 1513 s, 22500 Marks, 14741 Actions; seconds by phase {"workflows.confirmPlan":4,"events":25,"marks":15,"review":1473,"workflows.recordPositionChange":17,"review.open":5,"open":5,"review.getTrade":91,"review.save":1377}
+bench: session 175 of 1255 (2024-09-11), 1981 s, 26250 Marks, 17251 Actions; seconds by phase {"workflows.confirmPlan":5,"events":29,"marks":18,"review":1934,"workflows.recordPositionChange":20,"review.open":7,"open":7,"review.getTrade":121,"review.save":1806}
+bench: session 200 of 1255 (2024-10-16), 2490 s, 30000 Marks, 19763 Actions; seconds by phase {"workflows.confirmPlan":6,"events":33,"marks":20,"review":2437,"workflows.recordPositionChange":23,"review.open":8,"open":8,"review.getTrade":154,"review.save":2274}
+bench: session 225 of 1255 (2024-11-20), 3064 s, 33750 Marks, 22274 Actions; seconds by phase {"workflows.confirmPlan":7,"events":37,"marks":23,"review":3005,"workflows.recordPositionChange":26,"review.open":10,"open":10,"review.getTrade":191,"review.save":2803}
+bench: 5000 plans
+bench: session 250 of 1255 (2024-12-27), 3691 s, 37500 Marks, 24784 Actions; seconds by phase {"workflows.confirmPlan":7,"events":41,"marks":25,"review":3625,"workflows.recordPositionChange":29,"review.open":12,"open":12,"review.getTrade":232,"review.save":3381}
+bench: session 275 of 1255 (2025-02-05), 4376 s, 41250 Marks, 27294 Actions; seconds by phase {"workflows.confirmPlan":8,"events":45,"marks":27,"review":4304,"workflows.recordPositionChange":31,"review.open":14,"open":14,"review.getTrade":276,"review.save":4014}
+bench: session 300 of 1255 (2025-03-13), 5125 s, 45000 Marks, 29802 Actions; seconds by phase {"workflows.confirmPlan":9,"events":48,"marks":30,"review":5047,"workflows.recordPositionChange":34,"review.open":17,"open":17,"review.getTrade":323,"review.save":4706}
+bench: session 325 of 1255 (2025-04-17), 5923 s, 48750 Marks, 32312 Actions; seconds by phase {"workflows.confirmPlan":10,"events":53,"marks":33,"review":5837,"workflows.recordPositionChange":37,"review.open":19,"open":19,"review.getTrade":372,"review.save":5446}
+bench: session 350 of 1255 (2025-05-23), 6779 s, 52500 Marks, 34824 Actions; seconds by phase {"workflows.confirmPlan":10,"events":57,"marks":35,"review":6687,"workflows.recordPositionChange":40,"review.open":22,"open":22,"review.getTrade":423,"review.save":6241}
+bench: 7500 plans
+bench: session 375 of 1255 (2025-07-01), 7705 s, 56250 Marks, 37335 Actions; seconds by phase {"workflows.confirmPlan":11,"events":61,"marks":37,"review":7607,"workflows.recordPositionChange":43,"review.open":25,"open":25,"review.getTrade":481,"review.save":7100}
+bench: session 400 of 1255 (2025-08-06), 8700 s, 60000 Marks, 39845 Actions; seconds by phase {"workflows.confirmPlan":12,"events":65,"marks":40,"review":8595,"workflows.recordPositionChange":46,"review.open":29,"open":29,"review.getTrade":545,"review.save":8022}
+bench: session 425 of 1255 (2025-09-11), 9734 s, 63750 Marks, 42354 Actions; seconds by phase {"workflows.confirmPlan":13,"events":69,"marks":42,"review":9622,"workflows.recordPositionChange":49,"review.open":32,"open":32,"review.getTrade":608,"review.save":8982}
+bench: session 450 of 1255 (2025-10-16), 10836 s, 67500 Marks, 44862 Actions; seconds by phase {"workflows.confirmPlan":13,"events":74,"marks":45,"review":10718,"workflows.recordPositionChange":52,"review.open":35,"open":35,"review.getTrade":677,"review.save":10004}
+bench: session 475 of 1255 (2025-11-20), 12020 s, 71250 Marks, 47372 Actions; seconds by phase {"workflows.confirmPlan":14,"events":78,"marks":47,"review":11895,"workflows.recordPositionChange":55,"review.open":39,"open":39,"review.getTrade":754,"review.save":11102}
+bench: 10000 plans
+bench: session 500 of 1255 (2025-12-29), 13251 s, 75000 Marks, 49884 Actions; seconds by phase {"workflows.confirmPlan":15,"events":82,"marks":49,"review":13119,"workflows.recordPositionChange":58,"review.open":43,"open":43,"review.getTrade":831,"review.save":12244}
+bench: session 525 of 1255 (2026-02-04), 14570 s, 78750 Marks, 52396 Actions; seconds by phase {"workflows.confirmPlan":16,"events":86,"marks":52,"review":14432,"workflows.recordPositionChange":61,"review.open":48,"open":48,"review.getTrade":920,"review.save":13464}
+bench: session 550 of 1255 (2026-03-12), 15950 s, 82500 Marks, 54906 Actions; seconds by phase {"workflows.confirmPlan":16,"events":91,"marks":54,"review":15805,"workflows.recordPositionChange":64,"review.open":52,"open":52,"review.getTrade":1012,"review.save":14741}
+bench: session 575 of 1255 (2026-04-17), 17377 s, 86250 Marks, 57415 Actions; seconds by phase {"workflows.confirmPlan":17,"events":95,"marks":57,"review":17225,"workflows.recordPositionChange":68,"review.open":57,"open":57,"review.getTrade":1105,"review.save":16063}
+bench: session 600 of 1255 (2026-05-22), 18886 s, 90000 Marks, 59923 Actions; seconds by phase {"workflows.confirmPlan":18,"events":99,"marks":59,"review":18727,"workflows.recordPositionChange":70,"review.open":61,"open":61,"review.getTrade":1203,"review.save":17462}
+bench: 12500 plans
+bench: session 625 of 1255 (2026-06-30), 20465 s, 93750 Marks, 62433 Actions; seconds by phase {"workflows.confirmPlan":19,"events":104,"marks":62,"review":20300,"workflows.recordPositionChange":74,"review.open":67,"open":67,"review.getTrade":1308,"review.save":18924}
+bench: session 650 of 1255 (2026-08-05), 22077 s, 97500 Marks, 64945 Actions; seconds by phase {"workflows.confirmPlan":20,"events":108,"marks":64,"review":21905,"workflows.recordPositionChange":77,"review.open":72,"open":72,"review.getTrade":1412,"review.save":20421}
+bench: session 675 of 1255 (2026-09-10), 23790 s, 101250 Marks, 67456 Actions; seconds by phase {"workflows.confirmPlan":20,"events":113,"marks":67,"review":23611,"workflows.recordPositionChange":80,"review.open":77,"open":77,"review.getTrade":1530,"review.save":22003}
+bench: session 700 of 1255 (2026-10-15), 25556 s, 105000 Marks, 69966 Actions; seconds by phase {"workflows.confirmPlan":21,"events":117,"marks":69,"review":25370,"workflows.recordPositionChange":83,"review.open":83,"open":83,"review.getTrade":1646,"review.save":23640}
+bench: session 725 of 1255 (2026-11-19), 27414 s, 108750 Marks, 72475 Actions; seconds by phase {"workflows.confirmPlan":22,"events":122,"marks":71,"review":27221,"workflows.recordPositionChange":87,"review.open":89,"open":89,"review.getTrade":1773,"review.save":25358}
+bench: 15000 plans
+bench: session 750 of 1255 (2026-12-28), 29376 s, 112500 Marks, 74983 Actions; seconds by phase {"workflows.confirmPlan":23,"events":126,"marks":74,"review":29176,"workflows.recordPositionChange":90,"review.open":95,"open":95,"review.getTrade":1901,"review.save":27179}
+bench: session 775 of 1255 (2027-02-03), 31418 s, 116250 Marks, 77494 Actions; seconds by phase {"workflows.confirmPlan":24,"events":131,"marks":77,"review":31209,"workflows.recordPositionChange":93,"review.open":102,"open":102,"review.getTrade":2037,"review.save":29070}
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+page.evaluate: Target page, context or browser has been closed
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/tools/bench-generate.ts:88:23 {
+  log: []
+}
+
+Node.js v26.12.0

@@ -1,0 +1,48 @@
+
+> trade-journal-v3@0.0.0 build:bench
+> vite build --mode bench --outDir dist-bench
+
+vite v8.3.4 building client environment for bench...
+transforming...
+✓ 162 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-bench/index.html                            0.50 kB │ gzip:   0.30 kB
+dist-bench/assets/index-PV2JbxLb.css            14.13 kB │ gzip:   3.64 kB
+dist-bench/assets/bench-generator-D5JpSCaa.js   22.36 kB │ gzip:   8.10 kB
+dist-bench/assets/index-DjaacTpm.js            654.68 kB │ gzip: 194.07 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 94ms
+
+> trade-journal-v3@0.0.0 bench:generate
+> node tools/bench-generate.ts
+
+bench:generate: cached profile is generator 3, schema 4; regenerating for generator 4, schema 5
+bench: session 25 of 1255 (2024-02-06), 86 s, 3750 Marks, 2191 Actions; seconds by phase {"workflows.confirmPlan":1,"events":4,"marks":2,"review":80,"workflows.recordPositionChange":3,"review.open":0,"open":0,"review.getTrade":5,"review.save":75}
+bench: session 50 of 1255 (2024-03-13), 233 s, 7500 Marks, 4703 Actions; seconds by phase {"workflows.confirmPlan":1,"events":8,"marks":4,"review":220,"workflows.recordPositionChange":5,"review.open":1,"open":1,"review.getTrade":13,"review.save":206}
+bench: session 75 of 1255 (2024-04-18), 442 s, 11250 Marks, 7214 Actions; seconds by phase {"workflows.confirmPlan":2,"events":12,"marks":7,"review":424,"workflows.recordPositionChange":8,"review.open":2,"open":2,"review.getTrade":26,"review.save":397}
+bench: session 100 of 1255 (2024-05-23), 718 s, 15000 Marks, 9724 Actions; seconds by phase {"workflows.confirmPlan":3,"events":16,"marks":9,"review":694,"workflows.recordPositionChange":11,"review.open":2,"open":2,"review.getTrade":43,"review.save":649}
+bench: 2500 plans
+bench: session 125 of 1255 (2024-07-01), 1064 s, 18750 Marks, 12233 Actions; seconds by phase {"workflows.confirmPlan":4,"events":20,"marks":12,"review":1032,"workflows.recordPositionChange":14,"review.open":4,"open":4,"review.getTrade":64,"review.save":965}
+bench: session 150 of 1255 (2024-08-06), 1468 s, 22500 Marks, 14744 Actions; seconds by phase {"workflows.confirmPlan":4,"events":24,"marks":14,"review":1429,"workflows.recordPositionChange":17,"review.open":5,"open":5,"review.getTrade":88,"review.save":1336}
+bench: session 175 of 1255 (2024-09-11), 1949 s, 26250 Marks, 17254 Actions; seconds by phase {"workflows.confirmPlan":5,"events":29,"marks":17,"review":1903,"workflows.recordPositionChange":20,"review.open":7,"open":7,"review.getTrade":119,"review.save":1777}
+bench: session 200 of 1255 (2024-10-16), 2486 s, 30000 Marks, 19766 Actions; seconds by phase {"workflows.confirmPlan":6,"events":33,"marks":19,"review":2434,"workflows.recordPositionChange":23,"review.open":8,"open":8,"review.getTrade":154,"review.save":2272}
+bench: session 225 of 1255 (2024-11-20), 3088 s, 33750 Marks, 22277 Actions; seconds by phase {"workflows.confirmPlan":7,"events":37,"marks":22,"review":3029,"workflows.recordPositionChange":26,"review.open":10,"open":10,"review.getTrade":193,"review.save":2826}
+bench: 5000 plans
+bench: session 250 of 1255 (2024-12-27), 3739 s, 37500 Marks, 24792 Actions; seconds by phase {"workflows.confirmPlan":7,"events":41,"marks":24,"review":3674,"workflows.recordPositionChange":29,"review.open":12,"open":12,"review.getTrade":235,"review.save":3427}
+bench: session 275 of 1255 (2025-02-05), 4481 s, 41250 Marks, 27302 Actions; seconds by phase {"workflows.confirmPlan":8,"events":46,"marks":27,"review":4408,"workflows.recordPositionChange":32,"review.open":15,"open":15,"review.getTrade":282,"review.save":4110}
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+page.evaluate: Target page, context or browser has been closed
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/tools/bench-generate.ts:88:23 {
+  log: []
+}
+
+Node.js v26.12.0
