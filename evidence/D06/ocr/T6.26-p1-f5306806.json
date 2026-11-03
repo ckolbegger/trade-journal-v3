@@ -1,0 +1,185 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 4,
+    "total_tokens": 282616,
+    "input_tokens": 280315,
+    "output_tokens": 2301,
+    "cache_read_tokens": 43520,
+    "elapsed": "2m0s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 4,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d06/support.ts",
+      "content": "The new suite is outside the configured integration-test location: vite.config.ts only collects tests/integration/**/*.test.ts, so none of these seven files runs under test:integration. This import also resolves to nonexistent src/itg/d5/support.ts (the helper is tests/integration/d5/support.ts), and lifecycle.ts similarly imports a nonexistent src/support/request-counter.ts. Move the suite to tests/integration/d06 and give its test files .test.ts names, or update both discovery and the helper imports explicitly. Otherwise these acceptance cases are not executed, and typecheck encounters unresolved imports.",
+      "existing_code": "import { buy, complete, device, type Device, type Fill, type MutableDump, positionChange } from '../d5/support.ts';",
+      "start_line": 11,
+      "end_line": 11,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d06/lifecycle.ts",
+      "content": "All three operations commit before any persisted-state assertions, and only X1's response is compared with Detail. A PC1/PC2 regression that returns Open but persists incorrect lifecycle/index membership or response contents can be hidden by the next operation. I6.3 requires these guarantees at each revision; execute and assert stored state, index membership, and response-versus-Detail immediately after each operation.",
+      "existing_code": "    const results = [await record(app, tradeId, PC1, await complete(app)), await record(app, tradeId, PC2, await complete(app)), await recordExit(app, tradeId, [X1])];",
+      "start_line": 43,
+      "end_line": 43,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d06/lifecycle.ts",
+      "content": "readIndex uses an unbounded index.getAll(), and this helper returns the document's lifecycle rather than its index key. Thus the assertions prove inclusion, not placement in the expected lifecycle range: an index defined on the wrong key path could still pass. Query bounded Planned/Open/Closed ranges (or inspect cursor keys), asserting presence in the new range and absence from the previous range at each transition to prove I6.3's index-movement requirement.",
+      "existing_code": "  const membership = async (index: string) =\u003e ((await readIndex(d.factory, database, 'trades', index)) as StoredTradeDoc[]).filter((t) =\u003e t.tradeId === tradeId).map((t) =\u003e t.lifecycle);",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d06/shortfall.ts",
+      "content": "This discards the exit receipt apart from its fact ID. The persisted Shortfall and the later Buy's supersession receipt are checked, but a regression that creates the original Shortfall without disclosing its creation or entry changes in the exit receipt still passes. Retain this result and assert its deviationReconciliation and entryChanges, so the scenario proves disclosure of both changes rather than only supersession.",
+      "existing_code": "    const xs = (await recordExit(app, tradeId, [SELL_30])).receipt.createdFactIds[0]!;",
+      "start_line": 48,
+      "end_line": 48,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D06 integration scenarios and shared support",
+      "files": [
+        "src/itg/d06/close-review.ts",
+        "src/itg/d06/earlier-exit.ts",
+        "src/itg/d06/lifecycle.ts",
+        "src/itg/d06/migration.ts",
+        "src/itg/d06/rejections.ts",
+        "src/itg/d06/shortfall.ts",
+        "src/itg/d06/support.ts"
+      ]
+    }
+  ],
+  "session_id": "9868caeb-32db-4b83-80e8-76978e1d144c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9868caeb-32db-4b83-80e8-76978e1d144c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "db7e74e8",
+      "resolved_base": "784ab2fd9f112fa1d2b7515e3d00bda743058bf9",
+      "resolved_head": "db7e74e8c43ef34b013ac2d420033971d4eba306",
+      "exact_range": "784ab2fd9f112fa1d2b7515e3d00bda743058bf9..db7e74e8c43ef34b013ac2d420033971d4eba306",
+      "source_artifact_sha256": "8b38ff947c633ab01448458a22dd2fb3a36ad523265bf776ca0485f4ec0912a4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4027206993dafa99798ddd675429411d26008e08bbcadd9e978c3fa5749978f5",
+          "path": "src/itg/d06/close-review.ts",
+          "fingerprint": "121037eb0dc2fa125871309648fa0ee6a0bef17f08538daa11605da71967727a"
+        },
+        {
+          "item_id": "564e32d88e9febbc6dba2be5bee1739274125bc697821cc0e9bed1e07752ef87",
+          "path": "src/itg/d06/shortfall.ts",
+          "fingerprint": "ea6a81e4b202fffaa259e42f1e9d212594c1e2b7d2f1ed6727c04d0a71eead79"
+        },
+        {
+          "item_id": "587131864456e10a67204c1c7eb34887f31e4ab2d184c6ad191da5d1594b9272",
+          "path": "src/itg/d06/lifecycle.ts",
+          "fingerprint": "1e62f94764a35ea44e0dfaa9e5dabb4ff470e19776ee81686c279308582cae73"
+        },
+        {
+          "item_id": "5db0ad6da0a757267e0a492e56e00f953056181444dbe704a90a955f0eb336bc",
+          "path": "src/itg/d06/earlier-exit.ts",
+          "fingerprint": "72627d1bb263b81ff07a0fc67713f10ecfe5aa7802450add971f92e915bd9bbb"
+        },
+        {
+          "item_id": "73d09ee860ac349111a994f747158ae19210eee9dd8397d2eeb3ea71f3a9d6f5",
+          "path": "src/itg/d06/rejections.ts",
+          "fingerprint": "b7c76b3fe6218701b83a887f6eb1e77d5e42a3594857473561e7cc03b1e769e9"
+        },
+        {
+          "item_id": "b97467bf2d5d0305f8e7c46f54b531915a7caa36b812ba7075ba6ec966e7276f",
+          "path": "src/itg/d06/migration.ts",
+          "fingerprint": "1f731bbe0ee53c4b1fcf0025ae5acc3822d74a405a6eac2c320ea45748188924"
+        },
+        {
+          "item_id": "d21962d3061a050abf4434d063e6f5c2350cd60db6e2cea797ef9eb4698e155b",
+          "path": "src/itg/d06/support.ts",
+          "fingerprint": "213a741a8971d1f5f844fd6276066d772cf6b17e8d7156cc9288dd7771ebd4d9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4027206993dafa99798ddd675429411d26008e08bbcadd9e978c3fa5749978f5",
+          "path": "src/itg/d06/close-review.ts",
+          "fingerprint": "121037eb0dc2fa125871309648fa0ee6a0bef17f08538daa11605da71967727a"
+        },
+        {
+          "item_id": "564e32d88e9febbc6dba2be5bee1739274125bc697821cc0e9bed1e07752ef87",
+          "path": "src/itg/d06/shortfall.ts",
+          "fingerprint": "ea6a81e4b202fffaa259e42f1e9d212594c1e2b7d2f1ed6727c04d0a71eead79"
+        },
+        {
+          "item_id": "587131864456e10a67204c1c7eb34887f31e4ab2d184c6ad191da5d1594b9272",
+          "path": "src/itg/d06/lifecycle.ts",
+          "fingerprint": "1e62f94764a35ea44e0dfaa9e5dabb4ff470e19776ee81686c279308582cae73"
+        },
+        {
+          "item_id": "5db0ad6da0a757267e0a492e56e00f953056181444dbe704a90a955f0eb336bc",
+          "path": "src/itg/d06/earlier-exit.ts",
+          "fingerprint": "72627d1bb263b81ff07a0fc67713f10ecfe5aa7802450add971f92e915bd9bbb"
+        },
+        {
+          "item_id": "73d09ee860ac349111a994f747158ae19210eee9dd8397d2eeb3ea71f3a9d6f5",
+          "path": "src/itg/d06/rejections.ts",
+          "fingerprint": "b7c76b3fe6218701b83a887f6eb1e77d5e42a3594857473561e7cc03b1e769e9"
+        },
+        {
+          "item_id": "b97467bf2d5d0305f8e7c46f54b531915a7caa36b812ba7075ba6ec966e7276f",
+          "path": "src/itg/d06/migration.ts",
+          "fingerprint": "1f731bbe0ee53c4b1fcf0025ae5acc3822d74a405a6eac2c320ea45748188924"
+        },
+        {
+          "item_id": "d21962d3061a050abf4434d063e6f5c2350cd60db6e2cea797ef9eb4698e155b",
+          "path": "src/itg/d06/support.ts",
+          "fingerprint": "213a741a8971d1f5f844fd6276066d772cf6b17e8d7156cc9288dd7771ebd4d9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 119558
+  }
+}

@@ -1720,3 +1720,59 @@ The reviewer found no problem with how `viewsOf` gates each view by schema.
 **Cumulative run `t6.23-b1-strict-a98`** (HEAD `bb9943b9`, task tier): unit 1174, integration 122, browser 5 (10.3 s), checks 12/12. Output: `suite-runs/t6.23-b1-strict-a98-*.txt`. Ports 5175, 9341 and 9342 were free before and after each run.
 
 **Order (at the user's direction, 2026-11-02):** T6.26, the Node integration suite, runs next, so that its results are in before the long benchmark generation. T6.24's generator then runs overnight, while T6.27 proceeds. The task graph allows this order.
+
+## T6.26: Node mock-free integration suite (I6.1 to I6.16)
+
+Every D6 case lives in `tests/integration/d6/`, with shared builders in `support.ts`. The behavior was built by T6.1–T6.15, so every case that passed did so on its first run. Each one is flagged and mutation-checked in `evidence/D06/tdd-log.md` (case, file, mutation, failure line), following D5's T5.23.
+
+- **Part 1, `f5306806` (I6.1–I6.8):** `migration`, `lifecycle`, `close-review`, `rejections`, `shortfall` and `earlier-exit`; 18 tests. Every case passed. The readings of the plan's wording are in the commit's report to the main session, and the key ones are logged here:
+  - I6.1's receipt contents are asserted exactly.
+  - I6.7 checks resolution at PC1, the Position Change immediately before XS (T6.3's wording).
+  - I6.8's X0 is a Sell @ 51.50 with a $0.80 fee, as in the unit fixture `earlierDatedExitResult`.
+- **Part 2, `c3b25603` (I6.9–I6.16):** `integrity`, `review`, `exit-action`, `retries`, `write-gate`, `rebuild`, `seed` and `missing-mark`; 16 tests. **The I6.9 Buy case failed on its first run, which exposed a product bug.** A Trade's facts were flat and Closed, but its stored lifecycle had been set to Open. A Buy on it was `Recorded`, because the `TradeClosed` check read only the stored lifecycle. The plan's A96 and I6.9 require a rejection, and so does P22 ("reject any Position Change on a Closed Trade"). The test was committed red, and its assertion was not weakened.
+  - **I6.12:** its b and c parts needed mutations at several sites, because the Journal commit has independent guards and each masks the others.
+  - **I6.10:** after Tuesday's facts exist, a reopened Monday Review's owed group reads the Debts Outstanding now. The exact Monday group is therefore asserted when Monday is first opened.
+- **T6.26-B2, `7349d9ff` (product fix):** `recordPositionChange` now also returns `TradeClosed`, writing nothing, when the Trade's derived lifecycle is Closed. The existing rejection for a stored lifecycle of Closed is unchanged.
+  - Red: a new unit case in the Trade Workflows tests, then the committed I6.9 Buy case. Both are green now.
+  - Effects: on flat Closed facts, `TradeClosed` now comes before every other issue. Incoherent facts skip the new check. `derive` is called twice; the two calls were left unmerged to keep the change minimal.
+- **T6.26-B1, `4e22956f` (ocr on part 1):** I6.3 now checks the stored lifecycle after every Position Change. It also checks the index keys (key cursor on `byLifecycle`, `byLifecycleActivity` and `byLifecycleTerminal`, with sort keys computed independently). I6.7 checks that XS's receipt discloses the Shortfall it creates. All three were first-run passes and were mutation-checked.
+- **T6.26-B3, `f4c928e8` (ocr on part 2):**
+  - I6.9's Sell and Buy assert exactly `TradeClosed` from `TradeWorkflows`.
+  - I6.14 damages `terminalTime`, `terminalDesc`, `activityDesc` and `journalObligations` before the rebuild.
+  - I6.15 asserts the Catalog additions exactly, and checks each seeded Close Reason's `origin` and `policy`.
+  - I6.16's title now matches what it checks.
+
+  All were first-run passes and were mutation-checked.
+
+**ocr review of part 1 (`f5306806`)** (`evidence/D06/ocr/T6.26-p1-f5306806.json`, relocated): 7 files, 4 comments.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| high | relocated `support.ts:11` | Imports and glob don't resolve | Wrong: relocation artifact | Dismissed |
+| medium | `lifecycle.test.ts:43` | No stored or index check after PC1 and PC2 | Valid | T6.26-B1 |
+| medium | `lifecycle.test.ts:19` | `membership` filters to the Trade and echoes `doc.lifecycle`, not the index key | Valid | T6.26-B1 |
+| medium | `shortfall.test.ts:48` | XS receipt's Shortfall disclosure is not asserted | Doubtful | T6.26-B1 |
+
+**ocr review of part 2 (`c3b25603`)** (`evidence/D06/ocr/T6.26-p2-c3b25603.json`, relocated): 9 files. ocr made 1 comment, and the reviewer added 4 more from reading the files against the plan rows.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `integrity.test.ts` (Sell, Buy) | Asserts any rejection, not P22's `TradeClosed` | Valid | T6.26-B3 |
+| medium | `missing-mark.test.ts:26` | Title says "in the Open list", which has no realized field | Doubtful: title only | T6.26-B3 (title) |
+| low | `review.test.ts` (Monday re-read) | The owed group is filtered to T-M before asserting | Doubtful: the exact group is asserted when Monday is first opened | Dismissed |
+| low | `review.test.ts` (T-N card) | `objectContaining` on `openQuantity` and `realizedToDate` | Doubtful: both values and lifecycle Closed are asserted exactly | Dismissed |
+| low | `rebuild.test.ts` | A rebuild that changed nothing would pass | Doubtful | T6.26-B3 |
+| (note) | `seed.test.ts` | "with policy" is not asserted | Valid | T6.26-B3 |
+
+**ocr pending:** the reviews of `7349d9ff`, `4e22956f` and `f4c928e8` didn't run. ocr's ChatGPT account hit its usage limit (`subscription_sharing_usage_limit_exceeded`, 2026-11-02 about 22:00 EST), and the failed attempts are sessions 86487fb6 and ca3ff0e2. They will run when the limit resets, and any findings become bug tasks as usual.
+
+**Cumulative run `t6.26-node-suite`**: run at HEAD `f4c928e8` on 2026-11-02, task tier.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1175 tests passed | `suite-runs/t6.26-node-suite-unit.txt` |
+| Node integration | 75 files, 151 tests passed (D6: 15 files, 34 tests) | `suite-runs/t6.26-node-suite-integration.txt` |
+| Browser (Chromium, task) | 5 passed (9.8 s) | `suite-runs/t6.26-node-suite-browser.txt` |
+| Static and verification (12) | 12 of 12 passed | `suite-runs/t6.26-node-suite-checks.txt` |
+
+T6.26's structural verification (`npm run test:integration`: every case in sections 6.1 of D1, D2, D4, D5 and D6 passes) is met. Ports 5175, 9341 and 9342 were free before and after the run.

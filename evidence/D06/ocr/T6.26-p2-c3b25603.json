@@ -1,0 +1,180 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 298134,
+    "input_tokens": 295607,
+    "output_tokens": 2527,
+    "cache_read_tokens": 34816,
+    "elapsed": "1m52s"
+  },
+  "tool_calls": {
+    "total": 34,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 15,
+      "file_find": 3,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d06/missing-mark.ts",
+      "content": "I6.16 claims to verify realized-to-date as Value(55.90) in the Open list as well as Detail and Review, but the list is only checked for Mark-dependent Unavailable figures. In fact, openItem() currently projects no realized-to-date field in its `current` object, and this test would still pass. Add an explicit Open-list realized-value assertion (and expose that figure in the projection if required by the contract) so this acceptance case detects the missing list value.",
+      "existing_code": "    const item = (await openItem(app, tradeId)).current;",
+      "start_line": 26,
+      "end_line": 26,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D06 integration scenarios and shared support",
+      "files": [
+        "src/itg/d06/exit-action.ts",
+        "src/itg/d06/integrity.ts",
+        "src/itg/d06/missing-mark.ts",
+        "src/itg/d06/rebuild.ts",
+        "src/itg/d06/retries.ts",
+        "src/itg/d06/review.ts",
+        "src/itg/d06/seed.ts",
+        "src/itg/d06/support.ts",
+        "src/itg/d06/write-gate.ts"
+      ]
+    }
+  ],
+  "session_id": "c57b0683-3b99-46b1-aa32-41c8bad6997c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c57b0683-3b99-46b1-aa32-41c8bad6997c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "c722bd7aef7da31b11c1b24bb6987cd5a30ee603",
+      "resolved_base": "9a2f1268364abf97123b6c8c5838686abb0f2ff6",
+      "resolved_head": "c722bd7aef7da31b11c1b24bb6987cd5a30ee603",
+      "exact_range": "9a2f1268364abf97123b6c8c5838686abb0f2ff6..c722bd7aef7da31b11c1b24bb6987cd5a30ee603",
+      "source_artifact_sha256": "8fb6356575fee9c856ceefc55cafe1c580c9d49e9e8550ac060d3b6af4608e12"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "267d9934ed2f03656c0452010848db8772d9e8b14787a68f6fa47783754d8d55",
+          "path": "src/itg/d06/integrity.ts",
+          "fingerprint": "838f3178a95fe41e551c70b41dbaa7e29df5c7db72d54fdac4298b83c2d65b03"
+        },
+        {
+          "item_id": "2b07438f01b0f43bc706da1bc193f88b8ef370403370076a4fe81ddcdef8908a",
+          "path": "src/itg/d06/review.ts",
+          "fingerprint": "b18afb1483ed8d63f2792977055d9e050c5683a0d2399372974d168f911d5304"
+        },
+        {
+          "item_id": "3d43e901f2810e2487fb4fd2eaef14e850a8e899c2c245b6a77bde5c03629585",
+          "path": "src/itg/d06/write-gate.ts",
+          "fingerprint": "839abcab907a88fc339ad24a71639066fb04787bcd4f8ed658a739377e59809a"
+        },
+        {
+          "item_id": "5d5f54081a5770442bb8cec18c9f62f4be345ae81b51190403ed217b487fbacf",
+          "path": "src/itg/d06/missing-mark.ts",
+          "fingerprint": "8db1e3269b470ec4c33c597e0934c84aebeb78cfeb19c401bd75e9c3aa0155da"
+        },
+        {
+          "item_id": "5fe34f3a47417817e2abc382d936225d94876226d8cd83f367b9f960d7f623ad",
+          "path": "src/itg/d06/exit-action.ts",
+          "fingerprint": "2ba7c9b99634e4485ebb0ddc2c54cae0c4e4587e81ded1d2c9d2f8b869c3ea26"
+        },
+        {
+          "item_id": "93752a7af1f0aaf92208fd891751d7f040162b1357138761245ac23553229e12",
+          "path": "src/itg/d06/rebuild.ts",
+          "fingerprint": "f4753f093616122ace7b0e7f9f0a19e414ddf9bd3ff6b265ccc655bff7f65c32"
+        },
+        {
+          "item_id": "ac3761f3ba8a632c351dc518373deb3a2031c342c71f864fb5d2ce3bf60dc28c",
+          "path": "src/itg/d06/seed.ts",
+          "fingerprint": "3809e5383ae7452b50a0fe2b7069b04dbc64658cdc5c2d97a2afe11f675640fc"
+        },
+        {
+          "item_id": "bf4c630fb7a5e0581eab74cc9e752a77c00f7efaf95caf9b951a296b8a1b28d6",
+          "path": "src/itg/d06/retries.ts",
+          "fingerprint": "3c12469e8f351b5b6bf8779b70cda21f27ff98a5901fa4b5c2303071386faba7"
+        },
+        {
+          "item_id": "d21962d3061a050abf4434d063e6f5c2350cd60db6e2cea797ef9eb4698e155b",
+          "path": "src/itg/d06/support.ts",
+          "fingerprint": "86b129fc4228613641ef9b796ccbc1a2456e790f3292c4d377a303b8277271d3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "267d9934ed2f03656c0452010848db8772d9e8b14787a68f6fa47783754d8d55",
+          "path": "src/itg/d06/integrity.ts",
+          "fingerprint": "838f3178a95fe41e551c70b41dbaa7e29df5c7db72d54fdac4298b83c2d65b03"
+        },
+        {
+          "item_id": "2b07438f01b0f43bc706da1bc193f88b8ef370403370076a4fe81ddcdef8908a",
+          "path": "src/itg/d06/review.ts",
+          "fingerprint": "b18afb1483ed8d63f2792977055d9e050c5683a0d2399372974d168f911d5304"
+        },
+        {
+          "item_id": "3d43e901f2810e2487fb4fd2eaef14e850a8e899c2c245b6a77bde5c03629585",
+          "path": "src/itg/d06/write-gate.ts",
+          "fingerprint": "839abcab907a88fc339ad24a71639066fb04787bcd4f8ed658a739377e59809a"
+        },
+        {
+          "item_id": "5d5f54081a5770442bb8cec18c9f62f4be345ae81b51190403ed217b487fbacf",
+          "path": "src/itg/d06/missing-mark.ts",
+          "fingerprint": "8db1e3269b470ec4c33c597e0934c84aebeb78cfeb19c401bd75e9c3aa0155da"
+        },
+        {
+          "item_id": "5fe34f3a47417817e2abc382d936225d94876226d8cd83f367b9f960d7f623ad",
+          "path": "src/itg/d06/exit-action.ts",
+          "fingerprint": "2ba7c9b99634e4485ebb0ddc2c54cae0c4e4587e81ded1d2c9d2f8b869c3ea26"
+        },
+        {
+          "item_id": "93752a7af1f0aaf92208fd891751d7f040162b1357138761245ac23553229e12",
+          "path": "src/itg/d06/rebuild.ts",
+          "fingerprint": "f4753f093616122ace7b0e7f9f0a19e414ddf9bd3ff6b265ccc655bff7f65c32"
+        },
+        {
+          "item_id": "ac3761f3ba8a632c351dc518373deb3a2031c342c71f864fb5d2ce3bf60dc28c",
+          "path": "src/itg/d06/seed.ts",
+          "fingerprint": "3809e5383ae7452b50a0fe2b7069b04dbc64658cdc5c2d97a2afe11f675640fc"
+        },
+        {
+          "item_id": "bf4c630fb7a5e0581eab74cc9e752a77c00f7efaf95caf9b951a296b8a1b28d6",
+          "path": "src/itg/d06/retries.ts",
+          "fingerprint": "3c12469e8f351b5b6bf8779b70cda21f27ff98a5901fa4b5c2303071386faba7"
+        },
+        {
+          "item_id": "d21962d3061a050abf4434d063e6f5c2350cd60db6e2cea797ef9eb4698e155b",
+          "path": "src/itg/d06/support.ts",
+          "fingerprint": "86b129fc4228613641ef9b796ccbc1a2456e790f3292c4d377a303b8277271d3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 111683
+  }
+}
