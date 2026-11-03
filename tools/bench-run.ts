@@ -13,16 +13,22 @@
 // generator's `asOfDueReflections` and `outstandingDebts` in bench/dataset.json; the time to render
 // that Review is disclosed, not gated. D5R (T5R.13) then times, on the Review's cards and also disclosed and
 // not gated, "open the first card" (the Review's `open` plus one `getTrade`), a Save Marks of one card's Marks, and a
-// Trade Action save, each from the pointer press to the rendered result. It writes evidence/D05R/bench.md and fails
-// when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
+// Trade Action save, each from the pointer press to the rendered result. D6 (T6.25) also compares, before and after the
+// runs, the first Closed page (each row's Trade, Underlying and Close date) with the first 50 Closed Trades of the stored
+// `byLifecycleTerminal` index, read raw in the page (the generator records no Closed page, so the expectation is
+// derived from the stored data), and the as-of Review's walk and owed-reflection group (each card's Trade and
+// Underlying) with `asOfReview` in bench/dataset.json. It discloses, ungated, the Closed page's render time and a
+// single Daily Trade Review Action save at the as-of Review, cold (fresh browser process) and warm. It writes
+// evidence/D06/bench.md and fails when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
 import { execFileSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { chromium, type BrowserContext, type Page } from '@playwright/test';
-import { BENCH_GENERATOR_VERSION } from '../src/app/bench.ts';
+import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
+import { cardIdentity, closedIdentity, firstDifference, tradeIdOfHref, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
 import { startReleaseServer } from './release-server.ts';
@@ -31,15 +37,23 @@ const RUNS = 30;
 const COLD_BUDGET_MS = 2_500;
 const WARM_BUDGET_MS = 1_500;
 const BUILD_DIR = 'dist';
-const EVIDENCE_FILE = path.resolve('evidence/D05R/bench.md');
+const EVIDENCE_FILE = path.resolve('evidence/D06/bench.md');
 const WAIT_MS = 60_000;
 // D5's recorded results (evidence/D05/bench.md), which the report compares with.
 const D5_COLD_P95_MS = 104.8;
 const D5_WARM_P95_MS = 43.6;
 const D5_REVIEW_OPEN_MS = { before: 2342, after: 2225 };
+// D5R2's results on the same generator-3 dataset (evidence/D05R2/bench.md).
+const D5R2_COLD_P95_MS = 96.2;
+const D5R2_WARM_P95_MS = 47.3;
 // Repetitions of each disclosed card timing (T5R.13).
 const OPEN_CARD_RUNS = 10;
 const SAVE_RUNS = 5;
+// D6 (T6.25), disclosed and not gated: Closed page renders, and Action saves on a fresh browser process.
+const CLOSED_PAGE_RUNS = 10;
+const COLD_SAVE_RUNS = 3;
+// A Closed page holds 50 rows (trade-record's CLOSED_PAGE_SIZE).
+const CLOSED_PAGE_SIZE = 50;
 
 // Nearest-rank p95: the ceil(0.95 × n)-th smallest value (the 29th of 30).
 function p95(values: readonly number[]): number {
@@ -127,6 +141,70 @@ interface DueComparison {
   readonly renderMs: number;
 }
 const dueComparisons: { when: string; due: DueComparison }[] = [];
+
+// ---- Closed page, Review walk and owed group (D6, T6.25) ------------------------------------------------------
+// The generator records the Review's identities (`asOfReview`) but no Closed page, so the expected Closed page is the
+// first CLOSED_PAGE_SIZE Closed Trades of the stored `byLifecycleTerminal` index (terminal time descending), read raw
+// from the profile's IndexedDB before any timed run; the Underlying of each walked Trade is read the same way, since
+// the dataset records only the walk's identities. The comparison is then between the stored records and what the
+// facade and UI render.
+const asOfReview = dataset['asOfReview'] as BenchAsOfReview | undefined;
+if (!asOfReview) throw new Error('bench/dataset.json has no asOfReview (generator 4 or later); regenerate the profile');
+let expectedClosedIdentities: string[] = [];
+let expectedWalkIdentities: string[] = [];
+const expectedOwedIdentities = asOfReview.owedGroup.map((t) => cardIdentity(t.tradeId, t.underlying));
+
+async function deriveExpectedIdentities(page: Page) {
+  const stored = await page.evaluate(
+    async ({ walk, size }) => {
+      const asPromise = <T,>(r: IDBRequest<T>) => new Promise<T>((resolve, reject) => ((r.onsuccess = () => resolve(r.result)), (r.onerror = () => reject(r.error ?? new Error('request failed')))));
+      const names = (await indexedDB.databases()).map((d) => d.name).filter((n): n is string => n?.startsWith('tj-ws-') === true);
+      if (names.length !== 1) throw new Error(`expected one Workspace database, found ${names.length}`);
+      const db = await asPromise(indexedDB.open(names[0]!));
+      try {
+        const trades = db.transaction('trades').objectStore('trades');
+        const closed = (await asPromise(trades.index('byLifecycleTerminal').getAll(IDBKeyRange.bound(['Closed'], ['Closed', []]), size))) as { tradeId: string; underlying: string; terminalTime: string }[];
+        const underlyings: Record<string, string> = {};
+        for (const id of walk) underlyings[id] = ((await asPromise(trades.get(id))) as { underlying: string } | undefined)?.underlying ?? '';
+        return { closed: closed.map(({ tradeId, underlying, terminalTime }) => ({ tradeId, underlying, terminalTime })), underlyings };
+      } finally {
+        db.close();
+      }
+    },
+    { walk: asOfReview!.walk, size: CLOSED_PAGE_SIZE },
+  );
+  expectedClosedIdentities = stored.closed.map((row: ExpectedClosedRow) => closedIdentity(row, BENCH_TIME_ZONE));
+  expectedWalkIdentities = asOfReview!.walk.map((id) => cardIdentity(id, stored.underlyings[id]!));
+  if (expectedClosedIdentities.length === 0) throw new Error('the stored Workspace holds no Closed Trade');
+  if (expectedWalkIdentities.some((id) => id.endsWith(' '))) throw new Error('a Trade in asOfReview.walk is not stored');
+}
+
+// The Closed tab's first page: each row's Trade (from its link), Underlying and Close date, in order.
+async function compareClosedPage(page: Page, when: string): Promise<number> {
+  const pressed = Date.now();
+  await primaryLink(page, 'Trades').click();
+  await page.getByRole('tab', { name: 'Closed' }).click();
+  const table = page.getByRole('table', { name: 'Closed Trades' });
+  await table.locator('tbody tr').nth(expectedClosedIdentities.length - 1).waitFor({ timeout: WAIT_MS });
+  const renderMs = Date.now() - pressed;
+  const rendered = await table.evaluate((t: HTMLTableElement) =>
+    [...t.tBodies[0]!.rows].map((r) => ({ href: r.cells[0]!.querySelector('a')!.getAttribute('href')!, underlying: r.cells[0]!.textContent.trim(), closeDate: r.cells[6]!.textContent.trim() })),
+  );
+  const identities = rendered.map((r) => `${tradeIdOfHref(r.href)} ${r.underlying} ${r.closeDate}`);
+  const difference = firstDifference(expectedClosedIdentities, identities);
+  console.log(`bench:run: first Closed page ${when}: ${identities.length} rows, ${difference ? `DIFFERENT (${difference})` : 'equal to the stored first Closed Trades'}`);
+  if (difference) throw new Error(`the first Closed page ${when} differs from the stored Closed Trades: ${difference}`);
+  return renderMs;
+}
+
+// The Review's cards as rendered: the walk's and the owed group's Trade and Underlying, in order.
+async function readReviewCards(page: Page) {
+  const read = (list: string) => page.locator(`${list} > li.review-card`).evaluateAll((items) => items.map((li) => `${li.getAttribute('data-trade-id')} ${li.querySelector('.review-card-name')?.textContent.trim() ?? ''}`));
+  if (expectedWalkIdentities.length > 0) await page.locator('ol[aria-label="Positions"] > li.review-card').nth(expectedWalkIdentities.length - 1).waitFor({ timeout: WAIT_MS });
+  if (expectedOwedIdentities.length > 0) await page.locator('ol[aria-labelledby="owed-group-heading"] > li.review-card').nth(expectedOwedIdentities.length - 1).waitFor({ timeout: WAIT_MS });
+  return { walk: await read('ol[aria-label="Positions"]'), owed: await read('ol[aria-labelledby="owed-group-heading"]') };
+}
+const reviewCardComparisons: { when: string; walk: number; owed: number }[] = [];
 async function compareDueReflections(page: Page, when: string) {
   const pressed = Date.now();
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Review' }).click();
@@ -149,6 +227,14 @@ async function compareDueReflections(page: Page, when: string) {
   console.log(`bench:run: as-of Review ${reviewDate} ${when}: ${total} due reflections (${[...byTrade].map(([t, n]) => `${t} ${n}`).join(', ') || 'none'}), ${equal ? 'equal to' : 'DIFFERENT from'} the expected ${expectedDue}`);
   dueComparisons.push({ when, due: { total, byTrade, renderMs } });
   if (!equal) throw new Error(`the as-of Review's due reflections ${when} differ from bench/dataset.json (${expectedDue} expected, Review Date ${String(dataset['reviewDate'])})`);
+  // D6: the walk and the owed-reflection group are the dataset's identities, in order.
+  const cards = await readReviewCards(page);
+  const walkDifference = firstDifference(expectedWalkIdentities, cards.walk);
+  const owedDifference = firstDifference(expectedOwedIdentities, cards.owed);
+  console.log(`bench:run: as-of Review ${when}: walk ${cards.walk.length} cards ${walkDifference ? `DIFFERENT (${walkDifference})` : 'equal'}, owed group ${cards.owed.length} cards ${owedDifference ? `DIFFERENT (${owedDifference})` : 'equal'}`);
+  if (walkDifference) throw new Error(`the as-of Review's walk ${when} differs from asOfReview.walk: ${walkDifference}`);
+  if (owedDifference) throw new Error(`the as-of Review's owed-reflection group ${when} differs from asOfReview.owedGroup: ${owedDifference}`);
+  reviewCardComparisons.push({ when, walk: cards.walk.length, owed: cards.owed.length });
 }
 
 // ---- Card timings (D5R, T5R.13): disclosed, not gated ---------------------------------------------------------
@@ -255,9 +341,11 @@ interface CardTimings {
   readonly openFirstCard: number[];
   readonly saveMarks: { symbol: string; ms: number }[];
   readonly saveAction: { symbol: string; ms: number }[];
+  // Cards for the cold saves (D6), picked with the warm ones so that no card is saved twice.
+  readonly coldSymbols: string[];
 }
 async function timeCards(page: Page): Promise<CardTimings> {
-  const timings: CardTimings = { openFirstCard: [], saveMarks: [], saveAction: [] };
+  const timings: CardTimings = { openFirstCard: [], saveMarks: [], saveAction: [], coldSymbols: [] };
   for (let run = 1; run <= OPEN_CARD_RUNS; run++) {
     timings.openFirstCard.push(await timeOpenFirstCard(page));
     console.log(`bench:run: open the first card ${run}/${OPEN_CARD_RUNS} ${timings.openFirstCard.at(-1)!.toFixed(1)} ms`);
@@ -270,8 +358,9 @@ async function timeCards(page: Page): Promise<CardTimings> {
   const owing = new Set(((dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []).map((d) => d.underlying));
   await timeOpenFirstCard(page);
   const names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
-  const symbols = [...new Set(names.map((n) => n.trim()))].filter((s) => !missing.includes(s) && !owing.has(s)).slice(0, SAVE_RUNS);
-  for (const symbol of symbols) {
+  const symbols = [...new Set(names.map((n) => n.trim()))].filter((s) => !missing.includes(s) && !owing.has(s)).slice(0, SAVE_RUNS + COLD_SAVE_RUNS);
+  timings.coldSymbols.push(...symbols.slice(SAVE_RUNS));
+  for (const symbol of symbols.slice(0, SAVE_RUNS)) {
     timings.saveAction.push({ symbol, ms: await timeSaveAction(page, symbol) });
     console.log(`bench:run: Trade Action save ${symbol} ${timings.saveAction.at(-1)!.ms.toFixed(1)} ms`);
   }
@@ -286,6 +375,15 @@ const launchToMark: number[] = [];
 const warm: number[] = [];
 let before: number;
 let after: number;
+let closedBefore: number;
+let closedAfter: number;
+const closedRenderMs: number[] = [];
+const coldSaveAction: { symbol: string; ms: number }[] = [];
+// Leaves the Closed list for the Open list, so the next press on Closed renders its page afresh.
+async function leaveClosed(page: Page) {
+  await page.getByRole('tab', { name: 'Open' }).click();
+  await page.getByRole('table', { name: 'Open Trades' }).waitFor({ timeout: WAIT_MS });
+}
 try {
   // Warm-up (excluded): online, so the release's service worker installs and claims the page.
   const warmUp = await launch(false);
@@ -295,6 +393,8 @@ try {
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: WAIT_MS });
   await markTime(page, 'tj:interactive');
   before = await compareOpenList(page, 'before the runs');
+  await deriveExpectedIdentities(page);
+  closedBefore = await compareClosedPage(page, 'before the runs');
   await compareDueReflections(page, 'before the runs');
   await warmUp.close();
 
@@ -335,10 +435,26 @@ try {
     console.log(`bench:run: warm ${run}/${RUNS} ${warm.at(-1)!.toFixed(1)} ms`);
   }
   after = await compareOpenList(warmPage, 'after the runs');
+  closedAfter = await compareClosedPage(warmPage, 'after the runs');
   await compareDueReflections(warmPage, 'after the runs');
+  // Disclosed, not gated: the Closed tab's first page, from the press on the tab to the last row.
+  for (let run = 1; run <= CLOSED_PAGE_RUNS; run++) {
+    await leaveClosed(warmPage);
+    closedRenderMs.push(await compareClosedPage(warmPage, `at render ${run}`));
+  }
   // Last, because the saves change the profile's copy.
   cardTimings = await timeCards(warmPage);
   await context.close();
+  // Cold Action saves: each on a fresh browser process, offline, on a card no warm save used.
+  for (const symbol of cardTimings.coldSymbols) {
+    const coldContext = await launch(true);
+    const savePage = await pageOf(coldContext);
+    await savePage.goto(origin);
+    await markTime(savePage, 'tj:interactive');
+    coldSaveAction.push({ symbol, ms: await timeSaveAction(savePage, symbol) });
+    console.log(`bench:run: cold Trade Action save ${symbol} ${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);
+    await coldContext.close();
+  }
 } finally {
   // Closing an already closed context is a no-op; a failure must not leave Chromium on a removed profile.
   for (const context of launched) await context.close();
@@ -369,9 +485,10 @@ const openCard = cardTimings!.openFirstCard;
 const markMs = cardTimings!.saveMarks.map((s) => s.ms);
 const actionMs = cardTimings!.saveAction.map((s) => s.ms);
 
-const report = `# D5R benchmark run (AC-PERF-001)
+const coldActionMs = coldSaveAction.map((s) => s.ms);
+const report = `# D6 benchmark run (AC-PERF-001)
 
-Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22 and T5R.13) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
+Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13 and T6.25) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
 
 ## Result
 
@@ -400,11 +517,31 @@ Each is the time from the pointer press to the rendered result, on the mature da
 | Save Marks of one card's Marks (press on Save Marks to the card's drafts cleared) | ${spread(markMs)} |
 | Trade Action save (press on Save in the Action form to the form replaced by the result) | ${spread(actionMs)} |
 
-- **Against D5:** D5 measured the cold start at ${D5_COLD_P95_MS} ms and the warm switch at ${D5_WARM_P95_MS} ms (p95); this run's are ${ms(coldP95)} ms and ${ms(warmP95)} ms. D5 timed the press on Review to the Review's status at ${D5_REVIEW_OPEN_MS.before} ms before its runs and ${D5_REVIEW_OPEN_MS.after} ms after (single measurements); opening the first card here, which adds the first Trade's \`getTrade\`, takes a median of ${ms(median(openCard))} ms.
+- **Against D5 and D5R2:** D5 measured the cold start at ${D5_COLD_P95_MS} ms and the warm switch at ${D5_WARM_P95_MS} ms (p95), D5R2 ${D5R2_COLD_P95_MS} ms and ${D5R2_WARM_P95_MS} ms on the same generator-3 dataset; this run's are ${ms(coldP95)} ms and ${ms(warmP95)} ms. D5 timed the press on Review to the Review's status at ${D5_REVIEW_OPEN_MS.before} ms before its runs and ${D5_REVIEW_OPEN_MS.after} ms after (single measurements); opening the first card here, which adds the first Trade's \`getTrade\`, takes a median of ${ms(median(openCard))} ms.
 - **Tech debt item 3** (the Review's open cost grows with history) is measured here, not fixed: D5R takes the save path off it (P38) but not the first \`open\` of each Review, and the open-the-first-card timing is its baseline.
 - **The saves** are timed on cards of the cached profile's copy: ${cardTimings!.saveMarks.map((s) => `Save Marks on ${s.symbol}`).join(', ')}; and a Hold Action on ${cardTimings!.saveAction.map((s) => s.symbol).join(', ')}. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. The dataset holds an Action for every Trade on the Review Date, so each Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save): a \`SaveTradeAction\` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
 - **Raw timings (ms, in run order):** open the first card ${openCard.map(ms).join(', ')}; Save Marks ${markMs.map(ms).join(', ')}; Trade Action save ${actionMs.map(ms).join(', ')}.
 - **Method:** a MutationObserver in the page reads the real clock on the first DOM change after which the result holds (the card's content shown with no card still loading; the card's Save Marks counting no drafts; the card's Action form gone with no card still loading), and a capture-phase pointer press records the start on the same clock.
+
+## Closed page, Review walk and owed group (T6.25)
+
+- **Closed page.** The generator records no Closed page, so the expected first page is derived from the stored data: the first ${CLOSED_PAGE_SIZE} Closed Trades of the profile's \`byLifecycleTerminal\` index (terminal time descending), read raw in the page before any timed run. Each rendered row (its Trade from the link, Underlying and Close date in ${BENCH_TIME_ZONE}) must equal the stored Trade's, in order, before the runs (${closedBefore} rows equal) and after them (${closedAfter} rows equal), and at each of the ${closedRenderMs.length} renders below. Realized figures, Disposition and Close Reason are not compared (the stored Trade does not hold them).
+- **Review walk and owed group.** The as-of Review's cards must equal \`asOfReview\` in \`bench/dataset.json\`, in order, each by its Trade (\`data-trade-id\`) and Underlying (the walked Trades' Underlyings are read from the stored Trades, the owed group's are the dataset's): ${reviewCardComparisons.map((c) => `${c.when} ${c.walk} walked and ${c.owed} owed cards equal`).join('; ')}. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
+
+| Measure (disclosed, not gated) | Runs | Median | Nearest-rank p95 | Min | Max |
+|---|---|---|---|---|---|
+| Closed tab to its first page (${closedBefore} rows; press on Trades, then Closed, to the last row rendered) | ${spread(closedRenderMs)} |
+
+## Daily Trade Review Action save (requested measurement, disclosed, not gated; not in the plan's T6.25 row)
+
+A single Action save on a card of the as-of Review (Change, Hold, an Intent, Save: a \`SaveTradeAction\` with the entry's expected revision, so the Review's post-save rebuild is included), from the press on Save to the form replaced by the result. Generator 5's Review save grew by about 1 ms per session in Chromium; this shows its cost at the mature profile. **Warm** is the five saves of the card timings above, in one long-lived page. **Cold** is one save on each of ${COLD_SAVE_RUNS} fresh browser processes (offline, from the service worker), on a card no warm save used, the Review opened afresh first (not timed). These figures are not gated; only the two p95 above are.
+
+| Save | Runs | Median | Nearest-rank p95 | Min | Max |
+|---|---|---|---|---|---|
+| Warm | ${spread(actionMs)} |
+| Cold | ${spread(coldActionMs)} |
+
+Raw (ms): warm ${actionMs.map(ms).join(', ')}; cold ${coldSaveAction.map((s) => `${s.symbol} ${ms(s.ms)}`).join(', ')}; closed page renders ${closedRenderMs.map(ms).join(', ')}.
 
 ## Method
 
