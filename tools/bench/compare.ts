@@ -31,9 +31,16 @@ export const cardIdentity = (tradeId: string, underlying: string) => `${tradeId}
 // The Trade of a Closed row's link ("/trades/<id>").
 export const tradeIdOfHref = (href: string) => decodeURIComponent(href.slice(href.lastIndexOf('/') + 1));
 
-// The Underlyings whose card in the Review's walk is of a Trade that owes a reflection. A Debt of a Trade outside the walk
-// (an owed-group or Closed Trade) does not bar the walked card of its Underlying from a timed Action save.
-export function owingUnderlyings(debts: readonly { tradeId: string; underlying: string }[], walk: readonly string[]): Set<string> {
+// The cards (in the Review's card order) of walked Trades that owe no reflection and whose Underlying is not Missing, up to `limit`.
+// The Action save is timed on a card chosen and opened by its Trade: every Underlying has an owing walked Trade, so no Underlying is free.
+export function walkedTradesOwingNothing(
+  cards: readonly { tradeId: string; underlying: string }[],
+  walk: readonly string[],
+  debts: readonly { tradeId: string }[],
+  missing: readonly string[],
+  limit: number,
+): { tradeId: string; underlying: string }[] {
   const walked = new Set(walk);
-  return new Set(debts.filter((d) => walked.has(d.tradeId)).map((d) => d.underlying));
+  const owing = new Set(debts.map((d) => d.tradeId));
+  return cards.filter((c) => walked.has(c.tradeId) && !owing.has(c.tradeId) && !missing.includes(c.underlying)).slice(0, limit);
 }

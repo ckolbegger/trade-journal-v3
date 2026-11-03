@@ -1,18 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { closeDate, closedIdentity, firstDifference, owingUnderlyings, tradeIdOfHref } from './compare.ts';
+import { closeDate, closedIdentity, firstDifference, tradeIdOfHref, walkedTradesOwingNothing } from './compare.ts';
 import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
 
 describe('bench Action-save card choice', () => {
-  const debts = [
-    { tradeId: 'closed1', underlying: 'AAA' },
-    { tradeId: 'owed1', underlying: 'BBB' },
+  // Every Underlying (AAA, BBB, CCC, DDD) has an owing walked Trade, yet some walked Trades owe none.
+  const cards = [
+    { tradeId: 'w1', underlying: 'AAA' },
+    { tradeId: 'w2', underlying: 'AAA' },
+    { tradeId: 'w3', underlying: 'BBB' },
+    { tradeId: 'w4', underlying: 'BBB' },
+    { tradeId: 'x1', underlying: 'CCC' },
+    { tradeId: 'w5', underlying: 'CCC' },
+    { tradeId: 'w6', underlying: 'DDD' },
+    { tradeId: 'w7', underlying: 'MMM' },
   ];
-  it('should not bar an Underlying whose Debts are all of Trades outside the walk', () => {
-    expect([...owingUnderlyings(debts, ['w1', 'w2'])]).toEqual([]);
+  const walk = ['w7', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6'];
+  const debts = [{ tradeId: 'w1' }, { tradeId: 'w3' }, { tradeId: 'w5' }, { tradeId: 'x1' }, { tradeId: 'w6' }];
+
+  it('should choose the walked Trades owing nothing, in card order, leaving out Missing Underlyings', () => {
+    expect(walkedTradesOwingNothing(cards, walk, debts, ['MMM'], 10)).toEqual([
+      { tradeId: 'w2', underlying: 'AAA' },
+      { tradeId: 'w4', underlying: 'BBB' },
+    ]);
   });
 
-  it('should bar the Underlying of a walked Trade that owes a reflection', () => {
-    expect([...owingUnderlyings([...debts, { tradeId: 'w2', underlying: 'CCC' }], ['w1', 'w2'])]).toEqual(['CCC']);
+  it('should never choose a walked Trade that owes a reflection, and stop at the limit', () => {
+    expect(walkedTradesOwingNothing(cards, walk, [], [], 3).map((c) => c.tradeId)).toEqual(['w1', 'w2', 'w3']);
+    expect(walkedTradesOwingNothing(cards, walk, debts, [], 10).map((c) => c.tradeId)).toEqual(['w2', 'w4', 'w7']);
   });
 });
 

@@ -25,10 +25,10 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { chromium, type BrowserContext, type Page } from '@playwright/test';
+import { chromium, type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
-import { cardIdentity, closedIdentity, firstDifference, owingUnderlyings, tradeIdOfHref, type ExpectedClosedRow } from './bench/compare.ts';
+import { cardIdentity, closedIdentity, firstDifference, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
 import { schemaMismatch } from './bench/partial.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
@@ -312,7 +312,7 @@ async function compareDueReflections(page: Page, when: string) {
 type Rendered =
   | { readonly kind: 'cardLoaded' } // some card's content is shown and no card is still loading
   | { readonly kind: 'marksSaved'; readonly symbol: string } // the card's Save Marks counts no drafts: the same result cleared them
-  | { readonly kind: 'actionSaved'; readonly symbol: string }; // the card's Action form is gone and no card is loading (the result replaced it)
+  | { readonly kind: 'actionSaved'; readonly tradeId: string }; // the Trade's card's Action form is gone and no card is loading (the result replaced it)
 
 // Runs `press` (one click) and returns the milliseconds from its pointer press to the rendered result.
 async function pressToRendered(page: Page, rendered: Rendered, press: () => Promise<void>): Promise<number> {
@@ -323,9 +323,10 @@ async function pressToRendered(page: Page, rendered: Rendered, press: () => Prom
     const loading = () => [...document.querySelectorAll('[role="status"]')].some((e) => (e.textContent ?? '').startsWith('Loading the Trade'));
     const holds = (): boolean => {
       if (r.kind === 'cardLoaded') return document.querySelector('section[aria-label$=" review"]') !== null && !loading();
+      // An Action save's card is the one list item of its Trade (an Underlying has several cards).
+      if (r.kind === 'actionSaved') return document.querySelector(`li[data-trade-id="${r.tradeId}"] form[aria-label="Action"]`) === null && !loading();
       // The card's region is named for its Trade in full, so it is found by the underlying it starts with.
       const card = `section[aria-label^="${r.symbol} "][aria-label$=" review"]`;
-      if (r.kind === 'actionSaved') return document.querySelector(`${card} form[aria-label="Action"]`) === null && !loading();
       return [...document.querySelectorAll(`${card} section[aria-label="Marks"] button`)].some((b) => b.textContent === 'Save Marks (0)');
     };
     const observer = new MutationObserver(() => {
@@ -350,7 +351,7 @@ async function pressToRendered(page: Page, rendered: Rendered, press: () => Prom
 
 const primaryLink = (page: Page, name: string) => page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name });
 // The card's region is named for its Trade in full ("ABBV (Long 120 shares @ $300.97) review", A150); it is found by its underlying.
-const cardOf = (page: Page, symbol: string) => page.getByRole('region', { name: new RegExp(`^${symbol.replace(/\./g, '\\.')}(?: \\(.*\\))? review$`) }).first();
+const cardOf = (page: Page | Locator, symbol: string) => page.getByRole('region', { name: new RegExp(`^${symbol.replace(/\./g, '\\.')}(?: \\(.*\\))? review$`) }).first();
 
 // Leaves the Review for the Trades list, so the next press on Review opens it afresh.
 async function leaveReview(page: Page) {
@@ -367,11 +368,13 @@ async function timeOpenFirstCard(page: Page): Promise<number> {
 }
 
 // Opens the Review afresh and the Trade's card, then waits for the card's content.
-async function reachCard(page: Page, symbol: string) {
+// A Trade's own card is found by its list item (`tradeId`); otherwise the first card of the Underlying.
+async function reachCard(page: Page, symbol: string, tradeId?: string) {
   await timeOpenFirstCard(page);
-  const header = page.getByRole('button', { name: new RegExp(`^Review ${symbol.replace(/\./g, '\\.')}(?:\\s|$)`) }).first();
+  const scope = tradeId === undefined ? page : page.locator(`ol[aria-label="Positions"] > li[data-trade-id="${tradeId}"]`);
+  const header = scope.getByRole('button', { name: new RegExp(`^Review ${symbol.replace(/\./g, '\\.')}(?:\\s|$)`) }).first();
   if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
-  const card = cardOf(page, symbol);
+  const card = cardOf(scope, symbol);
   await card.waitFor({ timeout: WAIT_MS });
   await page.getByRole('status').filter({ hasText: /^Loading the Trade/ }).waitFor({ state: 'detached', timeout: WAIT_MS });
   return card;
@@ -397,18 +400,24 @@ async function timeSaveMarks(page: Page, symbol: string): Promise<number> {
 // The cards whose timed Action save was the first of their Action (not an edit).
 const firstSaves = new Set<string>();
 // A Hold Action save, from the press on Save in the card's Action form.
-async function timeSaveAction(page: Page, symbol: string): Promise<number> {
-  const card = await reachCard(page, symbol);
+interface SaveCard {
+  readonly symbol: string;
+  readonly tradeId: string;
+}
+// How the report names a Trade's card: its Underlying and the start of its Trade id.
+const labelOf = (c: SaveCard) => `${c.symbol} ${c.tradeId.slice(0, 8)}`;
+async function timeSaveAction(page: Page, saveCard: SaveCard): Promise<number> {
+  const card = await reachCard(page, saveCard.symbol, saveCard.tradeId);
   await showPanel(card, 'Action');
   // The dataset holds an Action for every Trade on the Review Date, so this save is an edit of it (its Change button).
   // A card whose Action is not saved yet (only the partial dataset has any, T6.25-P1) shows the form already, so this save is a first one.
   const change = card.getByRole('button', { name: 'Change' });
   if ((await change.count()) > 0) await change.click();
-  else firstSaves.add(symbol);
+  else firstSaves.add(labelOf(saveCard));
   const form = card.getByRole('form', { name: 'Action' });
   await form.getByRole('radio', { name: 'Hold', exact: true }).check();
   await form.getByLabel(/^Why are you taking this action\?/).fill('bench edit');
-  return pressToRendered(page, { kind: 'actionSaved', symbol }, () => form.getByRole('button', { name: 'Save' }).click());
+  return pressToRendered(page, { kind: 'actionSaved', tradeId: saveCard.tradeId }, () => form.getByRole('button', { name: 'Save' }).click());
 }
 
 interface CardTimings {
@@ -416,10 +425,10 @@ interface CardTimings {
   readonly saveMarks: { symbol: string; ms: number }[];
   readonly saveAction: { symbol: string; ms: number }[];
   // Cards for the cold saves (D6), picked with the warm ones so that no card is saved twice.
-  readonly coldSymbols: string[];
+  readonly coldCards: SaveCard[];
 }
 async function timeCards(page: Page): Promise<CardTimings> {
-  const timings: CardTimings = { openFirstCard: [], saveMarks: [], saveAction: [], coldSymbols: [] };
+  const timings: CardTimings = { openFirstCard: [], saveMarks: [], saveAction: [], coldCards: [] };
   for (let run = 1; run <= OPEN_CARD_RUNS; run++) {
     timings.openFirstCard.push(await timeOpenFirstCard(page));
     console.log(`bench:run: open the first card ${run}/${OPEN_CARD_RUNS} ${timings.openFirstCard.at(-1)!.toFixed(1)} ms`);
@@ -428,26 +437,33 @@ async function timeCards(page: Page): Promise<CardTimings> {
     timings.saveMarks.push({ symbol, ms: await timeSaveMarks(page, symbol) });
     console.log(`bench:run: Save Marks ${symbol} ${timings.saveMarks.at(-1)!.ms.toFixed(1)} ms`);
   }
-  // Cards whose Instrument is not Missing and whose Trade owes no reflection, in the Review's order.
-  const owing = new Set(partial ? (dataset['outstandingUnderlyings'] as string[]) : owingUnderlyings((dataset['outstandingDebts'] as { tradeId: string; underlying: string }[] | undefined) ?? [], asOfReview?.walk ?? []));
+  // Cards (each opened by its Trade) whose Instrument is not Missing and whose Trade owes no reflection, in the Review's order.
   await timeOpenFirstCard(page);
-  let names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
+  const reviewCards = await page.locator('ol[aria-label="Positions"] > li.review-card').evaluateAll((items) => items.map((li) => ({ tradeId: li.getAttribute('data-trade-id') ?? '', underlying: li.querySelector('.review-card-name')?.textContent.trim() ?? '' })));
+  let picked: { tradeId: string; underlying: string }[];
   if (partial) {
     // The partial Review stopped part-way: only the first card of an Underlying whose Action is saved can be edited (its Change button),
-    // as every card of a full dataset can; a card is found by its Underlying, so the first one. These come first. The Underlyings
-    // whose first card has no Action yet follow, to make up the number of saves: those are first saves, disclosed as such.
+    // as every card of a full dataset can. These come first. The Underlyings whose first card has no Action yet follow, to make up the
+    // number of saves: those are first saves, disclosed as such. An Underlying that owes a reflection is left out.
     const actioned = new Set(dataset['actionedTradeIds'] as string[]);
-    const cards = await page.locator('ol[aria-label="Positions"] > li.review-card').evaluateAll((items) => items.map((li) => ({ id: li.getAttribute('data-trade-id') ?? '', name: li.querySelector('.review-card-name')?.textContent.trim() ?? '' })));
+    const owing = new Set(dataset['outstandingUnderlyings'] as string[]);
     const firstOf = new Map<string, string>();
-    for (const card of cards) if (!firstOf.has(card.name)) firstOf.set(card.name, card.id);
-    names = [...firstOf].sort(([, a], [, b]) => Number(actioned.has(b)) - Number(actioned.has(a))).map(([name]) => name);
+    for (const card of reviewCards) if (!firstOf.has(card.underlying)) firstOf.set(card.underlying, card.tradeId);
+    picked = [...firstOf]
+      .sort(([, a], [, b]) => Number(actioned.has(b)) - Number(actioned.has(a)))
+      .map(([underlying, tradeId]) => ({ tradeId, underlying }))
+      .filter((c) => !missing.includes(c.underlying) && !owing.has(c.underlying))
+      .slice(0, SAVE_RUNS + COLD_SAVE_RUNS);
+  } else {
+    // Every Underlying has a walked Trade that owes a reflection, so a card is chosen by its Trade, not by its Underlying.
+    picked = walkedTradesOwingNothing(reviewCards, asOfReview?.walk ?? [], (dataset['outstandingDebts'] as { tradeId: string }[] | undefined) ?? [], missing, SAVE_RUNS + COLD_SAVE_RUNS);
   }
-  const symbols = [...new Set(names.map((n) => n.trim()))].filter((s) => !missing.includes(s) && !owing.has(s)).slice(0, SAVE_RUNS + COLD_SAVE_RUNS);
-  if (partial) console.log(`bench:run: ${symbols.length} Action cards found for ${SAVE_RUNS + COLD_SAVE_RUNS} saves`);
-  timings.coldSymbols.push(...symbols.slice(SAVE_RUNS));
-  for (const symbol of symbols.slice(0, SAVE_RUNS)) {
-    timings.saveAction.push({ symbol, ms: await timeSaveAction(page, symbol) });
-    console.log(`bench:run: Trade Action save ${symbol} ${timings.saveAction.at(-1)!.ms.toFixed(1)} ms`);
+  const saveCards: SaveCard[] = picked.map((c) => ({ symbol: c.underlying, tradeId: c.tradeId }));
+  if (partial) console.log(`bench:run: ${saveCards.length} Action cards found for ${SAVE_RUNS + COLD_SAVE_RUNS} saves`);
+  timings.coldCards.push(...saveCards.slice(SAVE_RUNS));
+  for (const saveCard of saveCards.slice(0, SAVE_RUNS)) {
+    timings.saveAction.push({ symbol: labelOf(saveCard), ms: await timeSaveAction(page, saveCard) });
+    console.log(`bench:run: Trade Action save ${labelOf(saveCard)} ${timings.saveAction.at(-1)!.ms.toFixed(1)} ms`);
   }
   return timings;
 }
@@ -530,13 +546,13 @@ try {
   cardTimings = await timeCards(warmPage);
   await context.close();
   // Cold Action saves: each on a fresh browser process, offline, on a card no warm save used.
-  for (const symbol of cardTimings.coldSymbols) {
+  for (const saveCard of cardTimings.coldCards) {
     const coldContext = await launch(true);
     const savePage = await pageOf(coldContext);
     await savePage.goto(origin);
     await markTime(savePage, 'tj:interactive');
-    coldSaveAction.push({ symbol, ms: await timeSaveAction(savePage, symbol) });
-    console.log(`bench:run: cold Trade Action save ${symbol} ${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);
+    coldSaveAction.push({ symbol: labelOf(saveCard), ms: await timeSaveAction(savePage, saveCard) });
+    console.log(`bench:run: cold Trade Action save ${labelOf(saveCard)}${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);
     await coldContext.close();
   }
 } finally {
