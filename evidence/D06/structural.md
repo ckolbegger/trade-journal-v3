@@ -2072,3 +2072,25 @@ The figures come from the critic's completion notice, the harness's own count. B
 | Checks | 12 of 12 | `suite-runs/t6.25-b2-checks.txt` |
 
 The critic 3 gate run, at the final code, will cover R1 in a complete cumulative run.
+
+## T6.25-B3: vacate the byOutstandingDue key a Debt write moves (decision 75)
+
+- **Commit `16da03d6`** (Journal): Debt resolution in `applyPreparedEffects` stages `vacateIndexKey` on `journalDebts.byOutstandingDue` with key `[outstandingDue, debtId]` from the record before the write, whenever that record had an `outstandingDue`. The Chromium regression test is `e2e/d6/stale-debt.spec.ts`.
+- **Regression test:** 3,000 Debts declined and 100 left Outstanding, on a browser profile kept on disk. Red without the fix: churned 4.9 ms against fresh 0.4 ms. Green with it: 0.5 ms against 0.5 ms, in three runs.
+- **Deviations:**
+  - No unchanged-key test. Resolution always drops `outstandingDue`, and no other path rewrites a Debt, so that case is unreachable.
+  - The regression test only declines Debts. Settle and decline share one code path, and the unit tests cover both.
+- **First-run passes, flagged:**
+  - A new Debt stages no vacate. Mutation check: staging one in the add branch gives `AssertionError: expected [ { op: 'vacateIndexKey', …(3) } ] to deeply equal []`.
+  - A Debt with no `outstandingDue` before the write stages none. Mutation check: inverting the guard gives the same AssertionError.
+- **ocr** (`ocr/T6.25-B3.json`): 0 comments.
+
+**Cumulative run `t6.25-b3`**: at HEAD `16da03d6`, full tier. The faults build and `dist-releases/d6` were rebuilt without `build:releases`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,188 passed | `suite-runs/t6.25-b3-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.25-b3-integration.txt` |
+| Browser (Chromium, full) | 162 passed (7.6 min) | `suite-runs/t6.25-b3-browser.txt` |
+| Release history | 4 passed | `suite-runs/t6.25-b3-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.25-b3-checks.txt` |
