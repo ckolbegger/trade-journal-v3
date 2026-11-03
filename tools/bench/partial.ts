@@ -69,6 +69,12 @@ export interface StoredCounts {
   readonly debtsOutstanding: number;
 }
 
+// The refusal for a snapshot or dataset whose stored schema version is not this source's, or undefined when they agree.
+export function schemaMismatch(stored: unknown, expected: number): string | undefined {
+  if (typeof stored !== 'number') return `the data holds no schema version (found ${JSON.stringify(stored) ?? 'nothing'}), but this source is at ${expected}`;
+  return stored === expected ? undefined : `the data is at schema version ${stored}, but this source is at ${expected}`;
+}
+
 const AS_OF_AFTER_CLOSE_MS = 35 * 60_000;
 
 export interface LastSession {

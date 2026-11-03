@@ -30,6 +30,7 @@ import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, type BenchAsOfReview } from '
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { cardIdentity, closedIdentity, firstDifference, tradeIdOfHref, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
+import { schemaMismatch } from './bench/partial.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
 import { startReleaseServer } from './release-server.ts';
 
@@ -85,6 +86,10 @@ npm('build');
 
 const dataset = JSON.parse(await readFile(partial ? path.join(partialDir, 'dataset.json') : BENCH_DATASET_FILE, 'utf8')) as Record<string, unknown>;
 if (partial && dataset['partial'] !== true) throw new Error(`${partialDir}/dataset.json is not marked partial`);
+if (partial) {
+  const mismatch = schemaMismatch(dataset['schemaVersion'], SCHEMA_VERSION);
+  if (mismatch) throw new Error(`${partialDir}/dataset.json is stale: ${mismatch}; rerun bench:partial`);
+}
 // The Open list to compare with: the generator's, or (partial) the first render's.
 let expected: Pick<ExpectedOpenRows, 'headers' | 'rows'> | undefined = partial ? undefined : (JSON.parse(await readFile(BENCH_EXPECTED_ROWS_FILE, 'utf8')) as ExpectedOpenRows);
 const partialCounts = partial ? (dataset['counts'] as { openTrades: number }) : undefined;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { closeDate, closedIdentity, firstDifference, tradeIdOfHref } from './compare.ts';
-import { countStored, lastSessionOf, reviewMembersOf, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
+import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
 
 describe('bench identity comparisons', () => {
   it('should report no difference for equal lists and the first difference otherwise', () => {
@@ -115,5 +115,12 @@ describe('partial dataset last session', () => {
     expect(() => lastSessionOf({ ...none, observations })).toThrow(/no Daily Trade Review Action/);
     expect(() => lastSessionOf({ ...none, observations, entries: [action('2027-02-17'), action('2027-02-17', { momentTime: '2027-02-17T18:00:00Z' })] })).toThrow(/close/);
     expect(() => lastSessionOf({ ...none, observations, entries: [action('2027-02-17', { authoredTime: '2027-02-17T21:40:00Z' })] })).toThrow(/authored/);
+  });
+
+  it('should accept a stored schema version equal to the source and refuse a different or unreadable one', () => {
+    expect(schemaMismatch(5, 5)).toBeUndefined();
+    expect(schemaMismatch(4, 5)).toMatch(/schema version 4.*5/);
+    expect(schemaMismatch(6, 5)).toMatch(/schema version 6.*5/);
+    expect(schemaMismatch(undefined, 5)).toMatch(/no schema version/);
   });
 });

@@ -11,7 +11,7 @@ import { chromium } from '@playwright/test';
 import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { BENCH_PORT } from './bench/profile.ts';
-import { countStored, lastSessionOf, reviewMembersOf, type StoredRows } from './bench/partial.ts';
+import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type StoredRows } from './bench/partial.ts';
 
 const dir = path.resolve(process.argv[2] ?? '');
 if (!process.argv[2]) throw new Error('usage: npm run bench:partial -- <dir>   (the directory holding profile/)');
@@ -24,8 +24,11 @@ const origin = `http://localhost:${BENCH_PORT}`;
 const blank = (context: Awaited<ReturnType<typeof chromium.launchPersistentContext>>) =>
   context.route(`${origin}/**`, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>partial</title>' }));
 
-const context = await chromium.launchPersistentContext(runProfile, { headless: true });
+// Service workers are blocked in both contexts, so the snapshot's worker cannot answer the navigation (`context.route`
+// does not see a worker's responses); the unregister and verify steps below still run.
+const context = await chromium.launchPersistentContext(runProfile, { headless: true, serviceWorkers: 'block' });
 let rows: StoredRows;
+let storedSchema: unknown;
 let underlyingOf: Record<string, string>;
 let engine: string;
 try {
@@ -76,11 +79,16 @@ try {
         marks: o.marks.length,
         corrections: o.marks.filter((m) => m.intention !== 'InitialManual').length,
       }));
-      return { trades, entries, declines, debts, observations };
+      // The schema record the app keeps in the Workspace's meta store (persistence.ts).
+      const schema = await asPromise(db.transaction('meta').objectStore('meta').get('schema') as IDBRequest<{ schemaVersion?: unknown } | undefined>);
+      return { trades, entries, declines, debts, observations, schemaVersion: schema?.schemaVersion };
     } finally {
       db.close();
     }
   });
+  storedSchema = read.schemaVersion;
+  const mismatch = schemaMismatch(storedSchema, SCHEMA_VERSION);
+  if (mismatch) throw new Error(`bench:partial refuses the snapshot: ${mismatch}`);
   rows = read;
   underlyingOf = Object.fromEntries(read.trades.map((t) => [t.tradeId, t.underlying]));
 
@@ -93,7 +101,7 @@ try {
 } finally {
   await context.close();
 }
-const check = await chromium.launchPersistentContext(runProfile, { headless: true });
+const check = await chromium.launchPersistentContext(runProfile, { headless: true, serviceWorkers: 'block' });
 try {
   await blank(check);
   const page = check.pages()[0] ?? (await check.newPage());
@@ -115,7 +123,8 @@ const dataset = {
   partial: true,
   sessions: counts.sessions,
   generatorVersion: BENCH_GENERATOR_VERSION,
-  schemaVersion: SCHEMA_VERSION,
+  // Read from the snapshot's stored schema record (equal to SCHEMA_VERSION, or the tool refused above).
+  schemaVersion: storedSchema,
   timeZone: BENCH_TIME_ZONE,
   origin,
   asOf: last.asOf,
