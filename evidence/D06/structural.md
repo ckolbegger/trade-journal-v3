@@ -1776,3 +1776,71 @@ Every D6 case lives in `tests/integration/d6/`, with shared builders in `support
 | Static and verification (12) | 12 of 12 passed | `suite-runs/t6.26-node-suite-checks.txt` |
 
 T6.26's structural verification (`npm run test:integration`: every case in sections 6.1 of D1, D2, D4, D5 and D6 passes) is met. Ports 5175, 9341 and 9342 were free before and after the run.
+
+## T6.24: benchmark generator 4 (closing the book)
+
+**Commit `6b72399f`** (`test(bench): T6.24 benchmark generator 4, closing the book`).
+- **Version.** `BENCH_GENERATOR_VERSION` is 4. The section 1.4 profile is met by construction and checked offline with the real `schedule()`:
+  - Trades: 25,000 in all (24,700 Closed, 200 Open, 100 Planned).
+  - Position Changes: 99,200. Executions: 198,400.
+  - Close Reasons: 7,410 / 8,645 / 3,705 / 4,940.
+  - Close Review outcomes: 16,055 completed, 3,705 declined, 4,446 answered later, 395 declined later and 99 Outstanding.
+  - Position Change Reflections: 64,480 / 14,880 / 17,856 / 1,587 / 397 Outstanding.
+  - Roundings use the largest remainder and sum exactly.
+
+  The generator asserts every count against the stored Workspace at the end. Exits are recorded through `recordPositionChange`, never through the Review (decision 72). `bench/dataset.json` gains `asOfReview.walk` and `asOfReview.owedGroup`.
+- **Smoke run.** `BENCH_SESSIONS=60`, written under `.cache/bench/smoke-60/` only, took 347 s. Every assertion passed, and the split was 30.0 / 35.0 / 15.0 / 20.0 %.
+- **Flagged by the subagent:**
+  1. A Review on the first covered session date (2024-01-02) throws: `open` needs the previous session's close, which coverage doesn't include. The generator skips session 0's Review. This is a product edge case, for the user.
+  2. A one-off "Execution context was destroyed" occurred at the service-worker takeover reload during setup.
+  3. Review `save` time grows during generation (below).
+
+**Full generation, started 2026-11-02 at about 23:10 EST.** It runs in the background, with its log in `evidence/D06/bench-generate-v4.log`. Each Review `save` takes about 1 ms longer every session:
+
+| By session | `save` per call |
+|---|---|
+| 25 | about 34 ms |
+| 100 | about 100 ms |
+| 200 | about 197 ms |
+| 275 | about 272 ms |
+
+At this rate, generation takes close to 20 hours. D5's generator 3 ran at a flat 4.8 s per session.
+
+### T6.24-B1 (investigation; no commit)
+
+The investigation counted IndexedDB requests and records per save on `fake-indexeddb` through the facade.
+- **Requests stay flat with history.** Every history-sized read is range-bounded: `byLifecycleTerminal` after the cutoff, `observations` and `journalObligations` by Review date, and the sparse `byOutstandingDue`. The only growth is `owedGroup`: one `getRecord` per Trade outside the walk that owes an Outstanding Debt (T6.11, `bb02208d`). It grows with Outstanding Debts, not with history.
+- **Node growth comes from `fake-indexeddb`.** Its unpruned transaction list grows without limit. With that list pruned, saves stay flat. A Node run of the real generator grows about 1 ms per Action over 75 sessions, against about 25 ms per interval in the browser.
+- **Leading suspect (unverified):** index tombstones in Chromium's IndexedDB from insert-and-delete churn on `byOutstandingDue` and `byLifecycleActivity`.
+- **No red could be written, so no fix was made.** The suggestion to batch `owedGroup`'s reads is left to the user.
+- **Next step:** T6.25's Chromium bench will time one save at the mature profile.
+
+## T6.27: browser integration suite (B6.1 to B6.12)
+
+- **Part 1, `d4e5294d` (B6.1–B6.6):**
+  - Files: `exit`, `exit-requirements`, `close-review`, `exit-action`, `update`.
+  - `package.json` adds `e2e/d6` to `test:e2e` and `test:e2e:release-history`.
+  - B6.5 follows decision 72: no Record the exit in the Review, and the exit is recorded from Trade Detail.
+  - B6.6 updates `d5r2` to `d6` (current source).
+- **Part 2, `d721d231` (B6.7–B6.12):** files `kill`, `offline`, `runtime-failure` (B6.9, B6.10), `no-save` and `responsive-a11y`.
+- **Results:**
+  - Every case passed on its first clean run. Each was mutation-checked against a rebuilt `dist-releases/d6` or `dist-faults` and logged in `tdd-log.md` as a flagged first-run pass.
+  - No product failure was found, and axe reports no violations.
+  - B6.10's mutation proves the explanation text only: values kept and no Position Change are asserted but were not mutated.
+  - B6.12 cannot reach the Closed list's paging states (they need more than 50 Closed Trades), and no row with incoherent facts was reached. Unit tests cover both.
+  - The subagents' readings are in their reports. Key ones:
+    - B6.2 adds an Open T-A, so each Review has a card to walk.
+    - B6.7's "both reflection outcomes" are the exit's reflection and the Close Review.
+    - B6.9 navigates within the app so the fault parameter holds.
+
+**Cumulative run `t6.27-browser-suite`**: run at HEAD `d721d231` on 2026-11-03, full tier, while the benchmark generation was running. The runner's final report was not delivered, so the results below are read from the output files.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1,174 of 1,175 passed. **1 failed:** `TradeList.test.tsx` "Closed list paging (T6.18-B1) … should append the next page…" (`expected <body> to be <a href="/trades/ccc">`, a focus assertion). Alone it passed 3 of 3 runs, and the file passed 34 of 34. Recorded as a new intermittent failure under CPU load; it gets a bug task if it recurs. | `suite-runs/t6.27-browser-suite-unit.txt` |
+| Node integration | 75 files, 151 tests passed | `suite-runs/t6.27-browser-suite-integration.txt` |
+| Browser (Chromium, full, with `e2e/d6`) | 158 passed (7.2 min) | `suite-runs/t6.27-browser-suite-browser.txt` |
+| `test:e2e:release-history` | 4 passed (B2.3, B2.5, B4.7, B5.6) | `suite-runs/t6.27-browser-suite-release-history.txt` |
+| Static and verification (12) | 12 of 12 passed | `suite-runs/t6.27-browser-suite-checks.txt` |
+
+T6.27's structural verification is met: every case in sections 6.2 of D1, D2, D4, D5 and D6 passes. The full browser tier now takes 7.2 minutes, against tech debt item 6's 8-minute trigger.
