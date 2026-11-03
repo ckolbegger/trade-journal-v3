@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ALLOWANCES, project, type EngineMeasurement } from '../../../tools/capacity/profile.ts';
+import { NO_CLOSE_PHASE } from '../../support/capacity-close-phase.ts';
 
 // T4.28: the capacity projection for schema 3 uses measured bytes for Marks and Daily Trade Review
 // Actions at their mature counts (190,000 and 126,000), and allowances only for what is still unbuilt.
@@ -50,18 +51,22 @@ const MEASUREMENT: EngineMeasurement = {
   bytesPerDebtAnswered: 0,
   bytesPerDebtDeclined: 0,
   bytesPerDebtOutstanding: 0,
+  ...NO_CLOSE_PHASE,
 };
 
 describe('capacity projection at schema 3', () => {
   it('should project Marks and Daily Trade Review Actions from measured bytes at their mature counts', () => {
-    // Measured kinds: 25,000,000 + 12,000 + 1,000,000 + 4,000,000 + 2,400,000 (the 80,000 outcomes at capture;
-    // the 20,000 deferred ones are priced from Debt bytes since D5, zero here) + 190,000 × 5 + 126,000 × 3.
-    // Allowances (Close Review outcomes, Review Notes, Daily Bars, Correction versions): 81,740,000 JSON bytes × 2.
-    expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(197_220_000);
+    // Measured kinds: 25,000,000 + 12,000 + 500,000 (the 50,000 entry Position Changes; the 50,000 exits are
+    // priced from Close phase bytes since D6, zero here) + 2,000,000 (the 100,000 entry Executions, likewise)
+    // + 2,400,000 (the 80,000 outcomes at capture; the 20,000 deferred ones are priced from Debt bytes
+    // since D5, zero here) + 190,000 × 5 + 126,000 × 3.
+    // Allowances (Review Notes, Daily Bars, Correction versions; the Close Review outcomes are priced from
+    // Close phase bytes since D6, zero here): 52,100,000 JSON bytes × 2.
+    expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(135_440_000);
   });
 
   it('should keep allowances only for the kinds not yet built, Daily Bars among them until D11', () => {
-    expect(ALLOWANCES.map((a) => a.kind)).toEqual(['Close Review outcomes', 'Review Notes and Trader Reflections', 'Daily Bars', 'Correction versions']);
+    expect(ALLOWANCES.map((a) => a.kind)).toEqual(['Review Notes and Trader Reflections', 'Daily Bars', 'Correction versions']);
     expect(ALLOWANCES.find((a) => a.kind === 'Daily Bars')?.until).toBe('D11');
   });
 });

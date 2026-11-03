@@ -1622,3 +1622,9 @@ Ports 5175, 9341 and 9342 were free before and after the run. T6.20 is complete.
 | Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.21-release-harness-checks.txt` |
 
 Ports 5175, 9341 and 9342 were free before and after the run.
+
+## T6.22: capacity basis recomputed for schema 5
+
+- **Measurement:** `measureClosePhase` in `tools/capacity/measure-page.ts` closes 2,000 Trades through the facade in 10 rounds of 200, with 1-3 entry and 1-3 exit Position Changes each (4,000 exits, 7,500 Sell Executions), a Close Reason (30/35/15/20) and the section 1.4 Close Review split (1,300 completed, 300 declined, 360 deferred then answered, 32 deferred then declined, 8 Outstanding). `tools/capacity/profile.ts` drops the Close Review allowance and prices 50,000 entry and 50,000 exit Position Changes and 100,000 entry and 100,000 exit Executions.
+- **Verification (exact):** `npm run measure:capacity` printed "measure:capacity OK: M 916515264 bytes, required quota 2749545792 bytes" (7.0 minutes). `npm run verify:capacity` printed "verify:capacity OK: required quota 2749545792 = 3 × 916515264, schema 5".
+- **Measured bytes per record (chromium):** exit Position Change 1,155.7 (entry 485.7), exit Execution 611.4 (entry 380.3), Close Review completed 1,879.7, declined 1,202.3, deferred then answered 3,369.6, deferred then declined 2,751.4, Outstanding 1,512.1. The replaced Close Review allowance was 1,200 JSON bytes x overhead for all 24,700.

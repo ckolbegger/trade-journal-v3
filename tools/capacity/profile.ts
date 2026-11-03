@@ -63,23 +63,62 @@ export interface EngineMeasurement {
   readonly bytesPerDebtAnswered: number;
   readonly bytesPerDebtDeclined: number;
   readonly bytesPerDebtOutstanding: number;
+  // The Close phase (D6): Trades closed through the facade with 1–3 exit Position Changes each and a Close
+  // Reason. The exit Position Change's share is the Trade document's growth beyond its Sell Executions
+  // (the Position Change fact, the Close Reason, the Lifecycle State), averaged over every exit. A Close
+  // Review outcome's share is its Entry or decline with its obligation record, or for a deferred one its
+  // Debt, obligation record and settling outcome, each scaled by the phase's own on-disk overhead.
+  readonly closedTrades: number;
+  readonly exitPositionChanges: number;
+  readonly exitExecutions: number;
+  readonly closeReviewsCompletedAtCapture: number;
+  readonly closeReviewsDeclinedAtCapture: number;
+  readonly closeReviewDebtsAnswered: number;
+  readonly closeReviewDebtsDeclined: number;
+  readonly closeReviewDebtsOutstanding: number;
+  readonly closeOverheadRatio: number;
+  readonly jsonBytesPerExitPositionChange: number;
+  readonly jsonBytesPerExitExecution: number;
+  readonly jsonBytesPerCloseReviewCompletedAtCapture: number;
+  readonly jsonBytesPerCloseReviewDeclinedAtCapture: number;
+  readonly jsonBytesPerCloseReviewDebtAnswered: number;
+  readonly jsonBytesPerCloseReviewDebtDeclined: number;
+  readonly jsonBytesPerCloseReviewDebtOutstanding: number;
+  readonly bytesPerExitPositionChange: number;
+  readonly bytesPerExitExecution: number;
+  readonly bytesPerCloseReviewCompletedAtCapture: number;
+  readonly bytesPerCloseReviewDeclinedAtCapture: number;
+  readonly bytesPerCloseReviewDebtAnswered: number;
+  readonly bytesPerCloseReviewDebtDeclined: number;
+  readonly bytesPerCloseReviewDebtOutstanding: number;
 }
 
 // Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
 // whole "Executions and settlement facts" count until D7 adds settlement facts. The 100,000
 // Position Change Reflection outcomes are split as D5 section 1.4 does: 65% completed and 15%
 // declined at capture (each priced from its own measured bytes), 18% deferred then answered, 1.6%
-// deferred then declined, and 0.4% still Outstanding (measured as Debts).
+// deferred then declined, and 0.4% still Outstanding (measured as Debts). From D6 the 100,000 Position
+// Changes and 200,000 Executions are half entries and half exits (D6 section 1.4: 1–3 entries and 1–3
+// exits per Closed Trade, averaging 4 Position Changes), the entries priced from the Open phase and the
+// exits from the Close phase. The 24,700 Close Review outcomes use the same fractions as the Position
+// Change Reflections; 24,700 × 1.6% and × 0.4% are rounded to 395 and 99 so that the five counts sum to 24,700.
 export const MEASURED = {
   tradesWithPlanReflection: 25_000,
   catalogRecords: 60,
-  positionChanges: 100_000,
-  executions: 200_000,
+  positionChangeEntries: 50_000,
+  positionChangeExits: 50_000,
+  executionEntries: 100_000,
+  executionExits: 100_000,
   positionChangeReflectionsCompletedAtCapture: 65_000,
   positionChangeReflectionsDeclinedAtCapture: 15_000,
   debtsAnswered: 18_000,
   debtsDeclined: 1_600,
   debtsOutstanding: 400,
+  closeReviewsCompletedAtCapture: 16_055,
+  closeReviewsDeclinedAtCapture: 3_705,
+  closeReviewDebtsAnswered: 4_446,
+  closeReviewDebtsDeclined: 395,
+  closeReviewDebtsOutstanding: 99,
   // Replaced the D1 allowances in D4 (T4.28): the Mark count includes corrections. Acknowledgments
   // have no mature count in the profile, so they are measured and recorded but not projected.
   marks: 190_000,
@@ -89,7 +128,6 @@ export const MEASURED = {
 // Kinds that do not exist yet: count × estimated JSON bytes from the planned shape, scaled by the
 // measured overhead ratio. Each schema-changing deliverable replaces its allowance.
 export const ALLOWANCES = [
-  { kind: 'Close Review outcomes', count: 24_700, jsonBytes: 1_200, until: 'D6', shape: 'review answers and grades' },
   { kind: 'Review Notes and Trader Reflections', count: 5_000, jsonBytes: 1_500, until: 'D13', shape: 'free text' },
   { kind: 'Daily Bars', count: 190_000, jsonBytes: 220, until: 'D11', shape: 'instrument, session, OHLC, volume' },
   { kind: 'Correction versions', count: 4_000, jsonBytes: 700, until: 'D15', shape: 'superseded fact copy and reason' },
@@ -104,13 +142,20 @@ export function project(m: EngineMeasurement): Projection {
   const measured =
     MEASURED.tradesWithPlanReflection * m.bytesPerTradeWithReflection +
     MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio +
-    MEASURED.positionChanges * m.bytesPerPositionChange +
-    MEASURED.executions * m.bytesPerExecution +
+    MEASURED.positionChangeEntries * m.bytesPerPositionChange +
+    MEASURED.positionChangeExits * m.bytesPerExitPositionChange +
+    MEASURED.executionEntries * m.bytesPerExecution +
+    MEASURED.executionExits * m.bytesPerExitExecution +
     MEASURED.positionChangeReflectionsCompletedAtCapture * m.bytesPerReflectionCompletedAtCapture +
     MEASURED.positionChangeReflectionsDeclinedAtCapture * m.bytesPerReflectionDeclinedAtCapture +
     MEASURED.debtsAnswered * m.bytesPerDebtAnswered +
     MEASURED.debtsDeclined * m.bytesPerDebtDeclined +
     MEASURED.debtsOutstanding * m.bytesPerDebtOutstanding +
+    MEASURED.closeReviewsCompletedAtCapture * m.bytesPerCloseReviewCompletedAtCapture +
+    MEASURED.closeReviewsDeclinedAtCapture * m.bytesPerCloseReviewDeclinedAtCapture +
+    MEASURED.closeReviewDebtsAnswered * m.bytesPerCloseReviewDebtAnswered +
+    MEASURED.closeReviewDebtsDeclined * m.bytesPerCloseReviewDebtDeclined +
+    MEASURED.closeReviewDebtsOutstanding * m.bytesPerCloseReviewDebtOutstanding +
     MEASURED.marks * m.bytesPerMark +
     MEASURED.dailyTradeReviewActions * m.bytesPerAction;
   const allowed = ALLOWANCES.reduce((sum, a) => sum + a.count * a.jsonBytes * m.overheadRatio, 0);

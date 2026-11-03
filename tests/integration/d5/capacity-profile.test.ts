@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MEASURED, project, type EngineMeasurement } from '../../../tools/capacity/profile.ts';
+import { NO_CLOSE_PHASE } from '../../support/capacity-close-phase.ts';
 
 // T5.19: the capacity projection for schema 4 prices the deferred part of the Position Change
 // Reflection outcomes from measured Debt bytes, using the D5 section 1.4 split.
@@ -49,6 +50,7 @@ const MEASUREMENT: EngineMeasurement = {
   bytesPerDebtAnswered: 100,
   bytesPerDebtDeclined: 200,
   bytesPerDebtOutstanding: 400,
+  ...NO_CLOSE_PHASE,
 };
 
 describe('capacity projection at schema 4', () => {
@@ -62,7 +64,7 @@ describe('capacity projection at schema 4', () => {
   });
 
   it('should project the deferred outcomes from the measured Debt bytes at the section 1.4 counts', () => {
-    // Allowances only (81,740,000 JSON bytes × overhead 0 here is nothing), so the measured kinds alone:
+    // Allowances (52,100,000 JSON bytes × overhead 0 here is nothing), so the measured kinds alone:
     // 65,000 × 10 + 15,000 × 50 + 18,000 × 100 + 1,600 × 200 + 400 × 400.
     expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(650_000 + 750_000 + 1_800_000 + 320_000 + 160_000);
   });
