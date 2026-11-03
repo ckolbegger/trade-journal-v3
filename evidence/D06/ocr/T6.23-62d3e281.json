@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 276312,
+    "input_tokens": 274187,
+    "output_tokens": 2125,
+    "cache_read_tokens": 40320,
+    "elapsed": "1m49s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_find": 2,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d06/fixture-views.ts",
+      "content": "These guards silently accept missing `lotMatches` and `realizedToDate` on Open Trade details. Both fields are required by `OpenTradeDetail`, but legacy snapshots predate them, so snapshot comparison will not detect their omission either. A reporting regression that stops emitting either field would therefore pass A98 verification. Distinguish Planned details from details with positions (for example, using lifecycle), and require an actual empty Lot Match array and exactly `'0/1'` for the latter.",
+      "existing_code": "    if (detail.lotMatches !== undefined \u0026\u0026 detail.lotMatches.length \u003e 0) out.push(`${detail.tradeId} Lot Matches (${detail.lotMatches.length})`);\n    if (detail.realizedToDate !== undefined \u0026\u0026 detail.realizedToDate !== '0/1') out.push(`${detail.tradeId} realized-to-date (${JSON.stringify(detail.realizedToDate)})`);",
+      "start_line": 74,
+      "end_line": 75,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D06 workspace fixture freezing, views, and verification",
+      "files": [
+        "src/itg/d06/fixture-views.ts",
+        "src/itg/d06/fixtures-freeze.ts",
+        "src/itg/d06/verify-fixtures.ts",
+        "src/itg/d06/workspace-fixture.ts"
+      ]
+    }
+  ],
+  "session_id": "7da75e13-8059-4d1a-8a80-ba2e546e8d66",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7da75e13-8059-4d1a-8a80-ba2e546e8d66",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "0bc6ac870e2077395a77c3356e6cd8b925567f34",
+      "resolved_head": "1be64413f4eb3905ce26c051c2b772ada950f86d",
+      "exact_range": "0bc6ac870e2077395a77c3356e6cd8b925567f34..1be64413f4eb3905ce26c051c2b772ada950f86d",
+      "source_artifact_sha256": "7dd32630a4e368d875b4397457f0d2ad5bbb2aecd8534a54cfbe6033ca9383bc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8a1a6f6a9ddc1d28817071584490d66dc3038fc906777cb7362934b4b3a773ac",
+          "path": "src/itg/d06/verify-fixtures.ts",
+          "fingerprint": "a40da8beac128d3039206054deceadb11b81f2a6e5ddd1f1b283d10465fb77e1"
+        },
+        {
+          "item_id": "a31e7201ec84915e61dc5598444c1fddd76d73ae053b0594a1eac85b189774b2",
+          "path": "src/itg/d06/workspace-fixture.ts",
+          "fingerprint": "eb35e668d3530e8e2dae29def60b628a53f88474ac140322047cce5caa77a8ff"
+        },
+        {
+          "item_id": "d7355451f300ad12b0c0c1228c83d66c4a504e6dc0b6343d80564d30c2393268",
+          "path": "src/itg/d06/fixtures-freeze.ts",
+          "fingerprint": "6a70a19d599da54551a83058d90c6e583bcef3d9a2d43d03c189d08b454a5974"
+        },
+        {
+          "item_id": "dc4d0882a50d3b409316a01578a896f66c707fe6e7df03f5d0be170fc55e0030",
+          "path": "src/itg/d06/fixture-views.ts",
+          "fingerprint": "5c21a4a8cb31de3134baa310adaf4bdd1f3d2e9d2706c92584fcda271e1c0180"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8a1a6f6a9ddc1d28817071584490d66dc3038fc906777cb7362934b4b3a773ac",
+          "path": "src/itg/d06/verify-fixtures.ts",
+          "fingerprint": "a40da8beac128d3039206054deceadb11b81f2a6e5ddd1f1b283d10465fb77e1"
+        },
+        {
+          "item_id": "a31e7201ec84915e61dc5598444c1fddd76d73ae053b0594a1eac85b189774b2",
+          "path": "src/itg/d06/workspace-fixture.ts",
+          "fingerprint": "eb35e668d3530e8e2dae29def60b628a53f88474ac140322047cce5caa77a8ff"
+        },
+        {
+          "item_id": "d7355451f300ad12b0c0c1228c83d66c4a504e6dc0b6343d80564d30c2393268",
+          "path": "src/itg/d06/fixtures-freeze.ts",
+          "fingerprint": "6a70a19d599da54551a83058d90c6e583bcef3d9a2d43d03c189d08b454a5974"
+        },
+        {
+          "item_id": "dc4d0882a50d3b409316a01578a896f66c707fe6e7df03f5d0be170fc55e0030",
+          "path": "src/itg/d06/fixture-views.ts",
+          "fingerprint": "5c21a4a8cb31de3134baa310adaf4bdd1f3d2e9d2706c92584fcda271e1c0180"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 109337
+  }
+}

@@ -1671,3 +1671,52 @@ The whole run took about 8.5 minutes from start to finish.
 | Static and verification (12) | 12 of 12 passed | `suite-runs/t6.22-b1-capacity-guard-checks.txt` |
 
 Ports 5175, 9341 and 9342 were free before and after both runs.
+
+## T6.23: the schema-v5 fixture; v1–v4 migrate (A98)
+
+**Commit `62d3e281`** (`test(fixtures): T6.23 …`).
+- **What it adds:** `tests/fixtures/workspace-v5/` (`dump.json` and `expected-views.json`). `viewsOf` now includes the Closed list and Closed Details from schema 5, and a new `closedViewsOf` covers dumps from earlier schemas. A new `closeViolations` check (A98) runs on dumps below schema 5.
+- **Frozen content**, as of Tuesday 2026-10-20 17:00 ET. D5's content is unchanged, and four Trades are added to it:
+
+| Trade | State | Detail |
+|---|---|---|
+| T-A (XYZ) | Open, Position 70 | X1 Sell 30 @ 52.00; one derived Lot Match; realized to date 55.90 |
+| T-S (QRS) | Open | Sell XS; one Active Shortfall of 40, caused by XS; realized 55.90 |
+| GIS | Closed Monday | Close Reason Target Reached; Close Review completed; realized 588.00 |
+| SYY | Closed Tuesday | Close Reason Stop Triggered; Close Review deferred, so one Outstanding Debt; realized −242.00 |
+
+  In total the fixture holds 5 Planned, 5 Open and 2 Closed Trades. The snapshot's Review Date is Tuesday.
+- **Verification:**
+  - `npm run fixtures:freeze -- --schema 5` printed "fixtures:freeze OK: tests/fixtures/workspace-v5 (schema 5, 5 Planned and 5 Open and 2 Closed Trades, 3 Accounts)".
+  - `npm run verify:fixtures` printed "verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4, workspace-v5 open Ready at schema 5 with views equal to their snapshots".
+  - `git diff --stat tests/fixtures/workspace-v[1-4]` is empty.
+- **Flagged:** T-A's and T-S's dates (10-12 and 10-13, from the plan) fall before D5's Monday Review Date (10-19). This does no harm.
+
+**ocr review of `62d3e281`** (`evidence/D06/ocr/T6.23-62d3e281.json`, relocated; the JSON dumps were excluded): ocr reviewed 4 files and made 1 comment.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tools/fixture-views.ts:74-75` | The `lotMatches` and `realizedToDate` guards pass when the field is missing | Valid. The reviewer found two more gaps of the same kind: the `?? []` on `positionChanges` and `journal`, and no requirement that a v3 or v4 view has any Open Trade to check | Bug task T6.23-B1 |
+
+The reviewer found no problem with how `viewsOf` gates each view by schema.
+
+**Cumulative run `t6.23-fixtures`** (HEAD `62d3e281`, task tier): unit 1174, integration 122, browser 5 (10.5 s), checks 12/12. Output: `suite-runs/t6.23-fixtures-*.txt`.
+
+### T6.23-B1: the A98 check reports what is missing
+
+**Commit `bb9943b9`.** The check now takes a second argument, `closeViolations(views, hasOpenTrades)`, which `verify-fixtures` sets to schema ≥ 2. It reports:
+- an Open detail with no `positionChanges` array, no `lotMatches`, non-empty `lotMatches`, or no `realizedToDate` of `0/1`;
+- any detail with no `journal` array;
+- no Open detail at all, when `hasOpenTrades` is set.
+
+**Tests** (`tools/fixture-views.test.ts`, which had no `closeViolations` tests before):
+- Four reds, each on an assertion, then green.
+- Two positive cases passed on their first run, because the check from T6.23 already covered them. Both are flagged. Mutating the exit check from `Sell` to `Buy` made both fail, and the code was then restored.
+
+`verify:fixtures` still reports OK for v1–v5, and `tests/fixtures/` is unchanged.
+
+**ocr review of `bb9943b9`** (`evidence/D06/ocr/T6.23-B1-bb9943b9.json`, relocated): ocr reviewed 3 files and made 0 comments.
+
+**Cumulative run `t6.23-b1-strict-a98`** (HEAD `bb9943b9`, task tier): unit 1174, integration 122, browser 5 (10.3 s), checks 12/12. Output: `suite-runs/t6.23-b1-strict-a98-*.txt`. Ports 5175, 9341 and 9342 were free before and after each run.
+
+**Order (at the user's direction, 2026-11-02):** T6.26, the Node integration suite, runs next, so that its results are in before the long benchmark generation. T6.24's generator then runs overnight, while T6.27 proceeds. The task graph allows this order.

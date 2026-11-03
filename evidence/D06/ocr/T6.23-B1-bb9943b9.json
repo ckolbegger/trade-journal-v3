@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 32434,
+    "input_tokens": 32113,
+    "output_tokens": 321,
+    "cache_read_tokens": 5760,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 5,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d06/fixture-views-spec.ts,src/itg/d06/fixture-views.ts,src/itg/d06/verify-fixtures.ts",
+        "arguments": "{\"file_path\":\"src/itg/d06/fixtures/workspace-fixture.ts\",\"start_line\":1,\"end_line\":260}",
+        "error": "file \"src/itg/d06/fixtures/workspace-fixture.ts\" not found: git show 9bf6e911:src/itg/d06/fixtures/workspace-fixture.ts: exit status 128: fatal: path 'src/itg/d06/fixtures/workspace-fixture.ts' does not exist in '9bf6e911'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/d06/fixture-views-spec.ts",
+        "src/itg/d06/fixture-views.ts",
+        "src/itg/d06/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "3bcb7e0d-7fd8-4ede-9436-b34954c17614",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3bcb7e0d-7fd8-4ede-9436-b34954c17614",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "9bf6e911",
+      "resolved_base": "6762052201d0952dabe5356f64bcf5c8b6dbb67e",
+      "resolved_head": "9bf6e911c41e006091b3bfd26df3ea407257c3c0",
+      "exact_range": "6762052201d0952dabe5356f64bcf5c8b6dbb67e..9bf6e911c41e006091b3bfd26df3ea407257c3c0",
+      "source_artifact_sha256": "d3b3f58f4513b0a293bc309fdd3daba1af7b06100c37e5a032282954a6213b48"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18ccdd61d5051182016855331581ed4042f052060ebad80ffbc210c8cc2f934a",
+          "path": "src/itg/d06/fixture-views-spec.ts",
+          "fingerprint": "f3efb506fd160345aaa753261c1a65d298d41571d31043833ac9a6645e0e35ed"
+        },
+        {
+          "item_id": "8a1a6f6a9ddc1d28817071584490d66dc3038fc906777cb7362934b4b3a773ac",
+          "path": "src/itg/d06/verify-fixtures.ts",
+          "fingerprint": "302f8d4ce2b3edb13f15266b8b3cec12331f8fdaaed406ef0513efb21a3ff06f"
+        },
+        {
+          "item_id": "dc4d0882a50d3b409316a01578a896f66c707fe6e7df03f5d0be170fc55e0030",
+          "path": "src/itg/d06/fixture-views.ts",
+          "fingerprint": "ea0100cd4f45e88ace0df64684205a1ae33a1ffc051d035f65110bcc6cbb5133"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18ccdd61d5051182016855331581ed4042f052060ebad80ffbc210c8cc2f934a",
+          "path": "src/itg/d06/fixture-views-spec.ts",
+          "fingerprint": "f3efb506fd160345aaa753261c1a65d298d41571d31043833ac9a6645e0e35ed"
+        },
+        {
+          "item_id": "8a1a6f6a9ddc1d28817071584490d66dc3038fc906777cb7362934b4b3a773ac",
+          "path": "src/itg/d06/verify-fixtures.ts",
+          "fingerprint": "302f8d4ce2b3edb13f15266b8b3cec12331f8fdaaed406ef0513efb21a3ff06f"
+        },
+        {
+          "item_id": "dc4d0882a50d3b409316a01578a896f66c707fe6e7df03f5d0be170fc55e0030",
+          "path": "src/itg/d06/fixture-views.ts",
+          "fingerprint": "ea0100cd4f45e88ace0df64684205a1ae33a1ffc051d035f65110bcc6cbb5133"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21099
+  }
+}
