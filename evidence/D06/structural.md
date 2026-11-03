@@ -2049,3 +2049,26 @@ The figures come from the critic's completion notice, the harness's own count. B
 | Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|---|
 | 2 | `8317e0dc` | v2 | 182,286 | 87 | 11 min 19 s | 3 low (fixed as T6.28-B2 to B4) |
+
+## T6.25-B2: vacate the lifecycle index keys a Trade write moves (decision 74)
+
+- **Commits:**
+  - `49fc42f0` (Persistence): the `vacateIndexKey` write op, a read-write cursor over `IDBKeyRange.only(key)` inside the commit transaction. It records no revision.
+  - `1822504c` (Trade Record): the stagers queue `vacateIndexKey` for whichever of `byLifecycle` and `byLifecycleActivity` a write moved. The Chromium regression test is `e2e/d6/stale-index.spec.ts`.
+- **Regression test:** 3,000 Trades churned on a browser profile kept on disk. Red without the fix: churned 16.1 ms against fresh 1.1 ms. Green with it: 1.2 ms against 1.1 ms.
+- **Deviation:** Planned to Open vacates `byLifecycle` only, because a Planned Trade has no `byLifecycleActivity` entry.
+- **First-run pass, flagged:** the earlier-dated Position Change that moves no key. Mutation check: dropping the unchanged-key check gives `AssertionError: expected [ Array(2) ] to deeply equal []`.
+- **ocr** (`ocr/T6.25-B2.json`): 1 finding, Valid with low practical risk. A synchronous `IDBKeyRange.only` throw inside the async cursor task was swallowed, so the commit returned Committed. Fixed by T6.25-B2-R1.
+- **T6.25-B2-R1 `1927f827`:** the key range is now built synchronously, before the cursor task, so a bad key aborts the commit. Red: `expected 'Committed' to be 'threw'`. ocr (`ocr/T6.25-B2-R1.json`): 0 comments.
+
+**Cumulative run `t6.25-b2`**: at HEAD `1822504c`, full tier. R1, a two-line persistence change, was checked by its own suites: persistence and Trade Record (95 passed), the stale-index browser test, typecheck, `tsc6`, lint and lint:deps.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,183 passed | `suite-runs/t6.25-b2-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.25-b2-integration.txt` |
+| Browser (Chromium, full) | 161 passed (7.5 min) | `suite-runs/t6.25-b2-browser.txt` |
+| Release history | 4 passed | `suite-runs/t6.25-b2-release-history.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.25-b2-checks.txt` |
+
+The critic 3 gate run, at the final code, will cover R1 in a complete cumulative run.

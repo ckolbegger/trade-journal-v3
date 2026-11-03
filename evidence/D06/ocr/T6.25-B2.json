@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 119833,
+    "input_tokens": 117718,
+    "output_tokens": 2115,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m24s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "A synchronous error inside this async function becomes a rejected promise without aborting the IndexedDB transaction. For example, `key: NaN` is allowed by the TypeScript `IDBValidKey` type but makes `IDBKeyRange.only` throw `DataError`. The request catch below swallows that rejection, while `tx.done` can still resolve, so preceding writes persist and commit returns `Committed` even though this operation failed. Construct the range and issue the initial cursor request synchronously inside the outer try, or explicitly abort the transaction when the cursor task rejects.",
+      "existing_code": "            request = (async () =\u003e {\n              let cursor = await index.openCursor(IDBKeyRange.only(write.key));\n              while (cursor) cursor = await cursor.continue();\n            })();",
+      "start_line": 401,
+      "end_line": 404,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d6/stale-index-entry.ts",
+        "src/modules/trade-record/trade-record.ts",
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "9f93faf1-ecc2-423d-b04e-63ef08f268bc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9f93faf1-ecc2-423d-b04e-63ef08f268bc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "065b08d4",
+      "requested_head": "1822504c",
+      "resolved_base": "065b08d49ed4a188804db860617ba32ce4876fd4",
+      "resolved_head": "1822504cc77477c78fcf1ef5b2117d3e72320db4",
+      "exact_range": "065b08d49ed4a188804db860617ba32ce4876fd4..1822504cc77477c78fcf1ef5b2117d3e72320db4",
+      "source_artifact_sha256": "aa175787bbef47dc95487353b72373bd9955ef74e547e015aebdb0e7e265c7fe"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "79fe813f196b34c44344cc5b4cf6178e62474878c78693f11baa80b3edc2bbda",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "a83f7f71a387890368422dbe9045f1124fb6765ac297d77132f51d26d22ef2cc"
+        },
+        {
+          "item_id": "9b542df9b824befbb613798a9ea6684465d1a571962c1e16a18dcb52575a0e67",
+          "path": "e2e/d6/stale-index-entry.ts",
+          "fingerprint": "7d0544c94592d9abbf55f79f79ea31d797a42bfeaa16ae98cb8cc69d7bfdf674"
+        },
+        {
+          "item_id": "e1a58c32fbee19567045a128df459af95f772f89436f90186b2dba4c4242f0be",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "6e5ddd56a4f6e2fee49c6ed17f3ad027206a9899c3bb0884043448ce86c2f98c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "79fe813f196b34c44344cc5b4cf6178e62474878c78693f11baa80b3edc2bbda",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "a83f7f71a387890368422dbe9045f1124fb6765ac297d77132f51d26d22ef2cc"
+        },
+        {
+          "item_id": "9b542df9b824befbb613798a9ea6684465d1a571962c1e16a18dcb52575a0e67",
+          "path": "e2e/d6/stale-index-entry.ts",
+          "fingerprint": "7d0544c94592d9abbf55f79f79ea31d797a42bfeaa16ae98cb8cc69d7bfdf674"
+        },
+        {
+          "item_id": "e1a58c32fbee19567045a128df459af95f772f89436f90186b2dba4c4242f0be",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "6e5ddd56a4f6e2fee49c6ed17f3ad027206a9899c3bb0884043448ce86c2f98c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 83918
+  }
+}

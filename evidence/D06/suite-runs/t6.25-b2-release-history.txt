@@ -1,0 +1,10 @@
+
+Running 4 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d2/migration.spec.ts:48:3 › B2.3 update from D1 with data › should show the migration message, then list both Plans under Planned with Record entry working and About at schema 2, on a new database with the old one gone @release-history (4.2s)
+  ✓  2 [chromium] › e2e/d2/migration.spec.ts:123:3 › B2.5 old tab during migration › should show "Updated in another tab" in the old tab with its values on screen, return RuntimeNotWritable on Confirm, and write nothing to the old database after the snapshot @release-history (3.6s)
+  ✓  3 [chromium] › e2e/d4/update.spec.ts:6:3 › B4.7 update from D2 with data › should show Updating your journal, then the Review with both Instruments, a working Mark and Action, About at schema 3 with the session policy, and the new database pointed to with the old one gone @release-history (4.2s)
+  ✓  4 [chromium] › e2e/d5/update.spec.ts:7:3 › B5.6 Update from D4 with data › should show Updating your journal, keep two Open Trades with their Actions, list a new deferred reflection as due, show schema 4 in About, and point to the new database with the old one gone @release-history (4.8s)
+
+  4 passed (19.0s)
+EXIT 0

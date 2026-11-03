@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 13903,
+    "input_tokens": 13789,
+    "output_tokens": 114,
+    "cache_read_tokens": 5760,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/persistence/persistence.ts",
+      "files": [
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "e67dbb4e-9c8c-4b2f-8311-5356a6f6c070",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e67dbb4e-9c8c-4b2f-8311-5356a6f6c070",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1927f827",
+      "resolved_base": "1822504cc77477c78fcf1ef5b2117d3e72320db4",
+      "resolved_head": "1927f827b6641eec0970d83d170ae7fc94afd0d6",
+      "exact_range": "1822504cc77477c78fcf1ef5b2117d3e72320db4..1927f827b6641eec0970d83d170ae7fc94afd0d6",
+      "source_artifact_sha256": "68a1df6e67e4e88ccf34984ed7d308b7475ad204d9d09fcc3137d20bece25c3d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "d5b2f9a7cde1a68bdd1d0e8cd5d2c8aa505432dd28a38b9be8138a8e669e4307"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "d5b2f9a7cde1a68bdd1d0e8cd5d2c8aa505432dd28a38b9be8138a8e669e4307"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 12588
+  }
+}
