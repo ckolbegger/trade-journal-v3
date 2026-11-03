@@ -552,7 +552,7 @@ try {
     await savePage.goto(origin);
     await markTime(savePage, 'tj:interactive');
     coldSaveAction.push({ symbol: labelOf(saveCard), ms: await timeSaveAction(savePage, saveCard) });
-    console.log(`bench:run: cold Trade Action save ${labelOf(saveCard)}${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);
+    console.log(`bench:run: cold Trade Action save ${labelOf(saveCard)} ${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);
     await coldContext.close();
   }
 } finally {
