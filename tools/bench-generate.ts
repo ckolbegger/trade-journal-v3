@@ -10,16 +10,27 @@ import os from 'node:os';
 import { chromium, type BrowserContext, type Page } from '@playwright/test';
 import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE, type BenchAsOf, type BenchCounts } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
+import path from 'node:path';
 import {
   BENCH_BUILD_DIR,
-  BENCH_DATASET_FILE,
-  BENCH_EXPECTED_ROWS_FILE,
+  BENCH_DATASET_FILE as FULL_DATASET_FILE,
+  BENCH_EXPECTED_ROWS_FILE as FULL_EXPECTED_ROWS_FILE,
   BENCH_PORT,
-  BENCH_PROFILE_DIR,
-  BENCH_STAMP_FILE,
+  BENCH_PROFILE_DIR as FULL_PROFILE_DIR,
   type BenchStamp,
   type ExpectedOpenRows,
 } from './bench/profile.ts';
+
+// BENCH_SESSIONS=<n> runs a short smoke generation over the first n sessions (D6 T6.24), scaling every count.
+// It writes only under .cache/bench/smoke-<n>/ (never bench/dataset.json, the cached profile or its stamp)
+// and always regenerates.
+const smokeSessions = process.env['BENCH_SESSIONS'] ? Number(process.env['BENCH_SESSIONS']) : undefined;
+if (smokeSessions !== undefined && !(Number.isInteger(smokeSessions) && smokeSessions > 0)) throw new Error(`BENCH_SESSIONS=${process.env['BENCH_SESSIONS']} is not a positive integer`);
+const smokeDir = smokeSessions === undefined ? undefined : path.resolve(`.cache/bench/smoke-${smokeSessions}`);
+const BENCH_PROFILE_DIR = smokeDir ? path.join(smokeDir, 'profile') : FULL_PROFILE_DIR;
+const BENCH_STAMP_FILE = path.join(BENCH_PROFILE_DIR, 'tj-bench.json');
+const BENCH_DATASET_FILE = smokeDir ? path.join(smokeDir, 'dataset.json') : FULL_DATASET_FILE;
+const BENCH_EXPECTED_ROWS_FILE = smokeDir ? path.join(smokeDir, 'expected-open-rows.json') : FULL_EXPECTED_ROWS_FILE;
 import { pinAsOf } from './bench/pin.ts';
 import { listFiles } from './release.ts';
 import { startReleaseServer } from './release-server.ts';
@@ -27,7 +38,7 @@ import { startReleaseServer } from './release-server.ts';
 const wanted: BenchStamp = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION };
 // Generation takes on the order of an hour (D4 T4.30); `bench:` progress lines are echoed below.
 const stamp = (await readFile(BENCH_STAMP_FILE, 'utf8').then(JSON.parse, () => undefined)) as BenchStamp | undefined;
-if (stamp?.generatorVersion === wanted.generatorVersion && stamp.schemaVersion === wanted.schemaVersion) {
+if (smokeSessions === undefined && stamp?.generatorVersion === wanted.generatorVersion && stamp.schemaVersion === wanted.schemaVersion) {
   console.log(`bench:generate OK: reusing the cached profile ${BENCH_PROFILE_DIR} (generator ${stamp.generatorVersion}, schema ${stamp.schemaVersion})`);
   process.exit(0);
 }
@@ -74,7 +85,7 @@ try {
   await controlled(page);
   release = await page.evaluate(() => document.getElementById('root')?.dataset.release ?? '');
   const started = performance.now();
-  result = await page.evaluate(() => window.__tjBench!.generate());
+  result = await page.evaluate((sessions) => window.__tjBench!.generate(sessions === undefined ? {} : { sessions }), smokeSessions);
   generationMs = Math.round(performance.now() - started);
 
   // The Open list as the trader sees it at the as-of instant, for T2.21's before-and-after comparison.
@@ -130,14 +141,17 @@ const provenance = {
   counts: result.counts,
   actionsByChoice: result.actionsByChoice,
   dispositions: result.dispositions,
+  closeReviewDispositions: result.closeReviewDispositions,
+  asOfReview: result.asOfReview,
   asOfDueReflections: result.asOfDueReflections,
   outstandingDebts: result.outstandingDebts,
   generationMs,
   generatedAt: new Date().toISOString(),
   engine,
   host: { platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model ?? 'unknown', cores: os.cpus().length },
-  profileDir: '.cache/bench/profile',
-  expectedOpenRows: 'bench/expected-open-rows.json',
+  profileDir: path.relative(process.cwd(), BENCH_PROFILE_DIR),
+  expectedOpenRows: path.relative(process.cwd(), BENCH_EXPECTED_ROWS_FILE),
+  ...(smokeSessions !== undefined && { smokeSessions }),
 };
 const rows: ExpectedOpenRows = { ...wanted, ...expected, items: result.openItems };
 await writeFile(BENCH_DATASET_FILE, `${JSON.stringify(provenance, null, 2)}\n`);
