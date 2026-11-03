@@ -241,4 +241,47 @@ test.describe('B6.12 Responsive and accessible', () => {
     }
     await context.close();
   });
+
+  test('should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
+    await setup.close();
+    const context = await launchAt(profile, TUESDAY_1405);
+    const page = await firstPage(context);
+    await page.goto('/');
+    await openTradeFromOpenList(page, 'XYZ');
+    await openExitForm(page);
+    await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
+    await answerIn(exitReflection(page));
+    await page.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
+
+    // Each "price on date time" phrase and each signed money amount sits on one line: its text range has one top.
+    for (const width of [375, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      const broken = await page.getByRole('table', { name: 'Lot Matches' }).evaluate((table) => {
+        const found: string[] = [];
+        const phrases = [/\$[\d,]+\.\d+ on \d{4}-\d{2}-\d{2} \d{2}:\d{2}/g, /[-+−–]?\$[\d,]+\.\d{2}/g];
+        const walker = document.createTreeWalker(table.querySelector('tbody')!, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+          const text = node.textContent ?? '';
+          for (const pattern of phrases) {
+            for (const match of text.matchAll(pattern)) {
+              const range = document.createRange();
+              range.setStart(node, match.index);
+              range.setEnd(node, match.index + match[0].length);
+              const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+              if (tops.size > 1) found.push(`${match[0]} (${tops.size} lines)`);
+            }
+          }
+        }
+        return found;
+      });
+      expect(broken, `Lot Matches at ${width} px: text that breaks`).toEqual([]);
+    }
+    await context.close();
+  });
 });

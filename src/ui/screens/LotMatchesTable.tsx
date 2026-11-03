@@ -49,10 +49,10 @@ export function LotMatchesTable({
       <tbody>
         {rows.map((match) => (
           <tr key={`${match.openingExecutionId}|${match.disposingExecutionId}`}>
-            <td>{at(match.openingExecutionId)}</td>
-            <td>{at(match.disposingExecutionId)}</td>
-            <td className="number">{quantity(match.quantity)}</td>
-            <td className="number">{calculation(match.realized, signed(money))}</td>
+            <td className="nowrap">{at(match.openingExecutionId)}</td>
+            <td className="nowrap">{at(match.disposingExecutionId)}</td>
+            <td className="number nowrap">{quantity(match.quantity)}</td>
+            <td className="number nowrap">{calculation(match.realized, signed(money))}</td>
           </tr>
         ))}
       </tbody>
