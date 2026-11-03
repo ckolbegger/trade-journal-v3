@@ -29,7 +29,22 @@ export const test = base.extend<{ server: ReleaseServer; profile: Profile }>({
   // eslint-disable-next-line no-empty-pattern -- Playwright requires the destructuring form.
   profile: async ({}, provide, info) => {
     const dir = info.outputPath('profile');
-    await provide(profileAt(dir));
+    // Every context the test launches is closed when the test ends, so a failure leaves no browser running
+    // (closing a context the test already closed does nothing).
+    const plain = profileAt(dir);
+    const launched: BrowserContext[] = [];
+    try {
+      await provide({
+        dir,
+        launch: async (options) => {
+          const context = await plain.launch(options);
+          launched.push(context);
+          return context;
+        },
+      });
+    } finally {
+      await Promise.all(launched.map((context) => context.close().catch(() => undefined)));
+    }
   },
 });
 

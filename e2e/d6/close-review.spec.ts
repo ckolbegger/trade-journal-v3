@@ -93,11 +93,19 @@ test.describe('B6.2 Close Review deferred to the Review', () => {
     await openReview(again);
     await expect(completion(again)).toHaveText('Complete');
     const workspace = workspaceOf(await probe(again))!;
-    const settled = entriesWithSettledDebt(workspace) as unknown as { entryTypeKey: string; sourceKey: string; settledDebtId: string }[];
+    const settled = entriesWithSettledDebt(workspace) as unknown as { id: string; entryTypeKey: string; sourceKey: string; settledDebtId: string; anchor: { tradeId: string } }[];
     const closeReviews = settled.filter((e) => /close-review/.test(e.entryTypeKey));
     expect(closeReviews).toHaveLength(2);
     expect(new Set(closeReviews.map((e) => e.settledDebtId)).size).toBe(2);
-    expect(debtsOf(workspace).filter((d) => JSON.stringify(d).includes('Settled'))).toHaveLength(2);
+    // Each Close Review Entry settles the Close Review Debt of its own Trade, and that Debt is exactly Settled.
+    const debts = debtsOf(workspace) as unknown as { debtId: string; obligationKey: string; versions: { status: string; entryId?: string }[] }[];
+    expect(debts).toHaveLength(2);
+    for (const entry of closeReviews) {
+      const own = debts.filter((d) => d.obligationKey === `CloseReview:${entry.anchor.tradeId}`);
+      expect(own.map((d) => d.debtId)).toEqual([entry.settledDebtId]);
+      expect(own[0]!.versions.at(-1)!.status).toBe('Settled');
+      expect(own[0]!.versions.at(-1)!.entryId).toBe(entry.id);
+    }
     expect(closeReviews.map((e) => e.sourceKey)).toEqual(['source.daily-review', 'source.daily-review']);
     await relaunched.close();
   });

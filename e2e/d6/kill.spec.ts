@@ -23,9 +23,8 @@ test.describe('B6.7 Kill after commit', () => {
       // The result has rendered: the browser is killed right after.
       await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
       await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');
-      await page.getByRole('link', { name: 'Back to the Trade' }).click();
-      await expect(valueOf(page, 'Close Reason')).toHaveText('Target Reached');
-      lotMatchesBefore = await page.getByRole('table', { name: 'Lot Matches' }).innerText();
+      // The Lot Matches are read from the receipt itself, with no further navigation before the kill.
+      lotMatchesBefore = await page.getByRole('region', { name: 'Lot Matches' }).locator('tbody').innerText();
       expect(lotMatchesBefore).not.toBe('');
     } finally {
       await killed.kill();
@@ -43,7 +42,7 @@ test.describe('B6.7 Kill after commit', () => {
       await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
       await expect(valueOf(page, 'Close Reason')).toHaveText('Target Reached');
       await expect(valueOf(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
-      expect(await page.getByRole('table', { name: 'Lot Matches' }).innerText()).toBe(lotMatchesBefore);
+      expect(await page.getByRole('table', { name: 'Lot Matches' }).locator('tbody').innerText()).toBe(lotMatchesBefore);
       // Both reflections are answered: nothing is owed.
       await expect(page.getByText('Reflection owed')).toHaveCount(0);
       await expect(page.getByText('Close Review owed')).toHaveCount(0);
