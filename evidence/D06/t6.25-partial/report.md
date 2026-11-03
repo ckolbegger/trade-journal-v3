@@ -99,3 +99,5 @@ These were measured on a copy of this snapshot. The scripts are in the main sess
 - **Read-only reads don't clean up.** Seven read-only reads in a row stayed at 168 ms.
 - **One read-write pass does.** It took 1,000 ms over the Open range, and afterwards read-only reads took 31–32 ms and stayed there.
 - **This accounts for the save time.** A save scans the Open range about 3–4 times: the binding check, the post-save reassembly, and the next card. That is about 0.5–0.7 s, which matches the 0.73 s per save in the log.
+
+The probe scripts are kept as `probes/*.mjs.txt` so lint skips them. To run one, copy it to a `.mjs` file outside the repository.
