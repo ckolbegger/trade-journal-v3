@@ -1885,3 +1885,45 @@ T6.27's structural verification is met: every case in sections 6.2 of D1, D2, D4
 | Static and verification (12) | 12 of 12 passed | `suite-runs/t6.27-b1-fix-round-checks.txt` |
 
 No flake reran. Ports 5175, 9341 and 9342 were free before and after.
+
+### T6.25 part A: latency harness and query count
+
+- **T6.25 part A `c248370a`** (base `685170bc`).
+  - `tools/bench-run.ts` now compares the first Closed page, the as-of Review's walk and its owed-reflection group with the dataset's recorded identities, and it times a cold Trade Action save on the Review at mature size.
+  - New `tools/bench/compare.ts` with `tools/bench/compare.test.ts`.
+  - New `tests/integration/d6/query-count.test.ts` covers the request counts for the Closed page and the owed group.
+  - **Disclosed deviation:** the expected Closed page is read from the store's `byLifecycleTerminal` order, not recorded by the generator. Its ordering matches the facade.
+  - **Disclosed deviation:** the Review-save timing is reported but has no threshold (see the save-growth note under T6.24).
+- **ocr review of `c248370a`** (`ocr/T6.25-A-c248370a.json`): 5 comments.
+
+  | Location | Finding | Assessment |
+  |---|---|---|
+  | `tools/bench-run.ts:442`, high | `leaveClosed` clicked the Open tab while on the Review | Valid. Became T6.25-B1. |
+  | `tools/bench-run.ts:533`, low | Elapsed ms were printed as row counts | Valid. Became T6.25-B1. |
+  | Reviewer's note | The walk and owed group had no non-empty guard | Doubtful. Became T6.25-B1. |
+  | Three comments | Paths and imports in the relocated scratch copy | Wrong: relocation artifacts. Dismissed. |
+
+**Cumulative run `t6.25-a-harness`**: at HEAD `c248370a`, task tier (`browser-auto 685170bc`).
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 94 files, 1,176 tests passed | `suite-runs/t6.25-a-harness-unit.txt` |
+| Node integration | 76 files, 154 tests passed | `suite-runs/t6.25-a-harness-integration.txt` |
+| Browser (Chromium, task) | 17 passed | `suite-runs/t6.25-a-harness-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.25-a-harness-checks.txt` |
+
+- **T6.25-B1 `6e641f6c`.**
+  - `leaveClosed` now goes to Trades first.
+  - The report prints the expected Closed row count.
+  - `deriveExpectedIdentities` throws if the walk or the owed group is empty.
+  - There was no red step: the code is a Playwright-driven harness, and it will be exercised by T6.25 part B's `bench:run`. This is recorded in the tdd-log.
+- **ocr review of `6e641f6c`** (`ocr/T6.25-B1-6e641f6c.json`): 0 comments.
+
+**Cumulative run `t6.25-b1-fix-round`**: at HEAD `6e641f6c`, task tier (`browser-auto 685170bc`).
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 94 files, 1,176 tests passed | `suite-runs/t6.25-b1-fix-round-unit.txt` |
+| Node integration | 76 files, 154 tests passed | `suite-runs/t6.25-b1-fix-round-integration.txt` |
+| Browser (Chromium, task) | 17 passed | `suite-runs/t6.25-b1-fix-round-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.25-b1-fix-round-checks.txt` |
