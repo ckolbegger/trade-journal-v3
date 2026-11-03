@@ -30,3 +30,10 @@ export const cardIdentity = (tradeId: string, underlying: string) => `${tradeId}
 
 // The Trade of a Closed row's link ("/trades/<id>").
 export const tradeIdOfHref = (href: string) => decodeURIComponent(href.slice(href.lastIndexOf('/') + 1));
+
+// The Underlyings whose card in the Review's walk is of a Trade that owes a reflection. A Debt of a Trade outside the walk
+// (an owed-group or Closed Trade) does not bar the walked card of its Underlying from a timed Action save.
+export function owingUnderlyings(debts: readonly { tradeId: string; underlying: string }[], walk: readonly string[]): Set<string> {
+  const walked = new Set(walk);
+  return new Set(debts.filter((d) => walked.has(d.tradeId)).map((d) => d.underlying));
+}

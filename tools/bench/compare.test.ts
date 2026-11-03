@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { closeDate, closedIdentity, firstDifference, tradeIdOfHref } from './compare.ts';
+import { closeDate, closedIdentity, firstDifference, owingUnderlyings, tradeIdOfHref } from './compare.ts';
 import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
+
+describe('bench Action-save card choice', () => {
+  const debts = [
+    { tradeId: 'closed1', underlying: 'AAA' },
+    { tradeId: 'owed1', underlying: 'BBB' },
+  ];
+  it('should not bar an Underlying whose Debts are all of Trades outside the walk', () => {
+    expect([...owingUnderlyings(debts, ['w1', 'w2'])]).toEqual([]);
+  });
+
+  it('should bar the Underlying of a walked Trade that owes a reflection', () => {
+    expect([...owingUnderlyings([...debts, { tradeId: 'w2', underlying: 'CCC' }], ['w1', 'w2'])]).toEqual(['CCC']);
+  });
+});
 
 describe('bench identity comparisons', () => {
   it('should report no difference for equal lists and the first difference otherwise', () => {

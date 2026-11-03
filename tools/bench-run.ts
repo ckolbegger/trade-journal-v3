@@ -28,7 +28,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { chromium, type BrowserContext, type Page } from '@playwright/test';
 import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
-import { cardIdentity, closedIdentity, firstDifference, tradeIdOfHref, type ExpectedClosedRow } from './bench/compare.ts';
+import { cardIdentity, closedIdentity, firstDifference, owingUnderlyings, tradeIdOfHref, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
 import { schemaMismatch } from './bench/partial.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
@@ -429,7 +429,7 @@ async function timeCards(page: Page): Promise<CardTimings> {
     console.log(`bench:run: Save Marks ${symbol} ${timings.saveMarks.at(-1)!.ms.toFixed(1)} ms`);
   }
   // Cards whose Instrument is not Missing and whose Trade owes no reflection, in the Review's order.
-  const owing = new Set(partial ? (dataset['outstandingUnderlyings'] as string[]) : ((dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []).map((d) => d.underlying));
+  const owing = new Set(partial ? (dataset['outstandingUnderlyings'] as string[]) : owingUnderlyings((dataset['outstandingDebts'] as { tradeId: string; underlying: string }[] | undefined) ?? [], asOfReview?.walk ?? []));
   await timeOpenFirstCard(page);
   let names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
   if (partial) {
