@@ -1844,3 +1844,44 @@ The investigation counted IndexedDB requests and records per save on `fake-index
 | Static and verification (12) | 12 of 12 passed | `suite-runs/t6.27-browser-suite-checks.txt` |
 
 T6.27's structural verification is met: every case in sections 6.2 of D1, D2, D4, D5 and D6 passes. The full browser tier now takes 7.2 minutes, against tech debt item 6's 8-minute trigger.
+
+### Owed ocr reviews, run 2026-11-03 (the usage limit had reset)
+
+| Commit | ocr JSON | Comments | Outcome |
+|---|---|---|---|
+| `7349d9ff` T6.26-B2 | `ocr/T6.26-B2-7349d9ff.json` | 0 | The reviewer confirmed the ordering: `TradeClosed` now comes before `VariantNotInstalled` on Closed facts, as it already did for stored Closed. Incoherent facts still take the existing path, and the double `derive` only costs time. |
+| `6b72399f` T6.24 | `ocr/T6.24-6b72399f.json` | 1 | Valid, medium: Position Changes were scheduled up to 19:29Z, so on early-close days some fell after the close and were applied in the next session. → **T6.24-B2** |
+| `4e22956f` T6.26-B1 | `ocr/T6.26-B1-4e22956f.json` (relocated) | 1 | Valid: I6.3 did not compare PC1's or PC2's result with the stored Trade. → **T6.26-B4** |
+| `f4c928e8` T6.26-B3 | `ocr/T6.26-B3-f4c928e8.json` (relocated) | 0 | — |
+| `d4e5294d` T6.27 p1 | `ocr/T6.27-p1-d4e5294d.json` (relocated) | 3 | Two were Wrong (relocation artifacts: an import and discoverability). One was Valid: B6.2 checked counts, not that each Entry settles its own Trade's Debt. → **T6.27-B1** |
+| `d721d231` T6.27 p2 | `ocr/T6.27-p2-d721d231.json` (relocated) | 3 | One was Wrong (relocation artifact). Two were Doubtful: B6.7 visited Detail before the kill, and contexts were not closed on failure. → **T6.27-B1** |
+
+### The fix round
+
+- **T6.24-B2 `fd47f57e`.** `schedule(days, profile, sessionCloses)` now places each Position Change at 14:30Z plus `index % min(300, minutesToClose − 1)` minutes. Times are unchanged on normal days, and on early-close days a change lands at least one minute before the close.
+  - Generator 5, with marker `tj-bench-generator-v5`.
+  - Red, from the new `src/app/bench-generator.test.ts`: on the old code, 229 Position Changes fell at or after the 2024-07-03 close. Then green.
+  - Offline counts equal section 1.4, as before.
+  - **The generator-4 run was stopped at session 275**, because its data was affected. Its log is kept in `evidence/D06/bench-generate-v4.log`.
+  - **Generator 5's full run started 2026-11-03 at about 00:05 EST**, logging to `evidence/D06/bench-generate-v5.log`.
+- **T6.26-B4 `51bdf5cd`.** I6.3 compares the result with Detail after PC1, PC2 and X1.
+  - Mutation check: a stale PC2 `postCommit` failed it.
+  - This commit also picked up T6.24-B2's three tdd-log rows, because two subagents were committing at once.
+- **T6.27-B1 `cca27fcc`.**
+  - B6.2: each Close Review Entry's `settledDebtId` is the `CloseReview:<its Trade>` Debt, whose last version is exactly `Settled` with that `entryId`.
+  - B6.7: the kill now comes right after the receipt, and the receipt's Lot Matches are compared with Detail after the relaunch.
+  - The shared `profile` fixture in `e2e/d1/support.ts` now closes every launched context in `finally`. That covers every spec, not only the D6 ones.
+  - Mutation checks: one Debt-anchor mutation and one empty `closeReasonFacts`. The exact `Settled` status check was not mutated.
+- **ocr reviews of `fd47f57e`, `51bdf5cd` and `cca27fcc`:** 0 comments each (`ocr/T6.24-B2-fd47f57e.json`, `ocr/T6.26-B4-51bdf5cd.json`, `ocr/T6.27-B1-cca27fcc.json`).
+
+**Cumulative run `t6.27-b1-fix-round`**: at HEAD `cca27fcc` on 2026-11-03, full tier (`e2e/d1/support.ts`). The generator-5 run was going at the same time.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 94 files, 1,176 tests passed | `suite-runs/t6.27-b1-fix-round-unit.txt` |
+| Node integration | 75 files, 151 tests passed | `suite-runs/t6.27-b1-fix-round-integration.txt` |
+| Browser (Chromium, full) | 158 passed (7.2 min) | `suite-runs/t6.27-b1-fix-round-browser.txt` |
+| `test:e2e:release-history` | 4 passed | `suite-runs/t6.27-b1-fix-round-release-history.txt` |
+| Static and verification (12) | 12 of 12 passed | `suite-runs/t6.27-b1-fix-round-checks.txt` |
+
+No flake reran. Ports 5175, 9341 and 9342 were free before and after.

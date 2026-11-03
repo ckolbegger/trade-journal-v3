@@ -1,0 +1,127 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 379819,
+    "input_tokens": 376063,
+    "output_tokens": 3756,
+    "cache_read_tokens": 30720,
+    "elapsed": "2m4s"
+  },
+  "tool_calls": {
+    "total": 33,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_find": 2,
+      "file_read": 13,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/bench-generator.ts",
+      "content": "Schedule Position Changes against the actual session close rather than a fixed UTC window. The covered calendar includes early closes (e.g. 2024-07-03 closes at 17:00Z), but this expression schedules changes as late as 19:29Z. Changes after that session's completion are therefore left pending by the event loop and recorded during the following session, after the early-close Review has already run. This changes cutoff eligibility and debt timing instead of simulating the intended one-change-per-session turnover. Pass session close timestamps into the scheduler and keep every execution before its assigned close.",
+      "existing_code": "      unsorted.push({ kind: 'PositionChange', time: days[sessionIndex]! + (14 * 60 + 30 + (index % 300)) * MINUTE, index, side, quantities, terminal });",
+      "start_line": 182,
+      "end_line": 182,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/app/bench-generator.ts",
+      "files": [
+        "src/app/bench-generator.ts"
+      ]
+    },
+    {
+      "label": "src/app/bench.ts",
+      "files": [
+        "src/app/bench.ts"
+      ]
+    },
+    {
+      "label": "tools/bench-generate.ts",
+      "files": [
+        "tools/bench-generate.ts"
+      ]
+    }
+  ],
+  "session_id": "32ab03d2-d9c9-4785-9169-7f3aaf2312e7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "32ab03d2-d9c9-4785-9169-7f3aaf2312e7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6b72399f",
+      "resolved_base": "5573d48f37776dd4b4efd35edd0565c450b02f98",
+      "resolved_head": "6b72399f1696eda28eba4667193f649e0e5a9be7",
+      "exact_range": "5573d48f37776dd4b4efd35edd0565c450b02f98..6b72399f1696eda28eba4667193f649e0e5a9be7",
+      "source_artifact_sha256": "b717615fcdb8b9a368abd33c923751c27375612f18121b431c20e7efdf9f1213"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "97faede464b0386b965653d6bd465e9945b041f37db71324074ae62c13a2a8df"
+        },
+        {
+          "item_id": "193fd6ed0ced4bf27c854f39d0d94ce7f46a200bd6f38b0f2eb8a6e2e63a8106",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "650d2f3e3ba89601c076f209f3379942e66c986a529c41e7f7ace41fe5e90e00"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "4db84a983fe908b1828ee957a72e7c28568d504ea849aaa1b1809fb4ddf41206"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "97faede464b0386b965653d6bd465e9945b041f37db71324074ae62c13a2a8df"
+        },
+        {
+          "item_id": "193fd6ed0ced4bf27c854f39d0d94ce7f46a200bd6f38b0f2eb8a6e2e63a8106",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "650d2f3e3ba89601c076f209f3379942e66c986a529c41e7f7ace41fe5e90e00"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "4db84a983fe908b1828ee957a72e7c28568d504ea849aaa1b1809fb4ddf41206"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 123703
+  }
+}

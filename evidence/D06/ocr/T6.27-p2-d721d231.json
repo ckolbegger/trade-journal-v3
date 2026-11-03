@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 3,
+    "total_tokens": 295707,
+    "input_tokens": 293292,
+    "output_tokens": 2415,
+    "cache_read_tokens": 55424,
+    "elapsed": "1m52s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 3,
+      "file_read": 12
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 4,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/e2e-d6/kill.ts,src/itg/relocated/e2e-d6/no-save.ts,src/itg/relocated/e2e-d6/offline.ts,src/itg/relocated/e2e-d6/responsive-a11y.ts,src/itg/relocated/e2e-d6/runtime-failure.ts",
+        "arguments": "{\"file_path\":\"src/itg/relocated/d5r/support.ts\",\"end_line\":80}",
+        "error": "file \"src/itg/relocated/d5r/support.ts\" not found: git show 3d5645405248dffd038b2789293b35e9254a5424:src/itg/relocated/d5r/support.ts: exit status 128: fatal: path 'src/itg/relocated/d5r/support.ts' does not exist in '3d5645405248dffd038b2789293b35e9254a5424'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/e2e-d6/kill.ts",
+      "content": "These five new browser tests are not discoverable by the existing runner: playwright.config.ts restricts testDir to `e2e`, the npm e2e scripts select `e2e/d6`, and these files also lack the `.spec.ts`/`.test.ts` suffix required by the default testMatch. In addition, this directory's support.ts imports `../d5r/support.ts`, which does not exist under `src/itg/relocated`. Move the tests into `e2e/d6` with discoverable names (or update discovery and fix the support imports); otherwise none of B6.7–B6.12 runs.",
+      "existing_code": "} from './support.ts';",
+      "start_line": 4,
+      "end_line": 4,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d6/kill.ts",
+      "content": "B6.7 requires SIGKILL immediately after the terminal result renders, but this navigates to Detail and waits for additional rendering before reaching kill(). That extra time allows deferred writes to finish, so a durability regression at receipt display could pass. Kill immediately after the receipt becomes visible and obtain expected Lot Matches from a separate baseline or deterministic expected fixture rather than navigating before termination.",
+      "existing_code": "      await page.getByRole('link', { name: 'Back to the Trade' }).click();\n      await expect(valueOf(page, 'Close Reason')).toHaveText('Target Reached');\n      lotMatchesBefore = await page.getByRole('table', { name: 'Lot Matches' }).innerText();",
+      "start_line": 26,
+      "end_line": 28,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d6/no-save.ts",
+      "content": "Ensure manually launched persistent contexts are closed in `finally` (also in offline.ts, responsive-a11y.ts, and runtime-failure.ts). `launchAt`/`onboardedAt` return contexts created directly through chromium.launchPersistentContext, and the profile fixture registers no context cleanup. Any failed assertion before the explicit close therefore leaves the browser running, potentially retaining profile locks and resources during subsequent runs. A shared fixture that tracks and closes every launched context would also address this.",
+      "existing_code": "    const context = await launchAt(profile, TUESDAY_1405);",
+      "start_line": 54,
+      "end_line": 54,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Relocated e2e-d6 integration tests for failure, persistence, offline, and accessibility scenarios",
+      "files": [
+        "src/itg/relocated/e2e-d6/kill.ts",
+        "src/itg/relocated/e2e-d6/no-save.ts",
+        "src/itg/relocated/e2e-d6/offline.ts",
+        "src/itg/relocated/e2e-d6/responsive-a11y.ts",
+        "src/itg/relocated/e2e-d6/runtime-failure.ts"
+      ]
+    }
+  ],
+  "session_id": "db0c251d-6041-4803-8de2-a8ea27c0da1d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "db0c251d-6041-4803-8de2-a8ea27c0da1d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "3d5645405248dffd038b2789293b35e9254a5424",
+      "resolved_base": "6b1a39745db811bb949db82921175ecd93670cc9",
+      "resolved_head": "3d5645405248dffd038b2789293b35e9254a5424",
+      "exact_range": "6b1a39745db811bb949db82921175ecd93670cc9..3d5645405248dffd038b2789293b35e9254a5424",
+      "source_artifact_sha256": "225e1a8297ed77c0fed3ce6f6b11d7facc2d8cd98e317dd8b91120657f8c1ce7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "191ac52f6acc527c0ede3f136236c159bac63f9bf512da97e91c0bdbfacd9d1e",
+          "path": "src/itg/relocated/e2e-d6/offline.ts",
+          "fingerprint": "5fc86433d94637aa0e8dfdd7ebff486f39975811904722827c6e59c203aeb7ca"
+        },
+        {
+          "item_id": "79ccaca07d43ffc2c7a422a79cbc2dc90f7a226d08bf63f21cc6a2438f0b54f8",
+          "path": "src/itg/relocated/e2e-d6/no-save.ts",
+          "fingerprint": "a43f5d3bce3a81b987117f5b3684894cf837c0eb17748b6899d7c052995788e4"
+        },
+        {
+          "item_id": "8cbc2e221ee2fde9332a637fc075f27e212abaac743665aba6687f6b3dcbd8ca",
+          "path": "src/itg/relocated/e2e-d6/runtime-failure.ts",
+          "fingerprint": "920b367f286359863db64770d27618e38e4ab97d7adc302a39bd6ee0f951e47e"
+        },
+        {
+          "item_id": "cc08bde4d8c03d332fc1215f662e0204bfe9a0fc193cb9d4d38c1cb09023c336",
+          "path": "src/itg/relocated/e2e-d6/kill.ts",
+          "fingerprint": "39668861969dafd7155c959fd79e2f8789e01aa7ff33e37e974fb91bbac33c7e"
+        },
+        {
+          "item_id": "e91268af40c98269c9f4e41aeb78327e36496b30e3681ffb0efeced6193f1067",
+          "path": "src/itg/relocated/e2e-d6/responsive-a11y.ts",
+          "fingerprint": "3e8f4f4e4e1b51a9b402da23bb843af468a0e7d9afcca4a64270959e35348540"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "191ac52f6acc527c0ede3f136236c159bac63f9bf512da97e91c0bdbfacd9d1e",
+          "path": "src/itg/relocated/e2e-d6/offline.ts",
+          "fingerprint": "5fc86433d94637aa0e8dfdd7ebff486f39975811904722827c6e59c203aeb7ca"
+        },
+        {
+          "item_id": "79ccaca07d43ffc2c7a422a79cbc2dc90f7a226d08bf63f21cc6a2438f0b54f8",
+          "path": "src/itg/relocated/e2e-d6/no-save.ts",
+          "fingerprint": "a43f5d3bce3a81b987117f5b3684894cf837c0eb17748b6899d7c052995788e4"
+        },
+        {
+          "item_id": "8cbc2e221ee2fde9332a637fc075f27e212abaac743665aba6687f6b3dcbd8ca",
+          "path": "src/itg/relocated/e2e-d6/runtime-failure.ts",
+          "fingerprint": "920b367f286359863db64770d27618e38e4ab97d7adc302a39bd6ee0f951e47e"
+        },
+        {
+          "item_id": "cc08bde4d8c03d332fc1215f662e0204bfe9a0fc193cb9d4d38c1cb09023c336",
+          "path": "src/itg/relocated/e2e-d6/kill.ts",
+          "fingerprint": "39668861969dafd7155c959fd79e2f8789e01aa7ff33e37e974fb91bbac33c7e"
+        },
+        {
+          "item_id": "e91268af40c98269c9f4e41aeb78327e36496b30e3681ffb0efeced6193f1067",
+          "path": "src/itg/relocated/e2e-d6/responsive-a11y.ts",
+          "fingerprint": "3e8f4f4e4e1b51a9b402da23bb843af468a0e7d9afcca4a64270959e35348540"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 111788
+  }
+}

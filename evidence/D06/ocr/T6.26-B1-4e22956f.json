@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 202177,
+    "input_tokens": 200608,
+    "output_tokens": 1569,
+    "cache_read_tokens": 35328,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_find": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/integration-d6/lifecycle.ts",
+      "content": "The new per-revision loop still does not verify AC-RESP-001 for PC1 and PC2. It checks persistence and index keys, but their returned snapshots are later checked only for lifecycle; the Detail comparison covers X1 only. A response with stale position changes or incorrect derived values for PC1/PC2 would therefore pass. Read Detail immediately after each step and compare that step's returned Trade and derivation with the persisted revision before advancing.",
+      "existing_code": "      results.push(await step());\n      expectIndexed(await stored(d, tradeId), 'Open');",
+      "start_line": 83,
+      "end_line": 84,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/integration-d6/lifecycle.ts",
+        "src/itg/relocated/integration-d6/shortfall.ts"
+      ]
+    }
+  ],
+  "session_id": "6468c57d-46a6-4e4a-9b9b-d0cc2a473aaf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6468c57d-46a6-4e4a-9b9b-d0cc2a473aaf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "29c7d77122804d9cf84c8160f77bb59bed4c68d9",
+      "resolved_base": "f5eea3f5eb47e669a52c7344d5c134f2fa756cb0",
+      "resolved_head": "29c7d77122804d9cf84c8160f77bb59bed4c68d9",
+      "exact_range": "f5eea3f5eb47e669a52c7344d5c134f2fa756cb0..29c7d77122804d9cf84c8160f77bb59bed4c68d9",
+      "source_artifact_sha256": "babe16c68beacb922983e211fd2798a6ff1d5b7d268730ff01ed9fa85bdf8d28"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4193a212083b5c240f4474e38c763ad4a7a13e3beb901a3461be565b1fc9dee1",
+          "path": "src/itg/relocated/integration-d6/shortfall.ts",
+          "fingerprint": "e5a6a41fa91906547fbebd7fc1da58572c76b3ee6324fd72e4e4f70a9cabfcb8"
+        },
+        {
+          "item_id": "b9dfb8fe2ee79102038db1047ca0973d31f69a0bb9025973612af5fdc2306908",
+          "path": "src/itg/relocated/integration-d6/lifecycle.ts",
+          "fingerprint": "86822730e0626234f9ce0e79441ca7e6c1b7d6b7d910999a83a57262bdf86002"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4193a212083b5c240f4474e38c763ad4a7a13e3beb901a3461be565b1fc9dee1",
+          "path": "src/itg/relocated/integration-d6/shortfall.ts",
+          "fingerprint": "e5a6a41fa91906547fbebd7fc1da58572c76b3ee6324fd72e4e4f70a9cabfcb8"
+        },
+        {
+          "item_id": "b9dfb8fe2ee79102038db1047ca0973d31f69a0bb9025973612af5fdc2306908",
+          "path": "src/itg/relocated/integration-d6/lifecycle.ts",
+          "fingerprint": "86822730e0626234f9ce0e79441ca7e6c1b7d6b7d910999a83a57262bdf86002"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 73100
+  }
+}

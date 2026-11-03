@@ -1,0 +1,114 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 61660,
+    "input_tokens": 61247,
+    "output_tokens": 413,
+    "cache_read_tokens": 11520,
+    "elapsed": "25s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 3,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Integration-d6 integrity, missing-mark, rebuild, and seed workflow",
+      "files": [
+        "src/itg/relocated/integration-d6/integrity.ts",
+        "src/itg/relocated/integration-d6/missing-mark.ts",
+        "src/itg/relocated/integration-d6/rebuild.ts",
+        "src/itg/relocated/integration-d6/seed.ts"
+      ]
+    }
+  ],
+  "session_id": "88aed621-98d0-4617-85d5-0302855a2360",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "88aed621-98d0-4617-85d5-0302855a2360",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "101edb7b0aabde8d3991600fcdde65ec51621b18",
+      "resolved_base": "1a45275f78e82aab198524fe68dbcc0779cb05ba",
+      "resolved_head": "101edb7b0aabde8d3991600fcdde65ec51621b18",
+      "exact_range": "1a45275f78e82aab198524fe68dbcc0779cb05ba..101edb7b0aabde8d3991600fcdde65ec51621b18",
+      "source_artifact_sha256": "89e5c774e929800edb1989fb1582b9406d8c6348931eeb130f0038a1a56fbd85"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12385025936dc95b4d555053340f8d4dd3a00e4cd7645ac92844195f65d0d6ff",
+          "path": "src/itg/relocated/integration-d6/rebuild.ts",
+          "fingerprint": "fcb59b39098f2165b90ecc27e2dae9e8e5970cab35bec6fcbdef960870b50177"
+        },
+        {
+          "item_id": "3fa6c2a9799e50d938266c12097c2e45b58e064ac1d8aa0459d54fe73c8532d1",
+          "path": "src/itg/relocated/integration-d6/seed.ts",
+          "fingerprint": "399ae9ac894d2d5f59647e66e82950f3b05782563b0a95ba6bb9eb46cfa3815f"
+        },
+        {
+          "item_id": "94801fba362c4d7849179fc3485d66f1f6e96075a56e4e927946404105ee4efc",
+          "path": "src/itg/relocated/integration-d6/missing-mark.ts",
+          "fingerprint": "aa10f7629a0423097603a03fc03bf9aa900b11c9a14bf8d416e7395b9b21ad60"
+        },
+        {
+          "item_id": "da4a442b4dfa13efc9e36e2fc7a9a3ea11e26100c2852be826280a2aea531415",
+          "path": "src/itg/relocated/integration-d6/integrity.ts",
+          "fingerprint": "04936f12b6a3c26c5e554e284a8eeaee51a2cfe644706cf02c829faee47761fb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12385025936dc95b4d555053340f8d4dd3a00e4cd7645ac92844195f65d0d6ff",
+          "path": "src/itg/relocated/integration-d6/rebuild.ts",
+          "fingerprint": "fcb59b39098f2165b90ecc27e2dae9e8e5970cab35bec6fcbdef960870b50177"
+        },
+        {
+          "item_id": "3fa6c2a9799e50d938266c12097c2e45b58e064ac1d8aa0459d54fe73c8532d1",
+          "path": "src/itg/relocated/integration-d6/seed.ts",
+          "fingerprint": "399ae9ac894d2d5f59647e66e82950f3b05782563b0a95ba6bb9eb46cfa3815f"
+        },
+        {
+          "item_id": "94801fba362c4d7849179fc3485d66f1f6e96075a56e4e927946404105ee4efc",
+          "path": "src/itg/relocated/integration-d6/missing-mark.ts",
+          "fingerprint": "aa10f7629a0423097603a03fc03bf9aa900b11c9a14bf8d416e7395b9b21ad60"
+        },
+        {
+          "item_id": "da4a442b4dfa13efc9e36e2fc7a9a3ea11e26100c2852be826280a2aea531415",
+          "path": "src/itg/relocated/integration-d6/integrity.ts",
+          "fingerprint": "04936f12b6a3c26c5e554e284a8eeaee51a2cfe644706cf02c829faee47761fb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 25410
+  }
+}

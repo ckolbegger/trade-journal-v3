@@ -1,0 +1,182 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 3,
+    "total_tokens": 365097,
+    "input_tokens": 362140,
+    "output_tokens": 2957,
+    "cache_read_tokens": 23040,
+    "elapsed": "1m52s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 3,
+      "file_read": 12
+    },
+    "failure": 2,
+    "failure_by_tool": {
+      "file_read": 2
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 4,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/e2e-d6/close-review.ts,src/itg/relocated/e2e-d6/exit-action.ts,src/itg/relocated/e2e-d6/exit-requirements.ts,src/itg/relocated/e2e-d6/exit.ts,src/itg/relocated/e2e-d6/support.ts,src/itg/relocated/e2e-d6/update.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/d5r/support.ts\", \"start_line\": 1, \"end_line\": 180}",
+        "error": "file \"src/itg/relocated/d5r/support.ts\" not found: git show b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26:src/itg/relocated/d5r/support.ts: exit status 128: fatal: path 'src/itg/relocated/d5r/support.ts' does not exist in 'b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26'\n"
+      },
+      {
+        "tool_call_number": 17,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/e2e-d6/close-review.ts,src/itg/relocated/e2e-d6/exit-action.ts,src/itg/relocated/e2e-d6/exit-requirements.ts,src/itg/relocated/e2e-d6/exit.ts,src/itg/relocated/e2e-d6/support.ts,src/itg/relocated/e2e-d6/update.ts",
+        "arguments": "{\"file_path\":\"src/itg/relocated/d5r/support.ts\",\"start_line\":1,\"end_line\":180}",
+        "error": "file \"src/itg/relocated/d5r/support.ts\" not found: git show b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26:src/itg/relocated/d5r/support.ts: exit status 128: fatal: path 'src/itg/relocated/d5r/support.ts' does not exist in 'b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/e2e-d6/close-review.ts",
+      "content": "These assertions verify counts, but not the durable Entry-to-Debt relationship promised by this case. Two distinct nonexistent debt IDs (or IDs swapped between ABC and DEF) would still pass, provided two debts contain a Settled version. Capture the created Trade IDs and assert that each Close Review Entry references the corresponding Trade's Close Review debt, whose latest version is Settled and links back to that Entry.",
+      "existing_code": "    expect(new Set(closeReviews.map((e) =\u003e e.settledDebtId)).size).toBe(2);\n    expect(debtsOf(workspace).filter((d) =\u003e JSON.stringify(d).includes('Settled'))).toHaveLength(2);",
+      "start_line": 99,
+      "end_line": 100,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d6/support.ts",
+      "content": "This relative import resolves to `src/itg/relocated/d5r/support.ts`, which does not exist. The shared helpers are at `e2e/d5r/support.ts`. Both this import and the re-export below need a valid path (or the suite needs to live under `e2e/d6`); otherwise all five browser suites fail module loading when executed.",
+      "existing_code": "import { executionRow, expect, FOUR_TRADES, createTrades, READY, type ProbedDatabase, type Row } from '../d5r/support.ts';",
+      "start_line": 4,
+      "end_line": 4,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d6/exit.ts",
+      "content": "None of the five new browser suites will be discovered: `playwright.config.ts` restricts `testDir` to `e2e`, these filenames lack Playwright's default `.spec`/`.test` suffix, and `test:e2e` explicitly selects only the existing D1–D5R directories. Move/rename the suites into a discovered location and include D6 in the test command, or explicitly configure discovery for these paths. Otherwise all six B6 scenarios are silently omitted from browser runs.",
+      "existing_code": "test.describe('B6.1 Partial then final exit', () =\u003e {",
+      "start_line": 9,
+      "end_line": 9,
+      "category": "test",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "E2E D6 review closure, exit workflow, and shared support",
+      "files": [
+        "src/itg/relocated/e2e-d6/close-review.ts",
+        "src/itg/relocated/e2e-d6/exit-action.ts",
+        "src/itg/relocated/e2e-d6/exit-requirements.ts",
+        "src/itg/relocated/e2e-d6/exit.ts",
+        "src/itg/relocated/e2e-d6/support.ts",
+        "src/itg/relocated/e2e-d6/update.ts"
+      ]
+    }
+  ],
+  "session_id": "93837492-a46f-42cd-b89b-48e29703b7ed",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "93837492-a46f-42cd-b89b-48e29703b7ed",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26",
+      "resolved_base": "4646fbbc1353e2fd37f5007ed1f3903b96ce75e4",
+      "resolved_head": "b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26",
+      "exact_range": "4646fbbc1353e2fd37f5007ed1f3903b96ce75e4..b4c5bebb3541e01bdbaa3baac5b8875b0fd13e26",
+      "source_artifact_sha256": "77ee112626174e53a6fac4311e49f3c6cbbf3e15f92f12bd335a0964a7f60e63"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a5835fa377a833edb6fbfe9706cf5cf649943c0c7a8501bcb86cf6d395167fd",
+          "path": "src/itg/relocated/e2e-d6/exit-action.ts",
+          "fingerprint": "0ec85408972247ffccb5a4690ee160a8b162c800db7046b118cbc66a1525348e"
+        },
+        {
+          "item_id": "2810a95f24a1bee53db7162d54677d65486784ea3af4602e00aa32e56381ff20",
+          "path": "src/itg/relocated/e2e-d6/update.ts",
+          "fingerprint": "f91d70e72cb399888454a332db4754817d663fd640a56924e083b3bc6467a1d9"
+        },
+        {
+          "item_id": "8583eab0248604cda7ff2be012ef5a8a952570b8e408aa4453389a2d5980dd86",
+          "path": "src/itg/relocated/e2e-d6/support.ts",
+          "fingerprint": "af9be4c1daca8e78ca7f76d9656c071e9e96889b564a51353884885513fdae62"
+        },
+        {
+          "item_id": "902fc84f62348e201548d0a8873a0aa2cacf688eec632fbcda187766dc94307a",
+          "path": "src/itg/relocated/e2e-d6/exit.ts",
+          "fingerprint": "e6d68cb0bbbdd36002eeb8a187b1624739ebf3833ceca068e1ed0fa5c5034bb3"
+        },
+        {
+          "item_id": "b31e3d425f4f9876c8f6f3b65ecc0cf2a70d71a4e35bb20ad3c0c9c91f5c1776",
+          "path": "src/itg/relocated/e2e-d6/close-review.ts",
+          "fingerprint": "f847cf99c50622a8e3fed54b4c9d0ad6f605ae09dc9ae1f28a9b2164ec6c76a8"
+        },
+        {
+          "item_id": "b963551d1356a4fe43ca3dd0e959084dff29e70f72c43db6d8ccd6532a9c9265",
+          "path": "src/itg/relocated/e2e-d6/exit-requirements.ts",
+          "fingerprint": "6531d39a88f2c8672d7c5372fd0b077f1bac08acb7d3c87de766841042fc3700"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a5835fa377a833edb6fbfe9706cf5cf649943c0c7a8501bcb86cf6d395167fd",
+          "path": "src/itg/relocated/e2e-d6/exit-action.ts",
+          "fingerprint": "0ec85408972247ffccb5a4690ee160a8b162c800db7046b118cbc66a1525348e"
+        },
+        {
+          "item_id": "2810a95f24a1bee53db7162d54677d65486784ea3af4602e00aa32e56381ff20",
+          "path": "src/itg/relocated/e2e-d6/update.ts",
+          "fingerprint": "f91d70e72cb399888454a332db4754817d663fd640a56924e083b3bc6467a1d9"
+        },
+        {
+          "item_id": "8583eab0248604cda7ff2be012ef5a8a952570b8e408aa4453389a2d5980dd86",
+          "path": "src/itg/relocated/e2e-d6/support.ts",
+          "fingerprint": "af9be4c1daca8e78ca7f76d9656c071e9e96889b564a51353884885513fdae62"
+        },
+        {
+          "item_id": "902fc84f62348e201548d0a8873a0aa2cacf688eec632fbcda187766dc94307a",
+          "path": "src/itg/relocated/e2e-d6/exit.ts",
+          "fingerprint": "e6d68cb0bbbdd36002eeb8a187b1624739ebf3833ceca068e1ed0fa5c5034bb3"
+        },
+        {
+          "item_id": "b31e3d425f4f9876c8f6f3b65ecc0cf2a70d71a4e35bb20ad3c0c9c91f5c1776",
+          "path": "src/itg/relocated/e2e-d6/close-review.ts",
+          "fingerprint": "f847cf99c50622a8e3fed54b4c9d0ad6f605ae09dc9ae1f28a9b2164ec6c76a8"
+        },
+        {
+          "item_id": "b963551d1356a4fe43ca3dd0e959084dff29e70f72c43db6d8ccd6532a9c9265",
+          "path": "src/itg/relocated/e2e-d6/exit-requirements.ts",
+          "fingerprint": "6531d39a88f2c8672d7c5372fd0b077f1bac08acb7d3c87de766841042fc3700"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 112466
+  }
+}
