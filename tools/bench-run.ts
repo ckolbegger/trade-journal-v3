@@ -176,6 +176,8 @@ async function deriveExpectedIdentities(page: Page) {
   expectedClosedIdentities = stored.closed.map((row: ExpectedClosedRow) => closedIdentity(row, BENCH_TIME_ZONE));
   expectedWalkIdentities = asOfReview!.walk.map((id) => cardIdentity(id, stored.underlyings[id]!));
   if (expectedClosedIdentities.length === 0) throw new Error('the stored Workspace holds no Closed Trade');
+  if (expectedWalkIdentities.length === 0) throw new Error('asOfReview.walk is empty, so the Review walk would be compared vacuously');
+  if (expectedOwedIdentities.length === 0) throw new Error('asOfReview.owedGroup is empty, so the owed group would be compared vacuously');
   if (expectedWalkIdentities.some((id) => id.endsWith(' '))) throw new Error('a Trade in asOfReview.walk is not stored');
 }
 
@@ -375,12 +377,11 @@ const launchToMark: number[] = [];
 const warm: number[] = [];
 let before: number;
 let after: number;
-let closedBefore: number;
-let closedAfter: number;
 const closedRenderMs: number[] = [];
 const coldSaveAction: { symbol: string; ms: number }[] = [];
-// Leaves the Closed list for the Open list, so the next press on Closed renders its page afresh.
+// Goes to the Trades page (the harness may be on the Review) and its Open list, so the next press on Closed renders its page afresh.
 async function leaveClosed(page: Page) {
+  await primaryLink(page, 'Trades').click();
   await page.getByRole('tab', { name: 'Open' }).click();
   await page.getByRole('table', { name: 'Open Trades' }).waitFor({ timeout: WAIT_MS });
 }
@@ -394,7 +395,7 @@ try {
   await markTime(page, 'tj:interactive');
   before = await compareOpenList(page, 'before the runs');
   await deriveExpectedIdentities(page);
-  closedBefore = await compareClosedPage(page, 'before the runs');
+  await compareClosedPage(page, 'before the runs');
   await compareDueReflections(page, 'before the runs');
   await warmUp.close();
 
@@ -435,7 +436,7 @@ try {
     console.log(`bench:run: warm ${run}/${RUNS} ${warm.at(-1)!.toFixed(1)} ms`);
   }
   after = await compareOpenList(warmPage, 'after the runs');
-  closedAfter = await compareClosedPage(warmPage, 'after the runs');
+  await compareClosedPage(warmPage, 'after the runs');
   await compareDueReflections(warmPage, 'after the runs');
   // Disclosed, not gated: the Closed tab's first page, from the press on the tab to the last row.
   for (let run = 1; run <= CLOSED_PAGE_RUNS; run++) {
@@ -525,12 +526,12 @@ Each is the time from the pointer press to the rendered result, on the mature da
 
 ## Closed page, Review walk and owed group (T6.25)
 
-- **Closed page.** The generator records no Closed page, so the expected first page is derived from the stored data: the first ${CLOSED_PAGE_SIZE} Closed Trades of the profile's \`byLifecycleTerminal\` index (terminal time descending), read raw in the page before any timed run. Each rendered row (its Trade from the link, Underlying and Close date in ${BENCH_TIME_ZONE}) must equal the stored Trade's, in order, before the runs (${closedBefore} rows equal) and after them (${closedAfter} rows equal), and at each of the ${closedRenderMs.length} renders below. Realized figures, Disposition and Close Reason are not compared (the stored Trade does not hold them).
+- **Closed page.** The generator records no Closed page, so the expected first page is derived from the stored data: the first ${CLOSED_PAGE_SIZE} Closed Trades of the profile's \`byLifecycleTerminal\` index (terminal time descending), read raw in the page before any timed run. Each rendered row (its Trade from the link, Underlying and Close date in ${BENCH_TIME_ZONE}) must equal the stored Trade's, in order, before the runs (${expectedClosedIdentities.length} rows equal) and after them (${expectedClosedIdentities.length} rows equal), and at each of the ${closedRenderMs.length} renders below. Realized figures, Disposition and Close Reason are not compared (the stored Trade does not hold them).
 - **Review walk and owed group.** The as-of Review's cards must equal \`asOfReview\` in \`bench/dataset.json\`, in order, each by its Trade (\`data-trade-id\`) and Underlying (the walked Trades' Underlyings are read from the stored Trades, the owed group's are the dataset's): ${reviewCardComparisons.map((c) => `${c.when} ${c.walk} walked and ${c.owed} owed cards equal`).join('; ')}. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
 
 | Measure (disclosed, not gated) | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Closed tab to its first page (${closedBefore} rows; press on Trades, then Closed, to the last row rendered) | ${spread(closedRenderMs)} |
+| Closed tab to its first page (${expectedClosedIdentities.length} rows; press on Trades, then Closed, to the last row rendered) | ${spread(closedRenderMs)} |
 
 ## Daily Trade Review Action save (requested measurement, disclosed, not gated; not in the plan's T6.25 row)
 
