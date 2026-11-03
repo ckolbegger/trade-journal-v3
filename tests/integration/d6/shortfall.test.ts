@@ -45,7 +45,8 @@ describe('I6.7 shortfall and the moving cutoff', () => {
     const app = await onboarded(d);
     const tradeId = await planStock(app, 'QRS', '50.00', '47.50', '56.00');
     const pc1 = (await record(app, tradeId, PC1)).receipt.createdFactIds[0]!;
-    const xs = (await recordExit(app, tradeId, [SELL_30])).receipt.createdFactIds[0]!;
+    const exit = await recordExit(app, tradeId, [SELL_30]);
+    const xs = exit.receipt.createdFactIds[0]!;
 
     const again = await restart(app, d);
     const detail = await detailOf(again, tradeId);
@@ -68,6 +69,10 @@ describe('I6.7 shortfall and the moving cutoff', () => {
     ]);
     expect(detail.deviations).toEqual(await storedDeviations(d, tradeId));
     const occurrenceId = shortfall[0]!.occurrenceId;
+    // XS's receipt discloses the Shortfall it created: 40 below plan, caused by XS.
+    expect(exit.receipt.deviationReconciliation).toEqual([
+      { action: 'Create', occurrenceId, version: expect.objectContaining({ form: 'Shortfall', quantityBelowPlan: '40', causingPositionChangeId: xs, economicTime: TUESDAY_1000, status: 'Active' }) as unknown },
+    ]);
 
     // PC-early: a Buy of 40 dated Monday 11:00, recorded after XS, completes the plan before the cutoff.
     const early = await record(again, tradeId, PC2);

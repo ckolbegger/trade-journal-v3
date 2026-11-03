@@ -5,19 +5,58 @@
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import { Rational } from '../../../src/domain/values/index.ts';
+import { activityDescOf } from '../../../src/persistence/index.ts';
 import { countRequests } from '../../support/request-counter.ts';
 import {
-  closeReasonId, closeReviewDisposition, complete, confirmReference, dec, device, dumpAll, onboarded, PC1, PC2, readIndex, recordExit, record, restart, TUESDAY_1400, TUESDAY_1700, workspaceStores, X1, X2A, X2B,
+  closeReasonId, closeReviewDisposition, complete, confirmReference, dec, device, dumpAll, onboarded, PC1, PC2, recordExit, record, restart, TUESDAY_1400, TUESDAY_1700, workspaceStores, X1, X2A, X2B,
   type Device, type StoredTradeDoc,
 } from './support.ts';
 
-// What the stores hold for the Trade at one revision: its stored lifecycle and its place in each index.
+type IndexedTradeDoc = StoredTradeDoc & { readonly planTime: string; readonly lastActivity: string };
+
+// The keys the Trade sits under in one index, read with a key cursor (the last key part is the Trade id).
+async function indexKeys(d: Device, database: string, index: string, tradeId: string): Promise<unknown[][]> {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const open = d.factory.open(database);
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(open.error ?? new Error('open failed'));
+  });
+  const keys = await new Promise<unknown[][]>((resolve, reject) => {
+    const found: unknown[][] = [];
+    const request = db.transaction('trades').objectStore('trades').index(index).openKeyCursor();
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) return resolve(found);
+      const key = cursor.key as unknown[];
+      if (key.at(-1) === tradeId) found.push(key);
+      cursor.continue();
+    };
+    request.onerror = () => reject(request.error ?? new Error('cursor failed'));
+  });
+  db.close();
+  return keys;
+}
+
+// What the stores hold for the Trade at one revision: its stored document and the index keys it sits under.
 async function stored(d: Device, tradeId: string) {
   const dump = await dumpAll(d.factory);
   const database = Object.keys(dump).find((n) => n.startsWith('tj-ws-'))!;
-  const trade = (workspaceStores(dump)['trades'] as StoredTradeDoc[]).find((t) => t.tradeId === tradeId)!;
-  const membership = async (index: string) => ((await readIndex(d.factory, database, 'trades', index)) as StoredTradeDoc[]).filter((t) => t.tradeId === tradeId).map((t) => t.lifecycle);
-  return { trade, byLifecycle: await membership('byLifecycle'), byLifecycleActivity: await membership('byLifecycleActivity'), byLifecycleTerminal: await membership('byLifecycleTerminal') };
+  const trade = (workspaceStores(dump)['trades'] as IndexedTradeDoc[]).find((t) => t.tradeId === tradeId)!;
+  return {
+    trade,
+    byLifecycle: await indexKeys(d, database, 'byLifecycle', tradeId),
+    byLifecycleActivity: await indexKeys(d, database, 'byLifecycleActivity', tradeId),
+    byLifecycleTerminal: await indexKeys(d, database, 'byLifecycleTerminal', tradeId),
+  };
+}
+
+// The Trade sits under exactly one key of byLifecycle, in the range of its lifecycle; the activity index lists only
+// started Trades and the terminal index only Closed ones.
+function expectIndexed(s: Awaited<ReturnType<typeof stored>>, lifecycle: string) {
+  expect(s.trade.lifecycle).toBe(lifecycle);
+  expect(s.byLifecycle).toEqual([[lifecycle, s.trade.planTime, s.trade.tradeId]]);
+  expect(s.byLifecycleActivity).toEqual(lifecycle === 'Planned' ? [] : [[lifecycle, activityDescOf(s.trade.lastActivity), s.trade.tradeId]]);
+  expect(s.byLifecycleTerminal).toEqual(lifecycle === 'Closed' ? [['Closed', activityDescOf(s.trade.terminalTime!), s.trade.tradeId]] : []);
 }
 
 async function detailOf(app: Application, tradeId: string) {
@@ -34,21 +73,20 @@ describe('I6.3 complete lifecycle', () => {
 
     // Planned.
     const planned = await stored(d, tradeId);
-    expect(planned.trade.lifecycle).toBe('Planned');
-    expect(planned.byLifecycle).toEqual(['Planned']);
-    expect(planned.byLifecycleTerminal).toEqual([]);
+    expectIndexed(planned, 'Planned');
     expect((await detailOf(app, tradeId)).lifecycle).toEqual({ stored: 'Planned', agreement: { kind: 'Agrees' } });
 
     // PC1, PC2 and X1: each result equals the Detail read now, and the Trade stays in the Open index.
-    const results = [await record(app, tradeId, PC1, await complete(app)), await record(app, tradeId, PC2, await complete(app)), await recordExit(app, tradeId, [X1])];
+    // The stored document and its index keys are read after every change, in the commit that made it.
+    const results = [];
+    for (const step of [async () => record(app, tradeId, PC1, await complete(app)), async () => record(app, tradeId, PC2, await complete(app)), () => recordExit(app, tradeId, [X1])]) {
+      results.push(await step());
+      expectIndexed(await stored(d, tradeId), 'Open');
+    }
     const lifecycles = ['Open', 'Open', 'Open'];
     // The Execution identities, in the order the receipts created them: the Position Change first, then its members.
     const executions = results.map((r) => r.receipt.createdFactIds.slice(1));
     const [ex1, ex2, exX1] = [executions[0]![0]!, executions[1]![0]!, executions[2]![0]!];
-    const afterX1 = await stored(d, tradeId);
-    expect(afterX1.trade.lifecycle).toBe('Open');
-    expect(afterX1.byLifecycleActivity).toEqual(['Open']);
-    expect(afterX1.byLifecycleTerminal).toEqual([]);
     for (const [i, result] of results.entries()) {
       expect(result.postCommit.trade.storedLifecycle).toBe(lifecycles[i]);
       expect(result.postCommit.derivation.expectedLifecycle).toBe(lifecycles[i]);
@@ -75,10 +113,7 @@ describe('I6.3 complete lifecycle', () => {
 
     // The same commit moved the Trade from the Open index to the Closed one.
     const closed = await stored(d, tradeId);
-    expect(closed.trade.lifecycle).toBe('Closed');
-    expect(closed.byLifecycle).toEqual(['Closed']);
-    expect(closed.byLifecycleActivity).toEqual(['Closed']);
-    expect(closed.byLifecycleTerminal).toEqual(['Closed']);
+    expectIndexed(closed, 'Closed');
     expect(closed.trade.terminalTime).toBe(TUESDAY_1400);
 
     // Dump: every Execution owned by T-A, a Close Reason fact naming X2, and no Lot-Match record anywhere (P23).
