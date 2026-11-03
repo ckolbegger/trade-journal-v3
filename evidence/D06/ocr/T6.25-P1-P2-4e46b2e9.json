@@ -1,0 +1,137 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 344478,
+    "input_tokens": 341839,
+    "output_tokens": 2639,
+    "cache_read_tokens": 19200,
+    "elapsed": "2m2s"
+  },
+  "tool_calls": {
+    "total": 32,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 15,
+      "file_find": 3,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/bench-partial.ts",
+      "content": "The snapshot still has its service worker when this navigation runs. Playwright routes do not intercept requests served by a service worker, and this project's worker serves cached `/index.html` for every navigation (`src/sw/release.ts`). Consequently `/bench-partial` can load the actual application rather than the blank document, allowing application startup to run against the copy while records are extracted and caches are removed. Bypass/block service-worker handling for the extraction context before navigating, and then unregister and verify cleanup, so preparation really reads the snapshot without running the app.",
+      "existing_code": "const context = await chromium.launchPersistentContext(runProfile, { headless: true });",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/bench-partial.ts",
+      "content": "This labels the snapshot with the current schema version without reading its actual schema. Unlike the normal benchmark path, partial runs also skip the version-stamp check, so an older snapshot can be reported as current (or fail later when the app detects an older workspace). Read the workspace's `meta` record with key `schema` during extraction and reject unsupported/mismatched versions before writing this provenance; the current source constant is not evidence of the copied database's version.",
+      "existing_code": "  schemaVersion: SCHEMA_VERSION,",
+      "start_line": 118,
+      "end_line": 118,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Partial benchmark implementation, runner integration, and package script",
+      "files": [
+        "package.json",
+        "tools/bench-partial.ts",
+        "tools/bench-run.ts",
+        "tools/bench/partial.ts"
+      ]
+    }
+  ],
+  "session_id": "df987cde-6e0f-44ed-8baf-fa24f0c16f11",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "df987cde-6e0f-44ed-8baf-fa24f0c16f11",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "0f7efb70",
+      "requested_head": "4e46b2e9",
+      "resolved_base": "0f7efb70d6c05ee4abc7cf8a277c4a78cfbd81d7",
+      "resolved_head": "4e46b2e9fb6c0091116815bd7c72ee069e4ea54a",
+      "exact_range": "0f7efb70d6c05ee4abc7cf8a277c4a78cfbd81d7..4e46b2e9fb6c0091116815bd7c72ee069e4ea54a",
+      "source_artifact_sha256": "3e74901dc05f0d01d6ba43e471b3bdf74604c96a1772a17ea67be5956a3c7ffa"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "220ce9d0e2e1371ff237975fecd775ba0756bd190123b544449b10c01f333d76",
+          "path": "tools/bench/partial.ts",
+          "fingerprint": "922d554953d2771a78888f0c55ece5abcf2eaa2658f9fb0061bff211576467a7"
+        },
+        {
+          "item_id": "7522c041b90c2f16ea5381cba1b358df3f1496322b5325e932ca141c2982d8cc",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "fb1ff9daff6142b8790092db40283a064bfda646be69413237ed530c4ba6ffee"
+        },
+        {
+          "item_id": "e3c7cbe310881d0348390239b00c219aa81fd9d09b83da3f90f33ba209ea7b6a",
+          "path": "package.json",
+          "fingerprint": "1409caedce38d6d91d6006e2342dd8cb61859b4e58af39b5df8b57033d520876"
+        },
+        {
+          "item_id": "f92772dc2d884d91b3aa1e025b8ee43fe273734b658b067c3c3351bad1b8146c",
+          "path": "tools/bench-partial.ts",
+          "fingerprint": "a57f8b5f020aee1e5aab398ba7d98b66acdbcc4f63c963c07565c4c592c97788"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "220ce9d0e2e1371ff237975fecd775ba0756bd190123b544449b10c01f333d76",
+          "path": "tools/bench/partial.ts",
+          "fingerprint": "922d554953d2771a78888f0c55ece5abcf2eaa2658f9fb0061bff211576467a7"
+        },
+        {
+          "item_id": "7522c041b90c2f16ea5381cba1b358df3f1496322b5325e932ca141c2982d8cc",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "fb1ff9daff6142b8790092db40283a064bfda646be69413237ed530c4ba6ffee"
+        },
+        {
+          "item_id": "e3c7cbe310881d0348390239b00c219aa81fd9d09b83da3f90f33ba209ea7b6a",
+          "path": "package.json",
+          "fingerprint": "1409caedce38d6d91d6006e2342dd8cb61859b4e58af39b5df8b57033d520876"
+        },
+        {
+          "item_id": "f92772dc2d884d91b3aa1e025b8ee43fe273734b658b067c3c3351bad1b8146c",
+          "path": "tools/bench-partial.ts",
+          "fingerprint": "a57f8b5f020aee1e5aab398ba7d98b66acdbcc4f63c963c07565c4c592c97788"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 121832
+  }
+}

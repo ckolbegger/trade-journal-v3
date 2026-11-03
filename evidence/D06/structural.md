@@ -1927,3 +1927,58 @@ No flake reran. Ports 5175, 9341 and 9342 were free before and after.
 | Node integration | 76 files, 154 tests passed | `suite-runs/t6.25-b1-fix-round-integration.txt` |
 | Browser (Chromium, task) | 17 passed | `suite-runs/t6.25-b1-fix-round-browser.txt` |
 | Checks | 12 of 12 | `suite-runs/t6.25-b1-fix-round-checks.txt` |
+
+### T6.25 on the partial dataset (decision 73, revision 33)
+
+- **Generator 5 stopped at the user's direction** on 2026-11-03 at about 08:55, after 31,418 s.
+  - The last stored session is 784 (2027-02-17), with that day's Review part-way.
+  - The profile was copied to `.cache/bench/partial-v5-s775/profile`, and only the copy is used.
+- **T6.25-P1 `2120a29f`:** `tools/bench/partial.ts` (`countStored`, `lastSessionOf`, `reviewMembersOf`), `tools/bench-partial.ts` (`npm run bench:partial -- <dir>`) and `bench-run.ts --partial <dir>`.
+- **T6.25-P2 `4e46b2e9`:** times first Action saves when too few cards have a saved Action, and words the report for a partial dataset.
+- **Plan revision 33 `cabe50e4`** (decision 73, tag `claude-opus-5.5-plan-r33`):
+  - T6.25 closes on the partial dataset as a disclosed deviation.
+  - The AC-PERF-001 D6 row is partial, not covered.
+  - The Review-save growth is tech debt item 8.
+- **Evidence `ccb187b5`:** `bench.md`, `t6.25-partial/progress.md` and both generator logs.
+- **Results of run 4,** the clean run of record:
+  - Cold p95 252.7 ms and warm p95 208.7 ms, against limits of 2,500 and 1,500.
+  - The Closed page, the walk (99 cards) and the owed group (18 cards) were equal before and after the timed renders.
+  - Ungated: the Closed page in 330 ms, the first card in 518 ms, and a Trade Action save in 682–692 ms.
+  - Run 3 overlapped the main session's Chromium probe and is kept as `bench-run3-overlapped.*`.
+- **Cause of the save growth,** verified by the main session on a copy of the snapshot. Details are in `t6.25-partial/report.md`.
+  - Chromium leaves the old index entry behind when a record's index key changes, and removes it only when a read-write transaction iterates over it.
+  - `trades.byLifecycleActivity` Open (99 rows) took 168 ms on the snapshot and 1.6 ms on a fresh copy of the same documents.
+  - One read-write pass over the range brought it to 31 ms.
+- **ocr review of `0f7efb70..4e46b2e9`** (`ocr/T6.25-P1-P2-4e46b2e9.json`): 2 comments, which became T6.25-P3.
+
+  | Location | Finding | Assessment |
+  |---|---|---|
+  | `bench-partial.ts:118` | The schema version was stamped from the source constant and never checked | Valid |
+  | `bench-partial.ts:27` | The snapshot's service worker could answer the navigation | Doubtful, but cheap to close |
+
+**Cumulative run `t6.25-partial`**: at HEAD `ccb187b5`, full tier (`package.json`). The checks stage ran at `bd9b41e0`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,175 of 1,176 passed | `suite-runs/t6.25-partial-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.25-partial-integration.txt` |
+| Browser (Chromium, full) | 158 passed (7.4 min) | `suite-runs/t6.25-partial-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.25-partial-checks.txt` |
+
+The one unit failure was the known intermittent case in the `TradeList.test.tsx` Open-list states (line 152, expected 3 got 2). It ran under load from two other subagents, and the file then passed 34 of 34 three times on its own.
+
+- **T6.25-P3 `bd9b41e0`:**
+  - `bench:partial` reads `meta.schema.schemaVersion` from the snapshot, refuses a mismatch, and records the value it read.
+  - `bench-run --partial` checks that recorded value.
+  - Both persistent contexts launch with `serviceWorkers: 'block'`.
+  - Red/green case T6.25-P3.1.
+- **ocr review of `bd9b41e0`** (`ocr/T6.25-P3-bd9b41e0.json`): 0 comments.
+
+**Cumulative run `t6.25-p3-fix-round`**: at HEAD `bd9b41e0`, full tier.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,176 passed | `suite-runs/t6.25-p3-fix-round-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.25-p3-fix-round-integration.txt` |
+| Browser (Chromium, full) | 158 passed (7.4 min) | `suite-runs/t6.25-p3-fix-round-browser.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.25-p3-fix-round-checks.txt` |

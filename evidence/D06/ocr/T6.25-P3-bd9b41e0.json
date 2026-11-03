@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 18778,
+    "input_tokens": 18545,
+    "output_tokens": 233,
+    "cache_read_tokens": 3840,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/bench-partial.ts",
+        "tools/bench-run.ts",
+        "tools/bench/partial.ts"
+      ]
+    }
+  ],
+  "session_id": "8c9793da-d52d-422c-8445-4db6d2bd405c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8c9793da-d52d-422c-8445-4db6d2bd405c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "bd9b41e0",
+      "resolved_base": "ccb187b59a9bd8c1ad215e709689cec5c2f22140",
+      "resolved_head": "bd9b41e0e996515943c1aa01a40a61727dc1bc8d",
+      "exact_range": "ccb187b59a9bd8c1ad215e709689cec5c2f22140..bd9b41e0e996515943c1aa01a40a61727dc1bc8d",
+      "source_artifact_sha256": "9cfe9bb20b6dcdb6a407ba6b3634176fa27a1dd7dcdd3a9bb1077a68705ca48c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "592fd01116feb6c8195f91ed29d7b8a16bfbdd996f23bc52422315c76e2f0104"
+        },
+        {
+          "item_id": "0f8fbfb24e10c86e529cd63ad6f3f511d88185b0eb7852dcbf27ea18ec67cc2e",
+          "path": "tools/bench-partial.ts",
+          "fingerprint": "788a930dccf223bb3da22b097c52ba44a1fc209794b374dda073b36914179290"
+        },
+        {
+          "item_id": "6da82e90259c815d28e061f60150339039397127130139dcd26cd13a98548da4",
+          "path": "tools/bench/partial.ts",
+          "fingerprint": "9a0f71e7e5905b5d8bf16f9174e2c8f4b30a3a6906d1b082522acf2a5593b276"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "592fd01116feb6c8195f91ed29d7b8a16bfbdd996f23bc52422315c76e2f0104"
+        },
+        {
+          "item_id": "0f8fbfb24e10c86e529cd63ad6f3f511d88185b0eb7852dcbf27ea18ec67cc2e",
+          "path": "tools/bench-partial.ts",
+          "fingerprint": "788a930dccf223bb3da22b097c52ba44a1fc209794b374dda073b36914179290"
+        },
+        {
+          "item_id": "6da82e90259c815d28e061f60150339039397127130139dcd26cd13a98548da4",
+          "path": "tools/bench/partial.ts",
+          "fingerprint": "9a0f71e7e5905b5d8bf16f9174e2c8f4b30a3a6906d1b082522acf2a5593b276"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 10446
+  }
+}
