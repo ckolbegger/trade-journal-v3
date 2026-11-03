@@ -778,6 +778,18 @@ describe('position paths P22', () => {
     }
   });
 
+  it('should reject a Buy with TradeClosed and write nothing when the stored lifecycle is Open but the facts are flat and Closed', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    const closed = await ref.stack.tradeWorkflows.recordPositionChange(closeCommand(ref, revision, { kind: 'Defer' }));
+    if (closed.kind !== 'Recorded') throw new Error(`expected Recorded, got ${closed.kind}`);
+    await rewriteTrade(ref, (document) => ({ ...document, lifecycle: 'Open' }));
+    const before = await dumpAll(ref.stack.factory);
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, closed.receipt.factRevision, [buy(ref, X2_TIME, '10', '50.00')]));
+    expect(result).toEqual(expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', code: 'TradeClosed' }] }));
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+  });
+
   it('should return ExceedsOpenQuantity and FlatBeforeLaterFacts from the candidates analysis as typed issues and write nothing', async () => {
     const ref = await exitReference();
     const revision = await enter(ref);

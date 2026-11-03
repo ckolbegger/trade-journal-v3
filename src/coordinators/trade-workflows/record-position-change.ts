@@ -333,7 +333,9 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   if (prepared.kind === 'Conflict') return { kind: 'Conflict', changed: [`trade:${prepared.tradeId}`] };
   if (prepared.kind !== 'Prepared') throw new Error(prepared.kind);
   // New exposure needs a new Plan, and a missed fill waits for correction or Rebuild (P22).
-  if (prepared.before!.lifecycle === 'Closed') return rejected(deps, [{ source: 'TradeWorkflows', code: 'TradeClosed' }]);
+  // A stored lifecycle that disagrees with flat, Closed facts stays visible until repair, so the facts count too (A96).
+  const beforeDerived = derive({ record: prepared.beforeAnalysisInput! });
+  if (prepared.before!.lifecycle === 'Closed' || (beforeDerived.kind === 'Derived' && beforeDerived.expectedLifecycle === 'Closed')) return rejected(deps, [{ source: 'TradeWorkflows', code: 'TradeClosed' }]);
   // Another Stock than the served Planned Leg's is Planned-Leg Terms, not installed until D10.
   const legs = prepared.beforeAnalysisInput!.plan.legs;
   if (command.members.some((m) => m.instrument.symbol !== legs.find((l) => l.factId === m.intent.plannedLegId)?.instrument.symbol)) {
