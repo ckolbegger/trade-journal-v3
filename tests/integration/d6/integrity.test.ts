@@ -55,7 +55,7 @@ describe('I6.9 Closed-lifecycle integrity', () => {
     const { d, app, tradeId, before } = await disagreeing();
 
     const sell = await app.TradeWorkflows.recordPositionChange(await exitCommand(app, tradeId, [{ quantity: '10', price: '52.00', economicTime: TUESDAY_1400 }]));
-    expect(sell.kind).toBe('Rejected');
+    expect(sell).toEqual(expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', code: 'TradeClosed' }] }));
     expect(await dumpAll(d.factory)).toEqual(before);
     expect(findingsOf(await app.TradeViewsAndReporting.getTradeDetail({ tradeId }))).toEqual([disagreement]);
   }, 60_000);
@@ -64,7 +64,7 @@ describe('I6.9 Closed-lifecycle integrity', () => {
     const { d, app, tradeId, before } = await disagreeing();
 
     const bought = await app.TradeWorkflows.recordPositionChange(await positionChange(app, tradeId, [await buy(app, tradeId, PC3)], await complete(app)));
-    expect(bought.kind).toBe('Rejected');
+    expect(bought).toEqual(expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeWorkflows', code: 'TradeClosed' }] }));
     expect(await dumpAll(d.factory)).toEqual(before);
     expect(findingsOf(await app.TradeViewsAndReporting.getTradeDetail({ tradeId }))).toEqual([disagreement]);
   }, 60_000);

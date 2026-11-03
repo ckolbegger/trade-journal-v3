@@ -19,7 +19,7 @@ const MARK_DEPENDENT = [
 const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: TUESDAY_DATE } };
 
 describe('I6.16 Realized beside a Missing Mark', () => {
-  it('should show realized-to-date 55.90 as a Value in the Open list, Detail and Review while remaining-open, current P&L and risk figures are Unavailable MarkMissing naming XYZ and 2026-10-13', async () => {
+  it('should show realized-to-date 55.90 as a Value in the Detail and Review, and remaining-open, current P&L and risk figures are Unavailable MarkMissing naming XYZ and 2026-10-13 in the Open list, Detail and Review', async () => {
     const { app, tradeId } = await referenceTrade(TUESDAY_1700);
     await recordExit(app, tradeId, [X1]);
 

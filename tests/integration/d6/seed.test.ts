@@ -16,7 +16,7 @@ describe('I6.15 fresh initialization at schema 5', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.catalog.manifestVersion).toBe(2);
-    expect(opened.receipt.seeds.catalog.additions).toEqual(expect.arrayContaining(CLOSE_REASONS));
+    expect(opened.receipt.seeds.catalog.additions).toEqual(['strategy.long-stock', ...CLOSE_REASONS]);
     expect(opened.receipt.seeds.journal.manifestVersion).toBe(5);
     expect(opened.receipt.seeds.journal.additions).toEqual(expect.arrayContaining(['entry-type.close-review', 'source.trade-close']));
 
@@ -27,6 +27,10 @@ describe('I6.15 fresh initialization at schema 5', () => {
     const journalTypes = (stores['journalTypes'] as { productKey: string }[]).map((t) => t.productKey);
     expect(journalTypes).toEqual(expect.arrayContaining(['entry-type.close-review', 'source.trade-close']));
     expect(stores['trades']).toEqual([]);
+    // Each stored Close Reason is Seeded with the policy that keeps seeded values selectable.
+    const storedReasons = (stores['catalog'] as { kind: string; productKey: string; origin: string; policy: string }[]).filter((r) => r.kind === 'CloseReason');
+    expect(storedReasons.map((r) => r.productKey).sort()).toEqual([...CLOSE_REASONS].sort());
+    for (const r of storedReasons) expect([r.productKey, r.origin, r.policy]).toEqual([r.productKey, 'Seeded', 'SeededValuesRemainSelectable']);
 
     // Exactly four Close Reasons, with policy, and none for Other, Expired, Assigned or Exercised.
     const reasons = await app.ReferenceCatalog.query({ family: 'CloseReason' });

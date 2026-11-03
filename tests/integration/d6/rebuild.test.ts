@@ -10,7 +10,35 @@ import {
   X2A, X2B, type CloseReviewKind,
 } from './support.ts';
 
-type Lifecycle = 'Planned' | 'Open' | 'Closed';
+// Raw damage with no application open: removes terminalTime, terminalDesc and activityDesc from every Trade and
+// clears journalObligations.
+async function damagePrivateState(factory: IDBFactory, databaseName: string): Promise<void> {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const open = factory.open(databaseName);
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(open.error ?? new Error('open failed'));
+  });
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(['trades', 'journalObligations'], 'readwrite');
+    tx.objectStore('journalObligations').clear();
+    const cursor = tx.objectStore('trades').openCursor();
+    cursor.onsuccess = () => {
+      const at = cursor.result;
+      if (!at) return;
+      const trade = { ...(at.value as Record<string, unknown>) };
+      delete trade['terminalTime'];
+      delete trade['terminalDesc'];
+      delete trade['activityDesc'];
+      at.update(trade);
+      at.continue();
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error('damage failed'));
+  });
+  db.close();
+}
+
+type Lifecycle ='Planned' | 'Open' | 'Closed';
 
 // The three lists, every listed Trade's Detail, the Tuesday Review without its binding, and the Outstanding Debts.
 async function views(app: Application) {
@@ -64,6 +92,10 @@ describe('I6.14 Rebuild equivalence', () => {
     expect((indexesBefore.journalObligations as unknown[]).length).toBeGreaterThan(9);
 
     app.persistence.close();
+    // Damage the private state first: drop every Trade's private sort keys (emptying both indexes) and clear
+    // the obligation store, so a rebuild that does nothing cannot pass.
+    await damagePrivateState(d.factory, databaseName);
+    expect(await indexes()).toEqual({ byLifecycleTerminal: [], byLifecycleActivity: [], journalObligations: [] });
     await rebuildPrivateState(d.factory, databaseName);
     app = await restart(app, d);
 
