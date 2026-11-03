@@ -63,9 +63,19 @@ function p95(values: readonly number[]): number {
 
 const npm = (script: string) => execFileSync('npm', ['run', script], { stdio: 'inherit' });
 
+// `--partial <dir>` (T6.25-P1) runs on a partial dataset prepared by `npm run bench:partial -- <dir>`: its profile is
+// `<dir>/run-profile`, its provenance `<dir>/dataset.json`, and there is no generator stamp or expected-rows file. The
+// Open list, the Review's walk and owed group, and its due reflections are then compared by membership with the stored
+// data (derived in bench:partial) and, for what the stored data cannot fix (the rows' figures, the attention-ranked
+// order, which reflections are due), with the first render, which every later render must equal.
+const partialAt = process.argv.indexOf('--partial');
+const partialDir = partialAt === -1 ? undefined : path.resolve(process.argv[partialAt + 1] ?? '');
+if (partialAt !== -1 && !process.argv[partialAt + 1]) throw new Error('--partial needs the dataset directory');
+const partial = partialDir !== undefined;
+
 // The cached profile must match this source's generator and schema versions.
-const stamp = (await readFile(BENCH_STAMP_FILE, 'utf8').then(JSON.parse, () => undefined)) as BenchStamp | undefined;
-if (stamp?.generatorVersion !== BENCH_GENERATOR_VERSION || stamp.schemaVersion !== SCHEMA_VERSION) {
+const stamp = partial ? undefined : ((await readFile(BENCH_STAMP_FILE, 'utf8').then(JSON.parse, () => undefined)) as BenchStamp | undefined);
+if (!partial && (stamp?.generatorVersion !== BENCH_GENERATOR_VERSION || stamp.schemaVersion !== SCHEMA_VERSION)) {
   console.log('bench:run: the cached profile is missing or stale; generating it');
   npm('build:bench');
   npm('bench:generate');
@@ -73,12 +83,16 @@ if (stamp?.generatorVersion !== BENCH_GENERATOR_VERSION || stamp.schemaVersion !
 // Measurement runs the production build.
 npm('build');
 
-const expected = JSON.parse(await readFile(BENCH_EXPECTED_ROWS_FILE, 'utf8')) as ExpectedOpenRows;
-const dataset = JSON.parse(await readFile(BENCH_DATASET_FILE, 'utf8')) as Record<string, unknown>;
+const dataset = JSON.parse(await readFile(partial ? path.join(partialDir, 'dataset.json') : BENCH_DATASET_FILE, 'utf8')) as Record<string, unknown>;
+if (partial && dataset['partial'] !== true) throw new Error(`${partialDir}/dataset.json is not marked partial`);
+// The Open list to compare with: the generator's, or (partial) the first render's.
+let expected: Pick<ExpectedOpenRows, 'headers' | 'rows'> | undefined = partial ? undefined : (JSON.parse(await readFile(BENCH_EXPECTED_ROWS_FILE, 'utf8')) as ExpectedOpenRows);
+const partialCounts = partial ? (dataset['counts'] as { openTrades: number }) : undefined;
+const openRowCount = () => expected?.rows.length ?? partialCounts!.openTrades;
 
 const workDir = await mkdtemp(path.join(os.tmpdir(), 'tj-bench-run-'));
 const profile = path.join(workDir, 'profile');
-await cp(BENCH_PROFILE_DIR, profile, { recursive: true });
+await cp(partial ? path.join(partialDir, 'run-profile') : BENCH_PROFILE_DIR, profile, { recursive: true });
 
 const server = await startReleaseServer({ root: process.cwd(), release: BUILD_DIR, port: BENCH_PORT });
 const origin = server.url;
@@ -113,13 +127,26 @@ const markTime = (page: Page, name: string) =>
 // The Open list as rendered, compared with the generator's expected rows.
 async function compareOpenList(page: Page, when: string, log = true) {
   const table = page.getByRole('table', { name: 'Open Trades' });
-  await table.locator('tbody tr').nth(expected.rows.length - 1).waitFor({ timeout: WAIT_MS });
+  await table.locator('tbody tr').nth(openRowCount() - 1).waitFor({ timeout: WAIT_MS });
   const rendered = await table.evaluate((t: HTMLTableElement) => ({
     headers: [...t.tHead!.rows[0]!.cells].map((c) => c.textContent.trim()),
     rows: [...t.tBodies[0]!.rows].map((r) => [...r.cells].map((c) => c.textContent.trim())),
   }));
   await assertPinned(page, asOf);
-  assertMissingRendered(rendered.rows, missing);
+  if (partial && missing.length === 0) {
+    // The last session of the partial dataset saved every Instrument's Mark, so no row may show a missing one.
+    const flagged = rendered.rows.filter((r) => r[3]!.startsWith('Mark missing')).map((r) => r[0]);
+    if (flagged.length > 0) throw new Error(`the Open list shows Mark missing for ${flagged.join(', ')}, though every Instrument has the as-of Mark`);
+  } else {
+    assertMissingRendered(rendered.rows, missing);
+  }
+  if (!expected) {
+    // Partial dataset, first render: the Open list must be exactly the stored Open Trades' Underlyings; its figures become the baseline.
+    const symbols = rendered.rows.map((r) => r[0]!).sort();
+    if (!isDeepStrictEqual(symbols, dataset['openUnderlyings'])) throw new Error(`the Open list's Underlyings differ from the stored Open Trades': ${symbols.length} rendered, ${(dataset['openUnderlyings'] as string[]).length} stored`);
+    expected = { headers: rendered.headers, rows: rendered.rows };
+    console.log(`bench:run: Open list baseline taken ${when}: ${rendered.rows.length} rows, the stored Open Trades' Underlyings`);
+  }
   const equal = isDeepStrictEqual(rendered.headers, expected.headers) && isDeepStrictEqual(rendered.rows, expected.rows);
   if (log) console.log(`bench:run: Open list ${when}: ${rendered.rows.length} rows, ${equal ? 'equal to' : 'DIFFERENT from'} the expected rows`);
   if (!equal) throw new Error(`the Open list ${when} differs from ${path.relative(process.cwd(), BENCH_EXPECTED_ROWS_FILE)}`);
@@ -130,11 +157,12 @@ async function compareOpenList(page: Page, when: string, log = true) {
 // "N reflections due for X" for each Trade with due Debt, X naming the Trade in full ("QAJ (Long 120 shares @ $300.97)",
 // A150); the harness compares X's underlying symbol (up to the first " ("). They must equal the generator's expected
 // count and the Trades of its Outstanding Debts (both due at the as-of Review, decision 58).
-const expectedDue = (dataset['asOfDueReflections'] as number | undefined) ?? Number.NaN;
-const expectedDueByTrade = new Map<string, number>();
+let expectedDue = (dataset['asOfDueReflections'] as number | undefined) ?? Number.NaN;
+let expectedDueByTrade = new Map<string, number>();
 for (const debt of (dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []) {
   expectedDueByTrade.set(debt.underlying, (expectedDueByTrade.get(debt.underlying) ?? 0) + 1);
 }
+let dueBaselineTaken = !partial;
 interface DueComparison {
   readonly total: number;
   readonly byTrade: ReadonlyMap<string, number>;
@@ -148,11 +176,18 @@ const dueComparisons: { when: string; due: DueComparison }[] = [];
 // from the profile's IndexedDB before any timed run; the Underlying of each walked Trade is read the same way, since
 // the dataset records only the walk's identities. The comparison is then between the stored records and what the
 // facade and UI render.
+// Partial dataset: the stored data fixes the walk's and the owed group's membership (sorted identities in the dataset), not
+// their order, so the first rendered Review sets the order every later one must equal.
 const asOfReview = dataset['asOfReview'] as BenchAsOfReview | undefined;
-if (!asOfReview) throw new Error('bench/dataset.json has no asOfReview (generator 4 or later); regenerate the profile');
+if (!asOfReview && !partial) throw new Error('bench/dataset.json has no asOfReview (generator 4 or later); regenerate the profile');
 let expectedClosedIdentities: string[] = [];
 let expectedWalkIdentities: string[] = [];
-const expectedOwedIdentities = asOfReview.owedGroup.map((t) => cardIdentity(t.tradeId, t.underlying));
+let expectedOwedIdentities: string[] = asOfReview ? asOfReview.owedGroup.map((t) => cardIdentity(t.tradeId, t.underlying)) : [];
+let reviewOrderTaken = !partial;
+const partialWalk = (dataset['walkIdentities'] as string[] | undefined) ?? [];
+const partialOwed = (dataset['owedIdentities'] as string[] | undefined) ?? [];
+const walkSize = () => (partial ? partialWalk.length : expectedWalkIdentities.length);
+const owedSize = () => (partial ? partialOwed.length : expectedOwedIdentities.length);
 
 async function deriveExpectedIdentities(page: Page) {
   const stored = await page.evaluate(
@@ -171,11 +206,16 @@ async function deriveExpectedIdentities(page: Page) {
         db.close();
       }
     },
-    { walk: asOfReview!.walk, size: CLOSED_PAGE_SIZE },
+    { walk: asOfReview?.walk ?? [], size: CLOSED_PAGE_SIZE },
   );
   expectedClosedIdentities = stored.closed.map((row: ExpectedClosedRow) => closedIdentity(row, BENCH_TIME_ZONE));
-  expectedWalkIdentities = asOfReview!.walk.map((id) => cardIdentity(id, stored.underlyings[id]!));
   if (expectedClosedIdentities.length === 0) throw new Error('the stored Workspace holds no Closed Trade');
+  if (partial) {
+    if (partialWalk.length === 0) throw new Error('the partial dataset has an empty walk, so the Review walk would be compared vacuously');
+    if (partialOwed.length === 0) throw new Error('the partial dataset has an empty owed group, so the owed group would be compared vacuously');
+    return;
+  }
+  expectedWalkIdentities = asOfReview!.walk.map((id) => cardIdentity(id, stored.underlyings[id]!));
   if (expectedWalkIdentities.length === 0) throw new Error('asOfReview.walk is empty, so the Review walk would be compared vacuously');
   if (expectedOwedIdentities.length === 0) throw new Error('asOfReview.owedGroup is empty, so the owed group would be compared vacuously');
   if (expectedWalkIdentities.some((id) => id.endsWith(' '))) throw new Error('a Trade in asOfReview.walk is not stored');
@@ -202,8 +242,8 @@ async function compareClosedPage(page: Page, when: string): Promise<number> {
 // The Review's cards as rendered: the walk's and the owed group's Trade and Underlying, in order.
 async function readReviewCards(page: Page) {
   const read = (list: string) => page.locator(`${list} > li.review-card`).evaluateAll((items) => items.map((li) => `${li.getAttribute('data-trade-id')} ${li.querySelector('.review-card-name')?.textContent.trim() ?? ''}`));
-  if (expectedWalkIdentities.length > 0) await page.locator('ol[aria-label="Positions"] > li.review-card').nth(expectedWalkIdentities.length - 1).waitFor({ timeout: WAIT_MS });
-  if (expectedOwedIdentities.length > 0) await page.locator('ol[aria-labelledby="owed-group-heading"] > li.review-card').nth(expectedOwedIdentities.length - 1).waitFor({ timeout: WAIT_MS });
+  if (walkSize() > 0) await page.locator('ol[aria-label="Positions"] > li.review-card').nth(walkSize() - 1).waitFor({ timeout: WAIT_MS });
+  if (owedSize() > 0) await page.locator('ol[aria-labelledby="owed-group-heading"] > li.review-card').nth(owedSize() - 1).waitFor({ timeout: WAIT_MS });
   return { walk: await read('ol[aria-label="Positions"]'), owed: await read('ol[aria-labelledby="owed-group-heading"]') };
 }
 const reviewCardComparisons: { when: string; walk: number; owed: number }[] = [];
@@ -225,12 +265,34 @@ async function compareDueReflections(page: Page, when: string) {
     byTrade.set(underlying, (byTrade.get(underlying) ?? 0) + count);
     total += count;
   }
+  if (!dueBaselineTaken) {
+    // Partial dataset, first render: which reflections are due is the app's rule (one session of grace), not stored, so
+    // the first render sets it. Every Trade it names must hold an Outstanding Debt in the stored data.
+    const owing = new Set(dataset['outstandingUnderlyings'] as string[]);
+    const strangers = [...byTrade.keys()].filter((t) => !owing.has(t));
+    if (strangers.length > 0) throw new Error(`the as-of Review lists reflections due for ${strangers.join(', ')}, which hold no Outstanding Debt in the stored data`);
+    expectedDue = total;
+    expectedDueByTrade = new Map(byTrade);
+    dueBaselineTaken = true;
+    console.log(`bench:run: due reflections baseline taken ${when}: ${total}`);
+  }
   const equal = reviewDate === dataset['reviewDate'] && total === expectedDue && isDeepStrictEqual([...byTrade].sort(), [...expectedDueByTrade].sort());
   console.log(`bench:run: as-of Review ${reviewDate} ${when}: ${total} due reflections (${[...byTrade].map(([t, n]) => `${t} ${n}`).join(', ') || 'none'}), ${equal ? 'equal to' : 'DIFFERENT from'} the expected ${expectedDue}`);
   dueComparisons.push({ when, due: { total, byTrade, renderMs } });
   if (!equal) throw new Error(`the as-of Review's due reflections ${when} differ from bench/dataset.json (${expectedDue} expected, Review Date ${String(dataset['reviewDate'])})`);
   // D6: the walk and the owed-reflection group are the dataset's identities, in order.
   const cards = await readReviewCards(page);
+  if (!reviewOrderTaken) {
+    // Partial dataset, first render: the walk and the owed group must be exactly the stored data's members; their order is the baseline.
+    const walkDiff = firstDifference(partialWalk, [...cards.walk].sort());
+    const owedDiff = firstDifference(partialOwed, [...cards.owed].sort());
+    if (walkDiff) throw new Error(`the as-of Review's walk is not the Trades open at the close in the stored data: ${walkDiff}`);
+    if (owedDiff) throw new Error(`the as-of Review's owed group is not the Trades outside the walk with an Outstanding Debt in the stored data: ${owedDiff}`);
+    expectedWalkIdentities = cards.walk;
+    expectedOwedIdentities = cards.owed;
+    reviewOrderTaken = true;
+    console.log(`bench:run: Review order baseline taken ${when}: ${cards.walk.length} walked and ${cards.owed.length} owed cards, the stored data's members`);
+  }
   const walkDifference = firstDifference(expectedWalkIdentities, cards.walk);
   const owedDifference = firstDifference(expectedOwedIdentities, cards.owed);
   console.log(`bench:run: as-of Review ${when}: walk ${cards.walk.length} cards ${walkDifference ? `DIFFERENT (${walkDifference})` : 'equal'}, owed group ${cards.owed.length} cards ${owedDifference ? `DIFFERENT (${owedDifference})` : 'equal'}`);
@@ -357,10 +419,20 @@ async function timeCards(page: Page): Promise<CardTimings> {
     console.log(`bench:run: Save Marks ${symbol} ${timings.saveMarks.at(-1)!.ms.toFixed(1)} ms`);
   }
   // Cards whose Instrument is not Missing and whose Trade owes no reflection, in the Review's order.
-  const owing = new Set(((dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []).map((d) => d.underlying));
+  const owing = new Set(partial ? (dataset['outstandingUnderlyings'] as string[]) : ((dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []).map((d) => d.underlying));
   await timeOpenFirstCard(page);
-  const names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
+  let names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
+  if (partial) {
+    // The partial Review stopped part-way: only the first card of an Underlying whose Action is saved can be edited (its Change button),
+    // as every card of a full dataset can; a card is found by its Underlying, so the first one.
+    const actioned = new Set(dataset['actionedTradeIds'] as string[]);
+    const cards = await page.locator('ol[aria-label="Positions"] > li.review-card').evaluateAll((items) => items.map((li) => ({ id: li.getAttribute('data-trade-id') ?? '', name: li.querySelector('.review-card-name')?.textContent.trim() ?? '' })));
+    const firstOf = new Map<string, string>();
+    for (const card of cards) if (!firstOf.has(card.name)) firstOf.set(card.name, card.id);
+    names = [...firstOf].filter(([, id]) => actioned.has(id)).map(([name]) => name);
+  }
   const symbols = [...new Set(names.map((n) => n.trim()))].filter((s) => !missing.includes(s) && !owing.has(s)).slice(0, SAVE_RUNS + COLD_SAVE_RUNS);
+  if (partial) console.log(`bench:run: ${symbols.length} editable Action cards found for ${SAVE_RUNS + COLD_SAVE_RUNS} saves`);
   timings.coldSymbols.push(...symbols.slice(SAVE_RUNS));
   for (const symbol of symbols.slice(0, SAVE_RUNS)) {
     timings.saveAction.push({ symbol, ms: await timeSaveAction(page, symbol) });
@@ -481,12 +553,40 @@ const median = (values: readonly number[]) => {
   const mid = sorted.length / 2;
   return sorted.length % 2 === 1 ? sorted[Math.floor(mid)]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 };
-const spread = (values: readonly number[]) => `${values.length} | ${ms(median(values))} ms | ${ms(p95(values))} ms | ${ms(Math.min(...values))} ms | ${ms(Math.max(...values))} ms`;
+const spread = (values: readonly number[]) => values.length === 0 ? '0 | none | none | none | none' : `${values.length} | ${ms(median(values))} ms | ${ms(p95(values))} ms | ${ms(Math.min(...values))} ms | ${ms(Math.max(...values))} ms`;
 const openCard = cardTimings!.openFirstCard;
 const markMs = cardTimings!.saveMarks.map((s) => s.ms);
 const actionMs = cardTimings!.saveAction.map((s) => s.ms);
 
 const coldActionMs = coldSaveAction.map((s) => s.ms);
+
+// The partial dataset's counts beside plan section 1.4's (D6 column), and how its expectations were fixed.
+function partialSection(): string {
+  const c = dataset['counts'] as Record<string, number>;
+  const n = (v: number) => v.toLocaleString('en-US');
+  return `**PARTIAL DATASET (user decision of 2026-11-03).** Generation (generator 5) was stopped by SIGTERM at session ${n(c['sessions']!)} of 1,255 (${String(dataset['reviewDate'])}) because a Review save grows with the stored history. This run is on that snapshot (\`${String(dataset['snapshotDir'])}\`, untouched; the run uses a copy with the service worker and caches stripped, \`${String(dataset['runProfileDir'])}\`). The as-of instant is the last session's close plus 35 minutes, ${String(dataset['asOf'])}, derived from the stored Review Actions. The last session's Review is incomplete: ${(dataset['actionedTradeIds'] as string[]).length} of its ${(dataset['walkIdentities'] as string[]).length} walked Trades have their Action. The AC-PERF-001 D6 row is therefore partial, not covered, until a full rerun.
+
+| Record kind | Plan section 1.4 at D6 | This partial dataset |
+|---|---|---|
+| Sessions | 1,255 | ${n(c['sessions']!)} |
+| Trades | 25,000 | ${n(c['trades']!)} |
+| Closed | 24,700 | ${n(c['closedTrades']!)} |
+| Open | 200 | ${n(c['openTrades']!)} |
+| Planned | 100 | ${n(c['plannedTrades']!)} |
+| Position Changes | about 100,000 | ${n(c['positionChanges']!)} |
+| Executions | about 200,000 | ${n(c['executions']!)} |
+| Close Reasons | 24,700 | ${n(c['closeReasons']!)} |
+| Position Change Reflection outcomes (entries + declines) | about 100,000 | ${n(c['positionChangeReflectionEntries']! + c['positionChangeReflectionDeclines']!)} |
+| Close Review outcomes (entries + declines) | 24,700 | ${n(c['closeReviewEntries']! + c['closeReviewDeclines']!)} |
+| Marks (revisions) | about 190,000 | ${n(c['marks']!)} |
+| Daily Trade Review Actions | about 126,000 | ${n(c['actions']!)} |
+| Debts (Outstanding) | not counted in section 1.4 | ${n(c['debts']!)} (${n(c['debtsOutstanding']!)}) |
+
+How the expectations were fixed (the generator wrote none for this snapshot): the counts, the Open Trades' Underlyings, the Missing Instruments (${missing.length}: every Instrument has the as-of Mark, as the generator saves them all before its last session), the first Closed page, and the membership of the Review's walk (Trades open at the close) and owed group (Trades outside the walk with an Outstanding Debt) come from the stored records. The stored records do not fix the Open rows' figures, the walk's attention-ranked order or which reflections are due, so those come from the first render, which every later render must equal. The Action saves are timed only on cards whose Action is already saved (they are edits, as in a full dataset): ${cardTimings!.saveAction.length} warm and ${coldSaveAction.length} cold, where a full run has ${SAVE_RUNS} and ${COLD_SAVE_RUNS}. No Save Marks timing is possible, because no Instrument is missing its as-of Mark.
+
+`;
+}
+
 const report = `# D6 benchmark run (AC-PERF-001)
 
 Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13 and T6.25) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
@@ -498,7 +598,7 @@ Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13 and T6
 | Cold start to \`tj:interactive\` | ${cold.length} | ${ms(coldP95)} ms | ${COLD_BUDGET_MS.toLocaleString('en-US')} ms | ${coldPass ? 'pass' : 'FAIL'} |
 | Warm Planned-to-Open switch to \`tj:open-list-ready\` | ${warm.length} | ${ms(warmP95)} ms | ${WARM_BUDGET_MS.toLocaleString('en-US')} ms | ${warmPass ? 'pass' : 'FAIL'} |
 
-Open list compared with \`bench/expected-open-rows.json\`: before the runs ${before} rows equal, after the runs ${after} rows equal, and each of the ${RUNS} cold starts rendered the same ${expected.rows.length} rows (figures included). The ${missing.length} Missing Instruments on the as-of date (${missing.join(', ')}) have rows in that list, each showing \`Mark missing\` in P&L (and no other row does).
+${partial ? partialSection() : ''}Open list compared with ${partial ? 'its first render (the baseline, which was checked against the stored Open Trades\' Underlyings)' : '`bench/expected-open-rows.json`'}: before the runs ${before} rows equal, after the runs ${after} rows equal, and each of the ${RUNS} cold starts rendered the same ${openRowCount()} rows (figures included). The ${missing.length} Missing Instruments on the as-of date (${missing.join(', ')}) have rows in that list, each showing \`Mark missing\` in P&L (and no other row does).
 
 ## As-of Review's due reflections (T5.22)
 
