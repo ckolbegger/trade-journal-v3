@@ -2,7 +2,7 @@ import { IDBIndex as FakeIDBIndex, IDBObjectStore as FakeIDBObjectStore } from '
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DeviationAction, ExcessFingerprint, IntegrityFinding, RecordedDeviation, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { beginSemanticTransaction, NotInSemanticTransaction, rebuildPrivateState, type Persistence } from '../../persistence/index.ts';
+import { activityDescOf, beginSemanticTransaction, NotInSemanticTransaction, rebuildPrivateState, type Persistence } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
 import { createTradeRecord, type ExecutionFactValue, type TradeRecord, type TradeSummary, type PositionChangeChange, type TradeDocument, type TradeFact } from './index.ts';
 
@@ -443,6 +443,47 @@ describe('applyPreparedChange: PositionChange', () => {
       record.applyPreparedChange(closed, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [retainPc3, createPc4], repairs: [], exposureStart: null }),
     ).toThrow(NotInSemanticTransaction);
     expect(drawn()).toBe(0);
+  });
+});
+
+describe('applyPreparedChange: PositionChange, vacated index keys (T6.25-B2)', () => {
+  // The vacate writes staged after the Trade put, for the given stored Trade and Position Change.
+  async function vacated(document: TradeDocument, executions: readonly ExecutionFactValue[], expectedLifecycle: 'Open' | 'Closed') {
+    const { record } = await tradeRecord([document]);
+    const prepared = await record.prepareChange(change(executions, document.factRevision));
+    if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
+    const tx = beginSemanticTransaction();
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle, deviationActions: [], repairs: [], exposureStart: null });
+    if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
+    const { writes } = tx.close();
+    expect(writes[0]).toEqual(expect.objectContaining({ op: 'put', store: 'trades' }));
+    return writes.filter((w) => w.op === 'vacateIndexKey');
+  }
+  const vacate = (index: string, key: unknown[]) => ({ op: 'vacateIndexKey', store: 'trades', index, key });
+  const stored = documentWith([PC1, PC2, PC3]);
+
+  it('should vacate only the old byLifecycleActivity key for a later-dated Position Change on an Open Trade', async () => {
+    const writes = await vacated(stored, [buy('2026-10-12T19:30:00Z', '10', '51.20')], 'Open');
+    expect(writes).toEqual([vacate('byLifecycleActivity', ['Open', activityDescOf('2026-10-12T18:00:00Z'), 'trade-1'])]);
+  });
+
+  it('should vacate both old keys for an exit that moves an Open Trade to Closed', async () => {
+    const exit = [{ ...buy('2026-10-13T14:00:00Z', '120', '52.00'), action: 'Sell' as const }];
+    const writes = await vacated(stored, exit, 'Closed');
+    expect(writes).toEqual([
+      vacate('byLifecycle', ['Open', PLAN_TIME, 'trade-1']),
+      vacate('byLifecycleActivity', ['Open', activityDescOf('2026-10-12T18:00:00Z'), 'trade-1']),
+    ]);
+  });
+
+  it('should vacate only the old byLifecycle key when a Planned Trade, which holds no activity key, becomes Open', async () => {
+    const writes = await vacated(plannedDocument(), PC1, 'Open');
+    expect(writes).toEqual([vacate('byLifecycle', ['Planned', PLAN_TIME, 'trade-1'])]);
+  });
+
+  it('should vacate nothing for an earlier-dated Position Change that leaves Last Activity and lifecycle unchanged', async () => {
+    const writes = await vacated(stored, [buy('2026-10-12T13:30:00Z', '10', '50.00')], 'Open');
+    expect(writes).toEqual([]);
   });
 });
 

@@ -414,6 +414,18 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       ...(terminalTime && { terminalTime, terminalDesc: activityDescOf(terminalTime) }),
     };
     tx.stage({ op: 'put', store: 'trades', value: stored });
+    // The put leaves the old lifecycle-index entries behind, and Chromium drops them only when a
+    // read-write cursor visits them, so every eligibility read would walk them (T6.25-B2).
+    const previousActivityDesc = before.lastActivity === undefined ? undefined : activityDescOf(before.lastActivity);
+    const keys = [
+      { index: 'byLifecycle', previous: [before.lifecycle, before.planTime, before.tradeId], current: [stored.lifecycle, stored.planTime, stored.tradeId] },
+      { index: 'byLifecycleActivity', previous: [before.lifecycle, previousActivityDesc, before.tradeId], current: [stored.lifecycle, stored.activityDesc, stored.tradeId] },
+    ];
+    for (const { index, previous, current } of keys) {
+      // An entry exists only for a complete key, and a cursor on an unchanged key would land on the live record.
+      if (previous.includes(undefined) || canonicalJson(previous) === canonicalJson(current)) continue;
+      tx.stage({ op: 'vacateIndexKey', store: 'trades', index, key: previous as string[] });
+    }
     touchTradeSection(tx);
     return { kind: 'Staged', mapping, projection: analysisInputOf(stored) };
   }

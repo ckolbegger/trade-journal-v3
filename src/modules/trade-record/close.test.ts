@@ -209,7 +209,8 @@ describe('applyPreparedChange', () => {
     );
     expect(staged.mapping['candidate:close-reason-1']).toMatch(/^d-/);
     // The write touches only the Trade store and the Trade-section record: no Lot Match is stored.
-    expect(writes.writes.map((w) => w.store).sort()).toEqual(['meta', 'trades']);
+    // The Trade put, its two vacated index keys (T6.25-B2) and the section record: the vacates are on the Trade store.
+    expect([...new Set(writes.writes.map((w) => w.store))].sort()).toEqual(['meta', 'trades']);
     expect(Object.keys(afterX2.stored!).filter((key) => /lot|match/i.test(key))).toEqual([]);
   });
 
