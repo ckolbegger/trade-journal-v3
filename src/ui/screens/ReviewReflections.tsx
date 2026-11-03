@@ -48,6 +48,7 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
   }, [isOpen]);
   return (
     <li ref={row}>
+      <h6>{reflection.entryType}</h6>
       <p>
         Position Change at <span className="nowrap">{when}</span>
       </p>

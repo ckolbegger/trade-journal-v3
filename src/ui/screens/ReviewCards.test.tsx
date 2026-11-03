@@ -604,6 +604,7 @@ describe('read only (A162)', () => {
     const user = userEvent.setup();
     const reflection: OwedReflection = {
       debtId: 'd1',
+      entryType: 'Position Change Reflection',
       definition: reflectionDefinition,
       economicTime: '2026-10-09T14:30:00Z',
       executions: [{ factId: 'x1', economicTime: '2026-10-09T14:30:00Z', recordedSequence: 1, action: 'Buy', instrument: symbol, quantity: '100', price: '50.00', fee: '1.00' }] as unknown as OwedReflection['executions'],

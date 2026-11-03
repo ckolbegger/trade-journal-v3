@@ -45,9 +45,10 @@ const walkedTrade = (tradeId: string, underlying: string): WalkedTrade => ({
 });
 
 // An Outstanding reflection of an owed Trade on the snapshot definition.
-function reflection(debtId: string, classification: OwedReflection['classification'], economicTime: string): OwedReflection {
+function reflection(debtId: string, classification: OwedReflection['classification'], economicTime: string, entryType = 'Position Change Reflection'): OwedReflection {
   return {
     debtId,
+    entryType,
     definition: reflectionDefinition,
     economicTime,
     executions: [{ factId: `${debtId}-x`, economicTime, recordedSequence: 1, action: 'Sell', instrument: symbol, quantity: '100', price: '52.48', fee: '1.00' }] as unknown as OwedReflection['executions'],
@@ -267,6 +268,23 @@ describe('owed-reflection group (P19, P20)', () => {
 
     expect(await screen.findByRole('region', { name: 'ABC review' })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
+  });
+
+  it('should name each owed reflection by its Entry Type, Close Review and Position Change Reflection for the same Position Change, and title the opened form with it', async () => {
+    const user = userEvent.setup();
+    const facade = reviewFacade(ready());
+    const time = '2026-10-13T20:30:00Z';
+    const both: OwedReflectionsCard = { ...CLOSED_CARD, reflections: [reflection('d-pcr', 'Due', time), reflection('d-close', 'Due', time, 'Close Review')], progress: reflectionsOwedProgress(2, 0) };
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(({ reviewDate }) => Promise.resolve({ kind: 'ReflectionsOwed', reviewDate, cutoff: CUTOFF, card: both }));
+    renderReview(facade);
+    const panel = await screen.findByRole('region', { name: 'Reflections' });
+    const titles = within(panel).getAllByRole('heading', { level: 6 }).map((h) => h.textContent);
+    expect(titles).toEqual(['Position Change Reflection', 'Close Review']);
+
+    const close = within(panel).getAllByRole('listitem').find((li) => within(li).queryByRole('heading', { name: 'Close Review' }))!;
+    await user.click(within(close).getByRole('button', { name: /^Reflect on/ }));
+    const form = await within(close).findByRole('form', { name: 'Reflection' });
+    expect(within(close).getByRole('heading', { name: 'Close Review' }).compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('should show the same Trades with owed reflections group inside the Empty view', async () => {

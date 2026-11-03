@@ -52,6 +52,7 @@ describe('owed reflections (A68)', () => {
     expect(result.trade.reflections).toEqual(
       expected.map(({ name, time, quantity, price, classification }) => ({
         debtId: debts[name].debtId,
+        entryType: 'Position Change Reflection',
         definition: definition.definition,
         economicTime: time,
         executions: [expect.objectContaining({ quantity, price }) as unknown],

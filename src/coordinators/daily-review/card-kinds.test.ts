@@ -75,6 +75,7 @@ describe('owed-reflection cards (A90)', () => {
     expect(m.reflections).toEqual([
       {
         debtId: debtM.debtId,
+        entryType: 'Close Review',
         definition: expect.objectContaining({ id: debtM.definitionId }) as unknown,
         economicTime: debtM.momentTime,
         executions: [expect.objectContaining({ action: 'Sell', quantity: '100', price: '41.00' }) as unknown],
@@ -98,6 +99,7 @@ describe('owed-reflection cards (A90)', () => {
     expect(q.reflections).toEqual([
       {
         debtId: debtQ.debtId,
+        entryType: 'Position Change Reflection',
         definition: expect.objectContaining({ id: debtQ.definitionId }) as unknown,
         economicTime: debtQ.momentTime,
         executions: [expect.objectContaining({ action: 'Buy', quantity: '100', price: '10.00' }) as unknown],

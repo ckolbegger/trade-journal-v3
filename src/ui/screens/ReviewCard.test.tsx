@@ -1114,6 +1114,7 @@ function savedAction(action: string, intent?: string, entryRevision = 1, extra: 
 function owed(debtId: string, classification: OwedReflection['classification'], economicTime: string, executions: readonly Partial<OwedReflection['executions'][number]>[] = []): OwedReflection {
   return {
     debtId,
+    entryType: 'Position Change Reflection',
     definition: reflectionDefinition,
     economicTime,
     executions: executions.map((e, i) => ({ factId: `${debtId}-x${i}`, economicTime, recordedSequence: i + 1, action: 'Buy', instrument: symbol, quantity: '100', price: '50.00', fee: '1.00', ...e })) as unknown as OwedReflection['executions'],

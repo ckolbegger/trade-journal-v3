@@ -217,7 +217,10 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
       ...Array.from({ length: n }, () => 'put'),
     ]);
     // The same post-save assembly requests as a Trade Action save: nothing differs but the transaction ids.
-    expect(saved.after.flatMap((tx) => tx.all)).toEqual(parts(action.requests).after.flatMap((tx) => tx.all));
+    // The one exception is the Trade narrative snapshot (journalTypes) that names an owed reflection's Entry Type (T6.28-B2): it
+    // follows the Trade the card reads back, which holds a Debt on the Action side, so it is a difference of data, not of assembly.
+    const assembly = (requests: typeof action.requests) => parts(requests).after.filter((tx) => !tx.stores.includes('journalTypes')).flatMap((tx) => tx.all);
+    expect(assembly(marks.requests)).toEqual(assembly(action.requests));
     // And no recovery or gap scan in it: no cursor, no per-Instrument date index, no write.
     const assembled = saved.after.flatMap((tx) => tx.all);
     expect(assembled.filter((r) => r.on === 'cursor' || r.index === 'byInstrumentDate')).toEqual([]);

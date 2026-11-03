@@ -498,12 +498,17 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // anchors compared as instants (A68, A89).
   async function reflectionsOf(debts: readonly DebtProjection[], positionChanges: TradeAnalysisRecord['positionChanges'], closes: SessionCloses): Promise<OwedReflection[]> {
     const reflections: OwedReflection[] = [];
+    // The Entry Type labels come from the Trade's narrative, which is where Trade Detail reads them: one bounded read of this Trade.
+    const tradeId = debts[0]?.anchor.tradeId;
+    const narrative = tradeId === undefined ? [] : (await deps.journal.query({ scope: 'TradeNarrative', tradeId })).items;
+    const entryTypes = new Map(narrative.flatMap((item) => (item.kind === 'Debt' ? [[item.id, item.entryType] as const] : [])));
     for (const debt of debts.toSorted((a, b) => compareDueAnchors(a.dueAnchor, b.dueAnchor))) {
       const definition = await deps.journal.getDefinitions({ revision: debt.definitionId });
       if (definition.kind !== 'Found') throw new Error(`no definition ${debt.definitionId}`);
       const positionChange = positionChanges.find((pc) => pc.factId === debt.origin.factId);
       reflections.push({
         debtId: debt.debtId,
+        entryType: entryTypes.get(debt.debtId) ?? debt.entryTypeKey,
         definition: definition.definition,
         economicTime: debt.momentTime,
         executions: positionChange?.executions ?? [],

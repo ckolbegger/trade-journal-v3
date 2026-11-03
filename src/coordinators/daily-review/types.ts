@@ -240,6 +240,8 @@ export interface ReflectionSaveBinding {
 // One Outstanding reflection of the Trade: its snapshot definition as a form, the Position Change it follows, and how it is classified.
 export interface OwedReflection {
   readonly debtId: string;
+  // The Entry Type's label, as Trade Detail shows it ("Close Review", "Position Change Reflection").
+  readonly entryType: string;
   readonly definition: EntryDefinitionRecord;
   readonly economicTime: Instant;
   readonly executions: readonly ExecutionFact[];
