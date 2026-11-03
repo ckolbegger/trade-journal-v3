@@ -397,9 +397,11 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
             // Runs to the cursor's end inside the transaction, which stays open while a request is
             // pending. A failure surfaces through `tx.done`.
             // The index is resolved before the request exists, so an unknown index throws synchronously.
+            // The key range is built here too, so an invalid key throws into the abort below.
             const index = store.index(write.index);
+            const range = IDBKeyRange.only(write.key);
             request = (async () => {
-              let cursor = await index.openCursor(IDBKeyRange.only(write.key));
+              let cursor = await index.openCursor(range);
               while (cursor) cursor = await cursor.continue();
             })();
           } else if (write.op === 'delete') {

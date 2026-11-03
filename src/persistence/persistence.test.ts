@@ -403,6 +403,28 @@ describe('vacateIndexKey write', () => {
     expect([range.lower, range.upper, range.lowerOpen, range.upperOpen]).toEqual([oldKey, oldKey, false, false]);
     expect(await rawGet(databaseName, 'trades', 'trade-1')).toEqual({ ...trade, activityDesc: 'c', revision: 3 });
   });
+
+  it('should abort the commit and leave the put unapplied when the vacate key is not a valid key', async () => {
+    const p = persistence();
+    const created = await p.createWorkspace([]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    const databaseName = created.databaseName;
+    const outcome = await p
+      .commit({
+        checks: [],
+        writes: [
+          { op: 'put', store: 'trades', value: { tradeId: 'trade-1' } },
+          { op: 'vacateIndexKey', store: 'trades', index: 'byLifecycleActivity', key: NaN },
+        ],
+      })
+      .then(
+        (result) => result.kind,
+        () => 'threw',
+      );
+    expect(outcome).toBe('threw');
+    expect(await rawGet(databaseName, 'trades', 'trade-1')).toBeUndefined();
+    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
+  });
 });
 
 describe('snapshot reads', () => {
