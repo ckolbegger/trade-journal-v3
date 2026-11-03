@@ -389,12 +389,17 @@ async function timeSaveMarks(page: Page, symbol: string): Promise<number> {
   return pressToRendered(page, { kind: 'marksSaved', symbol }, () => save.click());
 }
 
+// The cards whose timed Action save was the first of their Action (not an edit).
+const firstSaves = new Set<string>();
 // A Hold Action save, from the press on Save in the card's Action form.
 async function timeSaveAction(page: Page, symbol: string): Promise<number> {
   const card = await reachCard(page, symbol);
   await showPanel(card, 'Action');
   // The dataset holds an Action for every Trade on the Review Date, so this save is an edit of it (its Change button).
-  await card.getByRole('button', { name: 'Change' }).click();
+  // A card whose Action is not saved yet (only the partial dataset has any, T6.25-P1) shows the form already, so this save is a first one.
+  const change = card.getByRole('button', { name: 'Change' });
+  if ((await change.count()) > 0) await change.click();
+  else firstSaves.add(symbol);
   const form = card.getByRole('form', { name: 'Action' });
   await form.getByRole('radio', { name: 'Hold', exact: true }).check();
   await form.getByLabel(/^Why are you taking this action\?/).fill('bench edit');
@@ -424,15 +429,16 @@ async function timeCards(page: Page): Promise<CardTimings> {
   let names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
   if (partial) {
     // The partial Review stopped part-way: only the first card of an Underlying whose Action is saved can be edited (its Change button),
-    // as every card of a full dataset can; a card is found by its Underlying, so the first one.
+    // as every card of a full dataset can; a card is found by its Underlying, so the first one. These come first. The Underlyings
+    // whose first card has no Action yet follow, to make up the number of saves: those are first saves, disclosed as such.
     const actioned = new Set(dataset['actionedTradeIds'] as string[]);
     const cards = await page.locator('ol[aria-label="Positions"] > li.review-card').evaluateAll((items) => items.map((li) => ({ id: li.getAttribute('data-trade-id') ?? '', name: li.querySelector('.review-card-name')?.textContent.trim() ?? '' })));
     const firstOf = new Map<string, string>();
     for (const card of cards) if (!firstOf.has(card.name)) firstOf.set(card.name, card.id);
-    names = [...firstOf].filter(([, id]) => actioned.has(id)).map(([name]) => name);
+    names = [...firstOf].sort(([, a], [, b]) => Number(actioned.has(b)) - Number(actioned.has(a))).map(([name]) => name);
   }
   const symbols = [...new Set(names.map((n) => n.trim()))].filter((s) => !missing.includes(s) && !owing.has(s)).slice(0, SAVE_RUNS + COLD_SAVE_RUNS);
-  if (partial) console.log(`bench:run: ${symbols.length} editable Action cards found for ${SAVE_RUNS + COLD_SAVE_RUNS} saves`);
+  if (partial) console.log(`bench:run: ${symbols.length} Action cards found for ${SAVE_RUNS + COLD_SAVE_RUNS} saves`);
   timings.coldSymbols.push(...symbols.slice(SAVE_RUNS));
   for (const symbol of symbols.slice(0, SAVE_RUNS)) {
     timings.saveAction.push({ symbol, ms: await timeSaveAction(page, symbol) });
@@ -582,7 +588,7 @@ function partialSection(): string {
 | Daily Trade Review Actions | about 126,000 | ${n(c['actions']!)} |
 | Debts (Outstanding) | not counted in section 1.4 | ${n(c['debts']!)} (${n(c['debtsOutstanding']!)}) |
 
-How the expectations were fixed (the generator wrote none for this snapshot): the counts, the Open Trades' Underlyings, the Missing Instruments (${missing.length}: every Instrument has the as-of Mark, as the generator saves them all before its last session), the first Closed page, and the membership of the Review's walk (Trades open at the close) and owed group (Trades outside the walk with an Outstanding Debt) come from the stored records. The stored records do not fix the Open rows' figures, the walk's attention-ranked order or which reflections are due, so those come from the first render, which every later render must equal. The Action saves are timed only on cards whose Action is already saved (they are edits, as in a full dataset): ${cardTimings!.saveAction.length} warm and ${coldSaveAction.length} cold, where a full run has ${SAVE_RUNS} and ${COLD_SAVE_RUNS}. No Save Marks timing is possible, because no Instrument is missing its as-of Mark.
+How the expectations were fixed (the generator wrote none for this snapshot): the counts, the Open Trades' Underlyings, the Missing Instruments (${missing.length}: every Instrument has the as-of Mark, as the generator saves them all before its last session), the first Closed page, and the membership of the Review's walk (Trades open at the close) and owed group (Trades outside the walk with an Outstanding Debt) come from the stored records. The stored records do not fix the Open rows' figures, the walk's attention-ranked order or which reflections are due, so those come from the first render, which every later render must equal. The Action saves (${cardTimings!.saveAction.length} warm and ${coldSaveAction.length} cold) are edits of a saved Action, as in a full dataset, wherever the part-way Review had saved one; the rest are first saves of an Action: ${[...firstSaves].join(', ') || 'none'}. No Save Marks timing is possible, because no Instrument is missing its as-of Mark.
 
 `;
 }
@@ -602,7 +608,7 @@ ${partial ? partialSection() : ''}Open list compared with ${partial ? 'its first
 
 ## As-of Review's due reflections (T5.22)
 
-The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (X names the Trade in full; the harness compares its underlying symbol) (Review Date ${String(dataset['reviewDate'])}). The expected values are \`asOfDueReflections\` and the Trades of \`outstandingDebts\` in \`bench/dataset.json\` (the Outstanding Debts are from ${((dataset['outstandingDebts'] as { momentDate: string }[] | undefined) ?? []).map((d) => d.momentDate).join(' and ')}, both due at the as-of Review, decision 58). A difference fails the run.
+The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (X names the Trade in full; the harness compares its underlying symbol) (Review Date ${String(dataset['reviewDate'])}). ${partial ? 'In the partial dataset the stored data does not say which reflections are due (the rule is one session of grace), so the first render sets the expected values after checking that every Trade it names holds an Outstanding Debt in the stored data; every later render must equal it.' : `The expected values are \`asOfDueReflections\` and the Trades of \`outstandingDebts\` in \`bench/dataset.json\` (the Outstanding Debts are from ${((dataset['outstandingDebts'] as { momentDate: string }[] | undefined) ?? []).map((d) => d.momentDate).join(' and ')}, both due at the as-of Review, decision 58).`} A difference fails the run.
 
 | When | Due reflections listed (by Trade) | Expected | Result | Time from the click on Review to its status (disclosed, not gated) |
 |---|---|---|---|---|
@@ -620,14 +626,14 @@ Each is the time from the pointer press to the rendered result, on the mature da
 
 - **Against D5 and D5R2:** D5 measured the cold start at ${D5_COLD_P95_MS} ms and the warm switch at ${D5_WARM_P95_MS} ms (p95), D5R2 ${D5R2_COLD_P95_MS} ms and ${D5R2_WARM_P95_MS} ms on the same generator-3 dataset; this run's are ${ms(coldP95)} ms and ${ms(warmP95)} ms. D5 timed the press on Review to the Review's status at ${D5_REVIEW_OPEN_MS.before} ms before its runs and ${D5_REVIEW_OPEN_MS.after} ms after (single measurements); opening the first card here, which adds the first Trade's \`getTrade\`, takes a median of ${ms(median(openCard))} ms.
 - **Tech debt item 3** (the Review's open cost grows with history) is measured here, not fixed: D5R takes the save path off it (P38) but not the first \`open\` of each Review, and the open-the-first-card timing is its baseline.
-- **The saves** are timed on cards of the cached profile's copy: ${cardTimings!.saveMarks.map((s) => `Save Marks on ${s.symbol}`).join(', ')}; and a Hold Action on ${cardTimings!.saveAction.map((s) => s.symbol).join(', ')}. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. The dataset holds an Action for every Trade on the Review Date, so each Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save): a \`SaveTradeAction\` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
+- **The saves** are timed on cards of the cached profile's copy: ${cardTimings!.saveMarks.map((s) => `Save Marks on ${s.symbol}`).join(', ')}; and a Hold Action on ${cardTimings!.saveAction.map((s) => s.symbol).join(', ')}. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. ${partial ? `The partial dataset's last Review is incomplete, so an Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save) except on ${[...firstSaves].join(', ') || 'none'}, where the Action was not saved yet and the save is the first one (Hold, an Intent of "bench edit", Save). Each is` : 'The dataset holds an Action for every Trade on the Review Date, so each Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save): each is'} a \`SaveTradeAction\` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
 - **Raw timings (ms, in run order):** open the first card ${openCard.map(ms).join(', ')}; Save Marks ${markMs.map(ms).join(', ')}; Trade Action save ${actionMs.map(ms).join(', ')}.
 - **Method:** a MutationObserver in the page reads the real clock on the first DOM change after which the result holds (the card's content shown with no card still loading; the card's Save Marks counting no drafts; the card's Action form gone with no card still loading), and a capture-phase pointer press records the start on the same clock.
 
 ## Closed page, Review walk and owed group (T6.25)
 
 - **Closed page.** The generator records no Closed page, so the expected first page is derived from the stored data: the first ${CLOSED_PAGE_SIZE} Closed Trades of the profile's \`byLifecycleTerminal\` index (terminal time descending), read raw in the page before any timed run. Each rendered row (its Trade from the link, Underlying and Close date in ${BENCH_TIME_ZONE}) must equal the stored Trade's, in order, before the runs (${expectedClosedIdentities.length} rows equal) and after them (${expectedClosedIdentities.length} rows equal), and at each of the ${closedRenderMs.length} renders below. Realized figures, Disposition and Close Reason are not compared (the stored Trade does not hold them).
-- **Review walk and owed group.** The as-of Review's cards must equal \`asOfReview\` in \`bench/dataset.json\`, in order, each by its Trade (\`data-trade-id\`) and Underlying (the walked Trades' Underlyings are read from the stored Trades, the owed group's are the dataset's): ${reviewCardComparisons.map((c) => `${c.when} ${c.walk} walked and ${c.owed} owed cards equal`).join('; ')}. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
+- **Review walk and owed group.** The as-of Review's cards must equal ${partial ? 'the stored data\'s members (the walk is the Trades open at the close, the owed group the Trades outside it with an Outstanding Debt, each by Trade and Underlying), and the order of the first render in every later render' : '`asOfReview` in `bench/dataset.json`, in order'}, each by its Trade (\`data-trade-id\`) and Underlying${partial ? '' : ' (the walked Trades\' Underlyings are read from the stored Trades, the owed group\'s are the dataset\'s)'}:${reviewCardComparisons.map((c) => `${c.when} ${c.walk} walked and ${c.owed} owed cards equal`).join('; ')}. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
 
 | Measure (disclosed, not gated) | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
@@ -648,7 +654,7 @@ Raw (ms): warm ${actionMs.map(ms).join(', ')}; cold ${coldSaveAction.map((s) => 
 
 - Playwright's clock also swaps \`window.performance\` for a fake that records no marks, so the harness keeps the real object before the pin and points the fake's \`mark\` at it; \`performance.now\` and timers are the real ones.
 - \`Date\` is pinned to the dataset's as-of instant (${asOf.toISOString()}, A52) with Playwright \`context.clock.setFixedTime\`, and native \`Temporal.Now.instant\` (the application's clock) is pointed at it (T4.31-B1); every comparison first checks both read the as-of instant and that exactly the Missing Instruments' rows show \`Mark missing\`. Timers and \`performance.now\` are real, and the build is production.
-- A copy of the cached profile (\`.cache/bench/profile\`, generator ${String(dataset['generatorVersion'])}, schema ${String(dataset['schemaVersion'])}) per run of the harness; the cached profile itself is never opened.
+- A copy of the ${partial ? `partial dataset's run profile (\`${String(dataset['runProfileDir'])}\`, a copy of the snapshot with the service worker and caches stripped; generator` : 'cached profile (`.cache/bench/profile`, generator'} ${String(dataset['generatorVersion'])}, schema ${String(dataset['schemaVersion'])}) per run of the harness; the cached profile itself is never opened.
 - The production build (\`${BUILD_DIR}/\`) served by the release harness server at ${origin}, the origin the profile's IndexedDB belongs to.
 - One warm-up launch, online, installs the service worker and is excluded. The server is then stopped and every later launch is offline (Playwright \`offline: true\`), so the app loads from the service worker and IndexedDB only.
 - Cold start: the Chromium process is launched on the profile, navigates to the origin, and the time is the \`tj:interactive\` mark's \`startTime\` (from navigation start; readiness Writable and the Open list fully rendered with every row's figures, each run's rendered list compared with the expected rows afterwards); the process is then closed. The time from the call that launches the browser process to the same mark is recorded beside it for disclosure and is not gated.
