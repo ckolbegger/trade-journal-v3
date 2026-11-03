@@ -1982,3 +1982,44 @@ The one unit failure was the known intermittent case in the `TradeList.test.tsx`
 | Node integration | 154 passed | `suite-runs/t6.25-p3-fix-round-integration.txt` |
 | Browser (Chromium, full) | 158 passed (7.4 min) | `suite-runs/t6.25-p3-fix-round-browser.txt` |
 | Checks | 12 of 12 | `suite-runs/t6.25-p3-fix-round-checks.txt` |
+
+### T6.28 Browser-critic gate
+
+**Gate run `t6.28-gate`**: at HEAD `43bf78b3`, browser on the full tier (explicitly `browser`).
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,176 passed | `suite-runs/t6.28-gate-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.28-gate-integration.txt` |
+| Browser (Chromium, full) | 158 passed (7.4 min) | `suite-runs/t6.28-gate-browser.txt` |
+| Release history | 4 passed (18.8 s) | `suite-runs/t6.28-gate-release-history.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.28-gate-checks.txt` |
+
+`full-suite.sh` has no release-history stage, so the suite-runner ran `npm run test:e2e:release-history` directly and redirected its output to the file above.
+
+- **Critic 1** (`critic-1.md`, at `43bf78b3`): **FAIL**. All of C6.1–C6.10 passed, but there was one medium narrow-layout defect: Fee reconciliation split money amounts mid-number at 375 px and 320 px. It also gave twelve minor observations.
+- **T6.28-B1 `fd9b6e58`.**
+  - Cause: the figure-grid `dd` rule `overflow-wrap: anywhere`.
+  - Fix: `dl.figure-grid dd.number { overflow-wrap: normal; }`, so amounts never break between digits and labels can still wrap.
+  - New case in `e2e/d6/responsive-a11y.spec.ts`: every pure money cell stays on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail.
+  - Red on the unfixed CSS: a 46 px high cell against a 23 px line, with "$0.5" / "0". Then green.
+  - The subagent rebuilt only `dist-releases/d6` (`TJ_BUILD_LABEL=d6 npx vite build --outDir dist-releases/d6 --emptyOutDir`), because the auto-mode classifier refused `npm run build:releases`, which empties `dist-releases/`. The gate run rebuilt every release.
+- **ocr review of `fd9b6e58`** (`ocr/T6.28-B1-fd9b6e58.json`): 0 comments. It reviewed the CSS only; the spec was not relocated.
+
+**Gate run `t6.28-b1-gate`**: at HEAD `fd9b6e58`, full tier, with the release builds rebuilt by the test scripts.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,176 passed | `suite-runs/t6.28-b1-gate-unit.txt` |
+| Node integration | 154 passed | `suite-runs/t6.28-b1-gate-integration.txt` |
+| Browser (Chromium, full) | 159 passed (7.4 min) | `suite-runs/t6.28-b1-gate-browser.txt` |
+| Release history | 4 passed (18.8 s) | `suite-runs/t6.28-b1-gate-release-history.txt` |
+| Checks | 12 of 12 | `suite-runs/t6.28-b1-gate-checks.txt` |
+
+### Critic cost
+
+The figures come from the critic's completion notice, the harness's own count. Brief v2 is `.claude/docs/critic-brief.md` with the setup helpers from `e2e/d6/support.ts` and the modules it re-exports.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 1 | `43bf78b3` | v2 | 189,645 | 80 | 12 min 6 s | 1 medium (Fee reconciliation wrapping, fixed as T6.28-B1) |
