@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 68642,
+    "input_tokens": 68038,
+    "output_tokens": 604,
+    "cache_read_tokens": 17280,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 5,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D4 support",
+      "files": [
+        "src/itg/d06/d4/support.ts"
+      ]
+    },
+    {
+      "label": "D5 support and update",
+      "files": [
+        "src/itg/d06/d5/support.ts",
+        "src/itg/d06/d5/update.ts"
+      ]
+    },
+    {
+      "label": "Release build, serving, and verification tools",
+      "files": [
+        "src/itg/d06/tools/build-releases.ts",
+        "src/itg/d06/tools/release-server.ts",
+        "src/itg/d06/tools/verify-releases.ts"
+      ]
+    }
+  ],
+  "session_id": "de3b1d93-32b8-481b-9b7b-fdeb70c7f792",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "de3b1d93-32b8-481b-9b7b-fdeb70c7f792",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "698b3677313ae56a88de4e44cd104191769ceb13",
+      "resolved_base": "5f86a12a7b09d26fe5bbc8f9458594aa9bd29327",
+      "resolved_head": "698b3677313ae56a88de4e44cd104191769ceb13",
+      "exact_range": "5f86a12a7b09d26fe5bbc8f9458594aa9bd29327..698b3677313ae56a88de4e44cd104191769ceb13",
+      "source_artifact_sha256": "1b4220b9d0bf9ca7adf182f0c28c8c036947d9a1a7382ddf1ca3ad93a605edba"
+    },
+    "execution": {
+      "ocr_version": "v1.13.4",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3e9e383dbc97894f48f62523fdf4643db928058dc9c590a5c61ee762c0c57c35",
+          "path": "src/itg/d06/d4/support.ts",
+          "fingerprint": "34164d1ea1dc21c60a017c07e20fa726c7a4d60310011a72e53360db0a0d7963"
+        },
+        {
+          "item_id": "421f02730e22ba3d830652b9daeaadbbeb842cc1c3eaeedd8ec3c9398d445fe7",
+          "path": "src/itg/d06/tools/release-server.ts",
+          "fingerprint": "7302b78a1646e5c6c508e61152ba379169a955a49be7cd95ff888291265a1c76"
+        },
+        {
+          "item_id": "766324fa1400ca7a16533d088fdf50cf2f40f1bd8ed7585a328d50a0e999eba0",
+          "path": "src/itg/d06/tools/build-releases.ts",
+          "fingerprint": "7adf52e624d286f11d1a5ece6e122b74ece051738e72b1db423104394109279d"
+        },
+        {
+          "item_id": "8b2e4a9933bdd8658bc25e9d6ffc417b0ac4bb1d372fd3958932ec128bf196a9",
+          "path": "src/itg/d06/d5/support.ts",
+          "fingerprint": "243e2fea0d821ab09657505081971ceb07427b1f054abda67e5f245e28da33a0"
+        },
+        {
+          "item_id": "e679359d097a2509d11794dcca9c5a0c294d9d15c278cabb308512bf0e45120d",
+          "path": "src/itg/d06/d5/update.ts",
+          "fingerprint": "ed7f06431b8e7c2ae23cbe35eb0f03ac3bfdb2da00b382143cc7df6dd7531d2f"
+        },
+        {
+          "item_id": "feb7e67f300671e8d07d26b9a3fe9de51b30bb1243f5fbf6d61d9d6d0d9d15ec",
+          "path": "src/itg/d06/tools/verify-releases.ts",
+          "fingerprint": "60adfbdc69d5f2a2256cd67298323c741acd4db02fdd602f4c5f119faef63df3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3e9e383dbc97894f48f62523fdf4643db928058dc9c590a5c61ee762c0c57c35",
+          "path": "src/itg/d06/d4/support.ts",
+          "fingerprint": "34164d1ea1dc21c60a017c07e20fa726c7a4d60310011a72e53360db0a0d7963"
+        },
+        {
+          "item_id": "421f02730e22ba3d830652b9daeaadbbeb842cc1c3eaeedd8ec3c9398d445fe7",
+          "path": "src/itg/d06/tools/release-server.ts",
+          "fingerprint": "7302b78a1646e5c6c508e61152ba379169a955a49be7cd95ff888291265a1c76"
+        },
+        {
+          "item_id": "766324fa1400ca7a16533d088fdf50cf2f40f1bd8ed7585a328d50a0e999eba0",
+          "path": "src/itg/d06/tools/build-releases.ts",
+          "fingerprint": "7adf52e624d286f11d1a5ece6e122b74ece051738e72b1db423104394109279d"
+        },
+        {
+          "item_id": "8b2e4a9933bdd8658bc25e9d6ffc417b0ac4bb1d372fd3958932ec128bf196a9",
+          "path": "src/itg/d06/d5/support.ts",
+          "fingerprint": "243e2fea0d821ab09657505081971ceb07427b1f054abda67e5f245e28da33a0"
+        },
+        {
+          "item_id": "e679359d097a2509d11794dcca9c5a0c294d9d15c278cabb308512bf0e45120d",
+          "path": "src/itg/d06/d5/update.ts",
+          "fingerprint": "ed7f06431b8e7c2ae23cbe35eb0f03ac3bfdb2da00b382143cc7df6dd7531d2f"
+        },
+        {
+          "item_id": "feb7e67f300671e8d07d26b9a3fe9de51b30bb1243f5fbf6d61d9d6d0d9d15ec",
+          "path": "src/itg/d06/tools/verify-releases.ts",
+          "fingerprint": "60adfbdc69d5f2a2256cd67298323c741acd4db02fdd602f4c5f119faef63df3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 19875
+  }
+}

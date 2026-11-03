@@ -1596,3 +1596,29 @@ Ports 5175, 9341 and 9342 were free before and after the run.
 | Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.20-r1-exit-intent-checks.txt` |
 
 Ports 5175, 9341 and 9342 were free before and after the run. T6.20 is complete. T6.21 starts from the commit that records these results.
+
+## T6.21: the previous release is D5R2 (decision 70, revision 29; decision 71, P56)
+
+**Commit `6e7503b8`** (`test(release): T6.21 …`). It changes six files under `tools/` and `e2e/`. No file in `src/` changes.
+- **The harness:** `tools/build-releases.ts` builds `dist-releases/d5r2` from tag `claude-opus-5.5-d5r2` (`765ac1ea`), using `git archive` and the same scratch-folder build as `d1`, `d2` and `d4`. The current source now builds into `dist-releases/d6`, and there is no `d5` folder.
+- **The checks:** `tools/verify-releases.ts` checks that `d5r2` reports schema 4 and `d6` reports schema 5, and that all eight release identities are different.
+- **The browser cases:** `e2e/d4/support.ts` meant the current source, so it now serves `d6` by default. B5.6 (`e2e/d5/update.spec.ts`) updated into the release it was built from, so it now updates to `d5r2`, with identity `d5r2` and schema 4. Both of its ends are now tags (`claude-opus-5.5-d4` to `claude-opus-5.5-d5r2`), so it is tagged `@release-history`.
+- **Verification (exact):**
+  - `npm run build:releases` printed: "build:releases OK: v1, v2, v2-corrupt, d1, d2, d4, d5r2, d6", with `d5r2` built from "claude-opus-5.5-d5r2 at 765ac1ea59f3…".
+  - `npm run verify:releases` printed: "verify:releases OK: … d4 ecd9bbff… schema 3, d5r2 7720af1b9738… schema 4, d6 ded0155c2628… schema 5".
+  - `npm run test:e2e -- --list` lists 146 tests in 47 files, and B5.6 is not among them.
+  - `npm run test:e2e:release-history` passed 4 tests: B2.3, B2.5, B4.7 and B5.6.
+- **Flagged:** B5.6's title still says "show the current schema in About". It now checks the schema of `d5r2`, which is 4, not the current one. The title follows the plan's wording, so it is left for the user.
+
+**ocr review of `6e7503b8`** (`evidence/D06/ocr/T6.21-6e7503b8.json`): this was a relocated review, because the commit is test-only. A scratch clone has the six files under `src/itg/d06/`. ocr reviewed 6 files and made 0 comments.
+
+**Cumulative run `t6.21-release-harness`**: at HEAD `6e7503b8`, on 2026-11-02. The browser tier was full, triggered by `e2e/d4/support.ts`.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 93 files, 1174 tests passed | `suite-runs/t6.21-release-harness-unit.txt` |
+| Node integration | 60 files, 117 tests passed | `suite-runs/t6.21-release-harness-integration.txt` |
+| Browser (Chromium, full) | 146 passed (6.5 min). That is one fewer than before, because B5.6 moved to `@release-history`. | `suite-runs/t6.21-release-harness-browser.txt` |
+| Static and verification (12) | 11 of 12 passed. `verify:capacity` failed, as expected until T6.22. | `suite-runs/t6.21-release-harness-checks.txt` |
+
+Ports 5175, 9341 and 9342 were free before and after the run.
