@@ -76,12 +76,20 @@ describe('I6.3 complete lifecycle', () => {
     expectIndexed(planned, 'Planned');
     expect((await detailOf(app, tradeId)).lifecycle).toEqual({ stored: 'Planned', agreement: { kind: 'Agrees' } });
 
-    // PC1, PC2 and X1: each result equals the Detail read now, and the Trade stays in the Open index.
-    // The stored document and its index keys are read after every change, in the commit that made it.
+    // PC1, PC2 and X1: each result equals the Detail read right after it (AC-RESP-001), and the Trade stays in the
+    // Open index. The stored document and its index keys are read after every change, in the commit that made it.
     const results = [];
     for (const step of [async () => record(app, tradeId, PC1, await complete(app)), async () => record(app, tradeId, PC2, await complete(app)), () => recordExit(app, tradeId, [X1])]) {
-      results.push(await step());
+      const result = await step();
+      results.push(result);
       expectIndexed(await stored(d, tradeId), 'Open');
+      const openDetail = await detailOf(app, tradeId);
+      expect(openDetail.lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
+      expect(result.postCommit.trade.positionChanges).toEqual('positionChanges' in openDetail ? openDetail.positionChanges : undefined);
+      expect('lotMatches' in openDetail && openDetail.lotMatches.map(({ openingExecutionId, disposingExecutionId, quantity }) => ({ openingExecutionId, disposingExecutionId, quantity }))).toEqual(
+        result.postCommit.derivation.lotMatches.map(({ openingExecutionId, disposingExecutionId, quantity }) => ({ openingExecutionId, disposingExecutionId, quantity })),
+      );
+      expect('realizedToDate' in openDetail && openDetail.realizedToDate).toEqual(result.postCommit.derivation.realizedToDate);
     }
     const lifecycles = ['Open', 'Open', 'Open'];
     // The Execution identities, in the order the receipts created them: the Position Change first, then its members.
@@ -91,16 +99,7 @@ describe('I6.3 complete lifecycle', () => {
       expect(result.postCommit.trade.storedLifecycle).toBe(lifecycles[i]);
       expect(result.postCommit.derivation.expectedLifecycle).toBe(lifecycles[i]);
     }
-    // X1's result equals the Detail of the stored Trade (AC-RESP-001).
-    const partial = results[2]!;
-    const openDetail = await detailOf(app, tradeId);
-    expect(openDetail.lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
-    expect(partial.postCommit.trade.positionChanges).toEqual('positionChanges' in openDetail ? openDetail.positionChanges : undefined);
-    expect('lotMatches' in openDetail && openDetail.lotMatches.map(({ openingExecutionId, disposingExecutionId, quantity }) => ({ openingExecutionId, disposingExecutionId, quantity }))).toEqual(
-      partial.postCommit.derivation.lotMatches.map(({ openingExecutionId, disposingExecutionId, quantity }) => ({ openingExecutionId, disposingExecutionId, quantity })),
-    );
-    expect('realizedToDate' in openDetail && openDetail.realizedToDate).toEqual(partial.postCommit.derivation.realizedToDate);
-    expect(partial.postCommit.derivation.realizedToDate).toEqual(dec('55.90'));
+    expect(results[2]!.postCommit.derivation.realizedToDate).toEqual(dec('55.90'));
 
     // X2 closes the Trade with a Close Reason and a completed Close Review, both reflections completed.
     const targetReached = await closeReasonId(app, 'Target Reached');
