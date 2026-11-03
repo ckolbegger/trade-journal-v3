@@ -292,7 +292,7 @@ describe('reflections in due-anchor order', () => {
 });
 
 describe('walked cards (A91, A94)', () => {
-  it('should return the Action form and cutoff evaluation of T-N with its current lifecycle Closed and no exit route, and those of T-A with an exit route naming its remaining 70 shares', async () => {
+  it('should return the Action form and cutoff evaluation of T-N with its current lifecycle Closed and those of T-A with its current lifecycle Open, and neither with an exit route', async () => {
     const { stack, trades } = await closedTradeReviewFixture();
     const review = ready(await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }));
     const open = (name: 'A' | 'N') => stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId: trades[name]!, binding: review.binding });
@@ -304,11 +304,11 @@ describe('walked cards (A91, A94)', () => {
     expect(n.evaluation).toEqual(expect.objectContaining({ openQuantity: { kind: 'Value', value: Rational.of(100n) } }));
     expect(n).not.toHaveProperty('exitRoute');
 
-    // T-A still holds 70 of its 100 shares.
+    // T-A still holds 70 of its 100 shares, and the Review offers no route to exit them (decision 72).
     const a = walkedCard(await open('A'));
     expect(a.lifecycle).toBe('Open');
     expect(a.form.kind).toBe('Saved');
     expect(a.evaluation).toEqual(expect.objectContaining({ openQuantity: { kind: 'Value', value: Rational.of(70n) } }));
-    expect(a.exitRoute).toEqual({ remainingQuantity: Rational.of(70n) });
+    expect(a).not.toHaveProperty('exitRoute');
   }, 60_000);
 });

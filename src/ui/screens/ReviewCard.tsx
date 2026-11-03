@@ -8,7 +8,6 @@ import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { CardFigures } from './CardFigures.tsx';
 import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import type { CardMarkRows } from './held-review.ts';
-import { RecordExit } from './RecordExit.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
 import { StopTargetSlider } from './StopTargetSlider.tsx';
@@ -52,8 +51,6 @@ export type CardDetail = 'Loading' | 'Unavailable' | { readonly trade: DailyTrad
 
 export interface ReviewCardProps {
   readonly facade: UiFacade;
-  // The current instant: the exit form in the Action panel defaults its Economic Time from it.
-  readonly now: () => string;
   readonly trade: WalkedTrade;
   readonly expanded: boolean;
   readonly detail: CardDetail | undefined;
@@ -70,10 +67,6 @@ export interface ReviewCardProps {
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
-  // Refresh Review's exit form reads the Review again; the Action is already saved there.
-  readonly onExitRefresh: () => Promise<boolean>;
-  // Refresh Review's exit form finished: the Review's own move of the focus, for a Trade that has left this card.
-  readonly onExitRefreshed: () => void;
   readonly onMarkSaved: (draftId: string) => void;
   readonly onSaveMarks: CardMarksProps['onSaveMarks'];
   // The Marks were saved but the figures were not read under them: the card says so and offers Refresh.
@@ -86,7 +79,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onExitRefresh, onExitRefreshed, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -94,13 +87,6 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
     item.current?.scrollIntoView?.({ block: 'start' });
     header.current?.focus({ preventScroll: true });
   }, [reveal]);
-  // The exit's receipt goes when Refresh Review reads the Review again, so focus moves to the Action panel's header, which stays
-  // whether or not Record the exit is offered again. The header is the card's, so a body that is replaced does not lose the move.
-  const actionHeader = useRef<HTMLButtonElement | null>(null);
-  const [refreshed, setRefreshed] = useState(0);
-  useEffect(() => {
-    if (refreshed > 0) actionHeader.current?.focus();
-  }, [refreshed]);
   // The press scrolled while the body was still loading and the page short, so the browser clamped the position: once the body
   // is there, the card is brought to the top again, so its header and first input are in view.
   const bodyShown = expanded && typeof detail === 'object';
@@ -141,7 +127,6 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
         <CardBody
           key={`${detail.trade.tradeId}:${detail.trade.saveBinding.reviewDate}`}
           facade={facade}
-          now={now}
           trade={detail.trade}
           progress={trade.progress}
           name={tradeName(trade)}
@@ -154,12 +139,6 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
           onSaved={onSaved}
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
-          onExitRefresh={onExitRefresh}
-          actionHeader={actionHeader}
-          onRefreshed={() => {
-            setRefreshed((count) => count + 1);
-            onExitRefreshed();
-          }}
           onMarkSaved={onMarkSaved}
           onSaveMarks={onSaveMarks}
           outOfDate={outOfDate}
@@ -173,7 +152,6 @@ export function ReviewCard({ facade, now, trade, expanded, detail, reveal, advan
 
 interface CardBodyProps {
   readonly facade: UiFacade;
-  readonly now: () => string;
   readonly trade: DailyTradeReview;
   // The newest progress the screen holds for this Trade (A165): the panels word it.
   readonly progress: CardProgress;
@@ -188,10 +166,6 @@ interface CardBodyProps {
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
-  readonly onExitRefresh: () => Promise<boolean>;
-  // The card's own handle on its Action panel's header, and the exit form's report that the Review was read again.
-  readonly actionHeader: { current: HTMLButtonElement | null };
-  readonly onRefreshed: () => void;
   readonly onMarkSaved: (draftId: string) => void;
   readonly onSaveMarks: CardMarksProps['onSaveMarks'];
   readonly outOfDate: boolean;
@@ -248,7 +222,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
 }
 
 // The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
-function CardBody({ facade, now, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onExitRefresh, actionHeader, onRefreshed, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress, marks);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
@@ -323,7 +297,6 @@ function CardBody({ facade, now, trade, progress, name, advance, go, marks, held
               type="button"
               ref={(button) => {
                 panelButtons.current[name] = button;
-                if (name === 'Action') actionHeader.current = button;
               }}
               aria-expanded={open === name} aria-controls={`${uid}-${name}`} onClick={() => setOpen(name)}>
               <span className="review-panel-name">{name}</span> <span className="review-panel-summary">{headers[name].summary}</span> <Badge tone="neutral">{headers[name].status}</Badge>
@@ -332,13 +305,7 @@ function CardBody({ facade, now, trade, progress, name, advance, go, marks, held
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
-            {name === 'Action' && (
-              <>
-                <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />
-                {/* An Exit Action is saved: the exit itself is a Trade Workflows save, recorded from here (A94). */}
-                {trade.form.kind === 'Saved' && trade.form.action.action === 'Exit' && <RecordExit facade={facade} tradeId={trade.tradeId} route={trade.exitRoute} now={now} onEntryDirty={onEntryDirty} onRefresh={onExitRefresh} onRefreshed={onRefreshed} />}
-              </>
-            )}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>
       ))}

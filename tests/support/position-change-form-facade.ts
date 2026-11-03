@@ -1,7 +1,6 @@
 // A facade double with the Trade Detail and Position Change Reflection definition the entry form
 // loads: the Reference Trade's confirmed Plan (100 XYZ, entry 50, Stop 47.50, Target 56).
 import { vi } from 'vitest';
-import type { UiFacade } from '../../src/app/compose.ts';
 import type { PlannedTradeDetail } from '../../src/app/types.ts';
 import { D2_JOURNAL_MANIFEST, D5_JOURNAL_MANIFEST } from '../../src/modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../src/modules/reference-catalog/index.ts';
@@ -54,11 +53,7 @@ export const closeReasonRecords = D6_CATALOG_MANIFEST.closeReasons!.map((reason,
 // A facade double for the exit form: an Open Trade of 100 shares, both reflection definitions, and
 // the Close Reason family.
 export function exitFormFacade(detail: unknown = openDetailOf([PC1, PC2])) {
-  return withExitForm(facadeDouble(), detail);
-}
-
-// The same reads on a facade double that serves other screens too (the Review hosts the exit form, A94).
-export function withExitForm(facade: UiFacade, detail: unknown = openDetailOf([PC1, PC2])) {
+  const facade = facadeDouble();
   vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
     kind: 'Ready',
     view: detail,

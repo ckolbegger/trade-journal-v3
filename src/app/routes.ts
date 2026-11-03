@@ -28,8 +28,6 @@ export const ROUTES = [
   {
     // The Daily Trade Review opens the latest completed session (D4 A60, P15). Mark entry and the
     // Action form are presented inside it, and its Marks family needs the Market Data operations.
-    // D6 A94: a card's Action panel hosts the exit form (Record the exit), which reads the Trade, both reflection definitions,
-    // and the Close Reasons, and records a Sell with its Close Reason and Close Review.
     id: 'review',
     path: '/review',
     label: 'Review',
@@ -40,10 +38,6 @@ export const ROUTES = [
       'MarketData.save',
       'MarketData.query',
       'MarketData.recover',
-      'TradeWorkflows.recordPositionChange',
-      'TradeViewsAndReporting.getTradeDetail',
-      'Journal.getDefinitions',
-      'ReferenceCatalog.query',
     ],
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
@@ -53,22 +47,6 @@ export const ROUTES = [
       'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
       'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
-      // The exit form records Sells of a Stock on one Trade: a Reduce or the Close, with the exit's reflection and, when the
-      // exit closes the Trade, its Close Reason and Close Review.
-      'TradeWorkflows.recordPositionChange': [
-        'Stock',
-        'SingleTrade',
-        'Complete',
-        'Decline',
-        'Defer',
-        'Reduce',
-        'Close',
-        'Sell',
-        'CloseReason',
-        'CloseReviewComplete',
-        'CloseReviewDecline',
-        'CloseReviewDefer',
-      ],
     },
     navigation: true,
     readOnly: true,

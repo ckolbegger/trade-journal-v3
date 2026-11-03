@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import type { EntryDefinitionRecord } from '../../app/types.ts';
-import { SectionHeading } from './heading-level.tsx';
 import { ChoiceGroup, type Choice } from './reflection-choice.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
@@ -33,7 +32,7 @@ export function ClosingTheTrade(props: ClosingTheTradeProps) {
   const { reasons, reasonId, definition, choice, answers, fieldError, describedBy } = props;
   return (
     <section className="card" aria-labelledby="closing-heading">
-      <SectionHeading id="closing-heading">Closing the Trade</SectionHeading>
+      <h2 id="closing-heading">Closing the Trade</h2>
       <fieldset role="radiogroup" aria-labelledby="close-reason-legend" className="choices" {...describedBy('closeReasonId')}>
         <legend id="close-reason-legend">Close Reason</legend>
         {reasons.map((reason) => (

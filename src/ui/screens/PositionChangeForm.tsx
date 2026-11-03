@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
@@ -9,6 +9,7 @@ import type {
 } from '../../app/types.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -18,23 +19,10 @@ import { describePositionChangeIssues, rowField } from './position-change-issues
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
 import { ClosingTheTrade, type CloseReasonOption } from './ClosingTheTrade.tsx';
 import { ExitReceipt } from './ExitReceipt.tsx';
-import { FormTitle, SectionHeading, TitleLevelProvider, type HostedTitleLevel } from './heading-level.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 import { ChoiceGroup, dispositionOf, type Choice } from './reflection-choice.tsx';
 import { LOCAL_TIME_CODES, minuteOf } from './local-time.ts';
 import { EXIT_ACTION, INCOHERENT_ENTRY_NOTE } from './TradeDetail.tsx';
-
-// The exit form hosted inside another screen, as the Review's card does (A94): the Trade is given, not routed, and
-// the form is the exit form. Leaving and what follows a saved exit are the host's, so the form never navigates.
-export interface PositionChangeFormHost {
-  readonly tradeId: string;
-  // The level of the form's title in the host's outline; its sections sit one level below it.
-  readonly titleLevel: HostedTitleLevel;
-  // Leaves without recording: Cancel, and the way out of a form that cannot be shown.
-  readonly onLeave: () => void;
-  // What follows the recorded exit, in place of the link back to the Trade.
-  readonly afterRecorded: ReactNode;
-}
 
 export interface PositionChangeFormProps {
   readonly facade: UiFacade;
@@ -43,7 +31,6 @@ export interface PositionChangeFormProps {
   readonly now: () => string;
   // Reports whether any value differs from its initial value (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
-  readonly host?: PositionChangeFormHost;
 }
 
 interface Row {
@@ -67,29 +54,10 @@ export { EXIT_ACTION };
 
 // One Position Change on the Trade's single Planned Leg: Buy rows of the Plan's Stock (D2 A18, A33),
 // or, opened with `?action=Sell`, Sell rows that exit it (D6 A93).
-export function PositionChangeForm(props: PositionChangeFormProps) {
-  return (
-    <TitleLevelProvider value={props.host?.titleLevel}>
-      <PositionChangeFormBody {...props} />
-    </TitleLevelProvider>
-  );
-}
-
-function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: PositionChangeFormProps) {
-  const hosted = host !== undefined;
-  const params = useParams();
-  const tradeId = host?.tradeId ?? params.tradeId ?? '';
-  const [search] = useSearchParams();
-  const exit = hosted || search.get('action') === EXIT_ACTION;
+export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: PositionChangeFormProps) {
+  const { tradeId = '' } = useParams();
+  const exit = useSearchParams()[0].get('action') === EXIT_ACTION;
   const title = exit ? 'Record exit' : 'Record entry';
-  // Hosted, Close is the way out of a form that is loading, cannot be shown, or failed to load.
-  const close = host && (
-    <button type="button" className="pill secondary" onClick={host.onLeave}>
-      Close
-    </button>
-  );
-  // Where a form that cannot be shown leads: the Trade or the list, or, hosted, back to the host.
-  const leave = (to: string, label: string) => close ?? <Link to={to}>{label}</Link>;
   const { writable, report } = useRuntime();
   const navigate = useNavigate();
   const [view, setView] = useState<TradeDetailView | undefined>();
@@ -270,7 +238,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
 
   if (recorded) {
     return exit ? (
-      <ExitReceipt result={recorded} timeZone={timeZone} closeReasons={closeReasons ?? []} {...(host && { after: host.afterRecorded })} />
+      <ExitReceipt result={recorded} timeZone={timeZone} closeReasons={closeReasons ?? []} />
     ) : (
       <PositionChangeReceipt result={recorded} timeZone={timeZone} />
     );
@@ -279,27 +247,27 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
   if (view && 'recordedPositionChanges' in view) {
     return (
       <section className="card">
-        <FormTitle ref={headingRef} tabIndex={-1}>
+        <PageTitle ref={headingRef} tabIndex={-1}>
           {title}
-        </FormTitle>
+        </PageTitle>
         <p>{INCOHERENT_ENTRY_NOTE}</p>
-        {leave(`/trades/${tradeId}`, 'Back to the Trade')}
+        <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
       </section>
     );
   }
   if (failure === 'NotFound') {
     return (
       <section className="card">
-        <FormTitle>Trade not found</FormTitle>
+        <PageTitle>Trade not found</PageTitle>
         <p>No Trade with this identity exists in this journal.</p>
-        {leave('/', 'Back to Trades')}
+        <Link to="/">Back to Trades</Link>
       </section>
     );
   }
   if (failure === 'Error') {
     return (
       <section className="card">
-        <FormTitle>{title}</FormTitle>
+        <PageTitle>{title}</PageTitle>
         <p>{`We couldn’t load this ${exit ? 'exit' : 'entry'} form. Nothing was changed.`}</p>
         <button
           type="button"
@@ -311,18 +279,10 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
         >
           Retry
         </button>
-        {close}
       </section>
     );
   }
-  if (!view || !definition || (exit && (!closeDefinition || !closeReasons))) {
-    return (
-      <>
-        <p role="status">{`Loading the ${exit ? 'exit' : 'entry'} form…`}</p>
-        {close}
-      </>
-    );
-  }
+  if (!view || !definition || (exit && (!closeDefinition || !closeReasons))) return <p role="status">{`Loading the ${exit ? 'exit' : 'entry'} form…`}</p>;
 
   const leg = view.plan.legs[0]!;
   // The quantity open on Detail, and whether the entered quantities total it: a presentation hint
@@ -336,11 +296,11 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
   if (exit && !hasPosition) {
     return (
       <section className="card">
-        <FormTitle ref={headingRef} tabIndex={-1}>
+        <PageTitle ref={headingRef} tabIndex={-1}>
           {title}
-        </FormTitle>
+        </PageTitle>
         <p>This Trade has no open Position to exit.</p>
-        {leave(`/trades/${tradeId}`, 'Back to the Trade')}
+        <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
       </section>
     );
   }
@@ -415,8 +375,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
       // The saved form's history entry becomes the Trade's, so reload, or Back then Forward, shows
       // the Trade rather than a blank form. The router does not observe replaceState, so the
       // receipt stays on screen in place; the router's state object is kept as it is.
-      // A hosted form is not a page of its own, so it leaves the address alone.
-      if (!hosted) window.history.replaceState(window.history.state, '', `/trades/${tradeId}`);
+      window.history.replaceState(window.history.state, '', `/trades/${tradeId}`);
     }
   };
 
@@ -446,10 +405,10 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
       {/* Leaving records nothing; entered values are never saved as a draft. */}
-      {!hosted && <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>}
-      <FormTitle ref={headingRef} tabIndex={-1}>
+      <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
+      <PageTitle ref={headingRef} tabIndex={-1}>
         {title}
-      </FormTitle>
+      </PageTitle>
       <section className="card" aria-label="Trade">
         <p>
           <strong>{view.plan.underlying}</strong> · <span>{view.labels.strategy}</span> · <Badge tone="info">{view.lifecycle.stored}</Badge>
@@ -460,7 +419,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
       </section>
       {conflict && (
         <section ref={conflictRef} tabIndex={-1} className="banner warning" aria-labelledby="entry-conflict-heading">
-          <SectionHeading id="entry-conflict-heading">This Trade changed after you opened this form</SectionHeading>
+          <h2 id="entry-conflict-heading">This Trade changed after you opened this form</h2>
           <p>
             Nothing was saved. Another entry was recorded for this Trade, so review the Trade before recording this one. Your values are kept below.
           </p>
@@ -472,7 +431,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
       )}
       {reloaded && (
         <section className="banner" aria-labelledby="entry-latest-heading">
-          <SectionHeading id="entry-latest-heading">Latest Trade</SectionHeading>
+          <h2 id="entry-latest-heading">Latest Trade</h2>
           <p>The latest Trade is loaded. Your values are kept below; review them against it before saving again.</p>
           <dl>
             <dt>Position</dt>
@@ -487,7 +446,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
       {/* A rejected entry moves focus to the summary of every issue. */}
       <IssueSummary id="entry-issues-heading" heading={`This ${exit ? 'exit' : 'entry'} can’t be saved yet`} issues={issues} corrected={corrected} />
       <section className="card" aria-labelledby="entry-terms-heading">
-        <SectionHeading id="entry-terms-heading">{exit ? 'Exit' : 'Entry'}</SectionHeading>
+        <h2 id="entry-terms-heading">{exit ? 'Exit' : 'Entry'}</h2>
         <dl>
           <dt>Symbol</dt>
           <dd>{leg.instrument.symbol}</dd>
@@ -538,7 +497,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
         Add Execution
       </button>
       <section className="card" aria-labelledby="reflection-heading">
-        <SectionHeading id="reflection-heading">{exit ? 'Reflection on this exit' : 'Position Change Reflection'}</SectionHeading>
+        <h2 id="reflection-heading">{exit ? 'Reflection on this exit' : 'Position Change Reflection'}</h2>
         <ChoiceGroup legend="Reflection" name="disposition" value={choice} onChange={setChoice} />
         {choice === 'decline' && (
           <div className="field">
@@ -574,7 +533,7 @@ function PositionChangeFormBody({ facade, timeZone, now, onDirtyChange, host }: 
         {exit ? 'Save exit' : 'Save entry'}
       </button>
       {/* Leaving records nothing: entered values are never saved as a draft. */}
-      <button type="button" className="pill secondary" onClick={() => (host ? host.onLeave() : void navigate(`/trades/${tradeId}`))}>
+      <button type="button" className="pill secondary" onClick={() => void navigate(`/trades/${tradeId}`)}>
         Cancel
       </button>
     </form>

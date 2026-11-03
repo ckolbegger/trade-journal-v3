@@ -572,9 +572,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // Facts that cannot be replayed have no figures.
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
-    // The exit route names the open quantity the Trade holds now, which differs from the cutoff's for a Trade sold after the close (A91, A94).
-    const remaining = entry.integrity.kind === 'Derived' ? openLongStockSummary(entry.integrity)?.quantity : undefined;
-    const exitRoute = remaining && { remainingQuantity: remaining };
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
     if (!outstanding) return { kind: 'ReviewChanged' };
@@ -602,7 +599,6 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           tradeId: analysis.tradeId,
           underlying: summary.underlying,
           lifecycle: summary.lifecycle,
-          ...(exitRoute && { exitRoute }),
           attention: item,
           labels,
           ...figures,

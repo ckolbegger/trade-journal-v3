@@ -247,20 +247,12 @@ export interface OwedReflection {
   readonly saveBinding: ReflectionSaveBinding;
 }
 
-// Where a walked Trade's card offers to record an exit (A94): the Trade still holds this quantity now. A Trade closed after
-// the cutoff has none, although the card describes the Position it held at the close (A91).
-export interface ExitRoute {
-  readonly remainingQuantity: Rational;
-}
-
 export interface DailyTradeReview {
   readonly tradeId: string;
   readonly underlying: string;
   // The Trade's stored lifecycle now, which differs from the cutoff's for a Trade closed after the close (A91).
   readonly lifecycle: LifecycleState;
   readonly summary?: TradeSummary;
-  // Present only while the Trade holds an open quantity now (A94).
-  readonly exitRoute?: ExitRoute;
   // The Trade's band and reasons, as the overview lists them.
   readonly attention: ReviewTradeItem;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
