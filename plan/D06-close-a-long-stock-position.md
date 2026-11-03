@@ -50,7 +50,7 @@ Numbering continues from D5's A61–A75. These are implementation-level choices 
 | A91 | **Walked Trade closed after the cutoff:** its card shows "Closed after this session's close" with its current lifecycle, keeps the Action form (it is eligible), and evaluates at the cutoff as before. A Trade's exits after the cutoff are excluded from that evaluation, so its Review-date figures still describe the Position held at the close. |
 | A92 | **`evaluate` with realized-to-date (extends A41):** realized-to-date is the sum of the Lot Matches realized at or before the cutoff, as a Value, independent of the Mark. Current Marked Trade P&L is realized-to-date plus remaining-open marked P&L. Risk, reward, worst case, and Overrun use the remaining Position only. Exits after the frame's close never cause `AwaitingClose`: the remaining shares existed at that close, and only Lots opened after it do (A54). A Closed Trade has no current figures (`NotApplicable(NoRemainingPosition)`) and requires no Mark. |
 | A93 | **Exit form:** Open Trade Detail offers **Record exit** beside Record entry. It reuses the Position Change form with action Sell fixed (A33), the exit's reflection disposition (D5 A70), and the Closing the Trade section (P21). The section appears when the entered Sell quantities total the open quantity shown on Detail, a presentation hint only. The workflow decides: a terminal submission without the section returns `CloseReasonRequired` and `CloseReviewDispositionRequired`, and the form then shows the section with those issues. The Close Reason group lists the selectable reasons from `ReferenceCatalog.query`. |
-| A94 | **Exit link from the Review (resolves D4 A58):** once an Exit Action is saved for a Trade that is still Open, its card offers **Record the exit**, opening the exit form in context over the Review with nothing prefilled except the Trade. After Save, the card shows the recorded exit from the result and offers **Refresh Review**, which calls `open` (as D4 A48). Saving the Action itself still creates no Trade fact (AC-REV-003). **Amended by decision 61 (revision 20):** Record the exit sits in the D5R card's Action panel; its Refresh Review after the exit stays a call to `open`, because the exit is a Trade Workflows save, not a Review save. |
+| A94 | **Exit link from the Review (resolves D4 A58):** once an Exit Action is saved for a Trade that is still Open, its card offers **Record the exit**, opening the exit form in context over the Review with nothing prefilled except the Trade. After Save, the card shows the recorded exit from the result and offers **Refresh Review**, which calls `open` (as D4 A48). Saving the Action itself still creates no Trade fact (AC-REV-003). **Amended by decision 61 (revision 20):** Record the exit sits in the D5R card's Action panel; its Refresh Review after the exit stays a call to `open`, because the exit is a Trade Workflows save, not a Review save. **Amended by decision 72 (revision 32): withdrawn.** The Review records Exit intent only. A card whose saved Action is Exit offers no Record the exit, hosts no exit form and has no Refresh Review for an exit. The trader records the exit from Trade Detail's Record exit (T6.19). The spec allows this, since an Action "may offer navigation to a Trade Workflow" (`specs/design/daily-review.md`, "`getTrade`"). D4 A58's link is not added. |
 | A95 | **Closed list:** a Closed tab joins Open and Planned (A32), pages of 50, Terminal Time descending. Each row shows the symbol, Strategy, Account, net realized P&L with sign, Realized R, "Closed via sale", Close Reason, close date in the Workspace zone, Deviation count, a "Reflection owed" indicator, and the integrity indicator. No Market Data is read. |
 | A96 | **Agreement on Closed Trades:** with Lot Matches derived (P23), the only stored agreed record a close adds to is Lifecycle State. D2's `LifecycleDisagreement` covers a Closed Trade whose stored lifecycle is Open, or the reverse. Reads surface it (AC-LIFE-003). A Trade mutation would repair it (plan decision 23), but any Position Change on flat facts is rejected (P22), so the disagreement stays visible until a migration or Restore (D8) repairs it. `terminalTime` is a private index key and is rebuilt, never reported as a finding. |
 | A97 | **Previous release:** the harness builds the D5 release from the tag `claude-opus-5.5-d5`, exported with `git archive` and never as a worktree (D2 A34). **Amended by decision 70 (revision 29):** the previous release is the last one before D6, D5R2: the harness builds `dist-releases/d5r2` from the tag `claude-opus-5.5-d5r2`, the same way. The current source moves from `d5` to `d6`, and no `d5` folder remains. Browser cases that serve `dist-releases/d5` move to `d5r2` where they update into the previous release, and to `d6` where they mean the current source, as D5's T5.18 moved them from `d4` (`e2e/d4/support.ts` defaults to the current source). |
@@ -88,7 +88,7 @@ The generator still simulates session by session through the production facade (
 | Workspace | `src/coordinators/workspace/` | migration to schema 5; Catalog manifest v2 and Journal manifest v5; Installed Capability Manifest v5 |
 | Persistence/Transaction (internal) | `src/persistence/` | schema v5 layout |
 | Migrations | `src/persistence/migrations/` | `v4→v5` and the `v1→…→v5` chain |
-| UI | `src/ui/` | exit form, Closed tab and list, Closed and Open Trade Detail additions, Review owed-reflection cards, Exit link |
+| UI | `src/ui/` | exit form, Closed tab and list, Closed and Open Trade Detail additions, Review owed-reflection cards (**amended by decision 72:** no Exit link) |
 
 ---
 
@@ -117,7 +117,7 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T6.17 | UI: exit form | UI | B | T6.16 | `PositionChangeForm` |
 | T6.18 | UI: Closed tab and list | UI | B | T6.16 | `TradeList` |
 | T6.19 | UI: Trade Detail closing additions | UI | B | T6.16 | `TradeDetail` |
-| T6.20 | UI: Review owed-reflection cards, Exit link | UI | B | T6.17 | `ReviewView`, `ReviewTrade` |
+| T6.20 | UI: Review owed-reflection cards, Exit link (**withdrawn by decision 72**) | UI | B | T6.17 | `ReviewView`, `ReviewTrade` |
 | T6.21 | Release harness: previous release from the `claude-opus-5.5-d5` tag (**amended by decision 70:** the `claude-opus-5.5-d5r2` tag, folder `d5r2`) | test | S | D5 T5.18 | `build:releases`, `verify:releases` |
 | T6.22 | Capacity basis recomputed for schema 5 | test/infrastructure | S | T6.16 | `measure:capacity`, `verify:capacity` |
 | T6.23 | Freeze the schema-v5 fixture; migrate the v1–v4 fixtures | test | S | T6.15, T6.16 | `fixtures:freeze`, `verify:fixtures` |
@@ -365,6 +365,8 @@ describe("walked cards (A91, A94)")
   it should return T-N's Action form and cutoff evaluation with its current lifecycle Closed and no exit route, and T-A's with an exit route naming its remaining 70 shares
 ```
 
+**Amended by decision 72 (revision 32):** walked cards carry no exit route, because the Review offers no Exit link. The case keeps T-N's and T-A's Action forms, cutoff evaluations and current lifecycles, and checks that neither has an exit route.
+
 ### T6.13 Daily Review: `save` across the walk and the group
 
 Seam: `DailyReview.save`, with the Closed-Trade Review fixture at Tuesday 17:00, every Mark and every Action saved.
@@ -455,6 +457,13 @@ describe("Exit link (A94)")
   it should offer Record the exit once an Exit Action is saved for a Trade that is still Open, open the exit form in context, and after its Save show the recorded exit from the result with Refresh Review
 ```
 
+**Amended by decision 72 (revision 32):** A94 is withdrawn, so the "Exit link (A94)" case is replaced by this one:
+
+```text
+describe("Exit Action records intent only (decision 72)")
+  it should show a saved Exit Action with its Intent in the card's Action panel, with no Record the exit, no exit form and no Refresh Review for an exit
+```
+
 ---
 
 ## 5. Structural tasks
@@ -512,7 +521,7 @@ Chromium only (decision 19). Dates are set with Playwright's clock on the produc
 | B6.2 Close Review deferred to the Review | Clock Tuesday 14:05: close Trade 1 and Trade 2, each with Close Review Reflect later. Clock Tuesday 17:00: open the Review; answer Trade 1's Close Review on its card. Clock Wednesday 17:00: open the Review; answer Trade 2's; save Actions. | Tuesday: both under "Trades with owed reflections" marked "Due in the next Review"; the Review can complete; Trade 1 answered there leaves the group. Wednesday: Trade 2's card marked "Due"; Incomplete until answered, then Complete. Probe: two Close Review Entries with `settledDebtId` and Source Daily Review. |
 | B6.3 Close requirements | Enter a full exit, clear the Close Reason, Save; then choose a reason and Save. | "Choose a Close Reason" beside the group, focus on it, values kept; then it saves. |
 | B6.4 Oversell | Record exit 101 on a 100-share Position. | "Only 100 shares are open" beside the row; nothing saved. |
-| B6.5 Exit link | Clock Monday 17:00: in the Review save Exit with Intent for T-A; press Record the exit; record 100 shares with a reason and reflections; Refresh Review. | The exit form opened over the Review; after Save the card shows the recorded exit; after refresh T-A is still walked for Monday with its Exit Action (it was Open at the close). |
+| B6.5 Exit link | Clock Monday 17:00: in the Review save Exit with Intent for T-A; press Record the exit; record 100 shares with a reason and reflections; Refresh Review. | The exit form opened over the Review; after Save the card shows the recorded exit; after refresh T-A is still walked for Monday with its Exit Action (it was Open at the close). **Amended by decision 72 (revision 32):** save Exit with Intent for T-A in the Review, and check that the card offers no Record the exit. Then open T-A's Trade Detail, use Record exit for 100 shares with a reason and reflections, and reopen Monday's Review. Expected: no exit form appeared in the Review; T-A is still walked for Monday with its Exit Action (it was Open at the close). |
 | B6.6 Update from D5 with data (**amended by decision 70:** from D5R2; the harness serves `d5r2`) | Harness serves `d5`; create two Open Trades with a deferred reflection; switch to `d6`; Reload from the update notice; record a full exit on one. | "Updating your journal" shows; earlier data intact; the exit closes the Trade; About shows schema 5. The probe shows the new pointer target and no old database. |
 | B6.7 Kill after commit | SIGKILL right after a terminal exit's result renders; relaunch. | Closed lifecycle, the Sell Executions, Close Reason, and both reflection outcomes are all present, and Detail derives the same Lot Matches. |
 | B6.8 Offline cold restart | Close; relaunch offline; record a partial and then a full exit. | Writable offline; both survive another offline restart (AC-DEL-001). |
@@ -544,7 +553,7 @@ It runs `npm run build && npm run preview` (port 5175) itself, plus `npm run ser
 | C6.4 Close Review in the Review | Defer a Close Review during a session; open that session's Review after the close, then the next session's. | First: the Trade under "Trades with owed reflections" with "Due in the next Review"; it can be answered there, and the Review completes without it. Second (if left unanswered): the same card marked Due; Incomplete until answered. A close reflected in full in the exit form appears in neither Review. |
 | C6.5 Validation | Exit more than is open; then a full exit without a Close Reason. | Clear errors beside the fields, focus on the first; nothing saved after reload. |
 | C6.6 Earlier-dated exit | Faults build with a pinned clock: on a Trade with exits at 10:00 and 14:00, record another exit dated 09:45. | The receipt lists the changed matches and realized P&L before and after; Detail's Lot Matches follow FIFO in Economic Time order. |
-| C6.7 Exit from the Review | Save Exit for a Trade in the Review, then use Record the exit. | The exit form opens over the Review; after Save the card shows the exit; the Action itself recorded no trade. |
+| C6.7 Exit from the Review | Save Exit for a Trade in the Review, then use Record the exit. | The exit form opens over the Review; after Save the card shows the exit; the Action itself recorded no trade. **Amended by decision 72 (revision 32):** save Exit for a Trade in the Review, then record the exit from its Trade Detail. Expected: the Review offers no exit form or link; the Action itself recorded no trade; after the exit, that Review still shows the Trade with its Exit Action. |
 | C6.8 Update with migration (**amended by decision 70:** the harness serves `d5r2`) | Harness serves `d5`; create Open Trades; switch to `d6`; reload from the notice; close one. | Migration message; earlier data intact; the Trade closes; About shows schema 5. |
 | C6.9 Recovery Only | Faults build: close a Trade; relaunch with `?faults=inventory`. | Closed list and Detail readable; no Record exit or reflection controls. |
 | C6.10 Offline, responsive, keyboard, About | Stop the server and reload, then record a full exit; resize with a half-filled exit form; close a Trade by keyboard; open About. | Offline works; values survive resizing; visible focus; About lists only D1, D2, D4, D5, and D6 capabilities. |
@@ -564,7 +573,7 @@ Status values: `planned`, `covered`, `intentionally not advertised`. All rows ar
 | AC-LIFE-003 (partial: Closed lifecycle agreement; the Lot-Match case is reopened by decision 30) | D6 | T6.14 | — (D2's agreement cases) | I6.9 | — | `npm run test:integration -- d6/integrity` | Reads surface the disagreement without writing | Content revision unchanged after reads; rejected mutations write nothing | planned (Restore branch in D8) |
 | AC-REV-001 (partial: a Trade closed after the cutoff stays eligible) | D6 | T6.6, T6.11 | T6.6 extended cutoff case; T6.11 eligibility case | I6.10, I6.11 | C6.7 | `npm run test:integration -- d6/review` | T-N walked although Closed now; cutoff evaluation excludes later exits | Restart I6.10 | planned (exact-date open and correction in D15) |
 | AC-REV-006 (partial: due Close Review on a non-walked Trade) | D6 | T6.11, T6.13, T6.20 | T6.11 owed-group case | I6.4, I6.10; B6.2 | C6.4 | as AC-REV-001 | Incomplete while an owed card's reflection is due; Complete after it is answered; not-yet-due ones never block | Restart | planned |
-| AC-REV-003 (full in D4; re-proven with the Exit link) | D6 | T6.20 | Exit link case | I6.11; B6.5 | C6.7 | `npm run test:integration -- d6/exit-action` | The Exit Action creates no Position Change; recording the exit is a separate Trade Workflow | — | planned |
+| AC-REV-003 (full in D4; re-proven with the Exit link) | D6 | T6.20 | Exit link case | I6.11; B6.5 | C6.7 | `npm run test:integration -- d6/exit-action` | The Exit Action creates no Position Change; recording the exit is a separate Trade Workflow. **Amended by decision 72:** the Review offers no Exit link; T6.20's case checks that none is offered, and B6.5 and C6.7 record the exit from Trade Detail | — | planned |
 | AC-CALC-002 (partial: realized-to-date stays a Value beside a Missing Mark) | D6 | T6.4, T6.14 | T6.4 case | I6.16 | — | `npm run test:integration -- d6/missing-mark` | Realized 55.90 a Value; Mark-dependent figures Unavailable naming XYZ and the date | — | planned (multi-Instrument in D10) |
 | AC-JOUR-005 (partial: Close Review retries and concurrency) | D6 | T6.8, T6.10 | — | I6.12 | — | `npm run test:integration -- d6/retries` | One current outcome per `(CloseReview, Trade)` | Conflicts write nothing | planned (Void reopening in D13) |
 | AC-JOUR-007 (partial: Close Review and the Trade Close Source) | D6 | T6.8, T6.15 | T6.8 seed group | I6.1, I6.15 | — | `npm run test:integration -- d6/seed` | Definition equals the contract text; Source added | Second launch adds nothing | planned |
@@ -608,7 +617,7 @@ Status values: `planned`, `covered`, `intentionally not advertised`. All rows ar
 | | exact-date Review opened before and after a correction | — | D15 |
 | AC-REV-002 | Mark, Debt, settlement, Trade order | T6.11 | Reopened by decision 29. D6 places the owed-reflection group after the walk (P19, P20); settlement still arrives in D7, which marks the scenario full. |
 | | global due Debt, not restricted to Open Trades | T6.11, I6.10 | covered by owed-reflection cards (P20), resolving the D5 finding without installing `getDebt` |
-| AC-REV-003 | Exit with Intent saves intent only and creates no Trade fact | I6.11, B6.5 | re-proven with the Exit link (A94) |
+| AC-REV-003 | Exit with Intent saves intent only and creates no Trade fact | I6.11, B6.5 | re-proven with the Exit link (A94) (**amended by decision 72:** re-proven without it; the exit is recorded from Trade Detail) |
 | AC-REV-006 | due Debt resolved before Complete | T6.11, I6.4, I6.10 | covered for Close Review Debt on non-walked Trades |
 | AC-JOUR-003 | (full in D5) | — | Close Review Defer reuses the same Debt (A86); I6.4 shows no blank Entry |
 | AC-JOUR-005 | one current outcome per key under retries | I6.12 | covered for the Close Review key |
@@ -623,7 +632,7 @@ Status values: `planned`, `covered`, `intentionally not advertised`. All rows ar
 
 - *`StateAtEconomicCutoff` for Trades closed after the cutoff (D4 A55):* A88, T6.6, T6.11, I6.10.
 - *Lot-Match integrity fixture for AC-LIFE-003:* reopened by P23 (decision 30), since no Lot Match is stored; I6.9 covers Closed lifecycle agreement instead.
-- *Exit Action link (D4 A58):* A94, T6.20, I6.11, B6.5.
+- *Exit Action link (D4 A58):* A94, T6.20, I6.11, B6.5. **Amended by decision 72:** no link is offered (A94 withdrawn); T6.20, I6.11 and B6.5 prove that the Exit Action records intent only.
 - *Home for owed reflections outside the walk (D5):* P20, A90, I6.10.
 - *Positions closed today in the Review (D5):* P19, A89, I6.10.
 - *Close Review Defer reusing D5's Debt, due rule, and resolution:* A86, T6.8, I6.4, B6.2.
