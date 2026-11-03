@@ -104,6 +104,13 @@ describe('capacity projection at schema 5', () => {
     expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(500_000 + 2_000_000 + 16_055 + 7_410 + 13_338 + 1_580 + 495);
   });
 
+  it('should reject an engine measurement taken before schema 5 that lacks the Close phase figures', () => {
+    const older: { -readonly [K in keyof EngineMeasurement]?: EngineMeasurement[K] } = { ...MEASUREMENT };
+    delete older.bytesPerExitPositionChange;
+    delete older.bytesPerCloseReviewCompletedAtCapture;
+    expect(() => project(older as EngineMeasurement)).toThrow(/test.*measure:capacity/);
+  });
+
   it('should keep no allowance for Close Review outcomes', () => {
     expect(ALLOWANCES.map((a) => a.kind)).toEqual(['Review Notes and Trader Reflections', 'Daily Bars', 'Correction versions']);
   });

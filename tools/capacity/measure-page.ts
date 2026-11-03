@@ -493,7 +493,6 @@ async function measureClosePhase(app: Application, workspace: string, context: P
     const tradesBefore = (await storeJsonBytes(workspace, 'trades')).bytes;
     const storesBefore = await closeStoresJsonBytes(workspace);
     const sellsBefore = await executionJsonBytes(workspace, 'Sell');
-    const times: string[] = [];
     for (const [i, { tradeId, symbol, shares, planLeg }] of round.entries()) {
       const n = r * CLOSE_PER_ROUND + i;
       const slot = n % CLOSE_CYCLE;
@@ -509,7 +508,6 @@ async function measureClosePhase(app: Application, workspace: string, context: P
         const members = Array.from({ length: fillsOf(k) }, (_, j) => {
           soldFills++;
           const economicTime = new Date(Date.parse(`${exitDate}T14:00:00Z`) + i * 60_000 + (k * 3 + j) * 1_000).toISOString().replace('.000Z', 'Z');
-          if (terminal && j === fillsOf(k) - 1) times.push(economicTime);
           return {
             kind: 'Execution' as const,
             tradeId,

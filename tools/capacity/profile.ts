@@ -158,6 +158,10 @@ export function project(m: EngineMeasurement): Projection {
     MEASURED.closeReviewDebtsOutstanding * m.bytesPerCloseReviewDebtOutstanding +
     MEASURED.marks * m.bytesPerMark +
     MEASURED.dailyTradeReviewActions * m.bytesPerAction;
+  // A measurement kept from an earlier schema lacks the newer phases' figures and would project NaN.
+  if (!Number.isFinite(measured)) {
+    throw new Error(`${m.engine} measurement lacks figures the current profile needs (taken at an older schema?); run npm run measure:capacity ${m.engine}`);
+  }
   const allowed = ALLOWANCES.reduce((sum, a) => sum + a.count * a.jsonBytes * m.overheadRatio, 0);
   const projectedWorkspaceBytes = Math.ceil(measured + allowed);
   return { projectedWorkspaceBytes, requiredQuotaBytes: 3 * projectedWorkspaceBytes };
