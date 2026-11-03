@@ -92,7 +92,11 @@ export type CreateWorkspaceResult =
 
 export type Write =
   | { readonly op: 'put' | 'add'; readonly store: WorkspaceStore; readonly value: Record<string, unknown> }
-  | { readonly op: 'delete'; readonly store: WorkspaceStore; readonly key: IDBValidKey };
+  | { readonly op: 'delete'; readonly store: WorkspaceStore; readonly key: IDBValidKey }
+  // Visits an index key with a read-write cursor and changes no data. Chromium keeps a record's old
+  // index entry when its key moves and drops it only when a read-write cursor visits it, so a write
+  // that moves an index key vacates the old one. The key must no longer belong to a live record.
+  | { readonly op: 'vacateIndexKey'; readonly store: WorkspaceStore; readonly index: string; readonly key: IDBValidKey };
 
 // Rechecked inside the commit transaction: `verify` receives the stored record and must
 // answer synchronously.
@@ -389,7 +393,16 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         for (const write of writeSet.writes) {
           const store = tx.objectStore(write.store);
           let request: Promise<unknown>;
-          if (write.op === 'delete') {
+          if (write.op === 'vacateIndexKey') {
+            // Runs to the cursor's end inside the transaction, which stays open while a request is
+            // pending. A failure surfaces through `tx.done`.
+            // The index is resolved before the request exists, so an unknown index throws synchronously.
+            const index = store.index(write.index);
+            request = (async () => {
+              let cursor = await index.openCursor(IDBKeyRange.only(write.key));
+              while (cursor) cursor = await cursor.continue();
+            })();
+          } else if (write.op === 'delete') {
             request = store.delete(write.key);
           } else {
             const value: Record<string, unknown> = { ...write.value, revision: contentRevision };

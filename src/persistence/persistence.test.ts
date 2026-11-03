@@ -1,4 +1,4 @@
-import { IDBDatabase as FakeIDBDatabase, IDBFactory, IDBObjectStore as FakeIDBObjectStore, IDBTransaction as FakeIDBTransaction } from 'fake-indexeddb';
+import { IDBDatabase as FakeIDBDatabase, IDBFactory, IDBIndex as FakeIDBIndex, IDBObjectStore as FakeIDBObjectStore, IDBTransaction as FakeIDBTransaction } from 'fake-indexeddb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { createPersistence, rebuildPrivateState, type WriteGate } from './index.ts';
@@ -373,6 +373,35 @@ describe('semantic commit', () => {
       ],
     });
     expect(await rawGet(databaseName, 'catalog', 'institution-1')).toEqual({ id: 'institution-1', revision: 2 });
+  });
+});
+
+describe('vacateIndexKey write', () => {
+  it('should commit alongside a put by iterating a read-write cursor over the one index key, recording no revision and changing no data', async () => {
+    const p = persistence();
+    const created = await p.createWorkspace([]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    const databaseName = created.databaseName;
+    const trade = { tradeId: 'trade-1', lifecycle: 'Open', planTime: '2026-10-12T13:00:00Z', activityDesc: 'b' };
+    await p.commit({ checks: [], writes: [{ op: 'put', store: 'trades', value: trade }] });
+    const cursors = vi.spyOn(FakeIDBIndex.prototype, 'openCursor');
+    const oldKey = ['Open', 'a', 'trade-1'];
+    const result = await p.commit({
+      checks: [],
+      writes: [
+        { op: 'put', store: 'trades', value: { ...trade, activityDesc: 'c' } },
+        { op: 'vacateIndexKey', store: 'trades', index: 'byLifecycleActivity', key: oldKey },
+      ],
+    });
+    expect(result).toEqual({
+      kind: 'Committed',
+      binding: { databaseName, contentRevision: 3 },
+      revisions: [{ store: 'trades', key: 'trade-1', revision: 3 }],
+    });
+    expect(cursors).toHaveBeenCalledTimes(1);
+    const range = cursors.mock.calls[0]?.[0] as IDBKeyRange;
+    expect([range.lower, range.upper, range.lowerOpen, range.upperOpen]).toEqual([oldKey, oldKey, false, false]);
+    expect(await rawGet(databaseName, 'trades', 'trade-1')).toEqual({ ...trade, activityDesc: 'c', revision: 3 });
   });
 });
 
