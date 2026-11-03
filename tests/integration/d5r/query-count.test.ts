@@ -217,9 +217,26 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
       ...Array.from({ length: n }, () => 'put'),
     ]);
     // The same post-save assembly requests as a Trade Action save: nothing differs but the transaction ids.
-    // The one exception is the Trade narrative snapshot (journalTypes) that names an owed reflection's Entry Type (T6.28-B2): it
-    // follows the Trade the card reads back, which holds a Debt on the Action side, so it is a difference of data, not of assembly.
-    const assembly = (requests: typeof action.requests) => parts(requests).after.filter((tx) => !tx.stores.includes('journalTypes')).flatMap((tx) => tx.all);
+    // The one exception is the Trade narrative snapshot that names an owed reflection's Entry Type (T6.28-B2): it follows the
+    // Trade the card reads back, which holds a Debt on the Action side, so it is a difference of data, not of assembly. It is
+    // identified by Journal's TradeNarrative store set, and it must be exactly one, of exactly that request shape.
+    const NARRATIVE_STORES = ['journalDebts', 'journalDeclines', 'journalDefinitions', 'journalEntries', 'journalTypes', 'meta'];
+    const isNarrative = (tx: Tx) => tx.mode === 'readonly' && [...tx.stores].sort().join() === NARRATIVE_STORES.join();
+    const assembly = (requests: typeof action.requests) => parts(requests).after.filter((tx) => !isNarrative(tx)).flatMap((tx) => tx.all);
+    const narratives = (requests: typeof action.requests) => parts(requests).after.filter(isNarrative);
+    expect(narratives(marks.requests)).toHaveLength(0);
+    const narrative = narratives(action.requests);
+    expect(narrative).toHaveLength(1);
+    expect(narrative[0]!.requests.map((r) => ({ store: r.store, index: r.index, method: r.method }))).toEqual([
+      // The snapshot's own leading read of the meta record, then Journal's six reads.
+      { store: 'meta', index: undefined, method: 'get' },
+      { store: 'journalEntries', index: 'byAnchorTrade', method: 'getAll' },
+      { store: 'journalDeclines', index: 'byAnchorTrade', method: 'getAll' },
+      { store: 'journalDebts', index: 'byAnchorTrade', method: 'getAll' },
+      { store: 'journalDefinitions', index: undefined, method: 'getAll' },
+      { store: 'journalTypes', index: undefined, method: 'getAll' },
+      { store: 'meta', index: undefined, method: 'get' },
+    ]);
     expect(assembly(marks.requests)).toEqual(assembly(action.requests));
     // And no recovery or gap scan in it: no cursor, no per-Instrument date index, no write.
     const assembled = saved.after.flatMap((tx) => tx.all);
