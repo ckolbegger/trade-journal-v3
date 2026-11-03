@@ -45,3 +45,35 @@ export function debtViolations(views: unknown, hasOpenTrades: boolean): string[]
   if (reviewTrades === undefined || (hasOpenTrades && walked.length === 0)) out.push('review (no walked Trades to check)');
   return out;
 }
+
+// D6 A98 (extends A73): a Workspace migrated from schema 1 to 4 has no exit, Close Reason, Close Review or
+// Closed Trade. Its Closed list is Empty, every derived Lot Match list is empty and realized-to-date is 0.
+// A missing list is a violation, not a pass.
+export function closeViolations(views: unknown): string[] {
+  const { closed, details, debts } = views as {
+    closed?: unknown[];
+    details?: {
+      tradeId: string;
+      closeReason?: unknown;
+      terminalTime?: unknown;
+      lotMatches?: unknown[];
+      realizedToDate?: unknown;
+      positionChanges?: { executions?: { action?: string }[] }[];
+      journal?: { entryTypeKey?: string }[];
+    }[];
+    debts?: { entryTypeKey?: string }[];
+  };
+  const out: string[] = [];
+  if (!Array.isArray(closed) || closed.length > 0) out.push(`closed list (${Array.isArray(closed) ? closed.length : 'missing'})`);
+  if (!Array.isArray(details)) out.push('details (missing)');
+  for (const detail of details ?? []) {
+    if (detail.closeReason !== undefined || detail.terminalTime !== undefined) out.push(`${detail.tradeId} Close Reason or terminal time`);
+    if ((detail.positionChanges ?? []).some((change) => (change.executions ?? []).some((e) => e.action === 'Sell'))) out.push(`${detail.tradeId} exit`);
+    if ((detail.journal ?? []).some((item) => item.entryTypeKey === 'entry-type.close-review')) out.push(`${detail.tradeId} Close Review`);
+    // Only a Trade with positions carries Lot Matches: there the derived list is empty and realized is exactly zero.
+    if (detail.lotMatches !== undefined && detail.lotMatches.length > 0) out.push(`${detail.tradeId} Lot Matches (${detail.lotMatches.length})`);
+    if (detail.realizedToDate !== undefined && detail.realizedToDate !== '0/1') out.push(`${detail.tradeId} realized-to-date (${JSON.stringify(detail.realizedToDate)})`);
+  }
+  if ((debts ?? []).some((debt) => debt.entryTypeKey === 'entry-type.close-review')) out.push('Close Review Debt');
+  return out;
+}

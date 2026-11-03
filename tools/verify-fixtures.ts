@@ -9,9 +9,9 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
-import { debtViolations, withWalkedReflections } from './fixture-views.ts';
+import { closeViolations, debtViolations, withWalkedReflections } from './fixture-views.ts';
 import { compareSnapshot } from './fixtures/snapshot-compare.ts';
-import { debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
+import { closedViewsOf, debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 // The D4 fields of an Open list row: the Mark's resolution and every figure and condition result.
 const CURRENT_FIGURES = [
@@ -103,6 +103,13 @@ for (const name of fixtures) {
     const debtViolation = debtViolations(withWalkedReflections({ ...(views as object), ...(await debtViewsOf(app, dump.asOf) as object) }), dump.schemaVersion >= 2);
     if (debtViolation.length > 0) {
       problems.push(`${name}: not Debt-free after migration: ${debtViolation.join(', ')}`);
+      continue;
+    }
+  }
+  if (dump.schemaVersion < 5) {
+    const closeViolation = closeViolations({ ...(views as object), ...(await closedViewsOf(app) as object) });
+    if (closeViolation.length > 0) {
+      problems.push(`${name}: not free of exits and closes after migration: ${closeViolation.join(', ')}`);
       continue;
     }
   }

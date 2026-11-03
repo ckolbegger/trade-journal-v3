@@ -3,6 +3,8 @@
 // regenerated, so an existing one is refused. Schema 2 (D2 T2.19) adds three Open Trades to D1's
 // content. Schema 3 (D4 T4.29) adds Marks, an acknowledgment, and Daily Trade Review Actions for the
 // Review Date of Monday 2026-10-19, 17:00 America/New_York. Schema 4 (D5 T5.20) adds four Debts at that instant.
+// Schema 5 (D6 T6.23) adds Sells and closes as of the following Tuesday 17:00: T-A after X1, T-S with its
+// shortfall, a Trade closed Monday with a completed Close Review and one closed Tuesday with a deferred one.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -14,7 +16,9 @@ import { dumpDatabases, FIXTURES_DIR, GENERATOR_VERSION, launchOn, viewsOf, type
 // Schemas 1 and 2 were frozen at Friday 17:00 America/New_York; schema 3 is frozen at the following
 // Monday 17:00 (EDT, so 21:00Z), a session date inside the session-policy calendar's coverage, after
 // which that Monday is the latest completed session and so the Review Date.
-const AS_OF = '2026-10-19T21:00:00Z';
+// Schema 5 is frozen at Tuesday 17:00 (21:00Z); the D5 content is built for the Monday Review Date.
+const MONDAY_AS_OF = '2026-10-19T21:00:00Z';
+const AS_OF = '2026-10-20T21:00:00Z';
 const REVIEW_DATE = '2026-10-19';
 
 const flag = process.argv.indexOf('--schema');
@@ -193,7 +197,7 @@ await markSaved({ intention: 'AssertUnavailable', instrumentKey: 'PFE', tradingD
 
 // Actions for the Review Date: CSCO Hold; KO Exit with an Intent, then edited once; PFE left without
 // an Action, so the Review is Incomplete.
-const review = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: AS_OF });
+const review = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_AS_OF });
 if (review.kind !== 'Ready' || review.reviewDate !== REVIEW_DATE) throw new Error(`DailyReview.open: ${review.kind}`);
 let reviewBinding = review.binding;
 const reviewed = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
@@ -241,9 +245,114 @@ if (!pfeDebt) throw new Error('PFE owes no Debt');
 const declined = await app.Journal.save({ intention: 'ResolveDebt', debtId: pfeDebt.debtId, expectedDebtRevision: pfeDebt.revision, resolution: { kind: 'Decline', reason: 'Nothing worth adding to the Journal.' } });
 if (declined.kind !== 'Saved') throw new Error(`ResolveDebt PFE: ${declined.kind}`);
 
+// Schema 5 (D6 T6.23): the plan's reference Trades (breakdown, section 4) and two closes.
+//  - T-A (XYZ): PC1 Monday 10-12 10:00 60 @ 50.10, PC2 11:00 40 @ 50.30, each fee 1.00; X1 Tuesday 10-13 10:00,
+//    Sell 30 @ 52.00, fee 0.60. Still Open with Position 70 and one derived Lot Match.
+//  - T-S (QRS): PC1 60 @ 50.10, then XS (the same Tuesday Sell of 30), cutting the entry window short: one
+//    Entry Size shortfall of 40.
+//  - GIS: bought 100, sold all 100 on Monday 10-19, Close Reason Target Reached, Close Review completed.
+//  - SYY: bought 100, sold all 100 on Tuesday 10-20, Close Reason Stop Triggered, Close Review deferred.
+const closeReasons = await app.ReferenceCatalog.query({ family: 'CloseReason' });
+const closeReviewDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.close-review' });
+if (closeReasons.kind !== 'Page' || closeReviewDefinition.kind !== 'Found') throw new Error('Close Reason or Close Review seed missing');
+const closeReasonId = (label: string) => {
+  const found = closeReasons.items.find((r) => r.label === label);
+  if (!found) throw new Error(`no Close Reason ${label}`);
+  return found.id;
+};
+const planDefinitionId = definition.definition.id;
+const closeReviewComplete: ReflectionDisposition = {
+  kind: 'Complete',
+  form: {
+    definitionId: closeReviewDefinition.definition.id,
+    answers: {
+      'prompt.close-review.take-again': { kind: 'Option', optionId: 'option.close-review.take-again.yes-as-planned' },
+      'prompt.close-review.what-worked': { kind: 'Text', text: 'Waited for the base to hold, then sold into the target.' },
+      'prompt.close-review.key-lesson': { kind: 'Text', text: 'The plan was sound; keep sizing the same.' },
+    },
+  },
+};
+
+interface Step {
+  readonly action: 'Buy' | 'Sell';
+  readonly quantity: string;
+  readonly price: string;
+  readonly fee: string;
+  readonly economicTime: string;
+  readonly reflection: ReflectionDisposition;
+  readonly close?: { readonly reason: string; readonly review: ReflectionDisposition };
+}
+async function closableTrade(symbol: string, accountIndex: number, planTime: string, steps: readonly Step[]) {
+  const account = accounts[accountIndex % accounts.length]!.record;
+  const confirmed: ConfirmPlanResult = await app.TradeWorkflows.confirmPlan({
+    accountId: account.id,
+    accountRevision: account.recordRevision,
+    strategyId: strategy.id,
+    strategyRevision: strategy.recordRevision,
+    economicTime: planTime,
+    plan: {
+      underlying: symbol,
+      legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol }, quantity: '100', intendedEntry: '50.00' }],
+      stops: [{ kind: 'UnderlyingPrice', price: '47.50' }],
+      targets: [{ kind: 'UnderlyingPrice', price: '56.00' }],
+    },
+    reflection: {
+      definitionId: planDefinitionId,
+      answers: {
+        'prompt.plan-reflection.thesis': { kind: 'Text', text: `${symbol}: reclaiming 50 after a higher low.` },
+        'prompt.plan-reflection.invalidation': { kind: 'Text', text: 'A daily close below 47.50.' },
+      },
+    },
+  });
+  if (confirmed.kind !== 'Confirmed') throw new Error(`confirmPlan ${symbol}: ${confirmed.kind}`);
+  const trade = confirmed.postCommit.trade;
+  let factRevision = trade.factRevision;
+  for (const [n, step] of steps.entries()) {
+    const recorded = await app.TradeWorkflows.recordPositionChange({
+      originTradeId: trade.tradeId,
+      trades: [{ tradeId: trade.tradeId, expectedFactRevision: factRevision }],
+      members: [
+        {
+          kind: 'Execution',
+          tradeId: trade.tradeId,
+          action: step.action,
+          instrument: { kind: 'Stock', symbol },
+          intent: { kind: 'ServesPlannedLeg', plannedLegId: trade.plan.legs[0]!.factId },
+          quantity: step.quantity,
+          price: step.price,
+          fee: step.fee,
+          economicTime: step.economicTime,
+        },
+      ],
+      reflection: step.reflection,
+      ...(step.close && { closeReasonId: closeReasonId(step.close.reason), closeReview: step.close.review }),
+    });
+    if (recorded.kind !== 'Recorded') throw new Error(`recordPositionChange ${symbol} step ${n + 1}: ${recorded.kind}`);
+    factRevision = recorded.receipt.factRevision;
+  }
+}
+const x1 = (reflection: ReflectionDisposition): Step => ({ action: 'Sell', quantity: '30', price: '52.00', fee: '0.60', economicTime: '2026-10-13T14:00:00Z', reflection });
+await closableTrade('XYZ', 0, '2026-10-12T13:00:00Z', [
+  { action: 'Buy', quantity: '60', price: '50.10', fee: '1.00', economicTime: '2026-10-12T14:00:00Z', reflection: complete('as-planned', 'calm', 4) },
+  { action: 'Buy', quantity: '40', price: '50.30', fee: '1.00', economicTime: '2026-10-12T15:00:00Z', reflection: decline('Filled the rest as planned.') },
+  x1(complete('as-planned', 'calm', 4)),
+]);
+await closableTrade('QRS', 1, '2026-10-12T13:00:00Z', [
+  { action: 'Buy', quantity: '60', price: '50.10', fee: '1.00', economicTime: '2026-10-12T14:00:00Z', reflection: complete('as-planned', 'eager', 3) },
+  x1(decline('Cut the position early.')),
+]);
+await closableTrade('GIS', 2, '2026-10-15T13:00:00Z', [
+  { action: 'Buy', quantity: '100', price: '50.20', fee: '1.00', economicTime: '2026-10-15T14:00:00Z', reflection: decline('Single fill.') },
+  { action: 'Sell', quantity: '100', price: '56.10', fee: '1.00', economicTime: '2026-10-19T15:00:00Z', reflection: decline('Target reached.'), close: { reason: 'Target Reached', review: closeReviewComplete } },
+]);
+await closableTrade('SYY', 0, '2026-10-16T13:00:00Z', [
+  { action: 'Buy', quantity: '100', price: '49.80', fee: '1.00', economicTime: '2026-10-16T14:00:00Z', reflection: decline('Single fill.') },
+  { action: 'Sell', quantity: '100', price: '47.40', fee: '1.00', economicTime: '2026-10-20T15:00:00Z', reflection: decline('Stopped out.'), close: { reason: 'Stop Triggered', review: { kind: 'Defer' } } },
+]);
+
 const dump: WorkspaceDump = { schemaVersion: SCHEMA_VERSION, generatorVersion: GENERATOR_VERSION, asOf: AS_OF, databases: await dumpDatabases(factory) };
 const views = await viewsOf(app, SCHEMA_VERSION, AS_OF);
 await mkdir(dir, { recursive: true });
 await writeFile(path.join(dir, 'dump.json'), `${JSON.stringify(dump, null, 2)}\n`);
 await writeFile(path.join(dir, 'expected-views.json'), `${JSON.stringify(views, null, 2)}\n`);
-console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length} Open Trades, ${accounts.length} Accounts)`);
+console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length + 2} Open and 2 Closed Trades, ${accounts.length} Accounts)`);

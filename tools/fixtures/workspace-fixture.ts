@@ -132,19 +132,31 @@ export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'> &
   if (planned.kind !== 'Ready') throw new Error(`browseTrades Planned: ${planned.kind}`);
   const open = schemaVersion >= 2 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }) : undefined;
   if (open && open.kind !== 'Ready') throw new Error(`browseTrades Open: ${open.kind}`);
+  // From schema 5 (D6 T6.23) it adds the Closed list and each Closed Trade's Detail.
+  const closed = schemaVersion >= 5 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Closed' }) : undefined;
+  if (closed && closed.kind !== 'Ready') throw new Error(`browseTrades Closed: ${closed.kind}`);
   const details = [];
-  for (const item of [...planned.view.items, ...(open?.view.items ?? [])]) {
+  for (const item of [...planned.view.items, ...(open?.view.items ?? []), ...(closed?.view.items ?? [])]) {
     const detail = await app.TradeViewsAndReporting.getTradeDetail({ tradeId: item.tradeId });
     if (detail.kind !== 'Ready') throw new Error(`getTradeDetail ${item.tradeId}: ${detail.kind}`);
     details.push(detail.view);
   }
-  const lists = open ? { planned: planned.view.items, open: open.view.items, details } : { planned: planned.view.items, details };
+  const lists = open
+    ? { planned: planned.view.items, open: open.view.items, ...(closed && { closed: closed.view.items }), details }
+    : { planned: planned.view.items, details };
   if (schemaVersion < 3) return normalize(lists);
   if (!app.DailyReview || asOf === undefined) throw new Error('viewsOf: schema 3 needs DailyReview and the as-of instant');
   const review = await reviewViews(app.DailyReview, asOf);
   if (schemaVersion < 4) return normalize({ ...lists, ...review });
   if (!app.Journal) throw new Error('viewsOf: schema 4 needs Journal');
   return normalize({ ...lists, ...review, debts: await outstandingDebts(app.Journal) });
+}
+
+// The Closed list alone, for a Workspace migrated from an earlier schema (D6 T6.23, A98).
+export async function closedViewsOf(app: Pick<Application, 'TradeViewsAndReporting'>): Promise<unknown> {
+  const closed = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Closed' });
+  if (closed.kind !== 'Ready') throw new Error(`browseTrades Closed: ${closed.kind}`);
+  return normalize({ closed: closed.view.items });
 }
 
 async function outstandingDebts(journal: Application['Journal']) {

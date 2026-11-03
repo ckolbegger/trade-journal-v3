@@ -1,0 +1,4607 @@
+{
+  "schemaVersion": 5,
+  "generatorVersion": 1,
+  "asOf": "2026-10-20T21:00:00Z",
+  "databases": {
+    "tj-root": {
+      "version": 1,
+      "stores": {
+        "diagnostics": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": []
+        },
+        "pointer": {
+          "keyPath": "key",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "key": "current",
+              "databaseName": "tj-ws-fx-0010"
+            }
+          ]
+        }
+      }
+    },
+    "tj-ws-fx-0010": {
+      "version": 1,
+      "stores": {
+        "catalog": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "id": "fx-0001",
+              "kind": "Strategy",
+              "label": "Long Stock",
+              "normalizedLabel": "long stock",
+              "active": true,
+              "origin": "Seeded",
+              "recordRevision": 1,
+              "productKey": "strategy.long-stock",
+              "shape": {
+                "roles": [
+                  {
+                    "side": "Long",
+                    "instrument": "Stock",
+                    "ratio": 1
+                  }
+                ]
+              },
+              "revision": 1
+            },
+            {
+              "id": "fx-0002",
+              "kind": "CloseReason",
+              "label": "Target Reached",
+              "normalizedLabel": "target reached",
+              "active": true,
+              "origin": "Seeded",
+              "recordRevision": 1,
+              "productKey": "close-reason.target-reached",
+              "policy": "SeededValuesRemainSelectable",
+              "seedOrder": 0,
+              "revision": 1
+            },
+            {
+              "id": "fx-0003",
+              "kind": "CloseReason",
+              "label": "Stop Triggered",
+              "normalizedLabel": "stop triggered",
+              "active": true,
+              "origin": "Seeded",
+              "recordRevision": 1,
+              "productKey": "close-reason.stop-triggered",
+              "policy": "SeededValuesRemainSelectable",
+              "seedOrder": 1,
+              "revision": 1
+            },
+            {
+              "id": "fx-0004",
+              "kind": "CloseReason",
+              "label": "Thesis Invalidated",
+              "normalizedLabel": "thesis invalidated",
+              "active": true,
+              "origin": "Seeded",
+              "recordRevision": 1,
+              "productKey": "close-reason.thesis-invalidated",
+              "policy": "SeededValuesRemainSelectable",
+              "seedOrder": 2,
+              "revision": 1
+            },
+            {
+              "id": "fx-0005",
+              "kind": "CloseReason",
+              "label": "Time-Based Exit",
+              "normalizedLabel": "time-based exit",
+              "active": true,
+              "origin": "Seeded",
+              "recordRevision": 1,
+              "productKey": "close-reason.time-based-exit",
+              "policy": "SeededValuesRemainSelectable",
+              "seedOrder": 3,
+              "revision": 1
+            },
+            {
+              "id": "fx-0011",
+              "label": "Fidelity",
+              "normalizedLabel": "fidelity",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Institution",
+              "revision": 2
+            },
+            {
+              "id": "fx-0012",
+              "label": "Charles Schwab",
+              "normalizedLabel": "charles schwab",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Institution",
+              "revision": 3
+            },
+            {
+              "id": "fx-0013",
+              "label": "Roth IRA",
+              "normalizedLabel": "roth ira",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Account",
+              "institutionId": "fx-0011",
+              "revision": 4
+            },
+            {
+              "id": "fx-0014",
+              "label": "Individual",
+              "normalizedLabel": "individual",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Account",
+              "institutionId": "fx-0011",
+              "revision": 5
+            },
+            {
+              "id": "fx-0015",
+              "label": "Brokerage",
+              "normalizedLabel": "brokerage",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Account",
+              "institutionId": "fx-0012",
+              "revision": 6
+            }
+          ]
+        },
+        "journalDebts": {
+          "keyPath": "debtId",
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byAnchorTrade",
+              "keyPath": "anchorTradeId",
+              "unique": false,
+              "multiEntry": false
+            },
+            {
+              "name": "byOutstandingDue",
+              "keyPath": [
+                "outstandingDue",
+                "debtId"
+              ],
+              "unique": false,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "debtId": "fx-0065",
+              "obligationKey": "PositionChangeReflection:fx-0062",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "definitionId": "fx-0007",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0062"
+              },
+              "momentTime": "2026-10-14T15:00:00Z",
+              "dueAnchor": "2026-10-14T15:00:00Z",
+              "dueRule": "OneSessionGrace",
+              "route": "JournalOnly",
+              "anchorTradeId": "fx-0046",
+              "outstandingDue": "2026-10-14T15:00:00Z",
+              "versions": [
+                {
+                  "versionId": "fx-0066",
+                  "status": "Outstanding",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 16
+            },
+            {
+              "debtId": "fx-0070",
+              "obligationKey": "PositionChangeReflection:fx-0067",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "definitionId": "fx-0007",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0067"
+              },
+              "momentTime": "2026-10-19T20:05:00Z",
+              "dueAnchor": "2026-10-19T20:05:00Z",
+              "dueRule": "OneSessionGrace",
+              "route": "JournalOnly",
+              "anchorTradeId": "fx-0046",
+              "outstandingDue": "2026-10-19T20:05:00Z",
+              "versions": [
+                {
+                  "versionId": "fx-0071",
+                  "status": "Outstanding",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 17
+            },
+            {
+              "debtId": "fx-0087",
+              "obligationKey": "PositionChangeReflection:fx-0084",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "definitionId": "fx-0007",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0072"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0084"
+              },
+              "momentTime": "2026-10-12T18:00:00Z",
+              "dueAnchor": "2026-10-12T18:00:00Z",
+              "dueRule": "OneSessionGrace",
+              "route": "JournalOnly",
+              "anchorTradeId": "fx-0072",
+              "versions": [
+                {
+                  "versionId": "fx-0088",
+                  "status": "Outstanding",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                },
+                {
+                  "versionId": "fx-0111",
+                  "status": "Settled",
+                  "entryId": "fx-0110",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 34
+            },
+            {
+              "debtId": "fx-0100",
+              "obligationKey": "PositionChangeReflection:fx-0098",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "definitionId": "fx-0007",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0089"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0098"
+              },
+              "momentTime": "2026-10-12T15:00:00Z",
+              "dueAnchor": "2026-10-12T15:00:00Z",
+              "dueRule": "OneSessionGrace",
+              "route": "JournalOnly",
+              "anchorTradeId": "fx-0089",
+              "versions": [
+                {
+                  "versionId": "fx-0101",
+                  "status": "Outstanding",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                },
+                {
+                  "versionId": "fx-0113",
+                  "status": "Declined",
+                  "declineId": "fx-0112",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 35
+            },
+            {
+              "debtId": "fx-0169",
+              "obligationKey": "CloseReview:fx-0156",
+              "entryTypeKey": "entry-type.close-review",
+              "sourceKey": "source.trade-close",
+              "definitionId": "fx-0009",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0156"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0165"
+              },
+              "momentTime": "2026-10-20T15:00:00Z",
+              "dueAnchor": "2026-10-20T15:00:00Z",
+              "dueRule": "OneSessionGrace",
+              "route": "JournalOnly",
+              "anchorTradeId": "fx-0156",
+              "outstandingDue": "2026-10-20T15:00:00Z",
+              "versions": [
+                {
+                  "versionId": "fx-0170",
+                  "status": "Outstanding",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 48
+            }
+          ]
+        },
+        "journalDeclines": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byAnchorTrade",
+              "keyPath": "anchorTradeId",
+              "unique": false,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "id": "fx-0061",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0058"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Added into strength; reflecting later.",
+              "momentTime": "2026-10-12T18:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0058",
+              "anchorTradeId": "fx-0046",
+              "revision": 15
+            },
+            {
+              "id": "fx-0083",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0072"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0081"
+              },
+              "definitionId": "fx-0007",
+              "momentTime": "2026-10-12T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0081",
+              "anchorTradeId": "fx-0072",
+              "revision": 20
+            },
+            {
+              "id": "fx-0097",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0089"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0095"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Entered between meetings.",
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0095",
+              "anchorTradeId": "fx-0089",
+              "revision": 23
+            },
+            {
+              "id": "fx-0112",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.trade-detail",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0089"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0098"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Nothing worth adding to the Journal.",
+              "momentTime": "2026-10-12T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "settledDebtId": "fx-0100",
+              "obligationKey": "PositionChangeReflection:fx-0098",
+              "anchorTradeId": "fx-0089",
+              "revision": 35
+            },
+            {
+              "id": "fx-0125",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0114"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0123"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Filled the rest as planned.",
+              "momentTime": "2026-10-12T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0123",
+              "anchorTradeId": "fx-0114",
+              "revision": 38
+            },
+            {
+              "id": "fx-0141",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0129"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0138"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Cut the position early.",
+              "momentTime": "2026-10-13T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0138",
+              "anchorTradeId": "fx-0129",
+              "revision": 42
+            },
+            {
+              "id": "fx-0150",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0142"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0148"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Single fill.",
+              "momentTime": "2026-10-15T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0148",
+              "anchorTradeId": "fx-0142",
+              "revision": 44
+            },
+            {
+              "id": "fx-0154",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0142"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0151"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Target reached.",
+              "momentTime": "2026-10-19T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0151",
+              "anchorTradeId": "fx-0142",
+              "revision": 45
+            },
+            {
+              "id": "fx-0164",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0156"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0162"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Single fill.",
+              "momentTime": "2026-10-16T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0162",
+              "anchorTradeId": "fx-0156",
+              "revision": 47
+            },
+            {
+              "id": "fx-0168",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0156"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0165"
+              },
+              "definitionId": "fx-0007",
+              "reason": "Stopped out.",
+              "momentTime": "2026-10-20T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0165",
+              "anchorTradeId": "fx-0156",
+              "revision": 48
+            }
+          ]
+        },
+        "journalDefinitions": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "id": "fx-0006",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "revisionNumber": 1,
+              "prompts": [
+                {
+                  "id": "prompt.plan-reflection.thesis",
+                  "kind": "Text",
+                  "text": "Why this trade, why now?",
+                  "required": true,
+                  "role": "Thesis"
+                },
+                {
+                  "id": "prompt.plan-reflection.invalidation",
+                  "kind": "Text",
+                  "text": "What would invalidate the thesis?",
+                  "required": true,
+                  "role": "Invalidation"
+                },
+                {
+                  "id": "prompt.plan-reflection.conviction",
+                  "kind": "Scale",
+                  "text": "Conviction",
+                  "required": false,
+                  "min": 1,
+                  "max": 5
+                },
+                {
+                  "id": "prompt.plan-reflection.primary-emotion",
+                  "kind": "SingleSelect",
+                  "text": "Primary emotion",
+                  "required": false,
+                  "options": [
+                    {
+                      "id": "option.plan-reflection.primary-emotion.calm",
+                      "label": "Calm"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.eager",
+                      "label": "Eager"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.anxious",
+                      "label": "Anxious"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.fomo",
+                      "label": "FOMO"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.revenge",
+                      "label": "Revenge"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.relieved",
+                      "label": "Relieved"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.frustrated",
+                      "label": "Frustrated"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.other",
+                      "label": "Other"
+                    }
+                  ]
+                }
+              ],
+              "revision": 1
+            },
+            {
+              "id": "fx-0007",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "revisionNumber": 1,
+              "prompts": [
+                {
+                  "id": "prompt.position-change-reflection.decision-mode",
+                  "kind": "SingleSelect",
+                  "text": "Decision mode",
+                  "required": true,
+                  "options": [
+                    {
+                      "id": "option.position-change-reflection.decision-mode.as-planned",
+                      "label": "As Planned"
+                    },
+                    {
+                      "id": "option.position-change-reflection.decision-mode.deliberate-adjustment",
+                      "label": "Deliberate Adjustment"
+                    },
+                    {
+                      "id": "option.position-change-reflection.decision-mode.reactive",
+                      "label": "Reactive"
+                    },
+                    {
+                      "id": "option.position-change-reflection.decision-mode.externally-imposed",
+                      "label": "Externally Imposed"
+                    }
+                  ]
+                },
+                {
+                  "id": "prompt.position-change-reflection.primary-emotion",
+                  "kind": "SingleSelect",
+                  "text": "Primary emotion",
+                  "required": true,
+                  "options": [
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.calm",
+                      "label": "Calm"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.eager",
+                      "label": "Eager"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.anxious",
+                      "label": "Anxious"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.fomo",
+                      "label": "FOMO"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.revenge",
+                      "label": "Revenge"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.relieved",
+                      "label": "Relieved"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.frustrated",
+                      "label": "Frustrated"
+                    },
+                    {
+                      "id": "option.position-change-reflection.primary-emotion.other",
+                      "label": "Other"
+                    }
+                  ]
+                },
+                {
+                  "id": "prompt.position-change-reflection.decision-confidence",
+                  "kind": "Scale",
+                  "text": "Decision confidence",
+                  "required": true,
+                  "min": 1,
+                  "max": 5
+                },
+                {
+                  "id": "prompt.position-change-reflection.note",
+                  "kind": "Text",
+                  "text": "Note",
+                  "required": false
+                }
+              ],
+              "revision": 1
+            },
+            {
+              "id": "fx-0008",
+              "entryTypeKey": "entry-type.daily-trade-review",
+              "revisionNumber": 1,
+              "prompts": [
+                {
+                  "id": "prompt.daily-trade-review.action",
+                  "kind": "SingleSelect",
+                  "text": "Action",
+                  "required": true,
+                  "role": "Action",
+                  "options": [
+                    {
+                      "id": "option.daily-trade-review.action.hold",
+                      "label": "Hold"
+                    },
+                    {
+                      "id": "option.daily-trade-review.action.exit",
+                      "label": "Exit"
+                    },
+                    {
+                      "id": "option.daily-trade-review.action.roll",
+                      "label": "Roll"
+                    },
+                    {
+                      "id": "option.daily-trade-review.action.adjust",
+                      "label": "Adjust"
+                    }
+                  ]
+                },
+                {
+                  "id": "prompt.daily-trade-review.intent",
+                  "kind": "Text",
+                  "text": "Why are you taking this action?",
+                  "required": false,
+                  "role": "Intent",
+                  "requiredWhen": {
+                    "promptId": "prompt.daily-trade-review.action",
+                    "optionIds": [
+                      "option.daily-trade-review.action.exit",
+                      "option.daily-trade-review.action.roll",
+                      "option.daily-trade-review.action.adjust"
+                    ]
+                  }
+                },
+                {
+                  "id": "prompt.daily-trade-review.conviction",
+                  "kind": "Scale",
+                  "text": "Conviction now",
+                  "required": false,
+                  "min": 1,
+                  "max": 5
+                },
+                {
+                  "id": "prompt.daily-trade-review.considered",
+                  "kind": "Text",
+                  "text": "Anything you considered doing and decided against?",
+                  "required": false
+                },
+                {
+                  "id": "prompt.daily-trade-review.note",
+                  "kind": "Text",
+                  "text": "Note",
+                  "required": false
+                }
+              ],
+              "revision": 1
+            },
+            {
+              "id": "fx-0009",
+              "entryTypeKey": "entry-type.close-review",
+              "revisionNumber": 1,
+              "prompts": [
+                {
+                  "id": "prompt.close-review.take-again",
+                  "kind": "SingleSelect",
+                  "text": "Would you take this Trade again under similar conditions?",
+                  "required": true,
+                  "options": [
+                    {
+                      "id": "option.close-review.take-again.yes-as-planned",
+                      "label": "Yes, as planned"
+                    },
+                    {
+                      "id": "option.close-review.take-again.yes-with-changes",
+                      "label": "Yes, with changes"
+                    },
+                    {
+                      "id": "option.close-review.take-again.no",
+                      "label": "No"
+                    },
+                    {
+                      "id": "option.close-review.take-again.unsure",
+                      "label": "Unsure"
+                    }
+                  ]
+                },
+                {
+                  "id": "prompt.close-review.what-worked",
+                  "kind": "Text",
+                  "text": "What worked, and what did not?",
+                  "required": false
+                },
+                {
+                  "id": "prompt.close-review.key-lesson",
+                  "kind": "Text",
+                  "text": "What is the key lesson?",
+                  "required": false
+                }
+              ],
+              "revision": 1
+            }
+          ]
+        },
+        "journalEntries": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byAnchorTrade",
+              "keyPath": "anchorTradeId",
+              "unique": false,
+              "multiEntry": false
+            },
+            {
+              "name": "byObligation",
+              "keyPath": "obligationKey",
+              "unique": true,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "id": "fx-0021",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0016"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0017"
+              },
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0016",
+              "anchorTradeId": "fx-0016",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "AAPL: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 221.00."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.calm"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 7
+            },
+            {
+              "id": "fx-0027",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0022"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0023"
+              },
+              "momentTime": "2026-10-13T15:30:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0022",
+              "anchorTradeId": "fx-0022",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "MSFT: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 402.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.eager"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 8
+            },
+            {
+              "id": "fx-0033",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0028"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0029"
+              },
+              "momentTime": "2026-10-14T13:45:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0028",
+              "anchorTradeId": "fx-0028",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "NVDA: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 124.80."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.anxious"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 9
+            },
+            {
+              "id": "fx-0039",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0034"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0035"
+              },
+              "momentTime": "2026-10-15T16:10:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0034",
+              "anchorTradeId": "fx-0034",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "COST: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 880.00."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 2
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.calm"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 10
+            },
+            {
+              "id": "fx-0045",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0040"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0041"
+              },
+              "momentTime": "2026-10-16T19:20:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0040",
+              "anchorTradeId": "fx-0040",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "BRK.B: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 451.00."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.relieved"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 11
+            },
+            {
+              "id": "fx-0051",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0047"
+              },
+              "momentTime": "2026-10-12T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0046",
+              "anchorTradeId": "fx-0046",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "CSCO: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 12
+            },
+            {
+              "id": "fx-0054",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0052"
+              },
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0052",
+              "anchorTradeId": "fx-0046",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.calm"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 13
+            },
+            {
+              "id": "fx-0057",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0055"
+              },
+              "momentTime": "2026-10-12T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0055",
+              "anchorTradeId": "fx-0046",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.calm"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 14
+            },
+            {
+              "id": "fx-0077",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0072"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0073"
+              },
+              "momentTime": "2026-10-12T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0072",
+              "anchorTradeId": "fx-0072",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "KO: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 18
+            },
+            {
+              "id": "fx-0080",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0072"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0078"
+              },
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0078",
+              "anchorTradeId": "fx-0072",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.eager"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 19
+            },
+            {
+              "id": "fx-0094",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0089"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0090"
+              },
+              "momentTime": "2026-10-12T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0089",
+              "anchorTradeId": "fx-0089",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "PFE: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 22
+            },
+            {
+              "id": "fx-0108",
+              "entryTypeKey": "entry-type.daily-trade-review",
+              "sourceKey": "source.daily-review",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0046"
+              },
+              "origin": {
+                "kind": "DailyReview",
+                "factId": "fx-0046",
+                "reviewDate": "2026-10-19"
+              },
+              "momentTime": "2026-10-19T20:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": [
+                "DailyTradeReview",
+                "2026-10-19",
+                "fx-0046"
+              ],
+              "anchorTradeId": "fx-0046",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0008",
+                  "responses": [
+                    {
+                      "promptId": "prompt.daily-trade-review.action",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.daily-trade-review.action.hold"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.intent",
+                      "value": {
+                        "kind": "Text",
+                        "text": "Let the position work; the Stop at 47.50 still stands."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.considered",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 31
+            },
+            {
+              "id": "fx-0109",
+              "entryTypeKey": "entry-type.daily-trade-review",
+              "sourceKey": "source.daily-review",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0072"
+              },
+              "origin": {
+                "kind": "DailyReview",
+                "factId": "fx-0072",
+                "reviewDate": "2026-10-19"
+              },
+              "momentTime": "2026-10-19T20:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": [
+                "DailyTradeReview",
+                "2026-10-19",
+                "fx-0072"
+              ],
+              "anchorTradeId": "fx-0072",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0008",
+                  "responses": [
+                    {
+                      "promptId": "prompt.daily-trade-review.action",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.daily-trade-review.action.exit"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.intent",
+                      "value": {
+                        "kind": "Text",
+                        "text": "Sell at tomorrow open if it fails to hold 49."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.considered",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                },
+                {
+                  "versionNumber": 2,
+                  "definitionId": "fx-0008",
+                  "responses": [
+                    {
+                      "promptId": "prompt.daily-trade-review.action",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.daily-trade-review.action.exit"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.intent",
+                      "value": {
+                        "kind": "Text",
+                        "text": "Sell at tomorrow open if it fails to hold 49; take the loss on a close below 48.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.considered",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.daily-trade-review.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 33
+            },
+            {
+              "id": "fx-0110",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.daily-review",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0072"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0084"
+              },
+              "momentTime": "2026-10-12T18:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "settledDebtId": "fx-0087",
+              "obligationKey": "PositionChangeReflection:fx-0084",
+              "anchorTradeId": "fx-0072",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.calm"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 34
+            },
+            {
+              "id": "fx-0119",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0114"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0115"
+              },
+              "momentTime": "2026-10-12T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0114",
+              "anchorTradeId": "fx-0114",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "XYZ: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 36
+            },
+            {
+              "id": "fx-0122",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0114"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0120"
+              },
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0120",
+              "anchorTradeId": "fx-0114",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.calm"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 37
+            },
+            {
+              "id": "fx-0128",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0114"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0126"
+              },
+              "momentTime": "2026-10-13T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0126",
+              "anchorTradeId": "fx-0114",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.calm"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 39
+            },
+            {
+              "id": "fx-0134",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0129"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0130"
+              },
+              "momentTime": "2026-10-12T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0129",
+              "anchorTradeId": "fx-0129",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "QRS: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 40
+            },
+            {
+              "id": "fx-0137",
+              "entryTypeKey": "entry-type.position-change-reflection",
+              "sourceKey": "source.position-change",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0129"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0135"
+              },
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PositionChangeReflection:fx-0135",
+              "anchorTradeId": "fx-0129",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0007",
+                  "responses": [
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-mode",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.decision-mode.as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.position-change-reflection.primary-emotion.eager"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.decision-confidence",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "promptId": "prompt.position-change-reflection.note",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 41
+            },
+            {
+              "id": "fx-0147",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0142"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0143"
+              },
+              "momentTime": "2026-10-15T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0142",
+              "anchorTradeId": "fx-0142",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "GIS: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 43
+            },
+            {
+              "id": "fx-0155",
+              "entryTypeKey": "entry-type.close-review",
+              "sourceKey": "source.trade-close",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0142"
+              },
+              "origin": {
+                "kind": "PositionChange",
+                "factId": "fx-0151"
+              },
+              "momentTime": "2026-10-19T15:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "CloseReview:fx-0142",
+              "anchorTradeId": "fx-0142",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0009",
+                  "responses": [
+                    {
+                      "promptId": "prompt.close-review.take-again",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.close-review.take-again.yes-as-planned"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.close-review.what-worked",
+                      "value": {
+                        "kind": "Text",
+                        "text": "Waited for the base to hold, then sold into the target."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.close-review.key-lesson",
+                      "value": {
+                        "kind": "Text",
+                        "text": "The plan was sound; keep sizing the same."
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 45
+            },
+            {
+              "id": "fx-0161",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0156"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0157"
+              },
+              "momentTime": "2026-10-16T13:00:00Z",
+              "authoredTime": "2026-10-20T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0156",
+              "anchorTradeId": "fx-0156",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0006",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "SYY: reclaiming 50 after a higher low."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 47.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Unanswered"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "revision": 46
+            }
+          ]
+        },
+        "journalObligations": {
+          "keyPath": "obligationKey",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "obligationKey": "CloseReview:fx-0142",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0155"
+              },
+              "revision": 45
+            },
+            {
+              "obligationKey": "CloseReview:fx-0156",
+              "outcome": {
+                "kind": "Debt",
+                "id": "fx-0169"
+              },
+              "revision": 48
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0016",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0021"
+              },
+              "revision": 7
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0022",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0027"
+              },
+              "revision": 8
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0028",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0033"
+              },
+              "revision": 9
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0034",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0039"
+              },
+              "revision": 10
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0040",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0045"
+              },
+              "revision": 11
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0046",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0051"
+              },
+              "revision": 12
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0072",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0077"
+              },
+              "revision": 18
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0089",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0094"
+              },
+              "revision": 22
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0114",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0119"
+              },
+              "revision": 36
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0129",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0134"
+              },
+              "revision": 40
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0142",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0147"
+              },
+              "revision": 43
+            },
+            {
+              "obligationKey": "PlanReflection:fx-0156",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0161"
+              },
+              "revision": 46
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0052",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0054"
+              },
+              "revision": 13
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0055",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0057"
+              },
+              "revision": 14
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0058",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0061"
+              },
+              "revision": 15
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0062",
+              "outcome": {
+                "kind": "Debt",
+                "id": "fx-0065"
+              },
+              "revision": 16
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0067",
+              "outcome": {
+                "kind": "Debt",
+                "id": "fx-0070"
+              },
+              "revision": 17
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0078",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0080"
+              },
+              "revision": 19
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0081",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0083"
+              },
+              "revision": 20
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0084",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0110"
+              },
+              "revision": 34
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0095",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0097"
+              },
+              "revision": 23
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0098",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0112"
+              },
+              "revision": 35
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0120",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0122"
+              },
+              "revision": 37
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0123",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0125"
+              },
+              "revision": 38
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0126",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0128"
+              },
+              "revision": 39
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0135",
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0137"
+              },
+              "revision": 41
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0138",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0141"
+              },
+              "revision": 42
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0148",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0150"
+              },
+              "revision": 44
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0151",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0154"
+              },
+              "revision": 45
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0162",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0164"
+              },
+              "revision": 47
+            },
+            {
+              "obligationKey": "PositionChangeReflection:fx-0165",
+              "outcome": {
+                "kind": "Decline",
+                "id": "fx-0168"
+              },
+              "revision": 48
+            },
+            {
+              "obligationKey": [
+                "DailyTradeReview",
+                "2026-10-19",
+                "fx-0046"
+              ],
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0108"
+              },
+              "revision": 31
+            },
+            {
+              "obligationKey": [
+                "DailyTradeReview",
+                "2026-10-19",
+                "fx-0072"
+              ],
+              "outcome": {
+                "kind": "Entry",
+                "id": "fx-0109"
+              },
+              "revision": 32
+            }
+          ]
+        },
+        "journalTypes": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "id": "entry-type.close-review",
+              "kind": "EntryType",
+              "productKey": "entry-type.close-review",
+              "label": "Close Review",
+              "revision": 1
+            },
+            {
+              "id": "entry-type.daily-trade-review",
+              "kind": "EntryType",
+              "productKey": "entry-type.daily-trade-review",
+              "label": "Daily Trade Review",
+              "revision": 1
+            },
+            {
+              "id": "entry-type.plan-reflection",
+              "kind": "EntryType",
+              "productKey": "entry-type.plan-reflection",
+              "label": "Plan Reflection",
+              "revision": 1
+            },
+            {
+              "id": "entry-type.position-change-reflection",
+              "kind": "EntryType",
+              "productKey": "entry-type.position-change-reflection",
+              "label": "Position Change Reflection",
+              "revision": 1
+            },
+            {
+              "id": "source.daily-review",
+              "kind": "Source",
+              "productKey": "source.daily-review",
+              "label": "Daily Review",
+              "revision": 1
+            },
+            {
+              "id": "source.plan-confirmation",
+              "kind": "Source",
+              "productKey": "source.plan-confirmation",
+              "label": "Plan Confirmation",
+              "revision": 1
+            },
+            {
+              "id": "source.position-change",
+              "kind": "Source",
+              "productKey": "source.position-change",
+              "label": "Position Change",
+              "revision": 1
+            },
+            {
+              "id": "source.trade-close",
+              "kind": "Source",
+              "productKey": "source.trade-close",
+              "label": "Trade Close",
+              "revision": 1
+            },
+            {
+              "id": "source.trade-detail",
+              "kind": "Source",
+              "productKey": "source.trade-detail",
+              "label": "Trade Detail",
+              "revision": 1
+            }
+          ]
+        },
+        "meta": {
+          "keyPath": "key",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "key": "catalog",
+              "catalogRevision": 6,
+              "revision": 6
+            },
+            {
+              "key": "content",
+              "contentRevision": 48
+            },
+            {
+              "key": "journal",
+              "journalRevision": 37,
+              "revision": 48
+            },
+            {
+              "key": "schema",
+              "schemaVersion": 5
+            },
+            {
+              "key": "sessionPolicy",
+              "policy": {
+                "id": "nyse",
+                "revision": 1,
+                "digest": "13ff3ef725e71414e2f9bed388b5b59c81964d2ffbd77db2c9a75443b859998b",
+                "coverage": {
+                  "first": "2024-01-01",
+                  "last": "2028-12-31"
+                }
+              }
+            },
+            {
+              "key": "settings",
+              "timeZone": "America/New_York",
+              "settingsRevision": 1,
+              "revision": 1
+            },
+            {
+              "key": "tradeRecord",
+              "revision": 48
+            }
+          ]
+        },
+        "observations": {
+          "keyPath": [
+            "tradingDate",
+            "instrumentKey"
+          ],
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byInstrumentDate",
+              "keyPath": [
+                "instrumentKey",
+                "tradingDate"
+              ],
+              "unique": false,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "instrumentKey": "CSCO",
+              "tradingDate": "2026-10-15",
+              "resolutionRevision": 1,
+              "marks": [
+                {
+                  "revisionId": "fx-0102",
+                  "price": "50.8",
+                  "source": "Manual",
+                  "observedAt": "2026-10-20T21:00:00Z",
+                  "savedAt": "2026-10-20T21:00:00Z",
+                  "revisionNumber": 1,
+                  "intention": "InitialManual"
+                }
+              ],
+              "effectiveMarkId": "fx-0102",
+              "acknowledgments": [],
+              "effectiveAcknowledgmentId": null,
+              "revision": 25
+            },
+            {
+              "instrumentKey": "PFE",
+              "tradingDate": "2026-10-16",
+              "resolutionRevision": 1,
+              "marks": [],
+              "effectiveMarkId": null,
+              "acknowledgments": [
+                {
+                  "versionId": "fx-0107",
+                  "kind": "Asserted",
+                  "reason": "No quote available from my broker that day.",
+                  "savedAt": "2026-10-20T21:00:00Z"
+                }
+              ],
+              "effectiveAcknowledgmentId": "fx-0107",
+              "revision": 30
+            },
+            {
+              "instrumentKey": "CSCO",
+              "tradingDate": "2026-10-19",
+              "resolutionRevision": 1,
+              "marks": [
+                {
+                  "revisionId": "fx-0103",
+                  "price": "51.6",
+                  "source": "Manual",
+                  "observedAt": "2026-10-20T21:00:00Z",
+                  "savedAt": "2026-10-20T21:00:00Z",
+                  "revisionNumber": 1,
+                  "intention": "InitialManual"
+                }
+              ],
+              "effectiveMarkId": "fx-0103",
+              "acknowledgments": [],
+              "effectiveAcknowledgmentId": null,
+              "revision": 26
+            },
+            {
+              "instrumentKey": "KO",
+              "tradingDate": "2026-10-19",
+              "resolutionRevision": 2,
+              "marks": [
+                {
+                  "revisionId": "fx-0104",
+                  "price": "49.4",
+                  "source": "Manual",
+                  "observedAt": "2026-10-20T21:00:00Z",
+                  "savedAt": "2026-10-20T21:00:00Z",
+                  "revisionNumber": 1,
+                  "intention": "InitialManual"
+                },
+                {
+                  "revisionId": "fx-0105",
+                  "price": "49.5",
+                  "source": "Manual",
+                  "observedAt": "2026-10-20T21:00:00Z",
+                  "savedAt": "2026-10-20T21:00:00Z",
+                  "revisionNumber": 2,
+                  "intention": "Correction",
+                  "reason": "Keyed the wrong digit from the broker statement.",
+                  "supersedes": "fx-0104",
+                  "correctionFootprint": {
+                    "key": {
+                      "instrumentKey": "KO",
+                      "tradingDate": "2026-10-19"
+                    },
+                    "effectDate": "2026-10-19",
+                    "savedAt": "2026-10-20T21:00:00Z",
+                    "domains": [
+                      "Valuation",
+                      "ConditionStatus",
+                      "Replay"
+                    ],
+                    "replayInterval": {
+                      "from": "2026-10-19",
+                      "to": "2026-10-19"
+                    }
+                  }
+                }
+              ],
+              "effectiveMarkId": "fx-0105",
+              "acknowledgments": [],
+              "effectiveAcknowledgmentId": null,
+              "revision": 28
+            },
+            {
+              "instrumentKey": "PFE",
+              "tradingDate": "2026-10-19",
+              "resolutionRevision": 1,
+              "marks": [
+                {
+                  "revisionId": "fx-0106",
+                  "price": "47.9",
+                  "source": "Manual",
+                  "observedAt": "2026-10-20T21:00:00Z",
+                  "savedAt": "2026-10-20T21:00:00Z",
+                  "revisionNumber": 1,
+                  "intention": "InitialManual"
+                }
+              ],
+              "effectiveMarkId": "fx-0106",
+              "acknowledgments": [],
+              "effectiveAcknowledgmentId": null,
+              "revision": 29
+            }
+          ]
+        },
+        "trades": {
+          "keyPath": "tradeId",
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byLifecycle",
+              "keyPath": [
+                "lifecycle",
+                "planTime",
+                "tradeId"
+              ],
+              "unique": false,
+              "multiEntry": false
+            },
+            {
+              "name": "byLifecycleActivity",
+              "keyPath": [
+                "lifecycle",
+                "activityDesc",
+                "tradeId"
+              ],
+              "unique": false,
+              "multiEntry": false
+            },
+            {
+              "name": "byLifecycleTerminal",
+              "keyPath": [
+                "lifecycle",
+                "terminalDesc",
+                "tradeId"
+              ],
+              "unique": false,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "tradeId": "fx-0016",
+              "accountId": "fx-0013",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-12T14:00:00Z",
+              "underlying": "AAPL",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0017",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "AAPL",
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "thesis": "AAPL: base breakout on rising volume.",
+                        "invalidation": "A daily close below 221.00."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0018",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "AAPL"
+                        },
+                        "quantity": "50",
+                        "intendedEntry": "228.4"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0019",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "221"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0020",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "245"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 7
+            },
+            {
+              "tradeId": "fx-0022",
+              "accountId": "fx-0014",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-13T15:30:00Z",
+              "underlying": "MSFT",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0023",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "MSFT",
+                        "economicTime": "2026-10-13T15:30:00Z",
+                        "thesis": "MSFT: base breakout on rising volume.",
+                        "invalidation": "A daily close below 402.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0024",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "MSFT"
+                        },
+                        "quantity": "30",
+                        "intendedEntry": "415.1"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0025",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "402.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0026",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "440"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 8
+            },
+            {
+              "tradeId": "fx-0028",
+              "accountId": "fx-0015",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-14T13:45:00Z",
+              "underlying": "NVDA",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0029",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "NVDA",
+                        "economicTime": "2026-10-14T13:45:00Z",
+                        "thesis": "NVDA: base breakout on rising volume.",
+                        "invalidation": "A daily close below 124.80."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0030",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "NVDA"
+                        },
+                        "quantity": "120",
+                        "intendedEntry": "131.25"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0031",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "124.8"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0032",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "149.9"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 9
+            },
+            {
+              "tradeId": "fx-0034",
+              "accountId": "fx-0013",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-15T16:10:00Z",
+              "underlying": "COST",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0035",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "COST",
+                        "economicTime": "2026-10-15T16:10:00Z",
+                        "thesis": "COST: base breakout on rising volume.",
+                        "invalidation": "A daily close below 880.00."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0036",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "COST"
+                        },
+                        "quantity": "10",
+                        "intendedEntry": "905"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0037",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "880"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0038",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "960"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 10
+            },
+            {
+              "tradeId": "fx-0040",
+              "accountId": "fx-0014",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-16T19:20:00Z",
+              "underlying": "BRK.B",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0041",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "BRK.B",
+                        "economicTime": "2026-10-16T19:20:00Z",
+                        "thesis": "BRK.B: base breakout on rising volume.",
+                        "invalidation": "A daily close below 451.00."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0042",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "BRK.B"
+                        },
+                        "quantity": "25",
+                        "intendedEntry": "462.75"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0043",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "451"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0044",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "489.5"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 11
+            },
+            {
+              "tradeId": "fx-0046",
+              "accountId": "fx-0013",
+              "strategyId": "fx-0001",
+              "lifecycle": "Open",
+              "planTime": "2026-10-12T13:00:00Z",
+              "underlying": "CSCO",
+              "factRevision": 6,
+              "facts": [
+                {
+                  "factId": "fx-0047",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "CSCO",
+                        "economicTime": "2026-10-12T13:00:00Z",
+                        "thesis": "CSCO: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0048",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "CSCO"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0049",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0050",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0052",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "originTradeId": "fx-0046",
+                        "participatingTradeIds": [
+                          "fx-0046"
+                        ],
+                        "memberIds": [
+                          "fx-0053"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0053",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "CSCO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0048"
+                        },
+                        "quantity": "60",
+                        "price": "50.10",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0055",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T15:00:00Z",
+                        "originTradeId": "fx-0046",
+                        "participatingTradeIds": [
+                          "fx-0046"
+                        ],
+                        "memberIds": [
+                          "fx-0056"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0056",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "CSCO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0048"
+                        },
+                        "quantity": "40",
+                        "price": "50.30",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T15:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0058",
+                  "kind": "PositionChange",
+                  "recordedSequence": 9,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T18:00:00Z",
+                        "originTradeId": "fx-0046",
+                        "participatingTradeIds": [
+                          "fx-0046"
+                        ],
+                        "memberIds": [
+                          "fx-0059"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0059",
+                  "kind": "Execution",
+                  "recordedSequence": 10,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "CSCO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0048"
+                        },
+                        "quantity": "20",
+                        "price": "51.00",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T18:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0062",
+                  "kind": "PositionChange",
+                  "recordedSequence": 11,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-14T15:00:00Z",
+                        "originTradeId": "fx-0046",
+                        "participatingTradeIds": [
+                          "fx-0046"
+                        ],
+                        "memberIds": [
+                          "fx-0063"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0063",
+                  "kind": "Execution",
+                  "recordedSequence": 12,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "CSCO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0048"
+                        },
+                        "quantity": "10",
+                        "price": "51.20",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-14T15:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0067",
+                  "kind": "PositionChange",
+                  "recordedSequence": 13,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-19T20:05:00Z",
+                        "originTradeId": "fx-0046",
+                        "participatingTradeIds": [
+                          "fx-0046"
+                        ],
+                        "memberIds": [
+                          "fx-0068"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0068",
+                  "kind": "Execution",
+                  "recordedSequence": 14,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "CSCO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0048"
+                        },
+                        "quantity": "10",
+                        "price": "51.50",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-19T20:05:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 14,
+              "lastActivity": "2026-10-19T20:05:00Z",
+              "deviations": [
+                {
+                  "occurrenceId": "fx-0060",
+                  "versions": [
+                    {
+                      "fingerprint": {
+                        "tradeId": "fx-0046",
+                        "plannedLegId": "fx-0048",
+                        "positionChangeId": "fx-0058"
+                      },
+                      "type": "EntrySize",
+                      "form": "Excess",
+                      "quantityAbovePlan": "20",
+                      "causingPositionChangeId": "fx-0058",
+                      "economicTime": "2026-10-12T18:00:00Z",
+                      "status": "Active"
+                    }
+                  ]
+                },
+                {
+                  "occurrenceId": "fx-0064",
+                  "versions": [
+                    {
+                      "fingerprint": {
+                        "tradeId": "fx-0046",
+                        "plannedLegId": "fx-0048",
+                        "positionChangeId": "fx-0062"
+                      },
+                      "type": "EntrySize",
+                      "form": "Excess",
+                      "quantityAbovePlan": "10",
+                      "causingPositionChangeId": "fx-0062",
+                      "economicTime": "2026-10-14T15:00:00Z",
+                      "status": "Active"
+                    }
+                  ]
+                },
+                {
+                  "occurrenceId": "fx-0069",
+                  "versions": [
+                    {
+                      "fingerprint": {
+                        "tradeId": "fx-0046",
+                        "plannedLegId": "fx-0048",
+                        "positionChangeId": "fx-0067"
+                      },
+                      "type": "EntrySize",
+                      "form": "Excess",
+                      "quantityAbovePlan": "10",
+                      "causingPositionChangeId": "fx-0067",
+                      "economicTime": "2026-10-19T20:05:00Z",
+                      "status": "Active"
+                    }
+                  ]
+                }
+              ],
+              "activityDesc": "98207559699999999999",
+              "exposureStart": "2026-10-12T14:00:00Z",
+              "revision": 17
+            },
+            {
+              "tradeId": "fx-0072",
+              "accountId": "fx-0014",
+              "strategyId": "fx-0001",
+              "lifecycle": "Open",
+              "planTime": "2026-10-12T13:00:00Z",
+              "underlying": "KO",
+              "factRevision": 4,
+              "facts": [
+                {
+                  "factId": "fx-0073",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "KO",
+                        "economicTime": "2026-10-12T13:00:00Z",
+                        "thesis": "KO: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0074",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "KO"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0075",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0076",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0078",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "originTradeId": "fx-0072",
+                        "participatingTradeIds": [
+                          "fx-0072"
+                        ],
+                        "memberIds": [
+                          "fx-0079"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0079",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "KO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0074"
+                        },
+                        "quantity": "60",
+                        "price": "50.10",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0081",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T15:00:00Z",
+                        "originTradeId": "fx-0072",
+                        "participatingTradeIds": [
+                          "fx-0072"
+                        ],
+                        "memberIds": [
+                          "fx-0082"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0082",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "KO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0074"
+                        },
+                        "quantity": "40",
+                        "price": "50.30",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T15:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0084",
+                  "kind": "PositionChange",
+                  "recordedSequence": 9,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T18:00:00Z",
+                        "originTradeId": "fx-0072",
+                        "participatingTradeIds": [
+                          "fx-0072"
+                        ],
+                        "memberIds": [
+                          "fx-0085"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0085",
+                  "kind": "Execution",
+                  "recordedSequence": 10,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "KO"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0074"
+                        },
+                        "quantity": "20",
+                        "price": "51.00",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T18:00:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 10,
+              "lastActivity": "2026-10-12T18:00:00Z",
+              "deviations": [
+                {
+                  "occurrenceId": "fx-0086",
+                  "versions": [
+                    {
+                      "fingerprint": {
+                        "tradeId": "fx-0072",
+                        "plannedLegId": "fx-0074",
+                        "positionChangeId": "fx-0084"
+                      },
+                      "type": "EntrySize",
+                      "form": "Excess",
+                      "quantityAbovePlan": "20",
+                      "causingPositionChangeId": "fx-0084",
+                      "economicTime": "2026-10-12T18:00:00Z",
+                      "status": "Active"
+                    }
+                  ]
+                }
+              ],
+              "activityDesc": "98208171999999999999",
+              "exposureStart": "2026-10-12T14:00:00Z",
+              "revision": 21
+            },
+            {
+              "tradeId": "fx-0089",
+              "accountId": "fx-0015",
+              "strategyId": "fx-0001",
+              "lifecycle": "Open",
+              "planTime": "2026-10-12T13:00:00Z",
+              "underlying": "PFE",
+              "factRevision": 3,
+              "facts": [
+                {
+                  "factId": "fx-0090",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "PFE",
+                        "economicTime": "2026-10-12T13:00:00Z",
+                        "thesis": "PFE: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0091",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "PFE"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0092",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0093",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0095",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "originTradeId": "fx-0089",
+                        "participatingTradeIds": [
+                          "fx-0089"
+                        ],
+                        "memberIds": [
+                          "fx-0096"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0096",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "PFE"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0091"
+                        },
+                        "quantity": "60",
+                        "price": "50.10",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0098",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T15:00:00Z",
+                        "originTradeId": "fx-0089",
+                        "participatingTradeIds": [
+                          "fx-0089"
+                        ],
+                        "memberIds": [
+                          "fx-0099"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0099",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "PFE"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0091"
+                        },
+                        "quantity": "40",
+                        "price": "50.30",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T15:00:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 8,
+              "lastActivity": "2026-10-12T15:00:00Z",
+              "deviations": [],
+              "activityDesc": "98208182799999999999",
+              "exposureStart": "2026-10-12T14:00:00Z",
+              "revision": 24
+            },
+            {
+              "tradeId": "fx-0114",
+              "accountId": "fx-0013",
+              "strategyId": "fx-0001",
+              "lifecycle": "Open",
+              "planTime": "2026-10-12T13:00:00Z",
+              "underlying": "XYZ",
+              "factRevision": 4,
+              "facts": [
+                {
+                  "factId": "fx-0115",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "XYZ",
+                        "economicTime": "2026-10-12T13:00:00Z",
+                        "thesis": "XYZ: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0116",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "XYZ"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0117",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0118",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0120",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "originTradeId": "fx-0114",
+                        "participatingTradeIds": [
+                          "fx-0114"
+                        ],
+                        "memberIds": [
+                          "fx-0121"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0121",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "XYZ"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0116"
+                        },
+                        "quantity": "60",
+                        "price": "50.10",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0123",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T15:00:00Z",
+                        "originTradeId": "fx-0114",
+                        "participatingTradeIds": [
+                          "fx-0114"
+                        ],
+                        "memberIds": [
+                          "fx-0124"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0124",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "XYZ"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0116"
+                        },
+                        "quantity": "40",
+                        "price": "50.30",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T15:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0126",
+                  "kind": "PositionChange",
+                  "recordedSequence": 9,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-13T14:00:00Z",
+                        "originTradeId": "fx-0114",
+                        "participatingTradeIds": [
+                          "fx-0114"
+                        ],
+                        "memberIds": [
+                          "fx-0127"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0127",
+                  "kind": "Execution",
+                  "recordedSequence": 10,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Sell",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "XYZ"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0116"
+                        },
+                        "quantity": "30",
+                        "price": "52.00",
+                        "fee": "0.60",
+                        "economicTime": "2026-10-13T14:00:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 10,
+              "lastActivity": "2026-10-13T14:00:00Z",
+              "deviations": [],
+              "activityDesc": "98208099999999999999",
+              "exposureStart": "2026-10-12T14:00:00Z",
+              "revision": 39
+            },
+            {
+              "tradeId": "fx-0129",
+              "accountId": "fx-0014",
+              "strategyId": "fx-0001",
+              "lifecycle": "Open",
+              "planTime": "2026-10-12T13:00:00Z",
+              "underlying": "QRS",
+              "factRevision": 3,
+              "facts": [
+                {
+                  "factId": "fx-0130",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "QRS",
+                        "economicTime": "2026-10-12T13:00:00Z",
+                        "thesis": "QRS: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0131",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "QRS"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0132",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0133",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0135",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "originTradeId": "fx-0129",
+                        "participatingTradeIds": [
+                          "fx-0129"
+                        ],
+                        "memberIds": [
+                          "fx-0136"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0136",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "QRS"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0131"
+                        },
+                        "quantity": "60",
+                        "price": "50.10",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-12T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0138",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-13T14:00:00Z",
+                        "originTradeId": "fx-0129",
+                        "participatingTradeIds": [
+                          "fx-0129"
+                        ],
+                        "memberIds": [
+                          "fx-0139"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0139",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Sell",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "QRS"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0131"
+                        },
+                        "quantity": "30",
+                        "price": "52.00",
+                        "fee": "0.60",
+                        "economicTime": "2026-10-13T14:00:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 8,
+              "lastActivity": "2026-10-13T14:00:00Z",
+              "deviations": [
+                {
+                  "occurrenceId": "fx-0140",
+                  "versions": [
+                    {
+                      "fingerprint": {
+                        "tradeId": "fx-0129",
+                        "plannedLegId": "fx-0131",
+                        "form": "Shortfall"
+                      },
+                      "type": "EntrySize",
+                      "form": "Shortfall",
+                      "quantityBelowPlan": "40",
+                      "causingPositionChangeId": "fx-0138",
+                      "economicTime": "2026-10-13T14:00:00Z",
+                      "status": "Active"
+                    }
+                  ]
+                }
+              ],
+              "activityDesc": "98208099999999999999",
+              "exposureStart": "2026-10-12T14:00:00Z",
+              "revision": 42
+            },
+            {
+              "tradeId": "fx-0142",
+              "accountId": "fx-0015",
+              "strategyId": "fx-0001",
+              "lifecycle": "Closed",
+              "planTime": "2026-10-15T13:00:00Z",
+              "underlying": "GIS",
+              "factRevision": 3,
+              "facts": [
+                {
+                  "factId": "fx-0143",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "GIS",
+                        "economicTime": "2026-10-15T13:00:00Z",
+                        "thesis": "GIS: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0144",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "GIS"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0145",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0146",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0148",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-15T14:00:00Z",
+                        "originTradeId": "fx-0142",
+                        "participatingTradeIds": [
+                          "fx-0142"
+                        ],
+                        "memberIds": [
+                          "fx-0149"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0149",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "GIS"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0144"
+                        },
+                        "quantity": "100",
+                        "price": "50.20",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-15T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0151",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-19T15:00:00Z",
+                        "originTradeId": "fx-0142",
+                        "participatingTradeIds": [
+                          "fx-0142"
+                        ],
+                        "memberIds": [
+                          "fx-0152"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0152",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Sell",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "GIS"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0144"
+                        },
+                        "quantity": "100",
+                        "price": "56.10",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-19T15:00:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 9,
+              "lastActivity": "2026-10-19T15:00:00Z",
+              "deviations": [],
+              "closeReasonFacts": [
+                {
+                  "factId": "fx-0153",
+                  "kind": "CloseReason",
+                  "recordedSequence": 9,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "closeReasonId": "fx-0002",
+                        "terminalPositionChangeId": "fx-0151"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "activityDesc": "98207577999999999999",
+              "exposureStart": "2026-10-15T14:00:00Z",
+              "terminalTime": "2026-10-19T15:00:00Z",
+              "terminalDesc": "98207577999999999999",
+              "revision": 45
+            },
+            {
+              "tradeId": "fx-0156",
+              "accountId": "fx-0013",
+              "strategyId": "fx-0001",
+              "lifecycle": "Closed",
+              "planTime": "2026-10-16T13:00:00Z",
+              "underlying": "SYY",
+              "factRevision": 3,
+              "facts": [
+                {
+                  "factId": "fx-0157",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "SYY",
+                        "economicTime": "2026-10-16T13:00:00Z",
+                        "thesis": "SYY: reclaiming 50 after a higher low.",
+                        "invalidation": "A daily close below 47.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0158",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "SYY"
+                        },
+                        "quantity": "100",
+                        "intendedEntry": "50"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0159",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "47.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0160",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "56"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0162",
+                  "kind": "PositionChange",
+                  "recordedSequence": 5,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-16T14:00:00Z",
+                        "originTradeId": "fx-0156",
+                        "participatingTradeIds": [
+                          "fx-0156"
+                        ],
+                        "memberIds": [
+                          "fx-0163"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0163",
+                  "kind": "Execution",
+                  "recordedSequence": 6,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Buy",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "SYY"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0158"
+                        },
+                        "quantity": "100",
+                        "price": "49.80",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-16T14:00:00Z"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0165",
+                  "kind": "PositionChange",
+                  "recordedSequence": 7,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "economicTime": "2026-10-20T15:00:00Z",
+                        "originTradeId": "fx-0156",
+                        "participatingTradeIds": [
+                          "fx-0156"
+                        ],
+                        "memberIds": [
+                          "fx-0166"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0166",
+                  "kind": "Execution",
+                  "recordedSequence": 8,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "action": "Sell",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "SYY"
+                        },
+                        "intent": {
+                          "kind": "ServesPlannedLeg",
+                          "plannedLegId": "fx-0158"
+                        },
+                        "quantity": "100",
+                        "price": "47.40",
+                        "fee": "1.00",
+                        "economicTime": "2026-10-20T15:00:00Z"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "recordedSequenceCounter": 9,
+              "lastActivity": "2026-10-20T15:00:00Z",
+              "deviations": [],
+              "closeReasonFacts": [
+                {
+                  "factId": "fx-0167",
+                  "kind": "CloseReason",
+                  "recordedSequence": 9,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "closeReasonId": "fx-0003",
+                        "terminalPositionChangeId": "fx-0165"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "activityDesc": "98207491599999999999",
+              "exposureStart": "2026-10-16T14:00:00Z",
+              "terminalTime": "2026-10-20T15:00:00Z",
+              "terminalDesc": "98207491599999999999",
+              "revision": 48
+            }
+          ]
+        }
+      }
+    }
+  }
+}
