@@ -4,7 +4,7 @@ import {
 } from './support.ts';
 
 test.describe('B5.6 Update from D4 with data', { tag: '@release-history' }, () => {
-  test('should show Updating your journal, keep two Open Trades with their Actions, list a new deferred reflection as due, show the current schema in About, and point to the new database with the old one gone', async ({ server, profile }) => {
+  test('should show Updating your journal, keep two Open Trades with their Actions, list a new deferred reflection as due, show schema 4 in About, and point to the new database with the old one gone', async ({ server, profile }) => {
     server.use('dist-releases/d4');
     const context = await launchAt(profile, MONDAY_1700);
     const updating = await watchUpdatingAcrossDocuments(context);
