@@ -1,0 +1,210 @@
+== d6/lifecycle
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/lifecycle
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:46
+   Duration  314ms (transform 124ms, setup 23ms, import 155ms, tests 59ms, environment 0ms)
+== d6/close-review
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/close-review
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:47
+   Duration  295ms (transform 122ms, setup 15ms, import 150ms, tests 60ms, environment 0ms)
+== d6/shortfall
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/shortfall
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  08:24:47
+   Duration  290ms (transform 119ms, setup 14ms, import 147ms, tests 61ms, environment 0ms)
+== d6/integrity
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/integrity
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  08:24:48
+   Duration  308ms (transform 118ms, setup 14ms, import 145ms, tests 81ms, environment 0ms)
+== d6/review
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/review
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:48
+   Duration  365ms (transform 119ms, setup 14ms, import 146ms, tests 136ms, environment 0ms)
+== d6/exit-action
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/exit-action
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:49
+   Duration  287ms (transform 123ms, setup 14ms, import 152ms, tests 53ms, environment 0ms)
+== d6/missing-mark
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/missing-mark
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:49
+   Duration  281ms (transform 125ms, setup 15ms, import 153ms, tests 44ms, environment 0ms)
+== d6/retries
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/retries
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  08:24:50
+   Duration  309ms (transform 119ms, setup 14ms, import 145ms, tests 81ms, environment 0ms)
+== d6/seed
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/seed
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:51
+   Duration  258ms (transform 121ms, setup 15ms, import 149ms, tests 25ms, environment 0ms)
+== d6/migration
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/migration
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  08:24:51
+   Duration  378ms (transform 120ms, setup 14ms, import 148ms, tests 147ms, environment 0ms)
+== d6/responses
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/responses
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+No test files found, exiting with code 1
+
+filter: d6/responses
+projects: integration
+
+|integration| 
+
+include: tests/integration/**/*.test.ts
+exclude:  **/node_modules/**, **/.git/**
+== d6/rebuild
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/rebuild
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:24:52
+   Duration  409ms (transform 118ms, setup 14ms, import 146ms, tests 181ms, environment 0ms)
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 19 operations, 10 variant-qualified, 8 routes, 4 Entry Types, schema 5, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+== responses corrected
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d6/lifecycle d6/review
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  2 passed (2)
+      Tests  2 passed (2)
+   Start at  08:25:10
+   Duration  386ms (transform 224ms, setup 30ms, import 296ms, tests 210ms, environment 0ms)
+== e2e no-save
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/d6/no-save.spec.ts:48:3 › B6.11 Nothing saved without Save (AC-JOUR-001) › should store no Position Change, Close Reason, Entry, decline, Debt, or Web Storage value after typing a full exit with a Close Reason and both reflections, resizing, leaving, and restarting (4.8s)
+
+  1 passed (5.2s)
+== e2e offline
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/d6/offline.spec.ts:11:3 › B6.8 Offline cold restart (AC-DEL-001) › should record a partial and then a full exit offline after a full stop, and keep both across another offline restart (3.4s)
+
+  1 passed (3.8s)
+== e2e runtime-failure
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged (3.9s)
+  ✓  2 [chromium] › e2e/d6/runtime-failure.spec.ts:73:3 › B6.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed exit and its answers, and record no Position Change (2.5s)
+
+  2 passed (6.7s)
+== e2e responsive-a11y
+
+Running 4 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d6/responsive-a11y.spec.ts:28:3 › B6.12 Responsive and accessible › should keep a half-filled full exit through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the exit form, the Closed list in each state, Closed Detail, Open Detail with Lot Matches and the owed-reflection cards, say signed P&L and Closed via in text, and record a full exit by keyboard alone (16.8s)
+  ✓  2 [chromium] › e2e/d6/responsive-a11y.spec.ts:195:3 › B6.12 Responsive and accessible › should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail (2.9s)
+  ✓  3 [chromium] › e2e/d6/responsive-a11y.spec.ts:245:3 › B6.12 Responsive and accessible › should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px (2.6s)
+  ✓  4 [chromium] › e2e/d6/responsive-a11y.spec.ts:289:3 › B6.12 Responsive and accessible › should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px (2.9s)
+
+  4 passed (25.5s)
