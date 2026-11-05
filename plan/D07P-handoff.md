@@ -110,7 +110,7 @@ Search `plan/spec-map.md` for anything else the work touches, and read that sect
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r43 and the next decision is 78.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r43 and the next decision is 78. (Revision 43, decision 78, was made on 2026-11-04 before T7P.1: the derived-view snapshots `expected-views.json` change shape only, with every `dump.json` unchanged. The next revision is now r44 and the next decision 79.)
 
 ## 3. Prefactor specifics
 
@@ -214,4 +214,5 @@ Update this section at the end of each task.
 | Tasks done | setup (`evidence/D07P/`, location checks recorded) |
 | Next step | T7P.1, base `72ad430a` (the setup commit). |
 | Last commit | `docs(plan): D7P handoff progress, T7P.1 base` (local; nothing pushed since `ad870c91`) |
+| Decisions made | Decision 78 (revision 43, the user's choice, 2026-11-04): `verify:fixtures` compares derived views with `expected-views.json`, so those snapshots change shape only (values kept) in T7P.1, T7P.4 and T7P.5; every `dump.json` stays byte-identical. |
 | Open questions | none yet |

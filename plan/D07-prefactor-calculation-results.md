@@ -29,7 +29,7 @@ So a date outside session-policy coverage reads "Mark missing" on the slider, "M
 | "Records disagree" labels both an integrity disagreement and facts that can't be replayed. | "Records disagree" labels only an integrity disagreement. Facts that can't be replayed read "Facts can't be replayed" (P72). |
 
 **Stays unchanged:**
-- **Stored data:** every store, index, record, fixture, backup and the schema version (5). `npm run verify:fixtures` passes unchanged.
+- **Stored data:** every store, index, record, fixture, backup and the schema version (5). `npm run verify:fixtures` passes unchanged. **Amended by plan revision 43 (decision 78):** every `dump.json` stays byte-identical; the derived-view snapshots `expected-views.json` change only the result shapes the prefactor changes, with every value kept, and `verify:fixtures` passes against them.
 - **Facade operations:** their names, requests and result branches. Only the shapes inside results change.
 - **Market Data's Expected-Mark Status** (`Available`, `Missing`, `AcknowledgedUnavailable`) and the Mark row's text. It is the evidence itself, not a figure's reason.
 - **`specs/` and the glossary.** "Calculation Result" keeps its four kinds as the glossary defines them. Nothing is added to the glossary.
@@ -142,7 +142,7 @@ Dates use the existing short date format ("Mon Oct 12"); the tables abbreviate i
 | # | Assumption |
 |---|---|
 | A181 | **Reading** (decision 45): the drafting guide's full `specs/` reading was scoped, as decisions 68 and 69 scoped theirs, to `specs/glossary.md` (Calculation Result, Expected-Mark Status, Unavailable Mark Acknowledgment), ADR 0007, and the Trade Analysis ("Shared values"), Daily Review ("Date, eligibility, and ordering"), Trade Views and Reporting, UI contract ("Calculation rendering", Trade Detail) and overview ("Calculation availability") design documents. |
-| A182 | No result shape that changes is stored, exported or part of a backup. Daily Review results and Trade view results are derived on every read (Daily Review, "Completion and resumption"; Trade Views and Reporting). `verify:fixtures` passing unchanged confirms it. |
+| A182 | No result shape that changes is stored, exported or part of a backup. Daily Review results and Trade view results are derived on every read (Daily Review, "Completion and resumption"; Trade Views and Reporting). `verify:fixtures` passing unchanged confirms it. **Amended by plan revision 43 (decision 78):** `verify:fixtures` also compares the derived views with each fixture's `expected-views.json`, which holds these shapes. Those snapshots change shape only, in the task that changes the producer; every `dump.json` stays byte-identical, which is what confirms that nothing stored changes. |
 | A183 | `CalculationResult`'s reason type parameter has three users that narrow it today: Terminal Disposition (`NotClosed`), Entry Quality (`EntryNotResolved`) and actual reward/risk (`EntryAtOrBeyondStop` or `…Target`). Every other figure uses the full unions. |
 | A184 | The Review's `ReviewCard` falls back to "Not available" for the slider figures when the Trade has no evaluation (facts that can't be replayed); under P72 that is `FactsIncoherent`'s figure text, from the module. |
 | A185 | Integration tests that assert reason shapes (for example the Unavailable details in D4's expected-Mark cases and D6's missing-Mark case) change only their expected shapes, in the task that changes the producer, and keep every expected value. |
@@ -295,7 +295,7 @@ describe("Review words (P72)")
 The prefactor is complete when all of the following hold. Then the handoff's progress section is updated and everything is committed locally.
 - T7P.1 to T7P.11 are committed, with each commit's ocr findings resolved.
 - T7P.12's full-tier run passes, with `verify:wording` among its checks.
-- `npm run verify:fixtures` passes unchanged (A182), and `git diff claude-opus-5.5-pre-d7p -- src/persistence` is empty.
+- `npm run verify:fixtures` passes unchanged (A182), and `git diff claude-opus-5.5-pre-d7p -- src/persistence` is empty. **Amended by plan revision 43 (decision 78):** `verify:fixtures` passes; `git diff claude-opus-5.5-pre-d7p -- tests/fixtures` touches only `expected-views.json` files, every `dump.json` unchanged; and each task's evidence lists the snapshot shapes it changed.
 - The tag `claude-opus-5.5-d7p` is made on the final commit.
 
 **Then, before D7 starts (main session, at the user's direction):** rebase the spec map for D7. Recheck every entry's line range and character count against `specs/` (all 259 matched on 2026-11-04); retag D7's sections in `plan/spec-map.md` for what D7 now needs on top of the prefactor (the amended A99 and A188); regenerate the lists with `.claude/scripts/spec-reading-lists.py`; and commit it with D7's handoff. The prefactor itself has no generated reading list: its handoff names the sections in A181, as D5R2's and the D6 prefactor's did.
@@ -306,7 +306,7 @@ The prefactor is complete when all of the following hold. Then the handoff's pro
 
 ### 6.1 Unit and integration cases whose shapes move
 
-Cases that assert a reason's shape change only that shape, in the task that changes its producer (A185): T7P.1 for `NoOpenQuantity`, T7P.4 for Trade Analysis and Trade Views, T7P.5 for Daily Review. Each task's report lists the cases it changed, with the old and new shape. Expected values (figures, dates, Instruments, order) don't change.
+Cases that assert a reason's shape change only that shape, in the task that changes its producer (A185): T7P.1 for `NoOpenQuantity`, T7P.4 for Trade Analysis and Trade Views, T7P.5 for Daily Review. Each task's report lists the cases it changed, with the old and new shape. Expected values (figures, dates, Instruments, order) don't change. **Amended by plan revision 43 (decision 78):** the same rule applies to the derived-view snapshots `tests/fixtures/workspace-v*/expected-views.json`, which `verify:fixtures` and `tests/integration/d4` and `d6` compare with: each task changes the snapshot shapes its producer changes, keeps every value, and lists them, old and new.
 
 ### 6.2 Browser cases whose expected text changes (T7P.10)
 
