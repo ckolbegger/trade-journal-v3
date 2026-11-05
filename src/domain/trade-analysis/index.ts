@@ -11,7 +11,6 @@ export {
 } from './plan.ts';
 export {
   derive,
-  type CalculationResult,
   type CandidateBinding,
   type ChangeEffect,
   type CloseRequirement,
@@ -46,8 +45,8 @@ export {
   type TerminalDisposition,
   type TradeAnalysisRecord,
   type TradeDerivationInput,
-  type UnavailableDetail,
 } from './derive.ts';
+export type { CalculationResult, NotApplicableReason, UnavailableDetail, UnavailableReason } from '../calculation-result/index.ts';
 export {
   evaluate,
   type AtEntryFigures,

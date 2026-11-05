@@ -1,5 +1,6 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
+import type { CalculationResult, NotApplicableReason } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
@@ -126,7 +127,7 @@ export interface DispositionMechanism {
   readonly quantity: Rational;
 }
 
-export type TerminalDisposition = CalculationResult<readonly DispositionMechanism[], 'NotClosed'>;
+export type TerminalDisposition = CalculationResult<readonly DispositionMechanism[], never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;
 
 // Derived signed net quantity and Open Lots for one exact Instrument within the Trade.
 export interface InstrumentPosition {
@@ -134,19 +135,6 @@ export interface InstrumentPosition {
   readonly quantity: Rational;
   readonly openLots: readonly OpenLot[];
 }
-
-// One independently useful calculation (Trade Analysis, shared values); reasons are stable codes.
-export type CalculationResult<T, Reason extends string = string> =
-  | { readonly kind: 'Value'; readonly value: T }
-  | { readonly kind: 'Unbounded'; readonly direction: 'Above' | 'Below'; readonly explanation: string }
-  | { readonly kind: 'NotApplicable'; readonly reason: Reason }
-  | { readonly kind: 'Unavailable'; readonly reason: Reason; readonly detail: UnavailableDetail };
-
-// What an Unavailable result names: the Instrument and date lacking an exact Mark, or the close
-// still awaited.
-export type UnavailableDetail =
-  | { readonly instrument: ExecutionFact['instrument']; readonly date: string }
-  | { readonly after: string };
 
 // D2's Entry Resolution Point: the Position Change at which the entry window resolves (A23).
 export type EntryResolution = { readonly kind: 'Unresolved' } | { readonly kind: 'Resolved'; readonly positionChangeId: string };
@@ -162,14 +150,14 @@ export interface EntryQualityFigures {
   readonly slippage: CalculationResult<Rational>;
   readonly sizeRatio: CalculationResult<Rational>;
   readonly plannedRewardRisk: CalculationResult<Rational>;
-  readonly actualRewardRisk: CalculationResult<Rational, EntryFlag>;
+  readonly actualRewardRisk: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: EntryFlag }>>;
   readonly flags: readonly EntryFlag[];
 }
 
 // An average entry at or beyond a boundary: the actual reward/risk ratio is then not applicable.
 export type EntryFlag = 'EntryAtOrBeyondStop' | 'EntryAtOrBeyondTarget';
 
-export type EntryQuality = CalculationResult<EntryQualityFigures, 'EntryNotResolved'>;
+export type EntryQuality = CalculationResult<EntryQualityFigures, never, Extract<NotApplicableReason, { reason: 'EntryNotResolved' }>>;
 
 // D2's per-leg fulfillment (A25); Not Entered and Not Verifiable arrive with later variants.
 export interface LegFulfillment {
@@ -348,14 +336,14 @@ export interface DerivedTradeState {
   // How the exposure ended; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A84).
   readonly terminalDisposition: TerminalDisposition;
   // Net realized P&L over 1R; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A81).
-  readonly realizedR: CalculationResult<Rational, 'NotClosed'>;  // One per Instrument with remaining quantity; none for a Planned Trade.
+  readonly realizedR: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;  // One per Instrument with remaining quantity; none for a Planned Trade.
   readonly observationRequirements: readonly ObservationRequirement[];
   // Actual fees, each Execution's counted once: the opening Executions' alone, and every Execution's
   // (A80). Neither is ever subtracted from realized P&L again.
   readonly fees: { readonly incurredOpening: Rational; readonly incurred: Rational };
   // Signed cost of the remaining open exposure: quantity x price over the Open Lots plus their unconsumed
   // opening fees (D4's C + F). Stock only until options add a multiplier.
-  readonly netCost: CalculationResult<Rational, 'NoOpenQuantity'>;
+  readonly netCost: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NoRemainingPosition' }>>;
   readonly baseline: PlanBaseline;
   readonly entryResolution: EntryResolution;
   readonly entryQuality: EntryQuality;
@@ -427,7 +415,7 @@ function decimal(text: string): Rational {
 
 function netCostOf(positions: readonly InstrumentPosition[]): DerivedTradeState['netCost'] {
   const lots = positions.flatMap((p) => p.openLots);
-  if (lots.length === 0) return { kind: 'NotApplicable', reason: 'NoOpenQuantity' };
+  if (lots.length === 0) return { kind: 'NotApplicable', reason: 'NoRemainingPosition' };
   const total = lots.reduce((sum, l) => sum.add(l.quantity.mul(l.price)).add(l.unconsumedOpeningFee), Rational.of(0n));
   return { kind: 'Value', value: total };
 }

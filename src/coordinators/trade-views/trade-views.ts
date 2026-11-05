@@ -10,6 +10,7 @@ import {
   type IncoherentFacts,
   type InstrumentPosition,
   type IntegrityFinding,
+  type NotApplicableReason,
   type LegFulfillment,
   type LifecycleAgreement,
   type LotMatch,
@@ -106,7 +107,7 @@ export interface OpenTradeItem {
   readonly openQuantity: Rational;
   readonly plannedQuantity: Rational;
   // Quantity-weighted Open Lot price, fees excluded.
-  readonly averageOpenCost: CalculationResult<Rational, 'NoOpenQuantity'>;
+  readonly averageOpenCost: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NoRemainingPosition' }>>;
   // The open quantity at the average open cost; absent with no open quantity.
   readonly summary?: TradeSummary;
   // Signed cost of the open exposure, opening fees included (Trade Analysis).
@@ -424,7 +425,7 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
     ...labels,
     openQuantity: open?.quantity ?? Rational.of(0n),
     plannedQuantity: sum(analysis.plan.legs.map((l) => decimal(l.quantity))),
-    averageOpenCost: open ? { kind: 'Value', value: open.price } : { kind: 'NotApplicable', reason: 'NoOpenQuantity' },
+    averageOpenCost: open ? { kind: 'Value', value: open.price } : { kind: 'NotApplicable', reason: 'NoRemainingPosition' },
     ...optional('summary', open),
     netCost: derived.netCost,
     incurredFees: derived.fees.incurredOpening,

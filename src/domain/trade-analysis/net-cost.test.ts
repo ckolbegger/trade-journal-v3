@@ -25,7 +25,7 @@ describe('Net cost', () => {
     expect(netCostOf(referenceRecord([PC2, PC1]))).toBe(exactly(5020n));
   });
 
-  it('should return Net cost NotApplicable with reason NoOpenQuantity for a Planned Trade with no Lots', () => {
-    expect(netCostOf(referenceRecord([]))).toEqual({ kind: 'NotApplicable', reason: 'NoOpenQuantity' });
+  it('should return Net cost NotApplicable with reason NoRemainingPosition for a Planned Trade with no Lots', () => {
+    expect(netCostOf(referenceRecord([]))).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });
   });
 });

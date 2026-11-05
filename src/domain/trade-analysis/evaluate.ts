@@ -1,7 +1,8 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
-import type { CalculationResult, DerivedTradeState, EntryQuality, OpenLot } from './derive.ts';
+import type { CalculationResult } from '../calculation-result/index.ts';
+import type { DerivedTradeState, EntryQuality, OpenLot } from './derive.ts';
 import type { PlanBaseline } from './plan.ts';
 
 // The exact Mark revision a figure was valued with.

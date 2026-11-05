@@ -1,7 +1,7 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { CalculationResult, EntryResolution, ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -281,7 +281,7 @@ export type OwedTradeSummary =
   | {
       readonly kind: 'Closed';
       readonly realizedPnl: Rational;
-      readonly realizedR: CalculationResult<Rational, 'NotClosed'>;
+      readonly realizedR: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;
       readonly terminalDisposition: TerminalDisposition;
       // The Close Reason the Trade was closed with; absent only when it was closed without one. The label is blank when the
       // Catalog cannot resolve the identity.

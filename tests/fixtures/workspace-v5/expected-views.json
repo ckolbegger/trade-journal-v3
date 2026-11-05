@@ -6924,7 +6924,7 @@
       },
       "netCost": {
         "kind": "NotApplicable",
-        "reason": "NoOpenQuantity"
+        "reason": "NoRemainingPosition"
       },
       "lastActivity": "2026-10-20T15:00:00Z",
       "fees": {
@@ -7469,7 +7469,7 @@
       },
       "netCost": {
         "kind": "NotApplicable",
-        "reason": "NoOpenQuantity"
+        "reason": "NoRemainingPosition"
       },
       "lastActivity": "2026-10-19T15:00:00Z",
       "fees": {
