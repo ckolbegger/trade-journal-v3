@@ -41,3 +41,5 @@ Tier: task, printed reason "browser tier: task (no changed path since 6b39c035 i
 ### ocr review of `536616d6`
 
 Not yet run: the first attempt failed before reviewing, with `ChatGPT OAuth request failed: status=400 code=invalid_grant` (expired `ocr` sign-in). Waiting for the user to sign in again (`ocr auth login`).
+
+Rerun on 2026-11-05 after the user signed in again: session `43bb23fe-33e5-4e50-aef7-020599e47c86`, model gpt-6.1-sol, 6 files reviewed in place (test files excluded), **no findings**. Raw output: [ocr/T7P.1-536616d6.json](ocr/T7P.1-536616d6.json). T7P.1 is complete.
