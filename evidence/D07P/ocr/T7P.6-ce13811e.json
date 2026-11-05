@@ -1,0 +1,96 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 73775,
+    "input_tokens": 72687,
+    "output_tokens": 1088,
+    "cache_read_tokens": 15360,
+    "elapsed": "50s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 1,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/calculation-words.ts",
+      "content": "This nested ternary violates the checklist's prohibition on nested ternary expressions. Use an explicit switch on `part.kind` so each rendering branch is clear.",
+      "suggestion_code": "  parts.map((part) =\u003e {\n    switch (part.kind) {\n      case 'text':\n        return part.text;\n      case 'instrument':\n        return instrumentLabel(part.instrument);\n      case 'date':\n        return shortDate(part.date);\n    }\n  }).join('');",
+      "existing_code": "  parts.map((part) =\u003e (part.kind === 'text' ? part.text : part.kind === 'instrument' ? instrumentLabel(part.instrument) : shortDate(part.date))).join('');",
+      "start_line": 16,
+      "end_line": 16,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/calculation-words.ts",
+      "files": [
+        "src/ui/calculation-words.ts"
+      ]
+    }
+  ],
+  "session_id": "9c600fd4-ce50-409e-8f07-f43617f63bdb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9c600fd4-ce50-409e-8f07-f43617f63bdb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ce13811e",
+      "resolved_base": "cbbaa7917d4f7f36b62d5f840c0a5786a5848aca",
+      "resolved_head": "ce13811ef2b334d8e0449760cfcb3243badc5a22",
+      "exact_range": "cbbaa7917d4f7f36b62d5f840c0a5786a5848aca..ce13811ef2b334d8e0449760cfcb3243badc5a22",
+      "source_artifact_sha256": "ab21c2542c0382f328ed44a43baf97bebe544994de6f27cb8c469b9eff354e16"
+    },
+    "execution": {
+      "ocr_version": "v1.13.5",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829bea598cee2689683e3fc90c6a7bf0c2494c56bb85e76157189cf875986d91",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "df2f2b76bc5d58880bbbb020c98910de90650b33a69a7e8eed7913b30b990a6c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "df2f2b76bc5d58880bbbb020c98910de90650b33a69a7e8eed7913b30b990a6c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 49879
+  }
+}

@@ -184,3 +184,23 @@ src/ui/screens/review-attention.ts(20,57): error TS2366: Function lacks ending r
 ```
 
 The module fails at its `never` default in `unavailableWords` (line 48) and at no catch-all. Two switches outside the module also fail (not fixed): `attention.ts` line 92 and `review-attention.ts` line 20, which have no default.
+
+### T7P.6 notes from the main session
+
+- **Scratch commit kept in history:** `guard-shell-writes.sh` refuses `git reset` in the worktree, so the compile-time check's scratch commit `87891c13` (adds `DummyScratch`) could not be dropped. The subagent undid it with `48f682f7`, which restores the file byte for byte (`git diff ce13811e -- src` empty after it). History is not rewritten. Flagged for the final report.
+- **First-run passes (flagged):** case 8 ("return the words in parts") and case 9 (`instrumentLabel`) passed on their first run, because cases 1 to 7 had built them. Each was checked by a mutation that failed by an assertion: case 8, the MarkMissing figure emitting its date as a text part (`AssertionError: expected [ { kind: 'text', …(1) }, …(3) ] to deeply equal [ … ]`); case 9, the label lower-cased (`AssertionError: expected 'xyz' to be 'XYZ'`). Both mutations were restored (`tdd-log.md`).
+- **Compile-time check:** the dummy case also failed to compile at two exhaustive switches outside the module that have no default (`attention.ts(92)`, `review-attention.ts(20)`), which is the intended effect; no catch-all absorbed it.
+
+### ocr review of `ce13811e`
+
+Session `9c600fd4-ce50-409e-8f07-f43617f63bdb`, model gpt-6.1-sol, 1 file reviewed in place. Raw output: [ocr/T7P.6-ce13811e.json](ocr/T7P.6-ce13811e.json).
+
+| Severity | Location | Finding | Assessment |
+|---|---|---|---|
+| low | `src/ui/calculation-words.ts:16` | `text()` uses a nested ternary over `part.kind`; it should be a `switch`. | **Valid**, becomes T7P.6-B1. |
+
+**T7P.6-B1: `text()` has an implicit catch-all.** The nested ternary's last branch takes every `Part` kind not named before it, so a new `Part` kind (for example one D7 might add) would be joined as that branch's text instead of failing the build. P71 requires every switch in the module to be exhaustive, with `never` in the default and no catch-all. Fix: an exhaustive `switch` on `part.kind` with a `never` default. The defect is compile-time only, so its verification is structural: `npm run typecheck` fails at `text()` when a `Part` kind is added (an uncommitted scratch edit, restored with the Edit tool), and every existing `calculation-words` case still passes.
+
+### Cumulative run after T7P.6 (`t7p-6-wording-module`, at `48f682f7`, before T7P.6-B1)
+
+Unit 97 files, 1215 passed; integration 76 files, 154 passed; browser full tier (`browser-auto cbbaa791`, "first matching path since cbbaa791: src/ui/calculation-words.test.ts") 163 passed (7.7 min); checks 12 of 12 exit 0. Outputs `suite-runs/t7p-6-wording-module-*.txt`. Ports free before and after. It ran alongside the ocr review, so a cumulative run follows T7P.6-B1.
