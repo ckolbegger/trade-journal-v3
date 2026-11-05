@@ -622,8 +622,8 @@ describe('Trades table columns', () => {
 
 // The Open item's current evaluation at the Expected Mark Date (T4.18), each figure its own result.
 const value = (n: bigint, d = 1n) => ({ kind: 'Value' as const, value: Rational.of(n, d) });
-const unavailableMark = { kind: 'Unavailable' as const, reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' } };
-const awaitingClose = { kind: 'Unavailable' as const, reason: 'AwaitingClose', detail: { after: '2026-10-13' } };
+const unavailableMark = { kind: 'Unavailable' as const, reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' };
+const awaitingClose = { kind: 'Unavailable' as const, reason: 'AwaitingClose', after: '2026-10-13' };
 const condition = (role: 'Stop' | 'Target', status: 'Active' | 'Breached' | 'Reached') => ({
   id: `${role}-1`,
   role,
@@ -719,7 +719,7 @@ describe('Open list current evaluation', () => {
   });
 
   it('should show Not available with no Review link and no Mark missing badge when the date lies outside session-policy coverage', async () => {
-    const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2030-01-02' } };
+    const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2030-01-02' };
     const outside = { ...openItem, current: { currentMarkedPnl: uncovered, currentMarkedPnlInPlanR: uncovered, conditions: [], atEntry: null } };
     const table = await openTable([outside]);
     const [, row] = within(table).getAllByRole('row');
@@ -730,7 +730,7 @@ describe('Open list current evaluation', () => {
   });
 
   it('should word an Acknowledged Unavailable P&L as the trader acknowledgment, linked to the Review, with no Mark missing badge', async () => {
-    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' } };
+    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' };
     const item = { ...openItem, current: { currentMarkedPnl: acknowledged, currentMarkedPnlInPlanR: acknowledged, conditions: [], atEntry: null } };
     const table = await openTable([item]);
     const [, row] = within(table).getAllByRole('row');
@@ -741,7 +741,7 @@ describe('Open list current evaluation', () => {
   });
 
   it('should word an unknown reason as Not available with no Review link and no Mark missing badge', async () => {
-    const unknown = { kind: 'Unavailable', reason: 'SomeFutureReason', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' } };
+    const unknown = { kind: 'Unavailable', reason: 'SomeFutureReason', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' };
     const item = { ...openItem, current: { currentMarkedPnl: unknown, currentMarkedPnlInPlanR: unknown, conditions: [], atEntry: null } };
     const table = await openTable([item]);
     const [, row] = within(table).getAllByRole('row');

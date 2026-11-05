@@ -83,3 +83,22 @@ Session `1a867925-2eae-4eb8-ab10-befaef5a465a`, model gpt-6.1-sol, 1 file review
 | Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-3-findings-checks.txt` |
 
 Stage `browser-auto a50ae8d8`; tier: full, printed reason "first matching path since a50ae8d8: src/ui/screens/PositionChangeForm.test.tsx". Ports free before and after.
+
+## T7P.4 Trade Analysis and Trade Views return the typed reasons
+
+Structural. `UnavailableReason` in `src/domain/calculation-result/index.ts` is now section 1.3's union, carried flat (`{ kind: 'Unavailable' } & U`): `MarkMissing`, `AcknowledgedUnavailable`, `SessionPolicyNotCovered` with `instrument: Instrument` and `date`; `AwaitingClose` with `after`; `FactsIncoherent` with `findings: readonly IncoherentFact[]`. `UnavailableDetail` is deleted. `IncoherentFact` and `ExecutionDescription` moved into `calculation-result` (a type import from `trade-analysis` would be a cycle) and `trade-analysis` re-exports them; a finding's instrument is `Instrument`. `evaluate` returns `{ reason, instrument, date }` and `{ reason: 'AwaitingClose', after }`. Trade Views' `IncoherentFactFinding` is removed; `IncoherentTradeDetail.findings` is `readonly IncoherentFact[]`.
+
+| Command | Result |
+|---|---|
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npx vitest run src/domain src/coordinators/trade-views` | 22 files, 202 passed, exit 0 |
+| `npm run test:integration` | 76 files, 154 passed, exit 0 |
+| `npx vitest run src` | 96 files, 1194 passed, exit 0 |
+| `npm run verify:fixtures` | exit 0, views equal for v1 to v5 |
+| `npm run lint` / `npm run lint:deps` | exit 0 / exit 0 |
+| `git diff claude-opus-5.5-pre-d7p -- src/persistence` | empty; no `dump.json` changed |
+
+Snapshot shapes changed (A185, decision 78), values kept: `workspace-v4/expected-views.json` 23 Unavailable results (`"reason": "AwaitingClose", "detail": { "after": "2026-10-19" }` becomes `"reason": "AwaitingClose", "after": "2026-10-19"`); `workspace-v5/expected-views.json` 200 (`"reason": "MarkMissing", "detail": { "instrument": { "kind": "Stock", "symbol": "CSCO" }, "date": "2026-10-20" }` becomes `"reason": "MarkMissing", "instrument": { ... }, "date": "2026-10-20"`).
+
+Test files changed, old to new: `detail: { instrument, date }` / `detail: { after }` beside `reason` becomes the fields beside `reason`, in `src/domain/trade-analysis/evaluate.test.ts` (6), `src/coordinators/trade-views/current-evaluation.test.ts` (3), `src/coordinators/daily-review/daily-review.test.ts` (2, embedded `marketValue`), `src/coordinators/workspace/migration.test.ts`, `src/ui/figures.test.ts` (2), `src/ui/screens/TradeList.test.tsx` (5), `ReviewCard.test.tsx` (2), `CardFigures.test.tsx`, `tests/integration/d4/intraday.test.ts` (2), `d4/expected-mark.test.ts`, `d6/missing-mark.test.ts`, `tests/support/views-fixtures.ts` (2); `tests/support/open-detail-fixtures.ts` renames the findings type only.

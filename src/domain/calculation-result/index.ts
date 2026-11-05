@@ -1,18 +1,38 @@
 import type { Instrument } from '../instrument'
+import type { Instant } from '../time/index.ts'
+import type { Rational } from '../values/index.ts'
 
 // One independently useful calculation: a Value, an Unbounded result, or no number because the
 // evidence is Unavailable or the method is NotApplicable. Reasons are stable codes in two unions;
 // a figure narrows the type parameters to the reasons it can return.
 
-// Temporary form until T7P.4: an Unavailable result holds the reason code plus a loose detail.
-// T7P.4 turns each case into { reason, instrument, date } / { reason: 'AwaitingClose', after } /
-// { reason: 'FactsIncoherent', findings } and drops `detail`.
+// Facts that cannot be replayed are a typed rejection naming each fact, never a number.
+// Each finding describes itself (P69). An Execution's quantity is the recorded decimal text, since a
+// nonpositive one is itself a finding; Economic Time is the fact's Instant.
+export interface ExecutionDescription {
+  readonly factId: string;
+  readonly kind: 'Execution';
+  readonly instrument: Instrument;
+  readonly economicTime: Instant;
+  readonly side: 'Buy' | 'Sell';
+  readonly quantity: string;
+}
+
+export type IncoherentFact =
+  | (ExecutionDescription & { readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' })
+  // P22: a Sell above the quantity open at its own point in Fact Order; names that quantity.
+  | (ExecutionDescription & { readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational })
+  // P22: a Sell that leaves the Position flat although a later fact follows it.
+  | (ExecutionDescription & { readonly reason: 'FlatBeforeLaterFacts' })
+  | { readonly factId: string; readonly kind: 'PositionChange'; readonly economicTime: Instant; readonly reason: 'DuplicateFactId' };
+
+// Each case is a reason with its own details, carried flat in the result.
 export type UnavailableReason =
-  | { readonly reason: 'MarkMissing' }
-  | { readonly reason: 'AcknowledgedUnavailable' }
-  | { readonly reason: 'SessionPolicyNotCovered' }
-  | { readonly reason: 'AwaitingClose' }
-  | { readonly reason: 'FactsIncoherent' };
+  | { readonly reason: 'MarkMissing'; readonly instrument: Instrument; readonly date: string }
+  | { readonly reason: 'AcknowledgedUnavailable'; readonly instrument: Instrument; readonly date: string }
+  | { readonly reason: 'SessionPolicyNotCovered'; readonly instrument: Instrument; readonly date: string }
+  | { readonly reason: 'AwaitingClose'; readonly after: string }
+  | { readonly reason: 'FactsIncoherent'; readonly findings: readonly IncoherentFact[] };
 
 export type NotApplicableReason =
   | { readonly reason: 'NoRemainingPosition' }
@@ -23,12 +43,6 @@ export type NotApplicableReason =
   | { readonly reason: 'EntryAtOrBeyondTarget' }
   | { readonly reason: 'NonPositiveAtEntry'; readonly side: 'Losing' | 'Winning' };
 
-// What an Unavailable result names: the Instrument and date lacking an exact Mark, or the close
-// still awaited. Temporary, with the Unavailable form above.
-export type UnavailableDetail =
-  | { readonly instrument: Instrument; readonly date: string }
-  | { readonly after: string };
-
 export type CalculationResult<
   T,
   U extends UnavailableReason = UnavailableReason,
@@ -37,4 +51,4 @@ export type CalculationResult<
   | { readonly kind: 'Value'; readonly value: T }
   | { readonly kind: 'Unbounded'; readonly direction: 'Above' | 'Below'; readonly explanation: string }
   | (N extends unknown ? { readonly kind: 'NotApplicable' } & N : never)
-  | (U extends unknown ? { readonly kind: 'Unavailable'; readonly reason: U['reason']; readonly detail: UnavailableDetail } : never);
+  | (U extends unknown ? { readonly kind: 'Unavailable' } & U : never);

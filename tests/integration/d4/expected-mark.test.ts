@@ -15,7 +15,7 @@ const MARK_DEPENDENT = [
   'incrementalRewardToTargetInPlanR',
 ] as const;
 
-const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: MONDAY } };
+const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: MONDAY };
 
 async function readA(app: Application, tradeId: string) {
   const current = (await openItem(app, tradeId)).current;

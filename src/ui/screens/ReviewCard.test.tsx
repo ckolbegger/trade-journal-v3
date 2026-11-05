@@ -158,7 +158,7 @@ describe('Trade in the walk', () => {
     cleanup();
 
     // The Review Date Mark is missing: no number stands in for it, the dated close and the at-entry lots are their own lines.
-    const unavailable = { kind: 'Unavailable' as const, reason: 'MarkMissing', detail: { instrument: symbol, date: '2026-10-12' } };
+    const unavailable = { kind: 'Unavailable' as const, reason: 'MarkMissing', instrument: symbol, date: '2026-10-12' };
     const limited = item('t1', 'XYZ', { band: 'EvidenceLimited', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', date: '2026-10-12' }], basis: { kind: 'NotComparable', reason: 'MissingInput', instrumentKey: 'XYZ', date: '2026-10-12' } });
     const missing = tradeReview('t1', 'XYZ', {
       attention: limited,
@@ -213,7 +213,7 @@ describe('Trade figures in R and worst case', () => {
   });
 
   it('should show the worst case Unavailable in the same words as the other figures when the Mark is missing', async () => {
-    const unavailable = { kind: 'Unavailable' as const, reason: 'MarkMissing', detail: { instrument: symbol, date: '2026-10-12' } };
+    const unavailable = { kind: 'Unavailable' as const, reason: 'MarkMissing', instrument: symbol, date: '2026-10-12' };
     const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', {
       evaluation: evaluation({
         observation: { instrument: symbol, tradingDate: '2026-10-12', mark: null },

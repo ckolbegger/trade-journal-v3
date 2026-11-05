@@ -1,7 +1,7 @@
 // Open Trade Detail fixtures for the UI tests: D2's reference Trade (breakdown, section 4), derived by
 // Trade Analysis so every figure is the one the coordinator would show.
 import type {
-  IncoherentFactFinding,
+  IncoherentFact,
   IncoherentTradeDetail,
   NarrativeItem,
   OpenTradeDetail,
@@ -143,7 +143,7 @@ export function openDetailUncovered(positionChanges: readonly PositionChangeFact
 // The Detail of a Trade whose recorded facts cannot be replayed: only stored values and the findings.
 export function incoherentDetailOf(
   positionChanges: readonly PositionChangeFact[],
-  findings: readonly IncoherentFactFinding[],
+  findings: readonly IncoherentFact[],
   journal: readonly TradeDetailNarrativeItem[] = [],
 ): IncoherentTradeDetail {
   const open = openDetailOf([]);

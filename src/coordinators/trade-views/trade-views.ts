@@ -7,7 +7,7 @@ import {
   type DerivedTradeState,
   type EntryQuality,
   type EntryResolution,
-  type IncoherentFacts,
+  type IncoherentFact,
   type InstrumentPosition,
   type IntegrityFinding,
   type NotApplicableReason,
@@ -338,9 +338,6 @@ export interface ClosedTradeDetail extends OpenTradeDetail {
   readonly realizedR: DerivedTradeState['realizedR'];
 }
 
-// A recorded fact that cannot be replayed, named with the reason (AC-LIFE-003).
-export type IncoherentFactFinding = IncoherentFacts['findings'][number];
-
 // The Detail of a Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Plan, stored
 // lifecycle, labels, recorded Position Changes, recorded Deviations, and narrative, with the findings.
 // Nothing is derived, so it has no Baseline, lifecycle agreement, Position, entry, or fulfillment.
@@ -349,7 +346,8 @@ export interface IncoherentTradeDetail extends Omit<PlannedTradeDetail, 'journal
   // As stored: without a replay there is no Fact Order.
   readonly recordedPositionChanges: readonly PositionChangeFact[];
   readonly deviations: readonly RecordedDeviation[];
-  readonly findings: readonly IncoherentFactFinding[];
+  // Each finding describes itself (P69), as `derive` returns it (AC-LIFE-003).
+  readonly findings: readonly IncoherentFact[];
   // Debt is listed without a due status: the facts cannot be replayed, so no Expected Mark Date is resolved.
   readonly journal: readonly TradeDetailNarrativeItem[];
 }

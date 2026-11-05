@@ -94,7 +94,7 @@ function missingFrame(stale?: { price: string }): ObservationFrame {
   };
 }
 
-const markMissing = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: XYZ, date: '2026-10-13' } } as const;
+const markMissing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: XYZ, date: '2026-10-13' } as const;
 
 describe('Missing Mark (AC-CALC-002, single Instrument)', () => {
   const state = derivedState(referenceRecord([PC1, PC2]));
@@ -140,7 +140,7 @@ describe('Missing Mark (AC-CALC-002, single Instrument)', () => {
       resolution: { kind: 'AcknowledgedUnavailable', stale: { tradingDate: '2026-10-12', price: '49.00', revisionId: 'mark-rev-0', revisionNumber: 1, closeInstant: MONDAY_CLOSE } },
     };
     const evaluation = evaluate({ state, frame });
-    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', detail: { instrument: XYZ, date: '2026-10-13' } };
+    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: XYZ, date: '2026-10-13' };
     expect(evaluation.coverage).toEqual({ kind: 'AcknowledgedUnavailable' });
     expect(evaluation.marketValue).toEqual(acknowledged);
     expect(evaluation.remainingOpenPnl).toEqual(acknowledged);
@@ -170,7 +170,7 @@ describe("Lots opened after the frame's close (P12, A54)", () => {
 
   it('should return current figures as Unavailable with reason AwaitingClose after 2026-10-12 when PC2 is dated Tuesday 10:00 and the frame is Monday\'s', () => {
     const evaluation = evaluate({ state, frame: mondayFrame });
-    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: '2026-10-12' } };
+    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' };
     expect(evaluation.marketValue).toEqual(awaiting);
     expect(evaluation.remainingOpenPnl).toEqual(awaiting);
     expect(evaluation.currentMarkedPnl).toEqual(awaiting);
@@ -211,7 +211,7 @@ describe('dated last close with a Missing Mark (P13, A54)', () => {
       reason: 'NoRemainingPosition',
     });
     const { atEntry, currentMarkedPnl } = evaluate({ state: derivedState(record), frame: fridayFrame });
-    expect(currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: '2026-10-09' } });
+    expect(currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-09' });
     expect(exact({ kind: 'Value', value: atEntry!.quantity })).toBe(q(100n));
     expect(exact({ kind: 'Value', value: atEntry!.riskFromEntry })).toBe(q(268n));
     expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));
@@ -247,7 +247,7 @@ describe('A frame for a different Instrument', () => {
     const state = derivedState(referenceRecord([PC1, PC2]));
     const abcFrame: ObservationFrame = { ...availableFrame('52.00'), instrument: { kind: 'Stock', symbol: 'ABC' } };
     const evaluation = evaluate({ state, frame: abcFrame });
-    const missing = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: XYZ, date: '2026-10-12' } };
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: XYZ, date: '2026-10-12' };
     expect(evaluation.marketValue).toEqual(missing);
     expect(evaluation.remainingOpenPnl).toEqual(missing);
     expect(evaluation.currentMarkedPnl).toEqual(missing);
@@ -474,7 +474,8 @@ describe('Reward : risk now (P40)', () => {
     expect(evaluation.rewardRiskNow).toEqual({
       kind: 'Unavailable',
       reason: 'MarkMissing',
-      detail: { instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' },
+      instrument: { kind: 'Stock', symbol: 'DEF' },
+      date: '2026-10-12',
     });
   });
 });

@@ -46,7 +46,7 @@ export {
   type TradeAnalysisRecord,
   type TradeDerivationInput,
 } from './derive.ts';
-export type { CalculationResult, NotApplicableReason, UnavailableDetail, UnavailableReason } from '../calculation-result/index.ts';
+export type { CalculationResult, NotApplicableReason, UnavailableReason } from '../calculation-result/index.ts';
 export {
   evaluate,
   type AtEntryFigures,

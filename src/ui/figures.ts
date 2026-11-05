@@ -11,12 +11,12 @@ export const closedViaSale = (mechanisms: readonly { readonly quantity: Rational
 export const signed = (format: (value: Rational) => string) => (value: Rational): string => (value.compare(ZERO) > 0 ? `+${format(value)}` : format(value));
 
 // Each reason in its own words: a missing Mark, the trader's acknowledgment that no price can be had, a close not yet come; a date outside coverage or any other code is just not available.
-function unavailable(reason: string, detail: Extract<CalculationResult<unknown>, { kind: 'Unavailable' }>['detail']): string {
-  if (reason === 'AwaitingClose') return 'Awaiting the next close';
-  if (!('date' in detail)) return 'Not available';
-  const where = `${detail.instrument.symbol}, ${shortDate(detail.date)}`;
-  if (reason === 'MarkMissing') return `Mark missing: ${where}`;
-  if (reason === 'AcknowledgedUnavailable') return `Acknowledged unavailable: ${where}`;
+function unavailable(result: Extract<CalculationResult<unknown>, { kind: 'Unavailable' }>): string {
+  if (result.reason === 'AwaitingClose') return 'Awaiting the next close';
+  if (!('date' in result)) return 'Not available';
+  const where = `${result.instrument.symbol}, ${shortDate(result.date)}`;
+  if (result.reason === 'MarkMissing') return `Mark missing: ${where}`;
+  if (result.reason === 'AcknowledgedUnavailable') return `Acknowledged unavailable: ${where}`;
   return 'Not available';
 }
 
@@ -30,7 +30,7 @@ export function calculation<T>(result: CalculationResult<T>, format: (value: T) 
     case 'NotApplicable':
       return 'Not applicable';
     case 'Unavailable':
-      return unavailable(result.reason, result.detail);
+      return unavailable(result);
   }
 }
 

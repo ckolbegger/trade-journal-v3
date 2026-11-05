@@ -32,6 +32,12 @@ type RiskReward =
   | { readonly kind: 'Figures'; readonly riskNow: Rational; readonly rewardNow: Rational; readonly riskAtEntry: Rational; readonly rewardAtEntry: Rational; readonly mark: Rational; readonly averageCost: Rational }
   | { readonly kind: 'Missing'; readonly acknowledged: boolean; readonly detail: { readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string } | { readonly reason: 'AwaitingClose'; readonly after: string } };
 
+// evaluate never returns FactsIncoherent (the Review lists such Trades by their facts); T7P.5 reshapes this.
+function awaitingAfter(u: Exclude<Extract<TradeEvaluation['ongoingRiskToStop'], { kind: 'Unavailable' }>, { instrument: unknown }>): string {
+  if (u.reason !== 'AwaitingClose') throw new Error(`An evaluation cannot be Unavailable for ${u.reason}`);
+  return u.after;
+}
+
 function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): RiskReward {
   const risk = evaluation.ongoingRiskToStop;
   const reward = evaluation.incrementalRewardToTarget;
@@ -42,9 +48,9 @@ function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): Ri
       kind: 'Missing',
       acknowledged: missing.reason === 'AcknowledgedUnavailable',
       detail:
-        'instrument' in missing.detail
-          ? { reason: 'MissingInput', instrumentKey: missing.detail.instrument.symbol, date: missing.detail.date }
-          : { reason: 'AwaitingClose', after: missing.detail.after },
+        'instrument' in missing
+          ? { reason: 'MissingInput', instrumentKey: missing.instrument.symbol, date: missing.date }
+          : { reason: 'AwaitingClose', after: awaitingAfter(missing) },
     };
   }
   const lots = state.positions.flatMap((p) => p.openLots);
@@ -104,13 +110,13 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
   const unavailable = evaluation.ongoingRiskToStop;
   if (unavailable.kind === 'Unavailable') {
     const reason: AttentionReason =
-      'instrument' in unavailable.detail
+      'instrument' in unavailable
         ? {
             code: unavailable.reason === 'MarkMissing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
-            instrumentKey: unavailable.detail.instrument.symbol,
-            date: unavailable.detail.date,
+            instrumentKey: unavailable.instrument.symbol,
+            date: unavailable.date,
           }
-        : { code: 'AwaitingClose', after: unavailable.detail.after };
+        : { code: 'AwaitingClose', after: awaitingAfter(unavailable) };
     return { band: 'EvidenceLimited', reasons: [reason], basis, rangePosition };
   }
   if (basis.kind === 'Comparable' && basis.side !== 'None') {

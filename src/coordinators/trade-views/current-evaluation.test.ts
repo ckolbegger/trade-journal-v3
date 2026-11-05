@@ -87,7 +87,7 @@ describe('browseTrades: Open with current evaluation', () => {
     const [item] = view.items;
     if (!item || !('current' in item)) throw new Error('expected a coherent Open item with current figures');
     const { current } = item;
-    const missing = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: REVIEW_DATE } };
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: REVIEW_DATE };
     expect(current).toEqual(
       expect.objectContaining({
         expectedMarkDate: REVIEW_DATE,
@@ -123,7 +123,7 @@ describe('browseTrades: Open with current evaluation', () => {
 
     const [item] = view.items;
     if (!item || !('current' in item)) throw new Error('expected a coherent Open item with current figures');
-    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: REVIEW_DATE } };
+    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: REVIEW_DATE };
     expect(item.current).toEqual(
       expect.objectContaining({
         expectedMarkDate: REVIEW_DATE,
@@ -336,7 +336,7 @@ describe('Open views outside session-policy coverage', () => {
   // Coverage ends 2028-12-31, so this Wednesday has no Expected Mark Date.
   const OUTSIDE = '2029-01-03T17:00:00Z';
   const OUTSIDE_DATE = '2029-01-03';
-  const notCovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: OUTSIDE_DATE } };
+  const notCovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: OUTSIDE_DATE };
 
   it('should return Open items and Detail with every Mark-dependent figure Unavailable SessionPolicyNotCovered when the as-of date is outside coverage', async () => {
     const stack = await openBook(OUTSIDE);

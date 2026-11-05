@@ -134,101 +134,83 @@
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -244,13 +226,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "CSCO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -261,13 +241,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "CSCO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -550,101 +528,83 @@
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -660,13 +620,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "XYZ"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "XYZ"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -677,13 +635,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "XYZ"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "XYZ"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -731,101 +687,83 @@
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -841,13 +779,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "QRS"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "QRS"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -858,13 +794,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "QRS"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "QRS"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -919,101 +853,83 @@
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -1029,13 +945,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -1046,13 +960,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -1336,101 +1248,83 @@
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -1446,13 +1340,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "PFE"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -1463,13 +1355,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "PFE"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -3044,24 +2934,20 @@
           "marketValue": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "remainingOpenPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "realizedToDate": {
             "kind": "Value",
@@ -3070,24 +2956,20 @@
           "currentMarkedPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "currentMarkedPnlInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "incurredFees": {
             "kind": "Value",
@@ -3096,79 +2978,65 @@
           "ongoingRiskToStop": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRisk": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTarget": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "rewardRiskNow": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "ongoingRiskToStopInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRiskInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTargetInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "CSCO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "date": "2026-10-20"
           },
           "maximumIncrementalReward": {
             "kind": "Unbounded",
@@ -3184,13 +3052,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "CSCO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "CSCO"
+                },
+                "date": "2026-10-20"
               }
             },
             {
@@ -3201,13 +3067,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "CSCO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "CSCO"
+                },
+                "date": "2026-10-20"
               }
             }
           ],
@@ -4006,24 +3870,20 @@
           "marketValue": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "remainingOpenPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "realizedToDate": {
             "kind": "Value",
@@ -4032,24 +3892,20 @@
           "currentMarkedPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "currentMarkedPnlInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "incurredFees": {
             "kind": "Value",
@@ -4058,79 +3914,65 @@
           "ongoingRiskToStop": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRisk": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTarget": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "rewardRiskNow": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "ongoingRiskToStopInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRiskInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTargetInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "XYZ"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
+            "date": "2026-10-20"
           },
           "maximumIncrementalReward": {
             "kind": "Unbounded",
@@ -4146,13 +3988,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "XYZ"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "XYZ"
+                },
+                "date": "2026-10-20"
               }
             },
             {
@@ -4163,13 +4003,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "XYZ"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "XYZ"
+                },
+                "date": "2026-10-20"
               }
             }
           ],
@@ -4672,24 +4510,20 @@
           "marketValue": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "remainingOpenPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "realizedToDate": {
             "kind": "Value",
@@ -4698,24 +4532,20 @@
           "currentMarkedPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "currentMarkedPnlInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "incurredFees": {
             "kind": "Value",
@@ -4724,79 +4554,65 @@
           "ongoingRiskToStop": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRisk": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTarget": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "rewardRiskNow": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "ongoingRiskToStopInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRiskInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTargetInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "QRS"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
+            "date": "2026-10-20"
           },
           "maximumIncrementalReward": {
             "kind": "Unbounded",
@@ -4812,13 +4628,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "QRS"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "QRS"
+                },
+                "date": "2026-10-20"
               }
             },
             {
@@ -4829,13 +4643,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "QRS"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "QRS"
+                },
+                "date": "2026-10-20"
               }
             }
           ],
@@ -5456,24 +5268,20 @@
           "marketValue": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "remainingOpenPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "realizedToDate": {
             "kind": "Value",
@@ -5482,24 +5290,20 @@
           "currentMarkedPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "currentMarkedPnlInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "incurredFees": {
             "kind": "Value",
@@ -5508,79 +5312,65 @@
           "ongoingRiskToStop": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRisk": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTarget": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "rewardRiskNow": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "ongoingRiskToStopInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRiskInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTargetInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "KO"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "date": "2026-10-20"
           },
           "maximumIncrementalReward": {
             "kind": "Unbounded",
@@ -5596,13 +5386,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "KO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
               }
             },
             {
@@ -5613,13 +5401,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "KO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
               }
             }
           ],
@@ -6308,24 +6094,20 @@
           "marketValue": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "remainingOpenPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "realizedToDate": {
             "kind": "Value",
@@ -6334,24 +6116,20 @@
           "currentMarkedPnl": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "currentMarkedPnlInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "incurredFees": {
             "kind": "Value",
@@ -6360,79 +6138,65 @@
           "ongoingRiskToStop": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRisk": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTarget": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "rewardRiskNow": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "ongoingRiskToStopInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "worstCaseOngoingRiskInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "incrementalRewardToTargetInPlanR": {
             "kind": "Unavailable",
             "reason": "MarkMissing",
-            "detail": {
-              "instrument": {
-                "kind": "Stock",
-                "symbol": "PFE"
-              },
-              "date": "2026-10-20"
-            }
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "date": "2026-10-20"
           },
           "maximumIncrementalReward": {
             "kind": "Unbounded",
@@ -6448,13 +6212,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "PFE"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "PFE"
+                },
+                "date": "2026-10-20"
               }
             },
             {
@@ -6465,13 +6227,11 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "PFE"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "PFE"
+                },
+                "date": "2026-10-20"
               }
             }
           ],
@@ -8214,35 +7974,29 @@
               "riskToStop": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "CSCO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "CSCO"
+                },
+                "date": "2026-10-20"
               },
               "pnl": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "CSCO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "CSCO"
+                },
+                "date": "2026-10-20"
               },
               "rewardRiskNow": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "CSCO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "CSCO"
+                },
+                "date": "2026-10-20"
               }
             }
           },
@@ -8303,35 +8057,29 @@
               "riskToStop": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "XYZ"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "XYZ"
+                },
+                "date": "2026-10-20"
               },
               "pnl": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "XYZ"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "XYZ"
+                },
+                "date": "2026-10-20"
               },
               "rewardRiskNow": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "XYZ"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "XYZ"
+                },
+                "date": "2026-10-20"
               }
             }
           },
@@ -8392,35 +8140,29 @@
               "riskToStop": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "QRS"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "QRS"
+                },
+                "date": "2026-10-20"
               },
               "pnl": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "QRS"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "QRS"
+                },
+                "date": "2026-10-20"
               },
               "rewardRiskNow": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "QRS"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "QRS"
+                },
+                "date": "2026-10-20"
               }
             }
           },
@@ -8481,35 +8223,29 @@
               "riskToStop": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "KO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
               },
               "pnl": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "KO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
               },
               "rewardRiskNow": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "KO"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
+                "date": "2026-10-20"
               }
             }
           },
@@ -8570,35 +8306,29 @@
               "riskToStop": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "PFE"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "PFE"
+                },
+                "date": "2026-10-20"
               },
               "pnl": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "PFE"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "PFE"
+                },
+                "date": "2026-10-20"
               },
               "rewardRiskNow": {
                 "kind": "Unavailable",
                 "reason": "MarkMissing",
-                "detail": {
-                  "instrument": {
-                    "kind": "Stock",
-                    "symbol": "PFE"
-                  },
-                  "date": "2026-10-20"
-                }
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "PFE"
+                },
+                "date": "2026-10-20"
               }
             }
           }
@@ -8789,24 +8519,20 @@
         "marketValue": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "realizedToDate": {
           "kind": "Value",
@@ -8815,24 +8541,20 @@
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "incurredFees": {
           "kind": "Value",
@@ -8841,79 +8563,65 @@
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "rewardRiskNow": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "CSCO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -8929,13 +8637,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "CSCO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -8946,13 +8652,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "CSCO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -9622,24 +9326,20 @@
         "marketValue": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "realizedToDate": {
           "kind": "Value",
@@ -9648,24 +9348,20 @@
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "incurredFees": {
           "kind": "Value",
@@ -9674,79 +9370,65 @@
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "rewardRiskNow": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "XYZ"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -9762,13 +9444,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "XYZ"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "XYZ"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -9779,13 +9459,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "XYZ"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "XYZ"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -9994,24 +9672,20 @@
         "marketValue": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "realizedToDate": {
           "kind": "Value",
@@ -10020,24 +9694,20 @@
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "incurredFees": {
           "kind": "Value",
@@ -10046,79 +9716,65 @@
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "rewardRiskNow": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "QRS"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -10134,13 +9790,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "QRS"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "QRS"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -10151,13 +9805,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "QRS"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "QRS"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -10373,24 +10025,20 @@
         "marketValue": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "realizedToDate": {
           "kind": "Value",
@@ -10399,24 +10047,20 @@
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "incurredFees": {
           "kind": "Value",
@@ -10425,79 +10069,65 @@
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "rewardRiskNow": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "KO"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -10513,13 +10143,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -10530,13 +10158,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "KO"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "date": "2026-10-20"
             }
           }
         ],
@@ -10988,24 +10614,20 @@
         "marketValue": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "realizedToDate": {
           "kind": "Value",
@@ -11014,24 +10636,20 @@
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "incurredFees": {
           "kind": "Value",
@@ -11040,79 +10658,65 @@
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "rewardRiskNow": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "MarkMissing",
-          "detail": {
-            "instrument": {
-              "kind": "Stock",
-              "symbol": "PFE"
-            },
-            "date": "2026-10-20"
-          }
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "date": "2026-10-20"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -11128,13 +10732,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "PFE"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
+              "date": "2026-10-20"
             }
           },
           {
@@ -11145,13 +10747,11 @@
             "result": {
               "kind": "Unavailable",
               "reason": "MarkMissing",
-              "detail": {
-                "instrument": {
-                  "kind": "Stock",
-                  "symbol": "PFE"
-                },
-                "date": "2026-10-20"
-              }
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
+              "date": "2026-10-20"
             }
           }
         ],

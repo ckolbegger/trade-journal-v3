@@ -4,6 +4,7 @@ import type { WorkspaceStatus } from '../coordinators/workspace/index.ts';
 
 // Journal Debt: when an Outstanding Debt falls due against the Review's closes (D5R2 A166).
 export type { DueClassification } from '../domain/journal-debt/index.ts';
+export type { IncoherentFact } from '../domain/calculation-result/index.ts';
 
 // Workspace: status, initialization, migration, and the Installed Capability Manifest.
 export type {
@@ -59,7 +60,6 @@ export type {
   IncoherentClosedTradeItem,
   LotMatchView,
   TradeSummary,
-  IncoherentFactFinding,
   IncoherentOpenTradeItem,
   IncoherentPlannedTradeItem,
   IncoherentTradeDetail,

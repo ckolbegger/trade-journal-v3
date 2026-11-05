@@ -5,7 +5,7 @@ import type {
   CalculationResult,
   ClosedTradeDetail,
   ExecutionFact,
-  IncoherentFactFinding,
+  IncoherentFact,
   IncoherentTradeDetail,
   IntegrityFinding,
   NarrativeAnswer,
@@ -778,7 +778,7 @@ function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; re
   );
 }
 
-const UNREPLAYABLE: Record<IncoherentFactFinding['reason'], string> = {
+const UNREPLAYABLE: Record<IncoherentFact['reason'], string> = {
   UnknownPlannedLeg: 'Names a Planned Leg that is not in the Plan',
   NonpositiveQuantity: 'Quantity is not positive',
   DuplicateFactId: 'Shares its identity with another fact',

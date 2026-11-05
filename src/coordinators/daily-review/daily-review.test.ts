@@ -685,7 +685,7 @@ describe('getTrade', () => {
     );
     expect(missing.kind === 'Ready' && missing.trade.evaluation).toEqual(
       expect.objectContaining({
-        marketValue: { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' } },
+        marketValue: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' },
         staleContext: expect.objectContaining({ tradingDate: '2026-10-09' }) as unknown,
       }),
     );
@@ -723,7 +723,7 @@ describe('getTrade', () => {
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
     const { evaluation, datedLastClose } = result.trade;
     // Current figures never use the earlier Mark.
-    expect(evaluation?.marketValue).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' } });
+    expect(evaluation?.marketValue).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' });
     // The Position held at Wednesday's close, valued with Wednesday's own Mark.
     expect(datedLastClose).toEqual({
       tradingDate: '2026-10-08',

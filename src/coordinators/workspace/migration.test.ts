@@ -358,7 +358,7 @@ describe('migration to the current schema', () => {
     const v2 = await v2Stack();
     expect((await v1.workspace.initialize({})).kind).toBe('Opened');
     expect((await v2.workspace.initialize({})).kind).toBe('Opened');
-    const missing = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: expect.any(String) as unknown }, date: '2026-10-16' } };
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: expect.any(String) as unknown }, date: '2026-10-16' };
     let checked = 0;
     for (const stack of [v1, v2]) {
       const views = createTradeViews(stack);

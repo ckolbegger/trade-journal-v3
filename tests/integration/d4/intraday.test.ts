@@ -32,7 +32,7 @@ const atEntry = { label: 'AtEntry', quantity: dec('40'), averageEntry: dec('50.3
 describe('I4.18 intraday and missing lines', () => {
   it('should show AwaitingClose figures with the Monday close line of 60 shares and the 40-share at-entry line on Tuesday noon, and Missing Tuesday figures with only the Monday line on Tuesday 17:00', async () => {
     const intraday = await book(TUESDAY_NOON);
-    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: MONDAY } };
+    const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', after: MONDAY };
     const check = async (app: typeof intraday.app) => {
       const item = (await openItem(app, intraday.tradeId)).current;
       const view = (await detail(app, intraday.tradeId)).current;
@@ -51,7 +51,7 @@ describe('I4.18 intraday and missing lines', () => {
 
     // Tuesday 17:00 with no Tuesday Mark: Tuesday is the Expected Mark Date and its Mark is Missing.
     const missing = await book(TUESDAY_1700);
-    const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument, date: TUESDAY } };
+    const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', instrument, date: TUESDAY };
     const checkMissing = async (app: typeof missing.app) => {
       const item = (await openItem(app, missing.tradeId)).current;
       const view = (await detail(app, missing.tradeId)).current;

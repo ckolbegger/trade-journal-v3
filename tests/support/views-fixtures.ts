@@ -78,8 +78,8 @@ export const openItem = {
   // The Expected Mark Date's close is still awaited, so no Mark-dependent figure is a number.
   current: {
     expectedMarkDate: '2026-10-13',
-    currentMarkedPnl: { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: '2026-10-13' } },
-    currentMarkedPnlInPlanR: { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: '2026-10-13' } },
+    currentMarkedPnl: { kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-13' },
+    currentMarkedPnlInPlanR: { kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-13' },
     conditions: [],
     atEntry: null,
   },

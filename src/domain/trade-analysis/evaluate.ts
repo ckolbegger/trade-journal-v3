@@ -195,17 +195,18 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const latestExactClose = latestExactCloseOf();
   const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   const unavailableResult = (): CalculationResult<never> => {
-    if (!covered) return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: frame.instrument, date } };
+    if (!covered) return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: frame.instrument, date };
     if (foreign) {
-      return { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date } };
+      return { kind: 'Unavailable', reason: 'MarkMissing', instrument: foreign.instrument, date };
     }
     if (openedAfterClose) {
-      return { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: date } };
+      return { kind: 'Unavailable', reason: 'AwaitingClose', after: date };
     }
     return {
       kind: 'Unavailable',
       reason: covered.resolution.kind === 'Missing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
-      detail: { instrument: frame.instrument, date },
+      instrument: frame.instrument,
+      date,
     };
   };
   const unavailable = unavailableResult();

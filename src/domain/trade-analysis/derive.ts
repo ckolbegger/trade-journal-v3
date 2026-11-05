@@ -1,6 +1,6 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
-import type { CalculationResult, NotApplicableReason } from '../calculation-result/index.ts';
+import type { CalculationResult, ExecutionDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
@@ -357,22 +357,8 @@ export interface DerivedTradeState {
 // Facts that cannot be replayed are a typed rejection naming each fact, never a number.
 // Each finding describes itself (P69). An Execution's quantity is the recorded decimal text, since a
 // nonpositive one is itself a finding; Economic Time is the fact's Instant.
-export interface ExecutionDescription {
-  readonly factId: string;
-  readonly kind: 'Execution';
-  readonly instrument: ExecutionFact['instrument'];
-  readonly economicTime: Instant;
-  readonly side: 'Buy' | 'Sell';
-  readonly quantity: string;
-}
-
-export type IncoherentFact =
-  | (ExecutionDescription & { readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' })
-  // P22: a Sell above the quantity open at its own point in Fact Order; names that quantity.
-  | (ExecutionDescription & { readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational })
-  // P22: a Sell that leaves the Position flat although a later fact follows it.
-  | (ExecutionDescription & { readonly reason: 'FlatBeforeLaterFacts' })
-  | { readonly factId: string; readonly kind: 'PositionChange'; readonly economicTime: Instant; readonly reason: 'DuplicateFactId' };
+// The types live in calculation-result, since an Unavailable result carries them; re-exported here.
+export type { ExecutionDescription, IncoherentFact };
 
 function described(e: ExecutionFact): ExecutionDescription {
   return { factId: e.factId, kind: 'Execution', instrument: { ...e.instrument }, economicTime: e.economicTime, side: e.action, quantity: e.quantity };

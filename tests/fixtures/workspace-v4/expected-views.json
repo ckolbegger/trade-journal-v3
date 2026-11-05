@@ -134,65 +134,47 @@
         "remainingOpenPnl": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "currentMarkedPnl": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "currentMarkedPnlInPlanR": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "ongoingRiskToStop": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "ongoingRiskToStopInPlanR": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "worstCaseOngoingRisk": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "worstCaseOngoingRiskInPlanR": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "incrementalRewardToTarget": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "incrementalRewardToTargetInPlanR": {
           "kind": "Unavailable",
           "reason": "AwaitingClose",
-          "detail": {
-            "after": "2026-10-19"
-          }
+          "after": "2026-10-19"
         },
         "maximumIncrementalReward": {
           "kind": "Unbounded",
@@ -208,9 +190,7 @@
             "result": {
               "kind": "Unavailable",
               "reason": "AwaitingClose",
-              "detail": {
-                "after": "2026-10-19"
-              }
+              "after": "2026-10-19"
             }
           },
           {
@@ -221,9 +201,7 @@
             "result": {
               "kind": "Unavailable",
               "reason": "AwaitingClose",
-              "detail": {
-                "after": "2026-10-19"
-              }
+              "after": "2026-10-19"
             }
           }
         ],
@@ -2019,16 +1997,12 @@
           "marketValue": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "remainingOpenPnl": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "realizedToDate": {
             "kind": "Value",
@@ -2037,16 +2011,12 @@
           "currentMarkedPnl": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "currentMarkedPnlInPlanR": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "incurredFees": {
             "kind": "Value",
@@ -2055,44 +2025,32 @@
           "ongoingRiskToStop": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "worstCaseOngoingRisk": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "incrementalRewardToTarget": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "ongoingRiskToStopInPlanR": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "worstCaseOngoingRiskInPlanR": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "incrementalRewardToTargetInPlanR": {
             "kind": "Unavailable",
             "reason": "AwaitingClose",
-            "detail": {
-              "after": "2026-10-19"
-            }
+            "after": "2026-10-19"
           },
           "maximumIncrementalReward": {
             "kind": "Unbounded",
@@ -2108,9 +2066,7 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "AwaitingClose",
-                "detail": {
-                  "after": "2026-10-19"
-                }
+                "after": "2026-10-19"
               }
             },
             {
@@ -2121,9 +2077,7 @@
               "result": {
                 "kind": "Unavailable",
                 "reason": "AwaitingClose",
-                "detail": {
-                  "after": "2026-10-19"
-                }
+                "after": "2026-10-19"
               }
             }
           ],

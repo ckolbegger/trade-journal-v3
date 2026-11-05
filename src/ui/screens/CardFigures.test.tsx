@@ -11,7 +11,7 @@ type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
 
 const value = (n: bigint, d = 1n) => ({ kind: 'Value' as const, value: Rational.of(n, d) });
 const symbol = { kind: 'Stock' as const, symbol: 'XYZ' };
-const missing = (name: string, date: string) => ({ kind: 'Unavailable' as const, reason: 'MarkMissing', detail: { instrument: { kind: 'Stock' as const, symbol: name }, date } });
+const missing = (name: string, date: string) => ({ kind: 'Unavailable' as const, reason: 'MarkMissing', instrument: { kind: 'Stock' as const, symbol: name }, date });
 const planBaseline = { kind: 'Value' as const, value: { originalPlannedRisk: Rational.of(250n), originalPlannedReward: Rational.of(600n), rewardRiskRatio: Rational.of(12n, 5n), oneR: Rational.of(250n) } };
 
 // T-A at XYZ 52.00: P&L +$180.00, risk to stop $450.00, worst case $5,200.00, reward to target $400.00.
