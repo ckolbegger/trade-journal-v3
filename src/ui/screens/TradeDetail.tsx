@@ -2,10 +2,8 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
-  CalculationResult,
   ClosedTradeDetail,
   ExecutionFact,
-  IncoherentFact,
   IncoherentTradeDetail,
   IntegrityFinding,
   NarrativeAnswer,
@@ -24,7 +22,9 @@ import { TradeText } from '../TradeText.tsx';
 import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
-import { calculation, closedViaSale, dollarsAndR, pnlText, signed } from '../figures.ts';
+import type { UnavailableReason } from '../../domain/calculation-result/index.ts';
+import { findingWords, text, unavailableWords } from '../calculation-words.ts';
+import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed } from '../figures.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
 
@@ -237,8 +237,8 @@ function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDe
         )}
         {'positionChanges' in view && view.entryQuality.kind === 'Value' && (
           <>
-            <Figure term="Average entry">{shown(view.entryQuality.value.averageEntry, money)}</Figure>
-            <Figure term="Actual initial risk">{shown(view.entryQuality.value.actualInitialRisk, money)}</Figure>
+            <Figure term="Average entry">{calculation(view.entryQuality.value.averageEntry, money)}</Figure>
+            <Figure term="Actual initial risk">{calculation(view.entryQuality.value.actualInitialRisk, money)}</Figure>
           </>
         )}
         {!('positionChanges' in view) && <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>}
@@ -265,17 +265,20 @@ function changeTime(view: OpenTradeDetail, positionChangeId: string, timeZone: s
 // the reason when the effective revision is a Correction.
 function ValuationSection({ tradeId, current, timeZone }: { readonly tradeId: string; readonly current: OpenTradeDetail['current']; readonly timeZone: string }) {
   const { mark, markResolution, evaluation } = current;
-  const symbol = evaluation.observation.instrument.symbol;
+  const { instrument } = evaluation.observation;
+  const symbol = instrument.symbol;
+  const date = evaluation.valuationDate;
+  const sentence = (reason: UnavailableReason) => text(unavailableWords(reason, 'sentence', timeZone));
   const stale = evaluation.staleContext;
   return (
     <section className="card" aria-labelledby="valuation-heading">
       <h2 id="valuation-heading">Valuation</h2>
       {markResolution?.kind === 'Missing' && (
         <p>
-          <Link to={`/review?trade=${encodeURIComponent(tradeId)}&instrument=${encodeURIComponent(symbol)}`}>{`Mark missing for ${symbol} on ${shortDate(evaluation.valuationDate)}`}</Link>
+          <Link to={`/review?trade=${encodeURIComponent(tradeId)}&instrument=${encodeURIComponent(symbol)}`}>{sentence({ reason: 'MarkMissing', instrument, date })}</Link>
         </p>
       )}
-      {markResolution?.kind === 'AcknowledgedUnavailable' && <p>{`Acknowledged unavailable for ${symbol} on ${shortDate(evaluation.valuationDate)}: your acknowledgment, not a price`}</p>}
+      {markResolution?.kind === 'AcknowledgedUnavailable' && <p>{`${sentence({ reason: 'AcknowledgedUnavailable', instrument, date })}: your acknowledgment, not a price`}</p>}
       {stale && <p>{`Stale context: ${price(stale.price)} from ${shortDate(stale.tradingDate)} close (stale, not used in any current figure)`}</p>}
       <dl className="figure-grid">
         {current.expectedMarkDate && <Figure term="Expected Mark Date" plain>{shortDate(current.expectedMarkDate)}</Figure>}
@@ -778,27 +781,12 @@ function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; re
   );
 }
 
-const UNREPLAYABLE: Record<IncoherentFact['reason'], string> = {
-  UnknownPlannedLeg: 'Names a Planned Leg that is not in the Plan',
-  NonpositiveQuantity: 'Quantity is not positive',
-  DuplicateFactId: 'Shares its identity with another fact',
-  ExceedsOpenQuantity: 'Sells more than was open at that point',
-  FlatBeforeLaterFacts: 'Leaves the Position flat before later facts',
-};
-
-// Recorded facts that cannot be replayed (AC-LIFE-003): each named with its problem. Nothing is
+// Recorded facts that cannot be replayed (AC-LIFE-003): each finding in its own sentence. Nothing is
 // derived from them, so no Position, entry, or fulfillment figure is shown.
 function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDetail; readonly timeZone: string }) {
-  const changes = view.recordedPositionChanges;
-  const record = (factId: string) => {
-    const change = changes.find((c) => c.factId === factId);
-    if (change) return `Position Change at ${localTime(change.economicTime, timeZone)}`;
-    const execution = changes.flatMap((c) => c.executions).find((e) => e.factId === factId);
-    return execution ? `Execution at ${localTime(execution.economicTime, timeZone)}` : factId;
-  };
   return (
     <section className="card integrity" aria-labelledby="integrity-heading">
-      <h2 id="integrity-heading">Records disagree</h2>
+      <h2 id="integrity-heading">{FACTS_INCOHERENT_LABEL}</h2>
       <p>Viewing this Trade does not change its records.</p>
       <p>These recorded facts cannot be replayed, so the Position, entry, and fulfillment figures are unavailable.</p>
       <p>{INCOHERENT_ENTRY_NOTE}</p>
@@ -807,15 +795,13 @@ function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDet
           <caption>Facts that cannot be replayed</caption>
           <thead>
             <tr>
-              <th scope="col">Record</th>
-              <th scope="col">Problem</th>
+              <th scope="col">Finding</th>
             </tr>
           </thead>
           <tbody>
             {view.findings.map((finding, index) => (
               <tr key={index}>
-                <td>{record(finding.factId)}</td>
-                <td>{UNREPLAYABLE[finding.reason]}</td>
+                <td>{text(findingWords(finding, timeZone))}</td>
               </tr>
             ))}
           </tbody>
@@ -922,18 +908,6 @@ function JournalSection({
   );
 }
 
-// Why a figure does not apply, in words: never shown as a number or zero.
-const NOT_APPLICABLE: Record<string, string> = {
-  EntryAtOrBeyondStop: 'entry at or beyond the Stop',
-  EntryAtOrBeyondTarget: 'entry at or beyond the Target',
-};
-
-function shown<T>(result: CalculationResult<T>, format: (value: T) => string): string {
-  if (result.kind === 'Value') return format(result.value);
-  if (result.kind === 'Unbounded') return `Unbounded ${result.direction.toLowerCase()}`;
-  return `Not applicable: ${NOT_APPLICABLE[result.reason] ?? result.reason}`;
-}
-
 // Entry Quality once the Entry Resolution Point is reached, and progress toward it before (A24).
 function EntryQualitySection({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
   const quality = view.entryQuality;
@@ -949,12 +923,12 @@ function EntryQualitySection({ view, timeZone }: { readonly view: OpenTradeDetai
           <Figure term="Resolved at" plain>
             {resolvedAt ? `Position Change at ${localTime(resolvedAt.economicTime, timeZone)}` : ''}
           </Figure>
-          <Figure term="Average entry">{shown(quality.value.averageEntry, money)}</Figure>
-          <Figure term="Actual initial risk"><WithSecondLine amount={shown(quality.value.actualInitialRisk, money)} second={shown(quality.value.riskInPlanR, rMultiple)} /></Figure>
-          <Figure term="Actual initial reward">{shown(quality.value.actualInitialReward, money)}</Figure>
-          <Figure term="Reward : risk"><WithSecondLine amount={shown(quality.value.actualRewardRisk, ratio)} second={`planned ${shown(quality.value.plannedRewardRisk, ratio)}`} /></Figure>
-          <Figure term="Slippage">{shown(quality.value.slippage, money)}</Figure>
-          <Figure term="Size">{`${shown(quality.value.sizeRatio, ratio)}× planned quantity`}</Figure>
+          <Figure term="Average entry">{calculation(quality.value.averageEntry, money)}</Figure>
+          <Figure term="Actual initial risk"><WithSecondLine amount={calculation(quality.value.actualInitialRisk, money)} second={calculation(quality.value.riskInPlanR, rMultiple)} /></Figure>
+          <Figure term="Actual initial reward">{calculation(quality.value.actualInitialReward, money)}</Figure>
+          <Figure term="Reward : risk"><WithSecondLine amount={calculation(quality.value.actualRewardRisk, ratio)} second={`planned ${calculation(quality.value.plannedRewardRisk, ratio)}`} /></Figure>
+          <Figure term="Slippage">{calculation(quality.value.slippage, money)}</Figure>
+          <Figure term="Size">{`${calculation(quality.value.sizeRatio, ratio)}× planned quantity`}</Figure>
         </dl>
       ) : (
         <p>{`Entry not yet resolved: ${quantity(entered)} of ${planned} entered`}</p>

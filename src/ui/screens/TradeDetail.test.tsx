@@ -303,7 +303,26 @@ describe('Open Trade Detail', () => {
     ]);
   });
 
-  it('should show the Records disagree region naming each fact that cannot be replayed, with the Plan, recorded Position Changes and Journal but no derived figures, when the facts are incoherent', async () => {
+  it('should list every finding as its sentence in the Detail table, under the heading Facts cannot be replayed', async () => {
+    renderView(
+      incoherentDetailOf(
+        [PC1, PC2],
+        [
+          { factId: 'ex-3', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-14T14:30:00Z', side: 'Sell', quantity: '120', reason: 'ExceedsOpenQuantity', available: Rational.of(100n) },
+          { factId: 'pc-9', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' },
+        ],
+      ),
+    );
+    const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
+    expect(within(panel).getByRole('heading', { name: "Facts can't be replayed", level: 2 })).toBeTruthy();
+    expect(rowsOf(within(panel).getByRole('table', { name: 'Facts that cannot be replayed' }))).toEqual([
+      ['Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open'],
+      ['Position Change on Wed Oct 14, 10:30 shares its identity with another record'],
+    ]);
+    expect(screen.queryByRole('region', { name: 'Records disagree' })).toBeNull();
+  });
+
+  it('should show the Facts cannot be replayed region naming each fact that cannot be replayed, with the Plan, recorded Position Changes and Journal but no derived figures, when the facts are incoherent', async () => {
     renderView(
       incoherentDetailOf(
         [PC1, PC2],
@@ -314,10 +333,10 @@ describe('Open Trade Detail', () => {
         [pc1Reflection, pc2Decline],
       ),
     );
-    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
     expect(rowsOf(within(panel).getByRole('table', { name: 'Facts that cannot be replayed' }))).toEqual([
-      ['Execution at 2026-10-12 11:00', 'Names a Planned Leg that is not in the Plan'],
-      ['Execution at 2026-10-12 10:00', 'Quantity is not positive'],
+      ["Buy of 40 XYZ on Mon Oct 12, 11:00 names a Planned Leg that isn't in the Plan"],
+      ["Buy of 60 XYZ on Mon Oct 12, 10:00 has a quantity that isn't positive"],
     ]);
     expect(within(panel).getByText('Viewing this Trade does not change its records.')).toBeTruthy();
     expect(within(panel).getByText(/position, entry, and fulfillment figures are unavailable/i)).toBeTruthy();
@@ -357,7 +376,7 @@ describe('incoherent Trade Detail', () => {
 
   it('should not offer Record entry on an IncoherentTradeDetail, while a coherent Open or Planned Detail still offers it', async () => {
     renderView(incoherent(), true);
-    await screen.findByRole('region', { name: 'Records disagree' });
+    await screen.findByRole('region', { name: "Facts can't be replayed" });
     expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
     cleanup();
 
@@ -368,9 +387,9 @@ describe('incoherent Trade Detail', () => {
     }
   });
 
-  it('should explain beside the Records disagree panel that new entries cannot be recorded until the records agree', async () => {
+  it('should explain beside the Facts cannot be replayed panel that new entries cannot be recorded until the records agree', async () => {
     renderView(incoherent(), true);
-    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
     expect(within(panel).getByText('New entries cannot be recorded for this Trade until its records agree.')).toBeTruthy();
   });
 });
@@ -496,9 +515,9 @@ describe('summary card', () => {
     expect(within(await summaryOf()).queryByText('Deviation active')).toBeNull();
   });
 
-  it('should show no summary figures on an incoherent Detail, leaving the Records disagree panel first', async () => {
+  it('should show no summary figures on an incoherent Detail, leaving the Facts cannot be replayed panel first', async () => {
     renderView(incoherentDetailOf([PC1, PC2], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'NonpositiveQuantity' }]));
-    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
     expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
     const regions = screen.getAllByRole('region').filter((r) => r.getAttribute('aria-label') === null || r.tagName === 'SECTION');
     expect(regions[0]).toBe(panel);
@@ -944,24 +963,49 @@ describe('missing or later evidence (P12, P13)', () => {
     expect(termValue(dated, 'Reward to target')).toBe('$480.00 · 1.92R');
   });
 
-  it('should word every Mark-dependent figure Not available outside calendar coverage while realized and fees keep their values', async () => {
+  it('should show Outside the market calendar with the date for an Open Trade Mark-dependent figures outside coverage while realized and fees keep their values', async () => {
     renderView(openDetailUncovered([PC1, PC2], '2031-01-02'));
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
     expect(within(valuation).queryByText('Expected Mark Date')).toBeNull();
     expect(termValue(valuation, 'Realized to date')).toBe('$0.00');
     expect(termValue(valuation, 'Incurred fees')).toBe('$2.00');
-    expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Not available');
+    expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Outside the market calendar: Thu Jan 2');
     expect(within(valuation).queryByText(/Mark missing/)).toBeNull();
     const risk = screen.getByRole('region', { name: 'Risk and reward' });
-    expect(termValue(risk, 'Risk to stop')).toBe('Not available');
+    expect(termValue(risk, 'Risk to stop')).toBe('Outside the market calendar: Thu Jan 2');
     expect(termValue(risk, 'Max reward')).toBe('Unbounded above');
+  });
+
+  it('should show each NotApplicable figure on Detail as Not applicable followed by its words, never a raw code', async () => {
+    const base = openDetailUncovered([PC1, PC2], '2031-01-02');
+    const notApplicable = (reason: string) => ({ kind: 'NotApplicable', reason });
+    const quality = base.entryQuality.kind === 'Value' ? base.entryQuality.value : undefined;
+    const view = {
+      ...base,
+      entryQuality: { kind: 'Value', value: { ...quality, slippage: notApplicable('EntryNotResolved') } },
+      current: {
+        ...base.current,
+        evaluation: {
+          ...base.current.evaluation,
+          ongoingRiskToStop: notApplicable('NoOngoingRisk'),
+          ongoingRiskToStopInPlanR: notApplicable('NoOngoingRisk'),
+          incrementalRewardToTarget: notApplicable('NoRemainingPosition'),
+          incrementalRewardToTargetInPlanR: notApplicable('NoRemainingPosition'),
+        },
+      },
+    } as unknown as TradeDetailView;
+    renderView(view);
+    const risk = await screen.findByRole('region', { name: 'Risk and reward' });
+    expect(termValue(risk, 'Risk to stop')).toBe('Not applicable: no risk to the Stop');
+    expect(termValue(risk, 'Reward to target')).toBe('Not applicable: no open position');
+    expect(termValue(screen.getByRole('region', { name: 'Entry Quality' }), 'Slippage')).toBe('Not applicable: entry not resolved yet');
   });
 
   it('should show an acknowledged unavailable Mark as the trader acknowledgment it is, not a link and not a price', async () => {
     const acknowledgment = { versionId: 'ack-1', kind: 'Asserted', observedAt: '2026-10-13T21:00:00Z', savedAt: '2026-10-13T21:30:00Z' };
     renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'AcknowledgedUnavailable', acknowledgment, stale: monContext } as never)));
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
-    expect(within(valuation).getByText('Acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price')).toBeTruthy();
+    expect(within(valuation).getByText('Mark acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price')).toBeTruthy();
     expect(within(valuation).queryByRole('link')).toBeNull();
     expect(within(valuation).queryByText(/Mark missing for/)).toBeNull();
     expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Acknowledged unavailable: XYZ, Tue Oct 13');
@@ -980,7 +1024,7 @@ describe('missing or later evidence (P12, P13)', () => {
     expect(within(entry).queryByText(/P&L/)).toBeNull();
     // The earlier close keeps its own line, and the current P&L waits for the next close.
     expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Current Marked Trade P&L')).toBe('+$65.00 · +0.26R');
-    expect(termValue(screen.getByRole('region', { name: 'Valuation' }), 'Current Marked Trade P&L')).toBe('Awaiting the next close');
+    expect(termValue(screen.getByRole('region', { name: 'Valuation' }), 'Current Marked Trade P&L')).toBe('Awaiting the close after Mon Oct 12');
   });
 });
 

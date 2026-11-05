@@ -1,6 +1,8 @@
 import type { CalculationResult } from '../app/types.ts';
 import { Rational } from '../domain/values/index.ts';
-import { money, quantity, rMultiple, shortDate } from './format.ts';
+import type { UnavailableReason } from '../domain/calculation-result/index.ts';
+import { notApplicableWords, text, unavailableWords, unboundedWords } from './calculation-words.ts';
+import { money, quantity, rMultiple } from './format.ts';
 
 const ZERO = Rational.of(0n);
 
@@ -10,15 +12,16 @@ export const closedViaSale = (mechanisms: readonly { readonly quantity: Rational
 // A gain carries a plus sign; a loss carries the minus the formats already give.
 export const signed = (format: (value: Rational) => string) => (value: Rational): string => (value.compare(ZERO) > 0 ? `+${format(value)}` : format(value));
 
-// Each reason in its own words: a missing Mark, the trader's acknowledgment that no price can be had, a close not yet come; a date outside coverage or any other code is just not available.
-function unavailable(result: Extract<CalculationResult<unknown>, { kind: 'Unavailable' }>): string {
-  if (result.reason === 'AwaitingClose') return 'Awaiting the next close';
-  if (!('date' in result)) return 'Not available';
-  const where = `${result.instrument.symbol}, ${shortDate(result.date)}`;
-  if (result.reason === 'MarkMissing') return `Mark missing: ${where}`;
-  if (result.reason === 'AcknowledgedUnavailable') return `Acknowledged unavailable: ${where}`;
-  return 'Not available';
-}
+// Only a finding's sentence prints a time; the label and figure lengths used here print none.
+const NO_ZONE = 'UTC';
+
+// The badge words for a reason without a number: the calculation-words module owns every text (P71).
+export const unavailableLabel = (reason: UnavailableReason): string => text(unavailableWords(reason, 'label', NO_ZONE));
+
+// A list has no result for a Trade whose facts cannot be replayed; it words FactsIncoherent, whose badge and figure these are.
+const FACTS_INCOHERENT = { reason: 'FactsIncoherent', findings: [] } as const satisfies UnavailableReason;
+export const FACTS_INCOHERENT_LABEL = unavailableLabel(FACTS_INCOHERENT);
+export const FACTS_INCOHERENT_FIGURE = text(unavailableWords(FACTS_INCOHERENT, 'figure', NO_ZONE));
 
 // A figure that may lack its Mark says so in words, never as a number or a zero.
 export function calculation<T>(result: CalculationResult<T>, format: (value: T) => string): string {
@@ -26,11 +29,11 @@ export function calculation<T>(result: CalculationResult<T>, format: (value: T) 
     case 'Value':
       return format(result.value);
     case 'Unbounded':
-      return `Unbounded ${result.direction.toLowerCase()}`;
+      return text(unboundedWords(result.direction));
     case 'NotApplicable':
-      return 'Not applicable';
+      return text(notApplicableWords(result, 'figure'));
     case 'Unavailable':
-      return unavailable(result);
+      return text(unavailableWords(result, 'figure', NO_ZONE));
   }
 }
 

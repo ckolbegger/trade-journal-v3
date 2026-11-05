@@ -5,7 +5,7 @@ import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeIte
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { calculation, pnlText, signed } from '../figures.ts';
+import { calculation, FACTS_INCOHERENT_FIGURE, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
@@ -201,7 +201,7 @@ function OpenList({
                 </td>
                 <td>
                   <TradeCell
-                    disagrees={item.integrity === 'Disagrees'}
+                    disagreement={disagreementBadge(item.integrity, derived)}
                     text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
                     line={
                       <>
@@ -230,14 +230,19 @@ function OpenList({
   );
 }
 
-const NOT_AVAILABLE = 'Not available';
+// A row without derived figures has facts that cannot be replayed: its figures read as FactsIncoherent's figure (A186).
+const NOT_AVAILABLE = FACTS_INCOHERENT_FIGURE;
+
+// "Records disagree" labels only an integrity disagreement of a Trade whose facts replay; one whose facts cannot be replayed gets FactsIncoherent's label (P72).
+const disagreementBadge = (integrity: 'Agrees' | 'Disagrees' | undefined, derived: unknown): string | undefined =>
+  integrity !== 'Disagrees' ? undefined : derived ? 'Records disagree' : FACTS_INCOHERENT_LABEL;
 
 type Current = OpenTradeItem['current'];
 
-// The Instrument and date lacking an exact Mark; absent when the P&L has its Mark, the date is outside coverage (decision 54) or the reason is not a known one.
+// The Instrument lacking an exact Mark; absent when the P&L has its Mark or the reason is another one (a date outside coverage, a close not yet come).
 function missingMark(current: Current) {
   const pnl = current.currentMarkedPnl;
-  return pnl.kind === 'Unavailable' && (pnl.reason === 'MarkMissing' || pnl.reason === 'AcknowledgedUnavailable') && 'date' in pnl ? { instrument: pnl.instrument, date: pnl.date } : undefined;
+  return pnl.kind === 'Unavailable' && (pnl.reason === 'MarkMissing' || pnl.reason === 'AcknowledgedUnavailable') ? { instrument: pnl.instrument } : undefined;
 }
 
 // Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
@@ -261,7 +266,7 @@ function StatusBadges({ current }: { readonly current: Current }) {
       {current.currentMarkedPnl.kind === 'Unavailable' && current.currentMarkedPnl.reason === 'MarkMissing' && (
         <>
           {' '}
-          <Badge tone="warning">Mark missing</Badge>
+          <Badge tone="warning">{unavailableLabel(current.currentMarkedPnl)}</Badge>
         </>
       )}
       {current.conditions.map((c) => {
@@ -285,13 +290,14 @@ function StatusBadges({ current }: { readonly current: Current }) {
 // columns are hidden there (plan section 2a). The wide layout hides the line instead.
 function TradeCell({
   text,
-  disagrees,
+  disagreement,
   line,
   badges,
   indicators,
 }: {
   readonly text: string;
-  readonly disagrees: boolean;
+  // The badge's words when the row's records disagree or its facts cannot be replayed; absent when they agree.
+  readonly disagreement: string | undefined;
   readonly line: ReactNode;
   readonly badges?: ReactNode;
   // Badges that belong to the first line, with the summary text.
@@ -302,10 +308,10 @@ function TradeCell({
       <TradeText text={text} />
       {/* Text, not colour alone, carries the meaning; an agreeing row shows nothing. The spaces keep
           the cell's text and accessible name from running the parts together. */}
-      {disagrees && (
+      {disagreement && (
         <>
           {' '}
-          <Badge tone="warning">Records disagree</Badge>
+          <Badge tone="warning">{disagreement}</Badge>
         </>
       )}
       {indicators}
@@ -410,7 +416,7 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
                 </td>
                 <td>
                   <TradeCell
-                    disagrees={item.integrity === 'Disagrees'}
+                    disagreement={disagreementBadge(item.integrity, derived)}
                     text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
                     indicators={
                       <>
@@ -524,7 +530,7 @@ function PlannedList({ state, retry }: ListProps) {
                 </td>
                 <td>
                   <TradeCell
-                    disagrees={item.integrity === 'Disagrees'}
+                    disagreement={disagreementBadge(item.integrity, derived)}
                     text={derived ? tradeSummary(derived.summary) : NOT_AVAILABLE}
                     line={`1R ${derived ? money(derived.oneR) : NOT_AVAILABLE} · Reward : risk ${derived ? ratio(derived.rewardRiskRatio) : NOT_AVAILABLE}`}
                   />

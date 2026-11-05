@@ -1152,6 +1152,25 @@ describe('entry context', () => {
   });
 });
 
+describe('receipt figures without a number (P72)', () => {
+  it('should show the receipt figure without a number in its own words, not a blanket Not applicable', async () => {
+    const facade = renderForm();
+    const result = recordedResult();
+    const value = (result as unknown as { postCommit: { derivation: { entryQuality: { value: Record<string, unknown> } } } }).postCommit.derivation.entryQuality.value;
+    value.actualRewardRisk = { kind: 'NotApplicable', reason: 'EntryAtOrBeyondStop' };
+    value.slippage = { kind: 'NotApplicable', reason: 'EntryNotResolved' };
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(result);
+    const user = userEvent.setup();
+    await fillRows(user, [['20', '51.00', '1.00', '2026-10-12T14:00']]);
+    await completeReflection(user);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const quality = within(await screen.findByRole('region', { name: 'Entry recorded' })).getByRole('region', { name: 'Entry Quality' });
+    const valueOf = (term: string) => within(quality).getByText(term, { selector: 'dt' }).nextElementSibling as HTMLElement;
+    expect(valueOf('Reward : risk').textContent).toBe('Not applicable: entry at or beyond the Stop planned 2.4');
+    expect(valueOf('Slippage').textContent).toBe('Not applicable: entry not resolved yet');
+  });
+});
+
 describe('R lines', () => {
   async function receiptEntryQuality() {
     const facade = renderForm();

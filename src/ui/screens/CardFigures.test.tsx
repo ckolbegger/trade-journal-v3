@@ -61,8 +61,8 @@ describe('figures (A158)', () => {
     expect(root.textContent).not.toMatch(/\$0\.00|(^|\s)0(\s|$)/);
     cleanup();
 
-    const b = render(<CardFigures trade={trade({ evaluation: evaluation({ rewardRiskNow: { kind: 'NotApplicable' } }) })} />);
-    expect(figure(b.container,'Reward : risk now')).toBe('Not applicable');
+    const b = render(<CardFigures trade={trade({ evaluation: evaluation({ rewardRiskNow: { kind: 'NotApplicable', reason: 'EntryAtOrBeyondStop' } }) })} />);
+    expect(figure(b.container,'Reward : risk now')).toBe('Not applicable: entry at or beyond the Stop');
   });
 
   it('should keep the dated last-close group beside the figures when the Review-date Mark is missing', () => {

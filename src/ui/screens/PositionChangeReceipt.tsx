@@ -4,6 +4,7 @@ import { PageTitle } from '../PageTitle.tsx';
 import { WithSecondLine } from '../SecondLine.tsx';
 import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
+import { calculation } from '../figures.ts';
 import { decimalMoney as price, localTime, money, ratio, rMultiple } from '../format.ts';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
@@ -55,8 +56,6 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
   const saved = changes.find((c) => c.factId === savedId)!;
   const quality = postCommit.derivation.entryQuality;
   const figures = quality.kind === 'Value' ? quality.value : undefined;
-  const shown = (r: { readonly kind: string; readonly value?: unknown }, format: (v: never) => string) =>
-    r.kind === 'Value' ? format(r.value as never) : 'Not applicable';
   const created = receipt.deviationReconciliation.filter((d) => d.action === 'Create');
   // An earlier-dated entry can change or end an existing occurrence (P5); Retain says nothing.
   const recorded = postCommit.trade.recordedDeviations ?? [];
@@ -102,15 +101,15 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
           <h2 id="entry-quality-heading">Entry Quality</h2>
           <dl>
             <dt>Average entry</dt>
-            <dd className="number">{shown(figures.averageEntry, money)}</dd>
+            <dd className="number">{calculation(figures.averageEntry, money)}</dd>
             <dt>Actual initial risk</dt>
-            <dd className="number"><WithSecondLine amount={shown(figures.actualInitialRisk, money)} second={shown(figures.riskInPlanR, rMultiple)} /></dd>
+            <dd className="number"><WithSecondLine amount={calculation(figures.actualInitialRisk, money)} second={calculation(figures.riskInPlanR, rMultiple)} /></dd>
             <dt>Actual initial reward</dt>
-            <dd className="number">{shown(figures.actualInitialReward, money)}</dd>
+            <dd className="number">{calculation(figures.actualInitialReward, money)}</dd>
             <dt>Reward : risk</dt>
-            <dd className="number"><WithSecondLine amount={shown(figures.actualRewardRisk, ratio)} second={`planned ${shown(figures.plannedRewardRisk, ratio)}`} /></dd>
+            <dd className="number"><WithSecondLine amount={calculation(figures.actualRewardRisk, ratio)} second={`planned ${calculation(figures.plannedRewardRisk, ratio)}`} /></dd>
             <dt>Slippage</dt>
-            <dd className="number">{shown(figures.slippage, money)}</dd>
+            <dd className="number">{calculation(figures.slippage, money)}</dd>
           </dl>
         </section>
       )}

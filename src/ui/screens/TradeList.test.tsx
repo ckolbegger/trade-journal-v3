@@ -289,7 +289,7 @@ describe('Closed list (A95)', () => {
     expect(await screen.findByText(/no closed trades yet/i)).toBeTruthy();
   });
 
-  it('should show an incoherent Closed row with Records disagree and Not available in place of its realized figures, keeping its Close Reason, close date and account', async () => {
+  it('should show an incoherent Closed row with Facts cannot be replayed and Not available in place of its realized figures, keeping its Close Reason, close date and account', async () => {
     const { strategy, account, institution, closeReason, terminalTime } = closedItem;
     const incoherent = { tradeId: 'trade-9', underlying: 'GHI', strategy, account, institution, closeReason, terminalTime, deviationCount: 0, reflectionOwed: true, integrity: 'Disagrees' };
     const disagreeing = { ...closedItem, tradeId: 'trade-10', underlying: 'JKL', integrity: 'Disagrees' };
@@ -300,7 +300,7 @@ describe('Closed list (A95)', () => {
     const [, broken, flagged] = within(table).getAllByRole('row');
     expect(within(broken!).getAllByRole('cell').map((c) => c.textContent)).toEqual([
       'GHI',
-      'Not available Records disagree Reflection owed Realized P&L Not available · Realized R Not available',
+      "Not available Facts can't be replayed Reflection owed Realized P&L Not available · Realized R Not available",
       'Not available',
       'Not available',
       'Not available',
@@ -531,10 +531,10 @@ describe('Trades table columns', () => {
   it('should show the Trade cell summary text and, on a second line, Net cost 3,007.00 for Open or 1R 250.00 and Reward : risk 2.4 for Planned', async () => {
     const open = await openTable([openItem]);
     const openCell = within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
-    expect(openCell.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00 · P&L Awaiting the next close');
+    expect(openCell.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00 · P&L Awaiting the close after Tue Oct 13');
     // T2.62: the "@" and its price sit in one no-wrap span, so the summary text has no break between them.
     expect(within(openCell).getByText('@ $50.10').className).toBe('nowrap');
-    expect(within(openCell).getByText('Net cost $3,007.00 · P&L Awaiting the next close').className).toBe('trade-line');
+    expect(within(openCell).getByText('Net cost $3,007.00 · P&L Awaiting the close after Tue Oct 13').className).toBe('trade-line');
     // The Net cost column carries the same figure for the wide layout.
     expect(within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[2]!.textContent).toBe('$3,007.00');
     cleanup();
@@ -548,8 +548,8 @@ describe('Trades table columns', () => {
   it("should separate the Trade cell's summary, badge and second line with a space", async () => {
     const open = await openTable([openItem, disagreeing]);
     const [, agreeing, coherent] = within(open).getAllByRole('row');
-    expect(within(agreeing!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00 · P&L Awaiting the next close');
-    expect(within(coherent!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00 · P&L Awaiting the next close');
+    expect(within(agreeing!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00 · P&L Awaiting the close after Tue Oct 13');
+    expect(within(coherent!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00 · P&L Awaiting the close after Tue Oct 13');
   });
 
   it('should show Entering · 60 of 100 or Resolved · 120.5 of 100 in the Open Entry cell', async () => {
@@ -598,10 +598,10 @@ describe('Trades table columns', () => {
     expect(within(agreeing!).queryByText(/records (dis)?agree/i)).toBeNull();
     const coherentCell = within(coherent!).getAllByRole('cell')[1]!;
     expect(within(coherentCell).getByText('Records disagree').className).toBe('badge');
-    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00 · P&L Awaiting the next close');
+    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00 · P&L Awaiting the close after Tue Oct 13');
     const brokenCells = within(broken!).getAllByRole('cell');
-    expect(brokenCells[1]!.textContent).toBe('Not available Records disagree Net cost Not available');
-    expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge');
+    expect(brokenCells[1]!.textContent).toBe("Not available Facts can't be replayed Net cost Not available");
+    expect(within(brokenCells[1]!).getByText("Facts can't be replayed").className).toBe('badge');
     expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
     expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-4');
     cleanup();
@@ -616,7 +616,7 @@ describe('Trades table columns', () => {
     expect(within(flaggedCells[1]!).getByText('Records disagree').className).toBe('badge');
     expect(flaggedCells[4]!.textContent).toBe('Awaiting entry');
     const lostCells = within(lost!).getAllByRole('cell');
-    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not available Records disagree 1R Not available · Reward : risk Not available', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
+    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', "Not available Facts can't be replayed 1R Not available · Reward : risk Not available", 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
   });
 });
 
@@ -698,14 +698,14 @@ describe('Open list current evaluation', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['/review?trade=trade-7&instrument=ABC', '/review?trade=trade-7&instrument=ABC']);
   });
 
-  it('should show Awaiting the next close in place of the P&L when the evaluation reports AwaitingClose, with no at-entry risk in the list, and the dated line when present', async () => {
+  it('should show Awaiting the close after the date in place of the P&L when the evaluation reports AwaitingClose, with no at-entry risk in the list, and the dated line when present', async () => {
     const atEntry = { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(503n, 10n), riskFromEntry: Rational.of(130n), rewardFromEntry: Rational.of(230n) };
     const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
     const awaiting = valued({ currentMarkedPnl: awaitingClose, currentMarkedPnlInPlanR: awaitingClose, atEntry, datedLine: dated });
     const table = await openTable([awaiting]);
     const [, row] = within(table).getAllByRole('row');
     const cells = within(row!).getAllByRole('cell');
-    expect(cells[3]!.textContent).toBe('Awaiting the next close Mon Oct 12 close +$120.00 · +0.48R');
+    expect(cells[3]!.textContent).toBe('Awaiting the close after Tue Oct 13 Mon Oct 12 close +$120.00 · +0.48R');
     // Awaiting a close is not a missing Mark: no link, no Mark missing badge.
     expect(within(cells[3]!).queryByRole('link')).toBeNull();
     expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
@@ -718,13 +718,13 @@ describe('Open list current evaluation', () => {
     expect(within(table).getByRole('columnheader', { name: 'Current Marked Trade P&L' }).textContent).toBe('P&L');
   });
 
-  it('should show Not available with no Review link and no Mark missing badge when the date lies outside session-policy coverage', async () => {
+  it('should show Outside the market calendar with no Review link and no Mark missing badge when the date lies outside session-policy coverage', async () => {
     const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2030-01-02' };
     const outside = { ...openItem, current: { currentMarkedPnl: uncovered, currentMarkedPnlInPlanR: uncovered, conditions: [], atEntry: null } };
     const table = await openTable([outside]);
     const [, row] = within(table).getAllByRole('row');
     const cells = within(row!).getAllByRole('cell');
-    expect(cells[3]!.textContent).toBe('Not available');
+    expect(cells[3]!.textContent).toBe('Outside the market calendar: Wed Jan 2');
     expect(within(row!).queryByRole('link', { name: /mark missing/i })).toBeNull();
     expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
   });
@@ -740,17 +740,6 @@ describe('Open list current evaluation', () => {
     expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
   });
 
-  it('should word an unknown reason as Not available with no Review link and no Mark missing badge', async () => {
-    const unknown = { kind: 'Unavailable', reason: 'SomeFutureReason', instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' };
-    const item = { ...openItem, current: { currentMarkedPnl: unknown, currentMarkedPnlInPlanR: unknown, conditions: [], atEntry: null } };
-    const table = await openTable([item]);
-    const [, row] = within(table).getAllByRole('row');
-    const cells = within(row!).getAllByRole('cell');
-    expect(cells[3]!.textContent).toBe('Not available');
-    expect(within(cells[3]!).queryByRole('link')).toBeNull();
-    expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
-  });
-
   it('should carry the P&L after Net cost in the second line of the Trade cell, with the Review link for a missing Mark, for the narrow layout', async () => {
     const missing = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark }), tradeId: 'trade-3', underlying: 'DEF' };
     const table = await openTable([valued(), missing]);
@@ -759,5 +748,37 @@ describe('Open list current evaluation', () => {
     expect(line(gain!).textContent).toBe('Net cost $3,007.00 · P&L +$582.00 · +2.33R');
     expect(line(lost!).textContent).toBe('Net cost $3,007.00 · P&L Mark missing: ABC, Tue Oct 13');
     expect(within(line(lost!)).getByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' }).getAttribute('href')).toBe('/review?trade=trade-3&instrument=ABC');
+  });
+});
+
+describe('lists, Detail and receipt words (P72)', () => {
+  async function openTable(items: readonly unknown[]) {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage(items));
+    renderList(facade, '/');
+    return screen.findByRole('table', { name: 'Open Trades' });
+  }
+  const missingItem = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark }), tradeId: 'trade-3', underlying: 'DEF' };
+
+  it('should show a missing Mark figure text in the Open list P&L cell and the Mark missing badge, from the module', async () => {
+    const table = await openTable([missingItem]);
+    const [, row] = within(table).getAllByRole('row');
+    const cells = within(row!).getAllByRole('cell');
+    expect(cells[3]!.textContent).toBe('Mark missing: ABC, Tue Oct 13');
+    expect(within(cells[1]!).getByText('Mark missing').className).toBe('badge');
+  });
+
+  it('should show Facts cannot be replayed as the badge of a Trade whose facts cannot be replayed, and Records disagree only on a Trade with an integrity disagreement', async () => {
+    const { strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
+    const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
+    const table = await openTable([{ ...valued(), integrity: 'Disagrees' }, incoherent]);
+    const [, coherent, broken] = within(table).getAllByRole('row');
+    const coherentCell = within(coherent!).getAllByRole('cell')[1]!;
+    expect(within(coherentCell).getByText('Records disagree').className).toBe('badge');
+    expect(within(coherentCell).queryByText("Facts can't be replayed")).toBeNull();
+    const brokenCell = within(broken!).getAllByRole('cell')[1]!;
+    expect(brokenCell.textContent).toBe("Not available Facts can't be replayed Net cost Not available");
+    expect(within(brokenCell).getByText("Facts can't be replayed").getAttribute('data-tone')).toBe('warning');
+    expect(within(brokenCell).queryByText('Records disagree')).toBeNull();
   });
 });
