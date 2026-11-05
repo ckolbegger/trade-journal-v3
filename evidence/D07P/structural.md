@@ -171,3 +171,16 @@ Session `45908ed6-788a-4e18-93f0-45ff13800d92`, model gpt-6.1-sol, 8 files revie
 Stage `browser-auto a39d0b3f`; the full tier ran (T7P.5 changed `src/ui/screens/` and `src/app/types.ts`). The runner's final table did not reach the main session (only an interim "still running" message did), so this table was read from the four output files; ports 5175, 9341 and 9342 were free afterwards (checked from the main session).
 
 Notes (from the T7P.5 report): `AwaitingClose` cannot reach a Review walked through `open` (the Review's cutoff is its date's close, so no Lot opens after the frame's close), so its pressure and range position case runs through `attentionOf`, as the breakdown allows for reasons `open` can't reach; the snapshot of workspace-v3 also needed its 6 `basis` entries reshaped (decision 78 covers `workspace-v*`). `save-marks.test.ts:113`'s title still says "kept MissingInput"; T7P.8 renames it.
+
+## T7P.6 UI: the wording module
+
+Compile-time check (scratch commit adding `{ reason: 'DummyScratch' }` to `UnavailableReason`, then `npm run typecheck`). The harness refuses `git reset` in the worktree, so the scratch commit was undone by a following commit that restores the file byte for byte (`git diff ce13811e -- src` is empty).
+
+```
+src/ui/calculation-words.ts(48,7): error TS2322: Type '{ readonly reason: "DummyScratch"; }' is not assignable to type 'Parts'.
+src/ui/calculation-words.ts(48,21): error TS1360: Type '{ readonly reason: "DummyScratch"; }' does not satisfy the expected type 'never'.
+src/coordinators/daily-review/attention.ts(92,114): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+src/ui/screens/review-attention.ts(20,57): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+```
+
+The module fails at its `never` default in `unavailableWords` (line 48) and at no catch-all. Two switches outside the module also fail (not fixed): `attention.ts` line 92 and `review-attention.ts` line 20, which have no default.
