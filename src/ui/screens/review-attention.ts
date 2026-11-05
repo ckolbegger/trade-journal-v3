@@ -1,7 +1,6 @@
 import type { ReviewTradeItem } from '../../app/types.ts';
-import { instrumentKey } from '../../domain/instrument/index.ts';
 import { Rational, formatDecimal } from '../../domain/values/index.ts';
-import { shortDate } from '../format.ts';
+import { text, unavailableWords } from '../calculation-words.ts';
 
 export const BAND_TEXT: Record<ReviewTradeItem['band'], string> = {
   Blocker: 'Blocker',
@@ -14,31 +13,13 @@ export const BAND_TEXT: Record<ReviewTradeItem['band'], string> = {
 // The share of the planned range travelled, as a whole percent.
 const percent = (share: Rational): string => formatDecimal(Rational.of(share.numerator * 100n, share.denominator), 0);
 
-type UnavailableAttention = Extract<ReviewTradeItem['reasons'][number], { code: 'Unavailable' }>;
-
-// Each reason the evaluation can be Unavailable for, in words.
-function unavailableText(reason: UnavailableAttention): string {
-  switch (reason.reason) {
-    case 'MarkMissing':
-      return `Mark missing for ${instrumentKey(reason.instrument)} on ${shortDate(reason.date)}`;
-    case 'AcknowledgedUnavailable':
-      return `Mark acknowledged unavailable for ${instrumentKey(reason.instrument)} on ${shortDate(reason.date)}`;
-    case 'AwaitingClose':
-      return `Awaiting the next close after ${shortDate(reason.after)}`;
-    case 'FactsIncoherent':
-      return 'Recorded facts cannot be replayed';
-    case 'SessionPolicyNotCovered':
-      return 'Not available';
-  }
-}
-
-// Why a Trade is in its band, in words.
-export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: ReviewTradeItem['basis']): string {
+// Why a Trade is in its band, in words; an Unavailable reason's words are the module's sentence (P72).
+export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: ReviewTradeItem['basis'], timeZone: string): string {
   switch (reason.code) {
     case 'IntegrityDisagreement':
       return 'Recorded facts disagree';
     case 'Unavailable':
-      return unavailableText(reason);
+      return text(unavailableWords(reason, 'sentence', timeZone));
     case 'StopBreached':
       return 'Stop breached';
     case 'TargetReached':

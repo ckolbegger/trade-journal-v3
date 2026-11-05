@@ -110,7 +110,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     expect(review.nextStep.trade.tradeId).toBe(c);
   }, 30_000);
 
-  it('should carry the acknowledged reason in the range position of T-C after DEF is saved unavailable, in its card and its walked item, where a Missing Mark kept MissingInput', async () => {
+  it('should carry the acknowledged reason in the range position of T-C after DEF is saved unavailable, in its card and its walked item, where a Missing Mark stays Unavailable with the MarkMissing reason', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { c } = await cardFixture(stack, { withoutMarks: true });
     const unavailable: MarketDataPrepareEntry = { key: { instrumentKey: 'DEF', tradingDate: REVIEW_DATE }, expectedRevision: 'None', intention: { kind: 'AssertUnavailable', reason: 'No quote available.' } };

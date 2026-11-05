@@ -2,7 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { money, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
-import { calculation, signed } from '../figures.ts';
+import { calculation, FACTS_INCOHERENT_FIGURE, signed } from '../figures.ts';
+import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { CardFigures } from './CardFigures.tsx';
@@ -30,7 +31,7 @@ function remainsText(progress: CardProgress): string {
 
 // The slider's description speaks these figures in the app's own words (figures.ts), never as zero when missing.
 function sliderFigures(figures: SliderEvaluation | undefined): { readonly riskToStop: string; readonly pnl: string; readonly rewardToRisk: string } {
-  if (!figures) return { riskToStop: 'Not available', pnl: 'Not available', rewardToRisk: 'Not available' };
+  if (!figures) return { riskToStop: FACTS_INCOHERENT_FIGURE, pnl: FACTS_INCOHERENT_FIGURE, rewardToRisk: FACTS_INCOHERENT_FIGURE };
   return { riskToStop: calculation(figures.riskToStop, money), pnl: calculation(figures.pnl, signed(money)), rewardToRisk: calculation(figures.rewardRiskNow, ratio) };
 }
 
@@ -277,6 +278,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
     setHandledReflections(finished);
     moveOn('Reflections');
   }
+  const { timeZone } = useRuntime();
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
@@ -292,7 +294,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
         </p>
       )}
       {trade.attention.reasons.map((reason, i) => (
-        <p key={i}>{reasonText(reason, trade.attention.basis)}</p>
+        <p key={i}>{reasonText(reason, trade.attention.basis, timeZone ?? 'UTC')}</p>
       ))}
       <CardFigures trade={trade} />
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}

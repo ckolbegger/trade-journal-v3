@@ -63,3 +63,19 @@ describe('ends and missing inputs', () => {
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe('Acknowledged unavailable: DEF, Mon Oct 12');
   });
 });
+
+describe('Review words (P72)', () => {
+  it('should give the slider figure text and accessible name the figure length for a missing, an acknowledged and an awaited Mark', () => {
+    const def = { kind: 'Stock' as const, symbol: 'DEF' };
+    const positions: readonly [RangePositionResult, string][] = [
+      [{ kind: 'Unavailable', reason: 'MarkMissing', instrument: def, date: '2026-10-12' }, 'Mark missing: DEF, Mon Oct 12'],
+      [{ kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: def, date: '2026-10-12' }, 'Acknowledged unavailable: DEF, Mon Oct 12'],
+      [{ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' }, 'Awaiting the close after Mon Oct 12'],
+    ];
+    for (const [position, words] of positions) {
+      const { unmount } = render(<StopTargetSlider position={position} figures={figures} />);
+      expect(screen.getByRole('img').getAttribute('aria-label')).toBe(words);
+      unmount();
+    }
+  });
+});

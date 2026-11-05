@@ -7,6 +7,7 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, ReviewCompletion, WalkedTrade } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
+import type { IncoherentFact } from '../../domain/calculation-result/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
@@ -960,7 +961,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
       `Action missing for ${NAME_F}`,
       `Reflection due for ${NAME_A}`,
       `${NAME_F}: recorded facts disagree`,
-      'ABC: recorded facts cannot be replayed',
+      "ABC: Facts can't be replayed",
     ]);
     const open = (index: number) => within(headers()[index]!.closest('li')!);
     const panelOpen = (index: number, panel: 'Marks' | 'Reflections' | 'Action') => open(index).getByRole('button', { name: new RegExp(`^${panel}\\b`) }).getAttribute('aria-expanded');
@@ -1126,5 +1127,60 @@ describe('Trade names in messages and blockers (decision 68)', () => {
     await user.click(headers()[3]!);
     expect((await screen.findByRole('region', { name: 'XYZ review' })).closest('li')!.getAttribute('data-trade-id')).toBe('t-a');
     expect(screen.queryByRole('region', { name: `${NAME_F} review` })).toBeNull();
+  });
+});
+
+describe('Review words (P72)', () => {
+  const DEF = { kind: 'Stock' as const, symbol: 'DEF' };
+  const sell = (quantity: string): IncoherentFact => ({ factId: 'e1', kind: 'Execution', instrument: symbol, economicTime: '2026-10-14T14:30:00Z', side: 'Sell', quantity, reason: 'ExceedsOpenQuantity', available: Rational.of(100n) });
+  const duplicate: IncoherentFact = { factId: 'p1', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' };
+  const SELL_SENTENCE = 'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open';
+
+  it('should give the attention reason the sentence length for each Unavailable reason', async () => {
+    const reasons: WalkedTrade['reasons'] = [
+      { code: 'Unavailable', reason: 'MarkMissing', instrument: DEF, date: '2026-10-12' },
+      { code: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: DEF, date: '2026-10-12' },
+      { code: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' },
+      { code: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: DEF, date: '2026-10-12' },
+      { code: 'Unavailable', reason: 'FactsIncoherent', findings: [sell('120'), duplicate] },
+    ];
+    renderReview(cardFacade(review({ families: [review().families[0]!, { family: 'Trades', trades: [{ ...TC, reasons }] }] })), { at: '/review?trade=t-c' });
+
+    const card = await screen.findByRole('region', { name: 'DEF review' });
+    for (const words of [
+      'Mark missing for DEF on Mon Oct 12',
+      'Mark acknowledged unavailable for DEF on Mon Oct 12',
+      'Awaiting the next close after Mon Oct 12',
+      'Mon Oct 12 is outside the market calendar',
+      `${SELL_SENTENCE} and 1 more`,
+    ]) {
+      expect(within(card).getByText(words).tagName).toBe('P');
+    }
+  });
+
+  it('should wrap the Instrument of a Mark-missing blocker in its card link, keeping the sentence words', async () => {
+    renderReview(cardFacade(review({ completion: incomplete({ code: 'MarkMissing', instrument: DEF, tradingDate: '2026-10-12', trades: ['t-c'] }) })));
+    const status = await screen.findByRole('region', { name: 'Review status' });
+
+    const [blocker] = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    expect(blocker!.textContent).toBe('Mark missing for DEF on Mon Oct 12');
+    expect(within(blocker!).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
+  });
+
+  it('should give the blocker for facts that cannot be replayed the Trade name, the first finding sentence and and 1 more, linking to Trade Detail', async () => {
+    renderReview(cardFacade(review({ completion: incomplete({ code: 'IncoherentFacts', tradeId: 't-b', findings: [sell('120'), duplicate] }) })));
+    const status = await screen.findByRole('region', { name: 'Review status' });
+
+    const [blocker] = within(within(status).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    expect(blocker!.textContent).toBe(`ABC: ${SELL_SENTENCE} and 1 more`);
+    expect(within(blocker!).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/t-b');
+  });
+
+  it('should show the slider figures of a Trade whose facts cannot be replayed as Not available, from the module', async () => {
+    const incoherent = { ...TF, figures: undefined };
+    renderReview(cardFacade(review({ families: [review().families[0]!, { family: 'Trades', trades: [incoherent] }] })));
+    await screen.findAllByRole('button', { name: /^Review / });
+
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe('57% of the way from the Stop to the Target, entry at 29%. Risk to stop Not available, P&L Not available, Reward : risk Not available.');
   });
 });

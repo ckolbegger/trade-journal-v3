@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
+import { text, unavailableWords } from '../calculation-words.ts';
 import { PageTitle } from '../PageTitle.tsx';
+import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
 import type { EntryDirty } from './CardMarks.tsx';
@@ -58,21 +60,20 @@ function CardLink({ tradeId, open, panel, instrument, children }: { readonly tra
 }
 
 // The Trade a blocker names, by its name (A150); each opens the card and panel that resolve it (A161).
-function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: string) => string, open: OpenCard): ReactNode {
+function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: string) => string, open: OpenCard, timeZone: string): ReactNode {
   switch (reason.code) {
     case 'MarkMissing': {
       const tradeId = walkedTrades(review).find((t) => reason.trades.includes(t.tradeId))?.tradeId;
-      const date = shortDate(reason.tradingDate);
-      const key = instrumentKey(reason.instrument);
-      if (tradeId === undefined) return `Mark missing for ${key} on ${date}`;
-      return (
-        <>
-          Mark missing for{' '}
-          <CardLink tradeId={tradeId} open={open} panel="Marks" instrument={key}>
-            {key}
-          </CardLink>{' '}
-          on {date}
-        </>
+      // The sentence is the module's; its Instrument part is the card link.
+      const parts = unavailableWords({ reason: 'MarkMissing', instrument: reason.instrument, date: reason.tradingDate }, 'sentence', timeZone);
+      return parts.map((part, i) =>
+        part.kind === 'instrument' && tradeId !== undefined ? (
+          <CardLink key={i} tradeId={tradeId} open={open} panel="Marks" instrument={instrumentKey(part.instrument)}>
+            {text([part])}
+          </CardLink>
+        ) : (
+          <Fragment key={i}>{text([part])}</Fragment>
+        ),
       );
     }
     case 'ActionMissing':
@@ -97,7 +98,12 @@ function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: st
     case 'IntegrityDisagreement':
       return `${name(reason.tradeId)}: recorded facts disagree`;
     case 'IncoherentFacts':
-      return `${name(reason.tradeId)}: recorded facts cannot be replayed`;
+      // The Trade links to its Detail, where each finding is listed; the sentence is the module's.
+      return (
+        <>
+          <Link to={`/trades/${reason.tradeId}`}>{name(reason.tradeId)}</Link>: {text(unavailableWords({ reason: 'FactsIncoherent', findings: reason.findings }, 'sentence', timeZone))}
+        </>
+      );
   }
 }
 
@@ -132,6 +138,7 @@ function tradeLabels(trades: readonly WalkedTrade[], owed: readonly OwedReflecti
 }
 
 function Status({ review, completion, name, openCard }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly name: (tradeId: string) => string; readonly openCard: OpenCard }) {
+  const { timeZone } = useRuntime();
   return (
     <section className="card" aria-label="Review status">
       <ReviewDate date={review.reviewDate} />
@@ -148,7 +155,7 @@ function Status({ review, completion, name, openCard }: { readonly review: Ready
       {completion.kind === 'Incomplete' && (
         <ul aria-label="Blockers">
           {marksFirst(completion.reasons).map((reason, i) => (
-            <li key={i}>{blockerText(reason, review, name, openCard)}</li>
+            <li key={i}>{blockerText(reason, review, name, openCard, timeZone ?? 'UTC')}</li>
           ))}
         </ul>
       )}
