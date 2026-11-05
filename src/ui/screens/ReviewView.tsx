@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
-import { text, unavailableWords } from '../calculation-words.ts';
+import { isMarkMissingBlocker, text, unavailableWords } from '../calculation-words.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
@@ -61,21 +61,21 @@ function CardLink({ tradeId, open, panel, instrument, children }: { readonly tra
 
 // The Trade a blocker names, by its name (A150); each opens the card and panel that resolve it (A161).
 function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: string) => string, open: OpenCard, timeZone: string): ReactNode {
+  if (isMarkMissingBlocker(reason)) {
+    const tradeId = walkedTrades(review).find((t) => reason.trades.includes(t.tradeId))?.tradeId;
+    // The sentence is the module's; its Instrument part is the card link.
+    const parts = unavailableWords({ reason: 'MarkMissing', instrument: reason.instrument, date: reason.tradingDate }, 'sentence', timeZone);
+    return parts.map((part, i) =>
+      part.kind === 'instrument' && tradeId !== undefined ? (
+        <CardLink key={i} tradeId={tradeId} open={open} panel="Marks" instrument={instrumentKey(part.instrument)}>
+          {text([part])}
+        </CardLink>
+      ) : (
+        <Fragment key={i}>{text([part])}</Fragment>
+      ),
+    );
+  }
   switch (reason.code) {
-    case 'MarkMissing': {
-      const tradeId = walkedTrades(review).find((t) => reason.trades.includes(t.tradeId))?.tradeId;
-      // The sentence is the module's; its Instrument part is the card link.
-      const parts = unavailableWords({ reason: 'MarkMissing', instrument: reason.instrument, date: reason.tradingDate }, 'sentence', timeZone);
-      return parts.map((part, i) =>
-        part.kind === 'instrument' && tradeId !== undefined ? (
-          <CardLink key={i} tradeId={tradeId} open={open} panel="Marks" instrument={instrumentKey(part.instrument)}>
-            {text([part])}
-          </CardLink>
-        ) : (
-          <Fragment key={i}>{text([part])}</Fragment>
-        ),
-      );
-    }
     case 'ActionMissing':
       return (
         <>
@@ -118,7 +118,7 @@ function ReviewDate({ date }: { readonly date: string }) {
 const walkedTrades = (review: Ready) => review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
 
 // The blockers with Missing Marks first (P36), the rest in the order the Review gave them.
-const marksFirst = (reasons: readonly IncompleteReason[]): IncompleteReason[] => [...reasons.filter((r) => r.code === 'MarkMissing'), ...reasons.filter((r) => r.code !== 'MarkMissing')];
+const marksFirst = (reasons: readonly IncompleteReason[]): IncompleteReason[] => [...reasons.filter(isMarkMissingBlocker), ...reasons.filter((r) => !isMarkMissingBlocker(r))];
 
 // How the Review names a Trade it holds, from one lookup over its walked Trades: `name` in a sentence (A150, "XYZ (Long 100
 // shares @ $50.18)"), and `line` for "also held by", the summary line alone (decision 67). The Trade id stands for one it does not hold.

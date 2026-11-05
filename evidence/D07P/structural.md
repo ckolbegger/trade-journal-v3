@@ -288,3 +288,35 @@ Session `0a0586a3-8fc4-4be2-9300-b2406633c6d2`, model gpt-6.1-sol, 3 files revie
 | Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-8-review-words-checks.txt` |
 
 Stage `browser-auto 03273a2d`; tier full ("first matching path since 03273a2d: src/ui/screens/ReviewCard.tsx"). The 5 failures are the same 5 planned ones as after T7P.7 (`integrity.spec.ts:57` and `:91`, `breach-overrun.spec.ts:15`, `responsive-a11y.spec.ts:118` at its line 175, `sliders.spec.ts:60`), each a section 6.2 row (with decision 79's), which T7P.10 changes. The browser stage took 8.2 min, over the runner's 8-minute warning line (tech debt item 6); T7P.11 adds `e2e/d7p`, so the gate's browser stage nears the 10-minute Bash limit.
+
+## T7P.9 verify:wording
+
+`tools/verify-wording.ts`, wired as `npm run verify:wording`. `full-suite.sh` derives its checks from every `verify:*` script in `package.json`, so no edit to the script was needed; the suite-runner agent file does not hard-code 12.
+
+**What it checks** (every non-test file under `src/ui/` except `src/ui/calculation-words.ts`; comments are blanked first, line numbers kept):
+- Reason words, case-insensitive, straight or curly apostrophe (19 phrases from section 1.4's tables): Mark missing; Acknowledged unavailable; Mark acknowledged unavailable; Awaiting close; Awaiting the close; Awaiting the next close; Outside calendar; Outside the market calendar; is outside the market calendar; Facts can't be replayed; Not available; Not applicable; Unbounded above; Unbounded below; is more than the; leaves the Position flat; names a Planned Leg; has a quantity that isn't positive; shares its identity.
+- Reason codes in a `case` or an equality comparison (17): MarkMissing, AcknowledgedUnavailable, AwaitingClose, SessionPolicyNotCovered, FactsIncoherent, NoRemainingPosition, NotClosed, EntryNotResolved, NoOngoingRisk, EntryAtOrBeyondStop, EntryAtOrBeyondTarget, NonPositiveAtEntry, UnknownPlannedLeg, NonpositiveQuantity, DuplicateFactId, FlatBeforeLaterFacts, ExceedsOpenQuantity. A comparison whose other side is a `.kind` field is Market Data's Expected-Mark Status (section 1.1) and is not matched.
+- Choices: "Not available" is in the list (it is FactsIncoherent's whole figure; a screen writing it itself is the drift P74 targets, and no other screen text in `src/ui` uses it today). The not-applicable tails ("no open position", "not closed yet", ...) are left out: they appear only after "Not applicable: ", which is listed, and "no open position" alone is ordinary text ("This Trade has no open Position to exit.").
+- `npm run verify:wording -- --list` prints the lists.
+
+**Moves for the known hits** (behavior and text unchanged; new exports of `calculation-words.ts`): `isMarkMissing(reason)`, `isMarkLacking(reason)` (MarkMissing or AcknowledgedUnavailable) and `isMarkMissingBlocker(blocker)`. `TradeList.tsx` (`missingMark`, `StatusBadges`) and `ReviewView.tsx` (`blockerText`, `marksFirst`) use them. `figures.ts` already went through the module. `npx vitest run src`: 97 files, 1223 tests pass.
+
+**Run 1, current tree:** exit 1, 5 matches, all text or codes the plan keeps outside reason wording (reported to the main session, not changed):
+```
+src/ui/screens/MarkEntry.tsx:160: words: Acknowledged Unavailable
+src/ui/screens/position-change-issues.ts:30: code: issue.code === 'ExceedsOpenQuantity'
+src/ui/screens/position-change-issues.ts:31: code: issue.code === 'FlatBeforeLaterFacts'
+src/ui/screens/position-change-issues.ts:61: code: issue.code === 'ExceedsOpenQuantity'
+src/ui/screens/position-change-issues.ts:61: code: issue.code === 'FlatBeforeLaterFacts'
+```
+
+**Planted run** (uncommitted Edit-tool edits: `<p>{'Mark missing'}</p>` in `AboutView.tsx`, a function with `case 'NotClosed':` in `format.ts`), exit 1, names both:
+```
+verify:wording failed: 7 match(es) outside src/ui/calculation-words.ts
+  src/ui/format.ts:48: code: case 'NotClosed'
+  src/ui/screens/AboutView.tsx:103: words: Mark missing
+  (and the 5 above)
+```
+Both edits restored with the Edit tool; `git diff` for those two files is empty.
+
+**Checks stage:** `.claude/scripts/full-suite.sh evidence/D07P t7p-9-checks-probe checks` reported "12 of 13 exit 0" with `npm run verify:wording` the failing one (the 5 matches above); the probe's file was deleted.

@@ -5,6 +5,7 @@ import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeIte
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
+import { isMarkLacking, isMarkMissing } from '../calculation-words.ts';
 import { calculation, FACTS_INCOHERENT_FIGURE, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -242,7 +243,7 @@ type Current = OpenTradeItem['current'];
 // The Instrument lacking an exact Mark; absent when the P&L has its Mark or the reason is another one (a date outside coverage, a close not yet come).
 function missingMark(current: Current) {
   const pnl = current.currentMarkedPnl;
-  return pnl.kind === 'Unavailable' && (pnl.reason === 'MarkMissing' || pnl.reason === 'AcknowledgedUnavailable') ? { instrument: pnl.instrument } : undefined;
+  return pnl.kind === 'Unavailable' && isMarkLacking(pnl) ? { instrument: pnl.instrument } : undefined;
 }
 
 // Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
@@ -263,7 +264,7 @@ function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId
 function StatusBadges({ current }: { readonly current: Current }) {
   return (
     <>
-      {current.currentMarkedPnl.kind === 'Unavailable' && current.currentMarkedPnl.reason === 'MarkMissing' && (
+      {current.currentMarkedPnl.kind === 'Unavailable' && isMarkMissing(current.currentMarkedPnl) && (
         <>
           {' '}
           <Badge tone="warning">{unavailableLabel(current.currentMarkedPnl)}</Badge>

@@ -1,4 +1,5 @@
 import type { IncoherentFact, NotApplicableReason, UnavailableReason } from '../domain/calculation-result/index.ts';
+import type { IncompleteReason } from '../app/types.ts';
 import type { Instrument } from '../domain/instrument/index.ts';
 import { toWorkspaceLocal } from '../domain/time/index.ts';
 import { parseDecimal } from '../domain/values/index.ts';
@@ -121,3 +122,13 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
 };
 // One text at every length.
 export const unboundedWords = (direction: 'Above' | 'Below'): Parts => [t(direction === 'Above' ? 'Unbounded above' : 'Unbounded below')];
+
+// The one place a screen asks which reason a result or a Review blocker holds (P74): a screen branches on these, never on a reason code.
+type MarkMissingReason = Extract<UnavailableReason, { readonly reason: 'MarkMissing' }>;
+type MarkLackingReason = Extract<UnavailableReason, { readonly reason: 'MarkMissing' | 'AcknowledgedUnavailable' }>;
+// The result lacks the Mark it needs.
+export const isMarkMissing = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkMissingReason> => reason.reason === 'MarkMissing';
+// The result lacks its Mark, or the trader acknowledged that none can be had.
+export const isMarkLacking = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkLackingReason> => reason.reason === 'MarkMissing' || reason.reason === 'AcknowledgedUnavailable';
+// A Review blocker for a Mark that is missing.
+export const isMarkMissingBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'MarkMissing' }> => blocker.code === 'MarkMissing';
