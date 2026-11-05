@@ -211,7 +211,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | none |
-| Next step | Setup: create `evidence/D07P/` (section 3) and record the location checks; then T7P.1, base the setup commit. |
-| Last commit | `docs(plan): the D7 prefactor's handoff`, tagged `claude-opus-5.5-pre-d7p` (local; nothing pushed since `ad870c91`) |
+| Tasks done | setup (`evidence/D07P/`, location checks recorded) |
+| Next step | T7P.1, base `72ad430a` (the setup commit). |
+| Last commit | `docs(plan): D7P handoff progress, T7P.1 base` (local; nothing pushed since `ad870c91`) |
 | Open questions | none yet |
