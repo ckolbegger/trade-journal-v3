@@ -610,7 +610,7 @@ describe("session-policy coverage")
   it should show a shell notice when today is outside coverage, saying valuation and review need an updated release, while every other control stays enabled
 ```
 
-**Amended by plan revision 13 (decision 54):** the notice is a warning icon in the shell, like the browser-storage icon, whose message reads "Coming soon - update calendar" until a calendar-update capability exists; every other control stays enabled.
+**Amended by plan revision 13 (decision 54):** the notice is a warning icon in the shell, like the browser-storage icon, whose message reads "Coming soon - update calendar" until a calendar-update capability exists; every other control stays enabled. **Amended by plan revision 42 (decision 77, the D7 prefactor's P72):** each Mark-dependent figure outside coverage, `Unavailable(SessionPolicyNotCovered)`, reads "Outside the market calendar: <date>" in place of "Not available"; the icon and its message are unchanged.
 
 ---
 

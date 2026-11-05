@@ -307,6 +307,7 @@ describe("Trades table columns")
   it should show the Trade cell's summary text and, on a second line, "Net cost $3,007.00" (Open) or "1R $250.00 · Reward : risk 2.4" (Planned)
   it should show "Entering · 60 of 100" or "Resolved · 120 of 100" in the Open Entry cell
   it should show a "Records disagree" badge in the Trade cell of a disagreeing row (coherent with findings, or incoherent with "Not available" as its Trade text), and no integrity badge on an agreeing row
+  (Amended by plan revision 42, decision 77, the D7 prefactor's P72: an incoherent row's badge reads "Facts can't be replayed"; "Records disagree" stays for a coherent row with findings. The "Not available" Trade text is unchanged.)
 ```
 
 The narrow/wide hiding (`display: none`) is CSS, measured in section 5.
@@ -381,6 +382,7 @@ describe("summary card")
   it should add the Average entry and Actual initial risk to the Open summary once the entry is resolved, and say "Entry not yet resolved" before
   it should show an active-Deviation badge in the Open summary when a recorded Deviation is Active
   it should show no summary figures on an incoherent Detail, leaving the Records disagree panel first
+  (Amended by plan revision 42, decision 77: on an incoherent Detail the panel is headed "Facts can't be replayed" and lists each finding's sentence.)
 ```
 
 **Test impact:**
