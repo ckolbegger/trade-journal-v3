@@ -226,3 +226,40 @@ Session `3fa0f67d-a797-4d32-a6dc-f43a7b64c266`, model gpt-6.1-sol, 1 file review
 ### Cumulative run after T7P.6-B1 (`t7p-6-b1-exhaustive-text`, at `3ad6841b`)
 
 Unit 97 files, 1215 passed; integration 76 files, 154 passed; browser full tier (`browser-auto aad86ca3`, "first matching path since aad86ca3: src/ui/calculation-words.ts") 163 passed (7.6 min); checks 12 of 12 exit 0. Outputs `suite-runs/t7p-6-b1-exhaustive-text-*.txt`. Ports free before and after.
+
+## T7P.7 UI: lists, Detail and the receipt word through the module
+
+Behavioral; commit `cc35ebb4`. 6 cases (`tdd-log.md`). `calculation()` in `figures.ts` now dispatches every non-Value result to the module at the figure length; `TradeList`, `TradeDetail` and `PositionChangeReceipt` word reasons only through it. Detail's findings table is one column of finding sentences, under "Facts can't be replayed".
+
+**First-run passes (flagged):** case 1 (missing Mark figure and badge, built by T4.18): mutation "Mark missin" in the figure failed by `AssertionError: expected 'Mark missin: ABC, Tue Oct 13' to be 'Mark missing: ABC, Tue Oct 13'`. Case 3 ("Outside the market calendar" on Open Detail): the subagent had routed `calculation()` through the module while making case 2 green, ahead of case 3's red, a deviation from strict red-first that it reported; mutation (Unavailable worded at the label length) failed by `AssertionError: expected 'Outside calendar' to be 'Outside the market calendar: Thu Jan 2'`.
+
+**Unit expectations changed to section 1.4's texts** (A185 does not cover text; these are the approved rewordings): `TradeList.test.tsx` ("Awaiting the next close" → "Awaiting the close after Tue Oct 13", 5 places; session-policy "Not available" → "Outside the market calendar: Wed Jan 2"; incoherent rows "Records disagree" → "Facts can't be replayed", the coherent disagreement keeps "Records disagree"); `TradeDetail.test.tsx` (panel region "Records disagree" → "Facts can't be replayed" in 4 cases; the findings table's two columns → one column of sentences; "Awaiting the close after Mon Oct 12"; Valuation note "Acknowledged unavailable for XYZ …" → "Mark acknowledged unavailable for XYZ …"); `figures.test.ts` (SessionPolicyNotCovered, AwaitingClose); `CardFigures.test.tsx` (a reason-less `NotApplicable` fixture given `EntryAtOrBeyondStop`, reading "Not applicable: entry at or beyond the Stop").
+
+**Implementation decision (main session):** two cases that fed an invented `SomeFutureReason` and expected the catch-all "Not available" (`TradeList.test.tsx`, `figures.test.ts`) were removed by the subagent. They asserted the catch-all that P71 forbids ("every switch is exhaustive, with no catch-all"), and the breakdown's "Why" names those catch-alls as the defect. Accepted; recorded for the final report.
+
+**Browser expectation outside section 6.2:** the Valuation note for an acknowledged Mark (`e2e/d4/responsive-a11y.spec.ts:175`). Asked the user; approved as plan revision 44, decision 79 (section 6.2 gains the row).
+
+### ocr review of `cc35ebb4`
+
+Session `774107fa-7e35-40dc-8fff-bf2a7f19f5b8`, model gpt-6.1-sol, 4 files reviewed in place (`figures.ts`, `PositionChangeReceipt.tsx`, `TradeDetail.tsx`, `TradeList.tsx`), **no findings**. Raw output: [ocr/T7P.7-cc35ebb4.json](ocr/T7P.7-cc35ebb4.json).
+
+### Cumulative run after T7P.7 (`t7p-7-lists-detail`, at `cc35ebb4`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 97 files, 1218 passed, exit 0 | `suite-runs/t7p-7-lists-detail-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-7-lists-detail-integration.txt` |
+| Browser (Chromium), full tier | 5 failed, 158 passed (7.9 min), exit 1 | `suite-runs/t7p-7-lists-detail-browser.txt` |
+| Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-7-lists-detail-checks.txt` |
+
+Stage `browser-auto 6807d801`; tier full ("first matching path since 6807d801: src/ui/figures.test.ts"). Every browser failure is a planned text change that T7P.10 makes:
+
+| Failing test | Section 6.2 row |
+|---|---|
+| `e2e/d2/integrity.spec.ts:57`, incoherent Planned row expects "Records disagree"; reads "Facts can't be replayed" | `integrity.spec.ts`, incoherent cases (row badge) |
+| `e2e/d2/integrity.spec.ts:91`, region "Records disagree" not found on the incoherent Detail | `integrity.spec.ts`, incoherent cases (panel name) |
+| `e2e/d4/breach-overrun.spec.ts:15`, expects "Awaiting the next close"; reads "Awaiting the close after Mon Oct 12" | `breach-overrun.spec.ts` |
+| `e2e/d4/responsive-a11y.spec.ts:118` (assertion at line 175), Valuation note "Mark acknowledged unavailable for DEF …" | the row added by decision 79; the same test's Tuesday-noon `AwaitingClose` lines (6.2's `responsive-a11y` row) come after it and were not reached |
+| `e2e/d5r/sliders.spec.ts:60`, accessible name gains ": no risk to the Stop." | `sliders.spec.ts` |
+
+The `ui-alignment` and `narrow` cases did not fail, consistent with 6.2's "if that fixture is incoherent"; T7P.10 confirms each fixture's kind.
