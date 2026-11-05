@@ -6,3 +6,8 @@ Every `it should` case from the D7 prefactor breakdown, section 3, run red and t
 
 | Task | Case | Phase | Command | Outcome | Failure excerpt |
 |---|---|---|---|---|---|
+| T7P.2 | should give a stock key as its symbol | red | `npx vitest run src/domain/instrument/instrument.test.ts -t "should give a stock key as its symbol"` | exit 1; Tests  no tests | Error: Cannot find module './index' imported from /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/src/domain/instrument/instrument.test.ts  |
+| T7P.2 | should give a stock key as its symbol | green | `npx vitest run src/domain/instrument/instrument.test.ts -t "should give a stock key as its symbol"` | exit 0; Tests  1 passed, 1 skipped (2) |  |
+| T7P.2 | should read a stock key back as the same Instrument | red | `npx vitest run src/domain/instrument/instrument.test.ts -t "should read a stock key back as the same Instrument"` | exit 1; Tests  1 failed, 1 skipped (2) | AssertionError: expected { kind: 'Stock', symbol: '' } to deeply equal { kind: 'Stock', symbol: 'XYZ' }  |
+| T7P.2 | should read a stock key back as the same Instrument | green | `npx vitest run src/domain/instrument/instrument.test.ts -t "should read a stock key back as the same Instrument"` | exit 0; Tests  1 passed, 1 skipped (2) |  |
+| T7P.2 | all | refactor | n/a | none | No refactor: module is 10 lines; calculation-result now imports Instrument type-only |

@@ -1,3 +1,5 @@
+import type { Instrument } from '../instrument'
+
 // One independently useful calculation: a Value, an Unbounded result, or no number because the
 // evidence is Unavailable or the method is NotApplicable. Reasons are stable codes in two unions;
 // a figure narrows the type parameters to the reasons it can return.
@@ -24,7 +26,7 @@ export type NotApplicableReason =
 // What an Unavailable result names: the Instrument and date lacking an exact Mark, or the close
 // still awaited. Temporary, with the Unavailable form above.
 export type UnavailableDetail =
-  | { readonly instrument: { readonly kind: 'Stock'; readonly symbol: string }; readonly date: string }
+  | { readonly instrument: Instrument; readonly date: string }
   | { readonly after: string };
 
 export type CalculationResult<
