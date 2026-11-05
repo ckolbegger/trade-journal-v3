@@ -3859,11 +3859,13 @@
               }
             ],
             "basis": {
-              "kind": "Comparable",
-              "side": "Losing",
-              "share": "57/67",
-              "atEntry": "268/1",
-              "now": "40/1"
+              "kind": "Value",
+              "value": {
+                "side": "Losing",
+                "share": "57/67",
+                "atEntry": "268/1",
+                "now": "40/1"
+              }
             },
             "reflections": {
               "due": 0,
@@ -3881,11 +3883,13 @@
               }
             ],
             "basis": {
-              "kind": "Comparable",
-              "side": "Losing",
-              "share": "49/169",
-              "atEntry": "338/1",
-              "now": "240/1"
+              "kind": "Value",
+              "value": {
+                "side": "Losing",
+                "share": "49/169",
+                "atEntry": "338/1",
+                "now": "240/1"
+              }
             },
             "reflections": {
               "due": 0,
@@ -3903,11 +3907,13 @@
               }
             ],
             "basis": {
-              "kind": "Comparable",
-              "side": "Winning",
-              "share": "79/365",
-              "atEntry": "730/1",
-              "now": "572/1"
+              "kind": "Value",
+              "value": {
+                "side": "Winning",
+                "share": "79/365",
+                "atEntry": "730/1",
+                "now": "572/1"
+              }
             },
             "reflections": {
               "due": 1,
@@ -3949,11 +3955,13 @@
           }
         ],
         "basis": {
-          "kind": "Comparable",
-          "side": "Losing",
-          "share": "57/67",
-          "atEntry": "268/1",
-          "now": "40/1"
+          "kind": "Value",
+          "value": {
+            "side": "Losing",
+            "share": "57/67",
+            "atEntry": "268/1",
+            "now": "40/1"
+          }
         }
       },
       "labels": {
@@ -4240,11 +4248,13 @@
           }
         ],
         "basis": {
-          "kind": "Comparable",
-          "side": "Losing",
-          "share": "49/169",
-          "atEntry": "338/1",
-          "now": "240/1"
+          "kind": "Value",
+          "value": {
+            "side": "Losing",
+            "share": "49/169",
+            "atEntry": "338/1",
+            "now": "240/1"
+          }
         }
       },
       "labels": {
@@ -4582,11 +4592,13 @@
           }
         ],
         "basis": {
-          "kind": "Comparable",
-          "side": "Winning",
-          "share": "79/365",
-          "atEntry": "730/1",
-          "now": "572/1"
+          "kind": "Value",
+          "value": {
+            "side": "Winning",
+            "share": "79/365",
+            "atEntry": "730/1",
+            "now": "572/1"
+          }
         }
       },
       "labels": {

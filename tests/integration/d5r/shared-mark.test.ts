@@ -14,13 +14,13 @@ describe('I5R.3 Shared Mark through either card', () => {
     if (review.kind !== 'Ready') throw new Error(review.kind);
     const walked = (id: string) => review.trades.find((t) => t.tradeId === id)!;
     // Both items are placed from XYZ 52.00: T-A 9/17 and T-F 4/7 (section 4's table).
-    expect(walked(trades.a).rangePosition).toEqual({ kind: 'Placed', now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) });
-    expect(walked(trades.f).rangePosition).toEqual({ kind: 'Placed', now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) });
+    expect(walked(trades.a).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
+    expect(walked(trades.f).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) } });
     expect(walked(trades.a).figures?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
     expect(walked(trades.f).figures?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(3n, 4n) });
     // No Mark-missing blocker for XYZ remains; the others do.
     const reasons = review.completion.kind === 'Incomplete' ? review.completion.reasons : [];
-    expect(reasons.filter((r) => r.code === 'MarkMissing').map((r) => (r.code === 'MarkMissing' ? r.instrumentKey : '')).sort()).toEqual(['ABC', 'DEF', 'JKL']);
+    expect(reasons.filter((r) => r.code === 'MarkMissing').map((r) => (r.code === 'MarkMissing' ? r.instrument.symbol : '')).sort()).toEqual(['ABC', 'DEF', 'JKL']);
 
     // A fresh open agrees, and each Trade's card uses the same XYZ Mark.
     const reopened = await openReview(app, d);

@@ -16,11 +16,11 @@ describe('I5R.4 Range position and baseline end to end', () => {
     const walked = opened.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
     const position = (id: string) => walked.find((t) => t.tradeId === id)!.rangePosition;
     const now = (id: string) => walked.find((t) => t.tradeId === id)!.figures?.rewardRiskNow;
-    expect(position(trades.a)).toEqual({ kind: 'Placed', now: r(9n, 17n), atEntry: r(134n, 425n) });
-    expect(position(trades.b)).toEqual({ kind: 'Placed', now: r(0n), atEntry: r(1n, 4n), pinned: 'Stop' });
-    expect(position(trades.c)).toEqual({ kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: opened.reviewDate });
-    expect(position(trades.e)).toEqual({ kind: 'Placed', now: r(2n, 11n), atEntry: r(1n, 11n) });
-    expect(position(trades.f)).toEqual({ kind: 'Placed', now: r(4n, 7n), atEntry: r(2n, 7n) });
+    expect(position(trades.a)).toEqual({ kind: 'Value', value: { now: r(9n, 17n), atEntry: r(134n, 425n) } });
+    expect(position(trades.b)).toEqual({ kind: 'Value', value: { now: r(0n), atEntry: r(1n, 4n), pinned: 'Stop' } });
+    expect(position(trades.c)).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: opened.reviewDate });
+    expect(position(trades.e)).toEqual({ kind: 'Value', value: { now: r(2n, 11n), atEntry: r(1n, 11n) } });
+    expect(position(trades.f)).toEqual({ kind: 'Value', value: { now: r(4n, 7n), atEntry: r(2n, 7n) } });
     expect(now(trades.a)).toEqual({ kind: 'Value', value: r(8n, 9n) });
     expect(now(trades.b)?.kind).toBe('NotApplicable');
     expect(now(trades.c)?.kind).toBe('Unavailable');

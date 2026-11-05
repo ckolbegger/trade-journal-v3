@@ -39,8 +39,8 @@ const walkedTrade = (tradeId: string, underlying: string): WalkedTrade => ({
   lastActivity: '2026-10-13T14:00:00Z',
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
-  basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
-  rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 2n) },
+  basis: { kind: 'Value', value: { side: 'None', share: rational(0n) } },
+  rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 2n) } },
   progress: cardProgress(0, 0, { owed: false }),
 });
 

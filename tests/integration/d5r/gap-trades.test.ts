@@ -20,7 +20,7 @@ describe('I5R.5 Gap Trades', () => {
     // The gap is not among the reasons the Review is incomplete: DEF's Monday Mark, the five Actions and D-1 are.
     const reasons = opened.completion.kind === 'Incomplete' ? opened.completion.reasons : [];
     expect(reasons.map((reason) => reason.code).sort()).toEqual(['ActionMissing', 'ActionMissing', 'ActionMissing', 'ActionMissing', 'ActionMissing', 'MarkMissing', 'ReflectionDue']);
-    expect(reasons.filter((reason) => reason.code === 'MarkMissing')).toEqual([expect.objectContaining({ instrumentKey: 'DEF', tradingDate: MONDAY })]);
+    expect(reasons.filter((reason) => reason.code === 'MarkMissing')).toEqual([expect.objectContaining({ instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: MONDAY })]);
 
     // Resolve every obligation of the Review date: the Review completes, and the Friday gap is still listed.
     const unavailable = await app.MarketData.save({ intention: 'AssertUnavailable', instrumentKey: 'DEF', tradingDate: MONDAY, reason: 'No quote available.', expectedResolutionRevision: 'None' });
@@ -32,7 +32,7 @@ describe('I5R.5 Gap Trades', () => {
     for (const tradeId of [trades.a, trades.b, trades.c, trades.e, trades.f]) await saveAction(app, d, tradeId);
 
     const done = await openReview(app, d);
-    expect(done.completion).toMatchObject({ kind: 'CompleteWithUnavailableMarks', instruments: ['DEF'] });
+    expect(done.completion).toMatchObject({ kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }] });
     const stillOpen = done.families.find((f) => f.family === 'Marks');
     expect(stillOpen?.family === 'Marks' && stillOpen.earlier.map((g) => [g.instrumentKey, g.missing])).toEqual([['XYZ', [FRIDAY_DATE]]]);
   }, 60_000);

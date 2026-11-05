@@ -70,12 +70,12 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     const review = ready(await saveMarks(stack, a, xyzEntries));
 
     expect(review.progress).toEqual({ tradesWithAction: 0, tradesEligible: 5 });
-    const missing = review.completion.kind === 'Incomplete' ? review.completion.reasons.filter((r) => r.code === 'MarkMissing').map((r) => (r.code === 'MarkMissing' ? r.instrumentKey : '')) : [];
+    const missing = review.completion.kind === 'Incomplete' ? review.completion.reasons.filter((r) => r.code === 'MarkMissing').map((r) => (r.code === 'MarkMissing' ? r.instrument.symbol : '')) : [];
     expect(missing.sort()).toEqual(['ABC', 'DEF', 'JKL']);
     expect(review.trade.tradeId).toBe(a);
-    expect(review.trade.attention.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) });
+    expect(review.trade.attention.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
     expect(review.trade.evaluation?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
-    expect(review.trades.find((t) => t.tradeId === f)!.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) });
+    expect(review.trades.find((t) => t.tradeId === f)!.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) } });
     // The binding is the one a fresh open gives.
     const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
     expect(reopened.kind === 'Ready' && reopened.binding).toEqual(review.binding);
@@ -117,7 +117,7 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
 
     const review = ready(await saveMarks(stack, c, [unavailable]));
 
-    const acknowledged = { kind: 'NotPlaced', reason: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: REVIEW_DATE };
+    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: REVIEW_DATE };
     expect(review.trade.attention.rangePosition).toMatchObject(acknowledged);
     expect(review.trades.find((t) => t.tradeId === c)!.rangePosition).toMatchObject(acknowledged);
   }, 30_000);

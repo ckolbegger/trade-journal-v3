@@ -5,6 +5,7 @@ import { dumpAll } from '../../../tests/support/stack.ts';
 import { createDailyReview, type OpenDailyReviewResult, type ReflectionSaveBinding, type SaveDailyReviewResult } from './index.ts';
 
 const open = (stack: ReviewStack, asOf: string) => stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
+const stock = (symbol: string) => ({ kind: 'Stock', symbol }) as const;
 
 function ready(result: OpenDailyReviewResult) {
   if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
@@ -199,14 +200,14 @@ describe('attention order', () => {
     expect(blocker!.reasons).toEqual([{ code: 'IntegrityDisagreement', findings: [expect.objectContaining({ kind: 'DeviationMissing' })] }]);
     // T-B: 100 @ 30.00 marked 27.50 breaches the 28.00 Stop by $50.00; the whole risk at entry ($200.00) is consumed.
     expect(boundary!.reasons).toEqual([{ code: 'StopBreached', conditionId: 'stop-1', overrun: Rational.of(50n) }]);
-    expect(boundary!.basis).toEqual({ kind: 'Comparable', side: 'Losing', share: Rational.of(1n), atEntry: Rational.of(200n), now: Rational.of(0n) });
+    expect(boundary!.basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: Rational.of(1n), atEntry: Rational.of(200n), now: Rational.of(0n) } });
     // T-C: DEF has no Review-date Mark, so the missing input is named.
-    expect(limited!.reasons).toEqual([{ code: 'MarkMissing', instrumentKey: 'DEF', date: '2026-10-12' }]);
-    expect(limited!.basis).toEqual({ kind: 'NotComparable', reason: 'MissingInput', instrumentKey: 'DEF', date: '2026-10-12' });
+    expect(limited!.reasons).toEqual([{ code: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' }]);
+    expect(limited!.basis).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' });
     // T-A: reward at entry $582.00 against $400.00 now.
     expect(pressureA!.reasons).toEqual([{ code: 'PressureTowardTarget' }]);
-    expect(pressureA!.basis).toEqual({ kind: 'Comparable', side: 'Winning', share: Rational.of(91n, 291n), atEntry: Rational.of(582n), now: Rational.of(400n) });
-    expect(pressureE!.basis).toEqual({ kind: 'Comparable', side: 'Winning', share: Rational.of(1n, 10n), atEntry: Rational.of(1000n), now: Rational.of(900n) });
+    expect(pressureA!.basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: Rational.of(91n, 291n), atEntry: Rational.of(582n), now: Rational.of(400n) } });
+    expect(pressureE!.basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: Rational.of(1n, 10n), atEntry: Rational.of(1000n), now: Rational.of(900n) } });
   }, 30_000);
 
   it('should carry each walked Trade summary, the open quantity at its average price (decision 67)', async () => {
@@ -228,7 +229,7 @@ describe('attention order', () => {
     const [item] = walk(await open(stack, MONDAY_1700));
 
     expect(item).toEqual(expect.objectContaining({ tradeId: b.tradeId, band: 'BoundaryReached' }));
-    expect(item!.basis).toEqual(expect.objectContaining({ kind: 'Comparable', now: Rational.of(0n) }));
+    expect(item!.basis).toMatchObject({ kind: 'Value', value: { now: Rational.of(0n) } });
   });
 
   it('should give T-A pressure 91/291 and T-E pressure 1/10 as winning shares, measured from each Trade open cost without fees', async () => {
@@ -239,8 +240,8 @@ describe('attention order', () => {
 
     // T-A: 60 @ 50.10 and 40 @ 50.30 cost 5,018.00 (fees of 2.00 are not part of it); 52.00 is
     // (5,600.00 - 5,018.00 - 400.00) / 582.00 of the way to the 56.00 Target.
-    expect(trades.find((t) => t.tradeId === a)!.basis).toEqual(expect.objectContaining({ side: 'Winning', share: Rational.of(91n, 291n) }));
-    expect(trades.find((t) => t.tradeId === e)!.basis).toEqual(expect.objectContaining({ side: 'Winning', share: Rational.of(1n, 10n) }));
+    expect(trades.find((t) => t.tradeId === a)!.basis).toMatchObject({ kind: 'Value', value: { side: 'Winning', share: Rational.of(91n, 291n) } });
+    expect(trades.find((t) => t.tradeId === e)!.basis).toMatchObject({ kind: 'Value', value: { side: 'Winning', share: Rational.of(1n, 10n) } });
   }, 30_000);
 
   it('should give equal pressure 3/4 to a Trade marked 48.50 and one marked 53.00, and order the losing one first whatever their Last Activity', async () => {
@@ -263,7 +264,7 @@ describe('attention order', () => {
         [loser.tradeId, 'QuantifiedPressure'],
         [winner.tradeId, 'QuantifiedPressure'],
       ]);
-      expect(trades.map((t) => [t.basis.kind === 'Comparable' && t.basis.side, t.basis.kind === 'Comparable' && t.basis.share])).toEqual([
+      expect(trades.map((t) => [t.basis.kind === 'Value' && t.basis.value.side, t.basis.kind === 'Value' && t.basis.value.share])).toEqual([
         ['Losing', Rational.of(3n, 4n)],
         ['Winning', Rational.of(3n, 4n)],
       ]);
@@ -304,7 +305,7 @@ describe('attention order', () => {
       [e.tradeId, 'QuantifiedPressure'],
       [flat.tradeId, 'Routine'],
     ]);
-    expect(trades[1]!.basis).toEqual({ kind: 'Comparable', side: 'None', share: Rational.of(0n) });
+    expect(trades[1]!.basis).toEqual({ kind: 'Value', value: { side: 'None', share: Rational.of(0n) } });
   }, 30_000);
 });
 
@@ -323,8 +324,8 @@ describe('pressure that cannot be compared', () => {
     const trades = walk(await open(stack, MONDAY_1700));
 
     expect(trades.map((t) => [t.tradeId, t.basis])).toEqual([
-      [pastTarget.tradeId, { kind: 'NotComparable', reason: 'NonPositiveAtEntry', side: 'Winning' }],
-      [atStop.tradeId, { kind: 'NotComparable', reason: 'NonPositiveAtEntry', side: 'Losing' }],
+      [pastTarget.tradeId, { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Winning' }],
+      [atStop.tradeId, { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Losing' }],
     ]);
   }, 30_000);
 });
@@ -341,7 +342,7 @@ describe('facts that cannot be replayed', () => {
     const review = ready(await open(stack, MONDAY_1700));
 
     const [item] = walk(review);
-    expect(item).toEqual(expect.objectContaining({ tradeId: trade.tradeId, band: 'Blocker', reasons: [{ code: 'IncoherentFacts', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] }));
+    expect(item).toEqual(expect.objectContaining({ tradeId: trade.tradeId, band: 'Blocker', reasons: [{ code: 'Unavailable', reason: 'FactsIncoherent', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] }));
     expect(review.completion).toEqual({ kind: 'Incomplete', reasons: [{ code: 'IncoherentFacts', tradeId: trade.tradeId, findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] });
   });
 });
@@ -364,7 +365,7 @@ describe('facts that cannot be replayed after the cutoff', () => {
 
     const review = ready(await open(stack, MONDAY_1700));
 
-    expect(walk(review)).toEqual([expect.objectContaining({ tradeId: trade.tradeId, band: 'Blocker', reasons: [{ code: 'IncoherentFacts', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] })]);
+    expect(walk(review)).toEqual([expect.objectContaining({ tradeId: trade.tradeId, band: 'Blocker', reasons: [{ code: 'Unavailable', reason: 'FactsIncoherent', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] })]);
     expect(review.completion).toEqual({ kind: 'Incomplete', reasons: [{ code: 'IncoherentFacts', tradeId: trade.tradeId, findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] });
   }, 30_000);
 });
@@ -494,7 +495,7 @@ describe('completion', () => {
     expect(review.completion).toEqual({
       kind: 'Incomplete',
       reasons: [
-        { code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: [c] },
+        { code: 'MarkMissing', instrument: stock('DEF'), tradingDate: '2026-10-12', trades: [c] },
         { code: 'ActionMissing', tradeId: b },
         { code: 'ActionMissing', tradeId: c },
         { code: 'ActionMissing', tradeId: a },
@@ -523,7 +524,7 @@ describe('completion', () => {
 
     expect(review.completion).toEqual({
       kind: 'CompleteWithUnavailableMarks',
-      instruments: ['DEF'],
+      instruments: [stock('DEF')],
       trades: [c],
       families: ['Valuation', 'Risk', 'Reward', 'ConditionStatus'],
     });
@@ -828,7 +829,7 @@ describe('getTrade', () => {
     const unreplayable = await stack.dailyReview.getTrade({ reviewDate, tradeId: e, binding });
     if (unreplayable.kind !== 'Ready') throw new Error(`expected Ready, got ${unreplayable.kind}`);
     expect(unreplayable.trade.attention).toEqual(items.find((t) => t.tradeId === e));
-    expect(unreplayable.trade.attention.reasons).toEqual([expect.objectContaining({ code: 'IncoherentFacts' })]);
+    expect(unreplayable.trade.attention.reasons).toEqual([expect.objectContaining({ code: 'Unavailable', reason: 'FactsIncoherent' })]);
     expect(unreplayable.trade).not.toHaveProperty('evaluation');
     expect(unreplayable.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
   }, 30_000);
@@ -843,9 +844,9 @@ describe('range position per walked Trade (P39)', () => {
 
     expect(trades.map((t) => t.tradeId)).toEqual([b, c, f, a, e]);
     const positionOf = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)!.rangePosition;
-    expect(positionOf(a)).toEqual({ kind: 'Placed', now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) });
-    expect(positionOf(e)).toEqual({ kind: 'Placed', now: Rational.of(2n, 11n), atEntry: Rational.of(1n, 11n) });
-    expect(positionOf(f)).toEqual({ kind: 'Placed', now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) });
+    expect(positionOf(a)).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
+    expect(positionOf(e)).toEqual({ kind: 'Value', value: { now: Rational.of(2n, 11n), atEntry: Rational.of(1n, 11n) } });
+    expect(positionOf(f)).toEqual({ kind: 'Value', value: { now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) } });
   }, 30_000);
 
   it('should return T-B share now as 0 with its StopBreached reason, and T-C as not placed with the missing Instrument and date', async () => {
@@ -856,8 +857,8 @@ describe('range position per walked Trade (P39)', () => {
 
     const tb = trades.find((t) => t.tradeId === b)!;
     expect(tb.reasons).toEqual([expect.objectContaining({ code: 'StopBreached' })]);
-    expect(tb.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' });
-    expect(trades.find((t) => t.tradeId === c)!.rangePosition).toEqual({ kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: '2026-10-12' });
+    expect(tb.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' } });
+    expect(trades.find((t) => t.tradeId === c)!.rangePosition).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' });
   }, 30_000);
 
   // Added beyond the planned cases: the Target end of the pin rule (reward zero gives share 1).
@@ -870,7 +871,7 @@ describe('range position per walked Trade (P39)', () => {
     const [item] = walk(await open(stack, MONDAY_1700));
 
     expect(item!.reasons).toEqual([expect.objectContaining({ code: 'TargetReached' })]);
-    expect(item!.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(1n), atEntry: Rational.of(250n, 350n), pinned: 'Target' });
+    expect(item!.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(1n), atEntry: Rational.of(250n, 350n), pinned: 'Target' } });
   }, 30_000);
 });
 
@@ -1113,4 +1114,117 @@ describe('card progress in save results (A165, Q12)', () => {
     for (const tradeId of [a, f]) expect(panelsOf(trades.find((t) => t.tradeId === tradeId)!.progress)[0]).toEqual({ panel: 'Marks', done: true, resolved: 1, needed: 0 });
     expect(trade.progress).toEqual(trades.find((t) => t.tradeId === a)!.progress);
   }, 60_000);
+});
+
+describe('pressure and range position (P66, P67)', () => {
+  it('should return pressure and range position as Values with todays figures for XYZ, ABC and JKL', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b, e } = await cardFixture(stack);
+
+    const trades = walk(await open(stack, MONDAY_1700));
+
+    const of = (id: string) => trades.find((t) => t.tradeId === id)!;
+    expect(of(a).basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: Rational.of(91n, 291n), atEntry: Rational.of(582n), now: Rational.of(400n) } });
+    expect(of(a).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } });
+    expect(of(b).basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: Rational.of(1n), atEntry: Rational.of(200n), now: Rational.of(0n) } });
+    expect(of(b).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' } });
+    expect(of(e).basis).toEqual({ kind: 'Value', value: { side: 'Winning', share: Rational.of(1n, 10n), atEntry: Rational.of(1000n), now: Rational.of(900n) } });
+    expect(of(e).rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(2n, 11n), atEntry: Rational.of(1n, 11n) } });
+  }, 30_000);
+
+  it('should return DEFs pressure and range position as the same Unavailable MarkMissing DEF Mon Oct 12 its evaluation returns', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { c } = await cardFixture(stack);
+
+    const item = walk(await open(stack, MONDAY_1700)).find((t) => t.tradeId === c)!;
+
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: stock('DEF'), date: '2026-10-12' };
+    expect(item.basis).toEqual(missing);
+    expect(item.rangePosition).toEqual(missing);
+  }, 30_000);
+
+  it('should return an acknowledged DEF Mark as Unavailable AcknowledgedUnavailable in both, no longer merged with a missing Mark in the pressure', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { c } = await cardFixture(stack);
+    await stack.acknowledge('DEF');
+
+    const item = walk(await open(stack, MONDAY_1700)).find((t) => t.tradeId === c)!;
+
+    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: stock('DEF'), date: '2026-10-12' };
+    expect(item.basis).toEqual(acknowledged);
+    expect(item.rangePosition).toEqual(acknowledged);
+  }, 30_000);
+
+  it('should return pressure NotApplicable NonPositiveAtEntry Losing with range position still a Value, for a Trade whose risk at entry is not positive', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    // Filled at its Stop and marked below it: no risk was taken at entry.
+    const atStop = await stack.confirm({ symbol: 'LOW', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
+    await stack.fill(atStop, TEN_AM, '100', '28.00');
+    await stack.saveMark('LOW', '27.00');
+
+    const [item] = walk(await open(stack, MONDAY_1700));
+
+    expect(item!.basis).toEqual({ kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Losing' });
+    expect(item!.rangePosition).toEqual({ kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(0n), pinned: 'Stop' } });
+  }, 30_000);
+
+  it('should return a Trade whose facts cannot be replayed with both as Unavailable FactsIncoherent carrying its findings', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    await stack.saveMark('XYZ', '52.00');
+    await breakFirstExecution(stack, trade.tradeId);
+
+    const [item] = walk(await open(stack, MONDAY_1700));
+
+    const incoherent = { kind: 'Unavailable', reason: 'FactsIncoherent', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg', kind: 'Execution', instrument: stock('XYZ') })] };
+    expect(item!.basis).toEqual(incoherent);
+    expect(item!.rangePosition).toEqual(incoherent);
+  }, 30_000);
+});
+
+describe('attention reasons and incomplete reasons (P67, P68)', () => {
+  it('should give the blocker for facts that cannot be replayed the same FactsIncoherent reason, with its findings', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    await stack.saveMark('XYZ', '52.00');
+    await breakFirstExecution(stack, trade.tradeId);
+
+    const [item] = walk(await open(stack, MONDAY_1700));
+
+    const findings = [expect.objectContaining({ reason: 'UnknownPlannedLeg', kind: 'Execution' })];
+    expect(item!.band).toBe('Blocker');
+    expect(item!.reasons).toEqual([{ code: 'Unavailable', reason: 'FactsIncoherent', findings }]);
+    expect(item!.basis).toEqual({ kind: 'Unavailable', reason: 'FactsIncoherent', findings });
+  }, 30_000);
+
+  it('should name the Instrument of a MarkMissing incomplete reason as an Instrument, converted from its key', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { c } = await cardFixture(stack);
+
+    const review = ready(await open(stack, MONDAY_1700));
+
+    if (review.completion.kind !== 'Incomplete') throw new Error('expected an Incomplete Review');
+    expect(review.completion.reasons.filter((r) => r.code === 'MarkMissing')).toEqual([{ code: 'MarkMissing', instrument: stock('DEF'), tradingDate: '2026-10-12', trades: [c] }]);
+  }, 30_000);
+});
+
+describe("the Review's session-policy reach (P73)", () => {
+  it('should open the Review with its as-of instant outside session-policy coverage and return what it returns today', async () => {
+    // Coverage is 2024-01-01 to 2028-12-31. After it, and early on its first morning (the Review date would be 2023-12-31), open rejects the as-of instant.
+    const after = await reviewStack('2029-01-03T22:00:00Z');
+    await cardFixture(after);
+    expect(await open(after, '2029-01-03T22:00:00Z')).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2029-01-03', coverage: { first: '2024-01-01', last: '2028-12-31' } }],
+    });
+    const before = await reviewStack('2024-01-02T14:00:00Z');
+    const trade = await before.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: '2023-12-28T14:00:00Z' });
+    await before.fill(trade, '2023-12-28T15:00:00Z', '100', '50.00');
+    expect(await open(before, '2024-01-02T14:00:00Z')).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2023-12-31', coverage: { first: '2024-01-01', last: '2028-12-31' } }],
+    });
+  }, 30_000);
 });

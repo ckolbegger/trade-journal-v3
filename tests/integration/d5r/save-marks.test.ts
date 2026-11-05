@@ -64,8 +64,8 @@ describe('I5R.1 Save Marks together', () => {
     expect(marksFamily.earlier.some((g) => g.instrumentKey === 'XYZ')).toBe(false);
     const walked = reopened.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
     const c = walked.find((t) => t.tradeId === trades.c)!;
-    expect(c.rangePosition).toEqual({ kind: 'NotPlaced', reason: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: MONDAY });
-    expect(c.reasons).toContainEqual({ code: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: MONDAY });
+    expect(c.rangePosition).toEqual({ kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: MONDAY });
+    expect(c.reasons).toContainEqual({ code: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: MONDAY });
 
     // Actions for the five Trades and D-1 resolved: the Review completes with DEF unavailable.
     const { form } = await bindingFor(live, d, trades.a);
@@ -75,7 +75,7 @@ describe('I5R.1 Save Marks together', () => {
     expect((await openReview(live, d)).completion.kind).toBe('Incomplete');
     for (const tradeId of [trades.a, trades.b, trades.c, trades.e, trades.f]) await saveAction(live, d, tradeId);
     const done = await openReview(live, d);
-    expect(done.completion).toMatchObject({ kind: 'CompleteWithUnavailableMarks', instruments: ['DEF'], trades: [trades.c] });
+    expect(done.completion).toMatchObject({ kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }], trades: [trades.c] });
 
     // Durable state: the three records the saves wrote, one acknowledgment among all records.
     const final = (await observations(d.factory)).filter((o) => !seeded.includes(keyOf(o)));

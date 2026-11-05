@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
+import { instrumentKey } from '../../domain/instrument/index.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
@@ -62,12 +63,13 @@ function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: st
     case 'MarkMissing': {
       const tradeId = walkedTrades(review).find((t) => reason.trades.includes(t.tradeId))?.tradeId;
       const date = shortDate(reason.tradingDate);
-      if (tradeId === undefined) return `Mark missing for ${reason.instrumentKey} on ${date}`;
+      const key = instrumentKey(reason.instrument);
+      if (tradeId === undefined) return `Mark missing for ${key} on ${date}`;
       return (
         <>
           Mark missing for{' '}
-          <CardLink tradeId={tradeId} open={open} panel="Marks" instrument={reason.instrumentKey}>
-            {reason.instrumentKey}
+          <CardLink tradeId={tradeId} open={open} panel="Marks" instrument={key}>
+            {key}
           </CardLink>{' '}
           on {date}
         </>
@@ -138,7 +140,7 @@ function Status({ review, completion, name, openCard }: { readonly review: Ready
       </p>
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">
-          <p>Instruments: {completion.instruments.join(', ')}</p>
+          <p>Instruments: {completion.instruments.map(instrumentKey).join(', ')}</p>
           <p>Trades: {completion.trades.map(name).join(', ')}</p>
           <p>Not calculated: {completion.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
         </div>

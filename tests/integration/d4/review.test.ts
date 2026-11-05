@@ -39,7 +39,7 @@ describe('I4.13 Review end to end', () => {
     await saveAction(app, d, c);
     await saveAction(app, d, e);
 
-    const expectedCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: ['DEF'], trades: [c] };
+    const expectedCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }], trades: [c] };
     const done = await openReview(app, d);
     expect(done.completion).toMatchObject(expectedCompletion);
 

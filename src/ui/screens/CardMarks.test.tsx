@@ -40,8 +40,8 @@ const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> 
   lastActivity: '2026-10-12T14:00:00Z',
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
-  basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
-  rangePosition: { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: underlying, date: MONDAY },
+  basis: { kind: 'Value', value: { side: 'None', share: rational(0n) } },
+  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: underlying }, date: MONDAY },
   progress: cardProgress(),
   ...over,
 });
@@ -52,7 +52,7 @@ const TF = walked('t-f', 'XYZ', { progress: needsMark, summary: { kind: 'Stock',
 const TC = walked('t-c', 'DEF', { progress: needsMark });
 const WALK = [TA, TF, TC] as const;
 
-const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrumentKey, tradingDate: MONDAY, trades });
+const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: MONDAY, trades });
 const actionMissing = (...ids: string[]): IncompleteReason[] => ids.map((tradeId) => ({ code: 'ActionMissing', tradeId }));
 const OWING: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('XYZ', 't-a', 't-f'), markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };
 
@@ -248,7 +248,7 @@ const EVALUATED = {
   atEntry: null,
 } as unknown as DailyTradeReview['evaluation'];
 // T-F shares XYZ: once the Mark is saved its slider is placed.
-const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 4n) }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
+const TF_PLACED = walked('t-f', 'XYZ', { summary: TF.summary, rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 4n) } }, figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) } });
 // T-F's collapsed card, picked by its header's name: the two XYZ cards read alike but for the summary line (decision 68).
 const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const tfHeader = () => screen.getByRole('button', { name: new RegExp(`^Review XYZ ${escaped(tradeSummary(TF.summary!))}\\b`) });

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { RangePosition } from '../../app/types.ts';
+import type { RangePositionResult } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { StopTargetSlider, type SliderFigures } from './StopTargetSlider.tsx';
 
@@ -9,7 +9,7 @@ afterEach(cleanup);
 
 const figures: SliderFigures = { riskToStop: '$450.00', pnl: '+$582.00 · +2.33R', rewardToRisk: '0.89' };
 // T-A: 9/17 now, 134/425 at entry.
-const placed: RangePosition = { kind: 'Placed', now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) };
+const placed: RangePositionResult = { kind: 'Value', value: { now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) } };
 
 describe('placement (P39)', () => {
   it('should place the dot at the share now and the entry tick at the share at entry, on a track running from the Stop colour to the Target colour, with no number in its visible text', () => {
@@ -32,14 +32,14 @@ describe('placement (P39)', () => {
 
 describe('ends and missing inputs', () => {
   it('should pin the dot at the Stop end with the pinned shape, and say past the Stop in its description, for a share of 0 with StopBreached; and at the Target end with past the Target for TargetReached', () => {
-    const atStop: RangePosition = { kind: 'Placed', now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' };
+    const atStop: RangePositionResult = { kind: 'Value', value: { now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' } };
     const { container, rerender } = render(<StopTargetSlider position={atStop} figures={figures} />);
     const dot = () => container.querySelector('.slider-now') as HTMLElement;
     expect(dot().style.left).toBe('0%');
     expect(dot().classList.contains('slider-pinned')).toBe(true);
     expect(screen.getByRole('img').getAttribute('aria-label')).toMatch(/^Past the Stop, entry at 25%\./);
 
-    const atTarget: RangePosition = { kind: 'Placed', now: Rational.of(1n), atEntry: Rational.of(1n, 4n), pinned: 'Target' };
+    const atTarget: RangePositionResult = { kind: 'Value', value: { now: Rational.of(1n), atEntry: Rational.of(1n, 4n), pinned: 'Target' } };
     rerender(<StopTargetSlider position={atTarget} figures={figures} />);
     expect(dot().style.left).toBe('100%');
     expect(dot().classList.contains('slider-pinned')).toBe(true);
@@ -47,7 +47,7 @@ describe('ends and missing inputs', () => {
   });
 
   it('should show a grey track with no dot, and Mark missing: DEF, Oct 12 as its description, when the Trade is not placed', () => {
-    const missing: RangePosition = { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: '2026-10-12' };
+    const missing: RangePositionResult = { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' };
     const { container } = render(<StopTargetSlider position={missing} figures={figures} />);
     expect(container.querySelector('.slider-none')).not.toBeNull();
     expect(container.querySelector('.slider-now')).toBeNull();
@@ -56,7 +56,7 @@ describe('ends and missing inputs', () => {
   });
 
   it('should read Acknowledged unavailable: DEF, Mon Oct 12 as its description, not Mark missing, when the position is not placed because the trader acknowledged the Mark unavailable', () => {
-    const acknowledged: RangePosition = { kind: 'NotPlaced', reason: 'AcknowledgedUnavailable', instrumentKey: 'DEF', date: '2026-10-12' };
+    const acknowledged: RangePositionResult = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' };
     const { container } = render(<StopTargetSlider position={acknowledged} figures={figures} />);
     expect(container.querySelector('.slider-none')).not.toBeNull();
     expect(container.querySelector('.slider-now')).toBeNull();

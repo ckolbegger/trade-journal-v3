@@ -172,7 +172,7 @@ describe('T5R.13 query count: the Review open and the Marks save', () => {
     // The data does exercise the additions: a placed range position, and the Missing Instrument's earlier gap.
     const families = review.result.families;
     const walked = families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
-    expect(walked.some((t) => t.rangePosition.kind === 'Placed')).toBe(true);
+    expect(walked.some((t) => t.rangePosition.kind === 'Value')).toBe(true);
     const gaps = families.flatMap((f) => (f.family === 'Marks' ? f.earlier : []));
     expect(gaps.map((g) => ({ instrumentKey: g.instrumentKey, missing: g.missing.length }))).toEqual([{ instrumentKey: 'MIS', missing: GAP_SESSIONS - 1 }]);
   });

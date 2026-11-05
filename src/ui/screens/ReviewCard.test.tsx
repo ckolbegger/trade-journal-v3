@@ -33,8 +33,8 @@ const item = (tradeId: string, underlying: string, over: Partial<ReviewTradeItem
   lastActivity: '2026-10-12T14:00:00Z',
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
-  basis: { kind: 'Comparable', side: 'None', share: Rational.of(0n, 1n) },
-  rangePosition: { kind: 'Placed', now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) },
+  basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
+  rangePosition: { kind: 'Value', value: { now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) } },
   ...over,
 });
 function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = trades.map((t) => t.tradeId), over: Partial<Ready> = {}): Ready {
@@ -140,7 +140,7 @@ async function openTrade(user: ReturnType<typeof userEvent.setup>, underlying: s
 
 describe('Trade in the walk', () => {
   it('should show the Trade figures for the Review Date, the dated and at-entry lines when present, and its attention reasons', async () => {
-    const attention = item('t1', 'XYZ', { band: 'QuantifiedPressure', reasons: [{ code: 'PressureTowardTarget' }], basis: { kind: 'Comparable', side: 'Winning', share: Rational.of(91n, 291n), atEntry: Rational.of(1000n), now: Rational.of(700n) } });
+    const attention = item('t1', 'XYZ', { band: 'QuantifiedPressure', reasons: [{ code: 'PressureTowardTarget' }], basis: { kind: 'Value', value: { side: 'Winning', share: Rational.of(91n, 291n), atEntry: Rational.of(1000n), now: Rational.of(700n) } } });
     const facade = walkFacade(ready([attention]), tradeReview('t1', 'XYZ', { attention }));
     renderWalk(facade);
     const user = userEvent.setup();
@@ -159,7 +159,7 @@ describe('Trade in the walk', () => {
 
     // The Review Date Mark is missing: no number stands in for it, the dated close and the at-entry lots are their own lines.
     const unavailable = { kind: 'Unavailable' as const, reason: 'MarkMissing', instrument: symbol, date: '2026-10-12' };
-    const limited = item('t1', 'XYZ', { band: 'EvidenceLimited', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', date: '2026-10-12' }], basis: { kind: 'NotComparable', reason: 'MissingInput', instrumentKey: 'XYZ', date: '2026-10-12' } });
+    const limited = item('t1', 'XYZ', { band: 'EvidenceLimited', reasons: [{ code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' }], basis: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' } });
     const missing = tradeReview('t1', 'XYZ', {
       attention: limited,
       evaluation: evaluation({
@@ -1209,8 +1209,8 @@ const markRow = (instrumentKey: string): MarkRow => ({ instrumentKey, tradingDat
 const owingCompletion: ReviewCompletion = {
   kind: 'Incomplete',
   reasons: [
-    { code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] },
-    { code: 'MarkMissing', instrumentKey: 'ABC', tradingDate: '2026-10-12', trades: ['t1'] },
+    { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] },
+    { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: '2026-10-12', trades: ['t1'] },
     { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] },
     { code: 'ActionMissing', tradeId: 't1' },
   ],
@@ -1385,7 +1385,7 @@ describe('moving on', () => {
     const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, progress: t.tradeId === 't1' ? cardProgress(1, 0, { needed: 1, resolved: 0 }) : cardProgress(0, 0, { resolved: 0 }) }));
     const owing: ReviewCompletion = {
       kind: 'Incomplete',
-      reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }],
+      reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }],
     };
     const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const first = tradeReview('t1', 'XYZ', { reflections: [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}])] });
@@ -1453,7 +1453,7 @@ describe('moving on from the panel that finished', () => {
     const user = userEvent.setup();
     // T-1 owes a Mark, a reflection due and its Action.
     const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, progress: cardProgress(1, 0, { needed: 1, resolved: 0 }) }));
-    const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
+    const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
     const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
     const trade = tradeReview('t1', 'XYZ', { reflections: owedPair });
     const facade = walkFacade(review, trade);
@@ -1581,7 +1581,7 @@ describe('panel headers from progress (A169)', () => {
       [cardProgress(1, 0, { needed: 1 }), 'Marks'],
     ] as const) {
       const review = ready([item('t1', 'XYZ')], [], {
-        completion: { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }] },
+        completion: { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: '2026-10-12', trades: ['t1'] }] },
         families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress }] }],
       });
       renderWalk(walkFacade(review, tradeReview('t1', 'XYZ', { reflections: [], progress })));

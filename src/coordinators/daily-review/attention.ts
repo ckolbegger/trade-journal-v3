@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
-import type { DerivedTradeState, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, DerivedTradeState, IntegrityFinding, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-import type { AttentionBand, AttentionReason, CalculationFamily, PressureBasis, RangePosition } from './types.ts';
+import type { AttentionBand, AttentionReason, CalculationFamily, PressureResult, RangePositionResult } from './types.ts';
 
 // What orders Trades that tie on band and pressure.
 interface TieBreak {
@@ -12,8 +12,8 @@ interface TieBreak {
 export interface Attention {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
-  readonly basis: PressureBasis;
-  readonly rangePosition: RangePosition;
+  readonly basis: PressureResult;
+  readonly rangePosition: RangePositionResult;
 }
 
 const ZERO = Rational.of(0n);
@@ -26,74 +26,80 @@ function decimal(text: string): Rational {
 }
 
 // The risk (toward the Stop) and reward (toward the Target) at the Review-date Mark and at entry: the
-// figures both the pressure basis and the range position use. The at-entry figures use each open Lot's
+// figures both the pressure and the range position use. The at-entry figures use each open Lot's
 // open cost, without fees, in place of the Mark; "now" is the evaluation's Value.
-type RiskReward =
-  | { readonly kind: 'Figures'; readonly riskNow: Rational; readonly rewardNow: Rational; readonly riskAtEntry: Rational; readonly rewardAtEntry: Rational; readonly mark: Rational; readonly averageCost: Rational }
-  | { readonly kind: 'Missing'; readonly acknowledged: boolean; readonly detail: { readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string } | { readonly reason: 'AwaitingClose'; readonly after: string } };
-
-// evaluate never returns FactsIncoherent (the Review lists such Trades by their facts); T7P.5 reshapes this.
-function awaitingAfter(u: Exclude<Extract<TradeEvaluation['ongoingRiskToStop'], { kind: 'Unavailable' }>, { instrument: unknown }>): string {
-  if (u.reason !== 'AwaitingClose') throw new Error(`An evaluation cannot be Unavailable for ${u.reason}`);
-  return u.after;
+interface RiskRewardFigures {
+  readonly riskNow: Rational;
+  readonly rewardNow: Rational;
+  readonly riskAtEntry: Rational;
+  readonly rewardAtEntry: Rational;
+  readonly mark: Rational;
+  readonly averageCost: Rational;
 }
+
+// Value, or the evaluation's own Unavailable, unchanged (P66): the figures have no other reason to be absent.
+type RiskReward = Extract<CalculationResult<RiskRewardFigures, UnavailableReason, never>, { kind: 'Value' | 'Unavailable' }>;
 
 function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): RiskReward {
   const risk = evaluation.ongoingRiskToStop;
   const reward = evaluation.incrementalRewardToTarget;
-  if (risk.kind !== 'Value' || reward.kind !== 'Value' || evaluation.observation.mark === null) {
-    const missing = risk.kind === 'Unavailable' ? risk : reward;
-    if (missing.kind !== 'Unavailable') throw new Error('A pressure input is neither a Value nor Unavailable');
-    return {
-      kind: 'Missing',
-      acknowledged: missing.reason === 'AcknowledgedUnavailable',
-      detail:
-        'instrument' in missing
-          ? { reason: 'MissingInput', instrumentKey: missing.instrument.symbol, date: missing.date }
-          : { reason: 'AwaitingClose', after: awaitingAfter(missing) },
-    };
-  }
+  if (risk.kind === 'Unavailable') return risk;
+  if (reward.kind === 'Unavailable') return reward;
+  if (risk.kind !== 'Value' || reward.kind !== 'Value' || evaluation.observation.mark === null) throw new Error('A pressure input is neither a Value nor Unavailable');
   const lots = state.positions.flatMap((p) => p.openLots);
   const stop = decimal(evaluation.conditions.find((c) => c.role === 'Stop')!.boundary);
   const target = decimal(evaluation.conditions.find((c) => c.role === 'Target')!.boundary);
   const quantity = sum(lots.map((l) => l.quantity));
   return {
-    kind: 'Figures',
-    riskNow: risk.value,
-    rewardNow: reward.value,
-    riskAtEntry: sum(lots.map((l) => l.quantity.mul(l.price.sub(stop)))),
-    rewardAtEntry: sum(lots.map((l) => l.quantity.mul(target.sub(l.price)))),
-    mark: decimal(evaluation.observation.mark.price),
-    averageCost: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity),
+    kind: 'Value',
+    value: {
+      riskNow: risk.value,
+      rewardNow: reward.value,
+      riskAtEntry: sum(lots.map((l) => l.quantity.mul(l.price.sub(stop)))),
+      rewardAtEntry: sum(lots.map((l) => l.quantity.mul(target.sub(l.price)))),
+      mark: decimal(evaluation.observation.mark.price),
+      averageCost: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity),
+    },
   };
 }
 
 // The share of the planned range travelled since entry (P14).
-function pressureOf(figures: RiskReward): PressureBasis {
-  if (figures.kind === 'Missing') return { kind: 'NotComparable', ...figures.detail };
-  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry, mark, averageCost } = figures;
-  if (mark.equals(averageCost)) return { kind: 'Comparable', side: 'None', share: ZERO };
+function pressureOf(result: RiskReward): PressureResult {
+  if (result.kind === 'Unavailable') return result;
+  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry, mark, averageCost } = result.value;
+  if (mark.equals(averageCost)) return { kind: 'Value', value: { side: 'None', share: ZERO } };
   if (mark.compare(averageCost) < 0) {
-    if (riskAtEntry.compare(ZERO) <= 0) return { kind: 'NotComparable', reason: 'NonPositiveAtEntry', side: 'Losing' };
-    return { kind: 'Comparable', side: 'Losing', share: riskAtEntry.sub(riskNow).div(riskAtEntry), atEntry: riskAtEntry, now: riskNow };
+    if (riskAtEntry.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Losing' };
+    return { kind: 'Value', value: { side: 'Losing', share: riskAtEntry.sub(riskNow).div(riskAtEntry), atEntry: riskAtEntry, now: riskNow } };
   }
-  if (rewardAtEntry.compare(ZERO) <= 0) return { kind: 'NotComparable', reason: 'NonPositiveAtEntry', side: 'Winning' };
-  return { kind: 'Comparable', side: 'Winning', share: rewardAtEntry.sub(rewardNow).div(rewardAtEntry), atEntry: rewardAtEntry, now: rewardNow };
+  if (rewardAtEntry.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Winning' };
+  return { kind: 'Value', value: { side: 'Winning', share: rewardAtEntry.sub(rewardNow).div(rewardAtEntry), atEntry: rewardAtEntry, now: rewardNow } };
 }
 
 // Risk ÷ (risk + reward) (P39).
 const shareOf = (risk: Rational, reward: Rational) => risk.div(risk.add(reward));
 
-function rangePositionOf(figures: RiskReward): RangePosition {
-  if (figures.kind === 'Missing') {
-    const { detail } = figures;
-    if (detail.reason === 'MissingInput' && figures.acknowledged) return { kind: 'NotPlaced', ...detail, reason: 'AcknowledgedUnavailable' };
-    return { kind: 'NotPlaced', ...detail };
+function rangePositionOf(result: RiskReward): RangePositionResult {
+  if (result.kind === 'Unavailable') return result;
+  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry } = result.value;
+  const atEntry = shareOf(riskAtEntry, rewardAtEntry);
+  if (riskNow.compare(ZERO) <= 0) return { kind: 'Value', value: { now: ZERO, atEntry, pinned: 'Stop' } };
+  if (rewardNow.compare(ZERO) <= 0) return { kind: 'Value', value: { now: Rational.of(1n), atEntry, pinned: 'Target' } };
+  return { kind: 'Value', value: { now: shareOf(riskNow, rewardNow), atEntry } };
+}
+
+// The evaluation's Unavailable reason, unchanged, as an attention reason (P67).
+function unavailableReason(unavailable: Extract<TradeEvaluation['ongoingRiskToStop'], { kind: 'Unavailable' }>): AttentionReason {
+  switch (unavailable.reason) {
+    case 'AwaitingClose':
+      return { code: 'Unavailable', reason: unavailable.reason, after: unavailable.after };
+    case 'FactsIncoherent':
+      return { code: 'Unavailable', reason: unavailable.reason, findings: unavailable.findings };
+    case 'MarkMissing':
+    case 'AcknowledgedUnavailable':
+    case 'SessionPolicyNotCovered':
+      return { code: 'Unavailable', reason: unavailable.reason, instrument: unavailable.instrument, date: unavailable.date };
   }
-  const atEntry = shareOf(figures.riskAtEntry, figures.rewardAtEntry);
-  if (figures.riskNow.compare(ZERO) <= 0) return { kind: 'Placed', now: ZERO, atEntry, pinned: 'Stop' };
-  if (figures.rewardNow.compare(ZERO) <= 0) return { kind: 'Placed', now: Rational.of(1n), atEntry, pinned: 'Target' };
-  return { kind: 'Placed', now: shareOf(figures.riskNow, figures.rewardNow), atEntry };
 }
 
 export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation, findings: readonly IntegrityFinding[]): Attention {
@@ -109,18 +115,10 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
   if (crossed.length > 0) return { band: 'BoundaryReached', reasons: crossed, basis, rangePosition };
   const unavailable = evaluation.ongoingRiskToStop;
   if (unavailable.kind === 'Unavailable') {
-    const reason: AttentionReason =
-      'instrument' in unavailable
-        ? {
-            code: unavailable.reason === 'MarkMissing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
-            instrumentKey: unavailable.instrument.symbol,
-            date: unavailable.date,
-          }
-        : { code: 'AwaitingClose', after: awaitingAfter(unavailable) };
-    return { band: 'EvidenceLimited', reasons: [reason], basis, rangePosition };
+    return { band: 'EvidenceLimited', reasons: [unavailableReason(unavailable)], basis, rangePosition };
   }
-  if (basis.kind === 'Comparable' && basis.side !== 'None') {
-    return { band: 'QuantifiedPressure', reasons: [{ code: basis.side === 'Losing' ? 'PressureTowardStop' : 'PressureTowardTarget' }], basis, rangePosition };
+  if (basis.kind === 'Value' && basis.value.side !== 'None') {
+    return { band: 'QuantifiedPressure', reasons: [{ code: basis.value.side === 'Losing' ? 'PressureTowardStop' : 'PressureTowardTarget' }], basis, rangePosition };
   }
   return { band: 'Routine', reasons: [{ code: 'NoPressure' }], basis, rangePosition };
 }
@@ -128,14 +126,15 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
 const BAND_RANK: Record<AttentionBand, number> = { Blocker: 0, BoundaryReached: 1, EvidenceLimited: 2, QuantifiedPressure: 3, Routine: 4 };
 
 // Band first. Within a band, comparable pressure sorts descending, a losing side before a winning one,
-// then Last Activity descending, then Trade identity; Not Comparable Trades follow the comparable ones.
+// then Last Activity descending, then Trade identity; a pressure that is not a Value follows the Values.
 export function byAttention(a: Attention & TieBreak, b: Attention & TieBreak): number {
   if (a.band !== b.band) return BAND_RANK[a.band] - BAND_RANK[b.band];
-  if (a.basis.kind === 'Comparable' && b.basis.kind === 'Comparable') {
-    const byPressure = b.basis.share.compare(a.basis.share) || Number(b.basis.side === 'Losing') - Number(a.basis.side === 'Losing');
+  if (a.basis.kind === 'Value' && b.basis.kind === 'Value') {
+    const [pa, pb] = [a.basis.value, b.basis.value];
+    const byPressure = pb.share.compare(pa.share) || Number(pb.side === 'Losing') - Number(pa.side === 'Losing');
     if (byPressure !== 0) return byPressure;
-  } else if (a.basis.kind !== b.basis.kind) {
-    return Number(a.basis.kind === 'NotComparable') - Number(b.basis.kind === 'NotComparable');
+  } else if ((a.basis.kind === 'Value') !== (b.basis.kind === 'Value')) {
+    return Number(a.basis.kind !== 'Value') - Number(b.basis.kind !== 'Value');
   }
   const byActivity = Temporal.Instant.compare(b.lastActivity, a.lastActivity);
   if (byActivity !== 0) return byActivity;

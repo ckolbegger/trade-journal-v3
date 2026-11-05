@@ -7930,21 +7930,31 @@
             "band": "EvidenceLimited",
             "reasons": [
               {
-                "code": "MarkMissing",
-                "instrumentKey": "CSCO",
+                "code": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "CSCO"
+                },
                 "date": "2026-10-20"
               }
             ],
             "basis": {
-              "kind": "NotComparable",
-              "reason": "MissingInput",
-              "instrumentKey": "CSCO",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
               "date": "2026-10-20"
             },
             "rangePosition": {
-              "kind": "NotPlaced",
-              "reason": "MissingInput",
-              "instrumentKey": "CSCO",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
               "date": "2026-10-20"
             },
             "progress": {
@@ -8013,21 +8023,31 @@
             "band": "EvidenceLimited",
             "reasons": [
               {
-                "code": "MarkMissing",
-                "instrumentKey": "XYZ",
+                "code": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "XYZ"
+                },
                 "date": "2026-10-20"
               }
             ],
             "basis": {
-              "kind": "NotComparable",
-              "reason": "MissingInput",
-              "instrumentKey": "XYZ",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "XYZ"
+              },
               "date": "2026-10-20"
             },
             "rangePosition": {
-              "kind": "NotPlaced",
-              "reason": "MissingInput",
-              "instrumentKey": "XYZ",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "XYZ"
+              },
               "date": "2026-10-20"
             },
             "progress": {
@@ -8096,21 +8116,31 @@
             "band": "EvidenceLimited",
             "reasons": [
               {
-                "code": "MarkMissing",
-                "instrumentKey": "QRS",
+                "code": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "QRS"
+                },
                 "date": "2026-10-20"
               }
             ],
             "basis": {
-              "kind": "NotComparable",
-              "reason": "MissingInput",
-              "instrumentKey": "QRS",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "QRS"
+              },
               "date": "2026-10-20"
             },
             "rangePosition": {
-              "kind": "NotPlaced",
-              "reason": "MissingInput",
-              "instrumentKey": "QRS",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "QRS"
+              },
               "date": "2026-10-20"
             },
             "progress": {
@@ -8179,21 +8209,31 @@
             "band": "EvidenceLimited",
             "reasons": [
               {
-                "code": "MarkMissing",
-                "instrumentKey": "KO",
+                "code": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "KO"
+                },
                 "date": "2026-10-20"
               }
             ],
             "basis": {
-              "kind": "NotComparable",
-              "reason": "MissingInput",
-              "instrumentKey": "KO",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
               "date": "2026-10-20"
             },
             "rangePosition": {
-              "kind": "NotPlaced",
-              "reason": "MissingInput",
-              "instrumentKey": "KO",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
               "date": "2026-10-20"
             },
             "progress": {
@@ -8262,21 +8302,31 @@
             "band": "EvidenceLimited",
             "reasons": [
               {
-                "code": "MarkMissing",
-                "instrumentKey": "PFE",
+                "code": "Unavailable",
+                "reason": "MarkMissing",
+                "instrument": {
+                  "kind": "Stock",
+                  "symbol": "PFE"
+                },
                 "date": "2026-10-20"
               }
             ],
             "basis": {
-              "kind": "NotComparable",
-              "reason": "MissingInput",
-              "instrumentKey": "PFE",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
               "date": "2026-10-20"
             },
             "rangePosition": {
-              "kind": "NotPlaced",
-              "reason": "MissingInput",
-              "instrumentKey": "PFE",
+              "kind": "Unavailable",
+              "reason": "MarkMissing",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
               "date": "2026-10-20"
             },
             "progress": {
@@ -8367,7 +8417,10 @@
       "reasons": [
         {
           "code": "MarkMissing",
-          "instrumentKey": "CSCO",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
           "tradingDate": "2026-10-20",
           "trades": [
             "fx-0046"
@@ -8375,7 +8428,10 @@
         },
         {
           "code": "MarkMissing",
-          "instrumentKey": "KO",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
           "tradingDate": "2026-10-20",
           "trades": [
             "fx-0072"
@@ -8383,7 +8439,10 @@
         },
         {
           "code": "MarkMissing",
-          "instrumentKey": "PFE",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
           "tradingDate": "2026-10-20",
           "trades": [
             "fx-0089"
@@ -8391,7 +8450,10 @@
         },
         {
           "code": "MarkMissing",
-          "instrumentKey": "QRS",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
           "tradingDate": "2026-10-20",
           "trades": [
             "fx-0129"
@@ -8399,7 +8461,10 @@
         },
         {
           "code": "MarkMissing",
-          "instrumentKey": "XYZ",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
           "tradingDate": "2026-10-20",
           "trades": [
             "fx-0114"
@@ -8453,21 +8518,31 @@
         "band": "EvidenceLimited",
         "reasons": [
           {
-            "code": "MarkMissing",
-            "instrumentKey": "CSCO",
+            "code": "Unavailable",
+            "reason": "MarkMissing",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
             "date": "2026-10-20"
           }
         ],
         "basis": {
-          "kind": "NotComparable",
-          "reason": "MissingInput",
-          "instrumentKey": "CSCO",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
           "date": "2026-10-20"
         },
         "rangePosition": {
-          "kind": "NotPlaced",
-          "reason": "MissingInput",
-          "instrumentKey": "CSCO",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
           "date": "2026-10-20"
         }
       },
@@ -9267,21 +9342,31 @@
         "band": "EvidenceLimited",
         "reasons": [
           {
-            "code": "MarkMissing",
-            "instrumentKey": "XYZ",
+            "code": "Unavailable",
+            "reason": "MarkMissing",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "XYZ"
+            },
             "date": "2026-10-20"
           }
         ],
         "basis": {
-          "kind": "NotComparable",
-          "reason": "MissingInput",
-          "instrumentKey": "XYZ",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
           "date": "2026-10-20"
         },
         "rangePosition": {
-          "kind": "NotPlaced",
-          "reason": "MissingInput",
-          "instrumentKey": "XYZ",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "XYZ"
+          },
           "date": "2026-10-20"
         }
       },
@@ -9613,21 +9698,31 @@
         "band": "EvidenceLimited",
         "reasons": [
           {
-            "code": "MarkMissing",
-            "instrumentKey": "QRS",
+            "code": "Unavailable",
+            "reason": "MarkMissing",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "QRS"
+            },
             "date": "2026-10-20"
           }
         ],
         "basis": {
-          "kind": "NotComparable",
-          "reason": "MissingInput",
-          "instrumentKey": "QRS",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
           "date": "2026-10-20"
         },
         "rangePosition": {
-          "kind": "NotPlaced",
-          "reason": "MissingInput",
-          "instrumentKey": "QRS",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "QRS"
+          },
           "date": "2026-10-20"
         }
       },
@@ -9959,21 +10054,31 @@
         "band": "EvidenceLimited",
         "reasons": [
           {
-            "code": "MarkMissing",
-            "instrumentKey": "KO",
+            "code": "Unavailable",
+            "reason": "MarkMissing",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
             "date": "2026-10-20"
           }
         ],
         "basis": {
-          "kind": "NotComparable",
-          "reason": "MissingInput",
-          "instrumentKey": "KO",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
           "date": "2026-10-20"
         },
         "rangePosition": {
-          "kind": "NotPlaced",
-          "reason": "MissingInput",
-          "instrumentKey": "KO",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
           "date": "2026-10-20"
         }
       },
@@ -10548,21 +10653,31 @@
         "band": "EvidenceLimited",
         "reasons": [
           {
-            "code": "MarkMissing",
-            "instrumentKey": "PFE",
+            "code": "Unavailable",
+            "reason": "MarkMissing",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
             "date": "2026-10-20"
           }
         ],
         "basis": {
-          "kind": "NotComparable",
-          "reason": "MissingInput",
-          "instrumentKey": "PFE",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
           "date": "2026-10-20"
         },
         "rangePosition": {
-          "kind": "NotPlaced",
-          "reason": "MissingInput",
-          "instrumentKey": "PFE",
+          "kind": "Unavailable",
+          "reason": "MarkMissing",
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
           "date": "2026-10-20"
         }
       },

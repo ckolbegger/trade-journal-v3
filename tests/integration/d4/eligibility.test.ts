@@ -34,7 +34,7 @@ describe('I4.14 eligibility at the cutoff', () => {
     const second = await openReview(app, d);
     expect(tradeIds(second).sort()).toEqual([p, q].sort());
     expect(second.completion.kind).toBe('Incomplete');
-    expect(second.completion.kind === 'Incomplete' && second.completion.reasons.map((r) => [r.code, r.code === 'ActionMissing' ? r.tradeId : r.code === 'MarkMissing' ? r.instrumentKey : ''])).toEqual([
+    expect(second.completion.kind === 'Incomplete' && second.completion.reasons.map((r) => [r.code, r.code === 'ActionMissing' ? r.tradeId : r.code === 'MarkMissing' ? r.instrument.symbol : ''])).toEqual([
       ['MarkMissing', 'ABC'],
       ['ActionMissing', q],
     ]);

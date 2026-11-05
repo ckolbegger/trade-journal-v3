@@ -172,7 +172,8 @@ export type {
   // The card of one such Trade (D6 A90).
   OwedReflectionsCard,
   OwedTradeSummary,
-  RangePosition,
+  RangePlacement,
+  RangePositionResult,
   // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
   SliderFigures as SliderEvaluation,
   CardProgress,

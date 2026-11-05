@@ -43,7 +43,7 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     // Completion is the one `open` derives from the facts after the save: T-A's Action is no longer missing.
     const reasons = result.review.kind === 'Ready' && result.review.completion.kind === 'Incomplete' ? result.review.completion.reasons : [];
     expect(reasons.filter((r) => r.code === 'ActionMissing').map((r) => r.tradeId).sort()).toEqual([b, c, d, e].sort());
-    expect(reasons).toContainEqual(expect.objectContaining({ code: 'MarkMissing', instrumentKey: 'DEF' }));
+    expect(reasons).toContainEqual(expect.objectContaining({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' } }));
     const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
     expect(result.review.kind === 'Ready' && result.review.completion).toEqual(reopened.kind === 'Ready' && reopened.completion);
 

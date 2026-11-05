@@ -44,38 +44,38 @@ const trade = (tradeId: string, underlying: string, over: Partial<WalkedTrade>):
   lastActivity: '2026-10-12T14:00:00Z',
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
-  basis: { kind: 'Comparable', side: 'None', share: rational(0n) },
-  rangePosition: { kind: 'Placed', now: rational(1n, 2n), atEntry: rational(1n, 2n) },
+  basis: { kind: 'Value', value: { side: 'None', share: rational(0n) } },
+  rangePosition: { kind: 'Value', value: { now: rational(1n, 2n), atEntry: rational(1n, 2n) } },
   progress: cardProgress(),
   ...over,
 });
 const TB = trade('t-b', 'ABC', {
   band: 'BoundaryReached',
   reasons: [{ code: 'StopBreached', conditionId: 'c', overrun: rational(1n) }],
-  rangePosition: { kind: 'Placed', now: rational(0n), atEntry: rational(1n, 4n), pinned: 'Stop' },
+  rangePosition: { kind: 'Value', value: { now: rational(0n), atEntry: rational(1n, 4n), pinned: 'Stop' } },
   figures: { riskToStop: value(0n), pnl: value(-200n), rewardRiskNow: { kind: 'NotApplicable' } as never },
 });
 const TC = trade('t-c', 'DEF', {
   band: 'EvidenceLimited',
-  reasons: [{ code: 'MarkMissing', instrumentKey: 'DEF', date: '2026-10-12' }],
-  rangePosition: { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: '2026-10-12' },
+  reasons: [{ code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' }],
+  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' },
   progress: cardProgress(0, 0, { needed: 1, resolved: 0 }),
 });
 const TF = trade('t-f', 'XYZ', {
   band: 'QuantifiedPressure',
   reasons: [{ code: 'PressureTowardTarget' }],
-  rangePosition: { kind: 'Placed', now: rational(4n, 7n), atEntry: rational(2n, 7n) },
+  rangePosition: { kind: 'Value', value: { now: rational(4n, 7n), atEntry: rational(2n, 7n) } },
   figures: { riskToStop: value(200n), pnl: value(100n), rewardRiskNow: value(3n, 4n) },
 });
 const TA = trade('t-a', 'XYZ', {
   band: 'QuantifiedPressure',
   reasons: [{ code: 'PressureTowardTarget' }],
-  rangePosition: { kind: 'Placed', now: rational(9n, 17n), atEntry: rational(134n, 425n) },
+  rangePosition: { kind: 'Value', value: { now: rational(9n, 17n), atEntry: rational(134n, 425n) } },
   progress: cardProgress(1, 1),
   figures: { riskToStop: value(450n), pnl: value(180n), rewardRiskNow: value(8n, 9n) },
 });
 const TE = trade('t-e', 'JKL', {
-  rangePosition: { kind: 'Placed', now: rational(2n, 11n), atEntry: rational(1n, 11n) },
+  rangePosition: { kind: 'Value', value: { now: rational(2n, 11n), atEntry: rational(1n, 11n) } },
   figures: { riskToStop: value(200n), pnl: value(-100n), rewardRiskNow: value(9n, 2n) },
 });
 const WALK = [TB, TC, TF, TA, TE] as const;
@@ -83,7 +83,7 @@ const WALK = [TB, TC, TF, TA, TE] as const;
 const incomplete = (...reasons: IncompleteReason[]): ReviewCompletion => ({ kind: 'Incomplete', reasons });
 const actionMissing = (...ids: string[]): IncompleteReason[] => ids.map((tradeId) => ({ code: 'ActionMissing', tradeId }));
 const MONDAY_COMPLETION = incomplete(
-  { code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] },
+  { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t-c'] },
   { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] },
   ...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e'),
 );
@@ -755,7 +755,7 @@ describe('a search-param change on the mounted Review (A161)', () => {
 });
 
 describe('blocker links open in a new tab (A161)', () => {
-  const blockers = incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] }, { code: 'ActionMissing', tradeId: 't-b' }, { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] });
+  const blockers = incomplete({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t-c'] }, { code: 'ActionMissing', tradeId: 't-b' }, { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] });
 
   it('should give a Mark blocker link the Instrument in its href, and Action and Reflection links the Trade and their panel', async () => {
     renderReview(cardFacade(review({ completion: blockers })));
@@ -800,7 +800,7 @@ describe('header', () => {
         completion: incomplete(
           { code: 'ActionMissing', tradeId: 't-b' },
           { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] },
-          { code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] },
+          { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t-c'] },
         ),
       }),
     );
@@ -944,7 +944,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
           completion: incomplete(
             { code: 'ActionMissing', tradeId: 't-f' },
             { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] },
-            { code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] },
+            { code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t-c'] },
             { code: 'IntegrityDisagreement', tradeId: 't-f', findings: [] },
             { code: 'IncoherentFacts', tradeId: 't-b', findings: [] as never },
           ),
@@ -982,7 +982,7 @@ describe('Trade names in messages and blockers (decision 68)', () => {
   });
 
   it('should list the Trades by name under Complete with unavailable Marks', async () => {
-    const completion: ReviewCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: ['DEF', 'XYZ'], trades: ['t-c', 't-f', 't-a'], families: ['Valuation'] };
+    const completion: ReviewCompletion = { kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'DEF' }, { kind: 'Stock', symbol: 'XYZ' }], trades: ['t-c', 't-f', 't-a'], families: ['Valuation'] };
     renderReview(cardFacade(namedReview({ completion })));
     const status = await screen.findByRole('region', { name: 'Review status' });
 

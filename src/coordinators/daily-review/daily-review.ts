@@ -1,4 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
+import { instrumentOf } from '../../domain/instrument/index.ts';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
@@ -65,12 +66,13 @@ const firstRelevantGapDate = (closes: Readonly<Record<string, string>>, exposure
 
 // Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare.
 function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying' | 'lastActivity'>, incoherent: IncoherentFacts): ReviewTradeItem {
+  const unavailable = { reason: 'FactsIncoherent', findings: incoherent.findings } as const;
   return {
     ...identity,
     band: 'Blocker',
-    reasons: [{ code: 'IncoherentFacts', findings: incoherent.findings }],
-    basis: { kind: 'NotComparable', reason: 'FactsIncoherent' },
-    rangePosition: { kind: 'NotPlaced', reason: 'FactsIncoherent' },
+    reasons: [{ code: 'Unavailable', ...unavailable }],
+    basis: { kind: 'Unavailable', ...unavailable },
+    rangePosition: { kind: 'Unavailable', ...unavailable },
   };
 }
 
@@ -413,11 +415,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const reasons: IncompleteReason[] = [
       ...today
         .filter((row) => row.task === 'Manual')
-        .map((row): IncompleteReason => ({ code: 'MarkMissing', instrumentKey: row.instrumentKey, tradingDate: row.tradingDate, trades: row.trades })),
+        .map((row): IncompleteReason => ({ code: 'MarkMissing', instrument: instrumentOf(row.instrumentKey), tradingDate: row.tradingDate, trades: row.trades })),
       ...walked.flatMap((item): IncompleteReason[] => [
-        ...item.reasons.flatMap((reason): IncompleteReason[] =>
-          reason.code === 'IntegrityDisagreement' || reason.code === 'IncoherentFacts' ? [{ ...reason, tradeId: item.tradeId }] : [],
-        ),
+        ...item.reasons.flatMap((reason): IncompleteReason[] => {
+          if (reason.code === 'IntegrityDisagreement') return [{ ...reason, tradeId: item.tradeId }];
+          if (reason.code === 'Unavailable' && reason.reason === 'FactsIncoherent') return [{ code: 'IncoherentFacts', tradeId: item.tradeId, findings: reason.findings }];
+          return [];
+        }),
         ...(item.tradeId in actions.actions ? [] : [{ code: 'ActionMissing' as const, tradeId: item.tradeId }]),
         ...(dueDebtIds(item.tradeId).length > 0 ? [{ code: 'ReflectionDue' as const, tradeId: item.tradeId, debtIds: dueDebtIds(item.tradeId) }] : []),
       ]),
@@ -434,7 +438,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       if (acknowledged.length === 0) return { kind: 'Complete' };
       return {
         kind: 'CompleteWithUnavailableMarks',
-        instruments: acknowledged.map((row) => row.instrumentKey),
+        instruments: acknowledged.map((row) => instrumentOf(row.instrumentKey)),
         trades: affected.map(({ item }) => item.tradeId),
         families: unavailableFamilies(affected.flatMap(({ evaluation }) => (evaluation ? [evaluation] : []))),
       };

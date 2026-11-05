@@ -42,8 +42,8 @@ const tradeItem = (tradeId: string, underlying: string, over: Partial<ReviewTrad
   lastActivity: '2026-10-12T14:00:00Z',
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
-  basis: { kind: 'Comparable', side: 'None', share: Rational.of(0n, 1n) },
-  rangePosition: { kind: 'Placed', now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) },
+  basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
+  rangePosition: { kind: 'Value', value: { now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) } },
   ...over,
 });
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];
@@ -80,7 +80,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Earlier; trades?: r
   };
 }
 const incomplete = (...reasons: IncompleteReason[]): ReviewCompletion => ({ kind: 'Incomplete', reasons });
-const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrumentKey, tradingDate: '2026-10-12', trades });
+const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: '2026-10-12', trades });
 const actionMissing = (...ids: string[]): IncompleteReason[] => ids.map((tradeId) => ({ code: 'ActionMissing', tradeId }));
 // An Instrument's earlier sessions without Marks, relevant to the Trades named from the first date.
 const gap = (instrumentKey: string, over: Partial<Earlier[number]> = {}): Earlier[number] => ({
@@ -176,7 +176,7 @@ describe('overview', () => {
       ready({
         today: [markRow('DEF', ['t2'])],
         trades,
-        completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t2'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'IntegrityDisagreement', tradeId: 't2', findings: [] }),
+        completion: incomplete({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t2'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'IntegrityDisagreement', tradeId: 't2', findings: [] }),
       }),
     );
     renderReview(facade);
@@ -262,7 +262,7 @@ describe('overview', () => {
       reviewFacade(
         ready({
           trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'ABC'), tradeItem('t3', 'DEF')],
-          completion: { kind: 'CompleteWithUnavailableMarks', instruments: ['XYZ', 'DEF'], trades: ['t1', 't3'], families: ['Valuation', 'Risk', 'Reward', 'ConditionStatus'] },
+          completion: { kind: 'CompleteWithUnavailableMarks', instruments: [{ kind: 'Stock', symbol: 'XYZ' }, { kind: 'Stock', symbol: 'DEF' }], trades: ['t1', 't3'], families: ['Valuation', 'Risk', 'Reward', 'ConditionStatus'] },
         }),
       ),
     );
@@ -486,7 +486,7 @@ describe('Marks in the card (P11, P15)', () => {
     const returned = ready({
       today: [markRow('XYZ', ['t1'], available('52'), 1), markRow('DEF', ['t2'])],
       trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')],
-      completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t2'] }, { code: 'ActionMissing', tradeId: 't2' }),
+      completion: incomplete({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-12', trades: ['t2'] }, { code: 'ActionMissing', tradeId: 't2' }),
     });
     const facade = reviewFacade(returned);
     renderReview(facade);
@@ -513,7 +513,7 @@ describe('Marks in the card (P11, P15)', () => {
     const trades = [tradeItem('t1', 'DEF')];
     const monday = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
     const tuesday: Ready = {
-      ...ready({ today: [{ ...markRow('DEF', ['t1']), tradingDate: '2026-10-13' }], trades, completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-13', trades: ['t1'] }, ...actionMissing('t1')) }),
+      ...ready({ today: [{ ...markRow('DEF', ['t1']), tradingDate: '2026-10-13' }], trades, completion: incomplete({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'DEF' }, tradingDate: '2026-10-13', trades: ['t1'] }, ...actionMissing('t1')) }),
       reviewDate: '2026-10-13',
     };
     const facade = reviewFacade(monday, tuesday);

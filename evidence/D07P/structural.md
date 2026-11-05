@@ -119,3 +119,38 @@ Session `245d2a35-ff2f-4512-aeec-23f329c4cc74`, model gpt-6.1-sol, 13 files revi
 Stage `browser-auto e90e267e`; tier: full, printed reason "first matching path since e90e267e: src/app/types.ts". Ports free before and after.
 
 Notes carried to later tasks (from the T7P.4 report): `attention.ts` has a temporary private `awaitingAfter(u)` helper that T7P.5 removes when it reshapes the Review; `figures.ts` still words `SessionPolicyNotCovered` and `FactsIncoherent` as "Not available" until T7P.6/T7P.7; `TradeDetail.tsx` still looks facts up by id for its findings table, which T7P.7 can drop now that findings describe themselves.
+
+## T7P.5 Daily Review: Calculation Results
+
+### Probe (P73): does SessionPolicyNotCovered reach a walked Trade's pressure, range position or attention reason?
+
+**No. The defect was latent.** The probe opens the Review with an as-of instant outside session-policy coverage (coverage is 2024-01-01 to 2028-12-31) and expects what `open` returns today. Command: `.claude/scripts/tdd.sh green T7P.5 src/coordinators/daily-review/daily-review.test.ts "should open the Review with its as-of instant outside session-policy coverage and return what it returns today"`.
+
+- As-of 2029-01-03T22:00Z with the card fixture's Trades open: `open` returns `{ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2029-01-03', coverage: { first: '2024-01-01', last: '2028-12-31' } }] }`. No Trade is walked.
+- As-of 2024-01-02T14:00Z (the latest completed session would be before coverage starts, Review date 2023-12-31) with one Trade open since 2023-12-28: the same `Rejected` with `date: '2023-12-31'`.
+
+So the Review rejects an as-of instant (or Review date) outside coverage before it builds any item. The later `attentionOf` session-policy case ("should give SessionPolicyNotCovered as SessionPolicyNotCovered, never as AcknowledgedUnavailable, in attentionOf") is the regression test of a latent defect: it went red on today's `AcknowledgedUnavailable` mapping, which no `open` call can reach. A second finding of the same kind: `AwaitingClose` is also unreachable through `open` (the Review's cutoff is its Review date's close, so no Lot opens after the frame's close), so its pressure and range position case runs through `attentionOf` with a constructed evaluation.
+
+### Shape changes (old to new)
+
+- `ReviewTradeItem.basis`: `PressureBasis` (`Comparable { side, share, atEntry, now }` / `Comparable { side: 'None', share }` / `NotComparable { reason: 'MissingInput' | 'AwaitingClose' | 'FactsIncoherent' | 'NonPositiveAtEntry', ... }`) to `CalculationResult<Pressure, UnavailableReason, Extract<NotApplicableReason, { reason: 'NonPositiveAtEntry' }>>` (`Value { value: Pressure }`, `Unavailable`, `NotApplicable { reason: 'NonPositiveAtEntry', side }`).
+- `ReviewTradeItem.rangePosition`: `RangePosition` (`Placed { now, atEntry, pinned? }` / `NotPlaced { reason, instrumentKey, date }`) to `CalculationResult<RangePlacement, UnavailableReason, never>`.
+- `AttentionReason`: `{ code: 'MarkMissing' | 'AcknowledgedUnavailable', instrumentKey, date }`, `{ code: 'AwaitingClose', after }`, `{ code: 'IncoherentFacts', findings }` to `{ code: 'Unavailable' } & UnavailableReason`.
+- `IncompleteReason` `MarkMissing`: `instrumentKey: string` to `instrument: Instrument`. `ReviewCompletion` `CompleteWithUnavailableMarks.instruments`: `string[]` to `Instrument[]` (P68's Unavailable Marks family). `IncompleteReason` `IncoherentFacts` is unchanged.
+- `attention.ts`: `riskRewardOf` returns the evaluation's own Unavailable, passed through; `Missing`, `MissingInput` conversion and `awaitingAfter` are gone.
+
+### Existing cases changed (shape only, values kept)
+
+- `src/coordinators/daily-review/daily-review.test.ts`: attention order (basis, reasons: Comparable/NotComparable/MarkMissing to Value/Unavailable), T-B boundary basis, T-A/T-E pressure x2, equal-pressure ordering map, routine pressure 0, Not Comparable NonPositiveAtEntry (NotComparable to NotApplicable), two incoherent blocker cases (reason shape), Incomplete MarkMissing reason, CompleteWithUnavailableMarks instruments, unreplayable card attention reason, three range-position cases, T-B/T-C range position, Target pin.
+- `src/coordinators/daily-review/save-marks.test.ts`: two Placed to Value, `r.instrumentKey` to `r.instrument.symbol`, acknowledged NotPlaced to Unavailable.
+- `src/coordinators/daily-review/save.test.ts`: MarkMissing reason `instrumentKey: 'DEF'` to `instrument`.
+- `src/coordinators/daily-review/attention.test.ts`: the ordering helper's basis and range position (Comparable/Placed to Value).
+- `tests/integration`: `d4/eligibility.test.ts`, `d4/review.test.ts`, `d5r/range-and-baseline.test.ts`, `d5r/save-marks.test.ts`, `d5r/shared-mark.test.ts`, `d5r/gap-trades.test.ts`, `d5r/query-count.test.ts`.
+- UI tests, constructed inputs only (expected text unchanged): `CardMarks.test.tsx`, `ReviewCard.test.tsx`, `ReviewCards.test.tsx`, `ReviewOwed.test.tsx`, `ReviewView.test.tsx`, `held-review.test.ts`, `StopTargetSlider.test.tsx` (type name and shapes).
+
+### Snapshots (`expected-views.json`; every `dump.json` unchanged)
+
+- `workspace-v3`: 6 `basis` entries (3 in `review`, 3 in `reviewTrades[].attention`): `{ kind: 'Comparable', side, share, atEntry, now }` to `{ kind: 'Value', value: { side, share, atEntry, now } }`.
+- `workspace-v4`: the same, 6 entries.
+- `workspace-v5`: 10 `reasons[0]` (`{ code: 'MarkMissing', instrumentKey, date }` to `{ code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol }, date }`), 10 `basis` (`NotComparable`/`MissingInput` to `Unavailable`/`MarkMissing`), 10 `rangePosition` (`NotPlaced`/`MissingInput` to `Unavailable`/`MarkMissing`), and 5 `completion.reasons` `MarkMissing` (`instrumentKey` to `instrument`). The `instrumentKey` fields of Marks rows (v4 9, v5 50 minus the 5 above) belong to rows this task does not change and stay.
+- `npm run verify:fixtures` passes (v1 to v5). `git diff --name-only | grep dump` is empty.

@@ -29,15 +29,15 @@ const walked = (tradeId: string, underlying: string): WalkedTrade => ({
   lastActivity: '2026-10-12T14:00:00Z',
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
-  basis: { kind: 'Comparable', side: 'None', share: Rational.of(0n, 1n) },
-  rangePosition: { kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: underlying, date: MONDAY },
+  basis: { kind: 'Value', value: { side: 'None', share: Rational.of(0n, 1n) } },
+  rangePosition: { kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: underlying }, date: MONDAY },
   progress: cardProgress(),
 });
 const TA = walked('t-a', 'XYZ');
 const TF = walked('t-f', 'XYZ');
 const TC = walked('t-c', 'DEF');
 
-const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrumentKey, tradingDate: MONDAY, trades });
+const markMissing = (instrumentKey: string, ...trades: string[]): IncompleteReason => ({ code: 'MarkMissing', instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: MONDAY, trades });
 const actionMissing = (...ids: string[]): IncompleteReason[] => ids.map((tradeId) => ({ code: 'ActionMissing', tradeId }));
 const OWING: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('XYZ', 't-a', 't-f'), markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };
 const xyzGap: Earlier[number] = {
