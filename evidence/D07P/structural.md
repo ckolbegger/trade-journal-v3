@@ -62,3 +62,24 @@ Session `c4a65bc5-501c-4e84-ab75-17945007526d`, model gpt-6.1-sol, 2 files revie
 | Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-2-instrument-checks.txt` |
 
 Stage `browser-auto 7e13d28b`; tier: task, printed reason "browser tier: task (no changed path since 7e13d28b is on the full-tier list)". Ports free before and after.
+
+## T7P.3 Domain: self-describing findings
+
+Behavioral; commit `763e5353`. 4 cases red then green (`tdd-log.md`, new `src/domain/trade-analysis/findings.test.ts`); no first-run pass. `IncoherentFact` stays in `derive.ts` (re-exported from `trade-analysis`): an Execution finding carries `factId`, `kind: 'Execution'`, `instrument` (`ExecutionFact['instrument']`, structurally `Instrument`), `economicTime` (Instant), `side`, `quantity` (the recorded decimal string, since a nonpositive quantity may not parse as a positive Rational) and `reason`; `ExceedsOpenQuantity` keeps `available` (Rational); a Position Change duplicate is `{ factId, kind: 'PositionChange', economicTime, reason: 'DuplicateFactId' }`.
+
+Existing cases changed by added fields only, no value changes (A185): `closed.test.ts`, `replay.test.ts`, `record-position-change.test.ts` (lines 340, 849), `src/modules/trade-record/section.test.ts`, `tests/integration/d2/integrity-incoherent.test.ts` (line 62); type-only literals in `closed-views.test.ts`, `PositionChangeForm.test.tsx` and `TradeDetail.test.tsx`. No `expected-views.json` changed (added fields pass the snapshot rule).
+
+### ocr review of `763e5353`
+
+Session `1a867925-2eae-4eb8-ab10-befaef5a465a`, model gpt-6.1-sol, 1 file reviewed in place (`derive.ts`; 10 test and evidence files excluded), **no findings**. Raw output: [ocr/T7P.3-763e5353.json](ocr/T7P.3-763e5353.json).
+
+### Cumulative run after T7P.3 (`t7p-3-findings`, at `763e5353`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 96 files, 1194 passed, exit 0 | `suite-runs/t7p-3-findings-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-3-findings-integration.txt` |
+| Browser (Chromium), full tier | 163 passed (7.7 min), exit 0 | `suite-runs/t7p-3-findings-browser.txt` |
+| Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-3-findings-checks.txt` |
+
+Stage `browser-auto a50ae8d8`; tier: full, printed reason "first matching path since a50ae8d8: src/ui/screens/PositionChangeForm.test.tsx". Ports free before and after.
