@@ -109,23 +109,27 @@ describe('expected lifecycle', () => {
 });
 
 describe('incoherent facts', () => {
+  // The self-describing fields (P69) of the Buy built in the cases below.
+  const buyDetails = (quantity: string, economicTime = '2026-10-12T14:00:00Z') =>
+    ({ kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime, side: 'Buy', quantity }) as const;
+
   it('should return a typed IncoherentFacts result naming the fact when an Execution names an unknown Planned Leg, has a nonpositive quantity, or duplicates a fact identity', () => {
     const unknownLeg = { ...execution('ex-9', '2026-10-12T14:00:00Z', 2, '10', '50', '0'), intent: { kind: 'ServesPlannedLeg', plannedLegId: 'leg-x' } } as const;
     expect(derive({ record: referenceRecord([positionChange('pc-9', 1, [unknownLeg])]) })).toEqual({
       kind: 'IncoherentFacts',
-      findings: [{ factId: 'ex-9', reason: 'UnknownPlannedLeg' }],
+      findings: [{ factId: 'ex-9', ...buyDetails('10'), reason: 'UnknownPlannedLeg' }],
     });
     for (const quantity of ['0', '-5']) {
       const pc = positionChange('pc-9', 1, [execution('ex-9', '2026-10-12T14:00:00Z', 2, quantity, '50', '0')]);
       expect(derive({ record: referenceRecord([pc]) }), quantity).toEqual({
         kind: 'IncoherentFacts',
-        findings: [{ factId: 'ex-9', reason: 'NonpositiveQuantity' }],
+        findings: [{ factId: 'ex-9', ...buyDetails(quantity), reason: 'NonpositiveQuantity' }],
       });
     }
     const twice = positionChange('pc-9', 1, [execution('ex-1', '2026-10-12T16:00:00Z', 2, '10', '50', '0')]);
     expect(derive({ record: referenceRecord([PC1, twice]) })).toEqual({
       kind: 'IncoherentFacts',
-      findings: [{ factId: 'ex-1', reason: 'DuplicateFactId' }],
+      findings: [{ factId: 'ex-1', ...buyDetails('10', '2026-10-12T16:00:00Z'), reason: 'DuplicateFactId' }],
     });
   });
 

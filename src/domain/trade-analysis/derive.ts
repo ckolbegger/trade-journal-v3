@@ -355,12 +355,28 @@ export interface DerivedTradeState {
 }
 
 // Facts that cannot be replayed are a typed rejection naming each fact, never a number.
+// Each finding describes itself (P69). An Execution's quantity is the recorded decimal text, since a
+// nonpositive one is itself a finding; Economic Time is the fact's Instant.
+export interface ExecutionDescription {
+  readonly factId: string;
+  readonly kind: 'Execution';
+  readonly instrument: ExecutionFact['instrument'];
+  readonly economicTime: Instant;
+  readonly side: 'Buy' | 'Sell';
+  readonly quantity: string;
+}
+
 export type IncoherentFact =
-  | { readonly factId: string; readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' }
+  | (ExecutionDescription & { readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' })
   // P22: a Sell above the quantity open at its own point in Fact Order; names that quantity.
-  | { readonly factId: string; readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational }
+  | (ExecutionDescription & { readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational })
   // P22: a Sell that leaves the Position flat although a later fact follows it.
-  | { readonly factId: string; readonly reason: 'FlatBeforeLaterFacts' };
+  | (ExecutionDescription & { readonly reason: 'FlatBeforeLaterFacts' })
+  | { readonly factId: string; readonly kind: 'PositionChange'; readonly economicTime: Instant; readonly reason: 'DuplicateFactId' };
+
+function described(e: ExecutionFact): ExecutionDescription {
+  return { factId: e.factId, kind: 'Execution', instrument: { ...e.instrument }, economicTime: e.economicTime, side: e.action, quantity: e.quantity };
+}
 
 export interface IncoherentFacts {
   readonly kind: 'IncoherentFacts';
@@ -374,13 +390,15 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
   const legs = new Set(record.plan.legs.map((l) => l.factId));
   const seen = new Set<string>();
   for (const pc of record.positionChanges) {
-    for (const fact of [pc, ...pc.executions]) {
-      if (seen.has(fact.factId)) findings.push({ factId: fact.factId, reason: 'DuplicateFactId' });
-      seen.add(fact.factId);
+    if (seen.has(pc.factId)) findings.push({ factId: pc.factId, kind: 'PositionChange', economicTime: pc.economicTime, reason: 'DuplicateFactId' });
+    seen.add(pc.factId);
+    for (const e of pc.executions) {
+      if (seen.has(e.factId)) findings.push({ ...described(e), reason: 'DuplicateFactId' });
+      seen.add(e.factId);
     }
     for (const e of pc.executions) {
-      if (!legs.has(e.intent.plannedLegId)) findings.push({ factId: e.factId, reason: 'UnknownPlannedLeg' });
-      if (!parseDecimal(e.quantity, { positive: true }).ok) findings.push({ factId: e.factId, reason: 'NonpositiveQuantity' });
+      if (!legs.has(e.intent.plannedLegId)) findings.push({ ...described(e), reason: 'UnknownPlannedLeg' });
+      if (!parseDecimal(e.quantity, { positive: true }).ok) findings.push({ ...described(e), reason: 'NonpositiveQuantity' });
     }
   }
   return findings;
@@ -397,10 +415,10 @@ function positionPathFindings(facts: readonly ExecutionFact[]): IncoherentFact[]
     if (e.action === 'Buy') {
       open = open.add(quantity);
     } else if (quantity.compare(open) > 0) {
-      findings.push({ factId: e.factId, reason: 'ExceedsOpenQuantity', available: open });
+      findings.push({ ...described(e), reason: 'ExceedsOpenQuantity', available: open });
     } else {
       open = open.sub(quantity);
-      if (open.compare(Rational.of(0n)) === 0 && index < facts.length - 1) findings.push({ factId: e.factId, reason: 'FlatBeforeLaterFacts' });
+      if (open.compare(Rational.of(0n)) === 0 && index < facts.length - 1) findings.push({ ...described(e), reason: 'FlatBeforeLaterFacts' });
     }
   });
   return findings;

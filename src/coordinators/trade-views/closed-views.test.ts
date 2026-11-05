@@ -78,7 +78,7 @@ describe('browseTrades: Closed (A95)', () => {
 
   it('should list a Closed Trade whose facts cannot be replayed with its stored values and integrity Disagrees', async () => {
     const { stack, trades } = await closedTradeReviewFixture({ only: ['K'] });
-    vi.mocked(derive).mockReturnValueOnce({ kind: 'IncoherentFacts', findings: [{ factId: 'x', reason: 'DuplicateFactId' }] });
+    vi.mocked(derive).mockReturnValueOnce({ kind: 'IncoherentFacts', findings: [{ factId: 'x', kind: 'PositionChange', economicTime: '2026-10-12T14:00:00Z', reason: 'DuplicateFactId' }] });
 
     const result = await createTradeViews({ ...stack, marketData: noMarketData }).browseTrades({ lifecycle: 'Closed' });
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);

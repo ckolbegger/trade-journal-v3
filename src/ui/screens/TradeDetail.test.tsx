@@ -308,8 +308,8 @@ describe('Open Trade Detail', () => {
       incoherentDetailOf(
         [PC1, PC2],
         [
-          { factId: 'ex-2', reason: 'UnknownPlannedLeg' },
-          { factId: 'ex-1', reason: 'NonpositiveQuantity' },
+          { factId: 'ex-2', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T15:00:00Z', side: 'Buy', quantity: '40', reason: 'UnknownPlannedLeg' },
+          { factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'NonpositiveQuantity' },
         ],
         [pc1Reflection, pc2Decline],
       ),
@@ -353,7 +353,7 @@ describe('Open Trade Detail', () => {
 });
 
 describe('incoherent Trade Detail', () => {
-  const incoherent = () => incoherentDetailOf([PC1], [{ factId: 'ex-1', reason: 'UnknownPlannedLeg' }]);
+  const incoherent = () => incoherentDetailOf([PC1], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }]);
 
   it('should not offer Record entry on an IncoherentTradeDetail, while a coherent Open or Planned Detail still offers it', async () => {
     renderView(incoherent(), true);
@@ -497,7 +497,7 @@ describe('summary card', () => {
   });
 
   it('should show no summary figures on an incoherent Detail, leaving the Records disagree panel first', async () => {
-    renderView(incoherentDetailOf([PC1, PC2], [{ factId: 'ex-1', reason: 'NonpositiveQuantity' }]));
+    renderView(incoherentDetailOf([PC1, PC2], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'NonpositiveQuantity' }]));
     const panel = await screen.findByRole('region', { name: 'Records disagree' });
     expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
     const regions = screen.getAllByRole('region').filter((r) => r.getAttribute('aria-label') === null || r.tagName === 'SECTION');

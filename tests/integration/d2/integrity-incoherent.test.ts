@@ -59,7 +59,11 @@ describe('I2.8 integrity disagreement (AC-LIFE-003)', () => {
     expect(open.kind === 'Ready' && open.view.items.map((i) => [i.tradeId, i.integrity])).toEqual([[tradeId, 'Disagrees']]);
     expect(contentRevision(await dumpAll(d.factory))).toBe(contentRevision(before));
 
-    expect(await app.TradeWorkflows.recordPositionChange(next)).toEqual({ kind: 'IntegrityDisagreement', tradeId, findings: [finding] });
+    expect(await app.TradeWorkflows.recordPositionChange(next)).toEqual({
+      kind: 'IntegrityDisagreement',
+      tradeId,
+      findings: [{ ...finding, kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60' }],
+    });
     expect(await dumpAll(d.factory)).toEqual(before);
   });
 });

@@ -337,7 +337,7 @@ describe('integrity before the change P7', () => {
     expect(result).toEqual({
       kind: 'IntegrityDisagreement',
       tradeId: ref.trade.tradeId,
-      findings: [{ factId: execution, reason: 'UnknownPlannedLeg' }],
+      findings: [{ factId: execution, kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }],
     });
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });
@@ -846,7 +846,7 @@ describe('position paths P22', () => {
     expect(result).toEqual({
       kind: 'IntegrityDisagreement',
       tradeId: ref.trade.tradeId,
-      findings: [{ factId: sellId, reason: 'ExceedsOpenQuantity', available: Rational.of(100n) }],
+      findings: [{ factId: sellId, kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: X1_TIME, side: 'Sell', quantity: '150', reason: 'ExceedsOpenQuantity', available: Rational.of(100n) }],
     });
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });

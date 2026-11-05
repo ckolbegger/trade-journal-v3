@@ -505,7 +505,7 @@ describe('Record entry route for an incoherent Trade', () => {
     const facade = positionChangeFormFacade();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
       kind: 'Ready',
-      view: incoherentDetailOf([PC1], [{ factId: 'ex-1', reason: 'UnknownPlannedLeg' }]),
+      view: incoherentDetailOf([PC1], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }]),
       binding: { databaseName: 'tj-ws-1', contentRevision: 7 },
     } as never);
     renderForm(facade);
@@ -988,7 +988,7 @@ describe('focus after navigation', () => {
     const facade = positionChangeFormFacade();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
       kind: 'Ready',
-      view: incoherentDetailOf([PC1], [{ factId: 'ex-1', reason: 'UnknownPlannedLeg' }]),
+      view: incoherentDetailOf([PC1], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }]),
       binding: { databaseName: 'tj-ws-1', contentRevision: 7 },
     } as never);
     vi.mocked(facade.Journal.getDefinitions).mockRejectedValue(new Error('store unavailable'));

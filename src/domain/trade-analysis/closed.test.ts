@@ -67,22 +67,25 @@ describe('position paths P22', () => {
     if (result.kind !== 'IncoherentFacts') throw new Error(`expected IncoherentFacts, got ${result.kind}`);
     return result.findings.map((f) => ({ ...f, ...('available' in f && { available: q(f.available) }) }));
   };
+  // The self-describing fields (P69) of the Sell built below.
+  const sellDetails = (economicTime: string, quantity: string) =>
+    ({ kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime, side: 'Sell', quantity }) as const;
   const sell = (quantity: string, at: string, sequence: number) =>
     positionChange('pc-s', sequence, [sellExecution('ex-s', at, sequence + 1, quantity, '52.00', '0.60')]);
 
   it('should return ExceedsOpenQuantity naming the available quantity for a Sell of 101 after PC2 available 100 and for a Sell of 70 dated Monday 10:30 available 60 at that time', () => {
     // ocr finding 2: a Sell beyond the open quantity used to drop its remainder and still derive.
     expect(incoherent(derive({ record: referenceRecord([PC1, PC2, sell('101', '2026-10-13T14:00:00Z', 7)]) }))).toEqual([
-      { factId: 'ex-s', reason: 'ExceedsOpenQuantity', available: '100/1' },
+      { factId: 'ex-s', ...sellDetails('2026-10-13T14:00:00Z', '101'), reason: 'ExceedsOpenQuantity', available: '100/1' },
     ]);
     expect(incoherent(derive({ record: referenceRecord([PC1, PC2, sell('70', '2026-10-12T14:30:00Z', 7)]) }))).toEqual([
-      { factId: 'ex-s', reason: 'ExceedsOpenQuantity', available: '60/1' },
+      { factId: 'ex-s', ...sellDetails('2026-10-12T14:30:00Z', '70'), reason: 'ExceedsOpenQuantity', available: '60/1' },
     ]);
   });
 
   it('should return FlatBeforeLaterFacts for a Sell of 60 dated Monday 10:30, which leaves the Position flat before PC2 at 11:00', () => {
     expect(incoherent(derive({ record: referenceRecord([PC1, PC2, sell('60', '2026-10-12T14:30:00Z', 7)]) }))).toEqual([
-      { factId: 'ex-s', reason: 'FlatBeforeLaterFacts' },
+      { factId: 'ex-s', ...sellDetails('2026-10-12T14:30:00Z', '60'), reason: 'FlatBeforeLaterFacts' },
     ]);
   });
 });

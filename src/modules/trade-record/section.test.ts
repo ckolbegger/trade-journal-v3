@@ -203,7 +203,7 @@ describe('Trade Record section', () => {
     const result = await validateSection(recordSourceOf({ trades }), { ...references, anchorTradeIds: new Set(['trade-1', 'trade-2']) });
 
     expect(result.issues).toEqual([
-      { code: 'IncoherentFacts', tradeId: 'trade-2', findings: [{ factId: 'trade-2:ex-2-1', reason: 'UnknownPlannedLeg' }] },
+      { code: 'IncoherentFacts', tradeId: 'trade-2', findings: [{ factId: 'trade-2:ex-2-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T15:00:00Z', side: 'Buy', quantity: '40', reason: 'UnknownPlannedLeg' }] },
     ]);
     expect(result.repairs).toEqual([]);
   });
