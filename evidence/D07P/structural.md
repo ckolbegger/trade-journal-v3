@@ -263,3 +263,28 @@ Stage `browser-auto 6807d801`; tier full ("first matching path since 6807d801: s
 | `e2e/d5r/sliders.spec.ts:60`, accessible name gains ": no risk to the Stop." | `sliders.spec.ts` |
 
 The `ui-alignment` and `narrow` cases did not fail, consistent with 6.2's "if that fixture is incoherent"; T7P.10 confirms each fixture's kind.
+
+## T7P.8 UI: the Review words through the module
+
+Behavioral; commit `94588b60`. 5 cases (`tdd-log.md`). `review-attention.ts`'s `reasonText` and `ReviewView`'s `blockerText` word every reason through the module at the sentence length and take the trader's time zone; the Mark-missing blocker wraps the module's Instrument part in its card link; the `FactsIncoherent` blocker links the Trade's name to Trade Detail, then the first finding's sentence and "and N more"; `ReviewCard`'s slider fallback is `FACTS_INCOHERENT_FIGURE` ("Not available", A184).
+
+**First-run passes (flagged):** case 1 (slider figure text and name, built by T7P.6/T7P.7): mutation of the AwaitingClose figure failed by `AssertionError: expected 'Awaiting close after Mon Oct 12' to be 'Awaiting the close after Mon Oct 12'`. Case 3 (Mark-missing blocker link, built by D5R and T7P.6): mutation "Mark absent for" failed by `AssertionError: expected 'Mark absent for DEF on Mon Oct 12' to be 'Mark missing for DEF on Mon Oct 12'`. Case 5 (slider "Not available" for incoherent facts): mutation to the label length failed by an `AssertionError` (name read "Facts can't be replayed"). Each mutation was restored. Two earlier red rows in `tdd-log.md` had wrong failure reasons (a test-scope `ReferenceError`, and a first case-2 query that matched other paragraphs) and are superseded by later valid rows.
+
+**Expectations changed:** `ReviewCards.test.tsx`, the decision 68 blockers case: "ABC: recorded facts cannot be replayed" → "ABC: Facts can't be replayed" (`FactsIncoherent`, sentence; its fixture has no findings, so the module's fallback). `save-marks.test.ts:113` title only. "Recorded facts disagree" (`IntegrityDisagreement`, not a section 1.4 reason) is unchanged. No `e2e/` expectation is broken by this task.
+
+**For T7P.9:** `ReviewView.tsx`'s `blockerText` has `case 'MarkMissing':` on `IncompleteReason.code`, and `marksFirst` compares `r.code === 'MarkMissing'`; `TradeList.tsx` compares `reason === 'MarkMissing'`/`'AcknowledgedUnavailable'` for routing (T7P.7).
+
+### ocr review of `94588b60`
+
+Session `0a0586a3-8fc4-4be2-9300-b2406633c6d2`, model gpt-6.1-sol, 3 files reviewed in place (`ReviewCard.tsx`, `ReviewView.tsx`, `review-attention.ts`), **no findings**. Raw output: [ocr/T7P.8-94588b60.json](ocr/T7P.8-94588b60.json).
+
+### Cumulative run after T7P.8 (`t7p-8-review-words`, at `94588b60`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 97 files, 1223 passed, exit 0 | `suite-runs/t7p-8-review-words-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-8-review-words-integration.txt` |
+| Browser (Chromium), full tier | 5 failed, 158 passed (8.2 min), exit 1 | `suite-runs/t7p-8-review-words-browser.txt` |
+| Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-8-review-words-checks.txt` |
+
+Stage `browser-auto 03273a2d`; tier full ("first matching path since 03273a2d: src/ui/screens/ReviewCard.tsx"). The 5 failures are the same 5 planned ones as after T7P.7 (`integrity.spec.ts:57` and `:91`, `breach-overrun.spec.ts:15`, `responsive-a11y.spec.ts:118` at its line 175, `sliders.spec.ts:60`), each a section 6.2 row (with decision 79's), which T7P.10 changes. The browser stage took 8.2 min, over the runner's 8-minute warning line (tech debt item 6); T7P.11 adds `e2e/d7p`, so the gate's browser stage nears the 10-minute Bash limit.
