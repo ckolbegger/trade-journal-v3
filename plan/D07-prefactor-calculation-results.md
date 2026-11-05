@@ -318,6 +318,7 @@ Cases that assert a reason's shape change only that shape, in the task that chan
 | `e2e/d2/ui-alignment.spec.ts`, the badge cases for an incoherent Trade (T2.40's XYZ row and T2.62's scroll-region case, where their fixture is incoherent) | "Records disagree" | "Facts can't be replayed" for the incoherent Trade; a Trade with findings keeps "Records disagree". The `Not available` cell expectations are unchanged (A186). |
 | `e2e/d2/narrow.spec.ts`, the Detail panel of the Trade stored as Planned | the "Records disagree" panel | the "Facts can't be replayed" panel, if that fixture is incoherent; unchanged if it has findings only |
 | `e2e/d5r/sliders.spec.ts`, T-B past the Stop: the slider's accessible name | "… Reward : risk Not applicable." | "… Reward : risk Not applicable: " plus the reason's words (`NotApplicable`, figure) |
+| `e2e/d4/responsive-a11y.spec.ts`, the Open Detail Valuation note for an acknowledged Mark (line 175 at `claude-opus-5.5-pre-d7p`). **Added by plan revision 44 (decision 79).** | "Acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price" | "Mark acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price" (`AcknowledgedUnavailable`, sentence, with the note's existing suffix) |
 
 T7P.10 confirms each fixture's kind (incoherent or with findings) before changing a line, and records it. A case not in this table that fails is a defect to investigate, not an expectation to change.
 
