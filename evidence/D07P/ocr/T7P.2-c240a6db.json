@@ -1,0 +1,91 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 3556,
+    "input_tokens": 3512,
+    "output_tokens": 44,
+    "cache_read_tokens": 1920,
+    "elapsed": "4s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/calculation-result/index.ts",
+        "src/domain/instrument/index.ts"
+      ]
+    }
+  ],
+  "session_id": "c4a65bc5-501c-4e84-ab75-17945007526d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c4a65bc5-501c-4e84-ab75-17945007526d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c240a6db",
+      "resolved_base": "1eb9bdfcf38d94ecd2993e0f4e626be521ec26d9",
+      "resolved_head": "c240a6db20c5394700a5ba6fdad39932e214334c",
+      "exact_range": "1eb9bdfcf38d94ecd2993e0f4e626be521ec26d9..c240a6db20c5394700a5ba6fdad39932e214334c",
+      "source_artifact_sha256": "72743ee0f5db6821ff9ade8da8c3c26eeba84178db24abbb08a4c96fcaae590c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.5",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829bea598cee2689683e3fc90c6a7bf0c2494c56bb85e76157189cf875986d91",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "d60db12feee0482035c3f6643b91b1398fe737c29d27534c17fd5efade3a1083"
+        },
+        {
+          "item_id": "8abcc42c9a4a79facecd8506a4e21dfa5f1b9b66d70febb3ad65e0ae283cbc0f",
+          "path": "src/domain/instrument/index.ts",
+          "fingerprint": "cc8ecc1fc7aa61c09640a96c637a70403ecce717fd12b62536a4e29f063ffe90"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "d60db12feee0482035c3f6643b91b1398fe737c29d27534c17fd5efade3a1083"
+        },
+        {
+          "item_id": "8abcc42c9a4a79facecd8506a4e21dfa5f1b9b66d70febb3ad65e0ae283cbc0f",
+          "path": "src/domain/instrument/index.ts",
+          "fingerprint": "cc8ecc1fc7aa61c09640a96c637a70403ecce717fd12b62536a4e29f063ffe90"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 3581
+  }
+}

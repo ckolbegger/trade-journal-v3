@@ -43,3 +43,22 @@ Tier: task, printed reason "browser tier: task (no changed path since 6b39c035 i
 Not yet run: the first attempt failed before reviewing, with `ChatGPT OAuth request failed: status=400 code=invalid_grant` (expired `ocr` sign-in). Waiting for the user to sign in again (`ocr auth login`).
 
 Rerun on 2026-11-05 after the user signed in again: session `43bb23fe-33e5-4e50-aef7-020599e47c86`, model gpt-6.1-sol, 6 files reviewed in place (test files excluded), **no findings**. Raw output: [ocr/T7P.1-536616d6.json](ocr/T7P.1-536616d6.json). T7P.1 is complete.
+
+## T7P.2 Domain: the Instrument module
+
+Behavioral; commit `c240a6db`. 2 cases red then green (`tdd-log.md`); no first-run pass. `src/domain/instrument/` exports `Instrument` (Stock only), `instrumentKey` and `instrumentOf`. `calculation-result` now imports `Instrument` type-only for its temporary `UnavailableDetail`; `lint:deps` needed no new rule.
+
+### ocr review of `c240a6db`
+
+Session `c4a65bc5-501c-4e84-ab75-17945007526d`, model gpt-6.1-sol, 2 files reviewed in place (the test file excluded), **no findings**. Raw output: [ocr/T7P.2-c240a6db.json](ocr/T7P.2-c240a6db.json).
+
+### Cumulative run after T7P.2 (`t7p-2-instrument`, at `882ff8ae`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 95 files, 1190 passed, exit 0 | `suite-runs/t7p-2-instrument-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-2-instrument-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (11.3 s), exit 0 | `suite-runs/t7p-2-instrument-browser.txt` |
+| Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-2-instrument-checks.txt` |
+
+Stage `browser-auto 7e13d28b`; tier: task, printed reason "browser tier: task (no changed path since 7e13d28b is on the full-tier list)". Ports free before and after.

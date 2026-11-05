@@ -211,8 +211,8 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | setup; T7P.1 (`536616d6`, cumulative run passed; its ocr review was rerun after the user signed in again, alongside T7P.2) |
-| Next step | T7P.2, base `7e13d28b` (T7P.1's evidence commit; the progress commit after it is plan-only); record T7P.1's ocr review when it returns. |
-| Last commit | `docs(plan): D7P handoff progress, T7P.2 base` (local; nothing pushed since `ad870c91`) |
+| Tasks done | setup; T7P.1 (`536616d6`); T7P.2 (`c240a6db`). Each with no ocr findings and a passing cumulative run (task tier). |
+| Next step | T7P.3, base: the commit "docs(evidence): T7P.2 ocr review and cumulative run". |
+| Last commit | `docs(evidence): T7P.2 ocr review and cumulative run` (local; nothing pushed since `ad870c91`) |
 | Decisions made | Decision 78 (revision 43, the user's choice, 2026-11-04): `verify:fixtures` compares derived views with `expected-views.json`, so those snapshots change shape only (values kept) in T7P.1, T7P.4 and T7P.5; every `dump.json` stays byte-identical. |
 | Open questions | none yet |
