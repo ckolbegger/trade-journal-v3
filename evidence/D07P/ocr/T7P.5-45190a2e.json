@@ -1,0 +1,160 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 66355,
+    "input_tokens": 65214,
+    "output_tokens": 1141,
+    "cache_read_tokens": 5760,
+    "elapsed": "47s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review attention coordination, types, and review UI integration",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/attention.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/StopTargetSlider.tsx",
+        "src/ui/screens/review-attention.ts"
+      ]
+    }
+  ],
+  "session_id": "45908ed6-788a-4e18-93f0-45ff13800d92",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "45908ed6-788a-4e18-93f0-45ff13800d92",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "45190a2e",
+      "resolved_base": "a39d0b3f6c5fb176404531c59ff17d6e9cff341a",
+      "resolved_head": "45190a2eca5d45744ee33d61b7796c244e036cbc",
+      "exact_range": "a39d0b3f6c5fb176404531c59ff17d6e9cff341a..45190a2eca5d45744ee33d61b7796c244e036cbc",
+      "source_artifact_sha256": "ee860d16bf6a1ad962c4757b91d4831cb3f858970a56482f24749b583dab2ae8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.5",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "829bea598cee2689683e3fc90c6a7bf0c2494c56bb85e76157189cf875986d91",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "859da08323013bf96ae964aaefa40f8a17d709d2dbc7f783237aa4ffa5c159cd"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "c4a2cd1f026993410e8b329e4e147dbdbe245b423a36cd6a23381a4c5706681c"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "7753bbeecc3ee832e0b8124003fb741f820bac835c07d85ac706a0bfb35cb150"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "27f200ce4ddb53c9dad2d3041ab2834f6bf5dfc331ba0ce11145906e1179674e"
+        },
+        {
+          "item_id": "7755ec7526e77ee9e402fcabe62ff07baa369eaabffd1676a709198f81126690",
+          "path": "src/ui/screens/StopTargetSlider.tsx",
+          "fingerprint": "2dd3a61b254b12205e669fa3b9123ef4adb94b6c1ded7ce03270bf8d9874490e"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "63519f39404b148afb746bce79a038d7e81cea2511b92041801a3976c7143301"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "b5a95ff781217ea56731c4ed38f8badf9012cb3981083b66ef4b7e203f4d45d1"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "f087070402f91cd0d6d794f95d2706ee2172a690d36a4cde42e88ed45262a4ca"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "859da08323013bf96ae964aaefa40f8a17d709d2dbc7f783237aa4ffa5c159cd"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "c4a2cd1f026993410e8b329e4e147dbdbe245b423a36cd6a23381a4c5706681c"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "7753bbeecc3ee832e0b8124003fb741f820bac835c07d85ac706a0bfb35cb150"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "27f200ce4ddb53c9dad2d3041ab2834f6bf5dfc331ba0ce11145906e1179674e"
+        },
+        {
+          "item_id": "7755ec7526e77ee9e402fcabe62ff07baa369eaabffd1676a709198f81126690",
+          "path": "src/ui/screens/StopTargetSlider.tsx",
+          "fingerprint": "2dd3a61b254b12205e669fa3b9123ef4adb94b6c1ded7ce03270bf8d9874490e"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "63519f39404b148afb746bce79a038d7e81cea2511b92041801a3976c7143301"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "b5a95ff781217ea56731c4ed38f8badf9012cb3981083b66ef4b7e203f4d45d1"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "f087070402f91cd0d6d794f95d2706ee2172a690d36a4cde42e88ed45262a4ca"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 46726
+  }
+}

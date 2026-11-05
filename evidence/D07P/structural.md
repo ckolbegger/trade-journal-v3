@@ -154,3 +154,20 @@ So the Review rejects an as-of instant (or Review date) outside coverage before 
 - `workspace-v4`: the same, 6 entries.
 - `workspace-v5`: 10 `reasons[0]` (`{ code: 'MarkMissing', instrumentKey, date }` to `{ code: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol }, date }`), 10 `basis` (`NotComparable`/`MissingInput` to `Unavailable`/`MarkMissing`), 10 `rangePosition` (`NotPlaced`/`MissingInput` to `Unavailable`/`MarkMissing`), and 5 `completion.reasons` `MarkMissing` (`instrumentKey` to `instrument`). The `instrumentKey` fields of Marks rows (v4 9, v5 50 minus the 5 above) belong to rows this task does not change and stay.
 - `npm run verify:fixtures` passes (v1 to v5). `git diff --name-only | grep dump` is empty.
+
+### ocr review of `45190a2e`
+
+Session `45908ed6-788a-4e18-93f0-45ff13800d92`, model gpt-6.1-sol, 8 files reviewed in place (23 test, fixture and evidence files excluded), **no findings**. Raw output: [ocr/T7P.5-45190a2e.json](ocr/T7P.5-45190a2e.json).
+
+### Cumulative run after T7P.5 (`t7p-5-daily-review`, at `45190a2e`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 96 files, 1206 passed | `suite-runs/t7p-5-daily-review-unit.txt` |
+| Node integration | 76 files, 154 passed | `suite-runs/t7p-5-daily-review-integration.txt` |
+| Browser (Chromium), full tier (`npm run test:e2e`) | 163 passed (7.6 min) | `suite-runs/t7p-5-daily-review-browser.txt` |
+| Static and verification checks | 12 of 12 `EXIT 0` | `suite-runs/t7p-5-daily-review-checks.txt` |
+
+Stage `browser-auto a39d0b3f`; the full tier ran (T7P.5 changed `src/ui/screens/` and `src/app/types.ts`). The runner's final table did not reach the main session (only an interim "still running" message did), so this table was read from the four output files; ports 5175, 9341 and 9342 were free afterwards (checked from the main session).
+
+Notes (from the T7P.5 report): `AwaitingClose` cannot reach a Review walked through `open` (the Review's cutoff is its date's close, so no Lot opens after the frame's close), so its pressure and range position case runs through `attentionOf`, as the breakdown allows for reasons `open` can't reach; the snapshot of workspace-v3 also needed its 6 `basis` entries reshaped (decision 78 covers `workspace-v*`). `save-marks.test.ts:113`'s title still says "kept MissingInput"; T7P.8 renames it.
