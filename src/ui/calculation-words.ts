@@ -12,8 +12,19 @@ export type Part =
 export type Parts = readonly Part[];
 
 export const instrumentLabel = (instrument: Instrument): string => instrument.symbol;
-export const text = (parts: Parts): string =>
-  parts.map((part) => (part.kind === 'text' ? part.text : part.kind === 'instrument' ? instrumentLabel(part.instrument) : shortDate(part.date))).join('');
+const partText = (part: Part): string => {
+  switch (part.kind) {
+    case 'text':
+      return part.text;
+    case 'instrument':
+      return instrumentLabel(part.instrument);
+    case 'date':
+      return shortDate(part.date);
+    default:
+      return part satisfies never;
+  }
+};
+export const text = (parts: Parts): string => parts.map(partText).join('');
 
 const t = (value: string): Part => ({ kind: 'text', text: value });
 const instrumentPart = (instrument: Instrument): Part => ({ kind: 'instrument', instrument });

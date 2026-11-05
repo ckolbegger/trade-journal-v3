@@ -204,3 +204,17 @@ Session `9c600fd4-ce50-409e-8f07-f43617f63bdb`, model gpt-6.1-sol, 1 file review
 ### Cumulative run after T7P.6 (`t7p-6-wording-module`, at `48f682f7`, before T7P.6-B1)
 
 Unit 97 files, 1215 passed; integration 76 files, 154 passed; browser full tier (`browser-auto cbbaa791`, "first matching path since cbbaa791: src/ui/calculation-words.test.ts") 163 passed (7.7 min); checks 12 of 12 exit 0. Outputs `suite-runs/t7p-6-wording-module-*.txt`. Ports free before and after. It ran alongside the ocr review, so a cumulative run follows T7P.6-B1.
+
+### T7P.6-B1
+
+Fix: `text()` in `src/ui/calculation-words.ts` now maps each part through `partText`, an exhaustive `switch` on `part.kind` with `return part satisfies never` in the default, the module's existing pattern. No behavior or text change.
+
+Other ternary or `if` chains over a union tag, examined: `findingWords` has `if (finding.kind === 'PositionChange')` followed by a `switch (finding.reason)` with a `never` default. That `if` is a two-way split on the one variant that carries `kind`; a new variant would fail to typecheck at `finding.side`, `finding.quantity` or the `never` default, so it has no silent catch-all and was left unchanged. The `length === ...` chains in `unavailableWords`, `notApplicableWords` and `unboundedWords` select among `WordLength` values or a two-valued direction, not a `Part` or reason tag; `figure` and `sentence` reading the same text is deliberate, so they were left unchanged. No other fix was needed.
+
+Note on the scratch edit: a new `Part` kind with no `date` field would fail the old ternary incidentally (`part.date` does not exist), which would hide the defect. The scratch kind therefore carries a `date: string`, so the old last branch accepts it.
+
+1. Scratch edit (Edit tool, never committed): added `| { readonly kind: 'scratch'; readonly date: string }` to `Part`.
+   - Before the fix: `npm run typecheck` exit 0 (the defect: the new kind is silently joined by the last ternary branch).
+   - After the fix: `npm run typecheck` exit 1, `src/ui/calculation-words.ts(25,19): error TS1360: Type '{ readonly kind: "scratch"; readonly date: string; }' does not satisfy the expected type 'never'.` (also TS2322 at 25,7), on the `satisfies never` line in `partText`, reached from `text()`.
+   - Scratch edit reverted with the Edit tool; `git diff` contains no `scratch` (0 matches).
+2. `npx vitest run src/ui/calculation-words.test.ts`: 9 passed, test file unchanged. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
