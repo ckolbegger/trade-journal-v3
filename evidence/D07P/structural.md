@@ -24,3 +24,20 @@ Spec reading (decision 45, A181, scoped): `specs/glossary.md` "Market observatio
 - Case changed: `src/domain/trade-analysis/net-cost.test.ts`, name and expectation `reason: 'NoOpenQuantity'` to `reason: 'NoRemainingPosition'`.
 - Temporary Unavailable form: `src/domain/calculation-result/index.ts` keeps `{ kind: 'Unavailable', reason, detail: UnavailableDetail }`; `UnavailableReason` lists today's five codes as reason-only cases. T7P.4 adds each case's fields, removes `detail` and `UnavailableDetail`.
 - `NotApplicable` is flat: `{ kind: 'NotApplicable' } & NotApplicableReason` case.
+
+### Cumulative run after T7P.1 (`t7p-1-calculation-result`, at `536616d6`)
+
+Run by `suite-runner` on 2026-11-04, browser stage `browser-auto 6b39c035` (the commit T7P.1 started from; the handoff's section 7 named the setup commit `72ad430a`, and the commits between are plan-only, so the tier is the same).
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 94 files, 1188 passed, exit 0 | `suite-runs/t7p-1-calculation-result-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-1-calculation-result-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (10.9 s), exit 0 | `suite-runs/t7p-1-calculation-result-browser.txt` |
+| Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-1-calculation-result-checks.txt` |
+
+Tier: task, printed reason "browser tier: task (no changed path since 6b39c035 is on the full-tier list)". The breakdown's section 2 expected the full tier for T7P.1; the commit touched no P55 path (no `src/ui/` file needed a change, since nothing there branched on `NoOpenQuantity`), so `browser-auto` chose the task tier, as decision 71 prescribes. No `e2e/d7p` folder exists yet, so only the `@every-task` call ran. Ports 5175, 9341, 9342 free before and after.
+
+### ocr review of `536616d6`
+
+Not yet run: the first attempt failed before reviewing, with `ChatGPT OAuth request failed: status=400 code=invalid_grant` (expired `ocr` sign-in). Waiting for the user to sign in again (`ocr auth login`).
