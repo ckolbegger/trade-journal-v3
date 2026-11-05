@@ -32,6 +32,7 @@ export type UnavailableReason =
   | { readonly reason: 'AcknowledgedUnavailable'; readonly instrument: Instrument; readonly date: string }
   | { readonly reason: 'SessionPolicyNotCovered'; readonly instrument: Instrument; readonly date: string }
   | { readonly reason: 'AwaitingClose'; readonly after: string }
+  | { readonly reason: 'DummyScratch' }
   | { readonly reason: 'FactsIncoherent'; readonly findings: readonly IncoherentFact[] };
 
 export type NotApplicableReason =
