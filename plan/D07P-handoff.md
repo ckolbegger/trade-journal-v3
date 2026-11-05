@@ -211,8 +211,8 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | setup; T7P.1 (`536616d6`); T7P.2 (`c240a6db`); T7P.3 (`763e5353`). Each with no ocr findings and a passing cumulative run. |
-| Next step | T7P.4, base: the commit "docs(evidence): T7P.3 ocr review and cumulative run". |
-| Last commit | `docs(evidence): T7P.3 ocr review and cumulative run` (local; nothing pushed since `ad870c91`) |
+| Tasks done | setup; T7P.1 (`536616d6`); T7P.2 (`c240a6db`); T7P.3 (`763e5353`); T7P.4 (`0fb6f453`). Each with no ocr findings and a passing cumulative run. |
+| Next step | T7P.5, base: the commit "docs(evidence): T7P.4 ocr review and cumulative run". |
+| Last commit | `docs(evidence): T7P.4 ocr review and cumulative run` (local; nothing pushed since `ad870c91`) |
 | Decisions made | Decision 78 (revision 43, the user's choice, 2026-11-04): `verify:fixtures` compares derived views with `expected-views.json`, so those snapshots change shape only (values kept) in T7P.1, T7P.4 and T7P.5; every `dump.json` stays byte-identical. |
 | Open questions | none yet |

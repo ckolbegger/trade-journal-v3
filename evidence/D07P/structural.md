@@ -102,3 +102,20 @@ Structural. `UnavailableReason` in `src/domain/calculation-result/index.ts` is n
 Snapshot shapes changed (A185, decision 78), values kept: `workspace-v4/expected-views.json` 23 Unavailable results (`"reason": "AwaitingClose", "detail": { "after": "2026-10-19" }` becomes `"reason": "AwaitingClose", "after": "2026-10-19"`); `workspace-v5/expected-views.json` 200 (`"reason": "MarkMissing", "detail": { "instrument": { "kind": "Stock", "symbol": "CSCO" }, "date": "2026-10-20" }` becomes `"reason": "MarkMissing", "instrument": { ... }, "date": "2026-10-20"`).
 
 Test files changed, old to new: `detail: { instrument, date }` / `detail: { after }` beside `reason` becomes the fields beside `reason`, in `src/domain/trade-analysis/evaluate.test.ts` (6), `src/coordinators/trade-views/current-evaluation.test.ts` (3), `src/coordinators/daily-review/daily-review.test.ts` (2, embedded `marketValue`), `src/coordinators/workspace/migration.test.ts`, `src/ui/figures.test.ts` (2), `src/ui/screens/TradeList.test.tsx` (5), `ReviewCard.test.tsx` (2), `CardFigures.test.tsx`, `tests/integration/d4/intraday.test.ts` (2), `d4/expected-mark.test.ts`, `d6/missing-mark.test.ts`, `tests/support/views-fixtures.ts` (2); `tests/support/open-detail-fixtures.ts` renames the findings type only.
+
+### ocr review of `0fb6f453`
+
+Session `245d2a35-ff2f-4512-aeec-23f329c4cc74`, model gpt-6.1-sol, 13 files reviewed in place (14 test, fixture and evidence files excluded), **no findings**. Raw output: [ocr/T7P.4-0fb6f453.json](ocr/T7P.4-0fb6f453.json).
+
+### Cumulative run after T7P.4 (`t7p-4-typed-reasons`, at `0fb6f453`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 96 files, 1194 passed, exit 0 | `suite-runs/t7p-4-typed-reasons-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-4-typed-reasons-integration.txt` |
+| Browser (Chromium), full tier | 163 passed (7.7 min), exit 0 | `suite-runs/t7p-4-typed-reasons-browser.txt` |
+| Static and verification checks | 12 of 12 exit 0 | `suite-runs/t7p-4-typed-reasons-checks.txt` |
+
+Stage `browser-auto e90e267e`; tier: full, printed reason "first matching path since e90e267e: src/app/types.ts". Ports free before and after.
+
+Notes carried to later tasks (from the T7P.4 report): `attention.ts` has a temporary private `awaitingAfter(u)` helper that T7P.5 removes when it reshapes the Review; `figures.ts` still words `SessionPolicyNotCovered` and `FactsIncoherent` as "Not available" until T7P.6/T7P.7; `TradeDetail.tsx` still looks facts up by id for its findings table, which T7P.7 can drop now that findings describe themselves.
