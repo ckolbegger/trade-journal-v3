@@ -218,3 +218,11 @@ Note on the scratch edit: a new `Part` kind with no `date` field would fail the 
    - After the fix: `npm run typecheck` exit 1, `src/ui/calculation-words.ts(25,19): error TS1360: Type '{ readonly kind: "scratch"; readonly date: string; }' does not satisfy the expected type 'never'.` (also TS2322 at 25,7), on the `satisfies never` line in `partText`, reached from `text()`.
    - Scratch edit reverted with the Edit tool; `git diff` contains no `scratch` (0 matches).
 2. `npx vitest run src/ui/calculation-words.test.ts`: 9 passed, test file unchanged. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
+
+### ocr review of `3ad6841b` (T7P.6-B1)
+
+Session `3fa0f67d-a797-4d32-a6dc-f43a7b64c266`, model gpt-6.1-sol, 1 file reviewed in place, **no findings**. Raw output: [ocr/T7P.6-B1-3ad6841b.json](ocr/T7P.6-B1-3ad6841b.json). T7P.6 and its bug task are resolved.
+
+### Cumulative run after T7P.6-B1 (`t7p-6-b1-exhaustive-text`, at `3ad6841b`)
+
+Unit 97 files, 1215 passed; integration 76 files, 154 passed; browser full tier (`browser-auto aad86ca3`, "first matching path since aad86ca3: src/ui/calculation-words.ts") 163 passed (7.6 min); checks 12 of 12 exit 0. Outputs `suite-runs/t7p-6-b1-exhaustive-text-*.txt`. Ports free before and after.

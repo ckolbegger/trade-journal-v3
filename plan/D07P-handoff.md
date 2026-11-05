@@ -211,8 +211,8 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | setup; T7P.1 (`536616d6`); T7P.2 (`c240a6db`); T7P.3 (`763e5353`); T7P.4 (`0fb6f453`); T7P.5 (`45190a2e`; P73's probe: latent). Each with no ocr findings and a passing cumulative run. |
-| Next step | T7P.6, base: the commit "docs(evidence): T7P.5 ocr review and cumulative run". |
-| Last commit | `docs(evidence): T7P.5 ocr review and cumulative run` (local; nothing pushed since `ad870c91`) |
+| Tasks done | setup; T7P.1 (`536616d6`); T7P.2 (`c240a6db`); T7P.3 (`763e5353`); T7P.4 (`0fb6f453`); T7P.5 (`45190a2e`; P73's probe: latent); T7P.6 (`ce13811e`, scratch `87891c13` undone by `48f682f7`) and T7P.6-B1 (`3ad6841b`). Each with its ocr findings resolved and a passing cumulative run. |
+| Next step | T7P.7, base: the commit "docs(evidence): T7P.6-B1 ocr review and cumulative run". From T7P.7 until T7P.10, the cumulative run's browser stage is expected to fail exactly the cases in the breakdown's section 6.2, whose expected texts T7P.10 changes; any other failure is a defect. |
+| Last commit | `docs(evidence): T7P.6-B1 ocr review and cumulative run` (local; nothing pushed since `ad870c91`) |
 | Decisions made | Decision 78 (revision 43, the user's choice, 2026-11-04): `verify:fixtures` compares derived views with `expected-views.json`, so those snapshots change shape only (values kept) in T7P.1, T7P.4 and T7P.5; every `dump.json` stays byte-identical. |
-| Open questions | none yet |
+| Open questions | For the final report: (1) T7P.6 cases 8 and 9 were first-run passes, each mutation-checked by an assertion failure (`structural.md`, T7P.6 notes). (2) T7P.6's compile-time scratch commit `87891c13` stays in history, undone by `48f682f7`, because the guard hook refuses `git reset` in the worktree. (3) T7P.6's ocr finding (nested ternary, implicit catch-all) was Valid and fixed as T7P.6-B1. |
