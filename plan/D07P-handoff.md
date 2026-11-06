@@ -110,7 +110,7 @@ Search `plan/spec-map.md` for anything else the work touches, and read that sect
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r43 and the next decision is 78. (Revision 43, decision 78, was made on 2026-11-04 before T7P.1: the derived-view snapshots `expected-views.json` change shape only, with every `dump.json` unchanged. The next revision is now r44 and the next decision 79.) (Revision 44, decision 79, was made on 2026-11-05 during T7P.7: section 6.2 gains Open Detail's Valuation note for an acknowledged Mark. The next revision is now r45 and the next decision 80.)
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r43 and the next decision is 78. (Revision 43, decision 78, was made on 2026-11-04 before T7P.1: the derived-view snapshots `expected-views.json` change shape only, with every `dump.json` unchanged. The next revision is now r44 and the next decision 79.) (Revision 44, decision 79, was made on 2026-11-05 during T7P.7: section 6.2 gains Open Detail's Valuation note for an acknowledged Mark. The next revision is now r45 and the next decision 80.) (Revision 45, decision 80, was made on 2026-11-05 during T7P.9: `verify:wording` keeps no exemption, and the Mark row's status words and the exit form's issue-code checks move into the wording module. The next revision is now r46 and the next decision 81.)
 
 ## 3. Prefactor specifics
 
