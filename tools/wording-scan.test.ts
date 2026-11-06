@@ -62,6 +62,47 @@ describe('verify:wording scanning', () => {
     expect(hits[0]).toMatch(/^src\/ui\/V\.tsx:4: code: /);
   });
 
+  it('passes on a code-first comparison whose operand wraps before .kind', () => {
+    expect(scanSource('src/ui/K.tsx', ["const a = 'AcknowledgedUnavailable' === status", '  .kind;'].join('\n'))).toEqual([]);
+  });
+
+  it('passes on a code-first comparison whose operand wraps before optional chaining kind', () => {
+    expect(scanSource('src/ui/K.tsx', ["const a = 'AcknowledgedUnavailable' === status", '  ?.kind;'].join('\n'))).toEqual([]);
+  });
+
+  it('still fails on a code-first comparison whose operand wraps before reason', () => {
+    const hits = scanSource('src/ui/K.tsx', ["const a = 'AcknowledgedUnavailable' === result", '  .reason;'].join('\n'));
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/K\.tsx:1: code: /);
+  });
+
+  it('passes on a comment inside a template substitution', () => {
+    expect(scanSource('src/ui/B5.tsx', '`${1 /* Mark missing */}`;')).toEqual([]);
+  });
+
+  it('still fails on a phrase in a template literal with a substitution', () => {
+    const hits = scanSource('src/ui/B5.tsx', '`Mark missing ${x}`;');
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B5\.tsx:1: words: Mark missing$/);
+  });
+
+  it('passes on a trailing comment after JSX text with an apostrophe', () => {
+    expect(scanSource('src/ui/B6.tsx', "const a = <span>Don't</span>; // Mark missing")).toEqual([]);
+  });
+
+  it('still fails on a phrase in an expression after JSX text with an apostrophe', () => {
+    const hits = scanSource('src/ui/B6.tsx', "const a = <span>Don't</span>;\nconst b = <i>{'Mark missing'}</i>;");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B6\.tsx:2: words: Mark missing$/);
+  });
+
+  it('fails on a code literal after a CRLF line continuation inside a string followed by comment text', () => {
+    const source = "const a = 'x\\\r\ny'; // note\r\nswitch (r) { case 'NotClosed': break; }\r\n";
+    const hits = scanSource('src/ui/B7.tsx', source);
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B7\.tsx:3: code: /);
+  });
+
   it('still passes on a sentence that contains a reason words, and on the current tree', () => {
     const sentence = scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";');
     expect(sentence).toEqual([]);

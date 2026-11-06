@@ -1,5 +1,7 @@
 // The scanning half of `npm run verify:wording` (see verify-wording.ts for what the check enforces): the
-// phrase and code lists, and a pure function from one file's text to its hits.
+// phrase and code lists, and a pure function from one file's text to its hits. The text is read with the
+// TypeScript parser, so what is a string, a template, JSX text or a comment is the compiler's call.
+import ts from 'typescript';
 
 // Phrases: every label, figure and sentence of the unavailable, not-applicable and finding tables, and the
 // Unbounded texts, reduced to the words that are fixed. "Not available" is FactsIncoherent's figure; it is
@@ -57,67 +59,57 @@ export const REASON_WORDS = [
   'no risk at entry',
   'no reward at entry',
 ];
-const reasonAlt = REASON_WORDS.join('|');
-const reasonStringRe = new RegExp(`(['"\`])\\s*(${reasonAlt})\\s*\\1`, 'gi');
-
-const reasonJsxRe = new RegExp(`>\\s*(${reasonAlt})\\s*<`, 'gi');
-
 // An apostrophe may be straight or curly in source text.
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const phraseRe = new RegExp(PHRASES.map((p) => escape(p).replace(/'/g, "['’]")).join('|'), 'gi');
-const alt = CODES.join('|');
-// `case 'Code'`, or an equality operator on either side of a quoted code; a `.kind` on the left is a status, not a reason.
-const caseRe = new RegExp(`\\bcase\\s+(['"\`])(${alt})\\1`, 'g');
-const eqAfterRe = new RegExp(`([\\w.?\\]]*)\\s*[!=]==?\\s*(['"\`])(${alt})\\2`, 'g');
-const eqBeforeRe = new RegExp(`(['"\`])(${alt})\\1\\s*[!=]==?\\s*([\\w.?]*)`, 'g');
+const reasonWords = new Set(REASON_WORDS.map((w) => w.toLowerCase()));
+const codes = new Set(CODES);
+const equalityOperators = new Set([
+  ts.SyntaxKind.EqualsEqualsEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsEqualsToken,
+  ts.SyntaxKind.EqualsEqualsToken,
+  ts.SyntaxKind.ExclamationEqualsToken,
+]);
 
-// Blank out comments, keeping every line break so line numbers hold. A `//` or `/*` inside a single, double or
-// backtick quoted literal is text, not a comment. A single or double quote ends at a line break (an apostrophe
-// in JSX text must not swallow the rest of the file); a backtick literal may span lines.
-const stripComments = (source: string): string => {
-  let out = '';
-  let i = 0;
-  while (i < source.length) {
-    const c = source[i]!;
-    const next = source[i + 1];
-    if (c === '/' && (next === '/' || next === '*')) {
-      const end =
-        next === '/'
-          ? (source.indexOf('\n', i) === -1 ? source.length : source.indexOf('\n', i))
-          : (source.indexOf('*/', i + 2) === -1 ? source.length : source.indexOf('*/', i + 2) + 2);
-      out += source.slice(i, end).replace(/[^\n]/g, ' ');
-      i = end;
-    } else if (c === "'" || c === '"' || c === '`') {
-      let j = i + 1;
-      while (j < source.length && source[j] !== c && (c === '`' || source[j] !== '\n')) j += source[j] === '\\' ? 2 : 1;
-      const end = source[j] === c ? j + 1 : Math.min(j, source.length);
-      out += source.slice(i, end);
-      i = end;
-    } else {
-      out += c;
-      i++;
-    }
-  }
-  return out;
-};
+const isStringLike = (n: ts.Node): n is ts.StringLiteral | ts.NoSubstitutionTemplateLiteral =>
+  ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n);
+const isCode = (n: ts.Node) => isStringLike(n) && codes.has(n.text);
+// A comparison on Market Data's Expected-Mark Status reads `.kind`; that is a status, not a reason.
+const isKindAccess = (n: ts.Node) => ts.isPropertyAccessExpression(n) && n.name.text === 'kind';
+const squash = (s: string) => s.replace(/\s*\n\s*/g, ' ');
 
 // Each hit as `path:line: kind: match`.
 export function scanSource(path: string, source: string): string[] {
-  const text = stripComments(source);
-  // The regexes run over the whole text so a match may cross line breaks; a hit names the line of its
-  // code literal (or, for words, of the phrase), found from the offset.
-  const lineAt = (offset: number) => text.slice(0, offset).split('\n').length;
+  const sf = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   const found: { line: number; kind: string; match: string }[] = [];
-  const at = (offset: number, kind: string, match: string) =>
-    found.push({ line: lineAt(offset), kind, match: match.replace(/\s*\n\s*/g, ' ') });
-  for (const m of text.matchAll(phraseRe)) at(m.index, 'words', m[0]);
-  for (const m of text.matchAll(reasonStringRe)) at(m.index + m[0].indexOf(m[2]!), 'words', m[2]!);
-  for (const m of text.matchAll(reasonJsxRe)) at(m.index + m[0].indexOf(m[1]!), 'words', m[1]!);
-  for (const m of text.matchAll(caseRe)) at(m.index + m[0].lastIndexOf(`${m[1]}${m[2]}`), 'code', m[0]);
-  for (const m of text.matchAll(eqAfterRe))
-    if (!/\.kind$/.test(m[1] ?? '')) at(m.index + m[0].lastIndexOf(`${m[2]}${m[3]}`), 'code', m[0].trim());
-  for (const m of text.matchAll(eqBeforeRe))
-    if (!/\.kind$/.test(m[3] ?? '')) at(m.index + m[0].indexOf(`${m[1]}${m[2]}`), 'code', m[0].trim());
-  // Line order as before; within a line, phrases, then case, then comparisons, as they were found.
+  const lineAt = (offset: number) => sf.getLineAndCharacterOfPosition(offset).line + 1;
+  const hit = (offset: number, kind: string, match: string) => found.push({ line: lineAt(offset), kind, match: squash(match) });
+
+  const visit = (node: ts.Node): void => {
+    const start = node.getStart(sf);
+    if (
+      isStringLike(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node) ||
+      node.kind === ts.SyntaxKind.JsxText
+    ) {
+      const raw = node.getText(sf);
+      for (const m of raw.matchAll(phraseRe)) hit(start + m.index, 'words', m[0]);
+      // Reason words count only as the whole literal or the whole JSX text node.
+      const whole = node.kind === ts.SyntaxKind.JsxText || isStringLike(node) ? (isStringLike(node) ? node.text : raw).trim() : '';
+      if (reasonWords.has(whole.toLowerCase())) hit(start + Math.max(raw.indexOf(whole), 0), 'words', whole);
+    } else if (ts.isCaseClause(node) && isCode(node.expression)) {
+      hit(node.expression.getStart(sf), 'code', node.getText(sf).slice(0, node.expression.getEnd() - start));
+    } else if (ts.isBinaryExpression(node) && equalityOperators.has(node.operatorToken.kind)) {
+      const { left, right } = node;
+      const literal = isCode(left) ? left : isCode(right) ? right : undefined;
+      const other = literal === left ? right : left;
+      if (literal && !isKindAccess(other)) hit(literal.getStart(sf), 'code', node.getText(sf));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  // Source order is traversal order, so the stable sort keeps hits of one line in the order they were found.
   return found.sort((a, b) => a.line - b.line).map((h) => `${path}:${h.line}: ${h.kind}: ${h.match}`);
 }
