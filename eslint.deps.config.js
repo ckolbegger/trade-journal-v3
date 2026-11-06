@@ -4,16 +4,17 @@ import tseslint from 'typescript-eslint';
 
 const identity = 'userAgent|userAgentData|platform|vendor';
 
+// ESLint replaces a rule's options when a later config entry sets the rule again, so every entry that sets
+// no-restricted-syntax for files under src/ repeats this selector.
+export const noIdentitySelector = {
+  selector: `MemberExpression[property.name=/^(${identity})$/]`,
+  message: 'no-identity: support is decided by functional checks, never browser or OS identity.',
+};
+
 export const noIdentityRules = {
   files: ['**/src/**/*.{ts,tsx}'],
   rules: {
-    'no-restricted-syntax': [
-      'error',
-      {
-        selector: `MemberExpression[property.name=/^(${identity})$/]`,
-        message: 'no-identity: support is decided by functional checks, never browser or OS identity.',
-      },
-    ],
+    'no-restricted-syntax': ['error', noIdentitySelector],
   },
 };
 
@@ -22,10 +23,7 @@ export const domainPurityRules = {
   rules: {
     'no-restricted-syntax': [
       'error',
-      {
-        selector: `MemberExpression[property.name=/^(${identity})$/]`,
-        message: 'no-identity: support is decided by functional checks, never browser or OS identity.',
-      },
+      noIdentitySelector,
       {
         selector: "MemberExpression[object.name='Date'][property.name='now']",
         message: 'domain-purity: read time from an injected clock, never Date.now.',

@@ -621,3 +621,17 @@ Session `68673aa9-c423-4841-9492-7cd76acbec22`, model gpt-6.1-sol, 3 files revie
 ### Cumulative run after Retro-B1 (`retro-b1`, at `dd0c8224`, before its bug tasks)
 
 Unit 97 files, 1225 passed; integration 76 files, 154 passed; browser full tier (`browser-auto 4b360324`, "first matching path since 4b360324: package.json") 167 passed (8.4 min); checks **13 of 13** exit 0, `verify:wording` among them. Outputs `suite-runs/retro-b1-*.txt`. Ports 5175, 9341, 9342 free before and after.
+
+### Retro-B1-B1 to B3
+
+Tests: `tools/wording-rules.test.ts` gains six cases (B1: four, through the real merged `eslint.config.js` with ESLint's `lintText` on existing files' paths; B2: one; B3: one). Fixes: `noIdentitySelector` exported from `eslint.deps.config.js` and repeated in `wordingRules` (ESLint replaces `no-restricted-syntax` options per later entry), `.kind` exemption guarded by `computed=false`, and a `ChainExpression` looked through as no wrapper level. `src/domain` is not matched by `wordingRules` and keeps its own repeated identity selector. Two first-run passes are flagged in `tdd-log.md` with mutation checks.
+
+| Command | Result |
+|---|---|
+| `npx vitest run tools` | exit 0; 3 files, 50 passed (50) |
+| `npm run verify:wording` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `.claude/scripts/full-suite.sh evidence/D07P retro-b1-bugs-checks-probe checks` | 13 of 13 exit 0 (output file deleted) |

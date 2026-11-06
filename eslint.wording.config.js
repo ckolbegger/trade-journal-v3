@@ -12,6 +12,7 @@
 // is compared on a `.kind` property access (optional chaining included), which (b) leaves alone.
 // Test files assert the words and are exempt, as is the module itself.
 import tseslint from 'typescript-eslint';
+import { noIdentitySelector } from './eslint.deps.config.js';
 
 // Phrases: every label, figure and sentence of the unavailable, not-applicable and finding tables, and the
 // Unbounded texts, reduced to the words that are fixed. "Not available" is FactsIncoherent's figure; it is
@@ -84,7 +85,15 @@ const codeMessage = message('this branches on a reason code');
 
 // A code literal at `path`: a string literal, or a template without substitutions.
 const codeAt = (path) => [`[${path}.value=/${codeRe}/]`, `[${path}.expressions.length=0][${path}.quasis.0.value.cooked=/${codeRe}/]`];
-const notKind = (side) => wrapperPaths(side).map((p) => `:not([${p}.property.name="kind"])`).join('');
+// A `.kind` property access: not a computed member such as `result[kind]`. An optional chain (`status?.kind`) is a
+// ChainExpression around the member and counts as no wrapper level, so the member is also looked for one level
+// further in when the node at that path is a chain.
+const kindAt = (p) => `[${p}.property.name="kind"][${p}.computed=false]`;
+const notKind = (side) =>
+  wrapperPaths(side)
+    .flatMap((p) => [kindAt(p), `[${p}.type="ChainExpression"]${kindAt(`${p}.expression`)}`])
+    .map((c) => `:not(${c})`)
+    .join('');
 
 const equality = '[operator=/^[!=]==?$/]';
 const selectors = [
@@ -103,7 +112,8 @@ export const wordingRules = {
   files: ['src/ui/**/*.{ts,tsx}'],
   ignores: ['src/ui/calculation-words.ts', '**/*.test.{ts,tsx}'],
   rules: {
-    'no-restricted-syntax': ['error', ...selectors.map(([selector, msg]) => ({ selector, message: msg }))],
+    // Repeats the no-identity selector: this entry's options replace noIdentityRules' for these files.
+    'no-restricted-syntax': ['error', noIdentitySelector, ...selectors.map(([selector, msg]) => ({ selector, message: msg }))],
   },
 };
 

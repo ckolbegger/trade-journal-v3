@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { Linter } from 'eslint';
+import { ESLint, Linter } from 'eslint';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error The configuration is plain JavaScript (as eslint.deps.config.js is), with no declaration file.
 import wordingConfig from '../eslint.wording.config.js';
@@ -151,5 +151,45 @@ describe('verify:wording rules', () => {
     expect(files.length).toBeGreaterThan(0);
     const hits = files.flatMap((f) => scanSource(`src/ui/${f.pathname.split('/src/ui/')[1]!}`, readFileSync(f, 'utf8')));
     expect(hits).toEqual([]);
+  });
+
+  it('fails on a reason code compared with a computed member named kind but passes on the kind property', () => {
+    expect(lines(scanSource('src/ui/K2.tsx', "if (result[kind] === 'MarkMissing') {}"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/K2.tsx', "if ('MarkMissing' === result[kind]) {}"))).toEqual([1]);
+    expect(scanSource('src/ui/K2.tsx', "if (status.kind === 'AcknowledgedUnavailable') {}")).toEqual([]);
+  });
+
+  it('passes on a kind comparison whose chain, as, satisfies and non-null wrappers use the three levels', () => {
+    expect(scanSource('src/ui/K3.tsx', "if (((status?.kind as string) satisfies string)! === 'AcknowledgedUnavailable') {}")).toEqual([]);
+    expect(scanSource('src/ui/K3.tsx', "if ('AcknowledgedUnavailable' === ((status?.kind as string) satisfies string)!) {}")).toEqual([]);
+  });
+
+  // The merged main configuration, run on existing files' paths with other text (type-aware parsing needs a real path).
+  const mainEslint = new ESLint({ cwd: new URL('..', import.meta.url).pathname });
+  const lintMain = async (path: string, source: string) => (await mainEslint.lintText(source, { filePath: path }))[0]!.messages;
+  const uiPath = 'src/ui/Badge.tsx';
+
+  it('reports navigator.userAgent in a non-test src/ui file through the merged main config', async () => {
+    const messages = await lintMain(uiPath, 'export const a = navigator.userAgent;');
+    expect(messages.map((m) => m.message)).toEqual([expect.stringMatching(/^no-identity:/)]);
+  });
+
+  it('still reports a wording violation in a src/ui file that also uses the identity ban', async () => {
+    const messages = await lintMain(uiPath, "export const a = navigator.userAgent;\nexport const b = 'Mark missing';");
+    expect(messages.map((m) => [m.line, m.message.split(':')[0]])).toEqual([[1, 'no-identity'], [2, 'verify']]);
+  });
+
+  it('applies only the identity rule in a src file outside src/ui and src/domain', async () => {
+    const messages = await lintMain('src/main.tsx', "export const a = navigator.platform;\nexport const b = 'Mark missing';");
+    expect(messages.map((m) => [m.line, m.message.split(':')[0]])).toEqual([[1, 'no-identity']]);
+  });
+
+  it('keeps the domain purity and identity rules in src/domain and adds no wording rule', async () => {
+    const messages = await lintMain('src/domain/daily-trade-review-prompts.ts', "export const a = navigator.platform;\nexport const b = 'Mark missing';\nexport const c = Date.now();");
+    expect(messages.map((m) => [m.line, /no-identity|domain-purity|verify:wording/.exec(m.message)?.[0]])).toEqual([
+      [1, 'domain-purity'],
+      [1, 'no-identity'],
+      [3, 'domain-purity'],
+    ]);
   });
 });
