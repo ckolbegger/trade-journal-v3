@@ -488,3 +488,20 @@ No fixture's kind contradicts section 6.2.
 **`npm run test:e2e` once:** 163 passed (7.7 m), 0 failed. Ports free after.
 
 **Diff** `git diff claude-opus-5.5-pre-d7p -- e2e`: integrity.spec.ts 5 lines, breach-overrun.spec.ts 5, responsive-a11y.spec.ts 3, sliders.spec.ts 1; no other file.
+
+### ocr review of `b80938d7` (T7P.10, test-only)
+
+Relocated (scratch clone; the four specs under `src/itg/d07p/` as `.ts`, the `support.ts` chain copied in the parent commit): session `ac693a69-0639-4505-b76a-b0b2cf408701`, 4 files reviewed, **no findings**. Raw output: [ocr/T7P.10-b80938d7.json](ocr/T7P.10-b80938d7.json). Note from the T7P.10 report: the comment at `e2e/d4/responsive-a11y.spec.ts:214` still says "Awaiting the next close"; it is a comment, not an expectation, and 6.2 lists only expectations, so it was left.
+
+### Cumulative run after T7P.10 (`t7p-10-browser-texts`, at `b80938d7`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 97 files, 1225 passed | `suite-runs/t7p-10-browser-texts-unit.txt` |
+| Node integration | 76 files, 154 passed | `suite-runs/t7p-10-browser-texts-integration.txt` |
+| Browser (Chromium), full tier (`npm run test:e2e`) | 1 failed, 162 passed (13.4 min), exit 1 | `suite-runs/t7p-10-browser-texts-browser.txt` |
+| Static and verification checks | 13 of 13 `EXIT 0` | `suite-runs/t7p-10-browser-texts-checks.txt` |
+
+Stage `browser-auto 2e25034d`; full tier (T7P.10 changed `e2e/`). The runner's final table did not reach the main session, so this table was read from the output files. All five section 6.2 failures of the T7P.7–T7P.9 runs now pass.
+
+**The one failure:** `e2e/d4/card-helpers.spec.ts:111` ("reach (decision 65) › should return the Marks family's row for XYZ on a previous release's Review (dist-releases/d4)"), a 30.0 s timeout. The whole browser stage took 13.4 min against 7.6–8.2 min in every earlier full run, so the machine was under load. **Rerun alone** from the main session (`npx playwright test e2e/d4/card-helpers.spec.ts:111`, ports 5175, 9341, 9342 free before and after): **1 passed (2.8 s)**. The spec is unchanged by the prefactor and runs against the frozen D4 release build, so the failure is a load-related timeout, not a defect. Both outcomes recorded; the gate run (T7P.12) reruns the full tier.

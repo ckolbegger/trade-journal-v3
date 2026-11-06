@@ -1,0 +1,124 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 27349,
+    "input_tokens": 27032,
+    "output_tokens": 317,
+    "cache_read_tokens": 11520,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D07P D2 integrity checks",
+      "files": [
+        "src/itg/d07p/d2/integrity.ts"
+      ]
+    },
+    {
+      "label": "D07P D4 breach and responsive accessibility checks",
+      "files": [
+        "src/itg/d07p/d4/breach-overrun.ts",
+        "src/itg/d07p/d4/responsive-a11y.ts"
+      ]
+    },
+    {
+      "label": "D07P D5R slider checks",
+      "files": [
+        "src/itg/d07p/d5r/sliders.ts"
+      ]
+    }
+  ],
+  "session_id": "ac693a69-0639-4505-b76a-b0b2cf408701",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ac693a69-0639-4505-b76a-b0b2cf408701",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "1665f279",
+      "resolved_base": "82a69c74f559897ef000f96eae656935752cf9e4",
+      "resolved_head": "1665f279c274d5412b7aede0d7fd60a578bdc2b3",
+      "exact_range": "82a69c74f559897ef000f96eae656935752cf9e4..1665f279c274d5412b7aede0d7fd60a578bdc2b3",
+      "source_artifact_sha256": "8fb92abacfb136ce0956e3d80aafd82d7819e73f8f72d00e571bd1d76aeab8fd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0847f52464da8db504b0dede15834b62c262ba810c5555e5fa9835407f97709a",
+          "path": "src/itg/d07p/d4/responsive-a11y.ts",
+          "fingerprint": "665b3e1ca514b4589e723053fed24b1796369879ce6a9345f41289f39e33306c"
+        },
+        {
+          "item_id": "4a9ed4a1b591b7963ba4b0cce6ed00b2ff50f795ae44b40e7b515339f0ce32eb",
+          "path": "src/itg/d07p/d5r/sliders.ts",
+          "fingerprint": "ba439be580b338926a44fe1038646639c5309e90685f792ba94ceaebb9636f1b"
+        },
+        {
+          "item_id": "62da022460c8ff5c10e3baa8542a3cca1f238f2e27ece8c17de6a0b959fd53fb",
+          "path": "src/itg/d07p/d4/breach-overrun.ts",
+          "fingerprint": "36568fa142b0e5b8a55fb03f6374f2a73479becd8898d4c6efb624d4d9edeadb"
+        },
+        {
+          "item_id": "968f89c6a512d0667295167d35a1456f43f8e1a4af4ce9debce1066e3338edc8",
+          "path": "src/itg/d07p/d2/integrity.ts",
+          "fingerprint": "60f27ea04609ce7cdf71aa63b70e664cad6699e4239695d5a30749602b6120cb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0847f52464da8db504b0dede15834b62c262ba810c5555e5fa9835407f97709a",
+          "path": "src/itg/d07p/d4/responsive-a11y.ts",
+          "fingerprint": "665b3e1ca514b4589e723053fed24b1796369879ce6a9345f41289f39e33306c"
+        },
+        {
+          "item_id": "4a9ed4a1b591b7963ba4b0cce6ed00b2ff50f795ae44b40e7b515339f0ce32eb",
+          "path": "src/itg/d07p/d5r/sliders.ts",
+          "fingerprint": "ba439be580b338926a44fe1038646639c5309e90685f792ba94ceaebb9636f1b"
+        },
+        {
+          "item_id": "62da022460c8ff5c10e3baa8542a3cca1f238f2e27ece8c17de6a0b959fd53fb",
+          "path": "src/itg/d07p/d4/breach-overrun.ts",
+          "fingerprint": "36568fa142b0e5b8a55fb03f6374f2a73479becd8898d4c6efb624d4d9edeadb"
+        },
+        {
+          "item_id": "968f89c6a512d0667295167d35a1456f43f8e1a4af4ce9debce1066e3338edc8",
+          "path": "src/itg/d07p/d2/integrity.ts",
+          "fingerprint": "60f27ea04609ce7cdf71aa63b70e664cad6699e4239695d5a30749602b6120cb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 14059
+  }
+}
