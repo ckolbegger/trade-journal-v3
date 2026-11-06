@@ -330,3 +330,23 @@ No exemption and no rule change in `tools/verify-wording.ts`; the 5 hits moved i
 
 `npm run verify:wording`: exit 0, "verify:wording: no reason words or reason-code branches outside src/ui/calculation-words.ts".
 `.claude/scripts/full-suite.sh evidence/D07P t7p-9-checks-probe2 checks`: "13 of 13 exit 0"; its file deleted. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src`: 97 files, 1225 tests pass (MarkEntry, PositionChangeForm and PositionChangeFormExit tests unchanged).
+
+### ocr review of `0d61ae73^..5554bfbd` (T7P.9, both parts)
+
+Session `c844bc8d-8fd0-4bf2-a567-8da3ca5538e9`, model gpt-6.1-sol, 7 files reviewed in place (the commit changes `package.json`), 3 findings. Raw output: [ocr/T7P.9-0d61ae73-5554bfbd.json](ocr/T7P.9-0d61ae73-5554bfbd.json). One ocr `file_read` of a nonexistent path failed, without effect on the findings.
+
+| Severity | Location | Finding | Assessment | Bug task |
+|---|---|---|---|---|
+| medium | `tools/verify-wording.ts:93` | The check scans one line at a time, so a `case` or comparison split across lines (`result.reason ===` then `'MarkMissing'` on the next line) is missed. | Valid | T7P.9-B1 |
+| medium | `tools/verify-wording.ts:78` | The comment stripper treats `//` or `/* */` inside string literals as comments, which can hide a phrase or code later on the line. | Valid | T7P.9-B2 |
+| medium | `tools/verify-wording.ts:32` | The phrase list leaves out the `NotApplicable` reasons' words ("no open position", "not closed yet", …), so a screen could hardcode one without the "Not applicable" prefix. | Doubtful (a real gap; section 1.4's table does list those words as the reasons' words) | T7P.9-B3 |
+
+**T7P.9-B1: multi-line branches are missed.** Defect: a reason-code `case` or equality comparison whose operator and code literal are on different lines (as a formatter may wrap them) passes the check. Cases: it should fail on a comparison whose `===` and code literal are on consecutive lines, naming the file and the code literal's line; it should fail on a `case` whose code literal is on the line after `case`; it should still pass on the current tree.
+
+**T7P.9-B2: comment markers inside strings hide later text.** Defect: a `//` or `/*` inside a string literal is treated as the start of a comment, so a phrase or code literal after it on the same line is not checked. Cases: it should fail on `const a = ' // '; const b = 'Mark missing';`; it should fail on a `case 'NotClosed':` after a string containing `/*`; it should still pass on the current tree, with real comments still ignored.
+
+**T7P.9-B3: the `NotApplicable` reasons' words are not checked.** Defect: a screen that writes, say, "not closed yet" as its own label passes the check. Implementation decision (main session): T7P.9 left these words out because, matched as substrings, "no open position" hits ordinary text ("This Trade has no open Position to exit.", `PositionChangeForm.tsx`). So the words are matched when they make up a whole string literal or a whole JSX text node (case-insensitively, trimmed), which catches a screen writing a reason's words as its own text without flagging sentences that merely contain them. Cases: it should fail on a string literal `'not closed yet'` in a `src/ui/` file; it should fail on JSX text `No open position`; it should still pass on the current tree, including `PositionChangeForm.tsx`'s sentence.
+
+### Cumulative run after T7P.9 (`t7p-9-verify-wording`, at `5554bfbd`, before its bug tasks)
+
+Unit 97 files, 1225 passed; integration 76 files, 154 passed; browser full tier (`browser-auto b41e6794`, "first matching path since b41e6794: package.json") 5 failed, 158 passed (7.9 min), the same 5 planned section 6.2 failures as after T7P.7 and T7P.8; checks **13 of 13** exit 0, `verify:wording` among them. Outputs `suite-runs/t7p-9-verify-wording-*.txt`. Ports free before and after. It ran alongside the ocr review, so a cumulative run follows the bug tasks.

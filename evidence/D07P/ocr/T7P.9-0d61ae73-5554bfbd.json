@@ -1,0 +1,190 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 3,
+    "total_tokens": 137811,
+    "input_tokens": 135609,
+    "output_tokens": 2202,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m28s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_find": 4,
+      "file_read": 7
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 10,
+        "tool_name": "file_read",
+        "file_path": "package.json,src/ui/calculation-words.ts,src/ui/screens/MarkEntry.tsx,src/ui/screens/ReviewView.tsx,src/ui/screens/TradeList.tsx,src/ui/screens/position-change-issues.ts,tools/verify-wording.ts",
+        "arguments": "{\"file_path\":\"src/domain/calculation-result/types.ts\"}",
+        "error": "file \"src/domain/calculation-result/types.ts\" not found: git show 5554bfbd:src/domain/calculation-result/types.ts: exit status 128: fatal: path 'src/domain/calculation-result/types.ts' does not exist in '5554bfbd'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "tools/verify-wording.ts",
+      "content": "Scanning each line separately misses valid multiline branches. For example, `if (result.reason ===\\n  'MarkMissing')` passes because neither line contains both the operator and the quoted code; `case\\n 'NotClosed':` is missed too. This allows ordinary formatting to bypass P74. Match against the complete source (mapping match offsets back to lines), or inspect the TypeScript AST, and add multiline regression cases.",
+      "existing_code": "  const lines = stripComments(await readFile(file, 'utf8')).split('\\n');\n  lines.forEach((line, i) =\u003e {",
+      "start_line": 93,
+      "end_line": 94,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/verify-wording.ts",
+      "content": "These replacements treat comment delimiters inside string literals as actual comments. For example, `const separator = ' // '; const label = 'Mark missing';` loses the prohibited label before scanning, and string literals containing `/*` and `*/` can hide intervening code as well. Use a syntax-aware scanner/parser to skip actual comments while preserving string contents, and cover these cases with regression tests.",
+      "existing_code": "    .replace(/\\/\\*[\\s\\S]*?\\*\\//g, (m) =\u003e m.replace(/[^\\n]/g, ' '))\n    .replace(/(^|[^\\w:'\"`])\\/\\/.*$/gm, (_m, lead: string) =\u003e lead);",
+      "start_line": 78,
+      "end_line": 79,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/verify-wording.ts",
+      "content": "The phrase list omits all of the fixed not-applicable reason tails in `notApplicableTail`, including `no open position`, `not closed yet`, `entry not resolved yet`, and `no risk at entry`. A screen can therefore hardcode one of these reason texts (without the `Not applicable` prefix) and `verify:wording` still succeeds, contrary to P74's requirement to reject reason wording outside the central module. Include these fixed texts and cover them with planted-violation tests.",
+      "existing_code": "  'Not applicable',",
+      "start_line": 32,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Standardize calculation wording across UI screens and add wording verification tooling",
+      "files": [
+        "package.json",
+        "src/ui/calculation-words.ts",
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/TradeList.tsx",
+        "src/ui/screens/position-change-issues.ts",
+        "tools/verify-wording.ts"
+      ]
+    }
+  ],
+  "session_id": "c844bc8d-8fd0-4bf2-a567-8da3ca5538e9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c844bc8d-8fd0-4bf2-a567-8da3ca5538e9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "0d61ae73^",
+      "requested_head": "5554bfbd",
+      "resolved_base": "b41e6794de39d43ab59920fc994350c106f513f3",
+      "resolved_head": "5554bfbd78968d7b48c286af407f06e2d230c3d5",
+      "exact_range": "b41e6794de39d43ab59920fc994350c106f513f3..5554bfbd78968d7b48c286af407f06e2d230c3d5",
+      "source_artifact_sha256": "702b00bf257fd78c574423e5a5b574a456bf94a261a381c1556e8f83622c801b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0861ff0105fb819d5e0853ea5b2ded9b66442a2d65d9dc2c8363aa630433e484",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "922a2dbdc61e1b1812d086d419357ae9f2d2b136520d8f87e00aa63855ae24c6"
+        },
+        {
+          "item_id": "10f43f9e4e8d26d2aecde9af82a12071800889ab2b84dc27202ffd9052dc57c7",
+          "path": "tools/verify-wording.ts",
+          "fingerprint": "f48a6457265d99ebd8c25e7d3cfd0536739cdb6f078fd164979d3d0517f3935b"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "77fe41dfe89d5c883c853f1399712b4dd26c59b46a875779bea941e4585b7b3b"
+        },
+        {
+          "item_id": "8bbb464bb26477643332e213787a190e281e196a8a12b5ee9d02add007c71125",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "d1be0950c20351ed7ff36c6c350bb6800cd06dfa40e4edc1bdc5001520808a82"
+        },
+        {
+          "item_id": "b12ad24522f1026301b11bf501681fcd0601ce407898c5b05ed4a4e72f117cc7",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "9af0893d60084d3eb12726d5be3c8a024a2ad98558f0c1f8fbc9df3ab042b531"
+        },
+        {
+          "item_id": "e03970da17b90aad3e07d5a2a2c7feb2e31ff2144e52de64bc7d5fac49060e5d",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "fbd4ddcc5a991db80bd4c9a2c6c9d81f89e6acf64c0e15633ce1413fc042d788"
+        },
+        {
+          "item_id": "e3c7cbe310881d0348390239b00c219aa81fd9d09b83da3f90f33ba209ea7b6a",
+          "path": "package.json",
+          "fingerprint": "f84959ec14e4ac9f8668ae84510c3e1780b86b966b35d2310ca04ac77dfe04d6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0861ff0105fb819d5e0853ea5b2ded9b66442a2d65d9dc2c8363aa630433e484",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "922a2dbdc61e1b1812d086d419357ae9f2d2b136520d8f87e00aa63855ae24c6"
+        },
+        {
+          "item_id": "10f43f9e4e8d26d2aecde9af82a12071800889ab2b84dc27202ffd9052dc57c7",
+          "path": "tools/verify-wording.ts",
+          "fingerprint": "f48a6457265d99ebd8c25e7d3cfd0536739cdb6f078fd164979d3d0517f3935b"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "77fe41dfe89d5c883c853f1399712b4dd26c59b46a875779bea941e4585b7b3b"
+        },
+        {
+          "item_id": "8bbb464bb26477643332e213787a190e281e196a8a12b5ee9d02add007c71125",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "d1be0950c20351ed7ff36c6c350bb6800cd06dfa40e4edc1bdc5001520808a82"
+        },
+        {
+          "item_id": "b12ad24522f1026301b11bf501681fcd0601ce407898c5b05ed4a4e72f117cc7",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "9af0893d60084d3eb12726d5be3c8a024a2ad98558f0c1f8fbc9df3ab042b531"
+        },
+        {
+          "item_id": "e03970da17b90aad3e07d5a2a2c7feb2e31ff2144e52de64bc7d5fac49060e5d",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "fbd4ddcc5a991db80bd4c9a2c6c9d81f89e6acf64c0e15633ce1413fc042d788"
+        },
+        {
+          "item_id": "e3c7cbe310881d0348390239b00c219aa81fd9d09b83da3f90f33ba209ea7b6a",
+          "path": "package.json",
+          "fingerprint": "f84959ec14e4ac9f8668ae84510c3e1780b86b966b35d2310ca04ac77dfe04d6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 87765
+  }
+}
