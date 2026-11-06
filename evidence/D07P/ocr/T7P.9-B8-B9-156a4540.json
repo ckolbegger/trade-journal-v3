@@ -1,0 +1,80 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 16129,
+    "input_tokens": 16030,
+    "output_tokens": 99,
+    "cache_read_tokens": 5760,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/d07p/cases/wording-scan.ts",
+      "files": [
+        "src/itg/d07p/cases/wording-scan.ts"
+      ]
+    }
+  ],
+  "session_id": "1064b079-2688-47d8-adbf-4b7da88aed52",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1064b079-2688-47d8-adbf-4b7da88aed52",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "bc4f4c8a7b4f0ba50049db02ca711b913107428e",
+      "resolved_head": "e5f6954fe0167a75655dc9a6dc3e878d46b10510",
+      "exact_range": "bc4f4c8a7b4f0ba50049db02ca711b913107428e..e5f6954fe0167a75655dc9a6dc3e878d46b10510",
+      "source_artifact_sha256": "181cccfd28f71368334e9bf8af1350a97d50db28657b531c4b5b79b931ac21fe"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b718d4fb137cf4bf625e9d90f2e7f28a22c7e304c5544e28e8b6fdf70fabcbb8",
+          "path": "src/itg/d07p/cases/wording-scan.ts",
+          "fingerprint": "227ea3bac5ab813afc90b3d96d5266a7b4dc4e8b5ede407b761c317761a80595"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b718d4fb137cf4bf625e9d90f2e7f28a22c7e304c5544e28e8b6fdf70fabcbb8",
+          "path": "src/itg/d07p/cases/wording-scan.ts",
+          "fingerprint": "227ea3bac5ab813afc90b3d96d5266a7b4dc4e8b5ede407b761c317761a80595"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8706
+  }
+}

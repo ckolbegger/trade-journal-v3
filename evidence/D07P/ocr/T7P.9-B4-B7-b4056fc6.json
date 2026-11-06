@@ -1,0 +1,113 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 87255,
+    "input_tokens": 85512,
+    "output_tokens": 1743,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "Wrapped code literals bypass detection: `result.reason === ('MarkMissing' as const)` and `case ('NotClosed'):` produce wrapper nodes rather than string-literal nodes, so neither is reported. The former was detected by the previous comparison regex. Unwrap parentheses, assertions, non-null and satisfies expressions before classifying code operands, and add regression tests for wrapped comparisons and case expressions.",
+      "existing_code": "const isCode = (n: ts.Node) =\u003e isStringLike(n) \u0026\u0026 codes.has(n.text);",
+      "start_line": 76,
+      "end_line": 76,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "Phrase matching still uses source spelling rather than decoded literal text. For example, `const label = 'Mark\\u0020missing';` renders the prohibited phrase but produces no hit, while escaped whole-value REASON_WORDS are checked using `node.text`. Match decoded content for strings and template fragments as well, preserving a mapping to source offsets for accurate line reporting.",
+      "existing_code": "      const raw = node.getText(sf);\n      for (const m of raw.matchAll(phraseRe)) hit(start + m.index, 'words', m[0]);",
+      "start_line": 97,
+      "end_line": 98,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "This nested conditional violates the requested no-nested-ternaries rule; the code-literal selection below does so as well. Use explicit branches or a small helper to distinguish string literals, JSX text and other nodes, making the classification easier to follow.",
+      "existing_code": "      const whole = node.kind === ts.SyntaxKind.JsxText || isStringLike(node) ? (isStringLike(node) ? node.text : raw).trim() : '';",
+      "start_line": 100,
+      "end_line": 100,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "tools/wording-scan.ts",
+      "files": [
+        "tools/wording-scan.ts"
+      ]
+    }
+  ],
+  "session_id": "eef1a871-7955-4316-838f-222ca029c11a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "eef1a871-7955-4316-838f-222ca029c11a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b4056fc6",
+      "resolved_base": "d5ded439f71d6996c7487732418a3e7bad2c3ba6",
+      "resolved_head": "b4056fc617d9599d62201eac11baf78e8a873b81",
+      "exact_range": "d5ded439f71d6996c7487732418a3e7bad2c3ba6..b4056fc617d9599d62201eac11baf78e8a873b81",
+      "source_artifact_sha256": "85d8d90719ebafd6d2e21c908f7748de60439942395555897eeed528aa8115fb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "6f1f72bcf5ca084f8c16601777551c5e5de611aabb28d7f38a19365f0da211a0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "6f1f72bcf5ca084f8c16601777551c5e5de611aabb28d7f38a19365f0da211a0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 81294
+  }
+}

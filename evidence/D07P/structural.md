@@ -403,3 +403,24 @@ Both come from the regexes that B4–B7's parser-based scan replaces. **T7P.9-B8
 **Working-rule slip (recorded):** the subagent restored the pre-mutation `tools/wording-scan.ts` once with a shell `cp` from a scratchpad copy, not the Edit tool; the guard allowed it, and the file equals its pre-mutation state.
 
 `npm run verify:wording`, `typecheck`, `tsc6 --noEmit`, `lint`, `lint:deps` and `npx vitest run tools` exit 0.
+
+### ocr review of `b4056fc6` (T7P.9-B4 to B7)
+
+Session `eef1a871-7955-4316-838f-222ca029c11a`, model gpt-6.1-sol, 1 file reviewed in place, 3 findings. Raw output: [ocr/T7P.9-B4-B7-b4056fc6.json](ocr/T7P.9-B4-B7-b4056fc6.json). The parser version does not show B8's or B9's gaps.
+
+| Severity | Location | Finding | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tools/wording-scan.ts:76` | A code literal wrapped in parentheses, `as const`, `satisfies` or `!` (`x === ('MarkMissing' as const)`, `case ('NotClosed'):`) is not a string-literal node, so it is not reported. | Valid (a false negative; the old regex caught these) | T7P.9-B10 |
+| medium | `tools/wording-scan.ts:97-98` | Phrases are matched against the literal's source spelling (`getText`), so an escape inside a phrase (`'Mark missing'`) evades the check; the whole-literal check uses the decoded `.text`. | Valid (a false negative) | T7P.9-B11 |
+| low | `tools/wording-scan.ts:100, 106` | Nested ternaries should be explicit branches. | **Dismissed**: no failure scenario. No project rule forbids nested ternaries in `tools/` (no lint rule, nothing in `CLAUDE.md` or `.claude/docs`); P71's exhaustiveness rule covers `calculation-words.ts`, and these ternaries choose between two hit kinds, with no union tag that could gain a case. | — |
+
+**This is the third round of bug tasks on T7P.9** (round 1: B1–B3 from T7P.9's review; round 2: B4–B9 from B1–B3's reviews). If B10's and B11's reviews still leave findings, the session stops for the user (handoff, "Running a whole deliverable", condition 6).
+
+**T7P.9-B10 cases:** it should fail on `x === ('MarkMissing' as const)`; it should fail on `case ('NotClosed'):`; it should fail on `'AwaitingClose' satisfies string` compared with `===`; it should still pass on `('AcknowledgedUnavailable' as const) === status.kind`.
+**T7P.9-B11 cases:** it should fail on `'Mark missing'`; it should fail on a template literal `` `Awaiting\x20the close` ``; it should still report the hit's line as the literal's line.
+
+### T7P.9-B8 and B9 (`156a4540`, tests only)
+
+Both cases passed on their first run against the parser-based scan (the defects were in the regexes `b4056fc6` replaced), each flagged with a mutation check that failed by an assertion and was restored with the Edit tool: B8, JsxText excluded from the whole-reason check (`AssertionError: expected +0 to be 1`); B9, reason words matched by `includes` (`AssertionError: expected [ Array(1) ] to deeply equal []`). No production code changed.
+
+ocr review, relocated as test-only (scratch clone, test under `src/itg/d07p/cases/`, `wording-scan.ts` copied in the parent commit): session `1064b079-2688-47d8-adbf-4b7da88aed52`, **no findings**. Raw output: [ocr/T7P.9-B8-B9-156a4540.json](ocr/T7P.9-B8-B9-156a4540.json).
