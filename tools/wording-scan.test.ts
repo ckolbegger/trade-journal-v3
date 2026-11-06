@@ -103,6 +103,19 @@ describe('verify:wording scanning', () => {
     expect(hits[0]).toMatch(/^src\/ui\/B7\.tsx:3: code: /);
   });
 
+  it('fails on reason words next to a JSX expression', () => {
+    const before = scanSource('src/ui/B8.tsx', '<p>{icon}No open position</p>');
+    expect(before.length).toBe(1);
+    expect(before[0]).toMatch(/^src\/ui\/B8\.tsx:1: words: No open position$/);
+    const after = scanSource('src/ui/B8.tsx', '<p>Not closed yet{icon}</p>');
+    expect(after.length).toBe(1);
+    expect(after[0]).toMatch(/^src\/ui\/B8\.tsx:1: words: Not closed yet$/);
+  });
+
+  it('passes on a reason quoted inside a longer string', () => {
+    expect(scanSource('src/ui/B9.tsx', `const a = "The label 'not closed yet' means the Trade is open";`)).toEqual([]);
+  });
+
   it('still passes on a sentence that contains a reason words, and on the current tree', () => {
     const sentence = scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";');
     expect(sentence).toEqual([]);
