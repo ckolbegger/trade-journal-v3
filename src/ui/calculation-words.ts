@@ -120,6 +120,8 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
         return [...expirationHead, t(" is dated after the contract's expiration or before an Execution on it")];
       case 'NotAnOption':
         return [...expirationHead, t(' names a stock, not an option')];
+      case 'DuplicateFactId':
+        return [...expirationHead, t(' shares its identity with another record')];
       default:
         return finding satisfies never;
     }

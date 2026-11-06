@@ -428,6 +428,8 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
     }
   }
   for (const s of record.positionChanges.flatMap((pc) => pc.settlements ?? [])) {
+    if (seen.has(s.factId)) findings.push({ ...describedExpiration(s), reason: 'DuplicateFactId' });
+    seen.add(s.factId);
     if (s.instrument.kind !== 'Option') {
       findings.push({ ...describedExpiration(s), reason: 'NotAnOption' });
       continue;

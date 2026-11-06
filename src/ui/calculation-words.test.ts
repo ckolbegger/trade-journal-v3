@@ -75,6 +75,12 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(sentence({ ...expiration(XYZ, '100'), reason: 'NotAnOption' })).toBe('Expiration of 100 XYZ at Fri Nov 20, 16:00 names a stock, not an option');
   });
 
+  it('should word an Expiration DuplicateFactId after the Expiration head with the shared identity tail', () => {
+    expect(sentence({ ...expiration(CALL, '1'), reason: 'DuplicateFactId' })).toBe(
+      'Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 shares its identity with another record',
+    );
+  });
+
   it('should word ExceedsOpenQuantity as contracts open for an option and keep shares open for stock', () => {
     expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(2n, 1n) })).toBe(
       'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts open',

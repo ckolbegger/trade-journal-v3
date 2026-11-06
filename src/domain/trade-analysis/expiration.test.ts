@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type DerivationResult, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
-import { EXPIRATION_CLOSE, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_CONTRACT, OS_ES, OS_S1, expirationChange, ocChange, ocRecord, opChange, opRecord, osRecord } from './option-trade.ts';
+import { EXPIRATION_CLOSE, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_B1, OS_CONTRACT, OS_ES, OS_S1, expirationChange, ocChange, ocRecord, opChange, opRecord, osRecord } from './option-trade.ts';
 import { PC1, PC2, X1, X2, referenceRecord } from './reference-trade.ts';
 
 function derivedState(record: TradeAnalysisRecord): DerivedTradeState {
@@ -42,6 +42,14 @@ describe('Expiration member (A106, P26)', () => {
     expect(findings(osRecord([OS_S1, early]))).toEqual([{ factId: 'exp-pc-early', kind: 'Expiration', reason: 'SettlementTimeInvalid' }]);
     const stock = expirationChange('pc-stock', EXPIRATION_CLOSE, 3, { kind: 'Stock', symbol: 'XYZ' }, '100');
     expect(findings(ocRecord([OC_PC1, stock]))).toEqual([{ factId: 'exp-pc-stock', kind: 'Expiration', reason: 'NotAnOption' }]);
+  });
+
+  it('should return DuplicateFactId for an Expiration that reuses an Execution fact id, rather than a Derived state', () => {
+    const clash = expirationChange('pc-clash', EXPIRATION_CLOSE, 5, OS_CONTRACT, '1');
+    const reused = { ...clash, settlements: clash.settlements!.map((s) => ({ ...s, factId: 'ex-pc-b1' })) };
+    const result: DerivationResult = derive({ record: osRecord([OS_S1, OS_B1, reused]) });
+    if (result.kind !== 'IncoherentFacts') throw new Error(`expected IncoherentFacts, got ${result.kind}`);
+    expect(result.findings.map((f) => ({ factId: f.factId, kind: f.kind, reason: f.reason }))).toEqual([{ factId: 'ex-pc-b1', kind: 'Expiration', reason: 'DuplicateFactId' }]);
   });
 
   it('should report the close requirement TerminalWithoutAgency for E1, where X2 in D6 is TerminalWithAgency A107', () => {
