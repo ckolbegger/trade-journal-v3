@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 13553,
+    "input_tokens": 13405,
+    "output_tokens": 148,
+    "cache_read_tokens": 3840,
+    "elapsed": "8s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/calculation-result/index.ts",
+        "src/domain/trade-analysis/derive.ts",
+        "src/ui/calculation-words.ts"
+      ]
+    }
+  ],
+  "session_id": "2f291e70-1405-41e6-801e-cd59154b2c86",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2f291e70-1405-41e6-801e-cd59154b2c86",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "74701796",
+      "resolved_base": "2d2f7f44f597fc80d6dfb353de3669f2fa921587",
+      "resolved_head": "74701796b92736dfe01c79d06eaa193ef4405635",
+      "exact_range": "2d2f7f44f597fc80d6dfb353de3669f2fa921587..74701796b92736dfe01c79d06eaa193ef4405635",
+      "source_artifact_sha256": "cbb41a61aa7f3edbeec5cfaa547bf451be3da2f98895141ad36f404f501179d0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "36184d02cb0308bcf8c806b4c203661d0be00f277d9a9ec215c61dcc0e7aacd8"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "f7badf28bd932990446ea0a4813e072c37f1aac59abffed9dae00c4189746f4a"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "024a1bbf75f00eb660b823b4b4a586eb8c13448f9350a3d0296ca85a44c1f289"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "36184d02cb0308bcf8c806b4c203661d0be00f277d9a9ec215c61dcc0e7aacd8"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "f7badf28bd932990446ea0a4813e072c37f1aac59abffed9dae00c4189746f4a"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "024a1bbf75f00eb660b823b4b4a586eb8c13448f9350a3d0296ca85a44c1f289"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8152
+  }
+}

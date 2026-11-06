@@ -1,0 +1,160 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 2,
+    "total_tokens": 128155,
+    "input_tokens": 126188,
+    "output_tokens": 1967,
+    "cache_read_tokens": 13440,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 2,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/payoff.ts",
+      "content": "The exported API accepts multiple option legs, but never verifies that they share an underlying and expiration before returning a single curve. For example, options expiring in November and December are treated as settling at the same price, producing unsupported extrema and break-evens. ADR 0007 explicitly requires mixed-expiration payoff to be unavailable. Validate the common anchor for both planned legs and current lots before constructing a view, or restrict the input contract so unsupported structures cannot reach this calculation.",
+      "existing_code": "  const planned = { kind: 'Value', value: viewOf(plannedLegs, ZERO, ZERO) } as const;",
+      "start_line": 190,
+      "end_line": 190,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/payoff.ts",
+      "content": "This nested ternary violates the checklist's prohibition on nested ternary expressions. Use a switch on `a.kind` to make the Point, Interval, and Ray upper bounds explicit.",
+      "suggestion_code": "const covers = (a: Attainment, price: Rational): boolean =\u003e {\n  switch (a.kind) {\n    case 'Point':\n      return price.equals(a.at);\n    case 'Interval':\n      return within(price, a.from, a.to);\n    case 'Ray':\n      return within(price, a.from, null);\n  }\n};",
+      "existing_code": "const covers = (a: Attainment, price: Rational) =\u003e within(price, startOf(a), a.kind === 'Interval' ? a.to : a.kind === 'Ray' ? null : a.at);",
+      "start_line": 148,
+      "end_line": 148,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade payoff analysis and calculation wording integration",
+      "files": [
+        "eslint.wording.config.js",
+        "src/domain/calculation-result/index.ts",
+        "src/domain/trade-analysis/index.ts",
+        "src/domain/trade-analysis/payoff.ts",
+        "src/domain/trade-analysis/plan.ts",
+        "src/ui/calculation-words.ts"
+      ]
+    }
+  ],
+  "session_id": "136d493b-dfb4-49e0-8203-535cb11f989f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "136d493b-dfb4-49e0-8203-535cb11f989f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c9b225e0",
+      "resolved_base": "4ff2885a1fc30b7822ed33f65e592023cba920fc",
+      "resolved_head": "c9b225e092a5c3c976f1e5dbc482833ca8d47216",
+      "exact_range": "4ff2885a1fc30b7822ed33f65e592023cba920fc..c9b225e092a5c3c976f1e5dbc482833ca8d47216",
+      "source_artifact_sha256": "7878ff3f6ec14e7d21328f4affdadc310fef939180a6668a2ca66089fbf0ec82"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "6da0c204d2a71f676ee6a48b379723677cc666bd32e3fd3be01928b7d4ed75f4"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "97dd2c4add3d13797c462974c72a456b7d338044e92695c6503c8041856a5a91"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "0906615b9e979b1213dcb93494b74d4f0c2d3033d0d4c60ee3483618c29b4cc4"
+        },
+        {
+          "item_id": "a0965cb3f8c76862b4e80658119f713d6f53bebf868de5efbfc6c39361657e63",
+          "path": "src/domain/trade-analysis/payoff.ts",
+          "fingerprint": "83ed1e3a84e448004d4afc4f6b6b6d54c43d45d7bd493213a86aff6efa544623"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "642f4ef5a0de02f2e48751d558b8a0643b621e4fb2134adf91d550bdd955e415"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "a80be8946639cf8ab073e3ba648c54fab48dad305eba600bb69108de58411ec1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "6da0c204d2a71f676ee6a48b379723677cc666bd32e3fd3be01928b7d4ed75f4"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "97dd2c4add3d13797c462974c72a456b7d338044e92695c6503c8041856a5a91"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "0906615b9e979b1213dcb93494b74d4f0c2d3033d0d4c60ee3483618c29b4cc4"
+        },
+        {
+          "item_id": "a0965cb3f8c76862b4e80658119f713d6f53bebf868de5efbfc6c39361657e63",
+          "path": "src/domain/trade-analysis/payoff.ts",
+          "fingerprint": "83ed1e3a84e448004d4afc4f6b6b6d54c43d45d7bd493213a86aff6efa544623"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "642f4ef5a0de02f2e48751d558b8a0643b621e4fb2134adf91d550bdd955e415"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "a80be8946639cf8ab073e3ba648c54fab48dad305eba600bb69108de58411ec1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 72666
+  }
+}

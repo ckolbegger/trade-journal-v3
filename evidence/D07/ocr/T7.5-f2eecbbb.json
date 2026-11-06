@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 4,
+    "total_tokens": 146201,
+    "input_tokens": 144019,
+    "output_tokens": 2182,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "The settlement's instrument is only used to look up execution times, not to verify that it is the contract being settled. For example, an O-C opening followed by an expiration naming OS_CONTRACT with the same quantity passes validation and consumes O-C's lots from the shared replay queue. Validate that the expiration names the held contract (or track quantities/lots per instrument) before allowing it to dispose exposure.",
+      "existing_code": "    const key = instrumentKey(s.instrument);",
+      "start_line": 437,
+      "end_line": 437,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "Settlement fact IDs bypass the existing `seen` duplicate checks. If an expiration reuses a partial closing execution's ID, `disposedOf` classifies both disposals as settlements, yielding FullyHeldToExpirationSettlement instead of Mixed and ambiguous lot-match identities. Include settlements in the same identity validation as executions and Position Changes, and support an Expiration-headed DuplicateFactId finding.",
+      "existing_code": "  for (const s of record.positionChanges.flatMap((pc) =\u003e pc.settlements ?? [])) {",
+      "start_line": 430,
+      "end_line": 430,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "This accepts a zero-quantity expiration after a previous expiration has already flattened the position. Appending that fact moves terminalTime and the terminal Position Change to a settlement that disposed nothing, without reporting incoherence. Require a positive open quantity and positive settlement quantity before accepting the settlement, and add coverage for repeated settlements after closure.",
+      "existing_code": "      if (quantity.compare(open) === 0) open = Rational.of(0n);",
+      "start_line": 472,
+      "end_line": 472,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "This nested ternary violates the supplied coding standard. Use explicit if/else branches for the three timing classifications so the business conditions remain easy to scan.",
+      "existing_code": "    disposed.bySettlement.compare(zero) === 0\n      ? 'FullyDisposedPreExpiration'\n      : disposed.byExecutions.compare(zero) === 0\n        ? 'FullyHeldToExpirationSettlement'\n        : 'Mixed';",
+      "start_line": 634,
+      "end_line": 638,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade analysis calculations and associated result terminology",
+      "files": [
+        "eslint.wording.config.js",
+        "src/domain/calculation-result/index.ts",
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/option-trade.ts",
+        "src/ui/calculation-words.ts"
+      ]
+    }
+  ],
+  "session_id": "20c50209-c740-419e-b391-4d3888659918",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "20c50209-c740-419e-b391-4d3888659918",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f2eecbbb",
+      "resolved_base": "ebb5873e4d0670e8f43122f4af73e7a69c9d1a0a",
+      "resolved_head": "f2eecbbbb55e3827e061c3b353f5959587a50fa9",
+      "exact_range": "ebb5873e4d0670e8f43122f4af73e7a69c9d1a0a..f2eecbbbb55e3827e061c3b353f5959587a50fa9",
+      "source_artifact_sha256": "6dc1e74779ba5f394332eba6067c9287623017e848e01d11a5e0b29a75748fa5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "fb8bc9a8d7216d928eaa61432bb7f4fffd70ee8cbda1ae8c3fd1d9017860fa43"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "72e152831e3127ba8db87e987ae65cba9550498de94918e4808feaa479b2a365"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "bc011b8324ecefa543a2b4ca0497c0ebf957718fa427fe4b1ad81accffeb5d74"
+        },
+        {
+          "item_id": "e3568abba3ad9fd5d760a2828ba583f0fb046da316fea9e0c1800af3e6d91f35",
+          "path": "src/domain/trade-analysis/option-trade.ts",
+          "fingerprint": "984ddd781df159b14069850f98cc100485fb8ea629f176d25f30e3fbb2e8cf5c"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "8be429d79dbf04704ff60b95287c86599fe9a881c98b007348463a5d54372519"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "fb8bc9a8d7216d928eaa61432bb7f4fffd70ee8cbda1ae8c3fd1d9017860fa43"
+        },
+        {
+          "item_id": "70e214474d988982c39e4d734294a055cde92d28cf9a907f6d943a826d2eb100",
+          "path": "src/domain/calculation-result/index.ts",
+          "fingerprint": "72e152831e3127ba8db87e987ae65cba9550498de94918e4808feaa479b2a365"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "bc011b8324ecefa543a2b4ca0497c0ebf957718fa427fe4b1ad81accffeb5d74"
+        },
+        {
+          "item_id": "e3568abba3ad9fd5d760a2828ba583f0fb046da316fea9e0c1800af3e6d91f35",
+          "path": "src/domain/trade-analysis/option-trade.ts",
+          "fingerprint": "984ddd781df159b14069850f98cc100485fb8ea629f176d25f30e3fbb2e8cf5c"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "8be429d79dbf04704ff60b95287c86599fe9a881c98b007348463a5d54372519"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 85401
+  }
+}

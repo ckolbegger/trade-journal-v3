@@ -112,6 +112,13 @@ Behavioral; commit `c9b225e0`. 8 payoff cases plus the wording unit case and the
 
 Not yet run: both attempts failed before reviewing, with `subscription_sharing_usage_limit_exceeded` (the ChatGPT usage limit for `ocr`), session `8ce87597-02c7-43bc-a1da-ef451ed9d766`. Queued, to be rerun once the limit resets; the session continues meanwhile and any findings become bug tasks then.
 
+Rerun 2026-11-06 after the limit reset (`ocr/T7.3-c9b225e0.json`), 2 comments, both dismissed:
+
+| Finding | Assessment | Outcome |
+|---|---|---|
+| `payoff.ts:190` builds one curve from several option legs without checking they share an underlying and expiration | Doubtful, no reachable failure scenario | Dismissed: T7.3 says multiple expirations "cannot arise with one Planned Leg and arrive with D10"; a guard now would be speculative. |
+| `payoff.ts:148` nested ternary in `covers` | Style, no failure scenario | Dismissed: equivalent code, no behavior change. |
+
 ### Cumulative run after T7.3 (`t7-3-payoff`, at `c9b225e0`)
 
 Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 4ff2885a`.
@@ -143,7 +150,11 @@ Behavioral; commit `0ab70bfd` (a first attempt stopped before any change for mis
 
 ### ocr review of `0ab70bfd`
 
-Queued (usage limit, as for T7.3).
+Run 2026-11-06 after the limit reset (`ocr/T7.4-0ab70bfd.json`), 1 comment:
+
+| Finding | Assessment | Outcome |
+|---|---|---|
+| `derive.ts` `netCostOf` omits the contract multiplier: O-C after X1 reads 2.55 for 190.65, O-S after B1 −0.60 for −124.35 | Valid | Bug task T7.4-B1, `2d2f7f44` (two `net-cost.test.ts` cases, red then green; multiplier on quantity × price, fee unmultiplied). ocr of `2d2f7f44`: no findings (`ocr/T7.4-B1-2d2f7f44.json`). |
 
 ### Cumulative run after T7.4 (`t7-4-option-derive`, at `0ab70bfd`)
 
@@ -169,3 +180,33 @@ Tier: full, printed reason "first matching path since 5f721ba2: src/ui/calculati
   ✖ 1 problem (1 error, 0 warnings)
   ```
   The line was removed by Edit; `git status` shows `src/ui/due-text.ts` unmodified, and `npm run verify:wording` exits 0 again.
+
+## T7.5 Trade Analysis: Expiration, Terminal Disposition, Option Disposition Timing
+
+Behavioral; commit `f2eecbbb` (a first attempt stopped before any change for missing finding words; decision 83, revision 50, `c5e38a80`, supplied them). 4 `expiration.test.ts` cases plus one wording unit case and one wording-rule case, red then green. No first-run passes. Wording conditions met (see "T7.5 wording checks"): `npx vitest run tools` exit 0, `tools/wording-rules.test.ts` at 36 cases (35 before), planted run failed. Implementation decisions (the subagent's, recorded in section 7 of the handoff): `ExpirationFact` (no price, fee or side) in `PositionChangeFact.settlements`; Expirations replay through the FIFO loop as a price-0, fee-0 disposal; an Expiration Lot Match's `disposingExecutionId` holds the settlement's fact id; `atCutoff` filters settlements; "after every Execution" is strict; `record-position-change.ts` unchanged (`TerminalWithoutAgency` falls into its not-applicable branch). `optionDispositionTiming` is a Calculation Result: `NotClosed` for Open Trades, `NoOptionExpirationAnchor` for Closed stock Trades. Two test names lost their brackets because they break `-t` filtering; two `tdd-log.md` rows logged `red` for runs that matched no case are annotated as invalid. **For later tasks:** an Expiration close still owes a deferred Close Review with no Close Reason (A107), and the workflow treats `TerminalWithoutAgency` as non-terminal (T7.10, T7.13); `closedViaSale` in `src/ui/figures.ts` and `TradeList.tsx`'s "Closed via sale" are stock-only (UI tasks); `entryWindowOf` isn't cut by an Expiration Position Change (no case; left alone).
+
+### ocr review of `f2eecbbb`
+
+`ocr/T7.5-f2eecbbb.json`, 4 comments:
+
+| Finding | Assessment | Outcome |
+|---|---|---|
+| `derive.ts:430` settlement fact ids skip the `seen` duplicate check; a clash turns Mixed into FullyHeldToExpirationSettlement | Valid | Bug task T7.5-B1, `74701796`: `DuplicateFactId` with the Expiration kind, worded with the decision-83 head and the existing tail ("… shares its identity with another record"); two cases red then green. ocr: no findings (`ocr/T7.5-B1-74701796.json`). |
+| `derive.ts:472` a zero-quantity Expiration after a flat position passes and becomes terminal | Valid | Bug task T7.5-B2, `1e65a41b`: `NonpositiveQuantity` with the Expiration kind, head plus the existing tail ("… has a quantity that isn't positive"); two cases red then green. ocr: no findings (`ocr/T7.5-B2-1e65a41b.json`). |
+| `derive.ts:437` an Expiration naming a different contract than the one held isn't rejected | Doubtful | Dismissed and flagged for the final report: Executions have the same single-queue behavior since D6 (no instrument-mismatch finding exists), it needs hand-built or corrupt facts, and a check would need a finding whose words the plan doesn't give; it belongs with D10's multi-leg replay. |
+| `derive.ts:634-638` nested ternary for the timing classification | Style | Dismissed: readability only, branches correct against A108. |
+
+The two bug tasks reuse approved words only (decision 83's head, the prefactor's tails), so no wording-list change and no new decision. T7.5-B1's subagent saw one unidentified unit failure in an ad-hoc `vitest run src tools`, not reproduced in two reruns or in the cumulative run below.
+
+### Cumulative run after T7.5 (`t7-5-expiration`, at `1e65a41b`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto c5e38a80`, covering T7.4-B1, T7.5, T7.5-B1 and T7.5-B2.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 101 files, 1270 passed, exit 0 | `suite-runs/t7-5-expiration-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-5-expiration-integration.txt` |
+| Browser (Chromium), full tier | 167 passed (8.3 min), exit 0 | `suite-runs/t7-5-expiration-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-5-expiration-checks.txt` |
+
+Tier: full, printed reason "first matching path since c5e38a80: src/ui/calculation-words.test.ts". Ports free before and after. Browser stage 8 min 17 s, under the 9-minute threshold for raising tech debt item 6. T7.5 is complete.
