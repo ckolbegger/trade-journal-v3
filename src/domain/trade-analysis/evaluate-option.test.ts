@@ -129,6 +129,27 @@ describe('evidence requirements and availability (A110, P27)', () => {
     expect(e.maximumIncrementalReward.kind).toBe('Unbounded');
   });
 
+  const guardedUnderlying = (underlyingFrame: ObservationFrame) => {
+    const e = evaluate({ state: derivedState(ocRecord([OC_PC1, OC_PC2])), frame: frameOf(OC_CONTRACT, '2.40'), underlyingFrame });
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', instrument: XYZ, date: '2026-10-12' };
+    expect(e.conditions.map((c) => c.result)).toEqual([missing, missing]);
+    expect(e.ongoingRiskToStop).toEqual(missing);
+    expect(e.incrementalRewardToTarget).toEqual(missing);
+    expect(exact(e.marketValue)).toBe(q(480n));
+  };
+
+  it('should read an underlying frame for another symbol as Unavailable MarkMissing for the Underlying, not as its price', () => {
+    guardedUnderlying(frameOf(ABC, '60.00'));
+  });
+
+  it('should read an underlying frame for another trading date as Unavailable MarkMissing for the Underlying', () => {
+    guardedUnderlying(frameOf(XYZ, '47.50', '2026-10-13', '2026-10-13T20:00:00Z'));
+  });
+
+  it('should read an underlying frame with a different cutoff than the contract frame as Unavailable MarkMissing for the Underlying', () => {
+    guardedUnderlying(frameOf(XYZ, '47.50', '2026-10-12', '2026-10-12T13:00:00Z'));
+  });
+
   it('should evaluate a call Mark of exactly 0 as marked P&L −$401.30, Worst-Case $0.00, and Risk to Stop $0.00', () => {
     const e = evaluate({ state: derivedState(ocRecord([OC_PC1, OC_PC2])), frame: frameOf(OC_CONTRACT, '0'), underlyingFrame: frameOf(XYZ, '52.00') });
     expect(exact(e.currentMarkedPnl)).toBe(q(-40130n, 100n));

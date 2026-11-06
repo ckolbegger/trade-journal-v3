@@ -273,10 +273,21 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   };
   // An option Trade is read against two Marks: the contract's (`marked`) and the Underlying's (A110).
   const underlyingFrame = input.underlyingFrame;
-  const underlyingInstrument: Instrument = underlyingFrame?.instrument ?? { kind: 'Stock', symbol: option?.symbol ?? '' };
+  const underlyingStock: Instrument = { kind: 'Stock', symbol: option?.symbol ?? '' };
+  const underlyingInstrument: Instrument = underlyingFrame?.instrument ?? underlyingStock;
   const underlyingDate = underlyingFrame ? ('resolution' in underlyingFrame ? underlyingFrame.tradingDate : underlyingFrame.date) : date;
-  const underlyingMark = underlyingFrame && 'resolution' in underlyingFrame && underlyingFrame.resolution.kind === 'Available' ? underlyingFrame.resolution.mark : null;
+  // Like the contract's, the Underlying's frame values nothing unless it is for the Underlying itself and for
+  // the contract frame's own date and cutoff; otherwise its Mark is Missing for the Underlying.
+  const underlyingForeign =
+    underlyingFrame !== undefined &&
+    (instrumentKey(underlyingFrame.instrument) !== instrumentKey(underlyingStock) ||
+      underlyingDate !== date ||
+      ('resolution' in underlyingFrame && covered !== undefined && underlyingFrame.closeInstant !== covered.closeInstant));
+  const underlyingMark = !underlyingForeign && underlyingFrame && 'resolution' in underlyingFrame && underlyingFrame.resolution.kind === 'Available' ? underlyingFrame.resolution.mark : null;
   const underlyingUnavailable = (): CalculationResult<never> => {
+    if (underlyingForeign) {
+      return { kind: 'Unavailable', reason: 'MarkMissing', instrument: underlyingStock, date };
+    }
     if (underlyingFrame && !('resolution' in underlyingFrame)) {
       return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: underlyingInstrument, date: underlyingDate };
     }
