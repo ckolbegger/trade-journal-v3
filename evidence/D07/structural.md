@@ -136,3 +136,24 @@ Tier: full, printed reason "first matching path since 4ff2885a: src/ui/calculati
   ✖ 1 problem (1 error, 0 warnings)
   ```
   The line was removed by Edit; `git status` shows `src/ui/due-text.ts` unmodified, and `npm run verify:wording` exits 0 again.
+
+## T7.4 Trade Analysis: option Executions, short Lots, Entry Quality, position paths
+
+Behavioral; commit `0ab70bfd` (a first attempt stopped before any change for missing finding words; decision 82, revision 49, supplied them). 5 derive cases plus two wording unit cases and one wording-rule case, red then green. One first-run pass, flagged: case 4 (position paths), built by case 2's role-aware signed replay; mutation (`available: open` → `available: quantity`) failed with `AssertionError: expected [ { factId: 'ex-pc-b3', …(2) } ] to deeply equal [ … ]`. Wording conditions met (see "T7.4 wording checks"): `npx vitest run tools` exit 0, `tools/wording-rules.test.ts` at 35 cases (34 before), planted run failed. Notes: `OpenLot.quantity` and `InstrumentPosition.quantity` are signed (short Lots negative); the refactor extended the role logic to the entry window, Entry Size deviations, leg fulfillment and incurred opening fees (short role proven by integration only). **For T7.16:** `netCostOf` still computes `quantity × price` without the multiplier ("Stock only"); decision 48's note gives T7.16 "Net cost carries the premium, and a credit shows as `$212.00 credit`".
+
+### ocr review of `0ab70bfd`
+
+Queued (usage limit, as for T7.3).
+
+### Cumulative run after T7.4 (`t7-4-option-derive`, at `0ab70bfd`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 5f721ba2`. The harness moved the browser stage to the background after 180 s; the runner finished the checks stage after it exited.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 100 files, 1259 passed, exit 0 | `suite-runs/t7-4-option-derive-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-4-option-derive-integration.txt` |
+| Browser (Chromium), full tier | 167 passed (8.1 min), exit 0 | `suite-runs/t7-4-option-derive-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-4-option-derive-checks.txt` |
+
+Tier: full, printed reason "first matching path since 5f721ba2: src/ui/calculation-words.test.ts". Ports free before and after. T7.4 is complete apart from its queued ocr review.
