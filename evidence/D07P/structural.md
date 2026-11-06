@@ -442,3 +442,26 @@ The third round of bug tasks on T7P.9 still leaves a finding, so the session sto
 **The user's decision (2026-11-05), after the third round:** fix the finding as T7P.9-B12, and then close T7P.9 whatever B12's ocr review finds; any further finding is recorded for the final report, not turned into a bug task.
 
 **T7P.9-B12: a phrase hit after an escape in a multi-line literal names the wrong line.** Fix: report a phrase or reason-word hit at the line where its literal (or template part, or JSX text node) starts, never from an offset into the decoded text. Cases: it should report a phrase on line 2 of a multi-line template literal starting on line 1, after an escape on line 1, at line 1; it should report a single-line literal's hit at its own line, as today.
+
+### T7P.9-B12 (`bcd1b73b`) and its ocr review; T7P.9 closes
+
+B12: phrase hits use the literal's start line (`hit(start, …)`). The planned case's first red was invalid (the escape made the old offset drift back onto line 1 by accident), so the subagent added a no-escape variant to the same case, which gave the genuine red (hit at line 2, expected 1); the invalid rows stay in `tdd-log.md` with a note. The single-line case was a first-run pass, mutation-checked (`hit(start - 12, …)`, `AssertionError: … :1: … to match … :2: …`). The subagent's first all-checks command was killed with no output; it reran each check alone, all exit 0, `npx vitest run tools` 44 passed.
+
+ocr review: session `fddb2656-14c2-4bfa-862c-9f1806895343`, model gpt-6.1-sol, 1 file reviewed in place, 1 finding. Raw output: [ocr/T7P.9-B12-bcd1b73b.json](ocr/T7P.9-B12-bcd1b73b.json).
+
+| Severity | Location | Finding | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tools/wording-scan.ts:112` | The reason-word branch still adds `raw.indexOf(whole)` to the literal's start, so a reason word after a newline (or an escape) in a multi-line template is reported on a later line than the literal's start. The check still fails, naming the file and the words. | Valid (wrong line number only) | **Recorded, not a bug task**, by the user's decision to close T7P.9 after B12's review. Listed for the final report. It also corrects the B12 report's statement that reason-word hits already used the literal's start. |
+
+**T7P.9 is closed:** `0d61ae73`, `5554bfbd` and bug tasks B1–B12 (`d8927527`, `fd2d751a`, `93413c87`, `b4056fc6`, `156a4540`, `57005d9e`, `bcd1b73b`).
+
+### Cumulative run after T7P.9 and its bug tasks (`t7p-9-final`, at `bcd1b73b`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 97 files, 1225 passed, exit 0 | `suite-runs/t7p-9-final-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7p-9-final-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (13.4 s), exit 0 | `suite-runs/t7p-9-final-browser.txt` |
+| Static and verification checks | **13 of 13** exit 0 | `suite-runs/t7p-9-final-checks.txt` |
+
+Stage `browser-auto b436ac7e` (the last commit covered by the full-tier run `t7p-9-verify-wording`); tier task, "no changed path since b436ac7e is on the full-tier list" (only `tools/` changed). Ports free before and after.
