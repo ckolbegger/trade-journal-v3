@@ -226,7 +226,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Next task | T7.4 Trade Analysis: option Executions, short Lots, Entry Quality, position paths. **ocr queue** (usage limit `subscription_sharing_usage_limit_exceeded` since T7.3; rerun each when it resets, findings become bug tasks): `c9b225e0` (T7.3). |
+| Next task | T7.4 Trade Analysis: option Executions, short Lots, Entry Quality, position paths. A first attempt stopped for words (stop condition 2); the user approved them as decision 82 (revision 49, tag `claude-opus-5.5-plan-r49`). Next revision r50, next decision 83. **ocr queue** (usage limit `subscription_sharing_usage_limit_exceeded` since T7.3; rerun each when it resets, findings become bug tasks): `c9b225e0` (T7.3). |
 | Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.4: `docs(evidence): T7.3 complete`. |
 | Tasks done | Setup (`5b420449`). T7.1 (`ba247330`) with bug task T7.1-B1 (`b115db30`, expiration year 2000–2099); cumulative run `t7-1-instrument` green (full tier, 8.2 min). T7.2 (`504705d2`) with bug tasks B1 `ba8f1893` (one Stop, one Target, `ConditionCountNotOne`), B2 `ca36f848` (`economicTime` required; `confirmPlan` passes it), B3 `3feb3f11` (canonical option Instrument kept), B4 `f1ffa592` (Exercise Intent on Long Stock rejected); run `t7-2-assess-plan` green (task tier). T7.3 (`c9b225e0`, payoff, `NoOptionExpirationAnchor` worded); run `t7-3-payoff` green (full tier, 7.9 min); ocr queued. |
 | Last commit | `docs(evidence): T7.3 complete` |

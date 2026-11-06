@@ -242,6 +242,8 @@ describe("position paths for both roles (A103)")
   it should return AfterExpiration for an Execution dated 2026-11-23 and ContractQuantityNotWhole for 1.5 contracts
 ```
 
+**Amended by decision 82 (revision 49):** `AfterExpiration` and `ContractQuantityNotWhole` are `IncoherentFact` findings (P69), worded "… is dated after the contract's expiration" and "… isn't a whole number of contracts" after the prefactor's head; `ExceedsOpenQuantity` reads "contracts" for an option, "shares" for stock.
+
 Proven only by integration, because they pass for free once these and D6's cases are green: the Entry window cut by an option exit with its Entry Size shortfall, and FIFO re-running after an earlier-dated option exit (I7.4).
 
 ### T7.5 Trade Analysis: Expiration, Terminal Disposition, Option Disposition Timing
