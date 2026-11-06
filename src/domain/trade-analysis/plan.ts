@@ -1,10 +1,13 @@
 import type { StrategyShape } from '../strategy.ts';
+import { Temporal } from 'temporal-polyfill';
+import { multiplierOf, validateOptionContract, type ContractIssue, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
+import type { Instant } from '../time/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 
 // Plan facts as proposed for confirmation; decimals are finite-decimal strings.
 export interface PlannedLegInput {
   readonly side: 'Long' | 'Short';
-  readonly instrument: { readonly kind: 'Stock'; readonly symbol: string };
+  readonly instrument: StockInstrument | OptionInstrument;
   readonly quantity: string;
   readonly intendedEntry: string;
 }
@@ -16,9 +19,13 @@ export interface PlanInput {
   readonly legs: readonly PlannedLegInput[];
   readonly stops: readonly ConditionInput[];
   readonly targets: readonly ConditionInput[];
+  // A fact of a long option Plan only (A100).
+  readonly exerciseIntent?: 'Authorized' | 'NotAuthorized';
 }
 
 export interface PlanAssessmentInput {
+  // The Plan's Economic Time; an option Plan's expiration is checked against its New York date.
+  readonly economicTime?: Instant;
   readonly strategyShape: StrategyShape;
   readonly plan: PlanInput;
 }
@@ -27,6 +34,9 @@ export interface ConditionBasis {
   readonly condition: ConditionInput;
   // Monetary distance from intended entry to this condition's boundary.
   readonly distance: Rational;
+  // An option condition's measurement basis, derived from its Underlying trigger: the contract's
+  // value at expiration at that price (P24, A100). Absent for stock.
+  readonly valueAtExpiration?: Rational;
 }
 
 // The frozen Plan Baseline: intended entry against every original Stop and Target, with the
@@ -50,7 +60,15 @@ export interface PlanIssue {
     | 'InvalidQuantity'
     | 'InvalidPrice'
     | 'NoPositiveRisk'
-    | 'TargetNotBeyondEntry';
+    | 'TargetNotBeyondEntry'
+    | 'StopTargetOrder'
+    | 'ExerciseIntentRequired'
+    | 'ExerciseIntentNotApplicable'
+    | 'ContractQuantityNotWhole'
+    | 'ContractAlreadyExpired'
+    | ContractIssue;
+  // An option rejection that names a breakeven carries it here (A100).
+  readonly details?: { readonly breakeven: Rational };
 }
 
 export type PlanAssessment =
@@ -91,6 +109,7 @@ function normalizePlan(plan: PlanInput): PlanInput {
     })),
     stops: plan.stops.map(condition),
     targets: plan.targets.map(condition),
+    ...(plan.exerciseIntent ? { exerciseIntent: plan.exerciseIntent } : {}),
   };
 }
 
@@ -102,8 +121,77 @@ function nearest(basis: readonly ConditionBasis[]): Rational {
 function matchesShape(legs: readonly PlannedLegInput[], shape: StrategyShape): boolean {
   return (
     legs.length === shape.roles.length &&
-    legs.every((leg, i) => leg.side === shape.roles[i]?.side && leg.instrument.kind === shape.roles[i]?.instrument)
+    legs.every((leg, i) => leg.side === shape.roles[i]?.side && roleOf(leg) === shape.roles[i]?.instrument)
   );
+}
+
+// The leg's nonzero quantity as a magnitude: a stock quantity is positive, an option's is signed by
+// its side (A100), so the side carries the direction.
+function contractsOf(leg: PlannedLegInput): Rational | undefined {
+  const parsed = parseDecimal(leg.quantity);
+  if (!parsed.ok || parsed.value.numerator === 0n) return undefined;
+  if (leg.instrument.kind === 'Stock') return positive(leg.quantity);
+  const negative = parsed.value.numerator < 0n;
+  // Contracts are positive for a long leg and negative for a short one (A100).
+  if (negative !== (leg.side === 'Short')) return undefined;
+  return negative ? Rational.of(0n).sub(parsed.value) : parsed.value;
+}
+
+// An option's breakeven Underlying price at expiration: strike plus the entry premium for a Call,
+// strike minus it for a Put (A100).
+function breakevenOf(leg: PlannedLegInput, entry: Rational): Rational | undefined {
+  if (leg.instrument.kind === 'Stock') return undefined;
+  const strike = parseDecimal(leg.instrument.strike);
+  if (!strike.ok) return undefined;
+  return leg.instrument.right === 'Call' ? strike.value.add(entry) : strike.value.sub(entry);
+}
+
+function roleOf(leg: PlannedLegInput): 'Stock' | 'Call' | 'Put' {
+  return leg.instrument.kind === 'Stock' ? 'Stock' : leg.instrument.right;
+}
+
+// The leg's value per unit at a condition's Underlying trigger: the price itself for stock, the
+// contract's intrinsic value at expiration for an option (P24, A100). Never entered or stored.
+function valueAtTrigger(instrument: StockInstrument | OptionInstrument, trigger: Rational): Rational {
+  if (instrument.kind === 'Stock') return trigger;
+  const strike = parseDecimal(instrument.strike);
+  if (!strike.ok) throw new Error('incoherent');
+  const intrinsic = instrument.right === 'Call' ? trigger.sub(strike.value) : strike.value.sub(trigger);
+  return intrinsic.compare(Rational.of(0n)) > 0 ? intrinsic : Rational.of(0n);
+}
+
+// Monetary distance from intended entry to a condition's boundary: the loss at a Stop, the gain at
+// a Target, as quantity x multiplier x (price difference) for the leg's side.
+function boundary(
+  leg: PlannedLegInput,
+  entry: Rational,
+  contracts: Rational,
+  condition: ConditionInput,
+  trigger: Rational,
+  kind: 'Stop' | 'Target',
+): ConditionBasis {
+  const value = valueAtTrigger(leg.instrument, trigger);
+  const gain = leg.side === 'Long' ? value.sub(entry) : entry.sub(value);
+  const scaled = (kind === 'Target' ? gain : Rational.of(0n).sub(gain)).mul(contracts).mul(Rational.of(BigInt(multiplierOf(leg.instrument))));
+  return leg.instrument.kind === 'Stock'
+    ? { condition: { ...condition }, distance: scaled }
+    : { condition: { ...condition }, distance: scaled, valueAtExpiration: value };
+}
+
+// An option leg's contract (T7.1), whole contracts, and an expiration on or after the Plan's New York
+// date (Plan Economic Time, decision 20). Trade Analysis keeps no calendar: only the date is compared.
+// Returns whether the contract itself is valid, which the arithmetic needs.
+function assessContract(leg: PlannedLegInput, economicTime: Instant | undefined, issue: (code: PlanIssue['code']) => void): boolean {
+  if (leg.instrument.kind !== 'Option') return true;
+  const contract = validateOptionContract(leg.instrument);
+  if (!contract.ok) for (const code of contract.issues) issue(code);
+  const quantity = parseDecimal(leg.quantity);
+  if (quantity.ok && quantity.value.denominator !== 1n) issue('ContractQuantityNotWhole');
+  if (contract.ok && economicTime) {
+    const planDate = Temporal.Instant.from(economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
+    if (leg.instrument.expiration < planDate) issue('ContractAlreadyExpired');
+  }
+  return contract.ok;
 }
 
 // Validates the proposed Plan and derives its frozen Plan Baseline. Every issue is returned
@@ -111,16 +199,27 @@ function matchesShape(legs: readonly PlannedLegInput[], shape: StrategyShape): b
 export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   const { plan } = input;
   const issues: PlanIssue[] = [];
-  const issue = (code: PlanIssue['code']) => {
-    if (!issues.some((i) => i.code === code)) issues.push({ code });
+  const issue = (code: PlanIssue['code'], details?: PlanIssue['details']) => {
+    if (!issues.some((i) => i.code === code)) issues.push(details ? { code, details } : { code });
   };
 
-  if (!matchesShape(plan.legs, input.strategyShape)) {
+  const shapeMismatch = !matchesShape(plan.legs, input.strategyShape);
+  if (shapeMismatch) {
     issue('StrategyShapeMismatch');
     // The Long Stock rules below still apply to a leading Long Stock leg, so its issues are
     // reported together with the shape (AC-PLAN-002); any other leading leg is not assessed.
     const first = plan.legs[0];
-    if (first?.side !== 'Long' || first.instrument.kind !== 'Stock') return { kind: 'Rejected', issues };
+    if (first?.instrument.kind !== 'Option' && (first?.side !== 'Long' || first.instrument.kind !== 'Stock')) return { kind: 'Rejected', issues };
+  }
+  // Exercise Intent is a fact of long options only (A100).
+  const first = plan.legs[0];
+  let calculable = true;
+  if (first?.instrument.kind === 'Option') {
+    if (first.side === 'Long' && !plan.exerciseIntent) issue('ExerciseIntentRequired');
+    if (first.side === 'Short' && plan.exerciseIntent) issue('ExerciseIntentNotApplicable');
+    // An invalid contract has no value at expiration, and a Strategy mismatch leaves the leg's
+    // direction ambiguous, so neither has its risk and reward assessed.
+    calculable = assessContract(first, input.economicTime, issue) && !shapeMismatch;
   }
   for (const leg of plan.legs) {
     const symbol = normalizeSymbol(leg.instrument.symbol);
@@ -132,23 +231,31 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   if (plan.targets.length === 0) issue('MissingTarget');
 
   const leg = plan.legs[0]!;
-  const quantity = positive(leg.quantity);
+  const quantity = contractsOf(leg);
   const entry = positive(leg.intendedEntry);
   const stops = plan.stops.map((condition) => ({ condition, price: positive(condition.price) }));
   const targets = plan.targets.map((condition) => ({ condition, price: positive(condition.price) }));
   if (!quantity) issue('InvalidQuantity');
   if (!entry || [...stops, ...targets].some((c) => !c.price)) issue('InvalidPrice');
-  if (!quantity || !entry || issues.some((i) => i.code === 'MissingStop' || i.code === 'MissingTarget' || i.code === 'InvalidPrice')) {
+  if (!calculable || !quantity || !entry || issues.some((i) => i.code === 'MissingStop' || i.code === 'MissingTarget' || i.code === 'InvalidPrice')) {
     return { kind: 'Rejected', issues };
   }
 
-  const stopBasis = stops.map(({ condition, price }) => ({ condition: { ...condition }, distance: entry.sub(price!).mul(quantity) }));
-  const targetBasis = targets.map(({ condition, price }) => ({ condition: { ...condition }, distance: price!.sub(entry).mul(quantity) }));
+  const stopBasis = stops.map(({ condition, price }) => boundary(leg, entry, quantity, condition, price!, 'Stop'));
+  const targetBasis = targets.map(({ condition, price }) => boundary(leg, entry, quantity, condition, price!, 'Target'));
   const zero = Rational.of(0n);
+  // The Underlying Stop lies below the Target for a bullish Strategy and above it for a bearish one.
+  if (leg.instrument.kind === 'Option') {
+    const bullish = (leg.side === 'Long') === (leg.instrument.right === 'Call');
+    const misordered = stops.some((s) => targets.some((t) => (bullish ? s.price!.compare(t.price!) >= 0 : s.price!.compare(t.price!) <= 0)));
+    if (misordered) issue('StopTargetOrder');
+  }
   // Original Planned Risk must be positive: it is exactly 1R.
-  if (nearest(stopBasis).compare(zero) <= 0) issue('NoPositiveRisk');
+  // The Cash-Secured Put's Stop must lie below the breakeven, which its rejection names (A100).
+  const breakeven = breakevenOf(leg, entry);
+  if (nearest(stopBasis).compare(zero) <= 0) issue('NoPositiveRisk', leg.side === 'Short' && breakeven ? { breakeven } : undefined);
   // A Long Stock Target must lie above intended entry (D1 A1).
-  if (nearest(targetBasis).compare(zero) <= 0) issue('TargetNotBeyondEntry');
+  if (nearest(targetBasis).compare(zero) <= 0) issue('TargetNotBeyondEntry', breakeven && { breakeven });
   if (issues.length > 0) return { kind: 'Rejected', issues };
 
   return { kind: 'Accepted', baseline: baselineOf(stopBasis, targetBasis), plan: normalizePlan(plan) };
@@ -171,11 +278,11 @@ function baselineOf(stopBasis: readonly ConditionBasis[], targetBasis: readonly 
 // frozen facts: deterministic, so it never needs storing.
 export function frozenBaseline(plan: PlanInput): PlanBaseline {
   const leg = plan.legs[0]!;
-  const quantity = positive(leg.quantity)!;
+  const contracts = contractsOf(leg)!;
   const entry = positive(leg.intendedEntry)!;
   // Conditions are copied so the inert output never aliases the caller's input.
   return baselineOf(
-    plan.stops.map((condition) => ({ condition: { ...condition }, distance: entry.sub(positive(condition.price)!).mul(quantity) })),
-    plan.targets.map((condition) => ({ condition: { ...condition }, distance: positive(condition.price)!.sub(entry).mul(quantity) })),
+    plan.stops.map((condition) => boundary(leg, entry, contracts, condition, positive(condition.price)!, 'Stop')),
+    plan.targets.map((condition) => boundary(leg, entry, contracts, condition, positive(condition.price)!, 'Target')),
   );
 }
