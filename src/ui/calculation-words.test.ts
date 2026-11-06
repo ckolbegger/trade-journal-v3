@@ -49,6 +49,28 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(sentence({ factId: 'p1', kind: 'PositionChange', economicTime: AT, reason: 'DuplicateFactId' })).toBe('Position Change on Wed Oct 14, 10:30 shares its identity with another record');
   });
 
+  const CALL = instrumentOf('XYZ261120C00055000');
+  const optionExecution = (side: 'Buy' | 'Sell', quantity: string) =>
+    ({ factId: 'f2', kind: 'Execution', instrument: CALL, economicTime: '2026-11-23T15:00:00Z', side, quantity }) as const;
+
+  it('should word AfterExpiration and ContractQuantityNotWhole after the option head as decision 82 gives', () => {
+    expect(sentence({ ...optionExecution('Buy', '1'), reason: 'AfterExpiration' })).toBe(
+      "Buy of 1 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is dated after the contract's expiration",
+    );
+    expect(sentence({ ...optionExecution('Buy', '1.5'), reason: 'ContractQuantityNotWhole' })).toBe(
+      "Buy of 1.5 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 isn't a whole number of contracts",
+    );
+  });
+
+  it('should word ExceedsOpenQuantity as contracts open for an option and keep shares open for stock', () => {
+    expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(2n, 1n) })).toBe(
+      'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts open',
+    );
+    expect(sentence({ ...execution('Sell', '120'), reason: 'ExceedsOpenQuantity', available: Rational.of(100n, 1n) })).toBe(
+      'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open',
+    );
+  });
+
   it('should word FactsIncoherent as Facts cannot be replayed, Not available, and the first finding sentence with and 2 more', () => {
     const first: IncoherentFact = { ...execution('Buy', '0'), reason: 'NonpositiveQuantity' };
     const second: IncoherentFact = { ...execution('Buy', '100'), reason: 'DuplicateFactId' };

@@ -124,3 +124,15 @@ Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 4ff2885a`.
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-3-payoff-checks.txt` |
 
 Tier: full, printed reason "first matching path since 4ff2885a: src/ui/calculation-words.test.ts". Ports free before and after. T7.3 is complete apart from its queued ocr review.
+
+## T7.4 wording checks
+
+- `npx vitest run tools`: exit 0; Test Files 3 passed (3), Tests 52 passed (52). `tools/wording-rules.test.ts` now has 35 cases (34 after T7.3, plus one for the AfterExpiration and ContractQuantityNotWhole words and codes).
+- `npm run verify:wording`: exit 0, no output beyond the command banner.
+- Planted `export const PLANTED = " is dated after the contract's expiration";` at line 2 of `src/ui/due-text.ts` (uncommitted Edit): `npm run verify:wording` exit 1:
+  ```
+  /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/src/ui/due-text.ts
+    2:24  error  verify:wording: this is a reason's or finding's words. Word it through src/ui/calculation-words.ts, the only place that words a Calculation Result or branches on its reason code  no-restricted-syntax
+  ✖ 1 problem (1 error, 0 warnings)
+  ```
+  The line was removed by Edit; `git status` shows `src/ui/due-text.ts` unmodified, and `npm run verify:wording` exits 0 again.

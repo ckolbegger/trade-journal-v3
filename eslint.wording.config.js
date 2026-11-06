@@ -37,6 +37,8 @@ export const PHRASES = [
   'names a Planned Leg',
   "has a quantity that isn't positive",
   'shares its identity',
+  "is dated after the contract's expiration",
+  "isn't a whole number of contracts",
 ];
 export const CODES = [
   'MarkMissing',
@@ -57,6 +59,8 @@ export const CODES = [
   'DuplicateFactId',
   'FlatBeforeLaterFacts',
   'ExceedsOpenQuantity',
+  'AfterExpiration',
+  'ContractQuantityNotWhole',
 ];
 
 // The NotApplicable reasons' words (calculation-words.ts, notApplicableTail).

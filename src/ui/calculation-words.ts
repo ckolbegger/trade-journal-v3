@@ -119,7 +119,11 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
   ];
   switch (finding.reason) {
     case 'ExceedsOpenQuantity':
-      return [...head, t(` is more than the ${quantity(finding.available)} shares open`)];
+      return [...head, t(` is more than the ${quantity(finding.available)} ${finding.instrument.kind === 'Option' ? 'contracts' : 'shares'} open`)];
+    case 'AfterExpiration':
+      return [...head, t(" is dated after the contract's expiration")];
+    case 'ContractQuantityNotWhole':
+      return [...head, t(" isn't a whole number of contracts")];
     case 'FlatBeforeLaterFacts':
       return [...head, t(' leaves the Position flat before later records')];
     case 'UnknownPlannedLeg':

@@ -19,7 +19,9 @@ export interface ExecutionDescription {
 }
 
 export type IncoherentFact =
-  | (ExecutionDescription & { readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' })
+  | (ExecutionDescription & {
+      readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' | 'AfterExpiration' | 'ContractQuantityNotWhole';
+    })
   // P22: a Sell above the quantity open at its own point in Fact Order; names that quantity.
   | (ExecutionDescription & { readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational })
   // P22: a Sell that leaves the Position flat although a later fact follows it.

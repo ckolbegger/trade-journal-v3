@@ -1,19 +1,20 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult, ExecutionDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
+import { multiplierOf, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
 export type LifecycleState = 'Planned' | 'Open' | 'Closed' | 'Abandoned';
 
 // One effective fill. D2 records Buys and D6 Sells of the Plan's Stock serving its Planned Leg
-// (D2 A18, D6 A76).
+// (D2 A18, D6 A76); D7 adds fills of the Plan's option contract (A102).
 export interface ExecutionFact {
   readonly factId: string;
   readonly economicTime: Instant;
   readonly recordedSequence: number;
   readonly action: 'Buy' | 'Sell';
-  readonly instrument: { readonly kind: 'Stock'; readonly symbol: string };
+  readonly instrument: StockInstrument | OptionInstrument;
   readonly quantity: string;
   readonly price: string;
   readonly fee: string;
@@ -384,21 +385,35 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
     }
     for (const e of pc.executions) {
       if (!legs.has(e.intent.plannedLegId)) findings.push({ ...described(e), reason: 'UnknownPlannedLeg' });
-      if (!parseDecimal(e.quantity, { positive: true }).ok) findings.push({ ...described(e), reason: 'NonpositiveQuantity' });
+      const quantity = parseDecimal(e.quantity, { positive: true });
+      if (!quantity.ok) findings.push({ ...described(e), reason: 'NonpositiveQuantity' });
+      if (e.instrument.kind !== 'Option') continue;
+      // A102: whole contracts, and no Execution after the contract's expiration (New York date).
+      if (quantity.ok && quantity.value.denominator !== 1n) findings.push({ ...described(e), reason: 'ContractQuantityNotWhole' });
+      const day = Temporal.Instant.from(e.economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
+      if (day > e.instrument.expiration) findings.push({ ...described(e), reason: 'AfterExpiration' });
     }
   }
   return findings;
 }
 
-// P22: replaying in Fact Order, the open quantity never goes below zero and may reach zero only at
-// the last fact. A Sell above the open quantity is reported with the quantity then available and
-// does not reduce it.
-function positionPathFindings(facts: readonly ExecutionFact[]): IncoherentFact[] {
+// Whether an Execution opens exposure: by its Planned Leg's role, a long leg's Buy or a short leg's
+// Sell (A102); the other action closes. Every Execution's leg is known once incoherence() has passed.
+type Opens = (e: ExecutionFact) => boolean;
+function opensOf(legs: TradeAnalysisRecord['plan']['legs']): Opens {
+  const short = new Set(legs.filter((l) => l.side === 'Short').map((l) => l.factId));
+  return (e) => short.has(e.intent.plannedLegId) === (e.action === 'Sell');
+}
+
+// P22, A103: replaying in Fact Order, the open quantity never crosses zero and may reach zero only at
+// the last fact. A closing Execution above the quantity open is reported with the magnitude then
+// available and does not reduce it.
+function positionPathFindings(facts: readonly ExecutionFact[], opens: Opens): IncoherentFact[] {
   const findings: IncoherentFact[] = [];
   let open = Rational.of(0n);
   facts.forEach((e, index) => {
     const quantity = decimal(e.quantity);
-    if (e.action === 'Buy') {
+    if (opens(e)) {
       open = open.add(quantity);
     } else if (quantity.compare(open) > 0) {
       findings.push({ ...described(e), reason: 'ExceedsOpenQuantity', available: open });
@@ -424,26 +439,27 @@ function netCostOf(positions: readonly InstrumentPosition[]): DerivedTradeState[
   return { kind: 'Value', value: total };
 }
 
-// Replays the facts in Fact Order. Each Buy creates one Open Lot holding its whole fee (D2 A22);
-// each Sell consumes the oldest Lots first (A79), one Lot Match per Lot it touches. Nothing is
-// stored (P23).
-function replayOf(facts: readonly ExecutionFact[]): {
+// Replays the facts in Fact Order. Each opening Execution creates one Open Lot holding its whole fee
+// (D2 A22), signed negative for a short role; each closing one consumes the oldest Lots first (A79,
+// A104), one Lot Match per Lot it touches. Nothing is stored (P23).
+function replayOf(facts: readonly ExecutionFact[], opens: Opens): {
   positions: InstrumentPosition[];
   lotMatches: LotMatch[];
   lotMatchResults: LotMatchResult[];
 } {
   const lots: OpenLot[] = [];
-  const originals = new Map<string, { quantity: Rational; price: Rational; fee: Rational }>();
+  const originals = new Map<string, { quantity: Rational; price: Rational; fee: Rational; direction: 1 | -1 }>();
   const lotMatches: LotMatch[] = [];
   const lotMatchResults: LotMatchResult[] = [];
   for (const e of facts) {
-    if (e.action === 'Buy') {
-      const lot = { quantity: decimal(e.quantity), price: decimal(e.price), fee: decimal(e.fee) };
+    if (opens(e)) {
+      const lot = { quantity: decimal(e.quantity), price: decimal(e.price), fee: decimal(e.fee), direction: e.action === 'Buy' ? (1 as const) : (-1 as const) };
       originals.set(e.factId, lot);
       lots.push({ openingExecutionId: e.factId, quantity: lot.quantity, price: lot.price, unconsumedOpeningFee: lot.fee });
       continue;
     }
     const sold = decimal(e.quantity);
+    const multiplier = Rational.of(BigInt(multiplierOf(e.instrument)));
     let remaining = sold;
     while (remaining.compare(Rational.of(0n)) > 0 && lots.length > 0) {
       const lot = lots[0]!;
@@ -461,8 +477,16 @@ function replayOf(facts: readonly ExecutionFact[]): {
         disposedAt: e.economicTime,
         allocatedOpeningFee: value(allocatedOpeningFee),
         allocatedDisposalFee: value(allocatedDisposalFee),
-        // q x (sell price - buy price) less both allocated fees (A80).
-        realized: value(matched.mul(decimal(e.price).sub(original.price)).sub(allocatedOpeningFee).sub(allocatedDisposalFee)),
+        // q x multiplier x (sell price - buy price) less both allocated fees (A80); a short Lot's
+        // direction reverses the price difference (A104).
+        realized: value(
+          matched
+            .mul(multiplier)
+            .mul(decimal(e.price).sub(original.price))
+            .mul(Rational.of(BigInt(original.direction)))
+            .sub(allocatedOpeningFee)
+            .sub(allocatedDisposalFee),
+        ),
       });
       remaining = remaining.sub(matched);
       const left = { ...lot, unconsumedOpeningFee: lot.unconsumedOpeningFee.sub(allocatedOpeningFee) };
@@ -471,12 +495,14 @@ function replayOf(facts: readonly ExecutionFact[]): {
     }
   }
   if (facts.length === 0) return { positions: [], lotMatches, lotMatchResults };
+  // A short Lot reads back signed negative, so the Position's quantity is signed too.
+  const signed = lots.map((l) => ({ ...l, quantity: l.quantity.mul(Rational.of(BigInt(originals.get(l.openingExecutionId)!.direction))) }));
   return {
     positions: [
       {
         instrument: facts[0]!.instrument,
-        quantity: lots.reduce((sum, l) => sum.add(l.quantity), Rational.of(0n)),
-        openLots: lots,
+        quantity: signed.reduce((sum, l) => sum.add(l.quantity), Rational.of(0n)),
+        openLots: signed,
       },
     ],
     lotMatches,
@@ -540,10 +566,11 @@ function factOrder(a: Ordered, b: Ordered): number {
 
 // The entry window opens with the first Position Change and resolves at the first one, in Fact
 // Order, after which every Planned Leg's entered quantity reaches its planned quantity (A23), or
-// immediately before the first Position Change holding a Sell, whichever comes first (A82). The
-// window holds every Execution of the Position Changes up to and including the resolving one; a
-// window cut by a Sell names that cutting Position Change.
-function entryWindowOf(record: TradeAnalysisRecord): {
+// immediately before the first Position Change holding a closing Execution (a Sell for a long leg, a
+// Buy for a short one), whichever comes first (A82). The window holds every Execution of the
+// Position Changes up to and including the resolving one; a window cut by a closing Execution names
+// that cutting Position Change.
+function entryWindowOf(record: TradeAnalysisRecord, opens: Opens): {
   resolution: EntryResolution;
   window: ExecutionFact[];
   cutBy?: PositionChangeFact;
@@ -552,19 +579,25 @@ function entryWindowOf(record: TradeAnalysisRecord): {
   const window: ExecutionFact[] = [];
   let last: PositionChangeFact | undefined;
   for (const pc of [...record.positionChanges].sort(factOrder)) {
-    if (last && pc.executions.some((e) => e.action === 'Sell'))
+    if (last && pc.executions.some((e) => !opens(e)))
       return { resolution: { kind: 'Resolved', positionChangeId: last.factId }, window, cutBy: pc };
     last = pc;
     for (const e of pc.executions) {
       const leg = e.intent.plannedLegId;
-      // Only a Buy enters; a Sell reduces exposure (P4).
-      if (e.action === 'Buy') entered.set(leg, (entered.get(leg) ?? Rational.of(0n)).add(decimal(e.quantity)));
+      // Only an opening Execution enters; a closing one reduces exposure (P4).
+      if (opens(e)) entered.set(leg, (entered.get(leg) ?? Rational.of(0n)).add(decimal(e.quantity)));
       window.push(e);
     }
-    const filled = record.plan.legs.every((leg) => (entered.get(leg.factId)?.compare(decimal(leg.quantity)) ?? -1) >= 0);
+    const filled = record.plan.legs.every((leg) => (entered.get(leg.factId)?.compare(plannedContracts(leg)) ?? -1) >= 0);
     if (filled) return { resolution: { kind: 'Resolved', positionChangeId: pc.factId }, window };
   }
   return { resolution: { kind: 'Unresolved' }, window };
+}
+
+// A Planned Leg's quantity as a magnitude: an option's is signed by its side (A100).
+function plannedContracts(leg: { readonly quantity: string }): Rational {
+  const planned = decimal(leg.quantity);
+  return planned.numerator < 0n ? Rational.of(0n).sub(planned) : planned;
 }
 
 const value = (v: Rational) => ({ kind: 'Value', value: v }) as const;
@@ -585,15 +618,19 @@ function entryQualityOf(
   const cost = total(window, (e) => decimal(e.quantity).mul(decimal(e.price)));
   const fees = total(window, (e) => decimal(e.fee));
   const average = cost.div(quantity);
-  const stop = decimal(plan.stops[0]!.price);
-  const target = decimal(plan.targets[0]!.price);
-  const flags: EntryFlag[] = [];
-  if (average.compare(stop) <= 0) flags.push('EntryAtOrBeyondStop');
-  if (average.compare(target) >= 0) flags.push('EntryAtOrBeyondTarget');
-  const nonnegative = (r: Rational) => (r.compare(zero) > 0 ? r : zero);
-  const risk = nonnegative(quantity.mul(average.sub(stop))).add(fees);
-  const reward = nonnegative(quantity.mul(target.sub(average))).sub(fees);
   const leg = plan.legs[0]!;
+  // An option measures each condition by its value at expiration (A105); stock by its trigger price.
+  const stop = baseline.stopBasis[0]!.valueAtExpiration ?? decimal(plan.stops[0]!.price);
+  const target = baseline.targetBasis[0]!.valueAtExpiration ?? decimal(plan.targets[0]!.price);
+  // Long exposure gains as the price rises; a short one reverses every price difference.
+  const direction = Rational.of(leg.side === 'Long' ? 1n : -1n);
+  const scale = Rational.of(BigInt(multiplierOf(leg.instrument)));
+  const flags: EntryFlag[] = [];
+  if (average.sub(stop).mul(direction).compare(zero) <= 0) flags.push('EntryAtOrBeyondStop');
+  if (target.sub(average).mul(direction).compare(zero) <= 0) flags.push('EntryAtOrBeyondTarget');
+  const nonnegative = (r: Rational) => (r.compare(zero) > 0 ? r : zero);
+  const risk = nonnegative(quantity.mul(scale).mul(average.sub(stop)).mul(direction)).add(fees);
+  const reward = nonnegative(quantity.mul(scale).mul(target.sub(average)).mul(direction)).sub(fees);
   return {
     kind: 'Value',
     value: {
@@ -603,8 +640,9 @@ function entryQualityOf(
       actualInitialRisk: value(risk),
       actualInitialReward: value(reward),
       riskInPlanR: value(risk.div(baseline.oneR)),
-      slippage: value(average.sub(decimal(leg.intendedEntry)).mul(quantity)),
-      sizeRatio: value(quantity.div(decimal(leg.quantity))),
+      // Positive is worse: paying more than intended for a long leg, receiving less for a short one.
+      slippage: value(average.sub(decimal(leg.intendedEntry)).mul(quantity).mul(scale).mul(direction)),
+      sizeRatio: value(quantity.div(plannedContracts(leg))),
       plannedRewardRisk: value(baseline.rewardRiskRatio),
       actualRewardRisk: flags[0] ? { kind: 'NotApplicable', reason: flags[0] } : value(reward.div(risk)),
       flags,
@@ -616,10 +654,11 @@ function legFulfillmentOf(
   plan: TradeAnalysisRecord['plan'],
   facts: readonly ExecutionFact[],
   deviations: readonly ExpectedDeviation[],
+  opens: Opens,
 ): LegFulfillment[] {
   return plan.legs.map((leg) => {
     const entered = total(
-      facts.filter((e) => e.action === 'Buy' && e.intent.plannedLegId === leg.factId),
+      facts.filter((e) => opens(e) && e.intent.plannedLegId === leg.factId),
       (e) => decimal(e.quantity),
     );
     // Any active Entry Size occurrence on the leg is a Deviation (A25).
@@ -627,7 +666,7 @@ function legFulfillmentOf(
       ? 'FilledWithDeviation'
       : entered.compare(Rational.of(0n)) === 0
         ? 'Unfilled'
-        : entered.compare(decimal(leg.quantity)) < 0
+        : entered.compare(plannedContracts(leg)) < 0
           ? 'PartiallyFilled'
           : 'FilledAsPlanned';
     return { plannedLegId: leg.factId, fulfillment };
@@ -636,13 +675,13 @@ function legFulfillmentOf(
 
 // Entry Size excess (P4): one occurrence per Position Change that raises a Planned Leg's open
 // quantity above its planned quantity, carrying the quantity it added above plan.
-function deviationsOf(record: TradeAnalysisRecord): ExpectedDeviation[] {
+function deviationsOf(record: TradeAnalysisRecord, opens: Opens): ExpectedDeviation[] {
   return record.plan.legs.flatMap((leg) => {
-    const planned = decimal(leg.quantity);
+    const planned = plannedContracts(leg);
     let entered = Rational.of(0n);
     return [...record.positionChanges].sort(factOrder).flatMap((pc): ExpectedDeviation[] => {
       const before = entered;
-      for (const e of pc.executions) if (e.action === 'Buy' && e.intent.plannedLegId === leg.factId) entered = entered.add(decimal(e.quantity));
+      for (const e of pc.executions) if (opens(e) && e.intent.plannedLegId === leg.factId) entered = entered.add(decimal(e.quantity));
       const above = entered.sub(before.compare(planned) > 0 ? before : planned);
       if (above.compare(Rational.of(0n)) <= 0) return [];
       return [
@@ -677,7 +716,7 @@ function shortfallsOf(
       entry.window.filter((e) => e.intent.plannedLegId === leg.factId),
       (e) => decimal(e.quantity),
     );
-    const short = decimal(leg.quantity).sub(entered);
+    const short = plannedContracts(leg).sub(entered);
     if (short.compare(Rational.of(0n)) <= 0) return [];
     return [
       {
@@ -854,17 +893,18 @@ export function derive(input: TradeDerivationInput): DerivationResult {
       pc.executions.map((e) => ({ ...e, instrument: { ...e.instrument }, intent: { ...e.intent }, positionChangeId: pc.factId })),
     )
     .sort(factOrder);
-  const pathFindings = positionPathFindings(facts);
+  const opens = opensOf(record.plan.legs);
+  const pathFindings = positionPathFindings(facts, opens);
   if (pathFindings.length > 0) return { kind: 'IncoherentFacts', findings: pathFindings };
-  const { positions, lotMatches, lotMatchResults } = replayOf(facts);
-  const entry = entryWindowOf(record);
+  const { positions, lotMatches, lotMatchResults } = replayOf(facts, opens);
+  const entry = entryWindowOf(record, opens);
   const baseline = frozenBaseline(record.plan);
   // Nonzero exposure makes the Trade Open; exposure that existed and is gone makes it Closed (the
   // path checks make that flat point the last fact); no effective fact leaves it Planned.
   const expectedLifecycle: LifecycleState = lifecycleOf(facts, positions);
   const closed = expectedLifecycle === 'Closed';
   const realizedToDate = lotMatchResults.reduce((sum, r) => (r.realized.kind === 'Value' ? sum.add(r.realized.value) : sum), Rational.of(0n));
-  const deviations = [...deviationsOf(record), ...shortfallsOf(record, entry)];
+  const deviations = [...deviationsOf(record, opens), ...shortfallsOf(record, entry)];
   const before = input.candidate && derive({ record: input.candidate.before, ...(input.cutoff && { cutoff: input.cutoff }) });
   if (before?.kind === 'IncoherentFacts') return before;
   const agreement: LifecycleAgreement =
@@ -893,14 +933,14 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     realizedR: closed ? value(realizedToDate.div(baseline.oneR)) : { kind: 'NotApplicable', reason: 'NotClosed' },
     observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
     fees: {
-      incurredOpening: facts.filter((e) => e.action === 'Buy').reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
+      incurredOpening: facts.filter(opens).reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
       incurred: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
     },
     netCost: netCostOf(positions),
     baseline,
     entryResolution: entry.resolution,
     entryQuality: entryQualityOf(entry.resolution, entry.window, record.plan, baseline),
-    legFulfillment: legFulfillmentOf(record.plan, facts, deviations),
+    legFulfillment: legFulfillmentOf(record.plan, facts, deviations, opens),
     deviations,
     findings: [...(agreement.kind === 'Agrees' ? [] : [agreement]), ...deviationFindings(deviations, record.recordedDeviations ?? [])],
     ...(input.candidate &&

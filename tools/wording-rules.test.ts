@@ -107,6 +107,13 @@ describe('verify:wording rules', () => {
     expect(lines(scanSource('src/ui/B11.tsx', "if (x.reason === 'NoOptionExpirationAnchor') {}"))).toEqual([1]);
   });
 
+  it('fails on the AfterExpiration and ContractQuantityNotWhole finding words and codes', () => {
+    expect(lines(scanSource('src/ui/B13.tsx', "const a = 1;\nconst b = ' is dated after the contract’s expiration';"))).toEqual([2]);
+    expect(lines(scanSource('src/ui/B13.tsx', "const b = \" isn't a whole number of contracts\";"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B13.tsx', "if (f.reason === 'AfterExpiration') {}"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B13.tsx', "switch (f.reason) {\n  case 'ContractQuantityNotWhole': break;\n}"))).toEqual([2]);
+  });
+
   it('passes on a reason quoted inside a longer string', () => {
     expect(scanSource('src/ui/B9.tsx', `const a = "The label 'not closed yet' means the Trade is open";`)).toEqual([]);
   });
