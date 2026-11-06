@@ -424,3 +424,17 @@ Session `eef1a871-7955-4316-838f-222ca029c11a`, model gpt-6.1-sol, 1 file review
 Both cases passed on their first run against the parser-based scan (the defects were in the regexes `b4056fc6` replaced), each flagged with a mutation check that failed by an assertion and was restored with the Edit tool: B8, JsxText excluded from the whole-reason check (`AssertionError: expected +0 to be 1`); B9, reason words matched by `includes` (`AssertionError: expected [ Array(1) ] to deeply equal []`). No production code changed.
 
 ocr review, relocated as test-only (scratch clone, test under `src/itg/d07p/cases/`, `wording-scan.ts` copied in the parent commit): session `1064b079-2688-47d8-adbf-4b7da88aed52`, **no findings**. Raw output: [ocr/T7P.9-B8-B9-156a4540.json](ocr/T7P.9-B8-B9-156a4540.json).
+
+### T7P.9-B10 and B11 (`57005d9e`)
+
+A private `unwrap` strips parentheses, `as`, `satisfies`, type assertions and `!` for `isCode` and `isKindAccess`; phrases match on decoded literal text. Genuine reds: B10 cases 1 and 4, B11 case 1. First-run passes (flagged, each mutation-checked by an assertion failure and restored with Edit): B10 cases 2 (`case ('NotClosed'):`) and 3 (`satisfies`), B11 cases 2 (template) and 3 (hit line). Red-first slip (recorded): the subagent wrote the `isKindAccess` unwrap while greening case 1, then reverted it to get case 4's genuine red, and re-applied it.
+
+### ocr review of `57005d9e` (T7P.9-B10 and B11, third round)
+
+Session `05a16eb4-4479-4af7-9429-bc7eceabf802`, model gpt-6.1-sol, 1 file reviewed in place, 1 finding. Raw output: [ocr/T7P.9-B10-B11-57005d9e.json](ocr/T7P.9-B10-B11-57005d9e.json). The unwrap logic showed no failure scenario.
+
+| Severity | Location | Finding | Assessment |
+|---|---|---|---|
+| low | `tools/wording-scan.ts:111` | A phrase's offset in the decoded text is used as a source offset, so in a multi-line literal with an escape before the phrase, the hit can be reported on the wrong line. The check still fails and names the file and phrase. | Valid (wrong line number only) |
+
+The third round of bug tasks on T7P.9 still leaves a finding, so the session stops for the user (handoff, "Running a whole deliverable", condition 6).
