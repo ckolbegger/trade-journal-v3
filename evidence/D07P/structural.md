@@ -603,3 +603,21 @@ Counts, `claude-opus-5.5-pre-d7p` → `claude-opus-5.5-d7p`: unit 1188 → 1225;
 | `.claude/scripts/full-suite.sh evidence/D07P retro-b1-checks-probe checks` | 13 of 13 exit 0, `verify:wording` among them; probe output file deleted |
 
 Port notes: all 27 cases keep their names and inputs and pass on their first run (the port is a reimplementation, so no red rows). A hit now sits at its matched node's start line (tech debt item 12): for a comparison the node is the whole comparison, for a `case` the `case` clause, for JSX text the text node, which starts right after its tag. Three asserted lines therefore differ from the scanner's: the comparison split across lines (2, was 3), the `case` on the line after `case` (2, was 3), and JSX text on the line after `<span>` (2, was 3). The test also asserts the message begins `verify:wording:` and names `src/ui/calculation-words.ts`.
+
+### ocr review of `dd0c8224` (Retro-B1)
+
+Session `68673aa9-c423-4841-9492-7cd76acbec22`, model gpt-6.1-sol, 3 files reviewed in place (the new test excluded by ocr), 3 findings. Raw output: [ocr/Retro-B1-dd0c8224.json](ocr/Retro-B1-dd0c8224.json).
+
+| Severity | Location | Finding | Assessment | Bug task |
+|---|---|---|---|---|
+| medium | `eslint.config.js:23` | ESLint replaces a rule's options rather than merging them across config entries, so `wordingRules`' `no-restricted-syntax` overrides `noIdentityRules`' for non-test `src/ui` files, and the no-identity ban (`navigator.userAgent` and similar) stops applying there. | Valid (a regression) | Retro-B1-B1 |
+| medium | `eslint.wording.config.js:87` | The `.kind` exemption checks only `property.name`, so a computed access `result[kind]` (an identifier named `kind`) also exempts a reason-code comparison. | Valid (an over-exemption) | Retro-B1-B2 |
+| medium | `eslint.wording.config.js:79` | A `ChainExpression` (optional chaining) uses up one of the three wrapper levels, so `((status?.kind as string) satisfies string)! === '…'` is wrongly flagged. | Valid (a false positive within the stated depth limit) | Retro-B1-B3 |
+
+**Retro-B1-B1 cases:** `navigator.userAgent` in a non-test `src/ui` file fails `npm run lint`; a wording violation in the same file still fails; both rules' selectors apply in `src/ui` and only the identity rule elsewhere in `src/`.
+**Retro-B1-B2 case:** `result[kind] === 'MarkMissing'` is flagged; `status.kind === 'AcknowledgedUnavailable'` is still exempt.
+**Retro-B1-B3 case:** `((status?.kind as string) satisfies string)! === 'AcknowledgedUnavailable'` is exempt; a chain counts as no wrapper level.
+
+### Cumulative run after Retro-B1 (`retro-b1`, at `dd0c8224`, before its bug tasks)
+
+Unit 97 files, 1225 passed; integration 76 files, 154 passed; browser full tier (`browser-auto 4b360324`, "first matching path since 4b360324: package.json") 167 passed (8.4 min); checks **13 of 13** exit 0, `verify:wording` among them. Outputs `suite-runs/retro-b1-*.txt`. Ports 5175, 9341, 9342 free before and after.
