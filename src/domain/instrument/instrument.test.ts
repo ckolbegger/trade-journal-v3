@@ -53,6 +53,18 @@ describe('Option Instruments (A99, decision 77)', () => {
     expect(validateOptionContract({ ...contract, expiration: '2026-02-30' })).toEqual({ ok: false, issues: ['InvalidExpiration'] })
   })
 
+  it('should reject an expiration outside 2000 to 2099 with InvalidExpiration, and accept 2000-01-21 and 2099-12-18, each round-tripping through its key', () => {
+    for (const expiration of ['1999-12-17', '2100-01-15', '2126-11-20']) {
+      expect(validateOptionContract({ ...contract, expiration })).toEqual({ ok: false, issues: ['InvalidExpiration'] })
+    }
+    for (const [expiration, key] of [['2000-01-21', 'XYZ000121C00055000'], ['2099-12-18', 'XYZ991218C00055000']] as const) {
+      const result = validateOptionContract({ ...contract, expiration })
+      if (!result.ok) throw new Error(`expected ${expiration} valid`)
+      expect(instrumentKey(result.instrument)).toBe(key)
+      expect(instrumentOf(key)).toEqual(result.instrument)
+    }
+  })
+
   it('should classify a bare symbol such as BRK.B as a Stock key with multiplier 1', () => {
     const instrument = instrumentOf('BRK.B')
     expect(instrument).toEqual({ kind: 'Stock', symbol: 'BRK.B' })

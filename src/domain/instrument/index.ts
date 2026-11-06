@@ -82,7 +82,8 @@ export function validateOptionContract(input: ContractInput): ContractResult {
   const issues: ContractIssue[] = []
   if (!SYMBOL.test(symbol)) issues.push('MissingInstrument')
   else if (root.length > 6) issues.push('RootTooLong')
-  if (!isIsoDate(input.expiration)) issues.push('InvalidExpiration')
+  // The key keeps only YY and instrumentOf rebuilds 20YY, so only 2000 to 2099 round-trips.
+  if (!isIsoDate(input.expiration) || input.expiration.slice(0, 2) !== '20') issues.push('InvalidExpiration')
   // Strikes have at most 3 fractional digits (decision 77) and 5 whole digits (the key's 8 digits).
   const strike = parseDecimal(input.strike)
   const [whole = '', fraction = ''] = input.strike.split('.')
