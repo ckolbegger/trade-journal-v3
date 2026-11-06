@@ -260,6 +260,8 @@ describe("Terminal Disposition and Option Disposition Timing (A108)")
   it should derive O-C as [Executions: 1 contract; Expiration: 1 contract] and Mixed (1 and 1), O-S after E-S as [Expiration: 2 contracts] and FullyHeldToExpirationSettlement with Realized R 829/1200, and O-P after Q1 on the expiration date as FullyDisposedPreExpiration, with Open option Trades and T-A NotApplicable
 ```
 
+**Amended by decision 83 (revision 50):** `ExpirationMustSettleAllOpen`, `SettlementTimeInvalid` and `NotAnOption` are `IncoherentFact` findings (P69) with an Expiration description kind and head ("Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00"), worded "… doesn't settle all 2 contracts open", "… is dated after the contract's expiration or before an Execution on it" and "Expiration of 100 XYZ at … names a stock, not an option".
+
 ### T7.6 Trade Analysis: `evaluate` for options and Settlement Due
 
 Seam: `TradeAnalysis.evaluate` (pure). Frames are built in the test; each frame carries its date and close.
