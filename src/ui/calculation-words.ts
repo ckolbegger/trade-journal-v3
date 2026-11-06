@@ -132,3 +132,9 @@ export const isMarkMissing = <R extends UnavailableReason>(reason: R): reason is
 export const isMarkLacking = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkLackingReason> => reason.reason === 'MarkMissing' || reason.reason === 'AcknowledgedUnavailable';
 // A Review blocker for a Mark that is missing.
 export const isMarkMissingBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'MarkMissing' }> => blocker.code === 'MarkMissing';
+
+// Market Data's Expected-Mark Status as the Mark row shows it (section 1.1: unchanged text, its own casing).
+export const acknowledgedUnavailableStatusLabel = (): string => 'Acknowledged Unavailable';
+// The Position Change form's validation issue codes, which the form words in its own messages.
+export const isExceedsOpenQuantityIssue = (issue: { readonly code: string }): boolean => issue.code === 'ExceedsOpenQuantity';
+export const isFlatBeforeLaterFactsIssue = (issue: { readonly code: string }): boolean => issue.code === 'FlatBeforeLaterFacts';

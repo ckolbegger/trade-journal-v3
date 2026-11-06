@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { IncoherentFact } from '../domain/calculation-result/index.ts';
 import { Rational } from '../domain/values/index.ts';
 import { instrumentOf } from '../domain/instrument/index.ts';
-import { findingWords, instrumentLabel, notApplicableWords, text, unavailableWords, unboundedWords } from './calculation-words.ts';
+import { acknowledgedUnavailableStatusLabel, findingWords, instrumentLabel, isExceedsOpenQuantityIssue, isFlatBeforeLaterFactsIssue, notApplicableWords, text, unavailableWords, unboundedWords } from './calculation-words.ts';
 
 const ZONE = 'America/New_York';
 const XYZ = instrumentOf('XYZ');
@@ -98,5 +98,16 @@ describe('calculation words (P70, P71, section 1.4)', () => {
   it('should name an Instrument only through instrumentLabel: a stock by its symbol', () => {
     expect(instrumentLabel(XYZ)).toBe('XYZ');
     expect(instrumentLabel(instrumentOf('BRK.B'))).toBe('BRK.B');
+  });
+
+  it('should label the Expected-Mark Status Acknowledged Unavailable with the Mark row casing', () => {
+    expect(acknowledgedUnavailableStatusLabel()).toBe('Acknowledged Unavailable');
+  });
+
+  it('should recognise the two Position Change issue codes and no other', () => {
+    expect(isExceedsOpenQuantityIssue({ code: 'ExceedsOpenQuantity' })).toBe(true);
+    expect(isExceedsOpenQuantityIssue({ code: 'FlatBeforeLaterFacts' })).toBe(false);
+    expect(isFlatBeforeLaterFactsIssue({ code: 'FlatBeforeLaterFacts' })).toBe(true);
+    expect(isFlatBeforeLaterFactsIssue({ code: 'ExceedsOpenQuantity' })).toBe(false);
   });
 });

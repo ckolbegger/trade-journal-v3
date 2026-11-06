@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ExpectedResolutionRevision, MarkResolution } from '../../app/types.ts';
+import { acknowledgedUnavailableStatusLabel } from '../calculation-words.ts';
 import { decimalMoney, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
@@ -157,7 +158,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
       )}
       {resolution.kind === 'AcknowledgedUnavailable' && (
         <p>
-          <strong>Acknowledged Unavailable</strong> · You said you can’t get a price
+          <strong>{acknowledgedUnavailableStatusLabel()}</strong> · You said you can’t get a price
           {resolution.acknowledgment.reason !== undefined && `: ${resolution.acknowledgment.reason}`}
         </p>
       )}

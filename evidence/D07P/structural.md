@@ -320,3 +320,13 @@ verify:wording failed: 7 match(es) outside src/ui/calculation-words.ts
 Both edits restored with the Edit tool; `git diff` for those two files is empty.
 
 **Checks stage:** `.claude/scripts/full-suite.sh evidence/D07P t7p-9-checks-probe checks` reported "12 of 13 exit 0" with `npm run verify:wording` the failing one (the 5 matches above); the probe's file was deleted.
+
+### T7P.9 second part (decision 80)
+
+No exemption and no rule change in `tools/verify-wording.ts`; the 5 hits moved into `src/ui/calculation-words.ts` with no visible text change:
+- `acknowledgedUnavailableStatusLabel()` returns "Acknowledged Unavailable" (the Mark row's own casing, section 1.1); `MarkEntry.tsx` renders it in the `<strong>`. The row's other statuses ("Missing") do not hit the check and stay as they were.
+- `isExceedsOpenQuantityIssue(issue)` and `isFlatBeforeLaterFactsIssue(issue)` (take `{ code: string }`); `position-change-issues.ts` calls them at lines 30, 31 and 61.
+- Unit cases in `calculation-words.test.ts`: the label, and both predicates (true for their code, false for the other). They passed on first run because the text and codes already existed in the screens (a move); mutation checks failed by assertion: label recased to "Acknowledged unavailable" (1 failed); `isFlatBeforeLaterFactsIssue` comparing `ExceedsOpenQuantity` (1 failed). Both restored (`git diff` shows only the additions).
+
+`npm run verify:wording`: exit 0, "verify:wording: no reason words or reason-code branches outside src/ui/calculation-words.ts".
+`.claude/scripts/full-suite.sh evidence/D07P t7p-9-checks-probe2 checks`: "13 of 13 exit 0"; its file deleted. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src`: 97 files, 1225 tests pass (MarkEntry, PositionChangeForm and PositionChangeFormExit tests unchanged).

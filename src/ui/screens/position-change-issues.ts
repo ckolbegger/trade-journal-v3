@@ -1,5 +1,6 @@
 import type { EntryDefinitionRecord } from '../../app/types.ts';
 import type { Rational } from '../../domain/values/index.ts';
+import { isExceedsOpenQuantityIssue, isFlatBeforeLaterFactsIssue } from '../calculation-words.ts';
 import { quantity } from '../format.ts';
 import { AMBIGUOUS_TIME, NONEXISTENT_TIME } from './local-time.ts';
 import { describeJournalIssue, type FieldIssue, type Issue } from './plan-issues.ts';
@@ -27,8 +28,8 @@ const TIME: Record<string, string> = {
 type PathIssue = Issue & { readonly member?: number; readonly available?: Rational };
 
 function memberMessage(issue: PathIssue): string {
-  if (issue.code === 'ExceedsOpenQuantity') return issue.available ? `Only ${quantity(issue.available)} shares are open.` : 'more shares than are open.';
-  if (issue.code === 'FlatBeforeLaterFacts') return 'this exit would leave the Position flat before a later recorded change.';
+  if (isExceedsOpenQuantityIssue(issue)) return issue.available ? `Only ${quantity(issue.available)} shares are open.` : 'more shares than are open.';
+  if (isFlatBeforeLaterFactsIssue(issue)) return 'this exit would leave the Position flat before a later recorded change.';
   if (issue.field === 'economicTime') return TIME[issue.code] ?? 'check the Economic Time.';
   if (issue.field === 'fee' && issue.code === 'Required') return 'enter the fee, or 0 if there was none.';
   return DECIMAL[issue.field ?? ''] ?? 'check this Execution.';
@@ -58,7 +59,7 @@ function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition:
   if (issue.member !== undefined) {
     return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue)}` };
   }
-  if (issue.source === 'TradeAnalysis' && (issue.code === 'ExceedsOpenQuantity' || issue.code === 'FlatBeforeLaterFacts')) {
+  if (issue.source === 'TradeAnalysis' && (isExceedsOpenQuantityIssue(issue) || isFlatBeforeLaterFactsIssue(issue))) {
     return { field: 'members', message: 'This exit would leave a later recorded exit without enough shares open.' };
   }
   if (issue.code === 'TradeClosed') return { field: 'trade', message: 'This Trade is closed. New exposure needs a new Plan.' };
