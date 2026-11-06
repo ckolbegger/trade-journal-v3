@@ -99,13 +99,14 @@ function normalizeSymbol(symbol: string): string {
   return symbol.trim().toUpperCase();
 }
 
-function normalizePlan(plan: PlanInput): PlanInput {
+// The accepted option leg carries the canonical Instrument (A99): normalized strike, derived root.
+function normalizePlan(plan: PlanInput, canonical?: OptionInstrument): PlanInput {
   const condition = (c: ConditionInput): ConditionInput => ({ ...c, price: normalized(c.price) });
   return {
     underlying: normalizeSymbol(plan.underlying),
-    legs: plan.legs.map((leg) => ({
+    legs: plan.legs.map((leg, i) => ({
       ...leg,
-      instrument: { ...leg.instrument, symbol: normalizeSymbol(leg.instrument.symbol) },
+      instrument: i === 0 && canonical ? canonical : { ...leg.instrument, symbol: normalizeSymbol(leg.instrument.symbol) },
       quantity: normalized(leg.quantity),
       intendedEntry: normalized(leg.intendedEntry),
     })),
@@ -182,9 +183,10 @@ function boundary(
 
 // An option leg's contract (T7.1), whole contracts, and an expiration on or after the Plan's New York
 // date (Plan Economic Time, decision 20). Trade Analysis keeps no calendar: only the date is compared.
-// Returns whether the contract itself is valid, which the arithmetic needs.
-function assessContract(leg: PlannedLegInput, economicTime: Instant, issue: (code: PlanIssue['code']) => void): boolean {
-  if (leg.instrument.kind !== 'Option') return true;
+// Returns the canonical Option Instrument when the contract itself is valid, which the arithmetic
+// and the accepted Plan need.
+function assessContract(leg: PlannedLegInput, economicTime: Instant, issue: (code: PlanIssue['code']) => void): OptionInstrument | undefined {
+  if (leg.instrument.kind !== 'Option') return undefined;
   const contract = validateOptionContract(leg.instrument);
   if (!contract.ok) for (const code of contract.issues) issue(code);
   const quantity = parseDecimal(leg.quantity);
@@ -193,7 +195,7 @@ function assessContract(leg: PlannedLegInput, economicTime: Instant, issue: (cod
     const planDate = Temporal.Instant.from(economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
     if (leg.instrument.expiration < planDate) issue('ContractAlreadyExpired');
   }
-  return contract.ok;
+  return contract.ok ? contract.instrument : undefined;
 }
 
 // Validates the proposed Plan and derives its frozen Plan Baseline. Every issue is returned
@@ -216,12 +218,14 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   // Exercise Intent is a fact of long options only (A100).
   const first = plan.legs[0];
   let calculable = true;
+  let canonical: OptionInstrument | undefined;
   if (first?.instrument.kind === 'Option') {
     if (first.side === 'Long' && !plan.exerciseIntent) issue('ExerciseIntentRequired');
     if (first.side === 'Short' && plan.exerciseIntent) issue('ExerciseIntentNotApplicable');
     // An invalid contract has no value at expiration, and a Strategy mismatch leaves the leg's
     // direction ambiguous, so neither has its risk and reward assessed.
-    calculable = assessContract(first, input.economicTime, issue) && !shapeMismatch;
+    canonical = assessContract(first, input.economicTime, issue);
+    calculable = canonical !== undefined && !shapeMismatch;
   }
   for (const leg of plan.legs) {
     const symbol = normalizeSymbol(leg.instrument.symbol);
@@ -265,7 +269,7 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   if (nearest(targetBasis).compare(zero) <= 0) issue('TargetNotBeyondEntry', breakeven && { breakeven });
   if (issues.length > 0) return { kind: 'Rejected', issues };
 
-  return { kind: 'Accepted', baseline: baselineOf(stopBasis, targetBasis), plan: normalizePlan(plan) };
+  return { kind: 'Accepted', baseline: baselineOf(stopBasis, targetBasis), plan: normalizePlan(plan, canonical) };
 }
 
 function baselineOf(stopBasis: readonly ConditionBasis[], targetBasis: readonly ConditionBasis[]): PlanBaseline {

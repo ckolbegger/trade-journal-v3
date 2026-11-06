@@ -148,6 +148,16 @@ describe('assessPlan: option condition count', () => {
   });
 });
 
+describe('assessPlan: canonical option leg', () => {
+  it('should return the accepted option leg canonical Instrument, normalizing strike 055.000 to 55 and deriving the root from the symbol', () => {
+    const raw = { kind: 'Option', symbol: 'brk.b', root: 'WRONG', expiration: '2026-11-20', strike: '055.000', right: 'Call', multiplier: 100 } as const;
+    const result = assessPlan(longCall({ underlying: 'BRK.B', legs: [{ side: 'Long', instrument: raw, quantity: '2', intendedEntry: '2.00' }] }));
+    expect(result.kind).toBe('Accepted');
+    if (result.kind !== 'Accepted') return;
+    expect(result.plan.legs[0]?.instrument).toEqual({ kind: 'Option', symbol: 'BRK.B', root: 'BRKB', expiration: '2026-11-20', strike: '55', right: 'Call', multiplier: 100 });
+  });
+});
+
 describe('assessPlan: option shape and contract', () => {
   const longCallLeg = (instrument: ReturnType<typeof contract>, quantity = '2') =>
     [{ side: 'Long', instrument, quantity, intendedEntry: '2.00' }] as const;
