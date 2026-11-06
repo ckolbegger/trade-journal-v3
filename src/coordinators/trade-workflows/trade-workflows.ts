@@ -86,7 +86,7 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       }
       // The Plan is assessed against the Strategy's immutable shape whenever that resolved.
       const shape = strategy.kind === 'Resolved' ? strategy.resolved['strategy']?.shape : undefined;
-      const assessment = shape ? assessPlan({ strategyShape: shape, plan: command.plan }) : undefined;
+      const assessment = shape ? assessPlan({ strategyShape: shape, economicTime: command.economicTime, plan: command.plan }) : undefined;
       if (assessment?.kind === 'Rejected') {
         for (const issue of assessment.issues) issues.push({ source: 'TradeAnalysis', code: issue.code });
       }

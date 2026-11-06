@@ -7,6 +7,7 @@ const LONG_STOCK = { roles: [{ side: 'Long', instrument: 'Stock', ratio: 1 }] } 
 function plan(overrides: Partial<PlanAssessmentInput['plan']> = {}): PlanAssessmentInput {
   return {
     strategyShape: LONG_STOCK,
+    economicTime: '2026-10-12T13:30:00Z',
     plan: {
       underlying: 'XYZ',
       legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', intendedEntry: '50.00' }],

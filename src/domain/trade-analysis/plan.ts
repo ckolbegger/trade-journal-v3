@@ -25,7 +25,7 @@ export interface PlanInput {
 
 export interface PlanAssessmentInput {
   // The Plan's Economic Time; an option Plan's expiration is checked against its New York date.
-  readonly economicTime?: Instant;
+  readonly economicTime: Instant;
   readonly strategyShape: StrategyShape;
   readonly plan: PlanInput;
 }
@@ -183,13 +183,13 @@ function boundary(
 // An option leg's contract (T7.1), whole contracts, and an expiration on or after the Plan's New York
 // date (Plan Economic Time, decision 20). Trade Analysis keeps no calendar: only the date is compared.
 // Returns whether the contract itself is valid, which the arithmetic needs.
-function assessContract(leg: PlannedLegInput, economicTime: Instant | undefined, issue: (code: PlanIssue['code']) => void): boolean {
+function assessContract(leg: PlannedLegInput, economicTime: Instant, issue: (code: PlanIssue['code']) => void): boolean {
   if (leg.instrument.kind !== 'Option') return true;
   const contract = validateOptionContract(leg.instrument);
   if (!contract.ok) for (const code of contract.issues) issue(code);
   const quantity = parseDecimal(leg.quantity);
   if (quantity.ok && quantity.value.denominator !== 1n) issue('ContractQuantityNotWhole');
-  if (contract.ok && economicTime) {
+  if (contract.ok) {
     const planDate = Temporal.Instant.from(economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
     if (leg.instrument.expiration < planDate) issue('ContractAlreadyExpired');
   }

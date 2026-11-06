@@ -122,6 +122,34 @@ describe('confirmPlan: rejected', () => {
     });
   });
 
+  it('should reject through confirmPlan an option Plan whose expiration is before the Plan New York date with ContractAlreadyExpired, writing nothing', async () => {
+    const stack = await onboardedStack();
+    const base = command(stack);
+    const before = await dumpAll(stack.factory);
+    // The Plan's New York date is 2026-10-12; the contract expired the day before. The onboarded
+    // Strategy is Long Stock, so the shape mismatch is reported alongside.
+    const result = await stack.tradeWorkflows.confirmPlan({
+      ...base,
+      plan: {
+        underlying: 'XYZ',
+        legs: [
+          {
+            side: 'Long',
+            instrument: { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-10-11', right: 'Call', strike: '50', multiplier: 100 },
+            quantity: '1',
+            intendedEntry: '1.50',
+          },
+        ],
+        stops: [{ kind: 'UnderlyingPrice', price: '47.50' }],
+        targets: [{ kind: 'UnderlyingPrice', price: '56.00' }],
+        exerciseIntent: 'Authorized',
+      },
+    });
+    expect(result.kind).toBe('Rejected');
+    expect(result.kind === 'Rejected' && result.issues).toContainEqual({ source: 'TradeAnalysis', code: 'ContractAlreadyExpired' });
+    expect(await dumpAll(stack.factory)).toEqual(before);
+  });
+
   it('should reject an unknown Account or Strategy with typed reference issues', async () => {
     const stack = await onboardedStack();
     expect(await stack.tradeWorkflows.confirmPlan(command(stack, { strategyId: 'no-such-strategy' }))).toEqual({
