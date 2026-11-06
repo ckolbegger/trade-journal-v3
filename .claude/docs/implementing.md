@@ -18,6 +18,8 @@ Do this reading once per session: at the start of the deliverable, or when a new
 
 Before the deliverable's first task, create `evidence/D<nn>/tdd-log.md` with a note that its rows are single-case runs; `tdd.sh` refuses to run without it.
 
+Also before the first task, run `ocr llm test`. It must print `✓ Connection test successful`. If it fails, stop and ask the user to run `ocr auth login`. `ocr auth status` is no substitute: it shows a past expiry even when the sign-in still refreshes.
+
 ## Delegating each task to `tdd-task`
 
 Delegate every implementation task to its own fresh `tdd-task` subagent (`.claude/agents/tdd-task.md`). This covers every behavioral and structural task. The only exceptions are the cumulative runs, which go to `suite-runner`, and the browser-critic gate, which has its own fresh-critic rules; brief each critic from `.claude/docs/critic-brief.md`.
@@ -52,3 +54,5 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
 Give its reading list in the form above, naming the sections to read, and name this file in it. Carry over two parts of the current handoff:
 - the "Starting a session" paragraph, with its one-line prompt (*"Read plan/D<nn>-handoff.md and follow it."*), so the session reads and then starts the first task without stopping;
 - the "Running a whole deliverable" stop conditions.
+
+Its location checks include `ocr llm test`, expecting `✓ Connection test successful`.

@@ -1,6 +1,6 @@
 # D7 prefactor retrospective
 
-Source: the user's retrospective of the D7 prefactor, 2026-11-06. It reviewed the implementation session `174d22d2-9e6a-48f5-873b-26bef5246c56` (2026-11-05 02:40 to 2026-11-06 08:39), its 114 subagent transcripts, and [structural.md](structural.md). Findings are ordered by severity. Each one gets its own section here, with its bug tasks, once the user chooses a fix; none is chosen yet.
+Source: the user's retrospective of the D7 prefactor, 2026-11-06. It reviewed the implementation session `174d22d2-9e6a-48f5-873b-26bef5246c56` (2026-11-05 02:40 to 2026-11-06 08:39), its 114 subagent transcripts, and [structural.md](structural.md). Findings are ordered by severity. Each one gets its own section here, with its bug tasks, once the user chooses a fix. **The user chose fixes for findings 1, 2 and 3 (2026-11-06) and judged findings 4 to 7 not significant enough to act on**; see "Chosen fixes" at the end.
 
 The prefactor finished and its gate passed, but it took about 30 hours of wall time. Most of that was not implementation:
 - **Two waits for the user's answers:** 06:50 to 18:16 (decision 79) and 18:32 to 01:07 (decision 80). Both questions came from gaps in the breakdown (finding 2).
@@ -95,3 +95,53 @@ A 13.4-minute stage is also well past the 10-minute mark that tech debt item 6 i
 
 - **A finished task showed as still running.** The agents panel showed the completed T7P.9-B12 subagent as running, which prompted the user's question at 2026-11-06 08:39. `.claude/agents/tdd-task.md` has no progress-reporting instruction, unlike `.claude/agents/ocr-review.md:10`, so its bar never completes. Proposed fix: copy that instruction into `tdd-task.md`.
 - **No commit-time guardrail.** There are no git hooks and no CI. Today the `suite-runner` run after every task covers this, so it is low priority. Proposed fix: a `pre-commit` hook running `npm run lint && npm run typecheck`, which would catch mistakes at the commit rather than at the next run.
+
+---
+
+## Chosen fixes (drafted 2026-11-06, awaiting the user's approval)
+
+### Fix 1: `verify:wording` becomes an ESLint rule (finding 1), as bug task Retro-B1
+
+**The decision.** The check keeps its name, `npm run verify:wording`, and its behavior: P74's rule, decision 80's no-exemption rule, and the phrase, reason-word and code lists in `tools/wording-scan.ts` today. Only how it is built changes, from a hand-written TypeScript-parser scan to ESLint `no-restricted-syntax` selectors, the pattern `eslint.deps.config.js` already uses. P74 doesn't specify the mechanism, so **no plan revision is needed for the change itself**. A plan edit marks tech debt item 12 resolved once Retro-B1 lands.
+
+**Feasibility, checked 2026-11-06** with ESLint's `Linter` API on snippets, in memory, writing no file. Selectors on `Literal[value=…]`, `TemplateElement[value.cooked=…]`, `JSXText[value=…]`, `SwitchCase[test.value=…]` and `BinaryExpression[operator=/^[!=]==?$/]`, with `:not([left.property.name="kind"])` and its mirror, gave the scanner's results on these cases:
+- **Hit:** a comparison split across lines; a phrase after a string holding ` // `; `x === ('MarkMissing' as const)`; `case ('NotClosed'):`; a phrase written with a ` ` escape; a phrase on the second line of a multi-line template; `<p>{icon}Mark missing</p>`; a curly apostrophe.
+- **No hit:** `${1 /* Mark missing */}`; `<span>Don't</span>; // Mark missing`; a code-first `.kind` comparison wrapped across lines; `s?.kind === 'AcknowledgedUnavailable'`.
+
+Every hit is reported at its node's start line, which removes tech debt item 12's wrong-line report.
+
+**Retro-B1 (structural; one fresh `tdd-task` subagent).**
+- **Build:**
+  - a new `eslint.wording.config.js` exporting `wordingRules`, built in JavaScript from the same three lists, applied to `src/ui/**/*.{ts,tsx}` and ignoring `src/ui/calculation-words.ts` and `**/*.test.{ts,tsx}`;
+  - `eslint.config.js` merges it, as it merges `noIdentityRules`;
+  - `verify:wording` becomes `eslint --no-config-lookup -c eslint.wording.config.js src/ui`, so the checks stage keeps 13 checks and still names this one when it fails;
+  - each selector's `message` names the rule (`verify:wording: …`) and the module to use.
+- **Remove:** `tools/wording-scan.ts` and `tools/verify-wording.ts`, and `--list` with them (the lists can be read in the config).
+- **Port the tests:** every one of `tools/wording-scan.test.ts`'s 27 cases moves to `tools/wording-rules.test.ts`, run through ESLint's `Linter` with the exported config. Each keeps its input and its hit or no hit. A case that asserts a line number expects the node's start line.
+- **Verification (exact):**
+  - every ported case passes;
+  - `npm run verify:wording` exits 0 on the tree;
+  - the planted run fails and names both files and lines. It plants uncommitted Edit-tool edits, as T7P.9's did (`'Mark missing'` in `src/ui/screens/AboutView.tsx`, a `case 'NotClosed':` in `src/ui/format.ts`), restored with Edit afterwards;
+  - `npm run lint` exits 0;
+  - the checks stage reports 13 of 13;
+  - a complete cumulative run passes;
+  - an `ocr-review` follows, with findings handled as bug tasks.
+
+**Order (the user's call).** Retro-B1 lands before D7 starts, so D7's new words are checked by the new rule. Two D7 documents then change:
+- **The D7 handoff:** its pointer to `tools/wording-scan.ts` (section 4, the Wording row) and its location check that `git diff claude-opus-5.5-d7p claude-opus-5.5-pre-d7 -- … tools package.json` is empty.
+- **The starting tag `claude-opus-5.5-pre-d7`:** it is already pushed, so moving it onto the new handoff commit needs a force push of that tag.
+
+### Fix 2: the drafter looks things up, and the guide says how (finding 2, and finding 1's prevention)
+
+Four rules join `.claude/docs/drafting-breakdowns.md`: the three lookups in finding 2, and finding 1's "a planned check on source code is a lint rule". Main-session edit; no code changes.
+
+### Fix 3: a real `ocr` probe before the first task (finding 3)
+
+**Checked 2026-11-06:**
+- `ocr auth status` printed `Expires: 2026-11-06T00:58:09-05:00`, already past, so it can't tell an expired refresh token from a working one.
+- `ocr llm test` sent one test conversation through the real sign-in and printed `✓ Connection test successful` and `✓ Tool-call round trip verified`, so it is the probe.
+
+**Change:**
+- `.claude/docs/implementing.md`: run `ocr llm test` before the deliverable's first task; if it fails, stop and ask the user to run `ocr auth login`.
+- "Writing the next deliverable's handoff": that probe becomes a row of the location checks.
+- The D7 handoff gains the row when it is next edited (with fix 1's changes).
