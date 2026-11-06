@@ -505,3 +505,18 @@ Relocated (scratch clone; the four specs under `src/itg/d07p/` as `.ts`, the `su
 Stage `browser-auto 2e25034d`; full tier (T7P.10 changed `e2e/`). The runner's final table did not reach the main session, so this table was read from the output files. All five section 6.2 failures of the T7P.7–T7P.9 runs now pass.
 
 **The one failure:** `e2e/d4/card-helpers.spec.ts:111` ("reach (decision 65) › should return the Marks family's row for XYZ on a previous release's Review (dist-releases/d4)"), a 30.0 s timeout. The whole browser stage took 13.4 min against 7.6–8.2 min in every earlier full run, so the machine was under load. **Rerun alone** from the main session (`npx playwright test e2e/d4/card-helpers.spec.ts:111`, ports 5175, 9341, 9342 free before and after): **1 passed (2.8 s)**. The spec is unchanged by the prefactor and runs against the frozen D4 release build, so the failure is a load-related timeout, not a defect. Both outcomes recorded; the gate run (T7P.12) reruns the full tier.
+
+## T7P.11 Browser layout spec
+
+Built `e2e/d7p/layout.spec.ts` (four cases, each at 320 and 375 px, serving `dist-faults`) and `e2e/d7p/support.ts` (D6's helpers re-exported; `writeSellQuantities`, the stored-record edit made before launch as A187 requires; `setWidth`, `expectNoSidewaysScroll`, `expectShownInFull`, `expectInsideCell`). `package.json`: `e2e/d7p` added after `e2e/d6` in `test:e2e` and `test:e2e:release-history`. No `src/` change.
+
+- The incoherent Trade (XYZ) is built through the UI (two entries, then two partial exits of 40 and 20), then `writeSellQuantities` edits the two stored Sells to 120 and 130 shares before launch, so replay gives two findings, both `ExceedsOpenQuantity` ("Sell of 120 XYZ on Mon Oct 12, 13:00 is more than the 100 shares open", and 130 at 14:00). `writeIntegrityFixture` offers no edit that produces `ExceedsOpenQuantity`, so the new writer follows its method.
+- "In full" is checked as: the element's text equals the module's words, its `scrollWidth <= clientWidth`, and it lies inside every ancestor that clips or scrolls sideways. The last check is what catches a sentence pushed out of the findings table's scroll region.
+- `setWidth` waits two animation frames after a resize and `expectNoSidewaysScroll` polls up to 3 s: without them about one run in four read a layout still under way (page scrollWidth 534 at 320 px in the Trades list) and failed. A real overflow persists and still fails.
+
+Verification:
+- `npm run build:faults`, then `npx playwright test e2e/d7p/layout.spec.ts`: 4 passed (16.8 s), also 12 passed on `--repeat-each 3`.
+- Mutation check: `style={{ whiteSpace: 'nowrap' }}` on the findings-table sentence `<td>` in `src/ui/screens/TradeDetail.tsx`, `npm run build:faults`, the spec: the Trade Detail case failed, the other three passed. Failing lines: `Error: finding 1 at 320: scrollWidth` / `expect(received).toBeLessThanOrEqual(expected)` / `Expected: <= 245` / `Received: 524` (at `e2e/d7p/support.ts`, `expectShownInFull`). Restored with the Edit tool, `npm run build:faults`, the spec: 4 passed. `git diff -- src`: empty.
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0.
+- `git diff claude-opus-5.5-pre-d7p -- e2e`: the section 6.2 files from T7P.10 only (`e2e/d2/integrity.spec.ts`, `e2e/d4/breach-overrun.spec.ts`, `e2e/d4/responsive-a11y.spec.ts`, `e2e/d5r/sliders.spec.ts`) plus the new untracked-before-commit `e2e/d7p/`.
+- Ports 5175, 9341, 9342: free before and after every browser run; nothing left running.
