@@ -1,0 +1,114 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 52907,
+    "input_tokens": 51967,
+    "output_tokens": 940,
+    "cache_read_tokens": 11520,
+    "elapsed": "50s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 2,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "This matches quote-delimited substrings anywhere in the source, not just whole string literals. For example, `\u003cp\u003eThe label 'not closed yet' means the trade is still open.\u003c/p\u003e` and `const help = \"The label 'not closed yet' means the trade is still open.\";` both produce a hit, although neither the whole JSX text node nor the whole string literal equals a reason. This violates the whole-value restriction and can reject legitimate explanatory sentences. Match against actual string-literal/JSX-text token boundaries (and add regression tests for embedded quotes) rather than treating every quote as a literal delimiter.",
+      "existing_code": "const reasonStringRe = new RegExp(`(['\"\\`])\\\\s*(${reasonAlt})\\\\s*\\\\1`, 'gi');",
+      "start_line": 61,
+      "end_line": 61,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "This only detects JSX text bounded by tags, but a whole JSX text node can also be bounded by an expression container. For example, `\u003cp\u003e{icon}No open position\u003c/p\u003e` contains a text node whose trimmed value is exactly a reason, yet this regex misses it because the preceding character is `}`, not `\u003e`. Similarly, `\u003cp\u003eNot closed yet{icon}\u003c/p\u003e` is missed. Match actual JSX text-node boundaries (preferably using the TSX parser) so these cases also fail the wording check.",
+      "existing_code": "const reasonJsxRe = new RegExp(`\u003e\\\\s*(${reasonAlt})\\\\s*\u003c`, 'gi');",
+      "start_line": 63,
+      "end_line": 63,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/verify-wording.ts",
+        "tools/wording-scan.ts"
+      ]
+    }
+  ],
+  "session_id": "dc75d5b9-86ed-4a36-b0d1-5881d9fc8402",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dc75d5b9-86ed-4a36-b0d1-5881d9fc8402",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "93413c87",
+      "resolved_base": "fd2d751aafe0ba9a5094eebc3ca13da7fa9b5f1b",
+      "resolved_head": "93413c870214fa971ea1be0fc518388d35bd12eb",
+      "exact_range": "fd2d751aafe0ba9a5094eebc3ca13da7fa9b5f1b..93413c870214fa971ea1be0fc518388d35bd12eb",
+      "source_artifact_sha256": "6f7cf2f7eb40a5c927a3de2438c9fd9614644b54c8a2c6b81ad5db786edb9d94"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "ece4723ad40566fd7b086529d588986504edcd827a50630c3b20dda3bbb8bb1f"
+        },
+        {
+          "item_id": "64ede7740fd9a0d98a911964208f67dc5a6266feacaba01306d4b8b73f991a41",
+          "path": "tools/verify-wording.ts",
+          "fingerprint": "e03f755fca332eb515c480d993e196ccc6e335bee99a10c86f3cd67d35290acb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "ece4723ad40566fd7b086529d588986504edcd827a50630c3b20dda3bbb8bb1f"
+        },
+        {
+          "item_id": "64ede7740fd9a0d98a911964208f67dc5a6266feacaba01306d4b8b73f991a41",
+          "path": "tools/verify-wording.ts",
+          "fingerprint": "e03f755fca332eb515c480d993e196ccc6e335bee99a10c86f3cd67d35290acb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 49515
+  }
+}

@@ -382,3 +382,24 @@ Session `95b93666-f3e8-4bc7-ac96-cedda00ea27b`, model gpt-6.1-sol, 1 file review
 **T7P.9-B5 cases:** it should pass on `` `${1 /* Mark missing */}` ``; it should still fail on `` `Mark missing ${x}` ``.
 **T7P.9-B6 cases:** it should pass on `<span>Don't</span>; // Mark missing`; it should still fail on `<span>Don't</span>{'Mark missing'}`.
 **T7P.9-B7 cases:** it should fail on a code literal after a CRLF line continuation inside a string followed by `//` text, the way the finding describes; it should still pass on the current tree.
+
+### ocr review of `93413c87` (T7P.9-B3)
+
+Session `dc75d5b9-86ed-4a36-b0d1-5881d9fc8402`, model gpt-6.1-sol, 2 files reviewed in place, 2 findings. Raw output: [ocr/T7P.9-B3-93413c87.json](ocr/T7P.9-B3-93413c87.json). B3's own cases (third case a first-run pass, mutation-checked: JSX regex widened to substrings, `AssertionError: expected [ Array(1) ] to deeply equal []`) are unaffected.
+
+| Severity | Location | Finding | Assessment | Bug task |
+|---|---|---|---|---|
+| medium | `tools/wording-scan.ts:63` | A JSX text node bounded by an expression container (`<p>{icon}No open position</p>`) is missed, since the regex needs `>` and `<` around the words. | Valid (a false negative) | T7P.9-B8 |
+| medium | `tools/wording-scan.ts:61` | A longer sentence that quotes a reason (`"The label 'not closed yet' means …"`) is flagged, since the regex doesn't check that the quotes are the literal's own. | Valid (a false positive) | T7P.9-B9 |
+
+Both come from the regexes that B4–B7's parser-based scan replaces. **T7P.9-B8 cases:** it should fail on `<p>{icon}No open position</p>` and on `<p>Not closed yet{icon}</p>`. **T7P.9-B9 case:** it should pass on `"The label 'not closed yet' means the Trade is open"`. They run after B4–B7 land, in a fresh subagent, against the parser-based scan. Still the second round of bug tasks on T7P.9.
+
+### T7P.9-B4 to B7 (`b4056fc6`): the scan uses the TypeScript parser
+
+`scanSource` parses each file with `ts.createSourceFile` (`ScriptKind.TSX` for `.tsx`) and visits string literals, template parts and JSX text for phrases and reason words, and `case` clauses and equality comparisons for codes (skipping a comparison whose other side is a `.kind` property access, optional chaining included); comments are never visited. The old tokenizer and regexes are removed. Hit text for a code is now the source of the `case` clause or comparison, line breaks collapsed; the prefix and line are unchanged.
+
+**Red and first-run passes (flagged):** only B4 case 1 had a genuine red (`AssertionError: expected [ Array(1) ] to deeply equal []`), because the parser replacement, the decision these bug tasks share, landed with it. The other seven new cases (B4 cases 2–3, B5 cases 1–2, B6 cases 1–2, B7 case 1) passed on their first run, each mutation-checked by an assertion failure and restored (table in `tdd-log.md` notes). B7's CRLF premise was exercised with a `'x\` + CR LF + `y'` continuation; the parser reads it natively and the hit lands on line 3.
+
+**Working-rule slip (recorded):** the subagent restored the pre-mutation `tools/wording-scan.ts` once with a shell `cp` from a scratchpad copy, not the Edit tool; the guard allowed it, and the file equals its pre-mutation state.
+
+`npm run verify:wording`, `typecheck`, `tsc6 --noEmit`, `lint`, `lint:deps` and `npx vitest run tools` exit 0.
