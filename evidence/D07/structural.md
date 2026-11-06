@@ -223,3 +223,52 @@ Commands run from the repository root after the `SettlementDue` code and the phr
 | `npm run verify:wording` after | exit 0; no output |
 | Planted run: `export const planted = 'Settlement due';` added by an Edit to `src/ui/format.ts` line 40, then `npm run verify:wording` | exit 1; `src/ui/format.ts 40:24 error verify:wording: this is a reason's or finding's words ...`, 1 problem |
 | After restoring `src/ui/format.ts` by Edit: `git diff -- src/ui/format.ts` empty, `npm run verify:wording` | exit 0 |
+
+## T7.6 Trade Analysis: `evaluate` for options and Settlement Due
+
+Behavioral; commit `2bbaa51b`. 9 `evaluate-option.test.ts` cases plus two wording unit cases and one wording-rule case, red then green. Two first-run passes, flagged: case 4 (Stop Breached) passed first because its branch had been written during case 2, ahead of its red; the branch was backed out, a genuine red (`expected '180/1' to be '0/1'`) obtained and the branch restored (the invalid red row is annotated in `tdd-log.md`); case 6 (call Mark of exactly 0) was built by cases 1 and 2, mutation (`marked` treating a Mark of 0 as unusable) failed with `AssertionError: expected { kind: 'Unavailable', …(3) } to be '-4013/10'`. Wording conditions met (see "T7.6 wording checks"): `npx vitest run tools` exit 0 (54), `tools/wording-rules.test.ts` at 37 cases (36 before), planted run failed. `SettlementDue` worded with decision 81's words; `CODES` gains `SettlementDue`, `PHRASES` gains "Settlement due" and "which expired".
+
+Implementation decisions (accepted by the main session as implementation-level): after the expiration date, only the Mark-dependent figures (valuation, P&L, Risk to Stop, Reward to Target, Worst-Case, Maximum, conditions, value at expiration) are `Unavailable(SettlementDue)`; facts (open quantity, cost, fees, realized, 1R) stay, which is how "every current figure" (A111's case) was read. Condition figures need both the contract's and the Underlying's Mark; the contract's reason wins when both are missing. `TradeEvaluationInput.underlyingFrame` (optional), `ObservationFrame.instrument` widened to `Instrument`; `settlement: SettlementItem[]`; `expirationValueAtUnderlyingClose`; `ConditionReading.underlying`; `openCost` multiplied. `observationRequirements` lists the contract then its Underlying, and neither after expiration. One passthrough case added in `src/coordinators/daily-review/attention.ts` to keep its exhaustive switch compiling (P67; T7.14 owns the settlement family). **For T7.24:** `PHRASES` holds the bare "Settlement due" case-insensitively, so the Review panel heading must take its words from `calculation-words.ts`. **For T7.14/T7.16:** the coordinators don't yet pass `underlyingFrame`.
+
+### ocr review of `2bbaa51b`
+
+`ocr/T7.6-2bbaa51b.json`, 2 comments:
+
+| Finding | Assessment | Outcome |
+|---|---|---|
+| `derive.ts:657` no requirements after expiration leaves `reviewItem` without an Underlying frame, so Daily Review throws for an expired open option | Doubtful, unreachable until options are stored (T7.7) and the Review is wired (T7.14) | Dismissed as a carried note for T7.14: A111's `Historical(expirationDate)` request and the Review's settlement handling must supply the frame or avoid the lookup. |
+| `evaluate.ts:278` `underlyingFrame` accepted without the instrument, date and cutoff guards the contract frame has | Doubtful, concrete at `evaluate`'s seam | Bug task T7.6-B1, `bcefef80`: a mismatched Underlying frame reads as `Unavailable(MarkMissing)` for the Underlying (the contract frame's `foreign` mechanism); three cases (symbol, date, cutoff) red then green, no new words. The reds ran the whole file through a quoting slip (exactly those three failed, before any production change); annotated in `tdd-log.md`. |
+
+### Cumulative run after T7.6 (`t7-6-option-evaluate`, at `2bbaa51b`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 90139b59`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 102 files, 1281 passed, exit 0 | `suite-runs/t7-6-option-evaluate-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-6-option-evaluate-integration.txt` |
+| Browser (Chromium), full tier | 167 passed (8.0 min), exit 0 | `suite-runs/t7-6-option-evaluate-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-6-option-evaluate-checks.txt` |
+
+Tier: full, printed reason "first matching path since 90139b59: src/ui/calculation-words.test.ts". Ports free before and after. T7.6-B1 (`bcefef80`) came after this run and gets its own, below.
+
+### Cumulative run after T7.6-B1 (`t7-6-b1-underlying-frame`, at `bcefef80`)
+
+Browser stage `browser-auto 2bbaa51b`, task tier ("no changed path since 2bbaa51b is on the full-tier list"), 5 passed (11.8 s). Integration 154 passed; checks 13 of 13. **Unit: 1 failed of 1284**: `src/ui/screens/TradeList.test.tsx` › "Closed list paging (T6.18-B1)" › "should move focus to the empty message when a cursor-expired reload finds no closed trades", `AssertionError: expected <body>… to be <p tabindex="-1">` (`suite-runs/t7-6-b1-underlying-frame-unit.txt`, about line 1296). Rerun alone: passed. Not tech debt item 11's case (the Open list's Ready mark at line 125).
+
+### T7.6-F1: the Closed list's focus assertions wait for the focus effect
+
+Suite-failure fix, commit `f058e165`, test only. Mechanism: `ClosedList` moves focus in a passive `useEffect` after the commit that shows the empty message, status line or new row, and three cases read `document.activeElement` straight after `findBy…`, so under load the read can come first. Shown with a temporary uncommitted `setTimeout(…, 20)` in the refreshed-branch focus: three cases failed, the empty-message one with the suite's error. Fix: the three positive focus assertions (append, refreshed status line, empty message) use `await waitFor(...)`; with the delay re-applied all 8 cases of the describe passed; mutation reverted, `git diff -- src` empty. Verification: the file 10 times sequentially (9 passed 35/35, one run failed 1 of 35, case not captured), then 15 sequential and 24 concurrent runs, all 35/35; the main session looped the file 20 more times, all 35/35. Not changed: the synchronous keyboard-focus assertions (lines 43, 46, 48) and the "focus stays where the trader moved it" assertions (about 471, 486, 493), which a `waitFor` would pass trivially. The one uncaptured failure (and T7.5-B1's unidentified one) may be tech debt item 11's case; its trigger is a cumulative-run failure of that case, which hasn't happened.
+
+### Cumulative run after T7.6-F1 (`t7-6-f1-closed-list-focus`, at `f058e165`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 2bbaa51b`, covering T7.6-B1 and T7.6-F1.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 102 files, 1284 passed, exit 0 | `suite-runs/t7-6-f1-closed-list-focus-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-6-f1-closed-list-focus-integration.txt` |
+| Browser (Chromium), full tier | 167 passed (7.9 min), exit 0 | `suite-runs/t7-6-f1-closed-list-focus-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-6-f1-closed-list-focus-checks.txt` |
+
+Tier: full, printed reason "first matching path since 2bbaa51b: src/ui/screens/TradeList.test.tsx". Ports free before and after. ocr of `bcefef80` (T7.6-B1): no findings (`ocr/T7.6-B1-bcefef80.json`). `f058e165` is test-only, so ocr (which excludes test files) has nothing to review. T7.6 is complete.
