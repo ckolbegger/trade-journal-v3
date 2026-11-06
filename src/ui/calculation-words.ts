@@ -111,6 +111,19 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
   if (finding.kind === 'PositionChange') {
     return [t('Position Change on '), ...timeParts(finding.economicTime, timeZone), t(' shares its identity with another record')];
   }
+  if (finding.kind === 'Expiration') {
+    const expirationHead: Parts = [t(`Expiration of ${recordedQuantity(finding.quantity)} `), instrumentPart(finding.instrument), t(' at '), ...timeParts(finding.economicTime, timeZone)];
+    switch (finding.reason) {
+      case 'ExpirationMustSettleAllOpen':
+        return [...expirationHead, t(` doesn't settle all ${quantity(finding.available)} contracts open`)];
+      case 'SettlementTimeInvalid':
+        return [...expirationHead, t(" is dated after the contract's expiration or before an Execution on it")];
+      case 'NotAnOption':
+        return [...expirationHead, t(' names a stock, not an option')];
+      default:
+        return finding satisfies never;
+    }
+  }
   const head: Parts = [
     t(`${finding.side} of ${recordedQuantity(finding.quantity)} `),
     instrumentPart(finding.instrument),

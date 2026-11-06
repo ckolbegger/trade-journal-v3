@@ -114,6 +114,15 @@ describe('verify:wording rules', () => {
     expect(lines(scanSource('src/ui/B13.tsx', "switch (f.reason) {\n  case 'ContractQuantityNotWhole': break;\n}"))).toEqual([2]);
   });
 
+  it('fails on the Expiration finding words and codes', () => {
+    expect(lines(scanSource('src/ui/B14.tsx', "const a = 1;\nconst b = ' doesn’t settle all 2 contracts open';"))).toEqual([2]);
+    expect(lines(scanSource('src/ui/B14.tsx', "const b = ' is dated after the contract’s expiration or before an Execution on it';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B14.tsx', "const b = 'Expiration of 100 XYZ at now names a stock, not an option';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B14.tsx', "if (f.reason === 'ExpirationMustSettleAllOpen') {}"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B14.tsx', "switch (f.reason) {\n  case 'SettlementTimeInvalid': break;\n}"))).toEqual([2]);
+    expect(lines(scanSource('src/ui/B14.tsx', "if (f.reason !== 'NotAnOption') {}"))).toEqual([1]);
+  });
+
   it('passes on a reason quoted inside a longer string', () => {
     expect(scanSource('src/ui/B9.tsx', `const a = "The label 'not closed yet' means the Trade is open";`)).toEqual([]);
   });

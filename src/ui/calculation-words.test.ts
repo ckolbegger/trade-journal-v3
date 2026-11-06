@@ -62,6 +62,19 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     );
   });
 
+  const expiration = (instrument: Parameters<typeof instrumentLabel>[0], quantity: string) =>
+    ({ factId: 'e1', kind: 'Expiration', instrument, economicTime: '2026-11-20T21:00:00Z', quantity }) as const;
+
+  it('should word the three Expiration findings after the Expiration head as decision 83 gives', () => {
+    expect(sentence({ ...expiration(CALL, '1'), reason: 'ExpirationMustSettleAllOpen', available: Rational.of(2n, 1n) })).toBe(
+      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 doesn't settle all 2 contracts open",
+    );
+    expect(sentence({ ...expiration(CALL, '1'), reason: 'SettlementTimeInvalid' })).toBe(
+      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 is dated after the contract's expiration or before an Execution on it",
+    );
+    expect(sentence({ ...expiration(XYZ, '100'), reason: 'NotAnOption' })).toBe('Expiration of 100 XYZ at Fri Nov 20, 16:00 names a stock, not an option');
+  });
+
   it('should word ExceedsOpenQuantity as contracts open for an option and keep shares open for stock', () => {
     expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(2n, 1n) })).toBe(
       'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts open',

@@ -18,6 +18,15 @@ export interface ExecutionDescription {
   readonly quantity: string;
 }
 
+// An Expiration has no side (A106, decision 83): its own description kind.
+export interface ExpirationDescription {
+  readonly factId: string;
+  readonly kind: 'Expiration';
+  readonly instrument: Instrument;
+  readonly economicTime: Instant;
+  readonly quantity: string;
+}
+
 export type IncoherentFact =
   | (ExecutionDescription & {
       readonly reason: 'UnknownPlannedLeg' | 'NonpositiveQuantity' | 'DuplicateFactId' | 'AfterExpiration' | 'ContractQuantityNotWhole';
@@ -26,6 +35,10 @@ export type IncoherentFact =
   | (ExecutionDescription & { readonly reason: 'ExceedsOpenQuantity'; readonly available: Rational })
   // P22: a Sell that leaves the Position flat although a later fact follows it.
   | (ExecutionDescription & { readonly reason: 'FlatBeforeLaterFacts' })
+  // A106: an Expiration that settles less or more than the quantity open, one dated after the contract's
+  // expiration or not after every Execution on it, and one on a stock Instrument.
+  | (ExpirationDescription & { readonly reason: 'ExpirationMustSettleAllOpen'; readonly available: Rational })
+  | (ExpirationDescription & { readonly reason: 'SettlementTimeInvalid' | 'NotAnOption' })
   | { readonly factId: string; readonly kind: 'PositionChange'; readonly economicTime: Instant; readonly reason: 'DuplicateFactId' };
 
 // Each case is a reason with its own details, carried flat in the result.

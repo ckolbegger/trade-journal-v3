@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
-import type { CalculationResult, ExecutionDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
-import { multiplierOf, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
+import type { CalculationResult, ExecutionDescription, ExpirationDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
+import { instrumentKey, multiplierOf, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
@@ -21,12 +21,25 @@ export interface ExecutionFact {
   readonly intent: { readonly kind: 'ServesPlannedLeg'; readonly plannedLegId: string };
 }
 
-// One decision grouping its member Executions; its Economic Time is its earliest member's (A19).
+// A settlement fact (A106): the option Instrument, the quantity, and the settlement time (P26). It has no
+// price, no fee and no agency, and is never an Execution. The Instrument may be a stock only so that
+// analysis can report NotAnOption.
+export interface ExpirationFact {
+  readonly factId: string;
+  readonly economicTime: Instant;
+  readonly recordedSequence: number;
+  readonly instrument: StockInstrument | OptionInstrument;
+  readonly quantity: string;
+}
+
+// One decision grouping its member Executions, or (D7) holding one Expiration member; its Economic Time
+// is its earliest Execution's (A19), or the settlement time for an Expiration (A106).
 export interface PositionChangeFact {
   readonly factId: string;
   readonly economicTime: Instant;
   readonly recordedSequence: number;
   readonly executions: readonly ExecutionFact[];
+  readonly settlements?: readonly ExpirationFact[];
 }
 
 // Trade Record's AnalysisInput projection: the complete effective facts of one Trade at one
@@ -122,13 +135,26 @@ export interface LotMatchResult {
 }
 
 // One mechanism by which a Closed Trade's exposure ended, with the quantity it disposed (A84).
-// Later variants add Expiration, Assignment, Exercise, and cash settlement.
+// Later variants add Assignment, Exercise, and cash settlement.
 export interface DispositionMechanism {
-  readonly mechanism: 'Executions';
+  readonly mechanism: 'Executions' | 'Expiration';
   readonly quantity: Rational;
 }
 
 export type TerminalDisposition = CalculationResult<readonly DispositionMechanism[], never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;
+
+// A108: how a Closed option Trade's opened contracts were disposed, with both quantities.
+export interface OptionDispositionTiming {
+  readonly timing: 'FullyDisposedPreExpiration' | 'FullyHeldToExpirationSettlement' | 'Mixed';
+  readonly disposedByExecutions: Rational;
+  readonly disposedBySettlement: Rational;
+}
+
+export type OptionDispositionTimingResult = CalculationResult<
+  OptionDispositionTiming,
+  never,
+  Extract<NotApplicableReason, { reason: 'NotClosed' | 'NoOptionExpirationAnchor' }>
+>;
 
 // Derived signed net quantity and Open Lots for one exact Instrument within the Trade.
 export interface InstrumentPosition {
@@ -282,7 +308,8 @@ export type DeviationAction =
       readonly reason: 'NoLongerExpected';
     };
 
-export type CloseRequirement = 'TerminalWithAgency' | 'NotTerminal';
+// An Expiration closes a Trade with no agency (A107), so it needs no Close Reason.
+export type CloseRequirement = 'TerminalWithAgency' | 'TerminalWithoutAgency' | 'NotTerminal';
 
 // Trade Analysis's expected state for one exact candidate, which Trade Record's apply requires.
 export interface DerivedTradeReconciliation {
@@ -336,6 +363,8 @@ export interface DerivedTradeState {
   readonly terminalTime: Instant | null;
   // How the exposure ended; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A84).
   readonly terminalDisposition: TerminalDisposition;
+  // NotApplicable(NotClosed) unless Closed; NotApplicable(NoOptionExpirationAnchor) for a stock-only Trade (A108).
+  readonly optionDispositionTiming: OptionDispositionTimingResult;
   // Net realized P&L over 1R; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A81).
   readonly realizedR: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;  // One per Instrument with remaining quantity; none for a Planned Trade.
   readonly observationRequirements: readonly ObservationRequirement[];
@@ -359,10 +388,14 @@ export interface DerivedTradeState {
 // Each finding describes itself (P69). An Execution's quantity is the recorded decimal text, since a
 // nonpositive one is itself a finding; Economic Time is the fact's Instant.
 // The types live in calculation-result, since an Unavailable result carries them; re-exported here.
-export type { ExecutionDescription, IncoherentFact };
+export type { ExecutionDescription, ExpirationDescription, IncoherentFact };
 
 function described(e: ExecutionFact): ExecutionDescription {
   return { factId: e.factId, kind: 'Execution', instrument: { ...e.instrument }, economicTime: e.economicTime, side: e.action, quantity: e.quantity };
+}
+
+function describedExpiration(s: ExpirationFact): ExpirationDescription {
+  return { factId: s.factId, kind: 'Expiration', instrument: { ...s.instrument }, economicTime: s.economicTime, quantity: s.quantity };
 }
 
 export interface IncoherentFacts {
@@ -394,8 +427,29 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
       if (day > e.instrument.expiration) findings.push({ ...described(e), reason: 'AfterExpiration' });
     }
   }
+  for (const s of record.positionChanges.flatMap((pc) => pc.settlements ?? [])) {
+    if (s.instrument.kind !== 'Option') {
+      findings.push({ ...describedExpiration(s), reason: 'NotAnOption' });
+      continue;
+    }
+    // A106: the New York date is on or before the expiration date, and the time is after every Execution on the contract.
+    const day = Temporal.Instant.from(s.economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
+    const key = instrumentKey(s.instrument);
+    const beforeExecution = record.positionChanges.some((pc) =>
+      pc.executions.some((e) => instrumentKey(e.instrument) === key && Temporal.Instant.compare(s.economicTime, e.economicTime) <= 0),
+    );
+    if (day > s.instrument.expiration || beforeExecution) findings.push({ ...describedExpiration(s), reason: 'SettlementTimeInvalid' });
+  }
   return findings;
 }
+
+// One member of Fact Order: an Execution, or an Expiration (a Position Change member with no agency),
+// with the Position Change that holds it.
+type Step =
+  | { readonly kind: 'Execution'; readonly fact: ExecutionFact; readonly positionChangeId: string }
+  | { readonly kind: 'Expiration'; readonly fact: ExpirationFact; readonly positionChangeId: string };
+// What disposes Lots: an Execution, or an Expiration with price 0 and no fee.
+type Disposal = Pick<ExecutionFact, 'factId' | 'economicTime' | 'quantity' | 'price' | 'fee' | 'instrument'>;
 
 // Whether an Execution opens exposure: by its Planned Leg's role, a long leg's Buy or a short leg's
 // Sell (A102); the other action closes. Every Execution's leg is known once incoherence() has passed.
@@ -408,18 +462,25 @@ function opensOf(legs: TradeAnalysisRecord['plan']['legs']): Opens {
 // P22, A103: replaying in Fact Order, the open quantity never crosses zero and may reach zero only at
 // the last fact. A closing Execution above the quantity open is reported with the magnitude then
 // available and does not reduce it.
-function positionPathFindings(facts: readonly ExecutionFact[], opens: Opens): IncoherentFact[] {
+// An Expiration must settle the whole quantity open (A106).
+function positionPathFindings(steps: readonly Step[], opens: Opens): IncoherentFact[] {
   const findings: IncoherentFact[] = [];
   let open = Rational.of(0n);
-  facts.forEach((e, index) => {
-    const quantity = decimal(e.quantity);
+  steps.forEach((step, index) => {
+    const quantity = decimal(step.fact.quantity);
+    if (step.kind === 'Expiration') {
+      if (quantity.compare(open) === 0) open = Rational.of(0n);
+      else findings.push({ ...describedExpiration(step.fact), reason: 'ExpirationMustSettleAllOpen', available: open });
+      return;
+    }
+    const e = step.fact;
     if (opens(e)) {
       open = open.add(quantity);
     } else if (quantity.compare(open) > 0) {
       findings.push({ ...described(e), reason: 'ExceedsOpenQuantity', available: open });
     } else {
       open = open.sub(quantity);
-      if (open.compare(Rational.of(0n)) === 0 && index < facts.length - 1) findings.push({ ...described(e), reason: 'FlatBeforeLaterFacts' });
+      if (open.compare(Rational.of(0n)) === 0 && index < steps.length - 1) findings.push({ ...described(e), reason: 'FlatBeforeLaterFacts' });
     }
   });
   return findings;
@@ -441,8 +502,10 @@ function netCostOf(positions: readonly InstrumentPosition[]): DerivedTradeState[
 
 // Replays the facts in Fact Order. Each opening Execution creates one Open Lot holding its whole fee
 // (D2 A22), signed negative for a short role; each closing one consumes the oldest Lots first (A79,
-// A104), one Lot Match per Lot it touches. Nothing is stored (P23).
-function replayOf(facts: readonly ExecutionFact[], opens: Opens): {
+// A104), one Lot Match per Lot it touches. An Expiration disposes the Lots the same way at price 0 with no
+// fee (A106), so a long Lot realizes -q x 100 x basis less its opening fee and a short Lot the reverse sign.
+// Nothing is stored (P23).
+function replayOf(steps: readonly Step[], opens: Opens): {
   positions: InstrumentPosition[];
   lotMatches: LotMatch[];
   lotMatchResults: LotMatchResult[];
@@ -451,9 +514,10 @@ function replayOf(facts: readonly ExecutionFact[], opens: Opens): {
   const originals = new Map<string, { quantity: Rational; price: Rational; fee: Rational; direction: 1 | -1 }>();
   const lotMatches: LotMatch[] = [];
   const lotMatchResults: LotMatchResult[] = [];
-  for (const e of facts) {
-    if (opens(e)) {
-      const lot = { quantity: decimal(e.quantity), price: decimal(e.price), fee: decimal(e.fee), direction: e.action === 'Buy' ? (1 as const) : (-1 as const) };
+  for (const step of steps) {
+    const e: Disposal = step.kind === 'Execution' ? step.fact : { ...step.fact, price: '0', fee: '0' };
+    if (step.kind === 'Execution' && opens(step.fact)) {
+      const lot = { quantity: decimal(e.quantity), price: decimal(e.price), fee: decimal(e.fee), direction: step.fact.action === 'Buy' ? (1 as const) : (-1 as const) };
       originals.set(e.factId, lot);
       lots.push({ openingExecutionId: e.factId, quantity: lot.quantity, price: lot.price, unconsumedOpeningFee: lot.fee });
       continue;
@@ -494,13 +558,13 @@ function replayOf(facts: readonly ExecutionFact[], opens: Opens): {
       else lots[0] = { ...left, quantity: lot.quantity.sub(matched) };
     }
   }
-  if (facts.length === 0) return { positions: [], lotMatches, lotMatchResults };
+  if (steps.length === 0) return { positions: [], lotMatches, lotMatchResults };
   // A short Lot reads back signed negative, so the Position's quantity is signed too.
   const signed = lots.map((l) => ({ ...l, quantity: l.quantity.mul(Rational.of(BigInt(originals.get(l.openingExecutionId)!.direction))) }));
   return {
     positions: [
       {
-        instrument: facts[0]!.instrument,
+        instrument: steps[0]!.fact.instrument,
         quantity: signed.reduce((sum, l) => sum.add(l.quantity), Rational.of(0n)),
         openLots: signed,
       },
@@ -518,30 +582,61 @@ function lifecycleOf(facts: readonly ExecutionFact[], positions: readonly Instru
 // The Position Change holding the last effective fact: with a flat Position it is the terminal one (A87).
 function terminalPositionChangeOf(
   record: TradeAnalysisRecord,
-  facts: readonly (ExecutionFact & { readonly positionChangeId: string })[],
+  steps: readonly Step[],
 ): PositionChangeFact {
-  const id = facts[facts.length - 1]!.positionChangeId;
+  const id = steps[steps.length - 1]!.positionChangeId;
   return record.positionChanges.find((pc) => pc.factId === id)!;
 }
 
-// Whether the candidate's new (latest-recorded) Position Change is the terminal one. Every D6
-// Execution, Buy or Sell, carries trader agency (A77), so a terminal change always has it.
+// Whether the candidate's new (latest-recorded) Position Change is the terminal one. Every
+// Execution, Buy or Sell, carries trader agency (A77); an Expiration carries none (A107).
 function closeRequirementOf(
   record: TradeAnalysisRecord,
-  facts: readonly (ExecutionFact & { readonly positionChangeId: string })[],
+  steps: readonly Step[],
   closed: boolean,
 ): CloseRequirement {
   if (!closed) return 'NotTerminal';
   const newest = record.positionChanges.reduce((a, b) => (b.recordedSequence > a.recordedSequence ? b : a));
-  return terminalPositionChangeOf(record, facts).factId === newest.factId ? 'TerminalWithAgency' : 'NotTerminal';
+  if (terminalPositionChangeOf(record, steps).factId !== newest.factId) return 'NotTerminal';
+  return steps[steps.length - 1]!.kind === 'Expiration' ? 'TerminalWithoutAgency' : 'TerminalWithAgency';
 }
 
 // How a Closed Trade's exposure ended (A84, ADR 0003): derived from the disposing facts, never
-// stored. D6 has one mechanism, Executions, holding the quantity they disposed.
-function terminalDispositionOf(lifecycle: LifecycleState, lotMatches: readonly LotMatch[]): TerminalDisposition {
+// stored. Each mechanism that disposed a quantity is listed with it: Executions, then Expiration (A108).
+function terminalDispositionOf(lifecycle: LifecycleState, disposed: Disposed): TerminalDisposition {
   if (lifecycle !== 'Closed') return { kind: 'NotApplicable', reason: 'NotClosed' };
-  const disposed = lotMatches.reduce((sum, m) => sum.add(m.quantity), Rational.of(0n));
-  return { kind: 'Value', value: [{ mechanism: 'Executions', quantity: disposed }] };
+  const zero = Rational.of(0n);
+  const mechanisms: DispositionMechanism[] = [
+    { mechanism: 'Executions', quantity: disposed.byExecutions },
+    { mechanism: 'Expiration', quantity: disposed.bySettlement },
+  ];
+  return { kind: 'Value', value: mechanisms.filter((m) => m.quantity.compare(zero) > 0) };
+}
+
+// The quantities Lot Matches disposed by Executions and by settlement (a Lot Match whose disposing fact is an Expiration).
+interface Disposed {
+  readonly byExecutions: Rational;
+  readonly bySettlement: Rational;
+}
+function disposedOf(lotMatches: readonly LotMatch[], steps: readonly Step[]): Disposed {
+  const settlements = new Set(steps.filter((s) => s.kind === 'Expiration').map((s) => s.fact.factId));
+  const sum = (settled: boolean) =>
+    lotMatches.filter((m) => settlements.has(m.disposingExecutionId) === settled).reduce((total, m) => total.add(m.quantity), Rational.of(0n));
+  return { byExecutions: sum(false), bySettlement: sum(true) };
+}
+
+// A108: for a Closed option Trade, the opened contracts' disposal by Executions and by settlement.
+function optionDispositionTimingOf(lifecycle: LifecycleState, positions: readonly InstrumentPosition[], disposed: Disposed): OptionDispositionTimingResult {
+  if (lifecycle !== 'Closed') return { kind: 'NotApplicable', reason: 'NotClosed' };
+  if (positions[0]?.instrument.kind !== 'Option') return { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' };
+  const zero = Rational.of(0n);
+  const timing =
+    disposed.bySettlement.compare(zero) === 0
+      ? 'FullyDisposedPreExpiration'
+      : disposed.byExecutions.compare(zero) === 0
+        ? 'FullyHeldToExpirationSettlement'
+        : 'Mixed';
+  return { kind: 'Value', value: { timing, disposedByExecutions: disposed.byExecutions, disposedBySettlement: disposed.bySettlement } };
 }
 
 function observationRequirementsOf(
@@ -874,8 +969,12 @@ function atCutoff(record: TradeAnalysisRecord, cutoff: Instant | undefined): Tra
   return {
     ...record,
     positionChanges: record.positionChanges
-      .map((pc) => ({ ...pc, executions: pc.executions.filter((e) => upTo(e.economicTime)) }))
-      .filter((pc) => pc.executions.length > 0),
+      .map((pc) => ({
+        ...pc,
+        executions: pc.executions.filter((e) => upTo(e.economicTime)),
+        ...(pc.settlements && { settlements: pc.settlements.filter((s) => upTo(s.economicTime)) }),
+      }))
+      .filter((pc) => pc.executions.length > 0 || (pc.settlements?.length ?? 0) > 0),
     // A recorded Deviation is placed by the Economic Time of the Position Change that raised it.
     ...(record.recordedDeviations && {
       recordedDeviations: record.recordedDeviations.filter((d) => upTo(latestVersion(d).economicTime)),
@@ -893,10 +992,17 @@ export function derive(input: TradeDerivationInput): DerivationResult {
       pc.executions.map((e) => ({ ...e, instrument: { ...e.instrument }, intent: { ...e.intent }, positionChangeId: pc.factId })),
     )
     .sort(factOrder);
+  const steps: Step[] = [
+    ...facts.map((fact): Step => ({ kind: 'Execution', fact, positionChangeId: fact.positionChangeId })),
+    ...record.positionChanges.flatMap((pc) =>
+      (pc.settlements ?? []).map((fact): Step => ({ kind: 'Expiration', fact: { ...fact, instrument: { ...fact.instrument } }, positionChangeId: pc.factId })),
+    ),
+  ].sort((a, b) => factOrder(a.fact, b.fact));
   const opens = opensOf(record.plan.legs);
-  const pathFindings = positionPathFindings(facts, opens);
+  const pathFindings = positionPathFindings(steps, opens);
   if (pathFindings.length > 0) return { kind: 'IncoherentFacts', findings: pathFindings };
-  const { positions, lotMatches, lotMatchResults } = replayOf(facts, opens);
+  const { positions, lotMatches, lotMatchResults } = replayOf(steps, opens);
+  const disposed = disposedOf(lotMatches, steps);
   const entry = entryWindowOf(record, opens);
   const baseline = frozenBaseline(record.plan);
   // Nonzero exposure makes the Trade Open; exposure that existed and is gone makes it Closed (the
@@ -927,8 +1033,9 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     lotMatchResults,
     realizedToDate,
     exposureStart: facts[0]?.economicTime ?? null,
-    terminalTime: closed ? terminalPositionChangeOf(record, facts).economicTime : null,
-    terminalDisposition: terminalDispositionOf(expectedLifecycle, lotMatches),
+    terminalTime: closed ? terminalPositionChangeOf(record, steps).economicTime : null,
+    terminalDisposition: terminalDispositionOf(expectedLifecycle, disposed),
+    optionDispositionTiming: optionDispositionTimingOf(expectedLifecycle, positions, disposed),
     // Every D6 Trade has a positive 1R, so the quotient is always a Value.
     realizedR: closed ? value(realizedToDate.div(baseline.oneR)) : { kind: 'NotApplicable', reason: 'NotClosed' },
     observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
@@ -949,7 +1056,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
           candidateDigest: input.candidate.digest,
           expectedLifecycle,
           exposureStart: facts[0]?.economicTime ?? null,
-          closeRequirement: closeRequirementOf(record, facts, closed),
+          closeRequirement: closeRequirementOf(record, steps, closed),
           deviationActions: deviationActions(deviations, input.candidate.before.recordedDeviations ?? []),
           repairs: before.findings,
           effects: changeEffects(before, expectedLifecycle, deviations),

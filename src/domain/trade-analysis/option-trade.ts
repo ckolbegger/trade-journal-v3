@@ -1,7 +1,7 @@
 // Test support: D7's option reference Trades (breakdown, section 4). O-C is the Long Call on XYZ, O-S the
 // Cash-Secured Put on MNO; every contract expires 2026-11-20. Plans are confirmed Monday 2026-10-12 09:00 New York.
 import type { OptionInstrument } from '../instrument/index.ts';
-import type { ExecutionFact, PositionChangeFact, TradeAnalysisRecord } from './derive.ts';
+import type { ExecutionFact, ExpirationFact, PositionChangeFact, TradeAnalysisRecord } from './derive.ts';
 import { positionChange } from './reference-trade.ts';
 
 export const OC_LEG_ID = 'leg-oc';
@@ -18,6 +18,8 @@ const contract = (symbol: string, strike: string, right: 'Call' | 'Put'): Option
 });
 export const OC_CONTRACT = contract('XYZ', '55', 'Call');
 export const OS_CONTRACT = contract('MNO', '45', 'Put');
+export const OP_CONTRACT = contract('ABC', '50', 'Put');
+export const OP_LEG_ID = 'leg-op';
 
 export function optionExecution(
   legId: string,
@@ -80,3 +82,35 @@ export const osRecord = (positionChanges: readonly PositionChangeFact[] = []): T
     },
     positionChanges,
   );
+
+// O-P: the Long Put on ABC, 1 contract at 1.50, Stop ABC at or above 55.00, Target ABC at or below 45.00.
+export const opRecord = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
+  record(
+    {
+      economicTime: '2026-10-12T13:00:00Z',
+      underlying: 'ABC',
+      thesis: 'Breakdown.',
+      invalidation: 'Above 55.',
+      legs: [{ factId: OP_LEG_ID, side: 'Long', instrument: OP_CONTRACT, quantity: '1', intendedEntry: '1.50' }],
+      stops: [{ factId: 'stop-p', kind: 'UnderlyingPrice', price: '55.00' }],
+      targets: [{ factId: 'target-p', kind: 'UnderlyingPrice', price: '45.00' }],
+    },
+    positionChanges,
+  );
+export const opChange = (factId: string, time: string, seq: number, action: 'Buy' | 'Sell', quantity: string, price: string, fee: string): PositionChangeFact =>
+  positionChange(factId, seq, [optionExecution(OP_LEG_ID, OP_CONTRACT, `ex-${factId}`, time, seq + 1, action, quantity, price, fee)]);
+
+// An Expiration is a Position Change with no Execution and no agency (A106): one settlement fact naming the
+// contract, the quantity and the settlement time, which is also the Position Change's Economic Time.
+export const expirationChange = (factId: string, time: string, seq: number, instrument: ExpirationFact['instrument'], quantity: string): PositionChangeFact => ({
+  factId,
+  economicTime: time,
+  recordedSequence: seq,
+  executions: [],
+  settlements: [{ factId: `exp-${factId}`, economicTime: time, recordedSequence: seq + 1, instrument, quantity }],
+});
+// Friday 2026-11-20 16:00 New York, the close of the expiration session.
+export const EXPIRATION_CLOSE = '2026-11-20T21:00:00Z';
+// E1 expires O-C's one remaining contract (after PC1 and X1's sale), E-S expires both of O-S's contracts.
+export const OC_E1 = expirationChange('pc-e1', EXPIRATION_CLOSE, 7, OC_CONTRACT, '1');
+export const OS_ES = expirationChange('pc-es', EXPIRATION_CLOSE, 5, OS_CONTRACT, '2');

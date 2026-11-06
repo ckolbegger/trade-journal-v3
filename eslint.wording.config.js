@@ -39,6 +39,9 @@ export const PHRASES = [
   'shares its identity',
   "is dated after the contract's expiration",
   "isn't a whole number of contracts",
+  "doesn't settle all",
+  'or before an Execution on it',
+  'names a stock, not an option',
 ];
 export const CODES = [
   'MarkMissing',
@@ -61,6 +64,9 @@ export const CODES = [
   'ExceedsOpenQuantity',
   'AfterExpiration',
   'ContractQuantityNotWhole',
+  'ExpirationMustSettleAllOpen',
+  'SettlementTimeInvalid',
+  'NotAnOption',
 ];
 
 // The NotApplicable reasons' words (calculation-words.ts, notApplicableTail).
