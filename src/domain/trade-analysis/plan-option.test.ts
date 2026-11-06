@@ -134,6 +134,21 @@ describe('assessPlan: Long Put and Cash-Secured Put', () => {
     expect(rejection(longCall({ exerciseIntent: undefined }))).toEqual([{ code: 'ExerciseIntentRequired' }]);
     expect(rejection(longPut({ exerciseIntent: undefined }))).toEqual([{ code: 'ExerciseIntentRequired' }]);
   });
+
+  it('should reject Exercise Intent on a Long Stock Plan with ExerciseIntentNotApplicable', () => {
+    const input: PlanAssessmentInput = {
+      strategyShape: { roles: [{ side: 'Long', instrument: 'Stock', ratio: 1 }] },
+      economicTime: PLAN_TIME,
+      plan: {
+        underlying: 'XYZ',
+        legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', intendedEntry: '50.00' }],
+        stops: [{ kind: 'UnderlyingPrice', price: '45.00' }],
+        targets: [{ kind: 'UnderlyingPrice', price: '60.00' }],
+        exerciseIntent: 'Authorized',
+      },
+    };
+    expect(rejection(input)).toEqual([{ code: 'ExerciseIntentNotApplicable' }]);
+  });
 });
 
 describe('assessPlan: option condition count', () => {

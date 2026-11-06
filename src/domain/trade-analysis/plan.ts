@@ -217,11 +217,11 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   }
   // Exercise Intent is a fact of long options only (A100).
   const first = plan.legs[0];
+  if (plan.exerciseIntent && !(first?.instrument.kind === 'Option' && first.side === 'Long')) issue('ExerciseIntentNotApplicable');
   let calculable = true;
   let canonical: OptionInstrument | undefined;
   if (first?.instrument.kind === 'Option') {
     if (first.side === 'Long' && !plan.exerciseIntent) issue('ExerciseIntentRequired');
-    if (first.side === 'Short' && plan.exerciseIntent) issue('ExerciseIntentNotApplicable');
     // An invalid contract has no value at expiration, and a Strategy mismatch leaves the leg's
     // direction ambiguous, so neither has its risk and reward assessed.
     canonical = assessContract(first, input.economicTime, issue);
