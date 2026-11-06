@@ -12,40 +12,42 @@ This table is the source of truth. After changing a tag or class here, regenerat
 
 **Built** 2026-10-19 from `specs/` at the commit tagged `claude-opus-5.5-plan-r4`, by subagents; reviewed and approved by the user with plan revision 5 on 2026-10-19.
 
+**Rebased for D7** 2026-11-06, after the D7 prefactor (tag `claude-opus-5.5-d7p`; its breakdown, section 5). All 259 entries' line ranges and character counts still match `specs/`. D7's tags already cover every section the prefactor and D7's amended A99 and A188 touch, so no tag changed, and the regenerated lists in `plan/spec-reading/` are unchanged. The reading-cost table below was refreshed from the entries: the spec-map corrections and glossary entry of revisions 11, 12 and 28 had changed the core and some tagged totals since it was built.
+
 ## Reading cost per deliverable
 
-Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 310,755 characters.
+Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 315,154 bytes (every `.md` file, as of 2026-11-06).
 
 | Deliverable | Core | Tagged (non-core) | Total characters | ≈ Tokens |
 |---|---|---|---|---|
-| D1 | 147,591 | 42,647 | 190,238 | 79K |
-| D2 | 147,591 | 48,684 | 196,275 | 82K |
-| D4 | 147,591 | 64,285 | 211,876 | 88K |
-| D5 | 147,591 | 64,346 | 211,937 | 88K |
-| D6 | 147,591 | 70,670 | 218,261 | 91K |
-| D7 | 147,591 | 71,557 | 219,148 | 91K |
-| D8 | 147,591 | 55,115 | 202,706 | 84K |
-| D9 (provisional) | 147,591 | 6,953 | 154,544 | 64K |
-| D10 (provisional) | 147,591 | 39,232 | 186,823 | 78K |
-| D11 (provisional) | 147,591 | 20,661 | 168,252 | 70K |
-| D12 (provisional) | 147,591 | 30,727 | 178,318 | 74K |
-| D13 (provisional) | 147,591 | 28,578 | 176,169 | 73K |
-| D14 (provisional) | 147,591 | 16,321 | 163,912 | 68K |
-| D15 (provisional) | 147,591 | 29,974 | 177,565 | 74K |
-| D16 (provisional) | 147,591 | 18,430 | 166,021 | 69K |
-| D17 (provisional) | 147,591 | 22,558 | 170,149 | 71K |
-| D18 (provisional) | 147,591 | 8,307 | 155,898 | 65K |
-| D19 (provisional) | 147,591 | 11,084 | 158,675 | 66K |
-| D20 (provisional) | 147,591 | 43,809 | 191,400 | 80K |
-| D21 (provisional) | 147,591 | 40,188 | 187,779 | 78K |
-| D22 (provisional) | 147,591 | 29,210 | 176,801 | 74K |
-| D23 (provisional) | 147,591 | 7,514 | 155,105 | 65K |
-| D24 (provisional) | 147,591 | 17,336 | 164,927 | 69K |
-| D25 (provisional) | 147,591 | 16,444 | 164,035 | 68K |
-| D26 (provisional) | 147,591 | 10,291 | 157,882 | 66K |
-| D27 (provisional) | 147,591 | 19,613 | 167,204 | 70K |
-| D28 (provisional) | 147,591 | 6,314 | 153,905 | 64K |
-| RC (provisional) | 147,591 | 5,112 | 152,703 | 64K |
+| D1 | 151,018 | 42,647 | 193,665 | 81K |
+| D2 | 151,018 | 48,684 | 199,702 | 83K |
+| D4 | 151,018 | 65,257 | 216,275 | 90K |
+| D5 | 151,018 | 65,318 | 216,336 | 90K |
+| D6 | 151,018 | 71,642 | 222,660 | 93K |
+| D7 | 151,018 | 72,529 | 223,547 | 93K |
+| D8 | 151,018 | 56,087 | 207,105 | 86K |
+| D9 (provisional) | 151,018 | 6,953 | 157,971 | 66K |
+| D10 (provisional) | 151,018 | 39,232 | 190,250 | 79K |
+| D11 (provisional) | 151,018 | 20,661 | 171,679 | 72K |
+| D12 (provisional) | 151,018 | 31,699 | 182,717 | 76K |
+| D13 (provisional) | 151,018 | 28,578 | 179,596 | 75K |
+| D14 (provisional) | 151,018 | 16,321 | 167,339 | 70K |
+| D15 (provisional) | 151,018 | 30,946 | 181,964 | 76K |
+| D16 (provisional) | 151,018 | 18,430 | 169,448 | 71K |
+| D17 (provisional) | 151,018 | 22,558 | 173,576 | 72K |
+| D18 (provisional) | 151,018 | 8,307 | 159,325 | 66K |
+| D19 (provisional) | 151,018 | 11,084 | 162,102 | 68K |
+| D20 (provisional) | 151,018 | 44,781 | 195,799 | 82K |
+| D21 (provisional) | 151,018 | 40,188 | 191,206 | 80K |
+| D22 (provisional) | 151,018 | 29,210 | 180,228 | 75K |
+| D23 (provisional) | 151,018 | 7,514 | 158,532 | 66K |
+| D24 (provisional) | 151,018 | 17,336 | 168,354 | 70K |
+| D25 (provisional) | 151,018 | 16,444 | 167,462 | 70K |
+| D26 (provisional) | 151,018 | 10,291 | 161,309 | 67K |
+| D27 (provisional) | 151,018 | 19,613 | 170,631 | 71K |
+| D28 (provisional) | 151,018 | 6,314 | 157,332 | 66K |
+| RC (provisional) | 151,018 | 5,112 | 156,130 | 65K |
 
 ## Entries
 
