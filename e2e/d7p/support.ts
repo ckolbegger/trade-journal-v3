@@ -14,44 +14,47 @@ export const WIDTHS = [320, 375] as const;
 // more than the shares open is an ExceedsOpenQuantity finding. The edit is written before the case launches the app (A187).
 export async function writeSellQuantities(dir: string, underlying: string, quantities: readonly string[]): Promise<void> {
   const context = await chromium.launchPersistentContext(path.resolve(dir), { channel: 'chromium', serviceWorkers: 'block' });
-  const page = await firstPage(context);
-  await page.route(`${BASE_URL}/__fixture`, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>fixture</title>' }));
-  await page.goto(`${BASE_URL}/__fixture`);
-  await page.evaluate(
-    async (change: { underlying: string; quantities: readonly string[] }) => {
-      const request = <T>(r: IDBRequest<T>) =>
-        new Promise<T>((resolve, reject) => {
-          r.onsuccess = () => resolve(r.result);
-          r.onerror = () => reject(r.error ?? new Error('fixture failed'));
+  try {
+    const page = await firstPage(context);
+    await page.route(`${BASE_URL}/__fixture`, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>fixture</title>' }));
+    await page.goto(`${BASE_URL}/__fixture`);
+    await page.evaluate(
+      async (change: { underlying: string; quantities: readonly string[] }) => {
+        const request = <T>(r: IDBRequest<T>) =>
+          new Promise<T>((resolve, reject) => {
+            r.onsuccess = () => resolve(r.result);
+            r.onerror = () => reject(r.error ?? new Error('fixture failed'));
+          });
+        const root = await request(indexedDB.open('tj-root'));
+        const pointer = (await request(root.transaction('pointer').objectStore('pointer').get('current'))) as { databaseName: string };
+        root.close();
+        const db = await request(indexedDB.open(pointer.databaseName));
+        const tx = db.transaction('trades', 'readwrite');
+        const store = tx.objectStore('trades');
+        const trades = (await request(store.getAll())) as {
+          underlying: string;
+          facts: { kind: string; versions: { value: { action: string; quantity: string; economicTime: string } }[] }[];
+        }[];
+        const trade = trades.find((t) => t.underlying === change.underlying);
+        if (!trade) throw new Error(`no stored Trade for ${change.underlying}`);
+        const sells = trade.facts.filter((f) => f.kind === 'Execution' && f.versions.at(-1)!.value.action === 'Sell');
+        sells.sort((a, b) => a.versions.at(-1)!.value.economicTime.localeCompare(b.versions.at(-1)!.value.economicTime));
+        if (sells.length !== change.quantities.length) throw new Error(`expected ${change.quantities.length} Sell Executions, found ${sells.length}`);
+        sells.forEach((fact, index) => {
+          for (const version of fact.versions) version.value.quantity = change.quantities[index]!;
         });
-      const root = await request(indexedDB.open('tj-root'));
-      const pointer = (await request(root.transaction('pointer').objectStore('pointer').get('current'))) as { databaseName: string };
-      root.close();
-      const db = await request(indexedDB.open(pointer.databaseName));
-      const tx = db.transaction('trades', 'readwrite');
-      const store = tx.objectStore('trades');
-      const trades = (await request(store.getAll())) as {
-        underlying: string;
-        facts: { kind: string; versions: { value: { action: string; quantity: string; economicTime: string } }[] }[];
-      }[];
-      const trade = trades.find((t) => t.underlying === change.underlying);
-      if (!trade) throw new Error(`no stored Trade for ${change.underlying}`);
-      const sells = trade.facts.filter((f) => f.kind === 'Execution' && f.versions.at(-1)!.value.action === 'Sell');
-      sells.sort((a, b) => a.versions.at(-1)!.value.economicTime.localeCompare(b.versions.at(-1)!.value.economicTime));
-      if (sells.length !== change.quantities.length) throw new Error(`expected ${change.quantities.length} Sell Executions, found ${sells.length}`);
-      sells.forEach((fact, index) => {
-        for (const version of fact.versions) version.value.quantity = change.quantities[index]!;
-      });
-      await request(store.put(trade));
-      await new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error ?? new Error('fixture failed'));
-      });
-      db.close();
-    },
-    { underlying, quantities },
-  );
-  await context.close();
+        await request(store.put(trade));
+        await new Promise<void>((resolve, reject) => {
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error ?? new Error('fixture failed'));
+        });
+        db.close();
+      },
+      { underlying, quantities },
+    );
+  } finally {
+    await context.close();
+  }
 }
 
 // Resizes the viewport and waits for the new layout to be drawn (two frames), so that no measure reads the old one.

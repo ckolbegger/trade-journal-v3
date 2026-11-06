@@ -520,3 +520,13 @@ Verification:
 - `npm run typecheck`: exit 0. `npm run lint`: exit 0.
 - `git diff claude-opus-5.5-pre-d7p -- e2e`: the section 6.2 files from T7P.10 only (`e2e/d2/integrity.spec.ts`, `e2e/d4/breach-overrun.spec.ts`, `e2e/d4/responsive-a11y.spec.ts`, `e2e/d5r/sliders.spec.ts`) plus the new untracked-before-commit `e2e/d7p/`.
 - Ports 5175, 9341, 9342: free before and after every browser run; nothing left running.
+
+## T7P.11-B1 The record writer closes its context on failure
+
+Finding (ocr, Valid): in `e2e/d7p/support.ts`, `writeSellQuantities` opened a context with `chromium.launchPersistentContext` and called `context.close()` without a `finally`, so a throw while editing the records left the context open and the profile locked.
+
+Fix: the work after the launch is inside `try { ... } finally { await context.close(); }`; nothing else changed (the rest of the diff is the indentation of the wrapped lines). No red test: this is a resource-cleanup change in a test helper with no observable assertion. `e2e/d2/support.ts` `writeIntegrityFixture` has the same shape, left unchanged because `e2e/d2` must not change in this prefactor.
+
+Verification:
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0.
+- Ports 5175, 9341, 9342 free before; `npx playwright test e2e/d7p/layout.spec.ts`: 4 passed (16.9 s); ports free after; nothing left running.
