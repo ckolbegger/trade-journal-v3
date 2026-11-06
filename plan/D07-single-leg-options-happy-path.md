@@ -7,6 +7,15 @@ Status: **breakdown agreed by the user on 2026-10-17** (the plan as a whole is s
 > **Before D7 starts (decision 69, revision 28):** raise tech debt item 5 with the user (`plan/implementation-plan.md`, "Tech debt"). Missing evidence has four shapes and five wordings, and D7's option contract Marks and expiration add new reasons to every one. The recommendation recorded there is a refactor deliverable of its own before D7, after a design session, as D5R2 ran before D6. The user decides whether it runs first and how this breakdown is amended.
 >
 > **Raised and decided, 2026-11-04 (decision 77, revision 42):** the [D7 prefactor](D07-prefactor-calculation-results.md) runs first, and D7 starts from the tag `claude-opus-5.5-d7p`. Every figure without a number is a Calculation Result with a typed reason, worded only through `src/ui/calculation-words.ts`. D7 adds `SettlementDue` as one `UnavailableReason` case with its label, figure and sentence; the Option variant of `Instrument` with one `instrumentKey`/`instrumentOf` branch and one `instrumentLabel` branch; and `verify:wording` applies to its screens (the prefactor's A188). The option key is amended in A99.
+>
+> **Amended by decision 81 (revision 47, 2026-11-06):** D7's two new reasons are union cases worded in `src/ui/calculation-words.ts` at the prefactor's three lengths (P70–P72), with these approved texts. Dates use the prefactor's short format, and the Instrument is the `instrumentLabel` part (A99's label).
+>
+> | Reason | Kind | Label | Figure | Sentence |
+> |---|---|---|---|---|
+> | `SettlementDue` (details: the option Instrument and its expiration date) | `UnavailableReason` | Settlement due | Settlement due: XYZ 20 Nov 2026 55 Call | Settlement due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20 |
+> | `NoOptionExpirationAnchor` (no details) | `NotApplicableReason` | Not applicable | Not applicable: no option expiration | Not applicable: no option expiration |
+>
+> Decision 81 also aligns two seams with the code the prefactor and D5R left: the Instrument module is the prefactor's `src/domain/instrument/` (singular), extended by T7.1, with the label in the wording module, not the domain (section 2 and T7.1); and the Review's walked card is D5R's `ReviewCard`, with Settlement Due as a panel between Reflections and Action and a `PanelProgress` variant (D5R and D5R2, section 9; T7.24).
 
 ---
 
@@ -82,7 +91,7 @@ At the as-of instant, which the generator moves to Friday 2026-11-20 17:00, four
 
 | Canonical boundary | Code location | D7 operations |
 |---|---|---|
-| Instruments (pure) | `src/domain/instruments/` (new) | option contract validation, Instrument key, label, multiplier |
+| Instruments (pure) | `src/domain/instruments/` (new). **Amended by decision 81 (revision 47):** the prefactor's `src/domain/instrument/`, extended | option contract validation, Instrument key, label, multiplier. **Amended by decision 81:** the label is `instrumentLabel` in `src/ui/calculation-words.ts` |
 | Trade Analysis (pure) | `src/domain/trade-analysis/` | `assessPlan` for Long Call, Long Put, and Cash-Secured Put; `expirationPayoff` (Planned and Current); `derive` with the multiplier, short Lots, Expiration members, Terminal Disposition mechanisms, Option Disposition Timing, option Entry Quality; `evaluate` for options with the values at expiration at each trigger, option and Underlying requirements, the value at expiration at the latest close, and Settlement Due |
 | Trade Record | `src/modules/trade-record/` | option Plan facts, Exercise Intent, option Executions, Expiration settlement facts; section validator extended |
 | Reference Catalog | `src/modules/reference-catalog/` | seed manifest v3 (three option Strategies); section validator extended |
@@ -103,7 +112,7 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 
 | Task | Title | Layer | Kind | Blocked by | Public seam under test |
 |---|---|---|---|---|---|
-| T7.1 | Option Instruments and keys | domain | B | D1 T1.5 | `src/domain/instruments` exports |
+| T7.1 | Option Instruments and keys | domain | B | D1 T1.5 | `src/domain/instruments` exports (**decision 81:** `src/domain/instrument`) |
 | T7.2 | Trade Analysis: `assessPlan` for single-leg options | domain | B | T7.1, D1 T1.13 | `TradeAnalysis.assessPlan` |
 | T7.3 | Trade Analysis: `expirationPayoff` | domain | B | T7.2, D6 T6.1 | `TradeAnalysis.expirationPayoff`, `assessPlan` |
 | T7.4 | Trade Analysis: option Executions, short Lots, Entry Quality, position paths | domain | B | T7.2, D6 T6.3 | `TradeAnalysis.derive` |
@@ -126,7 +135,7 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T7.21 | UI: expiration form | UI | B | T7.18 | `ExpirationForm` |
 | T7.22 | UI: payoff view | UI | B | T7.18 | `PayoffView` |
 | T7.23 | UI: option lists and Trade Detail | UI | B | T7.21, T7.22 | `TradeList`, `TradeDetail` |
-| T7.24 | UI: Review settlement family and option Marks | UI | B | T7.21 | `ReviewView`, `MarkEntry`, `ReviewTrade` |
+| T7.24 | UI: Review settlement family and option Marks | UI | B | T7.21 | `ReviewView`, `MarkEntry`, `ReviewTrade` (**decision 81:** `ReviewCard`) |
 | T7.25 | Release harness: previous release from the `claude-opus-5.5-d6` tag. **Amended by decision 76 (revision 41):** tag B6.6 `@release-history` | structural | S | D6 T6.21 | `test:e2e -- --list` |
 | T7.26 | Capacity basis recomputed for schema 6 | test/infrastructure | S | T7.18 | `measure:capacity`, `verify:capacity` |
 | T7.27 | Freeze the schema-v6 fixture; migrate the v1–v5 fixtures | test | S | T7.17, T7.18 | `fixtures:freeze`, `verify:fixtures` |
@@ -164,7 +173,7 @@ All dates are 2026, New York time. Every contract expires Friday **2026-11-20**,
 
 ### T7.1 Option Instruments and keys
 
-Seam: `src/domain/instruments` exports (pure).
+Seam: `src/domain/instruments` exports (pure). **Amended by decision 81 (revision 47):** `src/domain/instrument` exports, extending the prefactor's Stock-only module; the label cases are `instrumentLabel`'s, in the wording module.
 
 ```text
 describe("option contract (A99)")
@@ -492,7 +501,7 @@ describe("option rows")
 
 ### T7.24 UI: Review settlement family and option Marks
 
-Seam: `ReviewView`, `MarkEntry`, and `ReviewTrade` with a facade test double.
+Seam: `ReviewView`, `MarkEntry`, and `ReviewTrade` with a facade test double. **Amended by decision 81 (revision 47):** `ReviewTrade` no longer exists; the walked card is `ReviewCard`, whose Settlement Due panel sits between Reflections and Action and renders from its `PanelProgress` (D5R and D5R2, section 9).
 
 ```text
 describe("settlement family (A112)")
