@@ -95,6 +95,8 @@ function unavailableReason(unavailable: Extract<TradeEvaluation['ongoingRiskToSt
       return { code: 'Unavailable', reason: unavailable.reason, after: unavailable.after };
     case 'FactsIncoherent':
       return { code: 'Unavailable', reason: unavailable.reason, findings: unavailable.findings };
+    case 'SettlementDue':
+      return { code: 'Unavailable', reason: unavailable.reason, instrument: unavailable.instrument, expiration: unavailable.expiration };
     case 'MarkMissing':
     case 'AcknowledgedUnavailable':
     case 'SessionPolicyNotCovered':

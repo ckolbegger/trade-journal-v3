@@ -114,6 +114,15 @@ describe('verify:wording rules', () => {
     expect(lines(scanSource('src/ui/B13.tsx', "switch (f.reason) {\n  case 'ContractQuantityNotWhole': break;\n}"))).toEqual([2]);
   });
 
+  it('fails on the SettlementDue words at each length and on its code', () => {
+    expect(lines(scanSource('src/ui/B15.tsx', "const label = 'Settlement due';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B15.tsx', "const a = 1;\nconst figure = 'Settlement due: XYZ 20 Nov 2026 55 Call';"))).toEqual([2]);
+    expect(lines(scanSource('src/ui/B15.tsx', "const s = 'Settlement due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B15.tsx', "const s = 'The contract, which expired Fri Nov 20';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B15.tsx', "if (x.reason === 'SettlementDue') {}"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B15.tsx', "switch (x.reason) {\n  case 'SettlementDue': break;\n}"))).toEqual([2]);
+  });
+
   it('fails on the Expiration finding words and codes', () => {
     expect(lines(scanSource('src/ui/B14.tsx', "const a = 1;\nconst b = ' doesn’t settle all 2 contracts open';"))).toEqual([2]);
     expect(lines(scanSource('src/ui/B14.tsx', "const b = ' is dated after the contract’s expiration or before an Execution on it';"))).toEqual([1]);

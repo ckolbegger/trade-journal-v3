@@ -190,7 +190,20 @@ export function expirationPayoff(input: ExpirationPayoffInput): ExpirationPayoff
   const planned = { kind: 'Value', value: viewOf(plannedLegs, ZERO, ZERO) } as const;
   const exposure = input.exposure;
   if (!exposure || exposure.lots.length === 0) return { planned, current: { kind: 'NotApplicable', reason: 'NoRemainingPosition' } };
+  return { planned, current: { kind: 'Value', value: currentExpirationView(exposure) } };
+}
+
+// The Current view of an exposure with at least one open Lot: its remaining Lots, the realized-to-date
+// offset and the unconsumed opening fees.
+export function currentExpirationView(exposure: CurrentExposure): ExpirationPayoffView {
   const fees = exposure.lots.reduce((sum, lot) => sum.add(lot.unconsumedOpeningFee), ZERO);
   const open = exposure.lots.map((lot) => positionOf(lot.instrument, lot.quantity, lot.basis));
-  return { planned, current: { kind: 'Value', value: viewOf(open, exposure.realizedToDate, fees) } };
+  return viewOf(open, exposure.realizedToDate, fees);
+}
+
+// The view's value at an Underlying price at expiration, read off the curve.
+export function expirationValueAt(view: ExpirationPayoffView, price: Rational): Rational {
+  const segment = view.segments.find((s) => within(price, s.from, s.to));
+  if (!segment) throw new Error('An Underlying price is never negative');
+  return segment.valueAtStart.add(segment.slope.mul(price.sub(segment.from)));
 }

@@ -55,6 +55,10 @@ export const unavailableWords = (reason: UnavailableReason, length: WordLength, 
       if (length === 'label') return [t('Awaiting close')];
       if (length === 'figure') return [t('Awaiting the close after '), datePart(reason.after)];
       return [t('Awaiting the next close after '), datePart(reason.after)];
+    case 'SettlementDue':
+      if (length === 'label') return [t('Settlement due')];
+      if (length === 'figure') return [t('Settlement due: '), instrumentPart(reason.instrument)];
+      return [t('Settlement due for '), instrumentPart(reason.instrument), t(', which expired '), datePart(reason.expiration)];
     case 'SessionPolicyNotCovered':
       if (length === 'label') return [t('Outside calendar')];
       if (length === 'figure') return [t('Outside the market calendar: '), datePart(reason.date)];

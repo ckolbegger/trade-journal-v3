@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { IncoherentFact } from '../domain/calculation-result/index.ts';
 import { Rational } from '../domain/values/index.ts';
-import { instrumentOf } from '../domain/instrument/index.ts';
+import { instrumentOf, type OptionInstrument } from '../domain/instrument/index.ts';
 import { acknowledgedUnavailableStatusLabel, findingWords, instrumentLabel, isExceedsOpenQuantityIssue, isFlatBeforeLaterFactsIssue, notApplicableWords, text, unavailableWords, unboundedWords } from './calculation-words.ts';
 
 const ZONE = 'America/New_York';
@@ -131,6 +131,23 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(text(notApplicableWords(reason, 'label'))).toBe('Not applicable');
     expect(text(notApplicableWords(reason, 'figure'))).toBe('Not applicable: no option expiration');
     expect(text(notApplicableWords(reason, 'sentence'))).toBe('Not applicable: no option expiration');
+  });
+
+  it('should word SettlementDue at the label, figure and sentence lengths as decision 81 gives', () => {
+    const reason = { reason: 'SettlementDue', instrument: CALL as OptionInstrument, expiration: '2026-11-20' } as const;
+    expect(words(reason, 'label')).toBe('Settlement due');
+    expect(words(reason, 'figure')).toBe('Settlement due: XYZ 20 Nov 2026 55 Call');
+    expect(words(reason, 'sentence')).toBe('Settlement due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20');
+  });
+
+  it('should word SettlementDue in parts, with the Instrument and the expiration date as their own parts', () => {
+    const reason = { reason: 'SettlementDue', instrument: CALL as OptionInstrument, expiration: '2026-11-20' } as const;
+    expect(unavailableWords(reason, 'sentence', ZONE)).toEqual([
+      { kind: 'text', text: 'Settlement due for ' },
+      { kind: 'instrument', instrument: CALL },
+      { kind: 'text', text: ', which expired ' },
+      { kind: 'date', date: '2026-11-20' },
+    ]);
   });
 
   it('should word Unbounded above and below', () => {

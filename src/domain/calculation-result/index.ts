@@ -1,4 +1,4 @@
-import type { Instrument } from '../instrument'
+import type { Instrument, OptionInstrument } from '../instrument'
 import type { Instant } from '../time/index.ts'
 import type { Rational } from '../values/index.ts'
 
@@ -47,6 +47,8 @@ export type UnavailableReason =
   | { readonly reason: 'AcknowledgedUnavailable'; readonly instrument: Instrument; readonly date: string }
   | { readonly reason: 'SessionPolicyNotCovered'; readonly instrument: Instrument; readonly date: string }
   | { readonly reason: 'AwaitingClose'; readonly after: string }
+  // P25: an option past its expiration date with quantity still open and no settlement fact has no honest Mark.
+  | { readonly reason: 'SettlementDue'; readonly instrument: OptionInstrument; readonly expiration: string }
   | { readonly reason: 'FactsIncoherent'; readonly findings: readonly IncoherentFact[] };
 
 export type NotApplicableReason =

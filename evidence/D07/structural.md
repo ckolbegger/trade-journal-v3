@@ -210,3 +210,16 @@ Run by `suite-runner` on 2026-11-06, browser stage `browser-auto c5e38a80`, cove
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-5-expiration-checks.txt` |
 
 Tier: full, printed reason "first matching path since c5e38a80: src/ui/calculation-words.test.ts". Ports free before and after. Browser stage 8 min 17 s, under the 9-minute threshold for raising tech debt item 6. T7.5 is complete.
+
+### T7.6 wording checks
+
+Commands run from the repository root after the `SettlementDue` code and the phrases `Settlement due` and `which expired` were added to `eslint.wording.config.js`, with the new case in `tools/wording-rules.test.ts` (the lists are what T7.6 touched).
+
+| Command | Result |
+|---|---|
+| `npx vitest run tools/wording-rules.test.ts` before the task | exit 0; 36 passed (36); all of `tools` 53 passed |
+| `npx vitest run tools/wording-rules.test.ts` after | exit 0; 37 passed (37) |
+| `npx vitest run tools` after | exit 0; 3 files, 54 passed (54) |
+| `npm run verify:wording` after | exit 0; no output |
+| Planted run: `export const planted = 'Settlement due';` added by an Edit to `src/ui/format.ts` line 40, then `npm run verify:wording` | exit 1; `src/ui/format.ts 40:24 error verify:wording: this is a reason's or finding's words ...`, 1 problem |
+| After restoring `src/ui/format.ts` by Edit: `git diff -- src/ui/format.ts` empty, `npm run verify:wording` | exit 0 |

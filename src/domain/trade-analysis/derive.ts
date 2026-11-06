@@ -650,13 +650,16 @@ function observationRequirementsOf(
   facts: readonly ExecutionFact[],
   valuationDate: string,
 ): ObservationRequirement[] {
+  // An option needs the contract's Mark and its Underlying's (A110).
+  // After its expiration date a contract needs no Mark and neither does its Underlying: it is Settlement Due (P25).
   return positions
     .filter((p) => p.quantity.compare(Rational.of(0n)) !== 0)
-    .map((p) => ({
-      instrument: p.instrument,
-      valuationDate,
-      earliestRelevance: facts.find((e) => e.instrument.symbol === p.instrument.symbol)!.economicTime,
-    }));
+    .filter((p) => p.instrument.kind === 'Stock' || valuationDate <= p.instrument.expiration)
+    .flatMap((p) => {
+      const earliestRelevance = facts.find((e) => e.instrument.symbol === p.instrument.symbol)!.economicTime;
+      const underlying: StockInstrument[] = p.instrument.kind === 'Option' ? [{ kind: 'Stock', symbol: p.instrument.symbol }] : [];
+      return [p.instrument, ...underlying].map((instrument) => ({ instrument, valuationDate, earliestRelevance }));
+    });
 }
 
 // FactOrder: Economic Time, then the stable Recorded Sequence for ties.
