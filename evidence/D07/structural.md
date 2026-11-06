@@ -103,3 +103,24 @@ Wording of `NoOptionExpirationAnchor` (decision 81): `notApplicableTail` in `src
   ✖ 1 problem (1 error, 0 warnings)
   ```
   The line was removed by Edit; `git status` shows `src/ui/due-text.ts` unmodified, and `npm run verify:wording` exits 0 again.
+
+## T7.3 Trade Analysis: `expirationPayoff`
+
+Behavioral; commit `c9b225e0`. 8 payoff cases plus the wording unit case and the wording-rule case, red then green. One first-run pass, flagged: case 5 (O-S short Lots give a falling segment), built by cases 2 and 4; mutation (Current view took each Lot's absolute quantity) failed with `AssertionError: expected { from: Rational{ …(2) }, …(3) } to match object …`. Wording conditions met (see "T7.3 wording checks"): `npx vitest run tools` exit 0 with `tools/wording-rules.test.ts` at 34 cases (33 before), and the planted run failed. Notes: `payoff.ts` declares a structural `PayoffPlan` to avoid a cycle with `plan.ts`; `assessPlan` returns `plannedPayoff` on every accepted Plan (stock: `NotApplicable(NoOptionExpirationAnchor)`); the `Unbounded` explanation string follows `evaluate.ts`'s existing pattern.
+
+### ocr review of `c9b225e0`
+
+Not yet run: both attempts failed before reviewing, with `subscription_sharing_usage_limit_exceeded` (the ChatGPT usage limit for `ocr`), session `8ce87597-02c7-43bc-a1da-ef451ed9d766`. Queued, to be rerun once the limit resets; the session continues meanwhile and any findings become bug tasks then.
+
+### Cumulative run after T7.3 (`t7-3-payoff`, at `c9b225e0`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 4ff2885a`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 99 files, 1252 passed, exit 0 | `suite-runs/t7-3-payoff-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-3-payoff-integration.txt` |
+| Browser (Chromium), full tier | 167 passed (7.9 min), exit 0 | `suite-runs/t7-3-payoff-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-3-payoff-checks.txt` |
+
+Tier: full, printed reason "first matching path since 4ff2885a: src/ui/calculation-words.test.ts". Ports free before and after. T7.3 is complete apart from its queued ocr review.
