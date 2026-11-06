@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
+import { OC_PC1, OC_PC2, OC_X1, OS_B1, OS_S1, ocRecord, osRecord } from './option-trade.ts';
 import { PC1, PC2, referenceRecord } from './reference-trade.ts';
 
 function derivedState(record: TradeAnalysisRecord): DerivedTradeState {
@@ -27,5 +28,13 @@ describe('Net cost', () => {
 
   it('should return Net cost NotApplicable with reason NoRemainingPosition for a Planned Trade with no Lots', () => {
     expect(netCostOf(referenceRecord([]))).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });
+  });
+
+  it('should multiply an option Lot by the contract multiplier: one long call at 1.90 with fee 0.65 is 190.65', () => {
+    expect(netCostOf(ocRecord([OC_PC1, OC_PC2, OC_X1]))).toBe('3813/20');
+  });
+
+  it('should multiply a short option Lot by the contract multiplier: one short put at 1.25 with fee 0.65 is minus 124.35', () => {
+    expect(netCostOf(osRecord([OS_S1, OS_B1]))).toBe('-2487/20');
   });
 });

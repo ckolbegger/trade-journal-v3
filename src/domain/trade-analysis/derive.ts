@@ -494,9 +494,12 @@ function decimal(text: string): Rational {
 }
 
 function netCostOf(positions: readonly InstrumentPosition[]): DerivedTradeState['netCost'] {
-  const lots = positions.flatMap((p) => p.openLots);
+  const lots = positions.flatMap((p) => {
+    const multiplier = Rational.of(BigInt(multiplierOf(p.instrument)));
+    return p.openLots.map((lot) => ({ lot, multiplier }));
+  });
   if (lots.length === 0) return { kind: 'NotApplicable', reason: 'NoRemainingPosition' };
-  const total = lots.reduce((sum, l) => sum.add(l.quantity.mul(l.price)).add(l.unconsumedOpeningFee), Rational.of(0n));
+  const total = lots.reduce((sum, { lot: l, multiplier }) => sum.add(l.quantity.mul(l.price).mul(multiplier)).add(l.unconsumedOpeningFee), Rational.of(0n));
   return { kind: 'Value', value: total };
 }
 
