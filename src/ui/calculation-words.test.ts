@@ -81,6 +81,12 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     );
   });
 
+  it('should word an Expiration NonpositiveQuantity after the Expiration head with the existing quantity tail', () => {
+    expect(sentence({ ...expiration(CALL, '0'), reason: 'NonpositiveQuantity' })).toBe(
+      "Expiration of 0 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 has a quantity that isn't positive",
+    );
+  });
+
   it('should word ExceedsOpenQuantity as contracts open for an option and keep shares open for stock', () => {
     expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(2n, 1n) })).toBe(
       'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts open',

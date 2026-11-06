@@ -38,7 +38,7 @@ export type IncoherentFact =
   // A106: an Expiration that settles less or more than the quantity open, one dated after the contract's
   // expiration or not after every Execution on it, and one on a stock Instrument.
   | (ExpirationDescription & { readonly reason: 'ExpirationMustSettleAllOpen'; readonly available: Rational })
-  | (ExpirationDescription & { readonly reason: 'SettlementTimeInvalid' | 'NotAnOption' | 'DuplicateFactId' })
+  | (ExpirationDescription & { readonly reason: 'SettlementTimeInvalid' | 'NotAnOption' | 'DuplicateFactId' | 'NonpositiveQuantity' })
   | { readonly factId: string; readonly kind: 'PositionChange'; readonly economicTime: Instant; readonly reason: 'DuplicateFactId' };
 
 // Each case is a reason with its own details, carried flat in the result.

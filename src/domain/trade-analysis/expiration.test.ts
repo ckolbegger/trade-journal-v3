@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type DerivationResult, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
-import { EXPIRATION_CLOSE, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_B1, OS_CONTRACT, OS_ES, OS_S1, expirationChange, ocChange, ocRecord, opChange, opRecord, osRecord } from './option-trade.ts';
+import { EXPIRATION_CLOSE, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_B1, OS_CONTRACT, OS_ES, OS_S1, expirationChange, ocChange, ocRecord, opChange, opRecord, osRecord } from './option-trade.ts';
 import { PC1, PC2, X1, X2, referenceRecord } from './reference-trade.ts';
 
 function derivedState(record: TradeAnalysisRecord): DerivedTradeState {
@@ -50,6 +50,15 @@ describe('Expiration member (A106, P26)', () => {
     const result: DerivationResult = derive({ record: osRecord([OS_S1, OS_B1, reused]) });
     if (result.kind !== 'IncoherentFacts') throw new Error(`expected IncoherentFacts, got ${result.kind}`);
     expect(result.findings.map((f) => ({ factId: f.factId, kind: f.kind, reason: f.reason }))).toEqual([{ factId: 'ex-pc-b1', kind: 'Expiration', reason: 'DuplicateFactId' }]);
+  });
+
+  it('should return NonpositiveQuantity for a zero or negative Expiration quantity after the position is flat, rather than a Derived state', () => {
+    for (const quantity of ['0', '-1']) {
+      const settle = expirationChange('pc-zero', EXPIRATION_CLOSE, 7, OC_CONTRACT, quantity);
+      const result: DerivationResult = derive({ record: ocRecord([OC_PC1, OC_X1, settle]) });
+      if (result.kind !== 'IncoherentFacts') throw new Error(`expected IncoherentFacts, got ${result.kind}`);
+      expect(result.findings.map((f) => ({ factId: f.factId, kind: f.kind, reason: f.reason }))).toEqual([{ factId: 'exp-pc-zero', kind: 'Expiration', reason: 'NonpositiveQuantity' }]);
+    }
   });
 
   it('should report the close requirement TerminalWithoutAgency for E1, where X2 in D6 is TerminalWithAgency A107', () => {

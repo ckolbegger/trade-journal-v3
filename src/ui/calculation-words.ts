@@ -122,6 +122,8 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
         return [...expirationHead, t(' names a stock, not an option')];
       case 'DuplicateFactId':
         return [...expirationHead, t(' shares its identity with another record')];
+      case 'NonpositiveQuantity':
+        return [...expirationHead, t(" has a quantity that isn't positive")];
       default:
         return finding satisfies never;
     }
