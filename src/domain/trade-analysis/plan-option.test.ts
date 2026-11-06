@@ -92,7 +92,7 @@ describe('assessPlan: Long Call (P24, A100)', () => {
     const issues = rejection(longCall({ targets: [{ kind: 'UnderlyingPrice', price: '56.00' }] }));
     expect(issues).toHaveLength(1);
     expect(issues[0]?.code).toBe('TargetNotBeyondEntry');
-    expect(issues[0]?.details?.breakeven.equals(r(57n))).toBe(true);
+    expect(issues[0]?.details?.breakeven?.equals(r(57n))).toBe(true);
   });
 
   it('should reject an Underlying Stop at or above the Underlying Target with StopTargetOrder', () => {
@@ -126,13 +126,25 @@ describe('assessPlan: Long Put and Cash-Secured Put', () => {
     const issues = rejection(cashSecuredPut({ stops: [{ kind: 'UnderlyingPrice', price: '44.00' }] }));
     expect(issues).toHaveLength(1);
     expect(issues[0]?.code).toBe('NoPositiveRisk');
-    expect(issues[0]?.details?.breakeven.equals(r(219n, 5n))).toBe(true);
+    expect(issues[0]?.details?.breakeven?.equals(r(219n, 5n))).toBe(true);
   });
 
   it('should reject Exercise Intent on the Cash-Secured Put with ExerciseIntentNotApplicable, and a long option without it with ExerciseIntentRequired', () => {
     expect(rejection(cashSecuredPut({ exerciseIntent: 'NotAuthorized' }))).toEqual([{ code: 'ExerciseIntentNotApplicable' }]);
     expect(rejection(longCall({ exerciseIntent: undefined }))).toEqual([{ code: 'ExerciseIntentRequired' }]);
     expect(rejection(longPut({ exerciseIntent: undefined }))).toEqual([{ code: 'ExerciseIntentRequired' }]);
+  });
+});
+
+describe('assessPlan: option condition count', () => {
+  it('should reject an option Plan with two Stops or two Targets, naming the extra condition', () => {
+    const two = (price: string) => [{ kind: 'UnderlyingPrice', price: '48.00' }, { kind: 'UnderlyingPrice', price }] as const;
+    expect(rejection(longCall({ stops: two('47.00') }))).toEqual([
+      { code: 'ConditionCountNotOne', details: { extraConditions: [{ kind: 'UnderlyingPrice', price: '47.00' }] } },
+    ]);
+    expect(rejection(longCall({ targets: [{ kind: 'UnderlyingPrice', price: '60.00' }, { kind: 'UnderlyingPrice', price: '65.00' }] }))).toEqual([
+      { code: 'ConditionCountNotOne', details: { extraConditions: [{ kind: 'UnderlyingPrice', price: '65.00' }] } },
+    ]);
   });
 });
 

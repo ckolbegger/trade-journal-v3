@@ -66,9 +66,11 @@ export interface PlanIssue {
     | 'ExerciseIntentNotApplicable'
     | 'ContractQuantityNotWhole'
     | 'ContractAlreadyExpired'
+    | 'ConditionCountNotOne'
     | ContractIssue;
-  // An option rejection that names a breakeven carries it here (A100).
-  readonly details?: { readonly breakeven: Rational };
+  // An option rejection that names a breakeven carries it here (A100); a rejection for more than
+  // one Stop or Target names the conditions beyond the first of each kind.
+  readonly details?: { readonly breakeven?: Rational; readonly extraConditions?: readonly ConditionInput[] };
 }
 
 export type PlanAssessment =
@@ -229,6 +231,11 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   // Long Stock management requires one original Stop and one original Target (D1 A1).
   if (plan.stops.length === 0) issue('MissingStop');
   if (plan.targets.length === 0) issue('MissingTarget');
+  // An option Plan has exactly one Underlying-price Stop and one Target (A100).
+  if (first?.instrument.kind === 'Option') {
+    const extraConditions = [...plan.stops.slice(1), ...plan.targets.slice(1)].map((c) => ({ ...c }));
+    if (extraConditions.length > 0) issue('ConditionCountNotOne', { extraConditions });
+  }
 
   const leg = plan.legs[0]!;
   const quantity = contractsOf(leg);
