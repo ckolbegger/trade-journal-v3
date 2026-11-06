@@ -157,6 +157,21 @@ describe('verify:wording scanning', () => {
     expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:3: words: Mark missing$/);
   });
 
+  it('reports a phrase on line 2 of a multi-line template at the line where the template starts', () => {
+    const hits = scanSource('src/ui/B12.tsx', 'const a = `x\\x20y\nMark missing`;');
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B12\.tsx:1: words: Mark missing$/);
+    // Without an escape the offset into the text is exact, yet the hit still names the line where the template starts.
+    const plain = scanSource('src/ui/B12.tsx', 'const a = `x y\nab Mark missing`;');
+    expect(plain[0]).toMatch(/^src\/ui\/B12\.tsx:1: words: Mark missing$/);
+  });
+
+  it('reports a single-line literal hit at its own line', () => {
+    const hits = scanSource('src/ui/B12.tsx', "const a = 1;\nconst b = 'Mark missing';");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B12\.tsx:2: words: Mark missing$/);
+  });
+
   it('still passes on a sentence that contains a reason words, and on the current tree', () => {
     const sentence = scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";');
     expect(sentence).toEqual([]);

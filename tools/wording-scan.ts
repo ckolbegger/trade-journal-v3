@@ -108,7 +108,7 @@ export function scanSource(path: string, source: string): string[] {
       const raw = node.getText(sf);
       // Phrases are matched on the decoded text, so an escape inside a phrase does not hide it; JSX text has no escapes.
       const decoded = node.kind === ts.SyntaxKind.JsxText ? raw : (node as ts.StringLiteral | ts.TemplateLiteralLikeNode).text;
-      for (const m of decoded.matchAll(phraseRe)) hit(Math.min(start + m.index, node.getEnd() - 1), 'words', m[0]);
+      for (const m of decoded.matchAll(phraseRe)) hit(start, 'words', m[0]);
       // Reason words count only as the whole literal or the whole JSX text node.
       const whole = node.kind === ts.SyntaxKind.JsxText || isStringLike(node) ? (isStringLike(node) ? node.text : raw).trim() : '';
       if (reasonWords.has(whole.toLowerCase())) hit(start + Math.max(raw.indexOf(whole), 0), 'words', whole);
