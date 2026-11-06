@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -359,7 +359,7 @@ describe('Closed list paging (T6.18-B1)', () => {
     expect(symbols()).toEqual(['AAA', 'BBB', 'CCC', 'DDD']);
     expect(screen.queryByRole('button', { name: /closed trades/i })).toBeNull();
     // With the button gone, focus moves to the first new row.
-    expect(document.activeElement).toBe(screen.getByRole('link', { name: 'CCC' }));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('link', { name: 'CCC' })));
   });
 
   it('should reload from the first page and say the list was refreshed when the cursor has expired, never the generic error', async () => {
@@ -433,7 +433,7 @@ describe('Closed list paging (T6.18-B1)', () => {
     fireEvent.click(button);
     const status = await screen.findByText('The list was refreshed because your journal changed. Showing from the first page.');
     expect(screen.queryByRole('button', { name: /closed trades/i })).toBeNull();
-    expect(document.activeElement).toBe(status);
+    await waitFor(() => expect(document.activeElement).toBe(status));
   });
 
   it('should move focus to the empty message when a cursor-expired reload finds no closed trades', async () => {
@@ -446,7 +446,8 @@ describe('Closed list paging (T6.18-B1)', () => {
     button.focus();
     fireEvent.click(button);
     const empty = await screen.findByText(/no closed trades yet/i);
-    expect(document.activeElement).toBe(empty);
+    // Focus moves in an effect after the commit that shows the message, so wait for it.
+    await waitFor(() => expect(document.activeElement).toBe(empty));
   });
 
   it('should leave focus where the trader moved it when the final page arrives late', async () => {
