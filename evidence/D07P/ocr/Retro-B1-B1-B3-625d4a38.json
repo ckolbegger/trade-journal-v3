@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 10985,
+    "input_tokens": 10720,
+    "output_tokens": 265,
+    "cache_read_tokens": 3840,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "eslint.deps.config.js",
+        "eslint.wording.config.js"
+      ]
+    }
+  ],
+  "session_id": "a09973f3-9568-485d-b7e2-d35c2b9c157f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a09973f3-9568-485d-b7e2-d35c2b9c157f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "625d4a38",
+      "resolved_base": "64324573050a58697a3d9350a62fb76768416094",
+      "resolved_head": "625d4a38b5c2be316c6004a2fb454151aa00ee73",
+      "exact_range": "64324573050a58697a3d9350a62fb76768416094..625d4a38b5c2be316c6004a2fb454151aa00ee73",
+      "source_artifact_sha256": "1e004f77263810aad061f7f1ce156e8b61513300065ca3ea280d11a4f15c450a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6ca8e0c59b73ba38caef0fcf54a23941cb12ccd6e21b4ea59603e439a001e0aa",
+          "path": "eslint.deps.config.js",
+          "fingerprint": "21a5e221982e74dfce701517e43e1954ca97c04b5c4689aaa61af1ecbe3e8dd3"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "6aa9292bfa15b8106ca98c4a37a78ed4cb134c690a54563d6fa09ed231693dca"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6ca8e0c59b73ba38caef0fcf54a23941cb12ccd6e21b4ea59603e439a001e0aa",
+          "path": "eslint.deps.config.js",
+          "fingerprint": "21a5e221982e74dfce701517e43e1954ca97c04b5c4689aaa61af1ecbe3e8dd3"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "6aa9292bfa15b8106ca98c4a37a78ed4cb134c690a54563d6fa09ed231693dca"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 14634
+  }
+}

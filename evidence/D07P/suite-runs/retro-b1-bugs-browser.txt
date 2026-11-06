@@ -1,0 +1,67 @@
+$ npm run build:faults && npm run build:releases && npx playwright test e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 e2e/d7p --grep @every-task
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.4 building client environment for faults...
+transforming...
+✓ 163 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-D7QVaqvh.css   14.17 kB │ gzip:   3.65 kB
+dist-faults/assets/faults-GInt4o0k.js    1.78 kB │ gzip:   0.90 kB
+dist-faults/assets/index-Ce85BZ82.js   657.65 kB │ gzip: 194.94 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 107ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases: d2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d2-de3fa276a263 (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39)
+build:releases: d4 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d4-4ab43d58931f (claude-opus-5.5-d4 at 4ab43d58931f2966d6a2d05f6b41be9bc239dd1c)
+build:releases: d5r2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d5r2-765ac1ea59f3 (claude-opus-5.5-d5r2 at 765ac1ea59f36e7d9923362f655c94bbef90e404)
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases OK: v1, v2, v2-corrupt, d1, d2, d4, d5r2, d6 in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-D7QVaqvh.css
+
+Running 5 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing @every-task (1.0s)
+  ✓  2 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent @every-task (837ms)
+  ✓  3 [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart @every-task (2.6s)
+  ✓  4 [chromium] › e2e/d1/plan.spec.ts:37:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders @every-task (1.6s)
+  ✓  5 [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged @every-task (4.9s)
+
+  5 passed (13.7s)
+EXIT 0
+$ npx playwright test e2e/d7p --grep-invert "@every-task|@release-history"
+
+Running 4 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d7p/layout.spec.ts:52:3 › T7P.11 Layout of the worded reasons › should show both finding sentences in full in the Trade Detail findings table at 320 and 375 px (4.8s)
+  ✓  2 [chromium] › e2e/d7p/layout.spec.ts:69:3 › T7P.11 Layout of the worded reasons › should keep the Facts cannot be replayed and Mark missing badges inside their cells in the Trades list at 320 and 375 px (4.7s)
+  ✓  3 [chromium] › e2e/d7p/layout.spec.ts:85:3 › T7P.11 Layout of the worded reasons › should show Mark missing and Awaiting the close in full in an Open Detail at 320 and 375 px (2.8s)
+  ✓  4 [chromium] › e2e/d7p/layout.spec.ts:116:3 › T7P.11 Layout of the worded reasons › should show the attention sentences, slider figures and blockers in full in the Review at 320 and 375 px (5.2s)
+
+  4 passed (18.0s)
+EXIT 0

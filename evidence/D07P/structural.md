@@ -635,3 +635,13 @@ Tests: `tools/wording-rules.test.ts` gains six cases (B1: four, through the real
 | `npm run typecheck` | exit 0 |
 | `npx tsc6 --noEmit` | exit 0 |
 | `.claude/scripts/full-suite.sh evidence/D07P retro-b1-bugs-checks-probe checks` | 13 of 13 exit 0 (output file deleted) |
+
+### ocr review of `625d4a38` (Retro-B1-B1 to B3)
+
+Session `a09973f3-9568-485d-b7e2-d35c2b9c157f`, model gpt-6.1-sol, 2 files reviewed in place (the test excluded by ocr), **no findings**. Raw output: [ocr/Retro-B1-B1-B3-625d4a38.json](ocr/Retro-B1-B1-B3-625d4a38.json).
+
+### Cumulative run after Retro-B1's bug tasks (`retro-b1-bugs`, at `625d4a38`)
+
+Unit 97 files, 1225 passed; integration 76 files, 154 passed; browser task tier (`browser-auto 64324573`, "no changed path since 64324573 is on the full-tier list": only ESLint configs and `tools/` tests changed; the full tier ran on Retro-B1 itself, `retro-b1`, 167 passed) 9 passed (5 `@every-task`, 4 `e2e/d7p`); checks **13 of 13** exit 0. `npx vitest run tools` (outside the unit stage): 3 files, 50 passed, in the bug tasks' own verification. Outputs `suite-runs/retro-b1-bugs-*.txt`. Ports free before and after.
+
+**Retro-B1 is complete:** `dd0c8224` and bug tasks B1–B3 `625d4a38`, each ocr review resolved.
