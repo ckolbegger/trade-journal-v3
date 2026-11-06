@@ -54,11 +54,35 @@ const caseRe = new RegExp(`\\bcase\\s+(['"\`])(${alt})\\1`, 'g');
 const eqAfterRe = new RegExp(`([\\w.?\\]]*)\\s*[!=]==?\\s*(['"\`])(${alt})\\2`, 'g');
 const eqBeforeRe = new RegExp(`(['"\`])(${alt})\\1\\s*[!=]==?\\s*([\\w.?]*)`, 'g');
 
-// Blank out comments, keeping every line break so line numbers hold.
-const stripComments = (source: string): string =>
-  source
-    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
-    .replace(/(^|[^\w:'"`])\/\/.*$/gm, (_m, lead: string) => lead);
+// Blank out comments, keeping every line break so line numbers hold. A `//` or `/*` inside a single, double or
+// backtick quoted literal is text, not a comment. A single or double quote ends at a line break (an apostrophe
+// in JSX text must not swallow the rest of the file); a backtick literal may span lines.
+const stripComments = (source: string): string => {
+  let out = '';
+  let i = 0;
+  while (i < source.length) {
+    const c = source[i]!;
+    const next = source[i + 1];
+    if (c === '/' && (next === '/' || next === '*')) {
+      const end =
+        next === '/'
+          ? (source.indexOf('\n', i) === -1 ? source.length : source.indexOf('\n', i))
+          : (source.indexOf('*/', i + 2) === -1 ? source.length : source.indexOf('*/', i + 2) + 2);
+      out += source.slice(i, end).replace(/[^\n]/g, ' ');
+      i = end;
+    } else if (c === "'" || c === '"' || c === '`') {
+      let j = i + 1;
+      while (j < source.length && source[j] !== c && (c === '`' || source[j] !== '\n')) j += source[j] === '\\' ? 2 : 1;
+      const end = source[j] === c ? j + 1 : Math.min(j, source.length);
+      out += source.slice(i, end);
+      i = end;
+    } else {
+      out += c;
+      i++;
+    }
+  }
+  return out;
+};
 
 // Each hit as `path:line: kind: match`.
 export function scanSource(path: string, source: string): string[] {

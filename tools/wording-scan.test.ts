@@ -24,6 +24,31 @@ describe('verify:wording scanning', () => {
     expect(hits[0]).toMatch(/^src\/ui\/Y\.tsx:3: code: /);
   });
 
+  it('fails on a phrase after a string containing a line comment marker', () => {
+    const hits = scanSource('src/ui/Z.tsx', "const a = ' // '; const b = 'Mark missing';");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/Z\.tsx:1: words: Mark missing$/);
+  });
+
+  it('fails on a case after a string containing a block comment marker', () => {
+    const source = ["const a = '/*';", "switch (r) { case 'NotClosed': break; }", "const b = '*/';"].join('\n');
+    const hits = scanSource('src/ui/W.tsx', source);
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/W\.tsx:2: code: /);
+  });
+
+  it('still ignores real comments and keeps line numbers', () => {
+    const source = [
+      "// case 'NotClosed':",
+      "/* case 'NotClosed':",
+      "   Mark missing */ const s = 'x'; // Mark missing",
+      "const t = `a // b`; r === 'MarkMissing';",
+    ].join('\n');
+    const hits = scanSource('src/ui/V.tsx', source);
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/V\.tsx:4: code: /);
+  });
+
   it('still passes on the current tree', () => {
     const files = uiSources(uiDir).filter((f) => !f.pathname.endsWith('/src/ui/calculation-words.ts'));
     expect(files.length).toBeGreaterThan(0);
