@@ -54,7 +54,7 @@ test.describe('B2.13 integrity surfaced', () => {
 });
 
 test.describe('Planned list row for an incoherent Trade', () => {
-  test('should show the row with Records disagree and Not available in each derived cell, linking to its Detail', async ({ server, profile }) => {
+  test("should show the row with Facts can't be replayed and Not available in each derived cell, linking to its Detail", async ({ server, profile }) => {
     void server;
     const setup = await profile.launch();
     const page = await onboardedPage(setup);
@@ -75,20 +75,20 @@ test.describe('Planned list row for an incoherent Trade', () => {
     await openPlanned(app);
     const table = app.getByRole('table', { name: 'Planned Trades' });
     const row = table.getByRole('row', { name: /XYZ/ });
-    await expect(row.getByRole('cell')).toHaveText([/XYZ/, /^Not available.*Records disagree/, 'Not available', 'Not available', 'Not available', /.+/]);
+    await expect(row.getByRole('cell')).toHaveText([/XYZ/, /^Not available.*Facts can't be replayed/, 'Not available', 'Not available', 'Not available', /.+/]);
     // The agreeing Planned Trade keeps its figures.
     await expect(table.getByRole('row', { name: /ABC/ })).not.toContainText('Not available');
 
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(app.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(app.getByRole('region', { name: 'Records disagree' })).toBeVisible();
+    await expect(app.getByRole('region', { name: "Facts can't be replayed" })).toBeVisible();
     expect(await probe(app)).toEqual(before);
     await context.close();
   });
 });
 
 test.describe('incoherent Trade Detail', () => {
-  test('should not offer Record entry on an incoherent Detail, explain why beside the Records disagree panel, and show the same explanation on the entry route', async ({
+  test("should not offer Record entry on an incoherent Detail, explain why beside the Facts can't be replayed panel, and show the same explanation on the entry route", async ({
     server,
     profile,
   }) => {
@@ -107,7 +107,7 @@ test.describe('incoherent Trade Detail', () => {
     await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
     const before = await probe(app);
     await openTradeFromOpenList(app);
-    const panel = app.getByRole('region', { name: 'Records disagree' });
+    const panel = app.getByRole('region', { name: "Facts can't be replayed" });
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('New entries cannot be recorded for this Trade until its records agree.');
     await expect(app.getByRole('link', { name: 'Record entry' })).toHaveCount(0);

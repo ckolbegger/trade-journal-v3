@@ -465,3 +465,26 @@ ocr review: session `fddb2656-14c2-4bfa-862c-9f1806895343`, model gpt-6.1-sol, 1
 | Static and verification checks | **13 of 13** exit 0 | `suite-runs/t7p-9-final-checks.txt` |
 
 Stage `browser-auto b436ac7e` (the last commit covered by the full-tier run `t7p-9-verify-wording`); tier task, "no changed path since b436ac7e is on the full-tier list" (only `tools/` changed). Ports free before and after.
+
+## T7P.10 Existing browser cases follow the approved texts
+
+**Fixture kinds, confirmed from the spec code before any change** (`writeIntegrityFixture` edits, `e2e/d2/support.ts:271`; `StoredLifecycle` alone leaves the facts replayable, so it is coherent with findings; `UnknownPlannedLeg` makes the facts unreplayable, so it is incoherent):
+
+| Case | Fixture edits | Kind | Decision |
+|---|---|---|---|
+| `integrity.spec.ts:18` (Open Trade stored as Planned) | StoredLifecycle | coherent, findings only | keeps "Records disagree" (did not fail) |
+| `integrity.spec.ts:57` (Planned row) | StoredLifecycle + UnknownPlannedLeg | incoherent | row badge and Detail panel name become "Facts can't be replayed" |
+| `integrity.spec.ts:91` (incoherent Detail) | UnknownPlannedLeg | incoherent | panel name becomes "Facts can't be replayed" |
+| `ui-alignment.spec.ts:604` (T2.40; ABC findings, XYZ incoherent) | ABC StoredLifecycle; XYZ StoredLifecycle + UnknownPlannedLeg | mixed: XYZ incoherent | no assertion quotes the text (counts badges and measures geometry); nothing to change |
+| `ui-alignment.spec.ts:1614` (T2.62 scroll region) | ABC StoredLifecycle | coherent, findings only | keeps "Records disagree"; unchanged. Section 6.2's "where their fixture is incoherent" does not apply (same for `:682`) |
+| `narrow.spec.ts:~87` (Trade stored as Planned) | XYZ StoredLifecycle | coherent, findings only | unchanged (its comment quotes the old panel name only for a findings Trade, so it stays correct) |
+
+No fixture's kind contradicts section 6.2.
+
+**Changes** (section 6.2): breach-overrun.spec.ts (4 expectations plus title: "Awaiting the close after Mon Oct 12"); responsive-a11y.spec.ts (line 175 note "Mark acknowledged unavailable for DEF on Mon Oct 12: ...", lines 219 and 228 AwaitingClose figure); integrity.spec.ts (lines 57 title/78/84 and 91 title/110, titles follow the new text); sliders.spec.ts:80 name gains ": no risk to the Stop". The comment at responsive-a11y.spec.ts:214 still says "Awaiting the next close" and was left alone.
+
+**Each changed case alone** (`npm run build:faults` first, exit 0; ports 5175, 9341, 9342 free before and after): integrity.spec.ts:57 passed, :91 passed, breach-overrun.spec.ts:15 passed, responsive-a11y.spec.ts:118 passed, sliders.spec.ts:60 passed.
+
+**`npm run test:e2e` once:** 163 passed (7.7 m), 0 failed. Ports free after.
+
+**Diff** `git diff claude-opus-5.5-pre-d7p -- e2e`: integrity.spec.ts 5 lines, breach-overrun.spec.ts 5, responsive-a11y.spec.ts 3, sliders.spec.ts 1; no other file.

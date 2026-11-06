@@ -12,7 +12,7 @@ const COLUMNS = ['Condition', 'Boundary', 'Status', 'Distance', 'Overrun'];
 const conditionCell = (page: Page, boundary: string, column: string) => conditionRow(page, boundary).getByRole('cell').nth(COLUMNS.indexOf(column));
 
 test.describe('B4.14 Breach, overrun, and intraday lines', () => {
-  test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the next close with Mon Oct 12 close and At entry sections for the 40 shares', async ({ profile }) => {
+  test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the close after Mon Oct 12 with Mon Oct 12 close and At entry sections for the 40 shares', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
@@ -37,10 +37,10 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
     await expect(page.getByText('Long 140 shares')).toBeVisible();
-    for (const term of ['Open P&L', 'Current Marked Trade P&L']) await expect(figure(page, 'Valuation', term)).toHaveText('Awaiting the next close');
-    for (const term of ['Risk to stop', 'Worst case', 'Reward to target']) await expect(figure(page, 'Risk and reward', term)).toHaveText('Awaiting the next close');
-    await expect(conditionCell(page, 'Stop', 'Status')).toHaveText('Awaiting the next close');
-    await expect(conditionCell(page, 'Target', 'Status')).toHaveText('Awaiting the next close');
+    for (const term of ['Open P&L', 'Current Marked Trade P&L']) await expect(figure(page, 'Valuation', term)).toHaveText('Awaiting the close after Mon Oct 12');
+    for (const term of ['Risk to stop', 'Worst case', 'Reward to target']) await expect(figure(page, 'Risk and reward', term)).toHaveText('Awaiting the close after Mon Oct 12');
+    await expect(conditionCell(page, 'Stop', 'Status')).toHaveText('Awaiting the close after Mon Oct 12');
+    await expect(conditionCell(page, 'Target', 'Status')).toHaveText('Awaiting the close after Mon Oct 12');
 
     // The dated line: the Position held at Monday's close with its own figures.
     const dated = 'At Mon Oct 12 close';

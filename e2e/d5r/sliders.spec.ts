@@ -77,7 +77,7 @@ test.describe('B5R.7 Slider states', () => {
     const round = await radiusOf(dot('T-A'));
 
     // T-B: past the Stop, so the dot is pinned at the Stop end (the slider's left edge) in a different shape.
-    await expect(sliderOf(page, tB)).toHaveAccessibleName('Past the Stop, entry at 25%. Risk to stop $0.00, P&L −$251.00, Reward : risk Not applicable.');
+    await expect(sliderOf(page, tB)).toHaveAccessibleName('Past the Stop, entry at 25%. Risk to stop $0.00, P&L −$251.00, Reward : risk Not applicable: no risk to the Stop.');
     await expect(dot('T-B')).toHaveClass(/slider-pinned/);
     expect(await radiusOf(dot('T-B'))).not.toBe(round);
     const track = (await sliderOf(page, tB).boundingBox())!;

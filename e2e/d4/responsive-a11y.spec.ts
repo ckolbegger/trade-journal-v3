@@ -172,7 +172,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expect(figure(page, 'Risk and reward', 'Max reward')).toHaveText('Unbounded above');
     await expectAccessible(page, 'Detail Available (Stop Breached, Unbounded)');
     await detail(page, 'DEF');
-    await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText('Acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price');
+    await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText('Mark acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price');
     await expectAccessible(page, 'Detail Acknowledged Unavailable');
     await detail(page, 'JKL');
     await expect(page.getByRole('region', { name: 'Valuation', exact: true }).getByRole('link', { name: 'Mark missing for JKL on Mon Oct 12' })).toBeVisible();
@@ -216,7 +216,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await recordEntry(page, [{ quantity: '40', price: '50.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(figure(page, 'Valuation', 'Open P&L')).toHaveText('Awaiting the next close');
+    await expect(figure(page, 'Valuation', 'Open P&L')).toHaveText('Awaiting the close after Mon Oct 12');
     await expect(page.getByRole('heading', { name: 'At Mon Oct 12 close', level: 2 })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'At entry', level: 2 })).toBeVisible();
     await expect(figure(page, 'At entry', 'Quantity')).toHaveText('40 shares');
@@ -225,7 +225,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Detail AwaitingClose, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
     await toOpenList(page);
-    await expect(openList(page).getByRole('row', { name: /XYZ/ })).toContainText('Awaiting the next close');
+    await expect(openList(page).getByRole('row', { name: /XYZ/ })).toContainText('Awaiting the close after Mon Oct 12');
     await expectAccessible(page, 'Open list with an AwaitingClose row');
 
     // Review Loading: the trades store is held behind a read-only transaction, so the read waits.
