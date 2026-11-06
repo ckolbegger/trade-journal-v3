@@ -350,3 +350,35 @@ Session `c844bc8d-8fd0-4bf2-a567-8da3ca5538e9`, model gpt-6.1-sol, 7 files revie
 ### Cumulative run after T7P.9 (`t7p-9-verify-wording`, at `5554bfbd`, before its bug tasks)
 
 Unit 97 files, 1225 passed; integration 76 files, 154 passed; browser full tier (`browser-auto b41e6794`, "first matching path since b41e6794: package.json") 5 failed, 158 passed (7.9 min), the same 5 planned section 6.2 failures as after T7P.7 and T7P.8; checks **13 of 13** exit 0, `verify:wording` among them. Outputs `suite-runs/t7p-9-verify-wording-*.txt`. Ports free before and after. It ran alongside the ocr review, so a cumulative run follows the bug tasks.
+
+### T7P.9-B1 (`d8927527`) and T7P.9-B2 (`fd2d751a`)
+
+B1: the scan moved into `tools/wording-scan.ts` (`scanSource(path, source)`, `PHRASES`, `CODES`), with tests in `tools/wording-scan.test.ts`; regexes run over the whole comment-blanked text and map offsets back to lines. Case 2's red came only after the subagent temporarily narrowed the `case` regex (the case-1 fix already covered it), then restored it; case 3 was a first-run pass, mutation-checked (the `.kind` rule renamed, `AssertionError: expected [ …(4) ] to deeply equal []`). Both flagged.
+
+B2: `stripComments` is a small tokenizer tracking quotes and escapes; real comments are still blanked with newlines kept. Its third case ("still ignores real comments and keeps line numbers") was a first-run pass, mutation-checked (`AssertionError: expected 3 to be 1`). Flagged. Known limits left: regex literals containing quotes, and `${}` nesting in templates.
+
+### ocr review of `d8927527` (T7P.9-B1)
+
+Session `95d58d15-bce1-4942-9f34-ca024dbd9476`, model gpt-6.1-sol, 2 files reviewed in place, 1 finding. Raw output: [ocr/T7P.9-B1-d8927527.json](ocr/T7P.9-B1-d8927527.json).
+
+| Severity | Location | Finding | Assessment | Bug task |
+|---|---|---|---|---|
+| medium | `tools/wording-scan.ts:100-101` | When a code-first comparison's right side wraps at a member access (`'AcknowledgedUnavailable' === status` then `.kind` on the next line), the captured operand stops at the line break, so the `.kind` rule misses and a valid Expected-Mark Status comparison is flagged. | Valid (a false positive) | T7P.9-B4 |
+
+**T7P.9-B4: a wrapped `.kind` operand defeats the Expected-Mark Status rule.** Defect: a comparison on Market Data's Expected-Mark Status, written with the code literal first and its operand's `.kind` wrapped onto the next line, fails the check although it isn't a reason branch. Cases: it should pass on `'AcknowledgedUnavailable' === status` followed by `.kind` on the next line; it should pass on the same with the operand wrapped before `?.kind`; it should still fail on `'AcknowledgedUnavailable' === result` followed by `.reason` on the next line. This is the second round of bug tasks on T7P.9 (B1–B3 the first); a third round that still leaves findings stops for the user.
+
+### ocr review of `fd2d751a` (T7P.9-B2)
+
+Session `95b93666-f3e8-4bc7-ac96-cedda00ea27b`, model gpt-6.1-sol, 1 file reviewed in place, 3 findings. Raw output: [ocr/T7P.9-B2-fd2d751a.json](ocr/T7P.9-B2-fd2d751a.json).
+
+| Severity | Location | Finding | Assessment | Bug task |
+|---|---|---|---|---|
+| medium | `tools/wording-scan.ts:75` | Template literals are copied whole, so a real comment inside `${ … }` (`${1 /* Mark missing */}`) is scanned and reported. | Valid (a false positive) | T7P.9-B5 |
+| medium | `tools/wording-scan.ts:73` | An apostrophe in JSX text (`<span>Don't</span>; // Mark missing`) opens a "string" to the end of the line, so a real trailing comment on that line is reported. | Valid (a false positive) | T7P.9-B6 |
+| medium | `tools/wording-scan.ts:75` | A backslash before CRLF inside a quoted string skips only the backslash and CR, so the LF ends the string early and a later `//` can hide text. | Doubtful (no file under `src/ui/` has CRLF line endings: `git ls-files --eol src/ui` lists none) | T7P.9-B7 |
+
+**Implementation decision (main session):** B4 to B7 all come from the hand-written scanner's model of JavaScript syntax (where strings, templates, JSX text and comments begin and end, and which operand a comparison has). Each round of hand fixes has exposed another edge. So after T7P.9-B3 lands, one fresh subagent fixes B4 to B7 together by having `scanSource` use the TypeScript compiler's own parser (`typescript`, already a pinned dev dependency at 6.0.2) instead of regexes over blanked text: phrases are matched in string literal, template and JSX text nodes; codes are matched in `case` clauses and equality `BinaryExpression`s whose other operand is not a `.kind` property access; comments are never visited. Each bug task keeps its own cases, run red then green. This is the second round of bug tasks on T7P.9.
+
+**T7P.9-B5 cases:** it should pass on `` `${1 /* Mark missing */}` ``; it should still fail on `` `Mark missing ${x}` ``.
+**T7P.9-B6 cases:** it should pass on `<span>Don't</span>; // Mark missing`; it should still fail on `<span>Don't</span>{'Mark missing'}`.
+**T7P.9-B7 cases:** it should fail on a code literal after a CRLF line continuation inside a string followed by `//` text, the way the finding describes; it should still pass on the current tree.

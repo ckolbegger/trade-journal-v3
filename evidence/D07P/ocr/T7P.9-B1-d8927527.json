@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 58193,
+    "input_tokens": 56692,
+    "output_tokens": 1501,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m19s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "The whole-file matching can now flag exempt status comparisons when the RHS member access spans lines. For example, `'AcknowledgedUnavailable'\\n === status\\n .kind` captures only `status` in group 3, so the `.kind` exemption fails and verify:wording rejects valid status code. Match the complete member expression (including whitespace around member access) before applying the exemption, and add regression coverage for multiline status comparisons in both operand orders.",
+      "existing_code": "  for (const m of text.matchAll(eqBeforeRe))\n    if (!/\\.kind$/.test(m[3] ?? '')) at(m.index + m[0].indexOf(`${m[1]}${m[2]}`), 'code', m[0].trim());",
+      "start_line": 76,
+      "end_line": 77,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/verify-wording.ts",
+        "tools/wording-scan.ts"
+      ]
+    }
+  ],
+  "session_id": "95d58d15-bce1-4942-9f34-ca024dbd9476",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "95d58d15-bce1-4942-9f34-ca024dbd9476",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d8927527",
+      "resolved_base": "b436ac7e2a67247f943ec191963813b09513f32a",
+      "resolved_head": "d892752742a62e79e774c5aeb34fd6ca08e1ab13",
+      "exact_range": "b436ac7e2a67247f943ec191963813b09513f32a..d892752742a62e79e774c5aeb34fd6ca08e1ab13",
+      "source_artifact_sha256": "14364bc663178329f324d07c264d09d485dd1e8fd061dab19d6ef1212784880c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "a4c02ba4064709989284f244ca639ab2d762a4535d6b73da618ae089620e28e4"
+        },
+        {
+          "item_id": "64ede7740fd9a0d98a911964208f67dc5a6266feacaba01306d4b8b73f991a41",
+          "path": "tools/verify-wording.ts",
+          "fingerprint": "36565c00f00a5f3609cd7fc106519404bf7d3a75da46874412afacb6bd3effc6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "a4c02ba4064709989284f244ca639ab2d762a4535d6b73da618ae089620e28e4"
+        },
+        {
+          "item_id": "64ede7740fd9a0d98a911964208f67dc5a6266feacaba01306d4b8b73f991a41",
+          "path": "tools/verify-wording.ts",
+          "fingerprint": "36565c00f00a5f3609cd7fc106519404bf7d3a75da46874412afacb6bd3effc6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 78946
+  }
+}

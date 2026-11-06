@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 50838,
+    "input_tokens": 49341,
+    "output_tokens": 1497,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m21s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "Template interpolation contains executable JavaScript, not literal text. For example, scanSource on `const s = `${1 /* Mark missing */}`;` reports the phrase inside the real block comment because this loop copies the entire template unchanged. This violates the requirement to ignore real comments and can make verify:wording reject compliant UI files. Track `${...}` expressions (including nested templates/braces) and strip comments inside those expressions; add a regression test.",
+      "existing_code": "      while (j \u003c source.length \u0026\u0026 source[j] !== c \u0026\u0026 (c === '`' || source[j] !== '\\n')) j += source[j] === '\\\\' ? 2 : 1;",
+      "start_line": 75,
+      "end_line": 75,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "Treating every apostrophe as a string opener still mishandles JSX text on the same line. For example, `const view = \u003cspan\u003eDon't\u003c/span\u003e; // Mark missing` produces a wording hit from the real trailing comment: the apostrophe causes the rest of the line to be copied without checking for comments. Ending at a newline only limits the damage; it does not preserve comment stripping for valid TSX. Distinguish JSX text from JavaScript string literals and cover this case with a regression test.",
+      "existing_code": "    } else if (c === \"'\" || c === '\"' || c === '`') {",
+      "start_line": 73,
+      "end_line": 73,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/wording-scan.ts",
+      "content": "Handle escaped CRLF line continuations as a single escape. In a valid quoted string containing a backslash followed by CRLF, advancing by two skips only the backslash and CR, leaving LF to terminate this loop prematurely. For example, a source line `const a = 'x\\` followed by CRLF and ` // '; const b = 'Mark missing';` incorrectly treats the literal's `//` as a comment and hides the prohibited phrase. Consume all three characters for a backslash-CRLF continuation so strings behave consistently with LF and CRLF files.",
+      "existing_code": "      while (j \u003c source.length \u0026\u0026 source[j] !== c \u0026\u0026 (c === '`' || source[j] !== '\\n')) j += source[j] === '\\\\' ? 2 : 1;",
+      "start_line": 75,
+      "end_line": 75,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "tools/wording-scan.ts",
+      "files": [
+        "tools/wording-scan.ts"
+      ]
+    }
+  ],
+  "session_id": "95b93666-f3e8-4bc7-ac96-cedda00ea27b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "95b93666-f3e8-4bc7-ac96-cedda00ea27b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fd2d751a",
+      "resolved_base": "d892752742a62e79e774c5aeb34fd6ca08e1ab13",
+      "resolved_head": "fd2d751aafe0ba9a5094eebc3ca13da7fa9b5f1b",
+      "exact_range": "d892752742a62e79e774c5aeb34fd6ca08e1ab13..fd2d751aafe0ba9a5094eebc3ca13da7fa9b5f1b",
+      "source_artifact_sha256": "7580ddf01bdadec1b5aa1cded7ac2dcb86d0ebc1955ead69e953f92293860c40"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "b8c4ddb8505296e7cee6206c87302c9727ad4afded7d0868b9fb87c33e65af06"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1679bf11b26fe4bbab866e58c7650f5c2453af2f11f0406fae4889c36124be3f",
+          "path": "tools/wording-scan.ts",
+          "fingerprint": "b8c4ddb8505296e7cee6206c87302c9727ad4afded7d0868b9fb87c33e65af06"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 80566
+  }
+}
