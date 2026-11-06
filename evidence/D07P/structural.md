@@ -587,3 +587,19 @@ Wall times: unit 7.9 s, integration 48.6 s, browser 7.9 min. The browser stage s
 - `git diff claude-opus-5.5-pre-d7p -- tests/fixtures`: only `workspace-v3`, `workspace-v4` and `workspace-v5` `expected-views.json` (decision 78); every `dump.json` unchanged.
 
 Counts, `claude-opus-5.5-pre-d7p` → `claude-opus-5.5-d7p`: unit 1188 → 1225; integration 154 → 154; browser 163 → 167; checks 12 → 13.
+
+## Retro-B1 verify:wording becomes an ESLint rule
+
+`eslint.wording.config.js` exports `wordingRules` (and a default export with the TS parser for `eslint --no-config-lookup -c`); `eslint.config.js` merges it; `package.json`'s `verify:wording` is `eslint --no-config-lookup -c eslint.wording.config.js src/ui`. `tools/wording-scan.ts`, `tools/verify-wording.ts` (with `--list`) and `tools/wording-scan.test.ts` are deleted. The phrase, reason-word and code lists moved unchanged. Selectors, generated in JavaScript: phrase on `Literal`, `TemplateElement[value.cooked]` and `JSXText`; whole-text reason words on `Literal`, an expression-less template's `TemplateElement`, and `JSXText`; codes on `SwitchCase[test…]` and on `BinaryExpression[operator=/^[!=]==?$/]` with the code on the right or the left, each through up to three `.expression` wrappers (`as`, `satisfies`, `<T>x`, `!`; a no-substitution template also counts), and `:not(…property.name="kind")` on the other side through the same wrappers (a `ChainExpression` is one wrapper, so `?.kind` is exempt).
+
+| Verification | Result |
+|---|---|
+| `npx vitest run tools/wording-rules.test.ts` | exit 0, 27 passed |
+| `npx vitest run tools` | exit 0, 3 files, 44 passed (the cumulative unit stage runs `src` only) |
+| `npm run verify:wording` on the tree | exit 0 |
+| Planted (uncommitted Edit-tool edits: `<p>{'Mark missing'}</p>` in `src/ui/screens/AboutView.tsx`, a function with `case 'NotClosed':` in `src/ui/format.ts`) | exit 1; `src/ui/format.ts` 12:5 `verify:wording: this branches on a reason code. Word it through src/ui/calculation-words.ts …`; `src/ui/screens/AboutView.tsx` 102:13 `verify:wording: this is a reason's or finding's words. Word it through src/ui/calculation-words.ts …` |
+| Restored with Edit | `git diff -- src/ui/format.ts src/ui/screens/AboutView.tsx` empty |
+| `npm run lint`, `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint:deps` | each exit 0 |
+| `.claude/scripts/full-suite.sh evidence/D07P retro-b1-checks-probe checks` | 13 of 13 exit 0, `verify:wording` among them; probe output file deleted |
+
+Port notes: all 27 cases keep their names and inputs and pass on their first run (the port is a reimplementation, so no red rows). A hit now sits at its matched node's start line (tech debt item 12): for a comparison the node is the whole comparison, for a `case` the `case` clause, for JSX text the text node, which starts right after its tag. Three asserted lines therefore differ from the scanner's: the comparison split across lines (2, was 3), the `case` on the line after `case` (2, was 3), and JSX text on the line after `<span>` (2, was 3). The test also asserts the message begins `verify:wording:` and names `src/ui/calculation-words.ts`.

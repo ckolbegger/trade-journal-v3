@@ -35,7 +35,7 @@
     "fixtures:freeze": "node tools/fixtures-freeze.ts",
     "verify:fixtures": "node tools/verify-fixtures.ts",
     "verify:session-policy": "node tools/verify-session-policy.ts",
-    "verify:wording": "node tools/verify-wording.ts",
+    "verify:wording": "eslint --no-config-lookup -c eslint.wording.config.js src/ui",
     "ui:screenshots": "node tools/ui-screenshots.ts"
   },
   "dependencies": {

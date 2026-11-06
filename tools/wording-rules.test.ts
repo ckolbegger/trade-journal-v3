@@ -1,6 +1,17 @@
 import { readdirSync, readFileSync } from 'node:fs';
+import { Linter } from 'eslint';
 import { describe, expect, it } from 'vitest';
-import { scanSource } from './wording-scan.ts';
+// @ts-expect-error The configuration is plain JavaScript (as eslint.deps.config.js is), with no declaration file.
+import wordingConfig from '../eslint.wording.config.js';
+
+const linter = new Linter({ configType: 'flat' });
+// Every hit as { line, message }: the start line of the hit node, and the rule's message.
+const scanSource = (path: string, source: string) => {
+  const messages = linter.verify(source, wordingConfig as Linter.Config[], { filename: path });
+  expect(messages.filter((m) => m.fatal)).toEqual([]);
+  return messages.map((m) => ({ line: m.line, message: m.message }));
+};
+const lines = (hits: { line: number }[]) => hits.map((h) => h.line);
 
 const uiDir = new URL('../src/ui/', import.meta.url);
 const uiSources = (dir: URL): URL[] =>
@@ -9,45 +20,37 @@ const uiSources = (dir: URL): URL[] =>
     return e.isDirectory() ? uiSources(child) : /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [child] : [];
   });
 
-describe('verify:wording scanning', () => {
+describe('verify:wording rules', () => {
   it('fails on a comparison whose operator and code literal are on consecutive lines', () => {
     const source = ['const a = 1;', 'const b = result.reason ===', "  'MarkMissing';"].join('\n');
     const hits = scanSource('src/ui/X.tsx', source);
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/X\.tsx:3: code: /);
+    // The hit is the comparison, which starts on line 2 (the scanner reported the literal's line, 3).
+    expect(lines(hits)).toEqual([2]);
+    expect(hits[0]?.message).toMatch(/^verify:wording: .*src\/ui\/calculation-words\.ts/);
   });
 
   it('fails on a case whose code literal is on the line after case', () => {
     const source = ['switch (r) {', '  case', "    'NotClosed':", '    break;', '}'].join('\n');
-    const hits = scanSource('src/ui/Y.tsx', source);
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/Y\.tsx:3: code: /);
+    expect(lines(scanSource('src/ui/Y.tsx', source))).toEqual([2]);
   });
 
   it('fails on a phrase after a string containing a line comment marker', () => {
-    const hits = scanSource('src/ui/Z.tsx', "const a = ' // '; const b = 'Mark missing';");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/Z\.tsx:1: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/Z.tsx', "const a = ' // '; const b = 'Mark missing';"))).toEqual([1]);
   });
 
   it('fails on a case after a string containing a block comment marker', () => {
     const source = ["const a = '/*';", "switch (r) { case 'NotClosed': break; }", "const b = '*/';"].join('\n');
-    const hits = scanSource('src/ui/W.tsx', source);
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/W\.tsx:2: code: /);
+    expect(lines(scanSource('src/ui/W.tsx', source))).toEqual([2]);
   });
 
   it('fails on a string literal that is a NotApplicable reason words', () => {
-    const hits = scanSource('src/ui/V.tsx', "const label = 'not closed yet';");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/V\.tsx:1: words: not closed yet$/);
+    expect(lines(scanSource('src/ui/V.tsx', "const label = 'not closed yet';"))).toEqual([1]);
   });
 
   it('fails on JSX text that is a NotApplicable reason words', () => {
     const source = ['const a = (', '  <span>', '    No open position', '  </span>', ');'].join('\n');
-    const hits = scanSource('src/ui/U.tsx', source);
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/U\.tsx:3: words: No open position$/);
+    // A JSX text node starts right after the tag, on line 2 (the scanner reported the words' line, 3).
+    expect(lines(scanSource('src/ui/U.tsx', source))).toEqual([2]);
   });
 
   it('still ignores real comments and keeps line numbers', () => {
@@ -57,9 +60,7 @@ describe('verify:wording scanning', () => {
       "   Mark missing */ const s = 'x'; // Mark missing",
       "const t = `a // b`; r === 'MarkMissing';",
     ].join('\n');
-    const hits = scanSource('src/ui/V.tsx', source);
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/V\.tsx:4: code: /);
+    expect(lines(scanSource('src/ui/V.tsx', source))).toEqual([4]);
   });
 
   it('passes on a code-first comparison whose operand wraps before .kind', () => {
@@ -72,8 +73,7 @@ describe('verify:wording scanning', () => {
 
   it('still fails on a code-first comparison whose operand wraps before reason', () => {
     const hits = scanSource('src/ui/K.tsx', ["const a = 'AcknowledgedUnavailable' === result", '  .reason;'].join('\n'));
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/K\.tsx:1: code: /);
+    expect(lines(hits)).toEqual([1]);
   });
 
   it('passes on a comment inside a template substitution', () => {
@@ -81,9 +81,7 @@ describe('verify:wording scanning', () => {
   });
 
   it('still fails on a phrase in a template literal with a substitution', () => {
-    const hits = scanSource('src/ui/B5.tsx', '`Mark missing ${x}`;');
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B5\.tsx:1: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B5.tsx', '`Mark missing ${x}`;'))).toEqual([1]);
   });
 
   it('passes on a trailing comment after JSX text with an apostrophe', () => {
@@ -91,25 +89,17 @@ describe('verify:wording scanning', () => {
   });
 
   it('still fails on a phrase in an expression after JSX text with an apostrophe', () => {
-    const hits = scanSource('src/ui/B6.tsx', "const a = <span>Don't</span>;\nconst b = <i>{'Mark missing'}</i>;");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B6\.tsx:2: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B6.tsx', "const a = <span>Don't</span>;\nconst b = <i>{'Mark missing'}</i>;"))).toEqual([2]);
   });
 
   it('fails on a code literal after a CRLF line continuation inside a string followed by comment text', () => {
     const source = "const a = 'x\\\r\ny'; // note\r\nswitch (r) { case 'NotClosed': break; }\r\n";
-    const hits = scanSource('src/ui/B7.tsx', source);
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B7\.tsx:3: code: /);
+    expect(lines(scanSource('src/ui/B7.tsx', source))).toEqual([3]);
   });
 
   it('fails on reason words next to a JSX expression', () => {
-    const before = scanSource('src/ui/B8.tsx', '<p>{icon}No open position</p>');
-    expect(before.length).toBe(1);
-    expect(before[0]).toMatch(/^src\/ui\/B8\.tsx:1: words: No open position$/);
-    const after = scanSource('src/ui/B8.tsx', '<p>Not closed yet{icon}</p>');
-    expect(after.length).toBe(1);
-    expect(after[0]).toMatch(/^src\/ui\/B8\.tsx:1: words: Not closed yet$/);
+    expect(lines(scanSource('src/ui/B8.tsx', '<p>{icon}No open position</p>'))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B8.tsx', '<p>Not closed yet{icon}</p>'))).toEqual([1]);
   });
 
   it('passes on a reason quoted inside a longer string', () => {
@@ -117,21 +107,15 @@ describe('verify:wording scanning', () => {
   });
 
   it('fails on a code literal wrapped in as const in a comparison', () => {
-    const hits = scanSource('src/ui/B10.tsx', "if (x === ('MarkMissing' as const)) {}");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B10\.tsx:1: code: /);
+    expect(lines(scanSource('src/ui/B10.tsx', "if (x === ('MarkMissing' as const)) {}"))).toEqual([1]);
   });
 
   it('fails on a parenthesized code literal in a case clause', () => {
-    const hits = scanSource('src/ui/B10.tsx', "switch (r) { case ('NotClosed'): break; }");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B10\.tsx:1: code: /);
+    expect(lines(scanSource('src/ui/B10.tsx', "switch (r) { case ('NotClosed'): break; }"))).toEqual([1]);
   });
 
   it('fails on a code literal with satisfies in a comparison', () => {
-    const hits = scanSource('src/ui/B10.tsx', "if (('AwaitingClose' satisfies string) === x) {}");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B10\.tsx:1: code: /);
+    expect(lines(scanSource('src/ui/B10.tsx', "if (('AwaitingClose' satisfies string) === x) {}"))).toEqual([1]);
   });
 
   it('still passes on a wrapped code literal compared with a kind access', () => {
@@ -140,45 +124,32 @@ describe('verify:wording scanning', () => {
   });
 
   it('fails on a phrase spelled with an escape in a string', () => {
-    const hits = scanSource('src/ui/B11.tsx', "const a = 'Mark\\x20missing';");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:1: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B11.tsx', "const a = 'Mark\\x20missing';"))).toEqual([1]);
   });
 
   it('fails on a phrase spelled with an escape in a template literal', () => {
-    const hits = scanSource('src/ui/B11.tsx', 'const a = `Awaiting\\x20the close`;');
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:1: words: Awaiting the close$/);
+    expect(lines(scanSource('src/ui/B11.tsx', 'const a = `Awaiting\\x20the close`;'))).toEqual([1]);
   });
 
   it('still reports the hit at the literal line', () => {
-    const hits = scanSource('src/ui/B11.tsx', "const a = 1;\nconst b = 'x';\nconst c = `y ${z} Mark\\x20missing`;");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:3: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B11.tsx', "const a = 1;\nconst b = 'x';\nconst c = `y ${z} Mark\\x20missing`;"))).toEqual([3]);
   });
 
   it('reports a phrase on line 2 of a multi-line template at the line where the template starts', () => {
-    const hits = scanSource('src/ui/B12.tsx', 'const a = `x\\x20y\nMark missing`;');
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B12\.tsx:1: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B12.tsx', 'const a = `x\\x20y\nMark missing`;'))).toEqual([1]);
     // Without an escape the offset into the text is exact, yet the hit still names the line where the template starts.
-    const plain = scanSource('src/ui/B12.tsx', 'const a = `x y\nab Mark missing`;');
-    expect(plain[0]).toMatch(/^src\/ui\/B12\.tsx:1: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B12.tsx', 'const a = `x y\nab Mark missing`;'))).toEqual([1]);
   });
 
   it('reports a single-line literal hit at its own line', () => {
-    const hits = scanSource('src/ui/B12.tsx', "const a = 1;\nconst b = 'Mark missing';");
-    expect(hits.length).toBe(1);
-    expect(hits[0]).toMatch(/^src\/ui\/B12\.tsx:2: words: Mark missing$/);
+    expect(lines(scanSource('src/ui/B12.tsx', "const a = 1;\nconst b = 'Mark missing';"))).toEqual([2]);
   });
 
   it('still passes on a sentence that contains a reason words, and on the current tree', () => {
-    const sentence = scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";');
-    expect(sentence).toEqual([]);
+    expect(scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";')).toEqual([]);
     const files = uiSources(uiDir).filter((f) => !f.pathname.endsWith('/src/ui/calculation-words.ts'));
     expect(files.length).toBeGreaterThan(0);
-    const hits = files.flatMap((f) => scanSource(f.pathname, readFileSync(f, 'utf8')));
-    expect(scanSource('src/ui/screens/PositionChangeForm.tsx', readFileSync(new URL('screens/PositionChangeForm.tsx', uiDir), 'utf8'))).toEqual([]);
+    const hits = files.flatMap((f) => scanSource(`src/ui/${f.pathname.split('/src/ui/')[1]!}`, readFileSync(f, 'utf8')));
     expect(hits).toEqual([]);
   });
 });
