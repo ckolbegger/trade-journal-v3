@@ -226,9 +226,9 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Next task | T7.2 Trade Analysis: `assessPlan` for single-leg options. |
-| Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.2: `docs(evidence): T7.1 complete`. |
-| Tasks done | Setup (`5b420449`). T7.1 (`ba247330`) with bug task T7.1-B1 (`b115db30`, expiration year 2000–2099); cumulative run `t7-1-instrument` green (full tier, 8.2 min). |
-| Last commit | `docs(evidence): T7.1 complete` |
+| Next task | T7.3 Trade Analysis: `expirationPayoff`. |
+| Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.3: `docs(evidence): T7.2 complete`. |
+| Tasks done | Setup (`5b420449`). T7.1 (`ba247330`) with bug task T7.1-B1 (`b115db30`, expiration year 2000–2099); cumulative run `t7-1-instrument` green (full tier, 8.2 min). T7.2 (`504705d2`) with bug tasks B1 `ba8f1893` (one Stop, one Target, `ConditionCountNotOne`), B2 `ca36f848` (`economicTime` required; `confirmPlan` passes it), B3 `3feb3f11` (canonical option Instrument kept), B4 `f1ffa592` (Exercise Intent on Long Stock rejected); run `t7-2-assess-plan` green (task tier). |
+| Last commit | `docs(evidence): T7.2 complete` |
 | Decisions made | T7.1: `instrumentOf` on an OCC key returns `symbol` = root (the key carries no listing symbol; callers holding the Trade's Instrument prefer it); contract issue codes `RootTooLong`, `InvalidExpiration`, `InvalidStrike`, `StrikeNotPositive`, `StrikeTooPrecise`, `InvalidRight`; strikes above 5 whole digits rejected; expirations limited to 2000–2099 (T7.1-B1). |
 | Open questions | First-run passes: T7.1 case 6 (bare symbol is Stock with multiplier 1), mutation-checked (`multiplierOf` → 100 for Stock failed). Dismissed ocr findings: none. (Settled before the session: the words for D7's new reasons, decision 81, revision 47; `verify:wording` rebuilt as an ESLint rule, revision 48.) |

@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 4,
+    "total_tokens": 145971,
+    "input_tokens": 144104,
+    "output_tokens": 1867,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m28s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/plan.ts",
+      "content": "A100 requires exactly one Stop and one Target for an option plan, but only empty arrays are rejected. For example, the valid Long Call fixture with Stops at 48 and 49 and a Target at 60 is accepted and gets a multi-condition baseline. Add option-specific cardinality validation before deriving the boundaries, with tests for multiple Stops and Targets.",
+      "existing_code": "  const stopBasis = stops.map(({ condition, price }) =\u003e boundary(leg, entry, quantity, condition, price!, 'Stop'));\n  const targetBasis = targets.map(({ condition, price }) =\u003e boundary(leg, entry, quantity, condition, price!, 'Target'));",
+      "start_line": 244,
+      "end_line": 245,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/plan.ts",
+      "content": "Expiration eligibility is silently skipped when economicTime is omitted. The production confirmPlan caller in trade-workflows.ts currently calls assessPlan with only strategyShape and plan, so it never runs this check, even though the command has an Economic Time. Require Economic Time for option assessment (or reject its absence) and pass command.economicTime through the workflow so expired contracts cannot be accepted.",
+      "existing_code": "  if (contract.ok \u0026\u0026 economicTime) {",
+      "start_line": 190,
+      "end_line": 190,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/plan.ts",
+      "content": "The applicability check is inside the Option branch, so an otherwise valid stock plan with exerciseIntent is accepted, and normalizePlan preserves that fact. Since Exercise Intent belongs only to long options, reject it whenever the leading leg is not a long option, including stock plans. Add a stock-plan regression test.",
+      "existing_code": "    if (first.side === 'Short' \u0026\u0026 plan.exerciseIntent) issue('ExerciseIntentNotApplicable');",
+      "start_line": 219,
+      "end_line": 219,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/plan.ts",
+      "content": "Use the canonical instrument returned by successful validation in the accepted plan, rather than only checking `contract.ok`. `normalizePlan` normalizes the symbol but leaves the option's strike and root untouched. For example, the valid strike `000055.00` passes this validator and is stored unchanged; `instrumentKey` then emits nine strike digits instead of eight, so `instrumentOf` no longer recognizes the key as an option. Likewise, a supplied root inconsistent with the symbol survives validation and identifies a different contract. Propagate `contract.instrument` into the normalized plan and test the accepted instrument's key round-trip.",
+      "existing_code": "  const contract = validateOptionContract(leg.instrument);",
+      "start_line": 186,
+      "end_line": 186,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/domain/trade-analysis/plan.ts",
+      "files": [
+        "src/domain/trade-analysis/plan.ts"
+      ]
+    }
+  ],
+  "session_id": "74e9c69a-ce79-49f8-bf0a-588bb3d3f8b4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "74e9c69a-ce79-49f8-bf0a-588bb3d3f8b4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "504705d2",
+      "resolved_base": "ddf82dbddf649120b364134ecc2a3f0d9ebb60e5",
+      "resolved_head": "504705d2743a090c35b5ee317497740c9262bdb5",
+      "exact_range": "ddf82dbddf649120b364134ecc2a3f0d9ebb60e5..504705d2743a090c35b5ee317497740c9262bdb5",
+      "source_artifact_sha256": "338899127a33ef4ab02777eb1c3b95f657c4d7ab1dc67c594e3db1e209f3e995"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "1e2c8413867751b744b24fe16a39c0a64f46c9ae67641b425ac83d827aa4943b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "1e2c8413867751b744b24fe16a39c0a64f46c9ae67641b425ac83d827aa4943b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 87658
+  }
+}
