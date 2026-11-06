@@ -73,9 +73,20 @@ const equalityOperators = new Set([
 
 const isStringLike = (n: ts.Node): n is ts.StringLiteral | ts.NoSubstitutionTemplateLiteral =>
   ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n);
-const isCode = (n: ts.Node) => isStringLike(n) && codes.has(n.text);
+// Parentheses, `as`, `satisfies`, `<T>x` and `x!` do not change which value a node is.
+const unwrap = (n: ts.Node): ts.Node =>
+  ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isSatisfiesExpression(n) || ts.isTypeAssertionExpression(n) || ts.isNonNullExpression(n)
+    ? unwrap(n.expression)
+    : n;
+const isCode = (n: ts.Node) => {
+  const u = unwrap(n);
+  return isStringLike(u) && codes.has(u.text);
+};
 // A comparison on Market Data's Expected-Mark Status reads `.kind`; that is a status, not a reason.
-const isKindAccess = (n: ts.Node) => ts.isPropertyAccessExpression(n) && n.name.text === 'kind';
+const isKindAccess = (n: ts.Node) => {
+  const u = unwrap(n);
+  return ts.isPropertyAccessExpression(u) && u.name.text === 'kind';
+};
 const squash = (s: string) => s.replace(/\s*\n\s*/g, ' ');
 
 // Each hit as `path:line: kind: match`.
@@ -95,7 +106,9 @@ export function scanSource(path: string, source: string): string[] {
       node.kind === ts.SyntaxKind.JsxText
     ) {
       const raw = node.getText(sf);
-      for (const m of raw.matchAll(phraseRe)) hit(start + m.index, 'words', m[0]);
+      // Phrases are matched on the decoded text, so an escape inside a phrase does not hide it; JSX text has no escapes.
+      const decoded = node.kind === ts.SyntaxKind.JsxText ? raw : (node as ts.StringLiteral | ts.TemplateLiteralLikeNode).text;
+      for (const m of decoded.matchAll(phraseRe)) hit(Math.min(start + m.index, node.getEnd() - 1), 'words', m[0]);
       // Reason words count only as the whole literal or the whole JSX text node.
       const whole = node.kind === ts.SyntaxKind.JsxText || isStringLike(node) ? (isStringLike(node) ? node.text : raw).trim() : '';
       if (reasonWords.has(whole.toLowerCase())) hit(start + Math.max(raw.indexOf(whole), 0), 'words', whole);

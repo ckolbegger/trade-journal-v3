@@ -116,6 +116,47 @@ describe('verify:wording scanning', () => {
     expect(scanSource('src/ui/B9.tsx', `const a = "The label 'not closed yet' means the Trade is open";`)).toEqual([]);
   });
 
+  it('fails on a code literal wrapped in as const in a comparison', () => {
+    const hits = scanSource('src/ui/B10.tsx', "if (x === ('MarkMissing' as const)) {}");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B10\.tsx:1: code: /);
+  });
+
+  it('fails on a parenthesized code literal in a case clause', () => {
+    const hits = scanSource('src/ui/B10.tsx', "switch (r) { case ('NotClosed'): break; }");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B10\.tsx:1: code: /);
+  });
+
+  it('fails on a code literal with satisfies in a comparison', () => {
+    const hits = scanSource('src/ui/B10.tsx', "if (('AwaitingClose' satisfies string) === x) {}");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B10\.tsx:1: code: /);
+  });
+
+  it('still passes on a wrapped code literal compared with a kind access', () => {
+    expect(scanSource('src/ui/B10.tsx', "if (('AcknowledgedUnavailable' as const) === status.kind) {}")).toEqual([]);
+    expect(scanSource('src/ui/B10.tsx', "if (('AcknowledgedUnavailable' as const) === (status!.kind as string)) {}")).toEqual([]);
+  });
+
+  it('fails on a phrase spelled with an escape in a string', () => {
+    const hits = scanSource('src/ui/B11.tsx', "const a = 'Mark\\x20missing';");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:1: words: Mark missing$/);
+  });
+
+  it('fails on a phrase spelled with an escape in a template literal', () => {
+    const hits = scanSource('src/ui/B11.tsx', 'const a = `Awaiting\\x20the close`;');
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:1: words: Awaiting the close$/);
+  });
+
+  it('still reports the hit at the literal line', () => {
+    const hits = scanSource('src/ui/B11.tsx', "const a = 1;\nconst b = 'x';\nconst c = `y ${z} Mark\\x20missing`;");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/B11\.tsx:3: words: Mark missing$/);
+  });
+
   it('still passes on a sentence that contains a reason words, and on the current tree', () => {
     const sentence = scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";');
     expect(sentence).toEqual([]);
