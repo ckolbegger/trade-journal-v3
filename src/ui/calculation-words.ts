@@ -12,7 +12,17 @@ export type Part =
   | { readonly kind: 'date'; readonly date: string };
 export type Parts = readonly Part[];
 
-export const instrumentLabel = (instrument: Instrument): string => instrument.symbol;
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// "20 Nov 2026" from an ISO date.
+const dayMonthYear = (date: string): string => {
+  const [year = '', month = '1', day = '1'] = date.split('-');
+  return `${Number(day)} ${SHORT_MONTHS[Number(month) - 1]} ${year}`;
+};
+// The only code that names an Instrument in text.
+export const instrumentLabel = (instrument: Instrument): string =>
+  instrument.kind === 'Option'
+    ? `${instrument.symbol} ${dayMonthYear(instrument.expiration)} ${instrument.strike} ${instrument.right}`
+    : instrument.symbol;
 const partText = (part: Part): string => {
   switch (part.kind) {
     case 'text':

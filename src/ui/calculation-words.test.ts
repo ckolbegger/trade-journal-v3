@@ -100,6 +100,11 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     expect(instrumentLabel(instrumentOf('BRK.B'))).toBe('BRK.B');
   });
 
+  it('should label an Option Instrument as XYZ 20 Nov 2026 55 Call', () => {
+    expect(instrumentLabel(instrumentOf('XYZ261120C00055000'))).toBe('XYZ 20 Nov 2026 55 Call');
+    expect(instrumentLabel({ kind: 'Option', symbol: 'BRK.B', root: 'BRKB', expiration: '2026-11-20', strike: '412.5', right: 'Put', multiplier: 100 })).toBe('BRK.B 20 Nov 2026 412.5 Put');
+  });
+
   it('should label the Expected-Mark Status Acknowledged Unavailable with the Mark row casing', () => {
     expect(acknowledgedUnavailableStatusLabel()).toBe('Acknowledged Unavailable');
   });
