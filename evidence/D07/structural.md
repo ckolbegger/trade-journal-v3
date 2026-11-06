@@ -90,3 +90,16 @@ Run by `suite-runner` on 2026-11-06, browser stage `browser-auto ddf82dbd`.
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-2-assess-plan-checks.txt` |
 
 Tier: task, printed reason "no changed path since ddf82dbd is on the full-tier list"; no `e2e/d7` folder yet. Ports free before and after. T7.2 is complete.
+
+## T7.3 wording checks
+
+Wording of `NoOptionExpirationAnchor` (decision 81): `notApplicableTail` in `src/ui/calculation-words.ts` gains the case "no option expiration" (label "Not applicable"; figure and sentence "Not applicable: no option expiration"); `eslint.wording.config.js` gains the code in `CODES` and the tail in `REASON_WORDS`.
+- `npx vitest run tools`: exit 0; Test Files 3 passed (3), Tests 51 passed (51). `tools/wording-rules.test.ts` now has 34 cases (33 at `claude-opus-5.5-pre-d7`, plus one for the new words and code).
+- `npm run verify:wording`: exit 0, no output beyond the command banner.
+- Planted `export const PLANTED = 'no option expiration';` at line 2 of `src/ui/due-text.ts` (uncommitted Edit): `npm run verify:wording` exit 1:
+  ```
+  /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/src/ui/due-text.ts
+    2:24  error  verify:wording: this is a reason's or finding's words. Word it through src/ui/calculation-words.ts, the only place that words a Calculation Result or branches on its reason code  no-restricted-syntax
+  ✖ 1 problem (1 error, 0 warnings)
+  ```
+  The line was removed by Edit; `git status` shows `src/ui/due-text.ts` unmodified, and `npm run verify:wording` exits 0 again.

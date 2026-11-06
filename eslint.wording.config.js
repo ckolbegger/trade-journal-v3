@@ -45,6 +45,7 @@ export const CODES = [
   'SessionPolicyNotCovered',
   'FactsIncoherent',
   'NoRemainingPosition',
+  'NoOptionExpirationAnchor',
   'NotClosed',
   'EntryNotResolved',
   'NoOngoingRisk',
@@ -61,6 +62,7 @@ export const CODES = [
 // The NotApplicable reasons' words (calculation-words.ts, notApplicableTail).
 export const REASON_WORDS = [
   'no open position',
+  'no option expiration',
   'not closed yet',
   'entry not resolved yet',
   'no risk to the Stop',

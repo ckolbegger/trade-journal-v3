@@ -3,6 +3,7 @@ import { Temporal } from 'temporal-polyfill';
 import { multiplierOf, validateOptionContract, type ContractIssue, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
+import { expirationPayoff, type ExpirationPayoffs } from './payoff.ts';
 
 // Plan facts as proposed for confirmation; decimals are finite-decimal strings.
 export interface PlannedLegInput {
@@ -80,6 +81,8 @@ export type PlanAssessment =
   readonly baseline: PlanBaseline;
   // The Plan with every decimal in its normalized stored form; these are the facts frozen.
   readonly plan: PlanInput;
+  // The Planned Expiration Payoff of the frozen Plan facts; NotApplicable for a Plan with no option.
+  readonly plannedPayoff: ExpirationPayoffs['planned'];
 };
 
 // A positive finite decimal, or undefined when the text is not one (A9).
@@ -269,7 +272,8 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   if (nearest(targetBasis).compare(zero) <= 0) issue('TargetNotBeyondEntry', breakeven && { breakeven });
   if (issues.length > 0) return { kind: 'Rejected', issues };
 
-  return { kind: 'Accepted', baseline: baselineOf(stopBasis, targetBasis), plan: normalizePlan(plan, canonical) };
+  const frozen = normalizePlan(plan, canonical);
+  return { kind: 'Accepted', baseline: baselineOf(stopBasis, targetBasis), plan: frozen, plannedPayoff: expirationPayoff({ plan: frozen }).planned };
 }
 
 function baselineOf(stopBasis: readonly ConditionBasis[], targetBasis: readonly ConditionBasis[]): PlanBaseline {

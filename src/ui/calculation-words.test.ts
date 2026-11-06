@@ -79,6 +79,13 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     }
   });
 
+  it('should word NoOptionExpirationAnchor at the label, figure and sentence lengths as decision 81 gives', () => {
+    const reason = { reason: 'NoOptionExpirationAnchor' } as const;
+    expect(text(notApplicableWords(reason, 'label'))).toBe('Not applicable');
+    expect(text(notApplicableWords(reason, 'figure'))).toBe('Not applicable: no option expiration');
+    expect(text(notApplicableWords(reason, 'sentence'))).toBe('Not applicable: no option expiration');
+  });
+
   it('should word Unbounded above and below', () => {
     expect(text(unboundedWords('Above'))).toBe('Unbounded above');
     expect(text(unboundedWords('Below'))).toBe('Unbounded below');

@@ -10,6 +10,19 @@ export {
   type PlannedLegInput,
 } from './plan.ts';
 export {
+  expirationPayoff,
+  type Attainment,
+  type CurrentExposure,
+  type ExpirationPayoffInput,
+  type ExpirationPayoffs,
+  type ExpirationPayoffView,
+  type PayoffExtremum,
+  type PayoffLot,
+  type PayoffPlan,
+  type PayoffSegment,
+  type PayoffZero,
+} from './payoff.ts';
+export {
   derive,
   type CandidateBinding,
   type ChangeEffect,

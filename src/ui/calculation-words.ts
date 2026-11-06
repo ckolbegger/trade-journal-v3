@@ -74,6 +74,8 @@ const notApplicableTail = (reason: NotApplicableReason): string => {
   switch (reason.reason) {
     case 'NoRemainingPosition':
       return 'no open position';
+    case 'NoOptionExpirationAnchor':
+      return 'no option expiration';
     case 'NotClosed':
       return 'not closed yet';
     case 'EntryNotResolved':

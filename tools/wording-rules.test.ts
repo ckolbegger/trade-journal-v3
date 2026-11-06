@@ -102,6 +102,11 @@ describe('verify:wording rules', () => {
     expect(lines(scanSource('src/ui/B8.tsx', '<p>Not closed yet{icon}</p>'))).toEqual([1]);
   });
 
+  it('fails on the NoOptionExpirationAnchor words as a whole string and on its code in a comparison', () => {
+    expect(lines(scanSource('src/ui/B11.tsx', "const label = 'no option expiration';"))).toEqual([1]);
+    expect(lines(scanSource('src/ui/B11.tsx', "if (x.reason === 'NoOptionExpirationAnchor') {}"))).toEqual([1]);
+  });
+
   it('passes on a reason quoted inside a longer string', () => {
     expect(scanSource('src/ui/B9.tsx', `const a = "The label 'not closed yet' means the Trade is open";`)).toEqual([]);
   });

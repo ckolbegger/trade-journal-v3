@@ -36,6 +36,7 @@ export type UnavailableReason =
 
 export type NotApplicableReason =
   | { readonly reason: 'NoRemainingPosition' }
+  | { readonly reason: 'NoOptionExpirationAnchor' }
   | { readonly reason: 'NotClosed' }
   | { readonly reason: 'EntryNotResolved' }
   | { readonly reason: 'NoOngoingRisk' }
