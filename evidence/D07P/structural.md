@@ -438,3 +438,7 @@ Session `05a16eb4-4479-4af7-9429-bc7eceabf802`, model gpt-6.1-sol, 1 file review
 | low | `tools/wording-scan.ts:111` | A phrase's offset in the decoded text is used as a source offset, so in a multi-line literal with an escape before the phrase, the hit can be reported on the wrong line. The check still fails and names the file and phrase. | Valid (wrong line number only) |
 
 The third round of bug tasks on T7P.9 still leaves a finding, so the session stops for the user (handoff, "Running a whole deliverable", condition 6).
+
+**The user's decision (2026-11-05), after the third round:** fix the finding as T7P.9-B12, and then close T7P.9 whatever B12's ocr review finds; any further finding is recorded for the final report, not turned into a bug task.
+
+**T7P.9-B12: a phrase hit after an escape in a multi-line literal names the wrong line.** Fix: report a phrase or reason-word hit at the line where its literal (or template part, or JSX text node) starts, never from an offset into the decoded text. Cases: it should report a phrase on line 2 of a multi-line template literal starting on line 1, after an escape on line 1, at line 1; it should report a single-line literal's hit at its own line, as today.
