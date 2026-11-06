@@ -98,7 +98,9 @@ A 13.4-minute stage is also well past the 10-minute mark that tech debt item 6 i
 
 ---
 
-## Chosen fixes (drafted 2026-11-06, awaiting the user's approval)
+## Chosen fixes (drafted and approved 2026-11-06; all three done the same day)
+
+**Done.** Fix 1 is Retro-B1 (`dd0c8224`) and its bug tasks B1–B3 (`625d4a38`), recorded in [structural.md](structural.md); revision 48 marks tech debt item 12 resolved, and the D7 handoff was updated. Fixes 2 and 3 are in `.claude/docs/` (`4b360324`).
 
 ### Fix 1: `verify:wording` becomes an ESLint rule (finding 1), as bug task Retro-B1
 
