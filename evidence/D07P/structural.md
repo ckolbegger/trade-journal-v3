@@ -530,3 +530,24 @@ Fix: the work after the launch is inside `try { ... } finally { await context.cl
 Verification:
 - `npm run typecheck`: exit 0. `npm run lint`: exit 0.
 - Ports 5175, 9341, 9342 free before; `npx playwright test e2e/d7p/layout.spec.ts`: 4 passed (16.9 s); ports free after; nothing left running.
+
+### ocr reviews of `05dc57eb` (T7P.11) and `78967377` (T7P.11-B1)
+
+- `05dc57eb` in place (for `package.json`; `e2e/d7p/support.ts` is reviewed in place too): session `cae2ed6c-b21c-4cd4-a635-8d20c47739ec`, 2 files, 1 comment. Raw: [ocr/T7P.11-05dc57eb-inplace.json](ocr/T7P.11-05dc57eb-inplace.json).
+- `05dc57eb` relocated (the spec and support under `src/itg/d07p/`, the d1–d6 support chain in the parent commit): session `7e494544-2aa4-4b63-b53a-a523d82b5e17`, 3 files, 2 comments. Raw: [ocr/T7P.11-05dc57eb.json](ocr/T7P.11-05dc57eb.json). The agent's first relocation attempt reviewed the wrong commit after a quoting error; that output was overwritten, and the saved one is of the relocated T7P.11 commit.
+- **Valid:** `e2e/d7p/support.ts:54`, `writeSellQuantities` closed its persistent context outside a `finally` (raised by both runs). Fixed as T7P.11-B1 (`78967377`). The same shape in `e2e/d2/support.ts`'s `writeIntegrityFixture` is left: `e2e/d2` is outside this prefactor's change set.
+- **Dismissed (relocation artifact):** `package.json:33`, "`e2e/d7p` does not exist", raised only by the relocated run, where the spec sits under `src/itg/d07p/`.
+- `78967377` in place: session `c77fd47f-6f66-432d-a4af-ae4238b6628f`, 1 file, **no findings**. Raw: [ocr/T7P.11-B1-78967377.json](ocr/T7P.11-B1-78967377.json).
+
+T7P.11 notes for the final report: the incoherent Trade has two `ExceedsOpenQuantity` findings (section 6.3 reads "two findings, one `ExceedsOpenQuantity`"), written by a new `writeSellQuantities` in `e2e/d7p/support.ts` because `writeIntegrityFixture` has no edit that yields that finding; the Mark-missing instrument in the Open Detail and Review cases is ABC, not the plan's example XYZ; "in full" is checked strictly (inside every clipping or scrolling ancestor), the reading under which the nowrap mutation fails; the slider has no visible text, so its accessible name is checked.
+
+### Cumulative run after T7P.11 (`t7p-11-layout`, at `78967377`)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 97 files, 1225 passed | `suite-runs/t7p-11-layout-unit.txt` |
+| Node integration | 76 files, 154 passed | `suite-runs/t7p-11-layout-integration.txt` |
+| Browser (Chromium), full tier (`npm run test:e2e`, now with `e2e/d7p`) | 167 passed (7.9 min), `EXIT 0` | `suite-runs/t7p-11-layout-browser.txt` |
+| Static and verification checks | 13 of 13 `EXIT 0` | `suite-runs/t7p-11-layout-checks.txt` |
+
+Stage `browser-auto d2de1bf3`; full tier (T7P.11 changed `e2e/` and `package.json`). The runner returned before its browser stage finished; the table was read from the output files. The four new layout cases are 164–167. Ports 5175, 9341 and 9342 free after the run.

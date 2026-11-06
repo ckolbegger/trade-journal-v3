@@ -1,0 +1,106 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 104577,
+    "input_tokens": 103092,
+    "output_tokens": 1485,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m9s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d7p/support.ts",
+      "content": "Close this context in a `finally` block covering all work after launch. If the fixture throws (for example, because the Trade is missing or the Sell count changes), this line is never reached. This context is launched directly rather than through the tracked `profile.launch`, so the profile fixture's teardown cannot close it; Chromium can remain running with the profile locked after the test fails.",
+      "existing_code": "  await context.close();",
+      "start_line": 54,
+      "end_line": 54,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d7p/support.ts",
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "cae2ed6c-b21c-4cd4-a635-8d20c47739ec",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cae2ed6c-b21c-4cd4-a635-8d20c47739ec",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "05dc57eb",
+      "resolved_base": "d2de1bf338dcb60c7653e78b7f898fcd4ad85576",
+      "resolved_head": "05dc57eb28edbb51cfe0463cd8fc4f87ff820e27",
+      "exact_range": "d2de1bf338dcb60c7653e78b7f898fcd4ad85576..05dc57eb28edbb51cfe0463cd8fc4f87ff820e27",
+      "source_artifact_sha256": "5a5a104d1462caf4052be536a39aab2b9c1aab6c593f581b767bbeefb3112d2a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "429ebe25973e81847267d54b44476a70db34fefc9b6cfa31c467cf744141e653",
+          "path": "e2e/d7p/support.ts",
+          "fingerprint": "cebfe2d35bcf0941e09fb6cb6b5dfb1aa402ae957b9a8112bab7ac2721f36709"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "55d65305d31398a55c13ce4a137b43cfb9182117716b0f7fe0f3d897947579c7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "429ebe25973e81847267d54b44476a70db34fefc9b6cfa31c467cf744141e653",
+          "path": "e2e/d7p/support.ts",
+          "fingerprint": "cebfe2d35bcf0941e09fb6cb6b5dfb1aa402ae957b9a8112bab7ac2721f36709"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "55d65305d31398a55c13ce4a137b43cfb9182117716b0f7fe0f3d897947579c7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 69003
+  }
+}

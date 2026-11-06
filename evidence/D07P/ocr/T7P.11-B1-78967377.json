@@ -1,0 +1,80 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 12710,
+    "input_tokens": 12546,
+    "output_tokens": 164,
+    "cache_read_tokens": 3840,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "e2e/d7p/support.ts",
+      "files": [
+        "e2e/d7p/support.ts"
+      ]
+    }
+  ],
+  "session_id": "c77fd47f-6f66-432d-a4af-ae4238b6628f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c77fd47f-6f66-432d-a4af-ae4238b6628f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "78967377",
+      "resolved_base": "05dc57eb28edbb51cfe0463cd8fc4f87ff820e27",
+      "resolved_head": "78967377a948ac0857b12f0f9d307ecfd2c16a65",
+      "exact_range": "05dc57eb28edbb51cfe0463cd8fc4f87ff820e27..78967377a948ac0857b12f0f9d307ecfd2c16a65",
+      "source_artifact_sha256": "24b17b23af748194648c6d33212c7e2304a664eda17d8203f2115c917517a39e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "429ebe25973e81847267d54b44476a70db34fefc9b6cfa31c467cf744141e653",
+          "path": "e2e/d7p/support.ts",
+          "fingerprint": "91e84115399857b0129d05eeb884089827fb45d6e31f8dc281ffecdc29e5944c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "429ebe25973e81847267d54b44476a70db34fefc9b6cfa31c467cf744141e653",
+          "path": "e2e/d7p/support.ts",
+          "fingerprint": "91e84115399857b0129d05eeb884089827fb45d6e31f8dc281ffecdc29e5944c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 11940
+  }
+}
