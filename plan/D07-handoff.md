@@ -226,8 +226,8 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Next task | Setup: create `evidence/D07/` (section 3) and record the location checks; then T7.1. |
-| Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.1: the setup commit. |
-| Tasks done | none |
-| Last commit | `docs(plan): D7's handoff`, tagged `claude-opus-5.5-pre-d7` |
+| Next task | T7.1 Option Instruments and keys. |
+| Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.1: the setup commit `docs(evidence): D7 setup`. |
+| Tasks done | Setup (`evidence/D07/` created, location checks recorded in `structural.md`). |
+| Last commit | `docs(evidence): D7 setup` |
 | Open questions | none yet. (Settled before the session: the words for D7's new reasons, decision 81, revision 47; `verify:wording` rebuilt as an ESLint rule, revision 48.) |
