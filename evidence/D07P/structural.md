@@ -551,3 +551,39 @@ T7P.11 notes for the final report: the incoherent Trade has two `ExceedsOpenQuan
 | Static and verification checks | 13 of 13 `EXIT 0` | `suite-runs/t7p-11-layout-checks.txt` |
 
 Stage `browser-auto d2de1bf3`; full tier (T7P.11 changed `e2e/` and `package.json`). The runner returned before its browser stage finished; the table was read from the output files. The four new layout cases are 164–167. Ports 5175, 9341 and 9342 free after the run.
+
+## T7P.12 Gate runs
+
+Full browser tier (`npm run test:e2e`), at `ca719652`, by `suite-runner`. Ports 5175, 9341 and 9342 free before and after each run.
+
+### First run (`t7p-12-full`)
+
+| Suite | Result | Wall time | Output |
+|---|---|---|---|
+| Unit | **1 failed**, 1224 passed (97 files, 1 failed), exit 1 | 8.3 s | `suite-runs/t7p-12-full-unit.txt` |
+| Node integration | 76 files, 154 passed | 49 s | `suite-runs/t7p-12-full-integration.txt` |
+| Browser (Chromium), full tier | 167 passed, `EXIT 0` | 7:56 | `suite-runs/t7p-12-full-browser.txt` |
+| Static and verification checks | 13 of 13 `EXIT 0` | 17 s | `suite-runs/t7p-12-full-checks.txt` |
+
+The failure: `src/ui/screens/TradeList.test.tsx:125`, "Open list › should render distinct Loading, Ready, Empty … and Error with Retry states", `expected +0 to be 1` on `marks('tj:open-list-ready')`. The mark is made in a passive effect after the Ready table renders (`TradeList.tsx:149-150`), and the case reads it right after `findByRole('table')` resolves, a race under load. The prefactor changed neither the mark, its effect, nor the case's mark assertions. Rerun alone from the main session five times: 35 of 35 each time. Recorded as a pre-existing timing flake, not fixed (outside the prefactor's scope); a candidate for tech debt.
+
+### Rerun (`t7p-12-rerun`) — the gate run
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 97 files, 1225 passed | `suite-runs/t7p-12-rerun-unit.txt` |
+| Node integration | 76 files, 154 passed | `suite-runs/t7p-12-rerun-integration.txt` |
+| Browser (Chromium), full tier | 167 passed (7.9 min), `EXIT 0` | `suite-runs/t7p-12-rerun-browser.txt` |
+| Static and verification checks | 13 of 13 `EXIT 0`, `verify:wording` among them | `suite-runs/t7p-12-rerun-checks.txt` |
+
+Wall times: unit 7.9 s, integration 48.6 s, browser 7.9 min. The browser stage stays under 8 minutes, close to the 10-minute Bash limit (tech debt item 6).
+
+### Gate checks (breakdown section 5)
+
+- T7P.1 to T7P.11 committed, each commit's ocr findings resolved (T7P.9's last B12 finding recorded at the user's direction).
+- T7P.12's full-tier run passes (the rerun), with `verify:wording` among its 13 checks.
+- `npm run verify:fixtures` passes (in both runs' checks: v1–v5 views equal to their snapshots).
+- `git diff claude-opus-5.5-pre-d7p -- src/persistence`: empty.
+- `git diff claude-opus-5.5-pre-d7p -- tests/fixtures`: only `workspace-v3`, `workspace-v4` and `workspace-v5` `expected-views.json` (decision 78); every `dump.json` unchanged.
+
+Counts, `claude-opus-5.5-pre-d7p` → `claude-opus-5.5-d7p`: unit 1188 → 1225; integration 154 → 154; browser 163 → 167; checks 12 → 13.
