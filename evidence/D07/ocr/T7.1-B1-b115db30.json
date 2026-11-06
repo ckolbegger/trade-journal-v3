@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 7820,
+    "input_tokens": 7778,
+    "output_tokens": 42,
+    "cache_read_tokens": 3840,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/domain/instrument/index.ts",
+      "files": [
+        "src/domain/instrument/index.ts"
+      ]
+    }
+  ],
+  "session_id": "61050e79-ec0b-4bfc-a732-3bce2af4e50e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "61050e79-ec0b-4bfc-a732-3bce2af4e50e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b115db30",
+      "resolved_base": "ba2473300ab14c785ee7d9cae04ca2fc67989339",
+      "resolved_head": "b115db30f8c1dc80a678c6eb0e2a81fe1ea975c9",
+      "exact_range": "ba2473300ab14c785ee7d9cae04ca2fc67989339..b115db30f8c1dc80a678c6eb0e2a81fe1ea975c9",
+      "source_artifact_sha256": "c711e9007bcba82d41edb016314c5e76492ca3351cdc863597cab877058f92d9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8abcc42c9a4a79facecd8506a4e21dfa5f1b9b66d70febb3ad65e0ae283cbc0f",
+          "path": "src/domain/instrument/index.ts",
+          "fingerprint": "c816da97c017688368195ee10718842fad095854f9da1239ff21f968c70b1b4b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8abcc42c9a4a79facecd8506a4e21dfa5f1b9b66d70febb3ad65e0ae283cbc0f",
+          "path": "src/domain/instrument/index.ts",
+          "fingerprint": "c816da97c017688368195ee10718842fad095854f9da1239ff21f968c70b1b4b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6249
+  }
+}

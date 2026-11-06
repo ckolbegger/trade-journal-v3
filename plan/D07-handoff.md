@@ -226,8 +226,9 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Next task | T7.1 Option Instruments and keys. |
-| Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.1: the setup commit `docs(evidence): D7 setup`. |
-| Tasks done | Setup (`evidence/D07/` created, location checks recorded in `structural.md`). |
-| Last commit | `docs(evidence): D7 setup` |
-| Open questions | none yet. (Settled before the session: the words for D7's new reasons, decision 81, revision 47; `verify:wording` rebuilt as an ESLint rule, revision 48.) |
+| Next task | T7.2 Trade Analysis: `assessPlan` for single-leg options. |
+| Base commit | the commit the next task starts from, for `browser-auto` (section 5). T7.2: `docs(evidence): T7.1 complete`. |
+| Tasks done | Setup (`5b420449`). T7.1 (`ba247330`) with bug task T7.1-B1 (`b115db30`, expiration year 2000–2099); cumulative run `t7-1-instrument` green (full tier, 8.2 min). |
+| Last commit | `docs(evidence): T7.1 complete` |
+| Decisions made | T7.1: `instrumentOf` on an OCC key returns `symbol` = root (the key carries no listing symbol; callers holding the Trade's Instrument prefer it); contract issue codes `RootTooLong`, `InvalidExpiration`, `InvalidStrike`, `StrikeNotPositive`, `StrikeTooPrecise`, `InvalidRight`; strikes above 5 whole digits rejected; expirations limited to 2000–2099 (T7.1-B1). |
+| Open questions | First-run passes: T7.1 case 6 (bare symbol is Stock with multiplier 1), mutation-checked (`multiplierOf` → 100 for Stock failed). Dismissed ocr findings: none. (Settled before the session: the words for D7's new reasons, decision 81, revision 47; `verify:wording` rebuilt as an ESLint rule, revision 48.) |
