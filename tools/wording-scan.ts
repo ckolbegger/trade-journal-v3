@@ -45,6 +45,23 @@ export const CODES = [
   'ExceedsOpenQuantity',
 ];
 
+// The NotApplicable reasons' words (calculation-words.ts, notApplicableTail). Ordinary sentences contain them
+// ("This Trade has no open Position to exit."), so they count only as a whole string literal or JSX text node.
+export const REASON_WORDS = [
+  'no open position',
+  'not closed yet',
+  'entry not resolved yet',
+  'no risk to the Stop',
+  'entry at or beyond the Stop',
+  'entry at or beyond the Target',
+  'no risk at entry',
+  'no reward at entry',
+];
+const reasonAlt = REASON_WORDS.join('|');
+const reasonStringRe = new RegExp(`(['"\`])\\s*(${reasonAlt})\\s*\\1`, 'gi');
+
+const reasonJsxRe = new RegExp(`>\\s*(${reasonAlt})\\s*<`, 'gi');
+
 // An apostrophe may be straight or curly in source text.
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const phraseRe = new RegExp(PHRASES.map((p) => escape(p).replace(/'/g, "['’]")).join('|'), 'gi');
@@ -94,6 +111,8 @@ export function scanSource(path: string, source: string): string[] {
   const at = (offset: number, kind: string, match: string) =>
     found.push({ line: lineAt(offset), kind, match: match.replace(/\s*\n\s*/g, ' ') });
   for (const m of text.matchAll(phraseRe)) at(m.index, 'words', m[0]);
+  for (const m of text.matchAll(reasonStringRe)) at(m.index + m[0].indexOf(m[2]!), 'words', m[2]!);
+  for (const m of text.matchAll(reasonJsxRe)) at(m.index + m[0].indexOf(m[1]!), 'words', m[1]!);
   for (const m of text.matchAll(caseRe)) at(m.index + m[0].lastIndexOf(`${m[1]}${m[2]}`), 'code', m[0]);
   for (const m of text.matchAll(eqAfterRe))
     if (!/\.kind$/.test(m[1] ?? '')) at(m.index + m[0].lastIndexOf(`${m[2]}${m[3]}`), 'code', m[0].trim());

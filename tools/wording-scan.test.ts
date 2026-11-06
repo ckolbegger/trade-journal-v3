@@ -37,6 +37,19 @@ describe('verify:wording scanning', () => {
     expect(hits[0]).toMatch(/^src\/ui\/W\.tsx:2: code: /);
   });
 
+  it('fails on a string literal that is a NotApplicable reason words', () => {
+    const hits = scanSource('src/ui/V.tsx', "const label = 'not closed yet';");
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/V\.tsx:1: words: not closed yet$/);
+  });
+
+  it('fails on JSX text that is a NotApplicable reason words', () => {
+    const source = ['const a = (', '  <span>', '    No open position', '  </span>', ');'].join('\n');
+    const hits = scanSource('src/ui/U.tsx', source);
+    expect(hits.length).toBe(1);
+    expect(hits[0]).toMatch(/^src\/ui\/U\.tsx:3: words: No open position$/);
+  });
+
   it('still ignores real comments and keeps line numbers', () => {
     const source = [
       "// case 'NotClosed':",
@@ -49,10 +62,13 @@ describe('verify:wording scanning', () => {
     expect(hits[0]).toMatch(/^src\/ui\/V\.tsx:4: code: /);
   });
 
-  it('still passes on the current tree', () => {
+  it('still passes on a sentence that contains a reason words, and on the current tree', () => {
+    const sentence = scanSource('src/ui/T.tsx', '<p>This Trade has no open Position to exit.</p>; const a = "not closed yet, so wait";');
+    expect(sentence).toEqual([]);
     const files = uiSources(uiDir).filter((f) => !f.pathname.endsWith('/src/ui/calculation-words.ts'));
     expect(files.length).toBeGreaterThan(0);
     const hits = files.flatMap((f) => scanSource(f.pathname, readFileSync(f, 'utf8')));
+    expect(scanSource('src/ui/screens/PositionChangeForm.tsx', readFileSync(new URL('screens/PositionChangeForm.tsx', uiDir), 'utf8'))).toEqual([]);
     expect(hits).toEqual([]);
   });
 });

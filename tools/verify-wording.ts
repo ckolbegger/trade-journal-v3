@@ -10,14 +10,14 @@
 // The phrase and code lists and the scanning live in wording-scan.ts.
 import { readdir, readFile } from 'node:fs/promises';
 import { relative } from 'node:path';
-import { CODES, PHRASES, scanSource } from './wording-scan.ts';
+import { CODES, PHRASES, REASON_WORDS, scanSource } from './wording-scan.ts';
 
 const root = new URL('../', import.meta.url);
 const uiDir = new URL('src/ui/', root);
 const MODULE = 'src/ui/calculation-words.ts';
 
 if (process.argv.includes('--list')) {
-  console.log(`phrases (${PHRASES.length}):\n${PHRASES.map((p) => `  ${p}`).join('\n')}\ncodes (${CODES.length}):\n${CODES.map((c) => `  ${c}`).join('\n')}`);
+  console.log(`phrases (${PHRASES.length}):\n${PHRASES.map((p) => `  ${p}`).join('\n')}\nreason words, whole literal or JSX text only (${REASON_WORDS.length}):\n${REASON_WORDS.map((w) => `  ${w}`).join('\n')}\ncodes (${CODES.length}):\n${CODES.map((c) => `  ${c}`).join('\n')}`);
   process.exit(0);
 }
 
