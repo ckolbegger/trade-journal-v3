@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 76344,
+    "input_tokens": 75537,
+    "output_tokens": 807,
+    "cache_read_tokens": 17408,
+    "elapsed": "35s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/reference-catalog/catalog.ts",
+      "content": "This changes Strategy query results to manifest order (Long Stock, Long Call, Long Put, Cash-Secured Put), contrary to Decision 85's required normalized-label/identity order (Cash-Secured Put, Long Call, Long Put, Long Stock). `query()` sorts with this comparator, so the regression also affects paginated selections. Remove the Strategy-specific ranking and let Strategies use the existing label/identity comparison; seed order should govern only the manifest.",
+      "existing_code": "  if (a.kind === 'Strategy' \u0026\u0026 b.kind === 'Strategy') {\n    const rankA = STRATEGY_SEED_ORDER.get(a.productKey) ?? Infinity;\n    const rankB = STRATEGY_SEED_ORDER.get(b.productKey) ?? Infinity;\n    if (rankA !== rankB) return rankA \u003c rankB ? -1 : 1;\n  }",
+      "start_line": 184,
+      "end_line": 188,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/reference-catalog/manifest.ts",
+      "content": "The new manifest is exported but is not used by any production seeding path: `workspace.ts` still passes `D6_CATALOG_MANIFEST` both when creating a workspace and when reopening one, and `migration.ts` also seeds/validates against D6. Consequently normal initialization still provides only Long Stock; the three option Strategies are available only to callers that explicitly supply D7 (currently tests). Wire D7 into the workspace seeding, validation, and receipt paths so fresh and existing workspaces actually receive these additions.",
+      "existing_code": "export const D7_CATALOG_MANIFEST: CatalogSeedManifest = {",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/reference-catalog/catalog.ts",
+        "src/modules/reference-catalog/index.ts",
+        "src/modules/reference-catalog/manifest.ts"
+      ]
+    }
+  ],
+  "session_id": "18b2d863-7b3a-4789-ae4c-c07b5885cf8c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "18b2d863-7b3a-4789-ae4c-c07b5885cf8c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e82f155f",
+      "resolved_base": "0042b80b995e5e1731e0b2e7906641a039624b42",
+      "resolved_head": "e82f155fd11e9a33279fb14646d0d12af35104d5",
+      "exact_range": "0042b80b995e5e1731e0b2e7906641a039624b42..e82f155fd11e9a33279fb14646d0d12af35104d5",
+      "source_artifact_sha256": "7aa45d25895bc1fcc5e771bd3f45543a715007cc988f7780cdc9eb88dfcf379f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "a0fe51d636498004b241bb6db7b56499f055ac7debb7954741e7fb574631f59c"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "b0e9acc8a0bb466113dc9a67442e52a58e71caae8dcf2041a5d1b73c2b42b0f5"
+        },
+        {
+          "item_id": "d7e76756a4115c48e4fb7775c3fc65d4f00bdf868a436e5cfa825ddf5235ab20",
+          "path": "src/modules/reference-catalog/manifest.ts",
+          "fingerprint": "d17f9dc3c293b5bb9a3a1068c07a7c47deb1d54a110258c1c6f137567ccacef8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "a0fe51d636498004b241bb6db7b56499f055ac7debb7954741e7fb574631f59c"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "b0e9acc8a0bb466113dc9a67442e52a58e71caae8dcf2041a5d1b73c2b42b0f5"
+        },
+        {
+          "item_id": "d7e76756a4115c48e4fb7775c3fc65d4f00bdf868a436e5cfa825ddf5235ab20",
+          "path": "src/modules/reference-catalog/manifest.ts",
+          "fingerprint": "d17f9dc3c293b5bb9a3a1068c07a7c47deb1d54a110258c1c6f137567ccacef8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34820
+  }
+}

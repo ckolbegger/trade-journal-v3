@@ -327,3 +327,30 @@ Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 76588e6d`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-8-option-marks-checks.txt` |
 
 Tier: task, printed reason "no changed path since 76588e6d is on the full-tier list". Ports free before and after. T7.8 is complete.
+
+## T7.9 Reference Catalog: option Strategies
+
+Behavioral; commit `e82f155f`. Two `option-strategies.test.ts` cases, red then green (case 1 against a temporary version-2 stub manifest so the red was an assertion; case 2 red: `query` sorted Cash-Secured Put first). No first-run passes. `D7_CATALOG_MANIFEST` (version 3): Long Stock, then `strategy.long-call` Long Call, `strategy.long-put` Long Put, `strategy.cash-secured-put` Cash-Secured Put, one role each (`ratio: 1`; Long Call, Long Put, Short Put), D6's close reasons; a v2-seeded Catalog gains exactly three Strategies and a second run adds nothing. No stored-record change beyond the three Strategy records. To meet case 2's "in seed order" the commit made `query` rank Strategies by manifest position, which departs from the spec's Query rule ("deterministic label/identity order", `specs/design/reference-catalog.md`). The main session asked; the user chose the spec's order (decision 85, revision 52, `274f853d`).
+
+Notes: A101's Cash-Secured Put "description" (the application doesn't verify cash coverage) has no field on Strategy records and the spec states it as a product claim, not a stored description; it is left to the Plan form's UI wording (T7.19). **For T7.17/I7.14:** `workspace.ts` (lines 301, 313, 324, 335, 355) and `migration.ts` (129, 144) still seed `D6_CATALOG_MANIFEST`, as do `record-position-change.test.ts`, `closed-views.test.ts`, `tests/support/closed-trade-review-fixture.ts` and `e2e/d2/migration.spec.ts`; a fresh Workspace shows only Long Stock until then.
+
+### T7.9-F1: `query` keeps label/identity order (decision 85)
+
+Commit `d9fbbedb`. Case 2 amended to "in label order" (Cash-Secured Put, Long Call, Long Put, Long Stock), red against the seed-order code, green after `compareForSelection` was restored to its pre-`e82f155f` form (`STRATEGY_SEED_ORDER` and the `D7_CATALOG_MANIFEST` import removed). Case 1 unchanged and green. One uncaptured unit failure in the subagent's first combined run ("1 failed | 1288 passed (1289)", fewer tests collected than the 1291 of later runs), not reproduced in four reruns or the cumulative run. **For the Strategy picker:** `query` lists by label; a picker wanting seed order sorts by manifest position itself.
+
+### ocr reviews of `e82f155f` and `d9fbbedb`
+
+`ocr/T7.9-e82f155f.json`, 2 comments: "`D7_CATALOG_MANIFEST` not used by production seeding" — dismissed (Wrong for T7.9: the wiring is T7.17's, whose seam is the Workspace); "seed-order comparator contradicts decision 85" — superseded by `d9fbbedb`. `ocr/T7.9-F1-d9fbbedb.json`: no findings.
+
+### Cumulative run after T7.9-F1 (`t7-9-option-strategies`, at `d9fbbedb`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 0042b80b`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 104 files, 1291 passed, exit 0 | `suite-runs/t7-9-option-strategies-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-9-option-strategies-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (11.4 s), exit 0 | `suite-runs/t7-9-option-strategies-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-9-option-strategies-checks.txt` |
+
+Tier: task, printed reason "no changed path since 0042b80b is on the full-tier list". Ports free before and after. T7.9 is complete.
