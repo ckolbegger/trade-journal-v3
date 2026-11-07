@@ -408,3 +408,28 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 0a249bfe`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-11-f1-missing-member-checks.txt` |
 
 Tier: full, printed reason "first matching path since 0a249bfe: src/ui/readiness-copy.ts". Ports free before and after. The runner notes the full browser stage (8.1 m) is near the 10-minute Bash limit. T7.11 is complete.
+
+## T7.12 Trade Workflows: `confirmPlan` for options
+
+Behavioral; commit `d04d91ed` (test only, `confirm-plan-options.test.ts`). **Both cases were first-run passes, flagged:** `confirmPlan` already resolved the Strategy once, passed its shape and `economicTime` to `assessPlan` (T7.2-B2) and aggregated Catalog, Journal and Trade Analysis issues (D1). Case 1's first red was a fixture error (expected "2.00", stored canonical "2"), annotated as invalid. Mutation checks: case 1, `confirmPlan` passing `exerciseIntent: 'Authorized'` failed with `AssertionError: expected 'Authorized' to be 'NotAuthorized'`; case 2, pushing `assessPlan` issues only when no other issue exists failed with `AssertionError: expected [ { …(3) }, …(1) ] to deeply equal ArrayContaining{…}`. The test seeds `D7_CATALOG_MANIFEST` itself and finds Long Call by product key; production seeding is unchanged (T7.17).
+
+### T7.12-B1 the accepted result carries the payoff views
+
+Defect from the subagent's summary: case 1 says `confirmPlan` returns "the Planned payoff view", and `specs/design/trade-workflows.md` line 200 has every accepted result carry the post-commit state the workflow needs (T7.19 renders the Planned payoff "from the result"), but the result had no payoff and the test computed it itself. Commit `f9b2eeaa`: case 1 reads `result.postCommit.payoff.planned`; red `TypeError: Cannot read properties of undefined (reading 'planned')`, green after `confirmPlan` returns `payoff: ExpirationPayoffs` (`planned`, `current`) from `expirationPayoff({ plan })`. A Long Stock Plan returns both views `NotApplicable(NoOptionExpirationAnchor)`. **For T7.19:** read `postCommit.payoff.planned`.
+
+### ocr review of `045ca82f..f9b2eeaa`
+
+No findings (`ocr/T7.12-f9b2eeaa.json`).
+
+### Cumulative run after T7.12-B1 (`t7-12-confirm-plan`, at `f9b2eeaa`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 045ca82f`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 109 files, 1300 passed, exit 0 | `suite-runs/t7-12-confirm-plan-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-12-confirm-plan-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (12.4 s), exit 0 | `suite-runs/t7-12-confirm-plan-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-12-confirm-plan-checks.txt` |
+
+Tier: task, printed reason "no changed path since 045ca82f is on the full-tier list". Ports free before and after. T7.12 is complete.
