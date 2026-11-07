@@ -369,7 +369,7 @@ describe('rejected', () => {
     const attempts: [PositionChangeCommand, string][] = [
       [command(ref, 1, [member, { ...member, action: 'Sell' }]), 'MixedActions'],
       [command(ref, 1, [{ ...member, instrument: { kind: 'Stock', symbol: 'ABC' } }]), 'OtherInstrument'],
-      [command(ref, 1, [{ ...member, instrument: { kind: 'Option', symbol: 'XYZ261120C00055000' } }]), 'OtherInstrument'],
+      [command(ref, 1, [{ ...member, instrument: { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call', strike: '55', multiplier: 100 } }]), 'OtherInstrument'],
       [command(ref, 1, [{ ...member, intent: { kind: 'ExplicitlyUnplanned' } }]), 'ExplicitlyUnplanned'],
       [
         { ...command(ref, 1, [member, { ...member, tradeId: 'trade-2' }]), trades: [{ tradeId: ref.trade.tradeId, expectedFactRevision: 1 }, { tradeId: 'trade-2', expectedFactRevision: 1 }] },

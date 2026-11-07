@@ -1,4 +1,5 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
+import { instrumentKey, type OptionInstrument, type StockInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import {
@@ -26,11 +27,21 @@ export interface PositionChangeMember {
   readonly kind: 'Execution';
   readonly tradeId: string;
   readonly action: 'Buy' | 'Sell';
-  readonly instrument: { readonly kind: 'Stock'; readonly symbol: string } | { readonly kind: 'Option'; readonly symbol: string };
+  readonly instrument: StockInstrument | OptionInstrument;
   readonly intent: { readonly kind: 'ServesPlannedLeg'; readonly plannedLegId: string } | { readonly kind: 'ExplicitlyUnplanned' };
   readonly quantity: string;
   readonly price: string;
   readonly fee?: string;
+  readonly economicTime: Instant;
+}
+
+// The one settlement member of an Expiration Position Change (D7 A106): the option Instrument, the
+// quantity, and the settlement time as its Economic Time. It has no price, fee, or agency.
+export interface ExpirationMember {
+  readonly kind: 'Expiration';
+  readonly tradeId: string;
+  readonly instrument: StockInstrument | OptionInstrument;
+  readonly quantity: string;
   readonly economicTime: Instant;
 }
 
@@ -39,7 +50,7 @@ export interface PositionChangeMember {
 export interface PositionChangeCommand {
   readonly originTradeId: string;
   readonly trades: readonly { readonly tradeId: string; readonly expectedFactRevision: number }[];
-  readonly members: readonly PositionChangeMember[];
+  readonly members: readonly (PositionChangeMember | ExpirationMember)[];
   readonly reflection: ReflectionDisposition;
   // Supplied exactly when the change closes the Trade (D6 A77): the Catalog identity of its one
   // Close Reason and the disposition of the Close Review, which is separate from `reflection`.
@@ -173,12 +184,14 @@ function entryChangesOf(before: DerivedTradeState, after: DerivedTradeState): En
 
 // A Position Change mixing Buys and Sells (A76), other Instruments and ExplicitlyUnplanned intent
 // (D10), and Position Changes across several Trades (D20, D21) are not installed.
-export type UninstalledVariant = 'MixedActions' | 'OtherInstrument' | 'ExplicitlyUnplanned' | 'MultipleTrades';
+// An Expiration shares its Position Change with no other member (D7 A106).
+export type UninstalledVariant = 'MixedActions' | 'OtherInstrument' | 'ExplicitlyUnplanned' | 'MultipleTrades' | 'MixedMembers';
 
-// The installed variant (D2 A18, D6 A76): Buys or Sells of a Stock serving a Planned Leg, every
-// member in the one Trade, all sharing one action.
+const isExecution = (m: PositionChangeMember | ExpirationMember): m is PositionChangeMember => m.kind === 'Execution';
+
+// The installed variant (D2 A18, D6 A76, D7 A102): Buys or Sells of a Stock or an option contract
+// serving a Planned Leg, every member in the one Trade, all sharing one action.
 type InstalledMember = PositionChangeMember & {
-  readonly instrument: { readonly kind: 'Stock' };
   readonly intent: { readonly kind: 'ServesPlannedLeg' };
 };
 
@@ -186,16 +199,17 @@ function uninstalledVariants(command: PositionChangeCommand): UninstalledVariant
   const variants = new Set<UninstalledVariant>();
   const origin = command.originTradeId;
   if (command.trades.some((t) => t.tradeId !== origin) || command.members.some((m) => m.tradeId !== origin)) variants.add('MultipleTrades');
-  if (new Set(command.members.map((m) => m.action)).size > 1) variants.add('MixedActions');
-  for (const member of command.members) {
-    if (member.instrument.kind !== 'Stock') variants.add('OtherInstrument');
+  const executions = command.members.filter(isExecution);
+  if (executions.length < command.members.length && command.members.length > 1) variants.add('MixedMembers');
+  if (new Set(executions.map((m) => m.action)).size > 1) variants.add('MixedActions');
+  for (const member of executions) {
     if (member.intent.kind !== 'ServesPlannedLeg') variants.add('ExplicitlyUnplanned');
   }
   return [...variants];
 }
 
 const installed = (members: readonly PositionChangeMember[]): members is readonly InstalledMember[] =>
-  members.every((m) => m.instrument.kind === 'Stock' && m.intent.kind === 'ServesPlannedLeg');
+  members.every((m) => m.intent.kind === 'ServesPlannedLeg');
 
 // At most 20 Executions per Position Change (D2 A18).
 const MAX_EXECUTIONS = 20;
@@ -214,14 +228,17 @@ function decimalIssue(text: string | undefined, positive: boolean): string | nul
 
 // Issues with one member's own values: quantity and price positive, a required fee of 0 or more,
 // and an Economic Time from the Plan's up to now (D2 A18, A19, decision 20).
-function memberIssues(member: PositionChangeMember, index: number, planTime: Instant, now: Instant): WorkflowIssue[] {
+function memberIssues(member: PositionChangeMember | ExpirationMember, index: number, planTime: Instant, now: Instant): WorkflowIssue[] {
   const issues: WorkflowIssue[] = [];
   const issue = (field: string, code: string) => issues.push({ source: 'TradeWorkflows', member: index, field, code });
-  for (const [field, text, positive] of [
-    ['quantity', member.quantity, true],
-    ['price', member.price, true],
-    ['fee', member.fee, false],
-  ] as const) {
+  // An Expiration has a quantity and a time only; it has no price or fee (A106).
+  for (const [field, text, positive] of isExecution(member)
+    ? ([
+        ['quantity', member.quantity, true],
+        ['price', member.price, true],
+        ['fee', member.fee, false],
+      ] as const)
+    : ([['quantity', member.quantity, true]] as const)) {
     const code = decimalIssue(text, positive);
     if (code) issue(field, code);
   }
@@ -241,9 +258,16 @@ function journalIssues(issues: readonly JournalIssue[], form?: string): Workflow
 }
 
 // A terminal change by a trader requires one Close Reason and a Close Review disposition; any
-// other change takes neither (A77).
+// other change takes neither (A77). A terminal Expiration has no agency, so it takes a Close Review
+// disposition but no Close Reason (A107).
 function closeRequirementIssues(command: PositionChangeCommand, requirement: CloseRequirement): WorkflowIssue[] {
   const issue = (field: string, code: string): WorkflowIssue => ({ source: 'TradeWorkflows', field, code });
+  if (requirement === 'TerminalWithoutAgency') {
+    return [
+      ...(command.closeReasonId === undefined ? [] : [issue('closeReasonId', 'CloseReasonNotApplicable')]),
+      ...(command.closeReview === undefined ? [issue('closeReview', 'CloseReviewDispositionRequired')] : []),
+    ];
+  }
   if (requirement === 'TerminalWithAgency') {
     return [
       ...(command.closeReasonId === undefined ? [issue('closeReasonId', 'CloseReasonRequired')] : []),
@@ -257,18 +281,27 @@ function closeRequirementIssues(command: PositionChangeCommand, requirement: Clo
 }
 
 // P22: findings that are only about the position path are the change's own fault and come back as
-// typed issues; any other incoherence is the Trade's facts, not this command (P7).
+// typed issues; any other incoherence is the Trade's facts, not this command (P7). An Expiration that
+// settles the wrong quantity, at an invalid time, or on a stock is the change's own fault too (A106).
+const OWN_FINDINGS = {
+  ExceedsOpenQuantity: 'quantity',
+  FlatBeforeLaterFacts: 'quantity',
+  ExpirationMustSettleAllOpen: 'quantity',
+  SettlementTimeInvalid: 'economicTime',
+  NotAnOption: 'instrument',
+} as const;
+
 function positionPathIssues(findings: IncoherentFacts['findings'], memberIds: readonly string[]): WorkflowIssue[] {
   const issues: WorkflowIssue[] = [];
   for (const finding of findings) {
-    if (finding.reason !== 'ExceedsOpenQuantity' && finding.reason !== 'FlatBeforeLaterFacts') return [];
+    if (!(finding.reason in OWN_FINDINGS)) return [];
     const member = memberIds.indexOf(finding.factId);
     issues.push({
       source: 'TradeAnalysis',
       // A recorded Sell the new change would leave short is named by its identity.
-      ...(member >= 0 ? { member, field: 'quantity' } : { factId: finding.factId }),
+      ...(member >= 0 ? { member, field: OWN_FINDINGS[finding.reason as keyof typeof OWN_FINDINGS] } : { factId: finding.factId }),
       code: finding.reason,
-      ...(finding.reason === 'ExceedsOpenQuantity' && { available: finding.available }),
+      ...((finding.reason === 'ExceedsOpenQuantity' || finding.reason === 'ExpirationMustSettleAllOpen') && { available: finding.available }),
     });
   }
   return issues;
@@ -311,21 +344,24 @@ export function recordPositionChange(deps: TradeWorkflowsDeps, command: Position
 
 async function attemptPositionChange(deps: TradeWorkflowsDeps, command: PositionChangeCommand): Promise<PositionChangeResult> {
   const variants = uninstalledVariants(command);
-  if (variants.length > 0 || !installed(command.members)) return { kind: 'VariantNotInstalled', variants };
+  const executionMembers: readonly PositionChangeMember[] = command.members.filter(isExecution);
+  const expirationMember = command.members.find((m): m is ExpirationMember => m.kind === 'Expiration');
+  if (variants.length > 0 || !installed(executionMembers)) return { kind: 'VariantNotInstalled', variants };
   const tradeId = command.originTradeId;
   const prepared = await deps.tradeRecord.prepareChange({
     kind: 'PositionChange',
     tradeId,
     expectedFactRevision: command.trades[0]!.expectedFactRevision,
-    executions: command.members.map((m) => ({
+    executions: executionMembers.map((m) => ({
       action: m.action,
-      instrument: { kind: m.instrument.kind, symbol: m.instrument.symbol },
+      instrument: m.instrument,
       intent: { kind: m.intent.kind, plannedLegId: m.intent.plannedLegId },
       quantity: m.quantity,
       price: m.price,
       fee: m.fee ?? '',
       economicTime: m.economicTime,
     })),
+    ...(expirationMember && { expiration: { economicTime: expirationMember.economicTime, instrument: expirationMember.instrument, quantity: expirationMember.quantity } }),
     // Carried by the candidate; analysis then rejects it unless the change proves terminal.
     ...(command.closeReasonId !== undefined && { closeReasonId: command.closeReasonId }),
   });
@@ -336,9 +372,13 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   // A stored lifecycle that disagrees with flat, Closed facts stays visible until repair, so the facts count too (A96).
   const beforeDerived = derive({ record: prepared.beforeAnalysisInput! });
   if (prepared.before!.lifecycle === 'Closed' || (beforeDerived.kind === 'Derived' && beforeDerived.expectedLifecycle === 'Closed')) return rejected(deps, [{ source: 'TradeWorkflows', code: 'TradeClosed' }]);
-  // Another Stock than the served Planned Leg's is Planned-Leg Terms, not installed until D10.
+  // Another Instrument than the served Planned Leg's is Planned-Leg Terms, not installed until D10.
   const legs = prepared.beforeAnalysisInput!.plan.legs;
-  if (command.members.some((m) => m.instrument.symbol !== legs.find((l) => l.factId === m.intent.plannedLegId)?.instrument.symbol)) {
+  const legKey = (m: InstalledMember) => {
+    const leg = legs.find((l) => l.factId === m.intent.plannedLegId);
+    return leg && instrumentKey(leg.instrument);
+  };
+  if (executionMembers.some((m) => instrumentKey(m.instrument) !== legKey(m))) {
     return { kind: 'VariantNotInstalled', variants: ['OtherInstrument'] };
   }
   // The candidate Position Change the Journal outcome's origin names until apply maps it.
@@ -375,9 +415,10 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
   }
   const closeRequirement = derived?.kind === 'Derived' ? derived.reconciliation?.closeRequirement : undefined;
   if (closeRequirement) issues.push(...closeRequirementIssues(command, closeRequirement));
-  const terminal = closeRequirement === 'TerminalWithAgency';
+  // Every terminal change owes a Close Review, with or without agency (A107).
+  const terminal = closeRequirement === 'TerminalWithAgency' || closeRequirement === 'TerminalWithoutAgency';
   // The Close Reason must be a selectable record of its own family (A77).
-  if (terminal && command.closeReasonId !== undefined) {
+  if (closeRequirement === 'TerminalWithAgency' && command.closeReasonId !== undefined) {
     const resolution = await deps.catalog.resolve([{ name: 'closeReasonId', kind: 'CloseReason', id: command.closeReasonId, mode: 'NewSelection' }]);
     if (resolution.kind === 'Unresolved') {
       for (const issue of resolution.issues) issues.push({ source: 'ReferenceCatalog', field: issue.name, code: issue.code });
