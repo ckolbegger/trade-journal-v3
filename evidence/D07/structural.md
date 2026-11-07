@@ -272,3 +272,10 @@ Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 2bbaa51b`, cove
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-6-f1-closed-list-focus-checks.txt` |
 
 Tier: full, printed reason "first matching path since 2bbaa51b: src/ui/screens/TradeList.test.tsx". Ports free before and after. ocr of `bcefef80` (T7.6-B1): no findings (`ocr/T7.6-B1-bcefef80.json`). `f058e165` is test-only, so ocr (which excludes test files) has nothing to review. T7.6 is complete.
+
+## T7.25
+
+Tagged B6.6 (`e2e/d6/update.spec.ts`) `{ tag: '@release-history' }` on its `test.describe`, as B2.3, B2.5, B4.7 and B5.6 are. Assertions unchanged; no `d6` release folder built (decision 76).
+
+- `npm run test:e2e -- --list`: exit 0, `Total: 166 tests in 59 files` (167 in 60 files before); no line names B6.6.
+- `npx playwright test e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 --list --grep @release-history`: exit 0, `Total: 5 tests in 4 files`: B2.3 (d2/migration.spec.ts:48), B2.5 (d2/migration.spec.ts:123), B4.7 (d4/update.spec.ts:6), B5.6 (d5/update.spec.ts:7), B6.6 (d6/update.spec.ts:9).

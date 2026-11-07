@@ -5,7 +5,7 @@ import {
 
 test.use({ actionTimeout: 15_000 });
 
-test.describe('B6.6 Update from D5R2 with data', () => {
+test.describe('B6.6 Update from D5R2 with data', { tag: '@release-history' }, () => {
   test('should show Updating your journal, keep two Open Trades and the deferred reflection, close a Trade with a full exit, show schema 5 in About, and point to the new database with the old one gone', async ({ server, profile }) => {
     test.setTimeout(240_000);
     server.use('dist-releases/d5r2');
