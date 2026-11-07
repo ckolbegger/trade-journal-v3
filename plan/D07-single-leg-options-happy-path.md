@@ -372,6 +372,8 @@ describe("Market Data section, options")
 
 **Amended by decisions 87 and 88 (revision 54):** T7.11 first creates the domain module `src/domain/strategy/`: `StrategyShape` and `StrategyRole` move there from `src/domain/strategy.ts`, `matchesShape` moves there from `plan.ts`, and it adds `sameShape` and `exerciseIntentApplies(shape)`. `assessPlan`, the Trade section validator, the Catalog's `StrategyShapeMismatch` check and `prepareSeed` use them; nothing decides a Strategy fact from a leg's sign. The Catalog's `strategyShapes` holds every Strategy record, active or not. The Trade validator checks each stored Plan only for shape match and Exercise Intent applicability (this narrows decision 86's point 3), under Trade-section codes of its own worded by the approved-words rows 11.1 and 11.2.
 
+**Amended by decision 90 (revision 55):** the Trade section's `ExerciseIntentNotApplicable` covers every Strategy whose shape takes no exercise intent and reads "A Plan records an exercise intent, which only a long option has." (row 11.4), in place of decision 86's Cash-Secured Put sentence.
+
 ### T7.12 Trade Workflows: `confirmPlan` for options
 
 Seam: `TradeWorkflows.confirmPlan`.

@@ -37,6 +37,7 @@ Every user-visible phrase D7's remaining tasks need, approved by the user in one
 | 11.1 | `readiness-copy.ts`, migration issue sentence; a stored Plan whose legs don't fill its Strategy's roles, under a Trade-section code of its own | "A Trade's Plan doesn't fit the roles of its strategy." (a Trade-section code of its own, conflict K17) |
 | 11.2 | same; `ExerciseIntentRequired` on a stored long-option Plan | "A long option's Plan records no exercise intent." (startup check only; shown on the screen the app shows when it can't open the journal) |
 | 11.3 | same; any other stored-Plan rule failure | Not needed: the startup check tests only shape match and Exercise Intent (decision 88). |
+| 11.4 | same; `ExerciseIntentNotApplicable` on a stored Plan whose Strategy takes no exercise intent (any Strategy: Cash-Secured Put, Long Stock) | "A Plan records an exercise intent, which only a long option has." (decision 90, revision 55; replaces decision 86's Cash-Secured Put sentence) |
 
 ### T7.18 Installed Capability Manifest
 
