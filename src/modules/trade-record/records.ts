@@ -1,4 +1,4 @@
-import type { ConditionInput, ExecutionFact, LifecycleState, PlannedLegInput, RecordedDeviation } from '../../domain/trade-analysis/index.ts';
+import type { ConditionInput, ExecutionFact, ExpirationFact, LifecycleState, PlannedLegInput, RecordedDeviation } from '../../domain/trade-analysis/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 
 export interface PlanFactValue {
@@ -6,6 +6,8 @@ export interface PlanFactValue {
   readonly underlying: string;
   readonly thesis: string;
   readonly invalidation: string;
+  // A long option Plan's Exercise Intent (A100, A118); absent for stock and the Cash-Secured Put.
+  readonly exerciseIntent?: 'Authorized' | 'NotAuthorized';
 }
 
 export type FactValue =
@@ -14,11 +16,17 @@ export type FactValue =
   | { readonly kind: 'Stop'; readonly value: ConditionInput }
   | { readonly kind: 'Target'; readonly value: ConditionInput }
   | { readonly kind: 'PositionChange'; readonly value: PositionChangeFactValue }
-  | { readonly kind: 'Execution'; readonly value: ExecutionFactValue };
+  | { readonly kind: 'Execution'; readonly value: ExecutionFactValue }
+  | { readonly kind: 'Expiration'; readonly value: ExpirationFactValue };
 
 // One fill as submitted and stored: action, Instrument, quantity, price, fee, its own Economic
 // Time, and its Planned-Leg intent (D2 A18).
 export type ExecutionFactValue = Omit<ExecutionFact, 'factId' | 'recordedSequence'>;
+
+// One settlement as submitted and stored (D7 A106): the option Instrument, the quantity, and the
+// settlement time as its Economic Time. It has no price, no fee and no agency, and sits in the same
+// fact list as Executions, a member of its Position Change.
+export type ExpirationFactValue = Omit<ExpirationFact, 'factId' | 'recordedSequence'>;
 
 // One decision grouping its members (D2 A21): its Economic Time is its earliest member's (A19).
 export interface PositionChangeFactValue {
@@ -100,6 +108,10 @@ export interface PositionChangeChange {
   readonly tradeId: string;
   readonly expectedFactRevision: number;
   readonly executions: readonly ExecutionFactValue[];
+  // The one Expiration member of an Expiration Position Change, which holds no Executions (A106);
+  // the Position Change's Economic Time is its settlement time. Mixing the two is the workflow's
+  // VariantNotInstalled, so Trade Record stores what it is given.
+  readonly expiration?: ExpirationFactValue;
   // The Catalog identity of the Close Reason, supplied by the workflow when the change is terminal
   // (D6 A85); Trade Record stores what it is given and does not require it.
   readonly closeReasonId?: string;

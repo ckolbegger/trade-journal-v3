@@ -40,6 +40,7 @@ export {
   type ExcessFingerprint,
   type ExecutionFact,
   type ExpectedDeviation,
+  type ExpirationFact,
   type IncoherentFact,
   type IncoherentFacts,
   type InstrumentPosition,

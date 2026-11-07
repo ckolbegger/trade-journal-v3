@@ -7,6 +7,7 @@ import type {
   DeviationFingerprint,
   ExecutionFact,
   ExpectedDeviation,
+  ExpirationFact,
   IntegrityFinding,
   RecordedDeviation,
   RecordedDeviationVersion,
@@ -76,6 +77,7 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
   const targets: (ConditionInput & { factId: string })[] = [];
   const changes: { factId: string; recordedSequence: number; value: PositionChangeFactValue }[] = [];
   const executions = new Map<string, ExecutionFact>();
+  const settlements = new Map<string, ExpirationFact>();
   const closeReason = document.closeReasonFacts?.at(-1);
   for (const fact of document.facts) {
     const { factId, recordedSequence } = fact;
@@ -84,6 +86,7 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
     else if (fact.kind === 'Stop') stops.push({ factId, ...effective(fact) });
     else if (fact.kind === 'Target') targets.push({ factId, ...effective(fact) });
     else if (fact.kind === 'PositionChange') changes.push({ factId, recordedSequence, value: effective(fact) });
+    else if (fact.kind === 'Expiration') settlements.set(factId, { factId, recordedSequence, ...effective(fact) });
     else executions.set(factId, { factId, recordedSequence, ...effective(fact) });
   }
   return {
@@ -91,12 +94,17 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
     factRevision: document.factRevision,
     storedLifecycle: document.lifecycle,
     plan: { ...plan!, legs, stops, targets },
-    positionChanges: changes.map(({ factId, recordedSequence, value }) => ({
-      factId,
-      economicTime: value.economicTime,
-      recordedSequence,
-      executions: value.memberIds.map((id) => executions.get(id)!),
-    })),
+    positionChanges: changes.map(({ factId, recordedSequence, value }) => {
+      const expirations = value.memberIds.flatMap((id) => settlements.get(id) ?? []);
+      return {
+        factId,
+        economicTime: value.economicTime,
+        recordedSequence,
+        executions: value.memberIds.flatMap((id) => executions.get(id) ?? []),
+        // Only an Expiration Position Change carries the member (A106).
+        ...(expirations.length > 0 && { settlements: expirations }),
+      };
+    }),
     // Recorded occurrences with their version lists, authoritative here (D2 A26).
     ...(document.deviations && { recordedDeviations: document.deviations }),
     // The effective Close Reason and the stored Terminal Time of a Closed Trade (D6 A85, A87).
@@ -306,12 +314,15 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     const before = storedDocument(value);
     // The change was composed against a FactRevision that is no longer current.
     if (before.factRevision !== change.expectedFactRevision) return { kind: 'Conflict', tradeId: change.tradeId };
-    const memberIds = change.executions.map((_, i) => `candidate:execution-${i + 1}`);
+    const executionIds = change.executions.map((_, i) => `candidate:execution-${i + 1}`);
+    const memberIds = [...executionIds, ...(change.expiration ? ['candidate:expiration-1'] : [])];
+    const memberCount = memberIds.length;
     // Recorded Sequence continues the Trade's counter: the Position Change first, then its members
     // in submitted order (D2 A20).
     const counter = before.recordedSequenceCounter ?? Math.max(...before.facts.map((f) => f.recordedSequence));
-    // A Position Change's Economic Time is its earliest member's (D2 A19).
-    const economicTime = change.executions.map((e) => e.economicTime).sort(compareInstants)[0]!;
+    // A Position Change's Economic Time is its earliest member's (D2 A19); an Expiration's is its
+    // settlement time (A106).
+    const economicTime = [...change.executions.map((e) => e.economicTime), ...(change.expiration ? [change.expiration.economicTime] : [])].sort(compareInstants)[0]!;
     const added: TradeFact[] = [
       {
         factId: 'candidate:pc-1',
@@ -325,10 +336,20 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
         ],
       },
       ...change.executions.map(
-        (value, i): TradeFact => ({ factId: memberIds[i]!, kind: 'Execution', recordedSequence: counter + 2 + i, versions: [{ versionNumber: 1, value }] }),
+        (value, i): TradeFact => ({ factId: executionIds[i]!, kind: 'Execution', recordedSequence: counter + 2 + i, versions: [{ versionNumber: 1, value }] }),
       ),
+      ...(change.expiration
+        ? [
+            {
+              factId: 'candidate:expiration-1',
+              kind: 'Expiration' as const,
+              recordedSequence: counter + 2 + change.executions.length,
+              versions: [{ versionNumber: 1, value: change.expiration }],
+            },
+          ]
+        : []),
     ];
-    const afterMembers = counter + 1 + change.executions.length;
+    const afterMembers = counter + 1 + memberCount;
     // A terminal change's Close Reason takes the next Recorded Sequence after its members (A85).
     const closeReasonFacts: CloseReasonFact[] = change.closeReasonId === undefined
       ? []

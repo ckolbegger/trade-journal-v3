@@ -53,6 +53,8 @@ export interface TradeAnalysisRecord {
     readonly underlying: string;
     readonly thesis: string;
     readonly invalidation: string;
+    // A long option Plan's Exercise Intent (A100); absent for stock and the Cash-Secured Put.
+    readonly exerciseIntent?: 'Authorized' | 'NotAuthorized';
     readonly legs: readonly (PlannedLegInput & { readonly factId: string })[];
     readonly stops: readonly (ConditionInput & { readonly factId: string })[];
     readonly targets: readonly (ConditionInput & { readonly factId: string })[];
