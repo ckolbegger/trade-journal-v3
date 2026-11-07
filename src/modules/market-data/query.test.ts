@@ -218,8 +218,20 @@ describe('Historical point context (A53)', () => {
 
   it('should return NotASession for Saturday 2026-10-10 and SessionNotCompleted for Tuesday at Tuesday noon', async () => {
     const { marketData } = await setup();
-    expect(await marketData.query(historical('2026-10-10'))).toEqual({ kind: 'Rejected', issues: [{ field: 'tradingDate', code: 'NotASession' }] });
+    expect(await marketData.query(historical('2026-10-10'))).toEqual({ kind: 'Rejected', issues: [{ field: 'tradingDate', code: 'NotASession', latestSession: { tradingDate: '2026-10-09', closeInstant: '2026-10-09T20:00:00Z' } }] });
     expect(await marketData.query(historical('2026-10-13'))).toEqual({ kind: 'Rejected', issues: [{ field: 'tradingDate', code: 'SessionNotCompleted' }] });
+  });
+});
+
+describe('frames for a non-session date (A111)', () => {
+  it('should return NotASession for Historical 2015-01-17, a Saturday, carrying Friday 2015-01-16 and its close', async () => {
+    const { persistence } = await setup();
+    const policy = createSessionPolicy({ id: 'nyse', revision: 1, coverage: { first: '2015-01-01', last: '2028-12-31' }, table: NYSE_TABLE });
+    const marketData = createMarketData({ persistence, ids: sequentialIds('rev'), clock: fixedClock(TUESDAY_NOON), sessionPolicy: policy });
+    expect(await marketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate: '2015-01-17' }, instruments: ['XYZ'] })).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'tradingDate', code: 'NotASession', latestSession: { tradingDate: '2015-01-16', closeInstant: '2015-01-16T21:00:00Z' } }],
+    });
   });
 });
 

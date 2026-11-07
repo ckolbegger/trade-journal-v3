@@ -2,6 +2,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
+import { instrumentOf } from '../../domain/instrument/index.ts';
 import type { CoverageRange, Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
@@ -44,6 +45,7 @@ export type MarketDataIssueCode =
   | 'InvalidDate'
   | 'InvalidInstant'
   | 'NotASession'
+  | 'AfterExpiration'
   | 'SessionPolicyCoverage'
   | 'SessionNotCompleted'
   | 'InvalidPrice'
@@ -63,6 +65,8 @@ export interface MarketDataIssue {
   // Set on a SessionPolicyCoverage issue for an as-of instant: the uncovered exchange date and the coverage.
   readonly date?: string;
   readonly coverage?: CoverageRange;
+  // Set on a Historical NotASession issue: the latest session before the date and its close (A111).
+  readonly latestSession?: { readonly tradingDate: string; readonly closeInstant: string };
 }
 
 export type MarketDataSaveResult =
@@ -395,8 +399,15 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
 
   function validateKey(command: ObservationKey): MarketDataIssue[] {
     const issues: MarketDataIssue[] = [];
-    if (!SYMBOL.test(command.instrumentKey)) issues.push({ field: 'instrumentKey', code: 'InvalidInstrument' });
+    // A stock symbol or an unpadded OCC option key with a real expiration date (A99, decision 77).
+    const instrument = instrumentOf(command.instrumentKey);
+    const wellFormed = instrument.kind === 'Option' ? isRealDate(instrument.expiration) : SYMBOL.test(command.instrumentKey);
+    if (!wellFormed) issues.push({ field: 'instrumentKey', code: 'InvalidInstrument' });
     issues.push(...validateDate(command.tradingDate));
+    // A contract has no Mark after it expires (A115).
+    if (wellFormed && instrument.kind === 'Option' && DATE.test(command.tradingDate) && command.tradingDate > instrument.expiration) {
+      issues.push({ field: 'tradingDate', code: 'AfterExpiration' });
+    }
     return issues;
   }
 
@@ -498,7 +509,12 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   else {
     const date = context.kind === 'Review' ? context.reviewDate : context.tradingDate;
     const issues = validateDate(date);
-    if (issues.length > 0) return { kind: 'Rejected', issues };
+    if (issues.length > 0) {
+      // A Historical NotASession carries the latest session before the date with its close (A111, extends A53).
+      const latest = context.kind === 'Historical' && issues[0]?.code === 'NotASession' ? deps.sessionPolicy.previousSession(date) : undefined;
+      if (latest?.ok) return { kind: 'Rejected', issues: [{ ...issues[0]!, latestSession: { tradingDate: latest.value.date, closeInstant: latest.value.close } }] };
+      return { kind: 'Rejected', issues };
+    }
     day = { ok: true, value: deps.sessionPolicy.classify(date) as Session };
   }
   if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: day.diagnostic.date, coverage: day.diagnostic.coverage }] };

@@ -590,3 +590,33 @@ describe('Stale context lookup bound (T4.5-B1)', () => {
     expect(visited.filter((k) => k !== 'DEF')).toEqual([]);
   });
 });
+
+// T7.8: option contract keys and Marks (D7 P27, A115, A99 as amended by decision 77).
+describe('option Marks (P27, A115)', () => {
+  const AFTER_EXPIRY_NOON = '2026-11-24T16:00:00Z';
+  const CONTRACT = 'XYZ261120C00055000';
+
+  it('should record initial Manual Marks of 0 for XYZ261120C00055000 and for XYZ stock on 2026-11-20 and resolve both Available, and reject -0.01 with PriceNegative', async () => {
+    const { marketData } = await setup(AFTER_EXPIRY_NOON);
+    for (const instrumentKey of [CONTRACT, 'XYZ']) {
+      expect(await marketData.save(initial({ instrumentKey, tradingDate: '2026-11-20', price: '0' }))).toMatchObject({
+        kind: 'Saved',
+        resolution: { kind: 'Available', mark: { price: '0' } },
+      });
+    }
+    expect(await marketData.save(initial({ instrumentKey: CONTRACT, tradingDate: '2026-11-19', price: '-0.01' }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'price', code: 'PriceNegative' }],
+    });
+  });
+
+  it('should reject a Mark for that contract dated 2026-11-23 with AfterExpiration', async () => {
+    const { marketData, persistence } = await setup(AFTER_EXPIRY_NOON);
+    const before = await stored(persistence);
+    expect(await marketData.save(initial({ instrumentKey: CONTRACT, tradingDate: '2026-11-23', price: '0' }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'tradingDate', code: 'AfterExpiration' }],
+    });
+    expect(await stored(persistence)).toEqual(before);
+  });
+});

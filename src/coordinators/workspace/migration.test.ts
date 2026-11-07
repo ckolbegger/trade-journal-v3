@@ -703,7 +703,7 @@ describe('session-policy compatibility (A40)', () => {
     const later = createMarketData({ persistence: second.persistence, ids: second.ids, clock: second.clock, sessionPolicy: withClosure });
     expect(await later.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate: '2026-10-14' }, instruments: ['XYZ'] })).toEqual({
       kind: 'Rejected',
-      issues: [{ field: 'tradingDate', code: 'NotASession' }],
+      issues: [{ field: 'tradingDate', code: 'NotASession', latestSession: { tradingDate: '2026-10-13', closeInstant: '2026-10-13T20:00:00Z' } }],
     });
     const friday = await later.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: '2026-10-16T21:00:00Z' }, instruments: ['XYZ'] });
     if (friday.kind !== 'Frames') throw new Error('expected frames');
