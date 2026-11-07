@@ -272,6 +272,22 @@ describe('Expiration (AC-POS-004, A107)', () => {
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });
 
+  it('should reject an Expiration naming a contract other than the held one (another strike, another expiration) with VariantNotInstalled OtherInstrument, writing nothing', async () => {
+    const ref = await optionTrade('CashSecuredPut', MONDAY_NEXT_17);
+    const revision = await recordAll(ref, [[fill(ref, 'Sell', MONDAY_10, '2', '1.25', '1.30')]]);
+    const before = await dumpAll(ref.stack.factory);
+    const held = ref.instrument;
+    if (held.kind !== 'Option') throw new Error('expected an option instrument');
+    const others = [{ ...held, strike: '999' }, { ...held, expiration: '2026-12-18' }];
+    for (const other of others) {
+      const result = await ref.stack.tradeWorkflows.recordPositionChange(
+        command(ref, revision, [expiration(ref, FRIDAY_16, '2', other)], { closeReview: closeReviewForm(ref) }),
+      );
+      expect(result).toEqual({ kind: 'VariantNotInstalled', variants: ['OtherInstrument'] });
+    }
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+  });
+
   it('should return the analysis ExpirationMustSettleAllOpen and SettlementTimeInvalid issues, and reject a settlement time in the future with EconomicTimeInFuture, writing nothing', async () => {
     const ref = await optionTrade('CashSecuredPut', MONDAY_NEXT_17);
     const revision = await recordAll(ref, [[fill(ref, 'Sell', MONDAY_10, '2', '1.25', '1.30')]]);

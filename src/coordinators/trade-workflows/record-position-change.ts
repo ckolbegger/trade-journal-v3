@@ -378,7 +378,10 @@ async function attemptPositionChange(deps: TradeWorkflowsDeps, command: Position
     const leg = legs.find((l) => l.factId === m.intent.plannedLegId);
     return leg && instrumentKey(leg.instrument);
   };
-  if (executionMembers.some((m) => instrumentKey(m.instrument) !== legKey(m))) {
+  // An Expiration names the contract held (A106), which is a Planned Leg's, so it is held to the same rule.
+  // A non-option instrument stays analysis's NotAnOption.
+  const otherExpiration = expirationMember !== undefined && expirationMember.instrument.kind === 'Option' && !legs.some((l) => instrumentKey(l.instrument) === instrumentKey(expirationMember.instrument));
+  if (otherExpiration || executionMembers.some((m) => instrumentKey(m.instrument) !== legKey(m))) {
     return { kind: 'VariantNotInstalled', variants: ['OtherInstrument'] };
   }
   // The candidate Position Change the Journal outcome's origin names until apply maps it.
