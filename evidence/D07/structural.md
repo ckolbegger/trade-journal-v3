@@ -306,3 +306,24 @@ Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 72797dc5`, cove
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-25-release-history-checks.txt` |
 
 Tier: full, printed reason "first matching path since 72797dc5: e2e/d6/update.spec.ts". Ports free before and after. T7.7 and T7.25 are complete.
+
+## T7.8 Market Data: option keys and Marks
+
+Behavioral; commit `da4f2587`. Three cases, red then green: Marks of 0 for `XYZ261120C00055000` and XYZ stock with −0.01 rejected (red: the OCC key failed the stock-symbol check with `InvalidInstrument`); `AfterExpiration` for a contract Mark dated 2026-11-23 (red: `Saved`; the code had first been written ahead of the red, was backed out for a genuine red and restored, flagged); `Historical(2015-01-17)` returns `NotASession` carrying 2015-01-16 and its close (red: no `latestSession`). No first-run passes. P27 needed no D4 test change: Market Data already accepted a Mark of 0 (`market-data.test.ts:333` saves 0.00) and rejected only negatives. Existing expectations extended with `latestSession`: `query.test.ts` (Saturday 2026-10-10), `tests/integration/d4/policy-revision.test.ts` (Tuesday 2026-10-13), `src/coordinators/workspace/migration.test.ts:706` (2026-10-14). Decisions: a key is well formed if it is a stock symbol or `instrumentOf` parses it as an Option with a real expiration; `AfterExpiration` (field `tradingDate`) needs a well-formed date after the expiration; `NotASession` carries `latestSession { tradingDate, closeInstant }` only for `Historical`, and only where the session policy covers the previous session. **For T7.11:** the section validator still treats an option key as an unknown stock symbol. **For T7.14:** a non-session `Historical(expirationDate)` is `Rejected` with `issues[0].latestSession`; calendar coverage is 2024–2028, so a pre-2015 date gives `SessionPolicyCoverage`. **For the Marks panel (UI tasks):** Market Data's `AfterExpiration` needs words the plan doesn't give; raise when that task reaches it.
+
+### ocr review of `da4f2587`
+
+No findings (`ocr/T7.8-da4f2587.json`).
+
+### Cumulative run after T7.8 (`t7-8-option-marks`, at `da4f2587`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 76588e6d`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 103 files, 1289 passed, exit 0 | `suite-runs/t7-8-option-marks-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-8-option-marks-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (12.5 s), exit 0 | `suite-runs/t7-8-option-marks-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-8-option-marks-checks.txt` |
+
+Tier: task, printed reason "no changed path since 76588e6d is on the full-tier list". Ports free before and after. T7.8 is complete.
