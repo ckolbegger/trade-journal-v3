@@ -354,3 +354,26 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 0042b80b`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-9-option-strategies-checks.txt` |
 
 Tier: task, printed reason "no changed path since 0042b80b is on the full-tier list". Ports free before and after. T7.9 is complete.
+
+## T7.10 Trade Record: option facts and Expiration
+
+Behavioral; commit `0ab541ba`. Three `option-record.test.ts` cases. Case 1 (ConfirmPlan for an option) was a first-run pass, flagged: `prepareChange` already spreads the Plan fact value and stores legs and conditions as submitted, and T7.7 left the Instrument tagged; only the optional `exerciseIntent` types were added; mutation (destructuring `exerciseIntent` out of the plan in `prepareChange`) failed with `AssertionError: expected { …(4) } to deeply equal ObjectContaining{…}`. Case 2 (Expiration) red: no Expiration member; green after the change. Case 3 (`getRecord`) first passed because its `analysisInputOf` branch had been written during case 2; backed out for a genuine red (`positionChanges` missing the Expiration member), restored, green; the invalid row is annotated in `tdd-log.md`.
+
+Stored shapes (implementation decisions, accepted by the main session as following A106 and A118): `TradeFact` kind `'Expiration'`, value `{ economicTime, instrument, quantity }`, in `TradeDocument.facts` beside Executions with a single-version list, its own `recordedSequence`, and listed in its Position Change's `memberIds`; no price, fee or Close Reason. `PlanFactValue.exerciseIntent?: 'Authorized' | 'NotAuthorized'`. Change input `PositionChangeChange.expiration?` with `executions: []`. `analysisInputOf` projects the member into `PositionChangeFact.settlements`. No new store, index or private field. Indexes: `byLifecycle` and `byLifecycleActivity` are vacated by the existing `vacateIndexKey` staging on the Open→Closed move (asserted); `byLifecycleTerminal` gains the Closed entry (an Open Trade had none); `terminalTime` equals the settlement time; only `trades` and `meta` are written. **For T7.11:** treat the `Expiration` fact kind as known. **For T7.12:** pass `exerciseIntent` in `ConfirmPlanChange.plan`. **For T7.13:** build `{ executions: [], expiration: { economicTime, instrument, quantity } }` with `expectedLifecycle: 'Closed'` and no `closeReasonId`; the workflow owns the Expiration rules and the no-mixing rule.
+
+### ocr review of `0ab541ba`
+
+No findings (`ocr/T7.10-0ab541ba.json`).
+
+### Cumulative run after T7.10 (`t7-10-trade-record`, at `0ab541ba`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 6a3a7d15`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 105 files, 1294 passed, exit 0 | `suite-runs/t7-10-trade-record-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-10-trade-record-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (10.2 s), exit 0 | `suite-runs/t7-10-trade-record-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-10-trade-record-checks.txt` |
+
+Tier: task, printed reason "no changed path since 6a3a7d15 is on the full-tier list". Ports free before and after. T7.10 is complete.
