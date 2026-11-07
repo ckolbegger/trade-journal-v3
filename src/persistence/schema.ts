@@ -6,7 +6,7 @@ export const WORKSPACE_PREFIX = 'tj-ws-';
 export const POINTER_KEY = 'current';
 
 // The Workspace schema this release reads and writes.
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export function upgradeRoot(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {

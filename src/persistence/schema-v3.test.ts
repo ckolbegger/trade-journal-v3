@@ -55,7 +55,7 @@ describe('schema v3 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 5 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 6 }));
     const db = await rawOpen(created.databaseName);
     const observations = db.transaction('observations').objectStore('observations');
     const keyPath = observations.keyPath;
@@ -70,7 +70,7 @@ describe('schema v3 layout', () => {
     expect(indexUnique).toBe(false);
     expect(meta).toEqual(
       expect.arrayContaining([
-        { key: 'schema', schemaVersion: 5 },
+        { key: 'schema', schemaVersion: 6 },
         { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
       ]),
     );
@@ -131,7 +131,7 @@ describe('v2 → v3 transform', () => {
     expect(await rawGetAll(candidate, 'observations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'schema', schemaVersion: 5 },
+      { key: 'schema', schemaVersion: 6 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
       { key: 'settings', timeZone: 'America/New_York', revision: 1 },
     ]);

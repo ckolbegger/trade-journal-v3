@@ -66,14 +66,14 @@ describe('schema v5 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 5 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 6 }));
     const db = await rawOpen(created.databaseName);
     const index = db.transaction('trades').objectStore('trades').index('byLifecycleTerminal');
     const shape = [index.keyPath, index.unique];
     db.close();
 
     expect(shape).toEqual([['lifecycle', 'terminalDesc', 'tradeId'], false]);
-    expect(await rawGetAll(created.databaseName, 'meta')).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 5 }]));
+    expect(await rawGetAll(created.databaseName, 'meta')).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 6 }]));
   });
 });
 
@@ -140,7 +140,7 @@ describe('v4 → v5 transform', () => {
       expect(await rawGetAll(candidate, store)).toEqual([{ ...value, revision: 1 }]);
     }
     expect(await rawGetAll(candidate, 'meta')).toEqual(
-      expect.arrayContaining([{ key: 'schema', schemaVersion: 5 }, { key: 'settings', timeZone: 'America/New_York', revision: 1 }]),
+      expect.arrayContaining([{ key: 'schema', schemaVersion: 6 }, { key: 'settings', timeZone: 'America/New_York', revision: 1 }]),
     );
 
     // A v1 Workspace passes through v1→v2, v2→v3, v3→v4, and v4→v5 in one candidate.
