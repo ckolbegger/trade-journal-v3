@@ -30,3 +30,16 @@ export const D6_CATALOG_MANIFEST: CatalogSeedManifest = {
     { productKey: 'close-reason.time-based-exit', label: 'Time-Based Exit' },
   ],
 };
+
+// D7 adds the single-leg option Strategies, after Long Stock in seed order (A101). The
+// Cash-Secured Put names trader intent: the application does not verify cash coverage.
+export const D7_CATALOG_MANIFEST: CatalogSeedManifest = {
+  version: 3,
+  strategies: [
+    ...D6_CATALOG_MANIFEST.strategies,
+    { productKey: 'strategy.long-call', label: 'Long Call', shape: { roles: [{ side: 'Long', instrument: 'Call', ratio: 1 }] } },
+    { productKey: 'strategy.long-put', label: 'Long Put', shape: { roles: [{ side: 'Long', instrument: 'Put', ratio: 1 }] } },
+    { productKey: 'strategy.cash-secured-put', label: 'Cash-Secured Put', shape: { roles: [{ side: 'Short', instrument: 'Put', ratio: 1 }] } },
+  ],
+  closeReasons: D6_CATALOG_MANIFEST.closeReasons,
+};
