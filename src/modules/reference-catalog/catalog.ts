@@ -1,7 +1,7 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { StrategyShape } from '../../domain/strategy.ts';
 import type { BindingCheck, IdGenerator, Persistence, StoreRecord } from '../../persistence/index.ts';
-import { D7_CATALOG_MANIFEST, type CatalogSeedManifest } from './manifest.ts';
+import type { CatalogSeedManifest } from './manifest.ts';
 import {
   normalizeLabel,
   type CatalogRecord,
@@ -173,19 +173,9 @@ export function prepareSeed(existing: readonly CatalogRecord[], manifest: Catalo
   return { kind: 'Additions', records: [...records, ...closeReasons] };
 }
 
-// Strategies are seeded in the current manifest's array order; the order is read from the manifest
-// by stable product key, so stored Strategy records need no order field. Add each new manifest here.
-const STRATEGY_SEED_ORDER = new Map(D7_CATALOG_MANIFEST.strategies.map((seed, order) => [seed.productKey, order]));
-
-// Close Reasons and seeded Strategies are listed in seed order; every family otherwise orders by
-// normalized label, then identity.
+// Close Reasons are listed in seed order; every family otherwise orders by normalized label, then identity.
 function compareForSelection(a: CatalogRecord, b: CatalogRecord): number {
   if (a.kind === 'CloseReason' && b.kind === 'CloseReason' && a.seedOrder !== b.seedOrder) return a.seedOrder - b.seedOrder;
-  if (a.kind === 'Strategy' && b.kind === 'Strategy') {
-    const rankA = STRATEGY_SEED_ORDER.get(a.productKey) ?? Infinity;
-    const rankB = STRATEGY_SEED_ORDER.get(b.productKey) ?? Infinity;
-    if (rankA !== rankB) return rankA < rankB ? -1 : 1;
-  }
   if (a.normalizedLabel !== b.normalizedLabel) return a.normalizedLabel < b.normalizedLabel ? -1 : 1;
   return a.id < b.id ? -1 : 1;
 }

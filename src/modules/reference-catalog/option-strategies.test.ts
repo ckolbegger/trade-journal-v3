@@ -52,16 +52,16 @@ describe('seedDefaults: manifest v3', () => {
     expect((await read()).value).toEqual(v3);
   });
 
-  it('should list the four selectable Strategies in seed order with their immutable shapes', async () => {
+  it('should list the four selectable Strategies in label order with their immutable shapes', async () => {
     const { catalog: c } = await catalog();
     await c.seedDefaults(D7_CATALOG_MANIFEST);
     const page = await c.query({ family: 'Strategy' });
     if (page.kind !== 'Page') throw new Error('no page');
     expect(page.items.map((r) => (r.kind === 'Strategy' ? [r.label, r.productKey, r.shape] : null))).toEqual([
-      ['Long Stock', 'strategy.long-stock', { roles: [{ side: 'Long', instrument: 'Stock', ratio: 1 }] }],
+      ['Cash-Secured Put', 'strategy.cash-secured-put', { roles: [{ side: 'Short', instrument: 'Put', ratio: 1 }] }],
       ['Long Call', 'strategy.long-call', { roles: [{ side: 'Long', instrument: 'Call', ratio: 1 }] }],
       ['Long Put', 'strategy.long-put', { roles: [{ side: 'Long', instrument: 'Put', ratio: 1 }] }],
-      ['Cash-Secured Put', 'strategy.cash-secured-put', { roles: [{ side: 'Short', instrument: 'Put', ratio: 1 }] }],
+      ['Long Stock', 'strategy.long-stock', { roles: [{ side: 'Long', instrument: 'Stock', ratio: 1 }] }],
     ]);
   });
 });
