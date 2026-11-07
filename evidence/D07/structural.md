@@ -433,3 +433,34 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 045ca82f`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-12-confirm-plan-checks.txt` |
 
 Tier: task, printed reason "no changed path since 045ca82f is on the full-tier list". Ports free before and after. T7.12 is complete.
+
+## T7.13 Trade Workflows: `recordPositionChange` for options and Expiration
+
+Behavioral; commit `8c72420c`, five cases in `record-position-change-options.test.ts`. Genuine reds: S1/B1 on O-S (`VariantNotInstalled` where `Recorded` was expected), E1 commit (`StorageFailure TypeError`), and the analysis-issues case (`IntegrityDisagreement`; its production code had been written ahead, backed out for the genuine red, restored). **First-run passes, flagged:** the Close Reason on a flat Buy to close (built by D6's `closeRequirementIssues`; mutation "never emit `CloseReasonRequired`" failed with `AssertionError: expected [ { source: 'TradeWorkflows', …(2) } ] to deeply equal [ …(2) ]`), and the Close Reason on E1 / mixed members case (built in the E1 case; mutation of the `CloseReasonNotApplicable` half only failed with `AssertionError: expected { kind: 'Recorded', …(3) } to deeply equal ObjectContaining{…}`; the `MixedMembers` half was not mutation-checked). Public types: `ExpirationMember`, `PositionChangeCommand.members` admits it, `PositionChangeMember.instrument` is the full `StockInstrument | OptionInstrument`, `UninstalledVariant` gains `MixedMembers`. A terminal Expiration owes a Close Review disposition (`CloseReviewDispositionRequired`) and no Close Reason. One T6 fixture line moved from a loose Option shape to a full contract.
+
+### ocr review of `8c72420c`
+
+`ocr/T7.13-8c72420c.json`, 2 comments, both Valid: (1) the same-contract guard checked only Executions, so an Expiration naming another contract with the same quantity closed the position; (2) `ContractQuantityNotWhole` and `AfterExpiration` were missing from `OWN_FINDINGS`, so a fractional or post-expiry option Execution returned `IntegrityDisagreement` instead of a member-scoped rejection (A102).
+
+### T7.13-B1 an Expiration naming another contract is rejected
+
+Commit `75384559`. Case "should reject an Expiration naming a contract other than the held one (another strike, another expiration) with VariantNotInstalled OtherInstrument, writing nothing"; red `AssertionError: expected { kind: 'Recorded', …(3) } to deeply equal { kind: 'VariantNotInstalled', …(1) }`, green after the guard compares an option Expiration's `instrumentKey` with the Plan's leg Instruments. A non-option Expiration still reaches analysis (`NotAnOption`). **For the final report:** with several option legs (D10), an Expiration naming another leg's contract than the one held would still pass this guard.
+
+### T7.13-B2 option Execution errors are member-scoped
+
+Commit `9e980a06`. Case "should reject an option Execution of a fractional quantity with ContractQuantityNotWhole and one dated after the contract's expiration with AfterExpiration, each on its member, writing nothing"; red `IntegrityDisagreement` where `Rejected` was expected, green after `OWN_FINDINGS` maps `ContractQuantityNotWhole` to `quantity` and `AfterExpiration` to `economicTime`.
+
+ocr review of `8c72420c..9e980a06`: no findings (`ocr/T7.13-B1-B2-9e980a06.json`).
+
+### Cumulative run after T7.13-B2 (`t7-13-position-change`, at `9e980a06`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 640b42bf`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 110 files, 1307 passed, exit 0 | `suite-runs/t7-13-position-change-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-13-position-change-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (10.0 s), exit 0 | `suite-runs/t7-13-position-change-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-13-position-change-checks.txt` |
+
+Tier: task, printed reason "no changed path since 640b42bf is on the full-tier list". Ports free before and after. T7.13 is complete.

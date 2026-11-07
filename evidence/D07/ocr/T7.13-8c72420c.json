@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 282585,
+    "input_tokens": 280435,
+    "output_tokens": 2150,
+    "cache_read_tokens": 45824,
+    "elapsed": "1m44s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 7,
+      "file_find": 2,
+      "file_read": 13
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 18,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/trade-workflows/index.ts,src/coordinators/trade-workflows/record-position-change.ts",
+        "arguments": "{\"file_path\": \"src/domain/instrument/instrument.ts\"}",
+        "error": "file \"src/domain/instrument/instrument.ts\" not found: git show 8c72420c:src/domain/instrument/instrument.ts: exit status 128: fatal: path 'src/domain/instrument/instrument.ts' does not exist in '8c72420c'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-workflows/record-position-change.ts",
+      "content": "Option executions introduce two more command-validation findings: `ContractQuantityNotWhole` and `AfterExpiration` (emitted by `derive` for fractional contracts and executions dated after expiration). Neither is mapped here, and `memberIssues` does not reject these inputs. Consequently, either input against an otherwise coherent Trade returns `IntegrityDisagreement` instead of a member-scoped `Rejected` issue, incorrectly presenting a form error as corrupted stored facts. Map these findings to `quantity` and `economicTime`, respectively, and cover both rejection cases.",
+      "existing_code": "  ExpirationMustSettleAllOpen: 'quantity',\n  SettlementTimeInvalid: 'economicTime',\n  NotAnOption: 'instrument',",
+      "start_line": 289,
+      "end_line": 291,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/trade-workflows/record-position-change.ts",
+      "content": "Validate the Expiration instrument against the Trade's option contract too. This guard only checks executions, so an Expiration for a different symbol, strike, or expiry passes through. Analysis checks the settlement quantity against the Trade's total open quantity and replays lots without matching instrument keys, so a settlement for an unrelated option can close the actual position (and even calculate realized results using the wrong multiplier). Reject mismatched expiration instruments before preparing/committing the change, and add a regression test.",
+      "existing_code": "  if (executionMembers.some((m) =\u003e instrumentKey(m.instrument) !== legKey(m))) {",
+      "start_line": 381,
+      "end_line": 381,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-workflows/index.ts",
+        "src/coordinators/trade-workflows/record-position-change.ts"
+      ]
+    }
+  ],
+  "session_id": "f7c61efc-d45e-423a-a049-4810c83cdd85",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f7c61efc-d45e-423a-a049-4810c83cdd85",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8c72420c",
+      "resolved_base": "640b42bf7b84e53b3a0c18683d788ad7b7308806",
+      "resolved_head": "8c72420c77fc375e85120ebd455feebd57890de4",
+      "exact_range": "640b42bf7b84e53b3a0c18683d788ad7b7308806..8c72420c77fc375e85120ebd455feebd57890de4",
+      "source_artifact_sha256": "8aba93d4016f9ef7f3a180a10f939291ce8f6a72f39a8e1e78a9a33052df1f2e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6f21b8627f1495a76f2099a793fbd884f62d03fd98b831235f15de925d721c60",
+          "path": "src/coordinators/trade-workflows/index.ts",
+          "fingerprint": "07c298a8d60eaea2b8ca373e521ef1097fb969836f8e23853eff8ae4233dd678"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "c2c6ad5bec22a1728c795f9340b159119746a0b429d8ca3d0953f6627bf996a8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6f21b8627f1495a76f2099a793fbd884f62d03fd98b831235f15de925d721c60",
+          "path": "src/coordinators/trade-workflows/index.ts",
+          "fingerprint": "07c298a8d60eaea2b8ca373e521ef1097fb969836f8e23853eff8ae4233dd678"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "c2c6ad5bec22a1728c795f9340b159119746a0b429d8ca3d0953f6627bf996a8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 104049
+  }
+}
