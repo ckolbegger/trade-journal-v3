@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 28301,
+    "input_tokens": 28073,
+    "output_tokens": 228,
+    "cache_read_tokens": 7680,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/modules/trade-record/trade-record.ts",
+      "files": [
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "3467c488-20ba-492f-a165-714ec44283cf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3467c488-20ba-492f-a165-714ec44283cf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7c4a7bfd",
+      "resolved_base": "abf65522c09afc04c25a4ec0c7572f1153e71f27",
+      "resolved_head": "7c4a7bfd49b35badaaf4067379c049b89d434f05",
+      "exact_range": "abf65522c09afc04c25a4ec0c7572f1153e71f27..7c4a7bfd49b35badaaf4067379c049b89d434f05",
+      "source_artifact_sha256": "070702695efb9754b221c045e4c2cb0c20f1cc04e20aaf947ad6e76d9158beb6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "570c41f4ac53fd271688e0263a3594a4bd832f6bdf3fc7d9a04fc46c047cdb5b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "570c41f4ac53fd271688e0263a3594a4bd832f6bdf3fc7d9a04fc46c047cdb5b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 15731
+  }
+}

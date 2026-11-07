@@ -377,3 +377,34 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 6a3a7d15`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-10-trade-record-checks.txt` |
 
 Tier: task, printed reason "no changed path since 6a3a7d15 is on the full-tier list". Ports free before and after. T7.10 is complete.
+
+## T7.11 Section validators: Trade Record, Catalog, Market Data
+
+Behavioral, restarted on decisions 86, 88 and 90 (base `0a249bfe`; an earlier restart was stopped by the user and its uncommitted changes discarded). Refactor `50252abf` (before any red): `src/domain/strategy/` holds `StrategyShape`, `StrategyRole`, `ShapedLeg`, `matchesShape`, `sameShape` and `exerciseIntentApplies`; `assessPlan` decides Exercise Intent with `exerciseIntentApplies`, `prepareSeed` and the Catalog use `sameShape`. Feature `abf65522`, three cases, each with a genuine red (Trade: assertion, new codes missing; Catalog: `TypeError`, `strategyShapes` missing; Market Data: assertion, `AfterExpiration` missing; its Mark-0 and `PriceNegative` assertions already held from T4.13). New Trade codes `PlanShapeMismatch`, `ExerciseIntentRequired`, `ExerciseIntentNotApplicable`, `CloseReasonNotApplicable`, `ExpirationHasPriceOrFee`; Catalog `StrategyShapeMismatch`; Market Data `AfterExpiration`; six `MIGRATION_ISSUES` sentences from rows 11.1, 11.2, 11.4 and decision 86. `TradeSectionReferences.strategyShapes` is required (fixtures that build Trade section references must supply it); `migration.ts` needed no edit (it spreads the Catalog's references). A mismatched Plan reports only `PlanShapeMismatch` and skips the Exercise Intent checks, as `assessPlan` does. The Market Data validator never treated OCC keys as unknown symbols (it checks none), so only `AfterExpiration` was added.
+
+### ocr review of `63e18213..abf65522`
+
+No findings (`ocr/T7.11-abf65522.json`).
+
+### Cumulative run after T7.11 (`t7-11-section-validators`, at `abf65522`)
+
+Browser stage `browser-auto 0a249bfe`, full tier ("first matching path since 0a249bfe: src/ui/readiness-copy.ts"). Unit 1297 passed; integration 154 passed; browser 4 failed, 162 passed (9.2 m): B2.12 (`e2e/d2/responsive-a11y.spec.ts:90`, `:179`), B4.13 (`e2e/d4/…:118`), B6.12 (`e2e/d6/…:28`), each expecting a load Error state that no longer appeared; checks 12 of 13 (`verify:capacity`, expected until T7.26). Reproduced `e2e/d2/responsive-a11y.spec.ts:90` alone in the main session.
+
+### T7.11-F1 a Position Change naming a missing member fails the read again
+
+Suite-failure fix, commit `7c4a7bfd`. Root cause in T7.10 (`0ab541ba`), not T7.11: `analysisInputOf` changed `memberIds.map((id) => executions.get(id)!)` to `flatMap((id) => executions.get(id) ?? [])`, silently dropping a missing member, so D2's integrity fault no longer failed the read. The fixture was right. Reproducing case in `option-record.test.ts` ("should refuse to build the analysis input rather than drop the missing member"), red `AssertionError: expected [Function] to throw an error`, green after `analysisInputOf` throws on a member that is neither an Execution nor an Expiration. The subagent's `npm run build:releases` was denied by the auto-mode classifier, so it could not refresh `dist-releases/d6` for B4.13 and B6.12; the cumulative run's browser stage rebuilds it.
+
+ocr review of `7c4a7bfd`: no findings (`ocr/T7.11-F1-7c4a7bfd.json`).
+
+### Cumulative run after T7.11-F1 (`t7-11-f1-missing-member`, at `7c4a7bfd`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 0a249bfe`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 108 files, 1298 passed, exit 0 | `suite-runs/t7-11-f1-missing-member-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-11-f1-missing-member-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (8.1 m), exit 0 | `suite-runs/t7-11-f1-missing-member-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-11-f1-missing-member-checks.txt` |
+
+Tier: full, printed reason "first matching path since 0a249bfe: src/ui/readiness-copy.ts". Ports free before and after. The runner notes the full browser stage (8.1 m) is near the 10-minute Bash limit. T7.11 is complete.

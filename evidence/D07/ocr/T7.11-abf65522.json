@@ -1,0 +1,198 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 0,
+    "total_tokens": 139123,
+    "input_tokens": 138041,
+    "output_tokens": 1082,
+    "cache_read_tokens": 24960,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Strategy domain and trade-analysis planning",
+      "files": [
+        "src/domain/strategy/index.ts",
+        "src/domain/trade-analysis/plan.ts"
+      ]
+    },
+    {
+      "label": "Reference catalog configuration and section",
+      "files": [
+        "src/modules/reference-catalog/catalog.ts",
+        "src/modules/reference-catalog/manifest.ts",
+        "src/modules/reference-catalog/records.ts",
+        "src/modules/reference-catalog/section.ts"
+      ]
+    },
+    {
+      "label": "Trade record module and section",
+      "files": [
+        "src/modules/trade-record/index.ts",
+        "src/modules/trade-record/section.ts"
+      ]
+    },
+    {
+      "label": "Market data readiness and UI copy",
+      "files": [
+        "src/modules/market-data/section.ts",
+        "src/ui/readiness-copy.ts"
+      ]
+    }
+  ],
+  "session_id": "8e499871-81ba-43a3-a09b-b8d6162647d5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8e499871-81ba-43a3-a09b-b8d6162647d5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "63e18213",
+      "requested_head": "abf65522",
+      "resolved_base": "63e18213f63cfaf322f1268bb8a6e2a8a6cafac2",
+      "resolved_head": "abf65522c09afc04c25a4ec0c7572f1153e71f27",
+      "exact_range": "63e18213f63cfaf322f1268bb8a6e2a8a6cafac2..abf65522c09afc04c25a4ec0c7572f1153e71f27",
+      "source_artifact_sha256": "f204fd26590235603b0b7cc4bff045250433491d0e0fe92f836a2fcd0f3ac4b5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07a8e5970f978f20ab523dd3c8e6ad9db5cd72575104f2ca7fc496f1e4e9eb26",
+          "path": "src/domain/strategy/index.ts",
+          "fingerprint": "1c344fd219c15d0381eac426ad9bd0a73c3ae9b96771bccf6679708abcead00b"
+        },
+        {
+          "item_id": "3d09d4b2c7e354af90994d8158ba117315b309bf777532a69108f3b4040afe8a",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "5ce84c1243575f101a509add8497f461202b1dc0418f30f3267b23cad7fd5da1"
+        },
+        {
+          "item_id": "455f00a36151aaf7c9fa32753a8ec9e78adc1f64da59c980602b5ee17f4dfc72",
+          "path": "src/modules/reference-catalog/records.ts",
+          "fingerprint": "7df92d864b8dab65975a179f47c20e4694332aa13a7593ec662fdea26e4b8478"
+        },
+        {
+          "item_id": "6b648c6992defcf610620492e364a94eccc8c663db5875cb17a5078a39bfc55c",
+          "path": "src/modules/reference-catalog/manifest.ts",
+          "fingerprint": "fb05ee14ed138adcfc0fe0d4e60db4c273508b9fe3fb2286aa3aa239211f0550"
+        },
+        {
+          "item_id": "78fb054475589a772112b6ae12b94d580d501cbaef5264da4c36230e1f87131c",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "d4106155b4240b33e62e1e55ffb231f5be901aec3da878354a5750329586b13b"
+        },
+        {
+          "item_id": "79bacccdf146f656263fb8f29766de62628ede720770ced50ba4d0c1b198997d",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "14dfc5e8c435fb7b810bf1ef8477ffe1adf3ae7fb1b88d9b5da9eb6e9d0faf96"
+        },
+        {
+          "item_id": "a00da8b00cd6af473712585952306c32539451c9af1cec6c1d4e67cc6b1ded50",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "94a0dd16582a6f4f3c8efc781583dadc2f94d604e9f129e07caf7d24004498a9"
+        },
+        {
+          "item_id": "aa98fa647ceee0f4f9b1e63bd881cf9c9ee79eee1ec9abdfe3ecb73a8d4436d9",
+          "path": "src/modules/trade-record/section.ts",
+          "fingerprint": "8e0237a2caac01726402bba85f7cbaf8507aa207178108156719fdfb18e89035"
+        },
+        {
+          "item_id": "c23aeb9684968dc5cea725d9792205b07f7a0cd2d9ef82d66679acb52982244f",
+          "path": "src/modules/reference-catalog/section.ts",
+          "fingerprint": "8edfc6030cee9d01a9da50865f65f7604b164e959fd274c44fcee8ea1c061d10"
+        },
+        {
+          "item_id": "fddff3aa1f7ae5069d460bd15749581fd4bdcd36ea824dd1cae9a8ffd1e85083",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "d5e38a1d17e7502b0104f18517c2cd54cce85e7fb6df72a38c53a2413da596a3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07a8e5970f978f20ab523dd3c8e6ad9db5cd72575104f2ca7fc496f1e4e9eb26",
+          "path": "src/domain/strategy/index.ts",
+          "fingerprint": "1c344fd219c15d0381eac426ad9bd0a73c3ae9b96771bccf6679708abcead00b"
+        },
+        {
+          "item_id": "3d09d4b2c7e354af90994d8158ba117315b309bf777532a69108f3b4040afe8a",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "5ce84c1243575f101a509add8497f461202b1dc0418f30f3267b23cad7fd5da1"
+        },
+        {
+          "item_id": "455f00a36151aaf7c9fa32753a8ec9e78adc1f64da59c980602b5ee17f4dfc72",
+          "path": "src/modules/reference-catalog/records.ts",
+          "fingerprint": "7df92d864b8dab65975a179f47c20e4694332aa13a7593ec662fdea26e4b8478"
+        },
+        {
+          "item_id": "6b648c6992defcf610620492e364a94eccc8c663db5875cb17a5078a39bfc55c",
+          "path": "src/modules/reference-catalog/manifest.ts",
+          "fingerprint": "fb05ee14ed138adcfc0fe0d4e60db4c273508b9fe3fb2286aa3aa239211f0550"
+        },
+        {
+          "item_id": "78fb054475589a772112b6ae12b94d580d501cbaef5264da4c36230e1f87131c",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "d4106155b4240b33e62e1e55ffb231f5be901aec3da878354a5750329586b13b"
+        },
+        {
+          "item_id": "79bacccdf146f656263fb8f29766de62628ede720770ced50ba4d0c1b198997d",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "14dfc5e8c435fb7b810bf1ef8477ffe1adf3ae7fb1b88d9b5da9eb6e9d0faf96"
+        },
+        {
+          "item_id": "a00da8b00cd6af473712585952306c32539451c9af1cec6c1d4e67cc6b1ded50",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "94a0dd16582a6f4f3c8efc781583dadc2f94d604e9f129e07caf7d24004498a9"
+        },
+        {
+          "item_id": "aa98fa647ceee0f4f9b1e63bd881cf9c9ee79eee1ec9abdfe3ecb73a8d4436d9",
+          "path": "src/modules/trade-record/section.ts",
+          "fingerprint": "8e0237a2caac01726402bba85f7cbaf8507aa207178108156719fdfb18e89035"
+        },
+        {
+          "item_id": "c23aeb9684968dc5cea725d9792205b07f7a0cd2d9ef82d66679acb52982244f",
+          "path": "src/modules/reference-catalog/section.ts",
+          "fingerprint": "8edfc6030cee9d01a9da50865f65f7604b164e959fd274c44fcee8ea1c061d10"
+        },
+        {
+          "item_id": "fddff3aa1f7ae5069d460bd15749581fd4bdcd36ea824dd1cae9a8ffd1e85083",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "d5e38a1d17e7502b0104f18517c2cd54cce85e7fb6df72a38c53a2413da596a3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34450
+  }
+}
