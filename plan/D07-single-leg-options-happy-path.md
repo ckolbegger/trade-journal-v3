@@ -328,6 +328,8 @@ describe("seedDefaults: manifest v3 (A101)")
   it should list the four selectable Strategies in seed order with their immutable shapes
 ```
 
+**Amended by decision 85 (revision 52):** the second case lists the four selectable Strategies in the spec's label/identity order (Cash-Secured Put, Long Call, Long Put, Long Stock), not seed order; seed order governs only the manifest.
+
 ### T7.10 Trade Record: option facts and Expiration
 
 Seam: `TradeRecord`, against `fake-indexeddb`.
