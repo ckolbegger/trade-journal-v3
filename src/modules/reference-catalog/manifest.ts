@@ -1,4 +1,4 @@
-import type { StrategyShape } from '../../domain/strategy.ts';
+import type { StrategyShape } from '../../domain/strategy/index.ts';
 
 export interface CatalogSeedManifest {
   readonly version: number;

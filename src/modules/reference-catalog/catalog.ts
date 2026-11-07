@@ -1,5 +1,5 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
-import type { StrategyShape } from '../../domain/strategy.ts';
+import { sameShape, type StrategyShape } from '../../domain/strategy/index.ts';
 import type { BindingCheck, IdGenerator, Persistence, StoreRecord } from '../../persistence/index.ts';
 import type { CatalogSeedManifest } from './manifest.ts';
 import {
@@ -134,7 +134,7 @@ export function prepareSeed(existing: readonly CatalogRecord[], manifest: Catalo
   const present = new Map(existing.flatMap((r) => (r.kind === 'Strategy' ? [[r.productKey, r] as const] : [])));
   for (const seed of manifest.strategies) {
     const stored = present.get(seed.productKey);
-    if (stored && JSON.stringify(stored.shape) !== JSON.stringify(seed.shape)) {
+    if (stored && !sameShape(stored.shape, seed.shape)) {
       return { kind: 'SeedConflict', productKey: seed.productKey };
     }
   }

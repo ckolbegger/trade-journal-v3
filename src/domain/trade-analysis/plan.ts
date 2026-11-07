@@ -1,4 +1,4 @@
-import type { StrategyShape } from '../strategy.ts';
+import { exerciseIntentApplies, matchesShape, type StrategyShape } from '../strategy/index.ts';
 import { Temporal } from 'temporal-polyfill';
 import { multiplierOf, validateOptionContract, type ContractIssue, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
@@ -123,14 +123,6 @@ function nearest(basis: readonly ConditionBasis[]): Rational {
   return basis.map((b) => b.distance).reduce((min, d) => (d.compare(min) < 0 ? d : min));
 }
 
-// Planned Legs must fill the Strategy's ordered roles exactly.
-function matchesShape(legs: readonly PlannedLegInput[], shape: StrategyShape): boolean {
-  return (
-    legs.length === shape.roles.length &&
-    legs.every((leg, i) => leg.side === shape.roles[i]?.side && roleOf(leg) === shape.roles[i]?.instrument)
-  );
-}
-
 // The leg's nonzero quantity as a magnitude: a stock quantity is positive, an option's is signed by
 // its side (A100), so the side carries the direction.
 function contractsOf(leg: PlannedLegInput): Rational | undefined {
@@ -150,10 +142,6 @@ function breakevenOf(leg: PlannedLegInput, entry: Rational): Rational | undefine
   const strike = parseDecimal(leg.instrument.strike);
   if (!strike.ok) return undefined;
   return leg.instrument.right === 'Call' ? strike.value.add(entry) : strike.value.sub(entry);
-}
-
-function roleOf(leg: PlannedLegInput): 'Stock' | 'Call' | 'Put' {
-  return leg.instrument.kind === 'Stock' ? 'Stock' : leg.instrument.right;
 }
 
 // The leg's value per unit at a condition's Underlying trigger: the price itself for stock, the
@@ -220,11 +208,13 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   }
   // Exercise Intent is a fact of long options only (A100).
   const first = plan.legs[0];
-  if (plan.exerciseIntent && !(first?.instrument.kind === 'Option' && first.side === 'Long')) issue('ExerciseIntentNotApplicable');
+  const takesIntent = exerciseIntentApplies(input.strategyShape);
+  // A mismatched Plan's legs don't fill the Strategy, so only the shape mismatch is reported for it.
+  if (plan.exerciseIntent && !takesIntent && !shapeMismatch) issue('ExerciseIntentNotApplicable');
   let calculable = true;
   let canonical: OptionInstrument | undefined;
   if (first?.instrument.kind === 'Option') {
-    if (first.side === 'Long' && !plan.exerciseIntent) issue('ExerciseIntentRequired');
+    if (takesIntent && !plan.exerciseIntent) issue('ExerciseIntentRequired');
     // An invalid contract has no value at expiration, and a Strategy mismatch leaves the leg's
     // direction ambiguous, so neither has its risk and reward assessed.
     canonical = assessContract(first, input.economicTime, issue);

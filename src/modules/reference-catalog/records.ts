@@ -1,4 +1,4 @@
-import type { StrategyShape } from '../../domain/strategy.ts';
+import type { StrategyShape } from '../../domain/strategy/index.ts';
 
 export type CatalogKind = 'Institution' | 'Account' | 'Strategy' | 'CloseReason';
 
