@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExpectedDeviation, RecordedDeviation } from '../../domain/trade-analysis/index.ts';
+import type { StrategyShape } from '../../domain/strategy/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { recordSourceOf } from '../../../tests/support/record-source.ts';
 import { validateSection, type CloseReasonFact, type ExecutionFactValue, type TradeDocument, type TradeFact } from './index.ts';
@@ -105,6 +106,7 @@ const references = {
   accountIds: new Set(['acct-1', 'acct-2']),
   anchorTradeIds: new Set(['trade-1', 'trade-2', 'trade-3']),
   closeReasonIds: new Set(['cr-1', 'cr-2']),
+  strategyShapes: new Map<string, StrategyShape>(),
 };
 
 describe('Trade Record section', () => {

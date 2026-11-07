@@ -1,5 +1,6 @@
 import { sha256Hex } from '../../delivery/inventory.ts';
-import { derive, type DerivationResult, type DerivedTradeState, type DeviationAction, type IncoherentFacts, type IntegrityFinding, type LifecycleState } from '../../domain/trade-analysis/index.ts';
+import { exerciseIntentApplies, matchesShape, type StrategyShape } from '../../domain/strategy/index.ts';
+import { derive, type DerivationResult, type TradeAnalysisRecord, type DerivedTradeState, type DeviationAction, type IncoherentFacts, type IntegrityFinding, type LifecycleState } from '../../domain/trade-analysis/index.ts';
 import type { RecordSource } from '../../persistence/index.ts';
 import { canonicalJson } from './canonical.ts';
 import { analysisInputOf } from './trade-record.ts';
@@ -11,6 +12,8 @@ export interface TradeSectionReferences {
   readonly accountIds: ReadonlySet<string>;
   readonly anchorTradeIds: ReadonlySet<string>;
   readonly closeReasonIds: ReadonlySet<string>;
+  // Every Catalog Strategy's shape by identity, active or not. A Trade naming a Strategy absent here is not reported.
+  readonly strategyShapes: ReadonlyMap<string, StrategyShape>;
 }
 
 export type TradeSectionIssue =
@@ -23,7 +26,13 @@ export type TradeSectionIssue =
   // A Trade whose facts leave it Closed has Executions, so its terminal change needs a Close Reason.
   | { readonly code: 'MissingCloseReason'; readonly tradeId: string }
   | { readonly code: 'UnknownCloseReason'; readonly tradeId: string; readonly factId: string; readonly closeReasonId: string }
-  | { readonly code: 'IncoherentFacts'; readonly tradeId: string; readonly findings: IncoherentFacts['findings'] };
+  | { readonly code: 'IncoherentFacts'; readonly tradeId: string; readonly findings: IncoherentFacts['findings'] }
+  // A Trade that closed by expiration owes no Close Reason (A107); `factId` names the Close Reason fact it carries.
+  | { readonly code: 'CloseReasonNotApplicable'; readonly tradeId: string; readonly factId: string }
+  | { readonly code: 'ExpirationHasPriceOrFee'; readonly tradeId: string; readonly factId: string }
+  // A stored Plan's legs don't fill its Strategy's roles; the Catalog's StrategyShapeMismatch is another section's code.
+  | { readonly code: 'PlanShapeMismatch'; readonly tradeId: string }
+  | { readonly code: 'ExerciseIntentRequired' | 'ExerciseIntentNotApplicable'; readonly tradeId: string };
 
 // Stored lifecycle or recorded Deviations that disagree with coherent facts (P7): each finding
 // carries the stored and expected values, and the expected lifecycle and Deviation actions are
@@ -64,6 +73,7 @@ export async function validateSection(source: RecordSource, references: TradeSec
       const verdict = agreementOf(document, derived);
       if (verdict?.code === 'IncoherentFacts') issues.push(verdict);
       else if (verdict) repairs.push(verdict);
+      issues.push(...expirationFactIssuesOf(document), ...planIssuesOf(document, record, references.strategyShapes));
       // Facts that cannot be replayed have no terminal Position Change to judge Close Reasons against.
       if (derived.kind === 'Derived') issues.push(...closeReasonIssuesOf(document, derived, references.closeReasonIds));
     }
@@ -74,6 +84,30 @@ export async function validateSection(source: RecordSource, references: TradeSec
   return { issues, repairs };
 }
 
+// An Expiration records no price and no fee (A106); a stored one that does is hand-edited.
+function expirationFactIssuesOf(document: TradeDocument): TradeSectionIssue[] {
+  return document.facts.flatMap((fact) => {
+    if (fact.kind !== 'Expiration') return [];
+    const value: object = fact.versions.at(-1)!.value;
+    return 'price' in value || 'fee' in value ? [{ code: 'ExpirationHasPriceOrFee' as const, tradeId: document.tradeId, factId: fact.factId }] : [];
+  });
+}
+
+// A stored Plan is checked only for its shape and its Exercise Intent against its Strategy's shape,
+// so a later Plan rule can't block migration or Restore of existing history (decision 88). A Trade
+// whose Strategy the Catalog doesn't hold is skipped, and a Plan that doesn't fill the roles is
+// reported for that alone.
+function planIssuesOf(document: TradeDocument, record: TradeAnalysisRecord, shapes: ReadonlyMap<string, StrategyShape>): TradeSectionIssue[] {
+  const { tradeId } = document;
+  const shape = shapes.get(document.strategyId);
+  if (shape === undefined) return [];
+  if (!matchesShape(record.plan.legs, shape)) return [{ code: 'PlanShapeMismatch', tradeId }];
+  const recorded = record.plan.exerciseIntent !== undefined;
+  if (exerciseIntentApplies(shape) && !recorded) return [{ code: 'ExerciseIntentRequired', tradeId }];
+  if (!exerciseIntentApplies(shape) && recorded) return [{ code: 'ExerciseIntentNotApplicable', tradeId }];
+  return [];
+}
+
 // A Closed Trade's Close Reason must agree with its facts (D6 A85): exactly one fact, naming the
 // terminal Position Change (the last in Fact Order of the replayed facts, which Trade Analysis
 // derives) and a Catalog identity that exists. Lifecycle and `terminalTime` agreement belong to
@@ -81,7 +115,13 @@ export async function validateSection(source: RecordSource, references: TradeSec
 function closeReasonIssuesOf(document: TradeDocument, derived: DerivedTradeState, closeReasonIds: ReadonlySet<string>): TradeSectionIssue[] {
   const { tradeId } = document;
   const facts = document.closeReasonFacts ?? [];
-  const terminalId = derived.expectedLifecycle === 'Closed' ? derived.facts.at(-1)?.positionChangeId : undefined;
+  const closed = derived.expectedLifecycle === 'Closed';
+  // An Expiration must settle everything open, so a Trade that closed with one ended on it (A106, A107):
+  // it owes no Close Reason and any it carries is reported.
+  if (closed && derived.terminalDisposition.kind === 'Value' && derived.terminalDisposition.value.some((m) => m.mechanism === 'Expiration')) {
+    return facts.map(({ factId }) => ({ code: 'CloseReasonNotApplicable', tradeId, factId }));
+  }
+  const terminalId = closed ? derived.facts.at(-1)?.positionChangeId : undefined;
   const issues: TradeSectionIssue[] = [];
   for (const { factId, versions } of facts) {
     const { closeReasonId, terminalPositionChangeId } = versions.at(-1)!.value;

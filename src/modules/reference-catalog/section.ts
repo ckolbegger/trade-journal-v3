@@ -1,3 +1,4 @@
+import { sameShape, type StrategyShape } from '../../domain/strategy/index.ts';
 import type { RecordSource } from '../../persistence/index.ts';
 import type { CatalogSeedManifest } from './manifest.ts';
 import { normalizeLabel, type CatalogRecord } from './records.ts';
@@ -9,14 +10,21 @@ export type CatalogSectionIssue =
   // Seeded Close Reasons stay selectable (SeededValuesRemainSelectable), so an inactive one is a finding.
   | { readonly code: 'SeededRecordInactive'; readonly id: string; readonly productKey: string }
   // Close Reason labels are unique within their family; `otherId` is the earlier record in stored order.
-  | { readonly code: 'LabelNotDistinguishable'; readonly id: string; readonly otherId: string };
+  | { readonly code: 'LabelNotDistinguishable'; readonly id: string; readonly otherId: string }
+  // A seeded Strategy's immutable shape differs from its product key's shape in the manifest.
+  | { readonly code: 'StrategyShapeMismatch'; readonly id: string; readonly productKey: string };
 
 export interface CatalogSectionValidation {
   readonly issues: readonly CatalogSectionIssue[];
   // The Catalog has no repairable disagreement in D2.
   readonly repairs: readonly never[];
   // The identities other sections' references are closed against, for Workspace to pass on.
-  readonly references: { readonly accountIds: ReadonlySet<string>; readonly closeReasonIds: ReadonlySet<string> };
+  readonly references: {
+    readonly accountIds: ReadonlySet<string>;
+    readonly closeReasonIds: ReadonlySet<string>;
+    // Every Strategy's shape by identity, active or not.
+    readonly strategyShapes: ReadonlyMap<string, StrategyShape>;
+  };
 }
 
 // Validates the Catalog section batch by batch, keeping only identity sets between batches (D8
@@ -28,6 +36,8 @@ export async function validateSection(source: RecordSource, manifest: CatalogSee
     Strategy: new Set(manifest.strategies.map((s) => s.productKey)),
     CloseReason: new Set((manifest.closeReasons ?? []).map((s) => s.productKey)),
   };
+  const seedShapes = new Map(manifest.strategies.map((s) => [s.productKey, s.shape]));
+  const strategyShapes = new Map<string, StrategyShape>();
   const ids = new Set<string>();
   const institutionIds = new Set<string>();
   const accountIds = new Set<string>();
@@ -49,6 +59,13 @@ export async function validateSection(source: RecordSource, manifest: CatalogSee
       if ((record.kind === 'Strategy' || record.kind === 'CloseReason') && !knownKeys[record.kind].has(record.productKey)) {
         issues.push({ code: 'UnknownSeedKey', id: record.id, productKey: record.productKey });
       }
+      if (record.kind === 'Strategy') {
+        strategyShapes.set(record.id, record.shape);
+        const seedShape = seedShapes.get(record.productKey);
+        if (record.origin === 'Seeded' && seedShape !== undefined && !sameShape(record.shape, seedShape)) {
+          issues.push({ code: 'StrategyShapeMismatch', id: record.id, productKey: record.productKey });
+        }
+      }
       if (record.kind === 'CloseReason') {
         closeReasonIds.add(record.id);
         if (record.origin === 'Seeded' && !record.active) {
@@ -64,5 +81,5 @@ export async function validateSection(source: RecordSource, manifest: CatalogSee
   for (const [id, parentId] of parents) {
     if (!institutionIds.has(parentId)) issues.push({ code: 'MissingParent', id, parentId });
   }
-  return { issues, repairs: [], references: { accountIds, closeReasonIds } };
+  return { issues, repairs: [], references: { accountIds, closeReasonIds, strategyShapes } };
 }

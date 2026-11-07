@@ -1,4 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
+import { instrumentOf } from '../../domain/instrument/index.ts';
 import type { SessionPolicy } from '../../domain/session-policy/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
 import type { RecordSource } from '../../persistence/index.ts';
@@ -9,7 +10,7 @@ type Chain = 'marks' | 'acknowledgments';
 export type MarketDataSectionIssue = { readonly instrumentKey: string; readonly tradingDate: string } & (
   | { readonly code: 'MissingRevisionIdentity'; readonly chain: Chain }
   | { readonly code: 'DuplicateRevisionIdentity'; readonly chain: Chain; readonly id: string }
-  | { readonly code: 'NotASession' | 'SessionPolicyCoverage' }
+  | { readonly code: 'NotASession' | 'SessionPolicyCoverage' | 'AfterExpiration' }
   | { readonly code: 'CorrectionReasonMissing'; readonly revisionId: string }
   | { readonly code: 'CorrectionFootprintMissing'; readonly revisionId: string }
   | { readonly code: 'AssertedWhileMarkEffective' | 'WithdrawnWhileMarkEffective' | 'WithdrawalWithoutAssertion'; readonly versionId: string }
@@ -44,6 +45,9 @@ export async function validateSection(source: RecordSource, policy: SessionPolic
       if (day === 'Invalid') issues.push({ code: 'NotASession', instrumentKey, tradingDate });
       else if (day.kind === 'NotCovered') issues.push({ code: 'SessionPolicyCoverage', instrumentKey, tradingDate });
       else if (day.kind !== 'Session') issues.push({ code: 'NotASession', instrumentKey, tradingDate });
+      // A contract has no observation after it expires (A115); the key is an OCC key, never an unknown stock symbol.
+      const instrument = instrumentOf(instrumentKey);
+      if (instrument.kind === 'Option' && tradingDate > instrument.expiration) issues.push({ code: 'AfterExpiration', instrumentKey, tradingDate });
       const chains: readonly (readonly [Chain, readonly (string | undefined)[], string | null])[] = [
         ['marks', record.marks.map((m) => m.revisionId), record.effectiveMarkId],
         ['acknowledgments', record.acknowledgments.map((a) => a.versionId), record.effectiveAcknowledgmentId],
