@@ -279,3 +279,30 @@ Tagged B6.6 (`e2e/d6/update.spec.ts`) `{ tag: '@release-history' }` on its `test
 
 - `npm run test:e2e -- --list`: exit 0, `Total: 166 tests in 59 files` (167 in 60 files before); no line names B6.6.
 - `npx playwright test e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 --list --grep @release-history`: exit 0, `Total: 5 tests in 4 files`: B2.3 (d2/migration.spec.ts:48), B2.5 (d2/migration.spec.ts:123), B4.7 (d4/update.spec.ts:6), B5.6 (d5/update.spec.ts:7), B6.6 (d6/update.spec.ts:9).
+
+Run early (the handoff, section 3: T7.25 needs nothing): T7.7's cumulative run failed only B6.6, whose About assertion expects schema 5 and now reads 6. Commit `ca194099`, test only. ocr (relocated under `src/itg/d07/` in a scratch clone): no findings (`ocr/T7.25-ca194099.json`). T7.6-F1's test-only `f058e165` was reviewed the same way afterwards, also with no findings (`ocr/T7.6-F1-f058e165.json`); the note above that it had nothing to review was wrong, since the handoff requires the relocated review.
+
+## T7.7 Persistence: schema v6
+
+Behavioral; commit `668378bd`. A first attempt stopped before any change: schema 5 already stores the tagged `{ kind: 'Stock', symbol }`, and the domain Stock Instrument has no multiplier, so A118's "rewrite as Stock with multiplier 1" forced a choice; the user chose the identity transform (decision 84, revision 51, `72797dc5`). Two `schema-v6.test.ts` cases, red then green: case 1 red `inspectRoot` reported version 5; case 2 red `Error: No migration from schema 5`. No first-run passes. `SCHEMA_VERSION` 6; `v5-to-v6.ts` drops private fields only, like `v2-to-v3.ts`. Version expectations moved to 6 in `candidate.test.ts`, `persistence.test.ts`, `schema-v3/v4/v5.test.ts` (test names unchanged), `workspace.test.ts`, `migration.test.ts` (receipts `toVersion` 6; the newer-schema case now seeds 7) and `tests/integration/d2`, `d4`, `d5`, `d6` (`migration.test.ts`, `seed.test.ts`). `verify:fixtures`: v1–v5 migrate to 6 with views equal to their snapshots; no `dump.json` or `expected-views.json` touched. `verify:capacity` fails ("basis measured at schema version 5, current is 6"), expected until T7.26, as D5 (T5.1–T5.19) and D6 (until T6.22) carried it. `verify:releases` failed in the subagent's run only because `dist-releases/d6` (built from the current source) predated the bump; it passes after the browser stage rebuilds it. **For T7.17:** some integration test names in d2, d4, d5, d6 still say "schema 5".
+
+### ocr review of `668378bd`
+
+No findings (`ocr/T7.7-668378bd.json`).
+
+### Cumulative run after T7.7 (`t7-7-schema-v6`, at `668378bd`)
+
+Browser stage `browser-auto 72797dc5`, full tier ("first matching path since 72797dc5: src/persistence/candidate.test.ts"). Unit 103 files, 1286 passed; integration 154 passed; browser 1 failed, 166 passed (8.2 min): B6.6 (`e2e/d6/update.spec.ts:9`), `Schema version` expected "5", got "6", failed the same way rerun alone; fixed by tagging it under T7.25 (above). Checks 12 of 13, `verify:capacity` expected. Outputs `suite-runs/t7-7-schema-v6-*.txt`.
+
+### Cumulative run after T7.25 (`t7-25-release-history`, at `ca194099`)
+
+Run by `suite-runner` on 2026-11-06, browser stage `browser-auto 72797dc5`, covering T7.7 and T7.25.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 103 files, 1286 passed, exit 0 | `suite-runs/t7-25-release-history-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-25-release-history-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 min), exit 0 | `suite-runs/t7-25-release-history-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-25-release-history-checks.txt` |
+
+Tier: full, printed reason "first matching path since 72797dc5: e2e/d6/update.spec.ts". Ports free before and after. T7.7 and T7.25 are complete.
