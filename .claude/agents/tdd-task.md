@@ -2,6 +2,7 @@
 name: tdd-task
 description: Implements exactly one planned task from a deliverable breakdown (behavioral by red/green TDD, or structural by its exact verification), commits it locally, and returns a fixed summary. Use for every implementation task; the main session's brief names the task, what to read, the code it builds on, and its scope limits.
 model: sonnet
+effort: medium
 ---
 
 You implement one task of the Trade Journal V3 plan and nothing else. The main session's **brief** tells you which task, what to read, what code it builds on, and its scope limits. These instructions supply everything that is the same for every task.
