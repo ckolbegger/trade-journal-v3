@@ -95,6 +95,10 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
     storedLifecycle: document.lifecycle,
     plan: { ...plan!, legs, stops, targets },
     positionChanges: changes.map(({ factId, recordedSequence, value }) => {
+      // A member that is neither an Execution nor an Expiration is an integrity fault the read must
+      // report (D2), so it fails here rather than being dropped.
+      const missing = value.memberIds.find((id) => !executions.has(id) && !settlements.has(id));
+      if (missing !== undefined) throw new Error(`Position Change ${factId} names missing member ${missing}`);
       const expirations = value.memberIds.flatMap((id) => settlements.get(id) ?? []);
       return {
         factId,

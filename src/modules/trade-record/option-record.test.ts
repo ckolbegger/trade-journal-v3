@@ -3,7 +3,7 @@ import type { OptionInstrument } from '../../domain/instrument/index.ts';
 import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { activityDescOf, beginSemanticTransaction } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
-import { createTradeRecord, type ConfirmPlanChange, type ExecutionFactValue, type PositionChangeChange, type TradeDocument } from './index.ts';
+import { analysisInputOf, createTradeRecord, type ConfirmPlanChange, type ExecutionFactValue, type PositionChangeChange, type TradeDocument } from './index.ts';
 
 // D7's reference option Trades (breakdown, section 1): O-C, a Long Call on XYZ with Exercise Intent
 // NotAuthorized, and O-S, a Cash-Secured Put on MNO (plan -2 contracts), whose S1 is Monday 10:00
@@ -233,5 +233,20 @@ describe('getRecord', () => {
     const derived = derive({ record: input });
     if (derived.kind !== 'Derived') throw new Error(`expected Derived, got ${derived.kind}`);
     expect(derived.expectedLifecycle).toBe('Closed');
+  });
+});
+
+describe('analysisInputOf: a Position Change naming a missing member', () => {
+  it('should refuse to build the analysis input rather than drop the missing member', () => {
+    const stored = openOS();
+    const document: TradeDocument = {
+      ...stored,
+      facts: stored.facts.map((fact) =>
+        fact.kind === 'PositionChange'
+          ? { ...fact, versions: [{ versionNumber: 1, value: { ...fact.versions[0]!.value, memberIds: [...fact.versions[0]!.value.memberIds, 'trade-1:missing'] } }] }
+          : fact,
+      ),
+    };
+    expect(() => analysisInputOf(document)).toThrow();
   });
 });
