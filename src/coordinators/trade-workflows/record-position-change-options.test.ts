@@ -184,6 +184,20 @@ describe('option Executions', () => {
     if (accepted.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(accepted)}`);
     expect(accepted.receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Open', to: 'Closed' }]);
   });
+
+  it("should reject an option Execution of a fractional quantity with ContractQuantityNotWhole and one dated after the contract's expiration with AfterExpiration, each on its member, writing nothing", async () => {
+    const ref = await optionTrade('LongCall', MONDAY_NEXT_17);
+    const before = await dumpAll(ref.stack.factory);
+    const half = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, 1, [fill(ref, 'Buy', MONDAY_10, '1.5', '2.10', '0.65')]));
+    expect(half).toEqual(
+      expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ContractQuantityNotWhole' }] }),
+    );
+    const late = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, 1, [fill(ref, 'Buy', MONDAY_NEXT_17, '1', '2.10', '0.65')]));
+    expect(late).toEqual(
+      expect.objectContaining({ kind: 'Rejected', issues: [{ source: 'TradeAnalysis', member: 0, field: 'economicTime', code: 'AfterExpiration' }] }),
+    );
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+  });
 });
 
 // O-C through X1: PC1 and PC2 on Monday, X1 on Tuesday, leaving PC2's contract open for E1.

@@ -289,6 +289,8 @@ const OWN_FINDINGS = {
   ExpirationMustSettleAllOpen: 'quantity',
   SettlementTimeInvalid: 'economicTime',
   NotAnOption: 'instrument',
+  ContractQuantityNotWhole: 'quantity',
+  AfterExpiration: 'economicTime',
 } as const;
 
 function positionPathIssues(findings: IncoherentFacts['findings'], memberIds: readonly string[]): WorkflowIssue[] {
