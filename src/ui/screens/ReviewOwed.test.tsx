@@ -117,6 +117,7 @@ function walkedReview(walked: WalkedTrade, over: Partial<DailyTradeReview> = {})
     lifecycle: 'Open',
     attention: walked,
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
+    settlement: [],
     reflections: [],
     progress: walked.progress,
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },

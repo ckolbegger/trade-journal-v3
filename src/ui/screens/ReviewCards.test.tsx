@@ -139,6 +139,7 @@ function tradeReview(walked: WalkedTrade, over: Partial<DailyTradeReview> = {}):
       planBaseline: { kind: 'Value' as const, value: { rewardRiskRatio: Rational.of(12n, 5n) } },
       atEntry: null,
     } as unknown as DailyTradeReview['evaluation'],
+    settlement: [],
     reflections: [],
     progress: walked.progress,
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },

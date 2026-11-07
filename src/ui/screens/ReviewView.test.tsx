@@ -102,6 +102,7 @@ function tradeFor(tradeId: string, underlying: string, reviewDate: string): Dail
     lifecycle: 'Open',
     attention: tradeItem(tradeId, underlying),
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
+    settlement: [],
     reflections: [],
     progress: cardProgress(),
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },

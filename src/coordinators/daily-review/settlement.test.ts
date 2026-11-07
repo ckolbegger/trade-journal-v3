@@ -167,3 +167,50 @@ describe('after the expiration session (P25, A110)', () => {
     expect(ready(result).owed).toEqual([]);
   }, 60_000);
 });
+
+async function cardOf(stack: ReviewStack, asOf: string, tradeId: string) {
+  const review = ready(await open(stack, asOf));
+  const card = await stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding });
+  if (card.kind !== 'Ready') throw new Error(`expected Ready, got ${card.kind}`);
+  return card.trade;
+}
+
+describe('settlement and payoff in the card', () => {
+  it('should return T-3 card with its Settlement Due item, the Record expiration route with the settlement time, the assignment explanation, its Review-date evaluation, its Current payoff summary, and its value at expiration at MNO close, and T-4 with payoff and value at expiration and no settlement item', async () => {
+    const { stack, t3, t4 } = await settlementFixture(FRIDAY_1700, true);
+
+    const card = await cardOf(stack, FRIDAY_1700, t3);
+
+    // The item carries the route's settlement time and, by its negative quantity, the assignment explanation.
+    expect(card.settlement.map((item) => ({ ...item, instrument: instrumentKey(item.instrument) }))).toEqual([
+      { tradeId: t3, instrument: 'MNO261120P00045000', quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_CLOSE },
+    ]);
+    expect(card.evaluation).toEqual(expect.objectContaining({ kind: 'Evaluated', valuationDate: '2026-11-20' }));
+    expect(card.progress.panels.map((panel) => panel.panel)).toEqual(['Marks', 'Reflections', 'Settlement', 'Action']);
+    expect(card.progress.panels.find((panel) => panel.panel === 'Settlement')).toEqual({ panel: 'Settlement', done: false, needed: true });
+    const current = card.payoff?.current;
+    if (current?.kind !== 'Value') throw new Error(`expected a Current view, got ${current?.kind}`);
+    expect(current.value.zeroSet).toEqual([{ kind: 'Crossing', price: Rational.of(437565n, 10000n) }]);
+    expect(current.value.maximum).toEqual(expect.objectContaining({ kind: 'Value', value: expect.objectContaining({ value: Rational.of(24870n, 100n) }) as unknown }));
+    expect(current.value.minimum).toEqual(expect.objectContaining({ kind: 'Value', value: expect.objectContaining({ value: Rational.of(-875130n, 100n) }) as unknown }));
+    expect(card.evaluation?.expirationValueAtUnderlyingClose).toEqual({ kind: 'Value', value: { underlyingPrice: Rational.of(46n), value: Rational.of(24870n, 100n) } });
+
+    const longPut = await cardOf(stack, FRIDAY_1700, t4);
+
+    expect(longPut.settlement).toEqual([]);
+    expect(longPut.progress.panels.map((panel) => panel.panel)).toEqual(['Marks', 'Reflections', 'Action']);
+    expect(longPut.payoff?.current.kind).toBe('Value');
+    expect(longPut.evaluation?.expirationValueAtUnderlyingClose).toEqual({ kind: 'Value', value: { underlyingPrice: Rational.of(49n), value: Rational.of(-5065n, 100n) } });
+  }, 60_000);
+
+  it('should return T-3 card at Monday 17:00, after the expiration session, with its Settlement Due item and no Mark-dependent figures, without needing a frame for MNO', async () => {
+    const { stack, t3 } = await settlementFixture(MONDAY_NEXT_1700, false);
+
+    const card = await cardOf(stack, MONDAY_NEXT_1700, t3);
+
+    expect(card.settlement.map(({ tradeId, quantity, settlementTime }) => ({ tradeId, quantity, settlementTime }))).toEqual([{ tradeId: t3, quantity: Rational.of(-2n), settlementTime: FRIDAY_CLOSE }]);
+    expect(card.evaluation?.currentMarkedPnl).toEqual(expect.objectContaining({ kind: 'Unavailable', reason: 'SettlementDue' }));
+    expect(card.evaluation?.expirationValueAtUnderlyingClose).toEqual(expect.objectContaining({ kind: 'Unavailable', reason: 'SettlementDue' }));
+    expect(card.progress.panels.find((panel) => panel.panel === 'Settlement')).toEqual({ panel: 'Settlement', done: false, needed: true });
+  }, 60_000);
+});

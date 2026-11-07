@@ -2,7 +2,7 @@ import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts'
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { CalculationResult, EntryResolution, ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -75,6 +75,8 @@ export interface ReviewTradeItem {
 export type PanelProgress =
   | { readonly panel: 'Marks'; readonly done: boolean; readonly resolved: number; readonly needed: number }
   | { readonly panel: 'Reflections'; readonly done: boolean; readonly dueNow: number; readonly later: number }
+  // Between Reflections and Action; present only while an option contract's settlement is due (A112, decision 81).
+  | { readonly panel: 'Settlement'; readonly done: boolean; readonly needed: boolean }
   | { readonly panel: 'Action'; readonly done: boolean; readonly owed: boolean };
 
 // A `Walked` card has every panel; a `ReflectionsOwed` card (A90) has the Reflections panel alone.
@@ -277,6 +279,12 @@ export interface DailyTradeReview {
   readonly evaluation?: TradeEvaluation;
   // The Position held at the Stale context's close, valued with that session's own exact Mark (P13, A54).
   readonly datedLastClose?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation };
+  // The option contracts the Trade still holds at or past expiration; empty otherwise. The signed quantity carries the
+  // assignment or exercise explanation, the settlement time the Record expiration route (A111, A112, decision 88).
+  readonly settlement: readonly SettlementItem[];
+  // The Planned and Current Expiration Payoff views, kept apart from every Mark-dependent figure (A122).
+  // Absent when the Trade's facts cannot be replayed.
+  readonly payoff?: ExpirationPayoffs;
   // The Trade's Outstanding reflections, oldest anchor first then Debt identity (A68); they sit above the Action form.
   readonly reflections: readonly OwedReflection[];
   // The card's progress, as `open` lists it on the Trade's walked item (A165).

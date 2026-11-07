@@ -102,6 +102,7 @@ function tradeReview(item: WalkedTrade, over: Partial<DailyTradeReview> = {}): D
     lifecycle: 'Open',
     attention: item,
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
+    settlement: [],
     reflections: [],
     progress: item.progress,
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },

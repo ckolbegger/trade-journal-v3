@@ -94,6 +94,7 @@ function tradeReview(tradeId: string, underlying: string, over: Partial<DailyTra
     attention: item(tradeId, underlying),
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     evaluation: evaluation(),
+    settlement: [],
     reflections: [],
     progress: cardProgress(),
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },

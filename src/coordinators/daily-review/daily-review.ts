@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentKey, instrumentOf, type Instrument } from '../../domain/instrument/index.ts';
+import { instrumentKey, instrumentOf, type Instrument, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
-import { derive, evaluate, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, evaluate, expirationPayoff, type ExpirationPayoffs, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
@@ -115,10 +115,12 @@ type ReflectionCounts = { readonly due: number; readonly later: number };
 const reflectionsPanel = (reflections: ReflectionCounts): PanelProgress => ({ panel: 'Reflections', done: reflections.due === 0, dueNow: reflections.due, later: reflections.later });
 
 // A card's panels in work order; it is done when every panel is (A164).
-function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: ReflectionCounts, owed: boolean): CardProgress {
+function cardProgress(marks: { readonly resolved: number; readonly needed: number }, reflections: ReflectionCounts, owed: boolean, settlementDue: boolean): CardProgress {
   const panels: PanelProgress[] = [
     { panel: 'Marks', done: marks.needed === 0, resolved: marks.resolved, needed: marks.needed },
     reflectionsPanel(reflections),
+    // Between Reflections and Action, only while a contract's settlement is due (A112, decision 81).
+    ...(settlementDue ? [{ panel: 'Settlement' as const, done: false, needed: true }] : []),
     { panel: 'Action', done: !owed, owed },
   ];
   return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };
@@ -238,10 +240,22 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
 // What replaying the Trade yields at the Review-date frame.
 function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: readonly MarkFrame[], evaluation: TradeEvaluation) {
   const frame = frames.find((f) => f.instrumentKey === entry.analysis.plan.underlying);
-  if (!frame) throw new Error(`Market Data returned no frame for ${entry.analysis.plan.underlying}`);
   const summary = openLongStockSummary(state);
+  if (!frame) {
+    // After its expiration date an option requires no Mark, so Market Data returned no frame (A110).
+    if (entry.analysis.plan.legs[0]!.instrument.kind === 'Option') return { ...(summary && { summary }), evaluation };
+    throw new Error(`Market Data returned no frame for ${entry.analysis.plan.underlying}`);
+  }
   const datedLastClose = datedLineOf(entry.analysis, frame, evaluation);
   return { ...(summary && { summary }), frame, evaluation, ...(datedLastClose && { datedLastClose }) };
+}
+
+// The Planned and Current Expiration Payoff of the Trade from its Plan and the Lots it still holds (AC-CALC-004).
+function payoffOf(analysis: TradeAnalysisRecord, state: DerivedTradeState): ExpirationPayoffs {
+  const lots = state.positions.flatMap((p) =>
+    p.instrument.kind === 'Option' ? p.openLots.map((l) => ({ instrument: p.instrument as OptionInstrument, quantity: l.quantity, basis: l.price, unconsumedOpeningFee: l.unconsumedOpeningFee })) : [],
+  );
+  return expirationPayoff({ plan: analysis.plan, exposure: { lots, realizedToDate: state.realizedToDate } });
 }
 
 export function createDailyReview(deps: DailyReviewDeps): DailyReview {
@@ -426,15 +440,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
     };
     const actions = await deps.journal.queryActions({ reviewDate });
-    const progressOf = (tradeId: string): CardProgress => {
+    const progressOf = (tradeId: string, settlementDue: boolean): CardProgress => {
       const rows = today.filter((row) => row.trades.includes(tradeId));
       const needed = rows.filter((row) => row.task === 'Manual').length;
-      return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), !(tradeId in actions.actions));
+      return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), !(tradeId in actions.actions), settlementDue);
     };
     const walked = ranked.map(
       ({ item, evaluation }): WalkedTrade => ({
         ...item,
-        progress: progressOf(item.tradeId),
+        progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
         ...(evaluation && { figures: { riskToStop: evaluation.ongoingRiskToStop, pnl: evaluation.currentMarkedPnl, rewardRiskNow: evaluation.rewardRiskNow } }),
       }),
     );
@@ -614,6 +628,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const { item, evaluation } = reviewItem(entry, frames.frames, { reviewDate, cutoff });
     // Facts that cannot be replayed have no figures.
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
+    const settlement = await settlementItems([{ item, evaluation }]);
+    const payoff = entry.derivation.kind === 'Derived' ? payoffOf(analysis, entry.derivation) : undefined;
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
@@ -624,7 +640,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const rows = frames.frames.filter((frame) => held.has(frame.instrumentKey));
     const needed = rows.filter((frame) => frame.resolution.kind === 'Missing').length;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;
-    const progress = cardProgress({ resolved: rows.length - needed, needed }, { due, later: reflections.length - due }, !saved);
+    const progress = cardProgress({ resolved: rows.length - needed, needed }, { due, later: reflections.length - due }, !saved, settlement.length > 0);
     const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: { selectedAction: 'Hold' } };
     // A saved Action's form is the Entry's first version's definition; a new form takes the latest.
     let definitionRevision = saved?.definitionId;
@@ -645,6 +661,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           attention: item,
           labels,
           ...figures,
+          settlement,
+          ...(payoff && { payoff }),
           reflections,
           progress,
           form,
