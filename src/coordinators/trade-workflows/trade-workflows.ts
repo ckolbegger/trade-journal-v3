@@ -1,8 +1,8 @@
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import { assessPlan, derive, type PlanInput } from '../../domain/trade-analysis/index.ts';
-import type { AnswerInput } from '../../modules/journal/index.ts';
+import { assessPlan, derive, expirationPayoff, type ExpirationPayoffs, type PlanInput } from '../../domain/trade-analysis/index.ts';
+import type { AnswerInput, EntryProjection } from '../../modules/journal/index.ts';
 import { recordPositionChange, type PositionChangeCommand, type PositionChangeResult } from './record-position-change.ts';
 import { beginSemanticTransaction, type BindingCheck, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { retryCounterConflict } from './counter-retry.ts';
@@ -23,7 +23,8 @@ export interface ConfirmPlanCommand {
 }
 
 export type ConfirmPlanResult =
-  | ({ readonly kind: 'Confirmed' } & TradeMutationSuccess)
+  // The accepted Plan's expiration payoff views (the Planned view is the one a Plan form renders).
+  | ({ readonly kind: 'Confirmed' } & TradeMutationSuccess<{ readonly entryId: string }, { readonly entry: EntryProjection; readonly payoff: ExpirationPayoffs }>)
   // Every issue from every participant together; nothing was written.
   | {
       readonly kind: 'Rejected';
@@ -140,7 +141,7 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
           lifecycleTransitions: [{ tradeId: trade.tradeId, from: null, to: trade.storedLifecycle }],
           entryId: entry.id,
         },
-        postCommit: { trade, derivation, entry },
+        postCommit: { trade, derivation, entry, payoff: expirationPayoff({ plan: trade.plan }) },
         affected: [{ scope: 'TradeList', lifecycle: trade.storedLifecycle }],
       };
     }

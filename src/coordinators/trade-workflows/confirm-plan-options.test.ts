@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../../domain/values/index.ts';
-import { expirationPayoff } from '../../domain/trade-analysis/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { onboardedStack } from '../../../tests/support/onboarded.ts';
@@ -75,7 +74,7 @@ describe('confirmPlan: option Plans (AC-PLAN-001)', () => {
     expect(derivation.baseline.oneR.equals(Rational.of(400n))).toBe(true);
     expect(derivation.agreement).toEqual({ kind: 'Agrees' });
     expect(result.postCommit.entry.anchor).toEqual({ kind: 'Trade', tradeId: trade.tradeId });
-    const planned = expirationPayoff({ plan: trade.plan }).planned;
+    const planned = result.postCommit.payoff.planned;
     if (planned.kind !== 'Value') throw new Error('expected a Planned view');
     expect(planned.value.segments).toEqual([
       { from: Rational.of(0n), to: Rational.of(55n), valueAtStart: Rational.of(-400n), slope: Rational.of(0n) },
