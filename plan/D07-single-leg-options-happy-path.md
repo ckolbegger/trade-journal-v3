@@ -428,6 +428,8 @@ Proven only by integration: T-1 leaving the walk and its Close Review joining th
 
 **Amended by decision 88 (revision 54):** each settlement item carries its signed open quantity, from which the UI words the assignment (short) or exercise (long) sentence; nothing keys on the Strategy. Options' pressure and range position are corrected in T7.33, after T7.15; T7.14's cases don't assert them.
 
+**Amended by decision 91 (revision 56):** the third case's last clause reads "while XYZ's task names T-2 only": after the expiration date T-1 needs neither its contract's Mark nor XYZ's (A110).
+
 ### T7.15 Daily Review: `getTrade` with Settlement Due and payoff
 
 Seam: `DailyReview.getTrade`, with the Settlement Review fixture at Friday 17:00.
