@@ -464,3 +464,24 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 640b42bf`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-13-position-change-checks.txt` |
 
 Tier: task, printed reason "no changed path since 640b42bf is on the full-tier list". Ports free before and after. T7.13 is complete.
+
+## T7.14 Daily Review: `open` with the settlement family
+
+Behavioral; stopped once before any change on a contradiction in case 3 (Monday: "XYZ's task names T-1 and T-2" against A110), resolved by the user as decision 91 (revision 56, `9443ae15`): "XYZ's task names T-2 only". Commit `8fd242ae`, three cases in `settlement.test.ts`. Reds: case 1 `expected ['Marks','Trades'] to deeply equal ['Marks','Settlement','Trades']`; case 2 (after backing out a `SettlementDue` reason line written ahead) the reasons lacked the settlements; case 3 first passed because the expired-option fallback frame was written in case 1, backed out to a throw for a genuine red (`Error: Market Data returned no frame for XYZ`), restored, green (annotated in `tdd-log.md`). Public types: `ReviewFamily` gains `Settlement` (between Marks and Trades, omitted when empty) with `SettlementItem { tradeId, instrument, quantity (signed), expiration, settlementTime }`; `IncompleteReason` and `AttentionReason` gain `SettlementDue` (Blocker band). Mark rows and `observationNeeds` key by `instrumentKey`; `observationFrame` derives the Instrument from the frame's key. `review-attention.ts` has a temporary wordless `default: return ''` for `SettlementDue`, for T7.24 to word. A `src/ui` mark-count assertion (`tj:open-list-ready`) failed once in a combined subagent run and passed alone (flaky; flagged for the final report).
+
+### ocr review of `8fd242ae`
+
+`ocr/T7.14-8fd242ae.json`, 3 comments, all real but owned by planned later tasks, so no bug task: (1) `getTrade`'s `figuresOf` throws "Market Data returned no frame for MNO" for an expired option with no stock Trade on its Underlying (T-3 on Monday) — **carried to T7.15** (`getTrade` with Settlement Due), whose brief names the Monday case; (2) `riskRewardOf` uses a stock formula for options — T7.33 (decision 88); (3) the empty `SettlementDue` attention line — the documented stub, T7.24.
+
+### Cumulative run after T7.14 (`t7-14-review-settlement`, at `8fd242ae`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 5086f888`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 111 files, 1310 passed, exit 0 | `suite-runs/t7-14-review-settlement-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-14-review-settlement-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (8.2 m), exit 0 | `suite-runs/t7-14-review-settlement-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-14-review-settlement-checks.txt` |
+
+Tier: full, printed reason "first matching path since 5086f888: src/ui/screens/review-attention.ts". Ports free before and after. T7.14 is complete.
