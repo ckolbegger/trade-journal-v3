@@ -144,6 +144,12 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T7.30 | Node mock-free integration suite | test | S | T7.18 | `test:integration` |
 | T7.31 | Browser integration suite (Chromium) | test | S | T7.19–T7.27 | `test:e2e` |
 | T7.32 | Independent browser-critic gate | test | S | all | fresh critic report |
+| T7.33 | Daily Review: pressure and range position for options (**decision 88**; runs after T7.15) | application | B | T7.14, T7.15 | `DailyReview.open`, `getTrade` |
+| T7.34 | Long Stock by product key in helpers and tools (**decision 88**; runs before T7.17) | test/infrastructure | S | T7.9 | `test:unit`, `test:integration`, `e2e/d1/no-save.spec.ts` |
+| T7.35 | Trade Analysis: a long option's `NoPositiveRisk` names the breakeven (**decision 87**, conflict K12; runs before T7.19) | domain | B | T7.2 | `TradeAnalysis.assessPlan` |
+| T7.36 | UI: changes to existing approved words (**decision 87**; runs after T7.18, before T7.19 to T7.24) | UI | B | T7.18 | `calculation-words`, `PositionChangeForm`, receipts |
+
+**Amended by decisions 87 and 88 (revision 54):** the task order from T7.11 on is T7.11, T7.12, T7.13, T7.14, T7.15, T7.33, T7.16, T7.34, T7.17, T7.18, T7.35, T7.36, T7.19 to T7.24, then T7.26 to T7.32. Every UI and validator task takes its words from [`plan/D07-approved-words.md`](D07-approved-words.md).
 
 **Parallel tracks.** Once the option Plan facts, the Expiration member, the payoff read model, and the Settlement Due item are fixed in T7.18's type module, four tracks proceed in parallel:
 - **Trade Analysis** (T7.1–T7.6), with payoff arithmetic (T7.3) independent of the Lot work (T7.4–T7.5) once T7.2 lands.
@@ -364,6 +370,8 @@ describe("Market Data section, options")
 
 **Amended by decision 86 (revision 53):** the Catalog section returns `strategyShapes` in its references and Workspace passes them to the Trade section, which checks each stored Plan with the domain's Plan rules (a Cash-Secured Put is known by its Strategy, never the leg's sign). New codes and sentences: `ExerciseIntentNotApplicable` "A Cash-Secured Put records an exercise intent, which only a long option has.", `CloseReasonNotApplicable` "A Trade that closed by expiration records a close reason.", `ExpirationHasPriceOrFee` "An expiration records a price or fee.", Catalog `StrategyShapeMismatch` "A default strategy's roles differ from the product it names."; Market Data's section `AfterExpiration` needs no sentence; a fractional option Execution is `IncoherentFacts`.
 
+**Amended by decisions 87 and 88 (revision 54):** T7.11 first creates the domain module `src/domain/strategy/`: `StrategyShape` and `StrategyRole` move there from `src/domain/strategy.ts`, `matchesShape` moves there from `plan.ts`, and it adds `sameShape` and `exerciseIntentApplies(shape)`. `assessPlan`, the Trade section validator, the Catalog's `StrategyShapeMismatch` check and `prepareSeed` use them; nothing decides a Strategy fact from a leg's sign. The Catalog's `strategyShapes` holds every Strategy record, active or not. The Trade validator checks each stored Plan only for shape match and Exercise Intent applicability (this narrows decision 86's point 3), under Trade-section codes of its own worded by the approved-words rows 11.1 and 11.2.
+
 ### T7.12 Trade Workflows: `confirmPlan` for options
 
 Seam: `TradeWorkflows.confirmPlan`.
@@ -416,6 +424,8 @@ describe("after the expiration session (P25, A110)")
 
 Proven only by integration: T-1 leaving the walk and its Close Review joining the owed group after E1 is recorded (I7.7), which follows from D6's eligibility rule once the Expiration's terminal time is at the cutoff.
 
+**Amended by decision 88 (revision 54):** each settlement item carries its signed open quantity, from which the UI words the assignment (short) or exercise (long) sentence; nothing keys on the Strategy. Options' pressure and range position are corrected in T7.33, after T7.15; T7.14's cases don't assert them.
+
 ### T7.15 Daily Review: `getTrade` with Settlement Due and payoff
 
 Seam: `DailyReview.getTrade`, with the Settlement Review fixture at Friday 17:00.
@@ -449,6 +459,8 @@ describe("migration to schema 6")
   it should migrate v1 through v5 Workspaces to schema 6 and return Opened with a receipt naming the from and to versions, per-store counts, and the seed additions (Long Call, Long Put, Cash-Secured Put)
 ```
 
+**Amended by decision 88 (revision 54):** T7.34 runs first, so no helper or tool takes `strategies.items[0]` as Long Stock once the option Strategies are seeded.
+
 ### T7.19 UI: option Plan form
 
 Seam: `PlanForm` with a facade test double.
@@ -461,6 +473,8 @@ describe("option Strategies (A116)")
   it should show StopTargetOrder and TargetNotBeyondEntry, with its breakeven, beside the trigger fields, and render the confirmed Plan's 1R and Planned payoff from the result
 ```
 
+**Amended by decisions 87 and 88 (revision 54):** words from the approved-words rows C1 to C8 and 19.1 to 19.23: the right is labelled "Type" (read-only "Call"), the price field "Intended entry price (per share)" (the screens never say "premium"), and each rejection code has its own sentence. The form preselects Long Stock by product key, not the first row (decision 85's order puts Cash-Secured Put first), shows the exercise checkbox by `exerciseIntentApplies(shape)`, and takes the read-only type from the shape's role. T7.35 and T7.36 run first.
+
 ### T7.20 UI: option Execution form
 
 Seam: `PositionChangeForm` with a facade test double.
@@ -470,6 +484,8 @@ describe("option Executions (A117)")
   it should label the action "Buy to open" and "Sell to close" on a Long Call and "Sell to open" and "Buy to close" on a Cash-Secured Put, take contracts and premium, and show each row's cash amount
   it should show Closing the Trade when the entered contracts total the open quantity, and "Only 2 contracts are open" for a Buy 3 to close
 ```
+
+**Amended by decision 87 (revision 54):** words from the approved-words rows C1 to C8 and 20.1 to 20.15. The row labels are "Contracts" and "Price (per share)"; the second case's message reads "Execution 1: The position has only 2 contracts." (row 20.6); receipt lines carry no fee (C5).
 
 ### T7.21 UI: expiration form
 
@@ -483,6 +499,8 @@ describe("submission")
   it should submit one Expiration member with the item's quantity and settlement time and both dispositions, and render the Closed Trade, Terminal Disposition, Option Disposition Timing, and both reflection outcomes from the result alone
 ```
 
+**Amended by decision 87 (revision 54):** words from the approved-words rows 21.1 to 21.17. Opened from the Review, the form is its own page and its receipt offers "Back to the Review" (conflict K14); there is no Refresh Review.
+
 ### T7.22 UI: payoff view
 
 Seam: `PayoffView` with fixed payoff read models.
@@ -493,6 +511,8 @@ describe("chart and textual equivalent (A114, AC-UI-002)")
   it should render a Zero Range as a labelled range and a Touch as a labelled point, and Current with its realized offset stated in the caption
   it should mark the value at expiration at the latest close on the Current chart and state it as "If XYZ is at 52.00 at expiration: −$401.30", and render NotApplicable views as text naming the reason, with no chart
 ```
+
+**Amended by decision 87 (revision 54):** words from the approved-words rows C3, C7 and 22.1 to 22.17. Every Underlying price has two decimals, so the first case reads "Max loss $400.00 for XYZ from 0.00 to 55.00" (conflict K7). "Max profit: unlimited" is a payoff-extremum wording in `calculation-words.ts`, and "unlimited" joins `PHRASES` (K2). A Maximum of 0 or less or a Minimum of 0 or more uses row 22.12 (K3). The table's third column is "Change per $1 rise in XYZ".
 
 **Amended by plan revision 8 (decision 48), applies to A119, T7.16 and T7.23:** rows use the Trade column in place of "the contract label and Strategy". T7.16 adds the Trade Summary's `Option` variant (`direction`, `contracts`, `expiration`, `strike`, `right`), and T7.23 its text ("Long 1 Nov 20 $300 Call", "Short 2 Dec 18 $45 Put", a two-digit year when the expiration is outside the current year). Net cost carries the premium, and a credit shows as "$212.00 credit". The Detail header shows the same text (D02-ui-alignment.md, section 2a).
 
@@ -509,6 +529,8 @@ describe("option rows")
   it should show the contract label and Strategy on Open, Planned, and Closed rows, and "Settlement due" as text on an Open row that needs it
 ```
 
+**Amended by decision 87 (revision 54):** words from the approved-words rows C1 to C8 and 23.1 to 23.19. The Open row's text is "Settlement Due" (conflict K4). A short closed by a purchase reads "Closed via buyback of 1 contract" (K10). A Long Stock Detail's payoff sections each show "Not applicable: no option expiration" (K1). An Expiration is listed in its own "Settlement" section, not among the Executions (row 23.7).
+
 ### T7.24 UI: Review settlement family and option Marks
 
 Seam: `ReviewView`, `MarkEntry`, and `ReviewTrade` with a facade test double. **Amended by decision 81 (revision 47):** `ReviewTrade` no longer exists; the walked card is `ReviewCard`, whose Settlement Due panel sits between Reflections and Action and renders from its `PanelProgress` (D5R and D5R2, section 9).
@@ -520,6 +542,46 @@ describe("settlement family (A112)")
 
 describe("option Marks (A115)")
   it should accept 0 for a contract with its explanatory note, and show "Needed only while settlement is due" on a task needed only by Settlement Due Trades
+```
+
+**Amended by decisions 87 and 88 (revision 54):** words from the approved-words rows 24.1 to 24.9. There is no screen-level settlement family (conflict K13), so the first case checks each card's Settlement panel and the overview's blocker line "Settlement Due for MNO 20 Nov 2026 45 Put, which expired Fri Nov 20" instead. Record expiration opens the expiration form on its own page, whose receipt offers "Back to the Review" (K14), so the second case checks that route and the recorded Expiration after returning, with no Refresh Review. The assignment or exercise sentence follows the item's signed quantity (decision 88). Mark rows name a contract by its label (C6, K18), and Market Data's `AfterExpiration` reads row 24.7.
+
+### T7.33 Daily Review: pressure and range position for options
+
+Added by decision 88 (revision 54); runs after T7.15. Seam: `DailyReview.open` (each walked Trade's attention basis) and `DailyReview.getTrade` (the card's range position), against `fake-indexeddb`.
+
+Risk and reward at entry use each open Lot's open cost, without fees, in place of the Mark (Daily Review, "Date, eligibility, and ordering"), measured as `evaluate` measures the current figures: an option condition by the contract's value at expiration at its trigger (P24), times the multiplier, with signed quantities. Pressure's side is the larger consumed share that is positive, not the side of the Mark against the average cost. D4's, D5's and D5R's stock pressure and range-position cases stay green unchanged.
+
+```text
+describe("pressure and range position for options (decision 88)")
+  it should give O-C after PC1 and PC2, with the call at 2.40 and XYZ 52.00, pressure 2/15 on its winning side (reward $600.00 at entry, $520.00 now) and range position 12/25 now, 2/5 at entry
+  it should give O-C with the call at 1.60 and XYZ 50.00 pressure 1/5 on its losing side (risk $400.00 at entry, $320.00 now) and range position 8/25 now, 2/5 at entry
+  it should give O-S after S1, with the put at 0.80 and MNO 47.00, pressure 9/25 on its winning side (reward $250.00 at entry, $160.00 now) and range position 11/15 now, 7/12 at entry
+```
+
+### T7.35 Trade Analysis: a long option's `NoPositiveRisk` names the breakeven
+
+Added by decision 87 (revision 54, conflict K12); runs before T7.19. Seam: `TradeAnalysis.assessPlan`. A100 says option rejections name the breakeven; the built rule attaches it only to a short leg's `NoPositiveRisk`.
+
+```text
+describe("NoPositiveRisk names the breakeven on every option Strategy (A100)")
+  it should reject O-C with its Stop at XYZ 57.50 (value 2.50 at expiration, above the 2.00 entry) and O-P with its Stop at ABC 48.00 (value 2.00, above the 1.50 entry) as NoPositiveRisk naming the breakevens 57.00 and 48.50
+```
+
+### T7.36 UI: changes to existing approved words
+
+Added by decision 87 (revision 54); runs after T7.18 and before T7.19 to T7.24. Seams: `src/ui/calculation-words.ts`'s exports, `PositionChangeForm`, and the entry and exit receipts. Each changed sentence's existing assertions move with it; `PHRASES` matches case-insensitively, so "Settlement due" there still covers "Settlement Due".
+
+```text
+describe("Settlement Due (approved words, conflict K4)")
+  it should word SettlementDue as "Settlement Due", "Settlement Due: XYZ 20 Nov 2026 55 Call" and "Settlement Due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20"
+
+describe("quantities in the position (row 20.6, conflict K9)")
+  it should word the quantity findings "… is more than the 1 contract in the position", "… is more than the 2 contracts in the position" and "… doesn't settle all 2 contracts in the position"
+  it should word a stock exit row "Execution 1: The position has only 60 shares." and "…only 1 share.", its fallback "Execution 1: more shares than the position has.", and the members issue "This exit would leave a later recorded exit without enough shares in the position."
+
+describe("receipt Execution lines (convention C5)")
+  it should show a stock Execution line on the entry and exit receipts as "Buy 60 XYZ @ $50.10", with no fee
 ```
 
 ---
@@ -537,6 +599,7 @@ describe("option Marks (A115)")
 | T7.30 Node integration suite | `npm run test:integration` | Every case in sections 6.1 of D1, D2, D4, D5, D6, and D7 passes. | Cumulative regression. |
 | T7.31 Browser integration suite | `npm run test:e2e` (Chromium) | Every case in sections 6.2 of D1, D2, D4, D5, D6, and D7 passes. | Cumulative regression. |
 | T7.32 Browser critic | Fresh critic agent per section 7 | A structured report with every flow passing. | Deliverable gate. |
+| T7.34 Long Stock by product key (decision 88) | `grep -rn "strategies.items\[0\]" src tools tests e2e` (no output), then `npm run test:unit`, `npm run test:integration` and `npx playwright test e2e/d1/no-save.spec.ts` | The bench generator (`src/app/bench-generator.ts`), the fixture freezer (`tools/fixtures-freeze.ts`), the capacity tool (`tools/capacity/measure-page.ts`), `tests/support/onboarded.ts` and `tests/integration/d1/support.ts` look Long Stock up by product key `strategy.long-stock`; `e2e/d1/no-save.spec.ts` selects "Long Stock" by label; all pass. | T7.17 (seeds the option Strategies, which decision 85's order puts first), T7.26 to T7.31. |
 
 ---
 
@@ -570,7 +633,7 @@ Conventions are as in earlier deliverables. Clocks are fixed per case.
 
 ### 6.2 Browser suite (`e2e/d7/`, Playwright against the built app on `localhost:5175`)
 
-Chromium only (decision 19). Dates are set with Playwright's clock on the production build. Durable state is proven by reload or full browser restart plus D1's read-only probe. RC later repeats B7.7–B7.9 in all three engines. **Amended by decision 76 (revision 41):** B7.7 is withdrawn, so RC repeats B7.8 and B7.9.
+Chromium only (decision 19). Dates are set with Playwright's clock on the production build. Durable state is proven by reload or full browser restart plus D1's read-only probe. RC later repeats B7.7–B7.9 in all three engines. **Amended by decision 76 (revision 41):** B7.7 is withdrawn, so RC repeats B7.8 and B7.9. **Amended by decision 87 (revision 54):** the visible texts follow [`plan/D07-approved-words.md`](D07-approved-words.md). B7.1's Current breakeven reads "Breakeven 57.01" (K6). B7.2's rejection reads "Execution 1: The position has only 2 contracts." (row 20.6). B7.3 has no settlement family and no Refresh Review: the trader records T-1's expiration from its card's Settlement panel on the form's own page and returns with "Back to the Review" (K13, K14). B7.4's panel reads "Settlement Due" (K4). B7.5 sets only the Stop at 61, which gives `NoPositiveRisk` (value 6.00 at expiration, above the 2.00 entry) and `StopTargetOrder` (above the Target 60), worded by rows 19.13 and 19.15 (K11). B7.6 expects "A price cannot be negative." (K5). B7.13's axe target for the settlement family is the card's Settlement panel.
 
 | Case | Procedure | Expected observable result and durable-state proof |
 |---|---|---|
