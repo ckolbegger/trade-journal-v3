@@ -362,6 +362,8 @@ describe("Market Data section, options")
   it should accept option and stock Marks of 0 and report a negative price and an option observation dated after its expiration date
 ```
 
+**Amended by decision 86 (revision 53):** the Catalog section returns `strategyShapes` in its references and Workspace passes them to the Trade section, which checks each stored Plan with the domain's Plan rules (a Cash-Secured Put is known by its Strategy, never the leg's sign). New codes and sentences: `ExerciseIntentNotApplicable` "A Cash-Secured Put records an exercise intent, which only a long option has.", `CloseReasonNotApplicable` "A Trade that closed by expiration records a close reason.", `ExpirationHasPriceOrFee` "An expiration records a price or fee.", Catalog `StrategyShapeMismatch` "A default strategy's roles differ from the product it names."; Market Data's section `AfterExpiration` needs no sentence; a fractional option Execution is `IncoherentFacts`.
+
 ### T7.12 Trade Workflows: `confirmPlan` for options
 
 Seam: `TradeWorkflows.confirmPlan`.
