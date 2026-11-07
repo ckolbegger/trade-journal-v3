@@ -108,7 +108,10 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
   const figures = riskRewardOf(state, evaluation);
   const basis = pressureOf(figures);
   const rangePosition = rangePositionOf(figures);
-  if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }], basis, rangePosition };
+  // A due settlement is a factual blocker, whatever the figures (A112).
+  const due = evaluation.settlement.filter((s) => s.status === 'Due').map((s): AttentionReason => ({ code: 'SettlementDue', instrument: s.instrument, quantity: s.quantity, expiration: s.expiration }));
+  const blockers: AttentionReason[] = [...(findings.length > 0 ? [{ code: 'IntegrityDisagreement' as const, findings }] : []), ...due];
+  if (blockers.length > 0) return { band: 'Blocker', reasons: blockers, basis, rangePosition };
   const crossed = evaluation.conditions.flatMap((c) =>
     c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun
       ? [{ code: c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const), conditionId: c.id, overrun: c.result.value.overrun.dollars }]

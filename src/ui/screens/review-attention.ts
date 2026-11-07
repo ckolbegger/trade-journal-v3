@@ -31,5 +31,8 @@ export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: Re
     }
     case 'NoPressure':
       return 'No pressure toward the Stop or the Target';
+    // The settlement blocker has no words yet: T7.24 words it (K13) and replaces this.
+    default:
+      return '';
   }
 }

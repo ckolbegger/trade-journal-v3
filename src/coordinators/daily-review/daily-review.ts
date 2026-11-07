@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentOf } from '../../domain/instrument/index.ts';
+import { instrumentKey, instrumentOf, type Instrument } from '../../domain/instrument/index.ts';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
-import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, evaluate, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
@@ -40,6 +40,7 @@ import type {
   SaveDailyReviewRequest,
   SaveDailyReviewResult,
   SavedMark,
+  SettlementItem,
   SaveReviewMarksRequest,
   SaveReviewMarksResult,
   SaveTradeActionRequest,
@@ -92,8 +93,9 @@ function observationNeeds(eligible: readonly EligibleTrade[]) {
   const requirements = derived.flatMap(({ state }) => state.observationRequirements.map((r) => ({ tradeId: state.tradeId, ...r })));
   const earliest = new Map<string, string>();
   for (const { instrument, earliestRelevance } of requirements) {
-    const known = earliest.get(instrument.symbol);
-    if (known === undefined || earliestRelevance < known) earliest.set(instrument.symbol, earliestRelevance);
+    const key = instrumentKey(instrument);
+    const known = earliest.get(key);
+    if (known === undefined || earliestRelevance < known) earliest.set(key, earliestRelevance);
   }
   return { requirements, earliest };
 }
@@ -194,14 +196,22 @@ export interface DailyReview {
 }
 
 // The Trade's place in the walk and, when its facts replay, its evaluation at the Review-date frame.
-function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade, frames: readonly MarkFrame[]) {
+function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade, frames: readonly MarkFrame[], review: { readonly reviewDate: string; readonly cutoff: string }) {
   const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
   // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
   if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), evaluation: undefined };
   if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), evaluation: undefined };
-  const frame = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
-  if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
-  const evaluation = evaluate({ state: derivation, frame: observationFrame(frame) });
+  const contract = analysis.plan.legs[0]!.instrument;
+  // After its expiration date an option requires no Mark, so Market Data was not asked for a frame: the Review
+  // supplies one at its own date and cutoff with no Mark, and the evaluation answers Settlement Due (A110).
+  const frameOf = (instrument: Instrument): ObservationFrame => {
+    const found = frames.find((f) => f.instrumentKey === instrumentKey(instrument));
+    if (found) return observationFrame(found);
+    if (contract.kind === 'Stock') throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
+    return { instrument, tradingDate: review.reviewDate, closeInstant: review.cutoff, resolution: { kind: 'Missing' } };
+  };
+  const underlyingFrame = contract.kind === 'Option' ? frameOf({ kind: 'Stock', symbol: analysis.plan.underlying }) : undefined;
+  const evaluation = evaluate({ state: derivation, frame: frameOf(contract), ...(underlyingFrame && { underlyingFrame }) });
   const held = openLongStockSummary(derivation);
   const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, evaluation, integrity.findings) };
   return { item, evaluation };
@@ -325,6 +335,26 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { trades: ordered.map(({ trade }) => trade), factRevisions: Object.fromEntries(ordered.map(({ trade, factRevision }) => [trade.tradeId, factRevision])) };
   }
 
+  // The close of the session an expiration date names, or of the latest session before it when it is not one (A111).
+  // A date outside calendar coverage has no such close (D7 Q1); that item is a later task's.
+  async function settlementTimeOf(expiration: string): Promise<string> {
+    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Historical', tradingDate: expiration } });
+    if (session.kind === 'Session') return session.closeInstant;
+    const latest = session.kind === 'Rejected' ? session.issues[0]?.latestSession : undefined;
+    if (!latest) throw new Error(`no settlement time for ${expiration}`);
+    return latest.closeInstant;
+  }
+
+  // The option contracts the walked Trades still hold at or past expiration, by expiration date then Trade identity (A112).
+  async function settlementItems(ranked: readonly { readonly item: ReviewTradeItem; readonly evaluation: TradeEvaluation | undefined }[]): Promise<SettlementItem[]> {
+    const due = ranked
+      .flatMap(({ item, evaluation }) => (evaluation?.settlement ?? []).filter((s) => s.status === 'Due').map((s) => ({ tradeId: item.tradeId, ...s })))
+      .sort((a, b) => (a.expiration === b.expiration ? (a.tradeId < b.tradeId ? -1 : Number(a.tradeId > b.tradeId)) : a.expiration < b.expiration ? -1 : 1));
+    const times = new Map<string, string>();
+    for (const expiration of new Set(due.map((s) => s.expiration))) times.set(expiration, await settlementTimeOf(expiration));
+    return due.map(({ tradeId, instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: times.get(expiration)! }));
+  }
+
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
   // `withGaps` false skips the historical Mark-gap scan: the frames and snapshot are the ones `recover` gives, the gaps are left empty.
   // `from` is the Trade a save just resolved: the next step is looked for from it.
@@ -336,7 +366,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const derivations = await eligibleTrades(cutoff, reviewDate);
     if (!derivations) return { kind: 'Expired' };
     const { requirements, earliest } = observationNeeds(derivations);
-    const instruments = [...earliest].map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure }));
+    const instruments = [...earliest].map(([key, earliestExposure]) => ({ instrumentKey: key, earliestExposure }));
     // With no walked Trade there is no Instrument to scan for gaps; the frames call still gives the previous close the owed group needs.
     const recovered = withGaps && derivations.length > 0
       ? await deps.marketData.recover({ context: { kind: 'Review', reviewDate }, instruments })
@@ -344,18 +374,19 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (recovered.kind === 'Rejected') throw new Error('Market Data rejected the Review recovery request');
 
     const today = recovered.frames.map(
-      ({ instrumentKey, tradingDate, resolution }): MarkRow => ({
-        instrumentKey,
+      ({ instrumentKey: key, tradingDate, resolution }): MarkRow => ({
+        instrumentKey: key,
         tradingDate,
-        trades: requirements.filter((r) => r.instrument.symbol === instrumentKey).map((r) => r.tradeId),
+        trades: requirements.filter((r) => instrumentKey(r.instrument) === key).map((r) => r.tradeId),
         resolution,
-        resolutionRevision: recovered.resolutions.find((r) => r.instrumentKey === instrumentKey)?.resolutionRevision ?? 'None',
+        resolutionRevision: recovered.resolutions.find((r) => r.instrumentKey === key)?.resolutionRevision ?? 'None',
         task: resolution.kind === 'Missing' ? 'Manual' : null,
       }),
     );
     const ranked = derivations
-      .map((trade) => reviewItem(trade, recovered.frames))
+      .map((trade) => reviewItem(trade, recovered.frames, { reviewDate, cutoff }))
       .sort((a, b) => byAttention(a.item, b.item));
+    const settlement = await settlementItems(ranked);
     const earlier = recovered.gaps
       .filter((g) => g.missing.length + g.acknowledged.length > 0)
       .map(
@@ -368,7 +399,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           acknowledgments: g.acknowledgments,
           trades: ranked.flatMap(({ item }) =>
             requirements
-              .filter((r) => r.tradeId === item.tradeId && r.instrument.symbol === g.instrumentKey)
+              .filter((r) => r.tradeId === item.tradeId && instrumentKey(r.instrument) === g.instrumentKey)
               // A Trade after every listed date is listed from the Review date (decision 63).
               .map((r) => ({ tradeId: r.tradeId, from: firstRelevantGapDate(g.closes, r.earliestRelevance) ?? reviewDate })),
           ),
@@ -409,6 +440,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     );
     const families: ReviewFamily[] = [
       { family: 'Marks', today, earlier },
+      ...(settlement.length > 0 ? [{ family: 'Settlement' as const, items: settlement }] : []),
       { family: 'Trades', trades: walked },
     ];
 
@@ -416,6 +448,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       ...today
         .filter((row) => row.task === 'Manual')
         .map((row): IncompleteReason => ({ code: 'MarkMissing', instrument: instrumentOf(row.instrumentKey), tradingDate: row.tradingDate, trades: row.trades })),
+      // Then each due settlement (A112), before the walk.
+      ...settlement.map((item): IncompleteReason => ({ code: 'SettlementDue', ...item })),
       ...walked.flatMap((item): IncompleteReason[] => [
         ...item.reasons.flatMap((reason): IncompleteReason[] => {
           if (reason.code === 'IntegrityDisagreement') return [{ ...reason, tradeId: item.tradeId }];
@@ -577,7 +611,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const frames = await reviewFrames(eligible, reviewDate, request.binding);
     if (frames.kind !== 'Frames') return frames;
     const labels = await labelsOf(summary);
-    const { item, evaluation } = reviewItem(entry, frames.frames);
+    const { item, evaluation } = reviewItem(entry, frames.frames, { reviewDate, cutoff });
     // Facts that cannot be replayed have no figures.
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
@@ -586,7 +620,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (!outstanding) return { kind: 'ReviewChanged' };
     const reflections = await reflectionsOf(outstanding, analysis.positionChanges, { previousClose: frames.previousCloseInstant, close: cutoff });
     // The same counts the overview's walked item holds: this Trade's Review-date rows, its Outstanding Debt, and its Action.
-    const held = new Set(observationNeeds([entry]).requirements.map((r) => r.instrument.symbol));
+    const held = new Set(observationNeeds([entry]).requirements.map((r) => instrumentKey(r.instrument)));
     const rows = frames.frames.filter((frame) => held.has(frame.instrumentKey));
     const needed = rows.filter((frame) => frame.resolution.kind === 'Missing').length;
     const due = reflections.filter((reflection) => reflection.classification === 'Due').length;

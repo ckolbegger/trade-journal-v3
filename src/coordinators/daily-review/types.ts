@@ -1,6 +1,6 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
-import type { Instrument } from '../../domain/instrument/index.ts';
+import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { CalculationResult, EntryResolution, ExecutionFact, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
@@ -28,6 +28,8 @@ export type AttentionReason =
   | ({ readonly code: 'Unavailable' } & UnavailableReason)
   | { readonly code: 'StopBreached' | 'TargetReached'; readonly conditionId: string; readonly overrun: Rational }
   | { readonly code: 'PressureTowardStop' | 'PressureTowardTarget' }
+  // An option contract held at or past its expiration date with no settlement fact (A112); a blocker.
+  | { readonly code: 'SettlementDue'; readonly instrument: OptionInstrument; readonly quantity: Rational; readonly expiration: string }
   | { readonly code: 'NoPressure' };
 
 // The pressure a Trade is ranked by: the share of its planned range travelled since entry, with the
@@ -147,16 +149,30 @@ export interface HistoricalGapGroup {
   readonly blocking: false;
 }
 
+// One option contract an eligible Trade still holds at or past its expiration date (A111, A112). The signed open
+// quantity is negative for a short contract: the screen words the assignment or exercise sentence from that sign.
+export interface SettlementItem {
+  readonly tradeId: string;
+  readonly instrument: OptionInstrument;
+  readonly quantity: Rational;
+  readonly expiration: string;
+  // The close of the expiration session, or of the latest session before it when the date is not a session.
+  readonly settlementTime: Instant;
+}
+
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
 export type ReviewFamily =
   | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[] }
+  // Between Marks and the walk; present only when a settlement is due, ordered by expiration date then Trade identity.
+  | { readonly family: 'Settlement'; readonly items: readonly SettlementItem[] }
   | { readonly family: 'Trades'; readonly trades: readonly WalkedTrade[] };
 
 // What keeps the Review from being complete, Marks first and then the Trades in the walk's order.
 export type IncompleteReason =
   | { readonly code: 'MarkMissing'; readonly instrument: Instrument; readonly tradingDate: string; readonly trades: readonly string[] }
   | { readonly code: 'ActionMissing'; readonly tradeId: string }
+  | ({ readonly code: 'SettlementDue' } & SettlementItem)
   // Deferred reflections of the Trade that are due in this Review, in anchor order (P17, AC-REV-006).
   | { readonly code: 'ReflectionDue'; readonly tradeId: string; readonly debtIds: readonly string[] }
   // An Action can be saved, but completion waits until a Trade mutation repairs the disagreement (A59).
