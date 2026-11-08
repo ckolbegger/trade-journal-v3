@@ -18,7 +18,7 @@ import { browserHost } from '../delivery/browser-host.ts';
 import { RELEASE_ID } from '../delivery/release-identity.ts';
 import type { Clock } from '../domain/time/index.ts';
 import { createWebLocksLifecycleLock, type IdGenerator } from '../persistence/index.ts';
-import { instrumentKey, type OptionInstrument } from '../domain/instrument/index.ts';
+import { instrumentKey, type Instrument, type OptionInstrument } from '../domain/instrument/index.ts';
 import {
   BENCH_AS_OF_DATE,
   BENCH_AS_OF_INSTANT,
@@ -408,11 +408,20 @@ function intendedEntryCents(index: number): number {
   return 2_000 + ((index * 7_919) % 38_000);
 }
 
-// Counts the stored Workspace's records directly, as provenance for `bench/dataset.json`. The Open
-// Trades' underlyings come from the Open list, since the Instruments they hold are not counted
-// from the stored Trades.
+// The Open book's distinct Instruments, by Instrument key (a contract and its Underlying's stock are
+// two), and how many of them two or more Open Trades hold.
+export function countHeld(openInstruments: readonly Instrument[]): { readonly open: number; readonly shared: number } {
+  const held = new Map<string, number>();
+  for (const instrument of openInstruments) {
+    const key = instrumentKey(instrument);
+    held.set(key, (held.get(key) ?? 0) + 1);
+  }
+  return { open: held.size, shared: [...held.values()].filter((n) => n > 1).length };
+}
+
+// Counts the stored Workspace's records directly, as provenance for `bench/dataset.json`.
 type StoredCounts = Omit<BenchCounts, 'instrumentsPerSessionMean' | 'instrumentsPerSessionMax'>;
-async function countStored(openUnderlyings: readonly string[] = [], closeReasonLabels: Readonly<Record<string, string>> = {}): Promise<StoredCounts> {
+async function countStored(closeReasonLabels: Readonly<Record<string, string>> = {}): Promise<StoredCounts> {
   const open = (name: string) =>
     new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open(name);
@@ -465,6 +474,7 @@ async function countStored(openUnderlyings: readonly string[] = [], closeReasonL
   // D7: the option Trades by the Strategy their Planned Leg shows (Long Call, Long Put, or the short Put), the Plans'
   // Exercise Intents, the Expirations, and the Open book's contracts and stock Underlyings.
   const optionCounts = { trades: 0, longCalls: 0, longPuts: 0, cashSecuredPuts: 0, exerciseIntent: 0, authorized: 0, expirations: 0, afterPartial: 0, open: 0 };
+  const openHeld: Instrument[] = [];
   const openContracts = new Set<string>();
   const openStock = new Set<string>();
   const openOptionUnderlyings = new Set<string>();
@@ -492,6 +502,7 @@ async function countStored(openUnderlyings: readonly string[] = [], closeReasonL
       if (expired && executions.includes('Buy') && executions.includes('Sell')) optionCounts.afterPartial++;
     }
     if (trade.lifecycle === 'Open') {
+      if (leg) openHeld.push(leg.instrument as Instrument);
       if (isOptionTrade) {
         optionCounts.open++;
         openContracts.add(instrumentKey(leg.instrument as OptionInstrument));
@@ -518,8 +529,7 @@ async function countStored(openUnderlyings: readonly string[] = [], closeReasonL
   const closeDebts = debts.filter((d) => d.entryTypeKey === closeKey);
   const debtsWith = (list: typeof debts, status: string) => list.filter((d) => d.versions[d.versions.length - 1]?.status === status).length;
   const catalogOf = (kind: string) => catalog.filter((r) => r.kind === kind).length;
-  const held = new Map<string, number>();
-  for (const underlying of openUnderlyings) held.set(underlying, (held.get(underlying) ?? 0) + 1);
+  const held = countHeld(openHeld);
   return {
     trades: tradeCounts.trades,
     openTrades: tradeCounts.open,
@@ -533,8 +543,8 @@ async function countStored(openUnderlyings: readonly string[] = [], closeReasonL
     accounts: catalogOf('Account'),
     strategies: catalogOf('Strategy'),
     sessions: sessionDates.size,
-    openInstruments: held.size,
-    sharedInstruments: [...held.values()].filter((n) => n > 1).length,
+    openInstruments: held.open,
+    sharedInstruments: held.shared,
     marks,
     markCorrections,
     acknowledgments,
@@ -1044,7 +1054,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
   const open = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });
   if (open.kind !== 'Ready') throw new Error(`browse Open: ${open.kind}`);
   if (!final.asOf || !expectedTotals) throw new Error('no session was simulated');
-  const stored = await countStored(open.view.items.map((item) => item.underlying), expectedTotals.closeReasonLabels);
+  const stored = await countStored(expectedTotals.closeReasonLabels);
   const perSession = markedPerSession.length === 0 ? 0 : markedPerSession.reduce((a, b) => a + b, 0) / markedPerSession.length;
   const counts: BenchCounts = { ...stored, instrumentsPerSessionMean: Math.round(perSession * 10) / 10, instrumentsPerSessionMax: Math.max(0, ...markedPerSession) };
   // The facade's own tallies must agree with what is stored.

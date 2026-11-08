@@ -1117,3 +1117,25 @@ The full-profile counts are asserted inside the generator (it throws and writes 
 ### Expected-rows tooling
 
 `tools/bench-expected-rows.ts` and `bench:expected` are not changed: they re-render the Open table generically from the cached profile at the dataset's as-of instant, so option rows need nothing new. The comparison of the settlement family against `asOfReview.settlement` (and any option-figure checks in `bench-run.ts`) is T7.29's.
+
+### Decision 95 (revision 60, `7aa783d2`)
+
+The full generation could not finish within the 10-minute limit (about 10.7 s per session; session 50 of 726 after 533 s). The user's decision: keep 726 sessions and about 150 Instruments per session, so the Marks come to about 120,000 rather than 190,000. The full generation runs in the background from the main session.
+
+### ocr review of `82751384`
+
+`ocr/T7.28-82751384.json` (relocated), 2 comments:
+1. Valid: `countStored` keys `openInstruments` and `sharedInstruments` by Underlying symbol, so with option Trades they would report 90 (all shared) instead of 150 distinct Instruments. → bug task B1.
+2. Doubtful (style), **dismissed**: nested ternaries pick the strike, stop and target (no repo rule; as earlier).
+
+The reviewer re-derived the mix from `schedule()`: 7,500 options split 3,000/2,000/2,500; 500 of 5,000 Authorized; 2,964 Expirations, 891 after a partial exit; 60 option Trades in the Open book; four Settlement Due. To watch in the full run: the Instruments marked per session may average about 170, counting contracts in flight; the actual mean goes into `bench/dataset.json`.
+
+### T7.28-B1 Open Instruments are counted by Instrument key
+
+- `it should count the Open book's distinct Instruments by Instrument key, so a contract and its Underlying's stock are two` (`src/app/bench-generator.test.ts`)
+
+Result (T7.28-B1): `countStored` runs only in the browser, so the counting was extracted as the pure, exported `countHeld(instruments)` in `src/app/bench-generator.ts` (keys each Instrument with `instrumentKey`; `open` is the distinct keys, `shared` the keys held by two or more Open Trades, D6's meaning applied to Instrument keys). `countStored` now collects each Open Trade's planned-leg Instrument from the stored Trades and no longer takes the Open list's underlyings (the only call site is updated). The test name drops the apostrophes of the planned wording so `-t` filtering works.
+- Red: `AssertionError: expected { open: 2, shared: 1 } to deeply equal { open: 3, shared: 1 }`; green after keying by `instrumentKey`.
+- `npx vitest run src/app/bench-generator.test.ts tools/bench`: 2 files, 18 tests passed. `npm run build:bench`, `npm run typecheck`, `npm run lint`: exit 0.
+- Smoke `BENCH_SESSIONS=12 npm run bench:generate`: exit 0, 240 s; `openInstruments` 3, `sharedInstruments` 0 (3 Open Trades: 1 contract plus 2 stocks, matching `openContracts` 1 and `openStockInstruments` 2). `bench/dataset.json` was not rewritten (still 150 / 50 from the full run; the full-run values need the D7 regeneration).
+- Readers of the two fields: only `src/app/bench.ts` (type) and the generator; no other reader.

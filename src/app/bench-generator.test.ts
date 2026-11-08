@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { schedule } from './bench-generator.ts';
+import { countHeld, schedule } from './bench-generator.ts';
+import type { Instrument } from '../domain/instrument/index.ts';
 
 const MINUTE = 60_000;
 const DAY = 86_400_000;
@@ -112,5 +113,19 @@ describe('bench generator schedule', () => {
       const first = firstChange.get(event.index);
       if (first !== undefined) expect(event.time).toBeLessThan(first);
     }
+  });
+});
+
+describe('bench generator Open book instruments', () => {
+  const stock = (symbol: string): Instrument => ({ kind: 'Stock', symbol });
+  const call = (strike: string): Instrument => ({ kind: 'Option', symbol: 'AAA', root: 'AAA', expiration: '2024-09-20', strike, right: 'Call', multiplier: 100 });
+  it('should count the Open book distinct Instruments by Instrument key, so a contract and its Underlying stock are two', () => {
+    const counts = countHeld([
+      stock('AAA'),
+      call('100'),
+      call('100'),
+      stock('BBB'),
+    ]);
+    expect(counts).toEqual({ open: 3, shared: 1 });
   });
 });
