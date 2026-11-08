@@ -34,6 +34,7 @@ import {
   BENCH_TAIL_SESSIONS,
   BENCH_TIME_ZONE,
   benchScale,
+  expectedSettlementDue,
   type BenchAsOf,
   type BenchCounts,
   type BenchDisposition,
@@ -1112,7 +1113,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
     );
   }
   // The as-of Review's settlement family is the Open option Trades whose contract expires on the as-of date.
-  const settlementWanted = Math.min(BENCH_SETTLEMENT_DUE, counts.openOptionTrades);
+  const settlementWanted = expectedSettlementDue({ partial: false, openOptionTrades: counts.openOptionTrades });
   if (final.asOf.asOfReview.settlement.length !== settlementWanted) {
     throw new Error(`the as-of Review has ${final.asOf.asOfReview.settlement.length} Settlement Due items, expected ${settlementWanted}`);
   }

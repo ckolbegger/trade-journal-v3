@@ -24,6 +24,11 @@ export const BENCH_AS_OF_DATE = '2026-11-20';
 export const BENCH_AS_OF_INSTANT = '2026-11-20T22:00:00Z';
 // Open option Trades whose contract expires on the as-of date, so they are Settlement Due in the as-of Review.
 export const BENCH_SETTLEMENT_DUE = 4;
+// The Settlement Due contracts the as-of Review lists: the generator's rule, shared with the harness. A partial dataset
+// records none.
+export function expectedSettlementDue(profile: { readonly partial: boolean; readonly openOptionTrades: number }): number {
+  return profile.partial ? 0 : Math.min(BENCH_SETTLEMENT_DUE, profile.openOptionTrades);
+}
 // The Open book's stock Instruments: the 60 Open option Trades' Underlyings are among them (most option
 // Underlyings are also held as stock), and each Open option Trade holds its own contract, 150 Instruments in all.
 export const BENCH_OPEN_STOCK_INSTRUMENTS = 90;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BENCH_SETTLEMENT_DUE, expectedSettlementDue } from '../../src/app/bench.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 import { instrumentLabel } from '../../src/ui/calculation-words.ts';
 import { shortDate } from '../../src/ui/format.ts';
@@ -186,5 +187,14 @@ describe('settlement expectations (T7.29-B3)', () => {
     expect(settlementExpectations(undefined, 0)).toBeUndefined();
     const items = [{ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' }];
     expect(settlementExpectations(items, 1)).toBe(items);
+  });
+});
+
+describe('expected Settlement Due count (T7.29-B9)', () => {
+  it('should expect the lesser of the generator due count and the Open option Trades, and none for a partial dataset', () => {
+    expect(expectedSettlementDue({ partial: false, openOptionTrades: 60 })).toBe(BENCH_SETTLEMENT_DUE);
+    expect(expectedSettlementDue({ partial: false, openOptionTrades: 2 })).toBe(2);
+    expect(expectedSettlementDue({ partial: false, openOptionTrades: 0 })).toBe(0);
+    expect(expectedSettlementDue({ partial: true, openOptionTrades: 60 })).toBe(0);
   });
 });
