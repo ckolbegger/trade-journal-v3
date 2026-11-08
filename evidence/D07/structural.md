@@ -709,3 +709,60 @@ Run by `suite-runner` (medium effort, `4e93847d`) on 2026-11-07, browser stage `
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-19-option-plan-form-checks.txt` |
 
 Tier: full, printed reason "first matching path since a678926d: src/ui/screens/PlanForm.test.tsx". Ports free before and after. (The task agent's "1384 passed" was a different unit command; the cumulative count is 1331.) T7.19 is complete.
+
+## T7.20 UI: option Execution form
+
+Behavioral (decision 87); commit `c666a5a6`, two cases, each with a genuine red ("Unable to find an element with the text: Contract"; "Unable to find an element with the text: Execution 1: The position has only 2 contracts."), plus two extra receipt cases with genuine reds (entry receipt "Sell to open 2 MNO 20 Nov 2026 45 Put", row 20.12; exit receipt "Sell to close 1 XYZ 20 Nov 2026 55 Call" with Lot Matches "Opened"/"Closed", row 20.13). Case 2's Closing the Trade half already passed from case 1's work (absolute held quantity); the case as a whole had a genuine red (note row in `tdd-log.md`). Option detected from the plan leg's instrument kind and side; new `execution-line.ts` (`executionWhat`), `LotMatchesTable` `option` prop, `describePositionChangeIssues(..., option)`, `tests/support/option-trade-fixtures.ts` (`optionTrade('O-C' | 'O-S')`). `src/ui` unit 512 passed; typecheck, tsc6, lint, lint:deps exit 0. No e2e change; nothing hit the `tradeSummary` throw. Two existing receipt fixtures gained `plan: {}`.
+
+Not done by the task, though its amendment gives rows 20.1 to 20.15, and reachable from the form (an option `ContractQuantityNotWhole` falls back to "check this Execution."; an option `InvalidQuantity` says "quantity"): rows 20.7, 20.8, 20.9, 20.11, 20.14 and 20.15. These become bug tasks (the subagent's summary reveals them in the task's own scope).
+
+### T7.20-B1 option row and form errors, and the conflict banner, take contracts words
+
+Rows 20.7, 20.8, 20.9 and 20.11. Cases:
+- `it should word an option row's InvalidQuantity and ContractQuantityNotWhole each with its own contracts sentence` (20.9)
+- `it should word AfterExpiration on a new option Execution with the expiration date` (20.8)
+- `it should word the members issue for a later recorded exit with contracts` (20.7)
+- `it should show the option position in the conflict reload banner as a holding in words` (20.11)
+
+### T7.20-B2 option receipts word the Changed Lot Matches note and the Entry Size Deviation with contracts
+
+Rows 20.14 and 20.15 (the receipt sentence; the Detail sentence is T7.23's). Cases:
+- `it should show the Changed Lot Matches note with Opened and Closed headers for an earlier-dated option exit` (20.13, 20.14)
+- `it should state an option Entry Size Deviation on the receipt in contracts` (20.15)
+
+### ocr review of `c666a5a6`
+
+`ocr/T7.20-c666a5a6.json`, 1 comment, Valid: Trade Detail's Lot Matches (`TradeDetail.tsx`) don't pass `option`, so an option Trade's Detail still heads them "Bought"/"Sold" (row 20.13). **Assigned to T7.23** (option Trade Detail), as T7.14's findings were assigned to planned tasks; T7.20's brief left Trade Detail to T7.23. The comment's side claim that "Opened"/"Closed" reverses the meaning for a short put is wrong: that is the approved wording.
+
+### T7.20-B1 result
+
+Commit `b063515f`, four cases, each with a genuine red (text not found: "Execution 1: enter a number of contracts greater than zero."; "Execution 1: the Economic Time cannot be after the expiration date, Fri Nov 20."; "This exit would leave a later recorded exit without enough contracts in the position."; "Long 1 contract of XYZ 20 Nov 2026 55 Call"). One invalid red (0 tests ran: an apostrophe in the `-t` name) logged and renamed. No first-run pass. `PositionChangeFormOptions` and `PositionChangeForm` tests 60 passed; typecheck, tsc6, lint, lint:deps exit 0. The workflow's real row codes (Required, NotPositive, TooManyFractionalDigits) on an option row all read row 20.9's "enter a number of contracts greater than zero."; `ContractQuantityNotWhole` reads its own sentence. New `isAfterExpirationIssue` and `isContractQuantityNotWholeIssue` in `calculation-words.ts`; `describePositionChangeIssues`'s last parameter is now the Trade's `OptionInstrument | undefined`. A short holding in the banner is read from a negative quantity; C2's one line per leg waits for D10.
+
+ocr (`ocr/T7.20-B1-b063515f.json`), 1 comment, Valid as a description, **dismissed**: a nested Short/Long ternary in the banner's Position wording (`PositionChangeForm.tsx:455-457`) against a "no nested ternaries" checklist item the repo doesn't have; output matches row 20.11. Dismissed as in T7.3, T7.5 and T7.36 (the reviewer cites a D7P precedent that fixed one; D7 has kept dismissing them).
+
+### T7.20-B2 result
+
+Commit `efe0af23`, two cases, each with a genuine red (the stock Changed Lot Matches sentence still shown; "1 contract above plan" not found, "shares" shown). No first-run pass. Form, Exit and Options tests 75 passed; typecheck, tsc6, lint, lint:deps exit 0. The option flag comes from `trade.plan.legs[0].instrument.kind` in `ExitReceipt` and from `saved.executions[0].instrument.kind` in `PositionChangeReceipt` (stock receipt fixtures carry no `plan.legs`).
+
+ocr (`ocr/T7.20-B2-efe0af23.json`), 2 comments, both Valid, becoming bug task T7.20-B3: (1) the receipt's `NewVersion` sentence "Entry Size Deviation changed: now N shares above plan (was M)" still says shares for an option (also reported by the subagent); (2) the contract count is a hand-written ternary rather than C1's `plural(n, one, many)` helper. The reviewer also noted `const matchQuantity =(` missing a space in `ExitReceipt.tsx:62` (lint passes; tidied in B3).
+
+### T7.20-B3 the changed Entry Size Deviation on an option receipt is in contracts, through C1's helper
+
+No approved row words the `NewVersion` sentence for an option; C1 (contract count and plural) and row 20.15's pattern give it: "Entry Size Deviation changed: now 2 contracts above plan (was 1), caused by …" (flagged for the final report as a C1 reading). Case: `it should state a changed option Entry Size Deviation on the receipt in contracts, with the singular at 1`. Both receipt Deviation sentences take the count through `plural`.
+
+### T7.20-B3 result
+
+Commit `60df88b7`, one case: an invalid first red (TypeError from an unknown fixture id, logged), then a genuine red ("Entry Size Deviation changed: now 2 contracts above plan (was 1)…" not found); green, file 11 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. Both receipt Deviation sentences use `plural(Number(quantityAbovePlan), 'contract', 'contracts')` from `ReviewCard.tsx` (lint:deps clean); stock unchanged; `ExitReceipt.tsx` spacing tidied. ocr: no findings (`ocr/T7.20-B3-60df88b7.json`).
+
+### Cumulative run after T7.20-B3 (`t7-20-option-execution-form`, at `60df88b7`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 755b623b`. The runner handed back "waiting" while the browser stage ran, which used its one report, so its final table was refused; the main session read the four output files instead, and `run-complete.sh` printed "run complete". (`suite-runner.md` now says to end the turn without a handback while waiting.)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 114 files, 1342 passed, exit 0 | `suite-runs/t7-20-option-execution-form-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-20-option-execution-form-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (8.0 m), exit 0 | `suite-runs/t7-20-option-execution-form-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-20-option-execution-form-checks.txt` |
+
+Tier: full; `full-suite.sh --choose-tier 755b623b` prints "full: src/ui/calculation-words.ts". T7.20 is complete; its Trade Detail Lot Matches headers (ocr finding on `c666a5a6`) and row 20.15's Detail sentence are T7.23's.
