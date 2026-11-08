@@ -1,0 +1,123 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 117573,
+    "input_tokens": 115865,
+    "output_tokens": 1708,
+    "cache_read_tokens": 46464,
+    "elapsed": "54s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_search": 7,
+      "file_find": 3,
+      "file_read": 8,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade workflow coordination and types",
+      "files": [
+        "src/coordinators/trade-workflows/trade-workflows.ts",
+        "src/coordinators/trade-workflows/types.ts"
+      ]
+    },
+    {
+      "label": "Plan form and issue handling",
+      "files": [
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/plan-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "a0b04eca-0a3a-422a-b8fe-99b49105d2a2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a0b04eca-0a3a-422a-b8fe-99b49105d2a2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "551ca046",
+      "resolved_base": "1583e9c6cdb6c15c9140e11c8ef1eb0b6f35f72d",
+      "resolved_head": "551ca046d6c410bcb70d15baa7a643ca68215043",
+      "exact_range": "1583e9c6cdb6c15c9140e11c8ef1eb0b6f35f72d..551ca046d6c410bcb70d15baa7a643ca68215043",
+      "source_artifact_sha256": "d5150aa6353a069ac29046e381a86d078b006a1b6b2731a36b0857bc9021329c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "89115e623ae75eecbc823b93f963a07513d9bb125dbac123317ba357016cd9cc",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "23e3572fb78c80ed45ad31899fd27aaac9db2195f60610b24de14d9f4e27b87d"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "9fccbeec2e606c356ed80e1044ffbfad025be75c20d6b21ac83992a54a7e2b75"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "8a7879206b6252e187d42c2f981c435f5fc6eee51b669944ffbc491b67fe9411"
+        },
+        {
+          "item_id": "ed041faad684a3fa521c6e4f72152772c27e8a4e20e0c5bcac79e41f806fd1a9",
+          "path": "src/coordinators/trade-workflows/types.ts",
+          "fingerprint": "4ba29805b7202eb518422714686326e1befc564148c9d4bc2856a84d9403cc94"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "89115e623ae75eecbc823b93f963a07513d9bb125dbac123317ba357016cd9cc",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "23e3572fb78c80ed45ad31899fd27aaac9db2195f60610b24de14d9f4e27b87d"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "9fccbeec2e606c356ed80e1044ffbfad025be75c20d6b21ac83992a54a7e2b75"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "8a7879206b6252e187d42c2f981c435f5fc6eee51b669944ffbc491b67fe9411"
+        },
+        {
+          "item_id": "ed041faad684a3fa521c6e4f72152772c27e8a4e20e0c5bcac79e41f806fd1a9",
+          "path": "src/coordinators/trade-workflows/types.ts",
+          "fingerprint": "4ba29805b7202eb518422714686326e1befc564148c9d4bc2856a84d9403cc94"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 54099
+  }
+}

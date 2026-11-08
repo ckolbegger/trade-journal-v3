@@ -682,3 +682,30 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 9ab16f31`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-36-f1-receipt-no-fee-checks.txt` |
 
 Tier: full, printed reason "first matching path since 9ab16f31: e2e/d2/ui-alignment.spec.ts". Ports free before and after. T7.36 is complete.
+
+## T7.19 UI: option Plan form
+
+Behavioral (decisions 87, 88, 92); commit `551ca046`, four cases (the fourth as four tests: trigger-field sentences, one sentence per option code in `plan-issues.ts`, the breakeven issue kept after a Stop edit, and `confirmPlan` forwarding `details.breakeven`), each with a genuine red. An extra Long Put direction test first passed (direction logic written during case 1), then reverted to `bullish = true` for a genuine red ("Unable to find a label with the text of: Stop (ABC at or above)") and restored. **First-run pass (flagged):** "should hand the confirmed option Plan, with its 1R from the result, to Trade Detail without a read call", built earlier by `confirmedDetail`; mutation (doubling `baseline.oneR` in `confirmed-detail.ts`) failed with `Unable to find an element with the text: 1R $400.00`, then restored. Unit 1384 passed; typecheck, tsc6, lint, lint:deps, verify:wording exit 0. No words missing. Plumbing outside the named files: `WorkflowIssue.details?: { breakeven }` (`types.ts`) and its forwarding in `trade-workflows.ts`, so the form can word the breakeven; one existing coordinator expectation gains `details`. Left for T7.23: `confirmedDetail` builds the summary with `plannedLongStockSummary` and drops `plan.exerciseIntent`.
+
+### ocr review of `551ca046`
+
+`ocr/T7.19-551ca046.json`: no findings.
+
+### T7.19-B1 a quantity issue clears on any positive edit
+
+Found in the subagent's summary (the task's own code). The form clears a quantity issue on any positive edit, so on an option Plan `ContractQuantityNotWhole` for "2.5" clears when the field reads "2.6", and the trader sees no error until submission. Case: `it should keep ContractQuantityNotWhole beside Contracts while the count stays fractional, and clear it once the count is whole`.
+
+Commit `630df208`: red `expected undefined to be 'Enter a whole number of contracts.'` (the issue gone after "2.5" replaced the rejected "1"); green, `PlanForm.test.tsx` 34 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. The rule is "an option's quantity issue clears only once the count is a positive whole number" (`verify:wording` refuses a branch on the reason code outside `calculation-words.ts`), so an option `InvalidQuantity` for 0 edited to "2.5" also stays until the next submission, when `ContractQuantityNotWhole` replaces it. Stock Plans keep the old rule. ocr: no findings (`ocr/T7.19-B1-630df208.json`).
+
+### Cumulative run after T7.19-B1 (`t7-19-option-plan-form`, at `630df208`)
+
+Run by `suite-runner` (medium effort, `4e93847d`) on 2026-11-07, browser stage `browser-auto a678926d`; `run-complete.sh` printed "run complete" for the runner and again in the main session.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1331 passed, exit 0 | `suite-runs/t7-19-option-plan-form-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-19-option-plan-form-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.8 m), exit 0 | `suite-runs/t7-19-option-plan-form-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-19-option-plan-form-checks.txt` |
+
+Tier: full, printed reason "first matching path since a678926d: src/ui/screens/PlanForm.test.tsx". Ports free before and after. (The task agent's "1384 passed" was a different unit command; the cumulative count is 1331.) T7.19 is complete.
