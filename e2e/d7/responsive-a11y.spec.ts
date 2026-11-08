@@ -47,6 +47,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
     await page.setViewportSize(WIDE);
     await expect(page.getByLabel('Strategy')).toHaveValue(/./);
+    await expect(page.getByLabel('Strategy').locator('option:checked')).toHaveText('Long Put');
     await expect(page.getByLabel('Underlying', { exact: true })).toHaveValue('ABC');
     await expect(page.getByLabel('Strike')).toHaveValue('50');
     await expect(page.getByLabel('Why this trade, why now?')).toHaveValue('Half-written thesis that must survive resizing.');
