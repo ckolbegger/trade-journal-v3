@@ -1,4 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
+import { terminalPositionChangeOf } from '../domain/trade-analysis/index.ts';
 import { openDatabase } from './idb.ts';
 import { activityDescOf, createWorkspaceIndexes } from './schema.ts';
 
@@ -99,21 +100,24 @@ interface StoredTerminalFact {
   readonly versions: readonly { readonly value: { readonly economicTime: string; readonly memberIds?: readonly string[] } }[];
 }
 
-// A Closed Trade's Terminal Time (D6 A87): the Economic Time of its terminal Position Change, the one
-// holding the last fact in Fact Order (P22): Economic Time, then Recorded Sequence, among the
-// Executions and Expirations at their latest versions, as Trade Analysis orders them. That change's
-// own Economic Time is its earliest member's, so it need not be the latest of the Trade's changes.
-// Undefined when the Trade has no member.
+// A Closed Trade's Terminal Time (D6 A87): the Economic Time of its terminal Position Change (P22),
+// each fact at its latest version. Undefined when no change lists a member.
+// The ordering is Trade Analysis's own: this only maps the stored records to its input.
 function terminalTimeOf(facts: unknown): string | undefined {
   const stored = (facts as readonly StoredTerminalFact[] | undefined) ?? [];
   const latest = (fact: StoredTerminalFact) => fact.versions[fact.versions.length - 1]!.value;
-  const lastMember = stored
-    .filter((fact) => fact.kind === 'Execution' || fact.kind === 'Expiration')
-    .sort((a, b) => Temporal.Instant.compare(latest(a).economicTime, latest(b).economicTime) || a.recordedSequence - b.recordedSequence)
-    .at(-1);
-  if (!lastMember) return undefined;
-  const holder = stored.find((fact) => fact.kind === 'PositionChange' && latest(fact).memberIds?.includes(lastMember.factId));
-  return holder && latest(holder).economicTime;
+  const memberOf = (kind: string) => (id: string) => {
+    const fact = stored.find((f) => f.kind === kind && f.factId === id);
+    return fact ? [{ economicTime: latest(fact).economicTime, recordedSequence: fact.recordedSequence }] : [];
+  };
+  const changes = stored
+    .filter((fact) => fact.kind === 'PositionChange')
+    .map((fact) => ({
+      economicTime: latest(fact).economicTime,
+      executions: (latest(fact).memberIds ?? []).flatMap(memberOf('Execution')),
+      settlements: (latest(fact).memberIds ?? []).flatMap(memberOf('Expiration')),
+    }));
+  return terminalPositionChangeOf(changes)?.economicTime;
 }
 
 // The Journal obligation index (D2 A28): one record per obligation key naming its current outcome,

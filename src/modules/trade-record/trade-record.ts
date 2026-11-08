@@ -429,10 +429,13 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     // A Closed Trade's private Terminal Time is the Economic Time of its terminal Position Change,
     // the one holding the last fact in Fact Order (P22, D6 A87), with its descending sort key; any
     // other lifecycle holds neither. That change need not have the latest Economic Time.
-    const terminalTime =
-      expectedLifecycle === 'Closed'
-        ? facts.flatMap((f) => (f.kind === 'PositionChange' && f.factId === terminalId ? [effective(f).economicTime] : []))[0]
-        : undefined;
+    // The id is Trade Analysis's own answer (terminalPositionChangeOf), the one source; one that names
+    // no Position Change is a fault, not a Closed Trade with no time.
+    const terminalChange =
+      expectedLifecycle === 'Closed' ? facts.find((f) => f.kind === 'PositionChange' && f.factId === terminalId) : undefined;
+    if (expectedLifecycle === 'Closed' && terminalChange?.kind !== 'PositionChange')
+      throw new Error(`Terminal Position Change ${terminalId} names no Position Change`);
+    const terminalTime = terminalChange?.kind === 'PositionChange' ? effective(terminalChange).economicTime : undefined;
     // Applies only to the FactRevision it was prepared from.
     tx.require({
       name: `trade:${before.tradeId}`,

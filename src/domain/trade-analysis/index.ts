@@ -24,6 +24,8 @@ export {
 } from './payoff.ts';
 export {
   derive,
+  terminalPositionChangeOf,
+  type TerminalCandidate,
   type CandidateBinding,
   type ChangeEffect,
   type CloseRequirement,

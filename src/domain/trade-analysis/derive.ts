@@ -596,15 +596,6 @@ function lifecycleOf(facts: readonly ExecutionFact[], positions: readonly Instru
   return positions.some((p) => p.quantity.compare(Rational.of(0n)) !== 0) ? 'Open' : 'Closed';
 }
 
-// The Position Change holding the last effective fact: with a flat Position it is the terminal one (A87).
-function terminalPositionChangeOf(
-  record: TradeAnalysisRecord,
-  steps: readonly Step[],
-): PositionChangeFact {
-  const id = steps[steps.length - 1]!.positionChangeId;
-  return record.positionChanges.find((pc) => pc.factId === id)!;
-}
-
 // Whether the candidate's new (latest-recorded) Position Change closes the Trade. Every
 // Execution, Buy or Sell, carries trader agency (A77); an Expiration carries none (A107).
 function closeRequirementOf(
@@ -678,6 +669,26 @@ function observationRequirementsOf(
 type Ordered = Pick<ExecutionFact, 'economicTime' | 'recordedSequence'>;
 function factOrder(a: Ordered, b: Ordered): number {
   return Temporal.Instant.compare(a.economicTime, b.economicTime) || a.recordedSequence - b.recordedSequence;
+}
+
+// What the terminal Position Change needs of a change: its Economic Time and the ordering keys of
+// the members it lists (a change's own Economic Time is its earliest member's, D2 A19).
+export interface TerminalCandidate {
+  readonly economicTime: Instant;
+  readonly executions: readonly Ordered[];
+  readonly settlements?: readonly Ordered[];
+}
+
+// The one source of the terminal Position Change (D6 A87, P22): the change holding the last member
+// in Fact Order, counting only the members a change lists, at their effective versions. At a full
+// tie an Execution precedes an Expiration. It need not have the latest Economic Time itself.
+// Undefined when no change lists a member.
+export function terminalPositionChangeOf<C extends TerminalCandidate>(changes: readonly C[]): C | undefined {
+  const membersOf = (listed: (change: C) => readonly Ordered[]) =>
+    changes.flatMap((change) => listed(change).map((member) => ({ change, member })));
+  return [...membersOf((c) => c.executions), ...membersOf((c) => c.settlements ?? [])]
+    .sort((a, b) => factOrder(a.member, b.member))
+    .at(-1)?.change;
 }
 
 // The entry window opens with the first Position Change and resolves at the first one, in Fact
@@ -1054,7 +1065,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     lotMatchResults,
     realizedToDate,
     exposureStart: facts[0]?.economicTime ?? null,
-    terminalTime: closed ? terminalPositionChangeOf(record, steps).economicTime : null,
+    terminalTime: closed ? terminalPositionChangeOf(record.positionChanges)!.economicTime : null,
     terminalDisposition: terminalDispositionOf(expectedLifecycle, disposed),
     optionDispositionTiming: optionDispositionTimingOf(expectedLifecycle, positions, disposed),
     // Every D6 Trade has a positive 1R, so the quotient is always a Value.
@@ -1076,7 +1087,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
         reconciliation: {
           candidateDigest: input.candidate.digest,
           ...(expectedLifecycle === 'Closed'
-            ? { expectedLifecycle, terminalPositionChangeId: terminalPositionChangeOf(record, steps).factId }
+            ? { expectedLifecycle, terminalPositionChangeId: terminalPositionChangeOf(record.positionChanges)!.factId }
             : { expectedLifecycle, terminalPositionChangeId: null }),
           exposureStart: facts[0]?.economicTime ?? null,
           closeRequirement: closeRequirementOf(record, steps, closed),
