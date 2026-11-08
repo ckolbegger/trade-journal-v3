@@ -1434,3 +1434,9 @@ The reviewer confirmed that the other gaps are closed and that no assertion is v
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-30-node-integration-checks.txt` |
 
 Tier: full, printed reason "first matching path since 10edb51a: e2e/d6/stale-index-entry.ts". `run-complete.sh`: run complete. Ports free before and after.
+
+### T7.30-B2-R1 and B3-R4
+
+- B2-R1 (`65c1f2f8`): the `ConditionCountNotOne` case in `tests/integration/d7/rejections.test.ts` now sends a Stop-only and a Target-only command, each expected Rejected with `ConditionCountNotOne` and an unchanged dump; "naming the extra condition" is gone from the title. Mutation-checked both halves in `plan.ts` (Stop slice, then Target slice, each replaced by `[]`): each fails with "expected Rejected, got Confirmed"; restored.
+- B3-R4: the comment above `historicalFrames` now says a `SessionPolicyCoverage` rejection is absorbed and any other non-`Frames` answer throws, and that the Historical coverage issue has no `date`. New `option-views.test.ts` case: `getTradeDetail` rejects on a `NotASession` Historical rejection. First-run pass (built by B3-R3), mutation-checked by absorbing every `Rejected`; restored. `git diff -- src` for the commit is the comment alone plus the test file.
+- Verified: see the final commands below.

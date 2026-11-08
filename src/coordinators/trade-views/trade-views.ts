@@ -739,7 +739,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
 
   // The Underlyings' frames at their dated closes: one Historical request per distinct date, carrying every Underlying
   // that date needs (A111). A session-policy coverage rejection leaves that date without frames and so its Trades without
-  // a dated line; any other answer that is not Frames throws, as `currentFrames` does.
+  // a dated line; any other answer that is not Frames throws. Unlike the coverage issue `currentFrames` checks, the
+  // Historical one carries no `date`, so any `SessionPolicyCoverage` rejection is absorbed.
   async function historicalFrames(needs: readonly HistoricalNeed[]): Promise<ReadonlyMap<string, MarkFrame>> {
     const byDate = new Map<string, Set<string>>();
     for (const { tradingDate, underlying } of needs) byDate.set(tradingDate, (byDate.get(tradingDate) ?? new Set()).add(underlying));
