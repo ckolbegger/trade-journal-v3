@@ -152,6 +152,9 @@ export function optionOpenDetail(which: OptionTradeName, positionChanges: readon
       ...(frames.contractMark !== undefined && {
         mark: { source: 'Manual' as const, revisionId: `mark-${contract.symbol}`, revisionNumber: 1, price: frames.contractMark, savedAt: frames.closeInstant },
       }),
+      ...(frames.underlyingMark !== undefined && {
+        underlyingMark: { source: 'Manual' as const, revisionId: `mark-${record.plan.underlying}`, revisionNumber: 1, price: frames.underlyingMark, savedAt: frames.closeInstant },
+      }),
       coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
       evaluation,
     },

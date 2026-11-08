@@ -4,8 +4,8 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { ocExcess, optionClosedDetail, optionOpenDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
-import { openDetailOf, PC1, PC2, X1 } from '../../../tests/support/open-detail-fixtures.ts';
-import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_S1 } from '../../../tests/support/option-trade-fixtures.ts';
+import { incoherentDetailOf, openDetailOf, PC1, PC2, X1 } from '../../../tests/support/open-detail-fixtures.ts';
+import { ocChange, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_S1 } from '../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -57,6 +57,14 @@ describe('option Trade Detail (A119)', () => {
     const position = screen.getByRole('region', { name: 'Position' });
     expect(termValue(position, 'Position')).toBe('Long 1 contract of XYZ 20 Nov 2026 55 Call');
     expect(screen.getByText('Expires Fri 20 Nov 2026')).toBeTruthy();
+  });
+});
+
+describe('option Trade Detail Valuation Underlying Mark (row 23.18)', () => {
+  it('should show the Valuation sections Underlying Mark with its price and provenance, Manual', async () => {
+    renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(valuation, 'Underlying Mark')).toBe('$52.00 · Manual');
   });
 });
 
@@ -157,6 +165,14 @@ describe('closed option Trade Detail (A119)', () => {
     expect(termValue(settlement, 'Settlement time')).toBe('2026-11-20 16:00');
     expect(within(settlement).getByText('Position Change', { selector: 'dt' })).toBeTruthy();
     expect(within(settlement).queryByText('Fee', { selector: 'dt' })).toBeNull();
+  });
+});
+
+describe('option Trade Detail on an incoherent Detail (ocr comment 1)', () => {
+  it('should list a recorded Expiration in its Settlement section on an incoherent Detail too', async () => {
+    renderView(incoherentDetailOf([OC_PC1, OC_PC2, OC_X1, OC_E1], [{ factId: 'ex-1', kind: 'Execution', instrument: OC_CONTRACT, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }]));
+    const settlement = await screen.findByRole('region', { name: 'Settlement (1)' });
+    expect(within(settlement).getByRole('button').textContent).toBe('Expiration of 1 XYZ 20 Nov 2026 55 Call 2026-11-20 16:00details');
   });
 });
 

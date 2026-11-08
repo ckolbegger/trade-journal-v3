@@ -159,6 +159,18 @@ describe('getTradeDetail: option Trades (AC-SET-003, A119)', () => {
   }, 60_000);
 });
 
+describe('getTradeDetail: option Underlying Mark (T7.23-B1)', () => {
+  it('should carry the Underlying Mark with its price and provenance on an open option Detail apart from the contract Mark', async () => {
+    const thursday = await optionStack(THURSDAY_1700);
+    const tradeId = await thursday.openCashSecuredPut();
+    await thursday.stack.saveMark('MNO', '46.00', '2026-11-19');
+
+    const detail = openDetail(await thursday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.underlyingMark).toEqual(expect.objectContaining({ source: 'Manual', price: '46' }));
+  }, 60_000);
+});
+
 describe('getTradeDetail: Planned option Trade (T7.23)', () => {
   it('should return a Planned option Trade Detail with its Planned payoff and Current NotApplicable NoRemainingPosition, so a read after a reload shows the Plan payoff', async () => {
     const fixture = await optionStack(THURSDAY_1700);

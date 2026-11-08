@@ -213,6 +213,7 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
       {'recordedPositionChanges' in view && (
         <>
           <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} legs={view.plan.legs} timeZone={timeZone} />
+          <SettlementSection positionChanges={view.recordedPositionChanges} timeZone={timeZone} />
           <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} onDirtyChange={onDirtyChange} />
         </>
       )}
@@ -381,6 +382,7 @@ function ValuationSection({ tradeId, current, timeZone }: { readonly tradeId: st
             <Figure term="Saved" plain>{localTime(mark.savedAt, timeZone)}</Figure>
           </>
         )}
+        {current.underlyingMark && <Figure term="Underlying Mark">{`${price(current.underlyingMark.price)} · ${current.underlyingMark.source}`}</Figure>}
         <ValuationFigures evaluation={current.evaluation} />
       </dl>
       {mark?.correctionReason !== undefined && (

@@ -262,6 +262,8 @@ export interface OpenCurrentEvaluation {
   readonly markResolution?: MarkResolution;
   // Present when an exact Mark valued the figures.
   readonly mark?: MarkProvenance;
+  // An option Trade's Underlying Mark, when one is exact (row 23.18).
+  readonly underlyingMark?: MarkProvenance;
   // Per Instrument; a Long Stock Trade has one.
   readonly coverage: readonly { readonly instrument: TradeEvaluation['observation']['instrument']; readonly coverage: TradeEvaluation['coverage'] }[];
   readonly evaluation: TradeEvaluation;
@@ -840,11 +842,14 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const frame = primaryFrameOf(frames, analysis);
         const evaluation = evaluateCurrent(derived, analysis, frames);
         const mark = markProvenance(frame);
+        const underlyingFrame = analysis.plan.legs[0]!.instrument.kind === 'Option' ? frames.find((f) => f.instrumentKey === analysis.plan.underlying) : undefined;
+        const underlyingMark = underlyingFrame && markProvenance(underlyingFrame);
         // The dated line values Long Stock; an option's has its own formulas (A110).
         const datedLine = 'resolution' in frame && analysis.plan.legs[0]!.instrument.kind === 'Stock' ? datedLineOf(analysis, frame, evaluation) : undefined;
         const current: OpenCurrentEvaluation = {
           ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
           ...optional('mark', mark),
+          ...optional('underlyingMark', underlyingMark),
           coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
           evaluation,
           ...optional('datedLine', datedLine),
