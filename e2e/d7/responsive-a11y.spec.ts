@@ -14,7 +14,12 @@ const NO_OPTION = /^Not applicable: no option expiration$/;
 // Axe at 1280 px and again at 390 px, returning to 1280.
 async function accessibleAtBothWidths(page: Page, state: string): Promise<void> {
   await expectAccessible(page, state);
+  const tables = page.getByRole('table', { name: / payoff at expiration by / });
+  const charts = await tables.count();
   await page.setViewportSize(NARROW);
+  // Every payoff chart keeps its table equivalent in view at 390 px too.
+  await expect(tables).toHaveCount(charts);
+  for (let n = 0; n < charts; n++) await expect(tables.nth(n)).toBeVisible();
   await expectAccessible(page, `${state}, narrow`);
   await page.setViewportSize(WIDE);
 }
