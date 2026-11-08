@@ -19,15 +19,20 @@ const WIDTH = 640;
 const HEIGHT = 320;
 const MARGIN = { left: 72, right: 32, top: 24, bottom: 56 };
 
-const toNumber = (value: Rational): number => Number(value.numerator) / Number(value.denominator);
+// SVG draws no stroke by default; currentColor follows the page ink in light and dark alike.
+const STROKE = { stroke: 'currentColor', strokeWidth: 1.5 } as const;
+
+const toNumber =(value: Rational): number => Number(value.numerator) / Number(value.denominator);
 
 // The hand-drawn chart (A114): x runs from 0 to 1.5 times the largest breakpoint, and the last ray ends in an arrow.
 function Chart({ view, symbol, caption, latestClose }: { readonly view: ExpirationPayoffView; readonly symbol: string; readonly caption: string; readonly latestClose: PayoffViewProps['latestClose'] }) {
   const { segments, zeroSet } = view;
-  const breakpoints = [
+  const allPrices = [
     ...segments.map((s) => s.from),
     ...zeroSet.flatMap((z) => (z.kind === 'ZeroRange' ? [z.from, ...(z.to ? [z.to] : [])] : [z.price])),
   ];
+  // Each price is one tick: a segment start is often also a zero-set end.
+  const breakpoints = allPrices.filter((p, i) => allPrices.findIndex((q) => q.numerator === p.numerator && q.denominator === p.denominator) === i);
   const largest = Math.max(...breakpoints.map(toNumber));
   // A latest close beyond the usual span still lands on the chart.
   const xMax = Math.max(largest > 0 ? 1.5 * largest : 1, latestClose ? 1.05 * toNumber(latestClose.underlyingPrice) : 0);
@@ -44,9 +49,9 @@ function Chart({ view, symbol, caption, latestClose }: { readonly view: Expirati
   const tipY = y(endValue);
   return (
     <svg role="img" aria-labelledby={caption} className="payoff-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
-      <line className="payoff-axis" x1={MARGIN.left} x2={WIDTH - MARGIN.right} y1={y(0)} y2={y(0)} />
-      <line className="payoff-axis" x1={MARGIN.left} x2={MARGIN.left} y1={MARGIN.top} y2={HEIGHT - MARGIN.bottom} />
-      <polyline className="payoff-curve" fill="none" points={points.map(([px, py]) => `${x(px)},${y(py)}`).join(' ')} />
+      <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={WIDTH - MARGIN.right} y1={y(0)} y2={y(0)} />
+      <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={MARGIN.left} y1={MARGIN.top} y2={HEIGHT - MARGIN.bottom} />
+      <polyline className="payoff-curve" {...STROKE} strokeWidth={2.5} fill="none" points={points.map(([px, py]) => `${x(px)},${y(py)}`).join(' ')} />
       <path className="payoff-arrow" d={`M${tipX},${tipY} l-10,-5 l0,10 z`} />
       <text x={tipX} y={tipY - 10} textAnchor="end">
         {lastRayText(last)}
@@ -59,7 +64,7 @@ function Chart({ view, symbol, caption, latestClose }: { readonly view: Expirati
       {zeroSet.map((zero) => (
         <g key={zeroText(zero)}>
           {zero.kind === 'ZeroRange' ? (
-            <line className="payoff-zero-range" x1={x(toNumber(zero.from))} x2={x(zero.to ? toNumber(zero.to) : xMax)} y1={y(0)} y2={y(0)} />
+            <line className="payoff-zero-range" {...STROKE} strokeWidth={4} x1={x(toNumber(zero.from))} x2={x(zero.to ? toNumber(zero.to) : xMax)} y1={y(0)} y2={y(0)} />
           ) : (
             <circle className="payoff-mark" cx={x(toNumber(zero.price))} cy={y(0)} r={4} />
           )}

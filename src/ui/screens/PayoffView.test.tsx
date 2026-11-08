@@ -99,6 +99,27 @@ describe('chart and textual equivalent (A114, AC-UI-002)', () => {
   });
 });
 
+describe('chart drawing and ticks (T7.22-B2)', () => {
+  it('should stroke the payoff curve, the axes and a Zero Range so the chart draws them', () => {
+    const { container } = show({ kind: 'Current', result: payoffFixtures.zeroRange().current });
+    const marks = [...container.querySelectorAll('.payoff-curve, .payoff-axis, .payoff-zero-range')];
+    expect(container.querySelector('.payoff-curve')).not.toBeNull();
+    expect(container.querySelectorAll('.payoff-axis')).toHaveLength(2);
+    expect(container.querySelector('.payoff-zero-range')).not.toBeNull();
+    for (const mark of marks) {
+      expect(mark.getAttribute('stroke')).toBe('currentColor');
+      expect(Number(mark.getAttribute('stroke-width'))).toBeGreaterThan(0);
+    }
+  });
+
+  it('should label each axis price once when a segment start is also a zero-set end', () => {
+    const { container } = show({ kind: 'Current', result: payoffFixtures.zeroRange().current });
+    const ticks = [...container.querySelectorAll('svg text[text-anchor="middle"]')].map((t) => t.textContent);
+    expect(ticks.filter((t) => t === '0.00')).toHaveLength(1);
+    expect(ticks.filter((t) => t === '55.00')).toHaveLength(1);
+  });
+});
+
 describe('a Zero Range with no upper end (T7.22-B1)', () => {
   it('should refuse to word a Zero Range with no upper end, which no approved row words', () => {
     expect(() => zeroText({ kind: 'ZeroRange', from: Rational.of(55n), to: null })).toThrow('no approved words');
