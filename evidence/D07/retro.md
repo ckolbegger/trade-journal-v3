@@ -38,6 +38,7 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 
 - **What happened:** the repository has no `.github/workflows` and no git hooks. Typecheck and lint run only when a subagent remembers to, or in the cumulative run. Nothing went wrong in this session because of it.
 - **Proposed change:** a pre-commit hook that runs `npm run typecheck && npm run lint` when staged files include `src/`.
+- **Applied 2026-11-08, at the user's direction** ("Not running a typecheck and lint is a serious violation of code hygiene"). `.githooks/pre-commit` runs `npm run typecheck` (about 0.6 s), then `npm run lint` (about 12 s), whenever the commit stages a `.ts`, `.tsx`, `.js`, `.mjs` or `.cjs` file, `package.json`, `package-lock.json` or a `tsconfig*.json`; it refuses the commit if either fails. It is enabled for this worktree only (`extensions.worktreeConfig` on, `git config --worktree core.hooksPath .githooks`), because `.git/hooks` is shared by every worktree. Verified on a scratch index: a docs-only commit skips the checks, a code commit runs both and passes, and a failing typecheck or lint (simulated with a fake `npm`) refuses with exit 1. The next handoff's location checks confirm `git rev-parse --git-path hooks` prints `.githooks` (`implementing.md`).
 
 ## Not findings
 

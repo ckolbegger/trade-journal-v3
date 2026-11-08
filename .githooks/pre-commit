@@ -1,0 +1,14 @@
+#!/bin/sh
+# Refuses a commit that stages code or tool config while typecheck or lint fails.
+# Enabled for this worktree only (D7 retro, finding 7):
+#   git config extensions.worktreeConfig true
+#   git config --worktree core.hooksPath .githooks
+# The checks run on the working tree, so stage whole files.
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+echo "$staged" | grep -Eq '\.(ts|tsx|js|mjs|cjs)$|(^|/)(package\.json|package-lock\.json|tsconfig[^/]*\.json)$' || exit 0
+
+echo "pre-commit: npm run typecheck" >&2
+npm run -s typecheck || { echo "pre-commit: typecheck failed; commit refused" >&2; exit 1; }
+echo "pre-commit: npm run lint" >&2
+npm run -s lint || { echo "pre-commit: lint failed; commit refused" >&2; exit 1; }

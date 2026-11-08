@@ -57,4 +57,4 @@ Give its reading list in the form above, naming the sections to read, and name t
 - the "Starting a session" paragraph, with its one-line prompt (*"Read plan/D<nn>-handoff.md and follow it."*), so the session reads and then starts the first task without stopping;
 - the "Running a whole deliverable" stop conditions.
 
-Its location checks include `ocr llm test`, expecting `✓ Connection test successful`.
+Its location checks include `ocr llm test`, expecting `✓ Connection test successful`, and `git rev-parse --git-path hooks`, expecting `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`).
