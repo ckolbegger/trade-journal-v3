@@ -2029,3 +2029,18 @@ No findings (`ocr/T7.31-B2-B3-17affdc0-relocated.json`). T7.31's ocr queue is em
 - **Gate run.** This is the full-tier run before T7.32's first critic.
 
 T7.31 is complete.
+
+## T7.32: Independent browser-critic gate
+
+### Critic cost
+
+The figures come from the critic's completion notice. The brief is `.claude/docs/critic-brief.md` (v2) with the setup helpers from `e2e/d7/support.ts`.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 1 | `10984e07` | v2 | 189,339 | 109 | 12 min 56 s | 2 distinct: 1 moderate (Defects 1 and 2, one cause), 1 minor (Defect 3) |
+
+- **Critic 1** (`critic-1.md`): the critic reported **PASS**, with C7.1–C7.10 all passing (C7.8 withdrawn by decision 76). Following the D5R and D6 precedent, its defects are fixed before the gate:
+  - **T7.32-B1** (Defects 1 and 2): the exit receipt and the Review's owed card show an option Trade's Terminal Disposition in stock words ("Closed via sale of 2 shares"), and on the owed card the wrong mechanism, against approved words row 23.12 and A108. Its `it should` cases: the receipt of a Sell to close of 2 contracts says "Closed via sale of 2 contracts"; the owed card of a Trade closed by a sale and an expiration says "Closed via sale of 1 contract and expiration of 1 contract"; a stock Trade's receipt and owed card are unchanged.
+  - **T7.32-B2** (Defect 3): payoff chart labels overprint (tick labels such as 55.00 and 57.00, and a Breakeven label over the "stays at" text) and become about 5 px at 320 px; a negative table amount breaks after its sign at 320 px, against A114's "marked and labelled". Its `it should` cases: no two chart labels overlap for the C7.1 Long Call and the MNO Cash-Secured Put at 1280, 375 and 320 px; chart text stays readable at 320 px; a negative table amount stays on one line.
+  - The minor observations are recorded for the final report and don't become bug tasks.
