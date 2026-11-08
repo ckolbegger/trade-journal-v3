@@ -3,12 +3,14 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import { planFormFacade } from '../../../tests/support/plan-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { money } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { PlanForm } from './PlanForm.tsx';
+import { TradeDetail } from './TradeDetail.tsx';
 
 afterEach(cleanup);
 
@@ -769,5 +771,81 @@ describe('option Strategies (A116)', () => {
     const [put] = confirm.mock.calls[3]![0].plan.legs;
     expect(put).toMatchObject({ side: 'Short', instrument: { kind: 'Option', right: 'Put' }, quantity: '-2' });
     expect('exerciseIntent' in confirm.mock.calls[3]![0].plan).toBe(false);
+  });
+});
+
+describe('option Plan receipt (A116)', () => {
+  it('should render the confirmed option Plan Planned payoff from the result with PayoffView, beside its 1R', async () => {
+    const facade = optionFacade();
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/plans/new']}>
+          <Routes>
+            <Route path="/plans/new" element={<PlanForm facade={facade} timeZone="America/New_York" now={() => '2026-10-12T14:05:00Z'} onDirtyChange={() => undefined} />} />
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const trade = {
+      tradeId: 'trade-7',
+      factRevision: 1,
+      storedLifecycle: 'Planned',
+      plan: {
+        economicTime: '2026-10-12T13:00:00Z',
+        underlying: 'XYZ',
+        thesis: 'Earnings run-up.',
+        invalidation: 'A close below 48.',
+        legs: [
+          {
+            factId: 'f-2',
+            side: 'Long',
+            instrument: { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call', strike: '55', multiplier: 100 },
+            quantity: '2',
+            intendedEntry: '2.00',
+          },
+        ],
+        stops: [{ factId: 'f-3', kind: 'UnderlyingPrice', price: '48' }],
+        targets: [{ factId: 'f-4', kind: 'UnderlyingPrice', price: '60' }],
+        exerciseIntent: 'NotAuthorized',
+      },
+      positionChanges: [],
+    };
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({
+      kind: 'Confirmed',
+      receipt: { tradeId: 'trade-7', factRevision: 1, binding: { databaseName: 'tj-ws-1', contentRevision: 9 }, createdFactIds: [], lifecycleTransitions: [], entryId: 'e-1' },
+      postCommit: {
+        trade,
+        derivation: {
+          tradeId: 'trade-7',
+          factRevision: 1,
+          expectedLifecycle: 'Planned',
+          agreement: { kind: 'Agrees' },
+          positions: [],
+          baseline: { oneR: Rational.of(400n), originalPlannedReward: Rational.of(800n), rewardRiskRatio: Rational.of(2n) },
+        },
+        entry: {
+          id: 'e-1',
+          entryTypeKey: 'entry-type.plan-reflection',
+          sourceKey: 'source.plan-confirmation',
+          anchor: { kind: 'Trade', tradeId: 'trade-7' },
+          origin: { kind: 'Plan', factId: 'f-1' },
+          momentTime: '2026-10-12T13:00:00Z',
+          authoredTime: '2026-10-12T14:05:00Z',
+          definitionId: 'def-1',
+          responses: [],
+        },
+        payoff: payoffFixtures.ocPayoffs(),
+      },
+      affected: [],
+    } as never);
+    const user = await chooseStrategy('Long Call');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(await screen.findByText('1R')).toBeTruthy();
+    const chart = await screen.findByRole('img', { name: 'Planned payoff at expiration by XYZ price' });
+    expect(screen.getByRole('heading', { name: 'Planned Expiration Payoff' })).toBeTruthy();
+    const table = document.getElementById(chart.getAttribute('aria-labelledby') ?? '')!.closest('table') as HTMLElement;
+    expect(within(table).getByText('Breakeven 57.00')).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
   });
 });

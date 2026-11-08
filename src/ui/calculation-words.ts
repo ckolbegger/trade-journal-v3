@@ -164,6 +164,9 @@ export const findingWords =(finding: IncoherentFact, timeZone: string): Parts =>
 // One text at every length.
 export const unboundedWords = (direction: 'Above' | 'Below'): Parts => [t(direction === 'Above' ? 'Unbounded above' : 'Unbounded below')];
 
+// A Payoff Maximum or Minimum with no bound (row 22.11, conflict K2): the payoff rises without limit above, falls without limit below.
+export const payoffUnboundedWords = (direction: 'Above' | 'Below'): Parts => [t(direction === 'Above' ? 'Max profit: unlimited' : 'Max loss: unlimited')];
+
 // The one place a screen asks which reason a result or a Review blocker holds (P74): a screen branches on these, never on a reason code.
 type MarkMissingReason = Extract<UnavailableReason, { readonly reason: 'MarkMissing' }>;
 type MarkLackingReason = Extract<UnavailableReason, { readonly reason: 'MarkMissing' | 'AcknowledgedUnavailable' }>;

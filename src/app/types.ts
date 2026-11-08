@@ -107,7 +107,13 @@ export type {
 
 // Trade Analysis results carried by the Open views and the Position Change receipt.
 export type {
+  Attainment,
   CalculationResult,
+  ExpirationPayoffs,
+  ExpirationPayoffView,
+  PayoffExtremum,
+  PayoffSegment,
+  PayoffZero,
   // D6: how a Closed Trade's exposure ended (never the Close Reason, A84) and each Lot Match's shape.
   DispositionMechanism,
   LotMatch,

@@ -19,6 +19,9 @@ export const ratio = (value: Rational): string => formatDecimal(value, 2).replac
 // An R multiple with exactly two decimals, so 1.30R and 1.08R line up (12/5 → "2.40R").
 export const rMultiple = (value: Rational): string => `${formatDecimal(value, 2)}R`;
 
+// An Underlying price: no "$", two decimals, zero included (convention C3, conflicts K6 and K7).
+export const underlyingPrice = (value: Rational): string => formatDecimal(value, 2);
+
 // A Quantity to at most six decimals (A9), without trailing zeros (241/2 → "120.5").
 export const quantity = (value: Rational): string => formatDecimal(value, 6).replace(/\.?0+$/, '');
 

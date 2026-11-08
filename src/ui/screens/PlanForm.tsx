@@ -214,7 +214,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         account: account?.name ?? '',
         institution: account?.institution ?? '',
       });
-      void navigate(`/trades/${result.receipt.tradeId}`, { state: { confirmed } });
+      // The Planned payoff of an option Plan travels with the Plan, so Trade Detail shows it without a read (decision 92).
+      void navigate(`/trades/${result.receipt.tradeId}`, { state: { confirmed, plannedPayoff: result.postCommit.payoff?.planned } });
     }
   };
 

@@ -27,6 +27,7 @@ import { findingWords, text, unavailableWords } from '../calculation-words.ts';
 import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed } from '../figures.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
+import { PayoffView, type PayoffViewProps } from './PayoffView.tsx';
 
 export interface TradeDetailProps {
   readonly facade: UiFacade;
@@ -68,7 +69,10 @@ function BackToTrades({ lifecycle }: { readonly lifecycle?: string }) {
 export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
-  const confirmed = (useLocation().state as { confirmed?: PlannedTradeDetail } | null)?.confirmed;
+  const navigation = useLocation().state as { confirmed?: PlannedTradeDetail; plannedPayoff?: PayoffViewProps['result'] } | null;
+  const confirmed = navigation?.confirmed;
+  // The confirmed option Plan's Planned payoff comes with it (decision 92); every other Detail gets its payoff sections from T7.23.
+  const plannedPayoff = confirmed?.tradeId === tradeId ? navigation?.plannedPayoff : undefined;
   const { writable } = useRuntime();
   const [state, setState] = useState<DetailState>(confirmed?.tradeId === tradeId ? { kind: 'Ready', view: confirmed } : { kind: 'Loading' });
 
@@ -151,6 +155,8 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
         )}
       </header>
       {!('recordedPositionChanges' in view) && <SummaryCard view={view} />}
+      {/* A stock Plan's "Not applicable" is T7.23's, with every Detail's payoff sections. */}
+      {plannedPayoff?.kind === 'Value' && !('positionChanges' in view) && <PayoffView kind="Planned" symbol={view.plan.underlying} result={plannedPayoff} />}
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="card" aria-labelledby="plan-heading">

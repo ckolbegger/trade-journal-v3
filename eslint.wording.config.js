@@ -34,6 +34,7 @@ export const PHRASES = [
   'Not applicable',
   'Unbounded above',
   'Unbounded below',
+  'unlimited',
   'is more than the',
   'leaves the Position flat',
   'names a Planned Leg',
