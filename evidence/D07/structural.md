@@ -2051,3 +2051,20 @@ The figures come from the critic's completion notice. The brief is `.claude/docs
 - **Cases:** (1) the exit receipt says "Closed via sale of 2 contracts", red then green; (2) the owed card says "Closed via sale of 1 contract and expiration of 1 contract", red then green; (3) stock wording unchanged, **first-run pass, flagged**: two existing tests already cover it. Mutation: `closedViaSale` saying "contracts" failed both with an AssertionError; restored.
 - **Checks:** typecheck, tsc6, lint, lint:deps exit 0; `vitest run src/ui src/coordinators` 882 passed.
 - **ocr** (`ocr/T7.32-B1-0e11a684.json`): 5 files reviewed, 0 comments. No findings.
+
+### T7.32-B2: payoff chart labels
+
+- **Commit `02f3e0aa`.** `PayoffView.tsx` and `app.css`: tick labels that would touch drop to a second or third row; the ray, zero-set and latest-close labels move by a `clearBaseline` collision helper (estimated widths, 7.5 px per character); chart text is fixed at 13 px (`fill: currentColor`, so it follows the dark-mode ink) inside a 640 px minimum-width chart that scrolls sideways in a new `.chart-scroll` region (`tabIndex=0`, labelled "Planned payoff chart" or "Current payoff chart"); viewBox height 320 to 344; the table's amount cells get `nowrap`. New Chromium spec `e2e/d7/payoff-chart-layout.spec.ts`, 3 cases, each red then green (logged by hand in `tdd-log.md`, since `tdd.sh` is Vitest only). No first-run passes.
+- **Checks:** typecheck, tsc6, lint, lint:deps exit 0; the `PayoffView` Vitest file (6) and `e2e/d7/responsive-a11y.spec.ts` (2, with axe) pass.
+- **ocr** (`ocr/T7.32-B2-02f3e0aa.json`): 2 files, 3 comments.
+
+  | Severity | Location | ocr's claim | Assessment |
+  |---|---|---|---|
+  | medium | `PayoffView.tsx:37-38` | `clearBaseline` doesn't keep a label inside the SVG; a latest-close label near a rising ray's end can be pushed above the top and clipped (or past the right edge, being centred) | Valid. **T7.32-B3** |
+  | medium | `PayoffView.tsx:36` | Tick labels and axis titles never enter the collision registry, and after six moves a label is accepted though it still collides | Valid (narrow in D7). **T7.32-B4** |
+  | medium | `PayoffView.tsx:94` | Tick rows are unbounded while the SVG height and bottom margin are fixed, so clustered breakpoints clip or hit the axis title | Doubtful (D7 has at most rows 0–2). **T7.32-B5** |
+
+  - Reviewer's note (not an ocr finding): the new spec covers Planned charts only, not the Current chart's "Latest close" label.
+- **T7.32-B3:** `it should` keep every chart label inside the SVG's bounds, including a Current chart's "Latest close" label near a rising ray's end.
+- **T7.32-B4:** `it should` keep a moved label clear of tick labels and axis titles, and never accept a colliding position when its search runs out.
+- **T7.32-B5:** `it should` keep every tick row inside the SVG and clear of the axis title when breakpoints cluster beyond three rows.
