@@ -506,3 +506,24 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto a94c536a`. The 
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-15-review-card-checks.txt` |
 
 Tier: full, printed reason "first matching path since a94c536a: src/ui/screens/CardMarks.test.tsx". Ports free before and after. T7.15 is complete.
+
+## T7.33 Daily Review: pressure and range position for options
+
+Behavioral (decision 88); commit `515311ea`, three cases in `option-attention.test.ts`, each asserting the walked Trade's basis and range position and the card's range position. Reds: case 1 basis assertion (old formula); case 2 `NotApplicable` instead of a Value (no multiplier); case 3 wrong side (the `mark < averageCost` rule picked Losing). The production change was written after case 1's red, ahead of cases 2 and 3; it was reverted for genuine reds and restored (noted in `tdd-log.md`). No first-run passes. D4, D5 and D5R stock pressure and range-position cases pass with no expectation edited. "Now" figures reuse `evaluate`'s `ongoingRiskToStop` and `incrementalRewardToTarget`; at-entry figures use the Plan's measurement values with each open Lot's cost (`evaluate`'s `atEntry` covers only Lots after the latest exact Mark). When no consumed share is positive: `NotApplicable(NonPositiveAtEntry)` if the value moved toward a side whose at-entry figure isn't positive, else a None-side Value with share 0.
+
+### ocr review of `515311ea`
+
+No findings (`ocr/T7.33-515311ea.json`).
+
+### Cumulative run after T7.33 (`t7-33-option-pressure`, at `515311ea`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 6530186f`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 112 files, 1315 passed, exit 0 | `suite-runs/t7-33-option-pressure-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-33-option-pressure-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (12.6 s), exit 0 | `suite-runs/t7-33-option-pressure-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-33-option-pressure-checks.txt` |
+
+Tier: task, printed reason "no changed path since 6530186f is on the full-tier list". Ports free before and after. T7.33 is complete.
