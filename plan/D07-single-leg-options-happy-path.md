@@ -539,6 +539,8 @@ describe("option rows")
 
 **Amended by decision 87 (revision 54):** words from the approved-words rows C1 to C8 and 23.1 to 23.19. The Open row's text is "Settlement Due" (conflict K4). A short closed by a purchase reads "Closed via buyback of 1 contract" (K10). A Long Stock Detail's payoff sections each show "Not applicable: no option expiration" (K1). An Expiration is listed in its own "Settlement" section, not among the Executions (row 23.7).
 
+**Amended by decision 93 (revision 58):** a Closed option Trade's Detail shows no expiration line; its Terminal Disposition says how it ended, as a Closed stock Trade's does (row 23.19 amended).
+
 ### T7.24 UI: Review settlement family and option Marks
 
 Seam: `ReviewView`, `MarkEntry`, and `ReviewTrade` with a facade test double. **Amended by decision 81 (revision 47):** `ReviewTrade` no longer exists; the walked card is `ReviewCard`, whose Settlement Due panel sits between Reflections and Action and renders from its `PanelProgress` (D5R and D5R2, section 9).
