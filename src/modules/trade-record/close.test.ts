@@ -139,7 +139,7 @@ async function closeTrades(record: TradeRecord, persistence: Persistence, closes
     if (current.kind !== 'Found') throw new Error(`unknown Trade ${tradeId}`);
     const prepared = await record.prepareChange(sell([fill('Sell', time, '100', '53.00', '1.00', tradeId)], current.factRevision, CLOSE_REASON, tradeId));
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Closed', deviationActions: [], repairs: [], exposureStart });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Closed', deviationActions: [], repairs: [], exposureStart, terminalPositionChangeId: 'candidate:pc-1' });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
   }
   const committed = await persistence.commit(tx.close());
@@ -173,7 +173,7 @@ describe('applyPreparedChange', () => {
       expect(prepared.candidate).not.toHaveProperty('terminalTime');
       expect(prepared.candidate).not.toHaveProperty('terminalDesc');
       const tx = beginSemanticTransaction();
-      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle, deviationActions: [], repairs: [], exposureStart: PC1[0]!.economicTime });
+      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle, deviationActions: [], repairs: [], exposureStart: PC1[0]!.economicTime, ...(expectedLifecycle === 'Closed' && { terminalPositionChangeId: 'candidate:pc-1' }) });
       if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
       const writes = tx.close();
       expect((await persistence.commit(writes)).kind).toBe('Committed');

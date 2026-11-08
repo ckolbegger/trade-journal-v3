@@ -322,6 +322,9 @@ export interface DerivedTradeReconciliation {
   // Whether the candidate's new Position Change closes the Trade with trader agency, which requires
   // a Close Reason (A77); the workflow turns this into its issues.
   readonly closeRequirement: CloseRequirement;
+  // The candidate's Position Change holding the last fact in Fact Order, null unless the expected
+  // lifecycle is Closed: the one a Close Reason names (decision 96).
+  readonly terminalPositionChangeId: string | null;
   readonly deviationActions: readonly DeviationAction[];
   // Where the before-state's stored lifecycle or recorded occurrences disagreed with its own
   // coherent facts: repaired by applying the candidate and disclosed (P7).
@@ -1069,6 +1072,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
           expectedLifecycle,
           exposureStart: facts[0]?.economicTime ?? null,
           closeRequirement: closeRequirementOf(record, steps, closed),
+          terminalPositionChangeId: closed ? terminalPositionChangeOf(record, steps).factId : null,
           deviationActions: deviationActions(deviations, input.candidate.before.recordedDeviations ?? []),
           repairs: before.findings,
           effects: changeEffects(before, expectedLifecycle, deviations),

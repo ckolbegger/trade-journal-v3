@@ -1201,3 +1201,19 @@ Bug task from T7.30-B1's ocr review (plan decision 96 as corrected in revision 6
 - Cases: unit case in `record-position-change.test.ts` (earlier-dated closing Sell) and I7.4 Workspace B in `tests/integration/d7/short-put.test.ts` (Close Reason names B1; restart is Ready). Each had its own red; rows in `tdd-log.md`.
 - `npx vitest run src`: 121 files, 1414 passed. `npx vitest run tests/integration`: 90 files, 181 passed. `npm run verify:fixtures` 0, `npm run lint` 0, `npm run lint:deps` 0.
 - `npm run typecheck` and `npx tsc6 --noEmit` fail only on two errors in T7.30 part 2's uncommitted files (`tests/integration/d7/marks.test.ts`, `missing-mark.test.ts`: `underlyingMark` missing on `ClosedCurrentEvaluation`); none in this task's files.
+
+### ocr review of `a4856c53` (T7.30-B1-R1)
+
+`ocr/T7.30-B1-R1-a4856c53.json` (in place) and `-relocated.json`: ocr found nothing. The reviewer's own reading found:
+1. Doubtful: `stagePositionChange` picks the terminal change by each change's own Economic Time (its earliest member), then by recorded sequence. The section validator uses the Position Change of the last fact in derived Fact Order (`derived.facts.at(-1).positionChangeId`). The two differ only for a closing change whose members have different times, interleaved with another change. → bug task B1-R2: take the same derived source as the validator.
+2. Answered: no reader or validator needs the Close Review's origin to be the terminal change. Close Review lookup and Debt resolution key on the Trade, and the Journal section has no origin check. The owed card and Trade Detail show the Close Review against the change the commit records (B0), which is cosmetic and was already so before.
+
+### T7.30-B1-R2 the Close Reason's terminal Position Change comes from the derived Fact Order
+
+Finding (ocr review of `a4856c53`, Doubtful): `stagePositionChange` chose the Close Reason's `terminalPositionChangeId` by each change's own Economic Time, the section validator by the last fact in derived Fact Order. They disagree for a closing change whose members straddle another change's.
+
+Fix: Trade Analysis's reconciliation now carries `terminalPositionChangeId` (the candidate's Position Change holding the last fact, null unless Closed), taken from the same step list as `terminalTime` and the validator; `stagePositionChange` maps it to its durable id. The validator is unchanged.
+
+- Red: `tdd.sh red T7.30-B1-R2 ... "should name the Position Change of the last fact in Fact Order when the closing change has members either side"`: assertion failure (Close Reason named X1's change).
+- Green: same case passes. `npx vitest run src` 1415 passed; `npx vitest run tests/integration` 185 passed, 1 expected fail; `npm run verify:fixtures`, `lint`, `lint:deps`, `typecheck`, `npx tsc6 --noEmit` all exit 0.
+- Open point, not changed: staged `terminalTime` is the latest Position Change Economic Time, while Trade Analysis's `terminalTime` is the last-in-order change's own Economic Time (its earliest member). They differ in the same straddling case.

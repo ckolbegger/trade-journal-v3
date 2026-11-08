@@ -122,7 +122,7 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
 // act on, so it may omit the Deviation actions and repairs.
 export type DerivedTradeReconciliation = Pick<AnalysisReconciliation, 'candidateDigest' | 'expectedLifecycle'> &
   Pick<AnalysisReconciliation, 'exposureStart'> &
-  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs'>>;
+  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs' | 'terminalPositionChangeId'>>;
 
 // Whether the Deviation actions account for every recorded occurrence of the before-state exactly
 // once and name only this candidate's Trade, Planned Legs, and Position Changes.
@@ -390,7 +390,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     tx: SemanticTransaction,
     before: TradeDocument,
     candidate: TradeDocument,
-    { expectedLifecycle, deviationActions = [], exposureStart }: DerivedTradeReconciliation,
+    { expectedLifecycle, deviationActions = [], exposureStart, terminalPositionChangeId }: DerivedTradeReconciliation,
   ): Omit<Staged, 'repairs'> {
     // Durable identities are assigned only here, never in prepare (D1 A11).
     const mapping: Record<string, string> = {};
@@ -405,12 +405,9 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       };
     });
     for (const fact of (candidate.closeReasonFacts ?? []).slice((before.closeReasonFacts ?? []).length)) mapping[fact.factId] = deps.ids.next();
-    // The Close Reason names the terminal Position Change in Fact Order, which an earlier-dated closing
-    // change is not (decision 96).
-    const terminalId = facts
-      .filter((f) => f.kind === 'PositionChange')
-      .sort((a, b) => compareInstants(effective(a).economicTime, effective(b).economicTime) || a.recordedSequence - b.recordedSequence)
-      .at(-1)?.factId;
+    // The Close Reason names the terminal Position Change in derived Fact Order, which neither an
+    // earlier-dated closing change nor one whose members straddle another change is (decision 96).
+    const terminalId = terminalPositionChangeId ? durable(terminalPositionChangeId) : undefined;
     const closeReasonFacts = candidate.closeReasonFacts?.map(
       (fact): CloseReasonFact => ({
         ...fact,

@@ -754,6 +754,22 @@ describe('terminal exit AC-POS-004', () => {
     expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId, terminalPositionChangeId: lastInFactOrder }));
   });
 
+  it('should name the Position Change of the last fact in Fact Order when the closing change has members either side of an earlier change, decision 96', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    // One decision of two Sells, 13:00 (before X1 at 14:00) and 15:00 (after it): its earliest member is
+    // earlier than X1's, but its last member is the last fact.
+    const result = await ref.stack.tradeWorkflows.recordPositionChange({
+      ...command(ref, revision, [sell(ref, '2026-10-13T13:00:00Z', '40', '53.00', '0.80'), sell(ref, '2026-10-13T15:00:00Z', '30', '53.00', '0.60')]),
+      closeReasonId: ref.closeReasonId,
+      closeReview: closeReviewForm(ref),
+    });
+    if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    const lastInFactOrder = result.postCommit.derivation.facts.at(-1)!.positionChangeId;
+    expect(lastInFactOrder).toBe(result.receipt.createdFactIds[0]);
+    expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ terminalPositionChangeId: lastInFactOrder }));
+  });
+
   it('should reject a Close Reason or Close Review disposition on a non-terminal exit with CloseReasonNotApplicable and CloseReviewNotApplicable', async () => {
     const ref = await exitReference();
     const revision = await enter(ref);
