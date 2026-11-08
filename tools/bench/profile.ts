@@ -2,9 +2,10 @@
 // the same paths and serves the production build on the same origin, so IndexedDB carries over.
 import path from 'node:path';
 
-// The bench origin: http://localhost:5175, the port assigned to this worktree (.env.local DEV_PORT; it was 5181 through
-// generator 5). IndexedDB belongs to the origin, so `bench:run` must serve the production build on this port.
-export const BENCH_PORT = 5175;
+// The bench origin: http://localhost:4175. The benchmark has its own port, apart from 5175 (every test run, critic and
+// manual check), so a generation or benchmark run can go alongside them. IndexedDB belongs to the origin, so
+// `bench:run` must serve the production build on this port.
+export const BENCH_PORT = 4175;
 // The cached Chromium profile (git-ignored through `.cache/`) and its version stamp, written last
 // so an interrupted generation never looks reusable.
 export const BENCH_PROFILE_DIR = path.resolve('.cache/bench/profile');
