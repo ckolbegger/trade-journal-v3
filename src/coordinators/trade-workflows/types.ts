@@ -47,4 +47,6 @@ export interface WorkflowIssue {
   readonly code: string;
   // The quantity open at the point a Sell exceeds it (ExceedsOpenQuantity, P22).
   readonly available?: Rational;
+  // The breakeven an option Plan rejection names (NoPositiveRisk, TargetNotBeyondEntry; A100).
+  readonly details?: { readonly breakeven: Rational };
 }

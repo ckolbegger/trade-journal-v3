@@ -102,9 +102,26 @@ describe('confirmPlan: option Plans (AC-PLAN-001)', () => {
         { source: 'ReferenceCatalog', field: 'account', code: 'UnknownReference' },
         { source: 'Journal', field: 'prompt.plan-reflection.thesis', code: 'RequiredAnswerMissing' },
         { source: 'TradeAnalysis', code: 'ContractAlreadyExpired' },
-        { source: 'TradeAnalysis', code: 'NoPositiveRisk' },
+        { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n) } },
       ]),
     );
     expect(await dumpAll(stack.factory)).toEqual(before);
+  });
+
+  it('should carry the breakeven on the NoPositiveRisk and TargetNotBeyondEntry issues of a rejected option Plan', async () => {
+    const { stack, longCall } = await optionStack();
+    const base = command(stack, longCall);
+    const result = await stack.tradeWorkflows.confirmPlan({
+      ...base,
+      plan: { ...base.plan, stops: [{ kind: 'UnderlyingPrice', price: '57.50' }], targets: [{ kind: 'UnderlyingPrice', price: '56.00' }] },
+    });
+    if (result.kind !== 'Rejected') throw new Error(`expected Rejected, got ${result.kind}`);
+    const breakeven = { breakeven: Rational.of(57n) };
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: breakeven },
+        { source: 'TradeAnalysis', code: 'TargetNotBeyondEntry', details: breakeven },
+      ]),
+    );
   });
 });

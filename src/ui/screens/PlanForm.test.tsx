@@ -5,6 +5,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { planFormFacade } from '../../../tests/support/plan-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
+import { Rational } from '../../domain/values/index.ts';
+import { money } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { PlanForm } from './PlanForm.tsx';
 
@@ -12,11 +14,16 @@ afterEach(cleanup);
 
 // Stands in for Trade Detail: shows what the form handed over in navigation state.
 function DetailFromState() {
-  const state = useLocation().state as { confirmed?: { tradeId: string; labels: { account: string }; plan: { thesis: string } } } | null;
+  const state = useLocation().state as {
+    confirmed?: { tradeId: string; labels: { account: string }; plan: { thesis: string }; baseline: { oneR: Rational } };
+  } | null;
   return (
-    <p>
-      Detail {state?.confirmed?.tradeId} for {state?.confirmed?.labels.account}: {state?.confirmed?.plan.thesis}
-    </p>
+    <>
+      <p>
+        Detail {state?.confirmed?.tradeId} for {state?.confirmed?.labels.account}: {state?.confirmed?.plan.thesis}
+      </p>
+      {state?.confirmed?.baseline.oneR && <p>1R {money(state.confirmed.baseline.oneR)}</p>}
+    </>
   );
 }
 
@@ -510,5 +517,242 @@ describe('Plan time during a fall-back hour', () => {
     expect(screen.queryByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     expect(vi.mocked(facade.TradeWorkflows.confirmPlan).mock.calls[0]![0].economicTime).toBe('2026-11-01T08:30:00Z');
+  });
+});
+
+// A facade whose Catalog also holds the option Strategies, each with its role shape, in decision 85's
+// order (Cash-Secured Put first), with every option Strategy installed.
+function optionFacade(): UiFacade {
+  const base = planFormFacade();
+  const query = vi.mocked(base.ReferenceCatalog.query).getMockImplementation()!;
+  const strategies = [
+    { id: 'strat-csp', label: 'Cash-Secured Put', productKey: 'strategy.cash-secured-put', roles: [{ side: 'Short', instrument: 'Put', ratio: 1 }] },
+    { id: 'strat-lc', label: 'Long Call', productKey: 'strategy.long-call', roles: [{ side: 'Long', instrument: 'Call', ratio: 1 }] },
+    { id: 'strat-lp', label: 'Long Put', productKey: 'strategy.long-put', roles: [{ side: 'Long', instrument: 'Put', ratio: 1 }] },
+  ].map((s) => ({ kind: 'Strategy', recordRevision: 3, ...s, shape: { roles: s.roles } }));
+  const facade = {
+    ...base,
+    capabilities: { ...base.capabilities, strategies: [...strategies.map((s) => s.productKey), 'strategy.long-stock'] },
+  } as unknown as UiFacade;
+  vi.mocked(facade.ReferenceCatalog.query).mockImplementation(async (request) => {
+    const page = await query(request);
+    if (request.family !== 'Strategy' || page.kind !== 'Page') return page;
+    return { ...page, items: [...strategies, ...page.items] as never };
+  });
+  return facade;
+}
+
+async function chooseStrategy(label: string) {
+  const user = userEvent.setup();
+  const strategy = await screen.findByLabelText<HTMLSelectElement>('Strategy');
+  await vi.waitFor(() => expect(strategy.options.length).toBe(4));
+  await user.selectOptions(strategy, label);
+  return user;
+}
+
+describe('option Strategies (A116)', () => {
+  it('should offer Long Stock, Long Call, Long Put, and Cash-Secured Put, and for Long Call show Underlying, expiration date, strike, the right Call read-only, contracts, entry price with its cash amount, the Stop and Target as Underlying triggers with the note, and the exercise checkbox unchecked', async () => {
+    renderForm(optionFacade());
+    const user = await chooseStrategy('Long Call');
+    const strategy = screen.getByLabelText<HTMLSelectElement>('Strategy');
+    expect(Array.from(strategy.options).map((o) => o.textContent).sort()).toEqual(['Cash-Secured Put', 'Long Call', 'Long Put', 'Long Stock']);
+    expect(screen.getByRole('heading', { name: 'Contract' })).toBeTruthy();
+    expect(screen.getByLabelText('Underlying')).toBeTruthy();
+    expect(screen.getByLabelText('Expiration date')).toBeTruthy();
+    expect(screen.getByLabelText('Strike')).toBeTruthy();
+    const type = screen.getByLabelText<HTMLInputElement>('Type');
+    expect(type.value).toBe('Call');
+    expect(type.readOnly).toBe(true);
+    await user.type(screen.getByLabelText('Contracts'), '2');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '2.00');
+    expect(screen.getByText('= $400.00 for 2 contracts')).toBeTruthy();
+    expect(screen.getByLabelText('Stop (Underlying at or below)')).toBeTruthy();
+    expect(screen.getByLabelText('Target (Underlying at or above)')).toBeTruthy();
+    await user.type(screen.getByLabelText('Underlying'), 'xyz');
+    expect(screen.getByLabelText('Stop (XYZ at or below)')).toBeTruthy();
+    expect(screen.getByLabelText('Target (XYZ at or above)')).toBeTruthy();
+    expect(screen.getByText("Risk and reward are measured by the option's value at expiration at these prices")).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('I plan to exercise this option if it is in the money').checked).toBe(false);
+    expect(screen.queryByLabelText('Symbol')).toBeNull();
+  });
+
+  it('should hide the exercise checkbox for Cash-Secured Put, word its entry as a credit, and note that cash coverage is not checked', async () => {
+    renderForm(optionFacade());
+    const user = await chooseStrategy('Cash-Secured Put');
+    expect(screen.queryByLabelText('I plan to exercise this option if it is in the money')).toBeNull();
+    expect(screen.getByLabelText<HTMLInputElement>('Type').value).toBe('Put');
+    await user.type(screen.getByLabelText('Contracts'), '2');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '1.20');
+    expect(screen.getByText('= $240.00 credit for 2 contracts')).toBeTruthy();
+    await user.type(screen.getByLabelText('Underlying'), 'mno');
+    expect(screen.getByLabelText('Stop (MNO at or below)')).toBeTruthy();
+    expect(screen.getByLabelText('Target (MNO at or above)')).toBeTruthy();
+    expect(screen.getByText("The app doesn't check that you have the cash to buy the shares if you're assigned.")).toBeTruthy();
+  });
+
+  it('should reverse the trigger directions for Long Put and show no cash-coverage note or credit', async () => {
+    renderForm(optionFacade());
+    const user = await chooseStrategy('Long Put');
+    await user.type(screen.getByLabelText('Underlying'), 'abc');
+    await user.type(screen.getByLabelText('Contracts'), '1');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '1.50');
+    expect(screen.getByLabelText('Stop (ABC at or above)')).toBeTruthy();
+    expect(screen.getByLabelText('Target (ABC at or below)')).toBeTruthy();
+    expect(screen.getByText('= $150.00 for 1 contract')).toBeTruthy();
+    expect(screen.queryByText(/cash to buy the shares/)).toBeNull();
+    expect(screen.getByLabelText('I plan to exercise this option if it is in the money')).toBeTruthy();
+  });
+
+  // The error text beside a labelled field.
+  const errorOf = (label: string) => document.getElementById(screen.getByLabelText(label).getAttribute('aria-describedby') ?? '')?.textContent;
+
+  async function submitRejected(strategy: string, issues: readonly unknown[]) {
+    const facade = renderForm(optionFacade());
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({ kind: 'Rejected', issues, binding: {} } as never);
+    const user = await chooseStrategy(strategy);
+    await user.type(screen.getByLabelText('Underlying'), 'abc');
+    await user.type(screen.getByLabelText('Contracts'), '1');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '1.50');
+    await user.type(screen.getByLabelText(/^Stop/), '40');
+    await user.type(screen.getByLabelText(/^Target/), '60');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+  }
+
+  it('should show StopTargetOrder and TargetNotBeyondEntry, with its breakeven, beside the trigger fields, in the direction of the Strategy', async () => {
+    const at = (code: string, breakeven: number) => ({ source: 'TradeAnalysis', code, details: { breakeven: Rational.of(BigInt(breakeven * 100), 100n) } });
+    await submitRejected('Long Put', [at('NoPositiveRisk', 48.5), at('TargetNotBeyondEntry', 48.5), { source: 'TradeAnalysis', code: 'StopTargetOrder' }]);
+    expect(errorOf('Stop (ABC at or above)')).toBe(
+      'The Stop must be above the breakeven, 48.50, so the Plan has a positive risk. The Stop must be above the Target.',
+    );
+    expect(errorOf('Target (ABC at or below)')).toBe('The Target must be below the breakeven, 48.50.');
+    cleanup();
+    await submitRejected('Long Call', [at('NoPositiveRisk', 57), at('TargetNotBeyondEntry', 57), { source: 'TradeAnalysis', code: 'StopTargetOrder' }]);
+    expect(errorOf('Stop (ABC at or below)')).toBe(
+      'The Stop must be below the breakeven, 57.00, so the Plan has a positive risk. The Stop must be below the Target.',
+    );
+    expect(errorOf('Target (ABC at or above)')).toBe('The Target must be above the breakeven, 57.00.');
+    cleanup();
+    await submitRejected('Cash-Secured Put', [at('NoPositiveRisk', 43.8)]);
+    expect(errorOf('Stop (ABC at or below)')).toBe('The Stop must be below the breakeven, 43.80, so the Plan has a positive risk.');
+  });
+
+  it('should hand the confirmed option Plan, with its 1R from the result, to Trade Detail without a read call', async () => {
+    const facade = renderForm(optionFacade());
+    const trade = {
+      tradeId: 'trade-7',
+      factRevision: 1,
+      storedLifecycle: 'Planned',
+      plan: {
+        economicTime: '2026-10-12T13:00:00Z',
+        underlying: 'XYZ',
+        thesis: 'Earnings run-up.',
+        invalidation: 'A close below 48.',
+        legs: [
+          {
+            factId: 'f-2',
+            side: 'Long',
+            instrument: { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call', strike: '55', multiplier: 100 },
+            quantity: '2',
+            intendedEntry: '2',
+          },
+        ],
+        stops: [{ factId: 'f-3', kind: 'UnderlyingPrice', price: '48' }],
+        targets: [{ factId: 'f-4', kind: 'UnderlyingPrice', price: '60' }],
+        exerciseIntent: 'NotAuthorized',
+      },
+      positionChanges: [],
+    };
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({
+      kind: 'Confirmed',
+      receipt: { tradeId: 'trade-7', factRevision: 1, binding: { databaseName: 'tj-ws-1', contentRevision: 9 }, createdFactIds: [], lifecycleTransitions: [], entryId: 'e-1' },
+      postCommit: {
+        trade,
+        derivation: { tradeId: 'trade-7', factRevision: 1, expectedLifecycle: 'Planned', agreement: { kind: 'Agrees' }, positions: [], baseline: { oneR: Rational.of(400n) } },
+        entry: {
+          id: 'e-1',
+          entryTypeKey: 'entry-type.plan-reflection',
+          sourceKey: 'source.plan-confirmation',
+          anchor: { kind: 'Trade', tradeId: 'trade-7' },
+          origin: { kind: 'Plan', factId: 'f-1' },
+          momentTime: '2026-10-12T13:00:00Z',
+          authoredTime: '2026-10-12T14:05:00Z',
+          definitionId: 'def-1',
+          responses: [],
+        },
+      },
+      affected: [],
+    } as never);
+    const user = await chooseStrategy('Long Call');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(await screen.findByText('1R $400.00')).toBeTruthy();
+    expect(screen.getByText('Detail trade-7 for Roth IRA: Earnings run-up.')).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
+  });
+
+  it('should keep an option breakeven issue after the Stop is edited, since only the domain can judge it against the breakeven', async () => {
+    await submitRejected('Long Call', [{ source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n) } }]);
+    const stop = screen.getByLabelText('Stop (ABC at or below)');
+    const user = userEvent.setup();
+    await user.clear(stop);
+    await user.type(stop, '1');
+    expect(errorOf('Stop (ABC at or below)')).toBe('The Stop must be below the breakeven, 57.00, so the Plan has a positive risk.');
+  });
+
+  it('should submit NotAuthorized when the checkbox is unchecked, and only the selected Strategy fields, keeping values from another Strategy in view state', async () => {
+    const facade = renderForm(optionFacade());
+    const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
+    confirm.mockResolvedValue({ kind: 'Rejected', issues: [], binding: {} } as never);
+    const user = await chooseStrategy('Long Call');
+    await user.type(screen.getByLabelText('Underlying'), 'xyz');
+    await user.type(screen.getByLabelText('Expiration date'), '2026-11-20');
+    await user.type(screen.getByLabelText('Strike'), '55');
+    await user.type(screen.getByLabelText('Contracts'), '2');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '2.00');
+    await user.type(screen.getByLabelText('Stop (XYZ at or below)'), '48.00');
+    await user.type(screen.getByLabelText('Target (XYZ at or above)'), '60.00');
+    await user.type(screen.getByLabelText('Why this trade, why now?'), 'Earnings run-up.');
+    await user.type(screen.getByLabelText('What would invalidate the thesis?'), 'A close below 48.');
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Conviction' })).getByLabelText('4'));
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
+    const contract = {
+      side: 'Long',
+      instrument: { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call', strike: '55', multiplier: 100 },
+      quantity: '2',
+      intendedEntry: '2.00',
+    };
+    const plan = (exerciseIntent: string) => ({
+      underlying: 'XYZ',
+      legs: [contract],
+      stops: [{ kind: 'UnderlyingPrice', price: '48.00' }],
+      targets: [{ kind: 'UnderlyingPrice', price: '60.00' }],
+      exerciseIntent,
+    });
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(confirm.mock.calls[0]![0]).toMatchObject({ strategyId: 'strat-lc', strategyRevision: 3, plan: plan('NotAuthorized') });
+    await user.click(screen.getByLabelText('I plan to exercise this option if it is in the money'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(confirm.mock.calls[1]![0]).toMatchObject({ plan: plan('Authorized') });
+    // Switching to Long Stock hides the option fields and submits none of them, but keeps their values.
+    await user.selectOptions(screen.getByLabelText('Strategy'), 'Long Stock');
+    expect(screen.queryByLabelText('Strike')).toBeNull();
+    expect(screen.getByLabelText<HTMLInputElement>('Symbol').value).toBe('xyz');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(confirm.mock.calls[2]![0].plan).toEqual({
+      underlying: 'XYZ',
+      legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '2', intendedEntry: '2.00' }],
+      stops: [{ kind: 'UnderlyingPrice', price: '48.00' }],
+      targets: [{ kind: 'UnderlyingPrice', price: '60.00' }],
+    });
+    await user.selectOptions(screen.getByLabelText('Strategy'), 'Long Call');
+    expect(screen.getByLabelText<HTMLInputElement>('Strike').value).toBe('55');
+    expect(screen.getByLabelText<HTMLInputElement>('Expiration date').value).toBe('2026-11-20');
+    expect(screen.getByLabelText<HTMLInputElement>('I plan to exercise this option if it is in the money').checked).toBe(true);
+    // A Cash-Secured Put is a short leg with a negative contract count and no Exercise Intent.
+    await user.selectOptions(screen.getByLabelText('Strategy'), 'Cash-Secured Put');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    const [put] = confirm.mock.calls[3]![0].plan.legs;
+    expect(put).toMatchObject({ side: 'Short', instrument: { kind: 'Option', right: 'Put' }, quantity: '-2' });
+    expect('exerciseIntent' in confirm.mock.calls[3]![0].plan).toBe(false);
   });
 });

@@ -89,7 +89,10 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       const shape = strategy.kind === 'Resolved' ? strategy.resolved['strategy']?.shape : undefined;
       const assessment = shape ? assessPlan({ strategyShape: shape, economicTime: command.economicTime, plan: command.plan }) : undefined;
       if (assessment?.kind === 'Rejected') {
-        for (const issue of assessment.issues) issues.push({ source: 'TradeAnalysis', code: issue.code });
+        for (const issue of assessment.issues) {
+          // A rejection that names the breakeven passes it on, so the form can say it (A100).
+          issues.push({ source: 'TradeAnalysis', code: issue.code, ...(issue.details?.breakeven && { details: { breakeven: issue.details.breakeven } }) });
+        }
       }
       if (issues.length > 0 || !assessment || assessment.kind !== 'Accepted' || reflection.kind !== 'Prepared') {
         const { binding } = await deps.persistence.readSnapshot(['meta'], () => Promise.resolve(null));
