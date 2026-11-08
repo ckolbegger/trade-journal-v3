@@ -391,3 +391,28 @@ describe('browseTrades: option rows', () => {
     expect(open.view.items).toEqual([expect.objectContaining({ tradeId: openId, strategy: fixture.strategyOf('strategy.cash-secured-put').label, summary: put, openQuantity: Rational.of(-2n), current: expect.objectContaining({ expectedMarkDate: '2026-11-20' }) as unknown })]);
   }, 60_000);
 });
+
+describe('browseTrades: a failing Historical answer for the dated close (T7.30-B3-R2)', () => {
+  it('should keep the Open page Ready and give the affected option Trade no dated line when Market Data rejects the Historical request', async () => {
+    const tuesday = await optionStack('2026-10-13T21:00:00Z');
+    const tradeId = await tuesday.openLongCallAtMonday();
+    await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
+    await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
+    const marketData = {
+      ...tuesday.stack.marketData,
+      query: (query: Parameters<typeof tuesday.stack.marketData.query>[0]) =>
+        query.kind === 'ResolveFrames' && query.context.kind === 'Historical'
+          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'SessionPolicyCoverage' as const }] })
+          : tuesday.stack.marketData.query(query),
+    };
+    const views = createTradeViews({ ...tuesday.stack, marketData });
+
+    const list = await views.browseTrades({ lifecycle: 'Open' });
+    const detail = openDetail(await views.getTradeDetail({ tradeId }));
+
+    if (list.kind !== 'Ready') throw new Error(`expected a Ready page, got ${list.kind}`);
+    expect(list.view.items).toEqual([expect.objectContaining({ tradeId })]);
+    expect((list.view.items[0] as { current: { datedLine?: unknown } }).current.datedLine).toBeUndefined();
+    expect(detail.current.datedLine).toBeUndefined();
+  }, 60_000);
+});

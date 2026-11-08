@@ -454,6 +454,11 @@ function closedSummaryOf(analysis: TradeAnalysisRecord, derived: DerivedTradeSta
 
 // The current frame of an Instrument, or the as-of date when it lies outside session-policy coverage.
 type CurrentFrame = MarkFrame | { readonly date: string; readonly instrumentKey: string };
+// An option's dated line needs its Underlying's frame at the dated close.
+interface HistoricalNeed {
+  readonly tradingDate: string;
+  readonly underlying: string;
+}
 
 // The Instruments a Trade's current figures need: an option's own contract and its Underlying (A110), otherwise the Underlying.
 const instrumentsOf = (analysis: TradeAnalysisRecord): string[] => {
@@ -708,16 +713,50 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
 
   // The dated close line (D4's mechanism): a stock's from its own frame, an option's from the contract's frame and the
   // Underlying's frame at that same dated close, whatever the Underlying's state on the frame date (A110).
-  async function datedLineOfTrade(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): Promise<DatedLine | undefined> {
+  // The Underlying's frame comes from the current frames when they are for that date, else from `historical`; an option
+  // whose Underlying frame is in neither has no dated line, the way an uncovered session leaves the current frames bare.
+  function datedLineWith(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation, historical: ReadonlyMap<string, MarkFrame>): DatedLine | undefined {
     if (!('resolution' in frame)) return undefined;
     if (analysis.plan.legs[0]!.instrument.kind === 'Stock') return datedLineOf(analysis, frame, evaluation);
     const tradingDate = datedCloseOf(frame, evaluation);
     if (tradingDate === undefined) return undefined;
-    const current = frames.find((f): f is MarkFrame => f.instrumentKey === analysis.plan.underlying && 'resolution' in f && f.tradingDate === tradingDate);
-    if (current) return datedLineOf(analysis, frame, evaluation, current);
-    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate }, instruments: [analysis.plan.underlying] });
-    if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the Underlying's frame at the dated close`);
-    return datedLineOf(analysis, frame, evaluation, result.frames[0]);
+    const underlyingFrame = currentUnderlyingAt(analysis, frames, tradingDate) ?? historical.get(historicalKey(tradingDate, analysis.plan.underlying));
+    return underlyingFrame && datedLineOf(analysis, frame, evaluation, underlyingFrame);
+  }
+
+  const historicalKey = (tradingDate: string, underlying: string) => `${tradingDate}|${underlying}`;
+
+  const currentUnderlyingAt = (analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], tradingDate: string) =>
+    frames.find((f): f is MarkFrame => f.instrumentKey === analysis.plan.underlying && 'resolution' in f && f.tradingDate === tradingDate);
+
+  // The Underlying frame an option's dated line still needs from Market Data, when the current frames lack it.
+  function historicalNeedOf(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): HistoricalNeed | undefined {
+    if (!('resolution' in frame) || analysis.plan.legs[0]!.instrument.kind === 'Stock') return undefined;
+    const tradingDate = datedCloseOf(frame, evaluation);
+    if (tradingDate === undefined || currentUnderlyingAt(analysis, frames, tradingDate)) return undefined;
+    return { tradingDate, underlying: analysis.plan.underlying };
+  }
+
+  // The Underlyings' frames at their dated closes: one Historical request per distinct date, carrying every Underlying
+  // that date needs (A111). An answer that is not Frames, a coverage rejection included, leaves that date without frames
+  // and so its Trades without a dated line; it never fails the page.
+  async function historicalFrames(needs: readonly HistoricalNeed[]): Promise<ReadonlyMap<string, MarkFrame>> {
+    const byDate = new Map<string, Set<string>>();
+    for (const { tradingDate, underlying } of needs) byDate.set(tradingDate, (byDate.get(tradingDate) ?? new Set()).add(underlying));
+    const answers = await Promise.all(
+      [...byDate].map(async ([tradingDate, underlyings]) => ({ tradingDate, result: await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate }, instruments: [...underlyings].sort() }) })),
+    );
+    const found = new Map<string, MarkFrame>();
+    for (const { tradingDate, result } of answers) {
+      if (result.kind !== 'Frames') continue;
+      for (const f of result.frames) if (f.tradingDate === tradingDate) found.set(historicalKey(tradingDate, f.instrumentKey), f);
+    }
+    return found;
+  }
+
+  async function datedLineOfTrade(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): Promise<DatedLine | undefined> {
+    const need = historicalNeedOf(analysis, frames, frame, evaluation);
+    return datedLineWith(analysis, frames, frame, evaluation, await historicalFrames(need ? [need] : []));
   }
 
   // The closes around the Expected Mark Date, for the due status of a Closed Trade's Debt. Market Data gives them
@@ -911,14 +950,19 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // On the Open page, each Trade is evaluated once; the contracts it finds due for settlement are the ones Detail shows.
         const evaluations = new Map<string, { readonly evaluation: TradeEvaluation; readonly settlement: readonly SettlementItem[]; readonly datedLine: DatedLine | undefined }>();
         if (request.lifecycle === 'Open') {
-          // The lookups run together; the entries keep the page's order.
+          // Each Trade is evaluated once; the Underlying frames the dated lines need are asked for once per distinct date.
+          const evaluated = derivations.flatMap(({ summary, analysis, derived }) =>
+            derived.kind === 'Derived' ? [{ tradeId: summary.tradeId, analysis, evaluation: evaluateCurrent(derived, analysis, frames), frame: primaryFrameOf(frames, analysis) }] : [],
+          );
+          const historical = await historicalFrames(evaluated.flatMap(({ analysis, frame, evaluation }) => historicalNeedOf(analysis, frames, frame, evaluation) ?? []));
+          // The settlement lookups run together; the entries keep the page's order.
           const found = await Promise.all(
-            derivations.flatMap(({ summary, analysis, derived }) => {
-              if (derived.kind !== 'Derived') return [];
-              const evaluation = evaluateCurrent(derived, analysis, frames);
-              const datedLine = datedLineOfTrade(analysis, frames, primaryFrameOf(frames, analysis), evaluation);
-              return [Promise.all([settlementItemsOf(summary.tradeId, evaluation), datedLine]).then(([settlement, dated]) => ({ tradeId: summary.tradeId, evaluation, settlement, datedLine: dated }))];
-            }),
+            evaluated.map(async ({ tradeId, analysis, evaluation, frame }) => ({
+              tradeId,
+              evaluation,
+              settlement: await settlementItemsOf(tradeId, evaluation),
+              datedLine: datedLineWith(analysis, frames, frame, evaluation, historical),
+            })),
           );
           for (const { tradeId, evaluation, settlement, datedLine } of found) evaluations.set(tradeId, { evaluation, settlement, datedLine });
         }
