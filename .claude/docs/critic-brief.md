@@ -37,7 +37,7 @@ The brief now points the critic at the browser suite's support modules **for set
 > - Judge the screen yourself, never from a helper's return value.
 > - A helper that fails is itself an observation: report it.
 >
-> **Report.** Your final message must be the full report, with these four parts:
+> **Report.** Write the full report to `test-results/critic-d<nn>-<n>/report.md`, then send the same text as your final message. It has these four parts:
 > 1. **Header:** date and time, commit, Node and Chromium versions, servers used, and confirmation that no tracked file was edited.
 > 2. **Results table:** Flow | PASS/FAIL | key observations, with exact on-screen text and figures.
 > 3. **Overall** PASS or FAIL, with numbered **Defects**. Each defect gives steps, expected (cite the spec or plan line), actual, and severity (high, moderate or low, defined below).
@@ -52,7 +52,7 @@ The brief now points the critic at the browser suite's support modules **for set
 
 ## After each critic
 
-- Save the report as `evidence/D<nn>/critic-<n>.md`.
+- Copy the critic's `test-results/critic-d<nn>-<n>/report.md` to `evidence/D<nn>/critic-<n>.md` with `cp`, never by retyping it (D7 retro, finding 4). If the file is missing, SendMessage the critic to write it.
 - Add a row to the deliverable's critic-cost table in `evidence/D<nn>/structural.md`. Take the token, tool-call and duration figures from the completion notice, and give the brief version and whether the critic found defects.
 - **Fix every defect, whatever its severity, before the gate closes** (D7 retro, finding 1; the user's rule, 2026-11-08). Each defect is its own bug task, `<gate task>-B<n>`, run one at a time:
   1. A fresh `tdd-task` subagent writes the failing test first, then the fix. Its brief names the browser spec files that cover the screens the defect touches, and the subagent runs them after its green.

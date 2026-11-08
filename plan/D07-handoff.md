@@ -145,7 +145,7 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The ne
   2. Spawn a **fresh** `general-purpose` critic agent, briefed from `.claude/docs/critic-brief.md`. Name the worktree and commit; forbid reading `evidence/` and any other worktree; list the setup helpers in `e2e/d4/support.ts`, `e2e/d5/support.ts`, `e2e/d5r/support.ts`, `e2e/d6/support.ts` and `e2e/d7/support.ts` by name with the Temporal pin helpers and clock constants; require port 5175 only; name the flows C7.1 onward without C7.8, the future-capability list, and the 375 and 320 px checks.
   3. It starts the app itself, drives the production UI in a browser, and never edits code.
   4. Delegate each defect it finds to a fresh subagent, which reproduces it with a failing test first and then fixes it. Follow `.claude/docs/critic-brief.md`, "After each critic" (D7 retro, finding 1). Each fix gets a quick run with the touched browser specs, and the full run comes after the last fix. A new critic is spawned only after a FAIL or a high or moderate defect, with at most three critics before asking the user.
-  5. Save each report as `evidence/D07/critic-<n>.md` and add a row to the critic-cost table in `evidence/D07/structural.md`.
+  5. Copy each report from `test-results/critic-d07-<n>/report.md` to `evidence/D07/critic-<n>.md` with `cp` (the critic writes that file) and add a row to the critic-cost table in `evidence/D07/structural.md`.
 
   If a fresh agent or a browser can't be provided, stop and report. Never self-certify.
 

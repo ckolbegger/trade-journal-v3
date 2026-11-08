@@ -36,6 +36,10 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 
 - **What happened:** each critic report arrives only as a message, so the main session saved `critic-1.md` to `critic-3.md` by writing their full text out again, about 6,000 to 8,000 output tokens each. A script to extract a report from the transcript was rightly blocked by `guard-shell-writes.sh`.
 - **Proposed change:** in `.claude/docs/critic-brief.md`, the critic also writes its report to `test-results/critic-d<nn>-<n>/report.md`. The main session then copies it into `evidence/` with `cp`, which the hook already allows.
+- **Applied (2026-11-08, the user's direction):**
+  - The critic brief's report section has the critic write `test-results/critic-d<nn>-<n>/report.md` (git-ignored), then send the same text as its final message.
+  - "After each critic" copies that file to `evidence/D<nn>/critic-<n>.md` with `cp`. If the file is missing, the main session asks the critic, through SendMessage, to write it.
+  - `guard-shell-writes.sh` passes the `cp` (tested, exit 0).
 
 ## 5. The plan's revision history sits in one 19,600-character table cell
 
