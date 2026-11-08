@@ -40,12 +40,27 @@ The brief now points the critic at the browser suite's support modules **for set
 > **Report.** Your final message must be the full report, with these four parts:
 > 1. **Header:** date and time, commit, Node and Chromium versions, servers used, and confirmation that no tracked file was edited.
 > 2. **Results table:** Flow | PASS/FAIL | key observations, with exact on-screen text and figures.
-> 3. **Overall** PASS or FAIL, with numbered **Defects**. Each defect gives steps, expected (cite the spec or plan line), actual, and severity.
+> 3. **Overall** PASS or FAIL, with numbered **Defects**. Each defect gives steps, expected (cite the spec or plan line), actual, and severity (high, moderate or low, defined below).
 > 4. **Minor observations.**
 >
 > A defect is a failed pass condition or a clear contradiction of `specs/`. Be rigorous and skeptical, and report only what you observed in the browser.
+>
+> Give each defect exactly one **severity**:
+> - **High:** a flow fails its pass condition. Data is lost or wrong, a figure is wrong, or the trader can't finish the task.
+> - **Moderate:** the flow passes, but something misleads or hides information. For example: wording that misstates what happened, a layout that makes a figure misreadable, or an accessibility failure.
+> - **Low:** cosmetic or polish. Nothing is misread and nothing is lost.
 
 ## After each critic
 
 - Save the report as `evidence/D<nn>/critic-<n>.md`.
 - Add a row to the deliverable's critic-cost table in `evidence/D<nn>/structural.md`. Take the token, tool-call and duration figures from the completion notice, and give the brief version and whether the critic found defects.
+- **Fix every defect, whatever its severity, before the gate closes** (D7 retro, finding 1; the user's rule, 2026-11-08). Each defect is its own bug task, `<gate task>-B<n>`, run one at a time:
+  1. A fresh `tdd-task` subagent writes the failing test first, then the fix. Its brief names the browser spec files that cover the screens the defect touches, and the subagent runs them after its green.
+  2. `ocr-review` runs on the fix's commit, as for any bug task.
+  3. `suite-runner` makes the quick run with the browser stage `browser-task`: unit, integration, the static and verify checks, and the task tier.
+- **After the last fix**, one full run (`browser-full`), then by the worst severity the critic reported:
+  - **PASS with only low defects:** the full run closes the gate. No new critic.
+  - **FAIL, or any high or moderate defect:** spawn a fresh critic after the full run.
+  - **PASS with no defects:** the gate closes on that critic, since the full run before it stands. No fixes are needed.
+- **Cap:** if the third critic still reports a high or moderate defect, stop and ask the user.
+

@@ -7,6 +7,12 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 - **What happened:** critics 1, 2 and 3 each reported PASS with one or two new minor or low defects. `plan/D07-handoff.md` (the browser-critic gate, step 4) says to fix them, rerun the suites and spawn another fresh critic, so the cycle ended only when the user said "Don't do a fourth critic run. It's time to move on."
 - **Cost:** 640,000 critic tokens (189,339 + 232,137 + 218,395) and about 41 minutes of critic time, plus a fix, an ocr review and a 9-minute full-tier run per round.
 - **Proposed change:** in `.claude/docs/critic-brief.md` ("After each critic") and the handoff template's gate steps: a PASS whose defects are all minor or low has them fixed, followed by a full-tier run, and the gate closes. A new critic runs only after a failed flow or a moderate (or worse) defect. The wording is the user's to set.
+- **Applied (2026-11-08, the user's wording):**
+  - **Severity:** the critic brief now defines three levels: high, moderate and low.
+  - **Fixes:** every defect is fixed before the gate closes, one bug task each. Each fix gets ocr and a quick run (`browser-task`), plus the browser specs that cover the touched screens.
+  - **After the last fix:** one full run. Then the gate closes if the critic passed with only low defects. After a FAIL or a high or moderate defect, a fresh critic follows.
+  - **Cap:** a third critic still finding high or moderate defects stops for the user.
+  - **Measured against D7:** critics 2 and 3 each found one minor defect, so the gate would have closed after critic 2's fix. That saves critic 3 (about 218,000 tokens and 14 minutes) and one full run.
 
 ## 2. Notes for later tasks are buried in one 19,500-character table cell
 

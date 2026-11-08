@@ -144,7 +144,7 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The ne
   1. Run the complete cumulative suites with `suite-runner` until they pass, with the browser stage on the full tier (`browser-full`, which the runner runs as `browser-1` then `browser-2`, never `browser-auto`), and record the runs. Decision 76: no `test:e2e:release-history` run at the gate.
   2. Spawn a **fresh** `general-purpose` critic agent, briefed from `.claude/docs/critic-brief.md`. Name the worktree and commit; forbid reading `evidence/` and any other worktree; list the setup helpers in `e2e/d4/support.ts`, `e2e/d5/support.ts`, `e2e/d5r/support.ts`, `e2e/d6/support.ts` and `e2e/d7/support.ts` by name with the Temporal pin helpers and clock constants; require port 5175 only; name the flows C7.1 onward without C7.8, the future-capability list, and the 375 and 320 px checks.
   3. It starts the app itself, drives the production UI in a browser, and never edits code.
-  4. Delegate each defect it finds to a fresh subagent, which reproduces it with a failing test first and then fixes it; rerun the suites, and spawn another fresh critic.
+  4. Delegate each defect it finds to a fresh subagent, which reproduces it with a failing test first and then fixes it. Follow `.claude/docs/critic-brief.md`, "After each critic" (D7 retro, finding 1). Each fix gets a quick run with the touched browser specs, and the full run comes after the last fix. A new critic is spawned only after a FAIL or a high or moderate defect, with at most three critics before asking the user.
   5. Save each report as `evidence/D07/critic-<n>.md` and add a row to the critic-cost table in `evidence/D07/structural.md`.
 
   If a fresh agent or a browser can't be provided, stop and report. Never self-certify.
@@ -196,7 +196,7 @@ Everything else continues without the user:
 - **Implementation-level decisions:** make them with the recommendation you would have offered, and record them in the evidence and in section 7.
 - **Suite failures:** reproduce each with one targeted run, delegate the fix to a fresh subagent (failing test first), and rerun the suite. Rerun a single browser failure once alone before treating it as real, and record both outcomes.
 - **First-run passes:** log them with their mutation check, list them under section 7's open questions, and report them at the end. They don't stop the session.
-- **ocr findings and critic defects:** handle them as section 3 and the working rules describe, then spawn a fresh critic until one passes.
+- **ocr findings and critic defects:** handle them as section 3 and the working rules describe. Critic defects follow `.claude/docs/critic-brief.md`, "After each critic".
 - **Context growth:** compaction is automatic. Section 7, updated after every task, is the recovery point.
 
 When the gate passes, tag `claude-opus-5.5-d7` locally. Then stop with a final report:
