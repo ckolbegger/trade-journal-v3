@@ -485,3 +485,24 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 5086f888`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-14-review-settlement-checks.txt` |
 
 Tier: full, printed reason "first matching path since 5086f888: src/ui/screens/review-attention.ts". Ports free before and after. T7.14 is complete.
+
+## T7.15 Daily Review: `getTrade` with Settlement Due and payoff
+
+Behavioral; commit `f70e9aea`, two cases in `settlement.test.ts`: T7.15's planned case, plus one carried from T7.14's ocr finding 1 (T-3's card at Monday 17:00 without an MNO frame). Reds: case 1 `TypeError: Cannot read properties of undefined (reading 'map')` (no `settlement` on the card); case 2 `Error: Market Data returned no frame for MNO`. No first-run passes. Public types: `PanelProgress` gains `Settlement` (between Reflections and Action, only while an item exists, never done while due); `DailyTradeReview` gains required `settlement` and optional `payoff: ExpirationPayoffs` (stock Trades get both views `NotApplicable(NoOptionExpirationAnchor)`). Five UI test fixtures gained `settlement: []` for the typecheck. **For later tasks:** the card has no separate route field (items carry the contract and settlement time); with an Underlying frame, an option card's `frame` is the Underlying's and `datedLineOf` still builds a Stock Instrument from it, so an option card's `datedLastClose` is not option-correct (T7.24, convention C6 and K18).
+
+### ocr review of `f70e9aea`
+
+No findings (`ocr/T7.15-f70e9aea.json`).
+
+### Cumulative run after T7.15 (`t7-15-review-card`, at `f70e9aea`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto a94c536a`. The runner first returned before the browser stage finished and was told to wait for it.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 111 files, 1312 passed, exit 0 | `suite-runs/t7-15-review-card-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-15-review-card-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-15-review-card-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-15-review-card-checks.txt` |
+
+Tier: full, printed reason "first matching path since a94c536a: src/ui/screens/CardMarks.test.tsx". Ports free before and after. T7.15 is complete.
