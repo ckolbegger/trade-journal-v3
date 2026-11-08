@@ -12,6 +12,7 @@ import { useRuntime } from './ui/runtime.tsx';
 import { AboutView } from './ui/screens/AboutView.tsx';
 import { AccountsView } from './ui/screens/AccountsView.tsx';
 import { PlanForm } from './ui/screens/PlanForm.tsx';
+import { ExpirationForm } from './ui/screens/ExpirationForm.tsx';
 import { PositionChangeForm } from './ui/screens/PositionChangeForm.tsx';
 import { ReviewView } from './ui/screens/ReviewView.tsx';
 import { TradeDetail } from './ui/screens/TradeDetail.tsx';
@@ -78,6 +79,9 @@ async function start(container: HTMLElement) {
     },
     'record-entry': function RecordEntry() {
       return <PositionChangeForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
+    },
+    'record-expiration': function RecordExpiration() {
+      return <ExpirationForm facade={facade} timeZone={useZone()} onDirtyChange={setUnsaved} />;
     },
     'new-plan': function NewPlan() {
       return <PlanForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;

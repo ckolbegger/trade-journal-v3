@@ -105,6 +105,17 @@ export const ROUTES = [
     readOnly: false,
   },
   {
+    // "Record expiration" on Trade Detail's Settlement Due panel and in the Review (D7 A113, conflict K14): the
+    // Expiration form is its own page; `?from=review` makes its receipt offer the way back to the Review.
+    id: 'record-expiration',
+    path: '/trades/:tradeId/record-expiration',
+    label: 'Record expiration',
+    requires: ['TradeWorkflows.recordPositionChange', 'TradeViewsAndReporting.getTradeDetail', 'Journal.getDefinitions'],
+    variants: { 'TradeWorkflows.recordPositionChange': ['Expiration'] },
+    navigation: false,
+    readOnly: false,
+  },
+  {
     id: 'new-plan',
     path: '/plans/new',
     label: 'New Plan',

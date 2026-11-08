@@ -15,6 +15,7 @@ export interface LotMatchRow {
 export function LotMatchesTable({
   rows,
   executions,
+  settlements = [],
   timeZone,
   caption,
   describedBy,
@@ -22,6 +23,8 @@ export function LotMatchesTable({
 }: {
   readonly rows: readonly LotMatchRow[];
   readonly executions: readonly ExecutionFact[];
+  // The Expirations that disposed Lots: a Lot Match's disposing fact is one of these or an Execution.
+  readonly settlements?: readonly { readonly factId: string; readonly economicTime: string }[];
   readonly timeZone: string;
   // Names the table where its section does not (the Detail's scroll region).
   readonly caption?: string;
@@ -31,6 +34,9 @@ export function LotMatchesTable({
   readonly option?: boolean;
 }) {
   const at = (executionId: string) => {
+    // A Lot an Expiration disposed names the settlement time and no price (row 21.15).
+    const settlement = settlements.find((s) => s.factId === executionId);
+    if (settlement) return `Expired on ${localTime(settlement.economicTime, timeZone)}`;
     const execution = executions.find((e) => e.factId === executionId)!;
     return `${price(execution.price)} on ${localTime(execution.economicTime, timeZone)}`;
   };

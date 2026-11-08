@@ -84,7 +84,7 @@ function navigationOwner(pathname: string): RouteId | undefined {
   const route = ROUTES.find((candidate) =>
     matchPath({ path: candidate.path, end: true }, pathname),
   );
-  return route?.id === "trade-detail" || route?.id === "record-entry"
+  return route?.id === "trade-detail" || route?.id === "record-entry" || route?.id === "record-expiration"
     ? "trades"
     : route?.id;
 }

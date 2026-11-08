@@ -9,10 +9,12 @@ export interface CloseReasonOption {
 }
 
 export interface ClosingTheTradeProps {
-  // The selectable Close Reasons, in the order the Catalog lists them.
-  readonly reasons: readonly CloseReasonOption[];
-  readonly reasonId: string;
-  readonly onReason: (id: string) => void;
+  // The selectable Close Reasons, in the order the Catalog lists them. A close that needs none (an
+  // Expiration) gives `noReasonNote` in their place.
+  readonly reasons?: readonly CloseReasonOption[];
+  readonly reasonId?: string;
+  readonly onReason?: (id: string) => void;
+  readonly noReasonNote?: string;
   readonly definition: EntryDefinitionRecord;
   readonly choice: Choice;
   readonly onChoice: (choice: Choice) => void;
@@ -33,16 +35,22 @@ export function ClosingTheTrade(props: ClosingTheTradeProps) {
   return (
     <section className="card" aria-labelledby="closing-heading">
       <h2 id="closing-heading">Closing the Trade</h2>
-      <fieldset role="radiogroup" aria-labelledby="close-reason-legend" className="choices" {...describedBy('closeReasonId')}>
-        <legend id="close-reason-legend">Close Reason</legend>
-        {reasons.map((reason) => (
-          <label key={reason.id} className="chip">
-            <input type="radio" name="close-reason" checked={reasonId === reason.id} onChange={() => props.onReason(reason.id)} />
-            {reason.label}
-          </label>
-        ))}
-      </fieldset>
-      {fieldError('closeReasonId')}
+      {reasons ? (
+        <>
+          <fieldset role="radiogroup" aria-labelledby="close-reason-legend" className="choices" {...describedBy('closeReasonId')}>
+            <legend id="close-reason-legend">Close Reason</legend>
+            {reasons.map((reason) => (
+              <label key={reason.id} className="chip">
+                <input type="radio" name="close-reason" checked={reasonId === reason.id} onChange={() => props.onReason?.(reason.id)} />
+                {reason.label}
+              </label>
+            ))}
+          </fieldset>
+          {fieldError('closeReasonId')}
+        </>
+      ) : (
+        <p>{props.noReasonNote}</p>
+      )}
       <ChoiceGroup legend="Close Review" name="close-review-disposition" value={choice} onChange={props.onChoice} describedBy={describedBy('closeReview')} />
       {fieldError('closeReview')}
       {choice === 'decline' && (

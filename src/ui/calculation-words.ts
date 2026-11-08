@@ -179,5 +179,7 @@ export const acknowledgedUnavailableStatusLabel = (): string => 'Acknowledged Un
 // The Position Change form's validation issue codes, which the form words in its own messages.
 export const isExceedsOpenQuantityIssue = (issue: { readonly code: string }): boolean => issue.code === 'ExceedsOpenQuantity';
 export const isFlatBeforeLaterFactsIssue = (issue: { readonly code: string }): boolean => issue.code === 'FlatBeforeLaterFacts';
-export const isAfterExpirationIssue = (issue: { readonly code: string }): boolean => issue.code === 'AfterExpiration';
+export const isExpirationMustSettleAllOpenIssue = (issue: { readonly code: string }): boolean => issue.code === 'ExpirationMustSettleAllOpen';
+export const isSettlementTimeInvalidIssue = (issue: { readonly code: string }): boolean => issue.code === 'SettlementTimeInvalid';
+export const isAfterExpirationIssue =(issue: { readonly code: string }): boolean => issue.code === 'AfterExpiration';
 export const isContractQuantityNotWholeIssue = (issue: { readonly code: string }): boolean => issue.code === 'ContractQuantityNotWhole';

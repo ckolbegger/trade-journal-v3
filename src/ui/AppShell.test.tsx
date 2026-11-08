@@ -24,6 +24,7 @@ const screens: Screens = {
   'trade-detail': () => <><PageTitle>XYZ</PageTitle><p>Trade detail</p></>,
   review: () => <p>Review screen</p>,
   'record-entry': () => <p>Record entry form</p>,
+  'record-expiration': () => <p>Record expiration form</p>,
   'new-plan': () => <p>New Plan form</p>,
   accounts: AccountsStub,
   about: () => <p>About screen</p>,

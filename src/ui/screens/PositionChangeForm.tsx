@@ -545,7 +545,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       </section>
       {showClosing && (
         <ClosingTheTrade
-          reasons={closeReasons!}
+          reasons={closeReasons}
           reasonId={closeReasonId}
           onReason={setCloseReasonId}
           definition={closeDefinition!}
