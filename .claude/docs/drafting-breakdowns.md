@@ -10,7 +10,7 @@
 - A planned check on source code is a `no-restricted-syntax` rule in an ESLint config, as `eslint.deps.config.js` and `eslint.wording.config.js` do, never a new scanner under `tools/` (D7 prefactor retro, finding 1).
 - List each task's `it should` cases in an order where every case introduces behavior the earlier cases do not already require, so each one can go red on its own and first-run passes needing a mutation check stay rare.
 - **Size check** (D7 retro, finding 8): once the task graph is drafted, propose a split to the user when the breakdown has any of these:
-  - more than 30 tasks;
+  - more than 20 tasks;
   - a schema change that reaches every layer (domain, persistence, coordinators and UI);
   - five or more open questions left for the user at drafting.
 
