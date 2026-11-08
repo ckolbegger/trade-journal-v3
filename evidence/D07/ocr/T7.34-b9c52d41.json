@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 21326,
+    "input_tokens": 20971,
+    "output_tokens": 355,
+    "cache_read_tokens": 5760,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Shared long-stock fixture integration across tests, benchmarks, and tooling",
+      "files": [
+        "src/app/bench-generator.ts",
+        "tests/integration/d1/support.ts",
+        "tests/support/long-stock.ts",
+        "tests/support/onboarded.ts",
+        "tools/capacity/measure-page.ts",
+        "tools/fixtures-freeze.ts"
+      ]
+    }
+  ],
+  "session_id": "2bdc0df0-a996-451b-88b4-50e412b2c093",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2bdc0df0-a996-451b-88b4-50e412b2c093",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b9c52d41",
+      "resolved_base": "1ee7aa39fd2be61d41dac076db886862c8a24911",
+      "resolved_head": "b9c52d41de31870cf5fd5e1ad2164df98e29b408",
+      "exact_range": "1ee7aa39fd2be61d41dac076db886862c8a24911..b9c52d41de31870cf5fd5e1ad2164df98e29b408",
+      "source_artifact_sha256": "388da213ab63bdd019126116ae0406e6a1725cfa37857c041b08d5dbf8f4d9cb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "668c2a53f1a010f20dd08e9f468bd934e354089e093e66298f9c141213fa521d"
+        },
+        {
+          "item_id": "49cd940e0795f212e878a38778dad492c54d3d8789ad150d5c4ec9fb547a1632",
+          "path": "tests/support/long-stock.ts",
+          "fingerprint": "5bf5673503abd1be25a1d282393f3c376adc35171e5228091e319704425c47c5"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "348c154e5ade428840f10043c2579608f5870ab842652da9964fbb160a02ff42"
+        },
+        {
+          "item_id": "6a6b9b12cb7b1e95587498df80d254f39f0795ba4947d1a526e1477d62864123",
+          "path": "tests/support/onboarded.ts",
+          "fingerprint": "7be5a6fb738eb492edd6b0a1b18becb0bb909b5b06f7436068917189526da257"
+        },
+        {
+          "item_id": "6e847557011a8f01db8557280726372a647807cedd0a6242431efb8056529c96",
+          "path": "tests/integration/d1/support.ts",
+          "fingerprint": "b590fbd78317ef6dc1eead781e62e73f8b6d42b2420485720f8e0600367f3b8d"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "4ecac9d44da4f7461c404eb41efc8ef9e041011caee1328c666fc0f4c24e3e78"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "668c2a53f1a010f20dd08e9f468bd934e354089e093e66298f9c141213fa521d"
+        },
+        {
+          "item_id": "49cd940e0795f212e878a38778dad492c54d3d8789ad150d5c4ec9fb547a1632",
+          "path": "tests/support/long-stock.ts",
+          "fingerprint": "5bf5673503abd1be25a1d282393f3c376adc35171e5228091e319704425c47c5"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "348c154e5ade428840f10043c2579608f5870ab842652da9964fbb160a02ff42"
+        },
+        {
+          "item_id": "6a6b9b12cb7b1e95587498df80d254f39f0795ba4947d1a526e1477d62864123",
+          "path": "tests/support/onboarded.ts",
+          "fingerprint": "7be5a6fb738eb492edd6b0a1b18becb0bb909b5b06f7436068917189526da257"
+        },
+        {
+          "item_id": "6e847557011a8f01db8557280726372a647807cedd0a6242431efb8056529c96",
+          "path": "tests/integration/d1/support.ts",
+          "fingerprint": "b590fbd78317ef6dc1eead781e62e73f8b6d42b2420485720f8e0600367f3b8d"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "4ecac9d44da4f7461c404eb41efc8ef9e041011caee1328c666fc0f4c24e3e78"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 16113
+  }
+}

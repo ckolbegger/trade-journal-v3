@@ -559,3 +559,20 @@ Tier: full, printed reason "first matching path since b5fb3e75: src/ui/format.ts
 - `npm run test:unit`: 116 files, 1372 tests passed. `npm run test:integration`: 76 files, 154 tests passed.
 - `npx playwright test e2e/d1/no-save.spec.ts`: 1 passed (selects "Long Stock" by label).
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run verify:fixtures`: all exit 0.
+
+### ocr review of `b9c52d41`
+
+No findings (`ocr/T7.34-b9c52d41.json`).
+
+### Cumulative run after T7.34 (`t7-34-long-stock-key`, at `b9c52d41`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 1ee7aa39`. The runner returned twice before its browser stage finished and was resumed each time.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1318 passed, exit 0 | `suite-runs/t7-34-long-stock-key-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-34-long-stock-key-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.8 m), exit 0 | `suite-runs/t7-34-long-stock-key-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-34-long-stock-key-checks.txt` |
+
+Tier: full, printed reason "first matching path since 1ee7aa39: e2e/d1/no-save.spec.ts". Ports free before and after. T7.34 is complete.
