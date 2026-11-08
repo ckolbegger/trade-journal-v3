@@ -2075,3 +2075,10 @@ The figures come from the critic's completion notice. The brief is `.claude/docs
 - **Case:** "should keep every chart label inside the SVG bounds, including the Latest close label near a rising ray end" (Vitest, `PayoffView.test.tsx`), over four Current charts. Red: "Latest close 90.00 … expected 694.98 to be less than or equal to 640" (the right edge). Green. **Flagged:** the red came from the right edge only; the top-edge clip ocr described (a collision pushing the close label above the top) was not shown red by this case.
 - **Checks:** `vitest run src/ui/screens` 491 passed; B2's 3 browser cases pass; typecheck, tsc6, lint, lint:deps exit 0.
 - **ocr** (`ocr/T7.32-B3-971559fe.json`): 1 file reviewed, 0 comments. No findings.
+
+### T7.32-B4: moved labels clear of tick labels and axis titles
+
+- **Commit `6949ac19`.** In `PayoffView.tsx`, the `placed` registry now starts with the tick label boxes (at their final rows), the "<symbol> at expiration" title and the rotated "Payoff" title; `Box` is `{left, right, top, bottom}` (baseline ∓ 8). Fallback: after the 13 stepped baselines, every baseline 13..344 nearest first, then every x in 4 px steps; only a completely full chart takes the wanted spot, clamped. Every label still renders.
+- **Case:** "should keep a moved label clear of every tick label and axis title and never render two overlapping labels when the search runs out", over a hand-built Planned view with 6 breakpoints (9 and 21 zero labels). Red: "'Breakeven at 0.00, touched without crossing' overlaps 'Breakeven from 0.00 to 55.00'". Green. The 9-label sub-case passes on the old code; the 21-label one carries the red. Mutation: dropping the tick boxes from the registry fails it ("30.00 overlaps Breakeven from 30.00 to 40.00").
+- **Checks:** `PayoffView.test.tsx` 8 passed, `src/ui/screens` 492 passed; typecheck, tsc6, lint, lint:deps exit 0. B2's Chromium spec not rerun (the gate run covers it).
+- **ocr** (`ocr/T7.32-B4-6949ac19.json`): 1 file reviewed, 0 comments. No findings.
