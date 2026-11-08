@@ -1,0 +1,106 @@
+$ npm run typecheck
+
+> trade-journal-v3@0.0.0 typecheck
+> tsc
+
+EXIT 0
+$ npx tsc6 --noEmit
+EXIT 0
+$ npm run lint
+
+> trade-journal-v3@0.0.0 lint
+> eslint .
+
+EXIT 0
+$ npm run lint:deps
+
+> trade-journal-v3@0.0.0 lint:deps
+> node tools/lint-deps.ts
+
+
+✔ no dependency violations found (322 modules, 1587 dependencies cruised)
+
+lint:deps OK (src)
+EXIT 0
+$ npm run build
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 175 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-D7QVaqvh.css   14.17 kB │ gzip:   3.65 kB
+dist/assets/index-DEq8Xl5z.js   715.71 kB │ gzip: 211.39 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 101ms
+EXIT 0
+$ npm run verify:release
+
+> trade-journal-v3@0.0.0 verify:release
+> node tools/verify-release.ts
+
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist: release fa13397df9de25b8bd9c32bd8ef61bef4ee73c080b8e47b65ad6d011bf3a8253, 6 assets
+EXIT 0
+$ npm run verify:capabilities
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 19 operations, 11 variant-qualified, 9 routes, 4 Entry Types, schema 6, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+EXIT 0
+$ npm run verify:releases
+
+> trade-journal-v3@0.0.0 verify:releases
+> node tools/verify-releases.ts
+
+verify:releases OK: v1 4460e7bef8622624ba227891a5cc5baa46c046485a292f78773bb34a12edb53c, v2 8245285d7da4b307526d8def0ef5bb6c4ae2db8885479f2cc58188e1dccd7b10, v2-corrupt fails only on /assets/index-D7QVaqvh.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 017365441a54b501a8c2ae4eee9a7321be9286c07062ffb16e6607622b4ce94d schema 2, d4 ecd9bbff1f81d60d3da8460b82d81b4a1899931c5ff08a3ac7546a6457232f8e schema 3, d5r2 7720af1b973860eabfa4d02143792cbd571a87dc8969412e41fe5aa708796243 schema 4, d6 c628b56294e51443b99d2a38f10cded80b10823b15f5f11d4b581e6fab512318 schema 6
+EXIT 0
+$ npm run verify:no-fault-hooks
+
+> trade-journal-v3@0.0.0 verify:no-fault-hooks
+> node tools/verify-no-fault-hooks.ts
+
+verify:no-fault-hooks OK: /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist has no fault or bench hooks
+EXIT 0
+$ npm run verify:capacity
+
+> trade-journal-v3@0.0.0 verify:capacity
+> node tools/verify-capacity.ts
+
+verify:capacity OK: required quota 2748219129 = 3 × 916073043, schema 6
+EXIT 0
+$ npm run verify:fixtures
+
+> trade-journal-v3@0.0.0 verify:fixtures
+> node tools/verify-fixtures.ts
+
+workspace-v1: schema 1, migrated to 6 into tj-ws-verify-0001, views equal
+workspace-v2: schema 2, migrated to 6 into tj-ws-verify-0001, views equal
+workspace-v3: schema 3, migrated to 6 into tj-ws-verify-0001, views equal
+workspace-v4: schema 4, migrated to 6 into tj-ws-verify-0001, views equal
+workspace-v5: schema 5, migrated to 6 into tj-ws-verify-0001, views equal
+workspace-v6: schema 6, opened without migration, views equal
+verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4, workspace-v5, workspace-v6 open Ready at schema 6 with views equal to their snapshots
+EXIT 0
+$ npm run verify:session-policy
+
+> trade-journal-v3@0.0.0 verify:session-policy
+> node tools/verify-session-policy.ts
+
+verify:session-policy OK: 5 years (2024-01-01 to 2028-12-31), 1827 dates compared, nyse revision 1 digest 13ff3ef725e71414e2f9bed388b5b59c81964d2ffbd77db2c9a75443b859998b
+EXIT 0
+$ npm run verify:wording
+
+> trade-journal-v3@0.0.0 verify:wording
+> eslint --no-config-lookup -c eslint.wording.config.js src/ui
+
+EXIT 0

@@ -1440,3 +1440,18 @@ Tier: full, printed reason "first matching path since 10edb51a: e2e/d6/stale-ind
 - B2-R1 (`65c1f2f8`): the `ConditionCountNotOne` case in `tests/integration/d7/rejections.test.ts` now sends a Stop-only and a Target-only command, each expected Rejected with `ConditionCountNotOne` and an unchanged dump; "naming the extra condition" is gone from the title. Mutation-checked both halves in `plan.ts` (Stop slice, then Target slice, each replaced by `[]`): each fails with "expected Rejected, got Confirmed"; restored.
 - B3-R4: the comment above `historicalFrames` now says a `SessionPolicyCoverage` rejection is absorbed and any other non-`Frames` answer throws, and that the Historical coverage issue has no `date`. New `option-views.test.ts` case: `getTradeDetail` rejects on a `NotASession` Historical rejection. First-run pass (built by B3-R3), mutation-checked by absorbing every `Rejected`; restored. `git diff -- src` for the commit is the comment alone plus the test file.
 - Verified: see the final commands below.
+
+### ocr review of `6ddaa465..ff7e8143` (T7.30-B2-R1 and B3-R4)
+
+`ocr/T7.30-B2-R1-B3-R4-ff7e8143.json` (in place) and `-relocated.json`: no findings. The reviewer checked the comment's claim against `market-data.ts:394` (the Historical coverage issue carries no `date`) and found it right. The ocr queue for T7.30 is empty.
+
+### Cumulative run `t7-30-b3-r4-final` (commit ff7e8143 plus evidence edits)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1426 tests passed, exit 0 | `suite-runs/t7-30-b3-r4-final-unit.txt` |
+| Node integration | 93 files, 189 tests passed, exit 0 | `suite-runs/t7-30-b3-r4-final-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (12.2 s), exit 0 | `suite-runs/t7-30-b3-r4-final-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-30-b3-r4-final-checks.txt` |
+
+Tier: task, printed reason "no changed path since 6ddaa465 is on the full-tier list". `run-complete.sh`: run complete. T7.28 and T7.30 are complete; T7.29 runs next, on the T7.28 dataset.
