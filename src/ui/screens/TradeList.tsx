@@ -5,7 +5,7 @@ import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeIte
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { isMarkLacking, isMarkMissing, isSettlementDue } from '../calculation-words.ts';
+import { isMarkLacking, isMarkMissing } from '../calculation-words.ts';
 import { calculation, FACTS_INCOHERENT_FIGURE, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -216,7 +216,7 @@ function OpenList({
                         )}
                       </>
                     }
-                    badges={derived && <StatusBadges current={derived.current} />}
+                    badges={derived && <StatusBadges current={derived.current} settlement={derived.settlement} />}
                   />
                 </td>
                 <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>
@@ -262,13 +262,20 @@ function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId
 }
 
 // The Mark status and a crossed Stop or reached Target are said in text, at every width; an active condition says nothing.
-function StatusBadges({ current }: { readonly current: Current }) {
+function StatusBadges({ current, settlement }: { readonly current: Current; readonly settlement: OpenTradeItem['settlement'] }) {
   return (
     <>
-      {current.currentMarkedPnl.kind === 'Unavailable' && (isMarkMissing(current.currentMarkedPnl) || isSettlementDue(current.currentMarkedPnl)) && (
+      {current.currentMarkedPnl.kind === 'Unavailable' && isMarkMissing(current.currentMarkedPnl) && (
         <>
           {' '}
           <Badge tone="warning">{unavailableLabel(current.currentMarkedPnl)}</Badge>
+        </>
+      )}
+      {/* Whenever a contract is due, as Detail's panel says, from the expiration date after the settlement time (K4, A113). */}
+      {settlement[0] && (
+        <>
+          {' '}
+          <Badge tone="warning">{unavailableLabel({ reason: 'SettlementDue', instrument: settlement[0].instrument, expiration: settlement[0].expiration })}</Badge>
         </>
       )}
       {current.conditions.map((c) => {

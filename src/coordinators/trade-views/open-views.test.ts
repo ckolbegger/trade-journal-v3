@@ -134,6 +134,7 @@ describe('browseTrades: Open', () => {
       integrity: 'Agrees',
       lastActivity: PC1,
       current: expect.any(Object) as unknown,
+      settlement: [],
     });
     expect(second?.openQuantity.equals(Rational.of(60n))).toBe(true);
     expect(second?.plannedQuantity.equals(Rational.of(100n))).toBe(true);

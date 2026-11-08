@@ -124,13 +124,15 @@ export interface OpenTradeItem {
   readonly integrity: 'Agrees' | 'Disagrees';
   readonly lastActivity: string;
   readonly current: OpenCurrentFigures;
+  // The option contracts due for settlement, as Detail has them (A111); empty for stock and before the settlement time.
+  readonly settlement: readonly SettlementItem[];
 }
 
 // An Open Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Position and entry figures
 // are unavailable rather than shown as numbers, and its records disagree.
 export interface IncoherentOpenTradeItem extends Omit<
   OpenTradeItem,
-  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity' | 'current'
+  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity' | 'current' | 'settlement'
 > {
   readonly integrity: 'Disagrees';
 }
@@ -482,9 +484,8 @@ function evaluateCurrent(derived: DerivedTradeState, analysis: TradeAnalysisReco
   });
 }
 
-function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frames: readonly CurrentFrame[]): OpenTradeItem {
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frames: readonly CurrentFrame[], evaluation: TradeEvaluation, settlement: readonly SettlementItem[]): OpenTradeItem {
   const frame = primaryFrameOf(frames, analysis);
-  const evaluation = evaluateCurrent(derived, analysis, frames);
   // The dated line values Long Stock; an option's has its own formulas (A110).
   const datedLine = 'resolution' in frame && analysis.plan.legs[0]!.instrument.kind === 'Stock' ? datedLineOf(analysis, frame, evaluation) : undefined;
   // The signed open quantity at the quantity-weighted Open Lot price.
@@ -521,6 +522,7 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
       atEntry: evaluation.atEntry,
       ...optional('datedLine', datedLine),
     },
+    settlement,
   };
 }
 
@@ -895,6 +897,15 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // A Closed page reads no Market Data: Close Reason labels, and the Trades with an Outstanding reflection.
         const closeReasons = request.lifecycle === 'Closed' ? await closeReasonsOf(records.map((r) => r.analysis)) : new Map<string, CloseReasonLabel>();
         const owed = request.lifecycle === 'Closed' ? await tradesWithOutstandingDebt() : new Set<string>();
+        // On the Open page, each Trade is evaluated once; the contracts it finds due for settlement are the ones Detail shows.
+        const evaluations = new Map<string, { readonly evaluation: TradeEvaluation; readonly settlement: readonly SettlementItem[] }>();
+        if (request.lifecycle === 'Open') {
+          for (const { summary, analysis, derived } of derivations) {
+            if (derived.kind !== 'Derived') continue;
+            const evaluation = evaluateCurrent(derived, analysis, frames);
+            evaluations.set(summary.tradeId, { evaluation, settlement: await settlementItemsOf(summary.tradeId, evaluation) });
+          }
+        }
         const items = derivations.map(({ summary, analysis, derived }) => {
           if (request.lifecycle === 'Closed') {
             const closeReason = analysis.closeReason && closeReasons.get(analysis.closeReason.closeReasonId);
@@ -904,7 +915,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           }
           if (request.lifecycle === 'Open') {
             if (derived.kind !== 'Derived') return incoherentItem(summary, analysis, labelsOf(summary));
-            return openItem(summary, analysis, derived, labelsOf(summary), frames);
+            const { evaluation, settlement } = evaluations.get(summary.tradeId)!;
+            return openItem(summary, analysis, derived, labelsOf(summary), frames, evaluation, settlement);
           }
           // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
           return derived.kind === 'Derived' ? plannedItem(summary, analysis, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));

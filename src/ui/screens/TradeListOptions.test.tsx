@@ -44,8 +44,9 @@ describe('option rows (A119)', () => {
     expect(cells(rowOf(planned, 'XYZ'))[1]?.textContent).toContain('Long 2 Nov 20 $55 Call');
     cleanup();
 
-    // O-S after expiration: the contract has no Mark to value it, so its P&L says Settlement Due.
-    const due = { kind: 'Unavailable', reason: 'SettlementDue', instrument: put, expiration: '2026-11-20' } as const;
+    // O-S on the expiration date after the settlement time: the row carries the settlement item Detail's panel
+    // shows, while its P&L still awaits the close (K4, row A113).
+    const dueItem = { tradeId: 'trade-o', instrument: put, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: '2026-11-20T21:00:00Z' } as const;
     renderList(
       [
         {
@@ -55,7 +56,7 @@ describe('option rows (A119)', () => {
           strategy: 'Cash-Secured Put',
           summary: shortPut,
           netCost: { kind: 'Value', value: Rational.of(-24870n, 100n) },
-          current: { ...openItem.current, currentMarkedPnl: due, currentMarkedPnlInPlanR: due },
+          settlement: [dueItem],
         },
         { ...openItem, tradeId: 'trade-q', underlying: 'ABC', summary: longCall },
       ],

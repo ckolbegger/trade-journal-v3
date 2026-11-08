@@ -187,6 +187,21 @@ describe('getTradeDetail: Planned option Trade (T7.23)', () => {
 });
 
 describe('browseTrades: option rows', () => {
+  it('should carry the Settlement Due item on an Open option row on the expiration date after the settlement time, as Detail does, and none the day before', async () => {
+    const friday = await optionStack(FRIDAY_1700);
+    const tradeId = await friday.openCashSecuredPut();
+    const thursday = await optionStack(THURSDAY_1700);
+    await thursday.openCashSecuredPut();
+    await thursday.stack.saveMark('MNO', '46.00', '2026-11-19');
+
+    const onExpiration = await friday.tradeViews.browseTrades({ lifecycle: 'Open' });
+    const before = await thursday.tradeViews.browseTrades({ lifecycle: 'Open' });
+    if (onExpiration.kind !== 'Ready' || before.kind !== 'Ready') throw new Error('expected Ready pages');
+
+    expect(onExpiration.view.items).toEqual([expect.objectContaining({ settlement: [{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_1600 }] })]);
+    expect(before.view.items).toEqual([expect.objectContaining({ settlement: [] })]);
+  }, 60_000);
+
   it('should return Open, Planned, and Closed rows with the Trade summary and Strategy, and Closed rows with their Terminal Disposition and Option Disposition Timing, reading Market Data only for Open rows', async () => {
     const fixture = await optionStack(FRIDAY_1700);
     const plannedId = await fixture.confirm('strategy.long-call', fixture.planOC());

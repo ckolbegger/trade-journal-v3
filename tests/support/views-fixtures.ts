@@ -85,4 +85,5 @@ export const openItem = {
     conditions: [],
     atEntry: null,
   },
+  settlement: [],
 } as const;
