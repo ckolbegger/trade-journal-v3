@@ -1693,7 +1693,7 @@ test.describe('T2.62 line breaks', () => {
     await context.close();
   });
 
-  test('should read each receipt row as one phrase with the price after the "@" and "fee" beside its amount at 320, 390 and 1280', async ({ server, profile }) => {
+  test('should read each receipt row as one phrase with the price after the "@" and no fee at 320, 390 and 1280', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();
     const page = await onboardedPage(context);
@@ -1707,7 +1707,7 @@ test.describe('T2.62 line breaks', () => {
       expect(pairs.length, `receipt rows at ${width}`).toBe(2);
       expectAtWithPrice(pairs, `receipt row at ${width}`);
       for (const p of pairs) {
-        expect(p.feeTop, 'receipt shows a fee').toBeDefined();
+        expect(p.feeTop, `receipt shows no fee at ${width} in "${p.text}"`).toBeUndefined();
         expect(p.priceLeft - p.atRight, `price follows the "@" at ${width} in "${p.text}"`).toBeLessThanOrEqual(12);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
