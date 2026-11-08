@@ -15,6 +15,9 @@
 #                 own EXIT line, and the summary adds up their counts.
 #   browser-auto  picks the full tier when `git diff --name-only <base> HEAD` touches a path
 #                 on P55's list, the task tier otherwise; prints the tier and why.
+# Decision 98: the full browser tier is limited to 720 s inside this script; on expiry the whole
+# process group is killed and the browser file ends with "TIMED OUT after 720 s" and "EXIT 124".
+# Unit-test files (*.test.ts, *.test.tsx) never pick the full tier.
 # Read-only queries (print and exit; nothing runs and no evidence is written):
 #   .claude/scripts/full-suite.sh --current-folder <evidence-dir>   the derived e2e folder
 #   .claude/scripts/full-suite.sh --choose-tier <base>              "task" or "full: <path>"
@@ -46,6 +49,9 @@ choose_tier() { # base
   local paths p
   paths=$(git -c core.quotePath=false diff --no-renames --name-only "$1" HEAD) || return 2
   while IFS= read -r p; do
+    case "$p" in
+      *.test.ts|*.test.tsx) continue ;; # decision 98: a Vitest file can't change what the browser sees
+    esac
     case "$p" in
       src/ui/*|src/app/*|src/sw/*|src/delivery/*|src/persistence/*|src/main.tsx|*.css|index.html|e2e/*|\
       playwright.config.ts|vite.config.ts|package.json|package-lock.json|tools/release*.ts|tools/build-releases.ts)
@@ -81,10 +87,39 @@ echo "commit: $(git rev-parse --short HEAD)$( [[ -n $(git status --porcelain) ]]
 
 want() { [[ -z "$stage" || "$stage" == "$1" ]]; }
 
+# Decision 98: the full browser tier gets 12 minutes (720 s). macOS has no GNU timeout, so a
+# watchdog kills the command's whole process group (Playwright, servers, browsers) on expiry.
+# TJ_BROWSER_LIMIT_SECONDS overrides the limit, only to test the watchdog quickly.
+browser_limit=${TJ_BROWSER_LIMIT_SECONDS:-720}
+
+run_limited() { # file, command, limit-seconds; appends output to file, returns the exit code (124 on timeout)
+  local file=$1 cmd=$2 limit=$3 pid wd ec flag
+  flag=$(mktemp)
+  perl -e 'setpgrp(0, 0); exec "bash", "-c", $ARGV[0]' "$cmd" >>"$file" 2>&1 &
+  pid=$!
+  (
+    for ((i = 0; i < limit; i++)); do sleep 1; kill -0 "$pid" 2>/dev/null || exit 0; done
+    echo timeout >"$flag"
+    kill -TERM -- "-$pid" 2>/dev/null; sleep 3; kill -KILL -- "-$pid" 2>/dev/null
+  ) &
+  wd=$!
+  wait "$pid"; ec=$?
+  if [[ -s "$flag" ]]; then
+    wait "$wd" 2>/dev/null
+    echo "TIMED OUT after $limit s (process group killed)" >>"$file"
+    ec=124
+  else
+    kill "$wd" 2>/dev/null; wait "$wd" 2>/dev/null
+  fi
+  rm -f "$flag"
+  return $ec
+}
+
 suite() { # name, command
   want "$1" || return 0
   local file="$out/$label-$1.txt"
-  bash -c "$2" >"$file" 2>&1
+  : >"$file"
+  if [[ "$1" == browser ]]; then run_limited "$file" "$2" "$browser_limit"; else bash -c "$2" >"$file" 2>&1; fi
   local ec=$?
   echo "EXIT $ec" >>"$file"
   (( ec == 0 )) || failed=1

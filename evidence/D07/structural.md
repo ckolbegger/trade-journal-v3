@@ -1499,3 +1499,240 @@ The settlement comparison reads each "Settlement Due for ..., which expired ..."
 - Review `open`: with 2 due Trades, 4 due Trades, and 2+2 due Trades on two distinct expiration dates, the facade issues the same requests, and the only `observations` read is D6's one `getAll`. **Deviation from the plan's wording:** the breakdown and A111 say one `Historical` frame request (one stored `observations` read) per distinct due expiration date. The code instead asks Market Data for a `ResolveSession` Historical per due item (`settlementItems`, `settlementTimeOf`), which the in-memory calendar answers with no stored read. So the Review open adds no stored read at all, rather than one per date, and at the Market Data query level it makes one session query per due item, not per distinct date. The plan's version of the case was written first and went red on exactly this; the case was reworded to pin the behavior (see the tdd-log note rows). Whether to change the code (one `ResolveFrames` per distinct date) or amend A111 and T7.29 is for the main session.
 - Trade Detail: a due option Trade adds at most one `observations` request over the same Trade before it is due (it adds none).
 - Open page (decision 97): covered by `tests/integration/d7/open-list-query-count.test.ts` (T7.30-B3-R2, 2 cases); referenced from the header of `query-count.test.ts`, not duplicated or folded in.
+
+### ocr review of `efedd324` (T7.29)
+
+Two runs, model gpt-6.1-sol. In place (`tools/bench-run.ts`, `tools/bench/compare.ts`): 0 comments, `ocr/T7.29-efedd324.json`. Relocated (`tools/bench/compare.test.ts`, `tests/integration/d7/query-count.test.ts`): 1 comment, `ocr/T7.29-efedd324-relocated.json`. Two earlier relocated runs raised only import paths and test discovery, which came from the relocation itself, so they were dismissed. The agent added rows 2–4 from reading the code.
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `query-count.test.ts:63-64` (ocr) | The Review-open case compares only runs that have due contracts, so it never proves D6's counts are kept: a constant extra read on some store other than `observations` would pass. | Valid. Becomes T7.29-B1. |
+| medium | `query-count.test.ts`, Trade Detail case (agent) | The Thursday-versus-Monday difference doesn't isolate the settlement lookup: the clock differs too; `due - notDue <= 1` passes when the difference is negative; neither run's count is asserted. | Valid. Becomes T7.29-B2. |
+| low | `tools/bench-run.ts:311-345` `compareSettlement` (agent, answering the brief) | It reads the UI and compares in order, and it can fail. Limits: all 4 items share a date; the settlement time isn't compared; a missing `asOfReview.settlement` returns silently as "not compared". | Valid, with limits. The silent return becomes T7.29-B3. The single date and the uncompared time go to the final report. |
+| low | `compare.test.ts:156-165` (agent) | `contractLabel`, `reviewShortDate` and `signedContractsText` re-implement the UI's `instrumentLabel`, `shortDate` and `signedContracts`, and the case never calls the UI functions. | Doubtful. Becomes T7.29-B4. |
+
+#### T7.29-B1 Review open preserves D6's counts
+
+- Defect: an extra constant request on any store passes unnoticed.
+- `it should` issue exactly the requests of a Review with no due contracts (same Workspace less the due option Trades, or the same Trades before they are due) when 2, 4, or 2+2 Trades are due.
+
+#### T7.29-B2 Trade Detail settlement lookup isolated
+
+- Defect: a different clock confounds the difference, a negative difference passes, and no absolute count is asserted.
+- `it should` at one clock, with one Trade whose contract expired before now and one whose contract expires after, issue the same requests for both Details, with an exact count for each.
+
+#### T7.29-B3 Bench fails when the as-of settlement expectations are missing
+
+- Defect: `compareSettlement` returns silently when `asOfReview.settlement` is absent, so a generation that loses it still passes.
+- `it should` fail the comparison, naming the missing expectations, when the profile has Settlement Due contracts but the expectations lack the settlement list.
+
+#### T7.29-B4 Bench label helpers use the UI's functions
+
+- Defect: hand-copied formatting can drift from the UI's.
+- `it should` build the expected contract, date and signed-quantity texts by calling `instrumentLabel`, `shortDate` and `signedContracts` (or have the helpers delegate to them), with the existing literal expectations kept.
+
+#### T7.29-B1 result (commit dcf3833b)
+
+- **First-run pass.** The mutation added one `deps.catalog.resolve` to the Review `open` and failed with "expected { 'meta.get': 15, …(7) } to deeply equal { 'meta.get': 13, …(6) }". The source was restored, and `git diff -- src` is empty.
+- **Baseline.** The baseline Review has the same number of Trades at the same clock, expiring 2026-12-18. The brief's two options didn't work: a Workspace with no Trades is `Empty`, and a different clock changes the walk. The baseline differs from the due runs only by D6's 4 `observations` `byInstrumentDate` mark reads for live contracts (2 `openCursor`, 2 `getAll`; measured by T7.29-B6, constant across the three baselines). The case removes those reads before comparing, and asserts that the baseline has them and no Settlement items.
+- **Absolute pin.** The Review open's measured count at D7 is 20 requests: 13 `meta.get`, 2 `trades.getAll`, 1 `observations.getAll`, and 1 `getAll` each on `journalDebts`, `journalDefinitions`, `journalObligations` and `journalTypes`. `daily-review.ts` has added no read since tag `claude-opus-5.5-d6`, so the count is unchanged in source from D6. No D6 build can open option Trades, so D6 never measured it (T7.29-B5).
+- **`tdd-log.md`.** It holds three `green exit=1` rows from abandoned attempts. The script wrote them, and they are not real greens.
+
+#### T7.29-B2 result (commit dc7c88ac)
+
+- **The case.** One clock (Monday 17:00) and two Trades: one expiring 2026-11-13, which is due, and one expiring 2026-12-18, which is not.
+- **The live Trade's count is pinned at 22 requests:**
+  - `meta.get` 11
+  - `observations.openCursor` 2
+  - `trades.get` 2
+  - `getAll` 1 each on `catalog`, `journalDebts`, `journalDeclines`, `journalDefinitions`, `journalEntries`, `journalTypes` and `observations`
+- **The due Trade's count.** It must equal the live Trade's on every store and method except `observations.getAll`, which may exceed it by 0 or 1. Today the two counts are identical, so the one-read allowance is a ceiling, not a measured cost.
+- **First-run pass.** The mutation made two extra Historical `ResolveFrames` calls per due item in `settlementItemsOf`. It failed with "expected 2 to be less than or equal to 1". The source was restored.
+
+#### ocr review of `dcf3833b` (T7.29-B1, relocated)
+
+Model gpt-6.1-sol, 1 comment; the raw output is `ocr/T7.29-B1-dcf3833b-relocated.json`. The agent added three findings of its own.
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `query-count.test.ts:80-82` | The pin of 20 is called "D6's count", but it is D7's count today. No D6 test pins `meta.get`, `journalDefinitions` or `journalTypes`. `daily-review.ts` adds no read since tag `claude-opus-5.5-d6`, but a D6 build can't open option Trades, so nothing can measure the count there. | Valid. Becomes T7.29-B5. |
+| low | `query-count.test.ts:73-75` `withoutMarkReads` | Only `baselineTwo` is checked, with `not.toEqual`, and the baseline's `byInstrumentDate` reads (4, not 3, per T7.29-B6) are never pinned. A new constant index read on the live-contract path would be dropped from the baseline unseen. | Valid. Becomes T7.29-B6. |
+| low | `query-count.test.ts:40` (ocr) | `reviewOpen` nests one ternary inside another. | Dismissed: a style point only; nested-ternary findings are dismissed throughout D7. |
+| low | `tally` key `${store}.${method}` | The key merges store and index `getAll`. | Dismissed: the agent confirmed that the filtered-baseline `toEqual` and the `GET_ALL` check, which both compare `on` and `index`, catch a swap. |
+
+#### T7.29-B5 The Review pin names what it measures
+
+- Defect: the test and its evidence claim a count is D6's when it is D7's measured count.
+- `it should` describe the pinned 20 requests as D7's Review open count, unchanged in source from D6's (no read added to `daily-review.ts` since tag `claude-opus-5.5-d6`), with no wording that claims D6 measured it.
+
+#### T7.29-B6 The baseline's mark reads are pinned
+
+- `it should` assert, for each of the three baselines, exactly the removed `observations` `byInstrumentDate` requests (the expected count per baseline), so any other index read fails.
+
+#### T7.29-B3 result (commit 1ffca8f8)
+
+- **The helper.** A new pure `settlementExpectations(settlement, expectedDue)` in `compare.ts`. It throws when `expectedDue` is above 0 and the list is missing or empty.
+- **The constant.** `bench-run.ts` passes 4 for the full profile, from a constant with a comment, not derived from the dataset. A `--partial` dataset passes 0, so "not compared" survives only on that path.
+- **Red and green.** The red failed with "expected [Function] to throw an error". The first green attempt failed (exit 1) on a test regex mistake, which was then fixed. The final green passed 12 of 12 in `compare.test.ts`.
+
+#### ocr review of `dc7c88ac` (T7.29-B2, relocated)
+
+Model gpt-6.1-sol, 1 comment; the raw output is `ocr/T7.29-B2-dc7c88ac-relocated.json`. The agent added two findings of its own.
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `query-count.test.ts:107-110` (ocr) | The due Detail may make 22 or 23 requests; ocr suggests pinning it exactly. | Dismissed: T7.29 and A111 allow the due Detail at most one extra request, so an exact pin would reject behavior the plan allows. Anything beyond one extra still fails. |
+| low | `detailOf` calls | Neither Trade has a saved Mark, so the live contract takes the missing-mark path rather than the usual marked path. The comment doesn't explain why the counts are identical. | Valid. Becomes T7.29-B7. |
+| low | `detailOf` order | The due Detail runs first, so a cache it warms could lower the live count, or hide an extra request on the due side. | Doubtful. Becomes T7.29-B8. |
+
+#### T7.29-B7 Detail counts with Marks
+
+- `it should` give both contracts (and XYZ) their Marks before the Details, so the live Trade takes the usual marked path, and pin both counts again with a comment that explains any difference.
+
+#### T7.29-B8 Detail counts independent of order
+
+- `it should` measure each Detail on a fresh launch (or in both orders) so neither run warms the other.
+
+#### T7.29-B5 and B6 results (commits a6f87d6c, 6eebc1e1)
+
+- **B5.** The comment above the `tally` pin now says the 20 requests are D7's measured count, unchanged in source from D6. The test name and header still say "D6 counts", meaning the counts D6's code makes; neither claims D6 measured the pin.
+- **B6.** Each of the three baselines must remove exactly `openCursor`, `openCursor`, `getAll`, `getAll` on `observations` `byInstrumentDate`.
+- **B6 first-run pass.** The mutation added one `getAllFromIndex('observations','byInstrumentDate', …)` at the top of `staleSourceOf` in `market-data.ts`. It failed with "expected [ { on: 'index', …(3) }, …(5) ] to deeply equal [ { on: 'index', …(3) }, …(3) ]". The source was reverted.
+
+#### T7.29-B4 result (commit d8707e7e)
+
+- **The helpers delegate.** `contractLabel` builds an Option Instrument and calls `instrumentLabel`, `signedContractsText` calls `signedContracts`, and `reviewShortDate` is `shortDate`. The `SHORT_MONTHS` copy is gone, and the literal case is kept.
+- **First-run pass, two mutations.** "Nov." in `dayMonthYear` failed the literal case. "Fr" in `reviewShortDate` failed the new case. Both were reverted.
+- **Dependency rules.** `lint:deps` scans `src/` only. `tools/capacity` already imports from `src/`.
+
+#### ocr review of `1ffca8f8` (T7.29-B3)
+
+Model gpt-6.1-sol. In place: 0 comments (`ocr/T7.29-B3-1ffca8f8.json`). Relocated: 1 comment (`ocr/T7.29-B3-1ffca8f8-relocated.json`). The agent added two findings of its own.
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `tools/bench-run.ts:318` | `partial ? 0 : 4` hard-codes the count, although `src/app/bench.ts` already exports `BENCH_SETTLEMENT_DUE = 4`, which the generator uses. | Valid. Becomes T7.29-B9. |
+| low | `tools/bench-run.ts:318` | The generator expects `Math.min(BENCH_SETTLEMENT_DUE, counts.openOptionTrades)`, so a reduced profile with fewer than 4 Open option Trades would throw wrongly. | Valid. Folded into T7.29-B9. |
+| high (ocr, relocated) | `compare.ts:86` | `settlementExpectations` is called only by the unit test. | Dismissed: an artifact of the relocation. The relocated review didn't include `bench-run.ts`, and at `1ffca8f8` `compareSettlement` does call it. |
+
+#### T7.29-B9 The expected due count comes from the generator's rule
+
+- `it should` expect `Math.min(BENCH_SETTLEMENT_DUE, openOptionTrades)` due items for a full dataset, and 0 for a partial one, through one shared function that both the generator and the harness call.
+
+#### T7.29-B9 result (commit 71907d03)
+
+- **The function.** `expectedSettlementDue({ partial, openOptionTrades })` lives in `src/app/bench.ts`, because the generator is in `src/` and can't import from `tools/`. It returns 0 for a partial dataset, and otherwise `Math.min(BENCH_SETTLEMENT_DUE, openOptionTrades)`.
+- **Who calls it.** The generator's check calls it, and `bench-run.ts` calls it with `dataset.counts.openOptionTrades ?? 0`.
+- **Red and green.** The red failed with "expectedSettlementDue is not a function". The green passed 14 of 14.
+
+#### T7.29-B7 and B8 results (commits 4d46468c, 607bc1ef)
+
+- **B7 Marks.** The expired contract is marked on its expiration date (2026-11-13), because a later Mark is rejected as `AfterExpiration`. The live contract and XYZ are marked on 2026-11-23.
+- **B7 counts.** The live Detail drops from 22 to 20 requests, with no `openCursor`; the old 22 was the missing-mark scan. The due Detail makes 24: the live 20, plus `MARK_LOOKUP` (1 `meta.get` and 2 `openCursor`) for the expired contract's stale Mark, plus 1 `observations.getAll`. That last request uses the whole allowance of one extra. A hand probe of an unmarked due contract made 22 requests. The agent notes that the stale-Mark `getAll` can't be told apart from the allowed settlement frame read.
+- **B7 first-run pass.** The mutation added an extra `historicalFrames` for XYZ in `datedLineOfTrade`, and the case failed. An earlier mutation, two extra `settlementTimeOf` calls, didn't fail, because `ResolveSession` makes no stored read.
+- **B8.** Each Detail is now measured after a `restart`.
+- **B8 first-run pass.** A `globalThis` first-call flag made the due Detail do one extra `historicalFrames`. It failed with "expected 2 to be less than or equal to 1". This proves the counts don't depend on order. It doesn't prove that the restart clears a module cache, since a module-level cache survives `restart`.
+
+#### ocr review of `a6f87d6c..6eebc1e1` (T7.29-B5 and B6, relocated)
+
+Model gpt-6.1-sol, 0 comments; the raw output is `ocr/T7.29-B5-B6-6eebc1e1-relocated.json`. The agent confirmed that the exact removed-request list is asserted for all three baselines. Its own checks:
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| low | `query-count.test.ts:77-79` | "`daily-review.ts` has added no read since the tag": the file has changed since then (+80/-34, including `settlementItems`), and no test measures the claim. | Doubtful. Becomes T7.29-B10. |
+| low | `:76` | The comment chains two "so" clauses. | Valid (wording). Folded into T7.29-B10. |
+| low | `:71-72` | "Any other index read fails here", but the filter covers only `observations`; a read on another store is caught later, by the tally. | Valid (wording). Folded into T7.29-B10. |
+
+#### T7.29-B10 The Review-case comments say exactly what is checked
+
+- `it should` word the comments to: (a) say `daily-review.ts` adds no *stored* read since the tag, by source reading (its new settlement code asks Market Data for a calendar answer); (b) use one clause per sentence; (c) say that this assertion catches other `observations` index reads, and that the tally catches reads on other stores. Comments only.
+
+#### T7.29-B10 result (commit c80bea20)
+
+Comments only, in the Review-open case. The file's 2 tests pass.
+
+#### ocr review of `d8707e7e` (T7.29-B4)
+
+Model gpt-6.1-sol, 0 comments, both in place and relocated; the raw outputs are `ocr/T7.29-B4-d8707e7e.json` and `ocr/T7.29-B4-d8707e7e-relocated.json`. The agent confirmed that the Option Instrument built from the OCC key matches the UI's, and that the `BigInt` throw can't hit a value the bench passes, since option quantities are whole contracts. Its own findings:
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| low | `tools/bench/compare.ts:63-69` | `contractLabel` re-parses the OCC key by hand, although `instrumentOf(key)` in `src/domain/instrument/index.ts` does the same parse. | Valid. Becomes T7.29-B11. |
+| low | `compare.test.ts:168-179` | The new case builds its Instruments the same way the code does, so it can't catch a parse error. | Dismissed: the literal cases kept at lines 163-167 (for example 'NVDA 20 Nov 2026 107 Call') cover the parse. The new case is meant to catch drift in the formatters only. |
+
+#### T7.29-B11 `contractLabel` uses `instrumentOf`
+
+- `it should` label a contract by `instrumentLabel(instrumentOf(key))`, with the hand parse removed and the literal cases unchanged.
+
+#### ocr review of `71907d03` (T7.29-B9)
+
+Model gpt-6.1-sol. In place: 1 comment (`ocr/T7.29-B9-71907d03.json`). Relocated: 2 comments (`ocr/T7.29-B9-71907d03-relocated.json`). The agent confirmed that the generator and the harness both call `expectedSettlementDue`.
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `tools/bench-run.ts:319` | `counts.openOptionTrades ?? 0` makes a full dataset that lacks the count expect 0 due items, which brings back B3's silent pass when the settlement list is also absent. Narrow: the current generator always writes the field. | Valid. Becomes T7.29-B12. |
+| high (relocated) | `compare-cases.ts:2` | `expectedSettlementDue` isn't exported. | Dismissed: an artifact of the relocation (the parent's `bench.ts`). It is gone on the second run. |
+| medium (relocated) | `src/app/bench.ts:29` | Only the test calls the helper. | Dismissed: an artifact of the relocation (the clone has no generator or harness); the in-place diff shows both call it. |
+
+#### T7.29-B12 A full dataset without the Open option count fails
+
+- `it should` throw a "regenerate the profile" error for a full dataset whose `counts.openOptionTrades` is not a non-negative integer, rather than defaulting it to 0.
+
+#### T7.29-B11 result (commit ebfaddd9)
+
+`contractLabel` now calls `instrumentLabel(instrumentOf(key))` and still throws for a key that isn't an option. That throw has no test. The 14 tests pass.
+
+#### ocr review of `6eebc1e1..607bc1ef` (T7.29-B7 and B8, relocated)
+
+Model gpt-6.1-sol, 0 comments; the raw output is `ocr/T7.29-B7-B8-607bc1ef-relocated.json`.
+
+**Verdict on the budget: within it.** The due Detail makes 1 `Current` and 1 `Historical` `ResolveFrames`, and settlement makes 0 stored reads (`ResolveSession` only). The `Historical` read is the dated line at 2026-11-13 for XYZ, which decision 97 and A111 allow. The 4 extra store requests are the `Historical` read (1 `meta.get`, 1 `getAll`, 1 `openCursor`) plus the contract's stale-Mark scan (1 `openCursor`). Restart isolation holds, and no module-level caches were found.
+
+The agent's notes, not made bug tasks (the user is reviewing the bug-task threshold, 2026-11-08):
+- The `MARK_LOOKUP` label and comment put the `meta.get` and one `openCursor` under Mark reads, when they belong to the `Historical` read. Medium, wording.
+- The "0 or 1" allowance is in effect exact, because `meta.get` +1 and the 2 `openCursor` are hard-coded.
+- Counting `observations` transactions would pin the `Historical` request directly. Low.
+- The comment about the unmarked probe ("1 cursor more") disagrees with the 22 requests recorded. Doubtful, low.
+
+T7.29-B12 (the `?? 0` default) is not started, for the same reason.
+
+#### ocr review of `c80bea20` (T7.29-B10, relocated)
+
+Model gpt-6.1-sol, 1 comment; the raw output is `ocr/T7.29-B10-c80bea20-relocated.json`. Every changed comment is accurate. The one low finding: two sentences still have more than one clause, against requirement (b). Not a bug task; it is noted for the final report.
+
+## Decision 98 tooling
+
+Scratch clone (`mktemp -d`, never this worktree) with four commits: base; one changing only `src/ui/A.test.tsx`; one changing `src/ui/B.tsx`; one changing `e2e/x.spec.ts`. The stub `package.json` has `test:e2e` = `bash -c "sleep 987 & sleep 988 & wait"`. Script copied from `.claude/scripts/full-suite.sh`.
+
+(a) and (b), run by a scratch script (`verify.sh`) that calls `bash full-suite.sh --choose-tier <parent>` per commit, then `TJ_BROWSER_LIMIT_SECONDS=3 bash full-suite.sh ev lbl browser`; output:
+
+```
+changed: src/ui/A.test.tsx  ->  task
+changed: src/ui/B.tsx  ->  full: src/ui/B.tsx
+changed: e2e/x.spec.ts  ->  full: e2e/x.spec.ts
+bash -n exit 0
+---
+date: 2026-11-08 09:23 EST
+commit: 7930551
+../full-suite.sh: line 106: 42736 Terminated: 15          perl -e 'setpgrp(0, 0); exec "bash", "-c", $ARGV[0]' "$cmd" >> "$file" 2>&1
+== browser: `npm run test:e2e` exit 124 -> ev/suite-runs/lbl-browser.txt
+
+real	0m6.089s
+user	0m0.097s
+sys	0m0.064s
+script exit 1
+
+> test:e2e
+> bash -c "sleep 987 & sleep 988 & wait"
+
+TIMED OUT after 3 s (process group killed)
+EXIT 124
+survivors:
+none
+```
+
+(c) `bash -n .claude/scripts/full-suite.sh` printed nothing, exit 0 (the "bash -n exit 0" line above checks the same file).
+
+Normal path (stub `test:e2e` = `echo ok`, limit 30): `== browser: npm run test:e2e exit 0`, file ends `ok` then `EXIT 0`, script exit 0, no TIMED OUT line.
+
+Notes: the timed-out file ends with the TIMED OUT line and `EXIT 124`, so `run-complete.sh` sees the stage as finished and failed. `TJ_BROWSER_LIMIT_SECONDS` overrides the 720 s limit and exists only for this check. The process group is created with `perl setpgrp` (macOS has no `setsid`); `pgrep -fl 'sleep 98[78]'` found no survivor.
