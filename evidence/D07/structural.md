@@ -1232,3 +1232,22 @@ Fix: Trade Analysis's reconciliation now carries `terminalPositionChangeId` (the
     - I7.15: the first Tuesday has the call's Mark 2.40 and no XYZ Mark. In the second, the Detail's Mark resolution is Missing with Monday's stale Mark. Option Trades carry no `marketValue` on the Open list item, so that field is checked on the Detail only.
     - Entry window: with O-S's S1 selling both contracts, and O-C's two contracts, an exit between two entries would leave the Position flat (`FlatBeforeLaterFacts`, or it closes the Trade and a later Buy is `TradeClosed`), so no cut can be built from the plan's own Trades. The case uses O-C's terms with a Plan of 3 contracts (1R $600): PC1 Buy 2 @ 2.10 (Monday 10:00), PC2 Buy 1 @ 1.90 (11:00) and an exit Sell 1 @ 3.00 at Monday 10:30. Recorded after both entries, the exit moves the Entry Resolution Point from PC2 to PC1 and creates a Shortfall of 1, disclosed in the receipt together with the Entry Quality change (window 2 of 3, risk 420.65, reward 579.35, size ratio 2/3, slippage 20.00). Recorded between them (PC1, exit, PC2), the exit creates the same Shortfall, and PC2 changes no Entry and only retains the Shortfall. The 3-contract Plan is this test's reading of the nearest case, not a figure from the plan.
   - **Concurrent work:** while this task ran, another agent edited `derive.ts`, `trade-record.ts` and `record-position-change.test.ts` (T7.30-B1-R2) in the same tree. My mutations touched `derive.ts` and `trade-record.ts` only through narrow edits, each restored; a test run of theirs during a mutation window could have seen it.
+
+### T7.30 part 2 triage (`3bdc7b17`)
+
+- Product bug, → bug task **T7.30-B3**: an option Trade with only an earlier session's Marks has no dated "At … close" line (I7.15 case 3, kept as `it.fails`). `trade-views.ts` builds `datedLine` only for a Stock leg (about lines 490 and 850), and `datedLineOf` (`src/coordinators/valuation.ts`) frames the dated evaluation as a Stock with no Underlying frame. T7.6 says the option dated line "reuses D4's mechanism unchanged".
+- Entry window gap case: O-C's terms with a Plan of 3 contracts (1R $600), a quantity the plan does not give, because none of the plan's Trades can cut an Entry window (any exit between entries leaves them flat). Recorded for the final report.
+- Concurrency check: part 2's mutations in `derive.ts` and `trade-record.ts` overlapped T7.30-B1-R2's commit `5f387a67`. The main session checked that commit's source diff, which holds only R2's change, and the worktree is clean.
+- Order: B3 (product), then B2 (part 1's assertions), one at a time, since both mutation-check `src/`.
+
+### ocr review of `5f387a67` (T7.30-B1-R2), the third round on this bug chain
+
+`ocr/T7.30-B1-R2-5f387a67.json` and `-relocated.json`, 1 comment (the same finding in both):
+1. Doubtful: `terminalPositionChangeId` is optional in Trade Record's `DerivedTradeReconciliation`, so a Closed reconciliation that omitted it would store the preparation-only id. The only production caller always supplies it, so this is a latent API weakness.
+2. Reviewer, on the Terminal Time question: the disagreement **predates D7**. The stored `terminalTime` (`trade-record.ts:424-430`, T6.6; `rebuild.ts:98-103`) is the latest Position Change Economic Time. The derived `terminalTime` (`derive.ts:1051`, T6.2) is the Economic Time of the change holding the last fact, which D6 A87 defines. They differ only when a multi-member change straddles another change's time. No agreement check compares them (D6 A96: a private index key, never a finding). But `byLifecycleTerminal` sorts the Closed list and A88's cutoff read by the stored time, while the row shows the derived one.
+
+Per the handoff, a third bug round that still leaves findings stops for the user.
+
+### T7.30-B3 an option Trade's dated "At … close" line
+
+I7.15 case 3 flipped from `it.fails` to `it`; red at the assertion (expected undefined to be '2026-10-12'). New unit case in `src/coordinators/trade-views/option-views.test.ts` (red, same assertion); both green after `datedLineOf` took an optional Underlying frame and Trade Views built the line for options from the contract and Underlying frames. Figures match the plan: market value 440.00, remaining-open P&L 38.70. No UI change: the Detail and list render the line from the same fields with D4's words, and the approved-words file has no option-specific dated-line row. Checks: `npx vitest run src` 1416 passed; `npx vitest run tests/integration` 186 passed; typecheck, tsc6, lint, lint:deps, verify:wording exit 0.

@@ -469,6 +469,14 @@ const primaryFrameOf = (frames: readonly CurrentFrame[], analysis: TradeAnalysis
   return found;
 };
 
+// The dated close line (D4's mechanism): a stock's from its own frame, an option's from the contract and Underlying frames (A110).
+function datedLineOfTrade(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): DatedLine | undefined {
+  if (!('resolution' in frame)) return undefined;
+  if (analysis.plan.legs[0]!.instrument.kind === 'Stock') return datedLineOf(analysis, frame, evaluation);
+  const underlying = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
+  return underlying && 'resolution' in underlying ? datedLineOf(analysis, frame, evaluation, underlying) : undefined;
+}
+
 // The Trade evaluated at the frames of its Instruments; an option's contract is the frame and its Underlying the underlyingFrame.
 function evaluateCurrent(derived: DerivedTradeState, analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[]): TradeEvaluation {
   const contract = analysis.plan.legs[0]!.instrument;
@@ -486,8 +494,7 @@ function evaluateCurrent(derived: DerivedTradeState, analysis: TradeAnalysisReco
 
 function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frames: readonly CurrentFrame[], evaluation: TradeEvaluation, settlement: readonly SettlementItem[]): OpenTradeItem {
   const frame = primaryFrameOf(frames, analysis);
-  // The dated line values Long Stock; an option's has its own formulas (A110).
-  const datedLine = 'resolution' in frame && analysis.plan.legs[0]!.instrument.kind === 'Stock' ? datedLineOf(analysis, frame, evaluation) : undefined;
+  const datedLine = datedLineOfTrade(analysis, frames, frame, evaluation);
   // The signed open quantity at the quantity-weighted Open Lot price.
   const lots = derived.positions.flatMap((p) => p.openLots);
   const openQuantity = sum(lots.map((lot) => lot.quantity));
@@ -846,8 +853,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const mark = markProvenance(frame);
         const underlyingFrame = analysis.plan.legs[0]!.instrument.kind === 'Option' ? frames.find((f) => f.instrumentKey === analysis.plan.underlying) : undefined;
         const underlyingMark = underlyingFrame && markProvenance(underlyingFrame);
-        // The dated line values Long Stock; an option's has its own formulas (A110).
-        const datedLine = 'resolution' in frame && analysis.plan.legs[0]!.instrument.kind === 'Stock' ? datedLineOf(analysis, frame, evaluation) : undefined;
+        const datedLine = datedLineOfTrade(analysis, frames, frame, evaluation);
         const current: OpenCurrentEvaluation = {
           ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
           ...optional('mark', mark),

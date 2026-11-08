@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { instrumentKey } from '../../domain/instrument/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
@@ -89,6 +90,13 @@ async function optionStack(now: string) {
     await record(tradeId, fill(tradeId, XYZ_CALL, 'Sell', TUESDAY_10, '1', '3.00', '0.65'));
     return tradeId;
   };
+  // O-C through PC1 and PC2 (Monday), 2 contracts.
+  const openLongCallAtMonday = async () => {
+    const tradeId = await confirm('strategy.long-call', planOC());
+    await record(tradeId, fill(tradeId, XYZ_CALL, 'Buy', MONDAY_10, '1', '2.10', '0.65'));
+    await record(tradeId, fill(tradeId, XYZ_CALL, 'Buy', MONDAY_11, '1', '1.90', '0.65'));
+    return tradeId;
+  };
   const closeLongCall = async () => {
     const tradeId = await openLongCall();
     await record(tradeId, expire(tradeId, XYZ_CALL, '1'), closeReviewForm);
@@ -100,7 +108,7 @@ async function optionStack(now: string) {
     await record(tradeId, expire(tradeId, MNO_PUT, '2'), closeReviewForm);
     return tradeId;
   };
-  return { stack, tradeViews: createTradeViews(stack), strategyOf, confirm, planOC, openCashSecuredPut, openLongCall, closeLongCall, closeCashSecuredPut };
+  return { stack, tradeViews: createTradeViews(stack), strategyOf, confirm, planOC, openCashSecuredPut, openLongCall, openLongCallAtMonday, closeLongCall, closeCashSecuredPut };
 }
 
 function openDetail(result: ReadViewResult<TradeDetailView>): OpenTradeDetail {
@@ -168,6 +176,25 @@ describe('getTradeDetail: option Underlying Mark (T7.23-B1)', () => {
     const detail = openDetail(await thursday.tradeViews.getTradeDetail({ tradeId }));
 
     expect(detail.current.underlyingMark).toEqual(expect.objectContaining({ source: 'Manual', price: '46' }));
+  }, 60_000);
+});
+
+describe('getTradeDetail: option dated line (T7.30-B3)', () => {
+  it('should add the dated line from Monday close valuing 2 contracts at the call Mark 2.20 with XYZ at 52.00 when Tuesday has neither Mark, on Detail and on the Open list item', async () => {
+    const tuesday = await optionStack('2026-10-13T21:00:00Z');
+    const tradeId = await tuesday.openLongCallAtMonday();
+    await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
+    await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
+
+    const detail = openDetail(await tuesday.tradeViews.getTradeDetail({ tradeId }));
+    const line = detail.current.datedLine;
+    expect(line?.tradingDate).toBe('2026-10-12');
+    if (line?.evaluation.kind !== 'Evaluated') throw new Error('the dated line has no evaluation');
+    expect(line.evaluation.marketValue).toEqual({ kind: 'Value', value: Rational.of(440n) });
+    expect(line.evaluation.remainingOpenPnl).toEqual({ kind: 'Value', value: money('38.70') });
+    const list = await tuesday.tradeViews.browseTrades({ lifecycle: 'Open' });
+    if (list.kind !== 'Ready') throw new Error('list not ready');
+    expect(list.view.items).toEqual([expect.objectContaining({ tradeId, current: expect.objectContaining({ datedLine: expect.objectContaining({ tradingDate: '2026-10-12' }) as unknown }) as unknown })]);
   }, 60_000);
 });
 

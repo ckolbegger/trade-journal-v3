@@ -29,17 +29,27 @@ function datedSourceOf(frame: MarkFrame, evaluation: TradeEvaluation) {
 
 // The Position held at that close, valued with that session's own exact Mark; absent when the
 // current figures need no such line, or the Trade had no exposure then (P12, P13, A54).
-export function datedLineOf(analysis: TradeAnalysisRecord, frame: MarkFrame, evaluation: TradeEvaluation): DatedLine | undefined {
+// An option's contract is the frame and its Underlying's frame supplies the Underlying's Mark at that same close (A110).
+export function datedLineOf(analysis: TradeAnalysisRecord, frame: MarkFrame, evaluation: TradeEvaluation, underlyingFrame?: MarkFrame): DatedLine | undefined {
   const source = datedSourceOf(frame, evaluation);
   if (!source) return undefined;
+  const instrument = instrumentOf(frame.instrumentKey);
+  let underlying: ObservationFrame | undefined;
+  if (instrument.kind === 'Option') {
+    const r = underlyingFrame?.resolution;
+    const mark = !r ? undefined : r.kind === 'Available' ? (underlyingFrame.tradingDate === source.tradingDate ? r.mark : undefined) : r.stale?.tradingDate === source.tradingDate ? r.stale : undefined;
+    // Without the Underlying's exact Mark at that close, the option cannot be valued there.
+    if (!underlyingFrame || !mark) return undefined;
+    underlying = { instrument: instrumentOf(underlyingFrame.instrumentKey), tradingDate: source.tradingDate, closeInstant: source.closeInstant, resolution: { kind: 'Available', mark } };
+  }
   const atClose = derive({ record: analysis, cutoff: source.closeInstant, valuationDate: source.tradingDate });
   if (atClose.kind !== 'Derived') throw new Error('facts cannot be replayed at the dated close');
   if (!atClose.positions.some((p) => p.openLots.length > 0)) return undefined;
   const datedFrame: ObservationFrame = {
-    instrument: { kind: 'Stock', symbol: frame.instrumentKey },
+    instrument: instrument.kind === 'Option' ? instrument : { kind: 'Stock', symbol: frame.instrumentKey },
     tradingDate: source.tradingDate,
     closeInstant: source.closeInstant,
     resolution: { kind: 'Available', mark: source.mark },
   };
-  return { tradingDate: source.tradingDate, evaluation: evaluate({ state: atClose, frame: datedFrame }) };
+  return { tradingDate: source.tradingDate, evaluation: evaluate({ state: atClose, frame: datedFrame, ...(underlying && { underlyingFrame: underlying }) }) };
 }
