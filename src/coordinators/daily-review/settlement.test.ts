@@ -299,3 +299,14 @@ describe('settlement items outside and inside calendar coverage (D7 Q1)', () => 
     expect(expirations).toEqual([[expired], [expired]]);
   }, 60_000);
 });
+
+describe('the summary of an option Trade on the Review (T7.31-F2, C2)', () => {
+  it('should summarize an option Trade by its contracts, expiration, strike and right, not as shares at a price', async () => {
+    const { stack, t1, t3 } = await settlementFixture(MONDAY_NEXT_1700, false);
+
+    const walked = family(await open(stack, MONDAY_NEXT_1700), 'Trades').trades;
+
+    expect(walked.find((t) => t.tradeId === t1)!.summary).toEqual({ kind: 'Option', direction: 'Long', contracts: Rational.of(1n), expiration: '2026-11-20', strike: '55', right: 'Call' });
+    expect(walked.find((t) => t.tradeId === t3)!.summary).toEqual({ kind: 'Option', direction: 'Short', contracts: Rational.of(2n), expiration: '2026-11-20', strike: '45', right: 'Put' });
+  }, 60_000);
+});

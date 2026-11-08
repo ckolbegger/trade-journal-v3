@@ -26,7 +26,7 @@ import {
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
-import { closedLongStockSummary, openLongStockSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
+import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
@@ -431,17 +431,12 @@ const optionContractOf = (analysis: TradeAnalysisRecord) => {
   const instrument = analysis.plan.legs[0]!.instrument;
   return instrument.kind === 'Option' ? instrument : undefined;
 };
-const magnitude = (value: Rational) => (value.compare(Rational.of(0n)) < 0 ? Rational.of(0n).sub(value) : value);
 
 const plannedSummaryOf = (analysis: TradeAnalysisRecord): TradeSummary => plannedTradeSummary(analysis.plan.legs);
 
 // The contracts still open, long or short by their sign; none when flat.
-function openSummaryOf(analysis: TradeAnalysisRecord, derived: DerivedTradeState): TradeSummary | undefined {
-  const contract = optionContractOf(analysis);
-  if (!contract) return openLongStockSummary(derived);
-  const held = sum(derived.positions.flatMap((p) => p.openLots.map((lot) => lot.quantity)));
-  return held.compare(Rational.of(0n)) === 0 ? undefined : optionSummary(contract, held.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long', magnitude(held));
-}
+const openSummaryOf = (analysis: TradeAnalysisRecord, derived: DerivedTradeState): TradeSummary | undefined =>
+  openTradeSummary(analysis.plan.legs[0]!.instrument, derived);
 
 // The contracts entered by opening Executions, once none is open (decision 48); none without an opening Execution.
 function closedSummaryOf(analysis: TradeAnalysisRecord, derived: DerivedTradeState): TradeSummary | undefined {

@@ -1,6 +1,6 @@
 import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
-import { openLongStockSummary } from '../../domain/trade-summary.ts';
+import { openTradeSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
@@ -215,7 +215,7 @@ function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade,
   };
   const underlyingFrame = contract.kind === 'Option' ? frameOf({ kind: 'Stock', symbol: analysis.plan.underlying }) : undefined;
   const evaluation = evaluate({ state: derivation, frame: frameOf(contract), ...(underlyingFrame && { underlyingFrame }) });
-  const held = openLongStockSummary(derivation);
+  const held = openTradeSummary(contract, derivation);
   const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, evaluation, integrity.findings) };
   return { item, evaluation };
 }
@@ -224,7 +224,7 @@ function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade,
 // otherwise Open with the Position it holds (A90).
 function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analysis: TradeAnalysisRecord, closeReason?: { id: string; label: string }, closeReviewOutcome?: ObligationOutcome): OwedTradeSummary {
   if (lifecycle !== 'Closed') {
-    const position = openLongStockSummary(state);
+    const position = openTradeSummary(analysis.plan.legs[0]!.instrument, state);
     return { kind: 'Open', ...(position && { position }), entryResolution: state.entryResolution };
   }
   return {
@@ -241,7 +241,7 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
 // What replaying the Trade yields at the Review-date frame.
 function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: readonly MarkFrame[], evaluation: TradeEvaluation) {
   const frame = frames.find((f) => f.instrumentKey === entry.analysis.plan.underlying);
-  const summary = openLongStockSummary(state);
+  const summary = openTradeSummary(entry.analysis.plan.legs[0]!.instrument, state);
   if (!frame) {
     // After its expiration date an option requires no Mark, so Market Data returned no frame (A110).
     if (entry.analysis.plan.legs[0]!.instrument.kind === 'Option') return { ...(summary && { summary }), evaluation };

@@ -67,6 +67,15 @@ export function closedLongStockSummary(derived: DerivedTradeState): TradeSummary
   return { kind: 'Stock', direction: 'Long', quantity, price: sum(buys.map((fact) => decimal(fact.quantity).mul(decimal(fact.price)))).div(quantity) };
 }
 
+// What a Trade holds now, by the contract its first Planned Leg names: an option's open contracts, long or short by
+// their sign; otherwise the open Long Stock. None when flat. The one builder for the lists and the Review.
+export function openTradeSummary(instrument: Instrument, derived: DerivedTradeState): TradeSummary | undefined {
+  if (instrument.kind !== 'Option') return openLongStockSummary(derived);
+  const held = derived.positions.flatMap((p) => p.openLots).reduce((a, lot) => a.add(lot.quantity), Rational.of(0n));
+  const zero = Rational.of(0n);
+  return held.compare(zero) === 0 ? undefined : optionSummary(instrument, held.compare(zero) < 0 ? 'Short' : 'Long', magnitude(held));
+}
+
 // The open quantity at the quantity-weighted Open Lot price, fees excluded; none without open quantity.
 export function openLongStockSummary(derived: DerivedTradeState): TradeSummary | undefined {
   const sum = (values: readonly Rational[]) => values.reduce((a, b) => a.add(b), Rational.of(0n));
