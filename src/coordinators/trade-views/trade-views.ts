@@ -165,6 +165,8 @@ export interface ClosedTradeItem {
   readonly realizedR: DerivedTradeState['realizedR'];
   // How the exposure ended, never the Close Reason (A84).
   readonly terminalDisposition: DerivedTradeState['terminalDisposition'];
+  // How a Closed option Trade's contracts were disposed (A108, A119); absent for stock.
+  readonly optionDispositionTiming?: DerivedTradeState['optionDispositionTiming'];
   // Absent when the Trade carries none.
   readonly closeReason?: CloseReasonLabel;
   // The terminal Position Change's Economic Time.

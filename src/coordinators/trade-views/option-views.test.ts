@@ -4,7 +4,7 @@ import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/j
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { reviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, ExpirationMember, PositionChangeMember } from '../trade-workflows/index.ts';
-import { createTradeViews, type ClosedTradeDetail, type OpenTradeDetail, type ReadViewResult, type TradeDetailView } from './index.ts';
+import { createTradeViews, type ClosedTradeDetail, type ClosedTradeItem, type OpenTradeDetail, type ReadViewResult, type TradeDetailView } from './index.ts';
 
 // D7 section 4: O-S (Cash-Secured Put on MNO) and O-C (Long Call on XYZ). Every contract expires Friday
 // 2026-11-20; New York is on standard time from 11-01, so 16:00 is 21:00Z and 17:00 is 22:00Z.
@@ -195,6 +195,10 @@ describe('browseTrades: option rows', () => {
         optionDispositionTiming: { kind: 'Value', value: { timing: 'FullyHeldToExpirationSettlement', disposedByExecutions: Rational.of(0n), disposedBySettlement: Rational.of(2n) } },
       }),
     );
+
+    // A typed read of the Closed row's field, with no cast (T7.16-B1).
+    const timingOf = (tradeId: string): ClosedTradeItem['optionDispositionTiming'] => closed.view.items.find((item) => item.tradeId === tradeId)?.optionDispositionTiming;
+    expect(timingOf(expiredId)).toEqual({ kind: 'Value', value: { timing: 'FullyHeldToExpirationSettlement', disposedByExecutions: Rational.of(0n), disposedBySettlement: Rational.of(2n) } });
 
     const open = await views.browseTrades({ lifecycle: 'Open' });
     if (open.kind !== 'Ready') throw new Error('expected a Ready page');
