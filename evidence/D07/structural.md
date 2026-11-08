@@ -1139,3 +1139,24 @@ Result (T7.28-B1): `countStored` runs only in the browser, so the counting was e
 - `npx vitest run src/app/bench-generator.test.ts tools/bench`: 2 files, 18 tests passed. `npm run build:bench`, `npm run typecheck`, `npm run lint`: exit 0.
 - Smoke `BENCH_SESSIONS=12 npm run bench:generate`: exit 0, 240 s; `openInstruments` 3, `sharedInstruments` 0 (3 Open Trades: 1 contract plus 2 stocks, matching `openContracts` 1 and `openStockInstruments` 2). `bench/dataset.json` was not rewritten (still 150 / 50 from the full run; the full-run values need the D7 regeneration).
 - Readers of the two fields: only `src/app/bench.ts` (type) and the generator; no other reader.
+- ocr review of `b4550fe1` (relocated, with `src/` and `tools/` as of the commit): no findings (`ocr/T7.28-B1-b4550fe1.json`).
+- Full generation started from the main session in the background after B1 (`npm run build:bench && npm run bench:generate`), logs in `bench-generate/`.
+
+### T7.28-B2 the benchmark serves on its own port, 4175 (`534d3f8c`, at the user's direction)
+
+T7.28 had moved `BENCH_PORT` from 5181 to 5175, the test port, so a multi-hour generation would have blocked every test run and critic. The user: "Please move the benchmark back to using its own port. Use port 4175 to avoid conflicts with any other worktrees." The first full generation, on 5175, was stopped after about 15 minutes. `BENCH_PORT` is now 4175 (`tools/bench/profile.ts`, the only definition; the bench tools import it). Verified by `npx vitest run tools/bench src/app/bench-generator.test.ts` (18 passed). Typecheck and lint at that moment failed only on T7.30's uncommitted test files, then in progress. The full generation was restarted on 4175.
+
+## T7.30 Node mock-free integration suite (I7.1 to I7.15)
+
+Every D7 Node case lives in `tests/integration/d7/`, with shared builders in `support.ts` (option Plans and Position Changes through the facade, the Expiration member, the Settlement Review fixture). The behavior was built by T7.1–T7.24, so every case that passed did so on its first run. Each is flagged and mutation-checked in `evidence/D07/tdd-log.md`, following D6's T6.26.
+
+- **Part 1 (I7.1–I7.8):** 11 new tests in `lifecycle`, `short-put` (3), `expiration-close-review`, `settlement-due`, `review`, `rejections` (2) plus I7.2 and the A121/pointer additions to I7.1 in `migration`; `npx vitest run tests/integration/d7` gives 8 files, 16 tests. Every case passed on its first run, and each was mutation-checked (11 mutations, all restored; `git diff -- src` empty). No product bug found.
+  - **Readings of the plan's wording:**
+    - I7.1: extends T7.17's migration cases (v1 to v5), adding the A121 views (`compareSnapshot` against `expected-views.json`, `optionViolations`) and the pointer check (new database, `candidates` empty, only the root and the new database remain).
+    - I7.2: the unknown Catalog identity sits on workspace-v5's Close Reason fact (`UnknownCloseReason`, naming the Trade and the fact). The old stores equal the fixture, `dumpAll` recording no IndexedDB version.
+    - I7.3: "equals the stored Trade" is the Detail read after each step (`positionChanges`, `realizedToDate`). The facade exposes no Trade Record. The "Closed via sale of 1 contract and expiration of 1 contract" words come from the UI's own `closedViaOption`, fed with the Detail's Terminal Disposition. "Close Review in the narrative" is a Detail journal Entry of type `entry-type.close-review`.
+    - I7.4: B2 is a Buy 1 @ 0.40, fee 0.65, on Wednesday 10-14 10:00 (the row fixes only its day and quantity); realized 83.70, total 147.40. B is S1, B1, then a Buy 1 @ 0.55 (fee 0.65) dated Monday 10:30. Receipt: one Created link S1 ← B0; realized 63.70 → 132.40; `entryChanges` is empty. S1 alone fills the Plan's two contracts, so no Entry window moves and no shortfall arises. The Trade also becomes Closed with no Close Reason, because the newest recorded change is not the terminal one (D6's `closeRequirementOf`; see item 4 of the report).
+    - I7.5: the fourth Long Call is left Open after its rejected Expiration. Friday's Review has no `ReflectionDue` reason and Monday's has one for the deferred Trade.
+    - I7.6: "expires 2026-11-20" is the Detail's Option summary and the evaluation's `NotYetDue` item. E-S is recorded with its Close Review deferred, so Monday 17:05 lists it Due in the owed group.
+    - I7.7: the Friday Marks of the Settlement Review fixture are saved first. XYZ's Mark is saved at 52.00. After the restart, the Review equals the pre-restart Review apart from its binding.
+    - I7.8: the Plan issues are asserted by code as members of the rejection (several arrive together). The clock is Monday 11-23 17:00 so that 11-23 dates are not in the future.
