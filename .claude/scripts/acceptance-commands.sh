@@ -47,12 +47,13 @@ split_args() {
     else
       case "$ch" in
         "'"|'"') q="$ch"; have=1 ;;
-        "$bs") i=$((i + 1)); cur+="${s:i:1}"; have=1 ;;
+        "$bs") if (( i + 1 >= ${#s} )); then return 1; fi; i=$((i + 1)); cur+="${s:i:1}"; have=1 ;;
         " "|$'\t') if (( have )); then SPLIT+=("$cur"); cur=""; have=0; fi ;;
         *) cur+="$ch"; have=1 ;;
       esac
     fi
   done
+  if [[ -n "$q" ]]; then return 1; fi  # an unterminated quote
   if (( have )); then SPLIT+=("$cur"); fi
 }
 
@@ -63,7 +64,7 @@ run_list() { # prints "N tests" or "FAIL: reason"
       # Bare form: the whole project. Filtered form: only the filters after "-- ".
       local proj=integration filters=""; [[ "$cmd" == "npm run test:unit"* ]] && proj=unit
       [[ "$cmd" == *" -- "* ]] && filters="${cmd#*-- }"
-      split_args "$filters"
+      split_args "$filters" || { echo "FAIL: malformed command"; return; }
       out=$(CLAUDE_FULL_OUTPUT=1 npx vitest list --project "$proj" ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
       if (( rc != 0 )); then echo "FAIL: vitest list exited $rc"; return; fi
       n=$(printf '%s\n' "$out" | grep -c '^\[') ;;
@@ -74,7 +75,7 @@ run_list() { # prints "N tests" or "FAIL: reason"
       for s in "${scripts[@]}"; do
         sargs=$(node -e 'const s = JSON.parse(require("fs").readFileSync("package.json", "utf8")).scripts[process.argv[1]] || ""; const m = s.match(/playwright test (.*)$/); process.stdout.write(m ? m[1] : "")' "$s")
         if [[ -z "$sargs" ]]; then echo "FAIL: no playwright command in script $s"; return; fi
-        split_args "$sargs"
+        split_args "$sargs" || { echo "FAIL: malformed command"; return; }
         out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
         sn=$(printf '%s\n' "$out" | sed -n 's/^Total: \([0-9][0-9]*\) test.*/\1/p' | tail -1)
         if (( rc != 0 )); then echo "FAIL: playwright --list exited $rc ($s)"; return; fi
@@ -82,7 +83,7 @@ run_list() { # prints "N tests" or "FAIL: reason"
       done ;;
     "npx playwright test "*|"npm run test:e2e"*" -- "*)
       local args="${cmd#npx playwright test }"; [[ "$cmd" == "npm run"* ]] && args="${cmd#*-- }"
-      split_args "$args"
+      split_args "$args" || { echo "FAIL: malformed command"; return; }
       out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
       n=$(printf '%s\n' "$out" | sed -n 's/^Total: \([0-9][0-9]*\) test.*/\1/p' | tail -1)
       if (( rc != 0 )) && [[ "${n:-0}" == 0 ]]; then echo "FAIL: playwright --list exited $rc, no tests"; return; fi
