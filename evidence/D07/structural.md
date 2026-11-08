@@ -2111,3 +2111,10 @@ No release-history run (decision 76). Ports 5175, 9341, 9342 free before and aft
 - **Critic 2** (`critic-2.md`): **PASS**, C7.1–C7.10 all passing (C7.8 withdrawn). One minor defect, fixed before the gate:
   - **T7.32-B6:** after the expiration date, an option Trade's Detail opens its Valuation section with "Mark missing for XYZ 20 Nov 2026 55 Call on Mon Nov 23", though P25 and A110 require no Mark after expiration, A115 refuses such a Mark, and the Review card says none is needed. Its `it should` cases: after the expiration date, the Detail with Settlement Due shows no Mark-missing note for the expired contract; on the expiration date itself, a missing contract Mark is still reported.
   - The minor observations are recorded for the final report (the user's choice, 2026-11-08, to leave critics' minor notes as notes).
+
+### T7.32-B6: no Mark requested on Detail after the expiration date
+
+- **Commit `caa825dd`.** The missing-Mark note comes from the Trade Views coordinator: `trade-views.ts` adds `afterExpiration(analysis, date)` (an option whose frame date is after its expiration) and leaves `markResolution` out at Trade Detail assembly only; `expectedMarkDate` is unchanged. The UI and the Review are untouched. The Open list row (`openItem`) passes `markResolution` through as well, but only `TradeDetail.tsx` renders it, so the list shows nothing wrong (checked by grep).
+- **Cases:** (1) after the expiration date, no Mark resolution for the expired contract, red then green; (2) on the expiration date a missing contract Mark is still reported, **first-run pass, flagged**; mutation `>=` for `>` failed it with an AssertionError; restored.
+- **Checks:** `src/coordinators/trade-views` and `TradeDetail` 158 passed; typecheck, tsc6, lint, lint:deps exit 0.
+- **ocr** (`ocr/T7.32-B6-caa825dd.json`): 1 file reviewed, 0 comments. No findings. Reviewer's note (not an ocr finding): the Open-list path still passes `markResolution` through, as recorded above.
