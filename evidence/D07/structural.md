@@ -2147,3 +2147,5 @@ No release-history run (decision 76). Ports free before and after.
 - **Cases:** (1) the value line, red then green; (2) the Mark-missing and Settlement Due forms, red then green; (3) no line on a stock card, **first-run pass, flagged**; mutation (render the Unavailable branch for every non-Value result) failed it with an AssertionError; restored.
 - **Checks:** `src/ui/screens` 496 passed; typecheck, tsc6, lint, lint:deps exit 0.
 - **ocr** (`ocr/T7.32-B7-1b92fe51.json`): 2 files reviewed, 0 comments. No findings. Reviewer's note (not an ocr finding): a comment in `CardFigures.tsx` cites row 23.11, where the card summary row is 24.8.
+
+- **No critic 4 (the user's decision, 2026-11-08):** "Don't do a fourth critic run. It's time to move on." The gate closes on critic 3's PASS with B7 fixed, ocr clean, and the full-tier run `t7-32-b7-gate`. B7's fix has no fresh-critic check; this departs from the handoff's "spawn another fresh critic" at the user's direction.
