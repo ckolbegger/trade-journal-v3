@@ -1,6 +1,7 @@
 // Pure helpers of `bench:run`'s identity comparisons (D6 T6.25): the Closed page, the as-of Review's walk and its
 // owed-reflection group are each compared as an ordered list of identity strings.
 
+import { instrumentOf } from '../../src/domain/instrument/index.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 import { instrumentLabel } from '../../src/ui/calculation-words.ts';
 import { shortDate } from '../../src/ui/format.ts';
@@ -61,10 +62,9 @@ export interface ExpectedSettlementItem {
 
 // The contract as the UI labels it ("NVDA 20 Nov 2026 107 Call"), from the generator's OCC-style key ("NVDA261120C00107000").
 export function contractLabel(key: string): string {
-  const found = /^(.+?)(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(key);
-  if (!found) throw new Error(`not an option contract key: ${key}`);
-  const [, symbol = '', yy, mm, dd, right, strike] = found;
-  return instrumentLabel({ kind: 'Option', symbol, root: symbol, expiration: `20${yy}-${mm}-${dd}`, strike: String(Number(strike) / 1000), right: right === 'C' ? 'Call' : 'Put', multiplier: 100 });
+  const instrument = instrumentOf(key);
+  if (instrument.kind !== 'Option') throw new Error(`not an option contract key: ${key}`);
+  return instrumentLabel(instrument);
 }
 
 // A signed open quantity as the Settlement panel words it: "Long 20 contracts" or "Short 1 contract".
