@@ -17,13 +17,14 @@ import { TradeDetail } from './TradeDetail.tsx';
 afterEach(cleanup);
 
 // Stands in for Trade Detail: shows what the form handed over, and keeps the navigation state it arrived with.
-let navigationState: unknown;
+let navigation: { readonly tradeId: string | undefined; readonly state: unknown } | undefined;
 function DetailFromState() {
   const state: unknown = useLocation().state;
+  const tradeId = useParams().tradeId;
   useEffect(() => {
-    navigationState = state;
+    navigation = { tradeId, state };
   });
-  const confirmed = handedOverConfirmed(useParams().tradeId ?? '');
+  const confirmed = handedOverConfirmed(tradeId ?? '');
   return (
     <>
       <p>
@@ -694,8 +695,10 @@ describe('option Strategies (A116)', () => {
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     expect(await screen.findByText('1R $400.00')).toBeTruthy();
     expect(screen.getByText('Detail trade-7 for Roth IRA: Earnings run-up.')).toBeTruthy();
-    // The browser structured-clones history state, so it holds no class instance (T7.31-F1).
-    expect(structuredClone(navigationState)).toStrictEqual(navigationState);
+    // The confirmation hands over in memory, so the navigation carries no history state (T7.31-F1, T7.31-F1-B1).
+    // The capture must have run for the confirmed Trade, so an uncaptured undefined cannot pass.
+    expect(navigation?.tradeId).toBe('trade-7');
+    expect(navigation?.state ?? null).toBeNull();
     expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
   });
 
