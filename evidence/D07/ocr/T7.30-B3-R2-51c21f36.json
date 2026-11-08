@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 100516,
+    "input_tokens": 99164,
+    "output_tokens": 1352,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m6s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "Awaiting all historical frame requests here delays every settlement lookup, although `settlementItemsOf` depends only on the already computed evaluation. Previously these lookups ran concurrently with dated-close resolution. On an Open page with both historical-frame needs and due settlements, this adds the historical lookup duration to the settlement path. Start the settlement promises before awaiting `historicalFrames` (or await both groups with `Promise.all`), then assemble the dated lines once both are available.",
+      "existing_code": "          const historical = await historicalFrames(evaluated.flatMap(({ analysis, frame, evaluation }) =\u003e historicalNeedOf(analysis, frames, frame, evaluation) ?? []));",
+      "start_line": 957,
+      "end_line": 957,
+      "category": "performance",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/trade-views/trade-views.ts",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "9cb68705-e7e5-4946-8201-cdf1a1a10884",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9cb68705-e7e5-4946-8201-cdf1a1a10884",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "51c21f36",
+      "resolved_base": "c5e4bfaa7314399edb9912bb90548051bce00071",
+      "resolved_head": "51c21f3663e4d2580805d92a64d9b5072ca4f125",
+      "exact_range": "c5e4bfaa7314399edb9912bb90548051bce00071..51c21f3663e4d2580805d92a64d9b5072ca4f125",
+      "source_artifact_sha256": "adeb0a7ecc5f844615379a9777552159b65f367344e90136e685fc5750feb797"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d2ce8011c7f427dbcfced1b9ce4eb3ebc94f49efa2f14b71e41b1d86ddc79af5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d2ce8011c7f427dbcfced1b9ce4eb3ebc94f49efa2f14b71e41b1d86ddc79af5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 65686
+  }
+}

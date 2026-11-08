@@ -1,0 +1,189 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 2,
+    "total_tokens": 250136,
+    "input_tokens": 247592,
+    "output_tokens": 2544,
+    "cache_read_tokens": 32512,
+    "elapsed": "1m36s"
+  },
+  "tool_calls": {
+    "total": 31,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 10,
+      "file_read": 20
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/tests/integration/d7/rejections.ts",
+      "content": "Both condition families are invalid in the same command, so this assertion still passes if validation stops checking extra Stops or extra Targets. The separate Stop-only case is marked `it.fails`, so it does not provide a passing rejection guard either. Exercise extra-Stop-only and extra-Target-only commands independently with `rejectedPlan`, asserting ConditionCountNotOne for each.",
+      "existing_code": "    const twice = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extra[0]], targets: [...longCall.plan.targets, extra[1]] } });\n    expect(twice).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'TradeAnalysis', code: 'ConditionCountNotOne' })]));",
+      "start_line": 79,
+      "end_line": 80,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/tests/integration/d7/rejections.ts",
+      "content": "`it.fails` accepts any failure in this callback, including `rejectedPlan` throwing because the command was accepted or its unchanged-dump assertion failing. Those regressions would therefore leave this test green instead of demonstrating the known missing extraConditions diagnostic. Keep setup, rejection-code verification and unchanged-persistence checks in a normally passing test or hook, and limit the expected-failure body to the missing diagnostic assertion.",
+      "existing_code": "    const issues = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extra] } });\n    expect(issues).toEqual(expect.arrayContaining([{ source: 'TradeAnalysis', code: 'ConditionCountNotOne', details: { extraConditions: [extra] } }]));",
+      "start_line": 105,
+      "end_line": 106,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D7 integration tests for lifecycle, reviews, payoff, and settlement",
+      "files": [
+        "src/itg/relocated/tests/integration/d7/entry-window.ts",
+        "src/itg/relocated/tests/integration/d7/expiration-close-review.ts",
+        "src/itg/relocated/tests/integration/d7/lifecycle.ts",
+        "src/itg/relocated/tests/integration/d7/missing-mark.ts",
+        "src/itg/relocated/tests/integration/d7/payoff.ts",
+        "src/itg/relocated/tests/integration/d7/rebuild.ts",
+        "src/itg/relocated/tests/integration/d7/rejections.ts",
+        "src/itg/relocated/tests/integration/d7/review.ts",
+        "src/itg/relocated/tests/integration/d7/settlement-due.ts"
+      ]
+    }
+  ],
+  "session_id": "2062b1e9-05af-4e30-9b82-d16d3a823614",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2062b1e9-05af-4e30-9b82-d16d3a823614",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "980deaa5",
+      "resolved_base": "e0042a86aac8db2656898e7ac58d921fe2f408f3",
+      "resolved_head": "980deaa56d6dff1030638daa54d683093ad712aa",
+      "exact_range": "e0042a86aac8db2656898e7ac58d921fe2f408f3..980deaa56d6dff1030638daa54d683093ad712aa",
+      "source_artifact_sha256": "3af0a12cd91ef96e88949829d80e369c0fe30681ca7d4c3df84d9ffa96ecd711"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "062f48af6962b6c2257e806950f8e8fcaa00405bb6fa5cc799a8ec7ef7d95d4d",
+          "path": "src/itg/relocated/tests/integration/d7/review.ts",
+          "fingerprint": "59ba5f116f4812f72b3f74018b3834531e552f144386b39259fd6330e5cb2982"
+        },
+        {
+          "item_id": "339f34eaa3585a47ea206b0f4a52f38bbcced57bf31ecd2086c2c687b87c7c7a",
+          "path": "src/itg/relocated/tests/integration/d7/settlement-due.ts",
+          "fingerprint": "bad8c24010322b000e3f376e8d09f2d343e6a40cd22573292b90c05ffc582d20"
+        },
+        {
+          "item_id": "5348db3b82de801f1f9cf829c871ae2c63711dcfebdee3658b54e8efbb55228d",
+          "path": "src/itg/relocated/tests/integration/d7/payoff.ts",
+          "fingerprint": "01b7df32620c42d5ef3cf7c7e4bc81ffaef8bc6ab6c600d13d0954baf2aeba56"
+        },
+        {
+          "item_id": "79c1369f941f81b628cb0e6d1f3faa78d892a85216eb5c8e1cba41292555d85e",
+          "path": "src/itg/relocated/tests/integration/d7/entry-window.ts",
+          "fingerprint": "5f53f2464b9385179ecd120d581aa20129c97273c12a005202ef57ecfbdb9f1c"
+        },
+        {
+          "item_id": "ae66c1ee4bb784e8d8b4088f5fd632bf488a4c9117b6c16c91343e3cb0949b50",
+          "path": "src/itg/relocated/tests/integration/d7/missing-mark.ts",
+          "fingerprint": "781a80c2217922edd71e938523295653f471702370241c58b18e328e5942051c"
+        },
+        {
+          "item_id": "c2cc3d73957af15966dd42929f68d8297f10606a616f89721ae3a5246b360a7f",
+          "path": "src/itg/relocated/tests/integration/d7/rebuild.ts",
+          "fingerprint": "54efe4397810c79068b697a4f7bcf492487c60b41754dcae0629da9d192976ee"
+        },
+        {
+          "item_id": "dc9c2b48f75dac38cfe6afe59a8e761c4383ca3f7523a3f0a72345b70438b45f",
+          "path": "src/itg/relocated/tests/integration/d7/lifecycle.ts",
+          "fingerprint": "62e44abed2268d60d776aa9bb1ff4697d85e7eda33ea5f49cdd3268a49657979"
+        },
+        {
+          "item_id": "ee03532b85271dfb09eb39ebcc751f49b8361c68060b4d2b64664122a14e97d0",
+          "path": "src/itg/relocated/tests/integration/d7/expiration-close-review.ts",
+          "fingerprint": "6cf2c02b1f9d92b8b01f6eaafc9af5ddcfee08e72792b20d3755206bf82d6de5"
+        },
+        {
+          "item_id": "fe45a970acb93a697e2fb1dde64730f6ef2ce67593f16c9766aff9ae6a0b1b4e",
+          "path": "src/itg/relocated/tests/integration/d7/rejections.ts",
+          "fingerprint": "c66b1fe2f7de4519a38075241e9cebb6f44862804214ae02bcf331e13746c8ac"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "062f48af6962b6c2257e806950f8e8fcaa00405bb6fa5cc799a8ec7ef7d95d4d",
+          "path": "src/itg/relocated/tests/integration/d7/review.ts",
+          "fingerprint": "59ba5f116f4812f72b3f74018b3834531e552f144386b39259fd6330e5cb2982"
+        },
+        {
+          "item_id": "339f34eaa3585a47ea206b0f4a52f38bbcced57bf31ecd2086c2c687b87c7c7a",
+          "path": "src/itg/relocated/tests/integration/d7/settlement-due.ts",
+          "fingerprint": "bad8c24010322b000e3f376e8d09f2d343e6a40cd22573292b90c05ffc582d20"
+        },
+        {
+          "item_id": "5348db3b82de801f1f9cf829c871ae2c63711dcfebdee3658b54e8efbb55228d",
+          "path": "src/itg/relocated/tests/integration/d7/payoff.ts",
+          "fingerprint": "01b7df32620c42d5ef3cf7c7e4bc81ffaef8bc6ab6c600d13d0954baf2aeba56"
+        },
+        {
+          "item_id": "79c1369f941f81b628cb0e6d1f3faa78d892a85216eb5c8e1cba41292555d85e",
+          "path": "src/itg/relocated/tests/integration/d7/entry-window.ts",
+          "fingerprint": "5f53f2464b9385179ecd120d581aa20129c97273c12a005202ef57ecfbdb9f1c"
+        },
+        {
+          "item_id": "ae66c1ee4bb784e8d8b4088f5fd632bf488a4c9117b6c16c91343e3cb0949b50",
+          "path": "src/itg/relocated/tests/integration/d7/missing-mark.ts",
+          "fingerprint": "781a80c2217922edd71e938523295653f471702370241c58b18e328e5942051c"
+        },
+        {
+          "item_id": "c2cc3d73957af15966dd42929f68d8297f10606a616f89721ae3a5246b360a7f",
+          "path": "src/itg/relocated/tests/integration/d7/rebuild.ts",
+          "fingerprint": "54efe4397810c79068b697a4f7bcf492487c60b41754dcae0629da9d192976ee"
+        },
+        {
+          "item_id": "dc9c2b48f75dac38cfe6afe59a8e761c4383ca3f7523a3f0a72345b70438b45f",
+          "path": "src/itg/relocated/tests/integration/d7/lifecycle.ts",
+          "fingerprint": "62e44abed2268d60d776aa9bb1ff4697d85e7eda33ea5f49cdd3268a49657979"
+        },
+        {
+          "item_id": "ee03532b85271dfb09eb39ebcc751f49b8361c68060b4d2b64664122a14e97d0",
+          "path": "src/itg/relocated/tests/integration/d7/expiration-close-review.ts",
+          "fingerprint": "6cf2c02b1f9d92b8b01f6eaafc9af5ddcfee08e72792b20d3755206bf82d6de5"
+        },
+        {
+          "item_id": "fe45a970acb93a697e2fb1dde64730f6ef2ce67593f16c9766aff9ae6a0b1b4e",
+          "path": "src/itg/relocated/tests/integration/d7/rejections.ts",
+          "fingerprint": "c66b1fe2f7de4519a38075241e9cebb6f44862804214ae02bcf331e13746c8ac"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 95900
+  }
+}

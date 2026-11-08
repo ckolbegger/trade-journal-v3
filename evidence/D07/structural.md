@@ -1406,3 +1406,31 @@ From the ocr review of `51c21f36` (T7.30-B3-R2).
 - Test gaps: query-count case for two Underlyings needing the same earlier date (one Historical read; first-run pass, mutation-checked in `tdd-log.md`); stray `console.log` removed.
 - B2's `it.fails` case on `details.extraConditions` through `confirmPlan` removed (dismissed by the main session); the ConditionCountNotOne code assertion stays.
 - Verified: `npx vitest run src` 1425 passed; `npx vitest run tests/integration` 189 passed, no `it.fails` left; `npm run verify:fixtures` OK; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
+
+### ocr review of `c13d07b9` (T7.30-B2)
+
+`ocr/T7.30-B2-c13d07b9.json` (relocated), 2 ocr comments plus 2 from the reviewer:
+1. Valid: the `ConditionCountNotOne` case sends an extra Stop and an extra Target in one command and checks the code with `arrayContaining`, so dropping either family's check would still pass. Its title also promises "naming the extra condition", which nothing asserts. → bug task **B2-R1**: separate Stop-only and Target-only commands, and a title without "naming".
+2. Ignored: the `it.fails` case, removed by B3-R3.
+3. Doubtful, **dismissed**: I7.15 rebuilds the "At Mon Oct 12 close" label from `shortDate` instead of reading it from the UI. A Node test can't render the UI. It asserts the read-model fields (`tradingDate`, Mark) and the shared formatter, and the heading's words are the UI tests' to pin.
+4. Wrong, **dismissed**: `closeReasonFacts ?? []` hides nothing, since the stored document omits the field when empty (`trade-record.ts:378`).
+The reviewer confirmed that the other gaps are closed and that no assertion is vacuous. B2-R1 waits for the cumulative run to finish.
+
+### ocr review of `18341190` (T7.30-B3-R3)
+
+`ocr/T7.30-B3-R3-18341190.json` and `-relocated.json`: ocr found nothing. The reviewer's own reading:
+1. Valid (comment only): `historicalFrames` absorbs any `SessionPolicyCoverage` rejection, while `currentFrames` requires a `date`, which the Historical coverage issue (`market-data.ts:394`) doesn't carry. The behavior is right; the "as `currentFrames` does" comment overstates the match. → B3-R4 (folded into one task with B2-R1).
+2. Valid: no test shows that Trade Detail now throws on a non-coverage rejection, a behavior change on Detail. → B3-R4.
+3. Valid but predates the commit, **dismissed**: the Open page resolves Catalog labels and `currentFrames` one after the other.
+4. Info, **dismissed**: Detail runs its one Historical read and its settlement lookups in turn, within T7.29's "at most one".
+
+### Cumulative run `t7-30-node-integration` (commit 18341190 plus evidence edits)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1425 tests passed, exit 0 | `suite-runs/t7-30-node-integration-unit.txt` |
+| Node integration | 93 files, 189 tests passed, exit 0 | `suite-runs/t7-30-node-integration-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-30-node-integration-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-30-node-integration-checks.txt` |
+
+Tier: full, printed reason "first matching path since 10edb51a: e2e/d6/stale-index-entry.ts". `run-complete.sh`: run complete. Ports free before and after.
