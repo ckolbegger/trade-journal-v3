@@ -159,7 +159,7 @@ Every user-visible phrase D7's remaining tasks need, approved by the user in one
 | 23.16 | Trade Summary strike with decimals; `Option` summary, strike 52.5 | A strike with decimals shows cents in the Trade Summary: "Long 1 Nov 20 $52.50 Call"; a whole strike stays "$300". The contract label keeps "52.5". |
 | 23.17 | Conditions table for options | Extra columns "Value at expiration" ("$0.00", "$5.00" per share) and "Distance on XYZ" ("4.00") |
 | 23.18 | Valuation section, the Underlying's Mark | Term "Underlying Mark", value "$52.00 · Manual" |
-| 23.19 | the expiration line on a Closed or expired option Trade | ~~"Expired Fri 20 Nov 2026"~~ **Amended by decision 93 (revision 58):** a Closed option Trade shows no expiration line: it was closed, and its Terminal Disposition (row 23.12) says how, as a Closed stock Trade's does. An open one shows A119's "Expires Fri 20 Nov 2026" until its Settlement Due panel replaces it. |
+| 23.19 | the expiration line on a Closed or expired option Trade | **Amended by decision 94 (revision 59), replacing decision 93:** "Expired Fri 20 Nov 2026" when the Trade's Terminal Disposition includes an expiration (it expired, wholly or in part, by no action of the trader); no expiration line when only the trader's Executions disposed of it (it was closed, and its Terminal Disposition, row 23.12, says how, as a Closed stock Trade's does). An open one shows A119's "Expires Fri 20 Nov 2026" until its Settlement Due panel replaces it. |
 
 ### T7.24 UI: Review settlement and option Marks (`ReviewView.tsx`, `ReviewCard.tsx`, `CardMarks.tsx`, `MarkEntry.tsx`, `mark-issues.ts`)
 
