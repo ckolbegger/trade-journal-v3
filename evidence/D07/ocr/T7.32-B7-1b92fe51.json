@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 20709,
+    "input_tokens": 20476,
+    "output_tokens": 233,
+    "cache_read_tokens": 5760,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/CardFigures.tsx",
+        "src/ui/screens/payoff-text.ts"
+      ]
+    }
+  ],
+  "session_id": "2051d895-9b36-4416-92b9-92ef99951dcf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2051d895-9b36-4416-92b9-92ef99951dcf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1b92fe51",
+      "resolved_base": "a725887a6ddcdf076523cbc1d8aac0db7d4fb36b",
+      "resolved_head": "1b92fe513995fc493d8d8a516ed5bbafc425aa2b",
+      "exact_range": "a725887a6ddcdf076523cbc1d8aac0db7d4fb36b..1b92fe513995fc493d8d8a516ed5bbafc425aa2b",
+      "source_artifact_sha256": "972f27473ab30686c6439fb6412b70eab3a07e1d3351a27bbbe3ea35ff4348e6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "1b7ba6c66da03d1ea32ca774765c48c7c55be4c58f861834baab22fa2f7bbd4b"
+        },
+        {
+          "item_id": "8b026ba05dd3426d0e2e744bff79ed05841b17c47e7e653e81030c1434ca0c9d",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "1e3aac03b292d6602709c3cdc9fb0e8a4d48ae54ba3c82bdad47e98c1ed943e6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "1b7ba6c66da03d1ea32ca774765c48c7c55be4c58f861834baab22fa2f7bbd4b"
+        },
+        {
+          "item_id": "8b026ba05dd3426d0e2e744bff79ed05841b17c47e7e653e81030c1434ca0c9d",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "1e3aac03b292d6602709c3cdc9fb0e8a4d48ae54ba3c82bdad47e98c1ed943e6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 11126
+  }
+}
