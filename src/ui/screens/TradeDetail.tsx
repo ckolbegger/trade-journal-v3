@@ -28,7 +28,7 @@ import { findingWords, instrumentLabel, text, unavailableWords } from '../calcul
 import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { contractCount, exerciseIntentText, expirationDate, holdingText, settlementTime } from './option-words.ts';
 import { executionWhat } from './execution-line.ts';
-import { closedViaOption, timingWords } from './option-disposition.ts';
+import { closedByExpiration, closedViaOption, timingWords } from './option-disposition.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
 import { PayoffView } from './PayoffView.tsx';
@@ -303,18 +303,20 @@ function PayoffSections({ view }: { readonly view: PlannedTradeDetail | OpenTrad
 
 // The Trade at a glance, from values the Detail already holds. Stop and Target carry their colour
 // and always their label.
-function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | OpenTradeDetail; readonly timeZone: string }) {
+function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | OpenTradeDetail | ClosedTradeDetail; readonly timeZone: string }) {
   const leg = view.plan.legs[0];
   const stop = view.plan.stops[0];
   const target = view.plan.targets[0];
   const contract = leg?.instrument.kind === 'Option' ? leg.instrument : undefined;
   const held = 'positions' in view ? view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)) : Rational.of(0n);
   const settlementPanel = 'settlement' in view && view.settlement.length > 0;
+  const expired = 'terminalDisposition' in view && view.terminalDisposition.kind === 'Value' && closedByExpiration(view.terminalDisposition.value);
   return (
     <section className="card summary-card" aria-label="Summary">
       {view.summary && <p className="summary-text number"><TradeText text={tradeSummary(view.summary, timeZone)} /></p>}
-      {/* A contract due for settlement has its panel; a Closed Trade's Terminal Disposition says how it ended (decision 93). */}
-      {contract && !settlementPanel && !('terminalDisposition' in view) && <p>{`Expires ${expirationDate(contract.expiration)}`}</p>}
+      {/* A contract due for settlement has its panel. A Closed Trade shows "Expired" only when its Terminal Disposition
+          includes an expiration; one only the trader's Executions disposed of shows no line (decision 94, row 23.19). */}
+      {contract && !settlementPanel && (!('terminalDisposition' in view) ? <p>{`Expires ${expirationDate(contract.expiration)}`}</p> : expired && <p>{`Expired ${expirationDate(contract.expiration)}`}</p>)}
       {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
       <dl className="figure-grid">
         {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
