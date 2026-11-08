@@ -632,3 +632,24 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 7853d74e`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-18-f1-long-stock-default-checks.txt` |
 
 Tier: full, printed reason "first matching path since 7853d74e: src/app/routes.ts". Ports free before and after. T7.18 is complete.
+
+## T7.35 Trade Analysis: a long option's `NoPositiveRisk` names the breakeven
+
+Behavioral (decision 87, K12); commit `015f46a1`. One case in `plan-option.test.ts`; red `expected undefined to be true` (no breakeven on the long Call's `NoPositiveRisk`), green after `NoPositiveRisk` takes `breakevenOf`'s value for every option leg (stock still gets none). No first-run passes. One earlier assertion (Long Call Stop 58.00) now compares issue codes only, since the issue carries details. **For T7.19:** row 19.13 reads `details.breakeven` for every option `NoPositiveRisk`.
+
+### ocr review of `015f46a1`
+
+No findings (`ocr/T7.35-015f46a1.json`).
+
+### Cumulative run after T7.35 (`t7-35-long-breakeven`, at `015f46a1`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 54ac5150`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1320 passed, exit 0 | `suite-runs/t7-35-long-breakeven-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-35-long-breakeven-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (12.6 s), exit 0 | `suite-runs/t7-35-long-breakeven-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-35-long-breakeven-checks.txt` |
+
+Tier: task, printed reason "no changed path since 54ac5150 is on the full-tier list". Ports free before and after. T7.35 is complete.
