@@ -28,6 +28,8 @@ export const plannedDetail = {
     targets: [{ factId: 'f-4', kind: 'UnderlyingPrice', price: '56' }],
   },
   lifecycle: { stored: 'Planned', agreement: { kind: 'Agrees' } },
+  // Long Stock has no option expiration: both payoff views are NotApplicable (AC-CALC-004).
+  payoff: { planned: { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' }, current: { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' } },
   summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(50n) },
   baseline: {
     originalPlannedRisk: Rational.of(250n),

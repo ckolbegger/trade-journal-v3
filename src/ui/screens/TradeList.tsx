@@ -5,10 +5,11 @@ import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeIte
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { isMarkLacking, isMarkMissing } from '../calculation-words.ts';
+import { isMarkLacking, isMarkMissing, isSettlementDue } from '../calculation-words.ts';
 import { calculation, FACTS_INCOHERENT_FIGURE, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
+import { closedByExpiration, closedViaOptionShort, timingLabel } from './option-disposition.ts';
 
 export interface TradeListProps {
   readonly facade: UiFacade;
@@ -145,7 +146,7 @@ function OpenList({
 }: ListProps & {
   readonly showPlanned: () => void;
 }) {
-  const { writable } = useRuntime();
+  const { writable, timeZone } = useRuntime();
   useEffect(() => {
     if (state.kind === 'Ready') markOpenListReady(writable);
   }, [state, writable]);
@@ -203,7 +204,7 @@ function OpenList({
                 <td>
                   <TradeCell
                     disagreement={disagreementBadge(item.integrity, derived)}
-                    text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
+                    text={derived?.summary ? tradeSummary(derived.summary, timeZone) : NOT_AVAILABLE}
                     line={
                       <>
                         Net cost {derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}
@@ -264,7 +265,7 @@ function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId
 function StatusBadges({ current }: { readonly current: Current }) {
   return (
     <>
-      {current.currentMarkedPnl.kind === 'Unavailable' && isMarkMissing(current.currentMarkedPnl) && (
+      {current.currentMarkedPnl.kind === 'Unavailable' && (isMarkMissing(current.currentMarkedPnl) || isSettlementDue(current.currentMarkedPnl)) && (
         <>
           {' '}
           <Badge tone="warning">{unavailableLabel(current.currentMarkedPnl)}</Badge>
@@ -326,6 +327,19 @@ function TradeCell({
     </>
   );
 }
+
+// A Closed row's Disposition cell: "Closed via sale" for stock; for an option the mechanisms by the side it held, then its
+// Option Disposition Timing after a middle dot (row 23.14).
+function dispositionCell(item: ClosedTradeItem): string {
+  const { terminalDisposition: disposition, optionDispositionTiming: timing, summary } = item;
+  if (disposition.kind !== 'Value') return NOT_AVAILABLE;
+  if (summary?.kind !== 'Option') return 'Closed via sale';
+  const via = closedViaOptionShort(summary.direction, disposition.value);
+  return timing?.kind === 'Value' ? `${via} · ${timingLabel(timing.value)}` : via;
+}
+
+// An Expiration closes a Trade with no Close Reason to give (row 23.15).
+const closedByExpirationOf = ({ terminalDisposition: disposition }: ClosedTradeItem): boolean => disposition.kind === 'Value' && closedByExpiration(disposition.value);
 
 const GAIN_LOSS = signed(money);
 const R_MULTIPLE = signed(rMultiple);
@@ -418,7 +432,7 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
                 <td>
                   <TradeCell
                     disagreement={disagreementBadge(item.integrity, derived)}
-                    text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
+                    text={derived?.summary ? tradeSummary(derived.summary, timeZone) : NOT_AVAILABLE}
                     indicators={
                       <>
                         {item.reflectionOwed && (
@@ -440,8 +454,8 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
                 </td>
                 <td className="number wide-only">{pnl}</td>
                 <td className="number wide-only">{r}</td>
-                <td>{derived && derived.terminalDisposition.kind === 'Value' ? 'Closed via sale' : NOT_AVAILABLE}</td>
-                <td>{item.closeReason?.label ?? 'Not recorded'}</td>
+                <td>{derived ? dispositionCell(derived) : NOT_AVAILABLE}</td>
+                <td>{item.closeReason?.label ?? (derived && closedByExpirationOf(derived) ? 'Not needed' : 'Not recorded')}</td>
                 <td>{timeZone ? localTime(item.terminalTime, timeZone).slice(0, 10) : NOT_AVAILABLE}</td>
                 <td>{`${item.institution} — ${item.account}`}</td>
               </tr>
@@ -479,6 +493,7 @@ function ClosedList({ state, retry, showMore }: ListProps & { readonly showMore:
 }
 
 function PlannedList({ state, retry }: ListProps) {
+  const { timeZone } = useRuntime();
   if (state.kind === 'Loading') return <p role="status">Loading planned trades…</p>;
   if (state.kind === 'Error') {
     return (
@@ -532,7 +547,7 @@ function PlannedList({ state, retry }: ListProps) {
                 <td>
                   <TradeCell
                     disagreement={disagreementBadge(item.integrity, derived)}
-                    text={derived ? tradeSummary(derived.summary) : NOT_AVAILABLE}
+                    text={derived ? tradeSummary(derived.summary, timeZone) : NOT_AVAILABLE}
                     line={`1R ${derived ? money(derived.oneR) : NOT_AVAILABLE} · Reward : risk ${derived ? ratio(derived.rewardRiskRatio) : NOT_AVAILABLE}`}
                   />
                 </td>

@@ -172,6 +172,8 @@ type MarkMissingReason = Extract<UnavailableReason, { readonly reason: 'MarkMiss
 type MarkLackingReason = Extract<UnavailableReason, { readonly reason: 'MarkMissing' | 'AcknowledgedUnavailable' }>;
 // The result lacks the Mark it needs.
 export const isMarkMissing = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkMissingReason> => reason.reason === 'MarkMissing';
+// The result is past its contract's expiration, which is due for settlement (K4).
+export const isSettlementDue = (reason: UnavailableReason): boolean => reason.reason === 'SettlementDue';
 // The result lacks its Mark, or the trader acknowledged that none can be had.
 export const isMarkLacking = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkLackingReason> => reason.reason === 'MarkMissing' || reason.reason === 'AcknowledgedUnavailable';
 // A Review blocker for a Mark that is missing.

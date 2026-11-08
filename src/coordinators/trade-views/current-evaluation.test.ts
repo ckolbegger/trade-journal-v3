@@ -323,7 +323,7 @@ describe('getTradeDetail: Open with current evaluation', () => {
     const detail = await views.getTradeDetail({ tradeId: planned.tradeId });
 
     if (detail.kind !== 'Ready') throw new Error(`expected Ready, got ${detail.kind}`);
-    expect(Object.keys(detail.view).sort()).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'plan', 'summary', 'tradeId']);
+    expect(Object.keys(detail.view).sort()).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'payoff', 'plan', 'summary', 'tradeId']);
     expect(detail.binding).not.toHaveProperty('marketDataSnapshotId');
     expect(queries).toBe(0);
     expect((await views.getTradeDetail({ tradeId: open.tradeId })).kind).toBe('Ready');

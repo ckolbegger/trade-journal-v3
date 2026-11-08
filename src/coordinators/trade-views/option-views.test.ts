@@ -4,7 +4,7 @@ import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/j
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { reviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, ExpirationMember, PositionChangeMember } from '../trade-workflows/index.ts';
-import { createTradeViews, type ClosedTradeDetail, type ClosedTradeItem, type OpenTradeDetail, type ReadViewResult, type TradeDetailView } from './index.ts';
+import { createTradeViews, type ClosedTradeDetail, type ClosedTradeItem, type OpenTradeDetail, type PlannedTradeDetail, type ReadViewResult, type TradeDetailView } from './index.ts';
 
 // D7 section 4: O-S (Cash-Secured Put on MNO) and O-C (Long Call on XYZ). Every contract expires Friday
 // 2026-11-20; New York is on standard time from 11-01, so 16:00 is 21:00Z and 17:00 is 22:00Z.
@@ -156,6 +156,21 @@ describe('getTradeDetail: option Trades (AC-SET-003, A119)', () => {
     expect(trade.current.expectedMarkDate).toBeUndefined();
     expect(trade.current.mark).toBeUndefined();
     expect(trade.current.evaluation.expirationValueAtUnderlyingClose).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });
+  }, 60_000);
+});
+
+describe('getTradeDetail: Planned option Trade (T7.23)', () => {
+  it('should return a Planned option Trade Detail with its Planned payoff and Current NotApplicable NoRemainingPosition, so a read after a reload shows the Plan payoff', async () => {
+    const fixture = await optionStack(THURSDAY_1700);
+    const tradeId = await fixture.confirm('strategy.long-call', fixture.planOC());
+
+    const result = await fixture.tradeViews.getTradeDetail({ tradeId });
+    if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+    const planned = result.view as PlannedTradeDetail;
+
+    expect(planned.lifecycle.stored).toBe('Planned');
+    expect(planned.payoff.planned.kind).toBe('Value');
+    expect(planned.payoff.current).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });
   }, 60_000);
 });
 

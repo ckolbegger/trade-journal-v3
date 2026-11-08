@@ -21,10 +21,10 @@ import {
   X2,
 } from '../../../tests/support/open-detail-fixtures.ts';
 import { closedDetailOf, closeReviewEntry } from '../../../tests/support/closed-detail-fixtures.ts';
-import { expiredOptionLotMatches, expiredOptionTrade } from '../../../tests/support/option-trade-fixtures.ts';
+import { expiredOptionTrade } from '../../../tests/support/option-trade-fixtures.ts';
+import { optionClosedDetail, optionPlannedDetail } from '../../../tests/support/option-detail-fixtures.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
-import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DueClassification, IntegrityFinding, NarrativeItem, RecordedDeviation, RecordedDeviationVersion, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -1466,8 +1466,7 @@ describe('Closed Trade Detail', () => {
 
 describe('Closed option Trade Detail (T7.21-B2)', () => {
   it('should show a Closed option Trades Lot Match disposed by an Expiration as Expired on 2026-11-20 16:00 on Trade Detail', async () => {
-    const view = { ...closedDetailOf([PC1, PC2, X1, X2]), positionChanges: expiredOptionTrade('O-C').record.positionChanges, lotMatches: expiredOptionLotMatches('O-C') };
-    renderView(view, true);
+    renderView(optionClosedDetail('O-C', expiredOptionTrade('O-C').record.positionChanges), true);
     const matches = within(await screen.findByRole('region', { name: 'Lot Matches' })).getByRole('table', { name: 'Lot Matches' });
     expect(within(matches).getAllByText('Expired on 2026-11-20 16:00').length).toBeGreaterThan(0);
   });
@@ -1512,9 +1511,11 @@ describe('Closed Trade Detail owed Debts (T6.19-B1)', () => {
 describe('Trade Detail of a just-confirmed Plan after a reload', () => {
   it('should render the confirmed Plan Detail after a reload or back navigation without throwing, with its Planned payoff', async () => {
     const facade = facadeDouble();
-    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
+    // The confirmed option Plan; the read after the reload carries its Planned payoff.
+    const confirmed = optionPlannedDetail('O-C');
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: confirmed, binding: {} } as never);
     // history.state is structured-cloned on a reload or back navigation: Rational instances come back as plain objects.
-    const cloned = structuredClone({ confirmed: plannedDetail, plannedPayoff: payoffFixtures.ocPayoffs().planned });
+    const cloned = structuredClone({ confirmed });
     render(
       // MemoryRouter would JSON-serialize the state (and fail on a BigInt), so the location is supplied directly.
       <Router location={{ pathname: '/trades/trade-1', search: '', hash: '', state: cloned, key: 'reloaded' }} navigationType={NavigationType.Pop} navigator={{ createHref: () => '', go: () => undefined, push: () => undefined, replace: () => undefined }}>
@@ -1526,7 +1527,10 @@ describe('Trade Detail of a just-confirmed Plan after a reload', () => {
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledWith({ tradeId: 'trade-1' });
     const baseline = screen.getByRole('region', { name: 'Plan Baseline' });
-    expect(within(baseline).getByText('1R (original risk)', { selector: 'dt' }).nextElementSibling?.textContent).toBe('$250.00');
+    expect(within(baseline).getByText('1R (original risk)', { selector: 'dt' }).nextElementSibling?.textContent).toBe('$400.00');
+    // The Planned payoff comes from the read, since the cloned state is not used (T7.23).
+    const payoff = screen.getByRole('region', { name: 'Planned Expiration Payoff' });
+    expect(within(payoff).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
   });
 });
 

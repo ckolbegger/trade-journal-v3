@@ -22,18 +22,42 @@ export const rMultiple = (value: Rational): string => `${formatDecimal(value, 2)
 // An Underlying price: no "$", two decimals, zero included (convention C3, conflicts K6 and K7).
 export const underlyingPrice = (value: Rational): string => formatDecimal(value, 2);
 
+// An Underlying price stored as entered (a trigger), in the same two-decimal format.
+export const decimalUnderlyingPrice = (text: string): string => {
+  const parsed = parseDecimal(text);
+  return parsed.ok ? underlyingPrice(parsed.value) : text;
+};
+
 // A Quantity to at most six decimals (A9), without trailing zeros (241/2 → "120.5").
 export const quantity = (value: Rational): string => formatDecimal(value, 6).replace(/\.?0+$/, '');
 
 // An instant as a Workspace-local date and time.
 export const localTime = (instant: string, timeZone: string): string => toWorkspaceLocal(instant, timeZone).replace('T', ' ');
 
-// What a Trade holds as one short text (plan section 2a); the Underlying is its own column, so it is not here.
-// An option summary's text arrives with the option lists (T7.23); until then none is worded.
-export const tradeSummary = (summary: PlannedTradeItem['summary']): string => {
-  if (summary.kind === 'Option') throw new Error('option Trade summaries are worded by T7.23');
-  return `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// The calendar year now in the Workspace zone (UTC until a zone is known).
+const currentYear = (timeZone = 'UTC'): number => Number(new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone }).format(new Date()));
+
+// "Nov 20", with a two-digit year ("Jan 21 '28") when the expiration is not in the current year (plan section 2a).
+const summaryExpiration = (expiration: string, timeZone: string | undefined): string => {
+  const [year = '', month = '1', day = '1'] = expiration.split('-');
+  const date = `${SHORT_MONTHS[Number(month) - 1]} ${Number(day)}`;
+  return Number(year) === currentYear(timeZone) ? date : `${date} '${year.slice(-2)}`;
 };
+
+// A strike as whole dollars, or with cents when it has decimals (row 23.16).
+const summaryStrike = (strike: string): string => {
+  const parsed = parseDecimal(strike);
+  if (!parsed.ok) return strike;
+  return parsed.value.denominator === 1n ? money(parsed.value).replace(/\.00$/, '') : money(parsed.value);
+};
+
+// What a Trade holds as one short text (plan section 2a); the Underlying is its own column, so it is not here.
+export const tradeSummary = (summary: PlannedTradeItem['summary'], timeZone?: string): string =>
+  summary.kind === 'Option'
+    ? `${summary.direction} ${quantity(summary.contracts)} ${summaryExpiration(summary.expiration, timeZone)} ${summaryStrike(summary.strike)} ${summary.right}`
+    : `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
 
 // A Trade named in a sentence: its Underlying, then its summary line in parentheses; the Underlying alone without a summary (A150).
 export const tradeName = (trade: { readonly underlying: string; readonly summary?: PlannedTradeItem['summary'] }): string =>

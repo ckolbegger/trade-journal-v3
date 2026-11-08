@@ -123,6 +123,7 @@ export type {
   EntryQualityFigures,
   EntryResolution,
   ExecutionFact,
+  ExpirationFact,
   InstrumentPosition,
   IntegrityFinding,
   LegFulfillment,

@@ -1,14 +1,14 @@
-import { plannedLongStockSummary } from '../../domain/trade-summary.ts';
-import type { EntryDefinitionRecord, NarrativeAnswer, PlannedTradeDetail, TradeMutationSuccess } from '../../app/types.ts';
+import { plannedTradeSummary } from '../../domain/trade-summary.ts';
+import type { ConfirmPlanResult, EntryDefinitionRecord, NarrativeAnswer, PlannedTradeDetail } from '../../app/types.ts';
 
 // Builds the Trade Detail view of a just-confirmed Plan from the command's post-commit result,
 // so presenting the success needs no read back (AC-RESP-001).
 export function confirmedDetail(
-  success: TradeMutationSuccess,
+  success: Extract<ConfirmPlanResult, { readonly kind: 'Confirmed' }>,
   definition: EntryDefinitionRecord,
   labels: PlannedTradeDetail['labels'],
 ): PlannedTradeDetail {
-  const { trade, derivation, entry } = success.postCommit;
+  const { trade, derivation, entry, payoff } = success.postCommit;
   const prompts = new Map(definition.prompts.map((p) => [p.id, p]));
   return {
     tradeId: trade.tradeId,
@@ -18,6 +18,7 @@ export function confirmedDetail(
       planTime: trade.plan.economicTime,
       thesis: trade.plan.thesis,
       invalidation: trade.plan.invalidation,
+      ...(trade.plan.exerciseIntent && { exerciseIntent: trade.plan.exerciseIntent }),
       legs: trade.plan.legs,
       stops: trade.plan.stops,
       targets: trade.plan.targets,
@@ -25,7 +26,8 @@ export function confirmedDetail(
     lifecycle: { stored: trade.storedLifecycle, agreement: derivation.agreement },
     baseline: derivation.baseline,
     // As Trade Views gives a Planned Detail: the Plan's total quantity at its first leg's intended entry.
-    summary: plannedLongStockSummary(trade.plan.legs),
+    summary: plannedTradeSummary(trade.plan.legs),
+    payoff,
     labels,
     journal: [
       {

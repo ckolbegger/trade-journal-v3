@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Rational } from '../domain/values/index.ts';
 import { decimalMoney, money, netCost, ratio, rMultiple, tradeName, tradeSummary } from './format.ts';
 
@@ -40,6 +40,19 @@ describe('Trade Summary text', () => {
 
   it('should keep a fractional share quantity exact', () => {
     expect(tradeSummary({ kind: 'Stock', direction: 'Long', quantity: r(25n, 2n), price: r(40n, 1n) })).toBe('Long 12.5 shares @ $40.00');
+  });
+
+  it('should word an option summary with its direction, contracts, expiration, strike and right, a two-digit year outside the current year, and cents on a strike with decimals', () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-08T17:00:00Z') });
+    try {
+      const option = { kind: 'Option' as const, direction: 'Long' as const, contracts: r(1n, 1n), expiration: '2026-11-20', strike: '300', right: 'Call' as const };
+      expect(tradeSummary(option)).toBe('Long 1 Nov 20 $300 Call');
+      expect(tradeSummary({ ...option, direction: 'Short', contracts: r(2n, 1n), expiration: '2026-12-18', strike: '45', right: 'Put' })).toBe('Short 2 Dec 18 $45 Put');
+      expect(tradeSummary({ ...option, expiration: '2028-01-21', strike: '250' })).toBe("Long 1 Jan 21 '28 $250 Call");
+      expect(tradeSummary({ ...option, strike: '52.5' })).toBe('Long 1 Nov 20 $52.50 Call');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('should format a Net cost debit as $3,007.00 and a credit as $212.00 credit', () => {

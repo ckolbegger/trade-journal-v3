@@ -1,4 +1,4 @@
-import type { OptionInstrument } from './instrument/index.ts';
+import type { Instrument, OptionInstrument } from './instrument/index.ts';
 import type { DerivedTradeState } from './trade-analysis/index.ts';
 import { parseDecimal, Rational } from './values/index.ts';
 
@@ -43,6 +43,18 @@ export function plannedLongStockSummary(
     quantity: legs.map((l) => decimal(l.quantity)).reduce((a, b) => a.add(b), Rational.of(0n)),
     price: decimal(legs[0]!.intendedEntry),
   };
+}
+
+const magnitude = (value: Rational) => (value.compare(Rational.of(0n)) < 0 ? Rational.of(0n).sub(value) : value);
+
+// A Planned Trade's Summary, by the contract its first Planned Leg names: an option's direction and total contracts,
+// otherwise Long Stock. The coordinator and the confirmed Detail both call it.
+export function plannedTradeSummary(
+  legs: readonly { readonly side: 'Long' | 'Short'; readonly instrument: Instrument; readonly quantity: string; readonly intendedEntry: string }[],
+): TradeSummary {
+  const first = legs[0]!;
+  if (first.instrument.kind !== 'Option') return plannedLongStockSummary(legs);
+  return optionSummary(first.instrument, first.side, magnitude(legs.map((l) => decimal(l.quantity)).reduce((a, b) => a.add(b), Rational.of(0n))));
 }
 
 // The entered quantity (every Buy; Sells are not entered quantity) at its quantity-weighted entry price, fees

@@ -26,7 +26,7 @@ import {
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
-import { closedLongStockSummary, openLongStockSummary, optionSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
+import { closedLongStockSummary, openLongStockSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
@@ -235,6 +235,8 @@ export interface PlannedTradeDetail {
   // Stored Lifecycle State and its independently derived agreement, shown as separate concepts.
   readonly lifecycle: { readonly stored: LifecycleState; readonly agreement: LifecycleAgreement };
   readonly baseline: PlanBaseline;
+  // The Planned and Current Expiration Payoff views, apart from every Mark-dependent figure; NotApplicable for stock (AC-CALC-004).
+  readonly payoff: ExpirationPayoffs;
   // The planned quantity at the intended entry (Planned form) or the open Position (Open form).
   readonly summary?: TradeSummary;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
@@ -309,8 +311,6 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   // The option contracts still held at or past expiration, each with the settlement time (A111); empty for stock
   // and before the expiration date.
   readonly settlement: readonly SettlementItem[];
-  // The Planned and Current Expiration Payoff views, apart from every Mark-dependent figure; NotApplicable for stock (AC-CALC-004).
-  readonly payoff: ExpirationPayoffs;
   // Position Changes, and the Executions within each, in Fact Order.
   readonly positionChanges: readonly PositionChangeFact[];
   readonly entryStatus: 'Entering' | 'Resolved';
@@ -356,7 +356,7 @@ export interface ClosedTradeDetail extends OpenTradeDetail {
 // The Detail of a Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Plan, stored
 // lifecycle, labels, recorded Position Changes, recorded Deviations, and narrative, with the findings.
 // Nothing is derived, so it has no Baseline, lifecycle agreement, Position, entry, or fulfillment.
-export interface IncoherentTradeDetail extends Omit<PlannedTradeDetail, 'journal' | 'lifecycle' | 'baseline'> {
+export interface IncoherentTradeDetail extends Omit<PlannedTradeDetail, 'journal' | 'lifecycle' | 'baseline' | 'payoff'> {
   readonly lifecycle: { readonly stored: LifecycleState };
   // As stored: without a replay there is no Fact Order.
   readonly recordedPositionChanges: readonly PositionChangeFact[];
@@ -429,11 +429,7 @@ const optionContractOf = (analysis: TradeAnalysisRecord) => {
 };
 const magnitude = (value: Rational) => (value.compare(Rational.of(0n)) < 0 ? Rational.of(0n).sub(value) : value);
 
-function plannedSummaryOf(analysis: TradeAnalysisRecord): TradeSummary {
-  const contract = optionContractOf(analysis);
-  if (!contract) return plannedLongStockSummary(analysis.plan.legs);
-  return optionSummary(contract, analysis.plan.legs[0]!.side, magnitude(sum(analysis.plan.legs.map((l) => decimal(l.quantity)))));
-}
+const plannedSummaryOf = (analysis: TradeAnalysisRecord): TradeSummary => plannedTradeSummary(analysis.plan.legs);
 
 // The contracts still open, long or short by their sign; none when flat.
 function openSummaryOf(analysis: TradeAnalysisRecord, derived: DerivedTradeState): TradeSummary | undefined {
@@ -661,7 +657,6 @@ function detailWithoutValuation(
   return {
     ...planned,
     settlement,
-    payoff: payoffOf(analysis, derived),
     positions: derived.positions,
     lotMatches: lotMatchViews(derived),
     realizedToDate: derived.realizedToDate,
@@ -822,6 +817,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           ...stored,
           lifecycle: { stored: analysis.storedLifecycle, agreement: derived.agreement },
           baseline: derived.baseline,
+          payoff: payoffOf(analysis, derived),
         };
         // A Trade that is Planned by both its stored lifecycle and its facts keeps D1's Detail, whose
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.

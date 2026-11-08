@@ -149,7 +149,7 @@ describe('Trade Summary', () => {
     expect(without(await listed(views, 'Open'), 'summary', 'netCost')).toEqual([
       'account', 'averageOpenCost', 'current', 'deviationCount', 'entryStatus', 'incurredFees', 'institution', 'integrity', 'lastActivity', 'openQuantity', 'plannedQuantity', 'strategy', 'tradeId', 'underlying',
     ]);
-    expect(without(await detailed(views, planned.tradeId), 'summary')).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'plan', 'tradeId']);
+    expect(without(await detailed(views, planned.tradeId), 'summary')).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'payoff', 'plan', 'tradeId']);
     expect(without(await detailed(views, open.tradeId), 'summary', 'netCost')).toEqual([
       'baseline', 'current', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'feeReconciliation', 'fees', 'findings', 'journal', 'labels', 'lastActivity', 'legFulfillment', 'lifecycle', 'lotMatches', 'payoff', 'plan', 'positionChanges', 'positions', 'realizedToDate', 'settlement', 'tradeId',
     ]);

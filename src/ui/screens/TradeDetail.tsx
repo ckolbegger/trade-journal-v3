@@ -4,6 +4,7 @@ import type { UiFacade } from '../../app/compose.ts';
 import type {
   ClosedTradeDetail,
   ExecutionFact,
+  ExpirationFact,
   IncoherentTradeDetail,
   IntegrityFinding,
   NarrativeAnswer,
@@ -19,15 +20,18 @@ import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { WithSecondLine } from '../SecondLine.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
+import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary, underlyingPrice } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
 import type { UnavailableReason } from '../../domain/calculation-result/index.ts';
-import { findingWords, text, unavailableWords } from '../calculation-words.ts';
-import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed } from '../figures.ts';
+import { findingWords, instrumentLabel, text, unavailableWords } from '../calculation-words.ts';
+import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
+import { contractCount, exerciseIntentText, expirationDate, holdingText, settlementTime } from './option-words.ts';
+import { executionWhat } from './execution-line.ts';
+import { closedViaOption, timingWords } from './option-disposition.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
-import { PayoffView, type PayoffViewProps } from './PayoffView.tsx';
+import { PayoffView } from './PayoffView.tsx';
 
 export interface TradeDetailProps {
   readonly facade: UiFacade;
@@ -56,6 +60,23 @@ function answerText(answer: NarrativeAnswer): string {
   return 'Not answered';
 }
 
+type PlannedLeg = PlannedTradeDetail['plan']['legs'][number];
+
+// A Planned Leg in words: an option leg by contracts and contract (C2), a stock leg by shares.
+const legText = (leg: PlannedLeg): string =>
+  leg.instrument.kind === 'Option' ? holdingText(leg.side, leg.quantity, leg.instrument) : `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`;
+
+// A Stop or Target trigger: an option's is an Underlying price (C3), a stock's a price in dollars.
+const triggerText = (leg: PlannedLeg | undefined, triggerPrice: string): string => (leg?.instrument.kind === 'Option' ? decimalUnderlyingPrice(triggerPrice) : price(triggerPrice));
+
+const abs = (value: Rational): Rational => (value.compare(Rational.of(0n)) < 0 ? Rational.of(0n).sub(value) : value);
+
+// An open position: an option by its direction, contracts and contract (23.4), a stock by shares.
+const positionText = (p: OpenTradeDetail['positions'][number]): string =>
+  p.instrument.kind === 'Option'
+    ? holdingText(p.quantity.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long', quantity(abs(p.quantity)), p.instrument)
+    : `${quantity(p.quantity)} shares of ${p.instrument.symbol}`;
+
 // Returns to the Trades tab the Trade is listed under; where the lifecycle is unknown, the default tab.
 function BackToTrades({ lifecycle }: { readonly lifecycle?: string }) {
   return (
@@ -72,12 +93,8 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
   // After a reload or back/forward (a POP) the state is structured-cloned and its Rational values are plain objects,
   // so it is used only on the navigation that carried it, and a POP takes the normal read.
   const location = useLocation();
-  const navigation = (useNavigationType() === NavigationType.Pop ? null : location.state) as
-    | { confirmed?: PlannedTradeDetail; plannedPayoff?: PayoffViewProps['result'] }
-    | null;
+  const navigation = (useNavigationType() === NavigationType.Pop ? null : location.state) as { confirmed?: PlannedTradeDetail } | null;
   const confirmed = navigation?.confirmed;
-  // The confirmed option Plan's Planned payoff comes with it (decision 92); every other Detail gets its payoff sections from T7.23.
-  const plannedPayoff = confirmed?.tradeId === tradeId ? navigation?.plannedPayoff : undefined;
   const { writable } = useRuntime();
   const [state, setState] = useState<DetailState>(confirmed?.tradeId === tradeId ? { kind: 'Ready', view: confirmed } : { kind: 'Loading' });
 
@@ -159,18 +176,20 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
           </Link>
         )}
       </header>
-      {!('recordedPositionChanges' in view) && <SummaryCard view={view} />}
-      {/* A stock Plan's "Not applicable" is T7.23's, with every Detail's payoff sections. */}
-      {plannedPayoff?.kind === 'Value' && !('positionChanges' in view) && <PayoffView kind="Planned" symbol={view.plan.underlying} result={plannedPayoff} />}
+      {!('recordedPositionChanges' in view) && <SummaryCard view={view} timeZone={timeZone} />}
+      {'settlement' in view && view.settlement.length > 0 && <SettlementDuePanel tradeId={view.tradeId} items={view.settlement} timeZone={timeZone} />}
+      {!('recordedPositionChanges' in view) && <PayoffSections view={view} />}
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="card" aria-labelledby="plan-heading">
         <h2 id="plan-heading">Plan</h2>
         <dl className="figure-grid">
-          <Figure term="Leg" plain>{leg ? `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}` : ''}</Figure>
+          {leg?.instrument.kind === 'Option' && <Figure term="Contract" plain>{instrumentLabel(leg.instrument)}</Figure>}
+          <Figure term="Leg" plain>{leg ? legText(leg) : ''}</Figure>
+          {view.plan.exerciseIntent && <Figure term="Exercise Intent" plain>{exerciseIntentText(view.plan.exerciseIntent)}</Figure>}
           <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>
-          <Figure term="Stop">{stop ? price(stop.price) : ''}</Figure>
-          <Figure term="Target">{target ? price(target.price) : ''}</Figure>
+          <Figure term="Stop">{stop ? triggerText(leg, stop.price) : ''}</Figure>
+          <Figure term="Target">{target ? triggerText(leg, target.price) : ''}</Figure>
           <Figure term="Plan time" plain>{localTime(view.plan.planTime, timeZone)}</Figure>
           <Figure term="Account" plain>{`${view.labels.institution} — ${view.labels.account}`}</Figure>
         </dl>
@@ -193,7 +212,7 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
         ))}
       {'recordedPositionChanges' in view && (
         <>
-          <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
+          <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} legs={view.plan.legs} timeZone={timeZone} />
           <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} onDirtyChange={onDirtyChange} />
         </>
       )}
@@ -224,15 +243,77 @@ function Figure({ term, plain, tone, children }: { readonly term: string; readon
   );
 }
 
+// A contract still held at or past its expiration date, due for settlement (rows 23.9 and 23.10). Whether it was
+// assigned or exercised is worded by the sign of its quantity, never by the Strategy (decision 88); Record expiration
+// is an authoritative write, so it is offered only while Writable.
+function SettlementDuePanel({ tradeId, items, timeZone }: { readonly tradeId: string; readonly items: OpenTradeDetail['settlement']; readonly timeZone: string }) {
+  const { writable } = useRuntime();
+  return (
+    <section className="card" aria-labelledby="settlement-due-heading">
+      {/* The calculation-words module owns the words "Settlement Due" (conflict K4). */}
+      <h2 id="settlement-due-heading">{unavailableLabel({ reason: 'SettlementDue', instrument: items[0]!.instrument, expiration: items[0]!.expiration })}</h2>
+      {items.map((item) => {
+        const short = item.quantity.compare(Rational.of(0n)) < 0;
+        return (
+          <div key={`${item.instrument.symbol}-${item.expiration}-${item.instrument.strike}`}>
+            <dl className="figure-grid">
+              <Figure term="Contract" plain>{instrumentLabel(item.instrument)}</Figure>
+              <Figure term="Quantity" plain>{`${short ? 'Short' : 'Long'} ${contractCount(quantity(abs(item.quantity)))}`}</Figure>
+              <Figure term="Expired" plain>{shortDate(item.expiration)}</Figure>
+              <Figure term="Settlement time" plain>{settlementTime(item.settlementTime, timeZone)}</Figure>
+            </dl>
+            <p>
+              {short
+                ? "If it was assigned, this release can't record the assignment yet, so this Trade stays open until a later release can."
+                : "If it was exercised, this release can't record the exercise yet, so this Trade stays open until a later release can."}
+            </p>
+          </div>
+        );
+      })}
+      {writable && (
+        <Link className="pill primary" to={`/trades/${tradeId}/record-expiration`}>
+          Record expiration
+        </Link>
+      )}
+    </section>
+  );
+}
+
+// The Planned and Current Expiration Payoff, each its own section and apart from every Mark-dependent figure
+// (A119). The Current chart marks the value at expiration at the Underlying's latest close (A122), once it has a number.
+function PayoffSections({ view }: { readonly view: PlannedTradeDetail | OpenTradeDetail }) {
+  const symbol = view.plan.underlying;
+  const atClose = 'current' in view ? view.current.evaluation.expirationValueAtUnderlyingClose : undefined;
+  return (
+    <>
+      <PayoffView kind="Planned" symbol={symbol} result={view.payoff.planned} />
+      <PayoffView kind="Current" symbol={symbol} result={view.payoff.current} {...(atClose?.kind === 'Value' && { latestClose: atClose.value })} />
+      {/* Where the figure has no number, the module says why (row 23.11); a flat or stock Trade shows none. */}
+      {atClose?.kind === 'Unavailable' && (
+        <section className="card">
+          <dl className="figure-grid">
+            <Figure term={`Value at expiration at ${symbol}'s latest close`} plain>{calculation(atClose, () => '')}</Figure>
+          </dl>
+        </section>
+      )}
+    </>
+  );
+}
+
 // The Trade at a glance, from values the Detail already holds. Stop and Target carry their colour
 // and always their label.
-function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDetail }) {
+function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | OpenTradeDetail; readonly timeZone: string }) {
   const leg = view.plan.legs[0];
   const stop = view.plan.stops[0];
   const target = view.plan.targets[0];
+  const contract = leg?.instrument.kind === 'Option' ? leg.instrument : undefined;
+  const held = 'positions' in view ? view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)) : Rational.of(0n);
+  const settlementPanel = 'settlement' in view && view.settlement.length > 0;
   return (
     <section className="card summary-card" aria-label="Summary">
-      {view.summary && <p className="summary-text number"><TradeText text={tradeSummary(view.summary)} /></p>}
+      {view.summary && <p className="summary-text number"><TradeText text={tradeSummary(view.summary, timeZone)} /></p>}
+      {/* A contract due for settlement has its panel; before then and after, the line says when it expires or expired. */}
+      {contract && !settlementPanel && <p>{`${'terminalDisposition' in view ? 'Expired' : 'Expires'} ${expirationDate(contract.expiration)}`}</p>}
       {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
       <dl className="figure-grid">
         {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
@@ -240,7 +321,7 @@ function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDe
           <>
             {/* A Closed Trade holds no shares, so its quantity against the plan would read as none. */}
             {!('terminalDisposition' in view) && (
-              <Figure term="Quantity">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg?.quantity ?? ''} shares`}</Figure>
+              <Figure term="Quantity">{contract ? `${quantity(abs(held))} of ${contractCount(leg?.quantity ?? 0)}` : `${quantity(held)} of ${leg?.quantity ?? ''} shares`}</Figure>
             )}
             <Figure term="Entry" plain>{view.entryStatus}</Figure>
             <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
@@ -253,8 +334,8 @@ function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDe
           </>
         )}
         {!('positionChanges' in view) && <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>}
-        <Figure term="Stop" tone="stop">{stop ? price(stop.price) : ''}</Figure>
-        <Figure term="Target" tone="target">{target ? price(target.price) : ''}</Figure>
+        <Figure term="Stop" tone="stop">{stop ? triggerText(leg, stop.price) : ''}</Figure>
+        <Figure term="Target" tone="target">{target ? triggerText(leg, target.price) : ''}</Figure>
         {!('positionChanges' in view) && (
           <>
             <Figure term="1R">{money(view.baseline.oneR)}</Figure>
@@ -354,13 +435,13 @@ function DatedSection({ line }: { readonly line: NonNullable<OpenTradeDetail['cu
 }
 
 // Lots bought after the last close with an exact Mark: risk and reward measured from their prices, never a P&L (A54).
-function AtEntrySection({ atEntry, oneR }: { readonly atEntry: NonNullable<Evaluation['atEntry']>; readonly oneR: Rational }) {
+function AtEntrySection({ atEntry, oneR, option }: { readonly atEntry: NonNullable<Evaluation['atEntry']>; readonly oneR: Rational; readonly option: boolean }) {
   const inR = (dollars: Rational) => `${money(dollars)} · ${rMultiple(dollars.div(oneR))}`;
   return (
     <section className="card" aria-labelledby="at-entry-heading">
       <h2 id="at-entry-heading">At entry</h2>
       <dl className="figure-grid">
-        <Figure term="Quantity">{`${quantity(atEntry.quantity)} shares`}</Figure>
+        <Figure term="Quantity">{option ? contractCount(quantity(abs(atEntry.quantity))) : `${quantity(atEntry.quantity)} shares`}</Figure>
         <Figure term="Average entry">{money(atEntry.averageEntry)}</Figure>
         <Figure term="Risk from entry">{inR(atEntry.riskFromEntry)}</Figure>
         <Figure term="Reward from entry">{inR(atEntry.rewardFromEntry)}</Figure>
@@ -371,7 +452,18 @@ function AtEntrySection({ atEntry, oneR }: { readonly atEntry: NonNullable<Evalu
 
 // Original risk and reward from the frozen Plan, beside the current Mark-dependent risk and reward; a
 // figure the Mark cannot give says why, never a zero.
-function RiskRewardSection({ evaluation, baseline }: { readonly evaluation: OpenTradeDetail['current']['evaluation']; readonly baseline: OpenTradeDetail['baseline'] }) {
+function RiskRewardSection({
+  evaluation,
+  baseline,
+  option,
+  symbol,
+}: {
+  readonly evaluation: OpenTradeDetail['current']['evaluation'];
+  readonly baseline: OpenTradeDetail['baseline'];
+  // An option's conditions are Underlying prices, read against the contract's value at expiration there (rows 23.17, C3).
+  readonly option: boolean;
+  readonly symbol: string;
+}) {
   return (
     <section className="card" aria-labelledby="risk-reward-heading">
       <h2 id="risk-reward-heading">Risk and reward</h2>
@@ -391,19 +483,33 @@ function RiskRewardSection({ evaluation, baseline }: { readonly evaluation: Open
               <th scope="col">Status</th>
               <th scope="col" className="number">Distance</th>
               <th scope="col" className="number">Overrun</th>
+              {option && (
+                <>
+                  <th scope="col" className="number">Value at expiration</th>
+                  <th scope="col" className="number">{`Distance on ${symbol}`}</th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
             {evaluation.conditions.map((condition) => {
               const { result } = condition;
               const reading = result.kind === 'Value' ? result.value : undefined;
+              // The frozen basis of this Stop or Target: its id is its role and 1-based position.
+              const basis = (condition.role === 'Stop' ? baseline.stopBasis : baseline.targetBasis)[Number(condition.id.split('-')[1]) - 1];
               return (
                 <tr key={condition.id}>
                   <td>{condition.role}</td>
-                  <td className="number">{price(condition.boundary)}</td>
+                  <td className="number">{option ? decimalUnderlyingPrice(condition.boundary) : price(condition.boundary)}</td>
                   <td>{reading ? reading.status : calculation(result, () => '')}</td>
                   <td className="number">{reading ? measureText(reading.distance) : '—'}</td>
                   <td className="number">{reading ? (reading.overrun ? measureText(reading.overrun) : 'None') : '—'}</td>
+                  {option && (
+                    <>
+                      <td className="number">{basis?.valueAtExpiration ? money(basis.valueAtExpiration) : '—'}</td>
+                      <td className="number">{reading?.underlying ? underlyingPrice(reading.underlying.distance) : '—'}</td>
+                    </>
+                  )}
                 </tr>
               );
             })}
@@ -429,6 +535,7 @@ function LotMatchesSection({ view, timeZone }: { readonly view: OpenTradeDetail;
           rows={view.lotMatches}
           executions={view.positionChanges.flatMap((change) => change.executions)}
           settlements={view.positionChanges.flatMap((change) => change.settlements ?? [])}
+          option={view.plan.legs[0]?.instrument.kind === 'Option'}
           timeZone={timeZone}
         />
       </div>
@@ -459,6 +566,7 @@ function FeeReconciliationSection({ view }: { readonly view: OpenTradeDetail }) 
 // "Closed via sale of 100 shares": how the exposure ended, with the Close Reason (why the trader closed)
 // as its own field. Realized figures are the read model's, with no Mark behind them (A92).
 function ClosedResultSection({ view }: { readonly view: ClosedTradeDetail }) {
+  const side = view.plan.legs[0]?.instrument.kind === 'Option' ? view.plan.legs[0].side : undefined;
   return (
     <section className="card" aria-labelledby="result-heading">
       <h2 id="result-heading">Result</h2>
@@ -466,8 +574,13 @@ function ClosedResultSection({ view }: { readonly view: ClosedTradeDetail }) {
         <Figure term="Realized P&L">{signed(money)(view.realizedToDate)}</Figure>
         <Figure term="Realized R">{calculation(view.realizedR, signed(rMultiple))}</Figure>
         <Figure term="Terminal Disposition" plain>
-          {calculation(view.terminalDisposition, closedViaSale)}
+          {calculation(view.terminalDisposition, side ? (mechanisms) => closedViaOption(side, mechanisms) : closedViaSale)}
         </Figure>
+        {view.optionDispositionTiming && (
+          <Figure term="Option Disposition Timing" plain>
+            {calculation(view.optionDispositionTiming, timingWords)}
+          </Figure>
+        )}
         {view.closeReason && (
           <Figure term="Close Reason" plain>
             {view.closeReason.label}
@@ -486,7 +599,8 @@ function ClosedSections({ facade, view, timeZone, onDirtyChange }: { readonly fa
       <ClosedResultSection view={view} />
       <LotMatchesSection view={view} timeZone={timeZone} />
       <FeeReconciliationSection view={view} />
-      <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
+      <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} legs={view.plan.legs} timeZone={timeZone} />
+      <SettlementSection positionChanges={view.positionChanges} timeZone={timeZone} />
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
@@ -503,12 +617,12 @@ function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly faca
     <>
       <ValuationSection tradeId={view.tradeId} current={view.current} timeZone={timeZone} />
       {view.current.datedLine && <DatedSection line={view.current.datedLine} />}
-      {view.current.evaluation.atEntry && <AtEntrySection atEntry={view.current.evaluation.atEntry} oneR={view.baseline.oneR} />}
-      <RiskRewardSection evaluation={view.current.evaluation} baseline={view.baseline} />
+      {view.current.evaluation.atEntry && <AtEntrySection atEntry={view.current.evaluation.atEntry} oneR={view.baseline.oneR} option={view.plan.legs[0]?.instrument.kind === 'Option'} />}
+      <RiskRewardSection evaluation={view.current.evaluation} baseline={view.baseline} option={view.plan.legs[0]?.instrument.kind === 'Option'} symbol={view.plan.underlying} />
       <section className="card" aria-labelledby="position-heading">
         <h2 id="position-heading">Position</h2>
         <dl className="figure-grid">
-          <Figure term="Position">{view.positions.map((p) => `${quantity(p.quantity)} shares of ${p.instrument.symbol}`).join(', ')}</Figure>
+          <Figure term="Position">{view.positions.map(positionText).join(', ')}</Figure>
           <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
           <Figure term="Last activity" plain>{localTime(view.lastActivity, timeZone)}</Figure>
         </dl>
@@ -547,7 +661,8 @@ function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly faca
       </section>
       <LotMatchesSection view={view} timeZone={timeZone} />
       <FeeReconciliationSection view={view} />
-      <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
+      <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} legs={view.plan.legs} timeZone={timeZone} />
+      <SettlementSection positionChanges={view.positionChanges} timeZone={timeZone} />
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
@@ -594,17 +709,20 @@ function ExecutionRow({
   execution: e,
   change,
   reflection,
+  legs,
   timeZone,
 }: {
   readonly execution: ExecutionFact;
   readonly change: PositionChangeFact;
   readonly reflection: NarrativeItem | undefined;
+  readonly legs: readonly PlannedLeg[];
   readonly timeZone: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const time = localTime(e.economicTime, timeZone);
   const group = change.executions.length > 1;
-  const what = `${e.action} ${e.quantity} ${e.instrument.symbol}`;
+  // An option is named by its label and its role's action (C5, C6); a stock Execution reads as it always has.
+  const what = executionWhat(e, legs);
   return (
     <li data-group={group ? change.factId : undefined}>
       <button
@@ -633,7 +751,7 @@ function ExecutionRow({
         <div id={`execution-details-${e.factId}`} className="execution-details">
           <dl>
             <dt>Instrument</dt>
-            <dd>{e.instrument.symbol}</dd>
+            <dd>{instrumentLabel(e.instrument)}</dd>
             <dt>Economic Time</dt>
             <dd>{time}</dd>
             <dt>Fee</dt>
@@ -654,10 +772,12 @@ function ExecutionRow({
 function ExecutionsSection({
   positionChanges,
   journal,
+  legs,
   timeZone,
 }: {
   readonly positionChanges: readonly PositionChangeFact[];
   readonly journal: readonly NarrativeItem[];
+  readonly legs: readonly PlannedLeg[];
   readonly timeZone: string;
 }) {
   const executions = positionChanges.flatMap((change) => change.executions.map((execution) => ({ execution, change })));
@@ -671,8 +791,63 @@ function ExecutionsSection({
             execution={execution}
             change={change}
             reflection={journal.find((item) => item.positionChangeId === change.factId)}
+            legs={legs}
             timeZone={timeZone}
           />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+// One Expiration as a compact row with its own disclosure (row 23.7): it has no price, fee or reflection.
+function SettlementRow({ settlement: s, change, timeZone }: { readonly settlement: ExpirationFact; readonly change: PositionChangeFact; readonly timeZone: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const time = localTime(s.economicTime, timeZone);
+  return (
+    <li>
+      <button
+        type="button"
+        className="execution-toggle"
+        aria-expanded={expanded}
+        aria-controls={`settlement-details-${s.factId}`}
+        aria-labelledby={`settlement-summary-${s.factId} settlement-hint-${s.factId}`}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span id={`settlement-summary-${s.factId}`} className="execution-summary">
+          <span className="execution-what">{`Expiration of ${s.quantity} ${instrumentLabel(s.instrument)}`}</span> <span className="nowrap">{time}</span>
+        </span>
+        <span id={`settlement-hint-${s.factId}`} className="visually-hidden">
+          details
+        </span>
+        <ChevronIcon />
+      </button>
+      {expanded && (
+        <div id={`settlement-details-${s.factId}`} className="execution-details">
+          <dl>
+            <dt>Instrument</dt>
+            <dd>{instrumentLabel(s.instrument)}</dd>
+            <dt>Settlement time</dt>
+            <dd>{time}</dd>
+            <dt>Position Change</dt>
+            <dd>{localTime(change.economicTime, timeZone)}</dd>
+          </dl>
+        </div>
+      )}
+    </li>
+  );
+}
+
+// Every recorded Expiration, apart from the Executions: an Expiration is a settlement, not an Execution (row 23.7).
+function SettlementSection({ positionChanges, timeZone }: { readonly positionChanges: readonly PositionChangeFact[]; readonly timeZone: string }) {
+  const settlements = positionChanges.flatMap((change) => (change.settlements ?? []).map((settlement) => ({ settlement, change })));
+  if (settlements.length === 0) return null;
+  return (
+    <section className="card" aria-labelledby="settlement-heading">
+      <h2 id="settlement-heading">{`Settlement (${settlements.length})`}</h2>
+      <ul className="executions">
+        {settlements.map(({ settlement, change }) => (
+          <SettlementRow key={settlement.factId} settlement={settlement} change={change} timeZone={timeZone} />
         ))}
       </ul>
     </section>
@@ -695,7 +870,7 @@ function FulfillmentSection({ view }: { readonly view: OpenTradeDetail }) {
         {view.legFulfillment.map((f) => {
           const leg = view.plan.legs.find((l) => l.factId === f.plannedLegId);
           return (
-            <Figure key={f.plannedLegId} term={leg ? `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}` : f.plannedLegId} plain>
+            <Figure key={f.plannedLegId} term={leg ? legText(leg) : f.plannedLegId} plain>
               {FULFILLMENT[f.fulfillment]}
             </Figure>
           );
@@ -708,6 +883,7 @@ function FulfillmentSection({ view }: { readonly view: OpenTradeDetail }) {
 // Each recorded Deviation occurrence in its current version, with the Position Change that caused it.
 function DeviationsSection({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
   const timeOf = (positionChangeId: string) => changeTime(view, positionChangeId, timeZone);
+  const optionLeg = view.plan.legs[0]?.instrument.kind === 'Option';
   return (
     <section className="card" aria-labelledby="deviations-heading">
       <h2 id="deviations-heading">Deviations</h2>
@@ -717,7 +893,8 @@ function DeviationsSection({ view, timeZone }: { readonly view: OpenTradeDetail;
         <ul>
           {view.deviations.map((occurrence) => {
             const current = occurrence.versions.at(-1)!;
-            const text = `Entry Size (Excess): ${current.quantityAbovePlan} shares above plan, caused by the Position Change at ${timeOf(current.causingPositionChangeId)}.`;
+            const unit = optionLeg ? contractCount(current.quantityAbovePlan ?? 0) : `${current.quantityAbovePlan} shares`;
+            const text = `Entry Size (Excess): ${unit} above plan, caused by the Position Change at ${timeOf(current.causingPositionChangeId)}.`;
             return (
               <li key={occurrence.occurrenceId}>
                 {current.status === 'Active' ? (
@@ -752,7 +929,8 @@ function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; re
     const stored = finding.kind === 'DeviationMissing' ? finding.expected : recordedVersion(finding.occurrenceId);
     const at = shortfall ? shortfallTime(stored) : timeOf(finding.fingerprint.positionChangeId ?? '');
     const record = `Entry Size Deviation, Position Change at ${at}`;
-    const shares = (amount: string) => `${amount} shares${shortfall ? ' below plan' : ''}`;
+    const optionLeg = view.plan.legs[0]?.instrument.kind === 'Option';
+    const shares = (amount: string) => `${optionLeg ? contractCount(amount) : `${amount} shares`}${shortfall ? ' below plan' : ''}`;
     switch (finding.kind) {
       case 'DeviationMissing':
         return [record, 'None', shares(quantity(finding.expected.quantityAbovePlan ?? finding.expected.quantityBelowPlan))];

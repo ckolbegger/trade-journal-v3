@@ -293,8 +293,8 @@ describe('getTradeDetail: Open', () => {
     const trade = await stack.confirm('XYZ');
     const result = await stack.views.getTradeDetail({ tradeId: trade.tradeId });
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
-    // D1's Detail plus the Trade Summary (T2.58): no Open fields, and narrative Entries without the item kind.
-    expect(Object.keys(result.view).sort()).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'plan', 'summary', 'tradeId']);
+    // D1's Detail plus the Trade Summary (T2.58) and the payoff views (T7.23): no Open fields, and narrative Entries without the item kind.
+    expect(Object.keys(result.view).sort()).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'payoff', 'plan', 'summary', 'tradeId']);
     expect(result.view.lifecycle).toEqual({ stored: 'Planned', agreement: { kind: 'Agrees' } });
     expect(result.view.journal).toHaveLength(1);
     expect(Object.keys(result.view.journal[0]!).sort()).toEqual(['anchor', 'authoredTime', 'entryType', 'entryTypeKey', 'id', 'momentTime', 'responses', 'source']);
