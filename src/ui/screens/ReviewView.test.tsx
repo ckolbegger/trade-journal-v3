@@ -30,6 +30,7 @@ const available = (price: string): MarkResolution => ({
 });
 const markRow = (instrumentKey: string, trades: readonly string[], resolution: MarkResolution = { kind: 'Missing' }, resolutionRevision: MarkRow['resolutionRevision'] = 'None'): MarkRow => ({
   instrumentKey,
+  instrument: { kind: 'Stock', symbol: instrumentKey },
   tradingDate: '2026-10-12',
   trades,
   resolution,
@@ -85,6 +86,7 @@ const actionMissing = (...ids: string[]): IncompleteReason[] => ids.map((tradeId
 // An Instrument's earlier sessions without Marks, relevant to the Trades named from the first date.
 const gap = (instrumentKey: string, over: Partial<Earlier[number]> = {}): Earlier[number] => ({
   instrumentKey,
+  instrument: { kind: 'Stock', symbol: instrumentKey },
   trades: [{ tradeId: 't1', from: '2026-09-01' }],
   missing: [],
   acknowledged: [],

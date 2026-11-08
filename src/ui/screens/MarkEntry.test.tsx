@@ -72,6 +72,7 @@ function renderEntry(
       <MarkEntry
         facade={facade}
         instrumentKey="XYZ"
+        instrument={{ kind: 'Stock', symbol: 'XYZ' }}
         tradingDate="2026-10-12"
         resolution={resolution}
         resolutionRevision={resolutionRevision}
@@ -99,6 +100,17 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(screen.queryByRole('button', { name: 'Enter' })).toBeNull();
     expect(facade.MarketData.query).not.toHaveBeenCalled();
     expect(facade.MarketData.recover).not.toHaveBeenCalled();
+  });
+
+  it('should show the note that 0 means it closed with no value beside the price of the Enter and Correct forms', async () => {
+    renderEntry({ kind: 'Missing' }, 'None');
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    expect(within(screen.getByRole('form', { name: 'Enter the Mark' })).getByText('0 means it closed with no value')).toBeTruthy();
+    cleanup();
+    renderEntry(mark('52.5'), 1);
+    await user.click(screen.getByRole('button', { name: 'Correct' }));
+    expect(within(screen.getByRole('form', { name: 'Correct the Mark' })).getByText('0 means it closed with no value')).toBeTruthy();
   });
 
   it('should open Correct with the effective price shown, require a reason, and submit the new price and reason', async () => {
@@ -394,7 +406,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     }
     render(
       <Flip>
-        <MarkEntry facade={facadeDouble()} instrumentKey="XYZ" tradingDate="2026-10-12" resolution={{ kind: 'Missing' }} resolutionRevision="None" onDirtyChange={() => undefined} />
+        <MarkEntry facade={facadeDouble()} instrumentKey="XYZ" instrument={{ kind: 'Stock', symbol: 'XYZ' }} tradingDate="2026-10-12" resolution={{ kind: 'Missing' }} resolutionRevision="None" onDirtyChange={() => undefined} />
       </Flip>,
     );
     const user = userEvent.setup();
@@ -548,7 +560,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     const user = userEvent.setup();
     const entry = (resolution: MarkResolution, resolutionRevision: ExpectedResolutionRevision) => (
       <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
-        <MarkEntry facade={facade} instrumentKey="XYZ" tradingDate="2026-10-12" resolution={resolution} resolutionRevision={resolutionRevision} onDirtyChange={() => undefined} />
+        <MarkEntry facade={facade} instrumentKey="XYZ" instrument={{ kind: 'Stock', symbol: 'XYZ' }} tradingDate="2026-10-12" resolution={resolution} resolutionRevision={resolutionRevision} onDirtyChange={() => undefined} />
       </RuntimeContext.Provider>
     );
     const { rerender } = render(entry(mark('50'), 1));

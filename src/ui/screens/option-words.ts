@@ -1,13 +1,19 @@
 import type { OptionInstrument } from '../../domain/instrument/index.ts';
 import { toWorkspaceLocal } from '../../domain/time/index.ts';
 import { instrumentLabel } from '../calculation-words.ts';
-import { shortDate } from '../format.ts';
-import { plural } from './ReviewCard.tsx';
+import { Rational } from '../../domain/values/index.ts';
+import { plural, quantity, shortDate } from '../format.ts';
 
 // The words an option Trade's Detail uses (approved-words rows 23.1 to 23.19 and conventions C1, C2, C4).
 
 // "2 contracts" (C1); a stored quantity may be signed, a short leg's being negative.
 export const contractCount = (amount: string | number): string => plural(Math.abs(Number(amount)), 'contract', 'contracts');
+
+// A signed open quantity: the sign is the direction, "Short 2 contracts" or "Long 1 contract" (C1, C2).
+export const signedContracts = (open: Rational): string => {
+  const short = open.compare(Rational.of(0n)) < 0;
+  return `${short ? 'Short' : 'Long'} ${contractCount(quantity(short ? Rational.of(0n).sub(open) : open))}`;
+};
 
 // A holding or leg: direction first, then count, then the contract (C2).
 export const holdingText = (side: 'Long' | 'Short', amount: string | number, instrument: OptionInstrument): string =>

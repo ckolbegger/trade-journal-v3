@@ -1,6 +1,6 @@
 import type { ReviewTradeItem } from '../../app/types.ts';
 import { Rational, formatDecimal } from '../../domain/values/index.ts';
-import { text, unavailableWords } from '../calculation-words.ts';
+import { isSettlementDueAttention, text, unavailableWords } from '../calculation-words.ts';
 
 export const BAND_TEXT: Record<ReviewTradeItem['band'], string> = {
   Blocker: 'Blocker',
@@ -15,6 +15,8 @@ const percent = (share: Rational): string => formatDecimal(Rational.of(share.num
 
 // Why a Trade is in its band, in words; an Unavailable reason's words are the module's sentence (P72).
 export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: ReviewTradeItem['basis'], timeZone: string): string {
+  // Row 24.5's sentence is the module's, so the card and the overview say the same; a screen never branches on its code.
+  if (isSettlementDueAttention(reason)) return text(unavailableWords({ reason: 'SettlementDue', instrument: reason.instrument, expiration: reason.expiration }, 'sentence', timeZone));
   switch (reason.code) {
     case 'IntegrityDisagreement':
       return 'Recorded facts disagree';
@@ -31,8 +33,5 @@ export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: Re
     }
     case 'NoPressure':
       return 'No pressure toward the Stop or the Target';
-    // The settlement blocker has no words yet: T7.24 words it (K13) and replaces this.
-    default:
-      return '';
   }
 }

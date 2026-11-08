@@ -32,6 +32,7 @@ const rational = (n: bigint, d = 1n) => Rational.of(n, d);
 const available = (price: string): MarkResolution => ({ kind: 'Available', mark: { revisionId: 'r1', revisionNumber: 1, price, source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } });
 const markRow = (instrumentKey: string, trades: readonly string[], resolution: MarkResolution = { kind: 'Missing' }): MarkRow => ({
   instrumentKey,
+  instrument: { kind: 'Stock', symbol: instrumentKey },
   tradingDate: '2026-10-12',
   trades,
   resolution,

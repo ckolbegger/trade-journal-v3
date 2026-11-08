@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { instrumentKey } from '../../domain/instrument/index.ts';
+import { instrumentKey, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { reviewStack, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, PositionChangeMember } from '../trade-workflows/index.ts';
-import type { OpenDailyReviewResult, ReviewFamily } from './index.ts';
+import { createDailyReview, type OpenDailyReviewResult, type ReviewFamily } from './index.ts';
 import type { ReflectionDisposition } from '../../modules/journal/index.ts';
 
 // D7 section 4, the Settlement Review fixture of T7.14. New York is on daylight time until 2026-11-01 and on
@@ -23,7 +23,7 @@ const THURSDAY_10 = '2026-11-19T15:00:00Z';
 const XYZ_CALL = { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call', strike: '55', multiplier: 100 } as const;
 const MNO_PUT = { kind: 'Option', symbol: 'MNO', root: 'MNO', expiration: '2026-11-20', right: 'Put', strike: '45', multiplier: 100 } as const;
 const ABC_PUT = { kind: 'Option', symbol: 'ABC', root: 'ABC', expiration: '2026-12-18', right: 'Put', strike: '50', multiplier: 100 } as const;
-type Contract = typeof XYZ_CALL | typeof MNO_PUT | typeof ABC_PUT;
+type Contract = OptionInstrument;
 
 async function strategyOf(stack: ReviewStack, productKey: string): Promise<StrategyRecord> {
   const strategies = await stack.catalog.query({ family: 'Strategy' });
@@ -90,7 +90,7 @@ async function settlementFixture(now: string, withMarks: boolean) {
     await stack.saveMark('ABC', '49.00', friday);
     await stack.saveMark('KLM', '20.50', friday);
   }
-  return { stack, t1: t1.tradeId, t2: t2.tradeId, t3: t3.tradeId, t4: t4.tradeId, t5: t5.tradeId };
+  return { stack, confirm, record, optionFill, t1: t1.tradeId, t2: t2.tradeId, t3: t3.tradeId, t4: t4.tradeId, t5: t5.tradeId };
 }
 
 function ready(result: OpenDailyReviewResult) {
@@ -212,5 +212,90 @@ describe('settlement and payoff in the card', () => {
     expect(card.evaluation?.currentMarkedPnl).toEqual(expect.objectContaining({ kind: 'Unavailable', reason: 'SettlementDue' }));
     expect(card.evaluation?.expirationValueAtUnderlyingClose).toEqual(expect.objectContaining({ kind: 'Unavailable', reason: 'SettlementDue' }));
     expect(card.progress.panels.find((panel) => panel.panel === 'Settlement')).toEqual({ panel: 'Settlement', done: false, needed: true });
+  }, 60_000);
+});
+
+describe('the Instrument of a Marks row (K18)', () => {
+  it('should give each Marks row and its MarkMissing blocker the Instrument the Trade holds, so a dotted symbol keeps its dot', async () => {
+    const { stack, confirm, record, optionFill } = await settlementFixture(FRIDAY_1700, false);
+    // BRK.B's OCC root has no dot: a label parsed from the key would read BRKB.
+    const BRK_CALL = { kind: 'Option', symbol: 'BRK.B', root: 'BRKB', expiration: '2026-12-18', right: 'Call', strike: '400', multiplier: 100 } as const;
+    const brk = await confirm('strategy.long-call', WEEK_PLAN, { underlying: 'BRK.B', legs: [{ side: 'Long', instrument: BRK_CALL, quantity: '1', intendedEntry: '5.00' }], stops: [{ kind: 'UnderlyingPrice', price: '380.00' }], targets: [{ kind: 'UnderlyingPrice', price: '440.00' }], exerciseIntent: 'NotAuthorized' });
+    await record(brk.tradeId, optionFill(brk.tradeId, BRK_CALL, 'Buy', WEEK_10, '1', '5.00', '0.65'));
+
+    const result = await open(stack, FRIDAY_1700);
+
+    const row = family(result, 'Marks').today.find((candidate) => candidate.instrumentKey === instrumentKey(BRK_CALL));
+    expect(row?.instrument).toEqual(BRK_CALL);
+    const { completion } = ready(result);
+    const blocker = completion.kind === 'Incomplete' ? completion.reasons.find((reason) => reason.code === 'MarkMissing' && instrumentKey(reason.instrument) === instrumentKey(BRK_CALL)) : undefined;
+    expect(blocker).toEqual(expect.objectContaining({ instrument: BRK_CALL }));
+  }, 60_000);
+});
+
+describe('the dated last close of an option card (T7.24 known defect)', () => {
+  it('should give an option card no dated last close when its contract has only a Stale context, since the Underlying frame is not the contract', async () => {
+    const { stack, t4 } = await settlementFixture(FRIDAY_1700, false);
+    // The Long Put has a Mark only for Thursday, so Friday's contract Mark is Missing with that Stale context.
+    await stack.saveMark(instrumentKey(ABC_PUT), '1.30', '2026-11-19');
+    await stack.saveMark('ABC', '49.00', '2026-11-20');
+
+    const card = await cardOf(stack, FRIDAY_1700, t4);
+
+    expect(card.evaluation?.staleContext).toEqual(expect.objectContaining({ tradingDate: '2026-11-19', price: '1.3' }));
+    expect(card.datedLastClose).toBeUndefined();
+  }, 60_000);
+});
+
+// Not in the breakdown: the T7.23-B5 ocr asked for a Review case with one covered and one uncovered item, and the Review
+// shows an Expiration on the owed reflection of the Position Change that recorded it (row 21.14).
+describe('settlement items outside and inside calendar coverage (D7 Q1)', () => {
+  it('should give an unavailable settlement time to an item whose expiration date is outside calendar coverage, and the close to the covered one, listing both Trades', async () => {
+    const { stack, confirm, record, optionFill, t1, t3 } = await settlementFixture(MONDAY_NEXT_1700, false);
+    const OLD_CALL = { kind: 'Option', symbol: 'BCD', root: 'BCD', expiration: '2026-11-13', right: 'Call', strike: '30', multiplier: 100 } as const;
+    const old = await confirm('strategy.long-call', '2026-11-02T14:00:00Z', { underlying: 'BCD', legs: [{ side: 'Long', instrument: OLD_CALL, quantity: '1', intendedEntry: '1.00' }], stops: [{ kind: 'UnderlyingPrice', price: '27.00' }], targets: [{ kind: 'UnderlyingPrice', price: '35.00' }], exerciseIntent: 'NotAuthorized' });
+    await record(old.tradeId, optionFill(old.tradeId, OLD_CALL, 'Buy', '2026-11-03T15:00:00Z', '1', '1.00', '0.65'));
+    // The calendar does not cover that expiration date (a stand-in for a date outside 2024 to 2028): Market Data refuses its session.
+    const marketData = {
+      ...stack.marketData,
+      query: (query: Parameters<typeof stack.marketData.query>[0]) =>
+        query.kind === 'ResolveSession' && query.context.kind === 'Historical' && query.context.tradingDate === OLD_CALL.expiration
+          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'SessionPolicyCoverage' as const }] })
+          : stack.marketData.query(query),
+    };
+    const dailyReview = createDailyReview({ ...stack, marketData });
+
+    const result = await dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_NEXT_1700 });
+
+    const items = family(result, 'Settlement').items.map(({ tradeId, settlementTime }) => ({ tradeId, settlementTime }));
+    expect(items).toEqual([
+      { tradeId: old.tradeId, settlementTime: { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: OLD_CALL, date: '2026-11-13' } },
+      { tradeId: t1, settlementTime: FRIDAY_CLOSE },
+      { tradeId: t3, settlementTime: FRIDAY_CLOSE },
+    ]);
+    expect(family(result, 'Trades').trades.map((trade) => trade.tradeId)).toContain(old.tradeId);
+  }, 60_000);
+
+  it('should carry the recorded Expiration on the owed reflection of the Position Change that settled the Trade', async () => {
+    const { stack, t3 } = await settlementFixture(MONDAY_NEXT_1700, false);
+    const current = await stack.tradeRecord.getRecord({ tradeId: t3, projection: 'AnalysisInput' });
+    if (current.kind !== 'Found') throw new Error('no Trade');
+    const recorded = await stack.tradeWorkflows.recordPositionChange({
+      originTradeId: t3,
+      trades: [{ tradeId: t3, expectedFactRevision: current.factRevision }],
+      members: [{ kind: 'Expiration', tradeId: t3, instrument: MNO_PUT, quantity: '2', economicTime: FRIDAY_CLOSE.value }],
+      reflection: { kind: 'Defer' },
+      closeReview: { kind: 'Defer' },
+    });
+    if (recorded.kind !== 'Recorded') throw new Error(`expected Recorded, got ${JSON.stringify(recorded)}`);
+    const review = ready(await open(stack, MONDAY_NEXT_1700));
+
+    const card = await stack.dailyReview.getTrade({ reviewDate: review.reviewDate, tradeId: t3, binding: review.binding });
+
+    if (card.kind !== 'ReflectionsOwed') throw new Error(`expected ReflectionsOwed, got ${card.kind}`);
+    // The Position Change Reflection and the Close Review both follow that Position Change, so each carries its Expiration.
+    const expirations = card.card.reflections.map((reflection) => (reflection.settlements ?? []).map(({ instrument, quantity, economicTime }) => ({ instrument: instrumentKey(instrument), quantity, economicTime })));
+    const expired = { instrument: 'MNO261120P00045000', quantity: '2', economicTime: FRIDAY_CLOSE.value };
+    expect(expirations).toEqual([[expired], [expired]]);
   }, 60_000);
 });

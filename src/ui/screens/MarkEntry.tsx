@@ -1,16 +1,19 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ExpectedResolutionRevision, MarkResolution } from '../../app/types.ts';
-import { acknowledgedUnavailableStatusLabel } from '../calculation-words.ts';
+import type { Instrument } from '../../domain/instrument/index.ts';
+import { acknowledgedUnavailableStatusLabel, instrumentLabel } from '../calculation-words.ts';
 import { decimalMoney, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
-import { describeMarkIssues } from './mark-issues.ts';
+import { describeMarkIssues, ZERO_MARK_NOTE } from './mark-issues.ts';
 import type { FieldIssue } from './plan-issues.ts';
 
 export interface MarkEntryProps {
   readonly facade: UiFacade;
   readonly instrumentKey: string;
+  // The Instrument the key names: the region is named by its label, never by the key (convention C6).
+  readonly instrument: Instrument;
   readonly tradingDate: string;
   // The key's resolution and the revision it was read at; every save binds to that revision.
   readonly resolution: MarkResolution;
@@ -41,7 +44,7 @@ const FITS: Record<'Enter' | 'Correct' | 'Acknowledge', readonly MarkResolution[
 };
 
 // One Instrument's Mark for one session: its resolution and the actions that change it.
-export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange, onSaved, offerEntry = true, children }: MarkEntryProps) {
+export function MarkEntry({ facade, instrumentKey, instrument, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange, onSaved, offerEntry = true, children }: MarkEntryProps) {
   const { writable, report } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
@@ -121,7 +124,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     // The shared message names a correction; an acknowledgment has none, so its reason is asked for in its own words.
     setIssues(
       result.kind === 'Rejected'
-        ? describeMarkIssues(result.issues, uid).map((issue) => (command.intention === 'AssertUnavailable' && issue.code === 'ReasonRequired' ? { ...issue, message: ACKNOWLEDGMENT_REASON_REQUIRED } : issue))
+        ? describeMarkIssues(result.issues, uid, instrument).map((issue) => (command.intention === 'AssertUnavailable' && issue.code === 'ReasonRequired' ? { ...issue, message: ACKNOWLEDGMENT_REASON_REQUIRED } : issue))
         : [],
     );
     setConflict(result.kind === 'Conflict' ? 'kept' : false);
@@ -149,7 +152,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   };
 
   return (
-    <section aria-label={`${instrumentKey} Mark, ${shortDate(tradingDate)}`}>
+    <section aria-label={`${instrumentLabel(instrument)} Mark, ${shortDate(tradingDate)}`} data-instrument-key={instrumentKey}>
       {resolution.kind === 'Available' && (
         <p>
           <span className="number">{decimalMoney(resolution.mark.price)}</span> · {resolution.mark.source}
@@ -205,6 +208,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
                 <input id={`${uid}-price`} inputMode="decimal" value={price} disabled={!writable} onChange={(e) => setPrice(e.target.value)} {...describedBy(`${uid}-price`)} />
               </label>
               {fieldError(`${uid}-price`)}
+              <p className="hint">{ZERO_MARK_NOTE}</p>
             </div>
           )}
           {mode !== 'Enter' && (

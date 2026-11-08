@@ -33,7 +33,7 @@ const binding: ReviewBinding = {
 const newBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
 const rational = (n: bigint, d = 1n) => Rational.of(n, d);
 const available = (price: string, revisionNumber = 1): MarkResolution => ({ kind: 'Available', mark: { revisionId: `r${revisionNumber}`, revisionNumber, price, source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } });
-const missingRow = (instrumentKey: string, trades: readonly string[]): MarkRow => ({ instrumentKey, tradingDate: MONDAY, trades, resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
+const missingRow = (instrumentKey: string, trades: readonly string[]): MarkRow => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: MONDAY, trades, resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
 const walked = (tradeId: string, underlying: string, over: Partial<WalkedTrade> = {}): WalkedTrade => ({
   tradeId,
   underlying,
@@ -59,6 +59,7 @@ const OWING: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('XYZ
 type Earlier = Extract<Ready['families'][number], { family: 'Marks' }>['earlier'];
 const xyzGap: Earlier[number] = {
   instrumentKey: 'XYZ',
+  instrument: { kind: 'Stock', symbol: 'XYZ' },
   trades: [
     { tradeId: 't-a', from: FRIDAY },
     { tradeId: 't-f', from: MONDAY },
@@ -457,8 +458,8 @@ describe('rows with a Mark', () => {
   it('should keep D4 per-row Correct and Withdraw for a row with an exact Mark or an acknowledgment, saving through MarketData.save as today', async () => {
     const acknowledged: MarkResolution = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', reason: 'no quote', savedAt: '2026-10-12T21:00:00Z' } };
     const rows: MarkRow[] = [
-      { instrumentKey: 'XYZ', tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 3), resolutionRevision: 3, task: null },
-      { instrumentKey: 'ABC', tradingDate: MONDAY, trades: ['t-a'], resolution: acknowledged, resolutionRevision: 2, task: null },
+      { instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 3), resolutionRevision: 3, task: null },
+      { instrumentKey: 'ABC', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: MONDAY, trades: ['t-a'], resolution: acknowledged, resolutionRevision: 2, task: null },
     ];
     const facade = cardFacade(review({ families: [{ family: 'Marks', today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] }));
     vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'XYZ', tradingDate: MONDAY }, resolution: available('52.00', 3), resolutionRevision: 3 });
@@ -486,8 +487,8 @@ describe('rows with a Mark', () => {
 describe('two quick row saves', () => {
   it('should refresh after both and show no could-not-refresh notice when a second per-row save finishes while the first refresh is still in flight', async () => {
     const rows: MarkRow[] = [
-      { instrumentKey: 'XYZ', tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null },
-      { instrumentKey: 'ABC', tradingDate: MONDAY, trades: ['t-a'], resolution: available('27.50', 1), resolutionRevision: 1, task: null },
+      { instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null },
+      { instrumentKey: 'ABC', instrument: { kind: 'Stock', symbol: 'ABC' }, tradingDate: MONDAY, trades: ['t-a'], resolution: available('27.50', 1), resolutionRevision: 1, task: null },
     ];
     const overview = review({ families: [{ family: 'Marks', today: rows, earlier: [] }, { family: 'Trades', trades: WALK }] });
     const facade = cardFacade(overview);
@@ -524,7 +525,7 @@ describe('earlier sessions after a save', () => {
     const day = (n: number) => `2026-09-${String(n).padStart(2, '0')}`;
     const missing = Array.from({ length: 25 }, (_, i) => day(i + 1));
     const gap: Earlier[number] = { ...xyzGap, trades: [{ tradeId: 't-a', from: day(1) }], missing, revisions: Object.fromEntries(missing.map((d) => [d, 'None'])) };
-    const rows: MarkRow[] = [{ instrumentKey: 'XYZ', tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null }];
+    const rows: MarkRow[] = [{ instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, tradingDate: MONDAY, trades: ['t-a', 't-f'], resolution: available('52.00', 1), resolutionRevision: 1, task: null }];
     const facade = cardFacade(review({ families: [{ family: 'Marks', today: rows, earlier: [gap] }, { family: 'Trades', trades: WALK }] }));
     vi.mocked(facade.DailyReview.save).mockResolvedValue(marksSavedResult([savedKey('XYZ', day(25), '9')]));
     renderReview(facade);

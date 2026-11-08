@@ -1,4 +1,4 @@
-import type { Attainment, CalculationResult, PayoffExtremum, PayoffSegment, PayoffZero } from '../../app/types.ts';
+import type { Attainment, CalculationResult, ExpirationPayoffView, PayoffExtremum, PayoffSegment, PayoffZero } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { payoffUnboundedWords, text } from '../calculation-words.ts';
 import { signed } from '../figures.ts';
@@ -41,15 +41,29 @@ const attainmentText = (attainment: Attainment): string => {
   }
 };
 
-// An extremum row: "Max loss $400.00 for XYZ from 0.00 to 55.00", the signs per row 22.12 (conflict K3).
-export function extremumText(side: 'Maximum' | 'Minimum', result: CalculationResult<PayoffExtremum, never, never>, symbol: string): string {
+// An extremum without where it is attained: "Max loss $400.00", the signs per row 22.12 (conflict K3).
+function extremumLead(side: 'Maximum' | 'Minimum', result: CalculationResult<PayoffExtremum, never, never>): string {
   if (result.kind === 'Unbounded') return text(payoffUnboundedWords(result.direction));
   if (result.kind !== 'Value') throw new Error('a payoff extremum is a value or unbounded');
-  const { value, attainedOn } = result.value;
-  const where = `${symbol} ${attainedOn.map(attainmentText).join(' and ')}`;
+  const { value } = result.value;
   const sense = value.compare(ZERO);
-  if (side === 'Maximum') return sense > 0 ? `Max profit ${money(value)} for ${where}` : `No profit: at best ${signedMoney(value)} for ${where}`;
-  return sense < 0 ? `Max loss ${money(ZERO.sub(value))} for ${where}` : `No loss: at worst ${signedMoney(value)} for ${where}`;
+  if (side === 'Maximum') return sense > 0 ? `Max profit ${money(value)}` : `No profit: at best ${signedMoney(value)}`;
+  return sense < 0 ? `Max loss ${money(ZERO.sub(value))}` : `No loss: at worst ${signedMoney(value)}`;
+}
+
+// An extremum row: "Max loss $400.00 for XYZ from 0.00 to 55.00".
+export function extremumText(side: 'Maximum' | 'Minimum', result: CalculationResult<PayoffExtremum, never, never>, symbol: string): string {
+  const lead = extremumLead(side, result);
+  if (result.kind !== 'Value') return lead;
+  return `${lead} for ${symbol} ${result.value.attainedOn.map(attainmentText).join(' and ')}`;
+}
+
+const lowerFirst = (words: string): string => words.charAt(0).toLowerCase() + words.slice(1);
+
+// The card's one-line Current payoff (row 24.8): "At expiration: breakeven 43.76 · max profit $248.70 · max loss $8,751.30".
+export function payoffSummary(view: ExpirationPayoffView): string {
+  const breakeven = view.zeroSet.length === 0 ? 'No breakeven' : view.zeroSet.map(zeroText).join(' and ');
+  return `At expiration: ${[breakeven, extremumLead('Maximum', view.maximum), extremumLead('Minimum', view.minimum)].map(lowerFirst).join(' · ')}`;
 }
 
 // The chart text at the last ray: a rising ray continues rising, a flat one stays at its value (row 22.13).

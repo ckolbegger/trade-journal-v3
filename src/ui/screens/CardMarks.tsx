@@ -2,12 +2,14 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ExpectedResolutionRevision, MarkResolution, MarkRow, MarketDataPrepareEntry, ObservationKey, SaveReviewMarksResult } from '../../app/types.ts';
+import type { Instrument } from '../../domain/instrument/index.ts';
+import { instrumentLabel } from '../calculation-words.ts';
 import { shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
 import { standing as heldStanding, type CardMarkRows, type GapGroup, type Held, type HeldResult, type Standing } from './held-review.ts';
 import { MarkEntry, type MarkEntryProps } from './MarkEntry.tsx';
-import { describeMarkIssues } from './mark-issues.ts';
+import { describeMarkIssues, ZERO_MARK_NOTE } from './mark-issues.ts';
 import type { FieldIssue } from './plan-issues.ts';
 
 export type EntryDirty = (id: string, dirty: boolean) => void;
@@ -28,6 +30,8 @@ interface Draft {
 const NO_DRAFT: Draft = { price: '', unavailable: false, reason: '' };
 const isDraft = (draft: Draft | undefined): draft is Draft => draft !== undefined && (draft.price !== '' || draft.unavailable);
 const CANT_GET_A_PRICE = "Can't get a price";
+// A Mark task only a Trade with a due settlement needs (A112, T7.24): recording the expiration removes it.
+const SETTLEMENT_ONLY_NOTE = 'Needed only while settlement is due';
 
 // What every row of the panel shares: the drafts and the controls over them.
 interface Panel {
@@ -49,6 +53,8 @@ interface Panel {
   readonly onMarkSaved: (draftId: string) => void;
   // Enter in a price moves on to the next price, and from the last to Save Marks (A153).
   readonly onPriceEnter: (price: HTMLInputElement) => void;
+  // The walked Trades whose settlement is due: a Mark only they need goes away once the expiration is recorded (A112).
+  readonly settlementTrades: ReadonlySet<string>;
 }
 
 const rowId = (instrumentKey: string, tradingDate: string): string => `${instrumentKey}:${tradingDate}`;
@@ -113,6 +119,7 @@ function DraftFields({ panel, id, resolution }: { readonly panel: Panel; readonl
             />
           </label>
           {fieldError(field.price)}
+          <p className="hint">{ZERO_MARK_NOTE}</p>
           {resolution.kind === 'Missing' && (
             <button type="button" className="pill secondary" onClick={() => panel.setDraft(id, { price: '', unavailable: true, reason: '' })}>
               {CANT_GET_A_PRICE}
@@ -125,7 +132,7 @@ function DraftFields({ panel, id, resolution }: { readonly panel: Panel; readonl
 }
 
 // One key's row: its Mark status and the actions on a saved one (Correct, Withdraw), then the draft fields.
-function KeyRow({ panel, instrumentKey, tradingDate, resolution, resolutionRevision, withdraw }: { readonly panel: Panel; readonly instrumentKey: string; readonly tradingDate: string; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision; readonly withdraw: boolean }) {
+function KeyRow({ panel, instrumentKey, instrument, tradingDate, resolution, resolutionRevision, withdraw, settlementOnly = false }: { readonly panel: Panel; readonly instrumentKey: string; readonly instrument: Instrument; readonly tradingDate: string; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision; readonly withdraw: boolean; readonly settlementOnly?: boolean }) {
   const id = rowId(instrumentKey, tradingDate);
   const now = panel.standing({ instrumentKey, tradingDate }, { resolution, revision: resolutionRevision });
   const saved: MarkEntryProps['onSaved'] = ({ resolution: next, resolutionRevision: revision }) => {
@@ -133,7 +140,8 @@ function KeyRow({ panel, instrumentKey, tradingDate, resolution, resolutionRevis
     panel.onMarkSaved(id);
   };
   return (
-    <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
+    <ReviewMarkEntry facade={panel.facade} instrumentKey={instrumentKey} instrument={instrument} tradingDate={tradingDate} resolution={now.resolution} resolutionRevision={now.revision} withdraw={withdraw} offerEntry={false} onEntryDirty={panel.onEntryDirty} onMarkSaved={saved}>
+      {settlementOnly && <p>{SETTLEMENT_ONLY_NOTE}</p>}
       {panel.writable && <DraftFields panel={panel} id={id} resolution={now.resolution} />}
     </ReviewMarkEntry>
   );
@@ -145,7 +153,7 @@ function TodayRow({ panel, row, cardTradeId, tradeLine }: { readonly panel: Pane
   const others = row.trades.filter((tradeId) => tradeId !== cardTradeId);
   return (
     <li>
-      <h4>{row.instrumentKey}</h4>
+      <h4>{instrumentLabel(row.instrument)}</h4>
       {others.length > 0 && (
         <p>
           also held by{' '}
@@ -157,7 +165,7 @@ function TodayRow({ panel, row, cardTradeId, tradeLine }: { readonly panel: Pane
           ))}
         </p>
       )}
-      <KeyRow panel={panel} instrumentKey={row.instrumentKey} tradingDate={row.tradingDate} resolution={row.resolution} resolutionRevision={row.resolutionRevision} withdraw />
+      <KeyRow panel={panel} instrumentKey={row.instrumentKey} instrument={row.instrument} tradingDate={row.tradingDate} resolution={row.resolution} resolutionRevision={row.resolutionRevision} withdraw settlementOnly={row.task === 'Manual' && row.trades.every((tradeId) => panel.settlementTrades.has(tradeId))} />
     </li>
   );
 }
@@ -201,13 +209,13 @@ function GapList({ panel: shared, group }: { readonly panel: Panel; readonly gro
   const first = page * GAPS_PER_PAGE;
   const shown = sessions.slice(first, first + GAPS_PER_PAGE);
   return (
-    <section aria-label={`${group.instrumentKey} earlier sessions`}>
-      <h4>{group.instrumentKey}</h4>
+    <section aria-label={`${instrumentLabel(group.instrument)} earlier sessions`}>
+      <h4>{instrumentLabel(group.instrument)}</h4>
       <ul className="review-rows">
         {shown.map((date) => (
           <li key={date}>
             <p>{shortDate(date)}</p>
-            <KeyRow panel={panel} instrumentKey={group.instrumentKey} tradingDate={date} resolution={resolutionOf(group, date)} resolutionRevision={group.revisions[date] ?? 'None'} withdraw={false} />
+            <KeyRow panel={panel} instrumentKey={group.instrumentKey} instrument={group.instrument} tradingDate={date} resolution={resolutionOf(group, date)} resolutionRevision={group.revisions[date] ?? 'None'} withdraw={false} />
           </li>
         ))}
       </ul>
@@ -305,20 +313,23 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
     const prices = [...(section.current?.querySelectorAll<HTMLInputElement>('input[data-mark-price]') ?? [])];
     (prices[prices.indexOf(price) + 1] ?? saveButton.current)?.focus();
   };
-  const panel: Panel = { facade, writable, uid, drafts, issues, notices, setDraft, standing, onResult, onEntryDirty, onMarkSaved, onPriceEnter };
+  // The walked Trades with a due settlement, from their card progress: a Mark only they need is said so in its row (A112).
+  const walkedTrades = heldReview.review.families.flatMap((family) => (family.family === 'Trades' ? family.trades : []));
+  const settlementTrades = new Set(walkedTrades.filter((trade) => trade.progress.panels.some((p) => p.panel === 'Settlement' && !p.done)).map((trade) => trade.tradeId));
+  const panel: Panel = { facade, writable, uid, drafts, issues, notices, setDraft, standing, onResult, onEntryDirty, onMarkSaved, onPriceEnter, settlementTrades };
   // Every drafted key becomes an entry, in the order the rows are shown, bound to the revision it stands at.
   const keys = [
-    ...marks.today.map((row) => ({ instrumentKey: row.instrumentKey, tradingDate: row.tradingDate, listed: { resolution: row.resolution, revision: row.resolutionRevision } })),
-    ...earlier.flatMap((group) => sessionsOf(group).map((date) => ({ instrumentKey: group.instrumentKey, tradingDate: date, listed: { resolution: resolutionOf(group, date), revision: group.revisions[date] ?? ('None' as const) } }))),
+    ...marks.today.map((row) => ({ instrumentKey: row.instrumentKey, instrument: row.instrument, tradingDate: row.tradingDate, listed: { resolution: row.resolution, revision: row.resolutionRevision } })),
+    ...earlier.flatMap((group) => sessionsOf(group).map((date) => ({ instrumentKey: group.instrumentKey, instrument: group.instrument, tradingDate: date, listed: { resolution: resolutionOf(group, date), revision: group.revisions[date] ?? ('None' as const) } }))),
   ];
   const save = async () => {
-    const sent = keys.flatMap(({ instrumentKey, tradingDate, listed }) => {
+    const sent = keys.flatMap(({ instrumentKey, instrument, tradingDate, listed }) => {
       const id = rowId(instrumentKey, tradingDate);
       const draft = drafts[id];
       if (!isDraft(draft)) return [];
       const intention = draft.unavailable ? ({ kind: 'AssertUnavailable', reason: draft.reason } as const) : ({ kind: 'RecordInitialManualMark', price: draft.price.trim() } as const);
       const entry: MarketDataPrepareEntry = { key: { instrumentKey, tradingDate }, expectedRevision: standing({ instrumentKey, tradingDate }, listed).revision, intention };
-      return [{ id, entry }];
+      return [{ id, entry, instrument }];
     });
     setSaving(true);
     let result: SaveReviewMarksResult | undefined;
@@ -357,7 +368,7 @@ export function CardMarks({ facade, tradeId, marks, held: heldReview, onResult, 
         const row = 'entryIndex' in issue && issue.entryIndex !== undefined ? sent[issue.entryIndex] : undefined;
         if (!row || !('field' in issue)) return [];
         const draft = drafts[row.id]!;
-        return describeMarkIssues([issue], `${uid}-${row.id}`).map((described) => ({ id: row.id, issue: draft.unavailable && described.code === 'ReasonRequired' ? { ...described, message: "Enter why you can't get a price." } : described }));
+        return describeMarkIssues([issue], `${uid}-${row.id}`, row.instrument).map((described) => ({ id: row.id, issue: draft.unavailable && described.code === 'ReasonRequired' ? { ...described, message: "Enter why you can't get a price." } : described }));
       });
       setIssues(Object.fromEntries([...new Set(found.map((f) => f.id))].map((id) => [id, found.filter((f) => f.id === id).map((f) => f.issue)])));
       const first = found[0];

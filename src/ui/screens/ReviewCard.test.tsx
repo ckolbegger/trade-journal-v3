@@ -1206,7 +1206,7 @@ describe('reflections in the Trade card (A71)', () => {
 });
 
 // A card that owes two Marks, a reflection due and a later one, and its Action.
-const markRow = (instrumentKey: string): MarkRow => ({ instrumentKey, tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
+const markRow = (instrumentKey: string): MarkRow => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
 const owingCompletion: ReviewCompletion = {
   kind: 'Incomplete',
   reasons: [
@@ -1223,7 +1223,7 @@ const owingReview = (): Ready =>
       {
         family: 'Marks',
         today: [markRow('XYZ'), markRow('ABC')],
-        earlier: [{ instrumentKey: 'XYZ', trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+        earlier: [{ instrumentKey: 'XYZ', instrument: { kind: 'Stock', symbol: 'XYZ' }, trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
       },
       { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), progress: cardProgress(1, 1, { needed: 2, resolved: 0 }) }] },
     ],

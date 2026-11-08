@@ -120,6 +120,7 @@ describe('task families (AC-REV-002, AC-MARK-004)', () => {
     expect(today.map((row) => row.instrumentKey)).toEqual(['ABC', 'DEF', 'GHI', 'JKL', 'XYZ']);
     expect(today.find((row) => row.instrumentKey === 'DEF')).toEqual({
       instrumentKey: 'DEF',
+      instrument: { kind: 'Stock', symbol: 'DEF' },
       tradingDate: '2026-10-12',
       trades: [trades.c],
       resolution: { kind: 'Missing' },

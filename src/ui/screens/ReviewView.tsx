@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, OwedReflectionsTrade, PostSaveReview, ReviewCompletion, SaveReviewMarksResult, WalkedTrade } from '../../app/types.ts';
 import { instrumentKey } from '../../domain/instrument/index.ts';
-import { isMarkMissingBlocker, text, unavailableWords } from '../calculation-words.ts';
+import { instrumentLabel, isMarkMissingBlocker, isSettlementDueBlocker, text, unavailableWords } from '../calculation-words.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { shortDate, tradeName, tradeSummary } from '../format.ts';
@@ -68,6 +68,19 @@ function blockerText(reason: IncompleteReason, review: Ready, name: (tradeId: st
     return parts.map((part, i) =>
       part.kind === 'instrument' && tradeId !== undefined ? (
         <CardLink key={i} tradeId={tradeId} open={open} panel="Marks" instrument={instrumentKey(part.instrument)}>
+          {text([part])}
+        </CardLink>
+      ) : (
+        <Fragment key={i}>{text([part])}</Fragment>
+      ),
+    );
+  }
+  // The settlement's sentence is the module's too; its contract is the link to the card's Settlement panel (row 24.5).
+  if (isSettlementDueBlocker(reason)) {
+    const parts = unavailableWords({ reason: 'SettlementDue', instrument: reason.instrument, expiration: reason.expiration }, 'sentence', timeZone);
+    return parts.map((part, i) =>
+      part.kind === 'instrument' ? (
+        <CardLink key={i} tradeId={reason.tradeId} open={open} panel="Settlement">
           {text([part])}
         </CardLink>
       ) : (
@@ -147,7 +160,7 @@ function Status({ review, completion, name, openCard }: { readonly review: Ready
       </p>
       {completion.kind === 'CompleteWithUnavailableMarks' && (
         <div role="group" aria-label="Unavailable Marks">
-          <p>Instruments: {completion.instruments.map(instrumentKey).join(', ')}</p>
+          <p>Instruments: {completion.instruments.map(instrumentLabel).join(', ')}</p>
           <p>Trades: {completion.trades.map(name).join(', ')}</p>
           <p>Not calculated: {completion.families.map((family) => FAMILY_TEXT[family]).join(', ')}</p>
         </div>

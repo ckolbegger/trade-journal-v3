@@ -2,7 +2,7 @@ import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts'
 import type { DueClassification } from '../../domain/journal-debt/index.ts';
 import type { Instrument, OptionInstrument } from '../../domain/instrument/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
+import type { CalculationResult, EntryResolution, ExecutionFact, ExpirationFact, ExpirationPayoffs, IncoherentFacts, IntegrityFinding, LifecycleState, NotApplicableReason, TerminalDisposition, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -127,6 +127,8 @@ export interface OwedReflectionsTrade {
 // Manual while the Mark is Missing; an exact Mark or an acknowledgment resolves it.
 export interface MarkRow {
   readonly instrumentKey: string;
+  // The Instrument the key names, as the Trades hold it: a screen names a contract by its label, never by parsing the key (K18).
+  readonly instrument: Instrument;
   readonly tradingDate: string;
   readonly trades: readonly string[];
   readonly resolution: MarkResolution;
@@ -139,6 +141,7 @@ export interface MarkRow {
 // can be filled, but never block the Review (P15, AC-MARK-004).
 export interface HistoricalGapGroup {
   readonly instrumentKey: string;
+  readonly instrument: Instrument;
   // The eligible Trades that hold the Instrument, in the walk's order, with the first session each is
   // relevant from: a gap before that date is not the Trade's (A153).
   readonly trades: readonly { readonly tradeId: string; readonly from: string }[];
@@ -252,6 +255,8 @@ export interface OwedReflection {
   readonly definition: EntryDefinitionRecord;
   readonly economicTime: Instant;
   readonly executions: readonly ExecutionFact[];
+  // The Expiration the Position Change recorded, which is not an Execution (row 21.14); absent when it holds none.
+  readonly settlements?: readonly ExpirationFact[];
   readonly classification: DueClassification;
   readonly saveBinding: ReflectionSaveBinding;
 }

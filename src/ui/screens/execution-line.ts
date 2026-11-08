@@ -1,5 +1,8 @@
-import type { ExecutionFact } from '../../app/types.ts';
+import type { ExecutionFact, ExpirationFact } from '../../app/types.ts';
 import { instrumentLabel } from '../calculation-words.ts';
+
+// An Expiration named in a receipt or Review line: it has no price or fee (row 21.14).
+export const expirationLine = (settlement: ExpirationFact): string => `Expiration of ${settlement.quantity} ${instrumentLabel(settlement.instrument)}, no price or fee`;
 
 // An Execution named in a receipt line, without its fee (C5): a stock Buy or Sell as it is, an option
 // by its role's action ("Buy to open") and the contract's label (C6). A Long leg opens by buying and a

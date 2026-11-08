@@ -1,7 +1,9 @@
 import { useId, type ReactNode } from 'react';
 import type { DailyTradeReview } from '../../app/types.ts';
+import { instrumentLabel } from '../calculation-words.ts';
 import { decimalMoney, money, ratio, shortDate } from '../format.ts';
 import { calculation, dollarsAndR, pnlText } from '../figures.ts';
+import { payoffSummary } from './payoff-text.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
 
@@ -43,7 +45,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
         <>
           {mark && (
             <p>
-              Mark {decimalMoney(mark.price)} for {evaluation.observation.instrument.symbol}, {shortDate(evaluation.observation.tradingDate)}
+              Mark {decimalMoney(mark.price)} for {instrumentLabel(evaluation.observation.instrument)}, {shortDate(evaluation.observation.tradingDate)}
             </p>
           )}
           <Figures evaluation={evaluation}>
@@ -52,6 +54,8 @@ export function CardFigures({ trade }: CardFiguresProps) {
           </Figures>
         </>
       )}
+      {/* An option's Current payoff in one line; a Trade with no option, or no position left, has none to show. */}
+      {trade.payoff?.current.kind === 'Value' && <p>{payoffSummary(trade.payoff.current.value)}</p>}
       {evaluation?.atEntry && (
         <div role="group" aria-labelledby={`${uid}-entry`}>
           <h4 id={`${uid}-entry`}>At entry</h4>

@@ -203,5 +203,6 @@ export type {
   SaveReviewMarksRequest,
   SaveReviewMarksResult,
   SaveTradeActionRequest,
+  SettlementItem,
   TradeSaveBinding,
 } from '../coordinators/daily-review/index.ts';

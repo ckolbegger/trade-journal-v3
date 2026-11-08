@@ -4,6 +4,9 @@ import { formatDecimal, formatMoney, parseDecimal, Rational } from '../domain/va
 
 // Presentation only. Values may arrive structurally cloned (navigation state), so only their
 // numerator and denominator fields are read.
+// "1 contract", "2 contracts" (convention C1).
+export const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+
 // Money with comma-grouped thousands; the one money format of the UI.
 export const money = (value: Rational): string => formatMoney(value).replace(/\d+(?=\.)/, (whole) => whole.replace(/\B(?=(\d{3})+$)/g, ','));
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { CardProgress, DailyTradeReview, PanelProgress, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { money, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
+import { money, plural, ratio, shortDate, tradeName, tradeSummary } from '../format.ts';
 import { calculation, FACTS_INCOHERENT_FIGURE, signed } from '../figures.ts';
 import { useRuntime } from '../runtime.tsx';
 import type { UiFacade } from '../../app/compose.ts';
@@ -10,22 +10,27 @@ import { CardFigures } from './CardFigures.tsx';
 import { CardMarks, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import type { CardMarkRows } from './held-review.ts';
 import { ReviewReflections } from './ReviewReflections.tsx';
+import { SettlementPanel, settlementSummary } from './ReviewSettlement.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
 import { StopTargetSlider } from './StopTargetSlider.tsx';
 
-export const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+export { plural };
 
 // A card's panel progress by name: the record has all three on a walked card (A164).
 export function panelOf<P extends PanelProgress['panel']>(progress: CardProgress, panel: P): Extract<PanelProgress, { panel: P }> {
   return progress.panels.find((p): p is Extract<PanelProgress, { panel: P }> => p.panel === panel)!;
 }
 
-// "2 Marks · 1 reflection due · Action", or Done once the card is done (A150, A169): the words of the progress record.
+// The Settlement panel, present only while a contract's settlement is due (decision 81).
+const settlementOf = (progress: CardProgress) => progress.panels.find((p): p is Extract<PanelProgress, { panel: 'Settlement' }> => p.panel === 'Settlement');
+
+// "2 Marks · 1 reflection due · Settlement · Action", or Done once the card is done (A150, A169): the words of the progress record.
 function remainsText(progress: CardProgress): string {
   const { needed } = panelOf(progress, 'Marks');
   const { dueNow } = panelOf(progress, 'Reflections');
   const { owed } = panelOf(progress, 'Action');
-  const parts = [...(needed > 0 ? [plural(needed, 'Mark', 'Marks')] : []), ...(dueNow > 0 ? [plural(dueNow, 'reflection', 'reflections') + ' due'] : []), ...(owed ? ['Action'] : [])];
+  const settlement = settlementOf(progress);
+  const parts = [...(needed > 0 ? [plural(needed, 'Mark', 'Marks')] : []), ...(dueNow > 0 ? [plural(dueNow, 'reflection', 'reflections') + ' due'] : []), ...(settlement?.done === false ? ['Settlement'] : []), ...(owed ? ['Action'] : [])];
   return parts.length > 0 ? parts.join(' · ') : 'Done · Action saved';
 }
 
@@ -35,7 +40,7 @@ function sliderFigures(figures: SliderEvaluation | undefined): { readonly riskTo
   return { riskToStop: calculation(figures.riskToStop, money), pnl: calculation(figures.pnl, signed(money)), rewardToRisk: calculation(figures.rewardRiskNow, ratio) };
 }
 
-export const PANELS = ['Marks', 'Reflections', 'Action'] as const;
+export const PANELS = ['Marks', 'Reflections', 'Settlement', 'Action'] as const;
 export type PanelName = (typeof PANELS)[number];
 
 // Where a link into the Review sends this card (A161): a panel to open, and an Instrument's row to focus. The count grows
@@ -203,6 +208,7 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
   const { dueNow: due, later } = panelOf(progress, 'Reflections');
   const owed = due + later;
   const form = trade.form;
+  const settlement = settlementOf(progress);
   return {
     Marks: {
       summary: [rows > 0 ? `${resolved} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
@@ -213,6 +219,12 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
       summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
       status: reflectionsStatus(due, owed),
       done: panelOf(progress, 'Reflections').done,
+    },
+    // Rows 24.1 and 24.2; a card with no due settlement has no such panel, so this header is never shown.
+    Settlement: {
+      summary: settlementSummary(trade.settlement),
+      status: settlement?.needed === false ? 'Recorded' : 'Needed',
+      done: settlement?.done ?? true,
     },
     Action: {
       summary: form.kind === 'Saved' ? form.action.action : 'Hold, Exit, Roll or Adjust',
@@ -226,13 +238,15 @@ function panelHeaders(trade: DailyTradeReview, progress: CardProgress, marks: Ca
 function CardBody({ facade, trade, progress, name, advance, go, marks, held, onResult, tradeLine, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   const headers = panelHeaders(trade, progress, marks);
+  // The card's panels in work order: the Settlement panel is there only while a contract's settlement is due (decision 81).
+  const panels = PANELS.filter((name) => name !== 'Settlement' || settlementOf(progress) !== undefined);
   // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
   const nextAfter = (from: PanelName): PanelName | undefined => {
-    const start = PANELS.indexOf(from);
-    return [...PANELS.slice(start + 1), ...PANELS.slice(0, start)].find((name) => !headers[name].done);
+    const start = panels.indexOf(from);
+    return [...panels.slice(start + 1), ...panels.slice(0, start)].find((name) => !headers[name].done);
   };
   // The card opens on the panel a link names, or else on its first panel that is not done.
-  const [open, setOpen] = useState<PanelName>(() => go.panel ?? PANELS.find((name) => !headers[name].done) ?? 'Action');
+  const [open, setOpen] = useState<PanelName>(() => (go.panel && panels.includes(go.panel) ? go.panel : (panels.find((name) => !headers[name].done) ?? 'Action')));
   const panelButtons = useRef<Partial<Record<PanelName, HTMLButtonElement | null>>>({});
   const [focusPanel, setFocusPanel] = useState<{ readonly panel: PanelName }>();
   useEffect(() => {
@@ -242,7 +256,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   const [handledGo, setHandledGo] = useState(go.count);
   if (go.count !== handledGo) {
     setHandledGo(go.count);
-    if (go.panel) {
+    if (go.panel && panels.includes(go.panel)) {
       setOpen(go.panel);
       if (!go.instrument) setFocusPanel({ panel: go.panel });
     }
@@ -252,7 +266,8 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
   const { count: linked, instrument } = go;
   useEffect(() => {
     if (linked === 0 || instrument === undefined) return;
-    const row = [...(body.current?.querySelectorAll<HTMLElement>('section[aria-label]') ?? [])].find((section) => section.getAttribute('aria-label')?.startsWith(`${instrument} Mark, `));
+    // The row is found by the key it carries: its name is the Instrument's label, which a contract's key is not (K18).
+    const row = [...(body.current?.querySelectorAll<HTMLElement>('section[data-instrument-key]') ?? [])].find((section) => section.dataset.instrumentKey === instrument);
     const control = row?.querySelector<HTMLElement>('input:not([disabled]), textarea:not([disabled]), button:not([disabled])');
     if (row && !control) row.tabIndex = -1;
     (control ?? row)?.focus();
@@ -298,7 +313,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
       ))}
       <CardFigures trade={trade} />
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
-      {PANELS.map((name) => (
+      {panels.map((name) => (
         <div key={name} className="review-panel">
           <h4>
             <button
@@ -313,6 +328,7 @@ function CardBody({ facade, trade, progress, name, advance, go, marks, held, onR
           <div id={`${uid}-${name}`} hidden={open !== name}>
             {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} held={held} onResult={onResult} tradeLine={tradeLine} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
             {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
+            {name === 'Settlement' && <SettlementPanel tradeId={trade.tradeId} items={trade.settlement} timeZone={timeZone ?? 'UTC'} />}
             {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
           </div>
         </div>

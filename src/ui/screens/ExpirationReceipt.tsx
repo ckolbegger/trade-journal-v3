@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import type { PositionChangeResult } from '../../app/types.ts';
-import { instrumentLabel } from '../calculation-words.ts';
 import { Badge } from '../Badge.tsx';
 import { calculation, signed } from '../figures.ts';
 import { localTime, money, rMultiple } from '../format.ts';
 import { PageTitle } from '../PageTitle.tsx';
+import { expirationLine } from './execution-line.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { closedViaOption, timingWords } from './option-disposition.ts';
 import { reflectionMessage } from './PositionChangeReceipt.tsx';
@@ -43,7 +43,7 @@ export function ExpirationReceipt({ result, timeZone, fromReview }: ExpirationRe
         </h2>
         <ul className="executions">
           {(saved.settlements ?? []).map((s) => (
-            <li key={s.factId} className="execution-line">{`Expiration of ${s.quantity} ${instrumentLabel(s.instrument)}, no price or fee`}</li>
+            <li key={s.factId} className="execution-line">{expirationLine(s)}</li>
           ))}
         </ul>
       </section>

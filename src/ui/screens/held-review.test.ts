@@ -22,7 +22,7 @@ const binding: ReviewBinding = {
 };
 const newBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
 const available = (price: string, revisionNumber = 1): MarkResolution => ({ kind: 'Available', mark: { revisionId: `r${revisionNumber}`, revisionNumber, price, source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } });
-const missingRow = (instrumentKey: string, trades: readonly string[]): MarkRow => ({ instrumentKey, tradingDate: MONDAY, trades, resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
+const missingRow = (instrumentKey: string, trades: readonly string[]): MarkRow => ({ instrumentKey, instrument: { kind: 'Stock', symbol: instrumentKey }, tradingDate: MONDAY, trades, resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
 const walked = (tradeId: string, underlying: string): WalkedTrade => ({
   tradeId,
   underlying,
@@ -42,6 +42,7 @@ const actionMissing = (...ids: string[]): IncompleteReason[] => ids.map((tradeId
 const OWING: ReviewCompletion = { kind: 'Incomplete', reasons: [markMissing('XYZ', 't-a', 't-f'), markMissing('DEF', 't-c'), ...actionMissing('t-a', 't-f', 't-c')] };
 const xyzGap: Earlier[number] = {
   instrumentKey: 'XYZ',
+  instrument: { kind: 'Stock', symbol: 'XYZ' },
   trades: [
     { tradeId: 't-a', from: FRIDAY },
     { tradeId: 't-f', from: MONDAY },

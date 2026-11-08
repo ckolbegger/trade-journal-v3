@@ -1,5 +1,5 @@
 import type { IncoherentFact, NotApplicableReason, UnavailableReason } from '../domain/calculation-result/index.ts';
-import type { IncompleteReason } from '../app/types.ts';
+import type { IncompleteReason, ReviewTradeItem } from '../app/types.ts';
 import type { Instrument } from '../domain/instrument/index.ts';
 import { toWorkspaceLocal } from '../domain/time/index.ts';
 import { parseDecimal } from '../domain/values/index.ts';
@@ -176,6 +176,9 @@ export const isMarkMissing = <R extends UnavailableReason>(reason: R): reason is
 export const isMarkLacking = <R extends UnavailableReason>(reason: R): reason is Extract<R, MarkLackingReason> => reason.reason === 'MarkMissing' || reason.reason === 'AcknowledgedUnavailable';
 // A Review blocker for a Mark that is missing.
 export const isMarkMissingBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'MarkMissing' }> => blocker.code === 'MarkMissing';
+// A Review blocker for a contract whose settlement is due, and the same reason in a Trade's attention (row 24.5).
+export const isSettlementDueBlocker = (blocker: IncompleteReason): blocker is Extract<IncompleteReason, { readonly code: 'SettlementDue' }> => blocker.code === 'SettlementDue';
+export const isSettlementDueAttention = (reason: ReviewTradeItem['reasons'][number]): reason is Extract<ReviewTradeItem['reasons'][number], { readonly code: 'SettlementDue' }> => reason.code === 'SettlementDue';
 
 // Market Data's Expected-Mark Status as the Mark row shows it (section 1.1: unchanged text, its own casing).
 export const acknowledgedUnavailableStatusLabel = (): string => 'Acknowledged Unavailable';

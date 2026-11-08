@@ -48,6 +48,14 @@ const DEF: PlanInput = {
   targets: [{ kind: 'UnderlyingPrice', price: '4.00' }],
   exerciseIntent: 'Authorized',
 };
+// O-S: Short MNO 20 Nov 2026 45 Put, 2 contracts at 1.20 planned and 1.25 filled, fee 1.30 (the Settlement Review's T-3).
+const MNO_PUT = contract('MNO', '45', 'Put');
+const OS: PlanInput = {
+  underlying: 'MNO',
+  legs: [{ side: 'Short', instrument: MNO_PUT, quantity: '-2', intendedEntry: '1.20' }],
+  stops: [{ kind: 'UnderlyingPrice', price: '42.00' }],
+  targets: [{ kind: 'UnderlyingPrice', price: '50.00' }],
+};
 // T-A: Long Stock, which has no option expiration.
 const STOCK: PlanInput = {
   underlying: 'XYZ',
@@ -69,6 +77,8 @@ export const payoffFixtures = {
   // A realized gain larger than the remaining loss: the curve never reaches zero.
   noBreakeven: (): ExpirationPayoffs =>
     expirationPayoff({ plan: OC, exposure: { lots: [lot(OC_CONTRACT, 1, '1.90', '0.65')], realizedToDate: dec('500.00') } }),
+  // O-S after S1: breakeven 43.7565, best case $248.70, worst case $8,751.30 down.
+  osPayoffs: (): ExpirationPayoffs => expirationPayoff({ plan: OS, exposure: { lots: [lot(MNO_PUT, -2, '1.25', '1.30')], realizedToDate: r(0) } }),
   ocFlat:(): ExpirationPayoffs => expirationPayoff({ plan: OC, exposure: { lots: [], realizedToDate: dec('-101.95') } }),
   longPut: (): ExpirationPayoffs => expirationPayoff({ plan: OP }),
   touch: (): ExpirationPayoffs => expirationPayoff({ plan: DEF }),

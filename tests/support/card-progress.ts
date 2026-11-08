@@ -8,12 +8,14 @@ export function reflectionsOwedProgress(dueNow = 0, later = 0): CardProgress {
   return { kind: 'ReflectionsOwed', panels, done: dueNow === 0 };
 }
 
-export function cardProgress(dueNow = 0, later = 0, over: { readonly needed?: number; readonly resolved?: number; readonly owed?: boolean } = {}): CardProgress {
-  const { needed = 0, owed = true } = over;
+// `settlement` adds the Settlement panel between Reflections and Action (decision 81): owed while it is true.
+export function cardProgress(dueNow = 0, later = 0, over: { readonly needed?: number; readonly resolved?: number; readonly owed?: boolean; readonly settlement?: boolean } = {}): CardProgress {
+  const { needed = 0, owed = true, settlement } = over;
   const { resolved = 1 - needed } = over;
   const panels: CardProgress['panels'] = [
     { panel: 'Marks', done: needed === 0, resolved, needed },
     { panel: 'Reflections', done: dueNow === 0, dueNow, later },
+    ...(settlement === undefined ? [] : [{ panel: 'Settlement' as const, done: !settlement, needed: settlement }]),
     { panel: 'Action', done: !owed, owed },
   ];
   return { kind: 'Walked', panels, done: panels.every((panel) => panel.done) };

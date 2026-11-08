@@ -5,6 +5,7 @@ import { DUE_TEXT } from '../due-text.ts';
 import { decimalMoney as price, localTime, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
+import { expirationLine } from './execution-line.ts';
 
 interface ReflectionsProps {
   readonly facade: UiFacade;
@@ -55,6 +56,9 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
       <ul className="executions">
         {reflection.executions.map((e) => (
           <li key={e.factId}>{`${e.action} ${e.quantity} ${e.instrument.symbol} @ ${price(e.price)}`}</li>
+        ))}
+        {(reflection.settlements ?? []).map((s) => (
+          <li key={s.factId}>{expirationLine(s)}</li>
         ))}
       </ul>
       {!resolved && !isOpen && (

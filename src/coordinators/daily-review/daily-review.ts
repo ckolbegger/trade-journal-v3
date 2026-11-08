@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentKey, instrumentOf, type Instrument } from '../../domain/instrument/index.ts';
+import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
@@ -247,7 +247,8 @@ function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: reado
     if (entry.analysis.plan.legs[0]!.instrument.kind === 'Option') return { ...(summary && { summary }), evaluation };
     throw new Error(`Market Data returned no frame for ${entry.analysis.plan.underlying}`);
   }
-  const datedLastClose = datedLineOf(entry.analysis, frame, evaluation);
+  // The dated line values Long Stock from the Underlying's frame; an option's frame is its contract's, so it has none here (A110).
+  const datedLastClose = entry.analysis.plan.legs[0]!.instrument.kind === 'Stock' ? datedLineOf(entry.analysis, frame, evaluation) : undefined;
   return { ...(summary && { summary }), frame, evaluation, ...(datedLastClose && { datedLastClose }) };
 }
 
@@ -368,9 +369,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       : await framesOnly(reviewDate, instruments.map((i) => i.instrumentKey));
     if (recovered.kind === 'Rejected') throw new Error('Market Data rejected the Review recovery request');
 
+    // Each key a frame or gap names is a requirement's Instrument, so the Instrument is the Trades' own (K18).
+    const instrumentOfKey = (key: string): Instrument => requirements.find((r) => instrumentKey(r.instrument) === key)!.instrument;
     const today = recovered.frames.map(
       ({ instrumentKey: key, tradingDate, resolution }): MarkRow => ({
         instrumentKey: key,
+        instrument: instrumentOfKey(key),
         tradingDate,
         trades: requirements.filter((r) => instrumentKey(r.instrument) === key).map((r) => r.tradeId),
         resolution,
@@ -388,6 +392,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         (g): HistoricalGapGroup => ({
           // The closes only place each Trade's first date, so they do not pass through to the group.
           instrumentKey: g.instrumentKey,
+          instrument: instrumentOfKey(g.instrumentKey),
           missing: g.missing,
           acknowledged: g.acknowledged,
           revisions: g.revisions,
@@ -442,7 +447,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const reasons: IncompleteReason[] = [
       ...today
         .filter((row) => row.task === 'Manual')
-        .map((row): IncompleteReason => ({ code: 'MarkMissing', instrument: instrumentOf(row.instrumentKey), tradingDate: row.tradingDate, trades: row.trades })),
+        .map((row): IncompleteReason => ({ code: 'MarkMissing', instrument: row.instrument, tradingDate: row.tradingDate, trades: row.trades })),
       // Then each due settlement (A112), before the walk.
       ...settlement.map((item): IncompleteReason => ({ code: 'SettlementDue', ...item })),
       ...walked.flatMap((item): IncompleteReason[] => [
@@ -467,7 +472,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       if (acknowledged.length === 0) return { kind: 'Complete' };
       return {
         kind: 'CompleteWithUnavailableMarks',
-        instruments: acknowledged.map((row) => instrumentOf(row.instrumentKey)),
+        instruments: acknowledged.map((row) => row.instrument),
         trades: affected.map(({ item }) => item.tradeId),
         families: unavailableFamilies(affected.flatMap(({ evaluation }) => (evaluation ? [evaluation] : []))),
       };
@@ -545,6 +550,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         definition: definition.definition,
         economicTime: debt.momentTime,
         executions: positionChange?.executions ?? [],
+        ...(positionChange?.settlements && { settlements: positionChange.settlements }),
         classification: classifyDue(debt.dueAnchor, closes),
         saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
       });
