@@ -29,6 +29,7 @@ import type { UiFacade } from '../../app/compose.ts';
 import type { DueClassification, IntegrityFinding, NarrativeItem, RecordedDeviation, RecordedDeviationVersion, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
+import { handOffConfirmed } from './confirmed-handoff.ts';
 import { TradeDetail } from './TradeDetail.tsx';
 
 afterEach(cleanup);
@@ -1531,6 +1532,33 @@ describe('Trade Detail of a just-confirmed Plan after a reload', () => {
     // The Planned payoff comes from the read, since the cloned state is not used (T7.23).
     const payoff = screen.getByRole('region', { name: 'Planned Expiration Payoff' });
     expect(within(payoff).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+  });
+});
+
+describe('Trade Detail of a Plan just confirmed in this session', () => {
+  it('should render the handed-over confirmed Plan Detail without a read, once, with its Planned payoff', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: optionPlannedDetail('O-C'), binding: {} } as never);
+    handOffConfirmed(optionPlannedDetail('O-C'));
+    const mount = () =>
+      render(
+        <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+          <MemoryRouter initialEntries={['/trades/trade-1']}>
+            <Routes>
+              <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+            </Routes>
+          </MemoryRouter>
+        </RuntimeContext.Provider>,
+      );
+    mount();
+    expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
+    expect(within(screen.getByRole('region', { name: 'Planned Expiration Payoff' })).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+    // Used once: a later visit to the same Trade takes the normal read.
+    cleanup();
+    mount();
+    await screen.findByRole('heading', { name: 'XYZ', level: 1 });
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
   });
 });
 

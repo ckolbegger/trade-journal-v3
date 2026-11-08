@@ -9,6 +9,7 @@ import { money } from '../format.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { confirmedDetail } from './confirmed-detail.ts';
+import { handOffConfirmed } from './confirmed-handoff.ts';
 import { answerChanged, fieldIssues, isValidSymbol, IssueSummary, positiveDecimal } from './form-issues.tsx';
 import { describeIssues, type FieldIssue } from './plan-issues.ts';
 import { AMBIGUOUS_TIME, INVALID_TIME, LOCAL_TIME_CODES, minuteOf, NONEXISTENT_TIME } from './local-time.ts';
@@ -215,7 +216,9 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         institution: account?.institution ?? '',
       });
       // The Planned payoff travels inside the confirmed Detail (decision 92), so Trade Detail shows it without a read.
-      void navigate(`/trades/${result.receipt.tradeId}`, { state: { confirmed } });
+      // Handed over in memory, not in history state, which the browser structured-clones (T7.31-F1).
+      handOffConfirmed(confirmed);
+      void navigate(`/trades/${result.receipt.tradeId}`);
     }
   };
 

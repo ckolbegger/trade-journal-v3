@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router';
 import userEvent from '@testing-library/user-event';
+import { useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import { planFormFacade } from '../../../tests/support/plan-form-facade.ts';
@@ -9,22 +10,26 @@ import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { money } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
+import { handedOverConfirmed } from './confirmed-handoff.ts';
 import { PlanForm } from './PlanForm.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
 
 afterEach(cleanup);
 
-// Stands in for Trade Detail: shows what the form handed over in navigation state.
+// Stands in for Trade Detail: shows what the form handed over, and keeps the navigation state it arrived with.
+let navigationState: unknown;
 function DetailFromState() {
-  const state = useLocation().state as {
-    confirmed?: { tradeId: string; labels: { account: string }; plan: { thesis: string }; baseline: { oneR: Rational } };
-  } | null;
+  const state: unknown = useLocation().state;
+  useEffect(() => {
+    navigationState = state;
+  });
+  const confirmed = handedOverConfirmed(useParams().tradeId ?? '');
   return (
     <>
       <p>
-        Detail {state?.confirmed?.tradeId} for {state?.confirmed?.labels.account}: {state?.confirmed?.plan.thesis}
+        Detail {confirmed?.tradeId} for {confirmed?.labels.account}: {confirmed?.plan.thesis}
       </p>
-      {state?.confirmed?.baseline.oneR && <p>1R {money(state.confirmed.baseline.oneR)}</p>}
+      {confirmed?.baseline.oneR && <p>1R {money(confirmed.baseline.oneR)}</p>}
     </>
   );
 }
@@ -689,6 +694,8 @@ describe('option Strategies (A116)', () => {
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     expect(await screen.findByText('1R $400.00')).toBeTruthy();
     expect(screen.getByText('Detail trade-7 for Roth IRA: Earnings run-up.')).toBeTruthy();
+    // The browser structured-clones history state, so it holds no class instance (T7.31-F1).
+    expect(structuredClone(navigationState)).toStrictEqual(navigationState);
     expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
   });
 

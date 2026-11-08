@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Link, NavigationType, useLocation, useNavigationType, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
   ClosedTradeDetail,
@@ -28,6 +28,7 @@ import { findingWords, instrumentLabel, text, unavailableWords } from '../calcul
 import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
 import { contractCount, exerciseIntentText, expirationDate, holdingText, settlementTime } from './option-words.ts';
 import { executionWhat } from './execution-line.ts';
+import { clearHandedOver, handedOverConfirmed } from './confirmed-handoff.ts';
 import { closedByExpiration, closedViaOption, timingWords } from './option-disposition.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
@@ -90,11 +91,12 @@ function BackToTrades({ lifecycle }: { readonly lifecycle?: string }) {
 export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
-  // After a reload or back/forward (a POP) the state is structured-cloned and its Rational values are plain objects,
-  // so it is used only on the navigation that carried it, and a POP takes the normal read.
-  const location = useLocation();
-  const navigation = (useNavigationType() === NavigationType.Pop ? null : location.state) as { confirmed?: PlannedTradeDetail } | null;
-  const confirmed = navigation?.confirmed;
+  // It is handed over in memory (not in history state, which the browser structured-clones and strips the Rational
+  // values of), taken once; a reload, a back/forward or a later visit takes the normal read.
+  const [confirmed] = useState(() => handedOverConfirmed(tradeId));
+  useEffect(() => {
+    clearHandedOver();
+  }, []);
   const { writable } = useRuntime();
   const [state, setState] = useState<DetailState>(confirmed?.tradeId === tradeId ? { kind: 'Ready', view: confirmed } : { kind: 'Loading' });
 
