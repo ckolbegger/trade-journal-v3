@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
-import { confirmOption, MONDAY_NEXT_1700, OC_PC1, onboardedAt, optionPlanCommand, recordOption, restart, THURSDAY_1700, XYZ_CALL, type Fill } from './support.ts';
+import { confirmOption, MONDAY_NEXT_1700, OC_PC1, onboardedAt, optionPlanCommand, recordOption, XYZ_CALL, type Fill } from './support.ts';
 
 const EARLY_EXPIRATION = '2026-11-13';
 const EARLY_PLAN = '2026-11-02T14:00:00Z';
@@ -85,21 +85,30 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL]);
   });
 
-  it('should add at most one Historical frame request to a Trade Detail whose contract is due', { timeout: 120_000 }, async () => {
-    const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
-    const tradeId = await fridayCall(app);
-    const detailOf = async (application: Application) => {
-      const counted = await countRequests(() => application.TradeViewsAndReporting.getTradeDetail({ tradeId }));
+  it('should issue the same Trade Detail requests, bar one observations read, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
+    const { app } = await onboardedAt(MONDAY_NEXT_1700);
+    const dueId = await earlyCall(app);
+    const liveId = await earlyCall(app, NOT_DUE_EXPIRATION);
+    const detailOf = async (tradeId: string) => {
+      const counted = await countRequests(() => app.TradeViewsAndReporting.getTradeDetail({ tradeId }));
       if (counted.result.kind !== 'Ready') throw new Error(`getTradeDetail: ${counted.result.kind}`);
-      return { requests: on(counted.requests, 'observations'), view: counted.result.view };
+      const tally: Record<string, number> = {};
+      for (const r of counted.requests) tally[`${r.store}.${r.method}`] = (tally[`${r.store}.${r.method}`] ?? 0) + 1;
+      return { tally, view: counted.result.view };
     };
-    // Thursday 17:00: the contract is not yet due, so Detail does only D4's reads.
-    const thursday = await restart(app, { ...d, now: THURSDAY_1700 });
-    const notDue = await detailOf(thursday);
-    const monday = await restart(thursday, { ...d, now: MONDAY_NEXT_1700 });
-    const due = await detailOf(monday);
-    expect('settlement' in notDue.view && notDue.view.settlement).toEqual([]);
+    const due = await detailOf(dueId);
+    const live = await detailOf(liveId);
+    // Exact counts per store and method for each Detail, 22 requests each.
+    const PINNED = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 11, 'observations.getAll': 1, 'observations.openCursor': 2, 'trades.get': 2 };
+    expect(live.tally).toEqual(PINNED);
+    // The expired contract's settlement time is a calendar answer (`ResolveSession`), not a stored read, and an expired contract has
+    // no live mark to read, so today the two Details issue identical requests. The plan allows one more `observations` request for
+    // the due Trade (A111's Historical frame); anything else, or fewer, is a defect.
+    const extra = (due.tally['observations.getAll'] ?? 0) - PINNED['observations.getAll'];
+    expect(extra).toBeGreaterThanOrEqual(0);
+    expect(extra).toBeLessThanOrEqual(1);
+    expect({ ...due.tally, 'observations.getAll': PINNED['observations.getAll'] }).toEqual(PINNED);
+    expect('settlement' in live.view && live.view.settlement).toEqual([]);
     expect('settlement' in due.view && due.view.settlement).toHaveLength(1);
-    expect(due.requests.length - notDue.requests.length).toBeLessThanOrEqual(1);
   });
 });
