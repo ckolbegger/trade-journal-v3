@@ -81,3 +81,11 @@ export function reviewShortDate(date: string): string {
 export const settlementIdentity = (tradeId: string, label: string, quantityText: string, expiredText: string) => `${tradeId} ${label} ${quantityText} expired ${expiredText}`;
 export const expectedSettlementIdentity = (item: ExpectedSettlementItem) =>
   settlementIdentity(item.tradeId, contractLabel(item.contract), signedContractsText(item.quantity), reviewShortDate(item.expiration));
+
+// The settlement expectations to compare, or none when the profile expects no Settlement Due contract.
+export function settlementExpectations(settlement: readonly ExpectedSettlementItem[] | undefined, expectedDue: number): readonly ExpectedSettlementItem[] | undefined {
+  if (expectedDue > 0 && (!settlement || settlement.length === 0)) {
+    throw new Error(`asOfReview.settlement is ${settlement ? 'empty' : 'missing'} in bench/dataset.json, but the profile expects ${expectedDue} Settlement Due contracts at the as-of Review; regenerate the profile`);
+  }
+  return settlement;
+}

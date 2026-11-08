@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { closeDate, closedIdentity, contractLabel, expectedSettlementIdentity, firstDifference, reviewShortDate, signedContractsText, tradeIdOfHref, walkedTradesOwingNothing } from './compare.ts';
+import { closeDate, closedIdentity, contractLabel, expectedSettlementIdentity, firstDifference, reviewShortDate, settlementExpectations, signedContractsText, tradeIdOfHref, walkedTradesOwingNothing } from './compare.ts';
 import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
 
 describe('bench Action-save card choice', () => {
@@ -161,5 +161,15 @@ describe('settlement identities (T7.29)', () => {
     expect(signedContractsText('-1')).toBe('Short 1 contract');
     expect(reviewShortDate('2026-11-20')).toBe('Fri Nov 20');
     expect(expectedSettlementIdentity({ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' })).toBe('t1 AAPL 20 Nov 2026 105 Call Long 20 contracts expired Fri Nov 20');
+  });
+});
+
+describe('settlement expectations (T7.29-B3)', () => {
+  it('should fail naming the missing settlement list when the profile has Settlement Due contracts', () => {
+    expect(() => settlementExpectations(undefined, 4)).toThrow(/asOfReview\.settlement.*missing.*4/);
+    expect(() => settlementExpectations([], 4)).toThrow(/asOfReview\.settlement.*empty.*4/);
+    expect(settlementExpectations(undefined, 0)).toBeUndefined();
+    const items = [{ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' }];
+    expect(settlementExpectations(items, 1)).toBe(items);
   });
 });

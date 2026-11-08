@@ -30,7 +30,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { chromium, type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
-import { cardIdentity, closedIdentity, expectedSettlementIdentity, firstDifference, settlementIdentity, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
+import { cardIdentity, closedIdentity, expectedSettlementIdentity, firstDifference, settlementExpectations, settlementIdentity, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
 import { schemaMismatch } from './bench/partial.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
@@ -314,8 +314,10 @@ async function compareDueReflections(page: Page, when: string) {
 // expiration date, plus the open quantity and contract that the Trade's Settlement panel shows once the link has opened its
 // card, with `asOfReview.settlement` in bench/dataset.json (the family in the Review's order: expiration date, then Trade).
 const settlementComparisons: { when: string; items: number }[] = [];
+// The full profile (30% option Trades) has 4 Settlement Due contracts at the as-of Review; a partial dataset records none.
+const EXPECTED_SETTLEMENT_DUE = partial ? 0 : 4;
 async function compareSettlement(page: Page, when: string) {
-  const expectedItems = asOfReview?.settlement;
+  const expectedItems = settlementExpectations(asOfReview?.settlement, EXPECTED_SETTLEMENT_DUE);
   if (!expectedItems) return;
   const expectedIdentities = expectedItems.map(expectedSettlementIdentity);
   const status = page.getByRole('region', { name: 'Review status' });
