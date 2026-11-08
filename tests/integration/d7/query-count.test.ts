@@ -70,8 +70,9 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     // index of `observations`; an expired contract has no mark to read, so the due runs make no such read (also checked below).
     const withoutMarkReads = (requests: readonly CountedRequest[]) => requests.filter((r) => !(r.store === 'observations' && r.on === 'index'));
     expect(baselineTwo.requests).not.toEqual(withoutMarkReads(baselineTwo.requests));
-    // Both runs above come from the same code, so a constant extra request would be in the baseline too: D6's own count is pinned
-    // as well, per store and method (20 requests).
+    // Both runs above come from the same code, so a constant extra request would be in the baseline too, so D7's measured count is
+    // pinned as well, per store and method (20 requests). It is the count D6's Review open had in source (`daily-review.ts` has
+    // added no read since tag claude-opus-5.5-d6), but no D6 build can open option Trades, so D6 never measured it.
     const tally: Record<string, number> = {};
     for (const r of twoTrades.requests) tally[`${r.store}.${r.method}`] = (tally[`${r.store}.${r.method}`] ?? 0) + 1;
     expect(tally).toEqual({ 'meta.get': 13, 'trades.getAll': 2, 'observations.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1 });
