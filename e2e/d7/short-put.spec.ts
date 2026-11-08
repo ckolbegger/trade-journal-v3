@@ -30,7 +30,9 @@ test.describe('B7.2 Cash-Secured Put', () => {
     await fillOptionExit(page2, [{ quantity: '3', price: '0.60', fee: '0.65', time: '2026-10-13T10:00' }]);
     await page2.getByRole('button', { name: 'Save exit' }).click();
     await expect(page2.getByRole('heading', { name: 'This exit can’t be saved yet' })).toBeVisible();
-    await expect(page2.getByText('Execution 1: The position has only 2 contracts.').first()).toBeVisible();
+    const row1 = page2.getByRole('group', { name: 'Execution 1', exact: true });
+    await expect(row1.getByText('Execution 1: The position has only 2 contracts.')).toBeVisible();
+    await expect(row1.getByLabel('Contracts')).toHaveAccessibleDescription('Execution 1: The position has only 2 contracts.');
     await expect(page2.getByRole('heading', { name: 'Exit recorded' })).toHaveCount(0);
     await page2.reload();
     const stored = tradesOf(workspaceOf(await probe(page2))!)[0]!;
