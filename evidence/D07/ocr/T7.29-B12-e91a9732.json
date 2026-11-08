@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 40315,
+    "input_tokens": 39843,
+    "output_tokens": 472,
+    "cache_read_tokens": 9600,
+    "elapsed": "29s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/bench.ts",
+      "content": "A full dataset with a missing or null `counts` object still throws a raw TypeError here instead of the required “regenerate the profile” error. The harness passes this property directly from JSON with only a type assertion, so the declared type does not protect this access at runtime. Validate the counts container (or safely read the property) before checking the count so this missing-count case also receives the actionable error.",
+      "existing_code": "  const count = dataset.counts['openOptionTrades'];",
+      "start_line": 32,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/bench.ts",
+        "tools/bench-run.ts"
+      ]
+    }
+  ],
+  "session_id": "b324cbce-3e5e-43ac-8769-417c4f248ee7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b324cbce-3e5e-43ac-8769-417c4f248ee7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e91a9732",
+      "resolved_base": "6779a481f78942d4458fff8ed9059d60dbafe179",
+      "resolved_head": "e91a9732d33bfd3a5f535142a2c1afbbd4f1bf2d",
+      "exact_range": "6779a481f78942d4458fff8ed9059d60dbafe179..e91a9732d33bfd3a5f535142a2c1afbbd4f1bf2d",
+      "source_artifact_sha256": "af14c8ab4728f2867d2e0346e56d1e91e6784fea37bf5b4be78e64a9663afc37"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "17574384c2328456f20d5afa84384d388a6a7bd207be94c4c5f50fc9dac80b63"
+        },
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "c5e16b140128c3b6b78429b0228baa816508013e7d1065bb17f04e2f1417430a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "17574384c2328456f20d5afa84384d388a6a7bd207be94c4c5f50fc9dac80b63"
+        },
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "c5e16b140128c3b6b78429b0228baa816508013e7d1065bb17f04e2f1417430a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 28650
+  }
+}

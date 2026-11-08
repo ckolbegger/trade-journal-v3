@@ -1813,3 +1813,36 @@ checks: finished (EXIT 0 ... 13 EXIT lines, one EXIT 1 )
 run complete
 exit 0
 ```
+
+#### T7.29-B12 result (commit e91a9732)
+
+- **The helper.** `openOptionTradesOf({ partial, counts })` in `src/app/bench.ts` returns 0 for a partial dataset. For a full dataset it returns the count, or throws "… regenerate the profile" when the count is missing or not a non-negative integer.
+- **Red and green.** The red failed with a TypeError inside the `toThrow` assertion. The green passed 15 of 15 in `compare.test.ts`.
+
+#### ocr review of `e91a9732` (T7.29-B12)
+
+Model gpt-6.1-sol. In place: 1 comment (`ocr/T7.29-B12-e91a9732.json`). Relocated: 1 comment (`ocr/T7.29-B12-e91a9732-relocated.json`).
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `src/app/bench.ts:32` | A full dataset with no `counts` object, or a null one, throws a raw TypeError rather than the "regenerate the profile" error. | Doubtful: the generator always writes `counts`, and the stamp check runs first. B12 was the third round on the benchmark chain, so this goes to the user (the third-round stop rule). |
+| high (relocated) | `compare-test.ts:2` | `openOptionTradesOf` isn't exported. | Dismissed: an artifact of the relocation (the parent's `bench.ts`). |
+
+The user's choice (2026-11-08): the medium finding on B12, a missing `counts` object, is noted for the final report and not fixed. The benchmark bug chain is closed.
+
+### Cumulative run `t7-29-split` (commit e91a9732 plus evidence edits; the checks ran at 34e9ce4b, a docs(plan) commit)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1426 passed, exit 0 | `suite-runs/t7-29-split-unit.txt` |
+| Node integration | 94 files, 191 passed, exit 0 | `suite-runs/t7-29-split-integration.txt` |
+| Browser (Chromium), full tier, `browser-1` | 119 passed (4.9 min), exit 0 | `suite-runs/t7-29-split-browser-1.txt` |
+| Browser (Chromium), full tier, `browser-2` | 47 passed (3.2 min), exit 0 | `suite-runs/t7-29-split-browser-2.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-29-split-checks.txt` |
+
+- **Tier.** Full; printed reason "first matching path since a3c036d2: package.json".
+- **Run of record.** This is the first run with decision 98's two foreground browser stages (revision 65). The 166 browser cases match the old full tier.
+- **Checks.** `run-complete.sh`: "run complete", checked again by the main session. Ports were free before and after.
+- **Superseded run.** `t7-29-final` was stopped at the user's request and is not a run of record.
+
+T7.29 is complete. Decision 99 (revision 67) settles the Review deviation: no stored read for settlement items.

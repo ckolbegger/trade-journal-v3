@@ -1,0 +1,92 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 32473,
+    "input_tokens": 32112,
+    "output_tokens": 361,
+    "cache_read_tokens": 11520,
+    "elapsed": "23s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/bench/compare-test.ts",
+      "content": "`src/app/bench.ts` does not export `openOptionTradesOf` (it currently only defines `expectedSettlementDue` for this logic). This new named import therefore fails type checking/module loading, so the test suite cannot run. Add and export the validation helper, and wire it into the benchmark runner to replace the fallback described in B12, before introducing these tests.",
+      "existing_code": "import { BENCH_SETTLEMENT_DUE, expectedSettlementDue, openOptionTradesOf } from '../../../app/bench.ts';",
+      "start_line": 2,
+      "end_line": 2,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/bench/compare-test.ts",
+      "files": [
+        "src/itg/relocated/bench/compare-test.ts"
+      ]
+    }
+  ],
+  "session_id": "7df8d1c0-ec29-4341-9b30-fabe87e60666",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7df8d1c0-ec29-4341-9b30-fabe87e60666",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "c33a2343b6221391856b371081ce532231ade7a8",
+      "resolved_head": "f8c6680bb4b44c51882b9aa42e217463393f9c44",
+      "exact_range": "c33a2343b6221391856b371081ce532231ade7a8..f8c6680bb4b44c51882b9aa42e217463393f9c44",
+      "source_artifact_sha256": "b933e88de333e80bc0027e072e71fb1377ebeb0d5118e7f8d47da05126b4c605"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3bc801a43014ef264d57654fdb8864baea65904f5a6a3f1ceeab6361e0950426",
+          "path": "src/itg/relocated/bench/compare-test.ts",
+          "fingerprint": "e796b444e9e5a24e8ad9e2e549dfec8dc2bd8dbe57d271d184673a0cb0cede12"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3bc801a43014ef264d57654fdb8864baea65904f5a6a3f1ceeab6361e0950426",
+          "path": "src/itg/relocated/bench/compare-test.ts",
+          "fingerprint": "e796b444e9e5a24e8ad9e2e549dfec8dc2bd8dbe57d271d184673a0cb0cede12"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 22899
+  }
+}
