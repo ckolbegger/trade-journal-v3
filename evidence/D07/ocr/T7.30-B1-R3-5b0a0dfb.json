@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 96575,
+    "input_tokens": 95736,
+    "output_tokens": 839,
+    "cache_read_tokens": 25472,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 11,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade derivation, record updates, and workflow coordination",
+      "files": [
+        "src/coordinators/trade-workflows/trade-workflows.ts",
+        "src/domain/trade-analysis/derive.ts",
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    },
+    {
+      "label": "Persistence rebuilding and stale-index regression coverage",
+      "files": [
+        "e2e/d6/stale-index-entry.ts",
+        "src/persistence/rebuild.ts"
+      ]
+    }
+  ],
+  "session_id": "ff415809-ecfa-4013-8ae5-9c5d7b11abcd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ff415809-ecfa-4013-8ae5-9c5d7b11abcd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5b0a0dfb",
+      "resolved_base": "00fd4bb189e4faa91c6b612df44183c69fdb318a",
+      "resolved_head": "5b0a0dfb70c3cd268083f8b6d3aec7c65dc6abe0",
+      "exact_range": "00fd4bb189e4faa91c6b612df44183c69fdb318a..5b0a0dfb70c3cd268083f8b6d3aec7c65dc6abe0",
+      "source_artifact_sha256": "b293be57c04593f49872217c00963b8bccdc20a0b5899fee9251afcd697ddb58"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2f6eb6786c98615d9dfeb0cd61f5ce3af3b99080d60c4d402fca615e73251a6c",
+          "path": "e2e/d6/stale-index-entry.ts",
+          "fingerprint": "1098ee70c70bcd078c336d374b12da06c5551af0e3be950d011c8621187e3f02"
+        },
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "ffc570874e3fc96a64aab2f38cd0d66a2aa6a46c829c09ae33a3eadc4a98528f"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "f22f676907ae3b124c146e92a75d5f3e0d7979f6c5a34b936a7f4f02f20fb98c"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "f7a02083be2dd42b24a86ff080c18a78163455c1f172b83b430e0c03d3645fab"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "8c6d12bf992b10051d4b2157b31f10b58c387530ba9e2effad516ab4669535fa"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2f6eb6786c98615d9dfeb0cd61f5ce3af3b99080d60c4d402fca615e73251a6c",
+          "path": "e2e/d6/stale-index-entry.ts",
+          "fingerprint": "1098ee70c70bcd078c336d374b12da06c5551af0e3be950d011c8621187e3f02"
+        },
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "ffc570874e3fc96a64aab2f38cd0d66a2aa6a46c829c09ae33a3eadc4a98528f"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "f22f676907ae3b124c146e92a75d5f3e0d7979f6c5a34b936a7f4f02f20fb98c"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "f7a02083be2dd42b24a86ff080c18a78163455c1f172b83b430e0c03d3645fab"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "8c6d12bf992b10051d4b2157b31f10b58c387530ba9e2effad516ab4669535fa"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 22344
+  }
+}

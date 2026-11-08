@@ -1,0 +1,179 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 2,
+    "total_tokens": 353901,
+    "input_tokens": 351334,
+    "output_tokens": 2567,
+    "cache_read_tokens": 50560,
+    "elapsed": "1m40s"
+  },
+  "tool_calls": {
+    "total": 35,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 19,
+      "file_find": 4,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7/marks.ts",
+      "content": "All eight new suites are outside the configured test discovery patterns. `vite.config.ts` includes only `tests/integration/**/*.test.ts` in the integration project and `src/**/*.test.{ts,tsx}` in the unit project; these files match neither, and no registration imports them. Consequently, the normal test commands execute none of this D7 coverage. Move the suites to `tests/integration/d7/*.test.ts` (adjusting imports), or explicitly register their current paths in the integration project.",
+      "existing_code": "describe('I7.9 Marks of 0', () =\u003e {",
+      "start_line": 12,
+      "end_line": 12,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/d7/entry-window.ts",
+      "content": "The lot-match assertion accepts any opening execution, so it does not verify that the backdated exit consumes PC1 rather than PC2. Retain PC1's recording result and assert `openingExecutionId` against its `receipt.createdFactIds[1]` (the execution; index 0 is the Position Change). Also assert the disposing execution against the sell receipt's execution ID. Otherwise a match referencing the wrong entry can pass this receipt check.",
+      "existing_code": "      expect.objectContaining({ kind: 'Created', openingExecutionId: expect.any(String) as unknown, quantity: { before: null, after: dec('1') } }),",
+      "start_line": 89,
+      "end_line": 89,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Relocated D7 integration scenarios and supporting utilities",
+      "files": [
+        "src/itg/relocated/d7/entry-window.ts",
+        "src/itg/relocated/d7/marks.ts",
+        "src/itg/relocated/d7/missing-mark.ts",
+        "src/itg/relocated/d7/payoff.ts",
+        "src/itg/relocated/d7/rebuild.ts",
+        "src/itg/relocated/d7/retries.ts",
+        "src/itg/relocated/d7/seed.ts",
+        "src/itg/relocated/d7/write-gate.ts"
+      ]
+    }
+  ],
+  "session_id": "c0563d6a-32f0-414f-821b-53802df3ee11",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c0563d6a-32f0-414f-821b-53802df3ee11",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ec6dd4ba8ee1267da05a2022992b9e557051e708",
+      "resolved_head": "4155010c7fbee98439cfa09486fe27329c8fb58d",
+      "exact_range": "ec6dd4ba8ee1267da05a2022992b9e557051e708..4155010c7fbee98439cfa09486fe27329c8fb58d",
+      "source_artifact_sha256": "ef6e3e1786c24c43595e7e0c69b313349dda5af2a96fffb50bde6579429030e6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2b995799a1243781cccb020d473f122ca82d17e7a332400440b4edefc2c483d7",
+          "path": "src/itg/relocated/d7/missing-mark.ts",
+          "fingerprint": "2a0cbc40aec68b263773c12bcd587e8f6815d9e7993bde162d8b7fe030bf2033"
+        },
+        {
+          "item_id": "384a8a53964cc6b82213d4b8cb62633fef9dfc6eba50d9e3daf9227a9a4e44ef",
+          "path": "src/itg/relocated/d7/marks.ts",
+          "fingerprint": "5a7928280f50911b9a0305b44b315bfaf09f60e31cf4e81c15a3489e6e777ee5"
+        },
+        {
+          "item_id": "5932347f58588dd5e2c784127cacd3e175f17d10e79674848041fb03641ac2e4",
+          "path": "src/itg/relocated/d7/entry-window.ts",
+          "fingerprint": "dcefb53d12f1248da96c6aeeaa06885085455a500f5a77141720136c528a2d38"
+        },
+        {
+          "item_id": "6736065347cac41eb36703324370aeedec85efaeabf6cfaf42851ec57159ab33",
+          "path": "src/itg/relocated/d7/rebuild.ts",
+          "fingerprint": "2ce6e7f3fd05c5538818124e441f05702623c9192dcd6482ee77208420810fc5"
+        },
+        {
+          "item_id": "92c9de446ad5a7047098bce663e59e7bf8fc79d8473724ae15b1034e180a6b0f",
+          "path": "src/itg/relocated/d7/write-gate.ts",
+          "fingerprint": "e23922ed8bb2f44f5442bb5f632c94fcd3a8c0952fbee83e986ea0d0a15d3430"
+        },
+        {
+          "item_id": "9df9972923e9c50db2c2cc983bde8e8e6f9c1da75672252b60d6c86690335c52",
+          "path": "src/itg/relocated/d7/seed.ts",
+          "fingerprint": "7f823f07fa8ad86609522fabb02309e82335584c58c9204ee04147e44db375dd"
+        },
+        {
+          "item_id": "bec4adfbd23d4b66d7932800c49221e1778610a9136992d6a569e4165f584649",
+          "path": "src/itg/relocated/d7/payoff.ts",
+          "fingerprint": "a0e4c5a19fd94edee665467b4e19cd799bd1131dfa292c7ad667209c7fe7a364"
+        },
+        {
+          "item_id": "e6ff586b5cb1e403632c68fe9467a61b554768690dee5c1a58786811631cb648",
+          "path": "src/itg/relocated/d7/retries.ts",
+          "fingerprint": "63659732066b81fd4848a66d2d793a7058a17a8e8eba704ec8e19bf8447566dc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2b995799a1243781cccb020d473f122ca82d17e7a332400440b4edefc2c483d7",
+          "path": "src/itg/relocated/d7/missing-mark.ts",
+          "fingerprint": "2a0cbc40aec68b263773c12bcd587e8f6815d9e7993bde162d8b7fe030bf2033"
+        },
+        {
+          "item_id": "384a8a53964cc6b82213d4b8cb62633fef9dfc6eba50d9e3daf9227a9a4e44ef",
+          "path": "src/itg/relocated/d7/marks.ts",
+          "fingerprint": "5a7928280f50911b9a0305b44b315bfaf09f60e31cf4e81c15a3489e6e777ee5"
+        },
+        {
+          "item_id": "5932347f58588dd5e2c784127cacd3e175f17d10e79674848041fb03641ac2e4",
+          "path": "src/itg/relocated/d7/entry-window.ts",
+          "fingerprint": "dcefb53d12f1248da96c6aeeaa06885085455a500f5a77141720136c528a2d38"
+        },
+        {
+          "item_id": "6736065347cac41eb36703324370aeedec85efaeabf6cfaf42851ec57159ab33",
+          "path": "src/itg/relocated/d7/rebuild.ts",
+          "fingerprint": "2ce6e7f3fd05c5538818124e441f05702623c9192dcd6482ee77208420810fc5"
+        },
+        {
+          "item_id": "92c9de446ad5a7047098bce663e59e7bf8fc79d8473724ae15b1034e180a6b0f",
+          "path": "src/itg/relocated/d7/write-gate.ts",
+          "fingerprint": "e23922ed8bb2f44f5442bb5f632c94fcd3a8c0952fbee83e986ea0d0a15d3430"
+        },
+        {
+          "item_id": "9df9972923e9c50db2c2cc983bde8e8e6f9c1da75672252b60d6c86690335c52",
+          "path": "src/itg/relocated/d7/seed.ts",
+          "fingerprint": "7f823f07fa8ad86609522fabb02309e82335584c58c9204ee04147e44db375dd"
+        },
+        {
+          "item_id": "bec4adfbd23d4b66d7932800c49221e1778610a9136992d6a569e4165f584649",
+          "path": "src/itg/relocated/d7/payoff.ts",
+          "fingerprint": "a0e4c5a19fd94edee665467b4e19cd799bd1131dfa292c7ad667209c7fe7a364"
+        },
+        {
+          "item_id": "e6ff586b5cb1e403632c68fe9467a61b554768690dee5c1a58786811631cb648",
+          "path": "src/itg/relocated/d7/retries.ts",
+          "fingerprint": "63659732066b81fd4848a66d2d793a7058a17a8e8eba704ec8e19bf8447566dc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 99962
+  }
+}

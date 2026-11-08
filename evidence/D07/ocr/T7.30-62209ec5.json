@@ -1,0 +1,208 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 4,
+    "total_tokens": 527527,
+    "input_tokens": 524449,
+    "output_tokens": 3078,
+    "cache_read_tokens": 55424,
+    "elapsed": "2m4s"
+  },
+  "tool_calls": {
+    "total": 26,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7/short-put.ts",
+      "content": "B0 consumes the second of S1's two contracts, so the resulting trade is terminal even though B0 is backdated. record-position-change requires both a Close Reason and a Close Review disposition for TerminalWithAgency; this call supplies neither, so recordOption throws before any receipt assertions run. First assert the missing-reason rejection (and unchanged dump), then retry with a reason and Close Review to exercise the receipt disclosures required by I7.4 B.",
+      "existing_code": "    const early = await recordOption(app, tradeId, 'Buy', B0);",
+      "start_line": 61,
+      "end_line": 61,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d7/expiration-close-review.ts",
+      "content": "The seven relocated D7 suites are not discovered by either Vitest project: vite.config.ts includes only src/**/*.test.{ts,tsx} (unit) and tests/integration/**/*.test.ts (integration). These files are under src/itg/relocated/d7 with plain .ts names, so test:integration never executes the new acceptance assertions. Move/rename them into the integration include pattern or explicitly register this directory's suites (excluding support.ts).",
+      "existing_code": "describe('I7.5 Expiration Close Review dispositions', () =\u003e {",
+      "start_line": 10,
+      "end_line": 10,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/d7/lifecycle.ts",
+      "content": "I7.3 requires the second match to be PC2 \u003c- E1, but this assertion only rules out X1. An undefined or unrelated disposal identifier would pass alongside the existing quantity/P\u0026L assertions. Assert equality with the expiration member's fact ID from expired.receipt.createdFactIds (or the stored Expiration fact) to prove the required link.",
+      "existing_code": "    expect(detail.lotMatches[1]!.disposingExecutionId).not.toBe(results[2]!.receipt.createdFactIds[1]);",
+      "start_line": 94,
+      "end_line": 94,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d7/lifecycle.ts",
+      "content": "I7.3 requires each result to agree with the stored Trade, but these comparisons only cover position changes and realized P\u0026L. In particular, factRevision is never compared at confirmation, after any execution, or after expiration/restart. A response returning a stale revision would pass this case even though the next command constructed from that response would conflict. Compare the returned factRevision with Detail at every step (and include the other persisted Trade fields in the result-versus-readback check).",
+      "existing_code": "      expect('positionChanges' in openDetail \u0026\u0026 openDetail.positionChanges).toEqual(result.postCommit.trade.positionChanges);\n      expect('realizedToDate' in openDetail \u0026\u0026 openDetail.realizedToDate).toEqual(result.postCommit.derivation.realizedToDate);",
+      "start_line": 48,
+      "end_line": 49,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D7 relocated integration scenarios, migration, and shared test support",
+      "files": [
+        "src/itg/relocated/d7/expiration-close-review.ts",
+        "src/itg/relocated/d7/lifecycle.ts",
+        "src/itg/relocated/d7/migration.ts",
+        "src/itg/relocated/d7/rejections.ts",
+        "src/itg/relocated/d7/review.ts",
+        "src/itg/relocated/d7/settlement-due.ts",
+        "src/itg/relocated/d7/short-put.ts",
+        "src/itg/relocated/d7/support.ts",
+        "tests/integration/d7/support.ts"
+      ]
+    }
+  ],
+  "session_id": "df310e48-9f68-4abf-ad1d-77c3eced18b6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "df310e48-9f68-4abf-ad1d-77c3eced18b6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "a56da45c",
+      "resolved_base": "b84b38052d7bfd94529f5924d4ae792a1ac48ce7",
+      "resolved_head": "a56da45c432fe5c2e3e1f897ef9a1b321590f4ee",
+      "exact_range": "b84b38052d7bfd94529f5924d4ae792a1ac48ce7..a56da45c432fe5c2e3e1f897ef9a1b321590f4ee",
+      "source_artifact_sha256": "91cd79344d33b7827005e39d19fbead33b1f546adab0672310a4af8333b0fb2e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "07c5da46b927e253f59c54b322ad923d27260dcac7878b3c9f317d228d90e490",
+          "path": "src/itg/relocated/d7/lifecycle.ts",
+          "fingerprint": "08f4e93fc9f522167e9f1655cd79c3988997c7f5eed3bae638adcab4de08e696"
+        },
+        {
+          "item_id": "1a8b40c4a39cc453bdfad6520b228876462f14454c7342425ef73e5192a4b3b0",
+          "path": "src/itg/relocated/d7/support.ts",
+          "fingerprint": "d8726b32e6b756fe8393b6e22eb544b2b59cc0035a05b12f2807b75299061db3"
+        },
+        {
+          "item_id": "1edd447cbdf6bbf627b0e6bdaec1e39b83a46805931bfef4ec49a2d21108e540",
+          "path": "src/itg/relocated/d7/short-put.ts",
+          "fingerprint": "1b88c4962a7742cb7d5805a7b12eedc78a4e1ae21a03eac01a92f17376c04191"
+        },
+        {
+          "item_id": "2313c13f372f66f521d4e856df627a55924c0330920f7b08dbf957350f3c702b",
+          "path": "src/itg/relocated/d7/migration.ts",
+          "fingerprint": "cadd837f0d660d3edd0c87f642e31ed71770167c751ec754b68cf8f035fa5273"
+        },
+        {
+          "item_id": "4750653cff209925ae1f80a29e43105d34be336232e472d994b6bb3f50400d8a",
+          "path": "src/itg/relocated/d7/settlement-due.ts",
+          "fingerprint": "8e7339502456401e2f1933b83d8c214d07278ad8893c71637d30d8de63a8b36f"
+        },
+        {
+          "item_id": "4b9fadd3d5bd8cee14f60df670c85c90c9aa10deaead2a1084151c24c9231db1",
+          "path": "tests/integration/d7/support.ts",
+          "fingerprint": "578dd2f19998a4fb6e4e69199728c7b7b343cff9534ec957ef7ef83f3a7f38b2"
+        },
+        {
+          "item_id": "6b1dbaba09e421969bfe78dd5565efb48ed459197a3c93ffbba1147c110219da",
+          "path": "src/itg/relocated/d7/rejections.ts",
+          "fingerprint": "a753cce24f0de83faafa46de5f56be8fe81157b85619ba48cd337a6a11aee35e"
+        },
+        {
+          "item_id": "9c784b8a55256d92888e81d4c1dc6ac2dec0dc5ded8375aed971a69229b2eef8",
+          "path": "src/itg/relocated/d7/review.ts",
+          "fingerprint": "9c2a4398d0de26858277013cd0c25b859c413f9aa0408f561a5b038e667840b8"
+        },
+        {
+          "item_id": "c352395d28c20edb1548621fa9fcc77d4e47cd2ea0593206e44c3e3d618eccd4",
+          "path": "src/itg/relocated/d7/expiration-close-review.ts",
+          "fingerprint": "df12a41ad1c5c3d2c9bf6f7ab632b944cdd51abb67006fdb992ed145c7e22b73"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "07c5da46b927e253f59c54b322ad923d27260dcac7878b3c9f317d228d90e490",
+          "path": "src/itg/relocated/d7/lifecycle.ts",
+          "fingerprint": "08f4e93fc9f522167e9f1655cd79c3988997c7f5eed3bae638adcab4de08e696"
+        },
+        {
+          "item_id": "1a8b40c4a39cc453bdfad6520b228876462f14454c7342425ef73e5192a4b3b0",
+          "path": "src/itg/relocated/d7/support.ts",
+          "fingerprint": "d8726b32e6b756fe8393b6e22eb544b2b59cc0035a05b12f2807b75299061db3"
+        },
+        {
+          "item_id": "1edd447cbdf6bbf627b0e6bdaec1e39b83a46805931bfef4ec49a2d21108e540",
+          "path": "src/itg/relocated/d7/short-put.ts",
+          "fingerprint": "1b88c4962a7742cb7d5805a7b12eedc78a4e1ae21a03eac01a92f17376c04191"
+        },
+        {
+          "item_id": "2313c13f372f66f521d4e856df627a55924c0330920f7b08dbf957350f3c702b",
+          "path": "src/itg/relocated/d7/migration.ts",
+          "fingerprint": "cadd837f0d660d3edd0c87f642e31ed71770167c751ec754b68cf8f035fa5273"
+        },
+        {
+          "item_id": "4750653cff209925ae1f80a29e43105d34be336232e472d994b6bb3f50400d8a",
+          "path": "src/itg/relocated/d7/settlement-due.ts",
+          "fingerprint": "8e7339502456401e2f1933b83d8c214d07278ad8893c71637d30d8de63a8b36f"
+        },
+        {
+          "item_id": "4b9fadd3d5bd8cee14f60df670c85c90c9aa10deaead2a1084151c24c9231db1",
+          "path": "tests/integration/d7/support.ts",
+          "fingerprint": "578dd2f19998a4fb6e4e69199728c7b7b343cff9534ec957ef7ef83f3a7f38b2"
+        },
+        {
+          "item_id": "6b1dbaba09e421969bfe78dd5565efb48ed459197a3c93ffbba1147c110219da",
+          "path": "src/itg/relocated/d7/rejections.ts",
+          "fingerprint": "a753cce24f0de83faafa46de5f56be8fe81157b85619ba48cd337a6a11aee35e"
+        },
+        {
+          "item_id": "9c784b8a55256d92888e81d4c1dc6ac2dec0dc5ded8375aed971a69229b2eef8",
+          "path": "src/itg/relocated/d7/review.ts",
+          "fingerprint": "9c2a4398d0de26858277013cd0c25b859c413f9aa0408f561a5b038e667840b8"
+        },
+        {
+          "item_id": "c352395d28c20edb1548621fa9fcc77d4e47cd2ea0593206e44c3e3d618eccd4",
+          "path": "src/itg/relocated/d7/expiration-close-review.ts",
+          "fingerprint": "df12a41ad1c5c3d2c9bf6f7ab632b944cdd51abb67006fdb992ed145c7e22b73"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 123894
+  }
+}

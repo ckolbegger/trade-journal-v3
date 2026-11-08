@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 125759,
+    "input_tokens": 124721,
+    "output_tokens": 1038,
+    "cache_read_tokens": 19200,
+    "elapsed": "55s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "Each option with an older dated close issues its own Historical ResolveFrames request here. Since the Open browse page calls this helper once per trade concurrently, 200 trades sharing the same underlying and dated close can produce 200 identical requests in addition to the batched current-frame lookup. Collect the required underlyings by dated close and resolve each date once (or at least share in-flight requests within the view assembly), then reuse those frames for each trade.",
+      "existing_code": "    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate }, instruments: [analysis.plan.underlying] });",
+      "start_line": 718,
+      "end_line": 718,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/valuation.ts"
+      ]
+    }
+  ],
+  "session_id": "416cfa93-4a65-4b99-9bb6-7bd63e0778ae",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "416cfa93-4a65-4b99-9bb6-7bd63e0778ae",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7aeb6f6b",
+      "resolved_base": "5b0a0dfb70c3cd268083f8b6d3aec7c65dc6abe0",
+      "resolved_head": "7aeb6f6b2c37ff102fe68de75eca632dd59c8694",
+      "exact_range": "5b0a0dfb70c3cd268083f8b6d3aec7c65dc6abe0..7aeb6f6b2c37ff102fe68de75eca632dd59c8694",
+      "source_artifact_sha256": "3dc6b4e0c356612d68ce4091fa5f4418bfac603f59960f86597318e86fd706d1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "e34f5e13fae5ee56d049f2623969c2f33f6d11b3937d45bd90970bae62326cf8"
+        },
+        {
+          "item_id": "99d627713d805a8be3f1d2ef6e20fe1ecba03739d81dfbba50d27ef341f8934c",
+          "path": "src/coordinators/valuation.ts",
+          "fingerprint": "4ebe03292f0aea941bfa2c68457b5415c1709f9114222f97a686665b4f809492"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "e34f5e13fae5ee56d049f2623969c2f33f6d11b3937d45bd90970bae62326cf8"
+        },
+        {
+          "item_id": "99d627713d805a8be3f1d2ef6e20fe1ecba03739d81dfbba50d27ef341f8934c",
+          "path": "src/coordinators/valuation.ts",
+          "fingerprint": "4ebe03292f0aea941bfa2c68457b5415c1709f9114222f97a686665b4f809492"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 54588
+  }
+}

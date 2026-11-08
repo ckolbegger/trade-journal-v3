@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 75793,
+    "input_tokens": 74892,
+    "output_tokens": 901,
+    "cache_read_tokens": 15360,
+    "elapsed": "38s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/trade-record/trade-record.ts",
+      "content": "`terminalPositionChangeId` is optional in the exported reconciliation type, and `applyPreparedChange` still accepts a Closed reconciliation that omits it. In that case `terminalId` is undefined and the new Close Reason falls back to the literal `candidate:pc-1` below, even though that Position Change has been assigned a durable ID. This persists a dangling reference (previously the local sort supplied a durable ID). Require and validate a terminal Position Change ID when adding a Close Reason, returning `ReconciliationMismatch` if it is absent, rather than staging the temporary reference.",
+      "existing_code": "    const terminalId = terminalPositionChangeId ? durable(terminalPositionChangeId) : undefined;",
+      "start_line": 410,
+      "end_line": 410,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "51976504-b86e-44fc-a4cb-5130ab5b1d47",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "51976504-b86e-44fc-a4cb-5130ab5b1d47",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5f387a67",
+      "resolved_base": "a4856c53dde9d0f92314ef66ce8ce79dfc854458",
+      "resolved_head": "5f387a67b33bd9dee4c2007213d273a20037b6a5",
+      "exact_range": "a4856c53dde9d0f92314ef66ce8ce79dfc854458..5f387a67b33bd9dee4c2007213d273a20037b6a5",
+      "source_artifact_sha256": "45b1f8449858456dc42c67c898bed1e363f49c386ff14a7768895bd84d253a3a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "5e7e1ecaeb639cda210c9f58ea20e1fceacc09fdbbdca56312f4e7398f3b0d61"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "5b119be109ec8db8f72452d20c8dc9c1103aa967629d1e30ac6d18debb01c6ee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "5e7e1ecaeb639cda210c9f58ea20e1fceacc09fdbbdca56312f4e7398f3b0d61"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "5b119be109ec8db8f72452d20c8dc9c1103aa967629d1e30ac6d18debb01c6ee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 37765
+  }
+}

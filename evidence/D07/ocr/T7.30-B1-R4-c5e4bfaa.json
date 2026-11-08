@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 48577,
+    "input_tokens": 48218,
+    "output_tokens": 359,
+    "cache_read_tokens": 7680,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade analysis derivation and integration with trade records and persistence rebuilds",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/index.ts",
+        "src/modules/trade-record/trade-record.ts",
+        "src/persistence/rebuild.ts"
+      ]
+    }
+  ],
+  "session_id": "5d121335-e266-44fd-87ac-2ab006b6169e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5d121335-e266-44fd-87ac-2ab006b6169e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c5e4bfaa",
+      "resolved_base": "7aeb6f6b2c37ff102fe68de75eca632dd59c8694",
+      "resolved_head": "c5e4bfaa7314399edb9912bb90548051bce00071",
+      "exact_range": "7aeb6f6b2c37ff102fe68de75eca632dd59c8694..c5e4bfaa7314399edb9912bb90548051bce00071",
+      "source_artifact_sha256": "e2caf68bd85bef04243432abad76953066675d766b36588c1afb4c43f40f77c4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "a45ea17b61d70073a5b2f8b2e77d22b23e902616442eb5df8f2e0f254e6d93ce"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "a008a17b4a56112daef0f8a13d6568c3a6c2dd99c6797d5c96c2ad6ebd15e61b"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "3e7e6d8cfba21987a04b2feefb612a032c9a35c745ad93b0ffbaf5597ff50ac9"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "62dfda882c87099a848238dc4086440ac5eb8812d07bf37af274d02cc6e9f791"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "a45ea17b61d70073a5b2f8b2e77d22b23e902616442eb5df8f2e0f254e6d93ce"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "a008a17b4a56112daef0f8a13d6568c3a6c2dd99c6797d5c96c2ad6ebd15e61b"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "3e7e6d8cfba21987a04b2feefb612a032c9a35c745ad93b0ffbaf5597ff50ac9"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "62dfda882c87099a848238dc4086440ac5eb8812d07bf37af274d02cc6e9f791"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 19938
+  }
+}

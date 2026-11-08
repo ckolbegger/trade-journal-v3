@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 110174,
+    "input_tokens": 109184,
+    "output_tokens": 990,
+    "cache_read_tokens": 15360,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/trade-record/trade-record.ts",
+      "content": "`terminalPositionChangeId` is optional in the exported reconciliation type, but omitting it when adding a Close Reason now persists the preparation-only ID `candidate:pc-1`: `terminalId` becomes undefined and the fallback below copies `v.value.terminalPositionChangeId` without applying `durable`. The call still returns `Staged`, leaving the Close Reason pointing to a nonexistent Position Change. Require a valid terminal Position Change ID when a Close Reason is added (and return `ReconciliationMismatch` if absent), rather than accepting an incomplete reconciliation.",
+      "existing_code": "    const terminalId = terminalPositionChangeId ? durable(terminalPositionChangeId) : undefined;",
+      "start_line": 410,
+      "end_line": 410,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade position changes, record closing, and derived analysis",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/itg/relocated/trade-record/close.ts",
+        "src/itg/relocated/trade-workflows/record-position-change.ts",
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "1cdef72c-1bf7-4048-bd50-815bac9ef2d0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1cdef72c-1bf7-4048-bd50-815bac9ef2d0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "5f30d1d016815ddb406870cd56e4f51626dfe591",
+      "resolved_head": "ff487909559d124b78d1ba268efdf83453e277b8",
+      "exact_range": "5f30d1d016815ddb406870cd56e4f51626dfe591..ff487909559d124b78d1ba268efdf83453e277b8",
+      "source_artifact_sha256": "42d4b9b8ce629306826fe94978b251d808eda8317e99b0de57df652619773baa"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "347a3d65b7f34aed30ea2eada2e1443a3165847817d99ef26f90d21526ec8483",
+          "path": "src/itg/relocated/trade-record/close.ts",
+          "fingerprint": "c7a6934ed59c899a45d4d9e2895ced8cf7b55907b4d9f21407f9086fd6750c94"
+        },
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "5e7e1ecaeb639cda210c9f58ea20e1fceacc09fdbbdca56312f4e7398f3b0d61"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "5b119be109ec8db8f72452d20c8dc9c1103aa967629d1e30ac6d18debb01c6ee"
+        },
+        {
+          "item_id": "a30a970f92af9150255080488623812f918fb239a8b5e5c75294f078b1aa41e3",
+          "path": "src/itg/relocated/trade-workflows/record-position-change.ts",
+          "fingerprint": "bfced0b02f36d0dffc10ec99822e91ac98fbf3fb817aa6948bac869aa8b0c7c5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "347a3d65b7f34aed30ea2eada2e1443a3165847817d99ef26f90d21526ec8483",
+          "path": "src/itg/relocated/trade-record/close.ts",
+          "fingerprint": "c7a6934ed59c899a45d4d9e2895ced8cf7b55907b4d9f21407f9086fd6750c94"
+        },
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "5e7e1ecaeb639cda210c9f58ea20e1fceacc09fdbbdca56312f4e7398f3b0d61"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "5b119be109ec8db8f72452d20c8dc9c1103aa967629d1e30ac6d18debb01c6ee"
+        },
+        {
+          "item_id": "a30a970f92af9150255080488623812f918fb239a8b5e5c75294f078b1aa41e3",
+          "path": "src/itg/relocated/trade-workflows/record-position-change.ts",
+          "fingerprint": "bfced0b02f36d0dffc10ec99822e91ac98fbf3fb817aa6948bac869aa8b0c7c5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 41225
+  }
+}

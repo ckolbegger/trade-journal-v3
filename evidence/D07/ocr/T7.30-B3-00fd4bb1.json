@@ -1,0 +1,124 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 143483,
+    "input_tokens": 142031,
+    "output_tokens": 1452,
+    "cache_read_tokens": 27264,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 12
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 7,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/trade-views/trade-views.ts,src/coordinators/valuation.ts",
+        "arguments": "{\"file_path\": \"src/domain/instrument/instrument.ts\", \"start_line\": 1, \"end_line\": 150}",
+        "error": "file \"src/domain/instrument/instrument.ts\" not found: git show 00fd4bb1:src/domain/instrument/instrument.ts: exit status 128: fatal: path 'src/domain/instrument/instrument.ts' does not exist in '00fd4bb1'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/valuation.ts",
+      "content": "This only searches the Underlying's current frame, so a valid dated line disappears when the Underlying gets a newer Mark. For example, with both Monday Marks and only the Underlying's Tuesday Mark, the contract selects Monday as its dated source, but the Available Tuesday Underlying frame cannot expose its Monday Mark and this function returns undefined. Resolve the Underlying frame at source.tradingDate (rather than relying solely on its current/stale frame) so the Monday line remains available. Add a regression test where only one of the two Tuesday Marks exists.",
+      "existing_code": "    const mark = !r ? undefined : r.kind === 'Available' ? (underlyingFrame.tradingDate === source.tradingDate ? r.mark : undefined) : r.stale?.tradingDate === source.tradingDate ? r.stale : undefined;",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/valuation.ts",
+      "content": "Requiring an exact Underlying Mark suppresses the entire dated evaluation even when the contract has an exact Mark and the Trade had exposure at that close. A110 specifies independent availability: market value, P\u0026L, and worst-case risk can still be calculated from the contract Mark while Underlying-dependent figures remain unavailable. Preserve the dated evaluation in this case and pass a Missing/Unavailable Underlying frame instead of dropping the line.",
+      "existing_code": "    if (!underlyingFrame || !mark) return undefined;",
+      "start_line": 42,
+      "end_line": 42,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/valuation.ts"
+      ]
+    }
+  ],
+  "session_id": "3df0ea6c-c279-493b-94f5-9e3608ea2083",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3df0ea6c-c279-493b-94f5-9e3608ea2083",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "00fd4bb1",
+      "resolved_base": "3bdc7b176c2c9564f8e703197706531dc96e1c87",
+      "resolved_head": "00fd4bb189e4faa91c6b612df44183c69fdb318a",
+      "exact_range": "3bdc7b176c2c9564f8e703197706531dc96e1c87..00fd4bb189e4faa91c6b612df44183c69fdb318a",
+      "source_artifact_sha256": "98592af2673f5c76c3f3ef54593d76a379fefc2de6751734accb2f27f060613a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "8ec039bf042e0e1d3b9aff7dd666bdb452f5f7fac0b931acfd3998203a6df035"
+        },
+        {
+          "item_id": "99d627713d805a8be3f1d2ef6e20fe1ecba03739d81dfbba50d27ef341f8934c",
+          "path": "src/coordinators/valuation.ts",
+          "fingerprint": "e69557d38f04db5d9d3235fa3cbf75e4f2a0f5ae0d03e29700ce1644b2fa5b19"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "8ec039bf042e0e1d3b9aff7dd666bdb452f5f7fac0b931acfd3998203a6df035"
+        },
+        {
+          "item_id": "99d627713d805a8be3f1d2ef6e20fe1ecba03739d81dfbba50d27ef341f8934c",
+          "path": "src/coordinators/valuation.ts",
+          "fingerprint": "e69557d38f04db5d9d3235fa3cbf75e4f2a0f5ae0d03e29700ce1644b2fa5b19"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 70139
+  }
+}

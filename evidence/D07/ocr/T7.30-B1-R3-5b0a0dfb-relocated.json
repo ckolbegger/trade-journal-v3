@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 128088,
+    "input_tokens": 127241,
+    "output_tokens": 847,
+    "cache_read_tokens": 24960,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_search": 6,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Stale index entry handling",
+      "files": [
+        "src/itg/relocated/d6/stale-index-entry.ts"
+      ]
+    },
+    {
+      "label": "Persistence schema v5 updates",
+      "files": [
+        "src/itg/relocated/persistence/schema-v5.ts"
+      ]
+    },
+    {
+      "label": "Trade record closing and position-change workflow",
+      "files": [
+        "src/itg/relocated/trade-record/close.ts",
+        "src/itg/relocated/trade-record/option-record.ts",
+        "src/itg/relocated/trade-record/position-change.ts",
+        "src/itg/relocated/trade-workflows/record-position-change.ts"
+      ]
+    }
+  ],
+  "session_id": "851fd83e-f46a-458b-9cf1-fbeacce010ec",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "851fd83e-f46a-458b-9cf1-fbeacce010ec",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "e24370c8",
+      "resolved_base": "97330b3c6a7dfa55e97f8354857c8be00534ff39",
+      "resolved_head": "e24370c8d46f59de2caa784d62a77d3a6d22570e",
+      "exact_range": "97330b3c6a7dfa55e97f8354857c8be00534ff39..e24370c8d46f59de2caa784d62a77d3a6d22570e",
+      "source_artifact_sha256": "b9319e3babc2165fdd08a1bbbba0806344bd6a26e4cd6929e11d6a45d46df6fa"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13757aef517dde7a6f175795f80f2366abc5fba9eb9decca31a6e92825986733",
+          "path": "src/itg/relocated/d6/stale-index-entry.ts",
+          "fingerprint": "7d40ee1fabc01081491a7e1d434d2ef8c255a168601463f225ce1efbe594d0d2"
+        },
+        {
+          "item_id": "347a3d65b7f34aed30ea2eada2e1443a3165847817d99ef26f90d21526ec8483",
+          "path": "src/itg/relocated/trade-record/close.ts",
+          "fingerprint": "2f30c32769cd25ae99740068b8637972ed071bcffe0a837cede8dd4b3e5ab96b"
+        },
+        {
+          "item_id": "a30a970f92af9150255080488623812f918fb239a8b5e5c75294f078b1aa41e3",
+          "path": "src/itg/relocated/trade-workflows/record-position-change.ts",
+          "fingerprint": "926969362e1ee0d996b81721c4d05c7f6ab026070db768d4856241cae5e018a3"
+        },
+        {
+          "item_id": "a920bb217ee5ebd5d431379e8462003f99176c9c56a574a0a4b45b65122868f8",
+          "path": "src/itg/relocated/trade-record/position-change.ts",
+          "fingerprint": "68c8cc3a6468cf96d6bc13e800b7e710ef7a0c0fe4ed882e3745cc5ed6d7be62"
+        },
+        {
+          "item_id": "c8fedeb606414493f0eb1f0485f382b2d125f00bc170761042e64e6ee5c9371b",
+          "path": "src/itg/relocated/trade-record/option-record.ts",
+          "fingerprint": "eb2bd85172841a1865e13a7088f9642bc06e06c71f940f147240d2ae819e9d78"
+        },
+        {
+          "item_id": "e94c46b0852f5353ea517e821ef171c3c8dbba4a7c932460c864fd137f4f9d69",
+          "path": "src/itg/relocated/persistence/schema-v5.ts",
+          "fingerprint": "1130b400eae2fb385dd98686902f10fe9b7cb3bf678bbe5f4f322f9922049efe"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13757aef517dde7a6f175795f80f2366abc5fba9eb9decca31a6e92825986733",
+          "path": "src/itg/relocated/d6/stale-index-entry.ts",
+          "fingerprint": "7d40ee1fabc01081491a7e1d434d2ef8c255a168601463f225ce1efbe594d0d2"
+        },
+        {
+          "item_id": "347a3d65b7f34aed30ea2eada2e1443a3165847817d99ef26f90d21526ec8483",
+          "path": "src/itg/relocated/trade-record/close.ts",
+          "fingerprint": "2f30c32769cd25ae99740068b8637972ed071bcffe0a837cede8dd4b3e5ab96b"
+        },
+        {
+          "item_id": "a30a970f92af9150255080488623812f918fb239a8b5e5c75294f078b1aa41e3",
+          "path": "src/itg/relocated/trade-workflows/record-position-change.ts",
+          "fingerprint": "926969362e1ee0d996b81721c4d05c7f6ab026070db768d4856241cae5e018a3"
+        },
+        {
+          "item_id": "a920bb217ee5ebd5d431379e8462003f99176c9c56a574a0a4b45b65122868f8",
+          "path": "src/itg/relocated/trade-record/position-change.ts",
+          "fingerprint": "68c8cc3a6468cf96d6bc13e800b7e710ef7a0c0fe4ed882e3745cc5ed6d7be62"
+        },
+        {
+          "item_id": "c8fedeb606414493f0eb1f0485f382b2d125f00bc170761042e64e6ee5c9371b",
+          "path": "src/itg/relocated/trade-record/option-record.ts",
+          "fingerprint": "eb2bd85172841a1865e13a7088f9642bc06e06c71f940f147240d2ae819e9d78"
+        },
+        {
+          "item_id": "e94c46b0852f5353ea517e821ef171c3c8dbba4a7c932460c864fd137f4f9d69",
+          "path": "src/itg/relocated/persistence/schema-v5.ts",
+          "fingerprint": "1130b400eae2fb385dd98686902f10fe9b7cb3bf678bbe5f4f322f9922049efe"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21916
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 210155,
+    "input_tokens": 209077,
+    "output_tokens": 1078,
+    "cache_read_tokens": 19200,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "The newly accepted earlier-dated close produces a Close Reason that the existing section validator rejects. `trade-record.ts` stores `terminalPositionChangeId` as the new candidate's ID, but `closeReasonIssuesOf` in `src/modules/trade-record/section.ts` still compares it with `derived.facts.at(-1)?.positionChangeId` (last in Fact Order). For example, recording an earlier-dated Sell that makes the Trade flat now succeeds with a Close Reason, then section validation reports `CloseReasonOnNonTerminalChange` for that valid record. Update the validator to recognize the closing recorded change under Decision 96 and add a record-then-validate regression test alongside this change.",
+      "existing_code": "  return steps.some((s) =\u003e s.positionChangeId === newest.factId \u0026\u0026 s.kind === 'Expiration') ? 'TerminalWithoutAgency' : 'TerminalWithAgency';",
+      "start_line": 610,
+      "end_line": 610,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/domain/trade-analysis/derive.ts",
+      "files": [
+        "src/domain/trade-analysis/derive.ts"
+      ]
+    }
+  ],
+  "session_id": "d9e37767-2464-4a2f-afd3-1fe3b83a296a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d9e37767-2464-4a2f-afd3-1fe3b83a296a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f6984753",
+      "resolved_base": "c5b1966240d2aec270da3598f0a78efc30897d3a",
+      "resolved_head": "f69847530a15654470d36b16bd29206be6be2d61",
+      "exact_range": "c5b1966240d2aec270da3598f0a78efc30897d3a..f69847530a15654470d36b16bd29206be6be2d61",
+      "source_artifact_sha256": "f5d2a8061bfa4fae67ad65d52804d1e531d66bf148ccf9c99649c802e59db3e7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "da626b40732312c63581bdf859c1b93300dcb0d7cfe8942e9f0e08ce1adaaa95"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "da626b40732312c63581bdf859c1b93300dcb0d7cfe8942e9f0e08ce1adaaa95"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 50655
+  }
+}
