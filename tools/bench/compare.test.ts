@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { closeDate, closedIdentity, firstDifference, tradeIdOfHref, walkedTradesOwingNothing } from './compare.ts';
+import { closeDate, closedIdentity, contractLabel, expectedSettlementIdentity, firstDifference, reviewShortDate, signedContractsText, tradeIdOfHref, walkedTradesOwingNothing } from './compare.ts';
 import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
 
 describe('bench Action-save card choice', () => {
@@ -150,5 +150,16 @@ describe('partial dataset last session', () => {
     expect(schemaMismatch(4, 5)).toMatch(/schema version 4.*5/);
     expect(schemaMismatch(6, 5)).toMatch(/schema version 6.*5/);
     expect(schemaMismatch(undefined, 5)).toMatch(/no schema version/);
+  });
+});
+
+describe('settlement identities (T7.29)', () => {
+  it('should word a contract key, a signed quantity and an expiration date as the Review does', () => {
+    expect(contractLabel('NVDA261120C00107000')).toBe('NVDA 20 Nov 2026 107 Call');
+    expect(contractLabel('QAB270104P00092500')).toBe('QAB 4 Jan 2027 92.5 Put');
+    expect(signedContractsText('20')).toBe('Long 20 contracts');
+    expect(signedContractsText('-1')).toBe('Short 1 contract');
+    expect(reviewShortDate('2026-11-20')).toBe('Fri Nov 20');
+    expect(expectedSettlementIdentity({ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' })).toBe('t1 AAPL 20 Nov 2026 105 Call Long 20 contracts expired Fri Nov 20');
   });
 });

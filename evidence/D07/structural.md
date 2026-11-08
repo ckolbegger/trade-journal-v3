@@ -1455,3 +1455,47 @@ Tier: full, printed reason "first matching path since 10edb51a: e2e/d6/stale-ind
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-30-b3-r4-final-checks.txt` |
 
 Tier: task, printed reason "no changed path since 6ddaa465 is on the full-tier list". `run-complete.sh`: run complete. T7.28 and T7.30 are complete; T7.29 runs next, on the T7.28 dataset.
+
+## T7.29 Latency harness and query count
+
+Structural task (breakdown row: `npm run bench:run`; `npm run test:integration -- d7/query-count`). Results: `evidence/D07/bench.md`; test log rows: `evidence/D07/tdd-log.md` (T7.29).
+
+| Command | Exit | Result |
+|---|---|---|
+| `npm run build:bench` | 0 | `dist-bench` rebuilt from HEAD `a3c036d2` |
+| `npm run build` (the harness serves `dist/`) | 0 | |
+| `npm run bench:expected` (on a copy of the old file, `/tmp`) | 0 | 200 rows re-rendered at 2026-11-20T22:00:00Z; **`bench/expected-open-rows.json` came out byte-identical** (`git status` clean for `bench/`). So the dated lines T7.30-B3, B3-R1 and B3-R2 changed do not differ on the 60 option rows of this profile at the as-of date; nothing was re-rendered or committed. |
+| `npm run bench:run` | 0 | cold p95 112.4 ms, warm p95 47.7 ms; both budgets met; every comparison equal (below) |
+| `npm run test:integration -- d7/query-count` | 0 | 1 file, 2 tests passed |
+| `npx vitest run tests/integration` | 0 | 94 files, 191 tests passed |
+| `npx vitest run tools` | 0 | 3 files, 60 tests passed (includes the new settlement-identity case) |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | 0, 0, 0, 0 | |
+
+Ports 4175, 5175, 9341 and 9342 were free before and after the run.
+
+### Results against the budgets (profile: generator 6, 25,000 Trades, 7,500 option Trades = 30%, 60 Open option Trades, 4 Settlement Due at the as-of Review)
+
+| Measure | Runs | Nearest-rank p95 | Budget | Result |
+|---|---|---|---|---|
+| Cold start to `tj:interactive` | 30 | 112.4 ms | 2,500 ms | pass |
+| Warm Planned-to-Open switch to `tj:open-list-ready` | 30 | 47.7 ms | 1,500 ms | pass |
+
+Disclosed, not gated (medians): open the first Review card 137.3 ms (p95 149.6), Save Marks 115.7 ms, Trade Action save 131.5 ms warm and 121.8 ms cold, Closed tab to its first page 110.5 ms (p95 156.0). The full tables are in `evidence/D07/bench.md`.
+
+### Comparisons, before and after the runs
+
+| Comparison | Expected from | Before | After |
+|---|---|---|---|
+| Open list: all 200 rows (option figures and dated lines included), headers, Missing Instruments | `bench/expected-open-rows.json` | equal | equal (and each of 30 cold starts equal) |
+| First Closed page: 50 rows by Trade, Underlying, Close date | the first 50 of the stored `byLifecycleTerminal` index (the generator records no Closed page, as in D6) | equal | equal (and 10 more renders equal) |
+| As-of Review's due reflections (487) | `bench/dataset.json` | equal | equal |
+| As-of Review's walk (200 cards) and owed group (99 cards), by Trade and Underlying, in order | `asOfReview` | equal | equal |
+| **New:** As-of Review's settlement family (4 items) by Trade, contract, open quantity and expiration date, in order | `asOfReview.settlement` | equal | equal |
+
+The settlement comparison reads each "Settlement Due for ..., which expired ..." blocker and its link's Trade, then opens that Trade's card through the link and reads the Settlement panel's contract and quantity (`compareSettlement` in `tools/bench-run.ts`; pure helpers and a unit case in `tools/bench/compare.ts`).
+
+### Query count (`tests/integration/d7/query-count.test.ts`)
+
+- Review `open`: with 2 due Trades, 4 due Trades, and 2+2 due Trades on two distinct expiration dates, the facade issues the same requests, and the only `observations` read is D6's one `getAll`. **Deviation from the plan's wording:** the breakdown and A111 say one `Historical` frame request (one stored `observations` read) per distinct due expiration date. The code instead asks Market Data for a `ResolveSession` Historical per due item (`settlementItems`, `settlementTimeOf`), which the in-memory calendar answers with no stored read. So the Review open adds no stored read at all, rather than one per date, and at the Market Data query level it makes one session query per due item, not per distinct date. The plan's version of the case was written first and went red on exactly this; the case was reworded to pin the behavior (see the tdd-log note rows). Whether to change the code (one `ResolveFrames` per distinct date) or amend A111 and T7.29 is for the main session.
+- Trade Detail: a due option Trade adds at most one `observations` request over the same Trade before it is due (it adds none).
+- Open page (decision 97): covered by `tests/integration/d7/open-list-query-count.test.ts` (T7.30-B3-R2, 2 cases); referenced from the header of `query-count.test.ts`, not duplicated or folded in.

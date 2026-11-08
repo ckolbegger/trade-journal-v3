@@ -18,8 +18,10 @@
 // `byLifecycleTerminal` index, read raw in the page (the generator records no Closed page, so the expectation is
 // derived from the stored data), and the as-of Review's walk and owed-reflection group (each card's Trade and
 // Underlying) with `asOfReview` in bench/dataset.json. It discloses, ungated, the Closed page's render time and a
-// single Daily Trade Review Action save at the as-of Review, cold (fresh browser process) and warm. It writes
-// evidence/D06/bench.md and fails when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
+// single Daily Trade Review Action save at the as-of Review, cold (fresh browser process) and warm. D7 (T7.29) also compares,
+// before and after the runs, the as-of Review's settlement family (each item's Trade, contract, open quantity and expiration
+// date, from its blocker and its card's Settlement panel) with `asOfReview.settlement`, on the profile with 30% option Trades. It writes
+// evidence/D07/bench.md and fails when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
 import { execFileSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -28,7 +30,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { chromium, type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
-import { cardIdentity, closedIdentity, firstDifference, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
+import { cardIdentity, closedIdentity, expectedSettlementIdentity, firstDifference, settlementIdentity, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
 import { schemaMismatch } from './bench/partial.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
@@ -38,7 +40,7 @@ const RUNS = 30;
 const COLD_BUDGET_MS = 2_500;
 const WARM_BUDGET_MS = 1_500;
 const BUILD_DIR = 'dist';
-const EVIDENCE_FILE = path.resolve('evidence/D06/bench.md');
+const EVIDENCE_FILE = path.resolve('evidence/D07/bench.md');
 const WAIT_MS = 60_000;
 // D5's recorded results (evidence/D05/bench.md), which the report compares with.
 const D5_COLD_P95_MS = 104.8;
@@ -306,6 +308,42 @@ async function compareDueReflections(page: Page, when: string) {
   reviewCardComparisons.push({ when, walk: cards.walk.length, owed: cards.owed.length });
 }
 
+// ---- The as-of Review's settlement family (D7, T7.29) ---------------------------------------------------------
+// The Review lists a "Settlement Due for <contract>, which expired <date>" blocker for each settlement item, linking to the
+// Trade's card. The comparison is the blockers in the Review's order, each by its Trade (from the link), contract and
+// expiration date, plus the open quantity and contract that the Trade's Settlement panel shows once the link has opened its
+// card, with `asOfReview.settlement` in bench/dataset.json (the family in the Review's order: expiration date, then Trade).
+const settlementComparisons: { when: string; items: number }[] = [];
+async function compareSettlement(page: Page, when: string) {
+  const expectedItems = asOfReview?.settlement;
+  if (!expectedItems) return;
+  const expectedIdentities = expectedItems.map(expectedSettlementIdentity);
+  const status = page.getByRole('region', { name: 'Review status' });
+  const blockers = await status
+    .getByRole('list', { name: 'Blockers' })
+    .getByRole('listitem')
+    .evaluateAll((items) => items.filter((li) => (li.textContent ?? '').startsWith('Settlement Due for ')).map((li) => ({ text: (li.textContent ?? '').trim(), href: li.querySelector('a')?.getAttribute('href') ?? '' })));
+  const identities: string[] = [];
+  for (const blocker of blockers) {
+    const words = /^Settlement Due for (.+), which expired (.+)$/.exec(blocker.text);
+    const tradeId = new URLSearchParams(blocker.href.split('?')[1] ?? '').get('trade');
+    if (!words || !tradeId) {
+      identities.push(`unreadable blocker "${blocker.text}" (${blocker.href})`);
+      continue;
+    }
+    await status.locator(`a[href="${blocker.href}"]`).click();
+    const panel = page.locator(`li[data-trade-id="${tradeId}"] section[aria-label="Settlement"]`);
+    await panel.waitFor({ state: 'attached', timeout: WAIT_MS });
+    const shown = await panel.locator('dd').allTextContents();
+    const panelContract = shown[0]?.trim() ?? '';
+    identities.push(settlementIdentity(tradeId, panelContract === words[1] ? words[1] : `${words[1]} (panel: ${panelContract})`, shown[1]?.trim() ?? '', words[2]!));
+  }
+  const difference = firstDifference(expectedIdentities, identities);
+  console.log(`bench:run: as-of Review settlement family ${when}: ${identities.length} items ${difference ? `DIFFERENT (${difference})` : 'equal'}`);
+  if (difference) throw new Error(`the as-of Review's settlement family ${when} differs from asOfReview.settlement: ${difference}`);
+  settlementComparisons.push({ when, items: identities.length });
+}
+
 // ---- Card timings (D5R, T5R.13): disclosed, not gated ---------------------------------------------------------
 // What "rendered" means for each timing. The condition is checked in the page on every DOM change, so the time is
 // the first change after which it holds, read from the real clock (the same timeline as the pointer press).
@@ -496,6 +534,7 @@ try {
   await deriveExpectedIdentities(page);
   await compareClosedPage(page, 'before the runs');
   await compareDueReflections(page, 'before the runs');
+  await compareSettlement(page, 'before the runs');
   await warmUp.close();
 
   // No network from here on: the server is stopped and every launch is offline.
@@ -537,6 +576,7 @@ try {
   after = await compareOpenList(warmPage, 'after the runs');
   await compareClosedPage(warmPage, 'after the runs');
   await compareDueReflections(warmPage, 'after the runs');
+  await compareSettlement(warmPage, 'after the runs');
   // Disclosed, not gated: the Closed tab's first page, from the press on the tab to the last row.
   for (let run = 1; run <= CLOSED_PAGE_RUNS; run++) {
     await leaveClosed(warmPage);
@@ -614,9 +654,9 @@ How the expectations were fixed (the generator wrote none for this snapshot): th
 `;
 }
 
-const report = `# D6 benchmark run (AC-PERF-001)
+const report = `# D7 benchmark run (AC-PERF-001)
 
-Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13 and T6.25) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
+Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13, T6.25 and T7.29) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
 
 ## Result
 
@@ -655,6 +695,8 @@ Each is the time from the pointer press to the rendered result, on the mature da
 
 - **Closed page.** The generator records no Closed page, so the expected first page is derived from the stored data: the first ${CLOSED_PAGE_SIZE} Closed Trades of the profile's \`byLifecycleTerminal\` index (terminal time descending), read raw in the page before any timed run. Each rendered row (its Trade from the link, Underlying and Close date in ${BENCH_TIME_ZONE}) must equal the stored Trade's, in order, before the runs (${expectedClosedIdentities.length} rows equal) and after them (${expectedClosedIdentities.length} rows equal), and at each of the ${closedRenderMs.length} renders below. Realized figures, Disposition and Close Reason are not compared (the stored Trade does not hold them).
 - **Review walk and owed group.** The as-of Review's cards must equal ${partial ? 'the stored data\'s members (the walk is the Trades open at the close, the owed group the Trades outside it with an Outstanding Debt, each by Trade and Underlying), and the order of the first render in every later render' : '`asOfReview` in `bench/dataset.json`, in order'}, each by its Trade (\`data-trade-id\`) and Underlying${partial ? '' : ' (the walked Trades\' Underlyings are read from the stored Trades, the owed group\'s are the dataset\'s)'}:${reviewCardComparisons.map((c) => `${c.when} ${c.walk} walked and ${c.owed} owed cards equal`).join('; ')}. The owed group's Debt identities are not rendered, so they are not compared here; the Trades and their order are.
+
+- **Settlement family (T7.29).** The as-of Review's "Settlement Due for ..." blockers must equal \`asOfReview.settlement\` in \`bench/dataset.json\`, in the Review's order, each by its Trade (from the blocker's link), contract, open quantity (read from the Settlement panel the link opens) and expiration date: ${settlementComparisons.map((c) => `${c.when} ${c.items} items equal`).join('; ') || 'not compared (the dataset records no settlement family)'}. The Open list's rows, option figures and dated lines included, are the \`bench/expected-open-rows.json\` comparison in the first section; the profile holds ${String((dataset['counts'] as Record<string, number>)['optionTrades'] ?? 0)} option Trades of ${String((dataset['counts'] as Record<string, number>)['trades'])} and ${String((dataset['counts'] as Record<string, number>)['openOptionTrades'] ?? 0)} Open ones.
 
 | Measure (disclosed, not gated) | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
