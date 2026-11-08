@@ -11,5 +11,15 @@ if [ "$(git rev-parse --git-path hooks 2>/dev/null)" = ".githooks" ]; then
   echo "install-hooks: already enabled (core.hooksPath=.githooks)"
   exit 0
 fi
+# Enabling extensions.worktreeConfig makes linked worktrees inherit a shared
+# core.bare=true or core.worktree, so change nothing in that case.
+if [ "$(git config --local --type=bool --get core.bare 2>/dev/null)" = "true" ]; then
+  echo "install-hooks: shared config has core.bare=true; skipped (move it into the main worktree's config.worktree, see git-worktree docs, section CONFIGURATION FILE)"
+  exit 0
+fi
+if git config --local --get core.worktree >/dev/null 2>&1; then
+  echo "install-hooks: shared config has core.worktree set; skipped (move it into the main worktree's config.worktree, see git-worktree docs, section CONFIGURATION FILE)"
+  exit 0
+fi
 git config extensions.worktreeConfig true && git config --worktree core.hooksPath .githooks || { echo "install-hooks: git config failed; skipped"; exit 0; }
 echo "install-hooks: enabled core.hooksPath=.githooks for this worktree"
