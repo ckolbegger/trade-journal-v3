@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
-import { confirmOption, MONDAY_NEXT_1700, OC_PC1, onboardedAt, optionPlanCommand, recordOption, saveMark, XYZ_CALL, type Fill } from './support.ts';
+import { confirmOption, MONDAY_NEXT_1700, OC_PC1, onboardedAt, optionPlanCommand, recordOption, restart, saveMark, XYZ_CALL, type Fill } from './support.ts';
 
 const EARLY_EXPIRATION = '2026-11-13';
 const EARLY_PLAN = '2026-11-02T14:00:00Z';
@@ -92,7 +92,8 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
   });
 
   it('should issue the same Trade Detail requests, bar one observations read, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
-    const { app } = await onboardedAt(MONDAY_NEXT_1700);
+    const { d, app: first } = await onboardedAt(MONDAY_NEXT_1700);
+    let app = first;
     const dueId = await earlyCall(app);
     const liveId = await earlyCall(app, NOT_DUE_EXPIRATION);
     // Marks for both contracts and for XYZ, so the live contract takes the usual marked path.
@@ -100,7 +101,9 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     await saveMark(app, instrumentKey({ ...XYZ_CALL, expiration: EARLY_EXPIRATION }), EARLY_EXPIRATION, '0.05');
     await saveMark(app, instrumentKey({ ...XYZ_CALL, expiration: NOT_DUE_EXPIRATION }), '2026-11-23', '1.20');
     await saveMark(app, 'XYZ', '2026-11-23', '56.00');
+    // Each Detail is measured on a fresh launch over the same stores, so neither run warms the other (no cache the first fills).
     const detailOf = async (tradeId: string) => {
+      app = await restart(app, d);
       const counted = await countRequests(() => app.TradeViewsAndReporting.getTradeDetail({ tradeId }));
       if (counted.result.kind !== 'Ready') throw new Error(`getTradeDetail: ${counted.result.kind}`);
       const tally: Record<string, number> = {};
