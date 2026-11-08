@@ -991,3 +991,30 @@ Commands: `npm run measure:capacity` (chromium, port 5175 free before and after)
 - `npm run verify:capacity` exit 0: `verify:capacity OK: required quota 2748219129 = 3 × 916073043, schema 6`.
 - Negative check: a temporary edit of `schemaVersion` to 5 in `src/delivery/capacity-basis.json` gave exit 1 with `FAIL basis measured at schema version 5, current is 6: run measure:capacity`; restored to 6 (see `git diff`).
 - The D4, D5 and D6 projection tests take a `NO_OPTION_PHASE` helper (`tests/support/capacity-option-phase.ts`); D6's Execution split test and sum now count the 3,000 Expirations.
+
+### ocr review of `e1621799`
+
+`ocr/T7.26-e1621799.json`, 1 ocr comment plus 2 from the reviewer's own reading:
+1. ocr, Valid as a description, **dismissed**: nested ternaries pick the strategy kind, strike, stop and target in `measure-page.ts:704` (no repo rule; as earlier). The mix is right: slots 6/4/5 of 15 give 240/160/200.
+2. Reviewer, Valid: the new `project()` terms (`optionTradesWithPlanReflection × bytesPerOptionTradeWithReflection`, `expirations × bytesPerExpiration`) have no test with a nonzero Expiration price (`NO_OPTION_PHASE` zeroes it in D4–D6; no D7 projection test). → bug task B1.
+3. Reviewer, Valid: `profile.ts:115-116` still says Executions stand in for the whole count "until D7 adds settlement facts". → added to B1.
+
+Arithmetic checked by the reviewer: 100,000 + 97,000 + 3,000 = 200,000; 17,500 + 7,500 = 25,000; Expiration 319.5 JSON bytes × 1.6517 = 527.7 bytes on disk.
+
+### T7.26-B1 the D7 projection terms are tested, and the stale comment goes
+
+- `it should project the D7 option Trades and Expirations at their measured prices` (`tests/integration/d7/capacity-profile.test.ts`, nonzero `bytesPerOptionTradeWithReflection` and `bytesPerExpiration`, 7,500 and 3,000)
+- the `profile.ts` comment says what the 200,000 count now holds.
+- Commit `5510a9d7`. Both cases passed on their first run (flagged, as decided). The mutation check removed `MEASURED.expirations * m.bytesPerExpiration +` from `project()`. The D7 test then failed with `AssertionError: expected 750000 to be 840000`; the term was restored.
+- ocr review: the in-place review of `tools/capacity/profile.ts` (`ocr/T7.26-B1-5510a9d7-inplace.json`) and the relocated review of the new test file (`ocr/T7.26-B1-5510a9d7.json`) both found nothing.
+
+### Cumulative run after T7.26 (`t7-26-capacity-basis`, commit 5510a9d7 plus evidence edits)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1404 tests passed, exit 0 | `suite-runs/t7-26-capacity-basis-unit.txt` |
+| Node integration | 78 files, 160 tests passed, exit 0 | `suite-runs/t7-26-capacity-basis-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-26-capacity-basis-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 (`verify:capacity` now passes) | `suite-runs/t7-26-capacity-basis-checks.txt` |
+
+Tier: full, printed reason "first matching path since 9efbba23: src/delivery/capacity-basis.json". `run-complete.sh`: run complete. Ports free before and after. T7.26 is complete.

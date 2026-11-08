@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 112239,
+    "input_tokens": 110808,
+    "output_tokens": 1431,
+    "cache_read_tokens": 11520,
+    "elapsed": "54s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/capacity/measure-page.ts",
+      "content": "The new strategy selection uses a nested ternary, as do the strike, stop, and target calculations below, contrary to the review checklist. Use an explicit if/else or a typed strategy configuration helper so the three strategies' fixture rules can be inspected without nested conditionals.",
+      "existing_code": "    const kind = slot \u003c 6 ? 'LongCall' : slot \u003c 10 ? 'LongPut' : 'CashSecuredPut';",
+      "start_line": 704,
+      "end_line": 704,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Capacity measurement, profiling, and option-phase support",
+      "files": [
+        "src/delivery/capacity-basis.json",
+        "tests/support/capacity-option-phase.ts",
+        "tools/capacity/measure-page.ts",
+        "tools/capacity/profile.ts",
+        "tools/measure-capacity.ts"
+      ]
+    }
+  ],
+  "session_id": "2e9e0b37-83c3-4f1c-807a-db46c7d93ea9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2e9e0b37-83c3-4f1c-807a-db46c7d93ea9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e1621799",
+      "resolved_base": "9efbba2331a8cd3dd952e89551150504952df21c",
+      "resolved_head": "e1621799eb29d4e5f94ac00feb6aa25ebb2a8e31",
+      "exact_range": "9efbba2331a8cd3dd952e89551150504952df21c..e1621799eb29d4e5f94ac00feb6aa25ebb2a8e31",
+      "source_artifact_sha256": "4f5fb4941a2066fd4ec50bdb20e4072fef381f5ea8f8ff32e2ebb58249b437ca"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1bd77995c1c0456cf681d7f6fc85ca374537dce55156bd4f5795b554fecce2a0",
+          "path": "src/delivery/capacity-basis.json",
+          "fingerprint": "4c2d580c8b509de4126e730c0ff2540ca8eaac031e564e3dd11a393ad15a1320"
+        },
+        {
+          "item_id": "229a3a93872ed40c502a4b0cb56f2ac95957c78db0a414e7997985bb1defba8f",
+          "path": "tools/capacity/profile.ts",
+          "fingerprint": "35b7bac317ea1b498b339aaf79cb553de5ca4d6e23b7aceb3af84f7ec817ca3c"
+        },
+        {
+          "item_id": "95f62cfd174c8fe52d2edd719cb60f851e13c49b12d124ca4c921810d738859b",
+          "path": "tests/support/capacity-option-phase.ts",
+          "fingerprint": "d2edacb6b24eff095532b002454071caf907250ff4e3364c5a7976046338e6e9"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "74867fc5224faf05b1cd13aab28d66f3a87d886dd718365415858e1631d109a9"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "0dda0a220682678a1bf2afa376b921ae82fd51467a7ad9782c1c384fec4dc142"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1bd77995c1c0456cf681d7f6fc85ca374537dce55156bd4f5795b554fecce2a0",
+          "path": "src/delivery/capacity-basis.json",
+          "fingerprint": "4c2d580c8b509de4126e730c0ff2540ca8eaac031e564e3dd11a393ad15a1320"
+        },
+        {
+          "item_id": "229a3a93872ed40c502a4b0cb56f2ac95957c78db0a414e7997985bb1defba8f",
+          "path": "tools/capacity/profile.ts",
+          "fingerprint": "35b7bac317ea1b498b339aaf79cb553de5ca4d6e23b7aceb3af84f7ec817ca3c"
+        },
+        {
+          "item_id": "95f62cfd174c8fe52d2edd719cb60f851e13c49b12d124ca4c921810d738859b",
+          "path": "tests/support/capacity-option-phase.ts",
+          "fingerprint": "d2edacb6b24eff095532b002454071caf907250ff4e3364c5a7976046338e6e9"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "74867fc5224faf05b1cd13aab28d66f3a87d886dd718365415858e1631d109a9"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "0dda0a220682678a1bf2afa376b921ae82fd51467a7ad9782c1c384fec4dc142"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 54491
+  }
+}
