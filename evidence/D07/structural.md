@@ -819,3 +819,56 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 25bc833e`; `run
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-21-expiration-form-checks.txt` |
 
 Tier: full, printed reason "first matching path since 25bc833e: src/app/routes.ts". Ports free before and after. T7.21 is complete.
+
+## T7.22 UI: payoff view
+
+Behavioral (decisions 87, 92); commit `a1f091fa`, four cases, each with a genuine red: (1) heading "Planned Expiration Payoff" not found (component rendered nothing); (2) runtime `Error: not yet worded` (Touch and Zero Range); (3) "If XYZ is at 52.00 at expiration: −$401.30" not found; (4, decision 92, `PlanForm.test.tsx` "option Plan receipt (A116)") role img "Planned payoff at expiration by XYZ price" not found while the 1R showed. No first-run pass; the NotApplicable branch was written during case 1, ahead of case 3, which stayed red on its first assertion (noted in `tdd-log.md`). `src/ui` 533 passed (before the last TradeDetail edit; PayoffView, PlanForm and TradeDetail rerun after it); typecheck, tsc6, lint, lint:deps, verify:wording exit 0.
+
+New `PayoffView` (`kind`, `symbol`, `result`, optional `latestClose` for T7.23), `payoff-text.ts`, `tests/support/payoff-fixtures.ts`; `payoffUnboundedWords` in `calculation-words.ts` and "unlimited" in `PHRASES` (K2); `underlyingPrice` in `format.ts` (C3); payoff types re-exported from `src/app/types.ts` (lint:deps). `PlanForm` navigates with `plannedPayoff: result.postCommit.payoff?.planned`, and `TradeDetail` shows it after `SummaryCard` for a just-confirmed Plan when it is a `Value` (T7.23 gives every Detail its payoff sections). A falling final ray throws "a falling final ray has no approved words" (no D7 Strategy has one; D10 needs words). "Breakeven 57.00" for a crossing is the breakdown's case 1 text.
+
+### T7.22-B1 an unbounded Zero Range uses no invented words
+
+Found in the subagent's summary: a `ZeroRange` with no upper end reads "Breakeven at 55.00 and above", words no approved row gives. It occurs only for a flat final ray at 0, which no D7 Strategy can produce (every entry price is above zero). Like the falling final ray, it throws a "no approved words" error instead. Case: `it should refuse to word a Zero Range with no upper end, which no approved row words`.
+
+### ocr review of `a1f091fa`
+
+`ocr/T7.22-a1f091fa.json`, 3 comments, all Valid:
+1. The payoff polyline, axes and zero-range lines have no stroke (no CSS rule for `payoff-curve`, `payoff-axis`, `payoff-zero-range`; SVG's default stroke is none), so the chart draws no curve, axes or Zero Range. → bug task B2.
+2. The Planned payoff, holding `Rational` instances, travels in router history state; `history.state` is structured-cloned, so after a reload or back/forward its values are plain objects and `PayoffView`'s `compare` calls throw. → bug task B3.
+3. Axis tick labels repeat a price that is both a segment start and a zero-set end (0 and 55 in the Zero Range fixture): duplicate React keys and doubled labels. → added to B2.
+
+### T7.22-B2 the payoff chart draws its curve, axes and Zero Range, with each tick once
+
+- `it should stroke the payoff curve, the axes and a Zero Range so the chart draws them`
+- `it should label each axis price once when a segment start is also a zero-set end`
+
+### T7.22-B3 the confirmed Plan's payoff survives a reload of its Detail
+
+- `it should render the confirmed Plan's Detail after a reload or back navigation without throwing, with its Planned payoff` (history state carries no class instances, or they are revived)
+
+### T7.22-B1 result
+
+Commit `f1a63143`, one case: red `expected [Function] to throw an error` (`zeroText` returned "Breakeven at 55.00 and above"); green, `PayoffView.test.tsx` 4 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. `zeroText` throws "a Zero Range with no upper end has no approved words", like the falling-final-ray throw; no fixture removed (the `zeroRange` fixture is bounded and shared). ocr: no findings (`ocr/T7.22-B1-f1a63143.json`). B2 and B3 run in parallel on separate files; both append to the shared `tdd-log.md`, so one commit may carry the other's log rows.
+
+### T7.22-B2 result
+
+Commit `5b7ec983`, two cases, each with a genuine red (`expected null to be 'currentColor'`; `expected [ '0.00', '0.00' ] to have a length of 1 but got 2`); green, `PayoffView.test.tsx` 6 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. Strokes are SVG attributes (`stroke="currentColor"`, widths 1.5, curve 2.5, zero range 4), inheriting the page ink in light and dark (`app.css` has no SVG rules); ticks de-duplicated by exact value, x-range unchanged. Its `tdd-log.md` diff carries one B3 row (shared file). ocr: no findings (`ocr/T7.22-B2-5b7ec983.json`).
+
+### T7.22-B3 result
+
+Commit `50ad3b4e`, one case: an invalid first red (MemoryRouter JSON-serializes state and throws on a BigInt; the test then drives a low-level `<Router navigationType=Pop>` with a `structuredClone`d location), then a genuine red `TypeError: value.compare is not a function`; green, TradeDetail and PlanForm tests 111 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. Fix: `TradeDetail` uses `location.state` only when `useNavigationType() !== NavigationType.Pop`; after a reload or back/forward it reads through `getTradeDetail` (covers `confirmed` too, which itself survives a clone). After a reload the confirmed option Plan's Detail shows no Planned payoff until T7.23 gives the read Detail its payoff sections; the test asserts the heading, the read call and the 1R (its name still says "with its Planned payoff"; T7.23 to assert the payoff on the read Detail).
+
+ocr of `50ad3b4e` (`ocr/T7.22-B3-50ad3b4e.json`), 1 comment, Valid: after a POP the payoff section vanishes and the test, despite its name, doesn't check for it. **Assigned to T7.23**, whose first case gives the read Detail its Planned and Current payoff sections: T7.23's brief extends this B3 test to assert the Planned payoff after the reload, and drops "with its Planned payoff" from the name if it still can't.
+
+### Cumulative run after T7.22-B2 and B3 (`t7-22-payoff-view`, at `5b7ec983`)
+
+Run by `suite-runner` on 2026-11-08, browser stage `browser-auto 284a4c2d`; `run-complete.sh` printed "run complete" for the runner and in the main session.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 116 files, 1360 passed, exit 0 | `suite-runs/t7-22-payoff-view-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-22-payoff-view-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.8 m), exit 0 | `suite-runs/t7-22-payoff-view-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-22-payoff-view-checks.txt` |
+
+Tier: full, printed reason "first matching path since 284a4c2d: src/app/types.ts". Ports free before and after. T7.22 is complete.

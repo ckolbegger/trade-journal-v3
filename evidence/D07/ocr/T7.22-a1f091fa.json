@@ -1,0 +1,201 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 3,
+    "total_tokens": 343864,
+    "input_tokens": 341198,
+    "output_tokens": 2666,
+    "cache_read_tokens": 58112,
+    "elapsed": "1m57s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 10,
+      "file_find": 1,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PlanForm.tsx",
+      "content": "The payoff contains Rational instances, but browser history structured-clones route state. After reloading this confirmed Plan (or restoring its history entry), those values are plain objects. TradeDetail still trusts `confirmed` and skips the read, then PayoffView calls `last.slope.compare(...)` in lastRayText and `value.compare(...)` in signedMoney/extremumText, causing a TypeError instead of rendering the payoff. Reconstruct the Rational values before consuming restored state, or make the payoff presentation helpers work from numerator/denominator fields. Add coverage using structured-cloned navigation state.",
+      "existing_code": "      void navigate(`/trades/${result.receipt.tradeId}`, { state: { confirmed, plannedPayoff: result.postCommit.payoff?.planned } });",
+      "start_line": 218,
+      "end_line": 218,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/screens/PayoffView.tsx",
+      "content": "Deduplicate prices before rendering the axis labels. Supported ZeroRange fixtures contribute 0 and 55 both as segment starts and as zero-range endpoints; the Touch fixture likewise contributes 0 twice. This creates sibling text elements with identical React keys and draws duplicate labels at the same coordinates. Build a unique price collection keyed by normalized numerator/denominator before mapping it to ticks.",
+      "existing_code": "      {breakpoints.map((price) =\u003e (\n        \u003ctext key={price.numerator + '/' + price.denominator} x={x(toNumber(price))} y={HEIGHT - MARGIN.bottom + 16} textAnchor=\"middle\"\u003e",
+      "start_line": 54,
+      "end_line": 55,
+      "category": "bug",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/PayoffView.tsx",
+      "content": "Set a visible stroke on the curve, axes, and zero-range lines (via SVG attributes or stylesheet rules). None of the new payoff classes has a stylesheet definition, and SVG defaults to `stroke: none`; with `fill=\"none\"` this polyline is completely invisible. Consequently the chart shows labels/markers but no payoff curve, axes, or Zero Range.",
+      "existing_code": "      \u003cpolyline className=\"payoff-curve\" fill=\"none\" points={points.map(([px, py]) =\u003e `${x(px)},${y(py)}`).join(' ')} /\u003e",
+      "start_line": 49,
+      "end_line": 49,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Payoff view, supporting types and text, screen integration, and test fixtures",
+      "files": [
+        "eslint.wording.config.js",
+        "src/app/types.ts",
+        "src/ui/calculation-words.ts",
+        "src/ui/format.ts",
+        "src/ui/screens/PayoffView.tsx",
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/payoff-text.ts",
+        "tests/support/payoff-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "69527891-b61e-4e8a-9536-5b2ef50efb3c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "69527891-b61e-4e8a-9536-5b2ef50efb3c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a1f091fa",
+      "resolved_base": "284a4c2dc9c656e21bf27842f10ae972c833876c",
+      "resolved_head": "a1f091fa9907e301d790ff5f1225abbd5982f9b0",
+      "exact_range": "284a4c2dc9c656e21bf27842f10ae972c833876c..a1f091fa9907e301d790ff5f1225abbd5982f9b0",
+      "source_artifact_sha256": "3adc066a356cd1376ba5d2425c6e2d4dd87635f40c2d0545a608d15a8284fae5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2090915fa35f3b9ecc015948943b5a5ef763d2716c9667ac955084508eab9bb1",
+          "path": "tests/support/payoff-fixtures.ts",
+          "fingerprint": "31965351967fb4d8eb1aa28789fe153b6dbae90e3db6243e069907d3a1a0649c"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "c11bb14d13ec8a6573d44c6fd7b418d343fe350d13d41d3ecd1f15bdf0f7242c"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "a8ade8612d4af9588c4761a6a4921ddc4a58186c209b3cd2f7bb7338f4cd1842"
+        },
+        {
+          "item_id": "81bdb5d3df05db375c56283f1a6925ef7f9fa382efc42757c77fc530e3ceb499",
+          "path": "src/ui/screens/PayoffView.tsx",
+          "fingerprint": "d376a30f4764f2f01b00f44384dd57bcf563e52ba421c68967911d40495f6f3e"
+        },
+        {
+          "item_id": "8b026ba05dd3426d0e2e744bff79ed05841b17c47e7e653e81030c1434ca0c9d",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "2c7e5ed4bc693c0810ba0b36b153ab35357d61adde47712aef6f147cf558d51e"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "a0ff81e0f48b0bc3de49778bd7894d98d5f87e0e8f1b2c05b33208942e57d2a0"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "cdec1d749a7c001ea4a0d4ffa15d38f1b893504402401dafb61da2e43d7171c6"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "1839d9e7c51c565a824aedcb9959c3846715379f4a69a915cd5326cef79229aa"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "a3c1ac0d31dbf457722da18d6ed5a404b3325724e812263d31a93e5f999f11ec"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2090915fa35f3b9ecc015948943b5a5ef763d2716c9667ac955084508eab9bb1",
+          "path": "tests/support/payoff-fixtures.ts",
+          "fingerprint": "31965351967fb4d8eb1aa28789fe153b6dbae90e3db6243e069907d3a1a0649c"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "c11bb14d13ec8a6573d44c6fd7b418d343fe350d13d41d3ecd1f15bdf0f7242c"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "a8ade8612d4af9588c4761a6a4921ddc4a58186c209b3cd2f7bb7338f4cd1842"
+        },
+        {
+          "item_id": "81bdb5d3df05db375c56283f1a6925ef7f9fa382efc42757c77fc530e3ceb499",
+          "path": "src/ui/screens/PayoffView.tsx",
+          "fingerprint": "d376a30f4764f2f01b00f44384dd57bcf563e52ba421c68967911d40495f6f3e"
+        },
+        {
+          "item_id": "8b026ba05dd3426d0e2e744bff79ed05841b17c47e7e653e81030c1434ca0c9d",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "2c7e5ed4bc693c0810ba0b36b153ab35357d61adde47712aef6f147cf558d51e"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "a0ff81e0f48b0bc3de49778bd7894d98d5f87e0e8f1b2c05b33208942e57d2a0"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "cdec1d749a7c001ea4a0d4ffa15d38f1b893504402401dafb61da2e43d7171c6"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "1839d9e7c51c565a824aedcb9959c3846715379f4a69a915cd5326cef79229aa"
+        },
+        {
+          "item_id": "e49ffc3b4818bf7b678a3115fa8ccf3fb1f5303089862033bb4d9b92852ab285",
+          "path": "eslint.wording.config.js",
+          "fingerprint": "a3c1ac0d31dbf457722da18d6ed5a404b3325724e812263d31a93e5f999f11ec"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 116652
+  }
+}

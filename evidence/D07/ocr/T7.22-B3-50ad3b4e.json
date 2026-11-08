@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 52265,
+    "input_tokens": 51715,
+    "output_tokens": 550,
+    "cache_read_tokens": 11520,
+    "elapsed": "29s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "Discarding all navigation state on POP prevents the Rational crash, but also drops the confirmed option Plan's Planned payoff. `plannedPayoff` is populated only from this state, while `getTradeDetail` returns a Planned view without payoff data, so reloading or returning to the Detail removes the payoff section entirely. This does not satisfy the requirement that the payoff survive reload/back navigation. Recompute/read the Planned payoff on the fallback path, or revive a safely serialized payoff before rendering it.",
+      "existing_code": "  const navigation = (useNavigationType() === NavigationType.Pop ? null : location.state) as\n    | { confirmed?: PlannedTradeDetail; plannedPayoff?: PayoffViewProps['result'] }\n    | null;",
+      "start_line": 75,
+      "end_line": 77,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/TradeDetail.tsx",
+      "files": [
+        "src/ui/screens/TradeDetail.tsx"
+      ]
+    }
+  ],
+  "session_id": "75867784-a24e-4a47-b85d-e36551691d98",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "75867784-a24e-4a47-b85d-e36551691d98",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "50ad3b4e",
+      "resolved_base": "f1a63143aee34edab080d2a29fd8d30ded63a5d3",
+      "resolved_head": "50ad3b4e11c2c9da91b31556ac6b96a005e6f192",
+      "exact_range": "f1a63143aee34edab080d2a29fd8d30ded63a5d3..50ad3b4e11c2c9da91b31556ac6b96a005e6f192",
+      "source_artifact_sha256": "814967996adf4ef7581c5888cb2e3e5005afc94376fa58e1971d43e0c50d092c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "7667e039767f59b73a3e745522dc1b3d8daf2cdd108a9b8e9b5a4b095379beee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "7667e039767f59b73a3e745522dc1b3d8daf2cdd108a9b8e9b5a4b095379beee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 28911
+  }
+}
