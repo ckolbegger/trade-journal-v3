@@ -55,7 +55,7 @@ Numbering continues from D5R2's P42–P54.
 | A177 | Playwright 1.63 accepts `test(title, { tag: '@every-task' }, body)` and `test.describe(title, { tag }, body)` on the project's extended `test` (`e2e/d1/support.ts`, `base.extend`), and `--grep` / `--grep-invert` match tags. T6P.1 verifies this with `--list` before tagging anything. |
 | A178 | A task-tier run needs `build:faults` and `build:releases` like the full tier. Both take seconds when the tagged releases are reused (as in every D5R2 run). |
 | A179 | `e2e/smoke/` (the RC engine-capability probe) stays outside both tiers, as it is outside `test:e2e` today. The tag is named `@every-task`, not `@smoke`, to avoid confusing the two. |
-| A180 | The base commit for P55's path rule is the commit the task started from, which the main session records in the handoff's progress section before each brief. |
+| A180 | The base commit for P55's path rule is the commit the task started from, which the main session records in the handoff's progress section before each brief. **Amended by decision 100 (revision 69):** it is recorded in the task's row of the breakdown's Progress section ("In progress from `<commit>`"), not in the handoff. |
 
 ---
 

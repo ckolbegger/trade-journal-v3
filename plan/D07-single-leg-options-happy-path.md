@@ -773,3 +773,50 @@ Status values: `planned`, `covered`, `intentionally not advertised`. All rows ar
 ## 10. Evidence recording
 
 As in earlier deliverables, under `evidence/D07/`: `tdd-log.md` (red and green per case), `structural.md`, `provenance.md` (engine and OS versions, never an allowlist), `bench.md` (raw timings, percentile method, dataset provenance including the pinned as-of instant, environment), and `critic-<n>.md`, with each critic defect first reproduced by a failing test.
+
+---
+
+## 11. Progress
+
+Status, not plan: editing this section is not a plan revision (decision 100, revision 69). The main session alone edits it. Before a task's brief, it marks the row "In progress from `<commit>`", naming the commit the task starts from (A180's base commit). After the task, it marks the row "Done" and lists the commits. The order is the run order, so the next task is the first row not marked "Done".
+
+Each row lists the task's own commits, then its bug tasks (B), suite-failure fixes (F) and their rounds (R), by ID, in commit order. Runs, ocr results and notes stay in `evidence/D07/structural.md`. Backfilled on 2026-11-08 from the D7 handoff and `git log`, with every D7 code commit assigned to a task.
+
+| Task | Status | Commits |
+|---|---|---|
+| T7.1 | Done | `ba247330`; B1 `b115db30` |
+| T7.2 | Done | `504705d2`; B1 `ba8f1893`; B2 `ca36f848`; B3 `3feb3f11`; B4 `f1ffa592` |
+| T7.3 | Done | `c9b225e0` |
+| T7.4 | Done | `0ab70bfd`; B1 `2d2f7f44` |
+| T7.5 | Done | `f2eecbbb`; B1 `74701796`; B2 `1e65a41b` |
+| T7.6 | Done | `2bbaa51b`; B1 `bcefef80`; F1 `f058e165` |
+| T7.7 | Done | `668378bd` |
+| T7.25 | Done (run early, after T7.7) | `ca194099` |
+| T7.8 | Done | `da4f2587` |
+| T7.9 | Done | `e82f155f`; F1 `d9fbbedb` |
+| T7.10 | Done | `0ab541ba` |
+| T7.11 | Done | `50252abf`, `abf65522`; F1 `7c4a7bfd` |
+| T7.12 | Done | `d04d91ed`; B1 `f9b2eeaa` |
+| T7.13 | Done | `8c72420c`; B1 `75384559`; B2 `9e980a06` |
+| T7.14 | Done | `8fd242ae` |
+| T7.15 | Done | `f70e9aea` |
+| T7.33 | Done | `515311ea` |
+| T7.16 | Done | `ee1e3dfd`; B1 `bb6c69ab` |
+| T7.34 | Done | `b9c52d41` |
+| T7.17 | Done | `35f38715` |
+| T7.18 | Done | `236b72ce`; F1 `6b0ace78` |
+| T7.35 | Done | `015f46a1` |
+| T7.36 | Done | `f2c1371e`; F1 `ca93e623` |
+| T7.19 | Done | `551ca046`; B1 `630df208` |
+| T7.20 | Done | `c666a5a6`; B1 `b063515f`; B2 `efe0af23`; B3 `60df88b7` |
+| T7.21 | Done | `8ea8561b`; B1 `089fee85`; B2 `6a0dad29` |
+| T7.22 | Done | `a1f091fa`; B1 `f1a63143`; B3 `50ad3b4e`; B2 `5b7ec983` |
+| T7.23 | Done | `90bd3571`; B1 `bae86299`; B3 `7ab6b5e4`; B2 `4deaabb2` + `772dcf30`; B4 `d2bf7560`; B5 `0152cfa7` |
+| T7.24 | Done | `30af5e9c`; B1 `4fba1c2d` |
+| T7.26 | Done | `e1621799`; B1 `5510a9d7` |
+| T7.27 | Done | `3d318b96`; B1 `15274b32` |
+| T7.28 | Done | `82751384`, `a907398b` (full generation); B1 `b4550fe1`; B2 `534d3f8c` |
+| T7.30 | Done | `62209ec5`, `3bdc7b17`; B1 `f6984753`; B1-R1 `a4856c53`; B1-R2 `5f387a67`; B3 `00fd4bb1`; B1-R3 `5b0a0dfb`; B3-R1 `7aeb6f6b`; B1-R4 `c5e4bfaa`; B3-R2 `51c21f36`; B1-R5 `c773f456`; B2 `c13d07b9`; B3-R3 `18341190`; B2-R1 `65c1f2f8`; B3-R4 `ff7e8143` |
+| T7.29 | Done | `efedd324`; B1 `dcf3833b`; B2 `dc7c88ac`; B3 `1ffca8f8`; B5 `a6f87d6c`; B6 `6eebc1e1`; B4 `d8707e7e`; B9 `71907d03`; B7 `4d46468c`; B8 `607bc1ef`; B10 `c80bea20`; B11 `ebfaddd9`; B12 `e91a9732` |
+| T7.31 | Done | `d03a6425`, `1d317fd8`; F1 `52ff9dcf`; F2 `025e457f`; F1-B1 `d22974e7`; F3 `90981401`; B1 `a42dbc77`; B4 `bd617794`; B5 `6d449297`; B2 `58182ce6`; B3 `17affdc0` |
+| T7.32 | Done (gate passed; tagged `claude-opus-5.5-d7`) | critic reports only; B1 `0e11a684`; B2 `02f3e0aa`; B3 `971559fe`; B4 `6949ac19`; B5 `a907f190`; B6 `caa825dd`; B7 `1b92fe51` |

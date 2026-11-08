@@ -18,6 +18,7 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
     - a brief copies in every "Notes for later tasks" bullet that names its task, and the bullet is deleted once every task it names has had it;
     - after each task, the update adds one "Tasks done" bullet, and puts each warning in its own notes bullet, starting with the task IDs it is for;
     - the next handoff's progress section is a short table followed by those two lists.
+  - **Then superseded the same day by decision 100 (revision 69), at the user's suggestion:** task status and commits moved to a Progress section at the end of each breakdown, and editing that section is not a plan revision. The handoff keeps only "Notes for later tasks" and "Open questions". The D7 breakdown's section 11 was backfilled from the handoff and `git log`, with every D7 code commit assigned to a task.
   - **D7 handoff:** the "Tasks done" cell is now a list, one bullet per task, below the table. The text is unchanged (checked with `cmp`). Its inline "For T7.xx" notes stay as history, since the gate has addressed them all.
 
 ## 3. Nobody checked the acceptance-row commands until the end
