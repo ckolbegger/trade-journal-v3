@@ -52,7 +52,8 @@ run_list() { # prints "N tests" or "FAIL: reason"
       n=${n:-0} ;;
     "npm run "*)
       local script; script=$(printf '%s' "${cmd#npm run }" | cut -d' ' -f1)
-      if grep -qE "^[[:space:]]*\"$script\"[[:space:]]*:" package.json; then echo "script present"; else echo "FAIL: script $script not in package.json"; fi
+      # Exact name, looked up only in the "scripts" object (no regex, top-level keys do not count).
+      if node -e 'const s = JSON.parse(require("fs").readFileSync("package.json", "utf8")).scripts; process.exit(s && Object.hasOwn(s, process.argv[1]) ? 0 : 1)' "$script"; then echo "script present"; else echo "FAIL: no such npm script"; fi
       return ;;
     *) echo "FAIL: unrecognized command form"; return ;;
   esac

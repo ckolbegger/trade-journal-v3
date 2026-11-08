@@ -138,3 +138,9 @@ Added at the user's request, after the first draft looked only at the session's 
   - **3.** `.claude/scripts/acceptance-commands.sh plan/no-such.md; echo "exit $?"`: `acceptance-commands.sh: no such file: plan/no-such.md`, exit 2.
   - **4.** The r70 plan (from `git show claude-opus-5.5-plan-r70:...` into a `mktemp -d` file): exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
 - **D7-Retro-F3-B1 ocr** (`ocr/D7-Retro-F3-B1-d2f14d3d.json`): 1 file, 0 comments. No findings.
+- **D7-Retro-F3-B2:** the presence check now reads `package.json` with `node -e` and accepts a name only if it is an own key of the `scripts` object (exact match, no regex); otherwise the row prints `FAIL: no such npm script`. The brief named AC-DEL-001, but `npm run verify:capabilities` is the command of AC-CAP-001 (line 714 of the D7 breakdown), so the copies change that row.
+  - **Red** (before the fix, `HEAD`'s script run from a `git show` copy in a `mktemp -d` directory, on a copy of the D7 breakdown with line 714's command replaced by `npm run name`): `AC-CAP-001 (cumulative) | npm run name | script present`, exit 0, 18 checked, 0 failed.
+  - **1.** The fixed script on that copy: `AC-CAP-001 (cumulative) | npm run name | FAIL: no such npm script`, exit 1, 18 checked, 1 failed.
+  - **2.** The regex near-miss copy (`npm run verify.capabilities`): the old script said `script present` (exit 0); the fixed script prints `FAIL: no such npm script`, exit 1, 1 failed.
+  - **3.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 checked, 0 failed; `npm run verify:capabilities` and `npm run bench:run` both `script present`.
+  - **4.** The r70 plan (`git show claude-opus-5.5-plan-r70:...` into a `mktemp -d` file): exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
