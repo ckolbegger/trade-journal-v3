@@ -42,12 +42,36 @@ describe('T7.30-B3-R2 query count: the Open page with option Trades', () => {
     expect(items.map((i) => i.current.datedLine?.tradingDate).filter(Boolean).sort()).toEqual(['2026-10-09', '2026-10-12', '2026-10-12']);
 
     const reads = on(page.requests, 'trades', 'observations');
-    console.log(`query-count: Open page with option Trades ${JSON.stringify(reads)}`);
     expect(reads.filter((r) => r.store === 'trades')).toEqual([{ on: 'index', store: 'trades', index: 'byLifecycleActivity', method: 'getAll', count: 201 }]);
     // D4's reads: one getAll on observations and one byInstrumentDate request per Missing Instrument (the call, the put and
     // their two Underlyings, all Missing at Tuesday's close); then one getAll per distinct dated close date, two here.
     const cursor = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' };
     const getAll = { on: 'store', store: 'observations', method: 'getAll' };
     expect(on(page.requests, 'observations')).toEqual([getAll, cursor, cursor, cursor, cursor, getAll, getAll]);
+  });
+
+  it('should read observations once for two different Underlyings that need the same earlier date', { timeout: 120_000 }, async () => {
+    const { app } = await onboardedAt(TUESDAY_1700);
+    // A Long Call on XYZ and a Long Put on ABC, both bought Monday and valued at Monday's close.
+    const call = (await confirmOption(app, 'O-C')).receipt.tradeId;
+    await recordOption(app, call, 'Buy', OC_PC1);
+    await recordOption(app, call, 'Buy', OC_PC2);
+    const put = (await confirmOption(app, 'O-P')).receipt.tradeId;
+    await recordOption(app, put, 'Buy', { ...ABC_FILL, economicTime: '2026-10-12T14:00:00Z' });
+    await saveMark(app, instrumentKey(XYZ_CALL), '2026-10-12', '2.20');
+    await saveMark(app, 'XYZ', '2026-10-12', '52.00');
+    await saveMark(app, instrumentKey(ABC_PUT), '2026-10-12', '1.60');
+    await saveMark(app, 'ABC', '2026-10-12', '51.00');
+
+    const page = await countRequests(() => app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }));
+    if (page.result.kind !== 'Ready') throw new Error(page.result.kind);
+    const items = page.result.view.items as unknown as readonly { current: { datedLine?: { tradingDate: string } } }[];
+    expect(items.map((i) => i.current.datedLine?.tradingDate)).toEqual(['2026-10-12', '2026-10-12']);
+
+    // D4's reads (one getAll, four byInstrumentDate requests for the call, the put and their Underlyings), then one getAll
+    // for the one earlier date, which carries both Underlyings.
+    const cursor = { on: 'index', store: 'observations', index: 'byInstrumentDate', method: 'openCursor' };
+    const getAll = { on: 'store', store: 'observations', method: 'getAll' };
+    expect(on(page.requests, 'observations')).toEqual([getAll, cursor, cursor, cursor, cursor, getAll]);
   });
 });

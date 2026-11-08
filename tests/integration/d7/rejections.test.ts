@@ -96,16 +96,6 @@ describe('I7.8 Rejections write nothing', () => {
     }
   }, 60_000);
 
-  // KNOWN GAP (T7.30-B2, reported, product code untouched): assessPlan returns details.extraConditions, but
-  // confirmPlan's issue (types.ts, trade-workflows.ts:94) passes on only details.breakeven, so the facade drops it.
-  it.fails('should name the extra conditions in details.extraConditions on ConditionCountNotOne through confirmPlan', async () => {
-    const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
-    const longCall = await optionPlanCommand(app, 'O-C');
-    const extra = { kind: 'UnderlyingPrice', price: '47.00' } as const;
-    const issues = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extra] } });
-    expect(issues).toEqual(expect.arrayContaining([{ source: 'TradeAnalysis', code: 'ConditionCountNotOne', details: { extraConditions: [extra] } }]));
-  });
-
   it('should refuse a Buy 3 to close, an Execution dated 2026-11-23, an Expiration of 1 of 2, a settlement time on 2026-11-23, an Expiration on XYZ stock, an Expiration with an Execution, and a Buy after E1, each with its typed result and the dump unchanged', async () => {
     const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
     const tradeId = (await confirmOption(app, 'O-S')).receipt.tradeId;

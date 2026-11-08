@@ -415,4 +415,21 @@ describe('browseTrades: a failing Historical answer for the dated close (T7.30-B
     expect((list.view.items[0] as { current: { datedLine?: unknown } }).current.datedLine).toBeUndefined();
     expect(detail.current.datedLine).toBeUndefined();
   }, 60_000);
+
+  it('should throw when Market Data rejects the Historical request for any reason but session-policy coverage', async () => {
+    const tuesday = await optionStack('2026-10-13T21:00:00Z');
+    await tuesday.openLongCallAtMonday();
+    await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
+    await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
+    const marketData = {
+      ...tuesday.stack.marketData,
+      query: (query: Parameters<typeof tuesday.stack.marketData.query>[0]) =>
+        query.kind === 'ResolveFrames' && query.context.kind === 'Historical'
+          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'NotASession' as const }] })
+          : tuesday.stack.marketData.query(query),
+    };
+    const views = createTradeViews({ ...tuesday.stack, marketData });
+
+    await expect(views.browseTrades({ lifecycle: 'Open' })).rejects.toThrow(/Historical|Market Data/);
+  }, 60_000);
 });

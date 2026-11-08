@@ -1389,3 +1389,20 @@ Test-only (`tests/integration/d7/`); `git diff -- src` is empty. Mutations are l
 - I7.6: Thursday's Review `kind` is `Ready`. I7.5: stored `closeReasonFacts` empty for the three Trades (field omitted when none, so `?? []`). Entry window: the Lot Match's opening Execution is PC1's Execution and the disposing one the exit's. I7.13: damage extended to `exposureStart`, `outstandingDue` and `anchorTradeId`; compares `byOutstandingDue`, the Debts `byAnchorTrade`, and the stored Trades and Debts (four Outstanding Debts). I7.10: Planned unchanged for X1 prime, theoretical-value scan over the whole Detail at four points, value at XYZ 58.00 after X1 is 198.05. I7.15: the dated line's date label ("At Mon Oct 12 close" via `shortDate`) and Mark 2.2.
 - Mutations: every item has one that the old assertion survived and the new one catches, except I7.5 (`closeReasonFacts`): the old `detail.closeReason` check already caught a written Close Reason fact.
 - Verification: `npx vitest run tests/integration/d7` 17 files, 34 passed and 1 expected fail; `tests/integration` 93 files, 188 passed and 1 expected fail; `src` 121 files, 1424 passed; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
+
+### T7.30-B2 triage (`c13d07b9`)
+
+Nine of the ten gaps pass on the real code, each mutation-checked. The tenth, `details.extraConditions` on `ConditionCountNotOne` through `confirmPlan`, fails, and was kept as `it.fails`. **Dismissed as a defect**: nothing in the plan or the approved words uses it (row 19.23's sentence "An option Plan takes one Stop and one Target." names no conditions), and no production reader takes `extraConditions`. The domain detail is T7.2-B1's own choice. The `it.fails` case asserts behavior nothing requires, so T7.30-B3-R3 removes it.
+
+### Decision 97 (revision 63, `145ded6c`)
+
+The user chose one extra read per distinct earlier date: "Let's add the one extra read per distinct earlier date. Make a note that when we implement spreads, we should try to pick up all contracts in the spread on that earlier date in a single read." Recorded as decision 97, with tech debt item 19 for D10. → **T7.30-B3-R3** fixes B3-R2's review findings: the settlement lookups run concurrently again; only `SessionPolicyCoverage` is absorbed, matching `currentFrames`; the query-count test gets two Underlyings on one date and loses its `console.log`. It also removes B2's `extraConditions` `it.fails` case.
+
+### T7.30-B3-R3 the Open list's earlier-date reads: concurrency, error handling, test gaps
+
+From the ocr review of `51c21f36` (T7.30-B3-R2).
+- Concurrency: the Open list now starts the Historical frame requests and the settlement lookups together and joins them (`Promise.all`), as the settlement lookups ran before B3-R2. No ordering-observable test exists (same fake-indexeddb, no hook for start order), so no red; the existing Open list tests stay green.
+- Error handling: `historicalFrames` absorbs only a `Rejected` carrying `SessionPolicyCoverage`; every other non-`Frames` answer throws, as `currentFrames` does. B3-R2's test already used the coverage rejection. New red/green case: a `NotASession` rejection makes `browseTrades` reject.
+- Test gaps: query-count case for two Underlyings needing the same earlier date (one Historical read; first-run pass, mutation-checked in `tdd-log.md`); stray `console.log` removed.
+- B2's `it.fails` case on `details.extraConditions` through `confirmPlan` removed (dismissed by the main session); the ConditionCountNotOne code assertion stays.
+- Verified: `npx vitest run src` 1425 passed; `npx vitest run tests/integration` 189 passed, no `it.fails` left; `npm run verify:fixtures` OK; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.

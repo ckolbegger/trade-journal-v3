@@ -738,8 +738,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
   }
 
   // The Underlyings' frames at their dated closes: one Historical request per distinct date, carrying every Underlying
-  // that date needs (A111). An answer that is not Frames, a coverage rejection included, leaves that date without frames
-  // and so its Trades without a dated line; it never fails the page.
+  // that date needs (A111). A session-policy coverage rejection leaves that date without frames and so its Trades without
+  // a dated line; any other answer that is not Frames throws, as `currentFrames` does.
   async function historicalFrames(needs: readonly HistoricalNeed[]): Promise<ReadonlyMap<string, MarkFrame>> {
     const byDate = new Map<string, Set<string>>();
     for (const { tradingDate, underlying } of needs) byDate.set(tradingDate, (byDate.get(tradingDate) ?? new Set()).add(underlying));
@@ -748,7 +748,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     );
     const found = new Map<string, MarkFrame>();
     for (const { tradingDate, result } of answers) {
-      if (result.kind !== 'Frames') continue;
+      if (result.kind === 'Rejected' && result.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) continue;
+      if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the historical frames at ${tradingDate}`);
       for (const f of result.frames) if (f.tradingDate === tradingDate) found.set(historicalKey(tradingDate, f.instrumentKey), f);
     }
     return found;
@@ -954,17 +955,14 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           const evaluated = derivations.flatMap(({ summary, analysis, derived }) =>
             derived.kind === 'Derived' ? [{ tradeId: summary.tradeId, analysis, evaluation: evaluateCurrent(derived, analysis, frames), frame: primaryFrameOf(frames, analysis) }] : [],
           );
-          const historical = await historicalFrames(evaluated.flatMap(({ analysis, frame, evaluation }) => historicalNeedOf(analysis, frames, frame, evaluation) ?? []));
-          // The settlement lookups run together; the entries keep the page's order.
-          const found = await Promise.all(
-            evaluated.map(async ({ tradeId, analysis, evaluation, frame }) => ({
-              tradeId,
-              evaluation,
-              settlement: await settlementItemsOf(tradeId, evaluation),
-              datedLine: datedLineWith(analysis, frames, frame, evaluation, historical),
-            })),
-          );
-          for (const { tradeId, evaluation, settlement, datedLine } of found) evaluations.set(tradeId, { evaluation, settlement, datedLine });
+          // The settlement lookups run together, beside the Historical reads, which they don't depend on; the entries keep the page's order.
+          const [historical, settlements] = await Promise.all([
+            historicalFrames(evaluated.flatMap(({ analysis, frame, evaluation }) => historicalNeedOf(analysis, frames, frame, evaluation) ?? [])),
+            Promise.all(evaluated.map(({ tradeId, evaluation }) => settlementItemsOf(tradeId, evaluation))),
+          ]);
+          evaluated.forEach(({ tradeId, analysis, evaluation, frame }, i) => {
+            evaluations.set(tradeId, { evaluation, settlement: settlements[i]!, datedLine: datedLineWith(analysis, frames, frame, evaluation, historical) });
+          });
         }
         const items = derivations.map(({ summary, analysis, derived }) => {
           if (request.lifecycle === 'Closed') {
