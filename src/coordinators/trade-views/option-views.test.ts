@@ -12,6 +12,7 @@ import { createTradeViews, type ClosedTradeDetail, type ClosedTradeItem, type Op
 const THURSDAY_1700 = '2026-11-19T22:00:00Z';
 const FRIDAY_1600 = '2026-11-20T21:00:00Z';
 const FRIDAY_1700 = '2026-11-20T22:00:00Z';
+const MONDAY_NOV_23_1700 = '2026-11-23T22:00:00Z';
 const MONDAY_PLAN = '2026-10-12T13:00:00Z';
 const MONDAY_10 = '2026-10-12T14:00:00Z';
 const MONDAY_11 = '2026-10-12T15:00:00Z';
@@ -448,5 +449,27 @@ describe('browseTrades: a failing Historical answer for the dated close (T7.30-B
     const views = createTradeViews({ ...tuesday.stack, marketData });
 
     await expect(views.getTradeDetail({ tradeId })).rejects.toThrow(/Historical|Market Data/);
+  }, 60_000);
+});
+
+describe('getTradeDetail: no Mark is requested after the expiration date (T7.32-B6)', () => {
+  it('should carry no Mark resolution for the expired contract after the expiration date while Settlement Due', async () => {
+    const monday = await optionStack(MONDAY_NOV_23_1700);
+    const tradeId = await monday.openCashSecuredPut();
+
+    const detail = openDetail(await monday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.settlement).toHaveLength(1);
+    expect(detail.current.evaluation.settlement).toEqual([expect.objectContaining({ status: 'Due' })]);
+    expect(detail.current).not.toHaveProperty('markResolution');
+  }, 60_000);
+
+  it('should still report a missing contract Mark on the expiration date itself', async () => {
+    const friday = await optionStack(FRIDAY_1700);
+    const tradeId = await friday.openCashSecuredPut();
+
+    const detail = openDetail(await friday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.markResolution).toEqual(expect.objectContaining({ kind: 'Missing' }));
   }, 60_000);
 });

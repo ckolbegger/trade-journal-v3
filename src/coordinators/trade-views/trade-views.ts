@@ -461,6 +461,12 @@ const instrumentsOf = (analysis: TradeAnalysisRecord): string[] => {
   return contract.kind === 'Option' ? [instrumentKey(contract), analysis.plan.underlying] : [analysis.plan.underlying];
 };
 
+// Whether the Trade's contract expired before the date: no Mark is required for it then (A110).
+const afterExpiration = (analysis: TradeAnalysisRecord, date: string): boolean => {
+  const contract = analysis.plan.legs[0]!.instrument;
+  return contract.kind === 'Option' && date > contract.expiration;
+};
+
 // The frame of the Instrument whose Mark values the Trade: the contract for an option, the Underlying for stock.
 const primaryFrameOf = (frames: readonly CurrentFrame[], analysis: TradeAnalysisRecord): CurrentFrame => {
   const key = instrumentsOf(analysis)[0]!;
@@ -896,7 +902,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const underlyingMark = underlyingFrame && markProvenance(underlyingFrame);
         const datedLine = await datedLineOfTrade(analysis, frames, frame, evaluation);
         const current: OpenCurrentEvaluation = {
-          ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
+          // After its expiration date an option requires no Mark, so Detail reports none missing (A110, as the Review does).
+          ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, ...(!afterExpiration(analysis, frame.tradingDate) && { markResolution: frame.resolution }) }),
           ...optional('mark', mark),
           ...optional('underlyingMark', underlyingMark),
           coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
