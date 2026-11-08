@@ -6,6 +6,7 @@ import { createInProcessLifecycleLock, type LifecycleLock } from '../../../src/p
 import { fixedClock } from '../../../src/domain/time/index.ts';
 import type { ConfirmPlanCommand } from '../../../src/coordinators/trade-workflows/index.ts';
 import { nodeTestHost, type NodeTestHost } from '../../support/node-test-host.ts';
+import { longStockOf } from '../../support/long-stock.ts';
 import { TEST_CAPACITY, dumpAll } from '../../support/stack.ts';
 import { sequentialIds } from '../../support/workspace.ts';
 
@@ -69,7 +70,7 @@ export async function planCommand(app: Application, overrides: { underlying?: st
   const definition = await app.Journal.getDefinitions({ latestFor: 'entry-type.plan-reflection' });
   if (accounts.kind !== 'Page' || strategies.kind !== 'Page' || definition.kind !== 'Found') throw new Error('catalog or journal missing');
   const account = accounts.items[0]!;
-  const strategy = strategies.items[0]!;
+  const strategy = longStockOf(strategies.items);
   const symbol = overrides.underlying ?? 'XYZ';
   return {
     accountId: account.id,

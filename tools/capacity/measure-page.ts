@@ -687,7 +687,7 @@ async function measure(plans: number, openTrades: number) {
   const strategies = await app.ReferenceCatalog.query({ family: 'Strategy' });
   const definition = await app.Journal.getDefinitions({ latestFor: 'entry-type.plan-reflection' });
   if (strategies.kind !== 'Page' || definition.kind !== 'Found') throw new Error('seed missing');
-  const strategy = strategies.items[0]!;
+  const strategy = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === 'strategy.long-stock')!;
   const workspace = (await indexedDB.databases()).find((d) => d.name?.startsWith('tj-ws-'))!.name!;
 
   const pcDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' });

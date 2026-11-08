@@ -3,6 +3,7 @@
 import { createMutationGuard } from '../../src/coordinators/mutation-guard.ts';
 import { createTradeWorkflows } from '../../src/coordinators/trade-workflows/index.ts';
 import { createWorkspace } from '../../src/coordinators/workspace/index.ts';
+import { longStockOf } from './long-stock.ts';
 import { testStack } from './stack.ts';
 
 export async function onboardedStack(...args: Parameters<typeof testStack>) {
@@ -26,7 +27,7 @@ export async function onboardedStack(...args: Parameters<typeof testStack>) {
     tradeWorkflows,
     institution: institution.record,
     account: account.record,
-    strategy: strategies.items[0]!,
+    strategy: longStockOf(strategies.items),
     definition: definition.definition,
   };
 }

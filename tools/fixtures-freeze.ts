@@ -53,7 +53,7 @@ const accounts = [
 const strategies = await app.ReferenceCatalog.query({ family: 'Strategy' });
 const definition = await app.Journal.getDefinitions({ latestFor: 'entry-type.plan-reflection' });
 if (strategies.kind !== 'Page' || definition.kind !== 'Found') throw new Error('seed missing');
-const strategy = strategies.items[0]!;
+const strategy = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === 'strategy.long-stock')!;
 
 const plans = [
   { symbol: 'AAPL', quantity: '50', entry: '228.40', stop: '221.00', target: '245.00', at: '2026-10-12T14:00:00Z', conviction: 4, emotion: 'calm' },

@@ -55,7 +55,7 @@ test.describe('B1.14 nothing is saved without Save', () => {
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
     await fillPlan(page, TYPED);
     await page.getByRole('combobox', { name: 'Account' }).selectOption({ index: 0 });
-    await page.getByRole('combobox', { name: 'Strategy' }).selectOption({ index: 0 });
+    await page.getByRole('combobox', { name: 'Strategy' }).selectOption({ label: 'Long Stock' });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createReferenceCatalog, D1_CATALOG_MANIFEST } from './index.ts';
+import { longStockOf } from '../../../tests/support/long-stock.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
 
 async function catalog() {
@@ -268,7 +269,7 @@ describe('resolve', () => {
     if (account.kind !== 'Saved') throw new Error('account not saved');
     const strategies = await setup.catalog.query({ family: 'Strategy' });
     if (strategies.kind !== 'Page') throw new Error('no strategies');
-    return { ...setup, institution: institution.record, account: account.record, strategy: strategies.items[0]! };
+    return { ...setup, institution: institution.record, account: account.record, strategy: longStockOf(strategies.items) };
   }
 
   it('should resolve a selectable Account and Strategy as NewSelection with record revisions and the Account\'s Institution', async () => {

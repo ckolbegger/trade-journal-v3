@@ -2,6 +2,7 @@
 // (AC-POS-004 requirements, P22 position paths).
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
+import { longStockOf } from '../../support/long-stock.ts';
 import type { PositionChangeCommand } from '../../../src/coordinators/trade-workflows/index.ts';
 import {
   buy, closeReasonId, closeReviewDisposition, complete, confirmReference, dec, device, dumpAll, exitCommand, MONDAY_1030, onboarded, PC1, PC2, PC3, positionChange, record, recordExit, TUESDAY_1000, TUESDAY_1400, TUESDAY_1700,
@@ -49,7 +50,7 @@ describe('I6.5 Close requirements write nothing', () => {
     // Terminal X2 with a Strategy identity as its Close Reason.
     const strategies = await app.ReferenceCatalog.query({ family: 'Strategy' });
     if (strategies.kind !== 'Page') throw new Error('no Strategies');
-    const wrong = await rejected(app, d, await exitCommand(app, tradeId, [sellOf('100', TUESDAY_1400)], { closeReasonId: strategies.items[0]!.id, closeReview: await closeReviewDisposition(app, 'Complete') }));
+    const wrong = await rejected(app, d, await exitCommand(app, tradeId, [sellOf('100', TUESDAY_1400)], { closeReasonId: longStockOf(strategies.items).id, closeReview: await closeReviewDisposition(app, 'Complete') }));
     expect(wrong).toEqual([expect.objectContaining({ source: 'ReferenceCatalog', field: 'closeReasonId', code: 'WrongKind' })]);
   }, 60_000);
 });

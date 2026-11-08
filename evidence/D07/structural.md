@@ -552,3 +552,10 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto b5fb3e75`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-16-option-views-checks.txt` |
 
 Tier: full, printed reason "first matching path since b5fb3e75: src/ui/format.ts". Ports free before and after. T7.16 is complete.
+
+## T7.34 Long Stock by product key in helpers and tools
+
+- `grep -rn "strategies.items\[0\]" src tools tests e2e`: no output (exit 1).
+- `npm run test:unit`: 116 files, 1372 tests passed. `npm run test:integration`: 76 files, 154 tests passed.
+- `npx playwright test e2e/d1/no-save.spec.ts`: 1 passed (selects "Long Stock" by label).
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run verify:fixtures`: all exit 0.

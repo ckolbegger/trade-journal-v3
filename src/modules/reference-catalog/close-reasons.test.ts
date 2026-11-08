@@ -80,7 +80,7 @@ describe('query and resolve', () => {
       },
     });
     expect(
-      await c.resolve([{ name: 'closeReason', kind: 'CloseReason', id: strategies.items[0]!.id, mode: 'NewSelection' }]),
+      await c.resolve([{ name: 'closeReason', kind: 'CloseReason', id: strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === 'strategy.long-stock')!.id, mode: 'NewSelection' }]),
     ).toEqual({
       kind: 'Unresolved',
       snapshot: { catalogRevision: 2 },

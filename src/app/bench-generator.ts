@@ -659,7 +659,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
     const planDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.plan-reflection' });
     const changeDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' });
     if (strategies.kind !== 'Page' || planDefinition.kind !== 'Found' || changeDefinition.kind !== 'Found') throw new Error('seed missing');
-    const strategy = strategies.items[0]!;
+    const strategy = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === 'strategy.long-stock')!;
 
     const closeReasonResult = await app.ReferenceCatalog.query({ family: 'CloseReason' });
     const closeReviewDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.close-review' });
