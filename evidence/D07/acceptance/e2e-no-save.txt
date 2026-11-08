@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/d7/no-save.spec.ts:52:3 › B7.12 Nothing saved without Save (AC-JOUR-001) › should store no Trade, Expiration, Entry, decline, Debt, or Web Storage value after typing an option Plan and an expiration form, resizing, leaving, and restarting (3.2s)
+
+  1 passed (4.1s)

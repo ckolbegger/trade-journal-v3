@@ -1,0 +1,5 @@
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 19 operations, 11 variant-qualified, 9 routes, 4 Entry Types, schema 6, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29

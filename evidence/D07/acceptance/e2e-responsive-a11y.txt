@@ -1,0 +1,7 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d7/responsive-a11y.spec.ts:28:3 › B7.13 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the option Plan, Execution and expiration forms, both payoff views in every state, option Detail with and without Settlement Due, and the Review settlement panel, and show Settlement Due and Not applicable as text with a table beside every chart (15.0s)
+  ✓  2 [chromium] › e2e/d7/responsive-a11y.spec.ts:123:3 › B7.13 Responsive and accessible › should record an Expiration by keyboard alone, with a visible focus ring on every stop (3.3s)
+
+  2 passed (18.7s)

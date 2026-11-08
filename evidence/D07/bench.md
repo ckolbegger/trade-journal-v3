@@ -1,13 +1,13 @@
 # D7 benchmark run (AC-PERF-001)
 
-Written by `npm run bench:run` (T2.21, extended by T4.31, T5.22, T5R.13, T6.25 and T7.29) on 2026-11-08T13:46:50.718Z, at commit a3c036d2dfa12ec387d9390f9625084b2287f6fb plus uncommitted changes to src, tools, bench or package.json.
+Written by `npm run bench:run` (T2.21, extended by T4.31, T5.22, T5R.13, T6.25 and T7.29) on 2026-11-08T18:02:21.178Z, at commit 7e50d82e4434e18ae48a140d251061e44b25a95b.
 
 ## Result
 
 | Measure | Runs | Nearest-rank p95 (29th of 30) | Budget | Result |
 |---|---|---|---|---|
-| Cold start to `tj:interactive` | 30 | 112.4 ms | 2,500 ms | pass |
-| Warm Planned-to-Open switch to `tj:open-list-ready` | 30 | 47.7 ms | 1,500 ms | pass |
+| Cold start to `tj:interactive` | 30 | 129.8 ms | 2,500 ms | pass |
+| Warm Planned-to-Open switch to `tj:open-list-ready` | 30 | 47.0 ms | 1,500 ms | pass |
 
 Open list compared with `bench/expected-open-rows.json`: before the runs 200 rows equal, after the runs 200 rows equal, and each of the 30 cold starts rendered the same 200 rows (figures included). The 10 Missing Instruments on the as-of date (ADBE, AVGO, NKE, QAD, QAM, QAV, QBE, QBN, QBW, UNH) have rows in that list, each showing `Mark missing` in P&L (and no other row does).
 
@@ -17,8 +17,8 @@ The harness opens the Review from the primary navigation and reads its blockers:
 
 | When | Due reflections listed (by Trade) | Expected | Result | Time from the click on Review to its status (disclosed, not gated) |
 |---|---|---|---|---|
-| before the runs | 487 (QAI 5, QAJ 5, QAH 3, QAE 7, QAR 3, GS 9, QAQ 4, QCOM 12, QAK 5, QAF 7, QAS 3, QAC 4, QAA 6, DE 13, BA 6, MCD 5, TXN 9, INTC 12, AMD 7, PEP 4, ABBV 10, CVX 7, KO 7, NVDA 10, QBV 3, QAT 3, QAB 3, CAT 12, QAN 2, ORCL 5, MRK 3, LLY 12, XOM 7, HD 13, QAG 4, V 11, PFE 9, CSCO 9, META 10, AMZN 4, MSFT 9, AAPL 7, QBQ 3, QBC 3, QAY 3, PG 10, NFLX 11, GOOGL 3, QBU 2, QBS 2, QBP 2, QBL 2, QBI 2, QBD 2, QBB 2, QAX 2, CRM 13, QAO 3, QBO 1, QBJ 1, QBA 1, QAW 1, QAU 1, QAP 3, QAL 4, MA 7, COST 6, DIS 14, TSLA 11, WMT 6, JPM 10, QBX 1, QBR 2, QBG 2, QAZ 2, QBT 1, QBF 1, NKE 13, ADBE 11, QAD 4, QAM 2, UNH 8, AVGO 6, QBW 2, QBN 2, QBE 2, QBK 2, QBM 3, QBH 3) | 487 (CVX 7, LLY 12, WMT 6, AAPL 7, KO 7, PFE 9, QCOM 12, TXN 9, NVDA 10, CSCO 9, ABBV 10, MSFT 9, JPM 10, PG 10, MRK 3, ADBE 11, INTC 12, DIS 14, NKE 13, MCD 5, CAT 12, GOOGL 3, META 10, TSLA 11, AVGO 6, NFLX 11, V 11, MA 7, UNH 8, HD 13, PEP 4, CRM 13, ORCL 5, AMD 7, BA 6, DE 13, GS 9, COST 6, XOM 7, QAA 6, QAB 3, QAC 4, QAE 7, QAF 7, QAG 4, QAI 5, QAJ 5, QAK 5, QAL 4, QAN 2, QAO 3, QAP 3, QAQ 4, QAS 3, QAT 3, QAU 1, QAW 1, QAX 2, QAY 3, QAZ 2, QBA 1, QBB 2, QBC 3, QBD 2, QBE 2, QBF 1, QBG 2, QBH 3, QBI 2, QBJ 1, QBK 2, QBL 2, QBM 3, QBN 2, QBO 1, QBP 2, QBQ 3, QBR 2, QBS 2, QBT 1, QBU 2, AMZN 4, QBV 3, QBW 2, QBX 1, QAD 4, QAH 3, QAM 2, QAR 3) | equal | 225 ms |
-| after the runs | 487 (QAI 5, QAJ 5, QAH 3, QAE 7, QAR 3, GS 9, QAQ 4, QCOM 12, QAK 5, QAF 7, QAS 3, QAC 4, QAA 6, DE 13, BA 6, MCD 5, TXN 9, INTC 12, AMD 7, PEP 4, ABBV 10, CVX 7, KO 7, NVDA 10, QBV 3, QAT 3, QAB 3, CAT 12, QAN 2, ORCL 5, MRK 3, LLY 12, XOM 7, HD 13, QAG 4, V 11, PFE 9, CSCO 9, META 10, AMZN 4, MSFT 9, AAPL 7, QBQ 3, QBC 3, QAY 3, PG 10, NFLX 11, GOOGL 3, QBU 2, QBS 2, QBP 2, QBL 2, QBI 2, QBD 2, QBB 2, QAX 2, CRM 13, QAO 3, QBO 1, QBJ 1, QBA 1, QAW 1, QAU 1, QAP 3, QAL 4, MA 7, COST 6, DIS 14, TSLA 11, WMT 6, JPM 10, QBX 1, QBR 2, QBG 2, QAZ 2, QBT 1, QBF 1, NKE 13, ADBE 11, QAD 4, QAM 2, UNH 8, AVGO 6, QBW 2, QBN 2, QBE 2, QBK 2, QBM 3, QBH 3) | 487 (CVX 7, LLY 12, WMT 6, AAPL 7, KO 7, PFE 9, QCOM 12, TXN 9, NVDA 10, CSCO 9, ABBV 10, MSFT 9, JPM 10, PG 10, MRK 3, ADBE 11, INTC 12, DIS 14, NKE 13, MCD 5, CAT 12, GOOGL 3, META 10, TSLA 11, AVGO 6, NFLX 11, V 11, MA 7, UNH 8, HD 13, PEP 4, CRM 13, ORCL 5, AMD 7, BA 6, DE 13, GS 9, COST 6, XOM 7, QAA 6, QAB 3, QAC 4, QAE 7, QAF 7, QAG 4, QAI 5, QAJ 5, QAK 5, QAL 4, QAN 2, QAO 3, QAP 3, QAQ 4, QAS 3, QAT 3, QAU 1, QAW 1, QAX 2, QAY 3, QAZ 2, QBA 1, QBB 2, QBC 3, QBD 2, QBE 2, QBF 1, QBG 2, QBH 3, QBI 2, QBJ 1, QBK 2, QBL 2, QBM 3, QBN 2, QBO 1, QBP 2, QBQ 3, QBR 2, QBS 2, QBT 1, QBU 2, AMZN 4, QBV 3, QBW 2, QBX 1, QAD 4, QAH 3, QAM 2, QAR 3) | equal | 214 ms |
+| before the runs | 487 (QAI 5, QAJ 5, QAH 3, QAE 7, QAR 3, GS 9, QAQ 4, QCOM 12, QAK 5, QAF 7, QAS 3, QAC 4, QAA 6, DE 13, BA 6, MCD 5, TXN 9, INTC 12, AMD 7, PEP 4, ABBV 10, CVX 7, KO 7, NVDA 10, QBV 3, QAT 3, QAB 3, CAT 12, QAN 2, ORCL 5, MRK 3, LLY 12, XOM 7, HD 13, QAG 4, V 11, PFE 9, CSCO 9, META 10, AMZN 4, MSFT 9, AAPL 7, QBQ 3, QBC 3, QAY 3, PG 10, NFLX 11, GOOGL 3, QBU 2, QBS 2, QBP 2, QBL 2, QBI 2, QBD 2, QBB 2, QAX 2, CRM 13, QAO 3, QBO 1, QBJ 1, QBA 1, QAW 1, QAU 1, QAP 3, QAL 4, MA 7, COST 6, DIS 14, TSLA 11, WMT 6, JPM 10, QBX 1, QBR 2, QBG 2, QAZ 2, QBT 1, QBF 1, NKE 13, ADBE 11, QAD 4, QAM 2, UNH 8, AVGO 6, QBW 2, QBN 2, QBE 2, QBK 2, QBM 3, QBH 3) | 487 (CVX 7, LLY 12, WMT 6, AAPL 7, KO 7, PFE 9, QCOM 12, TXN 9, NVDA 10, CSCO 9, ABBV 10, MSFT 9, JPM 10, PG 10, MRK 3, ADBE 11, INTC 12, DIS 14, NKE 13, MCD 5, CAT 12, GOOGL 3, META 10, TSLA 11, AVGO 6, NFLX 11, V 11, MA 7, UNH 8, HD 13, PEP 4, CRM 13, ORCL 5, AMD 7, BA 6, DE 13, GS 9, COST 6, XOM 7, QAA 6, QAB 3, QAC 4, QAE 7, QAF 7, QAG 4, QAI 5, QAJ 5, QAK 5, QAL 4, QAN 2, QAO 3, QAP 3, QAQ 4, QAS 3, QAT 3, QAU 1, QAW 1, QAX 2, QAY 3, QAZ 2, QBA 1, QBB 2, QBC 3, QBD 2, QBE 2, QBF 1, QBG 2, QBH 3, QBI 2, QBJ 1, QBK 2, QBL 2, QBM 3, QBN 2, QBO 1, QBP 2, QBQ 3, QBR 2, QBS 2, QBT 1, QBU 2, AMZN 4, QBV 3, QBW 2, QBX 1, QAD 4, QAH 3, QAM 2, QAR 3) | equal | 210 ms |
+| after the runs | 487 (QAI 5, QAJ 5, QAH 3, QAE 7, QAR 3, GS 9, QAQ 4, QCOM 12, QAK 5, QAF 7, QAS 3, QAC 4, QAA 6, DE 13, BA 6, MCD 5, TXN 9, INTC 12, AMD 7, PEP 4, ABBV 10, CVX 7, KO 7, NVDA 10, QBV 3, QAT 3, QAB 3, CAT 12, QAN 2, ORCL 5, MRK 3, LLY 12, XOM 7, HD 13, QAG 4, V 11, PFE 9, CSCO 9, META 10, AMZN 4, MSFT 9, AAPL 7, QBQ 3, QBC 3, QAY 3, PG 10, NFLX 11, GOOGL 3, QBU 2, QBS 2, QBP 2, QBL 2, QBI 2, QBD 2, QBB 2, QAX 2, CRM 13, QAO 3, QBO 1, QBJ 1, QBA 1, QAW 1, QAU 1, QAP 3, QAL 4, MA 7, COST 6, DIS 14, TSLA 11, WMT 6, JPM 10, QBX 1, QBR 2, QBG 2, QAZ 2, QBT 1, QBF 1, NKE 13, ADBE 11, QAD 4, QAM 2, UNH 8, AVGO 6, QBW 2, QBN 2, QBE 2, QBK 2, QBM 3, QBH 3) | 487 (CVX 7, LLY 12, WMT 6, AAPL 7, KO 7, PFE 9, QCOM 12, TXN 9, NVDA 10, CSCO 9, ABBV 10, MSFT 9, JPM 10, PG 10, MRK 3, ADBE 11, INTC 12, DIS 14, NKE 13, MCD 5, CAT 12, GOOGL 3, META 10, TSLA 11, AVGO 6, NFLX 11, V 11, MA 7, UNH 8, HD 13, PEP 4, CRM 13, ORCL 5, AMD 7, BA 6, DE 13, GS 9, COST 6, XOM 7, QAA 6, QAB 3, QAC 4, QAE 7, QAF 7, QAG 4, QAI 5, QAJ 5, QAK 5, QAL 4, QAN 2, QAO 3, QAP 3, QAQ 4, QAS 3, QAT 3, QAU 1, QAW 1, QAX 2, QAY 3, QAZ 2, QBA 1, QBB 2, QBC 3, QBD 2, QBE 2, QBF 1, QBG 2, QBH 3, QBI 2, QBJ 1, QBK 2, QBL 2, QBM 3, QBN 2, QBO 1, QBP 2, QBQ 3, QBR 2, QBS 2, QBT 1, QBU 2, AMZN 4, QBV 3, QBW 2, QBX 1, QAD 4, QAH 3, QAM 2, QAR 3) | equal | 206 ms |
 
 ## Card timings (T5R.13, disclosed, not gated)
 
@@ -26,14 +26,14 @@ Each is the time from the pointer press to the rendered result, on the mature da
 
 | Measure | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Open the first card (press on Review to the first card's content: `open` plus one `getTrade`) | 10 | 137.3 ms | 149.6 ms | 129.3 ms | 149.6 ms |
-| Save Marks of one card's Marks (press on Save Marks to the card's drafts cleared) | 5 | 115.7 ms | 120.8 ms | 109.5 ms | 120.8 ms |
-| Trade Action save (press on Save in the Action form to the form replaced by the result) | 5 | 131.5 ms | 137.5 ms | 113.7 ms | 137.5 ms |
+| Open the first card (press on Review to the first card's content: `open` plus one `getTrade`) | 10 | 154.9 ms | 165.7 ms | 133.6 ms | 165.7 ms |
+| Save Marks of one card's Marks (press on Save Marks to the card's drafts cleared) | 5 | 149.5 ms | 151.9 ms | 141.1 ms | 151.9 ms |
+| Trade Action save (press on Save in the Action form to the form replaced by the result) | 5 | 124.1 ms | 160.8 ms | 122.2 ms | 160.8 ms |
 
-- **Against D5 and D5R2:** D5 measured the cold start at 104.8 ms and the warm switch at 43.6 ms (p95), D5R2 96.2 ms and 47.3 ms on the same generator-3 dataset; this run's are 112.4 ms and 47.7 ms. D5 timed the press on Review to the Review's status at 2342 ms before its runs and 2225 ms after (single measurements); opening the first card here, which adds the first Trade's `getTrade`, takes a median of 137.3 ms.
+- **Against D5 and D5R2:** D5 measured the cold start at 104.8 ms and the warm switch at 43.6 ms (p95), D5R2 96.2 ms and 47.3 ms on the same generator-3 dataset; this run's are 129.8 ms and 47.0 ms. D5 timed the press on Review to the Review's status at 2342 ms before its runs and 2225 ms after (single measurements); opening the first card here, which adds the first Trade's `getTrade`, takes a median of 154.9 ms.
 - **Tech debt item 3** (the Review's open cost grows with history) is measured here, not fixed: D5R takes the save path off it (P38) but not the first `open` of each Review, and the open-the-first-card timing is its baseline.
 - **The saves** are timed on cards of the cached profile's copy: Save Marks on ADBE, Save Marks on AVGO, Save Marks on NKE, Save Marks on QAD, Save Marks on QAM; and a Hold Action on AMZN fcecbc73, NVDA 3b2a2fcd, MSFT 9c570136, AAPL 85c8d727, QAR c7b18563. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. The dataset holds an Action for every Trade on the Review Date, so each Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save): each is a `SaveTradeAction` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
-- **Raw timings (ms, in run order):** open the first card 143.1, 144.4, 149.6, 147.3, 144.4, 129.8, 129.4, 129.3, 131.5, 130.1; Save Marks 120.8, 115.7, 118.6, 112.4, 109.5; Trade Action save 113.7, 123.6, 135.5, 137.5, 131.5.
+- **Raw timings (ms, in run order):** open the first card 160.0, 133.6, 165.7, 155.0, 153.6, 152.9, 153.5, 155.2, 156.5, 154.8; Save Marks 141.1, 150.9, 151.9, 149.5, 146.3; Trade Action save 126.2, 124.1, 123.5, 122.2, 160.8.
 - **Method:** a MutationObserver in the page reads the real clock on the first DOM change after which the result holds (the card's content shown with no card still loading; the card's Save Marks counting no drafts; the card's Action form gone with no card still loading), and a capture-phase pointer press records the start on the same clock.
 
 ## Closed page, Review walk and owed group (T6.25)
@@ -45,7 +45,7 @@ Each is the time from the pointer press to the rendered result, on the mature da
 
 | Measure (disclosed, not gated) | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Closed tab to its first page (50 rows; press on Trades, then Closed, to the last row rendered) | 10 | 110.5 ms | 156.0 ms | 79.0 ms | 156.0 ms |
+| Closed tab to its first page (50 rows; press on Trades, then Closed, to the last row rendered) | 10 | 87.0 ms | 163.0 ms | 79.0 ms | 163.0 ms |
 
 ## Daily Trade Review Action save (requested measurement, disclosed, not gated; not in the plan's T6.25 row)
 
@@ -53,10 +53,10 @@ A single Action save on a card of the as-of Review (Change, Hold, an Intent, Sav
 
 | Save | Runs | Median | Nearest-rank p95 | Min | Max |
 |---|---|---|---|---|---|
-| Warm | 5 | 131.5 ms | 137.5 ms | 113.7 ms | 137.5 ms |
-| Cold | 3 | 121.8 ms | 121.9 ms | 121.3 ms | 121.9 ms |
+| Warm | 5 | 124.1 ms | 160.8 ms | 122.2 ms | 160.8 ms |
+| Cold | 3 | 132.0 ms | 142.3 ms | 131.2 ms | 142.3 ms |
 
-Raw (ms): warm 113.7, 123.6, 135.5, 137.5, 131.5; cold PEP c02fd70f 121.9, MRK a192c766 121.8, QAH 53fa0a42 121.3; closed page renders 110.0, 105.0, 113.0, 114.0, 79.0, 113.0, 111.0, 109.0, 156.0, 106.0.
+Raw (ms): warm 126.2, 124.1, 123.5, 122.2, 160.8; cold PEP c02fd70f 132.0, MRK a192c766 131.2, QAH 53fa0a42 142.3; closed page renders 163.0, 117.0, 103.0, 86.0, 103.0, 87.0, 87.0, 86.0, 79.0, 86.0.
 
 ## Method
 
@@ -72,42 +72,42 @@ Raw (ms): warm 113.7, 123.6, 135.5, 137.5, 131.5; cold PEP c02fd70f 121.9, MRK a
 
 | Run | Cold (navigation start to mark) | Cold, disclosed: process launch to mark | Warm |
 |---|---|---|---|
-| 1 | 102.4 | 173.5 | 43.5 |
-| 2 | 99.5 | 168.6 | 44.1 |
-| 3 | 101.5 | 171.0 | 42.4 |
-| 4 | 112.4 | 181.4 | 42.2 |
-| 5 | 98.8 | 167.2 | 47.7 |
-| 6 | 101.3 | 170.1 | 43.0 |
-| 7 | 100.7 | 170.4 | 41.0 |
-| 8 | 101.8 | 171.1 | 40.5 |
-| 9 | 99.0 | 168.3 | 40.1 |
-| 10 | 101.3 | 171.5 | 41.6 |
-| 11 | 99.0 | 168.4 | 41.1 |
-| 12 | 102.4 | 170.6 | 42.1 |
-| 13 | 98.7 | 167.2 | 38.8 |
-| 14 | 109.7 | 177.9 | 39.2 |
-| 15 | 99.6 | 167.0 | 40.6 |
-| 16 | 100.0 | 168.1 | 41.3 |
-| 17 | 100.7 | 170.1 | 41.2 |
-| 18 | 101.5 | 173.1 | 38.9 |
-| 19 | 101.0 | 170.9 | 40.7 |
-| 20 | 101.2 | 169.5 | 39.5 |
-| 21 | 101.4 | 173.4 | 48.1 |
-| 22 | 120.2 | 189.6 | 41.0 |
-| 23 | 101.7 | 171.0 | 40.0 |
-| 24 | 100.6 | 169.0 | 40.6 |
-| 25 | 98.8 | 167.9 | 41.1 |
-| 26 | 105.0 | 178.2 | 40.1 |
-| 27 | 98.7 | 169.4 | 39.1 |
-| 28 | 105.6 | 174.2 | 40.4 |
-| 29 | 103.0 | 172.1 | 40.0 |
-| 30 | 101.5 | 170.5 | 41.7 |
+| 1 | 114.4 | 211.2 | 42.3 |
+| 2 | 129.8 | 205.4 | 40.1 |
+| 3 | 123.5 | 213.1 | 38.8 |
+| 4 | 125.9 | 200.0 | 39.8 |
+| 5 | 124.8 | 200.9 | 45.7 |
+| 6 | 129.4 | 208.7 | 39.7 |
+| 7 | 120.8 | 212.5 | 45.9 |
+| 8 | 119.4 | 195.2 | 45.2 |
+| 9 | 124.9 | 203.4 | 38.1 |
+| 10 | 128.6 | 207.2 | 45.5 |
+| 11 | 121.1 | 209.7 | 50.3 |
+| 12 | 113.4 | 189.4 | 44.4 |
+| 13 | 124.9 | 208.0 | 44.4 |
+| 14 | 124.7 | 198.2 | 44.6 |
+| 15 | 125.4 | 207.4 | 45.5 |
+| 16 | 125.3 | 207.5 | 46.3 |
+| 17 | 125.9 | 202.5 | 46.4 |
+| 18 | 123.3 | 204.1 | 47.0 |
+| 19 | 125.0 | 211.3 | 44.7 |
+| 20 | 123.1 | 199.7 | 44.8 |
+| 21 | 124.8 | 228.2 | 45.3 |
+| 22 | 129.9 | 207.0 | 45.8 |
+| 23 | 114.7 | 191.9 | 44.1 |
+| 24 | 124.6 | 213.3 | 38.3 |
+| 25 | 120.6 | 204.3 | 45.3 |
+| 26 | 114.5 | 188.6 | 45.4 |
+| 27 | 126.7 | 206.5 | 43.9 |
+| 28 | 112.9 | 191.2 | 43.4 |
+| 29 | 126.1 | 215.1 | 43.9 |
+| 30 | 114.4 | 190.8 | 45.9 |
 
-Sorted cold: 98.7, 98.7, 98.8, 98.8, 99.0, 99.0, 99.5, 99.6, 100.0, 100.6, 100.7, 100.7, 101.0, 101.2, 101.3, 101.3, 101.4, 101.5, 101.5, 101.5, 101.7, 101.8, 102.4, 102.4, 103.0, 105.0, 105.6, 109.7, 112.4, 120.2
+Sorted cold: 112.9, 113.4, 114.4, 114.4, 114.5, 114.7, 119.4, 120.6, 120.8, 121.1, 123.1, 123.3, 123.5, 124.6, 124.7, 124.8, 124.8, 124.9, 124.9, 125.0, 125.3, 125.4, 125.9, 125.9, 126.1, 126.7, 128.6, 129.4, 129.8, 129.9
 
-Process launch to mark (not gated): p95 181.4 ms.
+Process launch to mark (not gated): p95 215.1 ms.
 
-Sorted warm: 38.8, 38.9, 39.1, 39.2, 39.5, 40.0, 40.0, 40.1, 40.1, 40.4, 40.5, 40.6, 40.6, 40.7, 41.0, 41.0, 41.1, 41.1, 41.2, 41.3, 41.6, 41.7, 42.1, 42.2, 42.4, 43.0, 43.5, 44.1, 47.7, 48.1
+Sorted warm: 38.1, 38.3, 38.8, 39.7, 39.8, 40.1, 42.3, 43.4, 43.9, 43.9, 44.1, 44.4, 44.4, 44.6, 44.7, 44.8, 45.2, 45.3, 45.3, 45.4, 45.5, 45.5, 45.7, 45.8, 45.9, 45.9, 46.3, 46.4, 47.0, 50.3
 
 ## Environment
 

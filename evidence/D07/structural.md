@@ -2163,3 +2163,28 @@ Unit and integration at `2b16c8fd`, browser-1 at `e2302c06`, browser-2 and check
 | Checks | 13 of 13 | `suite-runs/t7-32-b7-gate-checks.txt` |
 
 No release-history run (decision 76). Ports free before and after. **T7.32 passes:** critic 3 PASS, its one defect fixed as B7 (ocr clean), and this run green; no critic 4, at the user's direction.
+
+## Acceptance rows: each row's command run as written (2026-11-08, at `7e50d82e`, tag `claude-opus-5.5-d7`)
+
+Outputs in `acceptance/`. Not yet marked `covered`: the user is asked first.
+
+| Row | Command | Result |
+|---|---|---|
+| AC-SET-003 | `npm run test:integration -- d7/settlement` | 1 passed |
+| AC-POS-004 | `npm run test:integration -- d7/close-review` | **matches no file** (exit 1). Its cases I7.3 and I7.5 are in `d7/lifecycle` (1 passed) and `d7/expiration-close-review` (1 passed) |
+| AC-REV-002 | `d7/review` | 1 passed |
+| AC-CALC-004, AC-CALC-003 | `d7/payoff` | 2 passed |
+| AC-PLAN-001 | `d7/lifecycle` | 1 passed |
+| AC-CALC-002 | `d7/missing-mark` | 3 passed |
+| AC-REF-001 | `d7/seed` | 1 passed |
+| AC-JOUR-005 | `d7/retries` | 2 passed |
+| AC-JOUR-001 | `npx playwright test e2e/d7/no-save.spec.ts` | 1 passed |
+| AC-REST-004 | `d7/migration` | 6 passed |
+| AC-RESP-001 | `npm run test:integration -- d7/responses` | **matches no file** (exit 1). Its case I7.3 is in `d7/lifecycle` and `d7/rebuild` (1 passed each) |
+| AC-CAP-001 | `npm run verify:capabilities` | exit 0 |
+| AC-DEL-001 | `e2e/d7/offline.spec.ts` | 1 passed |
+| AC-DEL-004, AC-DEL-006 | `e2e/d7/runtime-failure.spec.ts` | 2 passed |
+| AC-DEL-003 | as B7.7 | deferred (decision 76); not run |
+| AC-UI-001, AC-UI-002 | `e2e/d7/responsive-a11y.spec.ts` | 2 passed |
+| AC-REBUILD-001 | `d7/rebuild` | 1 passed |
+| AC-PERF-001 | `npm run build:bench && npm run bench:run` | OK: cold start p95 129.8 ms (budget 2,500), warm switch p95 47.0 ms (budget 1,500); `bench.md` rewritten at the tag |

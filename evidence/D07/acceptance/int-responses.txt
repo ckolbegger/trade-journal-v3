@@ -1,0 +1,17 @@
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d7/responses
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+No test files found, exiting with code 1
+
+filter: d7/responses
+projects: integration
+
+|integration| 
+
+include: tests/integration/**/*.test.ts
+exclude:  **/node_modules/**, **/.git/**
+

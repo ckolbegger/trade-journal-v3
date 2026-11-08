@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/d7/offline.spec.ts:10:3 › B7.9 Offline cold restart (AC-DEL-001) › should confirm an option Plan, record an entry, and record an Expiration offline after a full stop, and keep all three across another offline restart (2.8s)
+
+  1 passed (3.2s)

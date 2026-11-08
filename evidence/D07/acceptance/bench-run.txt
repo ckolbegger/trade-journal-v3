@@ -1,0 +1,149 @@
+
+> trade-journal-v3@0.0.0 build:bench
+> vite build --mode bench --outDir dist-bench
+
+vite v8.3.4 building client environment for bench...
+transforming...
+✓ 178 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-bench/index.html                            0.50 kB │ gzip:   0.31 kB
+dist-bench/assets/index-BoVSYqTO.css            14.32 kB │ gzip:   3.69 kB
+dist-bench/assets/bench-generator-INavn45s.js   28.06 kB │ gzip:  10.08 kB
+dist-bench/assets/index-DLpNYSQ3.js            718.10 kB │ gzip: 212.44 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 104ms
+
+> trade-journal-v3@0.0.0 bench:run
+> node tools/bench-run.ts
+
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 176 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-BoVSYqTO.css   14.32 kB │ gzip:   3.69 kB
+dist/assets/index-DkRZnCCv.js   717.89 kB │ gzip: 212.34 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 106ms
+bench:run: Open list before the runs: 200 rows, equal to the expected rows
+bench:run: first Closed page before the runs: 50 rows, equal to the stored first Closed Trades
+bench:run: as-of Review 2026-11-20 before the runs: 487 due reflections (QAI 5, QAJ 5, QAH 3, QAE 7, QAR 3, GS 9, QAQ 4, QCOM 12, QAK 5, QAF 7, QAS 3, QAC 4, QAA 6, DE 13, BA 6, MCD 5, TXN 9, INTC 12, AMD 7, PEP 4, ABBV 10, CVX 7, KO 7, NVDA 10, QBV 3, QAT 3, QAB 3, CAT 12, QAN 2, ORCL 5, MRK 3, LLY 12, XOM 7, HD 13, QAG 4, V 11, PFE 9, CSCO 9, META 10, AMZN 4, MSFT 9, AAPL 7, QBQ 3, QBC 3, QAY 3, PG 10, NFLX 11, GOOGL 3, QBU 2, QBS 2, QBP 2, QBL 2, QBI 2, QBD 2, QBB 2, QAX 2, CRM 13, QAO 3, QBO 1, QBJ 1, QBA 1, QAW 1, QAU 1, QAP 3, QAL 4, MA 7, COST 6, DIS 14, TSLA 11, WMT 6, JPM 10, QBX 1, QBR 2, QBG 2, QAZ 2, QBT 1, QBF 1, NKE 13, ADBE 11, QAD 4, QAM 2, UNH 8, AVGO 6, QBW 2, QBN 2, QBE 2, QBK 2, QBM 3, QBH 3), equal to the expected 487
+bench:run: as-of Review before the runs: walk 200 cards equal, owed group 99 cards equal
+bench:run: as-of Review settlement family before the runs: 4 items equal
+bench:run: cold 1/30 114.4 ms
+bench:run: cold 2/30 129.8 ms
+bench:run: cold 3/30 123.5 ms
+bench:run: cold 4/30 125.9 ms
+bench:run: cold 5/30 124.8 ms
+bench:run: cold 6/30 129.4 ms
+bench:run: cold 7/30 120.8 ms
+bench:run: cold 8/30 119.4 ms
+bench:run: cold 9/30 124.9 ms
+bench:run: cold 10/30 128.6 ms
+bench:run: cold 11/30 121.1 ms
+bench:run: cold 12/30 113.4 ms
+bench:run: cold 13/30 124.9 ms
+bench:run: cold 14/30 124.7 ms
+bench:run: cold 15/30 125.4 ms
+bench:run: cold 16/30 125.3 ms
+bench:run: cold 17/30 125.9 ms
+bench:run: cold 18/30 123.3 ms
+bench:run: cold 19/30 125.0 ms
+bench:run: cold 20/30 123.1 ms
+bench:run: cold 21/30 124.8 ms
+bench:run: cold 22/30 129.9 ms
+bench:run: cold 23/30 114.7 ms
+bench:run: cold 24/30 124.6 ms
+bench:run: cold 25/30 120.6 ms
+bench:run: cold 26/30 114.5 ms
+bench:run: cold 27/30 126.7 ms
+bench:run: cold 28/30 112.9 ms
+bench:run: cold 29/30 126.1 ms
+bench:run: cold 30/30 114.4 ms
+bench:run: warm 1/30 42.3 ms
+bench:run: warm 2/30 40.1 ms
+bench:run: warm 3/30 38.8 ms
+bench:run: warm 4/30 39.8 ms
+bench:run: warm 5/30 45.7 ms
+bench:run: warm 6/30 39.7 ms
+bench:run: warm 7/30 45.9 ms
+bench:run: warm 8/30 45.2 ms
+bench:run: warm 9/30 38.1 ms
+bench:run: warm 10/30 45.5 ms
+bench:run: warm 11/30 50.3 ms
+bench:run: warm 12/30 44.4 ms
+bench:run: warm 13/30 44.4 ms
+bench:run: warm 14/30 44.6 ms
+bench:run: warm 15/30 45.5 ms
+bench:run: warm 16/30 46.3 ms
+bench:run: warm 17/30 46.4 ms
+bench:run: warm 18/30 47.0 ms
+bench:run: warm 19/30 44.7 ms
+bench:run: warm 20/30 44.8 ms
+bench:run: warm 21/30 45.3 ms
+bench:run: warm 22/30 45.8 ms
+bench:run: warm 23/30 44.1 ms
+bench:run: warm 24/30 38.3 ms
+bench:run: warm 25/30 45.3 ms
+bench:run: warm 26/30 45.4 ms
+bench:run: warm 27/30 43.9 ms
+bench:run: warm 28/30 43.4 ms
+bench:run: warm 29/30 43.9 ms
+bench:run: warm 30/30 45.9 ms
+bench:run: Open list after the runs: 200 rows, equal to the expected rows
+bench:run: first Closed page after the runs: 50 rows, equal to the stored first Closed Trades
+bench:run: as-of Review 2026-11-20 after the runs: 487 due reflections (QAI 5, QAJ 5, QAH 3, QAE 7, QAR 3, GS 9, QAQ 4, QCOM 12, QAK 5, QAF 7, QAS 3, QAC 4, QAA 6, DE 13, BA 6, MCD 5, TXN 9, INTC 12, AMD 7, PEP 4, ABBV 10, CVX 7, KO 7, NVDA 10, QBV 3, QAT 3, QAB 3, CAT 12, QAN 2, ORCL 5, MRK 3, LLY 12, XOM 7, HD 13, QAG 4, V 11, PFE 9, CSCO 9, META 10, AMZN 4, MSFT 9, AAPL 7, QBQ 3, QBC 3, QAY 3, PG 10, NFLX 11, GOOGL 3, QBU 2, QBS 2, QBP 2, QBL 2, QBI 2, QBD 2, QBB 2, QAX 2, CRM 13, QAO 3, QBO 1, QBJ 1, QBA 1, QAW 1, QAU 1, QAP 3, QAL 4, MA 7, COST 6, DIS 14, TSLA 11, WMT 6, JPM 10, QBX 1, QBR 2, QBG 2, QAZ 2, QBT 1, QBF 1, NKE 13, ADBE 11, QAD 4, QAM 2, UNH 8, AVGO 6, QBW 2, QBN 2, QBE 2, QBK 2, QBM 3, QBH 3), equal to the expected 487
+bench:run: as-of Review after the runs: walk 200 cards equal, owed group 99 cards equal
+bench:run: as-of Review settlement family after the runs: 4 items equal
+bench:run: first Closed page at render 1: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 2: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 3: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 4: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 5: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 6: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 7: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 8: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 9: 50 rows, equal to the stored first Closed Trades
+bench:run: first Closed page at render 10: 50 rows, equal to the stored first Closed Trades
+bench:run: open the first card 1/10 160.0 ms
+bench:run: open the first card 2/10 133.6 ms
+bench:run: open the first card 3/10 165.7 ms
+bench:run: open the first card 4/10 155.0 ms
+bench:run: open the first card 5/10 153.6 ms
+bench:run: open the first card 6/10 152.9 ms
+bench:run: open the first card 7/10 153.5 ms
+bench:run: open the first card 8/10 155.2 ms
+bench:run: open the first card 9/10 156.5 ms
+bench:run: open the first card 10/10 154.8 ms
+bench:run: Save Marks ADBE 141.1 ms
+bench:run: Save Marks AVGO 150.9 ms
+bench:run: Save Marks NKE 151.9 ms
+bench:run: Save Marks QAD 149.5 ms
+bench:run: Save Marks QAM 146.3 ms
+bench:run: Trade Action save AMZN fcecbc73 126.2 ms
+bench:run: Trade Action save NVDA 3b2a2fcd 124.1 ms
+bench:run: Trade Action save MSFT 9c570136 123.5 ms
+bench:run: Trade Action save AAPL 85c8d727 122.2 ms
+bench:run: Trade Action save QAR c7b18563 160.8 ms
+bench:run: cold Trade Action save PEP c02fd70f 132.0 ms
+bench:run: cold Trade Action save MRK a192c766 131.2 ms
+bench:run: cold Trade Action save QAH 53fa0a42 142.3 ms
+bench:run: cold p95 129.8 ms (budget 2500), warm p95 47.0 ms (budget 1500); wrote evidence/D07/bench.md
+bench:run OK
+exit 0
