@@ -1,5 +1,6 @@
 import { Temporal } from 'temporal-polyfill';
 import type { CalculationResult, DerivedTradeState, IntegrityFinding, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
+import { multiplierOf } from '../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { AttentionBand, AttentionReason, CalculationFamily, PressureResult, RangePositionResult } from './types.ts';
 
@@ -27,14 +28,16 @@ function decimal(text: string): Rational {
 
 // The risk (toward the Stop) and reward (toward the Target) at the Review-date Mark and at entry: the
 // figures both the pressure and the range position use. The at-entry figures use each open Lot's
-// open cost, without fees, in place of the Mark; "now" is the evaluation's Value.
+// open cost, without fees, in place of the Mark; "now" is the evaluation's Value. Both are measured the
+// way `evaluate` measures its own: signed quantity x multiplier x price against the condition's
+// measurement value, which for an option is the contract's value at expiration at its trigger (P24).
 interface RiskRewardFigures {
   readonly riskNow: Rational;
   readonly rewardNow: Rational;
   readonly riskAtEntry: Rational;
   readonly rewardAtEntry: Rational;
-  readonly mark: Rational;
-  readonly averageCost: Rational;
+  // The sign of signed quantity x (Mark - average cost): which way the Position's value has moved.
+  readonly move: number;
 }
 
 // Value, or the evaluation's own Unavailable, unchanged (P66): the figures have no other reason to be absent.
@@ -47,33 +50,37 @@ function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): Ri
   if (reward.kind === 'Unavailable') return reward;
   if (risk.kind !== 'Value' || reward.kind !== 'Value' || evaluation.observation.mark === null) throw new Error('A pressure input is neither a Value nor Unavailable');
   const lots = state.positions.flatMap((p) => p.openLots);
-  const stop = decimal(evaluation.conditions.find((c) => c.role === 'Stop')!.boundary);
-  const target = decimal(evaluation.conditions.find((c) => c.role === 'Target')!.boundary);
+  const [stopBasis, targetBasis] = [state.baseline.stopBasis[0]!, state.baseline.targetBasis[0]!];
+  const stop = stopBasis.valueAtExpiration ?? decimal(stopBasis.condition.price);
+  const target = targetBasis.valueAtExpiration ?? decimal(targetBasis.condition.price);
+  const multiplier = Rational.of(BigInt(multiplierOf(state.positions[0]!.instrument)));
   const quantity = sum(lots.map((l) => l.quantity));
+  const averageCost = sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity);
   return {
     kind: 'Value',
     value: {
       riskNow: risk.value,
       rewardNow: reward.value,
-      riskAtEntry: sum(lots.map((l) => l.quantity.mul(l.price.sub(stop)))),
-      rewardAtEntry: sum(lots.map((l) => l.quantity.mul(target.sub(l.price)))),
-      mark: decimal(evaluation.observation.mark.price),
-      averageCost: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity),
+      riskAtEntry: sum(lots.map((l) => l.quantity.mul(multiplier).mul(l.price.sub(stop)))),
+      rewardAtEntry: sum(lots.map((l) => l.quantity.mul(multiplier).mul(target.sub(l.price)))),
+      move: quantity.mul(decimal(evaluation.observation.mark.price).sub(averageCost)).compare(ZERO),
     },
   };
 }
 
-// The share of the planned range travelled since entry (P14).
+// The share of the planned range travelled since entry (P14): the larger consumed share that is positive.
 function pressureOf(result: RiskReward): PressureResult {
   if (result.kind === 'Unavailable') return result;
-  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry, mark, averageCost } = result.value;
-  if (mark.equals(averageCost)) return { kind: 'Value', value: { side: 'None', share: ZERO } };
-  if (mark.compare(averageCost) < 0) {
-    if (riskAtEntry.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Losing' };
-    return { kind: 'Value', value: { side: 'Losing', share: riskAtEntry.sub(riskNow).div(riskAtEntry), atEntry: riskAtEntry, now: riskNow } };
-  }
-  if (rewardAtEntry.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: 'Winning' };
-  return { kind: 'Value', value: { side: 'Winning', share: rewardAtEntry.sub(rewardNow).div(rewardAtEntry), atEntry: rewardAtEntry, now: rewardNow } };
+  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry, move } = result.value;
+  const losing = { side: 'Losing' as const, atEntry: riskAtEntry, now: riskNow };
+  const winning = { side: 'Winning' as const, atEntry: rewardAtEntry, now: rewardNow };
+  const shares = [losing, winning].flatMap((s) => (s.atEntry.compare(ZERO) > 0 ? [{ ...s, share: s.atEntry.sub(s.now).div(s.atEntry) }] : []));
+  const positive = shares.filter((s) => s.share.compare(ZERO) > 0).sort((a, b) => b.share.compare(a.share));
+  if (positive.length > 0) return { kind: 'Value', value: positive[0]! };
+  // No share is positive: a move toward a side with no positive at-entry figure cannot be measured.
+  const toward = move < 0 ? losing : winning;
+  if (move !== 0 && toward.atEntry.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NonPositiveAtEntry', side: toward.side };
+  return { kind: 'Value', value: { side: 'None', share: ZERO } };
 }
 
 // Risk ÷ (risk + reward) (P39).
