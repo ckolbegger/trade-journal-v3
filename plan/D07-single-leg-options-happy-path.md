@@ -479,6 +479,8 @@ describe("option Strategies (A116)")
 
 **Amended by decisions 87 and 88 (revision 54):** words from the approved-words rows C1 to C8 and 19.1 to 19.23: the right is labelled "Type" (read-only "Call"), the price field "Intended entry price (per share)" (the screens never say "premium"), and each rejection code has its own sentence. The form preselects Long Stock by product key, not the first row (decision 85's order puts Cash-Secured Put first), shows the exercise checkbox by `exerciseIntentApplies(shape)`, and takes the read-only type from the shape's role. T7.35 and T7.36 run first.
 
+**Amended by decision 92 (revision 57):** the fourth case renders the confirmed Plan's 1R only; the Planned payoff on the receipt moves to T7.22, where `PayoffView` is built. The checkbox label and the trigger note are A116's words.
+
 ### T7.20 UI: option Execution form
 
 Seam: `PositionChangeForm` with a facade test double.
@@ -517,6 +519,8 @@ describe("chart and textual equivalent (A114, AC-UI-002)")
 ```
 
 **Amended by decision 87 (revision 54):** words from the approved-words rows C3, C7 and 22.1 to 22.17. Every Underlying price has two decimals, so the first case reads "Max loss $400.00 for XYZ from 0.00 to 55.00" (conflict K7). "Max profit: unlimited" is a payoff-extremum wording in `calculation-words.ts`, and "unlimited" joins `PHRASES` (K2). A Maximum of 0 or less or a Minimum of 0 or more uses row 22.12 (K3). The table's third column is "Change per $1 rise in XYZ".
+
+**Amended by decision 92 (revision 57):** a fourth case, under a new `describe("option Plan receipt (A116)")` with `PlanForm` and a facade test double: "it should render the confirmed option Plan's Planned payoff from the result (`postCommit.payoff.planned`) with `PayoffView`, beside its 1R".
 
 **Amended by plan revision 8 (decision 48), applies to A119, T7.16 and T7.23:** rows use the Trade column in place of "the contract label and Strategy". T7.16 adds the Trade Summary's `Option` variant (`direction`, `contracts`, `expiration`, `strike`, `right`), and T7.23 its text ("Long 1 Nov 20 $300 Call", "Short 2 Dec 18 $45 Put", a two-digit year when the expiration is outside the current year). Net cost carries the premium, and a credit shows as "$212.00 credit". The Detail header shows the same text (D02-ui-alignment.md, section 2a).
 
