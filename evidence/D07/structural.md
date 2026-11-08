@@ -2149,3 +2149,17 @@ No release-history run (decision 76). Ports free before and after.
 - **ocr** (`ocr/T7.32-B7-1b92fe51.json`): 2 files reviewed, 0 comments. No findings. Reviewer's note (not an ocr finding): a comment in `CardFigures.tsx` cites row 23.11, where the card summary row is 24.8.
 
 - **No critic 4 (the user's decision, 2026-11-08):** "Don't do a fourth critic run. It's time to move on." The gate closes on critic 3's PASS with B7 fixed, ocr clean, and the full-tier run `t7-32-b7-gate`. B7's fix has no fresh-critic check; this departs from the handoff's "spawn another fresh critic" at the user's direction.
+
+### Gate run `t7-32-b7-gate` (the gate's run of record)
+
+Unit and integration at `2b16c8fd`, browser-1 at `e2302c06`, browser-2 and checks at `75710f30`; the commits between changed only plan and evidence documents. Full tier. `run-complete.sh`: run complete.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,438 passed (121 files) | `suite-runs/t7-32-b7-gate-unit.txt` |
+| Node integration | 191 passed (94 files) | `suite-runs/t7-32-b7-gate-integration.txt` |
+| Browser 1 (Chromium) | 119 passed (4.9 min) | `suite-runs/t7-32-b7-gate-browser-1.txt` |
+| Browser 2 (Chromium) | 64 passed (4.0 min) | `suite-runs/t7-32-b7-gate-browser-2.txt` |
+| Checks | 13 of 13 | `suite-runs/t7-32-b7-gate-checks.txt` |
+
+No release-history run (decision 76). Ports free before and after. **T7.32 passes:** critic 3 PASS, its one defect fixed as B7 (ocr clean), and this run green; no critic 4, at the user's direction.
