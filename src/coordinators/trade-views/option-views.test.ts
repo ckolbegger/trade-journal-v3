@@ -108,7 +108,7 @@ async function optionStack(now: string) {
     await record(tradeId, expire(tradeId, MNO_PUT, '2'), closeReviewForm);
     return tradeId;
   };
-  return { stack, tradeViews: createTradeViews(stack), strategyOf, confirm, planOC, openCashSecuredPut, openLongCall, openLongCallAtMonday, closeLongCall, closeCashSecuredPut };
+  return { stack, tradeViews: createTradeViews(stack), strategyOf, confirm, record, fill, planOC, openCashSecuredPut, openLongCall, openLongCallAtMonday, closeLongCall, closeCashSecuredPut };
 }
 
 function openDetail(result: ReadViewResult<TradeDetailView>): OpenTradeDetail {
@@ -195,6 +195,76 @@ describe('getTradeDetail: option dated line (T7.30-B3)', () => {
     const list = await tuesday.tradeViews.browseTrades({ lifecycle: 'Open' });
     if (list.kind !== 'Ready') throw new Error('list not ready');
     expect(list.view.items).toEqual([expect.objectContaining({ tradeId, current: expect.objectContaining({ datedLine: expect.objectContaining({ tradingDate: '2026-10-12' }) as unknown }) as unknown })]);
+  }, 60_000);
+});
+
+describe('getTradeDetail: option dated line pairs the Underlying Mark at the dated close (T7.30-B3-R1)', () => {
+  const lineOf = (detail: OpenTradeDetail) => {
+    const line = detail.current.datedLine;
+    if (line?.evaluation.kind !== 'Evaluated') throw new Error('the dated line has no evaluation');
+    return line.evaluation;
+  };
+  const stopReading = (evaluation: ReturnType<typeof lineOf>) => evaluation.conditions.find((c) => c.role === 'Stop')!.result;
+
+  it('should value the Monday dated line with XYZ Monday Mark 52.00 when the call is Missing on Tuesday and XYZ is marked on both days', async () => {
+    const tuesday = await optionStack('2026-10-13T21:00:00Z');
+    const tradeId = await tuesday.openLongCallAtMonday();
+    await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
+    await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
+    await tuesday.stack.saveMark('XYZ', '53.00', '2026-10-13');
+
+    const detail = openDetail(await tuesday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.datedLine?.tradingDate).toBe('2026-10-12');
+    const stop = stopReading(lineOf(detail));
+    if (stop.kind !== 'Value') throw new Error(`expected a Value, got ${stop.kind}`);
+    expect(stop.value.evidence.mark.price).toBe('52');
+    const list = await tuesday.tradeViews.browseTrades({ lifecycle: 'Open' });
+    if (list.kind !== 'Ready') throw new Error('list not ready');
+    expect(list.view.items).toEqual([expect.objectContaining({ current: expect.objectContaining({ datedLine: expect.objectContaining({ tradingDate: '2026-10-12' }) as unknown }) as unknown })]);
+  }, 60_000);
+
+  it('should add no dated line when the call is Available on Tuesday and XYZ is Missing, since D4 gives the current figures no earlier close to show', async () => {
+    const tuesday = await optionStack('2026-10-13T21:00:00Z');
+    const tradeId = await tuesday.openLongCallAtMonday();
+    await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.30', '2026-10-13');
+    await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
+
+    const detail = openDetail(await tuesday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.datedLine).toBeUndefined();
+  }, 60_000);
+
+  it('should keep the Monday dated line with the contract-only figures as Values and the Underlying-dependent figures Unavailable MarkMissing for XYZ on Monday when only XYZ has no Monday Mark', async () => {
+    const tuesday = await optionStack('2026-10-13T21:00:00Z');
+    const tradeId = await tuesday.openLongCallAtMonday();
+    await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
+    await tuesday.stack.saveMark('XYZ', '53.00', '2026-10-13');
+
+    const detail = openDetail(await tuesday.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.datedLine?.tradingDate).toBe('2026-10-12');
+    const evaluation = lineOf(detail);
+    expect(evaluation.marketValue).toEqual({ kind: 'Value', value: Rational.of(440n) });
+    expect(evaluation.remainingOpenPnl).toEqual({ kind: 'Value', value: money('38.70') });
+    expect(stopReading(evaluation)).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' });
+    expect(evaluation.incrementalRewardToTarget).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' });
+  }, 60_000);
+
+  it('should value the at-entry path dated line at the Tuesday close with XYZ Tuesday Mark when a contract was bought after that close', async () => {
+    const afterClose = await optionStack('2026-10-13T22:00:00Z');
+    const tradeId = await afterClose.confirm('strategy.long-call', afterClose.planOC());
+    await afterClose.record(tradeId, afterClose.fill(tradeId, XYZ_CALL, 'Buy', MONDAY_10, '1', '2.10', '0.65'));
+    await afterClose.record(tradeId, afterClose.fill(tradeId, XYZ_CALL, 'Buy', '2026-10-13T21:30:00Z', '1', '2.40', '0.65'));
+    await afterClose.stack.saveMark(instrumentKey(XYZ_CALL), '2.30', '2026-10-13');
+    await afterClose.stack.saveMark('XYZ', '53.00', '2026-10-13');
+
+    const detail = openDetail(await afterClose.tradeViews.getTradeDetail({ tradeId }));
+
+    expect(detail.current.datedLine?.tradingDate).toBe('2026-10-13');
+    const stop = stopReading(lineOf(detail));
+    if (stop.kind !== 'Value') throw new Error(`expected a Value, got ${stop.kind}`);
+    expect(stop.value.evidence.mark.price).toBe('53');
   }, 60_000);
 });
 

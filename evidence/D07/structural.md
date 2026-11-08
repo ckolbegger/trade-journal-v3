@@ -1290,3 +1290,21 @@ The Stock path is confirmed unchanged. B3-R1 runs after B1-R3 (both in `src/coor
 - **Red/green** (`tdd-log.md`): (a) workflow case, stored `terminalTime` 14:00 instead of the derived 13:00; (b) rebuild case, same 14:00 vs 13:00; (c) Closed-list order after rebuild, got [trade-a, trade-b], expected [trade-b, trade-a]. All green.
 - **Fixture change:** `schema-v5.test.ts` rebuild fixture had Position Changes with no members; each now has one Execution and the Trade an `exposureStart`.
 - **Checks:** `npx vitest run src` 1419 passed; `npx vitest run tests/integration` 186 passed; `npm run verify:fixtures` OK (all six views equal, no snapshot change); `typecheck`, `tsc6`, `lint`, `lint:deps` exit 0.
+
+### ocr review of `5b0a0dfb` (T7.30-B1-R3)
+
+`ocr/T7.30-B1-R3-5b0a0dfb.json` and `-relocated.json`: ocr found nothing. The reviewer confirmed that the rebuild's ordering matches Fact Order on well-formed data, that the stored and derived `terminalTime` are now identical for a Closed candidate, and that the `schema-v5.test.ts` fixture fix is legitimate. It also raised three Doubtful points:
+1. `terminalTimeOf` considers every stored Execution and Expiration, while `derive` counts only the members a Position Change lists. Not producible today. → absorbed by R4.
+2. For a stored-Closed Trade that isn't flat (`LifecycleDisagreement`), the rebuild still writes a time. **Dismissed**: it predates the commit, and A96 rebuilds the key while the disagreement stays visible.
+3. A `terminalPositionChangeId` naming no Position Change stages a Closed Trade with no time, silently. → absorbed by R4.
+
+**The user's question (2026-11-08):** "Should there not be a domain function that handles ordering that both can use instead?" Yes: Fact Order, the effective-version rule and the choice of terminal change are implemented separately in `derive.ts`, `rebuild.ts` and `trade-record.ts`. → **T7.30-B1-R4** (refactor): one exported Trade Analysis function, used by derive, stage and rebuild. It runs after B3-R1 lands.
+
+### T7.30-B3-R1 an option's dated line pairs the Underlying's Mark at the dated close
+
+- **Mechanism:** `datedCloseOf` (new, `valuation.ts`) names the dated close's date. Trade Views (`datedLineOfTrade`, now async inside the factory) reuses the Underlying's current frame when it is for that date, else asks Market Data for the Underlying's `Historical` frame at that date. `datedLineOf` requires the Underlying's frame at the dated date and hands its resolution to `evaluate` as it is, so a Missing Underlying leaves the line with contract-only figures as Values and the Underlying-dependent ones `Unavailable(MarkMissing)` for XYZ and that date (A110). The Open list computes the line in its concurrent per-Trade lookup.
+- **Shape and words check:** the dated line carries a full `TradeEvaluation`, and the Detail's dated section renders it through `ValuationFigures` and `ExposureFigures`, which already show an Unavailable figure with its approved reason words (the same renderers the current figures use). No new words, no UI change.
+- **Cases** (`option-views.test.ts`): (a) call Missing Tuesday, XYZ marked Monday 52 and Tuesday 53: Monday line, Underlying evidence 52 (red: expected undefined to be '2026-10-12'); (b) call Available Tuesday, XYZ Missing: no dated line, since D4 gives the current figures no Stale context or at-entry Lots (first-run pass, mutation below); (c) call marked Monday, XYZ no Monday Mark: line kept, market value 440 and remaining-open P&L 38.70 as Values, Stop reading and reward to target `Unavailable(MarkMissing, XYZ, 2026-10-12)` (red, same assertion as (a)); (d) at-entry path: a contract bought after Tuesday's close, line at Tuesday with XYZ's Tuesday Mark (first-run pass, mutation below).
+- **First-run passes:** (b) mutated by dropping `&& evaluation.atEntry`, failing with "expected { tradingDate: '2026-10-13' ... } to be undefined"; (d) mutated by giving the Underlying's dated observation a Missing resolution, failing with "expected a Value, got Unavailable". Both restored.
+- **Stale comment** in `missing-mark.test.ts` removed.
+- **Checks:** `npx vitest run src` 1423 passed; `npx vitest run tests/integration` 186 passed; `verify:fixtures` OK; `typecheck`, `tsc6`, `lint`, `lint:deps`, `verify:wording` exit 0.

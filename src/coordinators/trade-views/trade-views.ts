@@ -35,7 +35,7 @@ import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts'
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { payoffOf, settlementTimeOf, type SettlementItem } from '../settlement.ts';
-import { datedLineOf, observationFrame, type DatedLine } from '../valuation.ts';
+import { datedCloseOf, datedLineOf, observationFrame, type DatedLine } from '../valuation.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;
@@ -469,14 +469,6 @@ const primaryFrameOf = (frames: readonly CurrentFrame[], analysis: TradeAnalysis
   return found;
 };
 
-// The dated close line (D4's mechanism): a stock's from its own frame, an option's from the contract and Underlying frames (A110).
-function datedLineOfTrade(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): DatedLine | undefined {
-  if (!('resolution' in frame)) return undefined;
-  if (analysis.plan.legs[0]!.instrument.kind === 'Stock') return datedLineOf(analysis, frame, evaluation);
-  const underlying = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
-  return underlying && 'resolution' in underlying ? datedLineOf(analysis, frame, evaluation, underlying) : undefined;
-}
-
 // The Trade evaluated at the frames of its Instruments; an option's contract is the frame and its Underlying the underlyingFrame.
 function evaluateCurrent(derived: DerivedTradeState, analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[]): TradeEvaluation {
   const contract = analysis.plan.legs[0]!.instrument;
@@ -492,9 +484,8 @@ function evaluateCurrent(derived: DerivedTradeState, analysis: TradeAnalysisReco
   });
 }
 
-function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frames: readonly CurrentFrame[], evaluation: TradeEvaluation, settlement: readonly SettlementItem[]): OpenTradeItem {
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frames: readonly CurrentFrame[], evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): OpenTradeItem {
   const frame = primaryFrameOf(frames, analysis);
-  const datedLine = datedLineOfTrade(analysis, frames, frame, evaluation);
   // The signed open quantity at the quantity-weighted Open Lot price.
   const lots = derived.positions.flatMap((p) => p.openLots);
   const openQuantity = sum(lots.map((lot) => lot.quantity));
@@ -715,6 +706,20 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     return { frames: result.frames, snapshotId: result.snapshotId };
   }
 
+  // The dated close line (D4's mechanism): a stock's from its own frame, an option's from the contract's frame and the
+  // Underlying's frame at that same dated close, whatever the Underlying's state on the frame date (A110).
+  async function datedLineOfTrade(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): Promise<DatedLine | undefined> {
+    if (!('resolution' in frame)) return undefined;
+    if (analysis.plan.legs[0]!.instrument.kind === 'Stock') return datedLineOf(analysis, frame, evaluation);
+    const tradingDate = datedCloseOf(frame, evaluation);
+    if (tradingDate === undefined) return undefined;
+    const current = frames.find((f): f is MarkFrame => f.instrumentKey === analysis.plan.underlying && 'resolution' in f && f.tradingDate === tradingDate);
+    if (current) return datedLineOf(analysis, frame, evaluation, current);
+    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate }, instruments: [analysis.plan.underlying] });
+    if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the Underlying's frame at the dated close`);
+    return datedLineOf(analysis, frame, evaluation, result.frames[0]);
+  }
+
   // The closes around the Expected Mark Date, for the due status of a Closed Trade's Debt. Market Data gives them
   // on the Instrument's frame; the frame's Mark is not read. Anything but frames, coverage rejections included,
   // leaves no closes, and the Debt carries no status (decision 56): a Closed Detail does not depend on Market Data.
@@ -853,7 +858,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const mark = markProvenance(frame);
         const underlyingFrame = analysis.plan.legs[0]!.instrument.kind === 'Option' ? frames.find((f) => f.instrumentKey === analysis.plan.underlying) : undefined;
         const underlyingMark = underlyingFrame && markProvenance(underlyingFrame);
-        const datedLine = datedLineOfTrade(analysis, frames, frame, evaluation);
+        const datedLine = await datedLineOfTrade(analysis, frames, frame, evaluation);
         const current: OpenCurrentEvaluation = {
           ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
           ...optional('mark', mark),
@@ -904,17 +909,18 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const closeReasons = request.lifecycle === 'Closed' ? await closeReasonsOf(records.map((r) => r.analysis)) : new Map<string, CloseReasonLabel>();
         const owed = request.lifecycle === 'Closed' ? await tradesWithOutstandingDebt() : new Set<string>();
         // On the Open page, each Trade is evaluated once; the contracts it finds due for settlement are the ones Detail shows.
-        const evaluations = new Map<string, { readonly evaluation: TradeEvaluation; readonly settlement: readonly SettlementItem[] }>();
+        const evaluations = new Map<string, { readonly evaluation: TradeEvaluation; readonly settlement: readonly SettlementItem[]; readonly datedLine: DatedLine | undefined }>();
         if (request.lifecycle === 'Open') {
           // The lookups run together; the entries keep the page's order.
           const found = await Promise.all(
             derivations.flatMap(({ summary, analysis, derived }) => {
               if (derived.kind !== 'Derived') return [];
               const evaluation = evaluateCurrent(derived, analysis, frames);
-              return [settlementItemsOf(summary.tradeId, evaluation).then((settlement) => ({ tradeId: summary.tradeId, evaluation, settlement }))];
+              const datedLine = datedLineOfTrade(analysis, frames, primaryFrameOf(frames, analysis), evaluation);
+              return [Promise.all([settlementItemsOf(summary.tradeId, evaluation), datedLine]).then(([settlement, dated]) => ({ tradeId: summary.tradeId, evaluation, settlement, datedLine: dated }))];
             }),
           );
-          for (const { tradeId, evaluation, settlement } of found) evaluations.set(tradeId, { evaluation, settlement });
+          for (const { tradeId, evaluation, settlement, datedLine } of found) evaluations.set(tradeId, { evaluation, settlement, datedLine });
         }
         const items = derivations.map(({ summary, analysis, derived }) => {
           if (request.lifecycle === 'Closed') {
@@ -925,8 +931,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           }
           if (request.lifecycle === 'Open') {
             if (derived.kind !== 'Derived') return incoherentItem(summary, analysis, labelsOf(summary));
-            const { evaluation, settlement } = evaluations.get(summary.tradeId)!;
-            return openItem(summary, analysis, derived, labelsOf(summary), frames, evaluation, settlement);
+            const { evaluation, settlement, datedLine } = evaluations.get(summary.tradeId)!;
+            return openItem(summary, analysis, derived, labelsOf(summary), frames, evaluation, settlement, datedLine);
           }
           // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
           return derived.kind === 'Derived' ? plannedItem(summary, analysis, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));

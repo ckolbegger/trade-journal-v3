@@ -68,9 +68,7 @@ describe('I7.15 Underlying Mark Missing and dated line', () => {
   }, 60_000);
 
   // The plan expects a dated "At Mon Oct 12 close" line valuing the Position held then with Monday's two Marks (decision 26,
-  // reusing D4's mechanism). Trade Views builds the dated line for a Long Stock Trade only (`legs[0].instrument.kind ===
-  // 'Stock'` in trade-views.ts, twice), and `datedLineOf` has no Underlying frame, so an option Trade gets none. Expected to
-  // fail until the dated line serves options.
+  // reusing D4's mechanism).
   it('should add the dated line from Monday close valuing 2 contracts at 2.20 with XYZ at 52.00 beside the Missing Tuesday figures', async () => {
     const { app, tradeId } = await afterPc2();
     await saveMark(app, CALL, MONDAY_DATE, '2.20');
