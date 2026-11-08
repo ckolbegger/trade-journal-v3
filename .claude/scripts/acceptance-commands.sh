@@ -7,7 +7,10 @@
 # commands. Prints one line per row and command, then a summary. Exits 1 if any row failed.
 set -u
 file="${1:-}"
-if [[ -z "$file" || ! -f "$file" ]]; then echo "usage: acceptance-commands.sh <breakdown.md>" >&2; exit 2; fi
+if [[ -z "$file" ]]; then echo "usage: acceptance-commands.sh <breakdown.md>" >&2; exit 2; fi
+if [[ ! -f "$file" ]]; then echo "acceptance-commands.sh: no such file: $file" >&2; exit 2; fi
+# Resolve against the caller's directory before changing to the repository root.
+file="$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
 root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$(pwd)
 cd "$root" || exit 2
 
