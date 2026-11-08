@@ -14,6 +14,7 @@ const pointerRecords = async (factory: IDBFactory) => (await dumpAll(factory))['
 // What the version 5 seeds add when migrating from each schema. The four Close Reasons are new to
 // every source; the Journal additions are the manifest's entries the source's own seed lacks, so the
 // Close Review type and the Trade Close Source are among them for every source.
+const OPTION_STRATEGIES = ['strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put'];
 const CLOSE_REASONS = ['close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'];
 const JOURNAL_ADDITIONS = {
   1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'entry-type.close-review', 'source.position-change', 'source.daily-review', 'source.trade-detail', 'source.trade-close'],
@@ -24,7 +25,7 @@ const JOURNAL_ADDITIONS = {
 
 describe('I6.1 migrate earlier fixtures', () => {
   for (const version of [1, 2, 3, 4] as const satisfies readonly FixtureVersion[]) {
-    it(`v${version}: should open with a receipt naming the Close Reason and Close Review seed additions, then after restart be Ready at schema 5 with views following A98, an Empty Closed list, an empty byLifecycleTerminal, a new database in the pointer, and no candidate`, async () => {
+    it(`v${version}: should open with a receipt naming the Close Reason and Close Review seed additions, then after restart be Ready at schema 6 with views following A98, an Empty Closed list, an empty byLifecycleTerminal, a new database in the pointer, and no candidate`, async () => {
       const d = await fixtureDevice(version);
       const app = await launch(d);
       const opened = await app.Workspace.initialize({});
@@ -32,7 +33,7 @@ describe('I6.1 migrate earlier fixtures', () => {
       expect(opened.receipt.migration).toEqual(
         expect.objectContaining({ fromVersion: version, toVersion: 6, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
-      expect(opened.receipt.seeds.catalog).toEqual({ manifestVersion: 2, additions: CLOSE_REASONS });
+      expect(opened.receipt.seeds.catalog).toEqual({ manifestVersion: 3, additions: [...OPTION_STRATEGIES, ...CLOSE_REASONS] });
       expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 5, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.seeds.journal.additions).toEqual(expect.arrayContaining(['entry-type.close-review', 'source.trade-close']));
       const newDatabase = opened.receipt.migration!.databaseName;

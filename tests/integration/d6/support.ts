@@ -31,7 +31,7 @@ export const X2B: Fill = { quantity: '20', price: '53.00', economicTime: TUESDAY
 
 // --- The committed fixtures, schema 1 to 4 ---
 
-export type FixtureVersion = 1 | 2 | 3 | 4;
+export type FixtureVersion = 1 | 2 | 3 | 4 | 5;
 
 export function fixtureDump(version: FixtureVersion): WorkspaceDump {
   return JSON.parse(readFileSync(`tests/fixtures/workspace-v${version}/dump.json`, 'utf8')) as WorkspaceDump;

@@ -5,7 +5,7 @@ import { toRuntimeNotWritable } from '../../delivery/write-gate.ts';
 import { validateTimeZone, type Clock } from '../../domain/time/index.ts';
 import { D5_JOURNAL_MANIFEST, prepareJournalSeed, type Journal } from '../../modules/journal/index.ts';
 import { validateSection as validateMarketData, type MarketDataDeps } from '../../modules/market-data/index.ts';
-import { D6_CATALOG_MANIFEST, prepareSeed, type ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
+import { D7_CATALOG_MANIFEST, prepareSeed, type ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import { SCHEMA_VERSION } from '../../persistence/schema.ts';
 import type { IdGenerator, LifecycleLock, Persistence, RecordSource, SectionRecord, SessionPolicyIdentity, StoreRecord, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { installedCapabilities, type InstalledCapabilityManifest } from './capabilities.ts';
@@ -298,7 +298,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
           fresh: false,
           readiness,
           seeds: {
-            catalog: { manifestVersion: D6_CATALOG_MANIFEST.version, additions: outcome.seeds.catalog },
+            catalog: { manifestVersion: D7_CATALOG_MANIFEST.version, additions: outcome.seeds.catalog },
             journal: { manifestVersion: D5_JOURNAL_MANIFEST.version, additions: outcome.seeds.journal },
           },
           migration: outcome.receipt,
@@ -310,7 +310,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       }
       if (readiness.rootInspection?.kind === 'KnownWorkspace') {
         // An existing Workspace receives only genuinely missing seeds.
-        const catalog = await deps.catalog.seedDefaults(D6_CATALOG_MANIFEST);
+        const catalog = await deps.catalog.seedDefaults(D7_CATALOG_MANIFEST);
         // A refused seed is a refused write, not an Opened Workspace; Journal's seed is not attempted.
         if (catalog.kind === 'RuntimeNotWritable') return catalog;
         const journal = await deps.journal.seedDefaults(D5_JOURNAL_MANIFEST);
@@ -321,7 +321,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
           fresh: false,
           readiness,
           seeds: {
-            catalog: seedReceipt(D6_CATALOG_MANIFEST.version, catalog),
+            catalog: seedReceipt(D7_CATALOG_MANIFEST.version, catalog),
             journal: seedReceipt(D5_JOURNAL_MANIFEST.version, journal),
           },
           ...(sessionPolicy && { sessionPolicy }),
@@ -332,7 +332,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       const zone = validateTimeZone(request.timeZone);
       if (!zone.ok) return { kind: 'Rejected', issues: [{ code: 'InvalidTimeZone' }] };
       const timeZone = zone.timeZone;
-      const catalogSeed = prepareSeed([], D6_CATALOG_MANIFEST, deps.ids);
+      const catalogSeed = prepareSeed([], D7_CATALOG_MANIFEST, deps.ids);
       const journalSeed = prepareJournalSeed([], [], D5_JOURNAL_MANIFEST, deps.ids);
       if (catalogSeed.kind !== 'Additions' || journalSeed.kind !== 'Additions') throw new Error('Fresh seeds cannot conflict');
       // Metadata and both modules' defaults are written by the one Workspace-creating transaction.
@@ -352,7 +352,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
         fresh: true,
         readiness,
         seeds: {
-          catalog: { manifestVersion: D6_CATALOG_MANIFEST.version, additions: catalogSeed.records.map((r) => r.productKey) },
+          catalog: { manifestVersion: D7_CATALOG_MANIFEST.version, additions: catalogSeed.records.map((r) => r.productKey) },
           journal: { manifestVersion: D5_JOURNAL_MANIFEST.version, additions: journalSeed.types.map((t) => t.productKey) },
         },
       };

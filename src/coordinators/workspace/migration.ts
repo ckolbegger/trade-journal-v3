@@ -9,7 +9,7 @@ import {
   type JournalTypeRecord,
 } from '../../modules/journal/index.ts';
 import {
-  D6_CATALOG_MANIFEST,
+  D7_CATALOG_MANIFEST,
   prepareSeed,
   validateSection as validateCatalog,
   type CatalogRecord,
@@ -126,7 +126,7 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   const records = persistence.candidateSource(candidate);
 
   // Seed: genuinely missing defaults join the candidate without overwriting customization.
-  const catalogSeed = prepareSeed(await all<CatalogRecord>(records, 'catalog'), D6_CATALOG_MANIFEST, ids);
+  const catalogSeed = prepareSeed(await all<CatalogRecord>(records, 'catalog'), D7_CATALOG_MANIFEST, ids);
   const journalSeed = prepareJournalSeed(
     await all<JournalTypeRecord>(records, 'journalTypes'),
     await all<EntryDefinitionRecord>(records, 'journalDefinitions'),
@@ -141,7 +141,7 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   ]);
 
   // Validate: each module judges its own section; Trade Record derives every Trade.
-  const catalog = await validateCatalog(records, D6_CATALOG_MANIFEST);
+  const catalog = await validateCatalog(records, D7_CATALOG_MANIFEST);
   const journal = await validateJournal(records);
   const trades = await validateTrades(records, { ...catalog.references, anchorTradeIds: journal.references.anchorTradeIds });
   const found = [...catalog.issues, ...journal.issues, ...trades.issues];

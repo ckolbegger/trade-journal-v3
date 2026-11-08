@@ -6,8 +6,8 @@ import { device, dumpAll, launch, restart, workspaceStores } from './support.ts'
 
 const CLOSE_REASONS = ['close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'];
 
-describe('I6.15 fresh initialization at schema 5', () => {
-  it('should create schema 5 directly with Catalog manifest v2 holding the four Close Reasons and Journal manifest v5 holding the Close Review and the Trade Close Source, no migration, and seed nothing on a second launch', async () => {
+describe('I6.15 fresh initialization at schema 6', () => {
+  it('should create schema 6 directly with Catalog manifest v3 holding the option Strategies and the four Close Reasons and Journal manifest v5 holding the Close Review and the Trade Close Source, no migration, and seed nothing on a second launch', async () => {
     const d = await device();
     const app = await launch(d);
     const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });
@@ -15,8 +15,8 @@ describe('I6.15 fresh initialization at schema 5', () => {
     expect(opened.status.schemaVersion).toBe(6);
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
-    expect(opened.receipt.seeds.catalog.manifestVersion).toBe(2);
-    expect(opened.receipt.seeds.catalog.additions).toEqual(['strategy.long-stock', ...CLOSE_REASONS]);
+    expect(opened.receipt.seeds.catalog.manifestVersion).toBe(3);
+    expect(opened.receipt.seeds.catalog.additions).toEqual(['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put', ...CLOSE_REASONS]);
     expect(opened.receipt.seeds.journal.manifestVersion).toBe(5);
     expect(opened.receipt.seeds.journal.additions).toEqual(expect.arrayContaining(['entry-type.close-review', 'source.trade-close']));
 

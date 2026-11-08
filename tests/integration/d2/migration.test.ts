@@ -50,7 +50,7 @@ const receiptWithoutName = (receipt: NonNullable<Awaited<ReturnType<typeof migra
 });
 
 describe('I2.1 migrate the v1 fixture', () => {
-  it('should open with the migration receipt, then after restart be Ready at schema 2 with the fixture views, the reflection seeded once, and only the new database', async () => {
+  it('should open with the migration receipt, then after restart be Ready at schema 6 with the fixture views, the reflection seeded once, and only the new database', async () => {
     const d = await v1Device();
     const app = await launch(d);
     const opened = await migrated(app);

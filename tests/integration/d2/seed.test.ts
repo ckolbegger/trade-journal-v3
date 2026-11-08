@@ -3,8 +3,8 @@
 import { describe, expect, it } from 'vitest';
 import { device, dumpAll, launch, workspaceStores } from './support.ts';
 
-describe('I2.12 fresh initialization at schema 2', () => {
-  it('should create schema 2 directly with Journal seed manifest v2 and both reflection types, and no migration in the receipt', async () => {
+describe('I2.12 fresh initialization at schema 6', () => {
+  it('should create schema 6 directly with Journal seed manifest v2 and both reflection types, and no migration in the receipt', async () => {
     const d = await device();
     const app = await launch(d);
     const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });

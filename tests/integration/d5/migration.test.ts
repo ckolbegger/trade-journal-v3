@@ -22,7 +22,7 @@ const JOURNAL_ADDITIONS = {
 
 describe('I5.1 migrate earlier fixtures', () => {
   for (const version of [1, 2, 3] as const) {
-    it(`v${version}: should open with a receipt naming the Trade Detail Source addition, then after restart be Ready at schema 4 with views following A73, no Debt, a new database in the pointer, and no candidate`, async () => {
+    it(`v${version}: should open with a receipt naming the Trade Detail Source addition, then after restart be Ready at schema 6 with views following A73, no Debt, a new database in the pointer, and no candidate`, async () => {
       const d = await fixtureDevice(version);
       const app = await launch(d);
       const opened = await app.Workspace.initialize({});

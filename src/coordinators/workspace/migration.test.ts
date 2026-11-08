@@ -21,7 +21,9 @@ const V1_VIEWS: unknown = JSON.parse(readFileSync('tests/fixtures/workspace-v1/e
 // What the schema 5 seed manifests add to any Workspace that lacks them: the four Close Reasons
 // (Catalog manifest 2), then the Close Review Entry Type and the Trade Close Source (Journal manifest 5).
 const CLOSE_REASON_KEYS = ['close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'];
-const CATALOG_SEEDS = { manifestVersion: 2, additions: CLOSE_REASON_KEYS };
+// Catalog manifest 3 (schema 6) puts the three option Strategies first in seed order.
+const OPTION_STRATEGY_KEYS = ['strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put'];
+const CATALOG_SEEDS = { manifestVersion: 3, additions: [...OPTION_STRATEGY_KEYS, ...CLOSE_REASON_KEYS] };
 
 type MutableDump = {
   databases: Record<string, { version: number; stores: Record<string, { keyPath: string; autoIncrement: boolean; indexes: unknown[]; records: Record<string, unknown>[] }> }>;
@@ -482,7 +484,7 @@ describe('migration to schema 5', () => {
     for (const [index, { from, source, stack, journalBefore }] of cases.entries()) {
       const { workspace, factory } = stack;
       const seeds = {
-        catalog: { manifestVersion: 2, additions: CLOSE_REASON_KEYS },
+        catalog: CATALOG_SEEDS,
         journal: { manifestVersion: 5, additions: [...journalBefore.filter((key) => key.startsWith('entry-type.')), 'entry-type.close-review', ...journalBefore.filter((key) => key.startsWith('source.')), 'source.trade-close'] },
       };
       const result = await workspace.initialize({});
@@ -516,7 +518,7 @@ describe('migration to schema 5', () => {
       const second = await workspace.initialize({});
       expect(second.kind === 'Opened' && [second.receipt.migration, second.receipt.seeds]).toEqual([
         undefined,
-        { catalog: { manifestVersion: 2, additions: [] }, journal: { manifestVersion: 5, additions: [] } },
+        { catalog: { manifestVersion: 3, additions: [] }, journal: { manifestVersion: 5, additions: [] } },
       ]);
       expect(await dumpAll(factory)).toEqual(dump);
     }

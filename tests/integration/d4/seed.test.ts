@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { nyseSessionPolicy } from '../../../src/domain/session-policy/index.ts';
 import { device, dumpAll, launch, restart, workspaceStores } from './support.ts';
 
-describe('I4.12 fresh initialization at schema 3', () => {
-  it('should create schema 3 directly with the session-policy identity and Journal seed manifest v3 holding all three reflection and review types, with no migration, and seed nothing on a second launch', async () => {
+describe('I4.12 fresh initialization at schema 6', () => {
+  it('should create schema 6 directly with the session-policy identity and Journal seed manifest v3 holding all three reflection and review types, with no migration, and seed nothing on a second launch', async () => {
     const d = await device();
     const app = await launch(d);
     const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });

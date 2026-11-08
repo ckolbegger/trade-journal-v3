@@ -30,8 +30,8 @@ describe('initialize', () => {
           readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
           seeds: {
             catalog: {
-              manifestVersion: 2,
-              additions: ['strategy.long-stock', 'close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'],
+              manifestVersion: 3,
+              additions: ['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put', 'close-reason.target-reached', 'close-reason.stop-triggered', 'close-reason.thesis-invalidated', 'close-reason.time-based-exit'],
             },
             journal: {
               manifestVersion: 5,
@@ -61,6 +61,7 @@ describe('initialize', () => {
     // Every seeded record was written by the one creating transaction (content revision 1).
     expect(stored?.['catalog']).toEqual([
       expect.objectContaining({ productKey: 'strategy.long-stock', revision: 1 }),
+      ...['long-call', 'long-put', 'cash-secured-put'].map((slug): unknown => expect.objectContaining({ productKey: `strategy.${slug}`, revision: 1 })),
       ...['target-reached', 'stop-triggered', 'thesis-invalidated', 'time-based-exit'].map((slug): unknown => expect.objectContaining({ productKey: `close-reason.${slug}`, revision: 1 })),
     ]);
     expect(stored?.['journalTypes']).toHaveLength(9);
@@ -87,7 +88,7 @@ describe('initialize', () => {
         receipt: expect.objectContaining({
           fresh: false,
           seeds: {
-            catalog: { manifestVersion: 2, additions: [] },
+            catalog: { manifestVersion: 3, additions: [] },
             journal: { manifestVersion: 5, additions: [] },
           },
         }) as unknown,
@@ -149,7 +150,7 @@ describe('initialize', () => {
         kind: 'Opened',
         receipt: expect.objectContaining({
           seeds: {
-            catalog: { manifestVersion: 2, additions: [] },
+            catalog: { manifestVersion: 3, additions: [] },
             journal: { manifestVersion: 5, additions: [], completed: false },
           },
         }) as unknown,

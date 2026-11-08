@@ -213,8 +213,10 @@ test.describe('B2.6 kill during migration (faults build)', () => {
       const expected = authoritative(before[rootOf(before).current]!);
       expected['trades'] = (expected['trades'] as object[]).map((trade) => ({ ...trade, closeReasonFacts: [] }));
       const migrated = authoritative(after[current]!);
-      const catalog = migrated['catalog'] as { kind: string; seedOrder?: number }[];
-      migrated['catalog'] = catalog.filter((record) => record.kind !== 'CloseReason');
+      const catalog = migrated['catalog'] as { kind: string; productKey?: string; seedOrder?: number }[];
+      // The schema 6 seeds also add the three option Strategies (Catalog manifest 3).
+      const optionStrategies = ['strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put'];
+      migrated['catalog'] = catalog.filter((record) => record.kind !== 'CloseReason' && !optionStrategies.includes(record.productKey ?? ''));
       const closeReasons = catalog.filter((record) => record.kind === 'CloseReason').sort((a, b) => a.seedOrder! - b.seedOrder!);
       expect(closeReasons).toEqual(
         D6_CATALOG_MANIFEST.closeReasons!.map(({ productKey, label }, seedOrder) => ({

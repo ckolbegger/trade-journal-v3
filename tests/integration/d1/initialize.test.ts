@@ -25,7 +25,7 @@ describe('I1.1 fresh initialization', () => {
 
     const stores = workspaceStores(await dumpAll(d.factory));
     const strategies = (stores['catalog'] as { kind: string; productKey?: string }[]).filter((r) => r.kind === 'Strategy');
-    expect(strategies.map((s) => s.productKey)).toEqual(['strategy.long-stock']);
+    expect(strategies.map((s) => s.productKey)).toEqual(['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put']);
     // One definition per seeded Entry Type: Plan Reflection, from D2 Position Change Reflection, from D4 Daily Trade Review, and from D6 Close Review.
     expect((stores['journalDefinitions'] as { entryTypeKey?: string }[]).length).toBe(4);
   });
