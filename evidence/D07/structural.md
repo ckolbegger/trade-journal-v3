@@ -766,3 +766,56 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 755b623b`. The 
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-20-option-execution-form-checks.txt` |
 
 Tier: full; `full-suite.sh --choose-tier 755b623b` prints "full: src/ui/calculation-words.ts". T7.20 is complete; its Trade Detail Lot Matches headers (ocr finding on `c666a5a6`) and row 20.15's Detail sentence are T7.23's.
+
+## T7.21 UI: expiration form
+
+Behavioral (decision 87, conflict K14); commit `8ea8561b`. Two planned cases, each with a genuine red (`Unable to find role="heading" and name "Expiration"` against a null-rendering stub; `TypeError: undefined is not iterable`, `recordPositionChange` never called), plus four extra cases: rejected-save summary (row 21.7) and Conflict (row 21.11), each with a genuine red; **two first-run passes (flagged)**, code written before their tests: "Back to the Review" only when opened from the Review (mutation `{!fromReview && …}` in `ExpirationReceipt.tsx`, `Unable to find role="link" and name "Back to the Review"`) and the nothing-due state (mutation of row 21.12's sentence, text not found); both restored. `src/ui src/app tests` 685 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+New route `record-expiration`, `/trades/:tradeId/record-expiration` (label "Record expiration"; requires `recordPositionChange` variant `Expiration`, `getTradeDetail`, `Journal.getDefinitions`), mounted in `src/main.tsx`; `?from=review` makes the receipt offer "Back to the Review" (T7.23 and T7.24 link with it). New `ExpirationForm`, `ExpirationReceipt`, `expiration-issues.ts` (rows 21.8–21.10), `option-disposition.ts` (`closedViaOption`, `timingWords`, rows 23.12–23.13, reusable by T7.23); `LotMatchesTable` `settlements` prop (row 21.15); `ClosingTheTrade` reason props optional plus `noReasonNote`. No `tradeSummary` throw hit; no Refresh Review.
+
+Words: "Closed via expiration of 2 contracts" (an expiration-only Terminal Disposition) is row 23.12's "expiration of 1 contract" phrase with C1's count, the list form being 23.14's "Closed via expiration"; flagged for the final report as a 23.12 and C1 reading, like T7.20-B3. Receipt headings reuse `ExitReceipt`'s words.
+
+### T7.21-B1 a failed load shows row 21.12's failure sentence
+
+Found in the subagent's summary: a failed `getTradeDetail` leaves the form on "Loading the expiration form…", though row 21.12 gives "We couldn’t load this expiration form. Nothing was changed." Case: `it should say the expiration form couldn’t load, and that nothing was changed, when the Trade can’t be read`.
+
+### ocr review of `8ea8561b`
+
+`ocr/T7.21-8ea8561b.json`, 6 comments (one, the load failure, already bug task B1):
+1. Valid (high): Trade Detail passes no `settlements` to `LotMatchesTable`, so a Closed Trade with a Lot Match disposed by an Expiration throws on `executions.find(...)!.price` and the Detail page breaks for every expired Trade. → bug task B2.
+2. Valid: `ExpirationForm`'s `dirty` stays true after a successful save (no `!recorded` guard, unlike `PositionChangeForm.tsx:148`). → added to B1.
+3. Doubtful: a route change to another `tradeId` doesn't reset view, receipt or reflection state. → added to B1.
+4. Doubtful: a `StorageFailure` result shows nothing. **Deferred, open question for the final report:** `PositionChangeForm` has the same gap (pre-existing), no approved row words a storage failure on either form, and wording one needs a decision; B7.11 (the mid-session failure browser scenario, `RuntimeNotWritable`) will test the shell's not-writable explanation.
+5. Doubtful: the route declares no data variant for `getTradeDetail`, though other routes list `SettlementDue`. → added to B2.
+
+### T7.21-B1 cases (expanded)
+
+- `it should say the expiration form couldn’t load, and that nothing was changed, when the Trade can’t be read` (row 21.12)
+- `it should report no unsaved values once the expiration is recorded`
+- `it should load the other Trade's settlement when the route's Trade changes`
+
+### T7.21-B2 Trade Detail shows an expired Lot Match
+
+- `it should show a Closed option Trade's Lot Match disposed by an Expiration as "Expired on 2026-11-20 16:00" on Trade Detail` (row 21.15)
+- the `record-expiration` route declares `getTradeDetail`'s `SettlementDue` variant, checked by `verify:capabilities` and the routes test.
+
+### T7.21-B1 result
+
+Commit `089fee85`, three cases, each with a genuine red (row 21.12's failure sentence not found; last `onDirtyChange` not `false`; the old receipt stayed after the Trade changed). No first-run pass. `ExpirationForm.test.tsx` 9 passed; typecheck, tsc6, lint, lint:deps exit 0. The failure (`<p role="alert">`, no Retry) covers a rejected or non-Ready load of the Trade or either definition; NotFound shows the same sentence (row 21.12 gives no separate words; `PositionChangeForm` has its own "Trade not found" view). The Trade-change reset follows `PositionChangeForm`'s render-phase `loadingFor` comparison. ocr: no findings (`ocr/T7.21-B1-089fee85.json`).
+
+### T7.21-B2 result
+
+Commit `6a0dad29`. Item 1: red `TypeError: Cannot read properties of undefined (reading 'price')` (Lot Matches region not rendered); green with `settlements={view.positionChanges.flatMap((c) => c.settlements ?? [])}` in `LotMatchesSection`, as `ExpirationReceipt` does; new helper `expiredOptionLotMatches(which)` in `tests/support/option-trade-fixtures.ts` (`lint:deps` keeps UI tests off the coordinator); the fixture is stock `closedDetailOf` with the option `positionChanges` and `lotMatches` swapped in. Item 2 (route variant): **no red**: no test checks that a route declares the variants it reads (`verify:capabilities` checks only absent, unrequired or unpresented variants), so `verify:capabilities` (19 operations, 9 routes) is a regression check only. No first-run pass. TradeDetail and ExpirationForm tests 84 passed; typecheck, tsc6, lint, lint:deps exit 0. Detail's Lot Matches headers ("Opened"/"Closed") need a derived option flag in the shared `LotMatchesSection`: left to T7.23. ocr: no findings (`ocr/T7.21-B2-6a0dad29.json`).
+
+### Cumulative run after T7.21-B2 (`t7-21-expiration-form`, at `6a0dad29`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 25bc833e`; `run-complete.sh` printed "run complete" for the runner and in the main session.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 115 files, 1352 passed, exit 0 | `suite-runs/t7-21-expiration-form-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-21-expiration-form-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-21-expiration-form-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-21-expiration-form-checks.txt` |
+
+Tier: full, printed reason "first matching path since 25bc833e: src/app/routes.ts". Ports free before and after. T7.21 is complete.

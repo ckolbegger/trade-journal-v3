@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 11318,
+    "input_tokens": 11220,
+    "output_tokens": 98,
+    "cache_read_tokens": 3840,
+    "elapsed": "8s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/ExpirationForm.tsx",
+      "files": [
+        "src/ui/screens/ExpirationForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "3a6905d6-1195-411e-8b6f-137b87bfd26d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3a6905d6-1195-411e-8b6f-137b87bfd26d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "089fee85",
+      "resolved_base": "8ea8561bf523f05fd6ebc8ae7836b8d9245bb197",
+      "resolved_head": "089fee859dbf4e08f14a80f82c1df3305d48cfcd",
+      "exact_range": "8ea8561bf523f05fd6ebc8ae7836b8d9245bb197..089fee859dbf4e08f14a80f82c1df3305d48cfcd",
+      "source_artifact_sha256": "8f74f8417085b531b524a9807a417a4810a006a1c5368e9a86edc400cedb76b2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "abf9dee54bffd740b1239a92de55235ac21e47b45242b34e18df801cc2bbd718"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "abf9dee54bffd740b1239a92de55235ac21e47b45242b34e18df801cc2bbd718"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8197
+  }
+}

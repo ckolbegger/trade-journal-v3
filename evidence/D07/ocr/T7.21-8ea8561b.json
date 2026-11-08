@@ -1,0 +1,267 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 6,
+    "total_tokens": 483555,
+    "input_tokens": 479052,
+    "output_tokens": 4503,
+    "cache_read_tokens": 58368,
+    "elapsed": "2m10s"
+  },
+  "tool_calls": {
+    "total": 63,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 18,
+      "file_find": 1,
+      "file_read": 40,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/LotMatchesTable.tsx",
+      "content": "The existing TradeDetail caller still passes only executions. After an expiration creates a Lot Match, opening that Closed Trade therefore leaves `settlements` empty; `at(disposingExecutionId)` cannot find an execution and dereferences `undefined.price`, crashing the detail page. Pass settlements from the position changes at all callers that can display expiration matches (including TradeDetail and receipts for backdated exits), rather than relying on this empty default.",
+      "existing_code": "  settlements = [],",
+      "start_line": 18,
+      "end_line": 18,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/screens/ExpirationForm.tsx",
+      "content": "The dirty flag remains true after a successful save whenever either reflection was answered or its disposition changed. Rendering the receipt does not unmount ExpirationForm, so the application continues treating committed data as unsaved and can keep deferring updates. Gate this expression with `!recorded`, as PositionChangeForm does.",
+      "existing_code": "  const dirty = choice !== 'now' || closeChoice !== 'now' || Object.keys(answers).length + Object.keys(closeAnswers).length \u003e 0 || reason !== '' || closeReason !== '';",
+      "start_line": 64,
+      "end_line": 64,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ExpirationForm.tsx",
+      "content": "Parameter-only navigation reuses this component, but changing tradeId does not clear view, recorded, or either reflection's state. While the next Trade loads, the old settlement can be submitted with the new Trade ID and the old revision; after a save, the old receipt continues to render even when the next load completes. Reset trade-specific state and hide stale data when the route parameter changes (or remount the form keyed by tradeId).",
+      "existing_code": "    void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then((result) =\u003e {\n      if (!superseded \u0026\u0026 result.kind === 'Ready') setView(result.view);\n    });",
+      "start_line": 70,
+      "end_line": 72,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ExpirationForm.tsx",
+      "content": "Loading never ends if getTradeDetail returns NotFound or another non-Ready result, or either definition request returns a non-Found result. Rejected promises are also unhandled. Track load failures and show a user-facing not-found/error state with recovery instead of leaving the permanent loading message; the existing PositionChangeForm provides this handling.",
+      "existing_code": "  if (!view || !definition || !closeDefinition) return \u003cp role=\"status\"\u003eLoading the expiration form…\u003c/p\u003e;",
+      "start_line": 86,
+      "end_line": 86,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ExpirationForm.tsx",
+      "content": "Handle StorageFailure explicitly. The mutation guard returns this result when a write fails but readiness still passes, and the shell's report handler only handles RuntimeNotWritable. Currently this outcome clears the issues and leaves the form unchanged, giving no indication that the expiration was not saved. Show a user-facing save failure while preserving the entered reflections so the trader can retry.",
+      "existing_code": "    setIssues(result.kind === 'Rejected' ? describeExpirationIssues(result.issues, definition, closeDefinition) : []);\n    if (result.kind === 'Recorded') setRecorded(result);",
+      "start_line": 103,
+      "end_line": 104,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/app/routes.ts",
+      "content": "This capability gate checks only Expiration, although the page also requires SettlementDue from getTradeDetail and offers Complete/Decline/Defer plus all three Close Review dispositions. With a partial capability manifest, availableRoutes can expose this page even when its required data or offered operations are unavailable. Declare the required getTradeDetail and reflection/Close Review variants here, as the entry route does for its offered operations.",
+      "existing_code": "    variants: { 'TradeWorkflows.recordPositionChange': ['Expiration'] },",
+      "start_line": 114,
+      "end_line": 114,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Option expiration workflow, routing, validation, and fixtures",
+      "files": [
+        "src/app/routes.ts",
+        "src/main.tsx",
+        "src/ui/screens/ExpirationForm.tsx",
+        "src/ui/screens/ExpirationReceipt.tsx",
+        "src/ui/screens/expiration-issues.ts",
+        "src/ui/screens/option-disposition.ts",
+        "tests/support/option-trade-fixtures.ts"
+      ]
+    },
+    {
+      "label": "Trade-closing UI and position-change presentation",
+      "files": [
+        "src/ui/AppShell.tsx",
+        "src/ui/calculation-words.ts",
+        "src/ui/screens/ClosingTheTrade.tsx",
+        "src/ui/screens/LotMatchesTable.tsx",
+        "src/ui/screens/PositionChangeForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "66d59978-dbff-422a-a57c-49520c706dee",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "66d59978-dbff-422a-a57c-49520c706dee",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8ea8561b",
+      "resolved_base": "25bc833e60255cb9f84325edce39980e4b094036",
+      "resolved_head": "8ea8561bf523f05fd6ebc8ae7836b8d9245bb197",
+      "exact_range": "25bc833e60255cb9f84325edce39980e4b094036..8ea8561bf523f05fd6ebc8ae7836b8d9245bb197",
+      "source_artifact_sha256": "f08c7b0a74e90e43f353a6ea28387eec46dddb6ec813f1683520642d58c80506"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "bd38c6e928bf41ed6b6210fa7cb7a8b6ac17ffc39e09ff5e18ae061860eca52e"
+        },
+        {
+          "item_id": "06ea30f6aaa7049bd156e318bc4548dc9bf9b583ea8f7181ccbd2da39b44410b",
+          "path": "src/ui/screens/ExpirationReceipt.tsx",
+          "fingerprint": "9c4d7d7601faedbb566a0031977fa8fa600f000e57f07c468f9fe593b8414a7f"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "0d3acc46c93996294c57cab578528d637a4fad0089a688f09aa56926bfcb983b"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "6befc27b3340f78fd4334ccf66ad9525eb064a52b0fa51da595e4327003783c0"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "53705a729e7c4429838022ba031661f5ba39f4f6aaa2f9405a3e4bc27f1a471e"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "6b2466cb92711c51a2555b2b6ee29086cca4ac5809233c0c9262724e4caed1a4"
+        },
+        {
+          "item_id": "653efb2b31237e13c5a1037d87974037711d91bbb8af348fbeb9bb265663c1ef",
+          "path": "src/ui/screens/option-disposition.ts",
+          "fingerprint": "7e44ed9a984c82354b9b50e9ee8e009180f7db52f41d4fd71c38a4bf2740cbcf"
+        },
+        {
+          "item_id": "7d3af699e015eb360947cf05c76cb4540c958e6e9d088ceaf731821eede44489",
+          "path": "src/ui/screens/expiration-issues.ts",
+          "fingerprint": "f80c43c9beee7bf57d9fa626cc646e521e328fb77fb5f2e29447e08e8aa60bfb"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "aa141182cede5b948e99d72b5e5d9ae2494296df18b0a50e9906fccd8d9c5c5c"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "b489f8a69a5ae162eef0946bb8634559eb08d6cf617245174d1bd24676330ada"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "50e61409f0efafffb349743a415a06241fc73990dc96337f2c63370be081f959"
+        },
+        {
+          "item_id": "e2f2d46d15c2f4fab0b22f66b91a79dcb7f58fdd53703a93878b0eb1564bb4e8",
+          "path": "src/ui/screens/LotMatchesTable.tsx",
+          "fingerprint": "526126aa2f001ba310b3b898eec89a8c26d7af328a71cfc12858b563940c67b2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "bd38c6e928bf41ed6b6210fa7cb7a8b6ac17ffc39e09ff5e18ae061860eca52e"
+        },
+        {
+          "item_id": "06ea30f6aaa7049bd156e318bc4548dc9bf9b583ea8f7181ccbd2da39b44410b",
+          "path": "src/ui/screens/ExpirationReceipt.tsx",
+          "fingerprint": "9c4d7d7601faedbb566a0031977fa8fa600f000e57f07c468f9fe593b8414a7f"
+        },
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "0d3acc46c93996294c57cab578528d637a4fad0089a688f09aa56926bfcb983b"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "6befc27b3340f78fd4334ccf66ad9525eb064a52b0fa51da595e4327003783c0"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "53705a729e7c4429838022ba031661f5ba39f4f6aaa2f9405a3e4bc27f1a471e"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "6b2466cb92711c51a2555b2b6ee29086cca4ac5809233c0c9262724e4caed1a4"
+        },
+        {
+          "item_id": "653efb2b31237e13c5a1037d87974037711d91bbb8af348fbeb9bb265663c1ef",
+          "path": "src/ui/screens/option-disposition.ts",
+          "fingerprint": "7e44ed9a984c82354b9b50e9ee8e009180f7db52f41d4fd71c38a4bf2740cbcf"
+        },
+        {
+          "item_id": "7d3af699e015eb360947cf05c76cb4540c958e6e9d088ceaf731821eede44489",
+          "path": "src/ui/screens/expiration-issues.ts",
+          "fingerprint": "f80c43c9beee7bf57d9fa626cc646e521e328fb77fb5f2e29447e08e8aa60bfb"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "aa141182cede5b948e99d72b5e5d9ae2494296df18b0a50e9906fccd8d9c5c5c"
+        },
+        {
+          "item_id": "9d7884d831fddbc890d507230ab592c13e484d97f5f895740b67d9c580587249",
+          "path": "src/ui/screens/ClosingTheTrade.tsx",
+          "fingerprint": "b489f8a69a5ae162eef0946bb8634559eb08d6cf617245174d1bd24676330ada"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "50e61409f0efafffb349743a415a06241fc73990dc96337f2c63370be081f959"
+        },
+        {
+          "item_id": "e2f2d46d15c2f4fab0b22f66b91a79dcb7f58fdd53703a93878b0eb1564bb4e8",
+          "path": "src/ui/screens/LotMatchesTable.tsx",
+          "fingerprint": "526126aa2f001ba310b3b898eec89a8c26d7af328a71cfc12858b563940c67b2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 129781
+  }
+}
