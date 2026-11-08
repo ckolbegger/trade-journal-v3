@@ -1057,3 +1057,15 @@ Fixture facts the plan does not give, chosen by the task (for the final report):
 - Red: `npx vitest run tools/fixture-views.test.ts -t "should report a missing Review Trade list when the Workspace has a Review"` failed with an assertion failure: expected `["reviewTrades (missing)"]`, received `[]`.
 - Fix: `optionViolations` pushes `reviewTrades (missing)` when `hasReview` and `reviewTrades` is not an array.
 - Green: whole `tools/fixture-views.test.ts` 12 passed (exit 0); `npm run verify:fixtures` exit 0 (all six fixtures views equal); `npm run typecheck` exit 0; `npm run lint` exit 0.
+- ocr review of `15274b32` (relocated, with `tools/` as of the commit): no findings (`ocr/T7.27-B1-15274b32.json`).
+
+### Cumulative run after T7.27 (`t7-27-schema-fixtures`, commit 15274b32 plus evidence edits)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1404 tests passed, exit 0 | `suite-runs/t7-27-schema-fixtures-unit.txt` |
+| Node integration | 78 files, 160 tests passed, exit 0 | `suite-runs/t7-27-schema-fixtures-integration.txt` |
+| Browser (Chromium), task tier | 5 passed (12.5 s), exit 0 | `suite-runs/t7-27-schema-fixtures-browser.txt` |
+| Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-27-schema-fixtures-checks.txt` |
+
+Tier: task, printed reason "no changed path since 47ec312b is on the full-tier list". `run-complete.sh`: run complete. Ports free before and after. Note: `tools/*.test.ts` (including `fixture-views.test.ts`, 12 passed in the task) sits outside `src` and `tests/integration`, so the cumulative unit stage does not run it (as before D7). T7.27 is complete.

@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 196017,
+    "input_tokens": 193567,
+    "output_tokens": 2450,
+    "cache_read_tokens": 23040,
+    "elapsed": "42s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_search": 6,
+      "file_find": 1,
+      "file_read": 13,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "tools/fixture-views.ts",
+      "files": [
+        "tools/fixture-views.ts"
+      ]
+    },
+    {
+      "label": "tools/fixtures-freeze.ts",
+      "files": [
+        "tools/fixtures-freeze.ts"
+      ]
+    },
+    {
+      "label": "tools/verify-fixtures.ts",
+      "files": [
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "833b067e-f1f2-44db-af83-776a47ec38dc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "833b067e-f1f2-44db-af83-776a47ec38dc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3d318b96",
+      "resolved_base": "47ec312b0e930a50de8ebb96695e49de993d134d",
+      "resolved_head": "3d318b96992afa3975d56e8e504948e1d360bff5",
+      "exact_range": "47ec312b0e930a50de8ebb96695e49de993d134d..3d318b96992afa3975d56e8e504948e1d360bff5",
+      "source_artifact_sha256": "012be7ae0561caf99f069fe51e26bf2679d3b650881de4084782fd8c88972ab5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "b71ece319e202cdcefe684276b33583ac510731f27ea4c49a6d5699e4d876c8f"
+        },
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "23d579fce4407e2187d8dcd9d0ca579880c8cc71db3144abf67ffb64477987bd"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "7a1cf8ea50cfad2f9a4f6766416a445d84e2dc69dcdc4a53461aef0b2741db64"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "b71ece319e202cdcefe684276b33583ac510731f27ea4c49a6d5699e4d876c8f"
+        },
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "23d579fce4407e2187d8dcd9d0ca579880c8cc71db3144abf67ffb64477987bd"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "7a1cf8ea50cfad2f9a4f6766416a445d84e2dc69dcdc4a53461aef0b2741db64"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 42116
+  }
+}

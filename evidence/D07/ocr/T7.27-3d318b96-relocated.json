@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 227074,
+    "input_tokens": 225098,
+    "output_tokens": 1976,
+    "cache_read_tokens": 46208,
+    "elapsed": "1m20s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_read": 10
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 15,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/tools/fixture-views.ts,tools/fixture-views.ts",
+        "arguments": "{\"file_path\":\"tools/fixtures/workspace-fixture.ts\",\"start_line\":250,\"end_line\":450}",
+        "error": "file \"tools/fixtures/workspace-fixture.ts\" has only 196 lines, requested range 250-450"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "tools/fixture-views.ts",
+      "content": "This validator is never invoked by the fixture verification runner: `tools/verify-fixtures.ts` still imports only the previous validators and proceeds directly from the schema \u003c 5 close checks to snapshot comparison. Consequently, `npm run verify:fixtures` does not enforce A121 for v1–v5; the new checks run only against synthetic test data. Wire this function into the schema \u003c 6 verification path, supplying the current settlement/Review views as needed (legacy snapshots do not contain these new fields).",
+      "existing_code": "export function optionViolations(views: unknown, hasOpenTrades: boolean, hasReview: boolean): string[] {",
+      "start_line": 114,
+      "end_line": 114,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/fixture-views.ts",
+      "content": "When `hasReview` is true, an omitted `reviewTrades` is silently treated as an empty list. For example, otherwise valid views with `review: { families: [] }` and no `reviewTrades` return no violations, so none of the Review trade settlement lists are checked. Report a missing `reviewTrades` collection explicitly, and validate coverage against the Review's walked trades so dropping action forms cannot make this check pass. An absent Settlement family itself is valid: the Review producer omits it when empty.",
+      "existing_code": "    for (const trade of reviewTrades ?? []) {",
+      "start_line": 144,
+      "end_line": 144,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/tools/fixture-views.ts",
+        "tools/fixture-views.ts"
+      ]
+    }
+  ],
+  "session_id": "7ec8022b-26d2-4d54-a09c-fbb5e85bd22b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7ec8022b-26d2-4d54-a09c-fbb5e85bd22b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "16181c229c36967327300d01121fb4d2616f1504",
+      "resolved_head": "ec5dc3e6efa4a7fb30450b47282f7061066825ce",
+      "exact_range": "16181c229c36967327300d01121fb4d2616f1504..ec5dc3e6efa4a7fb30450b47282f7061066825ce",
+      "source_artifact_sha256": "d972ee17aa1cd6fedf098507db404de6a0abd75df98f8ef2af72af061cbae70c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "b71ece319e202cdcefe684276b33583ac510731f27ea4c49a6d5699e4d876c8f"
+        },
+        {
+          "item_id": "85fda8001c90c4ca1f858e51bcce6390c423afe25d06f6e79513f77a5661a863",
+          "path": "src/itg/relocated/tools/fixture-views.ts",
+          "fingerprint": "92933c0abbaf748bb4fdf1b4a01fffd0b5b3bfe53fa99cb88ba28aae75be18bd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "b71ece319e202cdcefe684276b33583ac510731f27ea4c49a6d5699e4d876c8f"
+        },
+        {
+          "item_id": "85fda8001c90c4ca1f858e51bcce6390c423afe25d06f6e79513f77a5661a863",
+          "path": "src/itg/relocated/tools/fixture-views.ts",
+          "fingerprint": "92933c0abbaf748bb4fdf1b4a01fffd0b5b3bfe53fa99cb88ba28aae75be18bd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 80315
+  }
+}
