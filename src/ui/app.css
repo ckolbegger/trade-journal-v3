@@ -756,6 +756,23 @@ ul.executions > li:first-child {
   white-space: nowrap;
 }
 
+/* The payoff chart keeps its own size (13px text at 640 wide) and scrolls inside its card rather than shrinking with the page. */
+.chart-scroll {
+  overflow-x: auto;
+}
+
+.payoff-chart {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+}
+
+.payoff-chart text {
+  font-size: 13px;
+  fill: currentColor;
+}
+
 .execution-toggle {
   display: flex;
   align-items: center;

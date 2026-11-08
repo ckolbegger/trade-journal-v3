@@ -16,8 +16,27 @@ export interface PayoffViewProps {
 }
 
 const WIDTH = 640;
-const HEIGHT = 320;
-const MARGIN = { left: 72, right: 32, top: 24, bottom: 56 };
+const HEIGHT = 344;
+const MARGIN = { left: 72, right: 32, top: 24, bottom: 80 };
+
+// Labels are laid out at the chart's own size, with a width estimated from the text (digits are about 7px at the chart's 13px font).
+const CHAR_WIDTH = 7.5;
+const LINE = 16;
+type Anchor = 'start' | 'middle' | 'end';
+interface Box { readonly left: number; readonly right: number; readonly baseline: number }
+const boxOf = (text: string, x: number, baseline: number, anchor: Anchor): Box => {
+  const width = text.length * CHAR_WIDTH;
+  const left = anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2;
+  return { left, right: left + width, baseline };
+};
+const collides = (a: Box, b: Box): boolean => a.left < b.right + 4 && b.left < a.right + 4 && Math.abs(a.baseline - b.baseline) < LINE;
+// The first baseline, moving by `step` from the wanted one, that clears every box already placed; the label's box is then placed.
+function clearBaseline(text: string, x: number, baseline: number, anchor: Anchor, placed: Box[], step: number): number {
+  let at = baseline;
+  while (placed.some((box) => collides(boxOf(text, x, at, anchor), box)) && Math.abs(at - baseline) < 6 * LINE) at += step;
+  placed.push(boxOf(text, x, at, anchor));
+  return at;
+}
 
 // SVG draws no stroke by default; currentColor follows the page ink in light and dark alike.
 const STROKE = { stroke: 'currentColor', strokeWidth: 1.5 } as const;
@@ -25,7 +44,7 @@ const STROKE = { stroke: 'currentColor', strokeWidth: 1.5 } as const;
 const toNumber =(value: Rational): number => Number(value.numerator) / Number(value.denominator);
 
 // The hand-drawn chart (A114): x runs from 0 to 1.5 times the largest breakpoint, and the last ray ends in an arrow.
-function Chart({ view, symbol, caption, latestClose }: { readonly view: ExpirationPayoffView; readonly symbol: string; readonly caption: string; readonly latestClose: PayoffViewProps['latestClose'] }) {
+function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: PayoffViewProps['kind']; readonly view: ExpirationPayoffView; readonly symbol: string; readonly caption: string; readonly latestClose: PayoffViewProps['latestClose'] }) {
   const { segments, zeroSet } = view;
   const allPrices = [
     ...segments.map((s) => s.from),
@@ -47,18 +66,33 @@ function Chart({ view, symbol, caption, latestClose }: { readonly view: Expirati
   const points = [...segments.map((s) => [toNumber(s.from), toNumber(s.valueAtStart)] as const), [xMax, endValue] as const];
   const tipX = x(xMax);
   const tipY = y(endValue);
+  // Tick labels that would touch drop to a second or third row; the other labels move off whatever they would overprint.
+  const ticks = breakpoints.map((price) => ({ price, label: underlyingPrice(price), at: x(toNumber(price)), row: 0 })).sort((a, b) => a.at - b.at);
+  const rowEnds: number[] = [];
+  for (const tick of ticks) {
+    const half = (tick.label.length * CHAR_WIDTH) / 2;
+    let row = 0;
+    while (rowEnds[row] !== undefined && tick.at - half < rowEnds[row]! + 6) row++;
+    tick.row = row;
+    rowEnds[row] = tick.at + half;
+  }
+  const placed: Box[] = [];
+  const rayText = lastRayText(last);
+  const rayY = clearBaseline(rayText, tipX, tipY - 10, 'end', placed, -LINE);
+  const closeText = latestClose ? `Latest close ${underlyingPrice(latestClose.underlyingPrice)}: ${signedMoney(latestClose.value)}` : '';
   return (
+    <div className="chart-scroll" role="region" aria-label={`${kind} payoff chart`} tabIndex={0}>
     <svg role="img" aria-labelledby={caption} className="payoff-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
       <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={WIDTH - MARGIN.right} y1={y(0)} y2={y(0)} />
       <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={MARGIN.left} y1={MARGIN.top} y2={HEIGHT - MARGIN.bottom} />
       <polyline className="payoff-curve" {...STROKE} strokeWidth={2.5} fill="none" points={points.map(([px, py]) => `${x(px)},${y(py)}`).join(' ')} />
       <path className="payoff-arrow" d={`M${tipX},${tipY} l-10,-5 l0,10 z`} />
-      <text x={tipX} y={tipY - 10} textAnchor="end">
-        {lastRayText(last)}
+      <text x={tipX} y={rayY} textAnchor="end">
+        {rayText}
       </text>
-      {breakpoints.map((price) => (
-        <text key={price.numerator + '/' + price.denominator} x={x(toNumber(price))} y={HEIGHT - MARGIN.bottom + 16} textAnchor="middle">
-          {underlyingPrice(price)}
+      {ticks.map((tick) => (
+        <text key={tick.price.numerator + '/' + tick.price.denominator} x={tick.at} y={HEIGHT - MARGIN.bottom + 16 + tick.row * LINE} textAnchor="middle">
+          {tick.label}
         </text>
       ))}
       {zeroSet.map((zero) => (
@@ -68,7 +102,11 @@ function Chart({ view, symbol, caption, latestClose }: { readonly view: Expirati
           ) : (
             <circle className="payoff-mark" cx={x(toNumber(zero.price))} cy={y(0)} r={4} />
           )}
-          <text x={x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price))} y={y(0) - 8} textAnchor="start">
+          <text
+            x={x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price))}
+            y={clearBaseline(zeroText(zero), x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price)), y(0) - 8, 'start', placed, LINE)}
+            textAnchor="start"
+          >
             {zeroText(zero)}
           </text>
         </g>
@@ -76,18 +114,19 @@ function Chart({ view, symbol, caption, latestClose }: { readonly view: Expirati
       {latestClose && (
         <g>
           <circle className="payoff-mark payoff-latest-close" cx={x(toNumber(latestClose.underlyingPrice))} cy={y(toNumber(latestClose.value))} r={5} />
-          <text x={x(toNumber(latestClose.underlyingPrice))} y={y(toNumber(latestClose.value)) - 10} textAnchor="middle">
-            {`Latest close ${underlyingPrice(latestClose.underlyingPrice)}: ${signedMoney(latestClose.value)}`}
+          <text x={x(toNumber(latestClose.underlyingPrice))} y={clearBaseline(closeText, x(toNumber(latestClose.underlyingPrice)), y(toNumber(latestClose.value)) - 10, 'middle', placed, -LINE)} textAnchor="middle">
+            {closeText}
           </text>
         </g>
       )}
-      <text x={(MARGIN.left + WIDTH - MARGIN.right) / 2} y={HEIGHT - 8} textAnchor="middle">
+      <text x={(MARGIN.left + WIDTH - MARGIN.right) / 2} y={HEIGHT - 6} textAnchor="middle">
         {`${symbol} at expiration`}
       </text>
       <text x={16} y={HEIGHT / 2} textAnchor="middle" transform={`rotate(-90 16 ${HEIGHT / 2})`}>
         Payoff
       </text>
     </svg>
+    </div>
   );
 }
 
@@ -109,7 +148,7 @@ export function PayoffView({ kind, symbol, result, latestClose }: PayoffViewProp
   return (
     <section className="card" aria-labelledby={headingId}>
       <h2 id={headingId}>{kind} Expiration Payoff</h2>
-      <Chart view={view} symbol={symbol} caption={captionId} latestClose={latestClose} />
+      <Chart kind={kind} view={view} symbol={symbol} caption={captionId} latestClose={latestClose} />
       {latestClose && <p>{`If ${symbol} is at ${underlyingPrice(latestClose.underlyingPrice)} at expiration: ${signedMoney(latestClose.value)}`}</p>}
       <div className="table-scroll">
         <table className="payoff-table">
@@ -128,8 +167,8 @@ export function PayoffView({ kind, symbol, result, latestClose }: PayoffViewProp
             {view.segments.map((segment) => (
               <tr key={segment.from.numerator + '/' + segment.from.denominator}>
                 <td>{rangeText(segment.from, segment.to)}</td>
-                <td>{signedMoney(segment.valueAtStart)}</td>
-                <td>{signedMoney(segment.slope)}</td>
+                <td className="nowrap">{signedMoney(segment.valueAtStart)}</td>
+                <td className="nowrap">{signedMoney(segment.slope)}</td>
               </tr>
             ))}
           </tbody>
