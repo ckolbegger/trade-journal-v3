@@ -36,12 +36,27 @@ commands_of() { printf '%s' "$1" | grep -oE '`(npm run|npx) [^`]*`' | tr -d '`';
 run_list() { # prints "N tests" or "FAIL: reason"
   local cmd="$1" out rc n
   case "$cmd" in
-    "npm run test:integration -- "*|"npm run test:unit -- "*)
-      local proj=integration; [[ "$cmd" == "npm run test:unit"* ]] && proj=unit
+    "npm run test:integration"|"npm run test:integration -- "*|"npm run test:unit"|"npm run test:unit -- "*)
+      # Bare form: the whole project. Filtered form: only the filters after "-- ".
+      local proj=integration filters=""; [[ "$cmd" == "npm run test:unit"* ]] && proj=unit
+      [[ "$cmd" == *" -- "* ]] && filters="${cmd#*-- }"
       # shellcheck disable=SC2086
-      out=$(CLAUDE_FULL_OUTPUT=1 npx vitest list --project $proj ${cmd#*-- } 2>&1); rc=$?
+      out=$(CLAUDE_FULL_OUTPUT=1 npx vitest list --project $proj $filters 2>&1); rc=$?
       if (( rc != 0 )); then echo "FAIL: vitest list exited $rc"; return; fi
       n=$(printf '%s\n' "$out" | grep -c '^\[') ;;
+    "npm run test:e2e"|"npm run test:e2e:1"|"npm run test:e2e:2")
+      # Bare form: the folders and --grep-invert that package.json's script names (read as text, never run).
+      local scripts=("${cmd#npm run }") s sargs sn; n=0
+      [[ "$cmd" == "npm run test:e2e" ]] && scripts=(test:e2e:1 test:e2e:2)
+      for s in "${scripts[@]}"; do
+        sargs=$(node -e 'const s = JSON.parse(require("fs").readFileSync("package.json", "utf8")).scripts[process.argv[1]] || ""; const m = s.match(/playwright test (.*)$/); process.stdout.write(m ? m[1] : "")' "$s")
+        if [[ -z "$sargs" ]]; then echo "FAIL: no playwright command in script $s"; return; fi
+        # shellcheck disable=SC2086
+        out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list $sargs 2>&1); rc=$?
+        sn=$(printf '%s\n' "$out" | sed -n 's/^Total: \([0-9][0-9]*\) test.*/\1/p' | tail -1)
+        if (( rc != 0 )); then echo "FAIL: playwright --list exited $rc ($s)"; return; fi
+        n=$((n + ${sn:-0}))
+      done ;;
     "npx playwright test "*|"npm run test:e2e"*" -- "*)
       local args="${cmd#npx playwright test }"; [[ "$cmd" == "npm run"* ]] && args="${cmd#*-- }"
       # shellcheck disable=SC2086
