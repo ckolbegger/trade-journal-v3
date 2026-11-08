@@ -255,6 +255,8 @@ export interface OwedReflection {
   readonly definition: EntryDefinitionRecord;
   readonly economicTime: Instant;
   readonly executions: readonly ExecutionFact[];
+  // The Trade's Planned Legs and their sides, which name each option Execution's role (a Long leg opens by buying).
+  readonly legs?: readonly { readonly factId: string; readonly side: 'Long' | 'Short' }[];
   // The Expiration the Position Change recorded, which is not an Execution (row 21.14); absent when it holds none.
   readonly settlements?: readonly ExpirationFact[];
   readonly classification: DueClassification;

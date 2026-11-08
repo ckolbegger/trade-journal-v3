@@ -56,10 +56,25 @@ describe('owed reflections (A68)', () => {
         definition: definition.definition,
         economicTime: time,
         executions: [expect.objectContaining({ quantity, price }) as unknown],
+        legs: [{ factId: expect.any(String) as unknown, side: 'Long' }],
         classification,
         saveBinding: { debtId: debts[name].debtId, debtRevision: debts[name].revision, definitionRevision: debts[name].definitionId },
       })),
     );
+  }, 60_000);
+});
+
+describe('owed reflection legs (T7.24-B1)', () => {
+  it("should return each owed reflection with the Trade's Planned Legs and their sides, which name an option Execution's role", async () => {
+    const fixture = await debtFixture();
+    const { trades, stack } = fixture;
+    const { reviewDate, binding } = ready(await open(fixture));
+
+    const result = await stack.dailyReview.getTrade({ reviewDate, tradeId: trades.a, binding });
+    if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+
+    expect(result.trade.reflections.map((r) => r.legs)).toEqual(result.trade.reflections.map(() => [{ factId: expect.any(String) as unknown, side: 'Long' }]));
+    expect(result.trade.reflections[0]!.executions[0]!.intent.plannedLegId).toBe(result.trade.reflections[0]!.legs![0]!.factId);
   }, 60_000);
 });
 

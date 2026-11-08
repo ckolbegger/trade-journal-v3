@@ -534,7 +534,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   // Each Debt as a form: its snapshot definition, the Position Change it follows, and how it is classified. In due-anchor order,
   // anchors compared as instants (A68, A89).
-  async function reflectionsOf(debts: readonly DebtProjection[], positionChanges: TradeAnalysisRecord['positionChanges'], closes: SessionCloses): Promise<OwedReflection[]> {
+  async function reflectionsOf(debts: readonly DebtProjection[], analysis: TradeAnalysisRecord, closes: SessionCloses): Promise<OwedReflection[]> {
+    const { positionChanges } = analysis;
+    const legs = analysis.plan.legs.map(({ factId, side }) => ({ factId, side }));
     const reflections: OwedReflection[] = [];
     // The Entry Type labels come from the Trade's narrative, which is where Trade Detail reads them: one bounded read of this Trade.
     const tradeId = debts[0]?.anchor.tradeId;
@@ -550,6 +552,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         definition: definition.definition,
         economicTime: debt.momentTime,
         executions: positionChange?.executions ?? [],
+        legs,
         ...(positionChange?.settlements && { settlements: positionChange.settlements }),
         classification: classifyDue(debt.dueAnchor, closes),
         saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
@@ -575,7 +578,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (frames.kind !== 'Frames') return frames;
     const outstanding = await boundDebts(tradeId, binding);
     if (!outstanding) return { kind: 'ReviewChanged' };
-    const reflections = await reflectionsOf(outstanding, analysis.positionChanges, { previousClose: frames.previousCloseInstant, close: cutoff });
+    const reflections = await reflectionsOf(outstanding, analysis, { previousClose: frames.previousCloseInstant, close: cutoff });
     const labels = await labelsOf(summary);
     const closeReason = await closeReasonOf(analysis.closeReason?.closeReasonId);
     const state = derive({ record: analysis });
@@ -621,7 +624,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
     const outstanding = await boundDebts(analysis.tradeId, request.binding);
     if (!outstanding) return { kind: 'ReviewChanged' };
-    const reflections = await reflectionsOf(outstanding, analysis.positionChanges, { previousClose: frames.previousCloseInstant, close: cutoff });
+    const reflections = await reflectionsOf(outstanding, analysis, { previousClose: frames.previousCloseInstant, close: cutoff });
     // The same counts the overview's walked item holds: this Trade's Review-date rows, its Outstanding Debt, and its Action.
     const held = new Set(observationNeeds([entry]).requirements.map((r) => instrumentKey(r.instrument)));
     const rows = frames.frames.filter((frame) => held.has(frame.instrumentKey));
