@@ -88,3 +88,63 @@ export function closeViolations(views: unknown, hasOpenTrades: boolean): string[
   if ((debts ?? []).some((debt) => debt.entryTypeKey === 'entry-type.close-review')) out.push('Close Review Debt');
   return out;
 }
+
+// D7 A121 (extends A98): a Workspace migrated from schema 1 to 5 has no option Trade. Its Instruments read as
+// Stock with multiplier 1, both payoff views of every Trade are NotApplicable(NoOptionExpirationAnchor), and the
+// settlement family is empty. A missing field or list is a violation, not a pass.
+type NotApplicable = { kind?: string; reason?: string };
+const isNoAnchor = (view: unknown): boolean => (view as NotApplicable | undefined)?.kind === 'NotApplicable' && (view as NotApplicable).reason === 'NoOptionExpirationAnchor';
+
+// Names each Instrument-shaped object of the views that is an option or a Stock whose multiplier is not 1,
+// and counts the Stock Instruments, so a view with none is reported rather than passed.
+function instrumentFindings(value: unknown, path: string, out: { bad: string[]; stocks: number }): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => instrumentFindings(item, `${path}[${i}]`, out));
+  } else if (value !== null && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (record['kind'] === 'Option' && ('strike' in record || 'right' in record || 'expiration' in record)) out.bad.push(`${path} (option Instrument)`);
+    else if (record['kind'] === 'Stock' && typeof record['symbol'] === 'string') {
+      out.stocks += 1;
+      if (record['multiplier'] !== undefined && record['multiplier'] !== 1) out.bad.push(`${path} (Stock multiplier ${JSON.stringify(record['multiplier'])})`);
+    }
+    for (const [key, inner] of Object.entries(record)) instrumentFindings(inner, `${path}.${key}`, out);
+  }
+}
+
+export function optionViolations(views: unknown, hasOpenTrades: boolean, hasReview: boolean): string[] {
+  const { details, open, review, reviewTrades } = views as {
+    details?: { tradeId: string; lifecycle?: { stored?: string }; payoff?: { planned?: unknown; current?: unknown }; settlement?: unknown[] }[];
+    open?: { tradeId: string; settlement?: unknown[] }[];
+    review?: { families?: { family: string; items?: unknown[] }[] };
+    reviewTrades?: { tradeId: string; settlement?: unknown[] }[];
+  };
+  const out: string[] = [];
+  const found = { bad: [] as string[], stocks: 0 };
+  instrumentFindings(views, 'views', found);
+  out.push(...found.bad);
+  if (found.stocks === 0) out.push('Instruments (no Stock Instrument to check)');
+  if (!Array.isArray(details) || details.length === 0) out.push('details (none to check)');
+  for (const detail of details ?? []) {
+    if (!isNoAnchor(detail.payoff?.planned)) out.push(`${detail.tradeId}.payoff.planned (${JSON.stringify(detail.payoff?.planned) ?? 'missing'})`);
+    if (!isNoAnchor(detail.payoff?.current)) out.push(`${detail.tradeId}.payoff.current (${JSON.stringify(detail.payoff?.current) ?? 'missing'})`);
+    // Only a Trade with a Position (not a Planned one) carries a settlement list.
+    if (detail.lifecycle?.stored === 'Planned') continue;
+    if (!Array.isArray(detail.settlement)) out.push(`${detail.tradeId}.settlement (missing)`);
+    else if (detail.settlement.length > 0) out.push(`${detail.tradeId}.settlement (${detail.settlement.length})`);
+  }
+  if (hasOpenTrades && (!Array.isArray(open) || open.length === 0)) out.push('open list (no Open Trades to check)');
+  for (const row of open ?? []) {
+    if (!Array.isArray(row.settlement)) out.push(`${row.tradeId}.open settlement (missing)`);
+    else if (row.settlement.length > 0) out.push(`${row.tradeId}.open settlement (${row.settlement.length})`);
+  }
+  if (hasReview) {
+    if (!Array.isArray(review?.families)) out.push('review.families (missing)');
+    const settlement = (review?.families ?? []).filter((family) => family.family === 'Settlement');
+    if (settlement.some((family) => !Array.isArray(family.items) || family.items.length > 0)) out.push('review Settlement family (not empty)');
+    for (const trade of reviewTrades ?? []) {
+      if (!Array.isArray(trade.settlement)) out.push(`${trade.tradeId}.review settlement (missing)`);
+      else if (trade.settlement.length > 0) out.push(`${trade.tradeId}.review settlement (${trade.settlement.length})`);
+    }
+  }
+  return out;
+}

@@ -9,7 +9,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
-import { closeViolations, debtViolations, withWalkedReflections } from './fixture-views.ts';
+import { closeViolations, debtViolations, optionViolations, withWalkedReflections } from './fixture-views.ts';
 import { compareSnapshot } from './fixtures/snapshot-compare.ts';
 import { closedViewsOf, debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
@@ -110,6 +110,23 @@ for (const name of fixtures) {
     const closeViolation = closeViolations({ ...(views as object), ...(await closedViewsOf(app) as object) }, dump.schemaVersion >= 2);
     if (closeViolation.length > 0) {
       problems.push(`${name}: not free of exits and closes after migration: ${closeViolation.join(', ')}`);
+      continue;
+    }
+  }
+  if (dump.schemaVersion < 6) {
+    const optionViolation = optionViolations(views, dump.schemaVersion >= 2, dump.schemaVersion >= 3);
+    if (optionViolation.length > 0) {
+      problems.push(`${name}: not free of option Trades after migration (A121): ${optionViolation.join(', ')}`);
+      continue;
+    }
+  }
+  if (dump.schemaVersion === 6) {
+    // The v6 snapshot must hold what T7.27 froze, so a snapshot emptied of it cannot pass by comparing nothing.
+    const held = expected as { details?: { payoff?: { planned?: { kind?: string } }; settlement?: unknown[] }[]; review?: { families?: { family: string; items?: unknown[] }[] } };
+    const settlementItems = held.review?.families?.find((family) => family.family === 'Settlement')?.items?.length ?? 0;
+    const payoffValues = (held.details ?? []).filter((detail) => detail.payoff?.planned?.kind === 'Value').length;
+    if (settlementItems !== 1 || payoffValues !== 4) {
+      problems.push(`${name}: expected-views.json lacks the option content (${settlementItems} Settlement items, not 1; ${payoffValues} Planned payoff views, not 4)`);
       continue;
     }
   }

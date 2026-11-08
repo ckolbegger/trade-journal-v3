@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { closeViolations, debtViolations, withWalkedReflections } from './fixture-views.ts';
+import { closeViolations, debtViolations, optionViolations, withWalkedReflections } from './fixture-views.ts';
 
 const viewsWithPanel = (panel: Record<string, unknown>) => ({
   debts: [],
@@ -48,5 +48,47 @@ describe('fixture views', () => {
     const review = { ...open, tradeId: 'T-R', journal: [{ entryTypeKey: 'entry-type.close-review' }] };
     const violations = closeViolations({ closed: [{}], details: [exit, review], debts: [{ entryTypeKey: 'entry-type.close-review' }] }, true);
     expect(violations).toEqual(['closed list (1)', 'T-X exit', 'T-R Close Review', 'Close Review Debt']);
+  });
+
+  const noAnchor = { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' };
+  const stock = { kind: 'Stock', symbol: 'AAPL' };
+  const optionDetail = { tradeId: 'T-O', lifecycle: { stored: 'Open' }, payoff: { planned: noAnchor, current: noAnchor }, settlement: [], plan: { legs: [{ instrument: stock }] } };
+  const optionViews = (detail: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
+    open: [{ tradeId: 'T-O', settlement: [] }],
+    details: [detail],
+    review: { families: [{ family: 'Settlement', items: [] }] },
+    reviewTrades: [{ tradeId: 'T-O', settlement: [] }],
+    ...extra,
+  });
+
+  it('should report no option violation for a Stock-only view with NotApplicable payoffs and no settlement', () => {
+    expect(optionViolations(optionViews(optionDetail), true, true)).toEqual([]);
+  });
+
+  it('should report a missing or applicable payoff view and a missing or non-empty settlement list', () => {
+    const detail = { ...optionDetail, payoff: { planned: { kind: 'Value' } }, settlement: [{}] };
+    expect(optionViolations(optionViews(detail), true, true)).toEqual([
+      'T-O.payoff.planned ({"kind":"Value"})',
+      'T-O.payoff.current (missing)',
+      'T-O.settlement (1)',
+    ]);
+    expect(optionViolations(optionViews(without(optionDetail, 'settlement')), true, true)).toEqual(['T-O.settlement (missing)']);
+  });
+
+  it('should report an option Instrument and a Stock multiplier other than 1', () => {
+    const option = { kind: 'Option', symbol: 'XYZ', right: 'Call', strike: '55', multiplier: 100 };
+    const detail = { ...optionDetail, plan: { legs: [{ instrument: option }, { instrument: { ...stock, multiplier: 100 } }] } };
+    expect(optionViolations(optionViews(detail), true, true)).toEqual([
+      'views.details[0].plan.legs[0].instrument (option Instrument)',
+      'views.details[0].plan.legs[1].instrument (Stock multiplier 100)',
+    ]);
+    expect(optionViolations(optionViews({ ...optionDetail, plan: {} }), true, true)).toEqual(['Instruments (no Stock Instrument to check)']);
+  });
+
+  it('should report a non-empty Settlement family, missing Review settlement lists, and missing open rows', () => {
+    const review = { families: [{ family: 'Settlement', items: [{}] }] };
+    expect(optionViolations(optionViews(optionDetail, { review, reviewTrades: [{ tradeId: 'T-O' }] }), true, true)).toEqual(['review Settlement family (not empty)', 'T-O.review settlement (missing)']);
+    expect(optionViolations(optionViews(optionDetail, { open: [] }), true, true)).toEqual(['open list (no Open Trades to check)']);
+    expect(optionViolations(optionViews(optionDetail, { review: undefined }), true, true)).toEqual(['review.families (missing)']);
   });
 });

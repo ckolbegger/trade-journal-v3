@@ -1018,3 +1018,27 @@ Arithmetic checked by the reviewer: 100,000 + 97,000 + 3,000 = 200,000; 17,500 +
 | Static and verification checks | 13 of 13 exit 0 (`verify:capacity` now passes) | `suite-runs/t7-26-capacity-basis-checks.txt` |
 
 Tier: full, printed reason "first matching path since 9efbba23: src/delivery/capacity-basis.json". `run-complete.sh`: run complete. Ports free before and after. T7.26 is complete.
+
+## T7.27 Schema fixtures
+
+Commands (base 47ec312b):
+
+- `npm run fixtures:freeze -- --schema 6` -> exit 0; final line: `fixtures:freeze OK: tests/fixtures/workspace-v6 (schema 6, 5 Planned and 5 Open and 2 Closed stock Trades plus 4 option Trades, 3 Accounts)`. (The count wording is the freezer's own; the 4 option Trades are O-C open, O-S closed, O-P closed, JKL planned. `5 Open` counts D6's five stock Open Trades, and the 2 Closed are GIS and SYY.)
+- `npm run verify:fixtures` -> exit 0; final line: `verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4, workspace-v5, workspace-v6 open Ready at schema 6 with views equal to their snapshots`. Lines for v1-v5: `migrated to 6 ... views equal`; v6: `opened without migration, views equal`.
+- `npx vitest run tools/fixture-views.test.ts` -> exit 0, 11 passed (four new `optionViolations` cases).
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` -> all exit 0.
+
+What the v6 dump contains (frozen as of Friday 2026-11-20 17:00 America/New_York, 22:00Z): D6's content (5 Planned and 5 Open stock Trades, GIS and SYY Closed, Marks, Review Actions, Debts) plus
+
+- O-C (XYZ 20 Nov 2026 55 Call, Long Call, Exercise Intent NotAuthorized): PC1, PC2, X1; one contract Open; Settlement Due at 2026-11-20T21:00:00Z (one Settlement item in Trade Detail, the Open row and the Review Settlement family).
+- O-S (MNO 45 Put, Cash-Secured Put): S1 (Sell 2 @ 1.25, fee 1.30), then Expiration of 2 contracts at Friday 16:00; Closed; Close Review deferred.
+- O-P (ABC 50 Put, Long Put, Exercise Intent Authorized): P1 and Q1 (Sell 1 @ 2.20, fee 0.65); Closed; Close Reason Target Reached; Close Review completed.
+- A Planned Long Call on JKL (JKL 20 Nov 2026 60 Call), 1 contract, intended entry 2.00, Stop JKL at or below 55.00, Target JKL at or above 70.00, Exercise Intent Authorized, planned 2026-11-19 09:00 New York. The plan names no such Trade, so these figures are this fixture's own.
+- The expected views add the four Planned payoff views (JKL, O-C, O-S, O-P are Value; stock Trades NotApplicable(NoOptionExpirationAnchor)), option Instruments, and the Settlement family of the Review.
+
+The v1-v5 dumps and expected-views are unchanged. `verify:fixtures` now also runs `optionViolations` (A121) on each of them after migration: no option Instrument, Stock without a multiplier other than 1, both payoff views of every Trade NotApplicable(NoOptionExpirationAnchor), empty settlement lists on Detail, Open rows and Review Trades, and an empty Settlement family; a missing field or list, no Stock Instrument, no Open row where Open Trades exist, or no detail is reported. The earlier-field equality is the existing snapshot comparison. For v6 it also requires the snapshot to hold one Settlement item and four Planned payoff Values.
+
+Negative checks:
+
+- V6 value: changed `details[9].settlement[0].settlementTime.value` in `tests/fixtures/workspace-v6/expected-views.json` from `2026-11-20T21:00:00Z` to `2026-11-20T20:00:00Z` -> `npm run verify:fixtures` exit 1: `FAIL workspace-v6: views differ from expected-views.json at details[9].settlement[0].settlementTime.value`. Restored byte for byte; rerun exit 0.
+- A121: `optionViolations` applied to the v6 expected views (which hold option Trades) reports 97 violations, the first `views.planned[0].summary (option Instrument)`. Unit cases in `tools/fixture-views.test.ts` cover a missing payoff, applicable payoff, missing or non-empty settlement, option Instrument, Stock multiplier, non-empty Settlement family, and missing lists.

@@ -5,10 +5,14 @@
 // Review Date of Monday 2026-10-19, 17:00 America/New_York. Schema 4 (D5 T5.20) adds four Debts at that instant.
 // Schema 5 (D6 T6.23) adds Sells and closes as of the following Tuesday 17:00: T-A after X1, T-S with its
 // shortfall, a Trade closed Monday with a completed Close Review and one closed Tuesday with a deferred one.
+// Schema 6 (D7 T7.27) adds the single-leg option Trades as of Friday 2026-11-20 17:00 America/New_York: O-C
+// through X1 (Settlement Due), O-S expired with a deferred Close Review, O-P closed by Q1, and a Planned
+// Long Call with Exercise Intent Authorized.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { IDBFactory } from 'fake-indexeddb';
+import type { ExpirationMember } from '../src/coordinators/trade-workflows/index.ts';
 import type { ConfirmPlanResult, PositionChangeMember, ReflectionDisposition } from '../src/app/types.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { dumpDatabases, FIXTURES_DIR, GENERATOR_VERSION, launchOn, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
@@ -18,7 +22,8 @@ import { dumpDatabases, FIXTURES_DIR, GENERATOR_VERSION, launchOn, viewsOf, type
 // which that Monday is the latest completed session and so the Review Date.
 // Schema 5 is frozen at Tuesday 17:00 (21:00Z); the D5 content is built for the Monday Review Date.
 const MONDAY_AS_OF = '2026-10-19T21:00:00Z';
-const AS_OF = '2026-10-20T21:00:00Z';
+// Schema 6 is frozen at the expiration Friday 17:00 (EST, so 22:00Z), an hour after the 16:00 close.
+const AS_OF = '2026-11-20T22:00:00Z';
 const REVIEW_DATE = '2026-10-19';
 
 const flag = process.argv.indexOf('--schema');
@@ -350,9 +355,164 @@ await closableTrade('SYY', 0, '2026-10-16T13:00:00Z', [
   { action: 'Sell', quantity: '100', price: '47.40', fee: '1.00', economicTime: '2026-10-20T15:00:00Z', reflection: decline('Stopped out.'), close: { reason: 'Stop Triggered', review: { kind: 'Defer' } } },
 ]);
 
+// Schema 6 (D7 T7.27): the option reference Trades (breakdown, section 4), every contract expiring Friday 11-20.
+//  - O-C (XYZ 55 Call, Long Call): Plan 2 at 2.00, Exercise Intent NotAuthorized; PC1 Monday 10:00 Buy 1 @ 2.10 and PC2 11:00
+//    Buy 1 @ 1.90 (fee 0.65 each), X1 Tuesday 10:00 Sell 1 @ 3.00. One contract stays Open: Settlement Due at the 16:00 close.
+//  - O-S (MNO 45 Put, Cash-Secured Put): Plan -2 at 1.20; S1 Monday 10:00 Sell 2 @ 1.25, fee 1.30; Expiration of both contracts at
+//    Friday 16:00, Close Review deferred.
+//  - O-P (ABC 50 Put, Long Put): Plan 1 at 1.50, Exercise Intent Authorized; P1 Monday 10:00 Buy 1 @ 1.50; Q1 Friday 11:00 Sell 1 @ 2.20,
+//    fee 0.65 each; Close Reason Target Reached, Close Review completed.
+//  - A Planned Long Call on JKL (60 Call), 1 contract at 2.00, Exercise Intent Authorized: the plan names no such contract, so these are
+//    this fixture's own figures.
+const optionStrategy = (productKey: string) => {
+  const found = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === productKey);
+  if (!found) throw new Error(`no Strategy ${productKey}`);
+  return found;
+};
+const optionContract = (symbol: string, right: 'Call' | 'Put', strike: string) =>
+  ({ kind: 'Option', symbol, root: symbol, expiration: '2026-11-20', right, strike, multiplier: 100 }) as const;
+interface OptionStep {
+  readonly member: 'Execution' | 'Expiration';
+  readonly action?: 'Buy' | 'Sell';
+  readonly quantity: string;
+  readonly price?: string;
+  readonly fee?: string;
+  readonly economicTime: string;
+  readonly reflection: ReflectionDisposition;
+  readonly close?: { readonly reason?: string; readonly review: ReflectionDisposition };
+}
+async function optionTrade(options: {
+  readonly strategyKey: string;
+  readonly accountIndex: number;
+  readonly instrument: ReturnType<typeof optionContract>;
+  readonly side: 'Long' | 'Short';
+  readonly quantity: string;
+  readonly intendedEntry: string;
+  readonly stop: string;
+  readonly target: string;
+  readonly exerciseIntent?: 'Authorized' | 'NotAuthorized';
+  readonly planTime: string;
+  readonly steps: readonly OptionStep[];
+}) {
+  const account = accounts[options.accountIndex % accounts.length]!.record;
+  const chosen = optionStrategy(options.strategyKey);
+  const symbol = options.instrument.symbol;
+  const confirmed: ConfirmPlanResult = await app.TradeWorkflows.confirmPlan({
+    accountId: account.id,
+    accountRevision: account.recordRevision,
+    strategyId: chosen.id,
+    strategyRevision: chosen.recordRevision,
+    economicTime: options.planTime,
+    plan: {
+      underlying: symbol,
+      legs: [{ side: options.side, instrument: options.instrument, quantity: options.quantity, intendedEntry: options.intendedEntry }],
+      stops: [{ kind: 'UnderlyingPrice', price: options.stop }],
+      targets: [{ kind: 'UnderlyingPrice', price: options.target }],
+      ...(options.exerciseIntent && { exerciseIntent: options.exerciseIntent }),
+    },
+    reflection: {
+      definitionId: planDefinitionId,
+      answers: {
+        'prompt.plan-reflection.thesis': { kind: 'Text', text: `${symbol}: the premium is worth the risk.` },
+        'prompt.plan-reflection.invalidation': { kind: 'Text', text: `A close through ${options.stop}.` },
+      },
+    },
+  });
+  if (confirmed.kind !== 'Confirmed') throw new Error(`confirmPlan ${symbol} option: ${confirmed.kind}`);
+  const trade = confirmed.postCommit.trade;
+  let factRevision = trade.factRevision;
+  for (const [n, step] of options.steps.entries()) {
+    const member: PositionChangeMember | ExpirationMember =
+      step.member === 'Expiration'
+        ? { kind: 'Expiration', tradeId: trade.tradeId, instrument: options.instrument, quantity: step.quantity, economicTime: step.economicTime }
+        : {
+            kind: 'Execution',
+            tradeId: trade.tradeId,
+            action: step.action!,
+            instrument: options.instrument,
+            intent: { kind: 'ServesPlannedLeg', plannedLegId: trade.plan.legs[0]!.factId },
+            quantity: step.quantity,
+            price: step.price!,
+            fee: step.fee!,
+            economicTime: step.economicTime,
+          };
+    const recorded = await app.TradeWorkflows.recordPositionChange({
+      originTradeId: trade.tradeId,
+      trades: [{ tradeId: trade.tradeId, expectedFactRevision: factRevision }],
+      members: [member],
+      reflection: step.reflection,
+      ...(step.close && { ...(step.close.reason !== undefined && { closeReasonId: closeReasonId(step.close.reason) }), closeReview: step.close.review }),
+    });
+    if (recorded.kind !== 'Recorded') throw new Error(`recordPositionChange ${symbol} option step ${n + 1}: ${recorded.kind}`);
+    factRevision = recorded.receipt.factRevision;
+  }
+}
+const optionBuy = (quantity: string, price: string, economicTime: string, reflection: ReflectionDisposition): OptionStep => ({ member: 'Execution', action: 'Buy', quantity, price, fee: '0.65', economicTime, reflection });
+await optionTrade({
+  strategyKey: 'strategy.long-call',
+  accountIndex: 0,
+  instrument: optionContract('XYZ', 'Call', '55'),
+  side: 'Long',
+  quantity: '2',
+  intendedEntry: '2.00',
+  stop: '48.00',
+  target: '60.00',
+  exerciseIntent: 'NotAuthorized',
+  planTime: '2026-10-12T13:00:00Z',
+  steps: [
+    optionBuy('1', '2.10', '2026-10-12T14:00:00Z', complete('as-planned', 'calm', 4)),
+    optionBuy('1', '1.90', '2026-10-12T15:00:00Z', decline('Filled the second contract.')),
+    { member: 'Execution', action: 'Sell', quantity: '1', price: '3.00', fee: '0.65', economicTime: '2026-10-13T14:00:00Z', reflection: complete('as-planned', 'eager', 3) },
+  ],
+});
+await optionTrade({
+  strategyKey: 'strategy.cash-secured-put',
+  accountIndex: 1,
+  instrument: optionContract('MNO', 'Put', '45'),
+  side: 'Short',
+  quantity: '-2',
+  intendedEntry: '1.20',
+  stop: '42.00',
+  target: '50.00',
+  planTime: '2026-10-12T13:00:00Z',
+  steps: [
+    { member: 'Execution', action: 'Sell', quantity: '2', price: '1.25', fee: '1.30', economicTime: '2026-10-12T14:00:00Z', reflection: complete('as-planned', 'calm', 4) },
+    { member: 'Expiration', quantity: '2', economicTime: '2026-11-20T21:00:00Z', reflection: decline('Expired worthless.'), close: { review: { kind: 'Defer' } } },
+  ],
+});
+await optionTrade({
+  strategyKey: 'strategy.long-put',
+  accountIndex: 2,
+  instrument: optionContract('ABC', 'Put', '50'),
+  side: 'Long',
+  quantity: '1',
+  intendedEntry: '1.50',
+  stop: '55.00',
+  target: '45.00',
+  exerciseIntent: 'Authorized',
+  planTime: '2026-10-12T13:00:00Z',
+  steps: [
+    optionBuy('1', '1.50', '2026-10-12T14:00:00Z', decline('Single fill.')),
+    { member: 'Execution', action: 'Sell', quantity: '1', price: '2.20', fee: '0.65', economicTime: '2026-11-20T16:00:00Z', reflection: decline('Took the gain.'), close: { reason: 'Target Reached', review: closeReviewComplete } },
+  ],
+});
+await optionTrade({
+  strategyKey: 'strategy.long-call',
+  accountIndex: 0,
+  instrument: optionContract('JKL', 'Call', '60'),
+  side: 'Long',
+  quantity: '1',
+  intendedEntry: '2.00',
+  stop: '55.00',
+  target: '70.00',
+  exerciseIntent: 'Authorized',
+  planTime: '2026-11-19T14:00:00Z',
+  steps: [],
+});
+
 const dump: WorkspaceDump = { schemaVersion: SCHEMA_VERSION, generatorVersion: GENERATOR_VERSION, asOf: AS_OF, databases: await dumpDatabases(factory) };
 const views = await viewsOf(app, SCHEMA_VERSION, AS_OF);
 await mkdir(dir, { recursive: true });
 await writeFile(path.join(dir, 'dump.json'), `${JSON.stringify(dump, null, 2)}\n`);
 await writeFile(path.join(dir, 'expected-views.json'), `${JSON.stringify(views, null, 2)}\n`);
-console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length + 2} Open and 2 Closed Trades, ${accounts.length} Accounts)`);
+console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length + 2} Open and 2 Closed stock Trades plus 4 option Trades, ${accounts.length} Accounts)`);
