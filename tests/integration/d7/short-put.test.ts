@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../../../src/domain/values/index.ts';
 import {
-  closeReasonId, closeReviewDisposition, complete, confirmOption, dec, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, onboardedAt, OS_B1, OS_S1, recordExpiration, recordOption, restart, WEDNESDAY_10,
+  closeReasonId, closeReviewDisposition, complete, confirmOption, dec, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, onboardedAt, optionCommand, optionExecution, OS_B1, OS_S1, recordExpiration, recordOption, restart, WEDNESDAY_10,
   workspaceStores, type Fill, type StoredTradeDoc,
 } from './support.ts';
 
@@ -58,7 +58,15 @@ describe('I7.4 Cash-Secured Put lifecycle', () => {
     const b1 = await recordOption(app, tradeId, 'Buy', OS_B1);
     expect(b1.postCommit.derivation.realizedToDate).toEqual(dec('63.70'));
 
-    const early = await recordOption(app, tradeId, 'Buy', B0);
+    // Decision 96: B0 makes the Trade flat, so it is the closing commit and needs a Close Reason although B1 is dated later.
+    const attempt = await app.TradeWorkflows.recordPositionChange(await optionCommand(app, tradeId, [await optionExecution(app, tradeId, 'Buy', B0)]));
+    if (attempt.kind !== 'Rejected') throw new Error(`expected Rejected, got ${attempt.kind}`);
+    expect(attempt.issues).toEqual(expect.arrayContaining([{ source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' }]));
+    const reason = await closeReasonId(app, 'Target Reached');
+    const early = await recordOption(app, tradeId, 'Buy', B0, { closeReasonId: reason, closeReview: await closeReviewDisposition(app, 'Defer') });
+    expect(early.receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Open', to: 'Closed' }]);
+    expect(early.receipt.closeReview?.kind).toBe('Debt');
+    expect(early.postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: reason }));
     const ids = { s1: s1.receipt.createdFactIds[1]!, b1: b1.receipt.createdFactIds[1]!, b0: early.receipt.createdFactIds[1]! };
     // FIFO over the effective facts: B0 takes one of S1's two contracts first, and B1 still takes the other, so
     // S1 <- B1 is unchanged and one link is created.

@@ -596,7 +596,7 @@ function terminalPositionChangeOf(
   return record.positionChanges.find((pc) => pc.factId === id)!;
 }
 
-// Whether the candidate's new (latest-recorded) Position Change is the terminal one. Every
+// Whether the candidate's new (latest-recorded) Position Change closes the Trade. Every
 // Execution, Buy or Sell, carries trader agency (A77); an Expiration carries none (A107).
 function closeRequirementOf(
   record: TradeAnalysisRecord,
@@ -605,8 +605,9 @@ function closeRequirementOf(
 ): CloseRequirement {
   if (!closed) return 'NotTerminal';
   const newest = record.positionChanges.reduce((a, b) => (b.recordedSequence > a.recordedSequence ? b : a));
-  if (terminalPositionChangeOf(record, steps).factId !== newest.factId) return 'NotTerminal';
-  return steps[steps.length - 1]!.kind === 'Expiration' ? 'TerminalWithoutAgency' : 'TerminalWithAgency';
+  // Decision 96: the commit that makes the Trade Closed is the closing one, even when it is dated
+  // before the last fill. An Expiration is always the last fact, so it is never the earlier-dated one.
+  return steps.some((s) => s.positionChangeId === newest.factId && s.kind === 'Expiration') ? 'TerminalWithoutAgency' : 'TerminalWithAgency';
 }
 
 // How a Closed Trade's exposure ended (A84, ADR 0003): derived from the disposing facts, never

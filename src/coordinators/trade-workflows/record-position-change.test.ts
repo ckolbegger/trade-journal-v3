@@ -713,6 +713,33 @@ describe('terminal exit AC-POS-004', () => {
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });
 
+  it('should require the Close Reason and owe the Close Review for an earlier-dated Sell recorded after X1 that leaves the Trade flat, decision 96', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    // The Sell of 70 is dated Tuesday 13:00, before X1 at 14:00 though recorded after it.
+    const earlierMembers = [sell(ref, '2026-10-13T13:00:00Z', '70', '53.00', '1.40')];
+    const before = await dumpAll(ref.stack.factory);
+    const rejected = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, revision, earlierMembers, blankReflection(ref)));
+    if (rejected.kind !== 'Rejected') throw new Error(`expected Rejected, got ${rejected.kind}`);
+    expect(rejected.issues).toEqual(
+      expect.arrayContaining([
+        { source: 'TradeWorkflows', field: 'closeReasonId', code: 'CloseReasonRequired' },
+        { source: 'TradeWorkflows', field: 'closeReview', code: 'CloseReviewDispositionRequired' },
+      ]),
+    );
+    expect(await dumpAll(ref.stack.factory)).toEqual(before);
+
+    const result = await ref.stack.tradeWorkflows.recordPositionChange({
+      ...command(ref, revision, earlierMembers),
+      closeReasonId: ref.closeReasonId,
+      closeReview: closeReviewForm(ref),
+    });
+    if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    expect(result.receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Open', to: 'Closed' }]);
+    expect(result.receipt.closeReview?.kind).toBe('Entry');
+    expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId }));
+  });
+
   it('should reject a Close Reason or Close Review disposition on a non-terminal exit with CloseReasonNotApplicable and CloseReviewNotApplicable', async () => {
     const ref = await exitReference();
     const revision = await enter(ref);

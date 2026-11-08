@@ -1160,3 +1160,13 @@ Every D7 Node case lives in `tests/integration/d7/`, with shared builders in `su
     - I7.6: "expires 2026-11-20" is the Detail's Option summary and the evaluation's `NotYetDue` item. E-S is recorded with its Close Review deferred, so Monday 17:05 lists it Due in the owed group.
     - I7.7: the Friday Marks of the Settlement Review fixture are saved first. XYZ's Mark is saved at 52.00. After the restart, the Review equals the pre-restart Review apart from its binding.
     - I7.8: the Plan issues are asserted by code as members of the rejection (several arrive together). The clock is Monday 11-23 17:00 so that 11-23 dates are not in the future.
+
+### T7.30-B1 The commit that closes a Trade asks for the Close Reason, even when dated before the last fill (decision 96)
+
+- **Fix:** `closeRequirementOf` (`src/domain/trade-analysis/derive.ts`) no longer returns `NotTerminal` when the newest recorded Position Change is not the terminal one in Fact Order. A candidate that derives Closed is the closing commit: `TerminalWithAgency`, or `TerminalWithoutAgency` when the new change holds an Expiration. `recordPositionChange` reads only this value, so the Close Reason and Close Review checks follow.
+- **Cases:**
+  - Domain (`closed.test.ts`): a Sell of 70 dated Tuesday 13:00, recorded after X1 (Tuesday 14:00), is `TerminalWithAgency`. Red: `expected 'NotTerminal' to be 'TerminalWithAgency'`. Green.
+  - Trade Workflows (`record-position-change.test.ts`): that Sell without a Close Reason is Rejected with `CloseReasonRequired` and `CloseReviewDispositionRequired`, writing nothing; with them it is Recorded, Closed, Close Review owed. First-run pass (flagged in `tdd-log.md`), mutation fails on the Rejected assertion.
+  - I7.4 Workspace B (`short-put.test.ts`): the Monday 10:30 Buy is Rejected without a Close Reason; with one it is Recorded, Open to Closed, Close Review Debt, Close Reason on the Trade; the receipt assertions are unchanged. First-run pass (flagged), mutation fails with `expected Rejected, got Recorded`.
+  - Execution form: no change. `PositionChangeForm.tsx` does not read the close requirement; it shows Closing the Trade when the entered quantities total the open quantity (ignoring dates) or when the workflow has answered `CloseReasonRequired`. An earlier-dated closing change enters exactly the open quantity, so the section shows; existing coverage is `PositionChangeFormExit.test.tsx` line 54.
+- **Commands:** `.claude/scripts/tdd.sh red|green T7.30-B1 ...` (rows in `tdd-log.md`); `npx vitest run src` (121 files, 1413 passed); `npx vitest run tests/integration` (84 files, 170 passed); `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` all exit 0.

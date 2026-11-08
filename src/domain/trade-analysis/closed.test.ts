@@ -60,6 +60,15 @@ describe('close requirement A77', () => {
     expect(closeRequirement(referenceRecord([PC1, PC2, X1]), referenceRecord([PC1, PC2, X1, X2]))).toBe('TerminalWithAgency');
     expect(closeRequirement(referenceRecord([PC1, PC2]), referenceRecord([PC1, PC2, X1]))).toBe('NotTerminal');
   });
+
+  it('should report TerminalWithAgency for a Sell dated before the recorded last fill that leaves the Position flat, decision 96', () => {
+    const digest = 'a'.repeat(64);
+    // X1 (Sell 30, Tuesday 14:00) is recorded first; the Sell 70 dated Tuesday 13:00 is recorded after it and closes the Trade.
+    const earlier = positionChange('pc-early', 9, [sellExecution('ex-early', '2026-10-13T13:00:00Z', 10, '70', '52.00', '0.60')]);
+    const result = derive({ record: referenceRecord([PC1, PC2, X1, earlier]), candidate: { digest, before: referenceRecord([PC1, PC2, X1]) } });
+    if (result.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(result)}`);
+    expect(result.reconciliation?.closeRequirement).toBe('TerminalWithAgency');
+  });
 });
 
 describe('position paths P22', () => {
