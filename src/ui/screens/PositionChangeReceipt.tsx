@@ -57,6 +57,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
   const saved = changes.find((c) => c.factId === savedId)!;
   const quality = postCommit.derivation.entryQuality;
   const figures = quality.kind === 'Value' ? quality.value : undefined;
+  const option = saved.executions[0]?.instrument.kind === 'Option';
   const created = receipt.deviationReconciliation.filter((d) => d.action === 'Create');
   // An earlier-dated entry can change or end an existing occurrence (P5); Retain says nothing.
   const recorded = postCommit.trade.recordedDeviations ?? [];
@@ -115,7 +116,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
       )}
       {created.map((d) => (
         <p key={d.occurrenceId}>
-          {`Entry Size Deviation: ${d.version.quantityAbovePlan} shares above plan, caused by ${
+          {`Entry Size Deviation: ${d.version.quantityAbovePlan} ${option ? (d.version.quantityAbovePlan === '1' ? 'contract' : 'contracts') : 'shares'} above plan, caused by ${
             d.version.causingPositionChangeId === savedId ? 'this Position Change' : `the Position Change at ${timeOf(d.version.causingPositionChangeId)}`
           }.`}
         </p>

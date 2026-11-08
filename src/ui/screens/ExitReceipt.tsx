@@ -58,7 +58,8 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
   const ownExecutions = new Set(saved.executions.map((e) => e.factId));
   const { lotMatchChanges, realizedToDate } = receipt;
   const disclosed = lotMatchChanges.some((c) => c.kind !== 'Created' || !ownExecutions.has(c.disposingExecutionId));
-  const matchQuantity = (amount: Rational | null) => (amount === null ? '—' : quantity(amount));
+  const option = trade.plan.legs[0]?.instrument.kind === 'Option';
+  const matchQuantity =(amount: Rational | null) => (amount === null ? '—' : quantity(amount));
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
@@ -86,21 +87,25 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
             rows={derivation.lotMatches.map((match, index) => ({ ...match, realized: derivation.lotMatchResults[index]!.realized }))}
             executions={trade.positionChanges.flatMap((c) => c.executions)}
             timeZone={timeZone}
-            option={trade.plan.legs[0]?.instrument.kind === 'Option'}
+            option={option}
           />
         </div>
       </section>
       {disclosed && (
         <section aria-labelledby="changed-matches-heading">
           <h2 id="changed-matches-heading">Changed Lot Matches</h2>
-          <p>This exit is dated before a later recorded change, so the sales are matched to the purchases again in order. The matches that changed:</p>
+          <p>
+            {option
+              ? 'This exit is dated before a later recorded change, so the closing Executions are matched to the opening ones again in order. The matches that changed:'
+              : 'This exit is dated before a later recorded change, so the sales are matched to the purchases again in order. The matches that changed:'}
+          </p>
           <div className="table-scroll" role="region" aria-label="Changed matched lots" tabIndex={0}>
             <table aria-label="Changed Lot Matches">
               <thead>
                 <tr>
                   <th scope="col">Change</th>
-                  <th scope="col">Bought</th>
-                  <th scope="col">Sold</th>
+                  <th scope="col">{option ? 'Opened' : 'Bought'}</th>
+                  <th scope="col">{option ? 'Closed' : 'Sold'}</th>
                   <th scope="col">Quantity before</th>
                   <th scope="col">Quantity after</th>
                 </tr>

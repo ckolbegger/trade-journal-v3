@@ -87,6 +87,45 @@ describe('option receipts', () => {
   });
 });
 
+describe('option receipt wording, rows 20.14 and 20.15', () => {
+  const recorded = (trade: unknown, derivation: unknown, createdFactIds: string[], lotMatchChanges: unknown[] = [], deviationReconciliation: unknown[] = []) => ({
+    kind: 'Recorded',
+    receipt: { tradeId: 'trade-1', createdFactIds, deviationReconciliation, entryChanges: [], repairs: [], lotMatchChanges, realizedToDate: { before: Rational.of(0n), after: Rational.of(0n) } },
+    postCommit: { trade, derivation, reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } } },
+  });
+
+  it('should show the Changed Lot Matches note with Opened and Closed headers for an earlier-dated option exit', () => {
+    const { record, derivation } = optionTrade('O-C');
+    const match = derivation.lotMatches[0]!;
+    const changes = [{ kind: 'Superseded', openingExecutionId: match.openingExecutionId, disposingExecutionId: match.disposingExecutionId, quantity: { before: Rational.of(1n), after: null } }];
+    render(
+      <MemoryRouter>
+        <ExitReceipt result={recorded(record, derivation, ['pc-x1'], changes) as never} timeZone="America/New_York" closeReasons={[]} />
+      </MemoryRouter>,
+    );
+    const changed = within(screen.getByRole('region', { name: 'Changed Lot Matches' }));
+    expect(changed.getByText('This exit is dated before a later recorded change, so the closing Executions are matched to the opening ones again in order. The matches that changed:')).toBeTruthy();
+    const headers = changed.getAllByRole('columnheader').map((h) => h.textContent);
+    expect(headers).toEqual(['Change', 'Opened', 'Closed', 'Quantity before', 'Quantity after']);
+  });
+
+  it('should state an option Entry Size Deviation on the receipt in contracts', () => {
+    const { record, derivation } = optionTrade('O-S');
+    const created = (quantityAbovePlan: string) => [{ action: 'Create', occurrenceId: 'dev-1', version: { quantityAbovePlan, causingPositionChangeId: 'pc-s1' } }];
+    const view = (quantityAbovePlan: string) =>
+      render(
+        <MemoryRouter>
+          <PositionChangeReceipt result={recorded(record, { ...derivation, entryQuality: { kind: 'NotApplicable' } }, ['pc-s1'], [], created(quantityAbovePlan)) as never} timeZone="America/New_York" />
+        </MemoryRouter>,
+      );
+    view('1');
+    expect(screen.getByText('Entry Size Deviation: 1 contract above plan, caused by this Position Change.')).toBeTruthy();
+    cleanup();
+    view('2');
+    expect(screen.getByText('Entry Size Deviation: 2 contracts above plan, caused by this Position Change.')).toBeTruthy();
+  });
+});
+
 describe('option Executions (A117)', () => {
   it('should label the action Buy to open and Sell to close on a Long Call and Sell to open and Buy to close on a Cash-Secured Put, take contracts and premium, and show each rows cash amount', async () => {
     const user = userEvent.setup();
