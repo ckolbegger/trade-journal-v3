@@ -21,20 +21,23 @@ async function fridayCall(app: Application): Promise<string> {
   return tradeId;
 }
 
-// A Long Call on XYZ expiring Friday 2026-11-13, one contract held.
-async function earlyCall(app: Application): Promise<string> {
+// A Long Call on XYZ expiring on `expiration` (default Friday 2026-11-13), one contract held.
+async function earlyCall(app: Application, expiration = EARLY_EXPIRATION): Promise<string> {
   const base = await optionPlanCommand(app, 'O-C', EARLY_PLAN);
-  const confirmed = await app.TradeWorkflows.confirmPlan({ ...base, plan: { ...base.plan, legs: [{ ...base.plan.legs[0]!, instrument: { ...XYZ_CALL, expiration: EARLY_EXPIRATION } }] } });
+  const confirmed = await app.TradeWorkflows.confirmPlan({ ...base, plan: { ...base.plan, legs: [{ ...base.plan.legs[0]!, instrument: { ...XYZ_CALL, expiration } }] } });
   if (confirmed.kind !== 'Confirmed') throw new Error(`confirmPlan: ${JSON.stringify(confirmed)}`);
   await recordOption(app, confirmed.receipt.tradeId, 'Buy', EARLY_FILL);
   return confirmed.receipt.tradeId;
 }
 
-// The Review `open` at Monday 2026-11-23 17:00 New York, with `friday` Trades expiring 2026-11-20 and `early` expiring 2026-11-13, all due.
-async function reviewOpen(friday: number, early: number) {
+// Well after the Review's clock, so a Trade expiring then is open but not due.
+const NOT_DUE_EXPIRATION = '2026-12-18';
+
+// The Review `open` at Monday 2026-11-23 17:00 New York, with `friday` Trades expiring 2026-11-20 and `early` expiring 2026-11-13,
+// all due. With `due` false the same number of Trades, at the same clock, all expire 2026-12-18 instead, so none is due: the baseline.
+async function reviewOpen(friday: number, early: number, due = true) {
   const { app } = await onboardedAt(MONDAY_NEXT_1700);
-  for (let n = 0; n < friday; n++) await fridayCall(app);
-  for (let n = 0; n < early; n++) await earlyCall(app);
+  for (let n = 0; n < friday + early; n++) await (due ? (n < friday ? fridayCall(app) : earlyCall(app)) : earlyCall(app, NOT_DUE_EXPIRATION));
   const review = await countRequests(() => app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_NEXT_1700 }));
   if (review.result.kind !== 'Ready') throw new Error(`open: ${review.result.kind}`);
   const items = review.result.families.flatMap((f) => (f.family === 'Settlement' ? f.items : []));
@@ -57,6 +60,24 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     expect(new Set(twoTrades.items.map((i) => i.expiration)).size).toBe(1);
     expect(fourTrades.items).toHaveLength(4);
     expect(new Set(twoDates.items.map((i) => i.expiration)).size).toBe(2);
+    // The baseline: the same number of Trades at the same clock, none due. Their Review has no Settlement items, so it issues D6's requests.
+    const baselineTwo = await reviewOpen(2, 0, false);
+    const baselineFour = await reviewOpen(4, 0, false);
+    const baselineTwoDates = await reviewOpen(2, 2, false);
+    for (const baseline of [baselineTwo, baselineFour, baselineTwoDates]) expect(baseline.items).toEqual([]);
+    // Each due run issues exactly the baseline's requests with the same Trades, so a constant extra request on any store fails.
+    // The one allowed difference: the baseline's contracts are still live, so D6 reads their marks through the `byInstrumentDate`
+    // index of `observations`; an expired contract has no mark to read, so the due runs make no such read (also checked below).
+    const withoutMarkReads = (requests: readonly CountedRequest[]) => requests.filter((r) => !(r.store === 'observations' && r.on === 'index'));
+    expect(baselineTwo.requests).not.toEqual(withoutMarkReads(baselineTwo.requests));
+    // Both runs above come from the same code, so a constant extra request would be in the baseline too: D6's own count is pinned
+    // as well, per store and method (20 requests).
+    const tally: Record<string, number> = {};
+    for (const r of twoTrades.requests) tally[`${r.store}.${r.method}`] = (tally[`${r.store}.${r.method}`] ?? 0) + 1;
+    expect(tally).toEqual({ 'meta.get': 13, 'trades.getAll': 2, 'observations.getAll': 1, 'journalDebts.getAll': 1, 'journalDefinitions.getAll': 1, 'journalObligations.getAll': 1, 'journalTypes.getAll': 1 });
+    expect(twoTrades.requests).toEqual(withoutMarkReads(baselineTwo.requests));
+    expect(fourTrades.requests).toEqual(withoutMarkReads(baselineFour.requests));
+    expect(twoDates.requests).toEqual(withoutMarkReads(baselineTwoDates.requests));
     // Nothing per Trade: twice the due Trades on the one date issue the same requests.
     expect(fourTrades.requests).toEqual(twoTrades.requests);
     // Nothing per distinct date: a second due date issues the same requests too, and D6's one getAll on observations is all there is.
