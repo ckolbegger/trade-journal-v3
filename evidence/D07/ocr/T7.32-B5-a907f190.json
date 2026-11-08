@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 32016,
+    "input_tokens": 31837,
+    "output_tokens": 179,
+    "cache_read_tokens": 7680,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/PayoffView.tsx",
+      "files": [
+        "src/ui/screens/PayoffView.tsx"
+      ]
+    }
+  ],
+  "session_id": "01c6e05f-9ceb-4040-ac8c-73bb5f226dba",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "01c6e05f-9ceb-4040-ac8c-73bb5f226dba",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a907f190",
+      "resolved_base": "0330aa84beb8f6c2819e642b1059dc33cf7e4884",
+      "resolved_head": "a907f190324bfc28523ba38fe16c2d647ddc73bf",
+      "exact_range": "0330aa84beb8f6c2819e642b1059dc33cf7e4884..a907f190324bfc28523ba38fe16c2d647ddc73bf",
+      "source_artifact_sha256": "5d0856e90c8af3a1ae906b6b09699791ff01b1bac46e5170aae833119a28ad8c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "81bdb5d3df05db375c56283f1a6925ef7f9fa382efc42757c77fc530e3ceb499",
+          "path": "src/ui/screens/PayoffView.tsx",
+          "fingerprint": "a9786109d0f9bb01591b7bbd7a92c074ce1e3c11ca82a608e0ed335301555cce"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "81bdb5d3df05db375c56283f1a6925ef7f9fa382efc42757c77fc530e3ceb499",
+          "path": "src/ui/screens/PayoffView.tsx",
+          "fingerprint": "a9786109d0f9bb01591b7bbd7a92c074ce1e3c11ca82a608e0ed335301555cce"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 14403
+  }
+}

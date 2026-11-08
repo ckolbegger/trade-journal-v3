@@ -2082,3 +2082,10 @@ The figures come from the critic's completion notice. The brief is `.claude/docs
 - **Case:** "should keep a moved label clear of every tick label and axis title and never render two overlapping labels when the search runs out", over a hand-built Planned view with 6 breakpoints (9 and 21 zero labels). Red: "'Breakeven at 0.00, touched without crossing' overlaps 'Breakeven from 0.00 to 55.00'". Green. The 9-label sub-case passes on the old code; the 21-label one carries the red. Mutation: dropping the tick boxes from the registry fails it ("30.00 overlaps Breakeven from 30.00 to 40.00").
 - **Checks:** `PayoffView.test.tsx` 8 passed, `src/ui/screens` 492 passed; typecheck, tsc6, lint, lint:deps exit 0. B2's Chromium spec not rerun (the gate run covers it).
 - **ocr** (`ocr/T7.32-B4-6949ac19.json`): 1 file reviewed, 0 comments. No findings.
+
+### T7.32-B5: tick rows inside the SVG
+
+- **Commit `a907f190`.** In `PayoffView.tsx`'s `Chart`, `height = HEIGHT + max(0, rows - 3) * LINE`; the y scale keeps the constant 344 − 80, and the viewBox, the axis title (y = height − 6), the rotated Payoff title's centre and the collision registry use `height`. Charts with three rows or fewer stay at 344. `place()` gains a trailing `height` parameter.
+- **Case:** "should keep every tick row inside the SVG and clear of the axis title when breakpoints cluster beyond three rows" (breakpoints 0 and 50 to 55). Red: "53.00 clear of the axis title: expected -3 to be greater than or equal to 4". Green. No first-run passes.
+- **Checks:** `PayoffView.test.tsx` 9 passed; `src/ui/screens` 493 passed; `e2e/d7/payoff-chart-layout.spec.ts` 3 passed (Chromium); typecheck, tsc6, lint, lint:deps exit 0.
+- **ocr** (`ocr/T7.32-B5-a907f190.json`): 1 file reviewed, 0 comments. No findings. The B2 chain is closed (one round of bug tasks, B3 to B5).
