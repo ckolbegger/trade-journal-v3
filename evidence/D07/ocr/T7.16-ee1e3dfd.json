@@ -1,0 +1,175 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 2,
+    "total_tokens": 223510,
+    "input_tokens": 221082,
+    "output_tokens": 2428,
+    "cache_read_tokens": 24960,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 9,
+      "file_read": 16,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/format.ts",
+      "content": "Trade Views now returns Option summaries for Planned, Open, and Closed trades, but TradeList and TradeDetail pass those summaries directly to this formatter without an option guard. Consequently, displaying any option trade throws during rendering instead of showing its contract label; tradeName and review cards can fail as well. Format the option direction, contract quantity, expiration, strike, and right here rather than throwing.",
+      "existing_code": "  if (summary.kind === 'Option') throw new Error('option Trade summaries are worded by T7.23');",
+      "start_line": 31,
+      "end_line": 31,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "`closedItem` now returns Option Disposition Timing at runtime, but `ClosedTradeItem` has no `optionDispositionTiming` member (it was added only to `ClosedTradeDetail`). Consequently, callers of the typed `browseTrades({ lifecycle: 'Closed' })` API cannot access the required timing or its two quantities without a cast. Add the optional member to `ClosedTradeItem` as well, and exclude it from `IncoherentClosedTradeItem` if it is unavailable without a replay.",
+      "existing_code": "    ...optionTimingOf(analysis, derived),",
+      "start_line": 555,
+      "end_line": 555,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review settlement coordination and types",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/coordinators/settlement.ts"
+      ]
+    },
+    {
+      "label": "Trade views, summary formatting, and detail fixtures",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/trade-summary.ts",
+        "src/ui/format.ts",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "4dd76482-f5cd-4dc3-af4b-de939d71a274",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4dd76482-f5cd-4dc3-af4b-de939d71a274",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ee1e3dfd",
+      "resolved_base": "b5fb3e7561de1fedec2fd16b0283181a5cbf3d3a",
+      "resolved_head": "ee1e3dfda65c66bcf8cc5bdfdb6503b3c0a20692",
+      "exact_range": "b5fb3e7561de1fedec2fd16b0283181a5cbf3d3a..ee1e3dfda65c66bcf8cc5bdfdb6503b3c0a20692",
+      "source_artifact_sha256": "df8069be80ea429c5c9711ecf110b51c8be61784156baf6929b0479835987997"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "0048243c687b1d2fe1a80208c3787304fc86d0bb2f827cf536b2b06a746671dd"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "ee5e6b8168b433b9fe327908ba53de780a957018a88420e79f054ab129086b21"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "bf7f5e1f7e686395217121ceb13e26e1fdad956d2645fbf3c2c2cc70b4c09e2d"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "73f25121e404438ce231a16d58929e5ffef76c0f66b5085121ea2f0646e6206f"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a66486cf31f1a65b37696bd6b94afc0fbaba8d7972ba16e1112831a0edaa8051"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "3ad2f1e1c99fe13a6295d9a737bb44efd981dbdf088105a7bf17a40f1f339aaa"
+        },
+        {
+          "item_id": "e1a567450c0cd49c69ea52a4be90b7e4bd9dbca93de4e2f0dd0cb23f27c9a235",
+          "path": "src/domain/trade-summary.ts",
+          "fingerprint": "33f42e06f625a0dc4e45da05fee3a13cefffa4f93577373ca84bb58fedd3d2ad"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "0048243c687b1d2fe1a80208c3787304fc86d0bb2f827cf536b2b06a746671dd"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "ee5e6b8168b433b9fe327908ba53de780a957018a88420e79f054ab129086b21"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "bf7f5e1f7e686395217121ceb13e26e1fdad956d2645fbf3c2c2cc70b4c09e2d"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "73f25121e404438ce231a16d58929e5ffef76c0f66b5085121ea2f0646e6206f"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "a66486cf31f1a65b37696bd6b94afc0fbaba8d7972ba16e1112831a0edaa8051"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "3ad2f1e1c99fe13a6295d9a737bb44efd981dbdf088105a7bf17a40f1f339aaa"
+        },
+        {
+          "item_id": "e1a567450c0cd49c69ea52a4be90b7e4bd9dbca93de4e2f0dd0cb23f27c9a235",
+          "path": "src/domain/trade-summary.ts",
+          "fingerprint": "33f42e06f625a0dc4e45da05fee3a13cefffa4f93577373ca84bb58fedd3d2ad"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 81559
+  }
+}

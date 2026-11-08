@@ -527,3 +527,28 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 6530186f`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-33-option-pressure-checks.txt` |
 
 Tier: task, printed reason "no changed path since 6530186f is on the full-tier list". Ports free before and after. T7.33 is complete.
+
+## T7.16 Trade Views: option lists and Detail
+
+Behavioral; commit `ee1e3dfd`, three cases in `option-views.test.ts`, each with a genuine red (no `settlement`; no `optionDispositionTiming`; a Stock-kind summary on the Planned row). No first-run passes. Shared `src/coordinators/settlement.ts` now holds `settlementTimeOf`, `payoffOf` and `SettlementItem`, used by Daily Review and Trade Views. `TradeSummary` gains an `Option` arm (direction, contracts, expiration, strike, right); Open and Closed Detail gain `settlement` (Due items only) and `payoff`; Closed Detail and rows gain `optionDispositionTiming` for option Trades; `PlannedTradeDetail.plan` gains `exerciseIntent`; `OpenTradeItem.openQuantity` is the signed open-lot sum (identical for stock). Trade Views requests the contract and Underlying frames together; the option dated line is skipped (`datedLineOf` is Stock-only). **Temporary rule:** `tradeSummary` in `src/ui/format.ts` throws for an Option summary until T7.23 words it. **For T7.23:** "expires 2026-11-20" from `current.evaluation.settlement[].expiration` (`NotYetDue`); "via … and expiration" from `terminalDisposition` mechanisms; value at expiration from `current.evaluation.expirationValueAtUnderlyingClose`; the Planned Detail carries no `payoff` yet.
+
+### ocr review of `ee1e3dfd`
+
+`ocr/T7.16-ee1e3dfd.json`, 2 comments: (1) Valid — `closedItem` returns `optionDispositionTiming` but `ClosedTradeItem` doesn't declare it (bug task B1); (2) Doubtful, **dismissed** — `tradeSummary` throws for an Option summary: it is the planned temporary rule, T7.23's scope, and no screen reaches it before the option forms (T7.19) except a restored backup holding an option Trade.
+
+### T7.16-B1 `ClosedTradeItem` declares `optionDispositionTiming`
+
+Commit `bb6c69ab`. Type-only defect: a typed read in `option-views.test.ts`; red `npm run typecheck` TS2339 "Property 'optionDispositionTiming' does not exist on type 'ClosedTradeItem'" (a compile-time red, noted in `tdd-log.md`), green after the optional field is declared (`IncoherentClosedTradeItem` inherits it through its `Omit`). ocr review: no findings (`ocr/T7.16-B1-bb6c69ab.json`).
+
+### Cumulative run after T7.16-B1 (`t7-16-option-views`, at `bb6c69ab`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto b5fb3e75`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1318 passed, exit 0 | `suite-runs/t7-16-option-views-unit.txt` |
+| Node integration | 76 files, 154 passed, exit 0 | `suite-runs/t7-16-option-views-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-16-option-views-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-16-option-views-checks.txt` |
+
+Tier: full, printed reason "first matching path since b5fb3e75: src/ui/format.ts". Ports free before and after. T7.16 is complete.
