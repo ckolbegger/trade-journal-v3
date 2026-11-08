@@ -334,7 +334,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     );
     const instants = times.flatMap((time) => (time.ok ? [time.instant] : []));
     if (timeIssues.length > 0) {
-      setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, closeDefinition, option !== undefined));
+      setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, closeDefinition, option));
       setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
       return;
     }
@@ -370,7 +370,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     setConflict(result.kind === 'Conflict');
     setReloaded(false);
     setReloadFailed(false);
-    setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, closeDefinition, option !== undefined) : []);
+    setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, closeDefinition, option) : []);
     setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
     if (result.kind === 'Rejected') {
       // The workflow decides whether the exit is terminal: what it requires shows the section, and
@@ -450,7 +450,13 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
             <dt>Position</dt>
             <dd className="number">
               {'positions' in view
-                ? view.positions.map((p) => `${quantity(p.quantity)} shares of ${p.instrument.symbol}`).join(', ')
+                ? view.positions
+                    .map((p) =>
+                      p.instrument.kind === 'Option'
+                        ? `${p.quantity.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long'} ${plural(Number(unsigned(p.quantity).numerator), 'contract', 'contracts')} of ${instrumentLabel(p.instrument)}`
+                        : `${quantity(p.quantity)} shares of ${p.instrument.symbol}`,
+                    )
+                    .join(', ')
                 : 'No Position yet'}
             </dd>
           </dl>

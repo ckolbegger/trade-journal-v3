@@ -1,7 +1,8 @@
 import type { EntryDefinitionRecord } from '../../app/types.ts';
 import type { Rational } from '../../domain/values/index.ts';
-import { isExceedsOpenQuantityIssue, isFlatBeforeLaterFactsIssue } from '../calculation-words.ts';
-import { quantity } from '../format.ts';
+import type { OptionInstrument } from '../../domain/instrument/index.ts';
+import { isAfterExpirationIssue, isContractQuantityNotWholeIssue, isExceedsOpenQuantityIssue, isFlatBeforeLaterFactsIssue } from '../calculation-words.ts';
+import { quantity, shortDate } from '../format.ts';
 import { AMBIGUOUS_TIME, NONEXISTENT_TIME } from './local-time.ts';
 import { describeJournalIssue, type FieldIssue, type Issue } from './plan-issues.ts';
 
@@ -27,12 +28,14 @@ const TIME: Record<string, string> = {
 // An issue about the change's position path (P22), with the quantity open where one is named.
 type PathIssue = Issue & { readonly member?: number; readonly available?: Rational };
 
-function memberMessage(issue: PathIssue, option: boolean): string {
+function memberMessage(issue: PathIssue, option: OptionInstrument | undefined): string {
   if (isExceedsOpenQuantityIssue(issue)) {
     const [one, many] = option ? ['contract', 'contracts'] : ['share', 'shares'];
     return issue.available ? `The position has only ${quantity(issue.available)} ${quantity(issue.available) === '1' ? one : many}.` : `more ${many} than the position has.`;
   }
   if (isFlatBeforeLaterFactsIssue(issue)) return 'this exit would leave the Position flat before a later recorded change.';
+  if (option && issue.field === 'quantity') return isContractQuantityNotWholeIssue(issue) ? 'enter a whole number of contracts.' : 'enter a number of contracts greater than zero.';
+  if (option && isAfterExpirationIssue(issue)) return `the Economic Time cannot be after the expiration date, ${shortDate(option.expiration)}.`;
   if (issue.field === 'economicTime') return TIME[issue.code] ?? 'check the Economic Time.';
   if (issue.field === 'fee' && issue.code === 'Required') return 'enter the fee, or 0 if there was none.';
   return DECIMAL[issue.field ?? ''] ?? 'check this Execution.';
@@ -46,8 +49,8 @@ export function describePositionChangeIssues(
   definition: EntryDefinitionRecord,
   // The exit form's Close Review definition, whose Prompts the Close Review's issues name (D6 P21).
   closeDefinition?: EntryDefinitionRecord,
-  // Whether the Trade's leg is an option, so counts are words of contracts rather than shares.
-  option = false,
+  // The Trade's leg when it is an option, so counts are words of contracts rather than shares.
+  option?: OptionInstrument,
 ): FieldIssue[] {
   return issues.map((issue): FieldIssue => ({ ...describeIssue(issue, rowKeys, definition, closeDefinition, option), code: issue.code }));
 }
@@ -60,12 +63,12 @@ const CLOSE: Record<string, FieldIssue> = {
   CloseReviewNotApplicable: { field: 'closeReview', message: 'This exit does not close the Trade, so it has no Close Review.' },
 };
 
-function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition: EntryDefinitionRecord, closeDefinition: EntryDefinitionRecord | undefined, option: boolean): FieldIssue {
+function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition: EntryDefinitionRecord, closeDefinition: EntryDefinitionRecord | undefined, option: OptionInstrument | undefined): FieldIssue {
   if (issue.member !== undefined) {
     return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue, option)}` };
   }
   if (issue.source === 'TradeAnalysis' && (isExceedsOpenQuantityIssue(issue) || isFlatBeforeLaterFactsIssue(issue))) {
-    return { field: 'members', message: 'This exit would leave a later recorded exit without enough shares in the position.' };
+    return { field: 'members', message: `This exit would leave a later recorded exit without enough ${option ? 'contracts' : 'shares'} in the position.` };
   }
   if (issue.code === 'TradeClosed') return { field: 'trade', message: 'This Trade is closed. New exposure needs a new Plan.' };
   if (issue.source === 'TradeWorkflows' && CLOSE[issue.code]) return CLOSE[issue.code]!;

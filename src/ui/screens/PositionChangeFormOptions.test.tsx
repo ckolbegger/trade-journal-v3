@@ -141,3 +141,60 @@ describe('option Executions (A117)', () => {
     expect(await within(row(1)).findByText('Execution 1: The position has only 2 contracts.')).toBeTruthy();
   });
 });
+
+// Rows 20.7, 20.8, 20.9 and 20.11: an option form's errors and its conflict banner use contracts words.
+describe('option form errors', () => {
+  const reject = (facade: ReturnType<typeof renderForm>, issues: unknown[]) =>
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ kind: 'Rejected', issues, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } } as never);
+
+  it('should word an option rows InvalidQuantity and ContractQuantityNotWhole each with its own contracts sentence', async () => {
+    const user = userEvent.setup();
+    const facade = renderForm(optionDetail(CALL_LEG, 'Long Call'), 'Buy');
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fill(user, 1, '1', '2.10');
+    reject(facade, [{ source: 'TradeWorkflows', member: 0, field: 'quantity', code: 'InvalidQuantity' }]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(await within(row(1)).findByText('Execution 1: enter a number of contracts greater than zero.')).toBeTruthy();
+    reject(facade, [{ source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ContractQuantityNotWhole' }]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(await within(row(1)).findByText('Execution 1: enter a whole number of contracts.')).toBeTruthy();
+  });
+
+  it('should word AfterExpiration on a new option Execution with the expiration date', async () => {
+    const user = userEvent.setup();
+    const facade = renderForm(optionDetail(CALL_LEG, 'Long Call'), 'Buy');
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fill(user, 1, '1', '2.10');
+    reject(facade, [{ source: 'TradeAnalysis', member: 0, field: 'economicTime', code: 'AfterExpiration' }]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(await within(row(1)).findByText('Execution 1: the Economic Time cannot be after the expiration date, Fri Nov 20.')).toBeTruthy();
+  });
+
+  it('should word the members issue for a later recorded exit with contracts', async () => {
+    const user = userEvent.setup();
+    const facade = renderForm(optionDetail(CALL_LEG, 'Long Call', 2n), 'Sell');
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fill(user, 1, '1', '2.10');
+    reject(facade, [{ source: 'TradeAnalysis', code: 'FlatBeforeLaterFacts', field: 'quantity' }]);
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+    expect((await screen.findAllByText('This exit would leave a later recorded exit without enough contracts in the position.')).length).toBeGreaterThan(0);
+  });
+
+  it('should show the option position in the conflict reload banner as a holding in words', async () => {
+    const user = userEvent.setup();
+    const facade = renderForm(optionDetail(CALL_LEG, 'Long Call'), 'Buy');
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fill(user, 1, '1', '2.10');
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ kind: 'Conflict', changed: ['trade:trade-1'] } as never);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const message = await screen.findByRole('region', { name: 'This Trade changed after you opened this form' });
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: optionDetail(CALL_LEG, 'Long Call', 1n),
+      binding: { databaseName: 'tj-ws-1', contentRevision: 8 },
+    } as never);
+    await user.click(within(message).getByRole('button', { name: 'Load the latest Trade' }));
+    const latest = await screen.findByRole('region', { name: 'Latest Trade' });
+    expect(within(latest).getByText('Long 1 contract of XYZ 20 Nov 2026 55 Call')).toBeTruthy();
+  });
+});
