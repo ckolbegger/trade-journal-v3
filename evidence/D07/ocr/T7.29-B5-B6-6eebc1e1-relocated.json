@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 18172,
+    "input_tokens": 18053,
+    "output_tokens": 119,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d7/query-count.ts",
+      "files": [
+        "src/itg/relocated/d7/query-count.ts"
+      ]
+    }
+  ],
+  "session_id": "6281533b-98c0-4a76-b360-04c5371b5a4e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6281533b-98c0-4a76-b360-04c5371b5a4e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "b677143e",
+      "requested_head": "a6702134",
+      "resolved_base": "b677143e9708965d6797221e750ce84d5ec9da8e",
+      "resolved_head": "a67021342016334702704422ab3b74034315b9ba",
+      "exact_range": "b677143e9708965d6797221e750ce84d5ec9da8e..a67021342016334702704422ab3b74034315b9ba",
+      "source_artifact_sha256": "2e9a502078fe0339b0a17f2ebf504a56a426e1631d85bb60c0a293c319e62164"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "c2d3bd3a30a771126c193c6ad6de9ba1920f29c2b0a93a4ffdc6a67fabace313",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "0dce8ac63b1f41b7bb809cc32377ae937563459378e43b5ac9e50ccce529156f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "c2d3bd3a30a771126c193c6ad6de9ba1920f29c2b0a93a4ffdc6a67fabace313",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "0dce8ac63b1f41b7bb809cc32377ae937563459378e43b5ac9e50ccce529156f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8993
+  }
+}

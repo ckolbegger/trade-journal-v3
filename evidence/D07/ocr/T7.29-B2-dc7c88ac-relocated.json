@@ -1,0 +1,92 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 32792,
+    "input_tokens": 32309,
+    "output_tokens": 483,
+    "cache_read_tokens": 9600,
+    "elapsed": "28s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7/query-count.ts",
+      "content": "The expired Detail's count is still not exact: both 22 and 23 requests pass because an extra `observations.getAll` is allowed and then overwritten before comparison. Thus an unintended extra read on the settlement path would pass, despite B2 requiring identical requests at this clock and an exact count for each Detail. Assert `due.tally` equals `PINNED` for the current implementation; if a Historical frame read is intentionally introduced later, update its explicit expected tally then.",
+      "suggestion_code": "    expect(due.tally).toEqual(PINNED);",
+      "existing_code": "    const extra = (due.tally['observations.getAll'] ?? 0) - PINNED['observations.getAll'];\n    expect(extra).toBeGreaterThanOrEqual(0);\n    expect(extra).toBeLessThanOrEqual(1);\n    expect({ ...due.tally, 'observations.getAll': PINNED['observations.getAll'] }).toEqual(PINNED);",
+      "start_line": 107,
+      "end_line": 110,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d7/query-count.ts",
+      "files": [
+        "src/itg/relocated/d7/query-count.ts"
+      ]
+    }
+  ],
+  "session_id": "11a33c99-962f-4ed6-b67f-18b41b43123e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "11a33c99-962f-4ed6-b67f-18b41b43123e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "a7530552e379fb0b95551d47bc6a93b2927e8f50",
+      "resolved_base": "6365d60a301ced279e731de0e3faeb0834b9e30b",
+      "resolved_head": "a7530552e379fb0b95551d47bc6a93b2927e8f50",
+      "exact_range": "6365d60a301ced279e731de0e3faeb0834b9e30b..a7530552e379fb0b95551d47bc6a93b2927e8f50",
+      "source_artifact_sha256": "3df29911325f3319c4b8ac43090b14c2b4773a6a79594be2fdb3ccbcf75804c4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "bdf90ff936f145d8f35de876d64b53132102e565398844c5f888f21915e58ac5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "bdf90ff936f145d8f35de876d64b53132102e565398844c5f888f21915e58ac5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 27631
+  }
+}

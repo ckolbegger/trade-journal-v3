@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 46492,
+    "input_tokens": 46041,
+    "output_tokens": 451,
+    "cache_read_tokens": 7680,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d7/query-count.ts",
+      "files": [
+        "src/itg/relocated/d7/query-count.ts"
+      ]
+    }
+  ],
+  "session_id": "b3a12c5d-0593-4936-ae76-aea10f36b43c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b3a12c5d-0593-4936-ae76-aea10f36b43c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "f3b97e510e29724b50f05a0a11cb83763b06a35d",
+      "resolved_base": "7d2671ccb40e2f7b91c9b0e37be63adb2994205a",
+      "resolved_head": "f3b97e510e29724b50f05a0a11cb83763b06a35d",
+      "exact_range": "7d2671ccb40e2f7b91c9b0e37be63adb2994205a..f3b97e510e29724b50f05a0a11cb83763b06a35d",
+      "source_artifact_sha256": "1ab0b1ca8a0b6b39d60f49327418eb2c42639a81a35c32ebf15615bb06b633bb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "e3e914ae7e20c8f98028f5881ecb1847b59274e929190a9c381600474c0e1147"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "e3e914ae7e20c8f98028f5881ecb1847b59274e929190a9c381600474c0e1147"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21689
+  }
+}

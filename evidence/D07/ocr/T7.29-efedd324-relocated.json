@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 99644,
+    "input_tokens": 98432,
+    "output_tokens": 1212,
+    "cache_read_tokens": 13440,
+    "elapsed": "1m3s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7/query-count.ts",
+      "content": "These comparisons establish that requests do not scale with Trade/date count, but not that the D6 baseline is preserved: all three scenarios contain due contracts, so a fixed extra read to any store other than `observations` passes every assertion. Add a matched no-due baseline (accounting for expected walk/owed reads), or assert the established per-store request budget, so a constant settlement-related overhead is detected as well.",
+      "existing_code": "    expect(twoDates.requests).toEqual(twoTrades.requests);\n    expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL]);",
+      "start_line": 63,
+      "end_line": 64,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/bench/compare.ts",
+        "src/itg/relocated/d7/query-count.ts"
+      ]
+    }
+  ],
+  "session_id": "1140ff62-4e66-44e2-b924-b4a15724db14",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1140ff62-4e66-44e2-b924-b4a15724db14",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "729013ec199cdd6845f8c4577087def2075878f1",
+      "resolved_head": "379ddace52208c49620896860838e98ef1a60330",
+      "exact_range": "729013ec199cdd6845f8c4577087def2075878f1..379ddace52208c49620896860838e98ef1a60330",
+      "source_artifact_sha256": "ffac85b2352b6b8d28ddfc3139000d59bd62ec84ce5a5a36db999f3828b0e136"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "29697f1c3d6e22f06ebd9dbe9fa93f484f804692be15ffa77ae18aa3405fb9b7"
+        },
+        {
+          "item_id": "c4deb206ddfe6c2cce5938faccfc9efb13fa41081354f609be8512fca022b38b",
+          "path": "src/itg/relocated/bench/compare.ts",
+          "fingerprint": "423ebe463146d26898b29ae951133286340cd58ad2d4c67b3277d7e2a1109c2e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "29697f1c3d6e22f06ebd9dbe9fa93f484f804692be15ffa77ae18aa3405fb9b7"
+        },
+        {
+          "item_id": "c4deb206ddfe6c2cce5938faccfc9efb13fa41081354f609be8512fca022b38b",
+          "path": "src/itg/relocated/bench/compare.ts",
+          "fingerprint": "423ebe463146d26898b29ae951133286340cd58ad2d4c67b3277d7e2a1109c2e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 62503
+  }
+}

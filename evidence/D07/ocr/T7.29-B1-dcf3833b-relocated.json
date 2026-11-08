@@ -1,0 +1,92 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 33373,
+    "input_tokens": 32925,
+    "output_tokens": 448,
+    "cache_read_tokens": 9600,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7/query-count.ts",
+      "content": "This nests one ternary inside another, contrary to the checklist's prohibition on nested ternaries. Use an explicit `if`/`else` for the not-due case, then select the Friday or early fixture in the due branch; keep the awaited calls sequential.",
+      "suggestion_code": "  for (let n = 0; n \u003c friday + early; n++) {\n    if (!due) {\n      await earlyCall(app, NOT_DUE_EXPIRATION);\n    } else if (n \u003c friday) {\n      await fridayCall(app);\n    } else {\n      await earlyCall(app);\n    }\n  }",
+      "existing_code": "  for (let n = 0; n \u003c friday + early; n++) await (due ? (n \u003c friday ? fridayCall(app) : earlyCall(app)) : earlyCall(app, NOT_DUE_EXPIRATION));",
+      "start_line": 40,
+      "end_line": 40,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d7/query-count.ts",
+      "files": [
+        "src/itg/relocated/d7/query-count.ts"
+      ]
+    }
+  ],
+  "session_id": "61896805-13bf-46db-af54-c45e66c39e46",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "61896805-13bf-46db-af54-c45e66c39e46",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "0379aba5",
+      "resolved_base": "aaf9d61bd111650608a4a40f6c9ef547101ebc0a",
+      "resolved_head": "0379aba5ae3611121512ee19f66cf533120bf0f5",
+      "exact_range": "aaf9d61bd111650608a4a40f6c9ef547101ebc0a..0379aba5ae3611121512ee19f66cf533120bf0f5",
+      "source_artifact_sha256": "ddd7c49d1b53856b41e2549e0d7d71afec30aa12bcfb69722a6000bf65de4b5f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "f6f03ca77a4eea5ef07b3cbd944d198b418fb4c980e65152eb968e491b05cbfb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b4ec1ae1158bb3de338f55b04ff4c96750299804222acbb7d1b48baf4437c53b",
+          "path": "src/itg/relocated/d7/query-count.ts",
+          "fingerprint": "f6f03ca77a4eea5ef07b3cbd944d198b418fb4c980e65152eb968e491b05cbfb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 23937
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 42830,
+    "input_tokens": 42287,
+    "output_tokens": 543,
+    "cache_read_tokens": 9600,
+    "elapsed": "27s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/bench.ts",
+      "content": "The helper is only called by the new unit test, so this does not yet implement B9's shared-rule behavior. `tools/bench-run.ts:318` still uses `partial ? 0 : 4`, and `src/app/bench-generator.ts:1115` still computes its own minimum. Consequently, a non-partial dataset with fewer than four Open option Trades still gives the harness the wrong expected count. Wire both production callers to this helper, retaining the `settlementExpectations` check so missing/empty expected data still fails.",
+      "existing_code": "export function expectedSettlementDue(profile: { readonly partial: boolean; readonly openOptionTrades: number }): number {",
+      "start_line": 29,
+      "end_line": 29,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/bench.ts",
+        "src/itg/relocated/bench/compare-cases.ts"
+      ]
+    }
+  ],
+  "session_id": "7bc3ecd4-87bf-48f5-9fff-96fb5625f558",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7bc3ecd4-87bf-48f5-9fff-96fb5625f558",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "HEAD~2",
+      "requested_head": "cfc17d578d2accd4f45229e342ed8bf4cda6f940",
+      "resolved_base": "8059aa0a3b9f644d0b369590c3ef64d5aa8d10a0",
+      "resolved_head": "cfc17d578d2accd4f45229e342ed8bf4cda6f940",
+      "exact_range": "8059aa0a3b9f644d0b369590c3ef64d5aa8d10a0..cfc17d578d2accd4f45229e342ed8bf4cda6f940",
+      "source_artifact_sha256": "c22b4fda6cda3cd046faab38e3735a9c98c17cdd959079a3d8256c555419b1b0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "20b041a131661266aa91b16c1d5231e4f57f570f3a0f958a5054b9bb987be472",
+          "path": "src/app/bench.ts",
+          "fingerprint": "9b907e4082710f5afd0b961f9b07c1ecb970078d89a993589c18a59910698a68"
+        },
+        {
+          "item_id": "44738028b34752184c58aee8a8c19a5326c78cdee31891607f891364d35edf94",
+          "path": "src/itg/relocated/bench/compare-cases.ts",
+          "fingerprint": "0fd326689357b89c530ad7180d7144c889a08fc40ef5cf0174fcaebb8f3f7df1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "20b041a131661266aa91b16c1d5231e4f57f570f3a0f958a5054b9bb987be472",
+          "path": "src/app/bench.ts",
+          "fingerprint": "9b907e4082710f5afd0b961f9b07c1ecb970078d89a993589c18a59910698a68"
+        },
+        {
+          "item_id": "44738028b34752184c58aee8a8c19a5326c78cdee31891607f891364d35edf94",
+          "path": "src/itg/relocated/bench/compare-cases.ts",
+          "fingerprint": "0fd326689357b89c530ad7180d7144c889a08fc40ef5cf0174fcaebb8f3f7df1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 27328
+  }
+}

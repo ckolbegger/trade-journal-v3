@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 60662,
+    "input_tokens": 60030,
+    "output_tokens": 632,
+    "cache_read_tokens": 11520,
+    "elapsed": "32s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/bench-run.ts",
+      "content": "Defaulting a missing `counts.openOptionTrades` to zero reintroduces a silent pass for an incomplete full dataset: if that field and `asOfReview.settlement` are absent, the expected count becomes zero and `settlementExpectations()` returns undefined instead of throwing. Validate that a full dataset provides a finite, nonnegative integer count before calling the shared helper, and fail with a regeneration error when it does not; reserve zero for an explicitly recorded zero count (or a partial dataset).",
+      "existing_code": "const EXPECTED_SETTLEMENT_DUE = expectedSettlementDue({ partial, openOptionTrades: (dataset['counts'] as Record\u003cstring, number\u003e)['openOptionTrades'] ?? 0 });",
+      "start_line": 319,
+      "end_line": 319,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/bench-generator.ts",
+        "src/app/bench.ts",
+        "tools/bench-run.ts"
+      ]
+    }
+  ],
+  "session_id": "79730471-092e-4bbe-b12f-7e086cda2047",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "79730471-092e-4bbe-b12f-7e086cda2047",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "71907d03",
+      "resolved_base": "d8707e7e5097578f744daca902c68bd36d534e72",
+      "resolved_head": "71907d03a76701c654087a707af4ee769f9c5261",
+      "exact_range": "d8707e7e5097578f744daca902c68bd36d534e72..71907d03a76701c654087a707af4ee769f9c5261",
+      "source_artifact_sha256": "ebbab44bdf8dfb6515ca9fdc1c37ab36c09801b636b477cd6c88b53c5eb02328"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "c1fca92f3eab15aed50f99368780e8dc47fc9a4141599fbeb19a8e26f68f4f05"
+        },
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "6b74c8133ace36937413e448c554ea7c33b45c9810e2e52f6e8f544b43a5bd4d"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "c28c87cd716d203d594f385230a3283b35905951252569f8b0f91317d746520c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "c1fca92f3eab15aed50f99368780e8dc47fc9a4141599fbeb19a8e26f68f4f05"
+        },
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "6b74c8133ace36937413e448c554ea7c33b45c9810e2e52f6e8f544b43a5bd4d"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "c28c87cd716d203d594f385230a3283b35905951252569f8b0f91317d746520c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 32185
+  }
+}
