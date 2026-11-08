@@ -2,7 +2,7 @@
 // build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { answerIn, closeReasonGroup, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, executionRow, expect, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves d6
+import { answerCloseReviewIn, answerIn, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, executionRow, expect, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves d6
 
 export * from '../d6/support.ts';
 
@@ -140,15 +140,49 @@ export async function openSettlement(page: Page, card: CardRef): Promise<Locator
   return tradeCard(page, card).getByRole('region', { name: 'Settlement', exact: true });
 }
 
-// On the expiration form: answers the expiration's own reflection, defers the Close Review (Reflect later), and saves.
-// The Close Reason is never asked for an Expiration (row 21.16).
-export async function recordExpiration(page: Page): Promise<void> {
+// On the expiration form: answers the expiration's own reflection, then either defers the Close Review (Reflect later, the
+// default) or answers it now, and saves. The Close Reason is never asked for an Expiration (row 21.16).
+export async function recordExpiration(page: Page, closeReview: 'later' | 'now' = 'later'): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
   await answerIn(page.getByRole('region', { name: 'Reflection on this expiration' }));
   await expect(closeReasonGroup(page)).toHaveCount(0);
-  await closeReviewGroup(page).getByLabel('Reflect later').check();
+  if (closeReview === 'later') await closeReviewGroup(page).getByLabel('Reflect later').check();
+  else await answerCloseReviewIn(closingSection(page));
   await page.getByRole('button', { name: 'Save expiration' }).click();
   await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible(READY);
+}
+
+// A payoff view with a value: its chart (labelled by the table's caption) and the table that is the chart's text equivalent.
+export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current'): Promise<void> {
+  const region = page.getByRole('region', { name: `${kind} Expiration Payoff` });
+  await expect(region.getByRole('img', { name: new RegExp(`^${kind} payoff at expiration by `) })).toBeVisible(READY);
+  const table = region.getByRole('table', { name: new RegExp(`^${kind} payoff at expiration by `) });
+  await expect(table).toBeVisible();
+  await expect(table.getByRole('columnheader')).toHaveCount(3);
+  expect(await table.locator('tbody tr').count()).toBeGreaterThan(0);
+}
+
+// A payoff view that does not apply: text naming the reason, with no chart and no table, so the state is not colour alone.
+export async function expectPayoffNotApplicable(page: Page, kind: 'Planned' | 'Current', reason: RegExp): Promise<void> {
+  const region = page.getByRole('region', { name: `${kind} Expiration Payoff` });
+  await expect(region).toBeVisible(READY);
+  await expect(region.getByText(reason)).toBeVisible();
+  await expect(region.getByRole('img')).toHaveCount(0);
+  await expect(region.getByRole('table')).toHaveCount(0);
+}
+
+// The Workspace's stored Journal Entries (by their entry type key).
+export const entriesOf = (workspace: ProbedDatabase): { entryTypeKey: string }[] => (workspace.stores['journalEntries'] ?? []) as { entryTypeKey: string }[];
+
+// O-S after S1 (Sell to open 2 @ 1.25, Monday 10:00), planned Monday 09:00 and recorded at whatever the clock is now, ending on its
+// Trade Detail; returns the Trade's id.
+export async function createShortPutTrade(page: Page): Promise<string> {
+  await confirmOptionPlan(page, { ...OS, planTime: '2026-10-12T09:00' });
+  const tradeId = await currentTradeId(page);
+  await recordOptionEntry(page, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
+  await page.getByRole('link', { name: 'Back to the Trade' }).click();
+  await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
+  return tradeId;
 }
 
 // From a Trade Detail: one option entry (Buy to open or Sell to open) with these rows and the reflection, ending on its receipt.
