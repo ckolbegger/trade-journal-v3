@@ -24,6 +24,17 @@ export const BENCH_AS_OF_DATE = '2026-11-20';
 export const BENCH_AS_OF_INSTANT = '2026-11-20T22:00:00Z';
 // Open option Trades whose contract expires on the as-of date, so they are Settlement Due in the as-of Review.
 export const BENCH_SETTLEMENT_DUE = 4;
+// The profile's Open option Trade count for `expectedSettlementDue`. A full dataset must record it as a non-negative
+// integer; a missing or malformed count fails rather than defaulting to 0, which would hide a missing settlement list.
+// A partial dataset records none and keeps 0.
+export function openOptionTradesOf(dataset: { readonly partial: boolean; readonly counts: Readonly<Record<string, unknown>> }): number {
+  if (dataset.partial) return 0;
+  const count = dataset.counts['openOptionTrades'];
+  if (typeof count !== 'number' || !Number.isInteger(count) || count < 0) {
+    throw new Error(`counts.openOptionTrades in bench/dataset.json is ${count === undefined ? 'missing' : `not a non-negative integer (${JSON.stringify(count)})`}; regenerate the profile`);
+  }
+  return count;
+}
 // The Settlement Due contracts the as-of Review lists: the generator's rule, shared with the harness. A partial dataset
 // records none.
 export function expectedSettlementDue(profile: { readonly partial: boolean; readonly openOptionTrades: number }): number {

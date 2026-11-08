@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BENCH_SETTLEMENT_DUE, expectedSettlementDue } from '../../src/app/bench.ts';
+import { BENCH_SETTLEMENT_DUE, expectedSettlementDue, openOptionTradesOf } from '../../src/app/bench.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 import { instrumentLabel } from '../../src/ui/calculation-words.ts';
 import { shortDate } from '../../src/ui/format.ts';
@@ -196,5 +196,17 @@ describe('expected Settlement Due count (T7.29-B9)', () => {
     expect(expectedSettlementDue({ partial: false, openOptionTrades: 2 })).toBe(2);
     expect(expectedSettlementDue({ partial: false, openOptionTrades: 0 })).toBe(0);
     expect(expectedSettlementDue({ partial: true, openOptionTrades: 60 })).toBe(0);
+  });
+});
+
+describe('Open option count of the profile (T7.29-B12)', () => {
+  it('should throw a regenerate the profile error for a full dataset whose Open option count is not a non-negative integer', () => {
+    for (const bad of [undefined, -1, 1.5, '60', null, Number.NaN]) {
+      expect(() => openOptionTradesOf({ partial: false, counts: { openOptionTrades: bad } })).toThrow(/openOptionTrades.*regenerate the profile/);
+    }
+    expect(() => openOptionTradesOf({ partial: false, counts: {} })).toThrow(/regenerate the profile/);
+    expect(openOptionTradesOf({ partial: false, counts: { openOptionTrades: 60 } })).toBe(60);
+    expect(openOptionTradesOf({ partial: false, counts: { openOptionTrades: 0 } })).toBe(0);
+    expect(openOptionTradesOf({ partial: true, counts: {} })).toBe(0);
   });
 });

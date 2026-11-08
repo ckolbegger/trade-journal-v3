@@ -28,7 +28,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { chromium, type BrowserContext, type Locator, type Page } from '@playwright/test';
-import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, expectedSettlementDue, type BenchAsOfReview } from '../src/app/bench.ts';
+import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, expectedSettlementDue, openOptionTradesOf, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { cardIdentity, closedIdentity, expectedSettlementIdentity, firstDifference, settlementExpectations, settlementIdentity, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
@@ -316,7 +316,7 @@ async function compareDueReflections(page: Page, when: string) {
 const settlementComparisons: { when: string; items: number }[] = [];
 // The generator's rule: its Settlement Due contracts at the as-of Review, fewer when the profile has fewer Open option Trades;
 // a partial dataset records none.
-const EXPECTED_SETTLEMENT_DUE = expectedSettlementDue({ partial, openOptionTrades: (dataset['counts'] as Record<string, number>)['openOptionTrades'] ?? 0 });
+const EXPECTED_SETTLEMENT_DUE = expectedSettlementDue({ partial, openOptionTrades: openOptionTradesOf({ partial, counts: dataset['counts'] as Record<string, unknown> }) });
 async function compareSettlement(page: Page, when: string) {
   const expectedItems = settlementExpectations(asOfReview?.settlement, EXPECTED_SETTLEMENT_DUE);
   if (!expectedItems) return;
