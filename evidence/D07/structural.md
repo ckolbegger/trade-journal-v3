@@ -2068,3 +2068,10 @@ The figures come from the critic's completion notice. The brief is `.claude/docs
 - **T7.32-B3:** `it should` keep every chart label inside the SVG's bounds, including a Current chart's "Latest close" label near a rising ray's end.
 - **T7.32-B4:** `it should` keep a moved label clear of tick labels and axis titles, and never accept a colliding position when its search runs out.
 - **T7.32-B5:** `it should` keep every tick row inside the SVG and clear of the axis title when breakpoints cluster beyond three rows.
+
+### T7.32-B3: chart labels stay inside the SVG
+
+- **Commit `971559fe`.** `clearBaseline` is replaced by `place(text, wantX, baseline, anchor, placed, step)` in `PayoffView.tsx`: it pulls x in so the label's estimated box stays within 0..640, searches baselines in the `step` direction (up to 6 moves) then the other way, accepting only a baseline in 13..344 that clears every placed box, and clamps to 13..344 if none fits. The zero-set and close labels are placed before the JSX, in B2's order.
+- **Case:** "should keep every chart label inside the SVG bounds, including the Latest close label near a rising ray end" (Vitest, `PayoffView.test.tsx`), over four Current charts. Red: "Latest close 90.00 … expected 694.98 to be less than or equal to 640" (the right edge). Green. **Flagged:** the red came from the right edge only; the top-edge clip ocr described (a collision pushing the close label above the top) was not shown red by this case.
+- **Checks:** `vitest run src/ui/screens` 491 passed; B2's 3 browser cases pass; typecheck, tsc6, lint, lint:deps exit 0.
+- **ocr** (`ocr/T7.32-B3-971559fe.json`): 1 file reviewed, 0 comments. No findings.
