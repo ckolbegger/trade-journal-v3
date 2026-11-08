@@ -37,7 +37,8 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
   // D5 P17, A64: resolve one Debt by Answer or Decline, from Trade Detail (Source Trade Detail).
   'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
-  'TradeWorkflows.confirmPlan': ['LongStock'],
+  // D7: a Plan of a single option Leg, with its payoff in the result.
+  'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut'],
   // D2 A18: opening and increase Buys of a Stock serving its Planned Leg, every member in one
   // Trade, with the Position Change Reflection completed or declined. D5: or deferred.
   // D6: a Sell reduces or closes the Position; the exit that leaves nothing open carries a Close Reason
@@ -58,16 +59,22 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
     'CloseReviewComplete',
     'CloseReviewDecline',
     'CloseReviewDefer',
+    // D7: option Executions in both roles, and the Expiration member.
+    'Option',
+    'SellToOpen',
+    'BuyToClose',
+    'Expiration',
   ],
   // D4: the Open list and Detail carry the current evaluation. D5: Detail carries Debt status and actions.
   // D6: the Closed list and Detail, which need no Mark.
-  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation'],
-  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt'],
+  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option'],
+  // D7: the payoff at the single expiration, and the Settlement Due item.
+  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
-  'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
+  'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
   // D5: frames carry the previous session's close.
-  'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
+  'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
   'MarketData.recover': [],
   // D5 P17: owed reflections inside the walk; there is no DailyReview.getDebt.
   // D5R: the walk carries each Trade's range position and the gap groups' Trades; a card carries the Plan
@@ -76,8 +83,8 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // is not an operation (P37).
   // D6 P20: the Trades outside the walk with a reflection owed form a group after it, whose cards are the
   // ReflectionsOwed kind; there is still no DailyReview.getDebt.
-  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup'],
-  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed'],
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+  'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue'],
   'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
 };
 
@@ -86,7 +93,7 @@ export function installedCapabilities(releaseId: string, sessionPolicy: SessionP
     releaseId,
     sessionPolicy,
     operations: OPERATIONS,
-    strategies: ['strategy.long-stock'],
+    strategies: ['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put'],
     entryTypes: [
       'entry-type.plan-reflection',
       'entry-type.position-change-reflection',

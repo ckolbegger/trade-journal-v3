@@ -21,7 +21,7 @@ export const ROUTES = [
     label: 'Trades',
     // The Open (default), Planned (D2 A32) and Closed (D6 A95) tabs.
     requires: ['TradeViewsAndReporting.browseTrades'],
-    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'Closed', 'CurrentEvaluation'] },
+    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'Closed', 'CurrentEvaluation', 'Option'] },
     navigation: true,
     readOnly: true,
   },
@@ -42,11 +42,11 @@ export const ROUTES = [
     variants: {
       // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
       // D6 P20, A89, A90: the group of Trades outside the walk with a reflection owed, and its cards.
-      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup'],
-      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed'],
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+      'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue'],
       'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
-      'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
-      'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
+      'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
+      'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
     },
     navigation: true,
     readOnly: true,
@@ -58,7 +58,7 @@ export const ROUTES = [
     // D5 P17: Debt status, and answering or declining an owed reflection here (Source Trade Detail).
     requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query', 'Journal.save'],
     variants: {
-      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt'],
+      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
       'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
       'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
     },
@@ -95,6 +95,10 @@ export const ROUTES = [
         'CloseReviewComplete',
         'CloseReviewDecline',
         'CloseReviewDefer',
+        'Option',
+        'SellToOpen',
+        'BuyToClose',
+        'Expiration',
       ],
     },
     navigation: false,
@@ -110,6 +114,7 @@ export const ROUTES = [
       'ReferenceCatalog.resolve',
       'Journal.getDefinitions',
     ],
+    variants: { 'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut'] },
     navigation: true,
     readOnly: false,
   },

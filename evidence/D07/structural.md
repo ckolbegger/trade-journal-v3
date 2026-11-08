@@ -597,3 +597,13 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 02f84102`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-17-schema-6-seed-checks.txt` |
 
 Tier: full, printed reason "first matching path since 02f84102: e2e/d2/migration.spec.ts". Ports free before and after. T7.17 is complete.
+
+## T7.18 Installed Capability Manifest and composition root for D7
+
+Command: `npm run verify:capabilities` (exit 0).
+
+```text
+verify:capabilities OK: 19 operations, 11 variant-qualified, 8 routes, 4 Entry Types, schema 6, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+```
+
+The manifest (`src/coordinators/workspace/capabilities.ts`) adds: `confirmPlan` LongCall, LongPut, CashSecuredPut; `recordPositionChange` Option, SellToOpen, BuyToClose, Expiration; `getTradeDetail` and `DailyReview.getTrade` ExpirationPayoff, SettlementDue; `DailyReview.open` SettlementFamily; `browseTrades`, `MarketData.save` and `MarketData.query` Option; the three Strategies; schema 6. Assignment, Exercise, cash settlement, multi-leg and structure-value variants are absent. The route table (`src/app/routes.ts`) declares the same variants so the verifier's reachability checks hold; the forms arrive in T7.19 to T7.22. Also run: typecheck, tsc6, lint, lint:deps (exit 0), unit project (116 files, 1372 passed), integration project (77 files, 159 passed).

@@ -363,7 +363,7 @@ describe('requestDurability', () => {
 });
 
 describe('Installed Capability Manifest', () => {
-  it('should list exactly the public operations and variants through D6, the Long Stock Strategy, the Plan Reflection, Position Change Reflection, Daily Trade Review and Close Review Entry Types, schema version 5, no backup schema range, and no provider adapters, bound to the release identity and the session-policy identity', () => {
+  it('should list exactly the public operations and variants through D7, the Long Stock, Long Call, Long Put and Cash-Secured Put Strategies, the Plan Reflection, Position Change Reflection, Daily Trade Review and Close Review Entry Types, schema version 6, no backup schema range, and no provider adapters, bound to the release identity and the session-policy identity', () => {
     expect(installedCapabilities('release-1', nyseSessionPolicy.identity)).toEqual({
       releaseId: 'release-1',
       sessionPolicy: nyseSessionPolicy.identity,
@@ -377,7 +377,7 @@ describe('Installed Capability Manifest', () => {
         'Journal.getDefinitions': [],
         'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
         'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
-        'TradeWorkflows.confirmPlan': ['LongStock'],
+        'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut'],
         'TradeWorkflows.recordPositionChange': [
           'Opening',
           'Increase',
@@ -393,17 +393,29 @@ describe('Installed Capability Manifest', () => {
           'CloseReviewComplete',
           'CloseReviewDecline',
           'CloseReviewDefer',
+          'Option',
+          'SellToOpen',
+          'BuyToClose',
+          'Expiration',
         ],
-        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation'],
-        'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt'],
-        'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
-        'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
+        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option'],
+        'TradeViewsAndReporting.getTradeDetail': [
+          'Planned',
+          'Open',
+          'Closed',
+          'CurrentEvaluation',
+          'Debt',
+          'ExpirationPayoff',
+          'SettlementDue',
+        ],
+        'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
+        'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
         'MarketData.recover': [],
-        'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup'],
-        'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed'],
+        'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
+        'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue'],
         'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
       },
-      strategies: ['strategy.long-stock'],
+      strategies: ['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put'],
       entryTypes: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',
