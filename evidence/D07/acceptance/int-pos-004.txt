@@ -1,0 +1,13 @@
+
+> trade-journal-v3@0.0.0 test:integration
+> vitest run --project integration d7/lifecycle d7/short-put d7/expiration-close-review
+
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  3 passed (3)
+      Tests  5 passed (5)
+   Start at  14:26:14
+   Duration  393ms (transform 432ms, setup 52ms, import 582ms, tests 258ms, environment 0ms)
+

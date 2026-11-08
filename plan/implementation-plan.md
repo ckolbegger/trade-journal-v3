@@ -120,7 +120,7 @@ Protocol Phase 6, adapted by decision 40.
 | Item | Record |
 |---|---|
 | Repository path | `plan/implementation-plan.md` on branch `claude-opus-5.5` of `ckolbegger/trade-journal-v3`, worktree `worktrees/claude-opus-5.5` |
-| Immutable revision | **Revision 70**: the commit tagged `claude-opus-5.5-plan-r70` (revision 69 with the revision history moved into [revisions.md](revisions.md)). Every revision, newest first, is in [revisions.md](revisions.md). A new revision adds its entry at the top there and replaces this one. Revisions are tagged `claude-opus-5.5-plan-r<n>`. |
+| Immutable revision | **Revision 71**: the commit tagged `claude-opus-5.5-plan-r71` (revision 70 with D7's AC-POS-004 and AC-RESP-001 commands corrected to name existing test files, and both rows covered). Every revision, newest first, is in [revisions.md](revisions.md). A new revision adds its entry at the top there and replaces this one. Revisions are tagged `claude-opus-5.5-plan-r<n>`. |
 | Stack and versions | [technology-stack.md](technology-stack.md), Profile A, with ["Pinned versions"](technology-stack.md#pinned-versions) (decision 42) |
 | Browser and OS provenance | Chromium 153.0.8010.12, Firefox 155.0, and WebKit 26.6 as bundled with Playwright 1.63.0, on macOS 26.6.2 (25G83) arm64. This is provenance, not a support allowlist. |
 | Task graph and boundaries | The 31 ordered deliverables in the summary table (27, plus D5R from revision 20, D5R2 from revision 28, the D6 prefactor from revision 30 and the D7 prefactor from revision 42). Task graphs for D1, D2, D4–D8, D5R, D5R2 and the D6 and D7 prefactors are in their breakdown files; D9–D28 get theirs by revision (decision 40). |
