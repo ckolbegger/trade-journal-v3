@@ -576,3 +576,24 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 1ee7aa39`. The 
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-34-long-stock-key-checks.txt` |
 
 Tier: full, printed reason "first matching path since 1ee7aa39: e2e/d1/no-save.spec.ts". Ports free before and after. T7.34 is complete.
+
+## T7.17 Workspace: migration to schema 6
+
+Behavioral; commit `35f38715`. One case, written as five per-version tests (v1 to v5 fixtures) in `tests/integration/d7/migration.test.ts`; red `AssertionError: expected 2 to be 3` (5 failed: the receipt's Catalog manifest was still 2), green after `workspace.ts` and `migration.ts` seed `D7_CATALOG_MANIFEST`. No first-run passes. Receipts name manifest 3 and the three option Strategy keys (after the four Close Reasons for v1–v4); per-store counts describe the source database, unchanged. `verify:fixtures` passes with no re-freeze. Expectations edited because the option Strategies are now seeded: `workspace.test.ts`, `migration.test.ts`, `tests/integration/d1/initialize.test.ts`, `d6/migration.test.ts`, `d6/seed.test.ts`; `e2e/d2/migration.spec.ts` filters the three option Strategy keys from its authoritative Catalog comparison; schema-5 test names in d2, d4, d5 and d6 renamed (d6 capacity-profile names left for T7.26). Four test-only places still seed `D6_CATALOG_MANIFEST` straight into the Catalog module, not through the Workspace (closed-trade-review fixture, position-change-form facade, `closed-views.test.ts`, `record-position-change.test.ts`).
+
+### ocr review of `35f38715`
+
+No findings (`ocr/T7.17-35f38715.json`).
+
+### Cumulative run after T7.17 (`t7-17-schema-6-seed`, at `35f38715`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 02f84102`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1318 passed, exit 0 | `suite-runs/t7-17-schema-6-seed-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-17-schema-6-seed-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-17-schema-6-seed-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-17-schema-6-seed-checks.txt` |
+
+Tier: full, printed reason "first matching path since 02f84102: e2e/d2/migration.spec.ts". Ports free before and after. T7.17 is complete.
