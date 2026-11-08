@@ -8,7 +8,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import { countRequests, type CountedRequest } from '../../support/request-counter.ts';
-import { confirmOption, MONDAY_NEXT_1700, OC_PC1, onboardedAt, optionPlanCommand, recordOption, XYZ_CALL, type Fill } from './support.ts';
+import { instrumentKey } from '../../../src/domain/instrument/index.ts';
+import { confirmOption, MONDAY_NEXT_1700, OC_PC1, onboardedAt, optionPlanCommand, recordOption, saveMark, XYZ_CALL, type Fill } from './support.ts';
 
 const EARLY_EXPIRATION = '2026-11-13';
 const EARLY_PLAN = '2026-11-02T14:00:00Z';
@@ -94,6 +95,11 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     const { app } = await onboardedAt(MONDAY_NEXT_1700);
     const dueId = await earlyCall(app);
     const liveId = await earlyCall(app, NOT_DUE_EXPIRATION);
+    // Marks for both contracts and for XYZ, so the live contract takes the usual marked path.
+    // The expired contract's last Mark is on its expiration date; a Mark after expiration is rejected.
+    await saveMark(app, instrumentKey({ ...XYZ_CALL, expiration: EARLY_EXPIRATION }), EARLY_EXPIRATION, '0.05');
+    await saveMark(app, instrumentKey({ ...XYZ_CALL, expiration: NOT_DUE_EXPIRATION }), '2026-11-23', '1.20');
+    await saveMark(app, 'XYZ', '2026-11-23', '56.00');
     const detailOf = async (tradeId: string) => {
       const counted = await countRequests(() => app.TradeViewsAndReporting.getTradeDetail({ tradeId }));
       if (counted.result.kind !== 'Ready') throw new Error(`getTradeDetail: ${counted.result.kind}`);
@@ -103,16 +109,19 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     };
     const due = await detailOf(dueId);
     const live = await detailOf(liveId);
-    // Exact counts per store and method for each Detail, 22 requests each.
-    const PINNED = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 11, 'observations.getAll': 1, 'observations.openCursor': 2, 'trades.get': 2 };
+    // Exact counts per store and method. The live contract has a Mark at the clock's date, so it takes the usual marked path: 20 requests.
+    const PINNED = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 11, 'observations.getAll': 1, 'trades.get': 2 };
     expect(live.tally).toEqual(PINNED);
-    // The expired contract's settlement time is a calendar answer (`ResolveSession`), not a stored read, and an expired contract has
-    // no live mark to read, so today the two Details issue identical requests. The plan allows one more `observations` request for
-    // the due Trade (A111's Historical frame); anything else, or fewer, is a defect.
+    // The expired contract's settlement time is a calendar answer (`ResolveSession`), not a stored read. Its own last Mark is
+    // dated its expiration, older than the clock, so the Detail also looks that Mark up: 1 `meta.get` and 2 `openCursor` on
+    // `observations` that the live Trade does not make (without that Mark, probed by hand, the Detail made only 1 cursor more
+    // than the live one). The plan allows one more `observations` request for the due Trade (A111's Historical frame); anything
+    // else, or fewer, is a defect, so the due Detail is 24 requests: the live 20, those 3 Mark reads, and at most 1 `getAll`.
+    const MARK_LOOKUP = { 'meta.get': 1, 'observations.openCursor': 2 };
     const extra = (due.tally['observations.getAll'] ?? 0) - PINNED['observations.getAll'];
     expect(extra).toBeGreaterThanOrEqual(0);
     expect(extra).toBeLessThanOrEqual(1);
-    expect({ ...due.tally, 'observations.getAll': PINNED['observations.getAll'] }).toEqual(PINNED);
+    expect(due.tally).toEqual({ ...PINNED, 'meta.get': PINNED['meta.get'] + MARK_LOOKUP['meta.get'], 'observations.openCursor': MARK_LOOKUP['observations.openCursor'], 'observations.getAll': PINNED['observations.getAll'] + extra });
     expect('settlement' in live.view && live.view.settlement).toEqual([]);
     expect('settlement' in due.view && due.view.settlement).toHaveLength(1);
   });
