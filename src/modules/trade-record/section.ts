@@ -109,8 +109,8 @@ function planIssuesOf(document: TradeDocument, record: TradeAnalysisRecord, shap
 }
 
 // A Closed Trade's Close Reason must agree with its facts (D6 A85): exactly one fact, naming the
-// terminal Position Change (the last in Fact Order of the replayed facts, which Trade Analysis
-// derives) and a Catalog identity that exists. Lifecycle and `terminalTime` agreement belong to
+// terminal Position Change (the one Trade Analysis's reconciliation names, from its shared
+// terminal-change function) and a Catalog identity that exists. Lifecycle and `terminalTime` agreement belong to
 // the stored-state repairs and the private index (A96), not here.
 function closeReasonIssuesOf(document: TradeDocument, derived: DerivedTradeState, closeReasonIds: ReadonlySet<string>): TradeSectionIssue[] {
   const { tradeId } = document;
@@ -121,7 +121,7 @@ function closeReasonIssuesOf(document: TradeDocument, derived: DerivedTradeState
   if (closed && derived.terminalDisposition.kind === 'Value' && derived.terminalDisposition.value.some((m) => m.mechanism === 'Expiration')) {
     return facts.map(({ factId }) => ({ code: 'CloseReasonNotApplicable', tradeId, factId }));
   }
-  const terminalId = closed ? derived.facts.at(-1)?.positionChangeId : undefined;
+  const terminalId = derived.reconciliation!.terminalPositionChangeId ?? undefined;
   const issues: TradeSectionIssue[] = [];
   for (const { factId, versions } of facts) {
     const { closeReasonId, terminalPositionChangeId } = versions.at(-1)!.value;
