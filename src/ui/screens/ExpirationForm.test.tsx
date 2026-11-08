@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { exitFormFacade, plannedDetail } from '../../../tests/support/position-change-form-facade.ts';
 import { expiredOptionTrade, OC_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
@@ -153,5 +153,63 @@ describe('the form around the save', () => {
     const banner = await screen.findByRole('region', { name: 'This Trade changed after you opened this form' });
     expect(within(banner).getByText('Nothing was saved. The Trade changed after this expiration was offered, so review the Trade before recording it. Your choices are kept below.')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Reflection on this expiration' })).toBeTruthy();
+  });
+});
+
+describe('load, dirtiness, and another Trade', () => {
+  it('should say the expiration form couldn’t load, and that nothing was changed, when the Trade can’t be read', async () => {
+    const facade = exitFormFacade(dueDetail);
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockRejectedValue(new Error('unreadable'));
+    renderForm(facade);
+    expect(await screen.findByText('We couldn’t load this expiration form. Nothing was changed.')).toBeTruthy();
+    expect(screen.queryByText('Loading the expiration form…')).toBeNull();
+  });
+
+  it('should report no unsaved values once the expiration is recorded', async () => {
+    const facade = exitFormFacade(dueDetail);
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+    const onDirtyChange = vi.fn();
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1/record-expiration']}>
+          <Routes>
+            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationForm facade={facade} timeZone="America/New_York" onDirtyChange={onDirtyChange} />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    const reflection = await screen.findByRole('region', { name: 'Reflection on this expiration' });
+    await user.click(within(reflection).getByRole('radio', { name: 'Decline to reflect' }));
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.click(screen.getByRole('button', { name: 'Save expiration' }));
+    await screen.findByRole('heading', { name: 'Expiration recorded' });
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('should load the other Trades settlement when the routes Trade changes', async () => {
+    const facade = exitFormFacade(dueDetail);
+    const other = { ...dueDetail, settlement: [{ ...dueDetail.settlement[0]!, tradeId: 'trade-2', quantity: Rational.of(3n) }] };
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockImplementation((request) =>
+      Promise.resolve({ kind: 'Ready', view: 'tradeId' in request && request.tradeId === 'trade-2' ? other : dueDetail, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } } as never),
+    );
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(expirationResult() as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1/record-expiration']}>
+          <Link to="/trades/trade-2/record-expiration">Other Trade</Link>
+          <Routes>
+            <Route path="/trades/:tradeId/record-expiration" element={<ExpirationForm facade={facade} timeZone="America/New_York" onDirtyChange={() => undefined} />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Save expiration' }));
+    await screen.findByRole('heading', { name: 'Expiration recorded' });
+    await user.click(screen.getByRole('link', { name: 'Other Trade' }));
+    const terms = await screen.findByRole('region', { name: 'Expiration' });
+    expect(within(terms).getByText('Quantity').nextElementSibling?.textContent).toBe('Long 3 contracts');
+    expect(screen.queryByRole('heading', { name: 'Expiration recorded' })).toBeNull();
   });
 });

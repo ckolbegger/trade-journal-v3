@@ -61,21 +61,52 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
     if (conflict) conflictRef.current?.focus();
   }, [conflict]);
   const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
-  const dirty = choice !== 'now' || closeChoice !== 'now' || Object.keys(answers).length + Object.keys(closeAnswers).length > 0 || reason !== '' || closeReason !== '';
+  const [failed, setFailed] = useState(false);
+  // The route keeps this form mounted across Trades, so another Trade starts from a clean load and clean values.
+  const [loadingFor, setLoadingFor] = useState({ facade, tradeId });
+  if (loadingFor.facade !== facade || loadingFor.tradeId !== tradeId) {
+    if (loadingFor.tradeId !== tradeId) {
+      setAnswers({});
+      setChoice('now');
+      setReason('');
+      setCloseAnswers({});
+      setCloseChoice('now');
+      setCloseReason('');
+      setIssues([]);
+      setConflict(false);
+      setRecorded(undefined);
+    }
+    setLoadingFor({ facade, tradeId });
+    setView(undefined);
+    setDefinition(undefined);
+    setCloseDefinition(undefined);
+    setFailed(false);
+  }
+  const dirty = !recorded && (choice !== 'now' || closeChoice !== 'now' || Object.keys(answers).length + Object.keys(closeAnswers).length > 0 || reason !== '' || closeReason !== '');
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
 
   useEffect(() => {
     let superseded = false;
+    // A read that fails or settles without its value leaves nothing to show but the failure.
+    const fail = () => {
+      if (!superseded) setFailed(true);
+    };
     void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then((result) => {
-      if (!superseded && result.kind === 'Ready') setView(result.view);
-    });
+      if (superseded) return;
+      if (result.kind === 'Ready') setView(result.view);
+      else setFailed(true);
+    }, fail);
     void facade.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' }).then((result) => {
-      if (!superseded && result.kind === 'Found') setDefinition(result.definition);
-    });
+      if (superseded) return;
+      if (result.kind === 'Found') setDefinition(result.definition);
+      else setFailed(true);
+    }, fail);
     void facade.Journal.getDefinitions({ latestFor: 'entry-type.close-review' }).then((result) => {
-      if (!superseded && result.kind === 'Found') setCloseDefinition(result.definition);
-    });
+      if (superseded) return;
+      if (result.kind === 'Found') setCloseDefinition(result.definition);
+      else setFailed(true);
+    }, fail);
     return () => {
       superseded = true;
     };
@@ -83,6 +114,7 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
 
   const { fieldError, describedBy, promptErrors } = fieldIssues(issues);
   if (recorded) return <ExpirationReceipt result={recorded} timeZone={timeZone} fromReview={fromReview} />;
+  if (failed) return <p role="alert">We couldn’t load this expiration form. Nothing was changed.</p>;
   if (!view || !definition || !closeDefinition) return <p role="status">Loading the expiration form…</p>;
   const item = 'settlement' in view ? view.settlement[0] : undefined;
   if (!item) return <p>This Trade has no contract due for settlement.</p>;
