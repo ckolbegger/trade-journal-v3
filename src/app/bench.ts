@@ -7,13 +7,26 @@
 // Version 4 (D6 T6.24): the book turns over (plan section 1.4 at D6): 24,700 Trades are planned, entered and
 // closed with a Close Reason and a Close Review, 200 stay Open and 100 stay Planned.
 // Version 5 (T6.24-B2): every Position Change falls before its own session's close, early-close days included.
-export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v5';
-export const BENCH_GENERATOR_VERSION = 5;
+// Version 6 (D7 T7.28): plan section 1.4 at D7: 30% of the Trades are single-leg options (Long Call 12%, Long Put 8%,
+// Cash-Secured Put 10%), 40% of the Closed option Trades end by Expiration (30% of those after a partial exit), 10% of
+// the long-option Plans are Authorized, and the as-of instant moves to Friday 2026-11-20 17:00 New York with four Open
+// option Trades Settlement Due.
+export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v6';
+export const BENCH_GENERATOR_VERSION = 6;
 export const BENCH_SEED = 20211011;
 // The generator's clock starts here and only moves forward with the generated Economic Times.
 // Every simulated session is inside session-policy coverage (decision 51).
 export const BENCH_CLOCK_START = '2024-01-02T13:00:00Z';
 export const BENCH_TIME_ZONE = 'America/New_York';
+// D7 section 1.4: the as-of instant is Friday 2026-11-20 17:00 New York (22:00Z, standard time); the simulation runs
+// through that session. A short smoke run ends at its last session's completion plus five minutes instead.
+export const BENCH_AS_OF_DATE = '2026-11-20';
+export const BENCH_AS_OF_INSTANT = '2026-11-20T22:00:00Z';
+// Open option Trades whose contract expires on the as-of date, so they are Settlement Due in the as-of Review.
+export const BENCH_SETTLEMENT_DUE = 4;
+// The Open book's stock Instruments: the 60 Open option Trades' Underlyings are among them (most option
+// Underlyings are also held as stock), and each Open option Trade holds its own contract, 150 Instruments in all.
+export const BENCH_OPEN_STOCK_INSTRUMENTS = 90;
 
 // Section 1.3 at D2 and D4: 25,000 Trades (200 Open) over the sessions from the clock start through
 // the end of session-policy coverage (1,255 real sessions; the plan says about 1,260), 150 distinct
@@ -93,6 +106,25 @@ export interface BenchCounts {
   readonly closeReviewDebtsSettled: number;
   readonly closeReviewDebtsDeclined: number;
   readonly closeReviewDebtsOutstanding: number;
+  // D7 (T7.28): the option Trades by Strategy (Long Call, Long Put, Cash-Secured Put), the Plans with an Exercise
+  // Intent and how many are Authorized, the Expirations and how many followed a partial exit, and the Open book's
+  // option Trades, the contracts they hold, and the Underlyings of those contracts that are also held as stock.
+  readonly optionTrades: number;
+  readonly longCalls: number;
+  readonly longPuts: number;
+  readonly cashSecuredPuts: number;
+  readonly exerciseIntentPlans: number;
+  readonly authorizedPlans: number;
+  readonly expirations: number;
+  readonly expirationsAfterPartialExit: number;
+  readonly openOptionTrades: number;
+  readonly openContracts: number;
+  readonly openStockInstruments: number;
+  readonly optionUnderlyingsHeldAsStock: number;
+  // Distinct Instruments the generator marked in a session (stock, and the contracts of the option Trades held at that
+  // session's cutoff): the mean over the sessions, and the most in one.
+  readonly instrumentsPerSessionMean: number;
+  readonly instrumentsPerSessionMax: number;
 }
 
 // An Outstanding Debt at the as-of instant: the Trade it follows, its kind, the Position Change's number
@@ -110,6 +142,9 @@ export interface BenchOutstandingDebt {
 // The as-of Review's identities (D6): its walk in order, and its owed-reflection group in order with each
 // Trade's Outstanding Debts in due-anchor order.
 export interface BenchAsOfReview {
+  // D7: the settlement family in the Review's order (expiration date, then Trade identity), each item's Trade,
+  // contract key, expiration date and open quantity.
+  readonly settlement: readonly { readonly tradeId: string; readonly underlying: string; readonly contract: string; readonly expiration: string; readonly quantity: string }[];
   readonly walk: readonly string[];
   readonly owedGroup: readonly { readonly tradeId: string; readonly underlying: string; readonly debtIds: readonly string[] }[];
 }

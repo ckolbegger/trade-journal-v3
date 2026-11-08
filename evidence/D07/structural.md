@@ -1069,3 +1069,51 @@ Fixture facts the plan does not give, chosen by the task (for the final report):
 | Static and verification checks | 13 of 13 exit 0 | `suite-runs/t7-27-schema-fixtures-checks.txt` |
 
 Tier: task, printed reason "no changed path since 47ec312b is on the full-tier list". `run-complete.sh`: run complete. Ports free before and after. Note: `tools/*.test.ts` (including `fixture-views.test.ts`, 12 passed in the task) sits outside `src` and `tests/integration`, so the cumulative unit stage does not run it (as before D7). T7.27 is complete.
+
+## T7.28 Benchmark generator
+
+Generator 6 (`src/app/bench.ts`: marker `tj-bench-generator-v6`, version 6; `src/app/bench-generator.ts`). Stack: schema 6.
+
+### Commands
+
+| Command | Result |
+|---|---|
+| `npm run build:bench` | exit 0 (`built in 98ms`) |
+| `BENCH_SESSIONS=12 node tools/bench-generate.ts` (smoke, same code path, scaled counts, writes only `.cache/bench/smoke-12/`) | exit 0, 228 s. Final line: `bench:generate OK: {"trades":413,"openTrades":3,"plannedTrades":2,"positionChanges":1602,"executions":3088,...,"optionTrades":126,"longCalls":54,"longPuts":32,"cashSecuredPuts":40,"exerciseIntentPlans":86,"authorizedPlans":9,"expirations":50,"expirationsAfterPartialExit":15,"openOptionTrades":1,"openContracts":1,...,"instrumentsPerSessionMean":142.1,"instrumentsPerSessionMax":202}`. Its as-of Review settlement family: one item (AAPL240118C00135000, expiration 2024-01-18, 20 contracts). |
+| `npm run bench:generate` (full) | **Not finished.** Stopped by me at about 10 minutes (the brief's limit): 50 of 726 sessions done in 533 s (8,395 of about 127,000 Actions; `review.save` was 490 of the 516 s of Review time, about 16 Actions a second, and a save grows with the stored history, tech debt item 8). A full run is therefore several hours (D4 said "on the order of an hour" for 1,255 sessions at 20 plans a session; D7 has 726 sessions at about 34 plans a session, so each Review walks about 240 Trades). `bench/dataset.json` and `bench/expected-open-rows.json` are therefore **unchanged** (still generator 5, schema 5), and the full counts below are not yet measured. Starting the command deleted the cached generator-5 profile (`.cache/bench/profile`, stamp mismatch), as the command always does on a version change; the aborted directory has no stamp, so it is never reused. Ports 5175, 9341 and 9342 were free before and after. |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+| `npx vitest run src/app/bench-generator.test.ts tools/bench` | 2 files, 17 tests passed (the file gained 5 cases: option mix, Authorized share, Expiration share and timing, Expirations not counted as Executions, four Settlement Due) |
+
+### Counts against section 1.4
+
+The full-profile counts are asserted inside the generator (it throws and writes nothing if they differ), and the schedule itself is unit tested at 1,000 Trades. Expected at 25,000 Trades, by construction:
+
+| Section 1.4 | Generator |
+|---|---|
+| 25,000 Trades: 24,700 Closed, 200 Open, 100 Planned | unchanged |
+| 30% options: Long Call 12%, Long Put 8%, Cash-Secured Put 10% | 7,500 = 3,000 / 2,000 / 2,500 (asserted) |
+| 5,000 long-option Plans, 10% Authorized | 5,000 and 500 (asserted) |
+| about 3,000 Expirations (40% of Closed option Trades, 30% after a partial exit) | **2,964** (40% of 7,410, asserted); after a partial exit **891** (30.06%) |
+| Open book 200 with 60 option Trades | 60 (asserted); 140 stock Trades on 90 stock Instruments, the 60 option Underlyings among them, plus 60 contracts: 150 Instruments |
+| about 150 distinct Instruments per session | 90 stock plus the contracts of the option Trades held at the cutoff: mean 142 and maximum 202 in the 12-session smoke; the full mean is recorded as `instrumentsPerSessionMean` |
+| Marks about 190,000 | **not reachable as written**: see choices. Estimate about 120,000 (90 x 726 stock Marks plus the contracts held) |
+| Close Review outcomes 24,700 split as D5 | unchanged (same `dispositionsFor` split over the 24,700 Closes, Expirations included; asserted) |
+| as-of Friday 2026-11-20 17:00 New York, four Open option Trades Settlement Due | `asOf` 2026-11-20T22:00:00Z, review date 2026-11-20; four Open option Trades expire on 2026-11-20 (asserted: the as-of Review has exactly 4 settlement items) |
+
+`bench/dataset.json` records, when generation completes: `generatorVersion`, `schemaVersion`, `asOf`, `reviewDate`, every count (including the new `optionTrades`, `longCalls`, `longPuts`, `cashSecuredPuts`, `exerciseIntentPlans`, `authorizedPlans`, `expirations`, `expirationsAfterPartialExit`, `openOptionTrades`, `openContracts`, `openStockInstruments`, `optionUnderlyingsHeldAsStock`, `instrumentsPerSessionMean`, `instrumentsPerSessionMax`) and `asOfReview` with the new `settlement` list (Trade, Underlying, contract key, expiration, quantity) beside `walk` and `owedGroup`.
+
+### Choices the plan leaves open (flagged)
+
+- **Session count and Marks.** Session-policy coverage starts 2024-01-01 (decision 51), so 2024-01-02 to 2026-11-20 is 726 sessions, not the 1,255 behind "about 190,000 Marks". With 150 Instruments a session the Marks are about 120,000. Reaching 190,000 would need about 260 Instruments a session, contradicting "about 150". I kept 150 and report the shortfall; the user decides.
+- **Port.** `BENCH_PORT` is 5175 (was 5181) in `tools/bench/profile.ts`; the bench origin changes with it.
+- **Stock instruments.** The Open stock Trades hold 90 symbols (the former 150 minus the 60 contract slots); a Marks gap on the as-of session is 10 of those 90.
+- **Contracts.** Root and symbol are the Underlying. Contracts per Plan: 20 or 40 (enough that an Open Trade's up-to-nine partial fills are whole). Strike by Strategy (call u+5, put u-5, Cash-Secured Put u-2, u = 40 + index mod 160), premium 2.00 to 6.00 (long) or 1.20 or 2.20 (credit), Stop and Target as in the T7.26 capacity phase. A partial exit is a fifth of the contracts in one Execution.
+- **Expiration dates.** A Closed option Trade's contract expires on the last session of a week (Friday, or Thursday before a holiday): for an Expiring Trade, the first such session at least 2 to 4 sessions after its last entry (one more after a partial exit); for a Trade closed by sale, the first one on or after its last exit. The Expiration is recorded at that session's close, before the Review; no Close Reason (A113), only a Close Review. So Close Reasons now total 24,700 less the Expirations; their section 1.4 shares apply to the other 21,736 and the old hard-coded exact reason counts were replaced by the option assertions. The four Settlement Due Trades expire on the as-of date, the other Open and the Planned option Trades on a later Friday (7 to 28 days).
+- **Marks of contracts.** A contract is marked each session its Trade is held at the cutoff, up to its expiration date, once per contract (Trades on one contract share the Mark). Trades closed by Expiration therefore have no Mark on their expiration day.
+- **Executions.** An Expiration is a settlement fact, not an Execution; the Executions are fewer than D6's by about the Expirations' exits.
+- **Which Underlyings.** Closed and Planned option Trades use the first 40 symbols like stock; Open option Trade k uses stock symbol k of the 90, so each is also held as stock.
+- **As-of clock.** Only the full run's last session uses 22:00Z; a smoke run keeps the session completion plus five minutes.
+
+### Expected-rows tooling
+
+`tools/bench-expected-rows.ts` and `bench:expected` are not changed: they re-render the Open table generically from the cached profile at the dataset's as-of instant, so option rows need nothing new. The comparison of the settlement family against `asOfReview.settlement` (and any option-figure checks in `bench-run.ts`) is T7.29's.

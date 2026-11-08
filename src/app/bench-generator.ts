@@ -18,13 +18,18 @@ import { browserHost } from '../delivery/browser-host.ts';
 import { RELEASE_ID } from '../delivery/release-identity.ts';
 import type { Clock } from '../domain/time/index.ts';
 import { createWebLocksLifecycleLock, type IdGenerator } from '../persistence/index.ts';
+import { instrumentKey, type OptionInstrument } from '../domain/instrument/index.ts';
 import {
+  BENCH_AS_OF_DATE,
+  BENCH_AS_OF_INSTANT,
   BENCH_CLOCK_START,
   BENCH_CLOSE_REASONS,
   BENCH_DISPOSITION_PER_MILLE,
   BENCH_GENERATOR_MARKER,
   BENCH_GENERATOR_VERSION,
+  BENCH_OPEN_STOCK_INSTRUMENTS,
   BENCH_PROFILE,
+  BENCH_SETTLEMENT_DUE,
   BENCH_SEED,
   BENCH_TAIL_SESSIONS,
   BENCH_TIME_ZONE,
@@ -76,15 +81,13 @@ interface Session {
   readonly completion: string;
 }
 const COMPLETION_BUFFER = 30 * MINUTE;
-const COVERAGE_END = '2028-12-31';
 
-// The real sessions from the clock start through the end of session-policy coverage, asked of Market
-// Data (only it sees the policy, A39): for each calendar day, the latest completed session as of that
-// day's end is the day itself exactly when the day is a session. 1,255 sessions, the last on
-// 2028-12-29 (the plan says about 1,260).
+// The real sessions from the clock start through the as-of date, asked of Market Data (only it sees the
+// policy, A39): for each calendar day, the latest completed session as of that day's end is the day itself
+// exactly when the day is a session. From D7 the run ends on the as-of date, Friday 2026-11-20.
 async function realSessions(app: Application): Promise<readonly Session[]> {
   const sessions: Session[] = [];
-  for (let day = Date.parse(BENCH_CLOCK_START.slice(0, 10)); new Date(day).toISOString().slice(0, 10) <= COVERAGE_END; day += 86_400_000) {
+  for (let day = Date.parse(BENCH_CLOCK_START.slice(0, 10)); new Date(day).toISOString().slice(0, 10) <= BENCH_AS_OF_DATE; day += 86_400_000) {
     const date = new Date(day).toISOString().slice(0, 10);
     const found = await app.MarketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: `${date}T23:59:00Z` } });
     if (found.kind !== 'Session') throw new Error(`session ${date}: ${found.kind}`);
@@ -98,10 +101,11 @@ const SYMBOLS = [
   'PG', 'XOM', 'CVX', 'LLY', 'ABBV', 'MRK', 'PEP', 'ADBE', 'CRM', 'ORCL', 'AMD', 'INTC', 'QCOM', 'TXN', 'WMT', 'DIS', 'NKE', 'MCD',
   'BA', 'CAT', 'DE', 'GS',
 ];
-// The 150 Instruments the Open Trades hold: the 40 above and 110 synthetic three-letter symbols.
-const INSTRUMENTS: readonly string[] = [
+// The 90 stock Instruments the Open Trades hold: the 40 above and 50 synthetic three-letter symbols. The Open book's
+// 60 option Trades each add a contract of their own, 150 Instruments in all (D7 section 1.4).
+const STOCK_INSTRUMENTS: readonly string[] = [
   ...SYMBOLS,
-  ...Array.from({ length: BENCH_PROFILE.instruments - SYMBOLS.length }, (_, k) => `Q${String.fromCharCode(65 + Math.floor(k / 26))}${String.fromCharCode(65 + (k % 26))}`),
+  ...Array.from({ length: BENCH_OPEN_STOCK_INSTRUMENTS - SYMBOLS.length }, (_, k) => `Q${String.fromCharCode(65 + Math.floor(k / 26))}${String.fromCharCode(65 + (k % 26))}`),
 ];
 const PLAN_EMOTIONS = ['calm', 'eager', 'anxious', 'fomo', 'relieved'];
 const DECISION_MODES = ['as-planned', 'deliberate-adjustment', 'reactive'];
@@ -115,18 +119,53 @@ const GAPS = [2, 3, 4] as const;
 // entering, most resolved at plan, some above plan (an Entry Size Excess).
 const FILL_TENTHS = [10, 6, 10, 12, 10] as const;
 
+// D7 section 1.4: 30% of the Trades are single-leg options. Within every ten Trades the first three are options,
+// and within every hundred 12 are Long Calls, 8 Long Puts and 10 Cash-Secured Puts. Of the Closed option Trades
+// 40% end by Expiration and 30% of those after a partial exit; 10% of the long-option Plans are Authorized.
+export type OptionKind = 'LongCall' | 'LongPut' | 'CashSecuredPut';
+export interface OptionSpec {
+  readonly kind: OptionKind;
+  readonly contracts: number;
+  // The contract's expiration date.
+  readonly expiration: string;
+  // The Trade ends by Expiration; `partial` contracts are first sold (or bought back) in a Position Change of their own.
+  readonly expires: boolean;
+  readonly partial: number;
+  readonly authorized: boolean;
+}
+const isOption = (index: number) => index % 10 < 3;
+// The number of option Trades among the first n Trades.
+const optionsBefore = (n: number) => 3 * Math.floor(n / 10) + Math.min(n % 10, 3);
+const KIND_OF_THIRTY = (k: number): OptionKind => (k < 12 ? 'LongCall' : k < 20 ? 'LongPut' : 'CashSecuredPut');
+const optionRight = (kind: OptionKind) => (kind === 'LongCall' ? 'Call' : 'Put');
+const isLongOption = (kind: OptionKind) => kind !== 'CashSecuredPut';
+
 // The Trades are, in order, the Closed ones (planned, entered, exited), the Open ones (entered, held) and the
-// Planned ones. Open Trade k holds Instrument k mod 150, so (at 200 of them) 50 Instruments are shared by two
-// Trades; the Closed and Planned Trades hold the first 40 Instruments, which have a Mark every session.
-const symbolOf = (index: number, closed: number, open: number) =>
-  index >= closed && index < closed + open ? INSTRUMENTS[(index - closed) % INSTRUMENTS.length]! : SYMBOLS[index % SYMBOLS.length]!;
+// Planned ones. The Open stock Trades hold the 90 stock Instruments in turn (so, at 140 of them, 50 are shared by two
+// Trades); each Open option Trade holds its own contract on one of the first 60 of them, which are therefore also held
+// as stock. The Closed and Planned Trades hold the first 40 Instruments, which have a Mark every session.
+const symbolOf = (index: number, closed: number, open: number) => {
+  if (index < closed || index >= closed + open) return SYMBOLS[index % SYMBOLS.length]!;
+  const optionIndex = optionsBefore(index) - optionsBefore(closed);
+  return STOCK_INSTRUMENTS[(isOption(index) ? optionIndex : index - closed - optionIndex) % STOCK_INSTRUMENTS.length]!;
+};
 
 const cents = (value: number) => `${Math.floor(value / 100)}.${String(value % 100).padStart(2, '0')}`;
+
+// The option Trade's contract as the Plan and its Executions name it.
+function contractOf(index: number, symbol: string, spec: OptionSpec): OptionInstrument {
+  const u = 40 + (index % 160);
+  const strike = spec.kind === 'LongCall' ? u + 5 : spec.kind === 'LongPut' ? u - 5 : u - 2;
+  return { kind: 'Option', symbol, root: symbol, expiration: spec.expiration, right: optionRight(spec.kind), strike: String(strike), multiplier: 100 };
+}
+// Premium per share in cents: what a long option costs (or a Cash-Secured Put credits) at the Plan's intended entry.
+const premiumOf = (index: number, kind: OptionKind) => (isLongOption(kind) ? 200 + 100 * (index % 5) : 120 + 100 * (index % 2));
 
 interface PlanEvent {
   readonly kind: 'Plan';
   readonly time: number;
   readonly index: number;
+  readonly option?: OptionSpec;
 }
 interface ChangeEvent {
   readonly kind: 'PositionChange';
@@ -134,7 +173,10 @@ interface ChangeEvent {
   readonly index: number;
   readonly side: 'Buy' | 'Sell';
   readonly quantities: readonly number[];
-  // The change that sells the whole Position: it carries the Close Reason and the Close Review.
+  readonly option?: OptionSpec;
+  // An Expiration of the contracts still held, at the close of the contract's last session: the Trade's terminal change.
+  readonly expire?: true;
+  // The change that closes the whole Position: it carries the Close Review, and (unless an Expiration) the Close Reason.
   readonly terminal: boolean;
   // The change's number in the generated (time) order and, for a terminal change, the Close's number.
   readonly number: number;
@@ -154,7 +196,14 @@ interface Schedule {
   readonly positionChanges: number;
   readonly closes: number;
   readonly executions: number;
+  // D7: the Expirations scheduled and how many follow a partial exit.
+  readonly expirations: number;
+  readonly expirationsAfterPartialExit: number;
 }
+
+// The week a day (UTC midnight) is in, Monday to Sunday.
+const weekOf = (day: number) => Math.floor((day / 86_400_000 + 3) / 7);
+const dateOf = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 // The whole dataset as a time-ordered list of Plan confirmations and Position Changes. A Closed Trade is
 // planned in a session, entered over the next 1–3 sessions, held, and exited over 1–3 sessions, one Position
@@ -169,21 +218,80 @@ export function schedule(days: readonly number[], profile: ReturnType<typeof ben
   let slot = 0;
   // Executions per Position Change run 1, 2, 3, 2 in the order the changes are scheduled: two on average.
   let fillSequence = 0;
+  const lastDay = days.length - 1;
+  // A contract expires at the close of the last session of a week.
+  const weekEnds = days.map((day, k) => k === lastDay || weekOf(days[k + 1]!) !== weekOf(day));
+  const weekEndFrom = (from: number) => {
+    for (let k = from; k < lastDay; k++) if (weekEnds[k]) return k;
+    return Math.max(from, lastDay - 1);
+  };
+  let expirations = 0;
+  let expirationsAfterPartialExit = 0;
   for (let index = 0; index < trades; index++) {
     const s = Math.floor((index * planSessions) / trades);
     slot = s === session ? slot + 1 : 0;
     session = s;
-    unsorted.push({ kind: 'Plan', time: days[s]! + 13 * 60 * MINUTE + 45 * MINUTE + slot * 5 * MINUTE, index });
-    if (index >= closedTrades + openTrades) continue;
+    const planTime = days[s]! + 13 * 60 * MINUTE + 45 * MINUTE + slot * 5 * MINUTE;
     const planned = plannedQuantity(index);
-    const change = (sessionIndex: number, side: 'Buy' | 'Sell', quantities: readonly number[], terminal: boolean) => {
+    const change = (sessionIndex: number, side: 'Buy' | 'Sell', quantities: readonly number[], terminal: boolean, option?: OptionSpec) => {
       if (sessionIndex > days.length - 2) throw new Error(`Trade ${index}: a Position Change in session ${sessionIndex}, after the last but one`);
       // Within regular hours in both UTC offsets, and a different minute for most Trades: up to 300 minutes
       // after 14:30Z, but at least a minute before that session's own close (an early close is at 17:00Z or 18:00Z).
       const minutesToClose = Math.floor((sessionCloses[sessionIndex]! - days[sessionIndex]!) / MINUTE) - (14 * 60 + 30);
       const spread = Math.min(300, minutesToClose - 1);
-      unsorted.push({ kind: 'PositionChange', time: days[sessionIndex]! + (14 * 60 + 30 + (index % spread)) * MINUTE, index, side, quantities, terminal });
+      unsorted.push({ kind: 'PositionChange', time: days[sessionIndex]! + (14 * 60 + 30 + (index % spread)) * MINUTE, index, side, quantities, terminal, ...(option && { option }) });
     };
+    if (isOption(index)) {
+      // The option Trade: its kind, Exercise Intent, and (if Closed) how it ends, from its place among the option Trades.
+      const c = optionsBefore(index);
+      const k = c % 30;
+      const kind = KIND_OF_THIRTY(k);
+      const authorized = isLongOption(kind) && (20 * Math.floor(c / 30) + k) % 10 === 0;
+      const entrySide = isLongOption(kind) ? 'Buy' : 'Sell';
+      const exitSide = isLongOption(kind) ? 'Sell' : 'Buy';
+      const spec = (expiration: string, expires = false, partial = 0): OptionSpec => ({ kind, contracts: planned, expiration, expires, partial, authorized });
+      if (index < closedTrades) {
+        const entries = Array.from({ length: PATTERN[index % PATTERN.length]! }, () => PATTERN[fillSequence++ % PATTERN.length]!);
+        const bought = splitQuantity(planned, entries);
+        const lastEntry = s + entries.length;
+        if (c % 5 < 2) {
+          // 40% of the Closed option Trades end by Expiration, 30% of those after selling a fifth of the contracts.
+          const partial = (2 * Math.floor(c / 5) + (c % 5)) % 10 < 3 ? planned / 5 : 0;
+          const x = weekEndFrom(lastEntry + GAPS[index % GAPS.length]! + (partial > 0 ? 1 : 0));
+          const option = spec(dateOf(days[Math.min(x, lastDay)]!), true, partial);
+          unsorted.push({ kind: 'Plan', time: planTime, index, option });
+          bought.forEach((quantities, j) => change(s + 1 + j, entrySide, quantities, false, option));
+          if (partial > 0) change(lastEntry + 1, exitSide, [partial], false, option);
+          if (x > days.length - 2) throw new Error(`Trade ${index}: an Expiration in session ${x}, after the last but one`);
+          unsorted.push({ kind: 'PositionChange', time: sessionCloses[x]!, index, side: exitSide, quantities: [planned - partial], terminal: true, expire: true, option });
+          expirations++;
+          if (partial > 0) expirationsAfterPartialExit++;
+        } else {
+          const exits = Array.from({ length: PATTERN[(index + 1) % PATTERN.length]! }, () => PATTERN[fillSequence++ % PATTERN.length]!);
+          const sold = splitQuantity(planned, exits);
+          const firstExit = lastEntry + GAPS[index % GAPS.length]!;
+          // The contract expires at the close of the week of the last exit.
+          const option = spec(dateOf(days[Math.min(weekEndFrom(firstExit + sold.length - 1), lastDay)]!));
+          unsorted.push({ kind: 'Plan', time: planTime, index, option });
+          bought.forEach((quantities, j) => change(s + 1 + j, entrySide, quantities, false, option));
+          sold.forEach((quantities, j) => change(firstExit + j, exitSide, quantities, j === sold.length - 1, option));
+        }
+        continue;
+      }
+      // An Open option Trade: the first BENCH_SETTLEMENT_DUE expire on the as-of date, so they are Settlement Due then;
+      // the rest, and the Planned ones, expire on a later Friday.
+      const m = c - optionsBefore(closedTrades);
+      const due = index < closedTrades + openTrades && m < BENCH_SETTLEMENT_DUE;
+      const option = spec(dateOf(days[lastDay]! + (due ? 0 : 7 * (1 + (c % 4)) * 86_400_000)));
+      unsorted.push({ kind: 'Plan', time: planTime, index, option });
+      if (index >= closedTrades + openTrades) continue;
+      const open = index - closedTrades;
+      const fills = Array.from({ length: PATTERN[open % PATTERN.length]! }, () => PATTERN[fillSequence++ % PATTERN.length]!);
+      splitQuantity((planned * FILL_TENTHS[open % FILL_TENTHS.length]!) / 10, fills).forEach((quantities, j) => change(s + 1 + j, entrySide, quantities, false, option));
+      continue;
+    }
+    unsorted.push({ kind: 'Plan', time: planTime, index });
+    if (index >= closedTrades + openTrades) continue;
     if (index < closedTrades) {
       const entries = Array.from({ length: PATTERN[index % PATTERN.length]! }, () => PATTERN[fillSequence++ % PATTERN.length]!);
       const exits = Array.from({ length: PATTERN[(index + 1) % PATTERN.length]! }, () => PATTERN[fillSequence++ % PATTERN.length]!);
@@ -204,10 +312,11 @@ export function schedule(days: readonly number[], profile: ReturnType<typeof ben
   let executions = 0;
   const events = unsorted.map((event): PlanEvent | ChangeEvent => {
     if (event.kind === 'Plan') return event;
-    executions += event.quantities.length;
+    // An Expiration is a settlement fact, not an Execution.
+    if (!event.expire) executions += event.quantities.length;
     return { ...event, number: positionChanges++, ...(event.terminal && { closeNumber: closes++ }) };
   });
-  return { events, positionChanges, closes, executions };
+  return { events, positionChanges, closes, executions, expirations, expirationsAfterPartialExit };
 }
 
 // A total over the section 1.4 outcomes as whole counts that sum exactly: each rounded down, and the
@@ -290,8 +399,10 @@ function captureCloseReview(disposition: BenchDisposition, n: number, symbol: st
   return { kind: 'Defer' as const };
 }
 
+// Shares for a stock Plan; contracts for an option Plan (20 or 40: enough that an Open Trade's partial fills, up to nine
+// Executions of 60% of the Plan, are whole contracts).
 function plannedQuantity(index: number): number {
-  return 10 * (5 + (index % 15));
+  return isOption(index) ? 20 * (1 + (index % 2)) : 10 * (5 + (index % 15));
 }
 function intendedEntryCents(index: number): number {
   return 2_000 + ((index * 7_919) % 38_000);
@@ -300,7 +411,8 @@ function intendedEntryCents(index: number): number {
 // Counts the stored Workspace's records directly, as provenance for `bench/dataset.json`. The Open
 // Trades' underlyings come from the Open list, since the Instruments they hold are not counted
 // from the stored Trades.
-async function countStored(openUnderlyings: readonly string[] = [], closeReasonLabels: Readonly<Record<string, string>> = {}): Promise<BenchCounts> {
+type StoredCounts = Omit<BenchCounts, 'instrumentsPerSessionMean' | 'instrumentsPerSessionMax'>;
+async function countStored(openUnderlyings: readonly string[] = [], closeReasonLabels: Readonly<Record<string, string>> = {}): Promise<StoredCounts> {
   const open = (name: string) =>
     new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open(name);
@@ -350,12 +462,44 @@ async function countStored(openUnderlyings: readonly string[] = [], closeReasonL
   // The 25,000 Trades carry about 300,000 facts, so they are visited by a cursor and only tallied.
   const tradeCounts = { trades: 0, open: 0, planned: 0, closed: 0, positionChanges: 0, executions: 0 };
   const closeReasons: Record<string, number> = {};
+  // D7: the option Trades by the Strategy their Planned Leg shows (Long Call, Long Put, or the short Put), the Plans'
+  // Exercise Intents, the Expirations, and the Open book's contracts and stock Underlyings.
+  const optionCounts = { trades: 0, longCalls: 0, longPuts: 0, cashSecuredPuts: 0, exerciseIntent: 0, authorized: 0, expirations: 0, afterPartial: 0, open: 0 };
+  const openContracts = new Set<string>();
+  const openStock = new Set<string>();
+  const openOptionUnderlyings = new Set<string>();
   await each(db, 'trades', (r) => {
-    const trade = r as { lifecycle: string; facts: { kind: string }[]; closeReasonFacts?: { versions: { value: { closeReasonId: string } }[] }[] };
+    type Fact = { kind: string; versions?: { value: Record<string, unknown> }[] };
+    const trade = r as { lifecycle: string; underlying: string; facts: Fact[]; closeReasonFacts?: { versions: { value: { closeReasonId: string } }[] }[] };
     tradeCounts.trades++;
     if (trade.lifecycle === 'Open') tradeCounts.open++;
     if (trade.lifecycle === 'Planned') tradeCounts.planned++;
     if (trade.lifecycle === 'Closed') tradeCounts.closed++;
+    const valueOf = (fact: Fact) => fact.versions?.[fact.versions.length - 1]?.value;
+    const leg = valueOf(trade.facts.find((fact) => fact.kind === 'PlannedLeg') ?? { kind: '' }) as { side: string; instrument: { kind: string } & Partial<OptionInstrument> } | undefined;
+    const isOptionTrade = leg?.instrument.kind === 'Option';
+    if (isOptionTrade) {
+      optionCounts.trades++;
+      if (leg.instrument.right === 'Call') optionCounts.longCalls++;
+      else if (leg.side === 'Long') optionCounts.longPuts++;
+      else optionCounts.cashSecuredPuts++;
+      const intent = (valueOf(trade.facts.find((fact) => fact.kind === 'Plan') ?? { kind: '' }) as { exerciseIntent?: string } | undefined)?.exerciseIntent;
+      if (intent !== undefined) optionCounts.exerciseIntent++;
+      if (intent === 'Authorized') optionCounts.authorized++;
+      const expired = trade.facts.some((fact) => fact.kind === 'Expiration');
+      if (expired) optionCounts.expirations++;
+      const executions = trade.facts.filter((fact) => fact.kind === 'Execution').map((fact) => (valueOf(fact) as { action: string }).action);
+      if (expired && executions.includes('Buy') && executions.includes('Sell')) optionCounts.afterPartial++;
+    }
+    if (trade.lifecycle === 'Open') {
+      if (isOptionTrade) {
+        optionCounts.open++;
+        openContracts.add(instrumentKey(leg.instrument as OptionInstrument));
+        openOptionUnderlyings.add(trade.underlying);
+      } else {
+        openStock.add(trade.underlying);
+      }
+    }
     for (const fact of trade.facts) {
       if (fact.kind === 'PositionChange') tradeCounts.positionChanges++;
       if (fact.kind === 'Execution') tradeCounts.executions++;
@@ -408,6 +552,18 @@ async function countStored(openUnderlyings: readonly string[] = [], closeReasonL
     closeReviewDebtsSettled: debtsWith(closeDebts, 'Settled'),
     closeReviewDebtsDeclined: debtsWith(closeDebts, 'Declined'),
     closeReviewDebtsOutstanding: debtsWith(closeDebts, 'Outstanding'),
+    optionTrades: optionCounts.trades,
+    longCalls: optionCounts.longCalls,
+    longPuts: optionCounts.longPuts,
+    cashSecuredPuts: optionCounts.cashSecuredPuts,
+    exerciseIntentPlans: optionCounts.exerciseIntent,
+    authorizedPlans: optionCounts.authorized,
+    expirations: optionCounts.expirations,
+    expirationsAfterPartialExit: optionCounts.afterPartial,
+    openOptionTrades: optionCounts.open,
+    openContracts: openContracts.size,
+    openStockInstruments: openStock.size,
+    optionUnderlyingsHeldAsStock: [...openOptionUnderlyings].filter((symbol) => openStock.has(symbol)).length,
   };
 }
 
@@ -472,18 +628,35 @@ async function generate(options: { readonly sessions?: number } = {}) {
         readonly reflectionCounts: Record<BenchDisposition, number>;
         readonly closeCounts: Record<BenchDisposition, number>;
         readonly closeReasonLabels: Readonly<Record<string, string>>;
+        readonly expirations: number;
+        readonly expirationsAfterPartialExit: number;
       }
     | undefined;
   // The deferred reflections and Close Reviews by Debt identity: what the Review will do when each falls due.
   const deferred = new Map<string, DeferredDebt>();
   const talliesOf = (debt: { readonly kind: DeferredDebt['kind'] }) => (debt.kind === 'CloseReview' ? stats.closeReviews : stats.dispositions);
 
-  // The Marks of one session: every one of the 150 Instruments, except that the as-of session leaves
-  // 10 of them Missing (the disclosed fraction). Every 100th Mark is corrected once.
+  // The option Trades held at the current cutoff, by Trade number, with the contract's key and expiration date.
+  const held = new Map<number, { readonly key: string; readonly expiration: string }>();
+  // How many Instruments were marked in each session.
+  const markedPerSession: number[] = [];
+
+  // The Marks of one session: each of the 90 stock Instruments, except that the as-of session leaves 10 of them
+  // Missing (the disclosed fraction), and the contract of each option Trade held at the cutoff (at or before its
+  // expiration date). Every 100th Mark is corrected once.
   async function saveMarks(session: Session, sessionNumber: number, last: boolean) {
-    for (const [k, instrumentKey] of INSTRUMENTS.entries()) {
-      if (last && k % (BENCH_PROFILE.instruments / BENCH_PROFILE.missingAsOfInstruments) === 7) continue;
-      const price = 2_000 + ((k * 977) % 18_000) + ((sessionNumber * 131 + k * 17) % 301) - 150;
+    // Trades on the same contract share its Mark, so each contract is marked once.
+    const contracts = new Map<string, { key: string; price: number; skip: boolean }>();
+    for (const [k, { key, expiration }] of held) {
+      if (session.date <= expiration && !contracts.has(key)) contracts.set(key, { key, price: 50 + ((k * 977 + sessionNumber * 131) % 900), skip: false });
+    }
+    const keys = [
+      ...STOCK_INSTRUMENTS.map((key, k) => ({ key, price: 2_000 + ((k * 977) % 18_000) + ((sessionNumber * 131 + k * 17) % 301) - 150, skip: last && k % (BENCH_OPEN_STOCK_INSTRUMENTS / BENCH_PROFILE.missingAsOfInstruments) === 7 })),
+      ...contracts.values(),
+    ];
+    let marked = 0;
+    for (const { key: instrumentKey, price, skip } of keys) {
+      if (skip) continue;
       const saved = await app.MarketData.save({
         intention: 'RecordInitialManualMark',
         instrumentKey,
@@ -492,6 +665,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
         price: cents(price),
       });
       if (saved.kind !== 'Saved') throw new Error(`mark ${instrumentKey} ${session.date}: ${saved.kind}`);
+      marked++;
       if (++stats.marks % BENCH_PROFILE.correctedMarkEvery !== 0) continue;
       const fix = await app.MarketData.save({
         intention: 'CorrectMark',
@@ -504,6 +678,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
       if (fix.kind !== 'Saved') throw new Error(`correction ${instrumentKey} ${session.date}: ${fix.kind}`);
       stats.corrections++;
     }
+    markedPerSession.push(marked);
   }
 
   // Opens the Review and saves an Action for each eligible Trade: 85% Hold, 15% Exit, Roll or
@@ -529,6 +704,17 @@ async function generate(options: { readonly sessions?: number } = {}) {
         dispositions: stats.dispositions,
         closeReviewDispositions: stats.closeReviews,
         asOfReview: {
+          settlement: opened.families.flatMap((f) =>
+            f.family === 'Settlement'
+              ? f.items.map((item) => ({
+                  tradeId: item.tradeId,
+                  underlying: item.instrument.symbol,
+                  contract: instrumentKey(item.instrument),
+                  expiration: item.expiration,
+                  quantity: item.quantity.denominator === 1n ? String(item.quantity.numerator) : `${item.quantity.numerator}/${item.quantity.denominator}`,
+                }))
+              : [],
+          ),
           walk: walk.map((t) => t.tradeId),
           owedGroup: opened.owed.map((t) => ({ tradeId: t.tradeId, underlying: t.underlying, debtIds: t.owed.map((o) => o.debtId) })),
         },
@@ -659,7 +845,17 @@ async function generate(options: { readonly sessions?: number } = {}) {
     const planDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.plan-reflection' });
     const changeDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' });
     if (strategies.kind !== 'Page' || planDefinition.kind !== 'Found' || changeDefinition.kind !== 'Found') throw new Error('seed missing');
-    const strategy = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === 'strategy.long-stock')!;
+    const strategyOf = (productKey: string) => {
+      const found = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === productKey);
+      if (!found) throw new Error(`no Strategy ${productKey}`);
+      return found;
+    };
+    const strategy = strategyOf('strategy.long-stock');
+    const optionStrategies: Record<OptionKind, typeof strategy> = {
+      LongCall: strategyOf('strategy.long-call'),
+      LongPut: strategyOf('strategy.long-put'),
+      CashSecuredPut: strategyOf('strategy.cash-secured-put'),
+    };
 
     const closeReasonResult = await app.ReferenceCatalog.query({ family: 'CloseReason' });
     const closeReviewDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.close-review' });
@@ -678,7 +874,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
     const allSessions = await realSessions(app);
     const sessions = options.sessions === undefined ? allSessions : allSessions.slice(0, options.sessions);
     const profile = benchScale(sessions.length, allSessions.length);
-    const { events, positionChanges: positionChangeTotal, closes: closeTotal, executions: executionTotal } = schedule(
+    const { events, positionChanges: positionChangeTotal, closes: closeTotal, executions: executionTotal, expirations, expirationsAfterPartialExit } = schedule(
       sessions.map((session) => Date.parse(session.date)),
       profile,
       sessions.map((session) => Date.parse(session.close)),
@@ -694,18 +890,37 @@ async function generate(options: { readonly sessions?: number } = {}) {
       const entry = intendedEntryCents(i);
       if (event.kind === 'Plan') {
         const account = accounts[i % accounts.length]!;
+        const option = event.option;
+        // An option Plan names its contract, enters at a premium, and its Stop and Target are Underlying prices around the
+        // Underlying's level `u`; Long Calls and Cash-Secured Puts rise to the Target, Long Puts fall to it.
+        const u = 40 + (i % 160);
+        const premium = option ? premiumOf(i, option.kind) : 0;
+        const plan = option
+          ? {
+              underlying: symbol,
+              legs: [
+                isLongOption(option.kind)
+                  ? { side: 'Long' as const, instrument: contractOf(i, symbol, option), quantity: String(option.contracts), intendedEntry: cents(premium) }
+                  : { side: 'Short' as const, instrument: contractOf(i, symbol, option), quantity: String(-option.contracts), intendedEntry: cents(premium) },
+              ],
+              stops: [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u - 3 : option.kind === 'LongPut' ? u + 3 : u - 6}.00` }],
+              targets: [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u + 12 : option.kind === 'LongPut' ? u - 12 : u + 5}.00` }],
+              ...(isLongOption(option.kind) && { exerciseIntent: option.authorized ? ('Authorized' as const) : ('NotAuthorized' as const) }),
+            }
+          : {
+              underlying: symbol,
+              legs: [{ side: 'Long' as const, instrument: { kind: 'Stock' as const, symbol }, quantity: String(plannedQuantity(i)), intendedEntry: cents(entry) }],
+              stops: [{ kind: 'UnderlyingPrice' as const, price: cents(entry - Math.round(entry * 0.05)) }],
+              targets: [{ kind: 'UnderlyingPrice' as const, price: cents(entry + Math.round(entry * 0.12)) }],
+            };
+        const planStrategy = option ? optionStrategies[option.kind] : strategy;
         const result = await app.TradeWorkflows.confirmPlan({
           accountId: account.id,
           accountRevision: account.recordRevision,
-          strategyId: strategy.id,
-          strategyRevision: strategy.recordRevision,
+          strategyId: planStrategy.id,
+          strategyRevision: planStrategy.recordRevision,
           economicTime: iso(event.time),
-          plan: {
-            underlying: symbol,
-            legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol }, quantity: String(plannedQuantity(i)), intendedEntry: cents(entry) }],
-            stops: [{ kind: 'UnderlyingPrice', price: cents(entry - Math.round(entry * 0.05)) }],
-            targets: [{ kind: 'UnderlyingPrice', price: cents(entry + Math.round(entry * 0.12)) }],
-          },
+          plan,
           reflection: {
             definitionId: planDefinition.definition.id,
             answers: {
@@ -731,17 +946,23 @@ async function generate(options: { readonly sessions?: number } = {}) {
         state = { planLeg: detail.view.plan.legs[0]!.factId, factRevision: detail.view.factRevision };
       }
       const planLeg = state.planLeg;
-      const members = event.quantities.map((quantity, j) => ({
-        kind: 'Execution' as const,
-        tradeId,
-        action: event.side,
-        instrument: { kind: 'Stock' as const, symbol },
-        intent: { kind: 'ServesPlannedLeg' as const, plannedLegId: planLeg },
-        quantity: String(quantity),
-        price: cents(entry + (event.side === 'Sell' ? 60 : 0) + ((n + j) % 21) - 10),
-        fee: (n + j) % 3 === 0 ? '0' : '0.65',
-        economicTime: iso(event.time + j * MINUTE),
-      }));
+      const option = event.option;
+      const contract = option ? contractOf(i, symbol, option) : undefined;
+      // An exit of a long option sells above the premium paid; the buy-back of a short one is below the credit.
+      const exitMove = option && !isLongOption(option.kind) ? -40 : 60;
+      const members = event.expire
+        ? [{ kind: 'Expiration' as const, tradeId, instrument: contract!, quantity: String(event.quantities[0]), economicTime: iso(event.time) }]
+        : event.quantities.map((quantity, j) => ({
+            kind: 'Execution' as const,
+            tradeId,
+            action: event.side,
+            instrument: contract ?? { kind: 'Stock' as const, symbol },
+            intent: { kind: 'ServesPlannedLeg' as const, plannedLegId: planLeg },
+            quantity: String(quantity),
+            price: cents((option ? premiumOf(i, option.kind) : entry) + (event.side === (option && !isLongOption(option.kind) ? 'Buy' : 'Sell') ? exitMove : 0) + ((n + j) % 21) - 10),
+            fee: (n + j) % 3 === 0 ? '0' : '0.65',
+            economicTime: iso(event.time + j * MINUTE),
+          }));
       const definitionId = changeDefinition.definition.id;
       const disposition = reflectionPlan.dispositions[n]!;
       const reflection = captureReflection(disposition, n, symbol, definitionId);
@@ -753,12 +974,19 @@ async function generate(options: { readonly sessions?: number } = {}) {
         trades: [{ tradeId, expectedFactRevision: state.factRevision }],
         members,
         reflection,
-        ...(closeReview && { closeReasonId: closeReasonIds[reasonOf]!, closeReview }),
+        // An Expiration needs no Close Reason: the contract expired rather than being closed by the trader's decision.
+        ...(closeReview && { ...(!event.expire && { closeReasonId: closeReasonIds[reasonOf]! }), closeReview }),
       });
       if (recorded.kind !== 'Recorded') throw new Error(`trade ${i} change ${n}: ${recorded.kind}`);
+      if (contract) {
+        if (event.terminal) held.delete(i);
+        else held.set(i, { key: instrumentKey(contract), expiration: contract.expiration });
+      }
       if (event.terminal) {
-        const label = BENCH_CLOSE_REASONS[reasonOf];
-        stats.closeReasons[label] = (stats.closeReasons[label] ?? 0) + 1;
+        if (!event.expire) {
+          const label = BENCH_CLOSE_REASONS[reasonOf];
+          stats.closeReasons[label] = (stats.closeReasons[label] ?? 0) + 1;
+        }
         tradeState.delete(i);
       } else {
         tradeState.set(i, { planLeg, factRevision: recorded.receipt.factRevision });
@@ -791,9 +1019,10 @@ async function generate(options: { readonly sessions?: number } = {}) {
       const eventsAt = performance.now();
       while (events[next] && events[next]!.time < Date.parse(session.completion)) await applyEvent(events[next++]!);
       timing['events'] = (timing['events'] ?? 0) + performance.now() - eventsAt;
-      // Five minutes after the session's completion: the pinned clock for the rest of the session.
-      now = iso(Date.parse(session.completion) + 5 * MINUTE);
       const last = n === sessions.length - 1;
+      // Five minutes after the session's completion: the pinned clock for the rest of the session. The full run's last
+      // session is the as-of session, and its clock is the as-of instant, Friday 17:00 New York (D7 section 1.4).
+      now = last && profile.full ? BENCH_AS_OF_INSTANT : iso(Date.parse(session.completion) + 5 * MINUTE);
       const marksAt = performance.now();
       await saveMarks(session, n, last);
       timing['marks'] = (timing['marks'] ?? 0) + performance.now() - marksAt;
@@ -802,20 +1031,22 @@ async function generate(options: { readonly sessions?: number } = {}) {
       // session's close, which the session policy does not cover for the first covered date.
       if (n > 0) await reviewSession(session, last);
       timing['review'] = (timing['review'] ?? 0) + performance.now() - reviewAt;
-      if ((n + 1) % 25 === 0) {
+      if ((n + 1) % 25 === 0 || (options.sessions !== undefined && options.sessions <= 100)) {
         const phases = JSON.stringify(Object.fromEntries(Object.entries(timing).map(([k, v]) => [k, Math.round(v / 1000)])));
         console.log(`bench: session ${n + 1} of ${sessions.length} (${session.date}), ${Math.round((performance.now() - started) / 1000)} s, ${stats.marks} Marks, ${stats.actions} Actions; seconds by phase ${phases}`);
       }
     }
     if (next !== events.length) throw new Error(`${events.length - next} events after the last session`);
-    expectedTotals = { positionChanges: positionChangeTotal, executions: executionTotal, profile, reflectionCounts: reflectionPlan.counts, closeCounts: closePlan.counts, closeReasonLabels };
+    expectedTotals = { positionChanges: positionChangeTotal, executions: executionTotal, profile, reflectionCounts: reflectionPlan.counts, closeCounts: closePlan.counts, closeReasonLabels, expirations, expirationsAfterPartialExit };
   } finally {
     generating = false;
   }
   const open = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });
   if (open.kind !== 'Ready') throw new Error(`browse Open: ${open.kind}`);
   if (!final.asOf || !expectedTotals) throw new Error('no session was simulated');
-  const counts = await countStored(open.view.items.map((item) => item.underlying), expectedTotals.closeReasonLabels);
+  const stored = await countStored(open.view.items.map((item) => item.underlying), expectedTotals.closeReasonLabels);
+  const perSession = markedPerSession.length === 0 ? 0 : markedPerSession.reduce((a, b) => a + b, 0) / markedPerSession.length;
+  const counts: BenchCounts = { ...stored, instrumentsPerSessionMean: Math.round(perSession * 10) / 10, instrumentsPerSessionMax: Math.max(0, ...markedPerSession) };
   // The facade's own tallies must agree with what is stored.
   if (counts.marks !== stats.marks || counts.markCorrections !== stats.corrections || counts.actions !== stats.actions || counts.editedActions !== stats.edited) {
     throw new Error(`stored ${counts.marks}/${counts.markCorrections}/${counts.actions}/${counts.editedActions} Marks/corrections/Actions/edited, saved ${stats.marks}/${stats.corrections}/${stats.actions}/${stats.edited}`);
@@ -861,18 +1092,28 @@ async function generate(options: { readonly sessions?: number } = {}) {
     outstandingDebts.length !== d.outstanding + c.outstanding ||
     final.asOf.asOfDueReflections !== d.outstanding + c.outstanding ||
     reasonsStored !== reasonsApplied ||
-    Object.values(counts.closeReasons).reduce((a, b) => a + b, 0) !== p.closedTrades
+    // An Expiration needs no Close Reason, so the Closed Trades with one are those that did not expire.
+    Object.values(counts.closeReasons).reduce((a, b) => a + b, 0) !== p.closedTrades - expected.expirations ||
+    counts.expirations !== expected.expirations ||
+    counts.expirationsAfterPartialExit !== expected.expirationsAfterPartialExit
   ) {
     throw new Error(
       `stored ${JSON.stringify(counts)} disagree with dispositions ${JSON.stringify(d)} and Close Reviews ${JSON.stringify(c)}, ${outstandingDebts.length} Outstanding, ${final.asOf.asOfDueReflections} due at as-of`,
     );
   }
+  // The as-of Review's settlement family is the Open option Trades whose contract expires on the as-of date.
+  const settlementWanted = Math.min(BENCH_SETTLEMENT_DUE, counts.openOptionTrades);
+  if (final.asOf.asOfReview.settlement.length !== settlementWanted) {
+    throw new Error(`the as-of Review has ${final.asOf.asOfReview.settlement.length} Settlement Due items, expected ${settlementWanted}`);
+  }
   // The full profile is exactly section 1.4's, by construction.
   if (p.full) {
-    const reasons = counts.closeReasons;
+    // D7: 30% options (Long Call 12%, Long Put 8%, Cash-Secured Put 10%), 5,000 long-option Plans of which 10% are
+    // Authorized, 60 Open option Trades, and 40% of the 7,410 Closed option Trades expiring (2,964).
     const exact =
       counts.trades === 25_000 && counts.closedTrades === 24_700 && counts.openTrades === 200 && counts.plannedTrades === 100 &&
-      reasons['Target Reached'] === 7_410 && reasons['Stop Triggered'] === 8_645 && reasons['Thesis Invalidated'] === 3_705 && reasons['Time-Based Exit'] === 4_940 &&
+      counts.optionTrades === 7_500 && counts.longCalls === 3_000 && counts.longPuts === 2_000 && counts.cashSecuredPuts === 2_500 &&
+      counts.exerciseIntentPlans === 5_000 && counts.authorizedPlans === 500 && counts.openOptionTrades === 60 && counts.expirations === 2_964 &&
       counts.closeReviewEntries + counts.closeReviewDeclines + counts.closeReviewDebtsOutstanding === 24_700;
     if (!exact) throw new Error(`the full profile misses section 1.4: ${JSON.stringify(counts)}`);
   }
