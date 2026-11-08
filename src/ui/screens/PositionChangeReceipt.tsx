@@ -5,6 +5,7 @@ import { WithSecondLine } from '../SecondLine.tsx';
 import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
 import { calculation } from '../figures.ts';
+import { executionWhat } from './execution-line.ts';
 import { decimalMoney as price, localTime, money, ratio, rMultiple } from '../format.ts';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
@@ -88,7 +89,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
         <ul className="executions">
           {saved.executions.map((e) => (
             <li key={e.factId} className="execution-line">
-              <span className="execution-what">{`${e.action} ${e.quantity} ${e.instrument.symbol}`}</span>{' '}
+              <span className="execution-what">{executionWhat(e, postCommit.trade.plan.legs)}</span>{' '}
               <span className="execution-price number">{`@ ${price(e.price)}`}</span>
             </li>
           ))}

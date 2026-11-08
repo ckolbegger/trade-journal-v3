@@ -18,6 +18,7 @@ export function LotMatchesTable({
   timeZone,
   caption,
   describedBy,
+  option = false,
 }: {
   readonly rows: readonly LotMatchRow[];
   readonly executions: readonly ExecutionFact[];
@@ -26,6 +27,8 @@ export function LotMatchesTable({
   readonly caption?: string;
   // The id of a note that describes the table, so a screen reader announces it with the table.
   readonly describedBy?: string;
+  // An option Trade's matches are headed Opened and Closed (row 20.13); a stock's Bought and Sold.
+  readonly option?: boolean;
 }) {
   const at = (executionId: string) => {
     const execution = executions.find((e) => e.factId === executionId)!;
@@ -36,8 +39,8 @@ export function LotMatchesTable({
       {caption !== undefined && <caption>{caption}</caption>}
       <thead>
         <tr>
-          <th scope="col">Bought</th>
-          <th scope="col">Sold</th>
+          <th scope="col">{option ? 'Opened' : 'Bought'}</th>
+          <th scope="col">{option ? 'Closed' : 'Sold'}</th>
           <th scope="col" className="number">
             Quantity
           </th>

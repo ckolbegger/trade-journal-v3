@@ -11,7 +11,9 @@ import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts
 import { Rational } from '../../domain/values/index.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
-import { quantity } from '../format.ts';
+import { instrumentLabel } from '../calculation-words.ts';
+import { money, quantity } from '../format.ts';
+import { plural } from './ReviewCard.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { answerChanged, fieldIssues, IssueSummary, nonNegativeDecimal, positiveDecimal } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
@@ -285,10 +287,17 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   if (!view || !definition || (exit && (!closeDefinition || !closeReasons))) return <p role="status">{`Loading the ${exit ? 'exit' : 'entry'} form…`}</p>;
 
   const leg = view.plan.legs[0]!;
+  // An option leg names the action by its side, never by the Strategy: a Long leg buys to open and
+  // sells to close, a Short leg the reverse. A Stock leg keeps Buy and Sell.
+  const option = leg.instrument.kind === 'Option' ? leg.instrument : undefined;
+  const side = leg.side;
+  const action = exit === (side === 'Long') ? 'Sell' : 'Buy';
+  const actionWords = option ? `${action} to ${exit ? 'close' : 'open'}` : action;
+  const unsigned = (amount: Rational) => (amount.compare(Rational.of(0n)) < 0 ? amount.mul(Rational.of(-1n)) : amount);
   // The quantity open on Detail, and whether the entered quantities total it: a presentation hint
   // for showing Closing the Trade; the workflow decides whether the change is terminal (A93).
   const sum = (amounts: readonly Rational[]) => amounts.reduce((total, amount) => total.add(amount), Rational.of(0n));
-  const openQuantity = 'positions' in view ? sum(view.positions.map((p) => p.quantity)) : Rational.of(0n);
+  const openQuantity = 'positions' in view ? sum(view.positions.map((p) => unsigned(p.quantity))) : Rational.of(0n);
   const entered = sum(rows.flatMap((r) => positiveDecimal(r.quantity) ?? []));
   const hasPosition = openQuantity.compare(Rational.of(0n)) > 0;
   const showClosing = exit && (closingRequiredAt?.equals(entered) === true || (hasPosition && entered.equals(openQuantity)));
@@ -325,7 +334,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     );
     const instants = times.flatMap((time) => (time.ok ? [time.instant] : []));
     if (timeIssues.length > 0) {
-      setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, closeDefinition));
+      setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition, closeDefinition, option !== undefined));
       setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
       return;
     }
@@ -333,8 +342,8 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       (row, index): PositionChangeMember => ({
         kind: 'Execution',
         tradeId,
-        action: exit ? 'Sell' : 'Buy',
-        instrument: { kind: 'Stock', symbol: leg.instrument.symbol },
+        action,
+        instrument: option ?? { kind: 'Stock', symbol: leg.instrument.symbol },
         intent: { kind: 'ServesPlannedLeg', plannedLegId: leg.factId },
         quantity: row.quantity.trim(),
         price: row.price.trim(),
@@ -361,7 +370,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     setConflict(result.kind === 'Conflict');
     setReloaded(false);
     setReloadFailed(false);
-    setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, closeDefinition) : []);
+    setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition, closeDefinition, option !== undefined) : []);
     setReported({ rows, answers, closeReasonId, closeChoice, closeAnswers });
     if (result.kind === 'Rejected') {
       // The workflow decides whether the exit is terminal: what it requires shows the section, and
@@ -414,7 +423,11 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
           <strong>{view.plan.underlying}</strong> · <span>{view.labels.strategy}</span> · <Badge tone="info">{view.lifecycle.stored}</Badge>
         </p>
         {'positions' in view && (
-          <p className="number">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg.quantity} shares entered`}</p>
+          <p className="number">
+            {option
+              ? `${quantity(openQuantity)} of ${leg.quantity.replace('-', '')} contracts entered`
+              : `${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg.quantity} shares entered`}
+          </p>
         )}
       </section>
       {conflict && (
@@ -448,17 +461,28 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       <section className="card" aria-labelledby="entry-terms-heading">
         <h2 id="entry-terms-heading">{exit ? 'Exit' : 'Entry'}</h2>
         <dl>
-          <dt>Symbol</dt>
-          <dd>{leg.instrument.symbol}</dd>
+          <dt>{option ? 'Contract' : 'Symbol'}</dt>
+          <dd>{option ? instrumentLabel(option) : leg.instrument.symbol}</dd>
           <dt>Action</dt>
-          <dd>{exit ? 'Sell' : 'Buy'}</dd>
+          <dd>{actionWords}</dd>
           <dt>Planned Leg</dt>
-          <dd>{`${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`}</dd>
+          <dd>
+            {option
+              ? `${leg.side} ${plural(Number(leg.quantity.replace('-', '')), 'contract', 'contracts')} of ${instrumentLabel(option)}`
+              : `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`}
+          </dd>
         </dl>
       </section>
       {rows.map((row, index) => {
         const n = index + 1;
-        const input = (name: EditableField, label: string, type?: 'datetime-local', field: string = name, wide = false) => (
+        // An option row's cash amount: contracts x 100 x price, a credit for any sale (C8).
+        const contracts = positiveDecimal(row.quantity);
+        const premium = positiveDecimal(row.price);
+        const cash =
+          option && contracts && premium && contracts.denominator === 1n
+            ? `= ${money(contracts.mul(premium).mul(Rational.of(100n)))}${action === 'Sell' ? ' credit' : ''} for ${plural(Number(contracts.numerator), 'contract', 'contracts')}`
+            : undefined;
+        const input =(name: EditableField, label: string, type?: 'datetime-local', field: string = name, wide = false) => (
           <div className={wide ? 'field field-wide' : 'field'}>
             <label>
               {label}
@@ -476,10 +500,11 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
         return (
           <fieldset key={row.key} aria-labelledby={`execution-${row.key}-legend`} className="execution-row">
             <legend id={`execution-${row.key}-legend`}>{`Execution ${n}`}</legend>
-            {input('quantity', 'Quantity')}
-            {input('price', 'Price')}
+            {input('quantity', option ? 'Contracts' : 'Quantity')}
+            {input('price', option ? 'Price (per share)' : 'Price')}
             {input('fee', 'Fee')}
             {input('time', 'Economic Time', 'datetime-local', 'economicTime', true)}
+            {cash && <p className="hint">{cash}</p>}
             {rows.length > 1 && (
               <button type="button" className="pill secondary" onClick={() => setRows((current) => current.filter((r) => r.key !== row.key))}>
                 {`Remove Execution ${n}`}

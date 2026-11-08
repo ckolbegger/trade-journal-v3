@@ -7,6 +7,7 @@ import { calculation, closedViaSale, signed } from '../figures.ts';
 import { decimalMoney as price, localTime, money, quantity, rMultiple } from '../format.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import type { CloseReasonOption } from './ClosingTheTrade.tsx';
+import { executionWhat } from './execution-line.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { reflectionMessage } from './PositionChangeReceipt.tsx';
 
@@ -71,7 +72,7 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
         <ul className="executions">
           {saved.executions.map((e) => (
             <li key={e.factId} className="execution-line">
-              <span className="execution-what">{`${e.action} ${e.quantity} ${e.instrument.symbol}`}</span>{' '}
+              <span className="execution-what">{executionWhat(e, trade.plan.legs)}</span>{' '}
               <span className="execution-price number">{`@ ${price(e.price)}`}</span>
             </li>
           ))}
@@ -85,6 +86,7 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
             rows={derivation.lotMatches.map((match, index) => ({ ...match, realized: derivation.lotMatchResults[index]!.realized }))}
             executions={trade.positionChanges.flatMap((c) => c.executions)}
             timeZone={timeZone}
+            option={trade.plan.legs[0]?.instrument.kind === 'Option'}
           />
         </div>
       </section>

@@ -405,7 +405,7 @@ describe('submission', () => {
       kind: 'Recorded',
       receipt: { tradeId: 'trade-1', createdFactIds: ['pc-1', 'ex-1'], deviationReconciliation: [], entryChanges: [], repairs: [] },
       postCommit: {
-        trade: { positionChanges: [{ factId: 'pc-1', economicTime: '2026-10-12T14:00:00Z', recordedSequence: 1, executions: [execution] }] },
+        trade: { plan: {}, positionChanges: [{ factId: 'pc-1', economicTime: '2026-10-12T14:00:00Z', recordedSequence: 1, executions: [execution] }] },
         derivation: { entryQuality: { kind: 'NotApplicable' } },
         reflection: { kind: 'Entry' },
       },
@@ -810,6 +810,7 @@ describe('Record entry on another Trade', () => {
       receipt: { tradeId: 'trade-1', createdFactIds: ['pc-1', 'ex-1'], deviationReconciliation: [], entryChanges: [], repairs: [] },
       postCommit: {
         trade: {
+          plan: {},
           positionChanges: [
             {
               factId: 'pc-1',

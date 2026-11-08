@@ -27,8 +27,11 @@ const TIME: Record<string, string> = {
 // An issue about the change's position path (P22), with the quantity open where one is named.
 type PathIssue = Issue & { readonly member?: number; readonly available?: Rational };
 
-function memberMessage(issue: PathIssue): string {
-  if (isExceedsOpenQuantityIssue(issue)) return issue.available ? `The position has only ${quantity(issue.available)} ${quantity(issue.available) === '1' ? 'share' : 'shares'}.` : 'more shares than the position has.';
+function memberMessage(issue: PathIssue, option: boolean): string {
+  if (isExceedsOpenQuantityIssue(issue)) {
+    const [one, many] = option ? ['contract', 'contracts'] : ['share', 'shares'];
+    return issue.available ? `The position has only ${quantity(issue.available)} ${quantity(issue.available) === '1' ? one : many}.` : `more ${many} than the position has.`;
+  }
   if (isFlatBeforeLaterFactsIssue(issue)) return 'this exit would leave the Position flat before a later recorded change.';
   if (issue.field === 'economicTime') return TIME[issue.code] ?? 'check the Economic Time.';
   if (issue.field === 'fee' && issue.code === 'Required') return 'enter the fee, or 0 if there was none.';
@@ -43,8 +46,10 @@ export function describePositionChangeIssues(
   definition: EntryDefinitionRecord,
   // The exit form's Close Review definition, whose Prompts the Close Review's issues name (D6 P21).
   closeDefinition?: EntryDefinitionRecord,
+  // Whether the Trade's leg is an option, so counts are words of contracts rather than shares.
+  option = false,
 ): FieldIssue[] {
-  return issues.map((issue): FieldIssue => ({ ...describeIssue(issue, rowKeys, definition, closeDefinition), code: issue.code }));
+  return issues.map((issue): FieldIssue => ({ ...describeIssue(issue, rowKeys, definition, closeDefinition, option), code: issue.code }));
 }
 
 // The close-requirement issues of the Closing the Trade section, by code (D6 A77, A93).
@@ -55,9 +60,9 @@ const CLOSE: Record<string, FieldIssue> = {
   CloseReviewNotApplicable: { field: 'closeReview', message: 'This exit does not close the Trade, so it has no Close Review.' },
 };
 
-function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition: EntryDefinitionRecord, closeDefinition: EntryDefinitionRecord | undefined): FieldIssue {
+function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition: EntryDefinitionRecord, closeDefinition: EntryDefinitionRecord | undefined, option: boolean): FieldIssue {
   if (issue.member !== undefined) {
-    return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue)}` };
+    return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue, option)}` };
   }
   if (issue.source === 'TradeAnalysis' && (isExceedsOpenQuantityIssue(issue) || isFlatBeforeLaterFactsIssue(issue))) {
     return { field: 'members', message: 'This exit would leave a later recorded exit without enough shares in the position.' };
