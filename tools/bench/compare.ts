@@ -1,6 +1,11 @@
 // Pure helpers of `bench:run`'s identity comparisons (D6 T6.25): the Closed page, the as-of Review's walk and its
 // owed-reflection group are each compared as an ordered list of identity strings.
 
+import { Rational } from '../../src/domain/values/index.ts';
+import { instrumentLabel } from '../../src/ui/calculation-words.ts';
+import { shortDate } from '../../src/ui/format.ts';
+import { signedContracts } from '../../src/ui/screens/option-words.ts';
+
 // Describes the first place two ordered lists differ, or undefined when they are equal.
 export function firstDifference(expected: readonly string[], actual: readonly string[]): string | undefined {
   const shared = Math.min(expected.length, actual.length);
@@ -54,28 +59,19 @@ export interface ExpectedSettlementItem {
   readonly quantity: string;
 }
 
-const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 // The contract as the UI labels it ("NVDA 20 Nov 2026 107 Call"), from the generator's OCC-style key ("NVDA261120C00107000").
 export function contractLabel(key: string): string {
   const found = /^(.+?)(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(key);
   if (!found) throw new Error(`not an option contract key: ${key}`);
-  const [, symbol, yy, mm, dd, right, strike] = found;
-  return `${symbol} ${Number(dd)} ${SHORT_MONTHS[Number(mm) - 1]} 20${yy} ${Number(strike) / 1000} ${right === 'C' ? 'Call' : 'Put'}`;
+  const [, symbol = '', yy, mm, dd, right, strike] = found;
+  return instrumentLabel({ kind: 'Option', symbol, root: symbol, expiration: `20${yy}-${mm}-${dd}`, strike: String(Number(strike) / 1000), right: right === 'C' ? 'Call' : 'Put', multiplier: 100 });
 }
 
 // A signed open quantity as the Settlement panel words it: "Long 20 contracts" or "Short 1 contract".
-export function signedContractsText(quantity: string): string {
-  const n = Number(quantity);
-  return `${n < 0 ? 'Short' : 'Long'} ${Math.abs(n)} ${Math.abs(n) === 1 ? 'contract' : 'contracts'}`;
-}
+export const signedContractsText = (quantity: string): string => signedContracts(Rational.of(BigInt(quantity)));
 
 // "Fri Nov 20", the Review's short date.
-export function reviewShortDate(date: string): string {
-  const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(new Date(`${date}T00:00:00Z`));
-  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${part('weekday')} ${part('month')} ${part('day')}`;
-}
+export const reviewShortDate = shortDate;
 
 // One identity per settlement item: its Trade, contract, direction and open count, and the expiration date its blocker names.
 export const settlementIdentity = (tradeId: string, label: string, quantityText: string, expiredText: string) => `${tradeId} ${label} ${quantityText} expired ${expiredText}`;

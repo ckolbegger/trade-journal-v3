@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { Rational } from '../../src/domain/values/index.ts';
+import { instrumentLabel } from '../../src/ui/calculation-words.ts';
+import { shortDate } from '../../src/ui/format.ts';
+import { signedContracts } from '../../src/ui/screens/option-words.ts';
 import { closeDate, closedIdentity, contractLabel, expectedSettlementIdentity, firstDifference, reviewShortDate, settlementExpectations, signedContractsText, tradeIdOfHref, walkedTradesOwingNothing } from './compare.ts';
 import { countStored, lastSessionOf, reviewMembersOf, schemaMismatch, type EntryRow, type StoredRows, type TradeRow } from './partial.ts';
 
@@ -161,6 +165,17 @@ describe('settlement identities (T7.29)', () => {
     expect(signedContractsText('-1')).toBe('Short 1 contract');
     expect(reviewShortDate('2026-11-20')).toBe('Fri Nov 20');
     expect(expectedSettlementIdentity({ tradeId: 't1', contract: 'AAPL261120C00105000', expiration: '2026-11-20', quantity: '20' })).toBe('t1 AAPL 20 Nov 2026 105 Call Long 20 contracts expired Fri Nov 20');
+  });
+});
+
+describe('settlement label helpers (T7.29-B4)', () => {
+  it('should build the contract, date and signed-quantity texts with the UI functions instrumentLabel, shortDate and signedContracts', () => {
+    const call = { kind: 'Option', symbol: 'NVDA', root: 'NVDA', expiration: '2026-11-20', strike: '107', right: 'Call', multiplier: 100 } as const;
+    const put = { kind: 'Option', symbol: 'QAB', root: 'QAB', expiration: '2027-01-04', strike: '92.5', right: 'Put', multiplier: 100 } as const;
+    expect(contractLabel('NVDA261120C00107000')).toBe(instrumentLabel(call));
+    expect(contractLabel('QAB270104P00092500')).toBe(instrumentLabel(put));
+    for (const q of [20, -1, 1, -2]) expect(signedContractsText(String(q))).toBe(signedContracts(Rational.of(BigInt(q))));
+    for (const d of ['2026-11-20', '2027-01-04']) expect(reviewShortDate(d)).toBe(shortDate(d));
   });
 });
 
