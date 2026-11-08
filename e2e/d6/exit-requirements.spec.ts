@@ -59,7 +59,7 @@ test.describe('B6.3 Close requirements', () => {
 });
 
 test.describe('B6.4 Oversell', () => {
-  test('should refuse an exit of 101 shares on a 100-share Position with Only 100 shares are open beside the row and save nothing', async ({ profile }) => {
+  test('should refuse an exit of 101 shares on a 100-share Position with The position has only 100 shares beside the row and save nothing', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
     await createTA(setupPage);
@@ -75,9 +75,9 @@ test.describe('B6.4 Oversell', () => {
     await page.getByRole('button', { name: 'Save exit' }).click();
 
     const row = executionRow(page, 1);
-    await expect(row.locator('.field-error')).toHaveText('Execution 1: Only 100 shares are open.');
+    await expect(row.locator('.field-error')).toHaveText('Execution 1: The position has only 100 shares.');
     await expect(row.getByLabel('Quantity')).toHaveAttribute('aria-invalid', 'true');
-    await expect(page.getByRole('region', { name: 'This exit can’t be saved yet' })).toContainText('Only 100 shares are open.');
+    await expect(page.getByRole('region', { name: 'This exit can’t be saved yet' })).toContainText('The position has only 100 shares.');
     await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible();
     await expect(row.getByLabel('Quantity')).toHaveValue('101');
 

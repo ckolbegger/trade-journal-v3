@@ -316,7 +316,7 @@ describe('Open Trade Detail', () => {
     const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
     expect(within(panel).getByRole('heading', { name: "Facts can't be replayed", level: 2 })).toBeTruthy();
     expect(rowsOf(within(panel).getByRole('table', { name: 'Facts that cannot be replayed' }))).toEqual([
-      ['Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open'],
+      ['Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares in the position'],
       ['Position Change on Wed Oct 14, 10:30 shares its identity with another record'],
     ]);
     expect(screen.queryByRole('region', { name: 'Records disagree' })).toBeNull();

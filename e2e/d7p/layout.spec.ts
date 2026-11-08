@@ -12,8 +12,8 @@ test.use({ actionTimeout: 15_000 });
 const DATE = 'Mon Oct 12';
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
 const TWO_FINDINGS = [
-  'Sell of 120 XYZ on Mon Oct 12, 13:00 is more than the 100 shares open',
-  'Sell of 130 XYZ on Mon Oct 12, 14:00 is more than the 100 shares open',
+  'Sell of 120 XYZ on Mon Oct 12, 13:00 is more than the 100 shares in the position',
+  'Sell of 130 XYZ on Mon Oct 12, 14:00 is more than the 100 shares in the position',
 ];
 const FACTS_INCOHERENT = "Facts can't be replayed";
 const MARK_MISSING_ABC = `Mark missing: ABC, ${DATE}`;

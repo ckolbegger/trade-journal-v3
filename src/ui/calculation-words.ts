@@ -56,9 +56,9 @@ export const unavailableWords = (reason: UnavailableReason, length: WordLength, 
       if (length === 'figure') return [t('Awaiting the close after '), datePart(reason.after)];
       return [t('Awaiting the next close after '), datePart(reason.after)];
     case 'SettlementDue':
-      if (length === 'label') return [t('Settlement due')];
-      if (length === 'figure') return [t('Settlement due: '), instrumentPart(reason.instrument)];
-      return [t('Settlement due for '), instrumentPart(reason.instrument), t(', which expired '), datePart(reason.expiration)];
+      if (length === 'label') return [t('Settlement Due')];
+      if (length === 'figure') return [t('Settlement Due: '), instrumentPart(reason.instrument)];
+      return [t('Settlement Due for '), instrumentPart(reason.instrument), t(', which expired '), datePart(reason.expiration)];
     case 'SessionPolicyNotCovered':
       if (length === 'label') return [t('Outside calendar')];
       if (length === 'figure') return [t('Outside the market calendar: '), datePart(reason.date)];
@@ -111,7 +111,11 @@ const recordedQuantity = (recorded: string): string => {
   return parsed.ok ? quantity(parsed.value) : recorded;
 };
 
-export const findingWords = (finding: IncoherentFact, timeZone: string): Parts => {
+// C1: the singular at exactly 1, in the one Quantity format.
+const isOne = (available: Parameters<typeof quantity>[0]): boolean => quantity(available) === '1';
+const plural1 = (available: Parameters<typeof quantity>[0], one: string, many: string): string => (isOne(available) ? one : many);
+
+export const findingWords =(finding: IncoherentFact, timeZone: string): Parts => {
   if (finding.kind === 'PositionChange') {
     return [t('Position Change on '), ...timeParts(finding.economicTime, timeZone), t(' shares its identity with another record')];
   }
@@ -119,7 +123,7 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
     const expirationHead: Parts = [t(`Expiration of ${recordedQuantity(finding.quantity)} `), instrumentPart(finding.instrument), t(' at '), ...timeParts(finding.economicTime, timeZone)];
     switch (finding.reason) {
       case 'ExpirationMustSettleAllOpen':
-        return [...expirationHead, t(` doesn't settle all ${quantity(finding.available)} contracts open`)];
+        return [...expirationHead, t(isOne(finding.available) ? " doesn't settle the 1 contract in the position" : ` doesn't settle all ${quantity(finding.available)} contracts in the position`)];
       case 'SettlementTimeInvalid':
         return [...expirationHead, t(" is dated after the contract's expiration or before an Execution on it")];
       case 'NotAnOption':
@@ -140,7 +144,7 @@ export const findingWords = (finding: IncoherentFact, timeZone: string): Parts =
   ];
   switch (finding.reason) {
     case 'ExceedsOpenQuantity':
-      return [...head, t(` is more than the ${quantity(finding.available)} ${finding.instrument.kind === 'Option' ? 'contracts' : 'shares'} open`)];
+      return [...head, t(` is more than the ${quantity(finding.available)} ${finding.instrument.kind === 'Option' ? plural1(finding.available, 'contract', 'contracts') : plural1(finding.available, 'share', 'shares')} in the position`)];
     case 'AfterExpiration':
       return [...head, t(" is dated after the contract's expiration")];
     case 'ContractQuantityNotWhole':

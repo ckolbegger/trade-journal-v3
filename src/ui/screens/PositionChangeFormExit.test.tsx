@@ -322,7 +322,7 @@ describe('submission', () => {
     // Nothing is read again: Trade Detail was read once, to open the form.
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
     const change = screen.getByRole('region', { name: /^Position Change at / });
-    expect(within(change).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Sell 50 XYZ @ $53.00, fee $1.00', 'Sell 20 XYZ @ $53.00, fee $0.40']);
+    expect(within(change).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Sell 50 XYZ @ $53.00', 'Sell 20 XYZ @ $53.00']);
 
     const matches = within(screen.getByRole('region', { name: 'Lot Matches' }));
     const cells = matches.getAllByRole('row').slice(1).map((r) => within(r).getAllByRole('cell').map((c) => c.textContent));
@@ -424,12 +424,39 @@ describe('submission', () => {
 
     const summary = within(await screen.findByRole('region', { name: 'This exit can’t be saved yet' }));
     expect(summary.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      'Execution 1: Only 100 shares are open.',
+      'Execution 1: The position has only 100 shares.',
       'Execution 2: this exit would leave the Position flat before a later recorded change.',
-      'This exit would leave a later recorded exit without enough shares open.',
+      'This exit would leave a later recorded exit without enough shares in the position.',
       'This Trade is closed. New exposure needs a new Plan.',
     ]);
     const quantity = within(rowOf(1)).getByLabelText('Quantity');
-    expect(document.getElementById(quantity.getAttribute('aria-describedby')!)!.textContent).toBe('Execution 1: Only 100 shares are open.');
+    expect(document.getElementById(quantity.getAttribute('aria-describedby')!)!.textContent).toBe('Execution 1: The position has only 100 shares.');
+  });
+
+  it('should word a stock exit row with the singular at 1 and the fallback when no quantity is named (row 20.6)', async () => {
+    const facade = renderExitForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
+      ...rejected,
+      issues: [
+        { source: 'TradeAnalysis', member: 0, field: 'quantity', code: 'ExceedsOpenQuantity', available: Rational.of(60n) },
+        { source: 'TradeAnalysis', member: 1, field: 'quantity', code: 'ExceedsOpenQuantity', available: Rational.of(1n) },
+        { source: 'TradeAnalysis', member: 2, field: 'quantity', code: 'ExceedsOpenQuantity' },
+      ],
+    } as never);
+    const user = userEvent.setup();
+    await screen.findByRole('group', { name: 'Execution 1' });
+    await fillRow(user, 1, '101');
+    await user.click(screen.getByRole('button', { name: 'Add Execution' }));
+    await fillRow(user, 2, '1');
+    await user.click(screen.getByRole('button', { name: 'Add Execution' }));
+    await fillRow(user, 3, '1');
+    await user.click(screen.getByRole('button', { name: 'Save exit' }));
+
+    const summary = within(await screen.findByRole('region', { name: 'This exit can’t be saved yet' }));
+    expect(summary.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Execution 1: The position has only 60 shares.',
+      'Execution 2: The position has only 1 share.',
+      'Execution 3: more shares than the position has.',
+    ]);
   });
 });

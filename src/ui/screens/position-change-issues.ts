@@ -28,7 +28,7 @@ const TIME: Record<string, string> = {
 type PathIssue = Issue & { readonly member?: number; readonly available?: Rational };
 
 function memberMessage(issue: PathIssue): string {
-  if (isExceedsOpenQuantityIssue(issue)) return issue.available ? `Only ${quantity(issue.available)} shares are open.` : 'more shares than are open.';
+  if (isExceedsOpenQuantityIssue(issue)) return issue.available ? `The position has only ${quantity(issue.available)} ${quantity(issue.available) === '1' ? 'share' : 'shares'}.` : 'more shares than the position has.';
   if (isFlatBeforeLaterFactsIssue(issue)) return 'this exit would leave the Position flat before a later recorded change.';
   if (issue.field === 'economicTime') return TIME[issue.code] ?? 'check the Economic Time.';
   if (issue.field === 'fee' && issue.code === 'Required') return 'enter the fee, or 0 if there was none.';
@@ -60,7 +60,7 @@ function describeIssue(issue: PathIssue, rowKeys: readonly number[], definition:
     return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue)}` };
   }
   if (issue.source === 'TradeAnalysis' && (isExceedsOpenQuantityIssue(issue) || isFlatBeforeLaterFactsIssue(issue))) {
-    return { field: 'members', message: 'This exit would leave a later recorded exit without enough shares open.' };
+    return { field: 'members', message: 'This exit would leave a later recorded exit without enough shares in the position.' };
   }
   if (issue.code === 'TradeClosed') return { field: 'trade', message: 'This Trade is closed. New exposure needs a new Plan.' };
   if (issue.source === 'TradeWorkflows' && CLOSE[issue.code]) return CLOSE[issue.code]!;

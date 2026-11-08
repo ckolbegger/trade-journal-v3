@@ -313,7 +313,7 @@ describe('submission', () => {
 
     const receipt = await screen.findByRole('region', { name: 'Entry recorded' });
     const saved = within(receipt).getByRole('region', { name: 'Position Change at 2026-10-12 14:00' });
-    expect(within(saved).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Buy 20 XYZ @ $51.00, fee $1.00']);
+    expect(within(saved).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Buy 20 XYZ @ $51.00']);
     const entryQuality = within(receipt).getByRole('region', { name: 'Entry Quality' });
     expect(within(entryQuality).getAllByRole('definition').map((dd) => dd.textContent)).toEqual([
       '$50.18',

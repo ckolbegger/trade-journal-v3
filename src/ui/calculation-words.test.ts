@@ -40,7 +40,7 @@ describe('calculation words (P70, P71, section 1.4)', () => {
 
   it('should word each finding as a sentence, with its quantities, and a Position Change duplicate in its own form', () => {
     expect(sentence({ ...execution('Sell', '120'), reason: 'ExceedsOpenQuantity', available: Rational.of(100n, 1n) })).toBe(
-      'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open',
+      'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares in the position',
     );
     expect(sentence({ ...execution('Sell', '100'), reason: 'FlatBeforeLaterFacts' })).toBe('Sell of 100 XYZ on Wed Oct 14, 10:30 leaves the Position flat before later records');
     expect(sentence({ ...execution('Buy', '100'), reason: 'UnknownPlannedLeg' })).toBe("Buy of 100 XYZ on Wed Oct 14, 10:30 names a Planned Leg that isn't in the Plan");
@@ -67,7 +67,7 @@ describe('calculation words (P70, P71, section 1.4)', () => {
 
   it('should word the three Expiration findings after the Expiration head as decision 83 gives', () => {
     expect(sentence({ ...expiration(CALL, '1'), reason: 'ExpirationMustSettleAllOpen', available: Rational.of(2n, 1n) })).toBe(
-      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 doesn't settle all 2 contracts open",
+      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 doesn't settle all 2 contracts in the position",
     );
     expect(sentence({ ...expiration(CALL, '1'), reason: 'SettlementTimeInvalid' })).toBe(
       "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 is dated after the contract's expiration or before an Execution on it",
@@ -87,12 +87,18 @@ describe('calculation words (P70, P71, section 1.4)', () => {
     );
   });
 
-  it('should word ExceedsOpenQuantity as contracts open for an option and keep shares open for stock', () => {
+  it('should word the quantity findings in the position with the singular at 1', () => {
+    expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(1n, 1n) })).toBe(
+      'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 1 contract in the position',
+    );
     expect(sentence({ ...optionExecution('Buy', '3'), reason: 'ExceedsOpenQuantity', available: Rational.of(2n, 1n) })).toBe(
-      'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts open',
+      'Buy of 3 XYZ 20 Nov 2026 55 Call on Mon Nov 23, 10:00 is more than the 2 contracts in the position',
+    );
+    expect(sentence({ ...expiration(CALL, '1'), reason: 'ExpirationMustSettleAllOpen', available: Rational.of(1n, 1n) })).toBe(
+      "Expiration of 1 XYZ 20 Nov 2026 55 Call at Fri Nov 20, 16:00 doesn't settle the 1 contract in the position",
     );
     expect(sentence({ ...execution('Sell', '120'), reason: 'ExceedsOpenQuantity', available: Rational.of(100n, 1n) })).toBe(
-      'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open',
+      'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares in the position',
     );
   });
 
@@ -135,15 +141,15 @@ describe('calculation words (P70, P71, section 1.4)', () => {
 
   it('should word SettlementDue at the label, figure and sentence lengths as decision 81 gives', () => {
     const reason = { reason: 'SettlementDue', instrument: CALL as OptionInstrument, expiration: '2026-11-20' } as const;
-    expect(words(reason, 'label')).toBe('Settlement due');
-    expect(words(reason, 'figure')).toBe('Settlement due: XYZ 20 Nov 2026 55 Call');
-    expect(words(reason, 'sentence')).toBe('Settlement due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20');
+    expect(words(reason, 'label')).toBe('Settlement Due');
+    expect(words(reason, 'figure')).toBe('Settlement Due: XYZ 20 Nov 2026 55 Call');
+    expect(words(reason, 'sentence')).toBe('Settlement Due for XYZ 20 Nov 2026 55 Call, which expired Fri Nov 20');
   });
 
   it('should word SettlementDue in parts, with the Instrument and the expiration date as their own parts', () => {
     const reason = { reason: 'SettlementDue', instrument: CALL as OptionInstrument, expiration: '2026-11-20' } as const;
     expect(unavailableWords(reason, 'sentence', ZONE)).toEqual([
-      { kind: 'text', text: 'Settlement due for ' },
+      { kind: 'text', text: 'Settlement Due for ' },
       { kind: 'instrument', instrument: CALL },
       { kind: 'text', text: ', which expired ' },
       { kind: 'date', date: '2026-11-20' },

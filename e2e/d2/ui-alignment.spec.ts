@@ -1245,7 +1245,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
         }),
       );
       expect(rows.length, `receipt rows at ${width}`).toBe(2);
-      expect(rows[0]!.text, 'receipt row text').toMatch(/^Buy 30 XYZ @ \$50\.00, fee \$0\.50$/);
+      expect(rows[0]!.text, 'receipt row text').toMatch(/^Buy 30 XYZ @ \$50\.00$/);
       for (const row of rows) expect(row.ground, `receipt row ground at ${width}`).toBe(tint);
       const link = receipt.getByRole('link', { name: 'Back to the Trade' });
       const look = await link.evaluate((el) => {

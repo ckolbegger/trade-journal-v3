@@ -1135,7 +1135,7 @@ describe('Review words (P72)', () => {
   const DEF = { kind: 'Stock' as const, symbol: 'DEF' };
   const sell = (quantity: string): IncoherentFact => ({ factId: 'e1', kind: 'Execution', instrument: symbol, economicTime: '2026-10-14T14:30:00Z', side: 'Sell', quantity, reason: 'ExceedsOpenQuantity', available: Rational.of(100n) });
   const duplicate: IncoherentFact = { factId: 'p1', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' };
-  const SELL_SENTENCE = 'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares open';
+  const SELL_SENTENCE = 'Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares in the position';
 
   it('should give the attention reason the sentence length for each Unavailable reason', async () => {
     const reasons: WalkedTrade['reasons'] = [
