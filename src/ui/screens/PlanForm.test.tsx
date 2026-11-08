@@ -699,6 +699,21 @@ describe('option Strategies (A116)', () => {
     expect(errorOf('Stop (ABC at or below)')).toBe('The Stop must be below the breakeven, 57.00, so the Plan has a positive risk.');
   });
 
+  it('should keep ContractQuantityNotWhole beside Contracts while the count stays fractional, and clear it once the count is whole', async () => {
+    await submitRejected('Long Call', [{ source: 'TradeAnalysis', code: 'ContractQuantityNotWhole' }]);
+    const contracts = screen.getByLabelText('Contracts');
+    const user = userEvent.setup();
+    await user.clear(contracts);
+    await user.paste('2.5');
+    expect(errorOf('Contracts')).toBe('Enter a whole number of contracts.');
+    await user.clear(contracts);
+    await user.paste('2.6');
+    expect(errorOf('Contracts')).toBe('Enter a whole number of contracts.');
+    await user.clear(contracts);
+    await user.paste('3');
+    expect(contracts.getAttribute('aria-describedby')).toBeNull();
+  });
+
   it('should submit NotAuthorized when the checkbox is unchecked, and only the selected Strategy fields, keeping values from another Strategy in view state', async () => {
     const facade = renderForm(optionFacade());
     const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);

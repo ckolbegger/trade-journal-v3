@@ -234,6 +234,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     if (!reported) return false;
     if (option && OPTION_TRIGGER_CODES.has(issue.code ?? '')) return false;
     const changed = (name: keyof Fields) => fields[name] !== reported.fields[name];
+    const quantity = positiveDecimal(fields.quantity);
     const entry = positiveDecimal(fields.entry);
     const stop = positiveDecimal(fields.stop);
     const target = positiveDecimal(fields.target);
@@ -241,7 +242,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       case 'symbol':
         return changed('symbol') && isValidSymbol(fields.symbol);
       case 'quantity':
-        return changed('quantity') && positiveDecimal(fields.quantity) !== undefined;
+        // Fractional shares are allowed, fractional contracts are not.
+        return changed('quantity') && !!quantity && (!option || quantity.denominator === 1n);
       case 'entry':
         return changed('entry') && !!entry;
       case 'stop':
