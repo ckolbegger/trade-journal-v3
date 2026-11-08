@@ -145,10 +145,11 @@ Added at the user's request, after the first draft looked only at the session's 
   - **3.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 checked, 0 failed; `npm run verify:capabilities` and `npm run bench:run` both `script present`.
   - **4.** The r70 plan (`git show claude-opus-5.5-plan-r70:...` into a `mktemp -d` file): exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
 - **D7-Retro-F3-B2 ocr** (`ocr/D7-Retro-F3-B2-e595ed40.json`): 1 file, 0 comments. No findings. The reviewer's own note, not an ocr finding: a missing or unparseable `package.json` reads "no such npm script", which fails closed.
-- **D7-Retro-F3-B3:** a bare `npm run test:integration` or `test:unit` is now listed with `vitest list --project <name>`, and a bare `test:e2e`, `test:e2e:1` or `test:e2e:2` with `playwright test --list` on the folders and `--grep-invert` read from that script's text in `package.json` (never run; `test:e2e` sums `:1` and `:2`). Copies of the D7 breakdown in a `mktemp -d` directory replace AC-CAP-001's command (`npm run verify:capabilities`).
+- **D7-Retro-F3-B3, commit `8006f567`:** a bare `npm run test:integration` or `test:unit` is now listed with `vitest list --project <name>`, and a bare `test:e2e`, `test:e2e:1` or `test:e2e:2` with `playwright test --list` on the folders and `--grep-invert` read from that script's text in `package.json` (never run; `test:e2e` sums `:1` and `:2`). Copies of the D7 breakdown in a `mktemp -d` directory replace AC-CAP-001's command (`npm run verify:capabilities`).
   - **Red** (before the fix, copy with `npm run test:integration`): `AC-CAP-001 (cumulative) | npm run test:integration | script present`, no count.
   - **1.** After the fix, the same copy: `191 tests`, exit 0 (18 checked, 0 failed).
   - **2.** `npm run test:unit`: `1502 tests`, exit 0. `npm run test:e2e:2`: `64 tests`, exit 0. `npm run test:e2e`: `183 tests`, exit 0.
   - **3.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 checked, 0 failed; output identical to the previous script's (`diff` empty), so the filtered rows' counts are unchanged.
   - **4.** The r70 plan: exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
   - **5.** Ports 5175, 9341 and 9342 free before and after (`--list` starts no server).
+- **D7-Retro-F3-B3 ocr** (`ocr/D7-Retro-F3-B3-8006f567.json`): 1 file, 0 comments. No findings.
