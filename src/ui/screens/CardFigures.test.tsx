@@ -3,6 +3,7 @@ import { cleanup, render, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DailyTradeReview } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import { CardFigures } from './CardFigures.tsx';
 
 afterEach(cleanup);
@@ -73,5 +74,34 @@ describe('figures (A158)', () => {
     const group = within(root).getByRole('group', { name: 'Fri Oct 9 close' });
     expect(figure(group, 'Current Marked Trade P&L')).toBe('−$50.00 · −0.20R');
     expect(figure(group, 'Ongoing Risk to Stop')).toBe('$450.00 · 1.80R');
+  });
+});
+
+describe('value at expiration at the Underlying latest close (A122)', () => {
+  const termIn = (root: HTMLElement, term: string) => within(root).getByText(term, { selector: 'dt' }).nextElementSibling?.textContent;
+  const withPayoff = (atClose: unknown) => trade({ payoff: payoffFixtures.osPayoffs(), evaluation: evaluation({ expirationValueAtUnderlyingClose: atClose }) });
+
+  it('should show If XYZ is at 57.50 at expiration beside the payoff summary and apart from the Mark-to-Market figures', () => {
+    const atClose = { kind: 'Value', value: { underlyingPrice: Rational.of(115n, 2n), value: Rational.of(14805n, 100n) } };
+    const { container: root } = render(<CardFigures trade={withPayoff(atClose)} />);
+    const line = within(root).getByText('If XYZ is at 57.50 at expiration: +$148.05');
+    expect(line.closest('dl')).toBeNull();
+    expect(line.previousElementSibling?.textContent).toMatch(/^At expiration: /);
+  });
+
+  it('should word the figure as Trade Detail does when the Underlying Mark is missing or the contract is past its expiration date', () => {
+    const missingMark = { kind: 'Unavailable', reason: 'MarkMissing', instrument: symbol, date: '2026-11-19' };
+    const first = render(<CardFigures trade={withPayoff(missingMark)} />);
+    expect(termIn(first.container, "Value at expiration at XYZ's latest close")).toBe('Mark missing: XYZ, Thu Nov 19');
+    cleanup();
+    const due = { kind: 'Unavailable', reason: 'SettlementDue', instrument: { kind: 'Option', underlying: 'XYZ', expiration: '2026-11-20', strike: '55', right: 'Call' } };
+    const second = render(<CardFigures trade={withPayoff(due)} />);
+    expect(termIn(second.container, "Value at expiration at XYZ's latest close")).toMatch(/^Settlement Due: /);
+  });
+
+  it('should show no such line on a stock Trade', () => {
+    const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ expirationValueAtUnderlyingClose: { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' } }) })} />);
+    expect(root.textContent).not.toMatch(/at expiration/);
+    expect(root.textContent).not.toMatch(/latest close/);
   });
 });

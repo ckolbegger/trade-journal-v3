@@ -66,6 +66,10 @@ export function payoffSummary(view: ExpirationPayoffView): string {
   return `At expiration: ${[breakeven, extremumLead('Maximum', view.maximum), extremumLead('Minimum', view.minimum)].map(lowerFirst).join(' · ')}`;
 }
 
+// "If XYZ is at 57.50 at expiration: +$148.05" (A122), the figure beside the Current chart and the card's payoff summary.
+export const valueAtCloseText = (symbol: string, atClose: { readonly underlyingPrice: Rational; readonly value: Rational }): string =>
+  `If ${symbol} is at ${underlyingPrice(atClose.underlyingPrice)} at expiration: ${signedMoney(atClose.value)}`;
+
 // The chart text at the last ray: a rising ray continues rising, a flat one stays at its value (row 22.13).
 export function lastRayText(last: PayoffSegment): string {
   const sense = last.slope.compare(ZERO);

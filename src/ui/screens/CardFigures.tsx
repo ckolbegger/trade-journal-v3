@@ -3,7 +3,7 @@ import type { DailyTradeReview } from '../../app/types.ts';
 import { instrumentLabel } from '../calculation-words.ts';
 import { decimalMoney, money, ratio, shortDate } from '../format.ts';
 import { calculation, dollarsAndR, pnlText } from '../figures.ts';
-import { payoffSummary } from './payoff-text.ts';
+import { payoffSummary, valueAtCloseText } from './payoff-text.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
 
@@ -39,6 +39,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
   const uid = useId();
   const { evaluation, datedLastClose } = trade;
   const mark = evaluation?.observation.mark;
+  const atClose = evaluation?.expirationValueAtUnderlyingClose;
   return (
     <>
       {evaluation && (
@@ -56,6 +57,14 @@ export function CardFigures({ trade }: CardFiguresProps) {
       )}
       {/* An option's Current payoff in one line; a Trade with no option, or no position left, has none to show. */}
       {trade.payoff?.current.kind === 'Value' && <p>{payoffSummary(trade.payoff.current.value)}</p>}
+      {/* The value at expiration at the Underlying's latest close, or the module's words for why it has none (row 23.11, A122);
+          a flat or stock Trade shows none. */}
+      {atClose?.kind === 'Value' && <p>{valueAtCloseText(trade.underlying, atClose.value)}</p>}
+      {atClose?.kind === 'Unavailable' && (
+        <dl>
+          <Figure term={`Value at expiration at ${trade.underlying}'s latest close`}>{calculation(atClose, () => '')}</Figure>
+        </dl>
+      )}
       {evaluation?.atEntry && (
         <div role="group" aria-labelledby={`${uid}-entry`}>
           <h4 id={`${uid}-entry`}>At entry</h4>
