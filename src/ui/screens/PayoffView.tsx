@@ -23,25 +23,34 @@ const MARGIN = { left: 72, right: 32, top: 24, bottom: 80 };
 const CHAR_WIDTH = 7.5;
 const LINE = 16;
 type Anchor = 'start' | 'middle' | 'end';
-interface Box { readonly left: number; readonly right: number; readonly baseline: number }
+interface Box { readonly left: number; readonly right: number; readonly top: number; readonly bottom: number }
 const boxOf = (text: string, x: number, baseline: number, anchor: Anchor): Box => {
   const width = text.length * CHAR_WIDTH;
   const left = anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2;
-  return { left, right: left + width, baseline };
+  return { left, right: left + width, top: baseline - LINE / 2, bottom: baseline + LINE / 2 };
 };
-const collides = (a: Box, b: Box): boolean => a.left < b.right + 4 && b.left < a.right + 4 && Math.abs(a.baseline - b.baseline) < LINE;
+const collides = (a: Box, b: Box): boolean => a.left < b.right + 4 && b.left < a.right + 4 && a.top < b.bottom && b.top < a.bottom;
 // Where a label goes: its x is pulled in so the box stays inside the SVG, and its baseline is the first, moving by `step` from the wanted
-// one and then the other way, that clears every box already placed and keeps the text inside the SVG; the label's box is then placed.
+// one and then the other way, that clears every box already placed (tick labels and axis titles included) and keeps the text inside the SVG.
+// When those 13 baselines all collide, every baseline is tried nearest the wanted one first, then every x across the chart in 4 px steps;
+// a label with no clear place at all (the chart is full) takes its wanted spot. The label's box is then placed.
 const TEXT_HEIGHT = 13;
 function place(text: string, wantX: number, baseline: number, anchor: Anchor, placed: Box[], step: number): { x: number; y: number } {
-  const probe = boxOf(text, wantX, baseline, anchor);
-  const x = wantX + Math.max(0, -probe.left) - Math.max(0, probe.right - WIDTH);
+  const pull = (x: number) => {
+    const probe = boxOf(text, x, baseline, anchor);
+    return x + Math.max(0, -probe.left) - Math.max(0, probe.right - WIDTH);
+  };
+  const wanted = pull(wantX);
   const inside = (at: number) => at - TEXT_HEIGHT >= 0 && at <= HEIGHT;
-  const fits = (at: number) => inside(at) && !placed.some((box) => collides(boxOf(text, x, at, anchor), box));
-  const tries = Array.from({ length: 7 }, (_, k) => baseline + k * step).concat(Array.from({ length: 6 }, (_, k) => baseline - (k + 1) * step));
-  const y = tries.find(fits) ?? Math.min(HEIGHT, Math.max(TEXT_HEIGHT, baseline));
-  placed.push(boxOf(text, x, y, anchor));
-  return { x, y };
+  const fits = (c: { x: number; y: number }) => inside(c.y) && !placed.some((box) => collides(boxOf(text, c.x, c.y, anchor), box));
+  const stepped = Array.from({ length: 7 }, (_, k) => baseline + k * step).concat(Array.from({ length: 6 }, (_, k) => baseline - (k + 1) * step));
+  const nearest = Array.from({ length: HEIGHT - TEXT_HEIGHT + 1 }, (_, k) => TEXT_HEIGHT + k).sort((a, b) => Math.abs(a - baseline) - Math.abs(b - baseline));
+  const across = Array.from({ length: WIDTH / 4 + 1 }, (_, k) => pull(k * 4));
+  const spot =
+    [...stepped, ...nearest].map((y) => ({ x: wanted, y })).find(fits) ??
+    across.flatMap((x) => nearest.map((y) => ({ x, y }))).find(fits) ?? { x: wanted, y: Math.min(HEIGHT, Math.max(TEXT_HEIGHT, baseline)) };
+  placed.push(boxOf(text, spot.x, spot.y, anchor));
+  return spot;
 }
 
 // SVG draws no stroke by default; currentColor follows the page ink in light and dark alike.
@@ -82,7 +91,13 @@ function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: Pa
     tick.row = row;
     rowEnds[row] = tick.at + half;
   }
-  const placed: Box[] = [];
+  // The tick labels and the two axis titles are fixed, so every moved label avoids them.
+  const placed: Box[] = [
+    ...ticks.map((tick) => boxOf(tick.label, tick.at, HEIGHT - MARGIN.bottom + 16 + tick.row * LINE, 'middle')),
+    boxOf(`${symbol} at expiration`, (MARGIN.left + WIDTH - MARGIN.right) / 2, HEIGHT - 6, 'middle'),
+    // "Payoff" is rotated, so its box runs vertically about the chart's middle.
+    { left: 16 - LINE / 2, right: 16 + LINE / 2, top: HEIGHT / 2 - (6 * CHAR_WIDTH) / 2, bottom: HEIGHT / 2 + (6 * CHAR_WIDTH) / 2 },
+  ];
   const rayText = lastRayText(last);
   const ray = place(rayText, tipX, tipY - 10, 'end', placed, -LINE);
   const closeText = latestClose ? `Latest close ${underlyingPrice(latestClose.underlyingPrice)}: ${signedMoney(latestClose.value)}` : '';

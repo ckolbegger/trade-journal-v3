@@ -150,6 +150,40 @@ describe('chart labels stay inside the SVG (T7.32-B3)', () => {
   });
 });
 
+describe('moved chart labels stay clear of ticks and axis titles (T7.32-B4)', () => {
+  it('should keep a moved label clear of every tick label and axis title and never render two overlapping labels when the search runs out', () => {
+    const base = viewOf(payoffFixtures.ocPayoffs().planned);
+    const at = (n: number) => Rational.of(BigInt(n), 1n);
+    const first = base.segments[0]!;
+    const prices = [0, 10, 20, 30, 40, 55];
+    const segments = prices.map((p, i) => ({ ...first, from: at(p), to: i < prices.length - 1 ? at(prices[i + 1]!) : null }));
+    const pairs = prices.flatMap((from, i) => prices.slice(i + 1).map((to) => ({ kind: 'ZeroRange' as const, from: at(from), to: at(to) })));
+    // 9 labels reach the tick rows from the Zero Set line; 21 leave the old search (6 moves each way) with no place.
+    for (const count of [9, 21]) {
+      const zeroSet = [...prices.map((p) => ({ kind: 'Touch' as const, price: at(p) })), ...pairs].slice(0, count);
+      show({ kind: 'Planned', result: { kind: 'Value', value: { ...base, segments, zeroSet } } });
+      const boxes = [...screen.getByRole('img').querySelectorAll('text')].map((label) => {
+        const x = Number(label.getAttribute('x'));
+        const y = Number(label.getAttribute('y'));
+        const text = label.textContent ?? '';
+        const width = text.length * 7.5;
+        const anchor = label.getAttribute('text-anchor');
+        if (label.getAttribute('transform') !== null) return { text, left: x - 7, right: x + 7, top: y - width / 2, bottom: y + width / 2 };
+        const left = anchor === 'end' ? x - width : anchor === 'middle' ? x - width / 2 : x;
+        return { text, left, right: left + width, top: y - 13, bottom: y };
+      });
+      expect(boxes.filter((b) => b.text.startsWith('Breakeven')), `${count} zero labels rendered`).toHaveLength(count);
+      for (const [i, a] of boxes.entries()) {
+        for (const b of boxes.slice(i + 1)) {
+          const overlap = a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+          expect(overlap, `${count} zero labels: "${a.text}" overlaps "${b.text}"`).toBe(false);
+        }
+      }
+      cleanup();
+    }
+  });
+});
+
 describe('a Zero Range with no upper end (T7.22-B1)', () => {
   it('should refuse to word a Zero Range with no upper end, which no approved row words', () => {
     expect(() => zeroText({ kind: 'ZeroRange', from: Rational.of(55n), to: null })).toThrow('no approved words');
