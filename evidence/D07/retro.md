@@ -131,9 +131,10 @@ Added at the user's request, after the first draft looked only at the session's 
 - **D7-Retro-F3-B2:** the presence check should look only in `package.json`'s `scripts` object, matching the name exactly, so `npm run name` fails.
 - **D7-Retro-F3-B3:** a bare `test:integration`, `test:unit` or `test:e2e` command should be listed for its whole project and counted.
 - **D7-Retro-F3-B4:** command arguments should keep their shell quoting and never glob-expand, so a quoted `--grep` filter is passed as one argument.
-- **D7-Retro-F3-B1, commit `SHA`:** the script now makes the breakdown path absolute (from the caller's directory) before changing to the repository root; a missing file exits 2 with `acceptance-commands.sh: no such file: <path>`.
+- **D7-Retro-F3-B1, commit `d2f14d3d`:** the script now makes the breakdown path absolute (from the caller's directory) before changing to the repository root; a missing file exits 2 with `acceptance-commands.sh: no such file: <path>`.
   - **Red** (before the fix): `(cd plan && ../.claude/scripts/acceptance-commands.sh D07-single-leg-options-happy-path.md); echo "exit $?"` printed `awk: can't open file D07-single-leg-options-happy-path.md`, then `no acceptance table with a "Command or procedure" column found in D07-single-leg-options-happy-path.md`, exit 2.
   - **1.** The same command after the fix: exit 0, output identical to the root run (`diff` empty); 18 commands checked, 0 failed, 1 procedure.
   - **2.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 commands checked, 0 failed, 1 rows are procedures.
   - **3.** `.claude/scripts/acceptance-commands.sh plan/no-such.md; echo "exit $?"`: `acceptance-commands.sh: no such file: plan/no-such.md`, exit 2.
   - **4.** The r70 plan (from `git show claude-opus-5.5-plan-r70:...` into a `mktemp -d` file): exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
+- **D7-Retro-F3-B1 ocr** (`ocr/D7-Retro-F3-B1-d2f14d3d.json`): 1 file, 0 comments. No findings.
