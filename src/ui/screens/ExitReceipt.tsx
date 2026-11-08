@@ -59,7 +59,7 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
   const { lotMatchChanges, realizedToDate } = receipt;
   const disclosed = lotMatchChanges.some((c) => c.kind !== 'Created' || !ownExecutions.has(c.disposingExecutionId));
   const option = trade.plan.legs[0]?.instrument.kind === 'Option';
-  const matchQuantity =(amount: Rational | null) => (amount === null ? '—' : quantity(amount));
+  const matchQuantity = (amount: Rational | null) => (amount === null ? '—' : quantity(amount));
 
   return (
     <section className="card" aria-labelledby="receipt-heading">

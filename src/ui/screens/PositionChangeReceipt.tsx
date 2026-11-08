@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
 import { calculation } from '../figures.ts';
 import { executionWhat } from './execution-line.ts';
+import { plural } from './ReviewCard.tsx';
 import { decimalMoney as price, localTime, money, ratio, rMultiple } from '../format.ts';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
@@ -67,7 +68,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
       return [
         {
           key: d.occurrenceId,
-          text: `Entry Size Deviation changed: now ${d.version.quantityAbovePlan} shares above plan${was ? ` (was ${was.quantityAbovePlan})` : ''}, caused by ${
+          text: `Entry Size Deviation changed: now ${option ? plural(Number(d.version.quantityAbovePlan), 'contract', 'contracts') : `${d.version.quantityAbovePlan} shares`} above plan${was ? ` (was ${was.quantityAbovePlan})` : ''}, caused by ${
             d.version.causingPositionChangeId === savedId ? 'this Position Change' : `the Position Change at ${timeOf(d.version.causingPositionChangeId)}`
           }.`,
         },
@@ -116,7 +117,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
       )}
       {created.map((d) => (
         <p key={d.occurrenceId}>
-          {`Entry Size Deviation: ${d.version.quantityAbovePlan} ${option ? (d.version.quantityAbovePlan === '1' ? 'contract' : 'contracts') : 'shares'} above plan, caused by ${
+          {`Entry Size Deviation: ${option ? plural(Number(d.version.quantityAbovePlan), 'contract', 'contracts') : `${d.version.quantityAbovePlan} shares`} above plan, caused by ${
             d.version.causingPositionChangeId === savedId ? 'this Position Change' : `the Position Change at ${timeOf(d.version.causingPositionChangeId)}`
           }.`}
         </p>

@@ -124,6 +124,24 @@ describe('option receipt wording, rows 20.14 and 20.15', () => {
     view('2');
     expect(screen.getByText('Entry Size Deviation: 2 contracts above plan, caused by this Position Change.')).toBeTruthy();
   });
+
+  it('should state a changed option Entry Size Deviation on the receipt in contracts, with the singular at 1', () => {
+    const { record, derivation } = optionTrade('O-S');
+    const changed = (now: string, was: string) => {
+      const trade = { ...record, recordedDeviations: [{ occurrenceId: 'dev-1', versions: [{ quantityAbovePlan: was }, { quantityAbovePlan: now }] }] };
+      const reconciliation = [{ action: 'NewVersion', occurrenceId: 'dev-1', version: { quantityAbovePlan: now, causingPositionChangeId: 'pc-s1' } }];
+      render(
+        <MemoryRouter>
+          <PositionChangeReceipt result={recorded(trade, { ...derivation, entryQuality: { kind: 'NotApplicable' } }, ['pc-s1'], [], reconciliation) as never} timeZone="America/New_York" />
+        </MemoryRouter>,
+      );
+    };
+    changed('2', '1');
+    expect(screen.getByText('Entry Size Deviation changed: now 2 contracts above plan (was 1), caused by this Position Change.')).toBeTruthy();
+    cleanup();
+    changed('1', '3');
+    expect(screen.getByText('Entry Size Deviation changed: now 1 contract above plan (was 3), caused by this Position Change.')).toBeTruthy();
+  });
 });
 
 describe('option Executions (A117)', () => {
