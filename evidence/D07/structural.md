@@ -1736,3 +1736,80 @@ none
 Normal path (stub `test:e2e` = `echo ok`, limit 30): `== browser: npm run test:e2e exit 0`, file ends `ok` then `EXIT 0`, script exit 0, no TIMED OUT line.
 
 Notes: the timed-out file ends with the TIMED OUT line and `EXIT 124`, so `run-complete.sh` sees the stage as finished and failed. `TJ_BROWSER_LIMIT_SECONDS` overrides the 720 s limit and exists only for this check. The process group is created with `perl setpgrp` (macOS has no `setsid`); `pgrep -fl 'sleep 98[78]'` found no survivor.
+
+#### The T7.29 bug chain under the ocr-only rule (user's direction, 2026-11-08)
+
+- **The rule.** From now on, only findings ocr itself raises become bug tasks. Applied to T7.29's bug tasks, ocr raised B1 and B12; the rest came from the reviewer's own reading.
+- **B10's ocr finding.** Two comment sentences still chain more than one clause. B10 was the third round of bug tasks on this test. At the user's choice, the finding is noted for the final report and the query-count test's bug chain is closed.
+- **B12.** It runs after the cumulative run `t7-29-final`.
+
+## Decision 98 tooling, revision 65
+
+The full browser tier is two foreground stages. `package.json` has `test:e2e:1` (`e2e/d1 e2e/d2 e2e/d4`), `test:e2e:2` (`e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7`) and `test:e2e` (runs both). Each half builds first and keeps `--grep-invert @release-history`. `full-suite.sh` lost `run_limited`, the perl watchdog and `TJ_BROWSER_LIMIT_SECONDS`; it kept `choose_tier`'s exclusion of `*.test.ts` and `*.test.tsx`. Stages are `unit`, `integration`, `browser-1`, `browser-2`, `browser-task`, `browser-auto <base>`, `checks`; the stage `browser` is a usage error naming `browser-1` and `browser-2`. `browser-auto <base>` runs the task tier itself (writing `<label>-browser.txt`) and, on the full tier, prints `browser tier: full (...)` and `next: run stages browser-1 and browser-2` and runs nothing; the runner then makes the two calls. `run-complete.sh` requires `browser-1` and `browser-2` when either file exists, else `browser`.
+
+Playwright's positional arguments are regular expressions on the file path, so `e2e/d7` also matches `e2e/d7p` (and `e2e/d5` matches `e2e/d5r`); inside `browser-2` that is harmless. A folder argument that matches nothing is fine next to others (`e2e/d1 e2e/d9` lists 23 tests, exit 0) and only fails alone ("Total: 0 tests"), so `e2e/d7` can stay in `test:e2e:2` before T7.31 adds the folder.
+
+### (a) Syntax
+
+```
+$ bash -n .claude/scripts/full-suite.sh; echo "exit $?"
+exit 0
+$ bash -n .claude/scripts/run-complete.sh; echo "exit $?"
+exit 0
+```
+
+### (b) The two halves equal the old full tier
+
+```
+$ npx playwright test --list e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 e2e/d7p --grep-invert @release-history   (old folder set)  -> 166 case lines
+$ npx playwright test --list e2e/d1 e2e/d2 e2e/d4 --grep-invert @release-history                              -> Total: 119 tests in 35 files
+$ npx playwright test --list e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 --grep-invert @release-history              -> Total: 47 tests in 24 files
+$ sort(old) vs sort(half 1 + half 2): cmp -> identical; sort -u of the union: 166 lines (no duplicate, none missing)
+```
+
+### (c) Scratch clone: `--choose-tier` and `browser-auto` (npm and npx stubbed on PATH; the real suite was not run)
+
+Commit 1 changed only `src/ui/calculation-words.test.ts`; commit 2 added `src/ui/AppShell.tsx`; commit 3 (from commit 2) changed only `e2e/d1/identity.spec.ts`.
+
+```
+# test file only
+$ full-suite.sh --choose-tier <base>
+task
+$ full-suite.sh evidence/D07 lab1 browser-auto <base>
+browser tier: task (no changed path since <base> is on the full-tier list)
+== browser-task: `npm run build:faults && npm run build:releases && npx playwright test e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 --grep @every-task` exit 0 -> evidence/D07/suite-runs/lab1-browser.txt
+== browser-task: no e2e/d7 folder, only the @every-task call ran
+  9 passed
+files written: lab1-browser.txt
+# plus a UI file
+full: src/ui/AppShell.tsx
+browser tier: full (first matching path since <base>: src/ui/AppShell.tsx)
+next: run stages browser-1 and browser-2, one after the other (nothing ran here)      (no lab2 file written)
+# e2e spec only
+full: e2e/d1/identity.spec.ts
+browser tier: full (first matching path since <base2>: e2e/d1/identity.spec.ts)
+next: run stages browser-1 and browser-2, one after the other (nothing ran here)
+# the old stage
+$ full-suite.sh evidence/D07 lab4 browser
+the stage browser no longer exists (decision 98, revision 65): run the full browser tier as two calls, browser-1 and then browser-2     exit 2
+# the two stages (stubbed)
+== browser-1: `npm run test:e2e:1` exit 0 -> evidence/D07/suite-runs/lab5-browser-1.txt
+== browser-2: `npm run test:e2e:2` exit 0 -> evidence/D07/suite-runs/lab5-browser-2.txt
+```
+
+### (d) `run-complete.sh`
+
+```
+five finished files (unit, integration, browser-1, browser-2, checks)  -> all "finished", "run complete", exit 0
+browser-2 file with no EXIT line                                       -> "browser-2: still running or cut off (0 of 1 commands finished)", "run INCOMPLETE", exit 1
+browser-1 and browser-2 present, checks missing                        -> "checks: missing (...)", "run INCOMPLETE", exit 1
+only browser-1 present (browser-2 absent)                              -> "browser-2: missing (...)", "run INCOMPLETE", exit 1
+task tier, four files (unit, integration, browser, checks)             -> "run complete", exit 0
+$ .claude/scripts/run-complete.sh evidence/D07 t7-10-trade-record      (existing four-file label, read-only)
+unit: finished (EXIT 0 )
+integration: finished (EXIT 0 )
+browser: finished (EXIT 0 )
+checks: finished (EXIT 0 ... 13 EXIT lines, one EXIT 1 )
+run complete
+exit 0
+```

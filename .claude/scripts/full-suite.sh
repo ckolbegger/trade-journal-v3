@@ -1,34 +1,38 @@
 #!/bin/bash
 # Runs the complete cumulative suite and writes the full outputs as evidence.
-# Usage: .claude/scripts/full-suite.sh <evidence-dir> <label> [unit|integration|browser|browser-task|checks]
+# Usage: .claude/scripts/full-suite.sh <evidence-dir> <label> [unit|integration|browser-1|browser-2|browser-task|checks]
 #        .claude/scripts/full-suite.sh <evidence-dir> <label> browser-auto <base>
-#   e.g. .claude/scripts/full-suite.sh evidence/D02 t2.5-recordPositionChange browser
+#   e.g. .claude/scripts/full-suite.sh evidence/D02 t2.5-recordPositionChange browser-1
 # With a stage, runs only that stage, so each stage fits in one foreground Bash call
 # (the whole suite takes longer than the Bash tool's 10-minute limit). Without one,
-# runs all four in order, with the full browser tier.
-# Browser tiers (decision P55):
-#   browser       the full tier: npm run test:e2e.
-#   browser-task  the task tier: the @every-task tests over the test:e2e folders, then the
+# runs all five in order (unit, integration, browser-1, browser-2, checks), the full browser tier.
+# Browser tiers (decisions P55 and 98):
+#   browser-1     half of the full tier: npm run test:e2e:1 (e2e/d1, d2, d4), writing <label>-browser-1.txt.
+#   browser-2     the other half: npm run test:e2e:2 (e2e/d5 onward), writing <label>-browser-2.txt.
+#                 The two run one after the other (both use port 5175); a plain `browser` stage no longer exists.
+#   browser-task  the task tier: the @every-task tests over the test:e2e:1 and :2 folders, then the
 #                 current deliverable's own e2e folder when it exists (derived from the
 #                 evidence folder, e.g. evidence/D06 -> e2e/d6; TJ_E2E_CURRENT overrides it).
 #                 Both playwright calls write to the one browser file, each ending in its
 #                 own EXIT line, and the summary adds up their counts.
 #   browser-auto  picks the full tier when `git diff --name-only <base> HEAD` touches a path
 #                 on P55's list, the task tier otherwise; prints the tier and why.
-# Decision 98: the full browser tier is limited to 720 s inside this script; on expiry the whole
-# process group is killed and the browser file ends with "TIMED OUT after 720 s" and "EXIT 124".
+#                 Task tier: runs it (one call, writing <label>-browser.txt).
+#                 Full tier: runs nothing. It prints "browser tier: full (...)" and "next: run
+#                 stages browser-1 and browser-2", and the caller makes those two calls.
 # Unit-test files (*.test.ts, *.test.tsx) never pick the full tier.
 # Read-only queries (print and exit; nothing runs and no evidence is written):
 #   .claude/scripts/full-suite.sh --current-folder <evidence-dir>   the derived e2e folder
 #   .claude/scripts/full-suite.sh --choose-tier <base>              "task" or "full: <path>"
 # A trailing /suite-runs on <evidence-dir> is ignored, so it is never doubled.
-# Writes <evidence-dir>/suite-runs/<label>-{unit,integration,browser,checks}.txt
+# Writes <evidence-dir>/suite-runs/<label>-{unit,integration,browser-1,browser-2,checks}.txt
+# (full tier) or <label>-{unit,integration,browser,checks}.txt (task tier)
 # and prints a short summary. Exits non-zero if any command failed.
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 
 usage() {
-  echo "usage: $0 <evidence-dir> <label> [unit|integration|browser|browser-task|checks]" >&2
+  echo "usage: $0 <evidence-dir> <label> [unit|integration|browser-1|browser-2|browser-task|checks]" >&2
   echo "       $0 <evidence-dir> <label> browser-auto <base>" >&2
   echo "       $0 --current-folder <evidence-dir>" >&2
   echo "       $0 --choose-tier <base>" >&2
@@ -69,9 +73,10 @@ esac
 [[ $# -eq 2 || $# -eq 3 || ( $# -eq 4 && "${3:-}" == browser-auto ) ]] || usage
 stage=${3:-}
 case "$stage" in
-  ''|unit|integration|browser|browser-task|checks) [[ $# -le 3 ]] || usage ;;
+  ''|unit|integration|browser-1|browser-2|browser-task|checks) [[ $# -le 3 ]] || usage ;;
   browser-auto) [[ $# -eq 4 ]] || usage ;;
-  *) echo "unknown stage: $stage (expected unit, integration, browser, browser-task, browser-auto or checks)" >&2; exit 2 ;;
+  browser) echo "the stage browser no longer exists (decision 98, revision 65): run the full browser tier as two calls, browser-1 and then browser-2" >&2; exit 2 ;;
+  *) echo "unknown stage: $stage (expected unit, integration, browser-1, browser-2, browser-task, browser-auto or checks)" >&2; exit 2 ;;
 esac
 # Accept evidence/D02, evidence/D02/, or evidence/D02/suite-runs alike.
 dir=${1%/}
@@ -87,39 +92,11 @@ echo "commit: $(git rev-parse --short HEAD)$( [[ -n $(git status --porcelain) ]]
 
 want() { [[ -z "$stage" || "$stage" == "$1" ]]; }
 
-# Decision 98: the full browser tier gets 12 minutes (720 s). macOS has no GNU timeout, so a
-# watchdog kills the command's whole process group (Playwright, servers, browsers) on expiry.
-# TJ_BROWSER_LIMIT_SECONDS overrides the limit, only to test the watchdog quickly.
-browser_limit=${TJ_BROWSER_LIMIT_SECONDS:-720}
-
-run_limited() { # file, command, limit-seconds; appends output to file, returns the exit code (124 on timeout)
-  local file=$1 cmd=$2 limit=$3 pid wd ec flag
-  flag=$(mktemp)
-  perl -e 'setpgrp(0, 0); exec "bash", "-c", $ARGV[0]' "$cmd" >>"$file" 2>&1 &
-  pid=$!
-  (
-    for ((i = 0; i < limit; i++)); do sleep 1; kill -0 "$pid" 2>/dev/null || exit 0; done
-    echo timeout >"$flag"
-    kill -TERM -- "-$pid" 2>/dev/null; sleep 3; kill -KILL -- "-$pid" 2>/dev/null
-  ) &
-  wd=$!
-  wait "$pid"; ec=$?
-  if [[ -s "$flag" ]]; then
-    wait "$wd" 2>/dev/null
-    echo "TIMED OUT after $limit s (process group killed)" >>"$file"
-    ec=124
-  else
-    kill "$wd" 2>/dev/null; wait "$wd" 2>/dev/null
-  fi
-  rm -f "$flag"
-  return $ec
-}
-
 suite() { # name, command
   want "$1" || return 0
   local file="$out/$label-$1.txt"
   : >"$file"
-  if [[ "$1" == browser ]]; then run_limited "$file" "$2" "$browser_limit"; else bash -c "$2" >"$file" 2>&1; fi
+  bash -c "$2" >"$file" 2>&1
   local ec=$?
   echo "EXIT $ec" >>"$file"
   (( ec == 0 )) || failed=1
@@ -129,8 +106,8 @@ suite() { # name, command
 
 browser_task() {
   local file="$out/$label-browser.txt" folders current cmd1 cmd2="" ec1 ec2=0
-  read -ra folders < <(node -p 'require("./package.json").scripts["test:e2e"].split(/\s+/).filter(t => /^e2e\//.test(t)).join(" ")')
-  (( ${#folders[@]} > 0 )) || { echo "no e2e folders found in the test:e2e script" >&2; exit 2; }
+  read -ra folders < <(node -p 'const s = require("./package.json").scripts; [s["test:e2e:1"], s["test:e2e:2"]].join(" ").split(/\s+/).filter(t => /^e2e\//.test(t)).join(" ")')
+  (( ${#folders[@]} > 0 )) || { echo "no e2e folders found in the test:e2e:1 and test:e2e:2 scripts" >&2; exit 2; }
   current=${TJ_E2E_CURRENT:-}
   if [[ -z "$current" ]]; then current=$(current_folder "$dir") || exit 2; fi
   cmd1="npm run build:faults && npm run build:releases && npx playwright test ${folders[*]} --grep @every-task"
@@ -162,14 +139,15 @@ case "$stage" in
       browser_task
     else
       echo "browser tier: full (first matching path since $4: ${tier#full: })"
-      stage=browser # the full tier is the browser stage below
+      echo "next: run stages browser-1 and browser-2, one after the other (nothing ran here)"
     fi
     ;;
 esac
 
 suite unit 'npx vitest run src --reporter=verbose'
 suite integration 'npx vitest run tests/integration --reporter=verbose'
-suite browser 'npm run test:e2e'
+suite browser-1 'npm run test:e2e:1'
+suite browser-2 'npm run test:e2e:2'
 
 want checks || exit $failed
 
