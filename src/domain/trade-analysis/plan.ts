@@ -255,9 +255,9 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
     if (misordered) issue('StopTargetOrder');
   }
   // Original Planned Risk must be positive: it is exactly 1R.
-  // The Cash-Secured Put's Stop must lie below the breakeven, which its rejection names (A100).
+  // An option's rejection for no positive risk names its breakeven (A100).
   const breakeven = breakevenOf(leg, entry);
-  if (nearest(stopBasis).compare(zero) <= 0) issue('NoPositiveRisk', leg.side === 'Short' && breakeven ? { breakeven } : undefined);
+  if (nearest(stopBasis).compare(zero) <= 0) issue('NoPositiveRisk', breakeven && { breakeven });
   // A Long Stock Target must lie above intended entry (D1 A1).
   if (nearest(targetBasis).compare(zero) <= 0) issue('TargetNotBeyondEntry', breakeven && { breakeven });
   if (issues.length > 0) return { kind: 'Rejected', issues };

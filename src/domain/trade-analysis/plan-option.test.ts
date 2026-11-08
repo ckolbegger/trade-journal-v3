@@ -88,7 +88,7 @@ describe('assessPlan: Long Call (P24, A100)', () => {
   });
 
   it('should reject a Stop at 58.00 with value 3.00 not below the entry with NoPositiveRisk and a Target at 56.00 with value 1.00 below the breakeven 57.00 with TargetNotBeyondEntry naming the breakeven', () => {
-    expect(rejection(longCall({ stops: [{ kind: 'UnderlyingPrice', price: '58.00' }] }))).toEqual([{ code: 'NoPositiveRisk' }]);
+    expect(rejection(longCall({ stops: [{ kind: 'UnderlyingPrice', price: '58.00' }] })).map((i) => i.code)).toEqual(['NoPositiveRisk']);
     const issues = rejection(longCall({ targets: [{ kind: 'UnderlyingPrice', price: '56.00' }] }));
     expect(issues).toHaveLength(1);
     expect(issues[0]?.code).toBe('TargetNotBeyondEntry');
@@ -193,5 +193,16 @@ describe('assessPlan: option shape and contract', () => {
     expect(codes({ ...lateOn12th, economicTime: '2026-10-13T13:00:00Z' })).toEqual(['ContractAlreadyExpired']);
     // The T7.1 contract validation's issues are surfaced as they are.
     expect(codes(longCall({ legs: longCallLeg(contract('XYZ', '0', 'Call')) }))).toEqual(['StrikeNotPositive']);
+  });
+});
+
+describe('NoPositiveRisk names the breakeven on every option Strategy (A100)', () => {
+  it('should reject O-C with its Stop at XYZ 57.50 (value 2.50 at expiration, above the 2.00 entry) and O-P with its Stop at ABC 48.00 (value 2.00, above the 1.50 entry) as NoPositiveRisk naming the breakevens 57.00 and 48.50', () => {
+    const call = rejection(longCall({ stops: [{ kind: 'UnderlyingPrice', price: '57.50' }] })).filter((i) => i.code === 'NoPositiveRisk');
+    expect(call).toHaveLength(1);
+    expect(call[0]?.details?.breakeven?.equals(r(57n))).toBe(true);
+    const put = rejection(longPut({ stops: [{ kind: 'UnderlyingPrice', price: '48.00' }] })).filter((i) => i.code === 'NoPositiveRisk');
+    expect(put).toHaveLength(1);
+    expect(put[0]?.details?.breakeven?.equals(r(97n, 2n))).toBe(true);
   });
 });
