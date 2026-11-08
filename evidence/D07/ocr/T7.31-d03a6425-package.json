@@ -1,0 +1,95 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 98064,
+    "input_tokens": 96715,
+    "output_tokens": 1349,
+    "cache_read_tokens": 9600,
+    "elapsed": "48s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_search": 6,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d7/support.ts",
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "5b0f5e19-8e6c-4eb6-9d4e-5615aafe2b3b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5b0f5e19-8e6c-4eb6-9d4e-5615aafe2b3b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d03a6425",
+      "resolved_base": "52ff9dcf77e66f1647bd6b1840e931bc6dfb1853",
+      "resolved_head": "d03a6425abf2c42a4f9f056140247a857763285f",
+      "exact_range": "52ff9dcf77e66f1647bd6b1840e931bc6dfb1853..d03a6425abf2c42a4f9f056140247a857763285f",
+      "source_artifact_sha256": "b4f14cf903b81947ba97fb99a66276b916e0dd30e1d7f9731de6017f14227d34"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "68a59e7aef33b09f55829784a7b0225ccd11ab6e7fe1305447792bbac8031b57"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "3d82d29c682292cb2d5e02a2242115e0271c538ed0b1ea15083f83f1f5583b2d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "68a59e7aef33b09f55829784a7b0225ccd11ab6e7fe1305447792bbac8031b57"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "3d82d29c682292cb2d5e02a2242115e0271c538ed0b1ea15083f83f1f5583b2d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 48274
+  }
+}

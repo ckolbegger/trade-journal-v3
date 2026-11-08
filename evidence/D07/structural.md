@@ -1984,3 +1984,48 @@ These wait for the cumulative run `t7-31-browser-suite`, which holds port 5175.
 | `summary.expiration` | absent | `2026-11-20` |
 | `summary.strike` | absent | `55` |
 | `summary.right` | absent | `Call` |
+
+#### ocr review of `90981401` (T7.31-F3)
+
+ocr selected no files ("Review skipped: no items were selected"), because the fixture JSON is excluded as a test file. Not relocated: a data snapshot carries no code to review. The reviewer read the diff and confirmed the three `summary` changes match the Trade's other renderings, with no `dump.json` change. F3 is closed.
+
+#### T7.31-B1, B4, B5 results (commits a42dbc77, bd617794, 6d449297)
+
+All three are first-run passes, each mutation-checked:
+- **B1:** the test selects Long Call after the resize; it failed on "Long Put" versus "Long Call".
+- **B4:** narrow-width `h1` contrast; it failed with "Closed option Detail, narrow".
+- **B5:** `.payoff-table` hidden at narrow width; it failed on a table count of 1 versus 0.
+
+The source was restored and `dist-faults` rebuilt. All of `e2e/d7` gives 18 passed.
+
+#### ocr review of `90981401..6d449297` (T7.31-B1, B4, B5, relocated)
+
+No findings (`ocr/T7.31-B1-B5-6d449297-relocated.json`).
+
+#### T7.31-B2 and B3 results (commits 58182ce6, 17affdc0)
+
+Both are first-run passes, each mutation-checked:
+- **B2:** the zero-Mark note dropped for KLM in `CardMarks.tsx`; the note was then not found.
+- **B3:** the row's field error removed in `PositionChangeForm.tsx`; the error was then not found inside the "Execution 1" group.
+
+The source was restored and `dist-faults` rebuilt. All of `e2e/d7` gives 18 passed.
+
+#### ocr review of `6d449297..17affdc0` (T7.31-B2, B3, relocated)
+
+No findings (`ocr/T7.31-B2-B3-17affdc0-relocated.json`). T7.31's ocr queue is empty.
+
+### Cumulative run `t7-31-final` (commit 17affdc0 plus evidence edits)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1428 passed, exit 0 | `suite-runs/t7-31-final-unit.txt` |
+| Node integration | 94 files, 191 passed, exit 0 | `suite-runs/t7-31-final-integration.txt` |
+| Browser (Chromium), full tier, `browser-1` | 119 passed (4.8 min), exit 0 | `suite-runs/t7-31-final-browser-1.txt` |
+| Browser (Chromium), full tier, `browser-2` | 61 passed (4.0 min), exit 0 | `suite-runs/t7-31-final-browser-2.txt` |
+| Checks | 13 of 13 exit 0 | `suite-runs/t7-31-final-checks.txt` |
+
+- **Checks.** `run-complete.sh`: "run complete", checked again by the main session. Ports were free before and after.
+- **T7.31's verification.** Every case in sections 6.2 of D1, D2, D4, D5, D6 and D7 passes.
+- **Gate run.** This is the full-tier run before T7.32's first critic.
+
+T7.31 is complete.

@@ -1,0 +1,128 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 181700,
+    "input_tokens": 179658,
+    "output_tokens": 2042,
+    "cache_read_tokens": 21120,
+    "elapsed": "1m28s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_find": 1,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d7/support.ts",
+      "content": "This aliases the D6 test, not the D1 test: the re-export chain goes through `e2e/d4/support.ts`, whose automatic `d4Release` fixture switches the server to `dist-releases/d6`. Consequently routine D7 cases still run the D6 release rather than the current faults build, so they cannot exercise this fix (or the new option UI). Import the base test directly from `../d1/support.ts`, or override the inherited server-selection fixture to serve `dist-faults`.",
+      "existing_code": "export const test = d1Test;",
+      "start_line": 10,
+      "end_line": 10,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Confirmed plan-to-trade handoff and end-to-end support",
+      "files": [
+        "e2e/d7/support.ts",
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/confirmed-handoff.ts"
+      ]
+    }
+  ],
+  "session_id": "90135b3f-5db8-4811-a923-37f56ff8e25d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "90135b3f-5db8-4811-a923-37f56ff8e25d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "52ff9dcf",
+      "resolved_base": "503ff280428cf2443dd9dec05cdc55658b32e69c",
+      "resolved_head": "52ff9dcf77e66f1647bd6b1840e931bc6dfb1853",
+      "exact_range": "503ff280428cf2443dd9dec05cdc55658b32e69c..52ff9dcf77e66f1647bd6b1840e931bc6dfb1853",
+      "source_artifact_sha256": "0af1d8fcf1ff80a0c7b51a60cc32b8639098cc8720b6b75030fd35c30a19ec62"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "6ffa4907627841ebda2c5a15b82f76ce9f0a16bcbf7d6092acb3053ba222d185"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "a095ce15800f6ae00c2cc2a6b7e2f1cdb88c39a9d8e52d095b3e084c1bd7a708"
+        },
+        {
+          "item_id": "b71f963401124b5998024826cf4c8d86476b968f855492723266dcdabf064662",
+          "path": "src/ui/screens/confirmed-handoff.ts",
+          "fingerprint": "ef258fb78b4e055ea33d326f5292fc3c006fc33b3f064a221c039ad5f74dcdb2"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "b8058f7d807031cd9a4fba9c0dd95146876c309e4331f50ff5cf4b4f88944c64"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "6ffa4907627841ebda2c5a15b82f76ce9f0a16bcbf7d6092acb3053ba222d185"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "a095ce15800f6ae00c2cc2a6b7e2f1cdb88c39a9d8e52d095b3e084c1bd7a708"
+        },
+        {
+          "item_id": "b71f963401124b5998024826cf4c8d86476b968f855492723266dcdabf064662",
+          "path": "src/ui/screens/confirmed-handoff.ts",
+          "fingerprint": "ef258fb78b4e055ea33d326f5292fc3c006fc33b3f064a221c039ad5f74dcdb2"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "b8058f7d807031cd9a4fba9c0dd95146876c309e4331f50ff5cf4b4f88944c64"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 87761
+  }
+}

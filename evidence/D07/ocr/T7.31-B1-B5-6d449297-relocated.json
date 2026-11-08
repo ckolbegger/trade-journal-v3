@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 24688,
+    "input_tokens": 24513,
+    "output_tokens": 175,
+    "cache_read_tokens": 7680,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d7/responsive-a11y.ts",
+      "files": [
+        "src/itg/relocated/d7/responsive-a11y.ts"
+      ]
+    }
+  ],
+  "session_id": "e42e2ff5-71d3-4047-a2b3-360197ed9ae8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e42e2ff5-71d3-4047-a2b3-360197ed9ae8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "d738591c13241d3626918a1592890064792eafea",
+      "resolved_base": "1ccfaaff3f69c6d1e4e1ccd1bc74f58a72da7896",
+      "resolved_head": "d738591c13241d3626918a1592890064792eafea",
+      "exact_range": "1ccfaaff3f69c6d1e4e1ccd1bc74f58a72da7896..d738591c13241d3626918a1592890064792eafea",
+      "source_artifact_sha256": "08c81570c7057a07dcdf2469b593024d8fa10e67e9b93b2c3d10ee9fd3276908"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "30e227a610e26df0acd218ef00dbac9014b06b575511ed03c093b7d7c2f8460d",
+          "path": "src/itg/relocated/d7/responsive-a11y.ts",
+          "fingerprint": "6ee28cf8bf456f71266a1f82dc98aedac9e7f226c17b5af0cef2213395b39467"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "30e227a610e26df0acd218ef00dbac9014b06b575511ed03c093b7d7c2f8460d",
+          "path": "src/itg/relocated/d7/responsive-a11y.ts",
+          "fingerprint": "6ee28cf8bf456f71266a1f82dc98aedac9e7f226c17b5af0cef2213395b39467"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 18341
+  }
+}

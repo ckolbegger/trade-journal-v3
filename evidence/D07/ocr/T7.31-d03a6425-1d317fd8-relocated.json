@@ -1,0 +1,263 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 5,
+    "total_tokens": 497286,
+    "input_tokens": 492585,
+    "output_tokens": 4701,
+    "cache_read_tokens": 76544,
+    "elapsed": "1m15s"
+  },
+  "tool_calls": {
+    "total": 39,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 14,
+      "file_find": 1,
+      "file_read": 18,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7/responsive-a11y.ts",
+      "content": "This only verifies that some strategy remains selected. A resize regression that resets Long Put to Long Call would pass, and fillOptionPlan subsequently selects Long Put again, hiding the loss. Assert the selected option's label is still Long Put (or compare against its value captured before resizing).",
+      "suggestion_code": "    await expect(page.getByLabel('Strategy').locator('option:checked')).toHaveText('Long Put');",
+      "existing_code": "    await expect(page.getByLabel('Strategy')).toHaveValue(/./);",
+      "start_line": 49,
+      "end_line": 49,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d7/responsive-a11y.ts",
+      "content": "The Closed option Detail is only scanned at the default viewport. expectAccessible runs axe once without resizing, so the narrow-layout Closed/Current-not-applicable state is omitted from the otherwise two-width coverage. Use accessibleAtBothWidths here as well to catch responsive accessibility regressions in this state.",
+      "suggestion_code": "    await accessibleAtBothWidths(page, 'Closed option Detail');",
+      "existing_code": "    await expectAccessible(page, 'Closed option Detail');",
+      "start_line": 151,
+      "end_line": 151,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d7/short-put.ts",
+      "content": "This page-wide `.first()` matches the error summary before the execution row, so B7.2 still passes if inline validation beside Contracts disappears. Scope the assertion to the `Execution 1` group (using `executionRow(page2, 1)` or `getByRole('group', { name: 'Execution 1', exact: true })`) to verify the required row-level feedback.",
+      "existing_code": "    await expect(page2.getByText('Execution 1: The position has only 2 contracts.').first()).toBeVisible();",
+      "start_line": 33,
+      "end_line": 33,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d7/marks-zero.ts",
+      "content": "The zero-price explanation is asserted for the option but not for KLM stock. `enterMark` only fills/saves the price and checks the Manual status, so this scenario passes even if stock rows omit the required note. Assert `ZERO_NOTE` on KLM's mark row before saving its zero price.",
+      "existing_code": "    await enterMark(page, klm, TUESDAY, '0');",
+      "start_line": 38,
+      "end_line": 38,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d7/responsive-a11y.ts",
+      "content": "The chart/table-equivalent assertions run only at the wide viewport. At 390 px this helper only runs axe, which does not enforce that a chart has a visible equivalent table. A responsive regression that hides the payoff table while leaving the chart visible would therefore pass this test. Re-run the applicable payoff chart/table (and Not applicable text) assertions at the narrow viewport as well.",
+      "existing_code": "  await page.setViewportSize(NARROW);\n  await expectAccessible(page, `${state}, narrow`);",
+      "start_line": 17,
+      "end_line": 18,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Runtime safety and failure integration tests with shared support",
+      "files": [
+        "src/itg/relocated/d7/kill.ts",
+        "src/itg/relocated/d7/no-save.ts",
+        "src/itg/relocated/d7/offline.ts",
+        "src/itg/relocated/d7/runtime-failure.ts",
+        "src/itg/relocated/d7/support.ts"
+      ]
+    },
+    {
+      "label": "Trading plan validation, pricing, review, and settlement integration tests",
+      "files": [
+        "src/itg/relocated/d7/marks-zero.ts",
+        "src/itg/relocated/d7/plan-open.ts",
+        "src/itg/relocated/d7/plan-validation.ts",
+        "src/itg/relocated/d7/review-expiration.ts",
+        "src/itg/relocated/d7/settlement-due.ts",
+        "src/itg/relocated/d7/short-put.ts"
+      ]
+    },
+    {
+      "label": "Responsive layout and accessibility integration tests",
+      "files": [
+        "src/itg/relocated/d7/responsive-a11y.ts"
+      ]
+    }
+  ],
+  "session_id": "0a5b893f-9bc4-4aa2-8ab6-a6976bac33df",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0a5b893f-9bc4-4aa2-8ab6-a6976bac33df",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "03affc81",
+      "resolved_base": "dd519cbc8e6fdd947835e2b869d69199a5e7a123",
+      "resolved_head": "03affc814ae3168669fa2a29adcc6e20d3dbe5a6",
+      "exact_range": "dd519cbc8e6fdd947835e2b869d69199a5e7a123..03affc814ae3168669fa2a29adcc6e20d3dbe5a6",
+      "source_artifact_sha256": "b02357466cc3344c0d73819a4cd782e0f176a9ca8122c124059fea83caefc7ca"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a16eb3e0a5bdf0e757f95d9e4b1fb83bc24a02b22913ed22e568e9a983e8d4d",
+          "path": "src/itg/relocated/d7/review-expiration.ts",
+          "fingerprint": "7de179942c525ac38943723d546f2424e774a174732e1a77f391529abb572a83"
+        },
+        {
+          "item_id": "1a8b40c4a39cc453bdfad6520b228876462f14454c7342425ef73e5192a4b3b0",
+          "path": "src/itg/relocated/d7/support.ts",
+          "fingerprint": "0a6ba2b173058899a396bb5f37b126acfe2ae54f3a8f287672154d5357a7b43b"
+        },
+        {
+          "item_id": "1edd447cbdf6bbf627b0e6bdaec1e39b83a46805931bfef4ec49a2d21108e540",
+          "path": "src/itg/relocated/d7/short-put.ts",
+          "fingerprint": "b146ac753575edef74767ae87412113a75de4eec352c3f25b047597064a8525e"
+        },
+        {
+          "item_id": "30e227a610e26df0acd218ef00dbac9014b06b575511ed03c093b7d7c2f8460d",
+          "path": "src/itg/relocated/d7/responsive-a11y.ts",
+          "fingerprint": "444a69074e2fd22cb32e4cbab5f471fdb892106e2b9ea9b645187c0a7671789d"
+        },
+        {
+          "item_id": "4750653cff209925ae1f80a29e43105d34be336232e472d994b6bb3f50400d8a",
+          "path": "src/itg/relocated/d7/settlement-due.ts",
+          "fingerprint": "6804273cfebc4c6fcc0feb287897af47d29d918823a3c4cf0b0f8fff5e3caa28"
+        },
+        {
+          "item_id": "4c9231f9de0edddabc4810ca0069f2b212125a7fa0576501a94db66f6a7f2462",
+          "path": "src/itg/relocated/d7/plan-open.ts",
+          "fingerprint": "4164ad651aec333770ce4d91e4bbf8a3ef77501137145ab5eed8f594e45a5c54"
+        },
+        {
+          "item_id": "5ade06feecf2983695f70b9ef27f6d59bc6c0d24c0890c7145219fee43fcaf52",
+          "path": "src/itg/relocated/d7/plan-validation.ts",
+          "fingerprint": "449be760a86aa25b7639c4e3989bc6ecf11750c1fe45f2b46905c644c03c7bc5"
+        },
+        {
+          "item_id": "8246c0eb60960d2b6b3dde63e05253df9bc49ec327e97f45e091b702a78c5e58",
+          "path": "src/itg/relocated/d7/offline.ts",
+          "fingerprint": "663ca01a27ed1cdedc7ed049089c8d07c0a5a480fbad6f73d0bcc0d2aa49801d"
+        },
+        {
+          "item_id": "844fb5c7e47c2c9cc6812433deef5ab4fd34d0dd2e977bd2f26a9738bc534d9f",
+          "path": "src/itg/relocated/d7/kill.ts",
+          "fingerprint": "94af475d0b7e5f1824216b79047a91db6d7f8cd9a96916405048b425338705f4"
+        },
+        {
+          "item_id": "a53cde19099de037435de02271fe1ab0d01830d53898272fc544dca51fa59666",
+          "path": "src/itg/relocated/d7/marks-zero.ts",
+          "fingerprint": "c6be59d825b8a8b0358b6efd35c9d77c6e9d8915a7f71a094dcb5e2a4e6f50c7"
+        },
+        {
+          "item_id": "aaeab42d130b113c10e7a689b1bdb4e5c333a5b5390ec50b32e348135f14fe4a",
+          "path": "src/itg/relocated/d7/runtime-failure.ts",
+          "fingerprint": "848a75da0474f5da407ca94c80abded613573bb0434b817957342ea72c2e784d"
+        },
+        {
+          "item_id": "bf464cbf5744fbac4e447fac3c7d09930807f164d15c03693a72c8a7d028b33f",
+          "path": "src/itg/relocated/d7/no-save.ts",
+          "fingerprint": "06d663f503a6b372af4a8ba3dd564d8ea9aa575a54142cc6fb5b11715bb570e7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a16eb3e0a5bdf0e757f95d9e4b1fb83bc24a02b22913ed22e568e9a983e8d4d",
+          "path": "src/itg/relocated/d7/review-expiration.ts",
+          "fingerprint": "7de179942c525ac38943723d546f2424e774a174732e1a77f391529abb572a83"
+        },
+        {
+          "item_id": "1a8b40c4a39cc453bdfad6520b228876462f14454c7342425ef73e5192a4b3b0",
+          "path": "src/itg/relocated/d7/support.ts",
+          "fingerprint": "0a6ba2b173058899a396bb5f37b126acfe2ae54f3a8f287672154d5357a7b43b"
+        },
+        {
+          "item_id": "1edd447cbdf6bbf627b0e6bdaec1e39b83a46805931bfef4ec49a2d21108e540",
+          "path": "src/itg/relocated/d7/short-put.ts",
+          "fingerprint": "b146ac753575edef74767ae87412113a75de4eec352c3f25b047597064a8525e"
+        },
+        {
+          "item_id": "30e227a610e26df0acd218ef00dbac9014b06b575511ed03c093b7d7c2f8460d",
+          "path": "src/itg/relocated/d7/responsive-a11y.ts",
+          "fingerprint": "444a69074e2fd22cb32e4cbab5f471fdb892106e2b9ea9b645187c0a7671789d"
+        },
+        {
+          "item_id": "4750653cff209925ae1f80a29e43105d34be336232e472d994b6bb3f50400d8a",
+          "path": "src/itg/relocated/d7/settlement-due.ts",
+          "fingerprint": "6804273cfebc4c6fcc0feb287897af47d29d918823a3c4cf0b0f8fff5e3caa28"
+        },
+        {
+          "item_id": "4c9231f9de0edddabc4810ca0069f2b212125a7fa0576501a94db66f6a7f2462",
+          "path": "src/itg/relocated/d7/plan-open.ts",
+          "fingerprint": "4164ad651aec333770ce4d91e4bbf8a3ef77501137145ab5eed8f594e45a5c54"
+        },
+        {
+          "item_id": "5ade06feecf2983695f70b9ef27f6d59bc6c0d24c0890c7145219fee43fcaf52",
+          "path": "src/itg/relocated/d7/plan-validation.ts",
+          "fingerprint": "449be760a86aa25b7639c4e3989bc6ecf11750c1fe45f2b46905c644c03c7bc5"
+        },
+        {
+          "item_id": "8246c0eb60960d2b6b3dde63e05253df9bc49ec327e97f45e091b702a78c5e58",
+          "path": "src/itg/relocated/d7/offline.ts",
+          "fingerprint": "663ca01a27ed1cdedc7ed049089c8d07c0a5a480fbad6f73d0bcc0d2aa49801d"
+        },
+        {
+          "item_id": "844fb5c7e47c2c9cc6812433deef5ab4fd34d0dd2e977bd2f26a9738bc534d9f",
+          "path": "src/itg/relocated/d7/kill.ts",
+          "fingerprint": "94af475d0b7e5f1824216b79047a91db6d7f8cd9a96916405048b425338705f4"
+        },
+        {
+          "item_id": "a53cde19099de037435de02271fe1ab0d01830d53898272fc544dca51fa59666",
+          "path": "src/itg/relocated/d7/marks-zero.ts",
+          "fingerprint": "c6be59d825b8a8b0358b6efd35c9d77c6e9d8915a7f71a094dcb5e2a4e6f50c7"
+        },
+        {
+          "item_id": "aaeab42d130b113c10e7a689b1bdb4e5c333a5b5390ec50b32e348135f14fe4a",
+          "path": "src/itg/relocated/d7/runtime-failure.ts",
+          "fingerprint": "848a75da0474f5da407ca94c80abded613573bb0434b817957342ea72c2e784d"
+        },
+        {
+          "item_id": "bf464cbf5744fbac4e447fac3c7d09930807f164d15c03693a72c8a7d028b33f",
+          "path": "src/itg/relocated/d7/no-save.ts",
+          "fingerprint": "06d663f503a6b372af4a8ba3dd564d8ea9aa575a54142cc6fb5b11715bb570e7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 75061
+  }
+}

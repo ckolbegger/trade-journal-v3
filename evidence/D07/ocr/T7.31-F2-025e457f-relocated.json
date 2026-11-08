@@ -1,0 +1,80 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 10479,
+    "input_tokens": 10400,
+    "output_tokens": 79,
+    "cache_read_tokens": 3840,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/daily-review/settlement.ts",
+      "files": [
+        "src/itg/relocated/daily-review/settlement.ts"
+      ]
+    }
+  ],
+  "session_id": "dbce7e86-688b-4578-84b8-e8cbdefabefd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dbce7e86-688b-4578-84b8-e8cbdefabefd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "899616f3e213fcea7441dcaf33fbebb74387430d",
+      "resolved_head": "63751a512a46d92634244cfada6e134f27bc30cd",
+      "exact_range": "899616f3e213fcea7441dcaf33fbebb74387430d..63751a512a46d92634244cfada6e134f27bc30cd",
+      "source_artifact_sha256": "d92cae14371aa16eff9fa70d94a9092b0f1c6803cceac81fb6dac18c085c9107"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b5be619d8758b0e81b4d0b95ed376ca5da92c26396c752bd15058dcf885b6081",
+          "path": "src/itg/relocated/daily-review/settlement.ts",
+          "fingerprint": "f3c4ffeb7c5086a5e13b14d9c82c33a42f66be90fb2fec9c29fe995066ea4fb6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b5be619d8758b0e81b4d0b95ed376ca5da92c26396c752bd15058dcf885b6081",
+          "path": "src/itg/relocated/daily-review/settlement.ts",
+          "fingerprint": "f3c4ffeb7c5086a5e13b14d9c82c33a42f66be90fb2fec9c29fe995066ea4fb6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6089
+  }
+}
