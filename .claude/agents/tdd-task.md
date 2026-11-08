@@ -27,7 +27,7 @@ These hold for every task; briefs don't repeat them.
   - one browser run at a time, since every server uses port 5175;
   - before and after each run, confirm nothing listens on 5175 (every test server) or on 9341 and 9342 (the Chromium that the D5 and D5R kill tests spawn; one left over makes their next launch fail). Use `lsof -nP -iTCP:<port> -sTCP:LISTEN`, and leave other processes alone.
 - **Mutations of served CSS or code** take effect only after rebuilding the folder the test serves. That is `npm run build:faults` for `dist-faults`, or the release build for a `dist-releases/` folder. Rebuild again after restoring.
-- **Staging:** stage your task's files by name. `.claude/settings.json` (the user's own file) and `plan/*handoff.md` (the main session's) stay unstaged.
+- **Staging:** stage your task's files by name. `.claude/settings.json` and `.claude/settings.local.json` (the user's) and `plan/*handoff.md` (the main session's) stay unedited and unstaged.
 
 ## `tdd.sh`
 
@@ -83,7 +83,7 @@ Run `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:
 
 Stage the task's code, tests, and evidence rows by name, and commit them as one commit with a conventional message naming the task (for example `feat(analysis): T2.2 entry window, …`), ending with the line `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. The handoff and the cumulative-run sections of `structural.md` belong to the main session. Pushing belongs to the user.
 
-Then confirm the worktree is clean: `git branch --show-current` names the branch you started on, and `git status --short` lists only `.claude/settings.json` and files the brief says the main session or another agent owns. Remove any stray file your commands created (a red run can create one through a script), and report each one. Stop after this task.
+Then confirm the worktree is clean: `git branch --show-current` names the branch you started on, and `git status --short` lists only files the brief says the main session or another agent owns. Remove any stray file your commands created (a red run can create one through a script), and report each one. Stop after this task.
 
 ## Return
 

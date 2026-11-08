@@ -40,7 +40,7 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, up to date at the first session: the branch was pushed with this note's commit on 2026-11-06. Afterwards `[ahead N]`, where N counts D7's commits until the user asks for a push; if the user has pushed since, N counts from that push. No uncommitted changes, except the untracked `.claude/settings.json`: it is the user's own file, expected, and **never staged**. |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, up to date at the first session: the branch was pushed with this note's commit on 2026-11-06. Afterwards `[ahead N]`, where N counts D7's commits until the user asks for a push; if the user has pushed since, N counts from that push. No uncommitted changes. (Until 2026-11-08 the untracked `.claude/settings.json` was listed here; since the D7 retro it is committed, holding the project's permissions and the PreToolUse hook registrations, and only the user edits it.) |
 | `git log --oneline claude-opus-5.5-pre-d7..HEAD` | Empty at the first session. Afterwards, only D7 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit. |
 | `git tag --list 'claude-opus-5.5-*'` | Includes `claude-opus-5.5-plan-r48`, `claude-opus-5.5-d6`, `claude-opus-5.5-d7p` and `claude-opus-5.5-pre-d7`. |
 | `git rev-parse 'claude-opus-5.5-d7p^{commit}'` | `b8517d481182069683cdfb43a733cb336d5da194` |
