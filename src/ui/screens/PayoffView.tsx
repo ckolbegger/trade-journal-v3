@@ -30,12 +30,18 @@ const boxOf = (text: string, x: number, baseline: number, anchor: Anchor): Box =
   return { left, right: left + width, baseline };
 };
 const collides = (a: Box, b: Box): boolean => a.left < b.right + 4 && b.left < a.right + 4 && Math.abs(a.baseline - b.baseline) < LINE;
-// The first baseline, moving by `step` from the wanted one, that clears every box already placed; the label's box is then placed.
-function clearBaseline(text: string, x: number, baseline: number, anchor: Anchor, placed: Box[], step: number): number {
-  let at = baseline;
-  while (placed.some((box) => collides(boxOf(text, x, at, anchor), box)) && Math.abs(at - baseline) < 6 * LINE) at += step;
-  placed.push(boxOf(text, x, at, anchor));
-  return at;
+// Where a label goes: its x is pulled in so the box stays inside the SVG, and its baseline is the first, moving by `step` from the wanted
+// one and then the other way, that clears every box already placed and keeps the text inside the SVG; the label's box is then placed.
+const TEXT_HEIGHT = 13;
+function place(text: string, wantX: number, baseline: number, anchor: Anchor, placed: Box[], step: number): { x: number; y: number } {
+  const probe = boxOf(text, wantX, baseline, anchor);
+  const x = wantX + Math.max(0, -probe.left) - Math.max(0, probe.right - WIDTH);
+  const inside = (at: number) => at - TEXT_HEIGHT >= 0 && at <= HEIGHT;
+  const fits = (at: number) => inside(at) && !placed.some((box) => collides(boxOf(text, x, at, anchor), box));
+  const tries = Array.from({ length: 7 }, (_, k) => baseline + k * step).concat(Array.from({ length: 6 }, (_, k) => baseline - (k + 1) * step));
+  const y = tries.find(fits) ?? Math.min(HEIGHT, Math.max(TEXT_HEIGHT, baseline));
+  placed.push(boxOf(text, x, y, anchor));
+  return { x, y };
 }
 
 // SVG draws no stroke by default; currentColor follows the page ink in light and dark alike.
@@ -78,8 +84,10 @@ function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: Pa
   }
   const placed: Box[] = [];
   const rayText = lastRayText(last);
-  const rayY = clearBaseline(rayText, tipX, tipY - 10, 'end', placed, -LINE);
+  const ray = place(rayText, tipX, tipY - 10, 'end', placed, -LINE);
   const closeText = latestClose ? `Latest close ${underlyingPrice(latestClose.underlyingPrice)}: ${signedMoney(latestClose.value)}` : '';
+  const zeroLabels = zeroSet.map((zero) => place(zeroText(zero), x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price)), y(0) - 8, 'start', placed, LINE));
+  const close = latestClose ? place(closeText, x(toNumber(latestClose.underlyingPrice)), y(toNumber(latestClose.value)) - 10, 'middle', placed, -LINE) : undefined;
   return (
     <div className="chart-scroll" role="region" aria-label={`${kind} payoff chart`} tabIndex={0}>
     <svg role="img" aria-labelledby={caption} className="payoff-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
@@ -87,7 +95,7 @@ function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: Pa
       <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={MARGIN.left} y1={MARGIN.top} y2={HEIGHT - MARGIN.bottom} />
       <polyline className="payoff-curve" {...STROKE} strokeWidth={2.5} fill="none" points={points.map(([px, py]) => `${x(px)},${y(py)}`).join(' ')} />
       <path className="payoff-arrow" d={`M${tipX},${tipY} l-10,-5 l0,10 z`} />
-      <text x={tipX} y={rayY} textAnchor="end">
+      <text x={ray.x} y={ray.y} textAnchor="end">
         {rayText}
       </text>
       {ticks.map((tick) => (
@@ -95,26 +103,25 @@ function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: Pa
           {tick.label}
         </text>
       ))}
-      {zeroSet.map((zero) => (
+      {zeroSet.map((zero, i) => {
+        const label = zeroLabels[i]!;
+        return (
         <g key={zeroText(zero)}>
           {zero.kind === 'ZeroRange' ? (
             <line className="payoff-zero-range" {...STROKE} strokeWidth={4} x1={x(toNumber(zero.from))} x2={x(zero.to ? toNumber(zero.to) : xMax)} y1={y(0)} y2={y(0)} />
           ) : (
             <circle className="payoff-mark" cx={x(toNumber(zero.price))} cy={y(0)} r={4} />
           )}
-          <text
-            x={x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price))}
-            y={clearBaseline(zeroText(zero), x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price)), y(0) - 8, 'start', placed, LINE)}
-            textAnchor="start"
-          >
+          <text x={label.x} y={label.y} textAnchor="start">
             {zeroText(zero)}
           </text>
         </g>
-      ))}
-      {latestClose && (
+        );
+      })}
+      {latestClose && close && (
         <g>
           <circle className="payoff-mark payoff-latest-close" cx={x(toNumber(latestClose.underlyingPrice))} cy={y(toNumber(latestClose.value))} r={5} />
-          <text x={x(toNumber(latestClose.underlyingPrice))} y={clearBaseline(closeText, x(toNumber(latestClose.underlyingPrice)), y(toNumber(latestClose.value)) - 10, 'middle', placed, -LINE)} textAnchor="middle">
+          <text x={close.x} y={close.y} textAnchor="middle">
             {closeText}
           </text>
         </g>

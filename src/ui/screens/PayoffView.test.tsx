@@ -120,6 +120,36 @@ describe('chart drawing and ticks (T7.22-B2)', () => {
   });
 });
 
+describe('chart labels stay inside the SVG (T7.32-B3)', () => {
+  it('should keep every chart label inside the SVG bounds, including the Latest close label near a rising ray end', () => {
+    for (const [payoffs, close] of [
+      [payoffFixtures.ocAfterExit(), '56.50'],
+      [payoffFixtures.ocAfterExit(), '90'],
+      [payoffFixtures.ocPayoffs(), '60'],
+      [payoffFixtures.ocPayoffs(), '200'],
+    ] as const) {
+      const current = payoffs.current;
+      show({ kind: 'Current', result: current, latestClose: payoffFixtures.valueAt(viewOf(current), close) });
+      for (const label of screen.getByRole('img').querySelectorAll('text')) {
+        const x = Number(label.getAttribute('x'));
+        const y = Number(label.getAttribute('y'));
+        const width = (label.textContent ?? '').length * 7.5;
+        const anchor = label.getAttribute('text-anchor');
+        const left = anchor === 'end' ? x - width : anchor === 'middle' ? x - width / 2 : x;
+        const where = `${label.textContent} (close ${close})`;
+        // A 13 px label sits between its baseline minus its height and its baseline.
+        expect(y - 13, where).toBeGreaterThanOrEqual(0);
+        expect(y, where).toBeLessThanOrEqual(344);
+        if (label.getAttribute('transform') === null) {
+          expect(left, where).toBeGreaterThanOrEqual(0);
+          expect(left + width, where).toBeLessThanOrEqual(640);
+        }
+      }
+      cleanup();
+    }
+  });
+});
+
 describe('a Zero Range with no upper end (T7.22-B1)', () => {
   it('should refuse to word a Zero Range with no upper end, which no approved row words', () => {
     expect(() => zeroText({ kind: 'ZeroRange', from: Rational.of(55n), to: null })).toThrow('no approved words');
