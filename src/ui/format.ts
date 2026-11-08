@@ -26,8 +26,11 @@ export const quantity = (value: Rational): string => formatDecimal(value, 6).rep
 export const localTime = (instant: string, timeZone: string): string => toWorkspaceLocal(instant, timeZone).replace('T', ' ');
 
 // What a Trade holds as one short text (plan section 2a); the Underlying is its own column, so it is not here.
-export const tradeSummary = (summary: PlannedTradeItem['summary']): string =>
-  `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
+// An option summary's text arrives with the option lists (T7.23); until then none is worded.
+export const tradeSummary = (summary: PlannedTradeItem['summary']): string => {
+  if (summary.kind === 'Option') throw new Error('option Trade summaries are worded by T7.23');
+  return `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
+};
 
 // A Trade named in a sentence: its Underlying, then its summary line in parentheses; the Underlying alone without a summary (A150).
 export const tradeName = (trade: { readonly underlying: string; readonly summary?: PlannedTradeItem['summary'] }): string =>

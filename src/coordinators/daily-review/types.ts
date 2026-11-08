@@ -7,6 +7,7 @@ import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
+import type { SettlementItem } from '../settlement.ts';
 import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
 
@@ -151,16 +152,8 @@ export interface HistoricalGapGroup {
   readonly blocking: false;
 }
 
-// One option contract an eligible Trade still holds at or past its expiration date (A111, A112). The signed open
-// quantity is negative for a short contract: the screen words the assignment or exercise sentence from that sign.
-export interface SettlementItem {
-  readonly tradeId: string;
-  readonly instrument: OptionInstrument;
-  readonly quantity: Rational;
-  readonly expiration: string;
-  // The close of the expiration session, or of the latest session before it when the date is not a session.
-  readonly settlementTime: Instant;
-}
+// Shared with Trade Views, which shows the same item on Trade Detail.
+export type { SettlementItem };
 
 // The task families in their normative order (Daily Review, "Date, eligibility, and ordering").
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.

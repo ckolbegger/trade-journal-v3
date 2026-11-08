@@ -13,6 +13,7 @@ import { Rational } from '../../src/domain/values/index.ts';
 import { derive, evaluate, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
+import { payoffOf } from '../../src/coordinators/settlement.ts';
 import { datedLineOf, observationFrame } from '../../src/coordinators/valuation.ts';
 import { feeReconciliationOf, lotMatchViews } from '../../src/coordinators/trade-views/index.ts';
 import type { MarkFrame } from '../../src/modules/market-data/index.ts';
@@ -82,6 +83,8 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     feeReconciliation: feeReconciliationOf(derived),
     netCost: derived.netCost,
     lastActivity: positionChanges.at(-1)?.economicTime ?? record.plan.economicTime,
+    settlement: [],
+    payoff: payoffOf(record, derived),
     fees: derived.fees,
     positionChanges,
     entryStatus: derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering',

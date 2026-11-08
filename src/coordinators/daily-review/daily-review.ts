@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentKey, instrumentOf, type Instrument, type OptionInstrument } from '../../domain/instrument/index.ts';
+import { instrumentKey, instrumentOf, type Instrument } from '../../domain/instrument/index.ts';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
-import { derive, evaluate, expirationPayoff, type ExpirationPayoffs, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, evaluate, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
@@ -9,6 +9,7 @@ import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts'
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
+import { payoffOf, settlementTimeOf } from '../settlement.ts';
 import { datedLineOf, observationFrame } from '../valuation.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
@@ -250,14 +251,6 @@ function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: reado
   return { ...(summary && { summary }), frame, evaluation, ...(datedLastClose && { datedLastClose }) };
 }
 
-// The Planned and Current Expiration Payoff of the Trade from its Plan and the Lots it still holds (AC-CALC-004).
-function payoffOf(analysis: TradeAnalysisRecord, state: DerivedTradeState): ExpirationPayoffs {
-  const lots = state.positions.flatMap((p) =>
-    p.instrument.kind === 'Option' ? p.openLots.map((l) => ({ instrument: p.instrument as OptionInstrument, quantity: l.quantity, basis: l.price, unconsumedOpeningFee: l.unconsumedOpeningFee })) : [],
-  );
-  return expirationPayoff({ plan: analysis.plan, exposure: { lots, realizedToDate: state.realizedToDate } });
-}
-
 export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // Every Open Trade whose exposure started at or before the cutoff, following the pages; undefined when a Trade commit expired the cursor.
   async function eligibleRecords(cutoff: string): Promise<BrowseRecord[] | undefined> {
@@ -349,23 +342,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { trades: ordered.map(({ trade }) => trade), factRevisions: Object.fromEntries(ordered.map(({ trade, factRevision }) => [trade.tradeId, factRevision])) };
   }
 
-  // The close of the session an expiration date names, or of the latest session before it when it is not one (A111).
-  // A date outside calendar coverage has no such close (D7 Q1); that item is a later task's.
-  async function settlementTimeOf(expiration: string): Promise<string> {
-    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Historical', tradingDate: expiration } });
-    if (session.kind === 'Session') return session.closeInstant;
-    const latest = session.kind === 'Rejected' ? session.issues[0]?.latestSession : undefined;
-    if (!latest) throw new Error(`no settlement time for ${expiration}`);
-    return latest.closeInstant;
-  }
-
   // The option contracts the walked Trades still hold at or past expiration, by expiration date then Trade identity (A112).
   async function settlementItems(ranked: readonly { readonly item: ReviewTradeItem; readonly evaluation: TradeEvaluation | undefined }[]): Promise<SettlementItem[]> {
     const due = ranked
       .flatMap(({ item, evaluation }) => (evaluation?.settlement ?? []).filter((s) => s.status === 'Due').map((s) => ({ tradeId: item.tradeId, ...s })))
       .sort((a, b) => (a.expiration === b.expiration ? (a.tradeId < b.tradeId ? -1 : Number(a.tradeId > b.tradeId)) : a.expiration < b.expiration ? -1 : 1));
     const times = new Map<string, string>();
-    for (const expiration of new Set(due.map((s) => s.expiration))) times.set(expiration, await settlementTimeOf(expiration));
+    for (const expiration of new Set(due.map((s) => s.expiration))) times.set(expiration, await settlementTimeOf(deps.marketData, expiration));
     return due.map(({ tradeId, instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: times.get(expiration)! }));
   }
 

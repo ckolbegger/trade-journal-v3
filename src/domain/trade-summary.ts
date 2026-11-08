@@ -1,14 +1,29 @@
+import type { OptionInstrument } from './instrument/index.ts';
 import type { DerivedTradeState } from './trade-analysis/index.ts';
 import { parseDecimal, Rational } from './values/index.ts';
 
-// What a Trade holds, structured so the UI formats it as one short text (plan section 2a). D2 has only
-// Long Stock; later deliverables add variants without changing this one. Never stored.
-export type TradeSummary = {
-  readonly kind: 'Stock';
-  readonly direction: 'Long';
-  readonly quantity: Rational;
-  readonly price: Rational;
-};
+// What a Trade holds, structured so the UI formats it as one short text (plan section 2a). Later
+// deliverables add variants without changing these. Never stored.
+export type TradeSummary =
+  | {
+      readonly kind: 'Stock';
+      readonly direction: 'Long';
+      readonly quantity: Rational;
+      readonly price: Rational;
+    }
+  // One option contract held long or short; the premium is the Trade's net cost, not part of the summary (A119).
+  | {
+      readonly kind: 'Option';
+      readonly direction: 'Long' | 'Short';
+      readonly contracts: Rational;
+      readonly expiration: string;
+      readonly strike: string;
+      readonly right: 'Call' | 'Put';
+    };
+
+export function optionSummary(instrument: OptionInstrument, direction: 'Long' | 'Short', contracts: Rational): TradeSummary {
+  return { kind: 'Option', direction, contracts, expiration: instrument.expiration, strike: instrument.strike, right: instrument.right };
+}
 
 const decimal = (text: string): Rational => {
   const parsed = parseDecimal(text);
