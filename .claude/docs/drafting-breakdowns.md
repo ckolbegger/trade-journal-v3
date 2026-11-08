@@ -8,6 +8,7 @@
   - **Shapes:** for every derived shape that changes, grep `tests/fixtures/` and the `verify:*` tools for its fields.
   - **Checks:** for every new check, run a throwaway version on the current tree, and list each hit with what happens to it.
 - A planned check on source code is a `no-restricted-syntax` rule in an ESLint config, as `eslint.deps.config.js` and `eslint.wording.config.js` do, never a new scanner under `tools/` (D7 prefactor retro, finding 1).
+- **Acceptance commands** (D7 retro, finding 3): each acceptance row's command names a test file that the breakdown's integration or browser section plans to create, by the name that section gives it. The structural rows of the integration-suite and browser-suite tasks include `.claude/scripts/acceptance-commands.sh <breakdown>` in their verification. It must exit 0 for the rows those tasks cover, since that's when the files get their names.
 - End the breakdown with a "Progress" section (decision 100), as in the D7 breakdown's section 11. It has one row per task in run order, each marked "Not started", with an empty Commits column.
 - List each task's `it should` cases in an order where every case introduces behavior the earlier cases do not already require, so each one can go red on its own and first-run passes needing a mutation check stay rare.
 - **Size check** (D7 retro, finding 8): once the task graph is drafted, propose a split to the user when the breakdown has any of these:

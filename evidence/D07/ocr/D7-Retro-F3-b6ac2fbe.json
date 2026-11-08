@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 4,
+    "total_tokens": 125222,
+    "input_tokens": 122835,
+    "output_tokens": 2387,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_find": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/acceptance-commands.sh",
+      "content": "The argument expansion does not preserve shell quoting: for example, `npx playwright test e2e/d7 --grep \"settlement review\"` is passed as three grep-related arguments containing literal quote characters rather than one pattern. Unquoted expansion also expands wildcard filters against the repository's files. This can reject valid acceptance commands or discover different tests from the documented command. Parse the command into an argument array with quote-aware tokenization (without evaluating arbitrary shell code), then pass the array quoted.",
+      "existing_code": "      out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list $args 2\u003e\u00261); rc=$?",
+      "start_line": 45,
+      "end_line": 45,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/acceptance-commands.sh",
+      "content": "The input file is checked relative to the caller's directory, but is read after changing to the repository root. Invoking this from `plan/` with `../.claude/scripts/acceptance-commands.sh D07-single-leg-options-happy-path.md` therefore accepts the path initially and then fails to open it in awk. Resolve the input to an absolute path before changing directories so the same file is validated and read.",
+      "existing_code": "cd \"$root\" || exit 2",
+      "start_line": 12,
+      "end_line": 12,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/acceptance-commands.sh",
+      "content": "This searches every package.json property, not just script names. For example, an acceptance command `npm run name` is reported as `script present` because the top-level `\"name\"` property exists, even though npm cannot run it. The interpolated name is also interpreted as a regular expression rather than a literal key. Parse package.json and check an exact own key in its `scripts` object to avoid falsely approving unusable commands.",
+      "existing_code": "      if grep -qE \"^[[:space:]]*\\\"$script\\\"[[:space:]]*:\" package.json; then echo \"script present\"; else echo \"FAIL: script $script not in package.json\"; fi",
+      "start_line": 52,
+      "end_line": 52,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/acceptance-commands.sh",
+      "content": "Test scripts without `-- \u003cfilters\u003e` fall through to the generic script-presence check. Thus a valid acceptance command such as `npm run test:integration` (or `npm run test:unit --`) is reported as successful without listing any tests, even if its project has zero tests or fails during discovery. The bare `npm run test:e2e` form has the same gap. Handle these no-filter forms in the list-mode branches as well, so test commands cannot bypass the zero-tests/list-error check.",
+      "existing_code": "    \"npm run test:integration -- \"*|\"npm run test:unit -- \"*)",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": ".claude/scripts/acceptance-commands.sh",
+      "files": [
+        ".claude/scripts/acceptance-commands.sh"
+      ]
+    }
+  ],
+  "session_id": "4b6e4bf7-30a5-49d8-afa1-6526b335af9f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4b6e4bf7-30a5-49d8-afa1-6526b335af9f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b6ac2fbe",
+      "resolved_base": "bb4cee81abc4f75cf518dbe47f41902f947cf3ca",
+      "resolved_head": "b6ac2fbea3582222af3460ba0001924ee7b5cddd",
+      "exact_range": "bb4cee81abc4f75cf518dbe47f41902f947cf3ca..b6ac2fbea3582222af3460ba0001924ee7b5cddd",
+      "source_artifact_sha256": "f3f0c7f3e4e63eb89dcf977813b5bd9ae3d491702199f937f787f2dc908b6036"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "cc9ee13c77e8a1378c50c7a81671177d9573ce9c874433e6824c902b966fbd3a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "cc9ee13c77e8a1378c50c7a81671177d9573ce9c874433e6824c902b966fbd3a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 85236
+  }
+}

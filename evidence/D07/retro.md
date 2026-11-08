@@ -118,3 +118,16 @@ Added at the user's request, after the first draft looked only at the session's 
   3. `plan/D06-close-a-long-stock-position.md`: exit 0. 21 commands checked, 0 failed, 1 procedure (AC-DEL-003). No D6 row has a dead filter.
   4. `git status --short` after the runs lists only the script and this file besides the main session's `.claude/docs/drafting-breakdowns.md` and `plan/D07-handoff.md`. Ports 5175, 9341 and 9342 were free before and after.
   5. `shellcheck`: not installed.
+- **Commit `b6ac2fbe`.** ocr (`ocr/D7-Retro-F3-b6ac2fbe.json`): 1 file, 4 comments. Three are Valid and one is Doubtful, so each becomes a bug task:
+
+  | Severity | Location | ocr's claim | Assessment |
+  |---|---|---|---|
+  | medium | `acceptance-commands.sh:12` | The path is checked from the caller's directory, then the script changes to the repository root, so a relative path given from another directory can't be opened | Valid. **D7-Retro-F3-B1** |
+  | medium | `acceptance-commands.sh:52` | The presence check matches any top-level `package.json` key (`npm run name` reads "script present"), and uses the name as a regex | Valid. **D7-Retro-F3-B2** |
+  | medium | `acceptance-commands.sh:36` | A bare `npm run test:integration`, `test:unit` or `test:e2e`, with no `-- <filters>`, is only checked for presence and never listed | Valid. **D7-Retro-F3-B3** |
+  | medium | `acceptance-commands.sh:45` | The unquoted `$args` drops shell quoting (`--grep "two words"`) and expands globs against the repository | Doubtful (no current row quotes a filter). **D7-Retro-F3-B4** |
+
+- **D7-Retro-F3-B1:** the script should open a breakdown path given relative to the caller's directory from any directory, such as `plan/`.
+- **D7-Retro-F3-B2:** the presence check should look only in `package.json`'s `scripts` object, matching the name exactly, so `npm run name` fails.
+- **D7-Retro-F3-B3:** a bare `test:integration`, `test:unit` or `test:e2e` command should be listed for its whole project and counted.
+- **D7-Retro-F3-B4:** command arguments should keep their shell quoting and never glob-expand, so a quoted `--grep` filter is passed as one argument.
