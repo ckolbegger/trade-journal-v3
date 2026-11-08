@@ -11320,10 +11320,12 @@
             "underlying": "XYZ",
             "lastActivity": "2026-10-13T14:00:00Z",
             "summary": {
-              "kind": "Stock",
+              "kind": "Option",
               "direction": "Long",
-              "quantity": "1/1",
-              "price": "19/10"
+              "contracts": "1/1",
+              "expiration": "2026-11-20",
+              "strike": "55",
+              "right": "Call"
             },
             "band": "Blocker",
             "reasons": [
@@ -12109,10 +12111,12 @@
         "underlying": "XYZ",
         "lastActivity": "2026-10-13T14:00:00Z",
         "summary": {
-          "kind": "Stock",
+          "kind": "Option",
           "direction": "Long",
-          "quantity": "1/1",
-          "price": "19/10"
+          "contracts": "1/1",
+          "expiration": "2026-11-20",
+          "strike": "55",
+          "right": "Call"
         },
         "band": "Blocker",
         "reasons": [
@@ -12166,10 +12170,12 @@
         "institution": "Fidelity"
       },
       "summary": {
-        "kind": "Stock",
+        "kind": "Option",
         "direction": "Long",
-        "quantity": "1/1",
-        "price": "19/10"
+        "contracts": "1/1",
+        "expiration": "2026-11-20",
+        "strike": "55",
+        "right": "Call"
       },
       "frame": {
         "instrumentKey": "XYZ",

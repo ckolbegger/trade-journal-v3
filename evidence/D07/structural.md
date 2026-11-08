@@ -1846,3 +1846,141 @@ The user's choice (2026-11-08): the medium finding on B12, a missing `counts` ob
 - **Superseded run.** `t7-29-final` was stopped at the user's request and is not a run of record.
 
 T7.29 is complete. Decision 99 (revision 67) settles the Review deviation: no stored read for settlement items.
+
+## T7.31 Browser integration suite
+
+### T7.31-F1 Confirming an option Plan leaves a blank page (found by part 1's B7.1)
+
+- **Found.** On `dist-faults` with O-C's terms, Confirm Plan navigates to `/trades/<id>`, but `#root` renders empty, with "TypeError: t.compare is not a function" in the payoff view's segment map. A reload shows the Detail correctly (1R $400.00, "Breakeven 57.00").
+- **Cause (the agent's reading).** `PlanForm` passes the confirmed Detail, including `postCommit.payoff` with its `Rational` values, through the router's history `state`. The browser structured-clones history state, which strips the class instances. Unit tests use an in-memory router that doesn't clone.
+- **Impact.** Every option Plan confirmation in B7.1–B7.6.
+- `it should` render the confirmed option Plan's Detail, with its Planned payoff ("Breakeven 57.00") and 1R, straight after Confirm Plan in the built app, with no page error.
+- `it should` keep no class instance in history state, so a structured clone of the navigation state still renders, if the fix keeps state at all.
+
+#### T7.31-F1 result (commit 52ff9dcf)
+
+- **The cause, confirmed.** react-router v7 reads `location.state` back from `window.history.state`, so even a PUSH is structured-cloned.
+- **The fix.** The confirmed Plan's Detail is handed to Trade Detail in memory (`confirmed-handoff.ts`: `handOffConfirmed`, `handedOverConfirmed`, `clearHandedOver`). It is taken once, and the navigation carries no state. The just-confirmed view still makes no read. A reload, back/forward and later visits read as before, and T7.22-B3's reload test still passes. `PlanForm.tsx` was the only `navigate(…, { state })` under `src/ui/`, and stock confirmation shares it (`e2e/d1/plan.spec.ts` passes 2 of 2).
+- **Reds.**
+  - Playwright: the Detail heading was missing on the rebuilt `dist-faults`.
+  - Unit: the `structuredClone` of the navigation state wasn't strictly equal.
+  - Unit: a Detail read was made where none was expected.
+- **Greens.** All pass. 112 tests pass in the two screens' files.
+- **Found along the way.** `e2e/d7/support.ts` re-exported d6's `test`, whose fixture serves `dist-releases/d6`, so a d7 spec that doesn't call `server.use('dist-faults')` would test the old release. Part 1 is told to make `dist-faults` the d7 default.
+
+#### ocr review of `52ff9dcf` (T7.31-F1)
+
+Model gpt-6.1-sol. In place: 1 comment (`ocr/T7.31-F1-52ff9dcf.json`). Relocated: 3 comments (`ocr/T7.31-F1-52ff9dcf-relocated.json`).
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `e2e/d7/support.ts:10` | The re-exported `test` serves `dist-releases/d6`, not the faults build, so the comment is wrong. | Valid. Already in part 1's brief: make `dist-faults` the d7 default and fix the comment. Checked when part 1 commits. |
+| medium | `PlanForm.test.tsx:698` | `structuredClone(state)` strictly equal to the state passes for any plain state; asserting no state is stricter. | Valid. Becomes T7.31-F1-B1. |
+| high (relocated) | `confirm-option-plan.ts:5` | The spec isn't discovered. | Dismissed: an artifact of the relocation (the real file is `e2e/d7/*.spec.ts`). |
+| medium (relocated) | `support.ts:5` | `../d6/support.ts` doesn't resolve. | Dismissed: an artifact of the relocation (the d5r chain wasn't copied). |
+
+The reviewer's notes, not ocr findings: a hand-off left behind when navigation is blocked; the hand-off is taken only at mount.
+
+#### T7.31-F1-B1 The Plan confirmation navigates with no history state
+
+- `it should` assert that the confirmation's captured navigation state is absent (null or undefined, captured for certain), not just that it survives a clone.
+
+### T7.31 part 1 (commit d03a6425): B7.1 to B7.6
+
+- **The cases.** All six pass on `dist-faults`, each run alone. B7.1 genuinely failed before F1 (the blank page). After F1 all six are first-run passes, each mutation-checked with one UI word mutation, and each failure named its own case's text. `git diff -- src` is empty afterwards.
+- **The fixes asked for.**
+  - `e2e/d7/support.ts` now makes `dist-faults` the default for every d7 test, through an automatic fixture `d7Faults` (ocr's F1 finding 1).
+  - `e2e/d7` is added to `test:e2e:release-history`.
+- **Run.** All of `e2e/d7`: 11 passed. The `e2e/d7` argument is a regex, so the count includes the `d7p` layout specs.
+- **B7.3's fixture.** It uses T-1 to T-3 only; T-4 and T-5 add nothing to the case.
+- **Defect found.** The Review card's summary for an option Trade reads "Long 1 shares @ $1.90" and "Long −2 shares @ $1.25". This is T7.31-F2.
+
+#### T7.31-F2 The Review card names an option Trade in share terms
+
+- **Defect.** `tradeSummary` (`src/ui/format.ts:60`) words an Option summary by its contracts, expiration, strike and right (T7.23, row 23.x). The Review card receives a Stock-kind summary for option Trades, so it shows "shares @ price", against C2.
+- `it should` give an option Trade's Review card, its name in sentences ("XYZ (…) review" and the hold message), and any other place the card's summary is shown, the same Option summary text as the Open list, for example O-C after PC2 and O-S after S1.
+
+#### T7.31-F2 result (commit 025e457f)
+
+- **The fix.** One builder, `openTradeSummary` in `src/domain/trade-summary.ts`, now serves both Trade Views and Daily Review. Daily Review uses it in three places: the walked item, the card detail's `summary`, and the owed-reflection card's `position`.
+- **Red and green.** The red failed with "expected { kind: 'Stock', … } to deeply equal { kind: 'Option', … }" for T-1 (O-C) and T-3 (O-S); the green passed.
+- **Other runs.** 829 tests pass across daily-review, trade-views, `src/ui` and the d7 and d5r integration tests.
+
+#### ocr review of `025e457f` (T7.31-F2)
+
+No findings, in place and relocated (`ocr/T7.31-F2-025e457f*.json`). The reviewer's notes, not ocr findings: only the walked item's summary is tested, while the card detail's `summary` and the owed card's `position` changed with it; a spread shows only its first leg's contract (D10).
+
+#### T7.31-F1-B1 result (commit d22974e7)
+
+- **The assertion.** The stand-in records `{ tradeId, state }`. The test asserts the capture ran (`tradeId` 'trade-7') and that the state is null.
+- **First-run pass.** The mutation `{ state: { x: 1 } }` in `navigate` failed with "expected { x: 1 } to be null". The source was reverted.
+
+#### ocr review of `d22974e7` (T7.31-F1-B1, relocated)
+
+No findings (`ocr/T7.31-F1-B1-d22974e7-relocated.json`). F1's chain is closed.
+
+### T7.31 part 2 (commit 1d317fd8): B7.8 to B7.13
+
+- **The cases.** Kill after commit; offline cold restart; Recovery Only; a mid-session failure; nothing saved without Save; and responsive and accessible (two tests, with axe on every listed view at 1280 and 390 px, and an Expiration recorded by keyboard). All are first-run passes, each mutation-checked with a UI mutation on a rebuilt `dist-faults`, then restored. `git diff -- src` is empty.
+- **Run.** All of `e2e/d7`: 18 passed, including the `d7p` layout specs. No product defects.
+- **B7.10.** Recovery Only removes the New Plan route and link, so the case asserts that no New Plan link and no Confirm Plan button exist ("no Plan confirmation").
+- **B7.9.** It onboards online. The Plan, the entry and the Expiration then run in one offline launch pinned at Friday 17:00, with the Plan and Economic Times given explicitly.
+
+#### ocr review of T7.31's specs (`d03a6425` and `1d317fd8`, relocated)
+
+Model gpt-6.1-sol: 12 files, 5 comments (`ocr/T7.31-d03a6425-1d317fd8-relocated.json`). The in-place review of `package.json` and `support.ts` made 0 comments (`ocr/T7.31-d03a6425-package.json`). None of the comments are artifacts of the relocation.
+
+| Severity | Location | Claim | Outcome |
+|---|---|---|---|
+| medium | `responsive-a11y.spec.ts:49` | After the resize, `toHaveValue(/./)` would pass if the Strategy were reset to Long Call. | Valid. Becomes T7.31-B1. |
+| medium | `marks-zero.spec.ts:38` | The zero-Mark note isn't asserted for KLM stock. | Valid. Becomes T7.31-B2. |
+| medium | `short-put.spec.ts:33` | A page-wide `.first()` can match the error summary instead of the row error. | Valid. Becomes T7.31-B3. |
+| medium | `responsive-a11y.spec.ts:151` | The Closed option Detail gets axe at the default width only. | Doubtful. Becomes T7.31-B4. |
+| medium | `responsive-a11y.spec.ts:17-18` | At 390 px only axe runs, so a payoff table hidden at narrow width would pass. | Doubtful. Becomes T7.31-B5. |
+
+#### T7.31-B1 to B5 (each one `it should`, test only)
+
+- **B1:** `it should` keep the option Plan form's selected Strategy, Long Put, by its checked label after resizing to 390 px and back.
+- **B2:** `it should` show the zero-Mark note for KLM stock before its 0 is saved, as for the MNO put (B7.6).
+- **B3:** `it should` find B7.2's rejection beside Execution row 1, not just anywhere on the page.
+- **B4:** `it should` run axe on the Closed option Detail at both 1280 and 390 px.
+- **B5:** `it should` show every payoff chart's table equivalent at 390 px as well.
+
+These wait for the cumulative run `t7-31-browser-suite`, which holds port 5175.
+
+### Cumulative run `t7-31-browser-suite` (commit 1d317fd8 plus evidence edits)
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1428 passed, exit 0 | `suite-runs/t7-31-browser-suite-unit.txt` |
+| Node integration | 94 files, 191 passed, exit 0 | `suite-runs/t7-31-browser-suite-integration.txt` |
+| Browser (Chromium), full tier, `browser-1` | 119 passed (4.7 min), exit 0 | `suite-runs/t7-31-browser-suite-browser-1.txt` |
+| Browser (Chromium), full tier, `browser-2` | 61 passed (3.9 min), exit 0 | `suite-runs/t7-31-browser-suite-browser-2.txt` |
+| Checks | 12 of 13; `verify:fixtures` exit 1 | `suite-runs/t7-31-browser-suite-checks.txt` |
+
+- **Browser.** Every case in sections 6.2 of D1, D2, D4, D5, D6 and D7 passes, 180 in all.
+- **The failure.** "FAIL workspace-v6: views differ from expected-views.json at review.families[2].trades[0].summary.kind/quantity/price, reviewTrades[0].attention.summary.…, reviewTrades[0].summary.…". This is T7.31-F2's fix showing up: T7.27 froze the v6 snapshot with the Review's wrong Stock-shaped summary for an option Trade.
+
+#### T7.31-F3 The schema-v6 snapshot records the Review's option summary
+
+- **The fix.** Re-render only `tests/fixtures/workspace-v6/expected-views.json` for the fields F2 corrected. Every `dump.json` stays byte-identical, and the v1–v5 snapshots are unchanged.
+- **The proof.** `verify:fixtures` passes, and `git diff 1d317fd8 -- tests/fixtures` touches only that file, at the summary fields named above. List the old and new values in the evidence.
+
+#### T7.31-F3 result
+
+`fixtures:freeze` refuses an existing fixture directory, so the snapshot was not refrozen with it. A scratch script outside the repository (the same `launchOn`, `loadDump` and `viewsOf` calls as `verify-fixtures.ts`) rendered the views from the unchanged `workspace-v6/dump.json`. Three `summary` blocks in `expected-views.json` were edited with the Edit tool to match; the file is then byte-identical (`cmp`) to the render. `dump.json` was never written.
+
+- `npm run verify:fixtures`: exit 0. "verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4, workspace-v5, workspace-v6 open Ready at schema 6 with views equal to their snapshots".
+- `git diff --stat 1d317fd8 -- tests/fixtures`: `tests/fixtures/workspace-v6/expected-views.json | 24 +++++++++++++++---------`, 1 file changed, 15 insertions(+), 9 deletions(-). `--name-only` lists only that file, so every `dump.json` is unchanged.
+- Changed values, three places (`review.families[2].trades[0]`, `reviewTrades[0].attention`, and `reviewTrades[0]`, all the same option Trade, a long Call with strike 55 expiring 2026-11-20), each the same change:
+
+| Field | Old (Stock shape) | New (Option shape) |
+|---|---|---|
+| `summary.kind` | `Stock` | `Option` |
+| `summary.direction` | `Long` | `Long` (unchanged) |
+| `summary.quantity` | `1/1` | removed |
+| `summary.price` | `19/10` | removed |
+| `summary.contracts` | absent | `1/1` |
+| `summary.expiration` | absent | `2026-11-20` |
+| `summary.strike` | absent | `55` |
+| `summary.right` | absent | `Call` |
