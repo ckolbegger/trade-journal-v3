@@ -2132,3 +2132,11 @@ At HEAD `526edb78`; full tier. `run-complete.sh`: run complete.
 | Checks | 13 of 13 | `suite-runs/t7-32-b6-gate-checks.txt` |
 
 No release-history run (decision 76). Ports free before and after.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| 3 | `3c5d4f68` | v2 | 218,395 | 76 | 13 min 45 s | 1 low (fixed as T7.32-B7) |
+
+- **Critic 3** (`critic-3.md`): **PASS**, C7.1–C7.10 all passing (C7.8 withdrawn). One low defect, fixed before the gate:
+  - **T7.32-B7:** the Review card never shows the value at expiration at the Underlying's latest close, though A122 says "Trade Detail and the Review card show it as 'If XYZ is at 52.00 at expiration: −$401.30'" and T7.15 returns it in the card; only `TradeDetail.tsx` reads `expirationValueAtUnderlyingClose`. Its `it should` cases: the card of an Open option Trade with both Marks saved shows "If XYZ is at 57.50 at expiration: +$148.05" apart from its Mark-to-Market figures; the card shows the Unavailable form when the Underlying's Mark is missing and after the expiration date, as Detail does; a stock card shows none.
+  - Minor observation 3 (tick labels 55.00 and 57.00 "on top of each other") is read as B2's second tick row, by design; recorded for the final report with the rest.
