@@ -149,7 +149,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
     await expectPayoffChart(page, 'Planned');
     await expectPayoffNotApplicable(page, 'Current', /^Not applicable/);
-    await expectAccessible(page, 'Closed option Detail');
+    await accessibleAtBothWidths(page, 'Closed option Detail');
     await context.close();
   });
 });
