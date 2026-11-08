@@ -21,7 +21,8 @@ export const zeroText = (zero: PayoffZero): string => {
     case 'Touch':
       return `Breakeven at ${underlyingPrice(zero.price)}, touched without crossing`;
     case 'ZeroRange':
-      return zero.to ? `Breakeven from ${underlyingPrice(zero.from)} to ${underlyingPrice(zero.to)}` : `Breakeven at ${rangeText(zero.from, null)}`;
+      if (!zero.to) throw new Error('a Zero Range with no upper end has no approved words');
+      return `Breakeven from ${underlyingPrice(zero.from)} to ${underlyingPrice(zero.to)}`;
     default:
       return zero satisfies never;
   }

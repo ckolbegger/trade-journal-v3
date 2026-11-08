@@ -2,7 +2,9 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { payoffFixtures, viewOf } from '../../../tests/support/payoff-fixtures.ts';
+import { Rational } from '../../domain/values/index.ts';
 import { PayoffView, type PayoffViewProps } from './PayoffView.tsx';
+import { zeroText } from './payoff-text.ts';
 
 afterEach(cleanup);
 
@@ -94,5 +96,11 @@ describe('chart and textual equivalent (A114, AC-UI-002)', () => {
     show({ kind: 'Planned', result: payoffFixtures.stock().planned });
     expect(screen.getByText('Not applicable: no option expiration')).toBeTruthy();
     expect(screen.queryByRole('img')).toBeNull();
+  });
+});
+
+describe('a Zero Range with no upper end (T7.22-B1)', () => {
+  it('should refuse to word a Zero Range with no upper end, which no approved row words', () => {
+    expect(() => zeroText({ kind: 'ZeroRange', from: Rational.of(55n), to: null })).toThrow('no approved words');
   });
 });
