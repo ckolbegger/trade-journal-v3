@@ -2089,3 +2089,17 @@ The figures come from the critic's completion notice. The brief is `.claude/docs
 - **Case:** "should keep every tick row inside the SVG and clear of the axis title when breakpoints cluster beyond three rows" (breakpoints 0 and 50 to 55). Red: "53.00 clear of the axis title: expected -3 to be greater than or equal to 4". Green. No first-run passes.
 - **Checks:** `PayoffView.test.tsx` 9 passed; `src/ui/screens` 493 passed; `e2e/d7/payoff-chart-layout.spec.ts` 3 passed (Chromium); typecheck, tsc6, lint, lint:deps exit 0.
 - **ocr** (`ocr/T7.32-B5-a907f190.json`): 1 file reviewed, 0 comments. No findings. The B2 chain is closed (one round of bug tasks, B3 to B5).
+
+### Gate run `t7-32-b5-gate`
+
+At HEAD `27cbebec` for unit and integration, `f336866f` for the later stages (the commits between changed only evidence and the handoff); full tier. `run-complete.sh`: run complete.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,433 passed (121 files) | `suite-runs/t7-32-b5-gate-unit.txt` |
+| Node integration | 191 passed (94 files) | `suite-runs/t7-32-b5-gate-integration.txt` |
+| Browser 1 (Chromium) | 119 passed (4.8 min) | `suite-runs/t7-32-b5-gate-browser-1.txt` |
+| Browser 2 (Chromium) | 64 passed (4.1 min) | `suite-runs/t7-32-b5-gate-browser-2.txt` |
+| Checks | 13 of 13 | `suite-runs/t7-32-b5-gate-checks.txt` |
+
+No release-history run (decision 76). Ports 5175, 9341, 9342 free before and after.
