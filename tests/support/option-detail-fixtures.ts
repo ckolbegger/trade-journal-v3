@@ -13,7 +13,7 @@ import type { OptionInstrument } from '../../src/domain/instrument/index.ts';
 export type OptionTradeName = 'O-C' | 'O-S';
 
 // Friday 2026-11-20 16:00 New York, the close of the expiration session.
-const SETTLEMENT_TIME = '2026-11-20T21:00:00Z';
+const SETTLEMENT_TIME = { kind: 'Value', value: '2026-11-20T21:00:00Z' } as const;
 
 const contractOf = (which: OptionTradeName): OptionInstrument => (which === 'O-C' ? OC_CONTRACT : OS_CONTRACT);
 

@@ -261,7 +261,7 @@ function SettlementDuePanel({ tradeId, items, timeZone }: { readonly tradeId: st
               <Figure term="Contract" plain>{instrumentLabel(item.instrument)}</Figure>
               <Figure term="Quantity" plain>{`${short ? 'Short' : 'Long'} ${contractCount(quantity(abs(item.quantity)))}`}</Figure>
               <Figure term="Expired" plain>{shortDate(item.expiration)}</Figure>
-              <Figure term="Settlement time" plain>{settlementTime(item.settlementTime, timeZone)}</Figure>
+              <Figure term="Settlement time" plain>{calculation(item.settlementTime, (instant) => settlementTime(instant, timeZone))}</Figure>
             </dl>
             <p>
               {short
@@ -271,7 +271,8 @@ function SettlementDuePanel({ tradeId, items, timeZone }: { readonly tradeId: st
           </div>
         );
       })}
-      {writable && (
+      {/* A date outside the market calendar has no settlement time to record at (D7 Q1). */}
+      {writable && items.every((item) => item.settlementTime.kind === 'Value') && (
         <Link className="pill primary" to={`/trades/${tradeId}/record-expiration`}>
           Record expiration
         </Link>

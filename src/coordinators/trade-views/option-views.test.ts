@@ -117,7 +117,7 @@ describe('getTradeDetail: option Trades (AC-SET-003, A119)', () => {
 
     expect(onExpiration.lifecycle.stored).toBe('Open');
     expect(onExpiration.positionChanges.flatMap((change) => change.settlements ?? [])).toEqual([]);
-    expect(onExpiration.settlement).toEqual([{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_1600 }]);
+    expect(onExpiration.settlement).toEqual([{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: { kind: 'Value', value: FRIDAY_1600 } }]);
     expect(onExpiration.payoff.planned.kind).toBe('Value');
     expect(onExpiration.payoff.current.kind).toBe('Value');
 
@@ -198,8 +198,53 @@ describe('browseTrades: option rows', () => {
     const before = await thursday.tradeViews.browseTrades({ lifecycle: 'Open' });
     if (onExpiration.kind !== 'Ready' || before.kind !== 'Ready') throw new Error('expected Ready pages');
 
-    expect(onExpiration.view.items).toEqual([expect.objectContaining({ settlement: [{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: FRIDAY_1600 }] })]);
+    expect(onExpiration.view.items).toEqual([expect.objectContaining({ settlement: [{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: { kind: 'Value', value: FRIDAY_1600 } }] })]);
     expect(before.view.items).toEqual([expect.objectContaining({ settlement: [] })]);
+  }, 60_000);
+
+  it('should look up the Open page settlement times concurrently', async () => {
+    const fixture = await optionStack(FRIDAY_1700);
+    const first = await fixture.openCashSecuredPut();
+    const second = await fixture.openCashSecuredPut();
+    let inFlight = 0;
+    let peak = 0;
+    const marketData = {
+      ...fixture.stack.marketData,
+      query: async (query: Parameters<typeof fixture.stack.marketData.query>[0]) => {
+        if (query.kind !== 'ResolveSession') return fixture.stack.marketData.query(query);
+        inFlight += 1;
+        peak = Math.max(peak, inFlight);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        inFlight -= 1;
+        return fixture.stack.marketData.query(query);
+      },
+    };
+    const views = createTradeViews({ ...fixture.stack, marketData });
+
+    const page = await views.browseTrades({ lifecycle: 'Open' });
+    if (page.kind !== 'Ready') throw new Error('expected a Ready page');
+
+    expect(page.view.items.map((item) => item.tradeId)).toEqual([first, second]);
+    expect(peak).toBe(2);
+  }, 60_000);
+
+  it('should give an unavailable settlement time for an expiration date outside calendar coverage and still list every Open Trade', async () => {
+    const fixture = await optionStack(FRIDAY_1700);
+    const tradeId = await fixture.openCashSecuredPut();
+    const marketData = {
+      ...fixture.stack.marketData,
+      query: (query: Parameters<typeof fixture.stack.marketData.query>[0]) =>
+        query.kind === 'ResolveSession' ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'SessionPolicyCoverage' as const }] }) : fixture.stack.marketData.query(query),
+    };
+    const views = createTradeViews({ ...fixture.stack, marketData });
+    const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: MNO_PUT, date: '2026-11-20' };
+
+    const page = await views.browseTrades({ lifecycle: 'Open' });
+    const detail = openDetail(await views.getTradeDetail({ tradeId }));
+
+    if (page.kind !== 'Ready') throw new Error('expected a Ready page');
+    expect(page.view.items).toEqual([expect.objectContaining({ settlement: [{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: uncovered }] })]);
+    expect(detail.settlement).toEqual([expect.objectContaining({ settlementTime: uncovered })]);
   }, 60_000);
 
   it('should return Open, Planned, and Closed rows with the Trade summary and Strategy, and Closed rows with their Terminal Disposition and Option Disposition Timing, reading Market Data only for Open rows', async () => {

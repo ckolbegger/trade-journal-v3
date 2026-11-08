@@ -347,9 +347,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const due = ranked
       .flatMap(({ item, evaluation }) => (evaluation?.settlement ?? []).filter((s) => s.status === 'Due').map((s) => ({ tradeId: item.tradeId, ...s })))
       .sort((a, b) => (a.expiration === b.expiration ? (a.tradeId < b.tradeId ? -1 : Number(a.tradeId > b.tradeId)) : a.expiration < b.expiration ? -1 : 1));
-    const times = new Map<string, string>();
-    for (const expiration of new Set(due.map((s) => s.expiration))) times.set(expiration, await settlementTimeOf(deps.marketData, expiration));
-    return due.map(({ tradeId, instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: times.get(expiration)! }));
+    return Promise.all(due.map(async ({ tradeId, instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: await settlementTimeOf(deps.marketData, instrument, expiration) })));
   }
 
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.

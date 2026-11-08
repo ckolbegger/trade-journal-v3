@@ -46,7 +46,7 @@ describe('option rows (A119)', () => {
 
     // O-S on the expiration date after the settlement time: the row carries the settlement item Detail's panel
     // shows, while its P&L still awaits the close (K4, row A113).
-    const dueItem = { tradeId: 'trade-o', instrument: put, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: '2026-11-20T21:00:00Z' } as const;
+    const dueItem = { tradeId: 'trade-o', instrument: put, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: { kind: 'Value', value: '2026-11-20T21:00:00Z' } } as const;
     renderList(
       [
         {

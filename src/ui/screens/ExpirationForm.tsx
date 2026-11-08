@@ -117,7 +117,9 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
   if (failed) return <p role="alert">We couldn’t load this expiration form. Nothing was changed.</p>;
   if (!view || !definition || !closeDefinition) return <p role="status">Loading the expiration form…</p>;
   const item = 'settlement' in view ? view.settlement[0] : undefined;
-  if (!item) return <p>This Trade has no contract due for settlement.</p>;
+  // A contract whose expiration date is outside the market calendar has no settlement time to record at (D7 Q1).
+  if (!item || item.settlementTime.kind !== 'Value') return <p>This Trade has no contract due for settlement.</p>;
+  const settlementInstant = item.settlementTime.value;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -125,7 +127,7 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: view.factRevision }],
       // The quantity and the settlement time are the item's, never entered (P26).
-      members: [{ kind: 'Expiration', tradeId, instrument: item.instrument, quantity: quantity(unsigned(item.quantity)), economicTime: item.settlementTime }],
+      members: [{ kind: 'Expiration', tradeId, instrument: item.instrument, quantity: quantity(unsigned(item.quantity)), economicTime: settlementInstant }],
       reflection: dispositionOf(choice, definition, answers, reason),
       // A single-leg Expiration is always terminal (A113): a Close Review and no Close Reason.
       closeReview: dispositionOf(closeChoice, closeDefinition, closeAnswers, closeReason),
@@ -154,7 +156,7 @@ export function ExpirationForm({ facade, timeZone, onDirtyChange }: ExpirationFo
           <dt>Quantity</dt>
           <dd>{heldWords(item.quantity)}</dd>
           <dt>Settlement time</dt>
-          <dd>{settlementWords(item.settlementTime, timeZone)}</dd>
+          <dd>{settlementWords(settlementInstant, timeZone)}</dd>
         </dl>
         <p className="hint">The close of the expiration session.</p>
       </section>

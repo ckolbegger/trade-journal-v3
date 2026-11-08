@@ -11,7 +11,7 @@ import type { ReflectionDisposition } from '../../modules/journal/index.ts';
 // standard time after it, so 10:00 is 14:00Z on 10-12 and 15:00Z in the week of 11-16.
 const FRIDAY_1700 = '2026-11-20T22:00:00Z';
 const MONDAY_NEXT_1700 = '2026-11-23T22:00:00Z';
-const FRIDAY_CLOSE = '2026-11-20T21:00:00Z';
+const FRIDAY_CLOSE = { kind: 'Value', value: '2026-11-20T21:00:00Z' } as const;
 const OC_PLAN = '2026-10-12T13:00:00Z';
 const OC_10 = '2026-10-12T14:00:00Z';
 const OC_11 = '2026-10-12T15:00:00Z';

@@ -133,6 +133,15 @@ describe('option Trade Detail Settlement Due panel (rows 23.9 and 23.10)', () =>
     expect(within(long).getByText("If it was exercised, this release can't record the exercise yet, so this Trade stays open until a later release can.")).toBeTruthy();
     expect(within(long).queryByRole('link', { name: 'Record expiration' })).toBeNull();
   });
+
+  it('should show Outside the market calendar in place of the settlement time, with no Record expiration, for an expiration date outside calendar coverage', async () => {
+    const covered = optionOpenDetail('O-S', [OS_S1], FRIDAY);
+    const settlementTime = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: covered.settlement[0]!.instrument, date: '2026-11-20' } as const;
+    renderView({ ...covered, settlement: covered.settlement.map((item) => ({ ...item, settlementTime })) }, true);
+    const panel = await screen.findByRole('region', { name: 'Settlement Due' });
+    expect(termValue(panel, 'Settlement time')).toBe('Outside the market calendar: Fri Nov 20');
+    expect(within(panel).queryByRole('link', { name: 'Record expiration' })).toBeNull();
+  });
 });
 
 describe('option Trade Detail expiration line (decision 94, row 23.19)', () => {

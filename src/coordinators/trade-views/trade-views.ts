@@ -720,7 +720,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
   // The contracts the evaluation finds Due, each with its settlement time from Market Data (A111).
   async function settlementItemsOf(tradeId: string, evaluation: TradeEvaluation): Promise<SettlementItem[]> {
     const due = evaluation.settlement.filter((item) => item.status === 'Due');
-    return Promise.all(due.map(async ({ instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: await settlementTimeOf(deps.marketData, expiration) })));
+    return Promise.all(due.map(async ({ instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: await settlementTimeOf(deps.marketData, instrument, expiration) })));
   }
 
   // The effective Mark revision's provenance, as Market Data describes it on the frame.
@@ -900,11 +900,15 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // On the Open page, each Trade is evaluated once; the contracts it finds due for settlement are the ones Detail shows.
         const evaluations = new Map<string, { readonly evaluation: TradeEvaluation; readonly settlement: readonly SettlementItem[] }>();
         if (request.lifecycle === 'Open') {
-          for (const { summary, analysis, derived } of derivations) {
-            if (derived.kind !== 'Derived') continue;
-            const evaluation = evaluateCurrent(derived, analysis, frames);
-            evaluations.set(summary.tradeId, { evaluation, settlement: await settlementItemsOf(summary.tradeId, evaluation) });
-          }
+          // The lookups run together; the entries keep the page's order.
+          const found = await Promise.all(
+            derivations.flatMap(({ summary, analysis, derived }) => {
+              if (derived.kind !== 'Derived') return [];
+              const evaluation = evaluateCurrent(derived, analysis, frames);
+              return [settlementItemsOf(summary.tradeId, evaluation).then((settlement) => ({ tradeId: summary.tradeId, evaluation, settlement }))];
+            }),
+          );
+          for (const { tradeId, evaluation, settlement } of found) evaluations.set(tradeId, { evaluation, settlement });
         }
         const items = derivations.map(({ summary, analysis, derived }) => {
           if (request.lifecycle === 'Closed') {

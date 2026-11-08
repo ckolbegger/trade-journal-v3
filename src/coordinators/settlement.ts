@@ -1,5 +1,6 @@
 import type { OptionInstrument } from '../domain/instrument/index.ts';
 import type { Instant } from '../domain/time/index.ts';
+import type { CalculationResult, UnavailableReason } from '../domain/calculation-result/index.ts';
 import { expirationPayoff, type DerivedTradeState, type ExpirationPayoffs, type TradeAnalysisRecord } from '../domain/trade-analysis/index.ts';
 import type { Rational } from '../domain/values/index.ts';
 import type { MarketData } from '../modules/market-data/index.ts';
@@ -12,17 +13,21 @@ export interface SettlementItem {
   readonly quantity: Rational;
   readonly expiration: string;
   // The close of the expiration session, or of the latest session before it when the date is not a session.
-  readonly settlementTime: Instant;
+  // Unavailable (SessionPolicyNotCovered) when the date lies outside calendar coverage (D7 Q1): no Record expiration then.
+  readonly settlementTime: SettlementTime;
 }
 
+export type SettlementTime = CalculationResult<Instant, Extract<UnavailableReason, { reason: 'SessionPolicyNotCovered' }>, never>;
+
 // The close of the session an expiration date names, or of the latest session before it when it is not one (A111).
-// A date outside calendar coverage has no such close (D7 Q1); that item is a later task's.
-export async function settlementTimeOf(marketData: MarketData, expiration: string): Promise<Instant> {
+// A date outside calendar coverage has no such close (D7 Q1).
+export async function settlementTimeOf(marketData: MarketData, instrument: OptionInstrument, expiration: string): Promise<SettlementTime> {
   const session = await marketData.query({ kind: 'ResolveSession', context: { kind: 'Historical', tradingDate: expiration } });
-  if (session.kind === 'Session') return session.closeInstant;
-  const latest = session.kind === 'Rejected' ? session.issues[0]?.latestSession : undefined;
-  if (!latest) throw new Error(`no settlement time for ${expiration}`);
-  return latest.closeInstant;
+  if (session.kind === 'Session') return { kind: 'Value', value: session.closeInstant };
+  const issue = session.kind === 'Rejected' ? session.issues[0] : undefined;
+  if (issue?.latestSession) return { kind: 'Value', value: issue.latestSession.closeInstant };
+  if (issue?.code === 'SessionPolicyCoverage') return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument, date: expiration };
+  throw new Error(`no settlement time for ${expiration}`);
 }
 
 // The Planned and Current Expiration Payoff of the Trade from its Plan and the Lots it still holds (AC-CALC-004).

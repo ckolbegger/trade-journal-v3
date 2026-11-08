@@ -25,7 +25,7 @@ const dueDetail = {
   labels: { ...plannedDetail.labels, strategy: 'Long Call' },
   lifecycle: { stored: 'Open', agreement: { kind: 'Agrees' } },
   positions: [{ instrument: OC_CONTRACT, quantity: Rational.of(1n), openLots: [] }],
-  settlement: [{ tradeId: 'trade-1', instrument: OC_CONTRACT, quantity: Rational.of(1n), expiration: '2026-11-20', settlementTime: SETTLEMENT_TIME }],
+  settlement: [{ tradeId: 'trade-1', instrument: OC_CONTRACT, quantity: Rational.of(1n), expiration: '2026-11-20', settlementTime: { kind: 'Value', value: SETTLEMENT_TIME } }],
 };
 
 function renderForm(facade: UiFacade = exitFormFacade(dueDetail), search = '') {
