@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 6085,
+    "input_tokens": 6011,
+    "output_tokens": 74,
+    "cache_read_tokens": 3840,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "tools/install-hooks.sh",
+      "files": [
+        "tools/install-hooks.sh"
+      ]
+    }
+  ],
+  "session_id": "2318f771-9b2d-4133-b067-befcbe3b0e49",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2318f771-9b2d-4133-b067-befcbe3b0e49",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "af86c92a",
+      "resolved_base": "aae4943c97b8cd40fb6f9d996994f5e61d6f5520",
+      "resolved_head": "af86c92a15fc99a7e114c6b2d1e4ec7ebe2cb656",
+      "exact_range": "aae4943c97b8cd40fb6f9d996994f5e61d6f5520..af86c92a15fc99a7e114c6b2d1e4ec7ebe2cb656",
+      "source_artifact_sha256": "30aa9ad90b8f5d79244181d7641039c45a758c9cef39d641c17e80aa794c5ca2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "64e78c96488d65f5563ffae3dcf953f50dddeb2ebd62123bea7da892ecb7a1a3",
+          "path": "tools/install-hooks.sh",
+          "fingerprint": "065dc2f2d3ecfefd58dea5d721788f91f3416bdf2ddf548472e0a2fc99da69c5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "64e78c96488d65f5563ffae3dcf953f50dddeb2ebd62123bea7da892ecb7a1a3",
+          "path": "tools/install-hooks.sh",
+          "fingerprint": "065dc2f2d3ecfefd58dea5d721788f91f3416bdf2ddf548472e0a2fc99da69c5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 5861
+  }
+}
