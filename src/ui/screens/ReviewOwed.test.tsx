@@ -8,7 +8,7 @@ import { cardProgress,reflectionsOwedProgress } from '../../../tests/support/car
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, ReviewBinding, WalkedTrade } from '../../app/types.ts';
+import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, OwedReflectionsCard, OwedReflectionsTrade, OwedTradeSummary, ReviewBinding, WalkedTrade } from '../../app/types.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -162,6 +162,26 @@ function renderReview(facade: UiFacade, at = '/review') {
 }
 
 const GROUP = 'Trades with owed reflections';
+
+describe('owed card Terminal Disposition, row 23.12', () => {
+  it('should say Closed via sale of 1 contract and expiration of 1 contract on the owed card of an option Trade closed by a sale and an expiration', async () => {
+    const facade = reviewFacade(ready());
+    const card: OwedReflectionsCard = {
+      ...CLOSED_CARD,
+      labels: { ...CLOSED_CARD.labels, strategy: 'Long Call' },
+      summary: {
+        ...(CLOSED_CARD.summary as Extract<OwedTradeSummary, { kind: 'Closed' }>),
+        optionSide: 'Long',
+        terminalDisposition: { kind: 'Value', value: [{ mechanism: 'Executions', quantity: rational(1n) }, { mechanism: 'Expiration', quantity: rational(1n) }] },
+      },
+    };
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReflectionsOwed', reviewDate: DATE, cutoff: CUTOFF, card });
+    renderReview(facade);
+    const closed = await screen.findByRole('region', { name: 'ABC review' });
+    const result = within(closed).getByRole('region', { name: 'Result' });
+    expect(within(result).getByText('Terminal Disposition').nextElementSibling?.textContent).toBe('Closed via sale of 1 contract and expiration of 1 contract');
+  });
+});
 
 describe('owed-reflection group (P19, P20)', () => {
   it('should show Trades with owed reflections after the walk, each card with its lifecycle summary and its Reflections section and no Action form', async () => {

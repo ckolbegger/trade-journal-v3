@@ -9,6 +9,7 @@ import { PageTitle } from '../PageTitle.tsx';
 import type { CloseReasonOption } from './ClosingTheTrade.tsx';
 import { executionWhat } from './execution-line.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
+import { closedViaOption } from './option-disposition.ts';
 import { reflectionMessage } from './PositionChangeReceipt.tsx';
 
 type Recorded = Extract<PositionChangeResult, { readonly kind: 'Recorded' }>;
@@ -58,7 +59,9 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
   const ownExecutions = new Set(saved.executions.map((e) => e.factId));
   const { lotMatchChanges, realizedToDate } = receipt;
   const disclosed = lotMatchChanges.some((c) => c.kind !== 'Created' || !ownExecutions.has(c.disposingExecutionId));
-  const option = trade.plan.legs[0]?.instrument.kind === 'Option';
+  const leg = trade.plan.legs[0];
+  const option = leg?.instrument.kind === 'Option';
+  const optionSide = option ? leg.side : undefined;
   const matchQuantity = (amount: Rational | null) => (amount === null ? '—' : quantity(amount));
 
   return (
@@ -143,7 +146,7 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
               <dt>Realized R</dt>
               <dd className="number">{calculation(derivation.realizedR, signed(rMultiple))}</dd>
               <dt>Terminal Disposition</dt>
-              <dd>{calculation(derivation.terminalDisposition, closedViaSale)}</dd>
+              <dd>{calculation(derivation.terminalDisposition, optionSide ? (mechanisms) => closedViaOption(optionSide, mechanisms) : closedViaSale)}</dd>
               {closeReason !== undefined && (
                 <>
                   <dt>Close Reason</dt>

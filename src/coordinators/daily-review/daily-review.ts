@@ -232,6 +232,7 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
     realizedPnl: state.realizedToDate,
     realizedR: state.realizedR,
     terminalDisposition: state.terminalDisposition,
+    ...(analysis.plan.legs[0]!.instrument.kind === 'Option' && { optionSide: analysis.plan.legs[0]!.side }),
     ...(closeReason && { closeReason }),
     ...(closeReviewOutcome && { closeReviewOutcome }),
     ...(analysis.terminalTime && { terminalTime: analysis.terminalTime }),

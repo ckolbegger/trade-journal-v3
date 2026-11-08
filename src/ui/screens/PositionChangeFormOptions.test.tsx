@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { exitFormFacade, plannedDetail } from '../../../tests/support/position-change-form-facade.ts';
-import { OC_CONTRACT, optionTrade, OS_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
+import { closedLongPutTrade, OC_CONTRACT, optionTrade, OS_CONTRACT } from '../../../tests/support/option-trade-fixtures.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ExitReceipt } from './ExitReceipt.tsx';
@@ -84,6 +84,23 @@ describe('option receipts', () => {
     expect(screen.getByText('Sell to close 1 XYZ 20 Nov 2026 55 Call')).toBeTruthy();
     const table = screen.getByRole('table', { name: 'Lot Matches' });
     expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
+  });
+});
+
+describe('option Terminal Disposition on the exit receipt, row 23.12', () => {
+  it('should say Closed via sale of 2 contracts on the exit receipt of a Sell to close of 2 contracts that closes a Long Put', () => {
+    const { record, derivation } = closedLongPutTrade();
+    const result = {
+      kind: 'Recorded',
+      receipt: { tradeId: 'trade-1', createdFactIds: ['pc-px'], deviationReconciliation: [], entryChanges: [], repairs: [], lotMatchChanges: [], realizedToDate: { before: Rational.of(0n), after: derivation.realizedToDate } },
+      postCommit: { trade: record, derivation, reflection: { kind: 'Debt', debt: { debtId: 'debt-1' } } },
+    };
+    render(
+      <MemoryRouter>
+        <ExitReceipt result={result as never} timeZone="America/New_York" closeReasons={[]} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Terminal Disposition').nextElementSibling?.textContent).toBe('Closed via sale of 2 contracts');
   });
 });
 

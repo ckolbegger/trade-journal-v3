@@ -5,6 +5,7 @@ import { Badge } from '../Badge.tsx';
 import { calculation, closedViaSale, signed } from '../figures.ts';
 import { money, rMultiple, tradeSummary } from '../format.ts';
 import { panelOf, plural, reflectionsStatus, type Go } from './ReviewCard.tsx';
+import { closedViaOption } from './option-disposition.ts';
 import { ReviewReflections } from './ReviewReflections.tsx';
 
 // What the open owed card shows while its Trade is read, or when it could not be.
@@ -23,6 +24,7 @@ function remainsText(trade: OwedReflectionsTrade): string {
 // The Trade's summary for its lifecycle (A90): how a Closed Trade ended, or what an Open Trade holds.
 function Summary({ card }: { readonly card: OwedReflectionsCard }) {
   const summary: OwedTradeSummary | undefined = card.summary;
+  const optionSide = summary?.kind === 'Closed' ? summary.optionSide : undefined;
   return (
     <section aria-label="Result">
       <dl>
@@ -35,7 +37,7 @@ function Summary({ card }: { readonly card: OwedReflectionsCard }) {
             <dt>Realized R</dt>
             <dd className="number">{calculation(summary.realizedR, signed(rMultiple))}</dd>
             <dt>Terminal Disposition</dt>
-            <dd>{calculation(summary.terminalDisposition, closedViaSale)}</dd>
+            <dd>{calculation(summary.terminalDisposition, optionSide ? (mechanisms) => closedViaOption(optionSide, mechanisms) : closedViaSale)}</dd>
             {summary.closeReason && (
               <>
                 <dt>Close Reason</dt>

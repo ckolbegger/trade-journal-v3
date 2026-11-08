@@ -303,6 +303,8 @@ export type OwedTradeSummary =
       readonly realizedPnl: Rational;
       readonly realizedR: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;
       readonly terminalDisposition: TerminalDisposition;
+      // The side of an option Trade's leg, which words its disposition mechanisms (a Long leg's Executions are sales); absent for stock.
+      readonly optionSide?: 'Long' | 'Short';
       // The Close Reason the Trade was closed with; absent only when it was closed without one. The label is blank when the
       // Catalog cannot resolve the identity.
       readonly closeReason?: { readonly id: string; readonly label: string };
