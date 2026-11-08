@@ -1,0 +1,102 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 30896,
+    "input_tokens": 30244,
+    "output_tokens": 652,
+    "cache_read_tokens": 9600,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/acceptance-commands.sh",
+      "content": "Double-quoted shell escaping also removes a backslash before `$` and backticks (and removes backslash-newline). This branch retains those backslashes, so a filter such as `--grep \"\\$\"` reaches Playwright as `\\$` instead of `$`, changing the regex and potentially the acceptance result. Handle these shell escape cases while continuing to treat the resulting characters as literal data; no evaluation is necessary.",
+      "existing_code": "      elif [[ \"$q\" == '\"' \u0026\u0026 \"$ch\" == \"$bs\" \u0026\u0026 ( \"$nx\" == '\"' || \"$nx\" == \"$bs\" ) ]]; then cur+=\"$nx\"; i=$((i + 1))",
+      "start_line": 45,
+      "end_line": 45,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/acceptance-commands.sh",
+      "content": "The parser accepts unterminated quotes and silently drops a trailing unquoted backslash. For example, `npm run test:unit -- 'foo` is converted to a valid `foo` filter and can pass this checker even though the documented command is syntactically incomplete. Detect an open quote or dangling escape, return a parsing error, and have the callers report `FAIL` rather than invoking the test-list command.",
+      "existing_code": "  if (( have )); then SPLIT+=(\"$cur\"); fi",
+      "start_line": 56,
+      "end_line": 56,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": ".claude/scripts/acceptance-commands.sh",
+      "files": [
+        ".claude/scripts/acceptance-commands.sh"
+      ]
+    }
+  ],
+  "session_id": "09cf2cc5-1331-443b-a601-0095f3e1031a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "09cf2cc5-1331-443b-a601-0095f3e1031a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1620d002",
+      "resolved_base": "b070f200002964c0d4089b13a0ef82e8343c75b3",
+      "resolved_head": "1620d00205b9677dc4f037e875dbe6898cf5586f",
+      "exact_range": "b070f200002964c0d4089b13a0ef82e8343c75b3..1620d00205b9677dc4f037e875dbe6898cf5586f",
+      "source_artifact_sha256": "0135879c9a695ba9406d4518c17b485aa028091cc826589b241f0d1746aa5907"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "67be20d34b496459eebfbe6219abf98ebaec1787902d57855388f061f2b7fa38"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "67be20d34b496459eebfbe6219abf98ebaec1787902d57855388f061f2b7fa38"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 29806
+  }
+}

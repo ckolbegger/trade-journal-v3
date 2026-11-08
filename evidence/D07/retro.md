@@ -153,10 +153,19 @@ Added at the user's request, after the first draft looked only at the session's 
   - **4.** The r70 plan: exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
   - **5.** Ports 5175, 9341 and 9342 free before and after (`--list` starts no server).
 - **D7-Retro-F3-B3 ocr** (`ocr/D7-Retro-F3-B3-8006f567.json`): 1 file, 0 comments. No findings.
-- **D7-Retro-F3-B4:** the script splits each command's arguments with a new `split_args` function. It keeps single quotes, double quotes and backslashes the way a shell does, never globs, and never evaluates `$(...)` or backticks (no `eval`). The vitest, `playwright test --list` and package.json-script paths all use it.
+- **D7-Retro-F3-B4, commit `1620d002`:** the script splits each command's arguments with a new `split_args` function. It keeps single quotes, double quotes and backslashes the way a shell does, never globs, and never evaluates `$(...)` or backticks (no `eval`). The vitest, `playwright test --list` and package.json-script paths all use it.
   - **1.** Red, before the fix: a copy of the D7 breakdown in a `mktemp -d` directory, with AC-CAP-001's command `npx playwright test e2e/d7/no-save.spec.ts --grep "store no Trade"`. The old script printed `AC-CAP-001 (cumulative) | ... | FAIL: playwright --list exited 1, no tests` (the phrase became `"store` and `no` and `Trade"`).
   - **2.** After the fix, that copy: `1 tests`, exit 0. By hand, `npx playwright test --list e2e/d7/no-save.spec.ts` lists 1 test, and its title contains "store no Trade". A phrase matching nothing (`"zzz absent phrase"`) gives `FAIL: playwright --list exited 1, no tests`.
   - **3.** A copy with `npm run test:integration -- tests/integration/d7/*` (the filter `d7/*` alone matches no path either way): the old script expanded the glob and printed `37 tests`; the new one passes `tests/integration/d7/*` literally, vitest lists nothing, and the row prints `FAIL: 0 tests`. With the filter `d7/*` the new script also prints `FAIL: 0 tests`.
   - **4.** A copy with the command `npm run test:integration -- --testNamePattern $(touch <scratch>/pwned)`: nothing ran, `pwned` does not exist, and the row prints `FAIL: vitest list exited 1` (the literal text is passed as an argument).
   - **5.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 checked, 0 failed; output identical to the previous script's (`diff` empty).
   - **6.** The r70 plan: failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed. Ports 5175, 9341 and 9342 free before and after.
+- **D7-Retro-F3-B4 ocr** (`ocr/D7-Retro-F3-B4-1620d002.json`): 1 file, 2 comments, both Valid. They are the second round of bug tasks:
+
+  | Severity | Location | ocr's claim | Assessment |
+  |---|---|---|---|
+  | medium | `acceptance-commands.sh:45` | Inside double quotes the split unescapes only `\"` and `\\`, whereas a shell also unescapes `\$` and `` \` `` | Valid. **D7-Retro-F3-B5** |
+  | medium | `acceptance-commands.sh:56` | An unterminated quote or a trailing unquoted backslash is accepted silently, so a malformed command can pass | Valid. **D7-Retro-F3-B6** |
+
+- **D7-Retro-F3-B5:** inside double quotes, the split should drop the backslash before `$`, a backtick, `"` and `\`, as a shell does, and keep it before any other character. The text stays literal data, never evaluated.
+- **D7-Retro-F3-B6:** an unterminated quote or a trailing unquoted backslash in a command should fail that row (`FAIL: malformed command`) instead of passing.
