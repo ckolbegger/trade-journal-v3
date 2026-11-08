@@ -1,13 +1,23 @@
 // Shared support for the D7 browser suite (plan section 6.2): D6's helpers (which re-export D5R's, D5's, D4's and D2's), the faults
-// build as the served build, and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
+// build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { expect, fillRows, READY, test as d1Test, type Row } from '../d6/support.ts';
+import { answerIn, closeReasonGroup, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, executionRow, expect, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves d6
 
 export * from '../d6/support.ts';
 
-// Routine D7 cases run the faults build, which the D1 default server serves and which builds from the current source.
-export const test = d1Test;
+// D4's test serves dist-releases/d6 through an automatic fixture; D7 cases measure the current source, so this one depends on it
+// and switches the served build back to dist-faults before the case launches anything.
+export const test = d1Test.extend<{ d7Faults: void }>({
+  d7Faults: [
+    async ({ server, d4Release }, provide) => {
+      void d4Release;
+      server.use('dist-faults');
+      await provide();
+    },
+    { auto: true },
+  ],
+});
 
 // Instants. October is EDT (UTC-4); from 2026-11-01 the Workspace zone is EST (UTC-5).
 export const MONDAY_0900 = '2026-10-12T13:00:00Z';
@@ -25,6 +35,8 @@ export interface OptionPlanValues {
   readonly entry: string;
   readonly stop: string;
   readonly target: string;
+  // Workspace-local Plan time, when the case's clock is later than the Plan's day.
+  readonly planTime?: string;
 }
 
 // O-C: 2 Calls at 2.00, Stop XYZ at or below 48.00, Target at or above 60.00.
@@ -46,6 +58,7 @@ export async function fillOptionPlan(page: Page, values: OptionPlanValues): Prom
   await page.getByLabel('Intended entry price (per share)').fill(values.entry);
   await page.getByLabel(/^Stop \(/).fill(values.stop);
   await page.getByLabel(/^Target \(/).fill(values.target);
+  if (values.planTime) await page.getByLabel('Plan time').fill(values.planTime);
   await page.getByLabel('Why this trade, why now?').fill('Earnings run-up with defined risk.');
   await page.getByLabel('What would invalidate the thesis?').fill('A close below the Stop.');
   await page.getByRole('radiogroup', { name: 'Conviction' }).getByLabel('4').check();
@@ -59,11 +72,99 @@ export async function confirmOptionPlan(page: Page, values: OptionPlanValues): P
   await expect(page.getByRole('heading', { name: values.underlying, level: 1 })).toBeVisible(READY);
 }
 
+// An option Execution form's rows (labelled Contracts and Price (per share)).
+export async function fillOptionRows(page: Page, rows: readonly Row[]): Promise<void> {
+  for (const [index, row] of rows.entries()) {
+    if (index > 0) await page.getByRole('button', { name: 'Add Execution' }).click();
+    const group = executionRow(page, index + 1);
+    await group.getByLabel('Contracts').fill(row.quantity);
+    await group.getByLabel('Price (per share)').fill(row.price);
+    await group.getByLabel('Fee').fill(row.fee);
+    if (row.time !== '') await group.getByLabel('Economic Time').fill(row.time);
+  }
+}
+
+// From a Trade Detail: an option exit saved (a partial one, which closes nothing), ending on its receipt.
+export async function recordOptionExit(page: Page, rows: readonly Row[]): Promise<void> {
+  await fillOptionExit(page, rows);
+  await page.getByRole('button', { name: 'Save exit' }).click();
+  await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+}
+
+export const FRIDAY_NOV = 'Fri Nov 20';
+
+// The Settlement Review fixture, created through the UI at Tuesday 10:30 (so every Economic Time is past): T-1 is O-C through
+// X1 (1 contract left of the XYZ Call), T-2 a Long Stock XYZ of 100 shares since Monday 10-12, and T-3 O-S after S1 (2 short
+// MNO Puts). T-4 and T-5 of the plan's table are left out: they add no settlement and these cases name neither.
+export async function createSettlementFixture(page: Page): Promise<{ t1: TradeRef; t2: TradeRef; t3: TradeRef }> {
+  await confirmOptionPlan(page, { ...OC, planTime: '2026-10-12T09:00' });
+  const t1 = await currentTradeId(page);
+  await recordOptionEntry(page, [
+    { quantity: '1', price: '2.10', fee: '0.65', time: '2026-10-12T10:00' },
+    { quantity: '1', price: '1.90', fee: '0.65', time: '2026-10-12T11:00' },
+  ]);
+  await page.getByRole('link', { name: 'Back to the Trade' }).click();
+  await recordOptionExit(page, [{ quantity: '1', price: '3.00', fee: '0.65', time: '2026-10-13T10:00' }]);
+  const t2 = await createTradeAt(page, PLAN, '2026-10-12T09:30', [['100', '50.00', '2026-10-12T10:00']]);
+  await confirmOptionPlan(page, { ...OS, planTime: '2026-10-12T09:00' });
+  const t3 = await currentTradeId(page);
+  await recordOptionEntry(page, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
+  return { t1: { symbol: 'XYZ', tradeId: t1, label: 'T-1' }, t2: { symbol: 'XYZ', tradeId: t2, label: 'T-2' }, t3: { symbol: 'MNO', tradeId: t3, label: 'T-3' } };
+}
+
+// An option's Mark row in a card's Marks panel, named by the contract's label (convention C6).
+export async function optionMarkRow(page: Page, card: CardRef, label: string, date: string): Promise<Locator> {
+  return (await reachPanel(page, card, 'Marks')).getByRole('region', { name: `${label} Mark, ${date}`, exact: true });
+}
+
+// Fills one Mark price in the open card's Marks panel and presses Save Marks (D5R, A153).
+export async function saveMarkPrice(page: Page, card: CardRef, row: Locator, price: string): Promise<void> {
+  await row.getByLabel('Price').fill(price);
+  await (await reachPanel(page, card, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
+}
+
+// After Save Marks succeeded the card clears its drafts and moves on to its next panel (A157); this waits for that, then
+// opens the Marks panel again and returns the saved option row.
+export async function savedOptionMarkRow(page: Page, card: CardRef, label: string, date: string): Promise<Locator> {
+  await expect(tradeCard(page, card).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  return optionMarkRow(page, card, label, date);
+}
+
+// A card's Settlement panel header and its content, and the panel opened.
+export const settlementHeader = (page: Page, card: CardRef): Locator => tradeCard(page, card).getByRole('button', { name: /^Settlement\b/ });
+export async function openSettlement(page: Page, card: CardRef): Promise<Locator> {
+  await reachCard(page, card);
+  const header = settlementHeader(page, card);
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+  return tradeCard(page, card).getByRole('region', { name: 'Settlement', exact: true });
+}
+
+// On the expiration form: answers the expiration's own reflection, defers the Close Review (Reflect later), and saves.
+// The Close Reason is never asked for an Expiration (row 21.16).
+export async function recordExpiration(page: Page): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
+  await answerIn(page.getByRole('region', { name: 'Reflection on this expiration' }));
+  await expect(closeReasonGroup(page)).toHaveCount(0);
+  await closeReviewGroup(page).getByLabel('Reflect later').check();
+  await page.getByRole('button', { name: 'Save expiration' }).click();
+  await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible(READY);
+}
+
+// From a Trade Detail: one option entry (Buy to open or Sell to open) with these rows and the reflection, ending on its receipt.
+export async function recordOptionEntry(page: Page, rows: readonly Row[]): Promise<void> {
+  await openEntryForm(page);
+  await fillOptionRows(page, rows);
+  await completeReflection(page);
+  await page.getByRole('button', { name: 'Save entry' }).click();
+  await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
+}
+
 // From a Trade Detail, opens the exit form (a Buy to close or Sell to close), fills its rows and its reflection.
 export async function fillOptionExit(page: Page, rows: readonly Row[]): Promise<void> {
   await page.getByRole('link', { name: 'Record exit' }).click();
   await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
-  await fillRows(page, rows);
+  await fillOptionRows(page, rows);
   const section = page.getByRole('region', { name: 'Reflection on this exit' });
   await section.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned').check();
   await section.getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Calm').check();
