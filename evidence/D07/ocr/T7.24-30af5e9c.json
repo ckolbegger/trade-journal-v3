@@ -1,0 +1,316 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 21 selected item(s).",
+  "summary": {
+    "files_reviewed": 21,
+    "comments": 0,
+    "total_tokens": 389894,
+    "input_tokens": 385130,
+    "output_tokens": 4764,
+    "cache_read_tokens": 34560,
+    "elapsed": "1m14s"
+  },
+  "tool_calls": {
+    "total": 48,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 15,
+      "file_find": 2,
+      "file_read": 27,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review flow, settlement screen, and progress support",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewReflections.tsx",
+        "src/ui/screens/ReviewSettlement.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "tests/support/card-progress.ts"
+      ]
+    },
+    {
+      "label": "Card marking, review presentation, and attention indicators",
+      "files": [
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/mark-issues.ts",
+        "src/ui/screens/review-attention.ts"
+      ]
+    },
+    {
+      "label": "Financial figures, payoff formatting, and supporting fixtures",
+      "files": [
+        "src/ui/calculation-words.ts",
+        "src/ui/format.ts",
+        "src/ui/screens/CardFigures.tsx",
+        "src/ui/screens/ExpirationReceipt.tsx",
+        "src/ui/screens/execution-line.ts",
+        "src/ui/screens/option-words.ts",
+        "src/ui/screens/payoff-text.ts",
+        "tests/support/payoff-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "fcb024d2-6858-4883-b913-9c0056c69191",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fcb024d2-6858-4883-b913-9c0056c69191",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "30af5e9c",
+      "resolved_base": "d81d3c415b019ce8bddd7dce22a0ee1ccd9345db",
+      "resolved_head": "30af5e9c21dc1a6aff0389cd2b01d077ebf7e726",
+      "exact_range": "d81d3c415b019ce8bddd7dce22a0ee1ccd9345db..30af5e9c21dc1a6aff0389cd2b01d077ebf7e726",
+      "source_artifact_sha256": "d24c1b96aff0dfad967e27a05acb1a9d3573b70844a720f4167cd743060f8383"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "f32ee7de50d0fd0d2e9a59700f50880670e09a7d587b82ae778595dc6b86174b"
+        },
+        {
+          "item_id": "06ea30f6aaa7049bd156e318bc4548dc9bf9b583ea8f7181ccbd2da39b44410b",
+          "path": "src/ui/screens/ExpirationReceipt.tsx",
+          "fingerprint": "42aafa03dbb43e08457dec81fc78f4318845934beb444826b4b7b12b9b262ef4"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "23ed2c234d09741205fe6544cf86a4ca8a06ccb0741547d674c6fa9b7b35291a"
+        },
+        {
+          "item_id": "1920314835f6283032209392f4cb9c5f803d88dbb1d717dcb931c0ec0d5fc3e6",
+          "path": "src/ui/screens/mark-issues.ts",
+          "fingerprint": "88c0c942bec1cd4141045bd3f0d46c1636074e93ef3125e9bb271288b1624767"
+        },
+        {
+          "item_id": "2090915fa35f3b9ecc015948943b5a5ef763d2716c9667ac955084508eab9bb1",
+          "path": "tests/support/payoff-fixtures.ts",
+          "fingerprint": "d10505ba7f062d308d2ee2d4c24285e3c5bd41443506b639742675c90c995414"
+        },
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "769b9f681d681ff696c6812bb05964f8d73d79dae9660e052813bafce12b3ed3"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "7557f3c4ec3e08b5b63e0f3e0051b7b2d7f19cbdb8d4bed701cee5bde095b1dc"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "be682bec12f19fa8b2cfb00d0d9ed6419af5bf8400f2b7cd11d82e3ab020b7ad"
+        },
+        {
+          "item_id": "4f9e88d753ddbb80eb8e13014380a313a05d8e5f34c83c571bd089e2ce5bfc3e",
+          "path": "tests/support/card-progress.ts",
+          "fingerprint": "a0a5e4dca1a25d433b07fb6d735c8eb03cd87ad3afd9bedeeb4ee5d39d854d22"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "4c372c77d88bbfeb275f897d0ae3ee6bc8204beaf734296a03f4b77738872d7e"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "cfe80a6cc14f9103712d9f5159523a552de365cf0b0975dea5b9d663609018f9"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "ba450be7844a2a806457083178614587a23f27e2585350c63371f59799ea3003"
+        },
+        {
+          "item_id": "8b026ba05dd3426d0e2e744bff79ed05841b17c47e7e653e81030c1434ca0c9d",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "c008490149453a5bf0729ef89e8fa5bd09ca6baa2c400a92dccd3952caa8260a"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "ad78928fb14c5431868c1876fb97560f6a7a5476d070bac41095d8e00029fbde"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "80c7dac412b7cd8d291ae4590f70ba3229a055dd054ed6477ec12a8173105c4f"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "1e7a07d7d87b15aa4da5d1a5b371a2c7884532ac2d602d485464fd6645b79fec"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "c90b85c46ed10c3e73f24b8778952c70e156250ff4cf95834c7f88d251b564c2"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "d25b678fcc5e0df8420c52ce64ac85bea1bfc5dc0d79faf99c848c4e15e435f3"
+        },
+        {
+          "item_id": "da77021484a256bc0425123fca373469bac6fba5c1aaac8a1b6524588b580dda",
+          "path": "src/ui/screens/execution-line.ts",
+          "fingerprint": "a4ea8c0616809c2bb2b4ffc75105c5e2b5be4e64daaf1c31f87c607ef472e55f"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "90e40ed0e81a92d16f5f6c77cd05bafaacad590861e008df762ca1f6b1a70b85"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "8fa45357d1710c4f6169a5b64f320ac20758cc747aa877eedd47fca63fdadd79"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "f32ee7de50d0fd0d2e9a59700f50880670e09a7d587b82ae778595dc6b86174b"
+        },
+        {
+          "item_id": "06ea30f6aaa7049bd156e318bc4548dc9bf9b583ea8f7181ccbd2da39b44410b",
+          "path": "src/ui/screens/ExpirationReceipt.tsx",
+          "fingerprint": "42aafa03dbb43e08457dec81fc78f4318845934beb444826b4b7b12b9b262ef4"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "23ed2c234d09741205fe6544cf86a4ca8a06ccb0741547d674c6fa9b7b35291a"
+        },
+        {
+          "item_id": "1920314835f6283032209392f4cb9c5f803d88dbb1d717dcb931c0ec0d5fc3e6",
+          "path": "src/ui/screens/mark-issues.ts",
+          "fingerprint": "88c0c942bec1cd4141045bd3f0d46c1636074e93ef3125e9bb271288b1624767"
+        },
+        {
+          "item_id": "2090915fa35f3b9ecc015948943b5a5ef763d2716c9667ac955084508eab9bb1",
+          "path": "tests/support/payoff-fixtures.ts",
+          "fingerprint": "d10505ba7f062d308d2ee2d4c24285e3c5bd41443506b639742675c90c995414"
+        },
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "769b9f681d681ff696c6812bb05964f8d73d79dae9660e052813bafce12b3ed3"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "7557f3c4ec3e08b5b63e0f3e0051b7b2d7f19cbdb8d4bed701cee5bde095b1dc"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "be682bec12f19fa8b2cfb00d0d9ed6419af5bf8400f2b7cd11d82e3ab020b7ad"
+        },
+        {
+          "item_id": "4f9e88d753ddbb80eb8e13014380a313a05d8e5f34c83c571bd089e2ce5bfc3e",
+          "path": "tests/support/card-progress.ts",
+          "fingerprint": "a0a5e4dca1a25d433b07fb6d735c8eb03cd87ad3afd9bedeeb4ee5d39d854d22"
+        },
+        {
+          "item_id": "6376131ed368e5ac2277c2f7a6073ab00b06d8dcc7fa59c84c1807d7587ffa40",
+          "path": "src/ui/screens/ReviewSettlement.tsx",
+          "fingerprint": "4c372c77d88bbfeb275f897d0ae3ee6bc8204beaf734296a03f4b77738872d7e"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "cfe80a6cc14f9103712d9f5159523a552de365cf0b0975dea5b9d663609018f9"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "ba450be7844a2a806457083178614587a23f27e2585350c63371f59799ea3003"
+        },
+        {
+          "item_id": "8b026ba05dd3426d0e2e744bff79ed05841b17c47e7e653e81030c1434ca0c9d",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "c008490149453a5bf0729ef89e8fa5bd09ca6baa2c400a92dccd3952caa8260a"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "ad78928fb14c5431868c1876fb97560f6a7a5476d070bac41095d8e00029fbde"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "80c7dac412b7cd8d291ae4590f70ba3229a055dd054ed6477ec12a8173105c4f"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "1e7a07d7d87b15aa4da5d1a5b371a2c7884532ac2d602d485464fd6645b79fec"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "c90b85c46ed10c3e73f24b8778952c70e156250ff4cf95834c7f88d251b564c2"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "d25b678fcc5e0df8420c52ce64ac85bea1bfc5dc0d79faf99c848c4e15e435f3"
+        },
+        {
+          "item_id": "da77021484a256bc0425123fca373469bac6fba5c1aaac8a1b6524588b580dda",
+          "path": "src/ui/screens/execution-line.ts",
+          "fingerprint": "a4ea8c0616809c2bb2b4ffc75105c5e2b5be4e64daaf1c31f87c607ef472e55f"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "90e40ed0e81a92d16f5f6c77cd05bafaacad590861e008df762ca1f6b1a70b85"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "8fa45357d1710c4f6169a5b64f320ac20758cc747aa877eedd47fca63fdadd79"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 74217
+  }
+}

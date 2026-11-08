@@ -950,3 +950,32 @@ Run by `suite-runner` on 2026-11-08, browser stage `browser-auto 66902ee1`; `run
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-23-option-lists-detail-checks.txt` |
 
 Tier: full, printed reason "first matching path since 66902ee1: src/app/types.ts". Ports free before and after. The runner warned the browser stage (8.0 m) is near the 10-minute Bash limit: T7.31 adds D7's browser suite, so the full tier must be split before then (flagged for T7.31). T7.23 is complete.
+
+## T7.24 UI: Review settlement family and option Marks
+
+Behavioral (decisions 81, 87, 88; conflicts K13, K14, K18); commit `30af5e9c` (33 files). Three planned cases, each with a genuine red: (1) the overview blockers list lacked the settlement line (`expected [ …(3) ] to deeply equal [ …(3) ]`); green: each card's Settlement panel, the blocker "Settlement Due for MNO 20 Nov 2026 45 Put, which expired Fri Nov 20" linking to `/review?trade=t3&panel=Settlement`, "1 Mark · Settlement · Action", the exercise or assignment sentence by signed quantity; (2) the owed reflection lacked "Expiration of 1 XYZ 20 Nov 2026 55 Call, no price or fee"; green: Record expiration opens `/trades/:id/record-expiration?from=review`, "Back to the Review", no Refresh Review, the Expiration on the owed reflection after returning; (3) the Mark row heading showed `MNO261120P00045000`; green: label, P27's note "0 means it closed with no value" (P27 quotes it), 0 saved unchanged, "Needed only while settlement is due" only on a row held only by Settlement Due Trades. Extra tests, each with a genuine red: Q1 uncovered item ("Outside the market calendar: Fri Nov 20", no Record expiration), row 24.9 NotASession note, row 24.2 "Recorded", Record expiration only while Writable, the option Mark line, row 24.8 payoff line, the Mark blocker link focusing the contract row, row 24.7 `AfterExpiration`, the "Instruments:" list by label, MarkEntry's zero note; coordinator: **the option card's `datedLastClose` defect fixed** (built for Stock only, as Trade Views does), Mark rows and the MarkMissing blocker carry the Trade's Instrument (BRK.B keeps its dot), an owed reflection carries its Expiration. Two log irregularities corrected in the log (an invalid "Recorded" red from a fixture; a row mislabelled green that was the payoff red). **First-run pass (flagged):** the Daily Review covered-plus-uncovered case B5 asked for (built by T7.23-B5); mutation: the `SessionPolicyCoverage` branch of `settlementTimeOf` returning a Value, failure `AssertionError: expected [ { tradeId: 'id-0071', …(1) }, …(2) ] to deeply equal [ … ]`, restored. typecheck, tsc6, lint, lint:deps, verify:wording exit 0; `src/ui`, `src/coordinators`, `tests` green. No e2e change (e2e names only stock Marks, whose aria-labels are unchanged).
+
+Notes: `isSettlementDueBlocker`, `isSettlementDueAttention` in `calculation-words.ts`; the Settlement panel shows only when `progress.panels` has one (the coordinator's `Settlement` family is ignored, K13); row focus matches a `data-instrument-key` attribute (K18 named the aria-label, which can't be matched against a key); `plural` moved to `format.ts`; row 24.4's sentences carry no final period, as the row gives them. Public: `MarkRow.instrument`, `HistoricalGapGroup.instrument`, `OwedReflection.settlements?`, `MarkEntryProps.instrument`, `describeMarkIssues(issues, prefix, instrument?)`, `PANELS` gains `'Settlement'`.
+
+### T7.24-B1 reflection Execution lines name an option by its role and label
+
+Found in the subagent's summary: the Review card's reflection Execution lines still print `instrument.symbol` ("Buy 1 XYZ @ …") for an option; C5 covers "receipts, Detail rows, reflections". Case: `it should name an option Execution in a Review reflection by the role's action, count and label, "Buy to open 1 XYZ 20 Nov 2026 55 Call @ $2.10", with no fee`.
+
+ocr of `30af5e9c` (`ocr/T7.24-30af5e9c.json`): no findings (21 files reviewed; the background omitted the approved-words rows).
+
+### T7.24-B1 result
+
+Commit `4fba1c2d`. Case: red (list lacked "Buy to open 1 XYZ 20 Nov 2026 55 Call…"), green; read-model field test "should return each owed reflection with the Trade's Planned Legs and their sides…" red (legs undefined), green. No first-run pass. daily-review and `src/ui/screens` 633 passed; typecheck, tsc6, lint, lint:deps exit 0. `OwedReflection.legs?` (always set by the coordinator; optional like `settlements`, so other fixtures stay); `reflectionsOf` takes the `TradeAnalysisRecord`; two exact-equality coordinator tests gain `legs`. Stock reflection lines already had no fee and are unchanged ("Sell 100 ABC @ $52.48"). ocr: no findings (`ocr/T7.24-B1-4fba1c2d.json`).
+
+### Cumulative run after T7.24-B1 (`t7-24-review-settlement`, at `4fba1c2d`)
+
+Run by `suite-runner` on 2026-11-08, browser stage `browser-auto d81d3c41`; `run-complete.sh` printed "run complete" for the runner and in the main session.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 121 files, 1404 passed, exit 0 | `suite-runs/t7-24-review-settlement-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-24-review-settlement-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-24-review-settlement-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-24-review-settlement-checks.txt` |
+
+Tier: full, printed reason "first matching path since d81d3c41: src/app/types.ts". Ports free before and after. T7.24 is complete.
