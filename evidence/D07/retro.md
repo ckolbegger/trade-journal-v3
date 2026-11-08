@@ -42,6 +42,29 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 - **Bypass blocked, at the user's direction:** `.claude/hooks/guard-shell-writes.sh` (the PreToolUse Bash guard, which also covers subagents) refuses, in the project's own repository, `git commit --no-verify` and its unambiguous prefixes, `-n` alone or in a short-option cluster (quoted words such as a `-m` message are not read as options), `git -c core.hooksPath=...`, and `git config` writes to `core.hooksPath` (a value, `set`, `unset`, `--unset`, `--replace-all`, `--add`, or removing or renaming the `core` section). Reads (`git config --get`, `git config get`) and commits in scratch clones outside the project stay allowed. The first version read each line of a multi-line commit message as a command and refused its own commit, whose message has a line starting "git config writes to core.hooksPath"; the guard now reads lines that start inside a quote or a heredoc body as text (a character scanner tracks `"` and `'` across lines, so an apostrophe inside a double-quoted message is handled), which also removes the same false positive from the older HEAD rule. Verified by a 43-case table (deny and allow cases, including messages that mention `-n` and `--no-verify`, that multi-line message, heredoc bodies, a bypass chained after a closed multi-line message or after "it's" in a message, `-uno`, `-mnothing` and the guard's earlier HEAD and `sed -i` rules): 43 of 43. The live guard also refused the first attempt to run that table inline, since one case line chains `&& git commit --no-verify`. Known limits, as for the guard's other rules: env prefixes (`GIT_CONFIG_KEY_0=core.hooksPath`), `--config-env` and aliases are not looked into.
 - **Hooks that travel with the branch (the user's direction, 2026-11-08; CI declined for now).** Git copies no config, and both Claude PreToolUse hooks (`filter-test-output.sh`, `guard-shell-writes.sh`) were registered only in `.claude/settings.local.json`, which the user's global git ignore excludes, so on another machine none of them would run. Three changes: (1) `npm install` enables the pre-commit hook through a `prepare` script; (2) a `verify:hooks` script fails the cumulative run's checks stage when the hook is not enabled (the stage runs every `verify:*` script); (3) the PreToolUse registrations moved from `settings.local.json` into `.claude/settings.json`, now committed with its four project permissions. After the move the guard still refused a probe `sed -i`. `tdd-task.md` and the D7 handoff no longer describe `settings.json` as untracked.
 
+## 8. D7 was two deliverables' worth of scope in one breakdown
+
+Added at the user's request, after the first draft looked only at the session's own work.
+
+- **What happened:** D7 was the largest deliverable so far by tasks and code, and far the largest by decisions:
+
+  | | Tasks | Commits | Bug and fix commits | Code changed (src, tests, e2e, tools) | Decisions during the deliverable |
+  |---|---|---|---|---|---|
+  | D2 | 24 | 250 | 70 | +23,016 lines, 161 files | — |
+  | D4 | 34 | 288 | 169 | +23,562, 179 files | — |
+  | D5 | 25 | 106 | 41 | +15,379, 108 files | — |
+  | D6 | 28 | 134 | 60 | +29,375, 182 files | 6 (70–75) |
+  | D7 | 36 | 198 | 86 | +35,551, 231 files | 19 (81–99), 22 plan revisions |
+
+  Counts come from the breakdowns' task graphs and `git` between each deliverable's start and release tags. D4 had more commits and bug fixes, so D7's problem was breadth and uncertainty more than length. Options touched every layer at once: Instruments, Trade Analysis and the schema-6 migration, Market Data and the Catalog, workflows, Daily Review, the views, three new forms and a new chart. The plan moved mid-flight: the approved-words batch (decision 87) and the Strategy module (decision 88) each added two tasks, option-price Stops and Targets split out into D7S (decision 89), and decisions 95 to 99 came out of the structural tail.
+- **Would a split have helped?** Mostly yes. The natural seam is expiration:
+  - D7a, contracts while open: Instruments, Plan, Executions, the lists, Detail and the payoff view.
+  - D7b, at and after expiration: the Expiration fact, Settlement Due, the Review's settlement family and the value at expiration.
+
+  The critics' seven defects fall on both sides: three in settlement and the Review (B1's owed card, B6, B7), four in the payoff chart (B2 to B5). A gate after D7a would have caught the chart and the "shares" wording before the settlement work landed. Each breakdown would have carried half the decisions. The progress cell (finding 2) and the many context compactions both grow with a 36-task deliverable.
+- **What a split costs:** the structural tail runs once per deliverable (capacity, fixtures, the benchmark generator and latency harness, the integration and browser suites, the critic): about eight tasks, including a 2.5-hour benchmark generation. A split doubles that unless the first half takes a lighter gate. Under D7a alone, an option past its expiration date would show Settlement Due with no way to record it, which is acceptable only because nothing is released for real use (decision 76).
+- **Proposed change:** add a size check to `.claude/docs/drafting-breakdowns.md`. A drafted breakdown that has more than 30 tasks, or a schema change that reaches every layer, or many open questions at drafting gets a proposed split at a seam where the in-between state is coherent. The first part takes a light gate (the suites and a critic, no benchmark); the full tail runs at the end. A cheaper partial fix is a checkpoint critic after the UI tasks, before the structural tail: it would have caught B1, B2, B6 and B7 earlier without a second breakdown, but does nothing for the decisions or the sprawl.
+
 ## Not findings
 
 - **`CLAUDE.md`** is small (about 3,000 characters).
