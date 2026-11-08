@@ -35,6 +35,7 @@ test.describe('B7.6 Marks of 0', () => {
     await expect(saved).toContainText('$0.00');
 
     // 0 for KLM stock.
+    await expect((await markRow(page, klm, TUESDAY)).getByText(ZERO_NOTE)).toBeVisible();
     await enterMark(page, klm, TUESDAY, '0');
 
     // -1 for ABC is refused with its error, and nothing is saved for ABC.
