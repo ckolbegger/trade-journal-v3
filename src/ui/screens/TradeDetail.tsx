@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Link, useLocation, useParams } from 'react-router';
+import { Link, NavigationType, useLocation, useNavigationType, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
   ClosedTradeDetail,
@@ -69,7 +69,12 @@ function BackToTrades({ lifecycle }: { readonly lifecycle?: string }) {
 export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
-  const navigation = useLocation().state as { confirmed?: PlannedTradeDetail; plannedPayoff?: PayoffViewProps['result'] } | null;
+  // After a reload or back/forward (a POP) the state is structured-cloned and its Rational values are plain objects,
+  // so it is used only on the navigation that carried it, and a POP takes the normal read.
+  const location = useLocation();
+  const navigation = (useNavigationType() === NavigationType.Pop ? null : location.state) as
+    | { confirmed?: PlannedTradeDetail; plannedPayoff?: PayoffViewProps['result'] }
+    | null;
   const confirmed = navigation?.confirmed;
   // The confirmed option Plan's Planned payoff comes with it (decision 92); every other Detail gets its payoff sections from T7.23.
   const plannedPayoff = confirmed?.tradeId === tradeId ? navigation?.plannedPayoff : undefined;

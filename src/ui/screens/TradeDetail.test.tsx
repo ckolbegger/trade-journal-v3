@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, NavigationType, Route, Router, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import {
@@ -24,6 +24,7 @@ import { closedDetailOf, closeReviewEntry } from '../../../tests/support/closed-
 import { expiredOptionLotMatches, expiredOptionTrade } from '../../../tests/support/option-trade-fixtures.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
+import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DueClassification, IntegrityFinding, NarrativeItem, RecordedDeviation, RecordedDeviationVersion, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -1505,6 +1506,27 @@ describe('Closed Trade Detail owed Debts (T6.19-B1)', () => {
       expect(within(item).getByText('Reflection owed')).toBeTruthy();
       expect(item.textContent).toContain('Position Change at 2026-10-13 14:00');
     }
+  });
+});
+
+describe('Trade Detail of a just-confirmed Plan after a reload', () => {
+  it('should render the confirmed Plan Detail after a reload or back navigation without throwing, with its Planned payoff', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
+    // history.state is structured-cloned on a reload or back navigation: Rational instances come back as plain objects.
+    const cloned = structuredClone({ confirmed: plannedDetail, plannedPayoff: payoffFixtures.ocPayoffs().planned });
+    render(
+      // MemoryRouter would JSON-serialize the state (and fail on a BigInt), so the location is supplied directly.
+      <Router location={{ pathname: '/trades/trade-1', search: '', hash: '', state: cloned, key: 'reloaded' }} navigationType={NavigationType.Pop} navigator={{ createHref: () => '', go: () => undefined, push: () => undefined, replace: () => undefined }}>
+        <Routes>
+          <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+        </Routes>
+      </Router>,
+    );
+    expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledWith({ tradeId: 'trade-1' });
+    const baseline = screen.getByRole('region', { name: 'Plan Baseline' });
+    expect(within(baseline).getByText('1R (original risk)', { selector: 'dt' }).nextElementSibling?.textContent).toBe('$250.00');
   });
 });
 
