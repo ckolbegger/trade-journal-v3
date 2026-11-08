@@ -35,20 +35,20 @@ const collides = (a: Box, b: Box): boolean => a.left < b.right + 4 && b.left < a
 // When those 13 baselines all collide, every baseline is tried nearest the wanted one first, then every x across the chart in 4 px steps;
 // a label with no clear place at all (the chart is full) takes its wanted spot. The label's box is then placed.
 const TEXT_HEIGHT = 13;
-function place(text: string, wantX: number, baseline: number, anchor: Anchor, placed: Box[], step: number): { x: number; y: number } {
+function place(text: string, wantX: number, baseline: number, anchor: Anchor, placed: Box[], step: number, height: number): { x: number; y: number } {
   const pull = (x: number) => {
     const probe = boxOf(text, x, baseline, anchor);
     return x + Math.max(0, -probe.left) - Math.max(0, probe.right - WIDTH);
   };
   const wanted = pull(wantX);
-  const inside = (at: number) => at - TEXT_HEIGHT >= 0 && at <= HEIGHT;
+  const inside = (at: number) => at - TEXT_HEIGHT >= 0 && at <= height;
   const fits = (c: { x: number; y: number }) => inside(c.y) && !placed.some((box) => collides(boxOf(text, c.x, c.y, anchor), box));
   const stepped = Array.from({ length: 7 }, (_, k) => baseline + k * step).concat(Array.from({ length: 6 }, (_, k) => baseline - (k + 1) * step));
-  const nearest = Array.from({ length: HEIGHT - TEXT_HEIGHT + 1 }, (_, k) => TEXT_HEIGHT + k).sort((a, b) => Math.abs(a - baseline) - Math.abs(b - baseline));
+  const nearest = Array.from({ length: height - TEXT_HEIGHT + 1 }, (_, k) => TEXT_HEIGHT + k).sort((a, b) => Math.abs(a - baseline) - Math.abs(b - baseline));
   const across = Array.from({ length: WIDTH / 4 + 1 }, (_, k) => pull(k * 4));
   const spot =
     [...stepped, ...nearest].map((y) => ({ x: wanted, y })).find(fits) ??
-    across.flatMap((x) => nearest.map((y) => ({ x, y }))).find(fits) ?? { x: wanted, y: Math.min(HEIGHT, Math.max(TEXT_HEIGHT, baseline)) };
+    across.flatMap((x) => nearest.map((y) => ({ x, y }))).find(fits) ?? { x: wanted, y: Math.min(height, Math.max(TEXT_HEIGHT, baseline)) };
   placed.push(boxOf(text, spot.x, spot.y, anchor));
   return spot;
 }
@@ -91,21 +91,23 @@ function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: Pa
     tick.row = row;
     rowEnds[row] = tick.at + half;
   }
+  // The chart grows by one line for each tick row beyond the three that fit, so the axis title stays below the last row.
+  const height = HEIGHT + Math.max(0, rowEnds.length - 3) * LINE;
   // The tick labels and the two axis titles are fixed, so every moved label avoids them.
   const placed: Box[] = [
     ...ticks.map((tick) => boxOf(tick.label, tick.at, HEIGHT - MARGIN.bottom + 16 + tick.row * LINE, 'middle')),
-    boxOf(`${symbol} at expiration`, (MARGIN.left + WIDTH - MARGIN.right) / 2, HEIGHT - 6, 'middle'),
+    boxOf(`${symbol} at expiration`, (MARGIN.left + WIDTH - MARGIN.right) / 2, height - 6, 'middle'),
     // "Payoff" is rotated, so its box runs vertically about the chart's middle.
-    { left: 16 - LINE / 2, right: 16 + LINE / 2, top: HEIGHT / 2 - (6 * CHAR_WIDTH) / 2, bottom: HEIGHT / 2 + (6 * CHAR_WIDTH) / 2 },
+    { left: 16 - LINE / 2, right: 16 + LINE / 2, top: height / 2 - (6 * CHAR_WIDTH) / 2, bottom: height / 2 + (6 * CHAR_WIDTH) / 2 },
   ];
   const rayText = lastRayText(last);
-  const ray = place(rayText, tipX, tipY - 10, 'end', placed, -LINE);
+  const ray = place(rayText, tipX, tipY - 10, 'end', placed, -LINE, height);
   const closeText = latestClose ? `Latest close ${underlyingPrice(latestClose.underlyingPrice)}: ${signedMoney(latestClose.value)}` : '';
-  const zeroLabels = zeroSet.map((zero) => place(zeroText(zero), x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price)), y(0) - 8, 'start', placed, LINE));
-  const close = latestClose ? place(closeText, x(toNumber(latestClose.underlyingPrice)), y(toNumber(latestClose.value)) - 10, 'middle', placed, -LINE) : undefined;
+  const zeroLabels = zeroSet.map((zero) => place(zeroText(zero), x(toNumber(zero.kind === 'ZeroRange' ? zero.from : zero.price)), y(0) - 8, 'start', placed, LINE, height));
+  const close = latestClose ? place(closeText, x(toNumber(latestClose.underlyingPrice)), y(toNumber(latestClose.value)) - 10, 'middle', placed, -LINE, height) : undefined;
   return (
     <div className="chart-scroll" role="region" aria-label={`${kind} payoff chart`} tabIndex={0}>
-    <svg role="img" aria-labelledby={caption} className="payoff-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
+    <svg role="img" aria-labelledby={caption} className="payoff-chart" viewBox={`0 0 ${WIDTH} ${height}`}>
       <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={WIDTH - MARGIN.right} y1={y(0)} y2={y(0)} />
       <line className="payoff-axis" {...STROKE} x1={MARGIN.left} x2={MARGIN.left} y1={MARGIN.top} y2={HEIGHT - MARGIN.bottom} />
       <polyline className="payoff-curve" {...STROKE} strokeWidth={2.5} fill="none" points={points.map(([px, py]) => `${x(px)},${y(py)}`).join(' ')} />
@@ -141,10 +143,10 @@ function Chart({ kind, view, symbol, caption, latestClose }: { readonly kind: Pa
           </text>
         </g>
       )}
-      <text x={(MARGIN.left + WIDTH - MARGIN.right) / 2} y={HEIGHT - 6} textAnchor="middle">
+      <text x={(MARGIN.left + WIDTH - MARGIN.right) / 2} y={height - 6} textAnchor="middle">
         {`${symbol} at expiration`}
       </text>
-      <text x={16} y={HEIGHT / 2} textAnchor="middle" transform={`rotate(-90 16 ${HEIGHT / 2})`}>
+      <text x={16} y={height / 2} textAnchor="middle" transform={`rotate(-90 16 ${height / 2})`}>
         Payoff
       </text>
     </svg>

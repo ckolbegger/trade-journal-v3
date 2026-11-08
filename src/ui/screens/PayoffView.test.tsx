@@ -184,6 +184,31 @@ describe('moved chart labels stay clear of ticks and axis titles (T7.32-B4)', ()
   });
 });
 
+describe('tick rows stay inside the SVG (T7.32-B5)', () => {
+  it('should keep every tick row inside the SVG and clear of the axis title when breakpoints cluster beyond three rows', () => {
+    const base = viewOf(payoffFixtures.ocPayoffs().planned);
+    const at = (n: number) => Rational.of(BigInt(n), 1n);
+    const first = base.segments[0]!;
+    const prices = [0, 50, 51, 52, 53, 54, 55];
+    const segments = prices.map((p, i) => ({ ...first, from: at(p), to: i < prices.length - 1 ? at(prices[i + 1]!) : null }));
+    show({ kind: 'Planned', result: { kind: 'Value', value: { ...base, segments, zeroSet: [] } } });
+    const svg = screen.getByRole('img');
+    const height = Number(svg.getAttribute('viewBox')!.split(' ')[3]);
+    const texts = [...svg.querySelectorAll('text')];
+    const title = texts.find((t) => t.textContent === 'XYZ at expiration')!;
+    const titleTop = Number(title.getAttribute('y')) - 13;
+    const ticks = texts.filter((t) => /^\d+\.\d\d$/.test(t.textContent ?? ''));
+    expect(ticks).toHaveLength(prices.length);
+    expect(new Set(ticks.map((t) => t.getAttribute('y'))).size, 'tick rows').toBeGreaterThan(3);
+    expect(Number(title.getAttribute('y'))).toBeLessThanOrEqual(height);
+    for (const tick of ticks) {
+      const baseline = Number(tick.getAttribute('y'));
+      expect(baseline, `${tick.textContent} inside`).toBeLessThanOrEqual(height);
+      expect(titleTop - baseline, `${tick.textContent} clear of the axis title`).toBeGreaterThanOrEqual(4);
+    }
+  });
+});
+
 describe('a Zero Range with no upper end (T7.22-B1)', () => {
   it('should refuse to word a Zero Range with no upper end, which no approved row words', () => {
     expect(() => zeroText({ kind: 'ZeroRange', from: Rational.of(55n), to: null })).toThrow('no approved words');
