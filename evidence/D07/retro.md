@@ -31,6 +31,13 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 
 - **What happened:** AC-POS-004's `npm run test:integration -- d7/close-review` and AC-RESP-001's `d7/responses` match no test file. That only came out when each row's command was run after the tag, so both rows stay `planned`.
 - **Proposed change:** add a script, `.claude/scripts/acceptance-commands.sh <breakdown>`. It extracts the backticked commands from the breakdown's acceptance table and runs each in list mode (`vitest list`, `playwright test --list`), failing on any command that matches zero tests. Call it from `.claude/docs/drafting-breakdowns.md` when a breakdown is written, and from the gate before the first critic.
+- **Applied (2026-11-08, the user's direction):**
+  - **Revision 71** corrected the AC-POS-004 and AC-RESP-001 commands to name `d7/lifecycle`, `d7/short-put` and `d7/expiration-close-review`. Both pass, so both rows are covered.
+  - **The script** `.claude/scripts/acceptance-commands.sh` is described under "D7-Retro-F3" below. It went through six bug tasks over two rounds of ocr, and on the D7 breakdown it reports 18 commands checked and 0 failed.
+  - **Call points:** at drafting the script can't run, because the test files don't exist yet. So `drafting-breakdowns.md` asks two things of each breakdown:
+    - each row's command names a test file that the breakdown plans to create;
+    - the integration-suite and browser-suite tasks run the script in their verification.
+  - **At the gate:** the D7 handoff's gate steps (the template for later handoffs) run the script before the first critic.
 
 ## 4. Critic reports are copied into the evidence by retyping them
 
@@ -176,8 +183,9 @@ Added at the user's request, after the first draft looked only at the session's 
   - **3.** `"$(touch <scratch>/pwned)" "`touch <scratch>/pwned`"` split to the two literal texts; nothing ran, and `pwned` does not exist.
   - **4.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 checked, 0 failed, 1 rows are procedures; output identical to the previous script's (`diff` empty). The r70 plan (`git show claude-opus-5.5-plan-r70:...` into a `mktemp -d` file): exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
 - **D7-Retro-F3-B5 ocr** (`ocr/D7-Retro-F3-B5-0564e0c9.json`): 1 file, 0 comments. No findings.
-- **D7-Retro-F3-B6:** `split_args` now returns 1 for an unterminated single or double quote, or a trailing unquoted backslash; its three callers print `FAIL: malformed command` for that row (the script goes on with the other rows). Checked in a `mktemp -d` directory outside the repository, with copies of the D7 breakdown whose AC-CAP-001 command was replaced:
+- **D7-Retro-F3-B6, commit `dc4fdbd8`:** `split_args` now returns 1 for an unterminated single or double quote, or a trailing unquoted backslash; its three callers print `FAIL: malformed command` for that row (the script goes on with the other rows). Checked in a `mktemp -d` directory outside the repository, with copies of the D7 breakdown whose AC-CAP-001 command was replaced:
   - **Red** (before the fix, the old script): `npm run test:integration -- 'd7/lifecycle` printed `AC-CAP-001 ... | 1 tests` (the quote was dropped and the filter became `d7/lifecycle`), exit 0, 18 checked, 0 failed.
   - **1.** After the fix, that copy: `AC-CAP-001 ... | FAIL: malformed command`, exit 1, 18 checked, 1 failed. The other rows are identical to the old script's (`diff` empty).
   - **2.** Unclosed double quote, `npx playwright test e2e/d7/no-save.spec.ts --grep "store`: old script `1 tests`, exit 0; new script `FAIL: malformed command`, exit 1, other rows identical. Lone trailing backslash, `npm run test:integration -- d7/lifecycle \`: old script `191 tests`, exit 0; new script `FAIL: malformed command`, exit 1, other rows identical. A properly escaped `\\` at the end (`... d7/lifecycle \\`) is unchanged: `191 tests`, exit 0, 0 failed.
   - **3.** `.claude/scripts/acceptance-commands.sh plan/D07-single-leg-options-happy-path.md; echo "exit $?"`: exit 0; 18 checked, 0 failed, 1 rows are procedures; output identical to the previous script's (`diff` empty). The r70 plan: exit 1, failing exactly AC-POS-004 and AC-RESP-001 (`FAIL: 0 tests`); 18 checked, 2 failed.
+- **D7-Retro-F3-B6 ocr** (`ocr/D7-Retro-F3-B6-dc4fdbd8.json`): 1 file, 0 comments. No findings. **D7-Retro-F3 is closed** after two rounds of bug tasks (B1 to B4 from the script's review, and B5 and B6 from B4's). The B6 subagent skipped the TypeScript checks because only a shell script changed, and the pre-commit hook skips them too for such a change.

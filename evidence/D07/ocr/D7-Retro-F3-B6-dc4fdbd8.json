@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 9286,
+    "input_tokens": 9188,
+    "output_tokens": 98,
+    "cache_read_tokens": 3840,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": ".claude/scripts/acceptance-commands.sh",
+      "files": [
+        ".claude/scripts/acceptance-commands.sh"
+      ]
+    }
+  ],
+  "session_id": "68c8918d-f860-4ca5-a5a2-12e098972a79",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "68c8918d-f860-4ca5-a5a2-12e098972a79",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "dc4fdbd8",
+      "resolved_base": "16fc6f6aa0236933703f8c1ea8487841c00a569a",
+      "resolved_head": "dc4fdbd842b0181dd64d6675ac2a43aad62dcdac",
+      "exact_range": "16fc6f6aa0236933703f8c1ea8487841c00a569a..dc4fdbd842b0181dd64d6675ac2a43aad62dcdac",
+      "source_artifact_sha256": "af1e5fe2ae9b9093c3712bcfc10c06d4bf6d8d660c4d3006ab9770922da054b5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "193e331350b8caf8e293038b792672b8b090a42fdc6023f211647dc7f1814b77"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5c39ed0244642be76c6610333408ab4d112b6e3e48622e17065a72d557ee72ce",
+          "path": ".claude/scripts/acceptance-commands.sh",
+          "fingerprint": "193e331350b8caf8e293038b792672b8b090a42fdc6023f211647dc7f1814b77"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6640
+  }
+}
