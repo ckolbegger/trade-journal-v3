@@ -76,7 +76,10 @@ describe('I7.4 Cash-Secured Put lifecycle', () => {
     expect(early.receipt.entryChanges).toEqual([]);
     expect(early.postCommit.derivation.entryResolution).toEqual({ kind: 'Resolved', positionChangeId: s1.receipt.createdFactIds[0] });
 
+    // The Close Reason names the terminal Position Change in Fact Order (B1), so the Trade Record section stays valid.
+    expect(early.postCommit.trade.closeReason).toEqual(expect.objectContaining({ terminalPositionChangeId: b1.receipt.createdFactIds[0] }));
     const again = await restart(app, d);
+    expect((await again.Workspace.getStatus()).kind).toBe('Ready');
     const detail = await detailOf(again, tradeId);
     if (!('lotMatches' in detail)) throw new Error('expected an Open or Closed Detail');
     expect(detail.lotMatches.map((m) => [m.openingExecutionId, m.disposingExecutionId, m.quantity, m.policy])).toEqual([

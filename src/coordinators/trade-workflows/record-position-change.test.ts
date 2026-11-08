@@ -740,6 +740,20 @@ describe('terminal exit AC-POS-004', () => {
     expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId }));
   });
 
+  it('should record the Close Reason of an earlier-dated closing Sell against the terminal Position Change in Fact Order, decision 96', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    const result = await ref.stack.tradeWorkflows.recordPositionChange({
+      ...command(ref, revision, [sell(ref, '2026-10-13T13:00:00Z', '70', '53.00', '1.40')]),
+      closeReasonId: ref.closeReasonId,
+      closeReview: closeReviewForm(ref),
+    });
+    if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    const lastInFactOrder = result.postCommit.derivation.facts.at(-1)!.positionChangeId;
+    expect(lastInFactOrder).not.toBe(result.receipt.createdFactIds[0]);
+    expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ closeReasonId: ref.closeReasonId, terminalPositionChangeId: lastInFactOrder }));
+  });
+
   it('should reject a Close Reason or Close Review disposition on a non-terminal exit with CloseReasonNotApplicable and CloseReviewNotApplicable', async () => {
     const ref = await exitReference();
     const revision = await enter(ref);

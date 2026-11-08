@@ -405,11 +405,20 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       };
     });
     for (const fact of (candidate.closeReasonFacts ?? []).slice((before.closeReasonFacts ?? []).length)) mapping[fact.factId] = deps.ids.next();
+    // The Close Reason names the terminal Position Change in Fact Order, which an earlier-dated closing
+    // change is not (decision 96).
+    const terminalId = facts
+      .filter((f) => f.kind === 'PositionChange')
+      .sort((a, b) => compareInstants(effective(a).economicTime, effective(b).economicTime) || a.recordedSequence - b.recordedSequence)
+      .at(-1)?.factId;
     const closeReasonFacts = candidate.closeReasonFacts?.map(
       (fact): CloseReasonFact => ({
         ...fact,
         factId: durable(fact.factId),
-        versions: fact.versions.map((v) => ({ ...v, value: { ...v.value, terminalPositionChangeId: durable(v.value.terminalPositionChangeId) } })),
+        versions: fact.versions.map((v) => ({
+          ...v,
+          value: { ...v.value, terminalPositionChangeId: fact.factId in mapping ? (terminalId ?? v.value.terminalPositionChangeId) : durable(v.value.terminalPositionChangeId) },
+        })),
       }),
     );
     const deviations = applyDeviationActions(before.deviations ?? [], deviationActions, deps.ids, durable);

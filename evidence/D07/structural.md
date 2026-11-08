@@ -1170,3 +1170,34 @@ Every D7 Node case lives in `tests/integration/d7/`, with shared builders in `su
   - I7.4 Workspace B (`short-put.test.ts`): the Monday 10:30 Buy is Rejected without a Close Reason; with one it is Recorded, Open to Closed, Close Review Debt, Close Reason on the Trade; the receipt assertions are unchanged. First-run pass (flagged), mutation fails with `expected Rejected, got Recorded`.
   - Execution form: no change. `PositionChangeForm.tsx` does not read the close requirement; it shows Closing the Trade when the entered quantities total the open quantity (ignoring dates) or when the workflow has answered `CloseReasonRequired`. An earlier-dated closing change enters exactly the open quantity, so the section shows; existing coverage is `PositionChangeFormExit.test.tsx` line 54.
 - **Commands:** `.claude/scripts/tdd.sh red|green T7.30-B1 ...` (rows in `tdd-log.md`); `npx vitest run src` (121 files, 1413 passed); `npx vitest run tests/integration` (84 files, 170 passed); `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` all exit 0.
+
+### ocr review of `62209ec5` (T7.30 part 1)
+
+`ocr/T7.30-62209ec5.json` (relocated), 4 ocr comments plus 4 from the reviewer's own row-by-row reading:
+1. ocr, Wrong, **dismissed**: "the relocated suites are not discovered by Vitest" is a relocation artifact; the real files are under `tests/integration/**/*.test.ts`.
+2. ocr, Valid, already bug task T7.30-B1 (decision 96): I7.4 B's Monday 10:30 Buy closes the Trade.
+3. ocr, Valid: I7.3 asserts only that PC2's disposing fact is not X1 (`lifecycle.test.ts:94`); it should be the Expiration fact. → B2.
+4. ocr, Valid: I7.3's "each result equals the stored Trade" never compares `factRevision`. → B2.
+5. Reviewer, Valid: I7.8 omits `ConditionCountNotOne` and the contract issue codes (`RootTooLong`, `InvalidExpiration`, `InvalidStrike`, `StrikeNotPositive`, `StrikeTooPrecise`, `InvalidRight`, `MissingInstrument`). → B2.
+6. Reviewer, Doubtful: I7.7 checks T-3's settlement only by a negative quantity, not the assignment explanation (decision 10). → B2: assert whatever the read model carries; if the explanation exists only as UI wording, say so.
+7. Reviewer, Valid: I7.6's Thursday assertions would pass on a Review that is not Ready. → B2.
+8. Reviewer, Valid: I7.5 does not check the dump's `closeReasonFacts`. → B2.
+
+B2 starts after part 2 lands, since both edit `tests/integration/d7/`.
+
+### ocr review of `f6984753` (T7.30-B1)
+
+`ocr/T7.30-B1-f6984753.json` (in place, `derive.ts`) and `ocr/T7.30-B1-f6984753-relocated.json` (test files, nothing):
+1. ocr, Valid (read, not run): the earlier-dated closing commit stores its Close Reason against that change (B0), but `closeReasonIssuesOf` (`src/modules/trade-record/section.ts`) requires the terminal Position Change in Fact Order (B1). A valid Trade would then be flagged `CloseReasonOnNonTerminalChange` on migration, Restore and readiness. → bug task B1-R1. Decision 96 was corrected in revision 62 (`f30b9850`): the Close Reason fact names the terminal change in Fact Order, as the spec already requires.
+2. Reviewer, Valid: decision 96's "no durable impact" was wrong. A Trade closed this way before the fix has no Close Reason and fails the section check with `MissingCloseReason`. No such Workspace exists (no release for real use, decision 76); corrected in revision 62, with no repair planned.
+
+The reviewer confirmed that `closeRequirement` is read only by `recordPositionChange`, after its `TradeClosed` gate, so the "newest change closes" rule never runs for a Trade already Closed.
+
+### T7.30-B1-R1 the Close Reason names the terminal Position Change in Fact Order
+
+Bug task from T7.30-B1's ocr review (plan decision 96 as corrected in revision 62). `stagePositionChange` (`src/modules/trade-record/trade-record.ts`) now sets a newly staged Close Reason fact's `terminalPositionChangeId` to the last Position Change in Fact Order (Economic Time, then Recorded Sequence) instead of the change being recorded. The commit that closes still asks for the Close Reason; `terminalTime` is unchanged; `closeReasonIssuesOf` is not relaxed.
+
+- Close Review: its Journal origin stays the Position Change the commit records (`origin: PositionChange`, `momentTime`). The Trade's terminal change is not part of its reference, so it was left as is.
+- Cases: unit case in `record-position-change.test.ts` (earlier-dated closing Sell) and I7.4 Workspace B in `tests/integration/d7/short-put.test.ts` (Close Reason names B1; restart is Ready). Each had its own red; rows in `tdd-log.md`.
+- `npx vitest run src`: 121 files, 1414 passed. `npx vitest run tests/integration`: 90 files, 181 passed. `npm run verify:fixtures` 0, `npm run lint` 0, `npm run lint:deps` 0.
+- `npm run typecheck` and `npx tsc6 --noEmit` fail only on two errors in T7.30 part 2's uncommitted files (`tests/integration/d7/marks.test.ts`, `missing-mark.test.ts`: `underlyingMark` missing on `ClosedCurrentEvaluation`); none in this task's files.
