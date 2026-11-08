@@ -116,7 +116,8 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       const tx = beginSemanticTransaction();
       const staged = deps.tradeRecord.applyPreparedChange(tx, prepared, {
         candidateDigest: prepared.digest,
-        expectedLifecycle: derived.expectedLifecycle,
+        // A confirmed Plan holds no Execution, so it is Planned.
+        expectedLifecycle: 'Planned',
         exposureStart: null,
       });
       if (staged.kind !== 'Staged') throw new Error('mismatch');

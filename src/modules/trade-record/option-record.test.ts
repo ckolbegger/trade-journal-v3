@@ -169,7 +169,7 @@ describe('prepareChange and applyPreparedChange: Expiration', () => {
     expect(prepared.candidate).not.toHaveProperty('terminalTime');
 
     const tx = beginSemanticTransaction();
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Closed', deviationActions: [], repairs: [], exposureStart: S1_TIME });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Closed', terminalPositionChangeId: 'candidate:pc-1', deviationActions: [], repairs: [], exposureStart: S1_TIME });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
     const writes = tx.close();
     expect((await persistence.commit(writes)).kind).toBe('Committed');
@@ -209,7 +209,7 @@ describe('getRecord', () => {
     const prepared = await record.prepareChange(expire());
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
     const tx = beginSemanticTransaction();
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Closed', deviationActions: [], repairs: [], exposureStart: S1_TIME });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Closed', terminalPositionChangeId: 'candidate:pc-1', deviationActions: [], repairs: [], exposureStart: S1_TIME });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
     expect((await persistence.commit(tx.close())).kind).toBe('Committed');
 

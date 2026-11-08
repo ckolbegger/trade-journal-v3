@@ -1251,3 +1251,42 @@ Per the handoff, a third bug round that still leaves findings stops for the user
 ### T7.30-B3 an option Trade's dated "At … close" line
 
 I7.15 case 3 flipped from `it.fails` to `it`; red at the assertion (expected undefined to be '2026-10-12'). New unit case in `src/coordinators/trade-views/option-views.test.ts` (red, same assertion); both green after `datedLineOf` took an optional Underlying frame and Trade Views built the line for options from the contract and Underlying frames. Figures match the plan: market value 440.00, remaining-open P&L 38.70. No UI change: the Detail and list render the line from the same fields with D4's words, and the approved-words file has no option-specific dated-line row. Checks: `npx vitest run src` 1416 passed; `npx vitest run tests/integration` 186 passed; typecheck, tsc6, lint, lint:deps, verify:wording exit 0.
+
+**The user's decision on the third-round findings (2026-11-08): "Fix both now."** → bug task **T7.30-B1-R3**:
+- `terminalPositionChangeId` required for a Closed reconciliation;
+- the stored `terminalTime` (`stagePositionChange`, and `terminalTimeOf` in `rebuild.ts`) becomes the Economic Time of the Position Change holding the last fact, as D6 A87 defines and the derived side already does, so the Closed list sorts by the time it shows.
+No new decision: it follows A87.
+
+### ocr review of `3bdc7b17` (T7.30 part 2)
+
+`ocr/T7.30-3bdc7b17.json` (relocated), 1 ocr comment plus 5 from the reviewer:
+1. ocr, Valid: the Entry window case's Lot Match accepts any opening Execution and doesn't pin the disposing one (`entry-window.test.ts:89`). → B2.
+2. Valid: I7.13 compares only three private indexes; `byOutstandingDue`, the Debts indexes, `exposureStart` and `anchorTradeId` aren't damaged or compared. → B2.
+3. Valid: I7.10 doesn't assert Planned for X1′, scans only `payoff` for a theoretical value, and doesn't re-check the value at XYZ after X1. → B2.
+4. Doubtful, **dismissed**: I7.9's two rejections are each covered by the final dump equality, which is what the row asks.
+5. Valid: I7.15's dated-line case doesn't assert the "At Mon Oct 12 close" label (B3 has since flipped it to `it`). → B2.
+6. Wrong, **dismissed**: a relocation artifact (discovery patterns).
+
+### T7.30-B3 note
+
+The Review card's `datedLastClose` stays Stock-only, by design: T7.15 builds an option card's dated last close from the Underlying frame as a Stock Instrument (C6, K18). Not a defect.
+
+B2 now covers part 1's six findings and part 2's four. It runs after B1-R3, since both mutation-check `src/`.
+
+### ocr review of `00fd4bb1` (T7.30-B3)
+
+`ocr/T7.30-B3-00fd4bb1.json` (in place, 2 comments) and `-relocated.json` (none), plus 2 from the reviewer:
+1. ocr, Valid: when the call has no Tuesday Mark but XYZ has one, the Underlying frame is Available on Tuesday and never exposes XYZ's Monday Mark, so the Monday dated line is dropped (`valuation.ts:40`). The option's dated evaluation needs the Underlying's Mark at the dated close, fetched for that date. → bug task B3-R1.
+2. ocr, Valid: returning no dated line when the Underlying has no Mark at that close drops the contract-only figures too. A110's independent availability, which the current figures already follow, says those should show, with the Underlying-dependent figures `Unavailable(MarkMissing)`. → B3-R1.
+3. Reviewer, Valid: a stale "Expected to fail" comment in `missing-mark.test.ts:69-73`. → B3-R1.
+4. Reviewer, Valid: no case covers a single missing Mark in either direction, or the at-entry path. → B3-R1.
+
+The Stock path is confirmed unchanged. B3-R1 runs after B1-R3 (both in `src/coordinators/`), and B2 after that.
+
+### T7.30-B1-R3 the stored Terminal Time is the terminal Position Change's, and the terminal change id is required when Closed
+
+- **Required id (compile-time, no red test):** `DerivedTradeReconciliation` is now a union in both `derive.ts` and `trade-record.ts`: `expectedLifecycle: 'Closed'` carries a string `terminalPositionChangeId`; any other lifecycle carries null. A Closed reconciliation without it does not type-check, and Trade Record has no fallback. Callers: Plan confirmation in `trade-workflows.ts` passes the literal `'Planned'`; the test builders and `e2e/d6/stale-index-entry.ts` supply `candidate:pc-1` when Closed.
+- **Stored Terminal Time:** `stagePositionChange` takes the Economic Time of the Position Change named by `terminalPositionChangeId`. `rebuild.ts` `terminalTimeOf` orders the stored Executions and Expirations by Economic Time then Recorded Sequence (Trade Analysis's Fact Order), takes the last, and returns the Economic Time of the Position Change whose `memberIds` hold it. No new dependency (`lint:deps` exit 0).
+- **Red/green** (`tdd-log.md`): (a) workflow case, stored `terminalTime` 14:00 instead of the derived 13:00; (b) rebuild case, same 14:00 vs 13:00; (c) Closed-list order after rebuild, got [trade-a, trade-b], expected [trade-b, trade-a]. All green.
+- **Fixture change:** `schema-v5.test.ts` rebuild fixture had Position Changes with no members; each now has one Execution and the Trade an `exposureStart`.
+- **Checks:** `npx vitest run src` 1419 passed; `npx vitest run tests/integration` 186 passed; `npm run verify:fixtures` OK (all six views equal, no snapshot change); `typecheck`, `tsc6`, `lint`, `lint:deps` exit 0.

@@ -1,7 +1,7 @@
 import { IDBIndex as FakeIDBIndex, IDBObjectStore as FakeIDBObjectStore } from 'fake-indexeddb';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
-import { activityDescOf, beginSemanticTransaction, type Persistence } from '../../persistence/index.ts';
+import { activityDescOf, beginSemanticTransaction, rebuildPrivateState, type Persistence } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
 import { createTradeRecord, type ExecutionFactValue, type PositionChangeChange, type TradeDocument, type TradeFact, type TradeRecord, type TradeSummary } from './index.ts';
 
@@ -173,7 +173,7 @@ describe('applyPreparedChange', () => {
       expect(prepared.candidate).not.toHaveProperty('terminalTime');
       expect(prepared.candidate).not.toHaveProperty('terminalDesc');
       const tx = beginSemanticTransaction();
-      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle, deviationActions: [], repairs: [], exposureStart: PC1[0]!.economicTime, ...(expectedLifecycle === 'Closed' && { terminalPositionChangeId: 'candidate:pc-1' }) });
+      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, deviationActions: [], repairs: [], exposureStart: PC1[0]!.economicTime, ...(expectedLifecycle === 'Closed' ? { expectedLifecycle, terminalPositionChangeId: 'candidate:pc-1' } : { expectedLifecycle }) });
       if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
       const writes = tx.close();
       expect((await persistence.commit(writes)).kind).toBe('Committed');
@@ -355,5 +355,36 @@ describe('getRecord', () => {
     const open = await record.getRecord({ tradeId: 'trade-2', projection: 'AnalysisInput' });
     expect(open.kind === 'Found' && open.projection).not.toHaveProperty('closeReason');
     expect(open.kind === 'Found' && open.projection).not.toHaveProperty('terminalTime');
+  });
+});
+
+describe('rebuildPrivateState: Terminal Time of a Closed Trade (T7.30-B1-R3)', () => {
+  // X1 at 14:00, then one terminal decision of two Sells at 13:00 and 15:00: its Economic Time is its
+  // earliest member's (13:00), earlier than X1's, though its last member is the last fact (D6 A87).
+  const STRADDLE = [fill('Sell', '2026-10-13T13:00:00Z', '40', '53.00', '0.80'), fill('Sell', '2026-10-13T15:00:00Z', '30', '53.00', '0.60')];
+  const closedStraddling = (tradeId: string) => tradeAfter(tradeId, [PC1, PC2, X1, STRADDLE], 'Closed');
+  // A plain close at 13:30, between the straddling change's time and X1's.
+  const closedAt1330 = (tradeId: string) => tradeAfter(tradeId, [PC1, PC2, [fill('Sell', '2026-10-13T13:30:00Z', '100', '53.00', '1.00', tradeId)]], 'Closed');
+
+  async function rebuilt(documents: readonly TradeDocument[]) {
+    const { record, persistence, factory } = await tradeRecord(documents);
+    const trades = () => persistence.readSnapshot(['trades'], (t) => t.getAll('trades'));
+    const { binding } = await trades();
+    persistence.close();
+    await rebuildPrivateState(factory, binding.databaseName);
+    return { record, trades: async () => (await trades()).value };
+  }
+
+  it('should rebuild a Closed Trade terminalTime and its byLifecycleTerminal key from the Position Change holding the last fact, not the latest Economic Time', async () => {
+    const { trades } = await rebuilt([closedStraddling('trade-a')]);
+    const [stored] = await trades();
+    expect(stored!['terminalTime']).toBe('2026-10-13T13:00:00Z');
+    expect(stored!['terminalDesc']).toBe(activityDescOf('2026-10-13T13:00:00Z'));
+  });
+
+  it('should list Closed Trades by the rebuilt Terminal Time of the change holding the last fact', async () => {
+    // The straddling Trade closed at 13:00 by its terminal change, so the 13:30 close is the later one.
+    const { record } = await rebuilt([closedStraddling('trade-a'), closedAt1330('trade-b')]);
+    expect(idsOf(await record.queryRecords({ lifecycle: 'Closed', projection: 'Summary' }))).toEqual(['trade-b', 'trade-a']);
   });
 });

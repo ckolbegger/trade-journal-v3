@@ -103,7 +103,7 @@ async function run(count: number) {
         ...(lifecycle === 'Closed' && { closeReasonId: 'catalog:close-reason-target-reached' }),
       });
       if (prepared.kind !== 'Prepared') throw new Error(prepared.kind);
-      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: lifecycle, deviationActions: [], repairs: [], exposureStart: null });
+      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, deviationActions: [], repairs: [], exposureStart: null, ...(lifecycle === 'Closed' ? { expectedLifecycle: 'Closed' as const, terminalPositionChangeId: 'candidate:pc-1' } : { expectedLifecycle: lifecycle }) });
       if (staged.kind !== 'Staged') throw new Error(staged.kind);
     });
   };

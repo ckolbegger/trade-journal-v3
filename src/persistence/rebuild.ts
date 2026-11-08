@@ -92,14 +92,28 @@ function exposureStartOf(facts: unknown): string | undefined {
   return times.sort((a, b) => Temporal.Instant.compare(a, b))[0];
 }
 
-// A Closed Trade's Terminal Time (D6 A87): the Economic Time of its terminal Position Change, which
-// is the Trade's last fact (P22), so the latest among its Position Changes at their latest versions;
-// undefined when it has none.
+interface StoredTerminalFact {
+  readonly factId: string;
+  readonly kind: string;
+  readonly recordedSequence: number;
+  readonly versions: readonly { readonly value: { readonly economicTime: string; readonly memberIds?: readonly string[] } }[];
+}
+
+// A Closed Trade's Terminal Time (D6 A87): the Economic Time of its terminal Position Change, the one
+// holding the last fact in Fact Order (P22): Economic Time, then Recorded Sequence, among the
+// Executions and Expirations at their latest versions, as Trade Analysis orders them. That change's
+// own Economic Time is its earliest member's, so it need not be the latest of the Trade's changes.
+// Undefined when the Trade has no member.
 function terminalTimeOf(facts: unknown): string | undefined {
-  const times = ((facts as readonly StoredFact[] | undefined) ?? [])
-    .filter((fact) => fact.kind === 'PositionChange')
-    .map((fact) => fact.versions[fact.versions.length - 1]!.value.economicTime);
-  return times.sort((a, b) => Temporal.Instant.compare(b, a))[0];
+  const stored = (facts as readonly StoredTerminalFact[] | undefined) ?? [];
+  const latest = (fact: StoredTerminalFact) => fact.versions[fact.versions.length - 1]!.value;
+  const lastMember = stored
+    .filter((fact) => fact.kind === 'Execution' || fact.kind === 'Expiration')
+    .sort((a, b) => Temporal.Instant.compare(latest(a).economicTime, latest(b).economicTime) || a.recordedSequence - b.recordedSequence)
+    .at(-1);
+  if (!lastMember) return undefined;
+  const holder = stored.find((fact) => fact.kind === 'PositionChange' && latest(fact).memberIds?.includes(lastMember.factId));
+  return holder && latest(holder).economicTime;
 }
 
 // The Journal obligation index (D2 A28): one record per obligation key naming its current outcome,

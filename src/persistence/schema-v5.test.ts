@@ -157,19 +157,26 @@ describe('v4 → v5 transform', () => {
   });
 });
 
-const positionChange = (factId: string, recordedSequence: number, economicTime: string) => ({
-  factId,
-  kind: 'PositionChange',
-  recordedSequence,
-  versions: [{ versionNumber: 1, value: { economicTime, originTradeId: 'x', participatingTradeIds: ['x'], memberIds: [] } }],
-});
+// A Position Change and its one Execution member, which holds the last fact in Fact Order when it is
+// the last one.
+const positionChange = (factId: string, recordedSequence: number, economicTime: string) => [
+  {
+    factId,
+    kind: 'PositionChange',
+    recordedSequence,
+    versions: [{ versionNumber: 1, value: { economicTime, originTradeId: 'x', participatingTradeIds: ['x'], memberIds: [`${factId}-ex`] } }],
+  },
+  { factId: `${factId}-ex`, kind: 'Execution', recordedSequence: recordedSequence + 100, versions: [{ versionNumber: 1, value: { economicTime } }] },
+];
 
 const trade = (tradeId: string, lifecycle: string, changeTimes: readonly string[], extra: Record<string, unknown> = {}) => ({
   tradeId,
   lifecycle,
   planTime: '2026-10-12T13:30:00Z',
-  facts: changeTimes.map((time, i) => positionChange(`${tradeId}-pc${i + 1}`, i + 1, time)),
+  facts: changeTimes.flatMap((time, i) => positionChange(`${tradeId}-pc${i + 1}`, i + 1, time)),
   closeReasonFacts: [],
+  // The Executions make the first change's time the exposure start.
+  ...(changeTimes.length > 0 && { exposureStart: [...changeTimes].sort()[0] }),
   ...extra,
 });
 

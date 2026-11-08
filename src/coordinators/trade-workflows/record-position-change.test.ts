@@ -4,6 +4,7 @@ import { derive, type TradeAnalysisRecord } from '../../domain/trade-analysis/in
 import { Rational } from '../../domain/values/index.ts';
 import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import { D6_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
+import { activityDescOf } from '../../persistence/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { onboardedStack } from '../../../tests/support/onboarded.ts';
 import type { PositionChangeCommand, PositionChangeMember, WorkflowIssue } from './index.ts';
@@ -768,6 +769,22 @@ describe('terminal exit AC-POS-004', () => {
     const lastInFactOrder = result.postCommit.derivation.facts.at(-1)!.positionChangeId;
     expect(lastInFactOrder).toBe(result.receipt.createdFactIds[0]);
     expect(result.postCommit.trade.closeReason).toEqual(expect.objectContaining({ terminalPositionChangeId: lastInFactOrder }));
+  });
+
+  it('should store the Terminal Time of the Position Change holding the last fact, not the latest Position Change Economic Time, D6 A87', async () => {
+    const ref = await exitReference();
+    const revision = await beforeTerminalExit(ref);
+    const result = await ref.stack.tradeWorkflows.recordPositionChange({
+      ...command(ref, revision, [sell(ref, '2026-10-13T13:00:00Z', '40', '53.00', '0.80'), sell(ref, '2026-10-13T15:00:00Z', '30', '53.00', '0.60')]),
+      closeReasonId: ref.closeReasonId,
+      closeReview: closeReviewForm(ref),
+    });
+    if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    const stored = (workspaceStores(await dumpAll(ref.stack.factory))['trades'] as { terminalTime?: string; terminalDesc?: string }[])[0]!;
+    // The straddling change's Economic Time is its earliest member's (13:00), earlier than X1's (14:00).
+    expect(result.postCommit.derivation.terminalTime).toBe('2026-10-13T13:00:00Z');
+    expect(stored.terminalTime).toBe(result.postCommit.derivation.terminalTime);
+    expect(stored.terminalDesc).toBe(activityDescOf(stored.terminalTime!));
   });
 
   it('should reject a Close Reason or Close Review disposition on a non-terminal exit with CloseReasonNotApplicable and CloseReviewNotApplicable', async () => {

@@ -314,17 +314,23 @@ export type DeviationAction =
 export type CloseRequirement = 'TerminalWithAgency' | 'TerminalWithoutAgency' | 'NotTerminal';
 
 // Trade Analysis's expected state for one exact candidate, which Trade Record's apply requires.
-export interface DerivedTradeReconciliation {
+export type DerivedTradeReconciliation = ReconciliationBase &
+  (
+    | {
+        readonly expectedLifecycle: 'Closed';
+        // The candidate's Position Change holding the last fact in Fact Order: the one a Close
+        // Reason names and whose Economic Time is the Terminal Time (decision 96, D6 A87).
+        readonly terminalPositionChangeId: string;
+      }
+    | { readonly expectedLifecycle: Exclude<LifecycleState, 'Closed'>; readonly terminalPositionChangeId: null }
+  );
+interface ReconciliationBase {
   readonly candidateDigest: string;
-  readonly expectedLifecycle: LifecycleState;
   // The candidate's exposure start, which Trade Record stores in the Trade document (D4 A38).
   readonly exposureStart: Instant | null;
   // Whether the candidate's new Position Change closes the Trade with trader agency, which requires
   // a Close Reason (A77); the workflow turns this into its issues.
   readonly closeRequirement: CloseRequirement;
-  // The candidate's Position Change holding the last fact in Fact Order, null unless the expected
-  // lifecycle is Closed: the one a Close Reason names (decision 96).
-  readonly terminalPositionChangeId: string | null;
   readonly deviationActions: readonly DeviationAction[];
   // Where the before-state's stored lifecycle or recorded occurrences disagreed with its own
   // coherent facts: repaired by applying the candidate and disclosed (P7).
@@ -1069,10 +1075,11 @@ export function derive(input: TradeDerivationInput): DerivationResult {
       before && {
         reconciliation: {
           candidateDigest: input.candidate.digest,
-          expectedLifecycle,
+          ...(expectedLifecycle === 'Closed'
+            ? { expectedLifecycle, terminalPositionChangeId: terminalPositionChangeOf(record, steps).factId }
+            : { expectedLifecycle, terminalPositionChangeId: null }),
           exposureStart: facts[0]?.economicTime ?? null,
           closeRequirement: closeRequirementOf(record, steps, closed),
-          terminalPositionChangeId: closed ? terminalPositionChangeOf(record, steps).factId : null,
           deviationActions: deviationActions(deviations, input.candidate.before.recordedDeviations ?? []),
           repairs: before.findings,
           effects: changeEffects(before, expectedLifecycle, deviations),

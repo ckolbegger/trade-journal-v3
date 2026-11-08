@@ -120,9 +120,15 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
 // Trade Analysis's verdict on the exact candidate: the coordinator supplies expected state and
 // Trade Record never sets lifecycle on its own. A Plan confirmation has no recorded occurrences to
 // act on, so it may omit the Deviation actions and repairs.
-export type DerivedTradeReconciliation = Pick<AnalysisReconciliation, 'candidateDigest' | 'expectedLifecycle'> &
+// A Closed reconciliation must name the terminal Position Change, since the stored Terminal Time and
+// the Close Reason's reference both come from it; any other lifecycle has none (decision 96, D6 A87).
+export type DerivedTradeReconciliation = Pick<AnalysisReconciliation, 'candidateDigest'> &
   Pick<AnalysisReconciliation, 'exposureStart'> &
-  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs' | 'terminalPositionChangeId'>>;
+  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs'>> &
+  (
+    | { readonly expectedLifecycle: 'Closed'; readonly terminalPositionChangeId: string }
+    | { readonly expectedLifecycle: Exclude<AnalysisReconciliation['expectedLifecycle'], 'Closed'>; readonly terminalPositionChangeId?: null }
+  );
 
 // Whether the Deviation actions account for every recorded occurrence of the before-state exactly
 // once and name only this candidate's Trade, Planned Legs, and Position Changes.
@@ -420,14 +426,12 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     );
     const deviations = applyDeviationActions(before.deviations ?? [], deviationActions, deps.ids, durable);
     const document: TradeDocument = { ...candidate, lifecycle: expectedLifecycle, facts, deviations, ...(closeReasonFacts && { closeReasonFacts }) };
-    // A Closed Trade's private Terminal Time is its terminal Position Change's Economic Time, the
-    // latest one (P22), with its descending sort key; any other lifecycle holds neither (D6 A87).
+    // A Closed Trade's private Terminal Time is the Economic Time of its terminal Position Change,
+    // the one holding the last fact in Fact Order (P22, D6 A87), with its descending sort key; any
+    // other lifecycle holds neither. That change need not have the latest Economic Time.
     const terminalTime =
       expectedLifecycle === 'Closed'
-        ? facts
-            .flatMap((f) => (f.kind === 'PositionChange' ? [effective(f).economicTime] : []))
-            .sort(compareInstants)
-            .at(-1)
+        ? facts.flatMap((f) => (f.kind === 'PositionChange' && f.factId === terminalId ? [effective(f).economicTime] : []))[0]
         : undefined;
     // Applies only to the FactRevision it was prepared from.
     tx.require({

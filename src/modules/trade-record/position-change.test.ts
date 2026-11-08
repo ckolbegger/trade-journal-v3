@@ -453,7 +453,7 @@ describe('applyPreparedChange: PositionChange, vacated index keys (T6.25-B2)', (
     const prepared = await record.prepareChange(change(executions, document.factRevision));
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
     const tx = beginSemanticTransaction();
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle, deviationActions: [], repairs: [], exposureStart: null });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, deviationActions: [], repairs: [], exposureStart: null, ...(expectedLifecycle === 'Closed' ? { expectedLifecycle, terminalPositionChangeId: 'candidate:pc-1' } : { expectedLifecycle }) });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
     const { writes } = tx.close();
     expect(writes[0]).toEqual(expect.objectContaining({ op: 'put', store: 'trades' }));
