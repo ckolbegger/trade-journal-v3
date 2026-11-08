@@ -65,7 +65,7 @@ describe('I7.8 Rejections write nothing', () => {
     expect(noRisk).toEqual(expect.arrayContaining([{ source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n) } }]));
   }, 60_000);
 
-  it('should reject a second Stop with ConditionCountNotOne naming the extra condition, and each invalid contract with its contract issue code, leaving the dump unchanged', async () => {
+  it('should reject a second Stop and a second Target each with ConditionCountNotOne, and each invalid contract with its contract issue code, leaving the dump unchanged', async () => {
     const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
     const longCall = await optionPlanCommand(app, 'O-C');
     const leg = longCall.plan.legs[0]!;
@@ -74,10 +74,13 @@ describe('I7.8 Rejections write nothing', () => {
       plan: { ...longCall.plan, underlying: symbol || longCall.plan.underlying, legs: [{ ...leg, instrument: { ...XYZ_CALL, symbol, root: symbol, ...contract } }] },
     });
 
-    // A second Stop and a second Target are rejected with ConditionCountNotOne.
-    const extra = [{ kind: 'UnderlyingPrice', price: '47.00' }, { kind: 'UnderlyingPrice', price: '62.00' }] as const;
-    const twice = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extra[0]], targets: [...longCall.plan.targets, extra[1]] } });
-    expect(twice).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'TradeAnalysis', code: 'ConditionCountNotOne' })]));
+    // A second Stop alone and a second Target alone are each rejected with ConditionCountNotOne.
+    const extraStop = { kind: 'UnderlyingPrice', price: '47.00' } as const;
+    const extraTarget = { kind: 'UnderlyingPrice', price: '62.00' } as const;
+    const twoStops = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extraStop] } });
+    expect(twoStops).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'TradeAnalysis', code: 'ConditionCountNotOne' })]));
+    const twoTargets = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, targets: [...longCall.plan.targets, extraTarget] } });
+    expect(twoTargets).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'TradeAnalysis', code: 'ConditionCountNotOne' })]));
 
     // Every contract issue is reachable through confirmPlan, which checks the text of the contract; the Plan form's
     // Right choice and date picker normally prevent InvalidRight and a malformed expiration, but the facade does not.
