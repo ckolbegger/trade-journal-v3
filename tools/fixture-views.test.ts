@@ -91,4 +91,8 @@ describe('fixture views', () => {
     expect(optionViolations(optionViews(optionDetail, { open: [] }), true, true)).toEqual(['open list (no Open Trades to check)']);
     expect(optionViolations(optionViews(optionDetail, { review: undefined }), true, true)).toEqual(['review.families (missing)']);
   });
+
+  it('should report a missing Review Trade list when the Workspace has a Review', () => {
+    expect(optionViolations(optionViews(optionDetail, { reviewTrades: undefined }), true, true)).toEqual(['reviewTrades (missing)']);
+  });
 });

@@ -1042,3 +1042,18 @@ Negative checks:
 
 - V6 value: changed `details[9].settlement[0].settlementTime.value` in `tests/fixtures/workspace-v6/expected-views.json` from `2026-11-20T21:00:00Z` to `2026-11-20T20:00:00Z` -> `npm run verify:fixtures` exit 1: `FAIL workspace-v6: views differ from expected-views.json at details[9].settlement[0].settlementTime.value`. Restored byte for byte; rerun exit 0.
 - A121: `optionViolations` applied to the v6 expected views (which hold option Trades) reports 97 violations, the first `views.planned[0].summary (option Instrument)`. Unit cases in `tools/fixture-views.test.ts` cover a missing payoff, applicable payoff, missing or non-empty settlement, option Instrument, Stock multiplier, non-empty Settlement family, and missing lists.
+
+### ocr review of `3d318b96`
+
+`ocr/T7.27-3d318b96.json` (in place, 0 comments) and `ocr/T7.27-3d318b96-relocated.json` (relocated test file, 2 comments):
+1. Doubtful: `optionViolations` (`tools/fixture-views.ts:144`) treats a missing `reviewTrades` as empty when `hasReview` is true, so the per-Trade Review settlement checks are skipped silently; `closeViolations` guards the same case (line 45). The loader always supplies the list today, but the T6.23-B1 rule is that a missing array is reported. → bug task B1.
+2. Wrong, **dismissed**: "`optionViolations` is never called". `tools/verify-fixtures.ts:117` calls it for schemas below 6, and the scratch clone lacked that file (a relocation artifact).
+
+Fixture facts the plan does not give, chosen by the task (for the final report): the Planned Long Call JKL 20 Nov 2026 60 Call (1 contract at 2.00, Stop JKL at or below 55.00, Target JKL at or above 70.00, planned 2026-11-19 09:00); O-P's Close Reason "Target Reached" and its completed Close Review; O-S's Expiration reflection declined with "Expired worthless."; the reflection texts.
+
+### T7.27-B1 a missing Review list is reported
+
+- `it should report a missing Review Trade list when the Workspace has a Review` (`tools/fixture-views.test.ts`)
+- Red: `npx vitest run tools/fixture-views.test.ts -t "should report a missing Review Trade list when the Workspace has a Review"` failed with an assertion failure: expected `["reviewTrades (missing)"]`, received `[]`.
+- Fix: `optionViolations` pushes `reviewTrades (missing)` when `hasReview` and `reviewTrades` is not an array.
+- Green: whole `tools/fixture-views.test.ts` 12 passed (exit 0); `npm run verify:fixtures` exit 0 (all six fixtures views equal); `npm run typecheck` exit 0; `npm run lint` exit 0.

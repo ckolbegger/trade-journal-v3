@@ -141,6 +141,7 @@ export function optionViolations(views: unknown, hasOpenTrades: boolean, hasRevi
     if (!Array.isArray(review?.families)) out.push('review.families (missing)');
     const settlement = (review?.families ?? []).filter((family) => family.family === 'Settlement');
     if (settlement.some((family) => !Array.isArray(family.items) || family.items.length > 0)) out.push('review Settlement family (not empty)');
+    if (!Array.isArray(reviewTrades)) out.push('reviewTrades (missing)');
     for (const trade of reviewTrades ?? []) {
       if (!Array.isArray(trade.settlement)) out.push(`${trade.tradeId}.review settlement (missing)`);
       else if (trade.settlement.length > 0) out.push(`${trade.tradeId}.review settlement (${trade.settlement.length})`);
