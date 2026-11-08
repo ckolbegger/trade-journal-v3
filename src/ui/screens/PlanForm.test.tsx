@@ -52,6 +52,26 @@ describe('rendering', () => {
     expect(Array.from(strategy.options).map((o) => o.textContent)).toEqual(['Long Stock']);
   });
 
+  it('should preselect Long Stock by product key when option Strategies are installed and sort first', async () => {
+    const base = planFormFacade();
+    const query = vi.mocked(base.ReferenceCatalog.query).getMockImplementation()!;
+    const facade = {
+      ...base,
+      capabilities: { ...base.capabilities, strategies: ['strategy.cash-secured-put', 'strategy.long-stock'] },
+    } as unknown as UiFacade;
+    vi.mocked(facade.ReferenceCatalog.query).mockImplementation(async (request) => {
+      const page = await query(request);
+      if (request.family !== 'Strategy' || page.kind !== 'Page') return page;
+      const csp = { id: 'strat-csp', kind: 'Strategy', label: 'Cash-Secured Put', productKey: 'strategy.cash-secured-put', recordRevision: 1 };
+      return { ...page, items: [csp, ...page.items] as never };
+    });
+    renderForm(facade);
+    const strategy = await screen.findByLabelText<HTMLSelectElement>('Strategy');
+    await vi.waitFor(() => expect(strategy.options.length).toBe(2));
+    expect(strategy.options[0]!.textContent).toBe('Cash-Secured Put');
+    expect(strategy.selectedOptions[0]!.textContent).toBe('Long Stock');
+  });
+
   it('should render Plan Reflection prompts from the loaded definition revision, with Primary emotion as a radio group inside a labelled fieldset and Conviction as a 1–5 radio group', async () => {
     renderForm();
     expect(await screen.findByLabelText('Why this trade, why now?')).toBeTruthy();

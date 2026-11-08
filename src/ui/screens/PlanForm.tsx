@@ -24,6 +24,7 @@ interface Option {
   // The plain labels, for presenting a confirmed Plan without a read.
   readonly name: string;
   readonly institution?: string;
+  readonly productKey?: string;
 }
 
 export interface PlanFormProps {
@@ -109,11 +110,13 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       const installed = new Set(facade.capabilities.strategies);
       const strategyOptions = strategyRows
         .filter((s) => installed.has(s.productKey ?? ''))
-        .map((s) => ({ id: s.id, label: s.label, recordRevision: s.recordRevision, name: s.label }));
+        .map((s) => ({ id: s.id, label: s.label, recordRevision: s.recordRevision, name: s.label, productKey: s.productKey }));
+      // Preselect Long Stock by product key, never the first row (decision 88).
+      const preselected = strategyOptions.find((s) => s.productKey === 'strategy.long-stock') ?? strategyOptions[0];
       setAccounts(accountOptions);
       setStrategies(strategyOptions);
       setFields((f) => {
-        const loaded = { ...f, accountId: accountOptions[0]?.id ?? '', strategyId: strategyOptions[0]?.id ?? '' };
+        const loaded = { ...f, accountId: accountOptions[0]?.id ?? '', strategyId: preselected?.id ?? '' };
         setInitial(loaded);
         return loaded;
       });
