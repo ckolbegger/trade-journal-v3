@@ -37,6 +37,7 @@ describe('I7.6 Settlement Due is never inferred', () => {
     expect(thursdayDetail.settlement).toEqual([]);
     expect(thursdayDetail.lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
     const thursdayReview = await reviewAt(thursday, THURSDAY_1700);
+    expect(thursdayReview.kind).toBe('Ready');
     expect(settlementFamily(thursdayReview)).toEqual([]);
     expect(JSON.stringify(walkedBands(thursdayReview))).not.toContain('SettlementDue');
     await expectUnchanged();

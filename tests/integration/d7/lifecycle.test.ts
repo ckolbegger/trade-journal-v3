@@ -27,6 +27,8 @@ describe('I7.3 Long Call lifecycle', () => {
     expect(planned.lifecycle).toEqual({ stored: 'Planned', agreement: { kind: 'Agrees' } });
     expect(planned.baseline.oneR).toEqual(dec('400'));
     expect(planned.payoff).toEqual(confirmed.postCommit.payoff);
+    expect(confirmed.receipt.factRevision).toBe(planned.factRevision);
+    expect(confirmed.postCommit.trade.factRevision).toBe(planned.factRevision);
     expect(confirmed.postCommit.trade.plan.legs).toEqual(planned.plan.legs);
     expect(confirmed.postCommit.trade.plan.exerciseIntent).toBe('NotAuthorized');
     const definitionId = (await app.Journal.getDefinitions({ latestFor: 'entry-type.plan-reflection' }))
@@ -45,6 +47,8 @@ describe('I7.3 Long Call lifecycle', () => {
       expect(result.postCommit.derivation.agreement).toEqual({ kind: 'Agrees' });
       const openDetail = await detailOf(app, tradeId);
       expect(openDetail.lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
+      expect(result.receipt.factRevision).toBe(openDetail.factRevision);
+      expect(result.postCommit.trade.factRevision).toBe(openDetail.factRevision);
       expect('positionChanges' in openDetail && openDetail.positionChanges).toEqual(result.postCommit.trade.positionChanges);
       expect('realizedToDate' in openDetail && openDetail.realizedToDate).toEqual(result.postCommit.derivation.realizedToDate);
     }
@@ -79,6 +83,8 @@ describe('I7.3 Long Call lifecycle', () => {
     if (!('terminalDisposition' in detail)) throw new Error('expected the Closed form of Detail');
     expect(detail.lifecycle).toEqual({ stored: 'Closed', agreement: { kind: 'Agrees' } });
     expect(expired.postCommit.trade.positionChanges).toEqual(detail.positionChanges);
+    expect(expired.receipt.factRevision).toBe(detail.factRevision);
+    expect(expired.postCommit.trade.factRevision).toBe(detail.factRevision);
     expect(expired.postCommit.derivation.realizedToDate).toEqual(detail.realizedToDate);
     expect(expired.postCommit.derivation.terminalDisposition).toEqual(detail.terminalDisposition);
 
@@ -91,7 +97,9 @@ describe('I7.3 Long Call lifecycle', () => {
     const [ex1, ex2] = [results[0]!, results[1]!].map((r) => r.receipt.createdFactIds[1]!);
     expect(detail.lotMatches.map((m) => m.openingExecutionId)).toEqual([ex1, ex2]);
     expect(detail.lotMatches[0]!.disposingExecutionId).toBe(results[2]!.receipt.createdFactIds[1]);
-    expect(detail.lotMatches[1]!.disposingExecutionId).not.toBe(results[2]!.receipt.createdFactIds[1]);
+    // PC2 is disposed by the Expiration fact the Position Change created, not by X1.
+    expect(detail.lotMatches[1]!.disposingExecutionId).toBe(expirations[0]!.factId);
+    expect(expired.receipt.createdFactIds).toContain(expirations[0]!.factId);
     expect(detail.realizedToDate).toEqual(dec('-101.95'));
     expect(detail.realizedR).toEqual({ kind: 'Value', value: Rational.of(-2039n, 8000n) });
     if (detail.terminalDisposition.kind !== 'Value') throw new Error('expected a Terminal Disposition');

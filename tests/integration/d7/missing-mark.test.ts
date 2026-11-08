@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { OpenTradeDetail } from '../../../src/coordinators/trade-views/index.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
+import { shortDate } from '../../../src/ui/format.ts';
 import { confirmOption, detail, MONDAY_DATE, OC_PC1, OC_PC2, onboardedAt, openItem, recordOption, restart, saveMark, TUESDAY_1700, TUESDAY_DATE, value, XYZ_CALL } from './support.ts';
 
 const CALL = instrumentKey(XYZ_CALL);
@@ -76,11 +77,17 @@ describe('I7.15 Underlying Mark Missing and dated line', () => {
 
     const view = (await detail(app, tradeId)).current;
     expect(view.datedLine?.tradingDate).toBe(MONDAY_DATE);
+    // The Detail's heading is `At ${shortDate(tradingDate)} close`, so the read-model date and the label function give
+    // "At Mon Oct 12 close"; the dated line's Mark is the call's Monday Mark.
+    expect(`At ${shortDate(view.datedLine!.tradingDate)} close`).toBe('At Mon Oct 12 close');
+    expect(view.datedLine!.evaluation.observation.mark).toEqual(expect.objectContaining({ price: '2.2' }));
     const line = view.datedLine!.evaluation;
     if (line.kind !== 'Evaluated') throw new Error('the dated line has no evaluation');
     // 2 contracts at 2.20 are worth 440.00; the cost was 400.00 and the fees 1.30.
     expect(line.marketValue).toEqual(value('440'));
     expect(line.remainingOpenPnl).toEqual(value('38.70'));
-    expect((await openItem(app, tradeId)).current.datedLine?.tradingDate).toBe(MONDAY_DATE);
+    const item = (await openItem(app, tradeId)).current.datedLine;
+    expect(item?.tradingDate).toBe(MONDAY_DATE);
+    expect(item?.evaluation.observation.mark).toEqual(expect.objectContaining({ price: '2.2' }));
   }, 60_000);
 });

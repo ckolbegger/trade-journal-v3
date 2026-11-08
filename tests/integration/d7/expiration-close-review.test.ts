@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   attemptExpiration, closeReasonId, closeReviewDisposition, confirmOption, detailOf, dumpAll, FRIDAY_1600, FRIDAY_1700, MONDAY_NEXT_1700, OC_PC1, onboardedAt, outstandingDebts, recordOption, restart, reviewAt,
-  recordExpiration, workspaceStores, type CloseReviewKind,
+  recordExpiration, workspaceStores, type CloseReviewKind, type StoredTradeDoc,
 } from './support.ts';
 
 describe('I7.5 Expiration Close Review dispositions', () => {
@@ -38,6 +38,13 @@ describe('I7.5 Expiration Close Review dispositions', () => {
       expect(detail.closeReason).toBeUndefined();
     }
     const stores = workspaceStores(await dumpAll(d.factory));
+    const storedTrades = stores['trades'] as StoredTradeDoc[];
+    for (const tradeId of Object.values(trades)) {
+      const stored = storedTrades.find((t) => t.tradeId === tradeId);
+      expect(stored?.lifecycle).toBe('Closed');
+      // The stored document omits the field when the Trade has no Close Reason fact.
+      expect(stored?.closeReasonFacts ?? []).toEqual([]);
+    }
     const obligations = stores['journalObligations'] as { obligationKey: string; outcome: { kind: string } }[];
     const outcomeOf = (tradeId: string) => obligations.find((o) => o.obligationKey === `CloseReview:${tradeId}`)?.outcome.kind;
     expect([outcomeOf(trades.Complete), outcomeOf(trades.Decline), outcomeOf(trades.Defer)]).toEqual(['Entry', 'Decline', 'Debt']);

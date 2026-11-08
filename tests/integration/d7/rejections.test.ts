@@ -65,6 +65,47 @@ describe('I7.8 Rejections write nothing', () => {
     expect(noRisk).toEqual(expect.arrayContaining([{ source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n) } }]));
   }, 60_000);
 
+  it('should reject a second Stop with ConditionCountNotOne naming the extra condition, and each invalid contract with its contract issue code, leaving the dump unchanged', async () => {
+    const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
+    const longCall = await optionPlanCommand(app, 'O-C');
+    const leg = longCall.plan.legs[0]!;
+    const withContract = (symbol: string, contract: Record<string, string>): ConfirmPlanCommand => ({
+      ...longCall,
+      plan: { ...longCall.plan, underlying: symbol || longCall.plan.underlying, legs: [{ ...leg, instrument: { ...XYZ_CALL, symbol, root: symbol, ...contract } }] },
+    });
+
+    // A second Stop and a second Target are rejected with ConditionCountNotOne.
+    const extra = [{ kind: 'UnderlyingPrice', price: '47.00' }, { kind: 'UnderlyingPrice', price: '62.00' }] as const;
+    const twice = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extra[0]], targets: [...longCall.plan.targets, extra[1]] } });
+    expect(twice).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'TradeAnalysis', code: 'ConditionCountNotOne' })]));
+
+    // Every contract issue is reachable through confirmPlan, which checks the text of the contract; the Plan form's
+    // Right choice and date picker normally prevent InvalidRight and a malformed expiration, but the facade does not.
+    const cases: readonly [code: string, command: ConfirmPlanCommand][] = [
+      ['RootTooLong', withContract('ABCDEFG', {})],
+      ['InvalidExpiration', withContract('XYZ', { expiration: '2026-13-45' })],
+      ['InvalidStrike', withContract('XYZ', { strike: 'abc' })],
+      ['StrikeNotPositive', withContract('XYZ', { strike: '0' })],
+      ['StrikeTooPrecise', withContract('XYZ', { strike: '55.1234' })],
+      ['InvalidRight', withContract('XYZ', { right: 'Straddle' })],
+      ['MissingInstrument', withContract('', {})],
+    ];
+    for (const [code, command] of cases) {
+      const issues = await rejectedPlan(app, d, command);
+      expect(issues, code).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'TradeAnalysis', code })]));
+    }
+  }, 60_000);
+
+  // KNOWN GAP (T7.30-B2, reported, product code untouched): assessPlan returns details.extraConditions, but
+  // confirmPlan's issue (types.ts, trade-workflows.ts:94) passes on only details.breakeven, so the facade drops it.
+  it.fails('should name the extra conditions in details.extraConditions on ConditionCountNotOne through confirmPlan', async () => {
+    const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
+    const longCall = await optionPlanCommand(app, 'O-C');
+    const extra = { kind: 'UnderlyingPrice', price: '47.00' } as const;
+    const issues = await rejectedPlan(app, d, { ...longCall, plan: { ...longCall.plan, stops: [...longCall.plan.stops, extra] } });
+    expect(issues).toEqual(expect.arrayContaining([{ source: 'TradeAnalysis', code: 'ConditionCountNotOne', details: { extraConditions: [extra] } }]));
+  });
+
   it('should refuse a Buy 3 to close, an Execution dated 2026-11-23, an Expiration of 1 of 2, a settlement time on 2026-11-23, an Expiration on XYZ stock, an Expiration with an Execution, and a Buy after E1, each with its typed result and the dump unchanged', async () => {
     const { d, app } = await onboardedAt(MONDAY_NEXT_1700);
     const tradeId = (await confirmOption(app, 'O-S')).receipt.tradeId;

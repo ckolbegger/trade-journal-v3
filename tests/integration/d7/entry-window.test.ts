@@ -66,7 +66,9 @@ async function openDetail(app: Application, tradeId: string) {
 describe('Entry window cut by an option exit', () => {
   it('should cut the window at an exit Sell 1 dated Monday 10:30 after PC1 and PC2, put PC2 outside it, create a Shortfall of 1 contract, and disclose the moved Entry Resolution Point, the Entry Quality and the Lot Match in the receipt', async () => {
     const { d, app, tradeId } = await threeContractCall();
-    const pc1 = (await recordOption(app, tradeId, 'Buy', PC1)).receipt.createdFactIds[0]!;
+    const bought = await recordOption(app, tradeId, 'Buy', PC1);
+    const pc1 = bought.receipt.createdFactIds[0]!;
+    const pc1Execution = bought.receipt.createdFactIds[1]!;
     const pc2 = (await recordOption(app, tradeId, 'Buy', PC2)).receipt.createdFactIds[0]!;
     expect((await openDetail(app, tradeId)).entryResolution).toEqual({ kind: 'Resolved', positionChangeId: pc2 });
     expect((await openDetail(app, tradeId)).entryQuality).toEqual(ALL_THREE_QUALITY);
@@ -86,7 +88,7 @@ describe('Entry window cut by an option exit', () => {
     ]);
     // The exit sells from PC1's Lot first (FIFO over the effective facts), so one link is created.
     expect(sold.receipt.lotMatchChanges).toEqual([
-      expect.objectContaining({ kind: 'Created', openingExecutionId: expect.any(String) as unknown, quantity: { before: null, after: dec('1') } }),
+      expect.objectContaining({ kind: 'Created', openingExecutionId: pc1Execution, disposingExecutionId: sold.receipt.createdFactIds[1], quantity: { before: null, after: dec('1') } }),
     ]);
 
     // After restart the Detail says the same: resolved at PC1, filled with a Deviation, the stored Shortfall equal to the Detail's.

@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import { instrumentKey } from '../../../src/domain/instrument/index.ts';
+import { Rational } from '../../../src/domain/values/index.ts';
 import {
   bindingFor, closeReviewDisposition, complete, device, dumpAll, FRIDAY_1600, FRIDAY_1700, FRIDAY_DATE, MNO_PUT, onboarded, recordExpiration, restart, reviewAt, saveAction, saveMark, SATURDAY_1000,
   settlementTrades, workspaceStores, XYZ_CALL, type Device,
@@ -92,8 +93,13 @@ describe('I7.7 Review end to end with settlement', () => {
     if (resumed.completion.kind !== 'Incomplete') throw new Error('expected Incomplete');
     // Only T-3's settlement remains, a short Cash-Secured Put whose assignment this release can't record (decision 10).
     expect(resumed.completion.reasons).toEqual([expect.objectContaining({ code: 'SettlementDue', tradeId: t3, instrument: MNO_PUT })]);
+    // The explanation itself is UI wording (ReviewSettlement.assignmentSentence) keyed by the item's signed quantity, so the
+    // read-model fields that drive it are asserted: -2 contracts (short, so the assignment sentence), the 2026-11-20 expiration.
     const item3 = resumed.completion.reasons[0]!;
-    expect(item3.code === 'SettlementDue' && item3.quantity.numerator < 0n).toBe(true);
+    expect(item3.code === 'SettlementDue' && item3.quantity.equals(Rational.of(-2n))).toBe(true);
+    expect(item3.code === 'SettlementDue' && item3.expiration).toBe(FRIDAY_DATE);
+    // T-1's item was long (the exercise sentence): a positive quantity.
+    expect(item.quantity.equals(Rational.of(1n))).toBe(true);
     expect({ ...resumed, binding: undefined }).toEqual({ ...worked, binding: undefined });
 
     // No Review-session record, flag or placeholder in any store.

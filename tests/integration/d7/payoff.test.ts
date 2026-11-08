@@ -68,13 +68,21 @@ describe('I7.10 Payoff is not valuation', () => {
     expect(xyzMoved.current.evaluation.marketValue).toEqual(value('620'));
 
     // No theoretical option value anywhere in the view: nothing but the facts and the Planned Leg's terms feeds it.
-    const text = JSON.stringify(xyzMoved.payoff, (_k, v: unknown) => (typeof v === 'bigint' ? String(v) : v));
-    expect(text).not.toMatch(/theoretical|blackScholes|impliedVol|delta|greeks/i);
+    // The whole Detail is scanned, not only its payoff views.
+    const noTheoreticalValue = (view: unknown) =>
+      expect(JSON.stringify(view, (_k, v: unknown) => (typeof v === 'bigint' ? String(v) : v))).not.toMatch(/theoretical|blackScholes|impliedVol|delta|greeks/i);
+    noTheoreticalValue(afterPc2);
+    noTheoreticalValue(callMoved);
+    noTheoreticalValue(xyzMoved);
 
-    // After X1: the Planned view is unchanged and Current takes the realized 88.70 as its offset.
+    // After X1: the Planned view is unchanged, Current takes the realized 88.70 as its offset, and the value at XYZ 58.00
+    // follows the facts alone (the call's Mark and XYZ's Mark are as before): 198.70 less X1's fee of 0.65.
     await recordOption(app, tradeId, 'Sell', OC_X1);
     const afterX1 = await detail(app, tradeId);
     expect(afterX1.payoff.planned).toEqual(planned);
+    if (afterX1.current.evaluation.kind !== 'Evaluated') throw new Error('expected an evaluation');
+    expect(afterX1.current.evaluation.expirationValueAtUnderlyingClose).toEqual({ kind: 'Value', value: { underlyingPrice: dec('58'), value: dec('198.05') } });
+    noTheoreticalValue(afterX1);
     const second = currentOf(afterX1);
     expect(second.realizedOffset).toEqual(dec('88.70'));
     expect(second.zeroSet).toEqual([{ kind: 'Crossing', price: dec('56.0195') }]);
@@ -87,6 +95,7 @@ describe('I7.10 Payoff is not valuation', () => {
     if (!('payoff' in closed)) throw new Error('expected a Detail with payoff views');
     expect(closed.payoff.current).toEqual({ kind: 'NotApplicable', reason: 'NoRemainingPosition' });
     expect(closed.payoff.planned).toEqual(planned);
+    noTheoreticalValue(closed);
   }, 60_000);
 
   it('should give Current a Zero Range of 0 to 55 for X1 prime, and NotApplicable for both views of T-A', async () => {
@@ -94,8 +103,13 @@ describe('I7.10 Payoff is not valuation', () => {
     const tradeId = (await confirmOption(app, 'O-C')).receipt.tradeId;
     await recordOption(app, tradeId, 'Buy', OC_PC1);
     await recordOption(app, tradeId, 'Buy', OC_PC2);
+    const plannedBefore = (await detail(app, tradeId)).payoff.planned;
     await recordOption(app, tradeId, 'Sell', X1_PRIME);
-    const current = currentOf(await detailOf(app, tradeId));
+    const primed = await detailOf(app, tradeId);
+    if (!('payoff' in primed)) throw new Error('expected a Detail with payoff views');
+    expect(plannedBefore.kind).toBe('Value');
+    expect(primed.payoff.planned).toEqual(plannedBefore);
+    const current = currentOf(primed);
     expect(current.zeroSet).toEqual([{ kind: 'ZeroRange', from: r(0n), to: r(55n) }]);
     expect(current.minimum).toEqual({ kind: 'Value', value: { value: r(0n), attainedOn: [{ kind: 'Interval', from: r(0n), to: r(55n) }] } });
 

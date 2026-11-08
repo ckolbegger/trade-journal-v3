@@ -13,8 +13,9 @@ import {
 const B2: Fill = { quantity: '1', price: '0.40', economicTime: WEDNESDAY_10, fee: '0.65' };
 const B0: Fill = { quantity: '1', price: '0.55', economicTime: '2026-10-12T14:30:00Z', fee: '0.65' };
 
-// Raw damage with no application open: removes terminalTime, terminalDesc and activityDesc from every Trade and
-// clears journalObligations (the same damage D6's I6.14 writes).
+// Raw damage with no application open: removes terminalTime, terminalDesc, activityDesc and exposureStart from every
+// Trade, outstandingDue and anchorTradeId from every Debt, and clears journalObligations (D6's I6.14 damage, extended
+// to the Debt fields and exposureStart the rebuild also recomputes).
 async function damagePrivateState(factory: IDBFactory, databaseName: string): Promise<void> {
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
     const open = factory.open(databaseName);
@@ -22,8 +23,18 @@ async function damagePrivateState(factory: IDBFactory, databaseName: string): Pr
     open.onerror = () => reject(open.error ?? new Error('open failed'));
   });
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(['trades', 'journalObligations'], 'readwrite');
+    const tx = db.transaction(['trades', 'journalObligations', 'journalDebts'], 'readwrite');
     tx.objectStore('journalObligations').clear();
+    const debts = tx.objectStore('journalDebts').openCursor();
+    debts.onsuccess = () => {
+      const at = debts.result;
+      if (!at) return;
+      const debt = { ...(at.value as Record<string, unknown>) };
+      delete debt['outstandingDue'];
+      delete debt['anchorTradeId'];
+      at.update(debt);
+      at.continue();
+    };
     const cursor = tx.objectStore('trades').openCursor();
     cursor.onsuccess = () => {
       const at = cursor.result;
@@ -32,6 +43,7 @@ async function damagePrivateState(factory: IDBFactory, databaseName: string): Pr
       delete trade['terminalTime'];
       delete trade['terminalDesc'];
       delete trade['activityDesc'];
+      delete trade['exposureStart'];
       at.update(trade);
       at.continue();
     };
@@ -87,11 +99,20 @@ describe('I7.13 Rebuild equivalence', () => {
     for (const tradeId of [t2, t3, t4, t5]) await saveAction(app, d, tradeId);
 
     const databaseName = await currentDatabase(d.factory);
-    const indexes = async () => ({
-      byLifecycleTerminal: await readIndex(d.factory, databaseName, 'trades', 'byLifecycleTerminal'),
-      byLifecycleActivity: await readIndex(d.factory, databaseName, 'trades', 'byLifecycleActivity'),
-      journalObligations: workspaceStores(await dumpAll(d.factory))['journalObligations'],
-    });
+    // Every private index and private field: the Trade indexes, the obligation store, the Debt indexes, and the stored Trades
+    // and Debts themselves (which carry exposureStart, outstandingDue and anchorTradeId).
+    const indexes = async () => {
+      const stores = workspaceStores(await dumpAll(d.factory));
+      return {
+        byLifecycleTerminal: await readIndex(d.factory, databaseName, 'trades', 'byLifecycleTerminal'),
+        byLifecycleActivity: await readIndex(d.factory, databaseName, 'trades', 'byLifecycleActivity'),
+        journalObligations: stores['journalObligations'],
+        byOutstandingDue: await readIndex(d.factory, databaseName, 'journalDebts', 'byOutstandingDue'),
+        debtsByAnchorTrade: await readIndex(d.factory, databaseName, 'journalDebts', 'byAnchorTrade'),
+        trades: stores['trades'],
+        journalDebts: stores['journalDebts'],
+      };
+    };
     const before = await views(app);
     const indexesBefore = await indexes();
     // The Workspace holds Open and Closed option and stock Trades, a Settlement Due item, and enough private state to compare.
@@ -99,6 +120,11 @@ describe('I7.13 Rebuild equivalence', () => {
     expect((before.lists['Closed'] as unknown[]).length).toBe(5);
     expect(indexesBefore.byLifecycleTerminal).toHaveLength(5);
     expect((indexesBefore.journalObligations as unknown[]).length).toBeGreaterThan(5);
+    // Four deferred reflections (the Close Reviews of B, C and T-1, and T-5's add) are Outstanding Debts anchored to their
+    // Trades, and Trades with Executions carry exposureStart.
+    expect(indexesBefore.byOutstandingDue).toHaveLength(4);
+    expect(indexesBefore.debtsByAnchorTrade).toHaveLength(4);
+    expect((indexesBefore.trades as { exposureStart?: string }[]).filter((t) => t.exposureStart !== undefined).length).toBeGreaterThan(5);
     expect(before.review.kind).toBe('Ready');
     expect(before.details.filter((view) => (view as { payoff?: { current: { kind: string } } }).payoff?.current.kind === 'Value')).not.toHaveLength(0);
 
@@ -106,7 +132,10 @@ describe('I7.13 Rebuild equivalence', () => {
     // Damage the private state first: drop every Trade's private sort keys (emptying both indexes) and clear the obligation
     // store, so a rebuild that does nothing cannot pass.
     await damagePrivateState(d.factory, databaseName);
-    expect(await indexes()).toEqual({ byLifecycleTerminal: [], byLifecycleActivity: [], journalObligations: [] });
+    const damaged = await indexes();
+    expect(damaged).toEqual(expect.objectContaining({ byLifecycleTerminal: [], byLifecycleActivity: [], journalObligations: [], byOutstandingDue: [], debtsByAnchorTrade: [] }));
+    expect((damaged.trades as { exposureStart?: string }[]).filter((t) => t.exposureStart !== undefined)).toEqual([]);
+    expect((damaged.journalDebts as { anchorTradeId?: string; outstandingDue?: string }[]).filter((x) => x.anchorTradeId !== undefined || x.outstandingDue !== undefined)).toEqual([]);
     await rebuildPrivateState(d.factory, databaseName);
     app = await restart(app, d);
 
