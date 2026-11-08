@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import { ocExcess, optionClosedDetail, optionOpenDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
 import { incoherentDetailOf, openDetailOf, PC1, PC2, X1 } from '../../../tests/support/open-detail-fixtures.ts';
-import { ocChange, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_S1 } from '../../../tests/support/option-trade-fixtures.ts';
+import { ocChange, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_S1, osChange } from '../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -135,14 +135,32 @@ describe('option Trade Detail Settlement Due panel (rows 23.9 and 23.10)', () =>
   });
 });
 
+describe('option Trade Detail expiration line (decision 93, row 23.19)', () => {
+  it('should show no expiration line on a Closed option Trade Detail, whether it was closed by sale, buyback or expiration, and keep Expires Fri 20 Nov 2026 on an Open one', async () => {
+    renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    expect(await screen.findByText('Expires Fri 20 Nov 2026')).toBeTruthy();
+    cleanup();
+    for (const view of [
+      optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]),
+      optionClosedDetail('O-C', [OC_PC1, OC_PC2, ocChange('pc-x2', '2026-10-13T14:00:00Z', 5, 'Sell', '2', '3.00', '0.65')]),
+      optionClosedDetail('O-S', [OS_S1, osChange('pc-b2', '2026-10-13T14:00:00Z', 3, 'Buy', '2', '0.60', '1.30')]),
+    ]) {
+      renderView(view);
+      await screen.findByRole('region', { name: 'Result' });
+      expect(screen.queryAllByText(/^Expire[sd] [A-Z][a-z]{2} \d/)).toEqual([]);
+      cleanup();
+    }
+  });
+});
+
 describe('closed option Trade Detail (A119)', () => {
-  it('should show a Closed option Trade Closed via sale of 1 contract and expiration of 1 contract, Option Disposition Timing Mixed with both quantities, the expired line, and no Close Reason field', async () => {
+  it('should show a Closed option Trade Closed via sale of 1 contract and expiration of 1 contract, Option Disposition Timing Mixed with both quantities, no expiration line, and no Close Reason field', async () => {
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
     const result = await screen.findByRole('region', { name: 'Result' });
     expect(termValue(result, 'Terminal Disposition')).toBe('Closed via sale of 1 contract and expiration of 1 contract');
     expect(termValue(result, 'Option Disposition Timing')).toBe('Mixed: 1 before expiration, 1 at expiration');
     expect(within(result).queryByText('Close Reason', { selector: 'dt' })).toBeNull();
-    expect(screen.getByText('Expired Fri 20 Nov 2026')).toBeTruthy();
+    expect(screen.queryAllByText(/^Expire[sd] [A-Z][a-z]{2} \d/)).toEqual([]);
     // A Closed Trade's Current payoff has nothing left to show.
     expect(within(screen.getByRole('region', { name: 'Current Expiration Payoff' })).getByText('Not applicable: no open position')).toBeTruthy();
   });

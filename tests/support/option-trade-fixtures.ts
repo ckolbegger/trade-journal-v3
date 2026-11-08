@@ -1,8 +1,8 @@
 // D7's option reference Trades for the UI tests (breakdown, section 4), with the engine's own derivation.
 import { derive } from '../../src/domain/trade-analysis/index.ts';
-import { OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, ocChange, ocRecord, OS_CONTRACT, OS_ES, OS_S1, osRecord } from '../../src/domain/trade-analysis/option-trade.ts';
+import { OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, ocChange, ocRecord, OS_CONTRACT, OS_ES, OS_S1, osChange, osRecord } from '../../src/domain/trade-analysis/option-trade.ts';
 
-export { OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, ocChange, OS_CONTRACT, OS_ES, OS_S1 };
+export { OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, ocChange, OS_CONTRACT, OS_ES, OS_S1, osChange };
 
 // O-C after PC1, PC2, and X1 (a Long Call exit), and O-S after S1 (a Cash-Secured Put entry).
 export function optionTrade(which: 'O-C' | 'O-S') {

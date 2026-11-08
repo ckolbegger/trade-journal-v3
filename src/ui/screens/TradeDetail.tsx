@@ -313,8 +313,8 @@ function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | O
   return (
     <section className="card summary-card" aria-label="Summary">
       {view.summary && <p className="summary-text number"><TradeText text={tradeSummary(view.summary, timeZone)} /></p>}
-      {/* A contract due for settlement has its panel; before then and after, the line says when it expires or expired. */}
-      {contract && !settlementPanel && <p>{`${'terminalDisposition' in view ? 'Expired' : 'Expires'} ${expirationDate(contract.expiration)}`}</p>}
+      {/* A contract due for settlement has its panel; a Closed Trade's Terminal Disposition says how it ended (decision 93). */}
+      {contract && !settlementPanel && !('terminalDisposition' in view) && <p>{`Expires ${expirationDate(contract.expiration)}`}</p>}
       {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
       <dl className="figure-grid">
         {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
