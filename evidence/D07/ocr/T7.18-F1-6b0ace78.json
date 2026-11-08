@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 17483,
+    "input_tokens": 17335,
+    "output_tokens": 148,
+    "cache_read_tokens": 5760,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/PlanForm.tsx",
+      "files": [
+        "src/ui/screens/PlanForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "d0f4c2f0-caf6-4d13-bfe3-bf1afbd6ed9a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d0f4c2f0-caf6-4d13-bfe3-bf1afbd6ed9a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6b0ace78",
+      "resolved_base": "236b72cec724cfe8e5a9244b6b8e3f9162a683ad",
+      "resolved_head": "6b0ace78d0e2b36e62a4efcb55591c3b218d2947",
+      "exact_range": "236b72cec724cfe8e5a9244b6b8e3f9162a683ad..6b0ace78d0e2b36e62a4efcb55591c3b218d2947",
+      "source_artifact_sha256": "b4d9f0a3bbc4540a8bc9dd4e02ccfa862f1fb00e03d8ac0cecbce1dfa3ab886c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "33a81b347add0995e880d04b6a04fdcd4465eba12de2c78adec7cb3ff79f78db"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "33a81b347add0995e880d04b6a04fdcd4465eba12de2c78adec7cb3ff79f78db"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9633
+  }
+}

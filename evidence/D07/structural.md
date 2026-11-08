@@ -607,3 +607,28 @@ verify:capabilities OK: 19 operations, 11 variant-qualified, 8 routes, 4 Entry T
 ```
 
 The manifest (`src/coordinators/workspace/capabilities.ts`) adds: `confirmPlan` LongCall, LongPut, CashSecuredPut; `recordPositionChange` Option, SellToOpen, BuyToClose, Expiration; `getTradeDetail` and `DailyReview.getTrade` ExpirationPayoff, SettlementDue; `DailyReview.open` SettlementFamily; `browseTrades`, `MarketData.save` and `MarketData.query` Option; the three Strategies; schema 6. Assignment, Exercise, cash settlement, multi-leg and structure-value variants are absent. The route table (`src/app/routes.ts`) declares the same variants so the verifier's reachability checks hold; the forms arrive in T7.19 to T7.22. Also run: typecheck, tsc6, lint, lint:deps (exit 0), unit project (116 files, 1372 passed), integration project (77 files, 159 passed).
+
+### ocr review of `236b72ce`
+
+No findings (`ocr/T7.18-236b72ce.json`). The subagent also listed the new variants in `src/app/routes.ts`, because `verify:capabilities` fails when an installed variant has no presenting route; nothing checks that a screen renders a variant, so T7.19 to T7.24 must.
+
+### Cumulative run after T7.18 (`t7-18-capabilities`, at `236b72ce`)
+
+Browser stage `browser-auto 7853d74e`, full tier ("first matching path since 7853d74e: src/app/routes.ts"). Unit 1318 passed; integration 159 passed; **browser 132 failed, 34 passed (14.7 m)**; checks 12 of 13 (`verify:capacity`, expected). Reproduced `e2e/d1/plan.spec.ts:7` in the main session: the New Plan form preselected "Cash-Secured Put" (first in decision 85's label order now that the option Strategies are installed), so a stock Plan was rejected with "This Plan does not fit the chosen Strategy."
+
+### T7.18-F1 the Plan form preselects Long Stock by product key
+
+Suite-failure fix, commit `6b0ace78` (decision 88, point 8, brought forward from T7.19). Root cause: `PlanForm.tsx` preselected `strategyOptions[0]`. Case "should preselect Long Stock by product key when option Strategies are installed and sort first" in `PlanForm.test.tsx`; red `AssertionError: expected 'Cash-Secured Put' to be 'Long Stock'`, green after the form selects the row whose `productKey` is `strategy.long-stock` (first row only if none). The subagent's `npm run build:faults` and `npm run build:releases` were denied by the auto-mode classifier, so it ran no browser tests; the cumulative run below confirms the fix. ocr review: no findings (`ocr/T7.18-F1-6b0ace78.json`).
+
+### Cumulative run after T7.18-F1 (`t7-18-f1-long-stock-default`, at `6b0ace78`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 7853d74e`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1319 passed, exit 0 | `suite-runs/t7-18-f1-long-stock-default-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-18-f1-long-stock-default-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.9 m), exit 0 | `suite-runs/t7-18-f1-long-stock-default-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-18-f1-long-stock-default-checks.txt` |
+
+Tier: full, printed reason "first matching path since 7853d74e: src/app/routes.ts". Ports free before and after. T7.18 is complete.
