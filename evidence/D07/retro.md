@@ -35,6 +35,10 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 
 - **What happened:** the "Immutable revision" cell in `plan/implementation-plan.md` (line 122) holds every revision from 5 to 68. Every session reads it at the start, and each revision makes it longer.
 - **Proposed change:** move revisions 5 to 67 into `plan/revisions.md`, leave the current revision and a pointer to that file in the cell, and add each later revision to that file.
+- **Applied (2026-11-08, the user's direction, revision 70):**
+  - `plan/revisions.md` lists every revision, newest first, one bullet each. Revisions 69 to 5 are verbatim from the cell (checked with `cmp`).
+  - The cell now names revision 70 only and points to the file. It is down from about 20,000 characters to about 330.
+  - Each new revision adds its entry at the top of `revisions.md` and replaces the cell's entry.
 
 ## 6. The chart-layout fixes were checked only on the charts that failed
 
