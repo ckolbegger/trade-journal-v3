@@ -112,8 +112,8 @@ export interface EngineMeasurement {
   readonly bytesPerExpiration: number;
 }
 
-// Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
-// whole "Executions and settlement facts" count until D7 adds settlement facts. The 100,000
+// Measured kinds and their mature counts (D1 plan, section 1.3). The 200,000 "Executions and
+// settlement facts" are 100,000 entry and 97,000 exit Executions plus 3,000 Expirations. The 100,000
 // Position Change Reflection outcomes are split as D5 section 1.4 does: 65% completed and 15%
 // declined at capture (each priced from its own measured bytes), 18% deferred then answered, 1.6%
 // deferred then declined, and 0.4% still Outstanding (measured as Debts). From D6 the 100,000 Position
