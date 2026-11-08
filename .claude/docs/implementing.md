@@ -31,7 +31,8 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
   - the assumptions and decisions the task relies on;
   - the files and modules it builds on, including public types added by earlier tasks;
   - any `specs/` ranges it needs;
-  - its scope limits: what later tasks own, and any temporary rule the task may need until then.
+  - its scope limits: what later tasks own, and any temporary rule the task may need until then;
+  - every bullet in the handoff's "Notes for later tasks" list that names this task, copied in word for word (D7 retro, finding 2). In the handoff update after the task, delete each bullet once every task it names has had it, so the list holds only notes still owed.
 - The agent definition holds the TDD procedure, the first-run mutation check, the working rules (Edit tool only, scratch directories, exit codes, browser runs and ports, rebuilding after a mutation, staging), committing, the clean-tree check, and the return format, so the brief doesn't repeat them. Likewise, `suite-runner.md` holds its port checks and how it waits for a backgrounded stage, and `ocr-review.md` holds the relocated review for test-only commits.
 
 ## After each task
@@ -48,7 +49,7 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
    - **Browser tier (decision 71, P55).** After a task, the browser stage is `browser-auto <base>`, where `<base>` is the commit the task started from, recorded in the handoff's progress section before the task's brief (A180). It runs the full tier when the task's commits touch P55's paths (UI, app shell, service worker, delivery, persistence, styles, `index.html`, `e2e/`, the Playwright or Vite config, the package files or the release tools), and the task tier (`@every-task` plus the current deliverable's `e2e/` folder) otherwise. Record the tier it chose and its printed reason in `structural.md`. When it picks the full tier it runs nothing itself; the runner then makes two foreground calls, `browser-1` (`e2e/d1`, `d2`, `d4`) and `browser-2` (`e2e/d5` onward), each with the 600000 ms limit (decision 98, revision 65). New deliverables' folders join `browser-2` (the `test:e2e:2` script). If a runner reports either stage above 8 minutes, add a `browser-3` stage for the newest folders.
    - **Full tier (`browser-full`, the runner's input for `browser-1` then `browser-2`)** before every critic, in the deliverable's browser-suite task (T6.27 in D6), and whenever a run needs it.
 4. Record the returned table in `evidence/D<nn>/structural.md`.
-5. Update the handoff's progress section, commit everything (evidence, raw ocr outputs, handoff), and start the next task without waiting.
+5. Update the handoff's progress section. Add one bullet to "Tasks done": the task, its commits, its bug tasks and its run label. Put each warning for a later task in its own bullet under "Notes for later tasks", beginning with the IDs of the tasks it is for ("For T7.19, T7.23: …"). Then commit everything (evidence, raw ocr outputs, handoff), and start the next task without waiting.
 6. Add any flagged item, such as a first-run pass or a dismissed finding, to the handoff's open questions for the final report. A deliverable runs from one prompt to its gate: the session stops only for the conditions the handoff lists under "Running a whole deliverable".
 
 ## Writing the next deliverable's handoff
@@ -56,5 +57,7 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
 Give its reading list in the form above, naming the sections to read, and name this file in it. Carry over two parts of the current handoff:
 - the "Starting a session" paragraph, with its one-line prompt (*"Read plan/D<nn>-handoff.md and follow it."*), so the session reads and then starts the first task without stopping;
 - the "Running a whole deliverable" stop conditions.
+
+Its progress section is a short table (next task, base commit, last commit, decisions made, open questions) followed by two lists, "Tasks done" and "Notes for later tasks", one bullet per entry.
 
 Its location checks include `ocr llm test`, expecting `✓ Connection test successful`, and `git rev-parse --git-path hooks`, expecting `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`).
