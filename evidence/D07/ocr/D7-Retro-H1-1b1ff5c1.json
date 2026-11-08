@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 50757,
+    "input_tokens": 49792,
+    "output_tokens": 965,
+    "cache_read_tokens": 12928,
+    "elapsed": "45s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/install-hooks.sh",
+      "content": "This early return checks the effective hooks path, not whether it is configured per worktree. If `.githooks` is already set in the repository-local or global config, `npm install` skips both enabling `extensions.worktreeConfig` and writing the worktree-specific setting. The hook configuration therefore remains shared/inherited rather than isolated as required, and a later shared-config change can silently disable it in this worktree. Always perform the worktree configuration, or only skip after confirming worktreeConfig is enabled and the value exists in the worktree scope.",
+      "existing_code": "if [ \"$(git rev-parse --git-path hooks 2\u003e/dev/null)\" = \".githooks\" ]; then\n  echo \"install-hooks: already enabled (core.hooksPath=.githooks)\"\n  exit 0\nfi",
+      "start_line": 10,
+      "end_line": 13,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/install-hooks.sh",
+      "content": "Enabling worktreeConfig requires migrating any existing shared core.worktree and core.bare=true settings into the main worktree's config.worktree. Without that migration, Git starts applying those previously main-worktree-only settings to linked worktrees too. For example, running npm install in a worktree attached to a bare repository can leave that worktree treated as bare, breaking subsequent working-tree commands. Handle the migration before enabling the extension, or detect these configurations and skip with an actionable diagnostic rather than changing the shared configuration.",
+      "existing_code": "git config extensions.worktreeConfig true \u0026\u0026 git config --worktree core.hooksPath .githooks || { echo \"install-hooks: git config failed; skipped\"; exit 0; }",
+      "start_line": 14,
+      "end_line": 14,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "package.json",
+        "tools/install-hooks.sh",
+        "tools/verify-hooks.sh"
+      ]
+    }
+  ],
+  "session_id": "46958f4d-9d2c-4330-bb2f-541d09f81706",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "46958f4d-9d2c-4330-bb2f-541d09f81706",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1b1ff5c1",
+      "resolved_base": "fd17e3a2175372b2b923a1edb069bd076990b648",
+      "resolved_head": "1b1ff5c1e072ae89c0f5e817a34f7406ecb66d3b",
+      "exact_range": "fd17e3a2175372b2b923a1edb069bd076990b648..1b1ff5c1e072ae89c0f5e817a34f7406ecb66d3b",
+      "source_artifact_sha256": "cacff35e3b18c714f5874d56f3d210d330a3c97a37ddde3db138de93ceecb94f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "64e78c96488d65f5563ffae3dcf953f50dddeb2ebd62123bea7da892ecb7a1a3",
+          "path": "tools/install-hooks.sh",
+          "fingerprint": "74ff53dbec60def9961a0e76c5a2c5131bd6061c184eae69545684ad41386495"
+        },
+        {
+          "item_id": "658b03af7682a8dc5e0c70a7184315dabfdc73a5440fdf56134165b900608eca",
+          "path": "tools/verify-hooks.sh",
+          "fingerprint": "d3500827f2f312c9ec7b441f8a19244519f4a1a243d2bc067207321cef0bbfcd"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "8eeffe7a179bb62a4d675883f5068041be6ddcb7843257b101b5d1ec1b49d233"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "64e78c96488d65f5563ffae3dcf953f50dddeb2ebd62123bea7da892ecb7a1a3",
+          "path": "tools/install-hooks.sh",
+          "fingerprint": "74ff53dbec60def9961a0e76c5a2c5131bd6061c184eae69545684ad41386495"
+        },
+        {
+          "item_id": "658b03af7682a8dc5e0c70a7184315dabfdc73a5440fdf56134165b900608eca",
+          "path": "tools/verify-hooks.sh",
+          "fingerprint": "d3500827f2f312c9ec7b441f8a19244519f4a1a243d2bc067207321cef0bbfcd"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "8eeffe7a179bb62a4d675883f5068041be6ddcb7843257b101b5d1ec1b49d233"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 44695
+  }
+}

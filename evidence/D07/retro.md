@@ -47,3 +47,17 @@ Covers the session from T7.29-B12 to the D7 push. Findings are ordered by severi
 - **`CLAUDE.md`** is small (about 3,000 characters).
 - **Earlier problems already have fixes:** the ocr-only rule (`implementing.md`, 2026-11-08) and the two-stage full browser tier (decision 98) address this session's bug-task inflation and the 10-minute Bash limit.
 - **The guard hook's two refusals** (an inline Python write and an in-place `sed`) were the hook working as intended.
+
+## D7-Retro-H1: install and verify the pre-commit hook
+
+- **Commit `1b1ff5c1`.** `package.json` gains `"prepare": "sh tools/install-hooks.sh"` and `"verify:hooks": "sh tools/verify-hooks.sh"` (the checks stage runs every `verify:*` script). `install-hooks.sh` works on the current directory (npm runs `prepare` at the package root), exits 0 with one line when git is missing, the directory is not a work tree or `.githooks` is absent, prints "already enabled" when `git rev-parse --git-path hooks` already prints `.githooks`, and otherwise enables `extensions.worktreeConfig` and sets `core.hooksPath` with `--worktree`. `verify-hooks.sh` exits 1, naming the fix, unless the hooks path is `.githooks` and `.githooks/pre-commit` is executable.
+- **Verified:** `npm run verify:hooks` and `npm run prepare` exit 0 here (re-run by the main session: "pre-commit hook enabled"); in a scratch clone, verify fails before install, install enables the hook, a second install changes nothing, and verify then passes; outside any repository install skips with exit 0. The pre-commit hook ran typecheck and lint on the commit. No cumulative run: no application code changed (the user, 2026-11-08).
+- **ocr** (`ocr/D7-Retro-H1-1b1ff5c1.json`): 3 files, 2 comments, both Doubtful, so both become bug tasks:
+
+  | Severity | Location | ocr's claim | Assessment |
+  |---|---|---|---|
+  | medium | `tools/install-hooks.sh:14` | Enabling `extensions.worktreeConfig` with a shared `core.bare=true` or `core.worktree` makes linked worktrees inherit them | Doubtful (this repo has `core.bare false`). **D7-Retro-H1-B1** |
+  | medium | `tools/install-hooks.sh:10-13` | The "already enabled" exit tests the effective hooks path, so a shared or global `.githooks` skips the per-worktree setting | Doubtful (here it is set at worktree scope). **D7-Retro-H1-B2** |
+
+- **D7-Retro-H1-B1:** `install-hooks.sh` should change nothing and say why when the shared config has `core.bare=true` or a `core.worktree` value, leaving `verify:hooks` to fail.
+- **D7-Retro-H1-B2:** `install-hooks.sh` should treat the hook as enabled only when `core.hooksPath` is `.githooks` at worktree scope, so a shared or global value still gets the worktree setting.
