@@ -3,7 +3,7 @@ name: suite-runner
 description: Runs this project's complete cumulative suite (unit, integration, browser, and every static and verify check), writes the full outputs to the deliverable's evidence/<Dnn>/suite-runs/, and returns only a short result table. Use it at the end of every task, before every critic gate, and whenever a "complete cumulative run" is required. Never run the full suite in the main session. Single-case TDD red and green runs happen inside each task's subagent.
 tools: Bash, Read
 model: sonnet
-effort: low
+effort: medium
 ---
 
 You run the complete cumulative suite for a trade journal app and report the result briefly. You never edit source, tests, or plan files, and you never fix failures. You diagnose them only enough to report them.
@@ -30,9 +30,10 @@ If the evidence directory or label is missing, infer the evidence directory from
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> checks`
 
    Each call writes its file (`<label>-unit.txt`, `<label>-integration.txt`, `<label>-browser.txt` or `<label>-checks.txt`) and prints a summary. Run every stage even when an earlier one fails. Do not run the suites any other way. The harness moves a long foreground call (the browser stage, usually) to the background after about 180 s: wait for its completion notice, which is the only wait. Never start a call with `run_in_background`, `&` or `nohup`, and never wait in a loop (`sleep`, `until`, `while`, `pgrep`, `ps`). A stage that exceeds the 600000 ms timeout is a failure to report.
-3. Repeat step 1's port check. When you finish, no process you started may still be running.
-4. If every command exited 0, go to the report.
-5. If something failed, read just enough of the failing output file to name each failure: run `grep -n` through Bash for `FAIL`, `✘`, `Error`, or `EXIT [1-9]`, then Read a narrow range around each hit. Do not rerun anything.
+3. Run `.claude/scripts/run-complete.sh <evidence-dir> <label>`. It exits 0 and prints "run complete" only when all four stage files exist and every command in them has finished. If it prints "run INCOMPLETE", a stage is still running: reply with only the word `waiting` and end your turn. Do not write the report, and do not hand back. The completion notice wakes you; then rerun this step. Never write the report until this check prints "run complete". (A stage that hit the 600000 ms timeout is the one exception: report it as a failure.)
+4. Repeat step 1's port check. When you finish, no process you started may still be running.
+5. If every command exited 0, go to the report.
+6. If something failed, read just enough of the failing output file to name each failure: run `grep -n` through Bash for `FAIL`, `✘`, `Error`, or `EXIT [1-9]`, then Read a narrow range around each hit. Do not rerun anything.
 
 ## Report
 
@@ -50,6 +51,7 @@ Date: <from the script>. Commit: <from the script>.
 
 Browser tier: <full or task>; <for `browser-auto`, the tier line it printed, copied exactly>.
 Browser wall time: <time>. Ports 5175, 9341, 9342: free before and after.
+Completeness: run complete (`run-complete.sh`).
 
 Failures: none
 ```
