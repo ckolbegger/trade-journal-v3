@@ -653,3 +653,32 @@ Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 54ac5150`.
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-35-long-breakeven-checks.txt` |
 
 Tier: task, printed reason "no changed path since 54ac5150 is on the full-tier list". Ports free before and after. T7.35 is complete.
+
+## T7.36 UI: changes to existing approved words
+
+Behavioral (decision 87); commit `f2c1371e`, four cases, each with a genuine red: "Settlement Due" capitalized at every length (K4); quantity findings "in the position" with the singular at 1 (C1, K9, row 20.6), including "doesn't settle the 1 contract in the position" and the stock "100 shares in the position"; stock exit rows "Execution 1: The position has only 60 shares." / "…only 1 share." / "…more shares than the position has." and the members issue "…enough shares in the position." (rows 20.6, 20.7); receipt Execution lines without the fee (C5; red `expected [ 'Buy 20 XYZ @ $51.00, fee $1.00' ] to deeply equal [ 'Buy 20 XYZ @ $51.00' ]`). No first-run passes. `PHRASES` and `CODES` unchanged. A local `isOne`/`plural1` pair in `calculation-words.ts` (the `plural` helper lives in `screens/ReviewCard.tsx`, a layer above). Existing assertions moved in five unit files and three e2e specs. One `test:unit` run had one uncaptured failure that two reruns didn't reproduce (flaky; flagged).
+
+### ocr review of `f2c1371e`
+
+`ocr/T7.36-f2c1371e.json`, 1 comment, Doubtful, **dismissed**: a nested singular/plural ternary in `position-change-issues.ts:31` against a "no nested ternaries" rule that the repo doesn't have; the output matches rows 20.6 and K9 (as T7.3's and T7.5's nested-ternary findings were dismissed). The reviewer also noted a harmless missing space in `findingWords =(`; lint passes.
+
+### Cumulative run after T7.36 (`t7-36-existing-words`, at `f2c1371e`)
+
+Browser stage `browser-auto 9ab16f31`, full tier. Unit 1321 passed; integration 159 passed; browser 1 failed, 165 passed (7.8 m): `e2e/d2/ui-alignment.spec.ts:1696` (T2.62) still expected "fee" beside each receipt row's amount (`Error: receipt shows a fee`), stale since C5; checks 12 of 13 (`verify:capacity`, expected).
+
+### T7.36-F1 T2.62 expects no fee on receipt rows
+
+Test-only fix, commit `ca93e623`: the T2.62 case now requires no fee on receipt rows and keeps its one-phrase, price-after-"@" and no-overflow checks; the Detail-row fee placement test is unchanged. `npx playwright test e2e/d2/ui-alignment.spec.ts`: 45 passed. ocr (relocated, test-only): no findings (`ocr/T7.36-F1-ca93e623.json`).
+
+### Cumulative run after T7.36-F1 (`t7-36-f1-receipt-no-fee`, at `ca93e623`)
+
+Run by `suite-runner` on 2026-11-07, browser stage `browser-auto 9ab16f31`.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 113 files, 1321 passed, exit 0 | `suite-runs/t7-36-f1-receipt-no-fee-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-36-f1-receipt-no-fee-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (7.8 m), exit 0 | `suite-runs/t7-36-f1-receipt-no-fee-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-36-f1-receipt-no-fee-checks.txt` |
+
+Tier: full, printed reason "first matching path since 9ab16f31: e2e/d2/ui-alignment.spec.ts". Ports free before and after. T7.36 is complete.

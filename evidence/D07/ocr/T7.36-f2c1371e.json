@@ -1,0 +1,128 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 82457,
+    "input_tokens": 81726,
+    "output_tokens": 731,
+    "cache_read_tokens": 16512,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/position-change-issues.ts",
+      "content": "This nests the singular/plural ternary inside the availability ternary, contrary to the requested no-nested-ternaries rule. Use an early return for missing availability, then format the quantity once and select the noun separately.",
+      "suggestion_code": "  if (isExceedsOpenQuantityIssue(issue)) {\n    if (!issue.available) return 'more shares than the position has.';\n    const available = quantity(issue.available);\n    const unit = available === '1' ? 'share' : 'shares';\n    return `The position has only ${available} ${unit}.`;\n  }",
+      "existing_code": "  if (isExceedsOpenQuantityIssue(issue)) return issue.available ? `The position has only ${quantity(issue.available)} ${quantity(issue.available) === '1' ? 'share' : 'shares'}.` : 'more shares than the position has.';",
+      "start_line": 31,
+      "end_line": 31,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Position change and exit receipt calculation wording and issue handling",
+      "files": [
+        "src/ui/calculation-words.ts",
+        "src/ui/screens/ExitReceipt.tsx",
+        "src/ui/screens/PositionChangeReceipt.tsx",
+        "src/ui/screens/position-change-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "c1940243-4a9e-41c0-9b03-164aba617df9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c1940243-4a9e-41c0-9b03-164aba617df9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f2c1371e",
+      "resolved_base": "9ab16f3180f1b7ffa201f21a74c48e7501484138",
+      "resolved_head": "f2c1371e2e1906b2b864f0ce3f34da46da98e6d6",
+      "exact_range": "9ab16f3180f1b7ffa201f21a74c48e7501484138..f2c1371e2e1906b2b864f0ce3f34da46da98e6d6",
+      "source_artifact_sha256": "fe2c2f296ab68a5deb817f2307ae23fe3cd75b56916b5409e030ebf99c4bd882"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "bea8716eaf244952f784ff0e11281927861dfba10e51c6a52797135771458d33"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "13b211721fdf181fce9f4bac118e0fbd9e632c06a29b96df451e23aad2bf83bf"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "12dac8fea1c1d07d197656e589e09ff3316628b2bf593f88c0ab04f7fbdbfefe"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "ff8c544cd5ffb57627ab75183bca036c39db8ae1730a1874ef7765f4533252b1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "bea8716eaf244952f784ff0e11281927861dfba10e51c6a52797135771458d33"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "13b211721fdf181fce9f4bac118e0fbd9e632c06a29b96df451e23aad2bf83bf"
+        },
+        {
+          "item_id": "7d52d85a5dcc833fee5642e16c8942b905a440aeb3b90a8ad3a47ff2762f257a",
+          "path": "src/ui/screens/ExitReceipt.tsx",
+          "fingerprint": "12dac8fea1c1d07d197656e589e09ff3316628b2bf593f88c0ab04f7fbdbfefe"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "ff8c544cd5ffb57627ab75183bca036c39db8ae1730a1874ef7765f4533252b1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34169
+  }
+}
