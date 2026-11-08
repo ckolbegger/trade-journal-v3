@@ -2118,3 +2118,17 @@ No release-history run (decision 76). Ports 5175, 9341, 9342 free before and aft
 - **Cases:** (1) after the expiration date, no Mark resolution for the expired contract, red then green; (2) on the expiration date a missing contract Mark is still reported, **first-run pass, flagged**; mutation `>=` for `>` failed it with an AssertionError; restored.
 - **Checks:** `src/coordinators/trade-views` and `TradeDetail` 158 passed; typecheck, tsc6, lint, lint:deps exit 0.
 - **ocr** (`ocr/T7.32-B6-caa825dd.json`): 1 file reviewed, 0 comments. No findings. Reviewer's note (not an ocr finding): the Open-list path still passes `markResolution` through, as recorded above.
+
+### Gate run `t7-32-b6-gate`
+
+At HEAD `526edb78`; full tier. `run-complete.sh`: run complete.
+
+| Stage | Result | Output |
+|---|---|---|
+| Unit | 1,435 passed (121 files) | `suite-runs/t7-32-b6-gate-unit.txt` |
+| Node integration | 191 passed (94 files) | `suite-runs/t7-32-b6-gate-integration.txt` |
+| Browser 1 (Chromium) | 119 passed (4.8 min) | `suite-runs/t7-32-b6-gate-browser-1.txt` |
+| Browser 2 (Chromium) | 64 passed (4.0 min) | `suite-runs/t7-32-b6-gate-browser-2.txt` |
+| Checks | 13 of 13 | `suite-runs/t7-32-b6-gate-checks.txt` |
+
+No release-history run (decision 76). Ports free before and after.
