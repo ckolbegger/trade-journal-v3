@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 37696,
+    "input_tokens": 37316,
+    "output_tokens": 380,
+    "cache_read_tokens": 7680,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/option-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "c3f1a31d-d22e-4ef1-8ea2-ab4234ec3fb4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3f1a31d-d22e-4ef1-8ea2-ab4234ec3fb4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "bae86299",
+      "resolved_base": "90bd35716c949729be9871be001f473051f6dd84",
+      "resolved_head": "bae86299ab0a91022351100e18264b3a4b5e841a",
+      "exact_range": "90bd35716c949729be9871be001f473051f6dd84..bae86299ab0a91022351100e18264b3a4b5e841a",
+      "source_artifact_sha256": "16ebf04e79c8053420e2768683f55a0214606b3a577bcecce0e40d1b15e35c0b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "0e54fb15f7ac8d842c314487e344d0a7500697ca8df5da0b459b1f66e37c998f"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "d8c1d40eb2f836243332c115e470c1890af0bfb69bd6877fda3a8f72960f8755"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "f6d59723646c1478ab79c270e754d1231f7fcbc2df24bddccd54f6b3c46a5a6f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "0e54fb15f7ac8d842c314487e344d0a7500697ca8df5da0b459b1f66e37c998f"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "d8c1d40eb2f836243332c115e470c1890af0bfb69bd6877fda3a8f72960f8755"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "f6d59723646c1478ab79c270e754d1231f7fcbc2df24bddccd54f6b3c46a5a6f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 16375
+  }
+}

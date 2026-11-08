@@ -1,0 +1,128 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 105742,
+    "input_tokens": 104866,
+    "output_tokens": 876,
+    "cache_read_tokens": 25856,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "Each due trade now waits for its settlement-time Market Data query before the next trade is processed. These lookups are independent, and the Open page can contain 200 trades, so a book of expired options incurs the sum of all lookup latencies before any rows can render. Build the evaluation/settlement entries with `Promise.all` (as `closeReasonsOf` does), optionally sharing settlement-time lookups for identical expiration dates.",
+      "existing_code": "            evaluations.set(summary.tradeId, { evaluation, settlement: await settlementItemsOf(summary.tradeId, evaluation) });",
+      "start_line": 906,
+      "end_line": 906,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade list view coordination, calculation labels, and test fixtures",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/ui/calculation-words.ts",
+        "src/ui/screens/TradeList.tsx",
+        "tests/support/views-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "e3641dcb-79ab-4d21-9a13-3fff50924555",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e3641dcb-79ab-4d21-9a13-3fff50924555",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "7ab6b5e4",
+      "requested_head": "772dcf30",
+      "resolved_base": "7ab6b5e487d40d11a19607de4f1891df722d1faf",
+      "resolved_head": "772dcf3013c1519a69471716c2011da56ee00c9a",
+      "exact_range": "7ab6b5e487d40d11a19607de4f1891df722d1faf..772dcf3013c1519a69471716c2011da56ee00c9a",
+      "source_artifact_sha256": "f2fe0b3f14f1f61b2997d5f07f78f1da86fb9dc25322aae20de768869680758a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "4e13bf1f426c69111896fcf90951b5216d757700782446bc030f86b5ab3ba0fa"
+        },
+        {
+          "item_id": "b12ad24522f1026301b11bf501681fcd0601ce407898c5b05ed4a4e72f117cc7",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "6aadc242a556abd87368ba030bf8609507739f798f5d385f451a5f450cf089af"
+        },
+        {
+          "item_id": "c2dbec2c9bb2ef428502d8bc91be0e2ae839d1e370e26fe58913945c650406de",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "c6bbdcd85469100e4c87ca02c7b0932f689f5e6a2718c8b740bcb0166988c6d8"
+        },
+        {
+          "item_id": "e03970da17b90aad3e07d5a2a2c7feb2e31ff2144e52de64bc7d5fac49060e5d",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "31bc1fe8a3d7e699e961e42eec928b79dd5adcfb009c7fbb3c2a15813b798bd0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "4e13bf1f426c69111896fcf90951b5216d757700782446bc030f86b5ab3ba0fa"
+        },
+        {
+          "item_id": "b12ad24522f1026301b11bf501681fcd0601ce407898c5b05ed4a4e72f117cc7",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "6aadc242a556abd87368ba030bf8609507739f798f5d385f451a5f450cf089af"
+        },
+        {
+          "item_id": "c2dbec2c9bb2ef428502d8bc91be0e2ae839d1e370e26fe58913945c650406de",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "c6bbdcd85469100e4c87ca02c7b0932f689f5e6a2718c8b740bcb0166988c6d8"
+        },
+        {
+          "item_id": "e03970da17b90aad3e07d5a2a2c7feb2e31ff2144e52de64bc7d5fac49060e5d",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "31bc1fe8a3d7e699e961e42eec928b79dd5adcfb009c7fbb3c2a15813b798bd0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 43289
+  }
+}

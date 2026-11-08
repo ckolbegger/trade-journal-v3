@@ -1,0 +1,155 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 144285,
+    "input_tokens": 142781,
+    "output_tokens": 1504,
+    "cache_read_tokens": 35456,
+    "elapsed": "45s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_read": 16,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "This changes Daily Review settlementTime from an Instant string to a CalculationResult, but src/coordinators/daily-review/settlement.test.ts still asserts raw FRIDAY_CLOSE strings (lines 117–118, 157–158, 186, and 211). Those existing assertions now fail for covered dates. Update them to expect { kind: 'Value', value: FRIDAY_CLOSE }, and add a mixed covered/uncovered case to verify the new unavailable result does not fail the review.",
+      "existing_code": "    return Promise.all(due.map(async ({ tradeId, instrument, quantity, expiration }) =\u003e ({ tradeId, instrument, quantity, expiration, settlementTime: await settlementTimeOf(deps.marketData, instrument, expiration) })));",
+      "start_line": 350,
+      "end_line": 350,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review, settlement, and expiration workflow",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/settlement.ts",
+        "src/ui/screens/ExpirationForm.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail views and option detail fixtures",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/option-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "e2ccf099-0eb1-48fb-9143-55c876a1f6d8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e2ccf099-0eb1-48fb-9143-55c876a1f6d8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0152cfa7",
+      "resolved_base": "d2bf756032abb4adc560b322446233d3dd0ade26",
+      "resolved_head": "0152cfa70b2cdb5ccc9900fac845a4d787dd44f9",
+      "exact_range": "d2bf756032abb4adc560b322446233d3dd0ade26..0152cfa70b2cdb5ccc9900fac845a4d787dd44f9",
+      "source_artifact_sha256": "4301dca1bc0034db61bb4e3f7f34f4b4cb0663a6a000ea02d0ad33f0a1e7ff1e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "cbbc1960d40fb2645d57e80d1f481bebd84cc4204c17fe314b2f86f8122df017"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "a02092bf606af13a8bbc97a60a35a3acfad2d4af3f0fc8100b06a83dbb88f283"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "bf453803f0e44c6467d32542fce78a61237a2866071d742e2d10d874fc0c0b5a"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "60f640fff51442740b394f1bcc955dd9723e8b240572478929a8197d327d3845"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "c620ebd4e022c72248e0726cc981c96b9dbd3623461efbcf0a1d74f684503242"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "42ac91034f20009e6c3e6d23af04632f1ff3e0c16ab8b765f7dc5f41026b094f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "cbbc1960d40fb2645d57e80d1f481bebd84cc4204c17fe314b2f86f8122df017"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "a02092bf606af13a8bbc97a60a35a3acfad2d4af3f0fc8100b06a83dbb88f283"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "bf453803f0e44c6467d32542fce78a61237a2866071d742e2d10d874fc0c0b5a"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "60f640fff51442740b394f1bcc955dd9723e8b240572478929a8197d327d3845"
+        },
+        {
+          "item_id": "8f669bf40c4e0581202e35b0025c05599ce1cb413cf1791b9979e09d426e5d54",
+          "path": "src/ui/screens/ExpirationForm.tsx",
+          "fingerprint": "c620ebd4e022c72248e0726cc981c96b9dbd3623461efbcf0a1d74f684503242"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "42ac91034f20009e6c3e6d23af04632f1ff3e0c16ab8b765f7dc5f41026b094f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 45445
+  }
+}

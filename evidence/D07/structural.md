@@ -872,3 +872,81 @@ Run by `suite-runner` on 2026-11-08, browser stage `browser-auto 284a4c2d`; `run
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-22-payoff-view-checks.txt` |
 
 Tier: full, printed reason "first matching path since 284a4c2d: src/app/types.ts". Ports free before and after. T7.22 is complete.
+
+## T7.23 UI: option lists and Trade Detail
+
+Behavioral (decisions 48, 87, 88); commit `90bd3571`. Three planned cases (case 1 as three tests: contract label, Exercise Intent and summary; Planned and Current payoff sections; the Settlement Due panel with Record expiration only while Writable), each with a genuine red (e.g. `expected '1 of 2 shares' to be '1 of 2 contracts'`; region "Planned Expiration Payoff" not found; region "Settlement Due" not found; `expected 'Closed via sale of 2 shares' to be 'Closed via sale of 1 contract and exp…'`; the "Settlement Due" row badge not found), plus extra cases with genuine reds for each carried-over item: Trade Summary Option text (`Error: option Trade summaries are worded by T7.23`, the T7.16 throw), the Planned Detail's `payoff`, `confirmedDetail` for an option Plan, row 23.11, Executions and "Settlement (1)" (23.7, C6, K18), Detail Lot Matches "Opened"/"Closed" (20.13), Deviation and Fulfillment in contracts (20.15, 23.2), Integrity cell (23.8; code written ahead, reverted for a genuine red, restored), At entry (23.5), Conditions columns (23.17), option Stop/Target as Underlying prices (C3). One invalid red (a fixture import) annotated. **Three first-run passes (flagged), each mutation-checked:** the extended T7.22-B3 reload case now asserts the Planned payoff (mutation: Planned `PayoffView` given `view.payoff.current`, role img "Planned payoff at expiration by XYZ price" not found); Long Stock Detail's two "Not applicable: no option expiration" sections (K1; mutation: Current given `NotApplicable(NoRemainingPosition)`); Net cost "$248.70 credit" and "$190.65" (mutation `< 0n` to `> 0n` in `netCost`, `expected '−$248.70' to be '$248.70 credit'`). Unit 121 files, 1432 passed; integration 159 passed; typecheck, tsc6, lint, lint:deps, verify:wording, verify:capabilities exit 0. Browser not run (the classifier denied the subagent `build:faults` and `build:releases`; the suite-runner's browser stage builds them).
+
+Read-model change inside a UI task (accepted: A119 requires a Planned Detail's Planned payoff, and the extended reload test needs it from the read): `PlannedTradeDetail.payoff: ExpirationPayoffs` from `payoffOf` (`OpenTradeDetail` inherits it, `IncoherentTradeDetail` omits it); three trade-views key-list tests updated. `confirmedDetail` now carries the option summary, `exerciseIntent` and `payoff`, so T7.22's `plannedPayoff` navigation state is removed. `tradeSummary(summary, timeZone?)` takes the current year in the Workspace zone. New `option-words.ts`, `isSettlementDue` (`calculation-words.ts`), `closedViaOptionShort`, `closedByExpiration`, `timingLabel`; `tests/support/option-detail-fixtures.ts`. The Settlement Due heading's words come from `unavailableLabel` (the lint owns "Settlement Due").
+
+Not done, becoming bug tasks (the task's own rows): row 23.18 "Underlying Mark" "$52.00 · Manual" (the read model carries only the contract Mark's provenance); an Open row shows "Settlement Due" only from the day after expiration (`OpenTradeItem` has no settlement field, the badge keys on `Unavailable(SettlementDue)`), while Detail shows its panel on the expiration date (B7.4, A113).
+
+### ocr review of `90bd3571`
+
+`ocr/T7.23-90bd3571.json`, 3 comments:
+1. Valid: the incoherent-Detail branch (`TradeDetail.tsx:215`) renders only `ExecutionsSection`, so a recorded Expiration vanishes when replay fails; the Open and Closed branches render `SettlementSection`. → bug task B1.
+2. Doubtful: every Closed option Trade shows "Expired <date>", including one sold or bought back before an expiration date still ahead. Row 23.19's words say "on a Closed or expired option Trade"; read literally the code follows them, but the line is then false before the date. **Asked the user** (a word-rule reading).
+3. Valid as a description, **dismissed**: `mechanismWord` in `option-disposition.ts` is a nested ternary; no repo rule (as in T7.3, T7.5, T7.36, T7.20-B1).
+
+### T7.23-B1 option Trade Detail: the Underlying Mark, and the Settlement section on an incoherent Detail
+
+- `it should show the Valuation section's Underlying Mark with its price and provenance, "$52.00 · Manual"` (row 23.18; the read model gains the Underlying Mark's provenance)
+- `it should list a recorded Expiration in its Settlement section on an incoherent Detail too` (ocr comment 1)
+
+### T7.23-B2 an Open option row shows "Settlement Due" from the expiration date
+
+- `it should show "Settlement Due" on an Open option row on the expiration date after the settlement time, as Detail's panel does` (`OpenTradeItem` carries the settlement state; K4)
+
+ocr comment 2 resolved by the user's decision (decision 93, revision 58): a Closed option Trade's Detail shows no expiration line. → bug task B3.
+
+### T7.23-B3 a Closed option Trade's Detail shows no expiration line
+
+- `it should show no expiration line on a Closed option Trade's Detail, whether it was closed by sale, buyback or expiration, and keep "Expires Fri 20 Nov 2026" on an Open one` (decision 93, row 23.19 amended)
+
+### T7.23-B1 result
+
+Commit `bae86299`. Coordinator case (extra) "should carry the Underlying Mark with its price and provenance on an open option Detail apart from the contract Mark": red `expected undefined to deeply equal ObjectContaining{…}`, green. Case 1: red `Unable to find an element with the text: Underlying Mark` (`dt`), green ("$52.00 · Manual"). Case 2: red `Unable to find role="region" and name "Settlement (1)"`, green. No first-run pass. TradeDetailOptions, TradeDetail and trade-views tests 142 passed; typecheck, tsc6, lint, lint:deps exit 0. New `OpenCurrentEvaluation.underlyingMark?: MarkProvenance` (option Trades, exact Underlying Mark only), read from the Underlying frame `currentFrames` already fetches; price and source only (row 23.18). ocr: no findings (`ocr/T7.23-B1-bae86299.json`).
+
+### T7.23-B2 result
+
+Commit `4deaabb2`, one case as two tests: coordinator "should carry the Settlement Due item on an Open option row" (red: the Open item had no `settlement`; green, the same `SettlementItem` as Detail at Friday 17:00, `[]` at Thursday 17:00) and the UI row (red: no "Settlement Due" badge with the P&L still AwaitingClose; green). No first-run pass. `src/coordinators src/ui` 845 passed; typecheck, tsc6, lint, lint:deps exit 0. `OpenTradeItem.settlement: readonly SettlementItem[]` (empty for stock and before the settlement time; `IncoherentOpenTradeItem` omits it); `openItem` takes the evaluation as a parameter, so each Open Trade is still evaluated once (the existing "evaluate each Trade once" test caught a first double-evaluating version); two key-list tests gain `settlement`. The badge keys on `settlement[0]` through `unavailableLabel`. The orphaned `isSettlementDue` removed in `772dcf30`. ocr pending.
+
+### T7.23-B3 result
+
+Commit `7ab6b5e4`, one case: red `expected [ <p></p> ] to deeply equal []` (after invalid reds on the fixture and a regex also matching the Lot Match "Expired on …"); green; TradeDetailOptions and TradeDetail tests 93 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. The Closed-Detail A119 case's "Expired Fri 20 Nov 2026" assertion moved to "no expiration line"; `osChange` re-exported from `option-trade-fixtures.ts`. ocr: no findings (`ocr/T7.23-B3-7ab6b5e4.json`).
+
+**Decision 93 was a misreading of the user's answer.** The user: a Trade is closed only by the trader's own Executions; an expired Trade is no longer open but was never closed. Asked how far D7 applies that (it conflicts with the specs' Lifecycle Closed and with approved rows 23.12, 23.14 and 21.x), the user chose the expiration line only: decision 94 (revision 59, `claude-opus-5.5-plan-r59`) replaces 93, and the wider wording is a follow-up after D7. B3 is corrected by B4.
+
+### T7.23-B4 an expired option Trade shows "Expired Fri 20 Nov 2026"; a trader-closed one shows none
+
+- `it should show "Expired Fri 20 Nov 2026" on a Closed option Trade whose Terminal Disposition includes an expiration, wholly or in part, and no expiration line on one only the trader's Executions disposed of` (decision 94, row 23.19). A sale plus an expiration ("Mixed") shows the line: part of the position expired (flagged for the final report).
+
+ocr of `7ab6b5e4..772dcf30` (`ocr/T7.23-B2-4deaabb2-772dcf30.json`), 1 comment, Doubtful: `browseTrades` awaits each Due Trade's settlement-time lookup in turn (`trade-views.ts:906`); a `Promise.all` is a small, safe improvement. → bug task B5. The reviewer also noted, outside ocr: `settlementTimeOf` (`src/coordinators/settlement.ts:20`) throws for an expiration date outside calendar coverage, so since B2 one such Trade fails the whole Open list (before, only its Detail). Approved-words Q1 already decides that case: the item shows the module's "outside the market calendar" figure in place of the settlement time and offers no Record expiration (tech debt item 18), and `calculation-words.ts` words `SessionPolicyNotCovered` ("Outside the market calendar: <date>"). → added to B5.
+
+### T7.23-B5 settlement times are looked up together, and an uncovered expiration date doesn't fail the page
+
+- `it should look up the Open page's settlement times concurrently` (coordinator)
+- `it should show "Outside the market calendar" in place of the settlement time, with no Record expiration, for an expiration date outside calendar coverage, and still list the other Trades` (Q1; Detail panel and Open list)
+
+### T7.23-B4 result
+
+Commit `d2bf7560`, one case (B3's test reworked and renamed): red `Unable to find an element with the text: /^Expire[sd] .../` (the line absent on the expired Details); green; `src/ui/screens` 473 passed; typecheck, tsc6, lint, lint:deps exit 0. No first-run pass. `SummaryCard` reads `closedByExpiration` on the Terminal Disposition's mechanisms (no dates); its `view` prop widened to include `ClosedTradeDetail`. Assertions moved: the mixed O-C and a new wholly expired O-S Detail expect `['Expired Fri 20 Nov 2026']`; sale-only and buyback-only expect none; the A119 closed case's no-line assertion removed and the test renamed. ocr: no findings (`ocr/T7.23-B4-d2bf7560.json`).
+
+### T7.23-B5 result
+
+Commit `0152cfa7`. Cases: concurrent lookups (red `expected 1 to be 2`, peak in-flight ResolveSession calls; green with `Promise.all`, page order kept); coordinator uncovered date (red `Error: no settlement time for 2026-11-20`; green, `browseTrades` and `getTradeDetail` return the item with `settlementTime` `Unavailable(SessionPolicyNotCovered)` and list every Open Trade); Detail panel (red `Temporal error: Parsing ended abruptly`, after reverting a UI half written with the type change; green, "Outside the market calendar: Fri Nov 20" in place of the time, no Record expiration). No first-run pass. coordinators, ui and tests 1007 passed; typecheck, tsc6, lint, lint:deps exit 0. `SettlementItem.settlementTime: SettlementTime = CalculationResult<Instant, SessionPolicyNotCovered, never>`; `settlementTimeOf(marketData, instrument, expiration)`. The expiration form shows its nothing-due text for an uncovered item (unreachable from Detail). Daily Review carries the uncovered item without throwing and now looks up per item rather than per expiration; its wording is T7.24's.
+
+ocr (`ocr/T7.23-B5-0152cfa7.json`), 1 comment, **Wrong, dismissed**: it claims `daily-review/settlement.test.ts` still asserts bare `FRIDAY_CLOSE` instants, but the same commit redefines `FRIDAY_CLOSE` as `{ kind: 'Value', … }` (line 14). Its side request, a Review case mixing a covered and an uncovered item, goes to T7.24 with the Review's wording of the uncovered item.
+
+### Cumulative run after T7.23-B5 (`t7-23-option-lists-detail`, at `0152cfa7`)
+
+Run by `suite-runner` on 2026-11-08, browser stage `browser-auto 66902ee1`; `run-complete.sh` printed "run complete" for the runner and in the main session.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 118 files, 1386 passed, exit 0 | `suite-runs/t7-23-option-lists-detail-unit.txt` |
+| Node integration | 77 files, 159 passed, exit 0 | `suite-runs/t7-23-option-lists-detail-integration.txt` |
+| Browser (Chromium), full tier | 166 passed (8.0 m), exit 0 | `suite-runs/t7-23-option-lists-detail-browser.txt` |
+| Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-23-option-lists-detail-checks.txt` |
+
+Tier: full, printed reason "first matching path since 66902ee1: src/app/types.ts". Ports free before and after. The runner warned the browser stage (8.0 m) is near the 10-minute Bash limit: T7.31 adds D7's browser suite, so the full tier must be split before then (flagged for T7.31). T7.23 is complete.

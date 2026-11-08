@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 10723,
+    "input_tokens": 10562,
+    "output_tokens": 161,
+    "cache_read_tokens": 3840,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/option-trade-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "7b03e6a9-f97a-46cb-b328-88cb3eac1a59",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7b03e6a9-f97a-46cb-b328-88cb3eac1a59",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7ab6b5e4",
+      "resolved_base": "781ec1e86e3b41899aab2e66161cb4925b8dd6f5",
+      "resolved_head": "7ab6b5e487d40d11a19607de4f1891df722d1faf",
+      "exact_range": "781ec1e86e3b41899aab2e66161cb4925b8dd6f5..7ab6b5e487d40d11a19607de4f1891df722d1faf",
+      "source_artifact_sha256": "51670a8f1a3bbde927f7bd258d4786da8281d6c2a4de528bce21f9b87e5755a4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "c108a2ebf7cab6637b27b04b7ffb47edea7b62b85a470cee3448f892f7a0f15b"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "a74d1d5f37deebddb46020e84da10943bac2dc9c150337e136f2af88d5ed60eb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "c108a2ebf7cab6637b27b04b7ffb47edea7b62b85a470cee3448f892f7a0f15b"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "a74d1d5f37deebddb46020e84da10943bac2dc9c150337e136f2af88d5ed60eb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6749
+  }
+}

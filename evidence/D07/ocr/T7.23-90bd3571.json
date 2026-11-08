@@ -1,0 +1,267 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 3,
+    "total_tokens": 401233,
+    "input_tokens": 397086,
+    "output_tokens": 4147,
+    "cache_read_tokens": 34560,
+    "elapsed": "1m39s"
+  },
+  "tool_calls": {
+    "total": 60,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 20,
+      "file_find": 2,
+      "file_read": 36
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "A terminal disposition means the position is closed, not that its contract has expired. An option sold or bought back before expiration will also take this branch and display, for example, “Expired Fri 20 Nov 2026” while that date is still in the future. Choose the expiration wording from the expiration/settlement state rather than the presence of terminalDisposition, and cover a FullyDisposedPreExpiration trade.",
+      "existing_code": "      {contract \u0026\u0026 !settlementPanel \u0026\u0026 \u003cp\u003e{`${'terminalDisposition' in view ? 'Expired' : 'Expires'} ${expirationDate(contract.expiration)}`}\u003c/p\u003e}",
+      "start_line": 316,
+      "end_line": 316,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "The incoherent-detail branch still renders only executions, so recorded expirations disappear from the fact history when replay fails. recordedPositionChanges retains settlement-bearing changes, and IncoherentPanel only lists findings; neither exposes these settlement rows. Render SettlementSection with view.recordedPositionChanges here as well, so users can inspect the authoritative expiration facts even for an incoherent trade.",
+      "existing_code": "          \u003cExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} legs={view.plan.legs} timeZone={timeZone} /\u003e",
+      "start_line": 215,
+      "end_line": 215,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/option-disposition.ts",
+      "content": "This introduces a nested ternary, which the review checklist explicitly prohibits. Handle `Expiration` with an early return, then select `sale` or `buyback` in a separate expression to keep the mechanism mapping straightforward.",
+      "suggestion_code": "const mechanismWord = (side: 'Long' | 'Short', mechanism: Mechanisms[number]['mechanism']): string =\u003e {\n  if (mechanism === 'Expiration') return 'expiration';\n  return side === 'Long' ? 'sale' : 'buyback';\n};",
+      "existing_code": "const mechanismWord = (side: 'Long' | 'Short', mechanism: Mechanisms[number]['mechanism']): string =\u003e (mechanism === 'Expiration' ? 'expiration' : side === 'Long' ? 'sale' : 'buyback');",
+      "start_line": 12,
+      "end_line": 12,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade summaries, view coordination, and list rendering",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/trade-summary.ts",
+        "src/ui/screens/TradeList.tsx",
+        "tests/support/option-trade-fixtures.ts",
+        "tests/support/views-fixtures.ts"
+      ]
+    },
+    {
+      "label": "Option trade details, disposition, and supporting fixtures",
+      "files": [
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/confirmed-detail.ts",
+        "src/ui/screens/option-disposition.ts",
+        "src/ui/screens/option-words.ts",
+        "tests/support/option-detail-fixtures.ts"
+      ]
+    },
+    {
+      "label": "Shared formatting and calculation wording",
+      "files": [
+        "src/ui/calculation-words.ts",
+        "src/ui/format.ts",
+        "src/ui/screens/PlanForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "ad732581-eece-459c-be1b-adb64739f73c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ad732581-eece-459c-be1b-adb64739f73c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "90bd3571",
+      "resolved_base": "66902ee1ab95b18c810bc3b794595ee197229ddb",
+      "resolved_head": "90bd35716c949729be9871be001f473051f6dd84",
+      "exact_range": "66902ee1ab95b18c810bc3b794595ee197229ddb..90bd35716c949729be9871be001f473051f6dd84",
+      "source_artifact_sha256": "374f7a17c63976fbd33375c046bd5ff9e3da55928b515c4a7c3e22e7e6d5a9c0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.6",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "f3463a1822e849bd50fa4ba17bc23067e956e85e65b72a71f89bb8c8435cfd25",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "8f1094c1a3b05dc9dd21cba90d038dfc4305aec2ace9f0adc66978edd5faddfa"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "6ccd4560dc3cdac8861550231594217ea4efc9f0f920e952a2b9b83639f42f3b"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "215ee9dc6216f99c51a2187cbd8f916e198d2bf71b8e85f20a2c0ab125cf9e11"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "f735b57f8ecdbcb4d9d216e2a91ecd24b4bcd3d344e809f503a03183b8bd79af"
+        },
+        {
+          "item_id": "653efb2b31237e13c5a1037d87974037711d91bbb8af348fbeb9bb265663c1ef",
+          "path": "src/ui/screens/option-disposition.ts",
+          "fingerprint": "2e2b2c7b54a3ab1508cb6053c3d4ab89183321eb438338bb63bdc8b9d7ce57f5"
+        },
+        {
+          "item_id": "67201c3e7eac47a79144c7c6bfcf860fc1e60bd550cc6c28713835a7875a4dad",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "95b553dcd7db1031a6fefe347af451e7e09a0cd57593f3ef1c38019257ff5f6f"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "213bcbf37efdd9c26da4c91ed6c863986a048cdfffa5800277b3f9aef96c2aa8"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "4bf362a2ea35f8cb58d59453b11c2772ccd2d08214c8e382c86b15bb5787f9ac"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "69e6aaa37435c2c2480ce6f7a35db625255a0668dc1a48168fe0c35f30a01e50"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "0c86d3e24a52a53f8c41f8153a9d435cb257fde8dff8b3dd5c1dc200700c2655"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "f9d6d5a0e040ab9cc8f85768d1d5cb7c2a67e34c222b31d9b2c7498e4e7f6cf8"
+        },
+        {
+          "item_id": "e1a567450c0cd49c69ea52a4be90b7e4bd9dbca93de4e2f0dd0cb23f27c9a235",
+          "path": "src/domain/trade-summary.ts",
+          "fingerprint": "0dacfb5db6a79ff6783bc9fc8ffeeedb42685e7ea2825df7c9d65e884fafd3c0"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "abc90a9cd0542fae457c43707af44403563efaf5457a8761319ce5ff136e1ab3"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "db9d6320a4c46f357b5c7846b27ce3bfd2309110c542ae0989d781e9703c7fd6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "8f1094c1a3b05dc9dd21cba90d038dfc4305aec2ace9f0adc66978edd5faddfa"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "6ccd4560dc3cdac8861550231594217ea4efc9f0f920e952a2b9b83639f42f3b"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "215ee9dc6216f99c51a2187cbd8f916e198d2bf71b8e85f20a2c0ab125cf9e11"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "f735b57f8ecdbcb4d9d216e2a91ecd24b4bcd3d344e809f503a03183b8bd79af"
+        },
+        {
+          "item_id": "653efb2b31237e13c5a1037d87974037711d91bbb8af348fbeb9bb265663c1ef",
+          "path": "src/ui/screens/option-disposition.ts",
+          "fingerprint": "2e2b2c7b54a3ab1508cb6053c3d4ab89183321eb438338bb63bdc8b9d7ce57f5"
+        },
+        {
+          "item_id": "67201c3e7eac47a79144c7c6bfcf860fc1e60bd550cc6c28713835a7875a4dad",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "95b553dcd7db1031a6fefe347af451e7e09a0cd57593f3ef1c38019257ff5f6f"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "213bcbf37efdd9c26da4c91ed6c863986a048cdfffa5800277b3f9aef96c2aa8"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "4bf362a2ea35f8cb58d59453b11c2772ccd2d08214c8e382c86b15bb5787f9ac"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "69e6aaa37435c2c2480ce6f7a35db625255a0668dc1a48168fe0c35f30a01e50"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "0c86d3e24a52a53f8c41f8153a9d435cb257fde8dff8b3dd5c1dc200700c2655"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "f9d6d5a0e040ab9cc8f85768d1d5cb7c2a67e34c222b31d9b2c7498e4e7f6cf8"
+        },
+        {
+          "item_id": "e1a567450c0cd49c69ea52a4be90b7e4bd9dbca93de4e2f0dd0cb23f27c9a235",
+          "path": "src/domain/trade-summary.ts",
+          "fingerprint": "0dacfb5db6a79ff6783bc9fc8ffeeedb42685e7ea2825df7c9d65e884fafd3c0"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "abc90a9cd0542fae457c43707af44403563efaf5457a8761319ce5ff136e1ab3"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "db9d6320a4c46f357b5c7846b27ce3bfd2309110c542ae0989d781e9703c7fd6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 99032
+  }
+}
