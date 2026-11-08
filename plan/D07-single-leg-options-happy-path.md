@@ -83,6 +83,8 @@ The generator version is bumped. The mature profile's counts are unchanged ([D1 
 | Marks | as at D6 | about 190,000: the Open book of 200 Trades has 60 option Trades, and distinct Instruments per session stay about 150 because most option Underlyings are also held as stock | 190,000 |
 | Close Review outcomes | 24,700 | 24,700, including the expired Trades, split as D5 section 1.4 | 24,700 |
 
+**Amended by decision 95 (revision 60):** the clock starts 2024-01-02, where session-policy coverage starts, so 726 sessions end on 2026-11-20. At about 150 Instruments per session the Marks are about 120,000, not 190,000; every other count stands.
+
 At the as-of instant, which the generator moves to Friday 2026-11-20 17:00, four Open option Trades are Settlement Due, so the as-of Review includes the settlement family. Every count, the as-of instant, and the identities of the as-of Review's settlement family, walk, and owed-reflection group are recorded in `bench/dataset.json`.
 
 ---
