@@ -42,7 +42,7 @@ split_args() {
     if [[ -n "$q" ]]; then
       nx="${s:i+1:1}"
       if [[ "$ch" == "$q" ]]; then q=""
-      elif [[ "$q" == '"' && "$ch" == "$bs" && ( "$nx" == '"' || "$nx" == "$bs" ) ]]; then cur+="$nx"; i=$((i + 1))
+      elif [[ "$q" == '"' && "$ch" == "$bs" && ( "$nx" == '"' || "$nx" == "$bs" || "$nx" == '$' || "$nx" == '`' ) ]]; then cur+="$nx"; i=$((i + 1))
       else cur+="$ch"; fi
     else
       case "$ch" in
