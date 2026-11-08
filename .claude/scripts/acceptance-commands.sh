@@ -33,6 +33,29 @@ if [[ -z "$rows" ]]; then echo "no acceptance table with a \"Command or procedur
 # Backticked commands (npm run ... or npx ...) in a cell, one per line.
 commands_of() { printf '%s' "$1" | grep -oE '`(npm run|npx) [^`]*`' | tr -d '`'; }
 
+# Splits text into the array SPLIT the way a shell would for quotes and backslashes, but evaluates
+# nothing: no globbing, no $(...), no backticks. The table is data, never code.
+split_args() {
+  SPLIT=(); local s="$1" i ch nx cur="" q="" have=0 bs='\'
+  for (( i = 0; i < ${#s}; i++ )); do
+    ch="${s:i:1}"
+    if [[ -n "$q" ]]; then
+      nx="${s:i+1:1}"
+      if [[ "$ch" == "$q" ]]; then q=""
+      elif [[ "$q" == '"' && "$ch" == "$bs" && ( "$nx" == '"' || "$nx" == "$bs" ) ]]; then cur+="$nx"; i=$((i + 1))
+      else cur+="$ch"; fi
+    else
+      case "$ch" in
+        "'"|'"') q="$ch"; have=1 ;;
+        "$bs") i=$((i + 1)); cur+="${s:i:1}"; have=1 ;;
+        " "|$'\t') if (( have )); then SPLIT+=("$cur"); cur=""; have=0; fi ;;
+        *) cur+="$ch"; have=1 ;;
+      esac
+    fi
+  done
+  if (( have )); then SPLIT+=("$cur"); fi
+}
+
 run_list() { # prints "N tests" or "FAIL: reason"
   local cmd="$1" out rc n
   case "$cmd" in
@@ -40,8 +63,8 @@ run_list() { # prints "N tests" or "FAIL: reason"
       # Bare form: the whole project. Filtered form: only the filters after "-- ".
       local proj=integration filters=""; [[ "$cmd" == "npm run test:unit"* ]] && proj=unit
       [[ "$cmd" == *" -- "* ]] && filters="${cmd#*-- }"
-      # shellcheck disable=SC2086
-      out=$(CLAUDE_FULL_OUTPUT=1 npx vitest list --project $proj $filters 2>&1); rc=$?
+      split_args "$filters"
+      out=$(CLAUDE_FULL_OUTPUT=1 npx vitest list --project "$proj" ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
       if (( rc != 0 )); then echo "FAIL: vitest list exited $rc"; return; fi
       n=$(printf '%s\n' "$out" | grep -c '^\[') ;;
     "npm run test:e2e"|"npm run test:e2e:1"|"npm run test:e2e:2")
@@ -51,16 +74,16 @@ run_list() { # prints "N tests" or "FAIL: reason"
       for s in "${scripts[@]}"; do
         sargs=$(node -e 'const s = JSON.parse(require("fs").readFileSync("package.json", "utf8")).scripts[process.argv[1]] || ""; const m = s.match(/playwright test (.*)$/); process.stdout.write(m ? m[1] : "")' "$s")
         if [[ -z "$sargs" ]]; then echo "FAIL: no playwright command in script $s"; return; fi
-        # shellcheck disable=SC2086
-        out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list $sargs 2>&1); rc=$?
+        split_args "$sargs"
+        out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
         sn=$(printf '%s\n' "$out" | sed -n 's/^Total: \([0-9][0-9]*\) test.*/\1/p' | tail -1)
         if (( rc != 0 )); then echo "FAIL: playwright --list exited $rc ($s)"; return; fi
         n=$((n + ${sn:-0}))
       done ;;
     "npx playwright test "*|"npm run test:e2e"*" -- "*)
       local args="${cmd#npx playwright test }"; [[ "$cmd" == "npm run"* ]] && args="${cmd#*-- }"
-      # shellcheck disable=SC2086
-      out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list $args 2>&1); rc=$?
+      split_args "$args"
+      out=$(CLAUDE_FULL_OUTPUT=1 npx playwright test --list ${SPLIT[@]+"${SPLIT[@]}"} 2>&1); rc=$?
       n=$(printf '%s\n' "$out" | sed -n 's/^Total: \([0-9][0-9]*\) test.*/\1/p' | tail -1)
       if (( rc != 0 )) && [[ "${n:-0}" == 0 ]]; then echo "FAIL: playwright --list exited $rc, no tests"; return; fi
       if (( rc != 0 )); then echo "FAIL: playwright --list exited $rc"; return; fi
