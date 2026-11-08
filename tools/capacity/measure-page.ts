@@ -668,6 +668,173 @@ async function measureClosePhase(app: Application, workspace: string, context: P
   };
 }
 
+// Option phase (T7.26): 600 option Plans in D7 section 1.4's mix (per 15: 6 Long Call, 4 Long Put, 5
+// Cash-Secured Put, so 240/160/200), 10% of the 400 long-option Plans Authorized. Two of every three Plans
+// are entered (one Execution of 2 contracts), 30% of those with a partial exit of 1 contract first, and the
+// remaining contracts expire on the contract's date: 400 Expirations, each with its Close Review declined
+// (Close Review outcomes are priced by the Close phase). Contracts expire on three past Fridays.
+const OPTION_PLANS = 600;
+const OPTION_EXPIRATION_DATES = ['2026-08-21', '2026-09-04', '2026-09-18'] as const;
+const OPTION_PLAN_BASE = Date.UTC(2026, 7, 3, 13);
+// A result's JSON for an error message; Rational values are bigints.
+const show = (value: unknown) => JSON.stringify(value, (_key, v: unknown) => (typeof v === 'bigint' ? String(v) : v));
+
+async function measureOptionPhase(app: Application, workspace: string, context: PlanContext, pcDefinitionId: string, closeReviewDefinitionId: string) {
+  const strategies = await app.ReferenceCatalog.query({ family: 'Strategy' });
+  if (strategies.kind !== 'Page') throw new Error('no strategies');
+  const strategyOf = (productKey: string) => {
+    const found = strategies.items.find((r) => r.kind === 'Strategy' && r.productKey === productKey);
+    if (!found) throw new Error(`no ${productKey}`);
+    return found;
+  };
+  const strategyByKind = { LongCall: strategyOf('strategy.long-call'), LongPut: strategyOf('strategy.long-put'), CashSecuredPut: strategyOf('strategy.cash-secured-put') };
+  const iso = (ms: number) => new Date(ms).toISOString().replace('.000Z', 'Z');
+  const decline = { kind: 'Decline' as const, definitionId: pcDefinitionId };
+
+  // Sub-phase one: the Plans.
+  const usageBeforePlans = await usage();
+  const tradesBeforePlans = (await storeJsonBytes(workspace, 'trades')).bytes;
+  const journalBeforePlans = await reflectionJsonBytes(workspace);
+  const planned: { tradeId: string; kind: keyof typeof strategyByKind; instrument: Record<string, unknown>; legId: string; n: number }[] = [];
+  const counts = { LongCall: 0, LongPut: 0, CashSecuredPut: 0 };
+  let authorized = 0;
+  let longOption = 0;
+  for (let n = 0; n < OPTION_PLANS; n++) {
+    const slot = n % 15;
+    const kind = slot < 6 ? 'LongCall' : slot < 10 ? 'LongPut' : 'CashSecuredPut';
+    counts[kind]++;
+    const symbol = SYMBOLS[n % SYMBOLS.length]!;
+    const u = 40 + (n % 160);
+    const right: 'Call' | 'Put' = kind === 'LongCall' ? 'Call' : 'Put';
+    const instrument = {
+      kind: 'Option' as const,
+      symbol,
+      root: symbol,
+      expiration: OPTION_EXPIRATION_DATES[n % OPTION_EXPIRATION_DATES.length]!,
+      right,
+      strike: String(kind === 'LongCall' ? u + 5 : kind === 'LongPut' ? u - 5 : u - 2),
+      multiplier: 100 as const,
+    };
+    const long = kind !== 'CashSecuredPut';
+    const exerciseIntent = long && longOption++ % 10 === 0 ? 'Authorized' : 'NotAuthorized';
+    if (long && exerciseIntent === 'Authorized') authorized++;
+    const strategy = strategyByKind[kind];
+    const quantity = 2;
+    const confirmed = await app.TradeWorkflows.confirmPlan({
+      accountId: context.accountId,
+      accountRevision: context.accountRevision,
+      strategyId: strategy.id,
+      strategyRevision: strategy.recordRevision,
+      economicTime: iso(OPTION_PLAN_BASE + n * 1_800_000),
+      plan: {
+        underlying: symbol,
+        legs: [
+          long
+            ? { side: 'Long', instrument, quantity: String(quantity), intendedEntry: `${2 + (n % 5)}.00` }
+            : { side: 'Short', instrument, quantity: String(-quantity), intendedEntry: `${1 + (n % 2)}.20` },
+        ],
+        stops: [{ kind: 'UnderlyingPrice', price: kind === 'LongCall' ? `${u - 3}.00` : kind === 'LongPut' ? `${u + 3}.00` : `${u - 6}.00` }],
+        targets: [{ kind: 'UnderlyingPrice', price: kind === 'LongCall' ? `${u + 12}.00` : kind === 'LongPut' ? `${u - 12}.00` : `${u + 5}.00` }],
+        ...(long && { exerciseIntent }),
+      },
+      reflection: {
+        definitionId: context.planDefinitionId,
+        answers: {
+          'prompt.plan-reflection.thesis': { kind: 'Text', text: `${symbol} ${kind} into the event with defined risk; option plan ${n}.` },
+          'prompt.plan-reflection.invalidation': { kind: 'Text', text: `A daily close through ${kind === 'LongPut' ? u + 3 : u - 3}.00.` },
+          'prompt.plan-reflection.conviction': { kind: 'Scale', value: 1 + (n % 5) },
+          'prompt.plan-reflection.primary-emotion': { kind: 'Option', optionId: 'option.plan-reflection.primary-emotion.calm' },
+        },
+      },
+    });
+    if (confirmed.kind !== 'Confirmed') throw new Error(`option plan ${n}: ${show(confirmed)}`);
+    planned.push({ tradeId: confirmed.receipt.tradeId, kind, instrument, legId: confirmed.postCommit.trade.plan.legs[0]!.factId, n });
+  }
+  await settle();
+  const usageAfterPlans = await usage();
+  const tradesAfterPlans = (await storeJsonBytes(workspace, 'trades')).bytes;
+  const journalAfterPlans = await reflectionJsonBytes(workspace);
+  const planJson = tradesAfterPlans - tradesBeforePlans + journalAfterPlans - journalBeforePlans;
+  const optionPlanOverheadRatio = (usageAfterPlans - usageBeforePlans) / planJson;
+
+  // Sub-phase two: entries, partial exits, and Expirations.
+  const expiring = planned.filter((p) => p.n % 3 !== 2);
+  const usageBefore = await usage();
+  const tradesBefore = (await storeJsonBytes(workspace, 'trades')).bytes;
+  const storesBefore = await closeStoresJsonBytes(workspace);
+  let entries = 0;
+  let partialExits = 0;
+  let expirations = 0;
+  const expirationFactBytes: unknown[] = [];
+  for (const [k, p] of expiring.entries()) {
+    const long = p.kind !== 'CashSecuredPut';
+    const planTime = OPTION_PLAN_BASE + p.n * 1_800_000;
+    const day = (d: number) => planTime + d * 86_400_000;
+    const record = async (members: unknown[], extra: Record<string, unknown>) => {
+      const detail = await app.TradeViewsAndReporting.getTradeDetail({ tradeId: p.tradeId });
+      if (detail.kind !== 'Ready') throw new Error(`option trade ${p.n}: ${detail.kind}`);
+      const recorded = await app.TradeWorkflows.recordPositionChange({
+        originTradeId: p.tradeId,
+        trades: [{ tradeId: p.tradeId, expectedFactRevision: detail.view.factRevision }],
+        members,
+        reflection: decline,
+        ...extra,
+      } as Parameters<Application['TradeWorkflows']['recordPositionChange']>[0]);
+      if (recorded.kind !== 'Recorded') throw new Error(`option trade ${p.n}: ${show(recorded)}`);
+    };
+    const execution = (action: 'Buy' | 'Sell', quantity: string, price: string, when: number) => ({
+      kind: 'Execution' as const,
+      tradeId: p.tradeId,
+      action,
+      instrument: p.instrument,
+      intent: { kind: 'ServesPlannedLeg' as const, plannedLegId: p.legId },
+      quantity,
+      price,
+      fee: '1.30',
+      economicTime: iso(when),
+    });
+    await record([execution(long ? 'Buy' : 'Sell', '2', `${2 + (p.n % 5)}.05`, day(1))], {});
+    entries++;
+    let remaining = 2;
+    if (k % 10 < 3) {
+      await record([execution(long ? 'Sell' : 'Buy', '1', `${1 + (p.n % 5)}.45`, day(2))], {});
+      partialExits++;
+      remaining = 1;
+    }
+    const expirationDate = (p.instrument as { expiration: string }).expiration;
+    await record(
+      [{ kind: 'Expiration' as const, tradeId: p.tradeId, instrument: p.instrument, quantity: String(remaining), economicTime: `${expirationDate}T20:00:00Z` }],
+      { closeReview: { kind: 'Decline', definitionId: closeReviewDefinitionId, ...(k % 2 === 0 && { reason: 'The contracts expired as planned; nothing to add.' }) } },
+    );
+    expirations++;
+  }
+  await settle();
+  const usageAfter = await usage();
+  const trades = (await storeRecords(workspace, 'trades')) as { facts: { kind: string }[] }[];
+  expirationFactBytes.push(...trades.flatMap((t) => t.facts.filter((f) => f.kind === 'Expiration')));
+  if (expirationFactBytes.length !== expirations) throw new Error(`${expirationFactBytes.length} Expiration facts for ${expirations} Expirations`);
+  const expirationJson = (await storeJsonBytes(workspace, 'trades')).bytes - tradesBefore + (await closeStoresJsonBytes(workspace)) - storesBefore;
+  const optionExpirationOverheadRatio = (usageAfter - usageBefore) / expirationJson;
+  const jsonBytesPerOptionTradeWithReflection = planJson / OPTION_PLANS;
+  const jsonBytesPerExpiration = jsonBytes(expirationFactBytes) / expirations;
+  return {
+    optionPlans: OPTION_PLANS,
+    optionLongCalls: counts.LongCall,
+    optionLongPuts: counts.LongPut,
+    optionCashSecuredPuts: counts.CashSecuredPut,
+    optionAuthorizedPlans: authorized,
+    optionEntries: entries,
+    optionPartialExits: partialExits,
+    expirations,
+    optionPlanOverheadRatio,
+    jsonBytesPerOptionTradeWithReflection,
+    bytesPerOptionTradeWithReflection: jsonBytesPerOptionTradeWithReflection * optionPlanOverheadRatio,
+    optionExpirationOverheadRatio,
+    jsonBytesPerExpiration,
+    bytesPerExpiration: jsonBytesPerExpiration * optionExpirationOverheadRatio,
+  };
+}
+
 async function measure(plans: number, openTrades: number) {
   const testHost = await nodeTestHost(indexedDB);
   const app = await createApplication({
@@ -802,10 +969,14 @@ async function measure(plans: number, openTrades: number) {
   const review = await measureReviewPhase(app, workspace, openTrades);
   const debt = await measureDebtPhase(app, workspace, tradeIds, openTrades);
   const close = await measureClosePhase(app, workspace, planContext, pcDefinition.definition.id);
+  const closeReviewDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.close-review' });
+  if (closeReviewDefinition.kind !== 'Found') throw new Error('Close Review definition missing');
+  const option = await measureOptionPhase(app, workspace, planContext, pcDefinition.definition.id, closeReviewDefinition.definition.id);
   return {
     ...review,
     ...debt,
     ...close,
+    ...option,
     plans,
     usageBefore: before,
     usageAfter: after,

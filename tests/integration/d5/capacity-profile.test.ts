@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MEASURED, project, type EngineMeasurement } from '../../../tools/capacity/profile.ts';
 import { NO_CLOSE_PHASE } from '../../support/capacity-close-phase.ts';
+import { NO_OPTION_PHASE } from '../../support/capacity-option-phase.ts';
 
 // T5.19: the capacity projection for schema 4 prices the deferred part of the Position Change
 // Reflection outcomes from measured Debt bytes, using the D5 section 1.4 split.
@@ -51,6 +52,7 @@ const MEASUREMENT: EngineMeasurement = {
   bytesPerDebtDeclined: 200,
   bytesPerDebtOutstanding: 400,
   ...NO_CLOSE_PHASE,
+  ...NO_OPTION_PHASE,
 };
 
 describe('capacity projection at schema 4', () => {

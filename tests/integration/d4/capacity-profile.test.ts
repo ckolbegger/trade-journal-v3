@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ALLOWANCES, project, type EngineMeasurement } from '../../../tools/capacity/profile.ts';
 import { NO_CLOSE_PHASE } from '../../support/capacity-close-phase.ts';
+import { NO_OPTION_PHASE } from '../../support/capacity-option-phase.ts';
 
 // T4.28: the capacity projection for schema 3 uses measured bytes for Marks and Daily Trade Review
 // Actions at their mature counts (190,000 and 126,000), and allowances only for what is still unbuilt.
@@ -52,6 +53,9 @@ const MEASUREMENT: EngineMeasurement = {
   bytesPerDebtDeclined: 0,
   bytesPerDebtOutstanding: 0,
   ...NO_CLOSE_PHASE,
+  ...NO_OPTION_PHASE,
+  // The 25,000 Trades are 17,500 stock and 7,500 option since D7, both priced at this figure here.
+  bytesPerOptionTradeWithReflection: 1_000,
 };
 
 describe('capacity projection at schema 3', () => {

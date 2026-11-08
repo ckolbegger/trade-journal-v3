@@ -91,6 +91,25 @@ export interface EngineMeasurement {
   readonly bytesPerCloseReviewDebtAnswered: number;
   readonly bytesPerCloseReviewDebtDeclined: number;
   readonly bytesPerCloseReviewDebtOutstanding: number;
+  // The Option phase (D7 T7.26): option Plans through the facade in section 1.4's mix (Long Call 12%, Long
+  // Put 8%, Cash-Secured Put 10% of all Trades, so 6:4:5), 10% of the long-option Plans Authorized; then
+  // entries for two thirds of them, a partial exit for 30% of those, and an Expiration of what remains.
+  // An option Trade's share is its Plan with its reflection scaled by the Plan sub-phase's own on-disk
+  // overhead; an Expiration's is the settlement fact's JSON scaled by the entry-and-expiration sub-phase's.
+  readonly optionPlans: number;
+  readonly optionLongCalls: number;
+  readonly optionLongPuts: number;
+  readonly optionCashSecuredPuts: number;
+  readonly optionAuthorizedPlans: number;
+  readonly optionEntries: number;
+  readonly optionPartialExits: number;
+  readonly expirations: number;
+  readonly optionPlanOverheadRatio: number;
+  readonly jsonBytesPerOptionTradeWithReflection: number;
+  readonly bytesPerOptionTradeWithReflection: number;
+  readonly optionExpirationOverheadRatio: number;
+  readonly jsonBytesPerExpiration: number;
+  readonly bytesPerExpiration: number;
 }
 
 // Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
@@ -102,13 +121,19 @@ export interface EngineMeasurement {
 // exits per Closed Trade, averaging 4 Position Changes), the entries priced from the Open phase and the
 // exits from the Close phase. The 24,700 Close Review outcomes use the same fractions as the Position
 // Change Reflections; 24,700 × 1.6% and × 0.4% are rounded to 395 and 99 so that the five counts sum to 24,700.
+//
+// D7 (section 1.4): 30% of the 25,000 Trades are single-leg options, so 7,500 are priced from the measured
+// option Plan; and about 3,000 of the exit Executions are Expirations, priced from the measured
+// settlement fact instead of an Execution (the Position Change that holds one is an exit Position Change).
 export const MEASURED = {
-  tradesWithPlanReflection: 25_000,
+  tradesWithPlanReflection: 17_500,
+  optionTradesWithPlanReflection: 7_500,
+  expirations: 3_000,
   catalogRecords: 60,
   positionChangeEntries: 50_000,
   positionChangeExits: 50_000,
   executionEntries: 100_000,
-  executionExits: 100_000,
+  executionExits: 97_000,
   positionChangeReflectionsCompletedAtCapture: 65_000,
   positionChangeReflectionsDeclinedAtCapture: 15_000,
   debtsAnswered: 18_000,
@@ -141,6 +166,8 @@ export interface Projection {
 export function project(m: EngineMeasurement): Projection {
   const measured =
     MEASURED.tradesWithPlanReflection * m.bytesPerTradeWithReflection +
+    MEASURED.optionTradesWithPlanReflection * m.bytesPerOptionTradeWithReflection +
+    MEASURED.expirations * m.bytesPerExpiration +
     MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio +
     MEASURED.positionChangeEntries * m.bytesPerPositionChange +
     MEASURED.positionChangeExits * m.bytesPerExitPositionChange +

@@ -2,7 +2,7 @@
 // per Position Change, Execution, and Position Change Reflection outcome (D2 T2.18), and per Mark,
 // acknowledgment, and Daily Trade Review Action (D4 T4.28), and per deferred Position Change
 // Reflection answered, declined, or left Outstanding (D5 T5.19), and per exit and Close Review outcome
-// of a closed Trade (D6 T6.22), in each engine (default chromium; RC adds firefox and webkit) and rewrites the capacity basis
+// of a closed Trade (D6 T6.22), and per option Plan and Expiration through the facade (D7 T7.26), in each engine (default chromium; RC adds firefox and webkit) and rewrites the capacity basis
 // with the largest projection (D1 T1.19, decision 18).
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium, firefox, webkit } from '@playwright/test';

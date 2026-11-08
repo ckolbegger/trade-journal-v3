@@ -979,3 +979,15 @@ Run by `suite-runner` on 2026-11-08, browser stage `browser-auto d81d3c41`; `run
 | Static and verification checks | 12 of 13 exit 0; `verify:capacity` failed, expected until T7.26 | `suite-runs/t7-24-review-settlement-checks.txt` |
 
 Tier: full, printed reason "first matching path since d81d3c41: src/app/types.ts". Ports free before and after. T7.24 is complete.
+
+## T7.26 Capacity basis recomputed for schema 6
+
+Commands: `npm run measure:capacity` (chromium, port 5175 free before and after), then `npm run verify:capacity`.
+
+- The new Option phase (`tools/capacity/measure-page.ts`, `measureOptionPhase`) generates its records through the production facade (`confirmPlan`, `recordPositionChange`) on the engine's real IndexedDB: 600 option Plans in section 1.4's mix (240 Long Call, 160 Long Put, 200 Cash-Secured Put; 40 of the 400 long-option Plans Authorized), 400 entries, 120 partial exits, and 400 Expirations (each Close Review declined).
+- `measure:capacity` output: `optionPlans 600, optionLongCalls 240, optionLongPuts 160, optionCashSecuredPuts 200, optionAuthorizedPlans 40, optionEntries 400, optionPartialExits 120, expirations 400`; `jsonBytesPerOptionTradeWithReflection 2522.2`, `bytesPerOptionTradeWithReflection 3679.6` (overhead 1.4589); `jsonBytesPerExpiration 319.5`, `bytesPerExpiration 527.7` (overhead 1.6517). Final line: `measure:capacity OK: M 916073043 bytes, required quota 2748219129 bytes`.
+- Projection (`tools/capacity/profile.ts`): the 25,000 Trades are 17,500 stock plus 7,500 option Trades priced from the measured option Plan; the exit side holds 97,000 Executions plus 3,000 Expirations priced from the measured settlement fact (no settlement-fact allowance remains; the stated allowances are unchanged).
+- `capacity-basis.json` carries `"schemaVersion": 6`.
+- `npm run verify:capacity` exit 0: `verify:capacity OK: required quota 2748219129 = 3 × 916073043, schema 6`.
+- Negative check: a temporary edit of `schemaVersion` to 5 in `src/delivery/capacity-basis.json` gave exit 1 with `FAIL basis measured at schema version 5, current is 6: run measure:capacity`; restored to 6 (see `git diff`).
+- The D4, D5 and D6 projection tests take a `NO_OPTION_PHASE` helper (`tests/support/capacity-option-phase.ts`); D6's Execution split test and sum now count the 3,000 Expirations.

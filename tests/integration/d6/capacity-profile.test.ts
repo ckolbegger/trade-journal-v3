@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ALLOWANCES, MEASURED, project, type EngineMeasurement } from '../../../tools/capacity/profile.ts';
+import { NO_OPTION_PHASE } from '../../support/capacity-option-phase.ts';
 
 // T6.22: the capacity projection for schema 5 prices the exits and the Close Review outcomes from
 // measured bytes, using the D6 section 1.4 split, and keeps no Close Review allowance.
@@ -73,14 +74,16 @@ const MEASUREMENT: EngineMeasurement = {
   bytesPerCloseReviewDebtAnswered: 3,
   bytesPerCloseReviewDebtDeclined: 4,
   bytesPerCloseReviewDebtOutstanding: 5,
+  ...NO_OPTION_PHASE,
 };
 
 describe('capacity projection at schema 5', () => {
   it('should split the mature profile into half entries and half exits for Position Changes and Executions', () => {
     expect(MEASURED.positionChangeEntries + MEASURED.positionChangeExits).toBe(100_000);
-    expect(MEASURED.executionEntries + MEASURED.executionExits).toBe(200_000);
+    // Since D7 the exit side holds the 3,000 Expirations, which are settlement facts, not Executions.
+    expect(MEASURED.executionEntries + MEASURED.executionExits + MEASURED.expirations).toBe(200_000);
     expect(MEASURED.positionChangeExits).toBe(MEASURED.positionChangeEntries);
-    expect(MEASURED.executionExits).toBe(MEASURED.executionEntries);
+    expect(MEASURED.executionExits + MEASURED.expirations).toBe(MEASURED.executionEntries);
   });
 
   it('should split the 24,700 Close Review outcomes with the fractions of the Position Change Reflections, 65%, 15%, 18%, 1.6% and 0.4%', () => {
@@ -100,8 +103,8 @@ describe('capacity projection at schema 5', () => {
 
   it('should project the exits and the Close Review outcomes from the measured bytes at their mature counts', () => {
     // Allowances (Review Notes, Daily Bars, Correction versions) × overhead 0 here are nothing:
-    // 50,000 × 10 + 100,000 × 20 + 16,055 × 1 + 3,705 × 2 + 4,446 × 3 + 395 × 4 + 99 × 5.
-    expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(500_000 + 2_000_000 + 16_055 + 7_410 + 13_338 + 1_580 + 495);
+    // 50,000 × 10 + 97,000 × 20 (the other 3,000 exits are Expirations, zero here) + 16,055 × 1 + 3,705 × 2 + 4,446 × 3 + 395 × 4 + 99 × 5.
+    expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(500_000 + 1_940_000 + 16_055 + 7_410 + 13_338 + 1_580 + 495);
   });
 
   it('should reject an engine measurement taken before schema 5 that lacks the Close phase figures', () => {
