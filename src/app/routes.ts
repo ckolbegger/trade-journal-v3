@@ -111,7 +111,7 @@ export const ROUTES = [
     path: '/trades/:tradeId/record-expiration',
     label: 'Record expiration',
     requires: ['TradeWorkflows.recordPositionChange', 'TradeViewsAndReporting.getTradeDetail', 'Journal.getDefinitions'],
-    variants: { 'TradeWorkflows.recordPositionChange': ['Expiration'] },
+    variants: { 'TradeWorkflows.recordPositionChange': ['Expiration'], 'TradeViewsAndReporting.getTradeDetail': ['SettlementDue'] },
     navigation: false,
     readOnly: false,
   },

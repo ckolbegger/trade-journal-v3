@@ -21,6 +21,7 @@ import {
   X2,
 } from '../../../tests/support/open-detail-fixtures.ts';
 import { closedDetailOf, closeReviewEntry } from '../../../tests/support/closed-detail-fixtures.ts';
+import { expiredOptionLotMatches, expiredOptionTrade } from '../../../tests/support/option-trade-fixtures.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -1459,6 +1460,15 @@ describe('Closed Trade Detail', () => {
     for (const text of ['Expected Mark Date', 'Mark', 'Open P&L']) expect(screen.queryByText(text)).toBeNull();
     expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
+  });
+});
+
+describe('Closed option Trade Detail (T7.21-B2)', () => {
+  it('should show a Closed option Trades Lot Match disposed by an Expiration as Expired on 2026-11-20 16:00 on Trade Detail', async () => {
+    const view = { ...closedDetailOf([PC1, PC2, X1, X2]), positionChanges: expiredOptionTrade('O-C').record.positionChanges, lotMatches: expiredOptionLotMatches('O-C') };
+    renderView(view, true);
+    const matches = within(await screen.findByRole('region', { name: 'Lot Matches' })).getByRole('table', { name: 'Lot Matches' });
+    expect(within(matches).getAllByText('Expired on 2026-11-20 16:00').length).toBeGreaterThan(0);
   });
 });
 

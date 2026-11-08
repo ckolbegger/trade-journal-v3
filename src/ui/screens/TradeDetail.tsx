@@ -417,6 +417,7 @@ function LotMatchesSection({ view, timeZone }: { readonly view: OpenTradeDetail;
           describedBy="lot-matches-note"
           rows={view.lotMatches}
           executions={view.positionChanges.flatMap((change) => change.executions)}
+          settlements={view.positionChanges.flatMap((change) => change.settlements ?? [])}
           timeZone={timeZone}
         />
       </div>
