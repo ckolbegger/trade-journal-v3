@@ -882,10 +882,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         },
         historicalFrames(date, instruments) {
           if (date === day.date) return framesAt(context, day, instruments);
+          // A date after the session's own would let a valuation read evidence from after it, covered or not.
+          if (date > day.date) return Promise.reject(new Error(`no frames for ${date}, after the session's ${day.date}`));
           const historical: FrameContext = { kind: 'Historical', tradingDate: date };
           const dated = resolveDay(historical);
-          // A date after the session's own would let a valuation read evidence from after it.
-          if (dated.kind === 'Day' && dated.day.date > day.date) return Promise.reject(new Error(`no frames for ${date}, after the session's ${day.date}`));
           if (dated.kind === 'Day') return framesAt(historical, dated.day, instruments);
           // Outside coverage a date has no frames, as Trade Views absorbs it today; any other rejection is a caller error.
           if (dated.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) return Promise.resolve([]);

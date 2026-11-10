@@ -138,6 +138,14 @@ describe('the read session (P78, P79)', () => {
     expect(requests).toEqual([]);
   });
 
+  it("should reject historicalFrames for a later date beyond the market calendar's coverage", async () => {
+    const { marketData } = await setup('2029-02-01T16:00:00Z');
+    const session = await marketData.openReadSession({ kind: 'Historical', tradingDate: '2026-10-09' });
+    const { result, requests } = await countRequests(() => session.historicalFrames('2029-01-05', ['AAA']).then((frames) => ({ frames }), () => 'rejected'));
+    expect(result).toBe('rejected');
+    expect(requests).toEqual([]);
+  });
+
   it("should return each Instrument's gaps as recover does, scanning each Instrument once however many calls ask", async () => {
     const { marketData } = await setup();
     await marketData.save(mark('MNO', '2026-10-08'));
