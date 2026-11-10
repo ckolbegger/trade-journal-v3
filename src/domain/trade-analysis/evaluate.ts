@@ -3,7 +3,7 @@ import { instrumentKey, multiplierOf, type Instrument, type OptionInstrument } f
 import type { Instant } from '../time/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
-import type { DerivedTradeState, EntryQuality, OpenLot } from './derive.ts';
+import { contractStatusesOf, type ContractStatus, type DerivedTradeState, type EntryQuality, type OpenLot } from './derive.ts';
 import { currentExpirationView, expirationValueAt } from './payoff.ts';
 import type { ConditionBasis, PlanBaseline } from './plan.ts';
 
@@ -191,6 +191,15 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   // Outside coverage there is no frame, so no Mark can value anything.
   const covered = 'resolution' in frame ? frame : undefined;
   const date = 'resolution' in frame ? frame.tradingDate : frame.date;
+  // The frame is for the date the state was derived at (P81).
+  if (state.valuationDate !== undefined && state.valuationDate !== date) {
+    throw new Error(`evaluate: the frame's trading date ${date} differs from the state's valuation date ${state.valuationDate}`);
+  }
+  // TEMPORARY FALLBACK, removed by T7SP.8 (A192): a state derived without a valuation date has no statuses,
+  // so they are worked out at the frame's date with the function derive uses.
+  const contractStatuses = state.valuationDate !== undefined ? state.contractStatuses : contractStatusesOf(state.positions, date);
+  const contractStatusOf = (instrument: Instrument): ContractStatus | undefined =>
+    contractStatuses.find((s) => instrumentKey(s.instrument) === instrumentKey(instrument))?.status;
   const quantity = sum(lots.map((l) => l.quantity));
   // Money formulas use quantity x multiplier x price; the Trade's one Instrument sets the multiplier (A99).
   const multiplier = Rational.of(BigInt(multiplierOf(state.positions[0]?.instrument ?? frame.instrument)));
@@ -226,7 +235,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   // After the expiration date the contract has no honest Mark, so no Mark is required and every current
   // figure is Unavailable(SettlementDue) (P25, A110).
-  const pastExpiration = option !== undefined && lots.length > 0 && date > option.expiration;
+  const pastExpiration = option !== undefined && lots.length > 0 && contractStatusOf(option) === 'PastExpiration';
   const unavailableResult = (): CalculationResult<never> => {
     if (pastExpiration) return { kind: 'Unavailable', reason: 'SettlementDue', instrument: option, expiration: option.expiration };
     if (!covered) return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: frame.instrument, date };
@@ -424,7 +433,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     expirationValueAtUnderlyingClose: expirationValueAtUnderlyingClose(),
     settlement: state.positions.flatMap((p): SettlementItem[] =>
       p.instrument.kind === 'Option' && p.openLots.length > 0
-        ? [{ instrument: p.instrument, quantity: p.quantity, expiration: p.instrument.expiration, status: p.instrument.expiration <= date ? 'Due' : 'NotYetDue' }]
+        ? [{ instrument: p.instrument, quantity: p.quantity, expiration: p.instrument.expiration, status: contractStatusOf(p.instrument) === 'Live' ? 'NotYetDue' : 'Due' }]
         : [],
     ),
     observation: { instrument: frame.instrument, tradingDate: date, mark: usableMark },

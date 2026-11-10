@@ -660,7 +660,7 @@ function optionDispositionTimingOf(lifecycle: LifecycleState, positions: readonl
   return { kind: 'Value', value: { timing, disposedByExecutions: disposed.byExecutions, disposedBySettlement: disposed.bySettlement } };
 }
 
-function contractStatusesOf(positions: readonly InstrumentPosition[], valuationDate: string): ContractStatusEntry[] {
+export function contractStatusesOf(positions: readonly InstrumentPosition[], valuationDate: string): ContractStatusEntry[] {
   return positions.flatMap((p) => {
     if (p.instrument.kind !== 'Option' || p.quantity.compare(Rational.of(0n)) === 0) return [];
     const status: ContractStatus = expiredOn(p.instrument, valuationDate)
