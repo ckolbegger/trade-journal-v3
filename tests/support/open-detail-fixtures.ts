@@ -14,7 +14,7 @@ import { derive, evaluate, type TradeAnalysisRecord } from '../../src/domain/tra
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
 import { payoffOf } from '../../src/coordinators/settlement.ts';
-import { datedLineOf, observationFrame } from '../../src/coordinators/valuation.ts';
+import { datedLineOf, observationFrame } from '../../src/coordinators/valuation/index.ts';
 import { feeReconciliationOf, lotMatchViews } from '../../src/coordinators/trade-views/index.ts';
 import type { MarkFrame } from '../../src/modules/market-data/index.ts';
 

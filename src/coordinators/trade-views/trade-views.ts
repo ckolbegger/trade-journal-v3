@@ -34,8 +34,8 @@ import type { MarkFrame, MarketData, MarkResolution } from '../../modules/market
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
-import { payoffOf, settlementTimeOf, type SettlementItem } from '../settlement.ts';
-import { datedCloseOf, datedLineOf, observationFrame, type DatedLine } from '../valuation.ts';
+import { payoffOf } from '../settlement.ts';
+import { datedCloseOf, datedLineOf, observationFrame, settlementTimeOf, type DatedLine, type SettlementItem } from '../valuation/index.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;

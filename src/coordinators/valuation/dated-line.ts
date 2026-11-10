@@ -1,6 +1,6 @@
-import { instrumentOf } from '../domain/instrument/index.ts';
-import { derive, evaluate, type ObservationFrame, type TradeAnalysisRecord, type TradeEvaluation } from '../domain/trade-analysis/index.ts';
-import type { MarkFrame } from '../modules/market-data/index.ts';
+import { instrumentOf } from '../../domain/instrument/index.ts';
+import { derive, evaluate, type ObservationFrame, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { MarkFrame } from '../../modules/market-data/index.ts';
 
 // Market Data's frame as Trade Analysis reads it: composition maps one into the other.
 export function observationFrame(frame: MarkFrame): ObservationFrame {

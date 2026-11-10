@@ -9,8 +9,8 @@ import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts'
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
-import { payoffOf, settlementTimeOf } from '../settlement.ts';
-import { datedLineOf, observationFrame } from '../valuation.ts';
+import { payoffOf } from '../settlement.ts';
+import { datedLineOf, observationFrame, settlementTimeOf } from '../valuation/index.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
   ActionForm,
