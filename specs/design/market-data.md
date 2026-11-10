@@ -8,6 +8,7 @@ Market Data owns observed closing evidence by exact Instrument and completed U.S
 interface MarketData
   save(command: MarketDataSaveCommand) -> MarketDataSaveResult
   query(query: MarketDataQuery) -> MarketDataQueryResult
+  openReadSession(context: FrameContext) -> MarketDataReadSession
   recover(request: RecoverMarketData) -> MarketDataRecoveryResult
   getProviderConfiguration() -> ProviderConfigurationView
   configureProvider(command: ConfigureProvider) -> ConfigureProviderResult
@@ -94,6 +95,8 @@ sequenceDiagram
 A frame is bound to the normalized request, session-policy revision, selected evidence revisions, stale-context revisions, and material absences through an opaque `MarketDataSnapshotId` plus an evidence digest. `ExpectedSnapshot` provides the transaction-time check used by Daily Review. Changed evidence returns current frames; it never blesses stale reconciliation.
 
 Ranges enumerate completed regular sessions and emit explicit gaps. They never interpolate, carry forward, connect across absence, or fabricate a candle from a close-only Mark. Candidate Manual Mark frames are visibly hypothetical and never count as committed evidence.
+
+`openReadSession` serves one coordinator operation that values Trades one at a time (plan decision 101, 2026-11-10). It resolves the context's trading date once, when it opens; outside session-policy coverage it carries the as-of exchange date and answers every frame as not covered. Within the session, a point frame for an Instrument at the session's date or an earlier date is the frame `ResolveFrames` returns for it, and gap and settlement-session answers are those `recover` and the calendar give. The session reads each date's observations once and each Instrument's stale context and gaps once, however many calls ask, so a caller's reads grow with distinct dates and Instruments, never with Trades. It binds as `ResolveFrames` does, with one `MarketDataSnapshotId` per date read, and it gives the caller the binding of everything it read. A session is never reused across operations; a new one reads fresh.
 
 ```mermaid
 sequenceDiagram

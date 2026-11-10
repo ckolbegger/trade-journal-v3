@@ -63,7 +63,7 @@ Explicitly outside the MVP:
 - [Trade Workflows](design/trade-workflows.md) — 6 operations
 - [Trade Record](design/trade-record.md) — 9 operations
 - [Journal](design/journal.md) — 10 operations
-- [Market Data](design/market-data.md) — 8 operations
+- [Market Data](design/market-data.md) — 9 operations
 - [Daily Review](design/daily-review.md) — 4 operations
 - [Performance Analysis](design/performance-analysis.md) — 4 operations
 - [Reference Catalog](design/reference-catalog.md) — 7 operations

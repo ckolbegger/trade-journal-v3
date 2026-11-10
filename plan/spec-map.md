@@ -14,40 +14,42 @@ This table is the source of truth. After changing a tag or class here, regenerat
 
 **Rebased for D7** 2026-11-06, after the D7 prefactor (tag `claude-opus-5.5-d7p`; its breakdown, section 5). All 259 entries' line ranges and character counts still match `specs/`. D7's tags already cover every section the prefactor and D7's amended A99 and A188 touch, so no tag changed, and the regenerated lists in `plan/spec-reading/` are unchanged. The reading-cost table below was refreshed from the entries: the spec-map corrections and glossary entry of revisions 11, 12 and 28 had changed the core and some tagged totals since it was built.
 
+**Rebased for the D7S prefactor** 2026-11-10, plan revision 72 (decision 101). The revision amended two specs, so the entries after each edit moved: `market-data.md` S121–S128 (S121 and S124 also grew, with `openReadSession`) and `trade-analysis.md` S166–S173 (S166 grew, with `derive`'s contract status). Each moved entry's line range and character count was recomputed from the file (characters, not bytes, as the map counts them; the unmoved entries S122, S123 and S125–S128 kept their counts). `overview.md` and `specs/README.md` changed one digit each, with no change in length or lines. No tag changed. The reading lists and the table below were regenerated from the entries.
+
 ## Reading cost per deliverable
 
-Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 315,154 bytes (every `.md` file, as of 2026-11-06).
+Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 316,457 bytes (every `.md` file, as of 2026-11-10).
 
 | Deliverable | Core | Tagged (non-core) | Total characters | ≈ Tokens |
 |---|---|---|---|---|
-| D1 | 151,018 | 42,647 | 193,665 | 81K |
-| D2 | 151,018 | 48,684 | 199,702 | 83K |
-| D4 | 151,018 | 65,257 | 216,275 | 90K |
-| D5 | 151,018 | 65,318 | 216,336 | 90K |
-| D6 | 151,018 | 71,642 | 222,660 | 93K |
-| D7 | 151,018 | 72,529 | 223,547 | 93K |
-| D8 | 151,018 | 56,087 | 207,105 | 86K |
-| D9 (provisional) | 151,018 | 6,953 | 157,971 | 66K |
-| D10 (provisional) | 151,018 | 39,232 | 190,250 | 79K |
-| D11 (provisional) | 151,018 | 20,661 | 171,679 | 72K |
-| D12 (provisional) | 151,018 | 31,699 | 182,717 | 76K |
-| D13 (provisional) | 151,018 | 28,578 | 179,596 | 75K |
-| D14 (provisional) | 151,018 | 16,321 | 167,339 | 70K |
-| D15 (provisional) | 151,018 | 30,946 | 181,964 | 76K |
-| D16 (provisional) | 151,018 | 18,430 | 169,448 | 71K |
-| D17 (provisional) | 151,018 | 22,558 | 173,576 | 72K |
-| D18 (provisional) | 151,018 | 8,307 | 159,325 | 66K |
-| D19 (provisional) | 151,018 | 11,084 | 162,102 | 68K |
-| D20 (provisional) | 151,018 | 44,781 | 195,799 | 82K |
-| D21 (provisional) | 151,018 | 40,188 | 191,206 | 80K |
-| D22 (provisional) | 151,018 | 29,210 | 180,228 | 75K |
-| D23 (provisional) | 151,018 | 7,514 | 158,532 | 66K |
-| D24 (provisional) | 151,018 | 17,336 | 168,354 | 70K |
-| D25 (provisional) | 151,018 | 16,444 | 167,462 | 70K |
-| D26 (provisional) | 151,018 | 10,291 | 161,309 | 67K |
-| D27 (provisional) | 151,018 | 19,613 | 170,631 | 71K |
-| D28 (provisional) | 151,018 | 6,314 | 157,332 | 66K |
-| RC (provisional) | 151,018 | 5,112 | 156,130 | 65K |
+| D1 | 151,084 | 42,967 | 194,051 | 81K |
+| D2 | 151,084 | 49,004 | 200,088 | 83K |
+| D4 | 151,084 | 66,494 | 217,578 | 91K |
+| D5 | 151,084 | 66,555 | 217,639 | 91K |
+| D6 | 151,084 | 72,879 | 223,963 | 93K |
+| D7 | 151,084 | 73,766 | 224,850 | 94K |
+| D8 | 151,084 | 57,324 | 208,408 | 87K |
+| D9 (provisional) | 151,084 | 7,870 | 158,954 | 66K |
+| D10 (provisional) | 151,084 | 40,469 | 191,553 | 80K |
+| D11 (provisional) | 151,084 | 21,578 | 172,662 | 72K |
+| D12 (provisional) | 151,084 | 32,616 | 183,700 | 77K |
+| D13 (provisional) | 151,084 | 28,578 | 179,662 | 75K |
+| D14 (provisional) | 151,084 | 16,641 | 167,725 | 70K |
+| D15 (provisional) | 151,084 | 32,183 | 183,267 | 76K |
+| D16 (provisional) | 151,084 | 18,430 | 169,514 | 71K |
+| D17 (provisional) | 151,084 | 22,558 | 173,642 | 72K |
+| D18 (provisional) | 151,084 | 8,307 | 159,391 | 66K |
+| D19 (provisional) | 151,084 | 12,001 | 163,085 | 68K |
+| D20 (provisional) | 151,084 | 45,101 | 196,185 | 82K |
+| D21 (provisional) | 151,084 | 40,188 | 191,272 | 80K |
+| D22 (provisional) | 151,084 | 29,210 | 180,294 | 75K |
+| D23 (provisional) | 151,084 | 7,514 | 158,598 | 66K |
+| D24 (provisional) | 151,084 | 17,656 | 168,740 | 70K |
+| D25 (provisional) | 151,084 | 16,444 | 167,528 | 70K |
+| D26 (provisional) | 151,084 | 10,291 | 161,375 | 67K |
+| D27 (provisional) | 151,084 | 19,613 | 170,697 | 71K |
+| D28 (provisional) | 151,084 | 6,314 | 157,398 | 66K |
+| RC (provisional) | 151,084 | 5,112 | 156,196 | 65K |
 
 ## Entries
 
@@ -256,14 +258,14 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 
 | ID | Lines | Section | Chars | Class | D1–D8 | D9–D28 (provisional) | Summary |
 |---|---|---|---|---|---|---|---|
-| S121 | 3–23 | Contract | 1,280 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D19 | Market Data contract: owns closing evidence, acknowledgments, precedence, recovery, provider config; Pricing Provider port. |
-| S122 | 24–52 | Observation model | 1,456 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D16, D19 | Observation keys and sources, Mark/Daily Bar resolution precedence, Stale context, Expected Mark Date semantics. |
-| S123 | 53–85 | Manual writes and precedence | 2,296 | tagged | D4, D5, D7, D8 | D10, D11, D19 | save intentions: Manual Mark, override, correction, assert/withdraw unavailable; Manual stickiness; provider refresh rules. |
-| S124 | 86–113 | Query contract | 1,554 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated. |
-| S125 | 114–136 | Automatic recovery | 1,974 | tagged | D4, D5, D6, D7, D8 | D11 | recover: enumerate sessions, find gaps, bounded provider fetch, Manual preserved, diagnostics only; NotConfigured without provider. |
-| S126 | 137–147 | Daily Bar use | 537 | tagged | D4, D7 | D9, D11, D12 | Daily Bar evidence rules for condition checks (high/low, synchronized Marks); Bars never alter valuation. |
-| S127 | 148–151 | Provider configuration | 550 | tagged | D8 | D11 | Provider configuration: zero or one provider, revisioned views, write-only credential never exported or logged. |
-| S128 | 152–158 | Backup and Restore | 863 | core — Backup/Restore compatibility of stored data is cross-cutting; every Market-Data-adding deliverable extends it. | D4, D7, D8 | D11, D12 | Market Data backup section contents, exclusions, provider-free Restore validation, restored config becomes Needs Setup. |
+| S121 | 3–24 | Contract | 1,346 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D19 | Market Data contract: owns closing evidence, acknowledgments, precedence, recovery, provider config; Pricing Provider port. |
+| S122 | 25–53 | Observation model | 1,456 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D16, D19 | Observation keys and sources, Mark/Daily Bar resolution precedence, Stale context, Expected Mark Date semantics. |
+| S123 | 54–86 | Manual writes and precedence | 2,296 | tagged | D4, D5, D7, D8 | D10, D11, D19 | save intentions: Manual Mark, override, correction, assert/withdraw unavailable; Manual stickiness; provider refresh rules. |
+| S124 | 87–116 | Query contract | 2,471 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated; read session (`openReadSession`, decision 101). |
+| S125 | 117–139 | Automatic recovery | 1,974 | tagged | D4, D5, D6, D7, D8 | D11 | recover: enumerate sessions, find gaps, bounded provider fetch, Manual preserved, diagnostics only; NotConfigured without provider. |
+| S126 | 140–150 | Daily Bar use | 537 | tagged | D4, D7 | D9, D11, D12 | Daily Bar evidence rules for condition checks (high/low, synchronized Marks); Bars never alter valuation. |
+| S127 | 151–154 | Provider configuration | 550 | tagged | D8 | D11 | Provider configuration: zero or one provider, revisioned views, write-only credential never exported or logged. |
+| S128 | 155–161 | Backup and Restore | 863 | core — Backup/Restore compatibility of stored data is cross-cutting; every Market-Data-adding deliverable extends it. | D4, D7, D8 | D11, D12 | Market Data backup section contents, exclusions, provider-free Restore validation, restored config becomes Needs Setup. |
 
 ### `specs/design/overview.md`
 
@@ -321,14 +323,14 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S163 | 3–20 | Contract | 1,450 | core — Module contract/purpose section. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D12, D14, D15, D17, D20, D21, D24 | Trade Analysis contract: pure per-Trade interpretation authority; six operations; no public formula toolkit. |
 | S164 | 21–48 | Shared values | 1,015 | core — Shared result vocabulary used by every calculating and displaying deliverable. | D1, D2, D4, D6, D7, D8 | D9, D10, D16 | CalculationResult states, FactOrder, DerivedTradeState contents; no substitution of fabricated values. |
 | S165 | 51–58 | Operation contracts › `assessPlan` | 1,109 | tagged | D1, D2, D4, D7 | D10, D20, D21 | assessPlan: Plan validation, Plan Baseline and 1R, option underlying-price Stop monetary boundary, typed rejection. |
-| S166 | 59–70 | Operation contracts › `derive` | 1,931 | tagged | D1, D2, D4, D5, D6, D7, D8 | D10, D14, D15, D20, D24 | derive: replay effective facts, Positions, Lots, fees, lifecycle, Entry window, leg fulfillment, Scaling, Disposition Timing. |
-| S167 | 71–84 | Operation contracts › `evaluate` | 1,173 | tagged | D4, D5, D6, D7 | D10, D12, D16, D17 | evaluate: valuation, ongoing risk/reward, condition status, Overrun, independent P&L components and coverage. |
-| S168 | 85–90 | Operation contracts › `expirationPayoff` | 866 | tagged | D1, D7, D8 | D10 | expirationPayoff: Planned and Current piecewise payoff, zero sets, extrema; Not Applicable and multi-expiration Unavailable. |
-| S169 | 91–96 | Operation contracts › `replay` | 876 | tagged | D4, D5 | D9, D10, D12, D17 | replay: per-frame corrected tracks with gaps; Stop Discipline episodes and stable fingerprints. |
-| S170 | 97–100 | Operation contracts › `assessChange` | 390 | tagged |  | D15, D18, D19, D20, D21 | assessChange: validates before/candidate records, returns reconciliation and Correction Footprint; never writes. |
-| S171 | 101–114 | Normative analytical rules | 2,200 | tagged | D1, D2, D4, D6, D7, D8 | D10, D12, D14, D17, D20, D21 | Normative rules: Execution ownership, FIFO, lot-aware fees, settlement basis, lifecycle, 1R, Deviation categories. |
-| S172 | 115–131 | Staged evaluation | 622 | tagged | D1, D2, D4, D5, D6, D7 | D9, D16 | Staged evaluation data dependency: derive, obtain one observation frame, evaluate, expirationPayoff. |
-| S173 | 132–136 | Failures and integrity | 704 | core — Module failures section. | D1, D2, D4, D5, D6, D7, D8 | D10, D20 | Typed rejections versus calculation states; callers never convert either into a plausible number. |
+| S166 | 59–72 | Operation contracts › `derive` | 2,251 | tagged | D1, D2, D4, D5, D6, D7, D8 | D10, D14, D15, D20, D24 | derive: replay effective facts, Positions, Lots, fees, lifecycle, Entry window, leg fulfillment, Scaling, Disposition Timing; contract status at a valuation date (decision 101). |
+| S167 | 73–86 | Operation contracts › `evaluate` | 1,173 | tagged | D4, D5, D6, D7 | D10, D12, D16, D17 | evaluate: valuation, ongoing risk/reward, condition status, Overrun, independent P&L components and coverage. |
+| S168 | 87–92 | Operation contracts › `expirationPayoff` | 866 | tagged | D1, D7, D8 | D10 | expirationPayoff: Planned and Current piecewise payoff, zero sets, extrema; Not Applicable and multi-expiration Unavailable. |
+| S169 | 93–98 | Operation contracts › `replay` | 876 | tagged | D4, D5 | D9, D10, D12, D17 | replay: per-frame corrected tracks with gaps; Stop Discipline episodes and stable fingerprints. |
+| S170 | 99–102 | Operation contracts › `assessChange` | 390 | tagged |  | D15, D18, D19, D20, D21 | assessChange: validates before/candidate records, returns reconciliation and Correction Footprint; never writes. |
+| S171 | 103–116 | Normative analytical rules | 2,200 | tagged | D1, D2, D4, D6, D7, D8 | D10, D12, D14, D17, D20, D21 | Normative rules: Execution ownership, FIFO, lot-aware fees, settlement basis, lifecycle, 1R, Deviation categories. |
+| S172 | 117–133 | Staged evaluation | 622 | tagged | D1, D2, D4, D5, D6, D7 | D9, D16 | Staged evaluation data dependency: derive, obtain one observation frame, evaluate, expirationPayoff. |
+| S173 | 134–138 | Failures and integrity | 704 | core — Module failures section. | D1, D2, D4, D5, D6, D7, D8 | D10, D20 | Typed rejections versus calculation states; callers never convert either into a plausible number. |
 
 ### `specs/design/trade-record.md`
 

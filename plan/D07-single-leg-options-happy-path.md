@@ -299,6 +299,8 @@ describe("value at expiration at the latest close (P24, A122)")
 
 Proven only by integration: the dated last-close line for an option Trade (I7.15), which reuses D4's mechanism unchanged once this task's formulas are green.
 
+**Amended by decision 101 (revision 72):** D7 shipped the option dated line in the Trades list and Detail only; the Review card kept it Stock-only (the T7.30-B3 note in `evidence/D07/structural.md`, and `settlement.test.ts`'s "T7.24 known defect" case). The [D7S prefactor](D07S-prefactor-mark-to-market-valuation.md) shows it on the Review card too (P83, T7SP.8).
+
 ### T7.7 Persistence: schema v6
 
 Seam: the internal `Persistence` interface and the `v5→v6` transform, against `fake-indexeddb`.

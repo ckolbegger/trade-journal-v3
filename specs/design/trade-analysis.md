@@ -62,6 +62,8 @@ Accepts one snapshot-consistent Trade Record and an explicit economic cutoff. It
 
 It derives Position, open Lots, FIFO Lot Matches, fee treatment, realized P&L, expected Lifecycle State, Terminal Disposition, Entry Resolution Point, actual-entry comparison, and fact-only Deviations. It reports disagreements with stored lifecycle, recorded lot links, or recorded deviations as structured integrity findings. It never silently repairs them.
 
+Given a valuation date, it gives each open option position's contract status at that date: `Live` before the expiration date, `DueToday` on it, `PastExpiration` after it. Its exact observation requirements follow that status, and `evaluate` reads the status rather than comparing dates (plan decision 101, 2026-11-10).
+
 Planned Leg fulfillment is independently `Unfilled`, `PartiallyFilled`, `FilledAsPlanned`, `FilledWithDeviation`, `NotEntered`, or `NotVerifiable`. Not Entered applies to an untouched leg when a partially executed Trade ends. A mismatch is deterministic only when retained selection evidence can reproduce it; absent evidence yields Not Verifiable rather than assumed conformance or Deviation.
 
 The Entry window begins with the first Position Change that establishes exposure. It ends when every Planned Leg/quantity is entered or explicitly Not Entered, or immediately before the first exposure-reducing Position Change, whichever occurs first. Entry Quality aggregates opening Executions and allocated fees only inside that window.
