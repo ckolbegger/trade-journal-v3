@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult, ExecutionDescription, ExpirationDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
-import { expiredOn, instrumentKey, multiplierOf, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
+import { expiredOn, instrumentKey, multiplierOf, settlementDueOn, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
@@ -99,6 +99,14 @@ export interface ObservationRequirement {
   readonly instrument: ExecutionFact['instrument'];
   readonly valuationDate: string;
   readonly earliestRelevance: Instant;
+}
+
+// An open option contract's standing against its expiration date (P81): Live before it, DueToday on
+// it (Settlement Due, P25), PastExpiration after it.
+export type ContractStatus = 'Live' | 'DueToday' | 'PastExpiration';
+export interface ContractStatusEntry {
+  readonly instrument: OptionInstrument;
+  readonly status: ContractStatus;
 }
 
 // Agreement between stored and expected Lifecycle State; a disagreement is reported, never repaired.
@@ -379,6 +387,10 @@ export interface DerivedTradeState {
   // Net realized P&L over 1R; NotApplicable(NotClosed) unless the expected lifecycle is Closed (A81).
   readonly realizedR: CalculationResult<Rational, never, Extract<NotApplicableReason, { reason: 'NotClosed' }>>;  // One per Instrument with remaining quantity; none for a Planned Trade.
   readonly observationRequirements: readonly ObservationRequirement[];
+  // The date the statuses and requirements are for; absent when derive had none (A192).
+  readonly valuationDate?: string;
+  // One per option position with remaining quantity at the valuation date (P81); none without a date.
+  readonly contractStatuses: readonly ContractStatusEntry[];
   // Actual fees, each Execution's counted once: the opening Executions' alone, and every Execution's
   // (A80). Neither is ever subtracted from realized P&L again.
   readonly fees: { readonly incurredOpening: Rational; readonly incurred: Rational };
@@ -648,16 +660,30 @@ function optionDispositionTimingOf(lifecycle: LifecycleState, positions: readonl
   return { kind: 'Value', value: { timing, disposedByExecutions: disposed.byExecutions, disposedBySettlement: disposed.bySettlement } };
 }
 
+function contractStatusesOf(positions: readonly InstrumentPosition[], valuationDate: string): ContractStatusEntry[] {
+  return positions.flatMap((p) => {
+    if (p.instrument.kind !== 'Option' || p.quantity.compare(Rational.of(0n)) === 0) return [];
+    const status: ContractStatus = expiredOn(p.instrument, valuationDate)
+      ? 'PastExpiration'
+      : settlementDueOn(p.instrument, valuationDate)
+        ? 'DueToday'
+        : 'Live';
+    return [{ instrument: p.instrument, status }];
+  });
+}
+
 function observationRequirementsOf(
   positions: readonly InstrumentPosition[],
   facts: readonly ExecutionFact[],
   valuationDate: string,
+  statuses: readonly ContractStatusEntry[],
 ): ObservationRequirement[] {
-  // An option needs the contract's Mark and its Underlying's (A110).
-  // After its expiration date a contract needs no Mark and neither does its Underlying: it is Settlement Due (P25).
+  // An option needs the contract's Mark and its Underlying's (A110) while Live or DueToday.
+  // Once PastExpiration a contract needs no Mark and neither does its Underlying: it is Settlement Due (P25).
+  const pastExpiration = new Set(statuses.filter((s) => s.status === 'PastExpiration').map((s) => instrumentKey(s.instrument)));
   return positions
     .filter((p) => p.quantity.compare(Rational.of(0n)) !== 0)
-    .filter((p) => p.instrument.kind === 'Stock' || valuationDate <= p.instrument.expiration)
+    .filter((p) => !pastExpiration.has(instrumentKey(p.instrument)))
     .flatMap((p) => {
       const earliestRelevance = facts.find((e) => e.instrument.symbol === p.instrument.symbol)!.economicTime;
       const underlying: StockInstrument[] = p.instrument.kind === 'Option' ? [{ kind: 'Stock', symbol: p.instrument.symbol }] : [];
@@ -1043,6 +1069,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
   const closed = expectedLifecycle === 'Closed';
   const realizedToDate = lotMatchResults.reduce((sum, r) => (r.realized.kind === 'Value' ? sum.add(r.realized.value) : sum), Rational.of(0n));
   const deviations = [...deviationsOf(record, opens), ...shortfallsOf(record, entry)];
+  const contractStatuses = input.valuationDate === undefined ? [] : contractStatusesOf(positions, input.valuationDate);
   const before = input.candidate && derive({ record: input.candidate.before, ...(input.cutoff && { cutoff: input.cutoff }) });
   if (before?.kind === 'IncoherentFacts') return before;
   const agreement: LifecycleAgreement =
@@ -1070,7 +1097,9 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     optionDispositionTiming: optionDispositionTimingOf(expectedLifecycle, positions, disposed),
     // Every D6 Trade has a positive 1R, so the quotient is always a Value.
     realizedR: closed ? value(realizedToDate.div(baseline.oneR)) : { kind: 'NotApplicable', reason: 'NotClosed' },
-    observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
+    observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate, contractStatuses),
+    ...(input.valuationDate !== undefined && { valuationDate: input.valuationDate }),
+    contractStatuses,
     fees: {
       incurredOpening: facts.filter(opens).reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
       incurred: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)),
