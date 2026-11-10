@@ -218,3 +218,55 @@ T7SP.5 and its bug tasks B1–B4 now have ocr reviews with no findings or only d
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 07449b9d`: `browser tier: task (no changed path since 07449b9d is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7SP.6 Mark-to-Market Valuation
+
+Behavioral (11 planned cases plus one extra, in `tdd-log.md`). Commit `23edc84b`. New: `src/coordinators/valuation/index.ts`, `value-trade.ts`, `value-trade.test.ts`, `settlement.ts`; `src/coordinators/valuation.ts` moved unchanged to `valuation/dated-line.ts` (`git mv`). `src/coordinators/settlement.ts` keeps only `payoffOf` (ADR 0007). Imports updated, with no behaviour change, in `daily-review/types.ts`, `daily-review/daily-review.ts`, `trade-views/trade-views.ts` and `tests/support/open-detail-fixtures.ts`; no thin re-export. Each test comment cites the existing Trade Views or Daily Review case its expected values come from.
+
+Public API (implementation-level names, P77's were indicative), `src/coordinators/valuation/index.ts`:
+- `valueTrade(session: MarketDataReadSession, analysis: TradeAnalysisRecord, options?: { factsAtClose?: boolean; withGaps?: boolean }): Promise<TradeValuation>`;
+- `TradeValuation = { kind: 'Valued'; state; evaluation; settlement: SettlementItem[]; gaps: HistoricalGaps[]; frame?; underlyingFrame?; datedLine? } | { kind: 'Unavailable'; reason: 'FactsIncoherent'; findings }`;
+- moved and re-exported: `datedCloseOf`, `datedLineOf`, `observationFrame`, `DatedLine`, `settlementTimeOf`, `SettlementItem`, `SettlementTime` (now an alias of Market Data's `MarketDataSettlementTime`, unifying the two copies).
+
+Implementation decisions (accepted by the main session, recorded here and in the handoff):
+- **`factsAtClose`:** a Review derives with the cutoff at `session.closeInstant`; a Current read derives with every effective fact, as Trade Views does today. The session doesn't expose its context kind, so the caller passes `{ factsAtClose: true }` for a Review. The caller still never passes a date or an instant (P78). The alternative, always deriving at the close, would change Trade Views' at-entry lines for Lots opened after the last close.
+- **`withGaps`:** "when the session recovers" is an option; by default `gaps: []`; when set, the call asks `session.gaps` for derive's requirements with `earliestRelevance` as the exposure.
+- **Closed Trades:** detected by stored and expected lifecycle `Closed`, re-derived at `terminalTime.slice(0, 10)` (the UTC date of the terminal instant), as Trade Views does today; no session read, `settlement: []`.
+- **Instruments:** from `observationRequirements`; for a `PastExpiration` contract from `contractStatuses`; for a Trade with no Position from `state.positions[0]`, falling back to `plan.underlying` only for an empty Trade, never a Planned Leg.
+- **After expiration:** the session's date and close with a `Missing` resolution stand in for the frames, as Daily Review does; Trade Views today still reads those frames and drops that read in T7SP.7.
+- **Dated line:** a stock's from `datedLineOf`; an option's reads `session.historicalFrames(date, [Underlying])`; absent when that returns `[]` (outside coverage).
+- **Incoherent facts:** the module checks the cutoff derivation only; Daily Review's integrity derivation without a cutoff stays with the caller (A192, T7SP.8).
+- The status types are not re-exported from `trade-analysis/index.ts`; no caller outside the module needs them.
+
+Seam: the Application facade exposes no read session or Trade Record, so the test builds `createMarketData` and `createTradeRecord` over `app.persistence`, with fixtures from `tests/integration/d7/support.ts`; it types the facade as `Awaited<ReturnType<typeof onboardedAt>>['app']`, because `lint:deps` forbids `src/coordinators` importing `src/app`.
+
+Case 1's red came from a throwing stub of `valueTrade` (`Error: not implemented`), a runtime failure; the missing import alone would have been an invalid red. Extra case beyond the plan: "should value a Planned Trade holding no Position with no read" (red `TypeError ... reading 'kind'`, green after a guard).
+
+**First-run passes:**
+- Case 2, "should value DEF with its Mark missing as Unavailable(MarkMissing, DEF, Mon Oct 12), with realized-to-date still a Value" (built by case 1). Mutation: evaluate with an uncovered observation instead of the session frame; failure `AssertionError: expected { kind: 'Evaluated', …(29) } to deeply equal ObjectContaining{…}`.
+- Case 5, "should value O-C at Fri 11-20 from its contract's Mark, with a Due settlement item" (built by cases 3 and 4). Mutation: treat `DueToday` like `PastExpiration`; failure `AssertionError: expected undefined to deeply equal { kind: 'Available', mark: ObjectContaining{…} }`.
+
+Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src/coordinators src/domain src/modules/market-data` 58 files, 644 tests; `npm run test:integration` 94 files, 191 tests (every query-count proof unchanged).
+
+**ocr review** (`ocr/T7SP.6-23edc84b.json`): one finding, a bug task.
+
+| Severity | Location | Claim | Reviewer | Outcome |
+|---|---|---|---|---|
+| medium (bug) | `src/coordinators/valuation/value-trade.ts:75` | With `factsAtClose` on a session outside coverage, `closeInstant` is undefined, so the cutoff is silently dropped and `derive` takes every effective fact, including later ones. | Valid, narrow: Daily Review's `ResolveSession` rejects an uncovered date first, so it can't reach this today; the risk is the module's contract once T7SP.8 routes through it. | **T7SP.6-B1.** Defect: `valueTrade(session, analysis, { factsAtClose: true })` on a session with no close instant values the Trade with facts after the Review date. Fix (main session's recommendation): reject the call, as the session rejects other caller errors, never derive without the cutoff. Case: `it should reject a valuation at the session's close when the session has no close`. |
+
+#### T7SP.6-B1, commit `b5398b91`
+
+Case "should reject a valuation at the session's close when the session has no close": case 6's session (Current, as-of 2029-01-03, outside coverage) with an XYZ stock Trade, `valueTrade(session, analysis, { factsAtClose: true })`. Red: the promise resolved `{ kind: 'Valued', …(4) }`; green after the fix: `valueTrade` throws `valueTrade: factsAtClose needs a session with a close` when `factsAtClose` is set and `session.closeInstant` is undefined, and the cutoff spread is `...(options.factsAtClose && { cutoff: session.closeInstant })`, never dropped silently. Verification: typecheck, `tsc6`, lint, lint:deps exit 0; `npx vitest run src/coordinators` and `npm run test:integration` pass; no existing case changed.
+
+**ocr review** (`ocr/T7SP.6-B1-b5398b91.json`): No findings.
+
+**Cumulative run `t7sp-6`** (2026-11-10, on `b5398b91`, after B1), outputs in `suite-runs/t7sp-6-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1476 tests passed |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), task tier | 5 passed (11.1 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 3998e749`: `browser tier: task (no changed path since 3998e749 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.

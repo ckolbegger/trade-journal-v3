@@ -1,0 +1,185 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 1,
+    "total_tokens": 238293,
+    "input_tokens": 235611,
+    "output_tokens": 2682,
+    "cache_read_tokens": 36096,
+    "elapsed": "1m43s"
+  },
+  "tool_calls": {
+    "total": 32,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 14,
+      "file_find": 2,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/valuation/value-trade.ts",
+      "content": "When `factsAtClose` is true but the session is outside calendar coverage, `openReadSession` supplies no `closeInstant`, so this expression silently omits the cutoff. `derive` does not filter facts by `valuationDate`; it then includes every effective execution and settlement, including those after the requested review date. Consequently, quantities and realized-to-date figures can reflect future transactions (or even return a later Closed trade) in a historical review. Handle the unavailable close explicitly rather than falling back to all-facts valuation, and add a test with an uncovered Review date and later executions.",
+      "existing_code": "  const open = derive({ record: analysis, ...(options.factsAtClose \u0026\u0026 session.closeInstant \u0026\u0026 { cutoff: session.closeInstant }), valuationDate: session.tradingDate });",
+      "start_line": 75,
+      "end_line": 75,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Valuation module extraction and coordinator/fixture integration",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/coordinators/settlement.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/valuation/dated-line.ts",
+        "src/coordinators/valuation/index.ts",
+        "src/coordinators/valuation/settlement.ts",
+        "src/coordinators/valuation/value-trade.ts",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "aefebaf2-7564-4b89-a05f-7ae6f3b118b6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "aefebaf2-7564-4b89-a05f-7ae6f3b118b6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "23edc84b",
+      "resolved_base": "527fff64d28241f42c1d77cbd3618fc398d55e70",
+      "resolved_head": "23edc84b6e52261cb0604e4749edf755332c68e9",
+      "exact_range": "527fff64d28241f42c1d77cbd3618fc398d55e70..23edc84b6e52261cb0604e4749edf755332c68e9",
+      "source_artifact_sha256": "57857f7b66b10bcc627d31d40fff728cca27d610cde35aac76e89a60f2843ebf"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "085d25322bbf52825f41e176d3b60a21277a8ff890031271ef37d64b16955958"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "f37197d5486e51aa9fd5e0f24ca55c0cbd127d76d5fa09a6948ffce1cb472514"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "97f2653be5e4d9acb87dc1b5622645b089d1bdddd4dbd2da57e806118bba2e9e"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "e3669adfe947c491eb65a0a063e9b5383f4a7459d75280c0526cb521058d678c"
+        },
+        {
+          "item_id": "80bdae89174334161eb92a11b43d3857791269b10c02708c3293a950a9dac50a",
+          "path": "src/coordinators/valuation/settlement.ts",
+          "fingerprint": "90830eef25b74f96d0bf77280f13e0baa0457f6d5c701aadb9d2edca00135766"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "c6a21d83c0ccf4be9212caec67c91e0034b1376badc7decf79abdebb0da34a82"
+        },
+        {
+          "item_id": "a42819fe84f3e7217e6207897f2e6d629dece782d6bda3514c2f405e35c60abb",
+          "path": "src/coordinators/valuation/value-trade.ts",
+          "fingerprint": "b7227c6bdf36fa803c4f918d952085a9009299b424ca7a95071b8f6c024da838"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "d157639edac063d0e397c00796b63b253374364483a3022bcc689ab76b7faf21"
+        },
+        {
+          "item_id": "b9186009f31687fddaf67335262f93febde6a21f2d1627938e8608147cfcf183",
+          "path": "src/coordinators/valuation/dated-line.ts",
+          "old_path": "src/coordinators/valuation.ts",
+          "fingerprint": "b5874c32a2c786550c91198436a6ed3f62588786db8c98142fc135fafb9e4b23"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "085d25322bbf52825f41e176d3b60a21277a8ff890031271ef37d64b16955958"
+        },
+        {
+          "item_id": "21429877d1dbdc7940b1ba89989ddfd73d1f769f4520daf4c3888c4f70113c4b",
+          "path": "src/coordinators/settlement.ts",
+          "fingerprint": "f37197d5486e51aa9fd5e0f24ca55c0cbd127d76d5fa09a6948ffce1cb472514"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "97f2653be5e4d9acb87dc1b5622645b089d1bdddd4dbd2da57e806118bba2e9e"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "e3669adfe947c491eb65a0a063e9b5383f4a7459d75280c0526cb521058d678c"
+        },
+        {
+          "item_id": "80bdae89174334161eb92a11b43d3857791269b10c02708c3293a950a9dac50a",
+          "path": "src/coordinators/valuation/settlement.ts",
+          "fingerprint": "90830eef25b74f96d0bf77280f13e0baa0457f6d5c701aadb9d2edca00135766"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "c6a21d83c0ccf4be9212caec67c91e0034b1376badc7decf79abdebb0da34a82"
+        },
+        {
+          "item_id": "a42819fe84f3e7217e6207897f2e6d629dece782d6bda3514c2f405e35c60abb",
+          "path": "src/coordinators/valuation/value-trade.ts",
+          "fingerprint": "b7227c6bdf36fa803c4f918d952085a9009299b424ca7a95071b8f6c024da838"
+        },
+        {
+          "item_id": "b19ec1bcad75098482125b4592ab045a1607bdf7c921462a97a75c2821f330a5",
+          "path": "src/coordinators/valuation/index.ts",
+          "fingerprint": "d157639edac063d0e397c00796b63b253374364483a3022bcc689ab76b7faf21"
+        },
+        {
+          "item_id": "b9186009f31687fddaf67335262f93febde6a21f2d1627938e8608147cfcf183",
+          "path": "src/coordinators/valuation/dated-line.ts",
+          "old_path": "src/coordinators/valuation.ts",
+          "fingerprint": "b5874c32a2c786550c91198436a6ed3f62588786db8c98142fc135fafb9e4b23"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 102601
+  }
+}
