@@ -190,6 +190,7 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 ### Notes for later tasks
 
+- **T7SP.4, T7SP.6:** T7SP.3 added `ContractStatus`, `ContractStatusEntry`, `DerivedTradeState.contractStatuses` and `DerivedTradeState.valuationDate?` in `src/domain/trade-analysis/derive.ts`, not yet re-exported from `trade-analysis/index.ts`; export them there if a caller outside the module needs them.
 - **T7SP.4:** `evaluate`'s date check applies to a state that carries a valuation date. Until T7SP.7, Trade Views derives without one (`trade-views.ts:840`, `:946`) and `closedCurrent` passes a frame dated at the terminal date, so a check on every state would break D7's Trade Views cases.
 - **T7SP.5:** the oracle is equality with `ResolveFrames` and `recover` for the same context and Instruments, inside the same test (A193). `settlementTimeOf`'s calendar-only answer (decision 99, `src/coordinators/settlement.ts`) is the model for the session's settlement time.
 - **T7SP.6:** `payoffOf` stays in `src/coordinators/settlement.ts` (ADR 0007). Check that `lint:deps` allows the new `src/coordinators/valuation/` folder to import `src/modules/market-data` and `src/domain/trade-analysis` as `valuation.ts` does today.
@@ -200,4 +201,8 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 ### Open questions
 
-None yet.
+- **T7SP.3, first-run pass:** "should give O-S's short contract the same three statuses on the same dates" passed first; mutation (short positions always `Live`) failed it by assertion (`evidence/D07SP/structural.md`, T7SP.3).
+- **T7SP.3, first-run pass:** "should give no status to a stock position, or to a contract once its quantity is closed" passed first; mutation (zero-quantity guard dropped) failed it.
+- **T7SP.3, first-run pass:** "should give no status and no requirements when derive has no valuation date" passed first; mutation (statuses at a fallback date) failed it.
+- **T7SP.3, the planned mutation check for case 3:** the breakdown's "requirements computed from `Live` alone" fails case 2 (DueToday), not case 3, because `Live`-only already gives no requirements after expiration; case 3 was checked with the inverse mutation (requirements ignoring status) instead. Both cases went red first on their status assertions, so neither is a first-run pass.
+- **T7SP.3, dismissed ocr finding:** a nested ternary at `derive.ts:666-670` (style, low); no failure scenario and no such rule in the repo (`evidence/D07SP/structural.md`, T7SP.3).

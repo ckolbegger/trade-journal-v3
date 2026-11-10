@@ -1,0 +1,95 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 52689,
+    "input_tokens": 52054,
+    "output_tokens": 635,
+    "cache_read_tokens": 15872,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/derive.ts",
+      "content": "This nested ternary violates the review checklist's prohibition on nested ternary expressions. Use an `if`/`else if` chain to assign the status, preserving the `expiredOn` check before `settlementDueOn` because both return true after expiration.",
+      "suggestion_code": "    let status: ContractStatus;\n    if (expiredOn(p.instrument, valuationDate)) {\n      status = 'PastExpiration';\n    } else if (settlementDueOn(p.instrument, valuationDate)) {\n      status = 'DueToday';\n    } else {\n      status = 'Live';\n    }",
+      "existing_code": "    const status: ContractStatus = expiredOn(p.instrument, valuationDate)\n      ? 'PastExpiration'\n      : settlementDueOn(p.instrument, valuationDate)\n        ? 'DueToday'\n        : 'Live';",
+      "start_line": 666,
+      "end_line": 670,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/domain/trade-analysis/derive.ts",
+      "files": [
+        "src/domain/trade-analysis/derive.ts"
+      ]
+    }
+  ],
+  "session_id": "0aa8660b-315c-41a3-8bf1-7c40d4341f20",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0aa8660b-315c-41a3-8bf1-7c40d4341f20",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e14f0cc8",
+      "resolved_base": "5f2beae42e7b90bf07a7417a1986cece32005dda",
+      "resolved_head": "e14f0cc8dcc79d25707dc06629690a3e642c8100",
+      "exact_range": "5f2beae42e7b90bf07a7417a1986cece32005dda..e14f0cc8dcc79d25707dc06629690a3e642c8100",
+      "source_artifact_sha256": "f18f6c8f1e7470a750fefe843655f3356260a38af2a5fc130fdc9a73b766158c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "5b3af2d4670b3a8c4451c86c2208bf8158903415f4cef90243c199dbc2f7ea0d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "5b3af2d4670b3a8c4451c86c2208bf8158903415f4cef90243c199dbc2f7ea0d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34321
+  }
+}

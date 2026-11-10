@@ -72,3 +72,41 @@ For `bench-generator.ts`, the `held` map now stores the Option Instrument (`cont
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 0cc181aa`: `browser tier: full (first matching path since 0cc181aa: src/app/bench-generator.ts)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7SP.3 Trade Analysis: contract status in `derive`
+
+Behavioral (6 cases, in `tdd-log.md`). Commit `e14f0cc8`, new test file `src/domain/trade-analysis/contract-status.test.ts`. Test names drop apostrophes only ("O-C contract position", "contract Mark and XYZ Mark", "O-S short contract").
+
+Public types, in `src/domain/trade-analysis/derive.ts` (not yet re-exported from `trade-analysis/index.ts`):
+- `type ContractStatus = 'Live' | 'DueToday' | 'PastExpiration'`;
+- `interface ContractStatusEntry { instrument: OptionInstrument; status: ContractStatus }`;
+- `DerivedTradeState.contractStatuses: readonly ContractStatusEntry[]`, one entry per open option position, empty without a valuation date or for stock and closed contracts;
+- `DerivedTradeState.valuationDate?: string`, present only when `derive` got a date (A192).
+
+Observation requirements now follow the status (the raw comparison at `derive.ts:660` is gone), computed from the same `contractStatuses`, with `expiredOn`/`settlementDueOn`.
+
+**First-run passes** (each mutation failed the case by assertion, then was restored):
+- "O-S short contract, same three statuses": the status code is not sign-specific, so cases 1–3 built it. Mutation: short positions always `Live`; failure `expected [ 'Live' ] to deeply equal [ 'DueToday' ]`.
+- "no status to a stock position, or to a contract once its quantity is closed": mutation dropped the zero-quantity guard; failure `expected [ { instrument … } ] to deeply equal []`.
+- "no status and no requirements when derive has no valuation date": mutation computed statuses with a fallback date 2026-11-20; failure `expected [ {…} ] to deeply equal []`.
+
+**The planned requirement-half mutation.** The breakdown expected the requirement halves of cases 2 and 3 to pass today, with the mutation "requirements computed from `Live` alone" recorded for the third. Both cases went red first on their status assertions, and the requirement switch landed in case 3's green. The planned mutation (drop `DueToday` from the requirement rule) fails case 2, not case 3, since `Live`-only already gives no requirements on Mon 11-23. For case 3 the subagent also ran the inverse (requirements ignoring status), which fails case 3. Recorded as an open question for the final report.
+
+Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src/domain` 216 passed; `npm run test:integration -- d7` 37 passed. No existing assertion changed.
+
+**ocr review** (`ocr/T7SP.3-e14f0cc8.json`): one finding, dismissed.
+
+| Severity | Location | Claim | Reviewer | Outcome |
+|---|---|---|---|---|
+| low (style) | `src/domain/trade-analysis/derive.ts:666-670` | The nested ternary assigning `ContractStatus` breaks a "no nested ternary" rule; use an `if`/`else if` chain with `expiredOn` first. | Doubtful: logic correct and equivalent; no such rule in `CLAUDE.md`, `.claude` or the ESLint config; D7 dismissed the same style finding three times (`derive.ts:634-638`, `payoff.ts:148`, `position-change-issues.ts:31`). | **Dismissed: no failure scenario.** The finding names no input that gives a wrong result; it is a readability preference with no behaviour change, and the repo has no such rule (handoff, section 5: a finding with no failure scenario is dismissed). Checked against the cited lines: `expiredOn` is tested before `settlementDueOn`, so `PastExpiration` wins after expiration as P81 requires. |
+
+**Cumulative run `t7sp-3`** (2026-11-10, on `e14f0cc8`), outputs in `suite-runs/t7sp-3-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 122 files, 1446 tests passed |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), task tier | 5 passed (11.5 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto e6ac2f5f`: `browser tier: task (no changed path since e6ac2f5f is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
