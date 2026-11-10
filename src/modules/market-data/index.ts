@@ -8,6 +8,8 @@ export {
   type FrameContext,
   type MarkFrame,
   type EvidenceBinding,
+  type MarketDataReadSession,
+  type SettlementTime as MarketDataSettlementTime,
   type MarketDataQuery,
   type MarketDataQueryResult,
   type MarketDataConflictedKey,

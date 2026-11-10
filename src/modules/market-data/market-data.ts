@@ -2,9 +2,10 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
-import { expiredOn, instrumentOf } from '../../domain/instrument/index.ts';
+import type { CalculationResult, UnavailableReason } from '../../domain/calculation-result/index.ts';
+import { expiredOn, instrumentOf, type OptionInstrument } from '../../domain/instrument/index.ts';
 import type { CoverageRange, Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
-import type { Clock } from '../../domain/time/index.ts';
+import type { Clock, Instant } from '../../domain/time/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
 import { beginSemanticTransaction, requireOpen, type BindingCheck, type IdGenerator, type Persistence, type ReadTransaction, type SemanticTransaction } from '../../persistence/index.ts';
 import {
@@ -272,6 +273,24 @@ export type RecoverResult =
     }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };
 
+// One coordinator operation's reads (P78, P79): the date and close resolved once at open.
+export interface MarketDataReadSession {
+  readonly tradingDate: string;
+  readonly closeInstant?: string;
+  readonly covered: boolean;
+  // The session's date, then an earlier one: a frame per Instrument asked, in the order asked, none outside coverage.
+  frames(instruments: readonly string[]): Promise<readonly MarkFrame[]>;
+  historicalFrames(date: string, instruments: readonly string[]): Promise<readonly MarkFrame[]>;
+  // What `recover` returns for the Instruments at the session's date, without a provider fetch; each Instrument is scanned once.
+  gaps(instruments: readonly { readonly instrumentKey: string; readonly earliestExposure: string }[]): Promise<readonly HistoricalGaps[]>;
+  // The close of the session an expiration date names, or of the latest session before it: the calendar alone, no stored read (decision 99).
+  settlementTime(contract: OptionInstrument): Promise<SettlementTime>;
+  // Every key the frames read, for `bindEvidence`, and one snapshot id per date read. Call it after the reads have resolved.
+  binding(): { readonly evidenceBinding: EvidenceBinding; readonly snapshotIds: Readonly<Record<string, string>> };
+}
+
+export type SettlementTime = CalculationResult<Instant, Extract<UnavailableReason, { reason: 'SessionPolicyNotCovered' }>, never>;
+
 export interface MarketData {
   save(command: MarketDataSaveCommand): Promise<MarketDataSaveResult>;
   // The read half of `save` for many keys: validates every entry, reads each key once in one snapshot, and builds
@@ -284,6 +303,7 @@ export interface MarketData {
   // `mark:<instrument>@<date>`, in the coordinator's semantic transaction (A176). Internal: not a facade operation.
   bindEvidence(tx: SemanticTransaction, evidenceBinding: EvidenceBinding): void;
   query(query: MarketDataQuery): Promise<MarketDataQueryResult>;
+  openReadSession(context: FrameContext): Promise<MarketDataReadSession>;
   recover(request: RecoverRequest): Promise<RecoverResult>;
 }
 
@@ -521,19 +541,39 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   return { kind: 'Day', day: day.value };
   }
 
+  // The close of the session an expiration date names, or of the latest session before it; the calendar alone (decision 99).
+  function calendarSettlementTime(contract: OptionInstrument): SettlementTime {
+    const uncovered: SettlementTime = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: contract, date: contract.expiration };
+    const expiry = deps.sessionPolicy.classify(contract.expiration);
+    if (expiry.kind === 'NotCovered') return uncovered;
+    if (expiry.kind === 'Session') return { kind: 'Value', value: expiry.close };
+    const latest = deps.sessionPolicy.previousSession(contract.expiration);
+    return latest.ok ? { kind: 'Value', value: latest.value.close } : uncovered;
+  }
+
   // The read half of a frame query, inside the caller's read transaction.
   // One range read of the valuation date, then one reverse-cursor request per Missing Instrument (A47).
+  function observationsOn(tx: ReadTransaction, date: string) {
+    return tx.getAllInRange('observations', IDBKeyRange.bound([date], [date, []]));
+  }
+
+  // One Instrument's evidence at a date from the date's observations; the Stale context is a read only when it has no effective Mark.
+  async function instrumentEvidence(tx: ReadTransaction, date: string, onDate: Awaited<ReturnType<typeof observationsOn>>, instrumentKey: string) {
+    const record = recordOf(onDate, instrumentKey);
+    return evidenceOf(date, instrumentKey, record, record?.effectiveMarkId ? undefined : await staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date }));
+  }
+
+  const recordOf = (onDate: Awaited<ReturnType<typeof observationsOn>>, instrumentKey: string) => stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
+
+  function evidenceOf(date: string, instrumentKey: string, record: ObservationRecord | undefined, source: StaleSource | undefined) {
+    const bound: BoundKey[] = [{ instrumentKey, tradingDate: date, resolutionRevision: revisionOf(record) }];
+    if (source) bound.push({ instrumentKey, tradingDate: source.context.tradingDate, resolutionRevision: source.resolutionRevision });
+    return { record, stale: source?.context, bound };
+  }
+
   async function frameEvidence(tx: ReadTransaction, date: string, instruments: readonly string[]) {
-    const onDate = await tx.getAllInRange('observations', IDBKeyRange.bound([date], [date, []]));
-    return Promise.all(
-      instruments.map(async (instrumentKey) => {
-        const record = stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
-        const source = record?.effectiveMarkId ? undefined : await staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date });
-        const bound: BoundKey[] = [{ instrumentKey, tradingDate: date, resolutionRevision: revisionOf(record) }];
-        if (source) bound.push({ instrumentKey, tradingDate: source.context.tradingDate, resolutionRevision: source.resolutionRevision });
-        return { record, stale: source?.context, bound };
-      }),
-    );
+    const onDate = await observationsOn(tx, date);
+    return Promise.all(instruments.map((instrumentKey) => instrumentEvidence(tx, date, onDate, instrumentKey)));
   }
 
   // The frames, digest, and snapshot id from evidence already read; computed after the read transaction closes (A45).
@@ -716,6 +756,127 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const instruments = [...new Set(query.instruments)].sort();
       const { value: evidence } = await deps.persistence.readSnapshot(['observations'], (tx) => frameEvidence(tx, resolved.day.date, instruments));
       return frameResult(query, resolved.day, instruments, evidence);
+    },
+    openReadSession(context) {
+      // Opening reads nothing, so a context that names no day is a rejected promise rather than a throw.
+      return Promise.resolve().then((): MarketDataReadSession => {
+      const resolved = resolveDay(context);
+      if (resolved.kind === 'Rejected') {
+        // Outside coverage the session still opens, at the as-of exchange date; any other rejection names no day to read.
+        if (!resolved.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) throw new Error(`no read session for ${JSON.stringify(context)}`);
+        const tradingDate =
+          context.kind === 'Current' ? Temporal.Instant.from(context.asOf).toZonedDateTimeISO('America/New_York').toPlainDate().toString() : context.kind === 'Review' ? context.reviewDate : context.tradingDate;
+        return { tradingDate, covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
+      }
+      const { day } = resolved;
+      // Each date's observations are read once, on the first call that asks for it.
+      const observations = new Map<string, Promise<Awaited<ReturnType<typeof observationsOn>>>>();
+      const observationsOf = (date: string) => {
+        let read = observations.get(date);
+        if (!read) {
+          read = deps.persistence.readSnapshot(['observations'], (tx) => observationsOn(tx, date)).then(({ value }) => value);
+          observations.set(date, read);
+        }
+        return read;
+      };
+      // Each Instrument's evidence at a date, with its Stale context looked up at most once.
+      const evidence = new Map<string, Promise<ReturnType<typeof evidenceOf>>>();
+      const evidenceAt = (date: string, instrumentKey: string) => {
+        const id = JSON.stringify([date, instrumentKey]);
+        let read = evidence.get(id);
+        if (!read) {
+          read = (async () => {
+            const record = recordOf(await observationsOf(date), instrumentKey);
+            if (record?.effectiveMarkId) return evidenceOf(date, instrumentKey, record, undefined);
+            const { value: source } = await deps.persistence.readSnapshot(['observations'], (tx) => staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date }));
+            return evidenceOf(date, instrumentKey, record, source);
+          })();
+          evidence.set(id, read);
+        }
+        return read;
+      };
+      // What the session has read, per date, for its binding.
+      const readOn = new Map<string, { context: FrameContext; day: Session; evidence: Map<string, ReturnType<typeof evidenceOf>> }>();
+      // Each Instrument's frame is the one `ResolveFrames` gives it alone, in the order asked.
+      const framesAt = async (at: FrameContext, atDay: Session, instruments: readonly string[]) => {
+        const read = await Promise.all(instruments.map((instrumentKey) => evidenceAt(atDay.date, instrumentKey)));
+        const scope = readOn.get(atDay.date) ?? { context: at, day: atDay, evidence: new Map() };
+        readOn.set(atDay.date, scope);
+        instruments.forEach((instrumentKey, i) => scope.evidence.set(instrumentKey, read[i]!));
+        return instruments.flatMap((instrumentKey, i) => {
+          const framed = frameResult({ kind: 'ResolveFrames', context: at, instruments: [instrumentKey] }, atDay, [instrumentKey], [read[i]!]);
+          return framed.kind === 'Frames' ? framed.frames : [];
+        });
+      };
+      // Each Instrument is scanned once, from the earliest exposure asked so far; a later exposure narrows that scan's answer.
+      const scans = new Map<string, { readonly earliestExposure: string; readonly read: Promise<HistoricalGaps> }>();
+      const scanOf = (instrumentKey: string, earliestExposure: string) => {
+        const known = scans.get(instrumentKey);
+        if (known && Temporal.Instant.compare(Temporal.Instant.from(known.earliestExposure), Temporal.Instant.from(earliestExposure)) <= 0) return known;
+        const read = deps.persistence
+          .readSnapshot(['observations'], (tx) => historicalGaps(tx, [{ instrumentKey, earliestExposure }], day.date))
+          .then(({ value }) => value.gaps[0]!);
+        const scan = { earliestExposure, read };
+        scans.set(instrumentKey, scan);
+        return scan;
+      };
+      return {
+        tradingDate: day.date,
+        closeInstant: day.close,
+        covered: true,
+        frames: (instruments) => framesAt(context, day, instruments),
+        // Keys and snapshot ids as one `ResolveFrames` per date over every Instrument read on it gives them.
+        binding() {
+          const scopes = [...readOn.values()].map(({ context: at, day: atDay, evidence: read }) => {
+            const instruments = [...read.keys()].sort();
+            const evidence = instruments.map((instrumentKey) => read.get(instrumentKey)!);
+            const framed = frameResult({ kind: 'ResolveFrames', context: at, instruments }, atDay, instruments, evidence);
+            return { date: atDay.date, evidence, snapshotId: framed.kind === 'Frames' ? framed.snapshotId : undefined };
+          });
+          return {
+            evidenceBinding: scopes.flatMap(({ evidence }) => evidence.flatMap(({ bound }) => bound)),
+            snapshotIds: Object.fromEntries(scopes.flatMap(({ date, snapshotId }) => (snapshotId === undefined ? [] : [[date, snapshotId]]))),
+          };
+        },
+        settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)),
+        gaps(instruments) {
+          const earliest = new Map<string, string>();
+          for (const { instrumentKey, earliestExposure } of instruments) {
+            const known = earliest.get(instrumentKey);
+            if (known === undefined || Temporal.Instant.compare(Temporal.Instant.from(earliestExposure), Temporal.Instant.from(known)) < 0) earliest.set(instrumentKey, earliestExposure);
+          }
+          return Promise.all(
+            [...earliest]
+              .sort(([a], [b]) => (a < b ? -1 : 1))
+              .map(async ([instrumentKey, earliestExposure]) => {
+                const scan = scanOf(instrumentKey, earliestExposure);
+                const gaps = await scan.read;
+                if (scan.earliestExposure === earliestExposure) return gaps;
+                const exposure = Temporal.Instant.from(earliestExposure);
+                const relevant = (date: string) => Temporal.Instant.compare(Temporal.Instant.from(gaps.closes[date]!), exposure) >= 0;
+                const only = <T,>(byDate: Readonly<Record<string, T>>) => Object.fromEntries(Object.entries(byDate).filter(([date]) => relevant(date)));
+                return {
+                  instrumentKey,
+                  missing: gaps.missing.filter(relevant),
+                  acknowledged: gaps.acknowledged.filter(relevant),
+                  revisions: only(gaps.revisions),
+                  acknowledgments: only(gaps.acknowledgments),
+                  closes: only(gaps.closes),
+                };
+              }),
+          );
+        },
+        historicalFrames(date, instruments) {
+          if (date === day.date) return framesAt(context, day, instruments);
+          const historical: FrameContext = { kind: 'Historical', tradingDate: date };
+          const dated = resolveDay(historical);
+          if (dated.kind === 'Day') return framesAt(historical, dated.day, instruments);
+          // Outside coverage a date has no frames, as Trade Views absorbs it today; any other rejection is a caller error.
+          if (dated.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) return Promise.resolve([]);
+          return Promise.reject(new Error(`no frames for ${date}`));
+        },
+      };
+      });
     },
     async save(command) {
       if (command.intention === 'OverrideManualValuation') return { kind: 'VariantNotInstalled', intention: command.intention };
