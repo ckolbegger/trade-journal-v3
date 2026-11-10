@@ -161,6 +161,25 @@ describe('the read session (P78, P79)', () => {
     expect(gaps[3]).toEqual(await recovered([laterOpened]));
   });
 
+  it("should scan an Instrument's gaps once when a later call asks from an earlier exposure, answering each call as recover does", async () => {
+    const { marketData } = await setup();
+    await marketData.save(mark('MNO', '2026-10-08'));
+    await marketData.save({ intention: 'AssertUnavailable', instrumentKey: 'MNO', tradingDate: '2026-10-09', reason: 'no quote', expectedResolutionRevision: 'None' });
+    const late = { instrumentKey: 'MNO', earliestExposure: '2026-10-09T14:00:00Z' };
+    const early = { instrumentKey: 'MNO', earliestExposure: '2026-10-07T14:00:00Z' };
+    const context = { kind: 'Review' as const, reviewDate: '2026-10-12' };
+    const recovered = async (instruments: { instrumentKey: string; earliestExposure: string }[]) => {
+      const result = await marketData.recover({ context, instruments });
+      if (result.kind !== 'Recovered') throw new Error('expected recovery');
+      return result.gaps;
+    };
+    const session = await marketData.openReadSession(context);
+    const { result: gaps, requests } = await countRequests(async () => [await session.gaps([late]), await session.gaps([early])]);
+    expect(requests.filter((r) => r.on === 'index' && r.method === 'getAll')).toHaveLength(1);
+    expect(gaps[0]).toEqual(await recovered([late]));
+    expect(gaps[1]).toEqual(await recovered([early]));
+  });
+
   it("should give a settlement time for an expiration date from the calendar with no stored read, and the latest session's close for a date that isn't one", async () => {
     // After every date but the last, so ResolveSession answers for them.
     const asOf = '2026-12-01T16:00:00Z';

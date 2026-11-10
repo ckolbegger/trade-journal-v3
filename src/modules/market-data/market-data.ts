@@ -467,6 +467,20 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     }
   }
 
+  // The sessions up to `lastHistorical` that an exposure makes relevant, and whether it precedes coverage.
+  function relevantSessions(earliestExposure: string, lastHistorical: string) {
+    const exposure = Temporal.Instant.from(earliestExposure);
+    const exposureDate = exposure.toZonedDateTimeISO('UTC').toPlainDate().toString();
+    const { coverage } = deps.sessionPolicy.identity;
+    // Outside coverage there is a diagnostic, never a guessed session (P8): enumeration starts at the first covered date.
+    const beforeCoverage = exposureDate < coverage.first;
+    const from = beforeCoverage ? coverage.first : exposureDate;
+    const sessions = deps.sessionPolicy.sessionsBetween(from, lastHistorical);
+    // Relevance starts at the first session whose close is at or after the exposure.
+    const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
+    return { relevant, beforeCoverage };
+  }
+
   // Per Instrument, the sessions before the Review Date without an effective Mark, from its relevance start (A56).
   // One bounded range read per Instrument, whatever the history length (A47).
   async function historicalGaps(tx: ReadTransaction, instruments: RecoverRequest['instruments'], reviewDate: string): Promise<{ gaps: HistoricalGaps[]; diagnostics: RecoverDiagnostic[] }> {
@@ -483,14 +497,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           .map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure }))
           .sort((a, b) => (a.instrumentKey < b.instrumentKey ? -1 : 1))
           .map(async ({ instrumentKey, earliestExposure }) => {
-            const exposure = Temporal.Instant.from(earliestExposure);
-            const exposureDate = exposure.toZonedDateTimeISO('UTC').toPlainDate().toString();
-            // Outside coverage there is a diagnostic, never a guessed session (P8): enumeration starts at the first covered date.
-            const beforeCoverage = exposureDate < coverage.first;
-            const from = beforeCoverage ? coverage.first : exposureDate;
-            const sessions = deps.sessionPolicy.sessionsBetween(from, lastHistorical);
-            // Relevance starts at the first session whose close is at or after the exposure.
-            const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
+            const { relevant, beforeCoverage } = relevantSessions(earliestExposure, lastHistorical);
             const stored = relevant.length === 0 ? [] : await tx.getAllFromIndex('observations', 'byInstrumentDate', IDBKeyRange.bound([instrumentKey, relevant[0]!.date], [instrumentKey, relevant[relevant.length - 1]!.date]));
             const storedOn = new Map(stored.map((r) => [r['tradingDate'] as string, r]));
             const resolutionOf = new Map([...storedOn].map(([date, r]) => [date, resolve(stripRevision(r))]));
@@ -808,17 +815,19 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           return framed.kind === 'Frames' ? framed.frames : [];
         });
       };
-      // Each Instrument is scanned once, from the earliest exposure asked so far; a later exposure narrows that scan's answer.
-      const scans = new Map<string, { readonly earliestExposure: string; readonly read: Promise<HistoricalGaps> }>();
-      const scanOf = (instrumentKey: string, earliestExposure: string) => {
-        const known = scans.get(instrumentKey);
-        if (known && Temporal.Instant.compare(Temporal.Instant.from(known.earliestExposure), Temporal.Instant.from(earliestExposure)) <= 0) return known;
-        const read = deps.persistence
-          .readSnapshot(['observations'], (tx) => historicalGaps(tx, [{ instrumentKey, earliestExposure }], day.date))
-          .then(({ value }) => value.gaps[0]!);
-        const scan = { earliestExposure, read };
-        scans.set(instrumentKey, scan);
-        return scan;
+      // Each Instrument is scanned once, from the first covered date, which no exposure precedes; each call's exposure narrows that scan's answer.
+      const lastHistorical = Temporal.PlainDate.from(day.date).subtract({ days: 1 }).toString();
+      const scans = new Map<string, Promise<HistoricalGaps>>();
+      const scanOf = (instrumentKey: string) => {
+        let read = scans.get(instrumentKey);
+        if (!read) {
+          const earliestExposure = `${deps.sessionPolicy.identity.coverage.first}T00:00:00Z`;
+          read = deps.persistence
+            .readSnapshot(['observations'], (tx) => historicalGaps(tx, [{ instrumentKey, earliestExposure }], day.date))
+            .then(({ value }) => value.gaps[0]!);
+          scans.set(instrumentKey, read);
+        }
+        return read;
       };
       return {
         tradingDate: day.date,
@@ -849,9 +858,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             [...earliest]
               .sort(([a], [b]) => (a < b ? -1 : 1))
               .map(async ([instrumentKey, earliestExposure]) => {
-                const scan = scanOf(instrumentKey, earliestExposure);
-                const gaps = await scan.read;
-                if (scan.earliestExposure === earliestExposure) return gaps;
+                // An exposure with no relevant session reads nothing, as recover does.
+                const none = relevantSessions(earliestExposure, lastHistorical).relevant.length === 0;
+                const gaps = none ? { instrumentKey, missing: [], acknowledged: [], revisions: {}, acknowledgments: {}, closes: {} } : await scanOf(instrumentKey);
                 const exposure = Temporal.Instant.from(earliestExposure);
                 const relevant = (date: string) => Temporal.Instant.compare(Temporal.Instant.from(gaps.closes[date]!), exposure) >= 0;
                 const only = <T,>(byDate: Readonly<Record<string, T>>) => Object.fromEntries(Object.entries(byDate).filter(([date]) => relevant(date)));
