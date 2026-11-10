@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 4,
+    "total_tokens": 136508,
+    "input_tokens": 134172,
+    "output_tokens": 2336,
+    "cache_read_tokens": 25216,
+    "elapsed": "1m29s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "A later request with an earlier exposure replaces the cached scan and reads storage again. For example, calling gaps for the same instrument first with October 9 exposure and then October 7 performs two history scans, violating the once-per-Instrument contract and potentially observing intervening saves. Cache a sufficiently broad history on the first scan and filter it by each requested exposure; add coverage for this reverse exposure ordering.",
+      "existing_code": "        if (known \u0026\u0026 Temporal.Instant.compare(Temporal.Instant.from(known.earliestExposure), Temporal.Instant.from(earliestExposure)) \u003c= 0) return known;",
+      "start_line": 815,
+      "end_line": 815,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "This accepts completed dates after the opened session's trading date: resolveDay validates against the wall clock, not day.date. For example, a Review session for October 8 can read October 12 observations when the clock is October 13. That violates the session-date-or-earlier contract and allows future evidence into a historical operation. Reject dates greater than day.date before resolving or reading them, and test that no persistence requests occur.",
+      "existing_code": "          const historical: FrameContext = { kind: 'Historical', tradingDate: date };\n          const dated = resolveDay(historical);",
+      "start_line": 871,
+      "end_line": 872,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "The context dispatch uses a nested ternary, which the supplied checklist explicitly prohibits. Use a switch or if/else branches for Current, Review, and Historical so each date-selection rule remains explicit.",
+      "existing_code": "          context.kind === 'Current' ? Temporal.Instant.from(context.asOf).toZonedDateTimeISO('America/New_York').toPlainDate().toString() : context.kind === 'Review' ? context.reviewDate : context.tradingDate;",
+      "start_line": 768,
+      "end_line": 768,
+      "category": "style",
+      "severity": "low"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "The binding only includes reads performed by framesAt; gaps() performs historical observation reads without registering any of their keys here. For example, after gaps() reports a missing historical mark, saving that mark before bindEvidence() will not cause a conflict (and a gaps-only session returns an empty binding). This does not satisfy the requirement to bind every key read. Track the historical keys and resolution revisions used by gap scans, including missing observations, and merge them into evidenceBinding.",
+      "existing_code": "evidenceBinding: scopes.flatMap(({ evidence }) =\u003e evidence.flatMap(({ bound }) =\u003e bound)),",
+      "start_line": 837,
+      "end_line": 837,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "aab1ed11-6000-4e70-ab51-22ca453719d6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "aab1ed11-6000-4e70-ab51-22ca453719d6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5438bfb7",
+      "resolved_base": "8fdb4eae0bd39aa4e12c3a3348f905df978eba10",
+      "resolved_head": "5438bfb789120bec44783bfa1bea81d8b695ce3c",
+      "exact_range": "8fdb4eae0bd39aa4e12c3a3348f905df978eba10..5438bfb789120bec44783bfa1bea81d8b695ce3c",
+      "source_artifact_sha256": "c868feb914e6ee6b5822c6a334d938004583a83daf24bbafd043a27cd37ceef9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "ac41816e5af845d781e529348cf7aee4dbdfe0c4c4e60afd7394145541ea508a"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "c36af314ce54fd02db32f0afcb9d31a1c3bcd7249303ca814291f3b455052119"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "ac41816e5af845d781e529348cf7aee4dbdfe0c4c4e60afd7394145541ea508a"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "c36af314ce54fd02db32f0afcb9d31a1c3bcd7249303ca814291f3b455052119"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 88746
+  }
+}

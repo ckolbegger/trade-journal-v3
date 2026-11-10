@@ -137,3 +137,84 @@ Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto e14f0cc8`: `browser tier: task (no changed path since e14f0cc8 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7SP.5 Market Data: the read session
+
+Behavioral (10 cases, in `tdd-log.md`). Commit `5438bfb7`, files `src/modules/market-data/market-data.ts`, `index.ts`, new `read-session.test.ts`. Every case compares the session's answers with `ResolveFrames`, `ResolveSession` or `recover` in the same test (A193). Case 1 went red on `openReadSession is not a function`; each later case went red on behaviour the earlier ones lacked (details in `tdd-log.md`, which also holds one harmless duplicate green row for case 5).
+
+Public names (implementation-level decisions, P79's names were indicative), exported from `src/modules/market-data/index.ts`:
+- `MarketData.openReadSession(context: FrameContext): Promise<MarketDataReadSession>`;
+- `MarketDataReadSession { tradingDate; closeInstant?; covered; frames(instruments); historicalFrames(date, instruments); gaps(instruments with earliestExposure); settlementTime(contract: OptionInstrument); binding(): { evidenceBinding; snapshotIds } }`, `snapshotIds` keyed by trading date;
+- `MarketDataSettlementTime` (`CalculationResult<Instant, Unavailable(SessionPolicyNotCovered), never>`), a copy of the coordinators' `SettlementTime` shape, since Market Data cannot import from `coordinators`; T7SP.6 can unify them.
+
+Choices recorded from the subagent's summary:
+- Outside coverage: `covered: false`, no `closeInstant`, `frames` returns `[]` (where `ResolveFrames` rejects with `SessionPolicyCoverage`), no request at open.
+- A context rejected for another reason (`InvalidInstant`, `NotASession`, `SessionNotCompleted`, `InvalidDate`) rejects the promise; `historicalFrames` likewise for such a date. Callers resolve the Review date with `ResolveSession` first, as Daily Review does today.
+- `settlementTime` is more lenient than `settlementTimeOf`: an uncompleted expiration session gives its close, and a non-session date with no covered earlier session gives `Unavailable(SessionPolicyNotCovered)`, where `settlementTimeOf` throws. Otherwise equal. `settlementTimeOf` is not moved (T7SP.6).
+- Frames are returned in the order asked, duplicates kept (`ResolveFrames` sorts and dedupes); each frame equals `ResolveFrames`' frame for that Instrument alone. `historicalFrames` on the session's own date delegates to `frames`.
+- `binding()` is synchronous and covers resolved reads only; it excludes gap scans, as `ResolveFrames` does; an uncovered session returns an empty binding.
+- Each date read and each Stale lookup is its own read snapshot (section 1.4), and each snapshot adds a `meta.get`. `frameEvidence` was split into `observationsOn`, `instrumentEvidence`, `recordOf` and `evidenceOf`, which `ResolveFrames` uses unchanged.
+
+**First-run pass:** case 10, "should read a Mark saved after the session closed only in a new session" (cases 4 and 5 built the caches). Mutation: removed `observations.set(date, read)` and `evidence.set(id, read)`; failure `AssertionError: expected { instrumentKey: 'AAA', …(4) } to deeply equal { instrumentKey: 'AAA', …(4) }`; restored, green rerun.
+
+Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src/modules/market-data` 99 passed; `npm run test:integration` 94 files, 191 tests passed (every existing query-count proof unchanged).
+
+**ocr review** (`ocr/T7SP.5-5438bfb7.json`): four findings; three become bug tasks, one is dismissed. Each was checked against the cited lines.
+
+| # | Severity | Location | Claim | Reviewer | Outcome |
+|---|---|---|---|---|---|
+| 1 | medium (bug) | `market-data.ts:815` | `scanOf` rescans when a later `gaps` call asks for an earlier exposure than the cached scan, so an Instrument can be scanned twice per session. | Valid: reuse only when the cached exposure is at or before the requested one; Oct 9 then Oct 7 scans twice. | **T7SP.5-B1** |
+| 2 | medium (bug) | `market-data.ts:871` | `historicalFrames` accepts a date later than the session's trading date (`resolveDay` checks the wall clock, not `day.date`). | Doubtful: no guard is stated; `ResolveFrames` Historical doesn't reject later dates either. | **T7SP.5-B2**: Doubtful with a failure scenario. The spec answers only "at the session's date or an earlier date" (`market-data.md`, Query contract), and a later frame would value a Trade with evidence after the operation's date. |
+| 3 | medium (bug) | `market-data.ts:837` | `binding()` omits the keys `gaps()` reads. | Doubtful: a known choice; `HistoricalGaps` carries per-date `revisions`, and `daily-review.ts:399` binds `g.revisions` from `recover` today. | **T7SP.5-B3**: Doubtful with a failure scenario. The spec says the session "gives the caller the binding of everything it read", and P79/Q6 say the session hands the binding over; a save relying on `binding()` alone would not recheck a gap key that moved. |
+| 4 | low (style) | `market-data.ts:768` | A nested ternary picks the outside-coverage date. | Wrong: no such rule in the repo; D7 dismissed it five times. | **Dismissed: Wrong, no failure scenario.** |
+
+### Bug tasks
+
+- **T7SP.5-B1** (finding 1). Defect: a session scans an Instrument's gaps more than once when a later `gaps` call names an earlier `earliestExposure`. Case: `it should scan an Instrument's gaps once when a later call asks from an earlier exposure, answering each call as recover does`.
+- **T7SP.5-B2** (finding 2). Defect: `historicalFrames` returns frames for a date after the session's trading date. Case: `it should reject historicalFrames for a date after the session's trading date`.
+- **T7SP.5-B3** (finding 3). Defect: `binding()` does not cover the keys the session's `gaps` scans read. Case: `it should include every key its gaps scans read in the binding, as recover's result binds them`.
+
+#### T7SP.5-B1, commit `40442940`
+
+Case "should scan an Instrument's gaps once when a later call asks from an earlier exposure, answering each call as recover does": red (`expected ... length 1`, got 2 scans), then green. Fix: the session's first scan of an Instrument runs from the session policy's coverage start (`coverage.first`), cached as one promise per Instrument; each call's answer is narrowed to its own exposure. A call whose exposure has no relevant session returns empty gaps with no read, as `recover` does, through `relevantSessions(earliestExposure, lastHistorical)`, extracted from `historicalGaps` with no behaviour change. Request lists unchanged (d4–d7 proofs pass); the cost is more records read per scan (every stored observation of the Instrument since coverage start). Noted in the handoff for T7SP.8 and T7SP.14. Verification: market-data 100 passed, integration 191 passed, typecheck, `tsc6`, lint, lint:deps exit 0.
+
+**ocr review** (`ocr/T7SP.5-B1-40442940.json`): one finding, dismissed.
+
+| Severity | Location | Claim | Reviewer | Outcome |
+|---|---|---|---|---|
+| medium (bug) | `market-data.ts:863` | The `none ? {...} : await scanOf(...)` conditional infers `closes` as `{}`, so `gaps.closes[date]` fails strict typechecking (TS7053). | Wrong: `npm run typecheck` (strict, `noUncheckedIndexedAccess`) exits 0 on this commit. | **Dismissed: Wrong.** The repo's typecheck passes, as the B1 subagent and the cumulative checks also show; no failure. |
+
+#### T7SP.5-B2, commit `f0316f62`
+
+Case "should reject historicalFrames for a date after the session's trading date": a Review session on 2026-10-09 asks `historicalFrames('2026-10-12', ['AAA'])` with a Mark saved on 2026-10-12. Red: `AssertionError: expected 'resolved' to be 'rejected'` (frames were returned); green after a two-line fix: after `resolveDay`, a day later than the session's `day.date` rejects the promise, with no stored read (request counter). The session's own date and earlier dates are unchanged; a session outside coverage still returns `[]` for any date. Verification: typecheck, `tsc6`, lint, lint:deps exit 0; market-data 101 passed; integration 191 passed.
+
+**ocr review** (`ocr/T7SP.5-B2-f0316f62.json`): one finding, a bug task.
+
+| Severity | Location | Claim | Reviewer | Outcome |
+|---|---|---|---|---|
+| medium (bug) | `market-data.ts:883` | The later-date guard fires only when `resolveDay` returns a `Day`; for a covered session, a later date beyond policy coverage resolves `Rejected(SessionPolicyCoverage)` and the call returns `[]` instead of rejecting. | Valid (small impact: `[]` reads no evidence), inconsistent with B2's rule. | **T7SP.5-B4.** Defect: a covered session's `historicalFrames` for a later date past coverage resolves `[]` instead of rejecting. Case: `it should reject historicalFrames for a later date beyond the market calendar's coverage`. |
+
+#### T7SP.5-B3, commit `5921ea19`
+
+Case "should include every key its gaps scans read in the binding, as the result of recover binds them" (apostrophe dropped for `-t`): red (`expected [] to have a length of 2 but got +0`), then green. Oracle: `recover` for the same Instruments in the same test; one `{instrumentKey, tradingDate, resolutionRevision}` per date in each gap's `revisions`, after `session.gaps([mno])` and `session.gaps([mno, xyz])`. Fix: a per-session map keyed by Instrument and date holds the keys of each `gaps()` answer (not the whole coverage-start scan), deduplicated, appended after the frame keys in `evidenceBinding`. No conversion existed to reuse: Daily Review only forwards each gap's `revisions` to the later Mark save, and its `bindEvidence` call carries frame keys only, so today's Review save does not recheck gap keys. Frame keys and snapshot ids unchanged; no request list changed. Verification: typecheck, `tsc6`, lint, lint:deps exit 0; market-data 102 passed; integration 191 passed. A note for T7SP.8 is in the handoff (tech debt item 1's trigger).
+
+**ocr review** (`ocr/T7SP.5-B3-5921ea19.json`): No findings. Reviewer's note (not an ocr finding): two `gaps()` calls listing the same Instrument and date with different revisions would overwrite. Not reachable: since B1 every call narrows one cached scan per Instrument, so a key's revision is the same in every answer within a session.
+
+#### T7SP.5-B4, commit `3998e749`
+
+Case "should reject historicalFrames for a later date beyond the market calendar's coverage": clock 2029-02-01, a Historical session on 2026-10-09 asks for 2029-01-05. Red: `expected { frames: [] } to be 'rejected'`; green after the fix: a plain ISO-string comparison `date > day.date` before `resolveDay` rejects at once (B2's two-line guard is subsumed). The session's own date, earlier dates, an earlier uncovered date (still `[]`) and sessions opened outside coverage take the same paths. Verification: typecheck, `tsc6`, lint, lint:deps exit 0; market-data 103 passed; integration 191 passed.
+
+**ocr review** (`ocr/T7SP.5-B4-3998e749.json`): No findings. (The reviewer's note described the test's session as opened outside coverage; checked at `read-session.test.ts:141-147`: the session is `Historical` 2026-10-09, covered, with the clock at 2029-02-01, so the case exercises the defect.)
+
+T7SP.5 and its bug tasks B1–B4 now have ocr reviews with no findings or only dismissed ones.
+
+**Cumulative run `t7sp-5`** (2026-11-10, on `3998e749`, after B1–B4), outputs in `suite-runs/t7sp-5-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 124 files, 1463 tests passed |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), task tier | 5 passed (12.1 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 07449b9d`: `browser tier: task (no changed path since 07449b9d is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
