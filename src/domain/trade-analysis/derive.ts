@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
 import type { CalculationResult, ExecutionDescription, ExpirationDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
-import { instrumentKey, multiplierOf, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
+import { expiredOn, instrumentKey, multiplierOf, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
@@ -435,7 +435,7 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
       // A102: whole contracts, and no Execution after the contract's expiration (New York date).
       if (quantity.ok && quantity.value.denominator !== 1n) findings.push({ ...described(e), reason: 'ContractQuantityNotWhole' });
       const day = Temporal.Instant.from(e.economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
-      if (day > e.instrument.expiration) findings.push({ ...described(e), reason: 'AfterExpiration' });
+      if (expiredOn(e.instrument, day)) findings.push({ ...described(e), reason: 'AfterExpiration' });
     }
   }
   for (const s of record.positionChanges.flatMap((pc) => pc.settlements ?? [])) {
@@ -452,7 +452,7 @@ function incoherence(record: TradeAnalysisRecord): IncoherentFact[] {
     const beforeExecution = record.positionChanges.some((pc) =>
       pc.executions.some((e) => instrumentKey(e.instrument) === key && Temporal.Instant.compare(s.economicTime, e.economicTime) <= 0),
     );
-    if (day > s.instrument.expiration || beforeExecution) findings.push({ ...describedExpiration(s), reason: 'SettlementTimeInvalid' });
+    if (expiredOn(s.instrument, day) || beforeExecution) findings.push({ ...describedExpiration(s), reason: 'SettlementTimeInvalid' });
   }
   return findings;
 }

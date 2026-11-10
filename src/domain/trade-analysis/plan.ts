@@ -1,6 +1,6 @@
 import { exerciseIntentApplies, matchesShape, type StrategyShape } from '../strategy/index.ts';
 import { Temporal } from 'temporal-polyfill';
-import { multiplierOf, validateOptionContract, type ContractIssue, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
+import { expiredOn, multiplierOf, validateOptionContract, type ContractIssue, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import type { Instant } from '../time/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import { expirationPayoff, type ExpirationPayoffs } from './payoff.ts';
@@ -184,7 +184,7 @@ function assessContract(leg: PlannedLegInput, economicTime: Instant, issue: (cod
   if (quantity.ok && quantity.value.denominator !== 1n) issue('ContractQuantityNotWhole');
   if (contract.ok) {
     const planDate = Temporal.Instant.from(economicTime).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
-    if (leg.instrument.expiration < planDate) issue('ContractAlreadyExpired');
+    if (expiredOn(leg.instrument, planDate)) issue('ContractAlreadyExpired');
   }
   return contract.ok ? contract.instrument : undefined;
 }

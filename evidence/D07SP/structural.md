@@ -34,3 +34,27 @@ Behavioral (2 cases, red then green, in `tdd-log.md`). Commit `0cc181aa`. `expir
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 9e66d72b`: `browser tier: task (no changed path since 9e66d72b is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7SP.2 The entry checks call the rules
+
+Six raw expiration comparisons now call `expiredOn` (P82); each is behaviour-identical (`expiredOn(c, d)` is `d > c.expiration`).
+
+| Site | Old expression | New expression |
+|---|---|---|
+| `src/domain/trade-analysis/derive.ts:438` (AfterExpiration) | `day > e.instrument.expiration` | `expiredOn(e.instrument, day)` |
+| `src/domain/trade-analysis/derive.ts:455` (SettlementTimeInvalid) | `day > s.instrument.expiration \|\| beforeExecution` | `expiredOn(s.instrument, day) \|\| beforeExecution` |
+| `src/domain/trade-analysis/plan.ts:187` (ContractAlreadyExpired) | `leg.instrument.expiration < planDate` | `expiredOn(leg.instrument, planDate)` |
+| `src/modules/market-data/market-data.ts:408` (Mark save, AfterExpiration) | `command.tradingDate > instrument.expiration` | `expiredOn(instrument, command.tradingDate)` |
+| `src/modules/market-data/section.ts:50` (Restore section, AfterExpiration) | `tradingDate > instrument.expiration` | `expiredOn(instrument, tradingDate)` |
+| `src/app/bench-generator.ts:662` (contract marked at or before expiration) | `session.date <= expiration` | `!expiredOn(contract, session.date)` |
+
+For `bench-generator.ts`, the `held` map now stores the Option Instrument (`contract`) instead of its expiration string, so the rule gets a real contract. `BENCH_GENERATOR_VERSION` is not bumped (behaviour-identical).
+
+| Command | Result |
+|---|---|
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npx vitest run src/domain src/modules/market-data` | 28 files, 299 tests passed |
+| `npm run test:integration -- d7` | 18 files, 37 tests passed |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |

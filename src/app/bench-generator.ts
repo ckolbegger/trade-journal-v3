@@ -18,7 +18,7 @@ import { browserHost } from '../delivery/browser-host.ts';
 import { RELEASE_ID } from '../delivery/release-identity.ts';
 import type { Clock } from '../domain/time/index.ts';
 import { createWebLocksLifecycleLock, type IdGenerator } from '../persistence/index.ts';
-import { instrumentKey, type Instrument, type OptionInstrument } from '../domain/instrument/index.ts';
+import { expiredOn, instrumentKey, type Instrument, type OptionInstrument } from '../domain/instrument/index.ts';
 import {
   BENCH_AS_OF_DATE,
   BENCH_AS_OF_INSTANT,
@@ -648,7 +648,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
   const talliesOf = (debt: { readonly kind: DeferredDebt['kind'] }) => (debt.kind === 'CloseReview' ? stats.closeReviews : stats.dispositions);
 
   // The option Trades held at the current cutoff, by Trade number, with the contract's key and expiration date.
-  const held = new Map<number, { readonly key: string; readonly expiration: string }>();
+  const held = new Map<number, { readonly key: string; readonly contract: OptionInstrument }>();
   // How many Instruments were marked in each session.
   const markedPerSession: number[] = [];
 
@@ -658,8 +658,8 @@ async function generate(options: { readonly sessions?: number } = {}) {
   async function saveMarks(session: Session, sessionNumber: number, last: boolean) {
     // Trades on the same contract share its Mark, so each contract is marked once.
     const contracts = new Map<string, { key: string; price: number; skip: boolean }>();
-    for (const [k, { key, expiration }] of held) {
-      if (session.date <= expiration && !contracts.has(key)) contracts.set(key, { key, price: 50 + ((k * 977 + sessionNumber * 131) % 900), skip: false });
+    for (const [k, { key, contract }] of held) {
+      if (!expiredOn(contract, session.date) && !contracts.has(key)) contracts.set(key, { key, price: 50 + ((k * 977 + sessionNumber * 131) % 900), skip: false });
     }
     const keys = [
       ...STOCK_INSTRUMENTS.map((key, k) => ({ key, price: 2_000 + ((k * 977) % 18_000) + ((sessionNumber * 131 + k * 17) % 301) - 150, skip: last && k % (BENCH_OPEN_STOCK_INSTRUMENTS / BENCH_PROFILE.missingAsOfInstruments) === 7 })),
@@ -991,7 +991,7 @@ async function generate(options: { readonly sessions?: number } = {}) {
       if (recorded.kind !== 'Recorded') throw new Error(`trade ${i} change ${n}: ${recorded.kind}`);
       if (contract) {
         if (event.terminal) held.delete(i);
-        else held.set(i, { key: instrumentKey(contract), expiration: contract.expiration });
+        else held.set(i, { key: instrumentKey(contract), contract });
       }
       if (event.terminal) {
         if (!event.expire) {

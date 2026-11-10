@@ -2,7 +2,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
-import { instrumentOf } from '../../domain/instrument/index.ts';
+import { expiredOn, instrumentOf } from '../../domain/instrument/index.ts';
 import type { CoverageRange, Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
@@ -405,7 +405,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     if (!wellFormed) issues.push({ field: 'instrumentKey', code: 'InvalidInstrument' });
     issues.push(...validateDate(command.tradingDate));
     // A contract has no Mark after it expires (A115).
-    if (wellFormed && instrument.kind === 'Option' && DATE.test(command.tradingDate) && command.tradingDate > instrument.expiration) {
+    if (wellFormed && instrument.kind === 'Option' && DATE.test(command.tradingDate) && expiredOn(instrument, command.tradingDate)) {
       issues.push({ field: 'tradingDate', code: 'AfterExpiration' });
     }
     return issues;

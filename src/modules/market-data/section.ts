@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentOf } from '../../domain/instrument/index.ts';
+import { expiredOn, instrumentOf } from '../../domain/instrument/index.ts';
 import type { SessionPolicy } from '../../domain/session-policy/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
 import type { RecordSource } from '../../persistence/index.ts';
@@ -47,7 +47,7 @@ export async function validateSection(source: RecordSource, policy: SessionPolic
       else if (day.kind !== 'Session') issues.push({ code: 'NotASession', instrumentKey, tradingDate });
       // A contract has no observation after it expires (A115); the key is an OCC key, never an unknown stock symbol.
       const instrument = instrumentOf(instrumentKey);
-      if (instrument.kind === 'Option' && tradingDate > instrument.expiration) issues.push({ code: 'AfterExpiration', instrumentKey, tradingDate });
+      if (instrument.kind === 'Option' && expiredOn(instrument, tradingDate)) issues.push({ code: 'AfterExpiration', instrumentKey, tradingDate });
       const chains: readonly (readonly [Chain, readonly (string | undefined)[], string | null])[] = [
         ['marks', record.marks.map((m) => m.revisionId), record.effectiveMarkId],
         ['acknowledgments', record.acknowledgments.map((a) => a.versionId), record.effectiveAcknowledgmentId],
