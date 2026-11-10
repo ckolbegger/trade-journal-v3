@@ -72,7 +72,9 @@ function unreadObservations(state: DerivedTradeState, analysis: TradeAnalysisRec
 }
 
 export async function valueTrade(session: MarketDataReadSession, analysis: TradeAnalysisRecord, options: ValuationOptions = {}): Promise<TradeValuation> {
-  const open = derive({ record: analysis, ...(options.factsAtClose && session.closeInstant && { cutoff: session.closeInstant }), valuationDate: session.tradingDate });
+  // A Review's facts end at the session's close; without one, deriving over every fact would count facts after the Review date.
+  if (options.factsAtClose && !session.closeInstant) throw new Error('valueTrade: factsAtClose needs a session with a close');
+  const open = derive({ record: analysis, ...(options.factsAtClose && { cutoff: session.closeInstant }), valuationDate: session.tradingDate });
   if (open.kind !== 'Derived') return { kind: 'Unavailable', reason: 'FactsIncoherent', findings: open.findings };
   if (analysis.storedLifecycle === 'Closed' && open.expectedLifecycle === 'Closed') {
     const state = derive({ record: analysis, valuationDate: open.terminalTime!.slice(0, 10) });

@@ -190,6 +190,17 @@ describe('Mark-to-Market Valuation (P77, P78, P80)', () => {
     expect(valuation.frame).toBeUndefined();
   });
 
+  it("should reject a valuation at the session's close when the session has no close", async () => {
+    const { app, analysisOf, open } = await book(MONDAY_1700);
+    const tradeId = await planStock(app, 'XYZ', '50.00', '47.50', '56.00');
+    await record(app, tradeId, { quantity: '100', price: '50.00', economicTime: PC1_TIME });
+    const session = await open({ kind: 'Current', asOf: '2029-01-03T17:00:00Z' });
+    expect(session.closeInstant).toBeUndefined();
+    const analysis = await analysisOf(tradeId);
+
+    await expect(valueTrade(session, analysis, { factsAtClose: true })).rejects.toThrow(Error);
+  });
+
   it('should value a Closed Trade at its terminal date with no read, its Mark-dependent figures NotApplicable(NoRemainingPosition)', async () => {
     const { app, analysisOf, open } = await book(WEDNESDAY_1700);
     const tradeId = await planStock(app, 'XYZ', '50.00', '47.50', '56.00');
