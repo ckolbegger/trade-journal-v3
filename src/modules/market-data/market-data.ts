@@ -829,6 +829,8 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         }
         return read;
       };
+      // The keys the answered gap lookups listed, each once.
+      const gapKeys = new Map<string, BoundKey>();
       return {
         tradingDate: day.date,
         closeInstant: day.close,
@@ -843,7 +845,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             return { date: atDay.date, evidence, snapshotId: framed.kind === 'Frames' ? framed.snapshotId : undefined };
           });
           return {
-            evidenceBinding: scopes.flatMap(({ evidence }) => evidence.flatMap(({ bound }) => bound)),
+            evidenceBinding: [...scopes.flatMap(({ evidence }) => evidence.flatMap(({ bound }) => bound)), ...gapKeys.values()],
             snapshotIds: Object.fromEntries(scopes.flatMap(({ date, snapshotId }) => (snapshotId === undefined ? [] : [[date, snapshotId]]))),
           };
         },
@@ -864,7 +866,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
                 const exposure = Temporal.Instant.from(earliestExposure);
                 const relevant = (date: string) => Temporal.Instant.compare(Temporal.Instant.from(gaps.closes[date]!), exposure) >= 0;
                 const only = <T,>(byDate: Readonly<Record<string, T>>) => Object.fromEntries(Object.entries(byDate).filter(([date]) => relevant(date)));
-                return {
+                const answer = {
                   instrumentKey,
                   missing: gaps.missing.filter(relevant),
                   acknowledged: gaps.acknowledged.filter(relevant),
@@ -872,6 +874,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
                   acknowledgments: only(gaps.acknowledgments),
                   closes: only(gaps.closes),
                 };
+                // What each answer lists is bound, as a save of recover's gaps binds them.
+                for (const [tradingDate, resolutionRevision] of Object.entries(answer.revisions)) gapKeys.set(`${instrumentKey}@${tradingDate}`, { instrumentKey, tradingDate, resolutionRevision });
+                return answer;
               }),
           );
         },

@@ -246,6 +246,26 @@ describe('the read session (P78, P79)', () => {
     expect(changed.kind).toBe('SnapshotChanged');
   });
 
+  it('should include every key its gaps scans read in the binding, as the result of recover binds them', async () => {
+    const { marketData } = await setup();
+    await marketData.save(mark('MNO', '2026-10-08'));
+    await marketData.save({ intention: 'AssertUnavailable', instrumentKey: 'MNO', tradingDate: '2026-10-09', reason: 'no quote', expectedResolutionRevision: 'None' });
+    const mno = { instrumentKey: 'MNO', earliestExposure: '2026-10-07T14:00:00Z' };
+    const xyz = { instrumentKey: 'XYZ', earliestExposure: '2026-10-12T14:00:00Z' };
+    const context = { kind: 'Review' as const, reviewDate: '2026-10-12' };
+    const recovered = await marketData.recover({ context, instruments: [mno, xyz] });
+    if (recovered.kind !== 'Recovered') throw new Error('expected recovery');
+    // What a save of the recovered gaps presents: each listed date's key at the revision it was read at.
+    const expected = recovered.gaps.flatMap((g) => Object.entries(g.revisions).map(([tradingDate, resolutionRevision]) => ({ instrumentKey: g.instrumentKey, tradingDate, resolutionRevision })));
+    expect(expected.length).toBeGreaterThan(0);
+    const session = await marketData.openReadSession(context);
+    await session.gaps([mno]);
+    await session.gaps([mno, xyz]);
+    const { evidenceBinding } = session.binding();
+    expect(evidenceBinding).toHaveLength(expected.length);
+    for (const key of expected) expect(evidenceBinding).toContainEqual(key);
+  });
+
   it('should read a Mark saved after the session closed only in a new session', async () => {
     const { marketData } = await setup();
     const context: FrameContext = { kind: 'Current', asOf: TUESDAY_NOON };
