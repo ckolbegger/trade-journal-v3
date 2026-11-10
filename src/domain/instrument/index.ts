@@ -53,6 +53,17 @@ export function instrumentOf(key: string): Instrument {
   }
 }
 
+// The expiration rules (P82). Dates are ISO trading dates, so string comparison is date order.
+// The contract has expired once the date is strictly after its expiration date.
+export function expiredOn(contract: OptionInstrument, date: string): boolean {
+  return date > contract.expiration
+}
+
+// Settlement is due on or after the expiration date.
+export function settlementDueOn(contract: OptionInstrument, date: string): boolean {
+  return date >= contract.expiration
+}
+
 export type ContractIssue =
   | 'MissingInstrument'
   | 'RootTooLong'

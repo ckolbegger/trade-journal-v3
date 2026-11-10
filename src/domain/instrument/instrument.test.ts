@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { instrumentKey, instrumentOf, multiplierOf, validateOptionContract, type Instrument } from './index'
+import { expiredOn, instrumentKey, instrumentOf, multiplierOf, settlementDueOn, validateOptionContract, type Instrument } from './index'
 
 describe('Instrument keys (P68)', () => {
   it('should give a stock key as its symbol', () => {
@@ -69,5 +69,20 @@ describe('Option Instruments (A99, decision 77)', () => {
     const instrument = instrumentOf('BRK.B')
     expect(instrument).toEqual({ kind: 'Stock', symbol: 'BRK.B' })
     expect(multiplierOf(instrument)).toBe(1)
+  })
+})
+
+describe('expiration rules (P82)', () => {
+  const result = validateOptionContract({ symbol: 'XYZ', expiration: '2026-11-20', strike: '55', right: 'Call' })
+  if (!result.ok) throw new Error('expected the D7 contract valid')
+  const contract = result.instrument
+
+  it('should say the contract has not expired on Thu 11-19 or Fri 11-20, and has expired on Sat 11-21 and Mon 11-23', () => {
+    expect(instrumentKey(contract)).toBe('XYZ261120C00055000')
+    expect([expiredOn(contract, '2026-11-19'), expiredOn(contract, '2026-11-20'), expiredOn(contract, '2026-11-21'), expiredOn(contract, '2026-11-23')]).toEqual([false, false, true, true])
+  })
+
+  it('should say Settlement is not due on Thu 11-19, and is due on Fri 11-20, Sat 11-21 and Mon 11-23', () => {
+    expect([settlementDueOn(contract, '2026-11-19'), settlementDueOn(contract, '2026-11-20'), settlementDueOn(contract, '2026-11-21'), settlementDueOn(contract, '2026-11-23')]).toEqual([false, true, true, true])
   })
 })
