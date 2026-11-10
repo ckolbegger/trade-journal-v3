@@ -371,8 +371,8 @@ On the draft, 2026-11-10:
 | T7SP.1 | Done | `0cc181aa` |
 | T7SP.2 | Done | `e6ac2f5f` |
 | T7SP.3 | Done | `e14f0cc8` |
-| T7SP.4 | In progress from `e14f0cc8` | |
-| T7SP.5 | Not started | |
+| T7SP.4 | Done | `07449b9d` |
+| T7SP.5 | In progress from `07449b9d` | |
 | T7SP.6 | Not started | |
 | T7SP.7 | Not started | |
 | T7SP.8 | Not started | |

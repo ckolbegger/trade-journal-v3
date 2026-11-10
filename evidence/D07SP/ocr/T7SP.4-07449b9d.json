@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 28151,
+    "input_tokens": 27864,
+    "output_tokens": 287,
+    "cache_read_tokens": 5760,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/evaluate.ts"
+      ]
+    }
+  ],
+  "session_id": "f53dda2f-ac82-41ef-9eb8-e4f69e8d24c5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f53dda2f-ac82-41ef-9eb8-e4f69e8d24c5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "07449b9d",
+      "resolved_base": "fd2820b94efc7cb79dd790268b36f243ff8eab97",
+      "resolved_head": "07449b9dddcd4e2b08c15461eb419b19ee9d4072",
+      "exact_range": "fd2820b94efc7cb79dd790268b36f243ff8eab97..07449b9dddcd4e2b08c15461eb419b19ee9d4072",
+      "source_artifact_sha256": "1931badb4595b584704657312b6c013fcad0b0b8e820da9f1e62709e95e7d5ff"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "652da84cfc541302bc9d553ab2c74c05ce252a98b2e374e47d56640fb33b0768"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "11dee0b97ae58ccce03893eecf95c60d915f9990ac5d4e6c36728fb4d851e4b7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "652da84cfc541302bc9d553ab2c74c05ce252a98b2e374e47d56640fb33b0768"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "11dee0b97ae58ccce03893eecf95c60d915f9990ac5d4e6c36728fb4d851e4b7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 13307
+  }
+}

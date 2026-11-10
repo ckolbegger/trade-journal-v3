@@ -110,3 +110,30 @@ Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto e6ac2f5f`: `browser tier: task (no changed path since e6ac2f5f is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7SP.4 Trade Analysis: `evaluate` reads the status
+
+Behavioral (3 cases, in `tdd-log.md`). Commit `07449b9d`, new test file `src/domain/trade-analysis/evaluate-status.test.ts` (O-S, `osRecord([OS_S1])`, derived at 2026-11-20 and 2026-11-23). The first case's name drops apostrophes.
+
+What changed in `evaluate.ts`: a local `contractStatusOf(instrument)` lookup by `instrumentKey`; `pastExpiration` is `option !== undefined && lots.length > 0 && contractStatusOf(option) === 'PastExpiration'`; the settlement item is `NotYetDue` for `Live`, otherwise `Due`; `evaluate` throws an `Error` when `state.valuationDate` is defined and differs from the frame's trading date. `evaluate.ts` no longer compares a date with `.expiration`; it still reads `option.expiration` as data for the `SettlementDue` result and the item. `derive.ts` now exports `contractStatusesOf(positions, valuationDate)` (not re-exported from `trade-analysis/index.ts`).
+
+**Temporary fallback (main session's decision, recorded in the brief):** a state without `valuationDate` skips the date check, and `evaluate` computes statuses at the frame's trading date with `contractStatusesOf`, the function `derive` uses, never a raw comparison. Needed because Trade Views derives without a date until T7SP.7, and `closedCurrent` evaluates at the terminal date. The code comment names T7SP.8 as the task that removes it (A192: after T7SP.7 and T7SP.8, `evaluate` is never called on a dateless state).
+
+**First-run passes** (expected by the breakdown; each mutation failed the case by assertion, then was restored):
+- "should return the Mark-dependent figures Unavailable(SettlementDue) for a PastExpiration contract and a settlement item Due": mutation returned `PastExpiration` as `Live` in `contractStatusesOf`; failure `expected [ 'NotYetDue' ] to deeply equal [ 'Due' ]`.
+- "should return a settlement item Due for a DueToday contract with its Mark-dependent figures valued from its Mark": mutation returned `DueToday` as `Live`; failure `expected [ 'NotYetDue' ] to deeply equal [ 'Due' ]`.
+
+Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src/domain src/coordinators` 529 passed; `npm run test:integration` 191 passed. No existing case broke or changed.
+
+**ocr review** (`ocr/T7SP.4-07449b9d.json`): No findings.
+
+**Cumulative run `t7sp-4`** (2026-11-10, on `07449b9d`), outputs in `suite-runs/t7sp-4-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 123 files, 1449 tests passed |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.2 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto e14f0cc8`: `browser tier: task (no changed path since e14f0cc8 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
