@@ -368,8 +368,8 @@ On the draft, 2026-11-10:
 
 | Task | Status | Commits |
 |---|---|---|
-| T7SP.1 | In progress from `9e66d72b` | |
-| T7SP.2 | Not started | |
+| T7SP.1 | Done | `0cc181aa` |
+| T7SP.2 | In progress from `0cc181aa` | |
 | T7SP.3 | Not started | |
 | T7SP.4 | Not started | |
 | T7SP.5 | Not started | |

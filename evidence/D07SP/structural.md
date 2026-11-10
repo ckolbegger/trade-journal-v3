@@ -17,3 +17,20 @@ Location checks (D7SP handoff, section 1) on 2026-11-10:
 - `npm ci`: exit 0. `npx vitest run src`: `Test Files 121 passed (121)`, `Tests 1438 passed (1438)`. `npx vitest run tests/integration`: `Test Files 94 passed (94)`, `Tests 191 passed (191)`.
 
 Spec reading (decision 45, A189): the ranges listed in the D7SP handoff, section 2 (no generated reading list). No other spec section has been needed yet.
+
+## T7SP.1 Domain: the expiration rules
+
+Behavioral (2 cases, red then green, in `tdd-log.md`). Commit `0cc181aa`. `expiredOn(contract: OptionInstrument, date)` is `date > contract.expiration`; `settlementDueOn` is `date >= contract.expiration` (P82), in `src/domain/instrument/index.ts`. No caller changed (T7SP.2 switches them). The subagent added one assertion beyond the planned wording: case 1 also pins `instrumentKey(contract)` to `XYZ261120C00055000`. Verification: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src/domain/instrument` 11 of 11.
+
+**ocr review** (`ocr/T7SP.1-0cc181aa.json`): No findings.
+
+**Cumulative run `t7sp-1`** (2026-11-10, on `0cc181aa`), outputs in `suite-runs/t7sp-1-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 121 files, 1440 tests passed |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), task tier | 5 passed (11.5 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 9e66d72b`: `browser tier: task (no changed path since 9e66d72b is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
