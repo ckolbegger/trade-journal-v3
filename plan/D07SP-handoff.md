@@ -190,7 +190,6 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 ### Notes for later tasks
 
-- **T7SP.2:** don't bump `BENCH_GENERATOR_VERSION` for the `bench-generator.ts:662` change; it is behaviour-identical, and T7SP.14 reuses the cached profile.
 - **T7SP.4:** `evaluate`'s date check applies to a state that carries a valuation date. Until T7SP.7, Trade Views derives without one (`trade-views.ts:840`, `:946`) and `closedCurrent` passes a frame dated at the terminal date, so a check on every state would break D7's Trade Views cases.
 - **T7SP.5:** the oracle is equality with `ResolveFrames` and `recover` for the same context and Instruments, inside the same test (A193). `settlementTimeOf`'s calendar-only answer (decision 99, `src/coordinators/settlement.ts`) is the model for the session's settlement time.
 - **T7SP.6:** `payoffOf` stays in `src/coordinators/settlement.ts` (ADR 0007). Check that `lint:deps` allows the new `src/coordinators/valuation/` folder to import `src/modules/market-data` and `src/domain/trade-analysis` as `valuation.ts` does today.

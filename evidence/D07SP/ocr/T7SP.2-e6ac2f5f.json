@@ -1,0 +1,137 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 53261,
+    "input_tokens": 52659,
+    "output_tokens": 602,
+    "cache_read_tokens": 19200,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Benchmark generation",
+      "files": [
+        "src/app/bench-generator.ts"
+      ]
+    },
+    {
+      "label": "Trade analysis derivation and planning",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/plan.ts"
+      ]
+    },
+    {
+      "label": "Market data module and section",
+      "files": [
+        "src/modules/market-data/market-data.ts",
+        "src/modules/market-data/section.ts"
+      ]
+    }
+  ],
+  "session_id": "795eefa8-dec9-4d63-abde-ddd7d48f55c4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "795eefa8-dec9-4d63-abde-ddd7d48f55c4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e6ac2f5f",
+      "resolved_base": "25b87d449fe47163edf38c90c25e0c566dcbf08a",
+      "resolved_head": "e6ac2f5f4c8a41b1f0ff8a4b5159c3706ad6ac1b",
+      "exact_range": "25b87d449fe47163edf38c90c25e0c566dcbf08a..e6ac2f5f4c8a41b1f0ff8a4b5159c3706ad6ac1b",
+      "source_artifact_sha256": "8aac7795050f8b200962be3124c8d653b906c5ee654a18018c79f8709970bf76"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "060d427c3f49c82640cf312ead9489f10a2e3e2b2c84adab714cf3116a6b4aa9"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "e658376b010caa929bdb0344cea46d8862ee46b067a8eeccc61278a028137984"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "af9bce00bf63f2c69e67f54b8ae008a66f848acf75c90d4b319a0e1274caf28c"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e78a2e75a042fa49165ee02f533cebb858eb29de25172628048d725b08f56380"
+        },
+        {
+          "item_id": "b9e68db2fc45bf23af8eda66f3fcb6558c676b61d556e918380a9b929f716337",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "4d73a935dda11d1dfe8b5b710d1e690796945647f2a474df168d38a519c4a954"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "060d427c3f49c82640cf312ead9489f10a2e3e2b2c84adab714cf3116a6b4aa9"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "e658376b010caa929bdb0344cea46d8862ee46b067a8eeccc61278a028137984"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "af9bce00bf63f2c69e67f54b8ae008a66f848acf75c90d4b319a0e1274caf28c"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e78a2e75a042fa49165ee02f533cebb858eb29de25172628048d725b08f56380"
+        },
+        {
+          "item_id": "b9e68db2fc45bf23af8eda66f3fcb6558c676b61d556e918380a9b929f716337",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "4d73a935dda11d1dfe8b5b710d1e690796945647f2a474df168d38a519c4a954"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 18236
+  }
+}

@@ -58,3 +58,17 @@ For `bench-generator.ts`, the `held` map now stores the Option Instrument (`cont
 | `npm run test:integration -- d7` | 18 files, 37 tests passed |
 | `npm run lint` | exit 0 |
 | `npm run lint:deps` | exit 0 |
+
+**ocr review** (`ocr/T7SP.2-e6ac2f5f.json`): No findings. The reviewer's own reading (not an ocr finding) confirmed each of the six switches is the same test, and that the generator's `held` map now stores the same contract object whose `.expiration` it used to copy.
+
+**Cumulative run `t7sp-2`** (2026-11-10, on `e6ac2f5f`), outputs in `suite-runs/t7sp-2-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 121 files, 1440 tests passed |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), full tier, `browser-1` | 119 passed (4.8 min) |
+| Browser (Chromium), full tier, `browser-2` | 64 passed (4.0 min) |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 0cc181aa`: `browser tier: full (first matching path since 0cc181aa: src/app/bench-generator.ts)`. Ports 5175, 9341, 9342 free before and after.
