@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 41620,
+    "input_tokens": 41408,
+    "output_tokens": 212,
+    "cache_read_tokens": 13440,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/daily-review/reflections.ts",
+        "src/itg/relocated/journal-debt/classify-due.ts",
+        "src/itg/relocated/trade-views/debt-status.ts"
+      ]
+    }
+  ],
+  "session_id": "163f422c-415b-4c76-a94d-6e7425682bad",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "163f422c-415b-4c76-a94d-6e7425682bad",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "766e0a91daacdf5fa72ea21528beecd4cd67d5b7",
+      "resolved_head": "91249e78ef17e1435972770ce393c70374c2ca25",
+      "exact_range": "766e0a91daacdf5fa72ea21528beecd4cd67d5b7..91249e78ef17e1435972770ce393c70374c2ca25",
+      "source_artifact_sha256": "5fa2f26e0600506c65d1900a8bd15287cbe83b71fbb1fe5b3867f278901c8087"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "228fef77c0acacd45b31e9e06ee70e8f9a8147d91a9b953788338420b21e31f8",
+          "path": "src/itg/relocated/daily-review/reflections.ts",
+          "fingerprint": "856120ed034e27ee3b0112545b64f4fb10305f9a9d3da116d6fa6cc0950b992e"
+        },
+        {
+          "item_id": "91cd5094ab2aab525d25a43e4c2e2a78614f18a589732b6507d9688d7a4c98f5",
+          "path": "src/itg/relocated/trade-views/debt-status.ts",
+          "fingerprint": "8004d3a9178230d4006cab64cbf753f42969456733c828f4341a576fb6f1ebef"
+        },
+        {
+          "item_id": "c61479f654279c95ca204bab8735b3e42cba618a05ff5f052a868b1f03279eeb",
+          "path": "src/itg/relocated/journal-debt/classify-due.ts",
+          "fingerprint": "d43613852659ea7240bdf6211c29155adc2e3b2ff538dcf8f69c56b7febca6e8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "228fef77c0acacd45b31e9e06ee70e8f9a8147d91a9b953788338420b21e31f8",
+          "path": "src/itg/relocated/daily-review/reflections.ts",
+          "fingerprint": "856120ed034e27ee3b0112545b64f4fb10305f9a9d3da116d6fa6cc0950b992e"
+        },
+        {
+          "item_id": "91cd5094ab2aab525d25a43e4c2e2a78614f18a589732b6507d9688d7a4c98f5",
+          "path": "src/itg/relocated/trade-views/debt-status.ts",
+          "fingerprint": "8004d3a9178230d4006cab64cbf753f42969456733c828f4341a576fb6f1ebef"
+        },
+        {
+          "item_id": "c61479f654279c95ca204bab8735b3e42cba618a05ff5f052a868b1f03279eeb",
+          "path": "src/itg/relocated/journal-debt/classify-due.ts",
+          "fingerprint": "d43613852659ea7240bdf6211c29155adc2e3b2ff538dcf8f69c56b7febca6e8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 17849
+  }
+}

@@ -538,3 +538,23 @@ Nothing was removed from `current-evaluation.test.ts` or `settlement.test.ts`: e
 | Checks | 14 of 14 exit 0 |
 
 The browser tier printed by `browser-auto 6c5687c2` was `browser tier: task (no changed path since 6c5687c2 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.13 Trim D5R2's due-classification cases (structural, tech debt item 4)
+
+**Committed as `982da791`** (tests only). The mapping table is in `tdd-log.md` under T7SP.13.
+- **`debt-status.test.ts`:** keeps one case per classification plus decision 56's no-frame case: D-1 Due, D-7 Due in the next Review at 17:00, and D-7 Due in the Review after next at midday. The repeats (D-2, T-H's D-6 and midday D-1) were removed, and the case was renamed to match. The remaining expected values are unchanged.
+- **`reflections.test.ts`:** lost its "due classification (A75)" case. Its New York offset anchor (`:96`) had no `classifyDue` case, so it moved to `classify-due.test.ts` as "should compare an anchor written with a New York offset as an instant, not as text", with four offset anchors. Under a mutation (`atOrBefore` as a string `<=`) it went red: `expected 'DueInNextReview' to be 'DueInReviewAfterNext'`. The code was then restored.
+- **Counts:** journal-debt, daily-review and trade-views had 215 cases before and after (one removed, one added). Integration has 196. Tech debt item 4 is marked resolved in `plan/implementation-plan.md`.
+
+**ocr on `982da791`** (relocated, because the commit is test-only; session 163f422c; `ocr/T7SP.13-982da791.json`): no findings. The reviewer confirmed that every classification is still covered at the domain level and in both coordinators. Reviewer's note, not a finding: no coordinator case now checks that a Fill's offset anchor, stored through the Journal, reaches `classifyDue` as the same instant. The risk is low.
+
+**Cumulative run `t7sp-13`** (2026-11-10, on `982da791`). The outputs are in `suite-runs/t7sp-13-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1477 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.7 s), plus `e2e/d7sp` 1 passed (2.5 s) |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto 85feaef2` printed `browser tier: task (no changed path since 85feaef2 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
