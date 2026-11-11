@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 29217,
+    "input_tokens": 28864,
+    "output_tokens": 353,
+    "cache_read_tokens": 5760,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/option-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "1ded9432-9643-4a11-94ad-3feadbfbcd58",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1ded9432-9643-4a11-94ad-3feadbfbcd58",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a719c7e5",
+      "resolved_base": "f621bd8d3f787dc73060219548371a5c1a4e31a8",
+      "resolved_head": "a719c7e5e94c1ccd94723330a72471d856453796",
+      "exact_range": "f621bd8d3f787dc73060219548371a5c1a4e31a8..a719c7e5e94c1ccd94723330a72471d856453796",
+      "source_artifact_sha256": "12ea7957b8b0dad4292215f53124390d937d57a8b90eba2640b7790c9b86df0b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "2b65db00a39a704a4ddaee45c9d68e9b2fc1bb60fd429da176e298be52df6d79"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "1650e7bc0bd502f58c6c4297e004e67f526e471a98b633712d5dcc1d405e8c91"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "2b65db00a39a704a4ddaee45c9d68e9b2fc1bb60fd429da176e298be52df6d79"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "1650e7bc0bd502f58c6c4297e004e67f526e471a98b633712d5dcc1d405e8c91"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 14068
+  }
+}

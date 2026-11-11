@@ -192,11 +192,6 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 - **T7SP.14:** since T7SP.8 (`e8b78874`, decision 104), the read session runs a date's frames, Stale-context lookups and gaps scans in one snapshot, as `recover` does, so the Review open's `meta.get` is unchanged (13 in `d7/query-count.test.ts:87`'s live baseline). The Review open skips the dated line (`skipDatedLine`); only `getTrade` reads for it.
 - **T7SP.14:** T7SP.5-B1 (`40442940`) makes the session's one gaps scan per Instrument run from the session policy's coverage start (2024-01-01), not from the exposure, so a later call with an earlier exposure needs no second scan. The request lists are unchanged, but each scan reads every stored observation of that Instrument since coverage start, where `recover` reads from the aggregated earliest exposure. When Daily Review's `open` switches to the session (T7SP.8), the records read per Review open grow with each Instrument's whole history (the growth tech debt item 3 describes). T7SP.14 measures it against `evidence/D07/bench.md`; more than 10% slower on a measured step stops the gate for the user (section 5, condition 5).
-- **T7SP.18 (decision 105):** it runs after T7SP.17 and before T7SP.14. It touches `src/ui/`, so its cumulative run is full tier. No visible text changes.
-  - `OpenTradeDetail.heldQuantity` is signed. `ClosedTradeDetail` inherits it, at 0.
-  - `contractExpiration.date` is the stored `instrument.expiration`, so the UI still formats it with `expirationDate`.
-  - `AtEntryFigures.riskFromEntryInPlanR` and `rewardFromEntryInPlanR` replace the division at `TradeDetail.tsx:446`.
-  - `closedByExpiration` stays in `option-disposition.ts` for `TradeList.tsx`; only Detail's import goes.
 - **T7SP.10 to T7SP.15 (any lint change):** since T7SP.9 (`552d0d06`, B1 `96660874`), every `no-restricted-syntax` entry under `src/` that isn't exempt (test files and `src/domain/instrument/` are exempt) must spread `expirationComparisonSelectors` from `eslint.deps.config.js`. That includes the `src/ui` wording entry in `eslint.config.js` (`wordingWithExpirationRules`). The wording block relies on the identity selector staying first in `wordingRules` (`.slice(1)`).
 
 ### Open questions
@@ -248,6 +243,7 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 - **T7SP.17, flags:**
   - `ClosedTradeDetail` inherits `heldQuantity` (0), which the plan scoped to the Open view; the type hierarchy carries it.
   - `trade-summary.test.ts:154`'s key list and three typed Detail builders gained `heldQuantity`. These are additive only, as T7SP.16's were.
+- **T7SP.18, test-support builder:** `option-detail-fixtures.ts`'s Open builder gives Expires when no settlement item is Due, where the coordinator requires an empty settlement list. That difference is test support only (`evidence/D07SP/structural.md`, T7SP.18).
 - **T7SP.7-B1, kept read:** with a Debt, an expired or no-Position Detail still makes a `ResolveFrames` read for the closes, outside `binding()` and `marketDataSnapshotId`, as the Closed Detail does (decision 56). Removing it needs `previousCloseInstant` from Market Data, which is a spec change.
 - **T7SP.5, dismissed ocr finding:** a nested ternary at `market-data.ts:768` (style, low), judged Wrong: no such rule in the repo.
 - **T7SP.5-B1, dismissed ocr finding:** a claimed TS7053 type error at `market-data.ts:863`, judged Wrong: `npm run typecheck` passes on the commit.

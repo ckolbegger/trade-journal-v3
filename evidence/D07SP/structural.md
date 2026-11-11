@@ -628,3 +628,31 @@ No existing value, request list, fixture dump or text changed.
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto daf2635e` printed `browser tier: task (no changed path since daf2635e is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.18 Trade Detail reads the finished fields (structural, decision 105)
+
+**Committed as `a719c7e5`.** In `src/ui/screens/TradeDetail.tsx`:
+- `SummaryCard` reads `view.heldQuantity` (0 for a Planned view) and `view.contractExpiration`. The date is still formatted with `expirationDate`. The `expired` and `settlementPanel` locals are gone.
+- `EntryQualitySection` reads `view.heldQuantity`.
+- `AtEntrySection` reads `riskFromEntryInPlanR` and `rewardFromEntryInPlanR` and has no `oneR` prop.
+- The `closedByExpiration` import is dropped. `option-disposition.ts` keeps it for `TradeList.tsx:349`, which is out of scope.
+
+No test file or expectation changed. One test-support builder was extended additively: `tests/support/option-detail-fixtures.ts`'s `optionOpenDetail` and `optionClosedDetail` gained `contractExpiration`, because two `TradeDetailOptions` cases render hand-built views. The Open builder gives Expires when no settlement item is Due, where the coordinator requires an empty settlement list. That difference is test support only.
+
+**Verification (exact):**
+- `npm run typecheck`: exit 0.
+- `npx vitest run src/ui`: 36 files, 580 tests passed.
+- The grep `grep -n '\.reduce(\|\.div(\|\.add(\|closedByExpiration' src/ui/screens/TradeDetail.tsx` printed lines 32, 314, 316, 446 and 1112 before the change, and prints nothing after.
+
+**ocr on `a719c7e5`** (session 1ded9432; `ocr/T7SP.18-a719c7e5.json`): no findings. Reviewer's note, not a finding: every rendered text is unchanged in each lifecycle (Planned, Open, Open Settlement Due, Closed by Expiration, Closed by Executions, stock). The at-entry R gets the same input as before.
+
+**Cumulative run `t7sp-18`** (2026-11-10, on `a719c7e5`, full tier). The outputs are in `suite-runs/t7sp-18-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 97 files, 202 tests passed |
+| Browser (Chromium), full tier | browser-1 119 passed (4.7 m); browser-2 65 passed (4.0 m) |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto 75aaee66` printed `browser tier: full (first matching path since 75aaee66: src/ui/screens/TradeDetail.tsx)`. Ports 5175, 9341 and 9342 were free before and after. `TradeList.test.tsx:125` passed, so tech debt item 11 did not trigger.
