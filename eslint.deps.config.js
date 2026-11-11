@@ -19,8 +19,15 @@ const expirationMessage =
 // An operand wrapped in as, !, satisfies, <T> or ?. is still that operand: TSAsExpression, TSNonNullExpression,
 // TSSatisfiesExpression, TSTypeAssertion and ChainExpression all hold it in .expression (the same looking-through
 // as wrapperPaths in eslint.wording.config.js). Up to three wrappers deep.
+// The member is x.expiration (not computed, identifier) or x['expiration'] (computed, string literal); a computed
+// key that is a variable named expiration (dates[expiration]) is neither.
 const isExpiration = (side) =>
-  `:matches(${[0, 1, 2, 3].map((depth) => `[${side}${'.expression'.repeat(depth)}.property.name='expiration']`).join(', ')})`;
+  `:matches(${[0, 1, 2, 3]
+    .flatMap((depth) => {
+      const member = `${side}${'.expression'.repeat(depth)}`;
+      return [`[${member}.computed=false][${member}.property.name='expiration']`, `[${member}.computed=true][${member}.property.value='expiration']`];
+    })
+    .join(', ')})`;
 export const expirationComparisonSelectors = [
   {
     selector: `${relational}${isExpiration('left')}:not(${isExpiration('right')})`,

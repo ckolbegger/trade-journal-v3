@@ -296,3 +296,42 @@ Real tree after: `npm run lint` 0, `npm run lint:deps` 0, `npm run verify:wordin
 | src/domain/trade-analysis/evaluate.ts | 8 / 2 |
 | src/domain/instrument/index.ts | 6 / 0 |
 | src/domain/instrument/instrument.test.ts | 6 / 0 |
+
+## T7SP.9-B3 (expiration-comparison selectors miss computed access)
+
+Fix: `isExpiration(side)` in `eslint.deps.config.js` now matches, at each wrapper depth 0..3, two member shapes: `[M.computed=false][M.property.name='expiration']` (x.expiration) and `[M.computed=true][M.property.value='expiration']` (x['expiration']), where M is `<side>` plus `.expression` repeated per depth. A computed key that is a variable named expiration matches neither. Still two selectors in `expirationComparisonSelectors`; B2's wrapper look-through is kept.
+
+New selector text (left-operand form; the right form swaps left and right, and the first :matches is negated against the other side):
+`BinaryExpression[operator=/^(<|<=|>|>=)$/]:matches([left.computed=false][left.property.name='expiration'], [left.computed=true][left.property.value='expiration'], [left.expression.computed=false][left.expression.property.name='expiration'], [left.expression.computed=true][left.expression.property.value='expiration'], ...same two for left.expression.expression and left.expression.expression.expression):not(:matches(<the same eight tests on right>))`
+
+Snippets linted via stdin as src/coordinators/trade-views/trade-views.ts; cell = whether the expiration-comparison message appears.
+
+| Snippet | Want | main before | deps before | main after | deps after |
+|---|---|---|---|---|---|
+| (a) `date > leg.instrument['expiration']` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| (b) `date > (leg.instrument['expiration'] as string)` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| (c) `date > dates[expiration]` | pass | rejected (WRONG) | rejected (WRONG) | pass | pass |
+| (d) `a['expiration'] < b.expiration` | pass | rejected (WRONG) | rejected (WRONG) | pass | pass |
+
+B2 snippets re-run after the fix (all as recorded in the B2 After columns):
+
+| Snippet | Want | main | deps |
+|---|---|---|---|
+| `date > (leg.instrument.expiration as string)` | reject | rejected | rejected |
+| `date > leg?.instrument?.expiration` | reject | rejected | rejected |
+| `date > leg.instrument.expiration!` | reject | rejected | rejected |
+| `(a.expiration as string) < b.expiration` | pass | pass | pass |
+| `date > leg.instrument.expiration` | reject | rejected | rejected |
+| `a.expiration < b.expiration` | pass | pass | pass |
+| `b.expiration < (i.expiration as string)` | pass | pass | pass |
+| `a?.expiration < b!.expiration` | pass | pass | pass |
+| `date > (x.expiration satisfies string)` | reject | rejected | rejected |
+| `date > (<string>x.expiration)` | reject | rejected | rejected |
+| `date > leg?.instrument.expiration` | reject | rejected | rejected |
+| `(x.expiration as string) > date` | reject | rejected | rejected |
+
+Extra: `date > (leg.instrument['expiration']!)` rejected under both.
+
+Real tree after: `npm run lint` 0, `npm run lint:deps` 0, `npm run verify:wording` 0, `npm run typecheck` 0 (rule fires on no real code).
+
+`npx eslint --print-config` per-file no-restricted-syntax counts (total / expiration) unchanged from B2: AppShell.tsx 33 / 2, calculation-words.ts 3 / 2, format.test.ts 1 / 0, trade-views.ts 3 / 2, evaluate.ts 8 / 2, instrument/index.ts 6 / 0, instrument.test.ts 6 / 0.
