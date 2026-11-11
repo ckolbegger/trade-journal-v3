@@ -465,3 +465,21 @@ The ocr finding's Doubtful half proved real: `date > dates[expiration]` was flag
 | Checks | 14 of 14 exit 0 |
 
 The browser tier printed by `browser-auto 6767ed6e` was `browser tier: task (no changed path since 6767ed6e is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.10 Fixture views (structural)
+
+**Committed as `10f52cf2`** (evidence only). No fixture changed: `git diff claude-opus-5.5-pre-d7sp -- tests/fixtures` is empty, so every `dump.json` is byte-identical, and `verify:fixtures` is OK for v1–v6.
+- **Why there is no change:** v6's Review view holds one option Trade, fx-0174 (an XYZ call expiring on the Review date). Its contract's resolution is `Missing` with no Stale context, and no Lot follows an exact close, so its card gets no dated line. v5 has no option Trades.
+- **How it was checked:** `verify:fixtures` alone doesn't settle this. `compareSnapshot` accepts fields a newer release adds, so a new `datedLastClose` would pass silently. A scratch probe outside the repo ran `viewsOf` (Review `open`, then `getTrade` per Trade) and compared each card's actual `datedLastClose` with the snapshot. v6's fx-0049, fx-0075 and fx-0092 have the line and match; fx-0117, fx-0132 and fx-0174 have none. All 5 v5 cards match.
+- **No ocr review:** the commit changes evidence only.
+
+**Cumulative run `t7sp-10`** (2026-11-10, on `10f52cf2`). Outputs are in `suite-runs/t7sp-10-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.6 s) |
+| Checks | 14 of 14 exit 0 |
+
+The browser tier printed by `browser-auto 85121bb5` was `browser tier: task (no changed path since 85121bb5 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.

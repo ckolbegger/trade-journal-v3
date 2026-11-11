@@ -407,8 +407,8 @@ During T7SP.8, 2026-11-10 (decision 104, revision 74):
 | T7SP.7 | Done | `4f95ab6c` (under decision 103, revision 73 `5c836aee`); B1 `f9fea5ef` |
 | T7SP.8 | Done | `e8b78874`, `bc47a037` (under decision 104, revision 74 `549301ba`); cumulative-run fix `6767ed6e` |
 | T7SP.9 | Done | `552d0d06`; B1 `96660874`; B2 `e66521f6`; B3 `85121bb5` |
-| T7SP.10 | In progress from `85121bb5` | |
-| T7SP.11 | Not started | |
+| T7SP.10 | Done | `10f52cf2` (no fixture change; evidence only) |
+| T7SP.11 | In progress from `10f52cf2` | |
 | T7SP.12 | Not started | |
 | T7SP.13 | Not started | |
 | T7SP.14 | Not started | |
