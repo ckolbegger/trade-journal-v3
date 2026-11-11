@@ -440,3 +440,24 @@ classify-due.test.ts "should compare an anchor written with a New York offset as
 | `npm run test:integration` | 96 files, 196 cases | 96 files, 196 cases |
 
 `git diff --stat` touches only the three test files and this log. Lint on `src/coordinators` and `src/domain/journal-debt`, and `npm run typecheck`, exit 0.
+
+## T7SP.16 Trade Analysis: the at-entry figures in Plan R
+
+Rows are single-case runs. The first red row for the risk case was a fixture error (`state` out of scope in the new describe), fixed and rerun; the second is the valid red. Both cases were genuine reds, so there is no first-run pass.
+
+| Task | Case | Phase | Command | Outcome | Failure excerpt |
+|---|---|---|---|---|---|
+| T7SP.16 | should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R | red | `npx vitest run src/domain/trade-analysis/evaluate.test.ts -t "should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R"` | exit 1; Tests  1 failed, 35 skipped (36) | ReferenceError: state is not defined  |
+| T7SP.16 | should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R | red | `npx vitest run src/domain/trade-analysis/evaluate.test.ts -t "should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R"` | exit 1; Tests  1 failed, 35 skipped (36) | TypeError: Cannot read properties of undefined (reading 'numerator')  |
+| T7SP.16 | should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R | green | `npx vitest run src/domain/trade-analysis/evaluate.test.ts -t "should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R"` | exit 0; Tests  1 passed, 35 skipped (36) |  |
+| T7SP.16 | should give the at-entry reward from entry in Plan R the same way, for an option Trade with the multiplier in the dollars | red | `npx vitest run src/domain/trade-analysis/evaluate-option.test.ts -t "should give the at-entry reward from entry in Plan R the same way, for an option Trade with the multiplier in the dollars"` | exit 1; Tests  1 failed, 12 skipped (13) | TypeError: Cannot read properties of undefined (reading 'numerator')  |
+| T7SP.16 | should give the at-entry reward from entry in Plan R the same way, for an option Trade with the multiplier in the dollars | green | `npx vitest run src/domain/trade-analysis/evaluate-option.test.ts -t "should give the at-entry reward from entry in Plan R the same way, for an option Trade with the multiplier in the dollars"` | exit 0; Tests  1 passed, 12 skipped (13) |  |
+| T7SP.16 | refactor | refactor | none | `atEntryOf` takes `oneR` and names `riskFromEntry` and `rewardFromEntry` as locals so each dollar figure is computed once and divided once. The planned name "the Plan's 1R" was rephrased "the Plan 1R" (apostrophe breaks `-t`). The option case reads the 1R from `evaluation.oneR` instead of a literal. Domain tests (23 files, 222 cases) green. | |
+
+### Existing expectation extended (authorized by the coordinator)
+
+`tests/integration/d4/intraday.test.ts:30`, whole-object `toEqual` on the at-entry figures (case I4.18), failed because `evaluate` now returns two more fields. No existing value changed; the new fields were added with their exact values (1R is $250: 112/250 = 56/125, 228/250 = 114/125), and the assertion stays `toEqual`.
+
+Before: `{ label: 'AtEntry', quantity: dec('40'), averageEntry: dec('50.30'), riskFromEntry: dec('112'), rewardFromEntry: dec('228') }`
+
+After: the same plus `riskFromEntryInPlanR: dec('0.448'), rewardFromEntryInPlanR: dec('0.912')`.

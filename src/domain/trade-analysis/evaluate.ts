@@ -83,6 +83,8 @@ export interface AtEntryFigures {
   readonly averageEntry: Rational;
   readonly riskFromEntry: Rational;
   readonly rewardFromEntry: Rational;
+  readonly riskFromEntryInPlanR: Rational;
+  readonly rewardFromEntryInPlanR: Rational;
 }
 
 // A111: an option Instrument with open quantity at the frame's cutoff and where it stands against its expiration
@@ -168,16 +170,20 @@ function decimal(text: string): Rational {
 const value = <T>(v: T): CalculationResult<T> => ({ kind: 'Value', value: v });
 
 // Risk and reward of lots measured from their execution prices, never called valuation or P&L (A54).
-function atEntryOf(lots: readonly OpenLot[], stop: Rational, target: Rational, multiplier: Rational): AtEntryFigures | null {
+function atEntryOf(lots: readonly OpenLot[], stop: Rational, target: Rational, multiplier: Rational, oneR: Rational): AtEntryFigures | null {
   if (lots.length === 0) return null;
   const quantity = sum(lots.map((l) => l.quantity));
   const nonnegative = (r: Rational) => (r.compare(ZERO) > 0 ? r : ZERO);
+  const riskFromEntry = nonnegative(sum(lots.map((l) => l.quantity.mul(multiplier).mul(l.price.sub(stop)))));
+  const rewardFromEntry = nonnegative(sum(lots.map((l) => l.quantity.mul(multiplier).mul(target.sub(l.price)))));
   return {
     label: 'AtEntry',
     quantity,
     averageEntry: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity),
-    riskFromEntry: nonnegative(sum(lots.map((l) => l.quantity.mul(multiplier).mul(l.price.sub(stop))))),
-    rewardFromEntry: nonnegative(sum(lots.map((l) => l.quantity.mul(multiplier).mul(target.sub(l.price))))),
+    riskFromEntry,
+    rewardFromEntry,
+    riskFromEntryInPlanR: riskFromEntry.div(oneR),
+    rewardFromEntryInPlanR: rewardFromEntry.div(oneR),
   };
 }
 
@@ -436,7 +442,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     observation: { instrument: frame.instrument, tradingDate: date, mark: usableMark },
     deviations: [],
     coveredSubtotal: null,
-    atEntry: atEntryOf(atEntryLots, stop, target, multiplier),
+    atEntry: atEntryOf(atEntryLots, stop, target, multiplier, state.baseline.oneR),
     planBaseline: { kind: 'Value', value: state.baseline },
     oneR: value(state.baseline.oneR),
     entryQuality: state.entryQuality,

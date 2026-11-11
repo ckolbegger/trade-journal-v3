@@ -27,7 +27,7 @@ const mondayLine = (evaluation: unknown) =>
   );
 
 // The 40 shares bought Tuesday, measured from their execution price against the Stop and Target.
-const atEntry = { label: 'AtEntry', quantity: dec('40'), averageEntry: dec('50.30'), riskFromEntry: dec('112'), rewardFromEntry: dec('228') };
+const atEntry = { label: 'AtEntry', quantity: dec('40'), averageEntry: dec('50.30'), riskFromEntry: dec('112'), rewardFromEntry: dec('228'), riskFromEntryInPlanR: dec('0.448'), rewardFromEntryInPlanR: dec('0.912') };
 
 describe('I4.18 intraday and missing lines', () => {
   it('should show AwaitingClose figures with the Monday close line of 60 shares and the 40-share at-entry line on Tuesday noon, and Missing Tuesday figures with only the Monday line on Tuesday 17:00', async () => {

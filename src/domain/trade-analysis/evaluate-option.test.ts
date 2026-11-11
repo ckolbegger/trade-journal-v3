@@ -213,6 +213,16 @@ describe('value at expiration at the latest close (P24, A122)', () => {
   });
 });
 
+describe('at-entry figures in Plan R (decision 105)', () => {
+  it('should give the at-entry reward from entry in Plan R the same way, for an option Trade with the multiplier in the dollars', () => {
+    const tuesdayPc2 = ocChange('pc-2', '2026-10-13T14:00:00Z', 3, 'Buy', '1', '1.90', '0.65');
+    const e = evaluate({ state: derivedState(ocRecord([OC_PC1, tuesdayPc2])), frame: frameOf(OC_CONTRACT, '2.40'), underlyingFrame: frameOf(XYZ, '52.00') });
+    // Reward $310.00 (one contract, multiplier 100) over the Plan's 1R.
+    if (e.oneR.kind !== 'Value') throw new Error('expected a 1R value');
+    expect(frac(e.atEntry!.rewardFromEntryInPlanR)).toBe(frac(Rational.of(310n).div(e.oneR.value)));
+  });
+});
+
 describe('at-entry line for options (A110, decision 26)', () => {
   it('should return at-entry risk $190.00 and reward $310.00 for PC2 dated Tuesday 10:00 under Monday\'s frame', () => {
     const tuesdayPc2 = ocChange('pc-2', '2026-10-13T14:00:00Z', 3, 'Buy', '1', '1.90', '0.65');

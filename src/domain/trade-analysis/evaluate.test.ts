@@ -200,6 +200,15 @@ describe("Lots opened after the frame's close (P12, A54)", () => {
   });
 });
 
+describe('at-entry figures in Plan R (decision 105)', () => {
+  it('should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan 1R', () => {
+    const { atEntry } = evaluate({ state: derivedState(referenceRecord([PC1, TUESDAY_PC2])), frame: availableFrame('52.00') });
+    // $112.00 over a 1R of $250.00.
+    expect(exact({ kind: 'Value', value: atEntry!.riskFromEntryInPlanR })).toBe(q(56n, 125n));
+    expect(exact({ kind: 'Value', value: atEntry!.riskFromEntry })).toBe(q(112n));
+  });
+});
+
 describe('dated last close with a Missing Mark (P13, A54)', () => {
   it('should, given only a Friday Mark and Monday fills, return no dated line (no exposure at Friday close) and at-entry figures for all 100 shares: risk from entry $268.00, reward from entry $582.00', () => {
     const fridayClose = '2026-10-09T20:00:00Z';
