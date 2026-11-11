@@ -235,6 +235,7 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
   - B3 (`85121bb5`): computed `['expiration']` was missed, and `dates[expiration]` was flagged.
 
   Known limits that remain: more than 3 stacked wrappers, and a template-literal key, which the B3 reviewer noted (not an ocr finding).
+- **T7SP.11, first-run pass:** the one browser case passed on its first run, because T7SP.8 had built the line. It failed on an assertion under the planned mutation (`skipDatedLine: true` in `getTrade`). That mutation ran before the spec's figure texts were made exact; the tightening only adds assertions.
 - **T7SP.7-B1, kept read:** with a Debt, an expired or no-Position Detail still makes a `ResolveFrames` read for the closes, outside `binding()` and `marketDataSnapshotId`, as the Closed Detail does (decision 56). Removing it needs `previousCloseInstant` from Market Data, which is a spec change.
 - **T7SP.5, dismissed ocr finding:** a nested ternary at `market-data.ts:768` (style, low), judged Wrong: no such rule in the repo.
 - **T7SP.5-B1, dismissed ocr finding:** a claimed TS7053 type error at `market-data.ts:863`, judged Wrong: `npm run typecheck` passes on the commit.

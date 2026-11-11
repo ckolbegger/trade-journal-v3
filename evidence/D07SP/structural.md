@@ -483,3 +483,34 @@ The browser tier printed by `browser-auto 6767ed6e` was `browser tier: task (no 
 | Checks | 14 of 14 exit 0 |
 
 The browser tier printed by `browser-auto 85121bb5` was `browser tier: task (no changed path since 85121bb5 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.11 Browser: the option dated line in the Review (behavioral)
+
+**Committed as `6c5687c2`**, adding `e2e/d7sp/review-dated-line.spec.ts`; the steps are in `tdd-log.md` under T7SP.11. There is one case.
+- **Setup:** onboard at Monday 17:00, confirm O-C, and record 2 contracts at 2.00. Save the call's Monday Mark of 2.50 in the Monday Review, with no XYZ Mark. Then relaunch at Tuesday 17:00 and open O-C's card.
+- **Assertions, at 320 and 1280 px:** the "Mon Oct 12 close" group shows four figures, and the page has no sideways scroll (`expectNoSidewaysScroll`).
+
+  | Figure | Shown |
+  |---|---|
+  | Current Marked Trade P&L | `+$98.70 · +0.25R` |
+  | Ongoing Risk to Stop | `Mark missing: XYZ, Mon Oct 12` |
+  | Worst-Case Ongoing Risk | `$500.00 · 1.25R` |
+  | Incremental Reward to Target | `Mark missing: XYZ, Mon Oct 12` |
+
+- **First-run pass,** because T7SP.8 built the behaviour. The planned mutation, `skipDatedLine: true` in `getTrade` (`daily-review.ts:644`), made it fail on an assertion (`getByRole('group', { name: 'Mon Oct 12 close' })` not found). The code was then restored and the spec passed again.
+- **Mutation coverage:** the mutation ran before the spec was tightened from counting the `dd` elements to their exact texts. The tightening only adds assertions after the failing one, so the mutation still fails it; it was not rerun.
+- **Not tagged `@release-history`** (decision 76). No product code changed.
+
+**ocr on `6c5687c2`** (relocated, because the commit is test-only; session 7a7414eb; `ocr/T7SP.11-6c5687c2.json`): no findings. Reviewer's note: ocr read mainly the spec's own text, not the helper chain under `e2e/d5r`.
+
+**Cumulative run `t7sp-11`** (2026-11-10, on `6c5687c2`, full tier). Outputs are in `suite-runs/t7sp-11-*.txt`; `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), `browser-1` | 119 passed (4.7 min) |
+| Browser (Chromium), `browser-2` | 65 passed (3.9 min), including `e2e/d7sp` |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto 10f52cf2` printed `browser tier: full (first matching path since 10f52cf2: e2e/d7sp/review-dated-line.spec.ts)`. Ports 5175, 9341 and 9342 were free before and after. `TradeList.test.tsx:125` passed, so tech debt item 11 did not trigger.
