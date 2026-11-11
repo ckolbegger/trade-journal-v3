@@ -4,7 +4,7 @@
 
 Written 2026-11-10, after plan revision 72. [D07-handoff.md](D07-handoff.md) is the record of D7's session; its section 7 and the D7 breakdown's Progress section list every D7 task, commit, decision and flagged item.
 
-This session **implements the D7S prefactor, "One Mark-to-Market Valuation"**, under the frozen plan at revision 73 (revision 72's breakdown plus decision 103, taken during T7SP.7). The breakdown is [D07S-prefactor-mark-to-market-valuation.md](D07S-prefactor-mark-to-market-valuation.md): 15 tasks (T7SP.1 to T7SP.15), agreed by the user on 2026-11-10 after an architecture review of D7's commits (decisions 101 and 102). Task status lives in the breakdown's Progress section (decision 100).
+This session **implements the D7S prefactor, "One Mark-to-Market Valuation"**, under the frozen plan at revision 74 (revision 72's breakdown plus decision 103, taken during T7SP.7, and decision 104, taken during T7SP.8). The breakdown is [D07S-prefactor-mark-to-market-valuation.md](D07S-prefactor-mark-to-market-valuation.md): 15 tasks (T7SP.1 to T7SP.15), agreed by the user on 2026-11-10 after an architecture review of D7's commits (decisions 101 and 102). Task status lives in the breakdown's Progress section (decision 100).
 
 Where things stand:
 - **D7:** complete, tagged `claude-opus-5.5-d7` (`7e50d82`). Its gate run (`t7-32-b7-gate`) passed 1438 unit, 191 integration and 183 browser tests (119 in `browser-1`, 64 in `browser-2`), with every check.
@@ -27,7 +27,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `5181` |
-| Frozen plan | tag `claude-opus-5.5-plan-r73` (revision 73; the prefactor started at `claude-opus-5.5-plan-r72`) |
+| Frozen plan | tag `claude-opus-5.5-plan-r74` (revision 74; the prefactor started at `claude-opus-5.5-plan-r72`) |
 | Code the prefactor builds on | tag `claude-opus-5.5-d7` (`7e50d82`) |
 | Prefactor starting point | tag `claude-opus-5.5-pre-d7sp` (the commit that added this note) |
 
@@ -97,13 +97,13 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r74 and the next decision is 104 (revision 73, decision 103, was taken during T7SP.7). Editing the breakdown's Progress section alone is not a revision (decision 100).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r75 and the next decision is 105 (revision 73, decision 103, was taken during T7SP.7; revision 74, decision 104, during T7SP.8). Editing the breakdown's Progress section alone is not a revision (decision 100).
 
 ## 3. Prefactor specifics
 
 - **Setup before T7SP.1:** create `evidence/D07SP/` with `tdd-log.md` (with its note that rows are single-case runs; `tdd.sh` maps `T7SP.n` to this folder and refuses to run without it), `structural.md` and `provenance.md`. Briefs take `evidence/D07SP` as the evidence directory. `full-suite.sh` derives `e2e/d7sp` from it as the current deliverable's folder.
 - **Order.** The Progress section's order, one task at a time: T7SP.1 to T7SP.15. Mark a row "In progress from `<commit>`" before its brief; that commit is the base for `browser-auto`.
-- **What must not change.** Every existing query-count proof passes with its exact request lists (D2, D4, D5, D5R, D6, D7, and D7's Open-list proof), and every existing case keeps its expected values, except the changes the breakdown lists in section 6.1 (`settlement.test.ts:236` flipped in T7SP.8, the fixture field in T7SP.10, and the removals in T7SP.12 and T7SP.13; decision 103, revision 73, adds T7SP.7's due-Detail request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session). A changed request list or expected value anywhere else is a defect to fix, never an expectation to update. If a fix can't keep the counts, that is a plan question (section 5).
+- **What must not change.** Every existing query-count proof passes with its exact request lists (D2, D4, D5, D5R, D6, D7, and D7's Open-list proof), and every existing case keeps its expected values, except the changes the breakdown lists in section 6.1 (`settlement.test.ts:236` flipped in T7SP.8, the fixture field in T7SP.10, and the removals in T7SP.12 and T7SP.13; decision 103, revision 73, adds T7SP.7's due-Detail request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session; decision 104, revision 74, extends that to Daily Review's unit cases that stub `marketData.query`, and keeps every request list, `meta.get` included, by making the session share a date's snapshot). A changed request list or expected value anywhere else is a defect to fix, never an expectation to update. If a fix can't keep the counts, that is a plan question (section 5).
 - **No stored change.** No store, index, record or schema version changes, and no `dump.json` changes. **Never regenerate any fixture's dump.**
 - **Expiration Payoff stays out of the valuation module** (ADR 0007): `payoffOf` stays in `src/coordinators/settlement.ts`; only `settlementTimeOf` moves.
 - **Lint rules.** ESLint replaces a rule's options rather than merging them, so T7SP.9's new `no-restricted-syntax` entry for files under `src/` repeats `noIdentitySelector` and the domain-purity selectors already in `eslint.deps.config.js`. T7SP.9's brief also runs `npm run lint` and `npm run verify:wording`, which share ESLint's config resolution.
@@ -176,7 +176,7 @@ Never push.
 
 ## 6. Out of scope
 
-- Any deliverable other than the D7S prefactor, unless the user says otherwise. In particular, **D7S's breakdown** is drafted in a later session, from `claude-opus-5.5-d7sp`; its numbering starts at P90, A195 and decision 104 (decision 103 was taken by revision 73).
+- Any deliverable other than the D7S prefactor, unless the user says otherwise. In particular, **D7S's breakdown** is drafted in a later session, from `claude-opus-5.5-d7sp`; its numbering starts at P90, A195 and decision 105 (decisions 103 and 104 were taken by revisions 73 and 74).
 - **Candidate 2 of the architecture review** (Trade Detail as a finished read: held quantity, R division and the expiration line decided in `TradeDetail.tsx`), and candidates 3 to 5 (quantity words, Terminal Disposition words, the terminal Position Change's owner). The user kept them out of this prefactor.
 - **The Pricing Provider** behind the read session (D11). The session serves `recover`'s gaps but no provider fetch is built.
 - **`previewMarkChange` and `replayTrade`** (A190), which D11 and D9 build on the module.
@@ -198,7 +198,13 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 - **T7SP.8:** how T7SP.7 (`4f95ab6c`, B1 `f9fea5ef`) did it in Trade Views, for the same moves in Daily Review:
   - Take the derived state from `valuation.state`; never derive a second time. The `derive`-count cases depend on it.
   - Read the clock once per operation, and use that instant for the session and for any other Market Data query. T7SP.7-B1 fixed a second clock sample.
-  - A unit case that stubs `marketData.query` to steer frames has no effect once reads go through the session. Decision 103 covers only Trade Views' cases, so for any such Daily Review case, stop and ask before changing it.
+  - A unit case that stubs `marketData.query` to steer frames has no effect once reads go through the session. Decision 104 (revision 74) extends decision 103 to Daily Review: rewrite such a case at the read session with a mutation check, or trim it where a T7SP.6 case covers it.
+- **T7SP.8 (first attempt, nothing committed):** the work in progress is at `/Users/ckolbegger/.claude/jobs/0e1ffc89/tmp/t7sp8-wip.patch`. It routed `open`, `getTrade` and the save check through the session and wrote case 1, which went red then green. The save check opens its own session and reads only the Review date's frames, with no `valueTrade`, so the recheck is unchanged and tech debt item 1 is not triggered. Decision 104 settles three points:
+  - The session's Stale-context lookups and gaps scans share their date's snapshot, fixed in this task, red first. This keeps `d7/query-count.test.ts:87`'s live baseline, which gained 4 `meta.get` in the first attempt.
+  - `settlement.test.ts:253` moves to the session.
+  - The dated line is computed only for `getTrade`'s card (`DailyTradeReview.datedLastClose`). The open makes no dated-line read.
+  
+  `getTrade` derived the requested Trade twice (the eligibility derive, then `valueTrade`). Avoid that where the eligibility derive can stay dateless (A192), or record why it can't.
   - A Debt's due status needs the previous close. The session exposes only `closeInstant`, so with no frame Trade Views still calls `sessionCloses` (`ResolveFrames`), outside the session's binding.
 - **T7SP.12:** decision 103 already trimmed one Trade Views case: `closed-views.test.ts`, "...when Market Data rejects the frames for a reason other than coverage". It also rewrote 8 stub cases at the read session (`evidence/D07SP/tdd-log.md`, T7SP.7). Trim only what remains, and keep the rewritten cases as Trade Views' wiring cases.
 - **T7SP.8:** in the same commit as the first case's green, flip `src/coordinators/daily-review/settlement.test.ts:236` ("T7.24 known defect") to expect ABC's put dated line at Thursday's close, recording the old and new expectation. The D4, D5 and D6 Review query-count proofs (stock Trades) must not change; the new proof goes in `tests/integration/d7sp/review-query-count.test.ts`.

@@ -47,8 +47,8 @@ Numbering continues from D7's handoff: P77, A189, decision 101.
 | P80 | **Cases that read nothing** | **The module handles them.** A date outside session-policy coverage returns coverage `NotCovered` and its figures `Unavailable(SessionPolicyNotCovered)`, as Trade Views does today. A Closed Trade returns every Mark-dependent figure `NotApplicable(NoRemainingPosition)` at its terminal date (A92). A Trade whose facts can't be replayed returns `Unavailable(FactsIncoherent)` with no read. | Callers check first: the knowledge leaks back into each coordinator. |
 | P81 | **Contract status** | **`derive` records each option position's status at its valuation date: `Live` (before the expiration date), `DueToday` (on it) or `PastExpiration` (after it).** A stock position and a contract with no open quantity have none. `observationRequirements` keeps a contract's Mark and its Underlying's for `Live` and `DueToday`. `evaluate` reads the status for `SettlementDue` figures and the settlement items' `Due` status, and rejects a frame whose trading date differs from the state's valuation date. | Two flags, `needsMark` and `settlementDue`: rejected by the user (Q9); on the expiration day both hold, and one status makes callers handle that day on purpose. |
 | P82 | **The two expiration rules** | **`expiredOn(contract, date)`, true when the date is after the expiration date, and `settlementDueOn(contract, date)`, true on or after it, in `src/domain/instrument/`.** The five entry checks call them (`derive.ts:438`, `:455`, `plan.ts:187`, `market-data.ts:408`, `section.ts:50`), as does `derive` when it records the status, and the benchmark generator (`bench-generator.ts:662`). A `no-restricted-syntax` rule fails a relational comparison with an `.expiration` member outside the Instrument module, except a comparison of two expirations (a sort). | Leave the comparisons inline: the rule stays written nine times. |
-| P83 | **The option dated line in the Review** | **Shown, as in the Trades list and Detail** (Q3). `ReviewTradeItem.datedLastClose` is filled for an option Trade when its contract has a Stale context or Lots opened after the last exact close, with the Underlying's frame at that close. `CardFigures` renders it unchanged (it renders any evaluation). | Keep the Review without it: then it should be a written rule, and none exists (D7's T7.6 says the mechanism is reused unchanged). |
-| P84 | **The Review's request count** | **One `observations` read per distinct earlier close date that an option Trade's dated line needs, and none per Trade**, the rule decision 97 set for the Open page. A new proof, `tests/integration/d7sp/review-query-count.test.ts`, pins it. The existing Review proofs don't change, because none of their Trades has an option dated line (D7's proof uses expired or not-yet-due contracts). Recorded as plan decision 102. | Keep the Review at D6's counts: then P83 can't be done. |
+| P83 | **The option dated line in the Review** | **Shown, as in the Trades list and Detail** (Q3). `ReviewTradeItem.datedLastClose` is filled for an option Trade when its contract has a Stale context or Lots opened after the last exact close, with the Underlying's frame at that close. `CardFigures` renders it unchanged (it renders any evaluation). **Amended by decision 104 (revision 74):** the field is on `getTrade`'s card (`DailyTradeReview`), and only `getTrade` computes the line; the Review open computes none. | Keep the Review without it: then it should be a written rule, and none exists (D7's T7.6 says the mechanism is reused unchanged). |
+| P84 | **The Review's request count** | **One `observations` read per distinct earlier close date that an option Trade's dated line needs, and none per Trade**, the rule decision 97 set for the Open page. A new proof, `tests/integration/d7sp/review-query-count.test.ts`, pins it. The existing Review proofs don't change, because none of their Trades has an option dated line (D7's proof uses expired or not-yet-due contracts). Recorded as plan decision 102. **Amended by decision 104 (revision 74):** the Review open computes no dated line and makes no read for one. `getTrade` makes at most one `observations` read for its Trade's line. The proof pins both. | Keep the Review at D6's counts: then P83 can't be done. |
 | P85 | **Coordinator tests that move** | **Kept unchanged through the refactor as proof that it changed nothing, then trimmed in T7SP.12** to one wiring case per coordinator for each behaviour the module now owns. | Keep them all: D5R2 did, and it became tech debt item 4. Delete them at once: no proof of no change. |
 | P86 | **Gate** | **No browser critic** (O2, agreed). One new browser spec covers the only visible change (P83), and the cumulative run on the full tier covers the rest. Starting and finishing tags `claude-opus-5.5-pre-d7sp` and `claude-opus-5.5-d7sp`. | A short critic on the Review card: the change is one existing figure group appearing for options. |
 | P87 | **IDs and evidence** | Tasks `T7SP.1` to `T7SP.15`; `tdd.sh` maps them to `evidence/D07SP/` (`tdd-log.md`, `structural.md`, `suite-runs/`). Browser specs in `e2e/d7sp/`, integration cases in `tests/integration/d7sp/`. | Under D7S: its evidence would open with work that isn't D7S's. |
@@ -99,7 +99,7 @@ Each date-wide read and each Stale-context or gap lookup is its own read transac
 
 **Texts.** No existing text changes. P83 adds the existing "<date> close" group to an option card. No browser case asserts its absence: `e2e/d7/review-expiration.spec.ts`, the only D7 Review spec, mentions "close" only for contexts and the Close Review. **One unit case pins the absence:** `src/coordinators/daily-review/settlement.test.ts:236`, "the dated last close of an option card (T7.24 known defect)", expects `datedLastClose` undefined for ABC's put with only a Stale context. D7's evidence calls this "Stock-only, by design: T7.15 builds an option card's dated last close from the Underlying frame as a Stock Instrument (C6, K18). Not a defect" (`evidence/D07/structural.md:1272`, the T7.30-B3 note). P83 reverses that note at the user's direction (Q3), and T7SP.8 flips the case's expectation.
 
-**Shapes.** `ReviewTradeItem.datedLastClose` is optional and already exists; only options newly fill it. `DerivedTradeState` gains the status and the valuation date. Lookups:
+**Shapes.** `ReviewTradeItem.datedLastClose` is optional and already exists; only options newly fill it. (**Corrected by decision 104, revision 74:** the field is `DailyTradeReview.datedLastClose`, on `getTrade`'s card, `src/coordinators/daily-review/types.ts:281`. `ReviewTradeItem` has none.) `DerivedTradeState` gains the status and the valuation date. Lookups:
 - `grep -rln 'datedLastClose' tests/fixtures` → `workspace-v5/expected-views.json`, `workspace-v6/expected-views.json` (3 occurrences each, stock Trades). T7SP.10 checks whether v6's Review view holds an option Trade that gains a line.
 - `grep -rln 'observationRequirements' tests/fixtures tools` → none. `DerivedTradeState` is not in any snapshot.
 
@@ -256,6 +256,25 @@ describe("the Review open's requests with option dated lines (P84)")
   it should keep D6's requests exactly for a Review with no option dated line
 ```
 
+**Amended by decision 104 (revision 74).** The breakdown's draft above assumed that the Review open's items carry the dated line. They don't: only `getTrade`'s card (`DailyTradeReview.datedLastClose`) has it. So the cases are:
+
+```text
+describe("Daily Review through Mark-to-Market Valuation (P83, P84)")
+  it should give O-C's getTrade card a dated line at Monday's close, valued with the call's and XYZ's Monday Marks
+  it should give O-C's card the same dated line as Trade Views' Detail for the same Trade and date
+  it should keep every existing Daily Review case's expected values
+
+describe("the Review's requests with option dated lines (P84, decision 104)")
+  it should make no request for option Trades' dated lines in the Review open
+  it should add at most one observations read for the Trade's dated line in getTrade
+  it should keep D6's requests exactly for a Review with no option dated line
+
+describe("the read session shares a date's snapshot (decision 104)")
+  it should cost one meta.get per date read, with that date's Stale-context lookups and gaps scans inside it, as recover does
+```
+
+The last case goes red on T7SP.5's session and is fixed in this task, so every existing proof keeps its `meta.get` counts. A Daily Review unit case that stubs `marketData.query` is either rewritten at the read session, with a mutation check, or trimmed where a T7SP.6 case covers it. The save's binding check opens its own session and reads only the Review date's frames, without `valueTrade`, so what a save rechecks is unchanged.
+
 The first case goes red on today's missing line. In the same commit, `settlement.test.ts:236` (the T7.24 case that pins the absence, section 1.5) flips: its `datedLastClose` becomes ABC's put at Thursday's close with ABC's Thursday frame, and the task's evidence records the old and new expectation. The structural part (`reviewItem` and `figuresOf` calling the module, `settlementItems` taking times from it, `save`'s binding check opening its own session) keeps every other case green, which the third `describe` case records as the suite run.
 
 ---
@@ -293,13 +312,13 @@ The prefactor is complete when all of the following hold. Then the Progress sect
 
 ### 6.1 Unit and integration cases that stay unchanged
 
-Through T7SP.2 to T7SP.8, every existing case keeps its expected values and shapes. A case that fails is a defect to investigate, not an expectation to change. The exceptions are `settlement.test.ts:236`'s flipped expectation (T7SP.8, P83), T7SP.10's fixture field (P83), T7SP.12's removals (P85) and T7SP.13's (P89), each listed in its task's evidence. Decision 103 (revision 73) adds T7SP.7's: the due Detail's request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session.
+Through T7SP.2 to T7SP.8, every existing case keeps its expected values and shapes. A case that fails is a defect to investigate, not an expectation to change. The exceptions are `settlement.test.ts:236`'s flipped expectation (T7SP.8, P83), T7SP.10's fixture field (P83), T7SP.12's removals (P85) and T7SP.13's (P89), each listed in its task's evidence. Decision 103 (revision 73) adds T7SP.7's: the due Detail's request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session. Decision 104 (revision 74) extends that to Daily Review's unit cases that stub `marketData.query`, starting with `settlement.test.ts:253`.
 
 ### 6.2 New integration and browser files
 
 | File | Task | Holds |
 |---|---|---|
-| `tests/integration/d7sp/review-query-count.test.ts` | T7SP.8 | P84's proof |
+| `tests/integration/d7sp/review-query-count.test.ts` | T7SP.8 | P84's proof, retargeted by decision 104 |
 | `e2e/d7sp/review-dated-line.spec.ts` | T7SP.11 | P83 in the browser |
 
 ### 6.3 Disclosed test substitutes
@@ -366,6 +385,12 @@ During T7SP.7, 2026-11-10 (decision 103, revision 73):
 
 21. **The due Detail makes fewer reads:** an expired contract's Detail reads no frame, and `d7/query-count.test.ts:97`'s list drops those reads.
 22. **Stub cases:** rewrite each case that stubs `marketData.query` at the read session, with a mutation check, and trim now the ones the module's suite already covers.
+
+During T7SP.8, 2026-11-10 (decision 104, revision 74):
+
+23. **`meta.get`:** fix the session, so Stale-context lookups and gaps scans share their date's snapshot and the proofs keep their counts.
+24. **Daily Review stub cases:** rewrite them at the read session, as decision 103 did for Trade Views.
+25. **The dated line:** compute it on `getTrade`'s card only. The Review open makes no dated-line read, and P84's proof is retargeted to match.
 
 ---
 
