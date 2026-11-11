@@ -104,7 +104,7 @@ describe('browseTrades: Open with current evaluation', () => {
         maximumIncrementalReward: expect.objectContaining({ kind: 'Unbounded' }) as unknown,
         conditions: [expect.objectContaining({ result: missing }), expect.objectContaining({ result: missing })],
         // The 40 shares bought after Friday's close, measured from their execution price.
-        atEntry: { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(52n), riskFromEntry: Rational.of(180n), rewardFromEntry: Rational.of(160n) },
+        atEntry: { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(52n), riskFromEntry: Rational.of(180n), rewardFromEntry: Rational.of(160n), riskFromEntryInPlanR: Rational.of(12n, 25n), rewardFromEntryInPlanR: Rational.of(32n, 75n) },
         // The 100 shares held at Friday's close, valued with Friday's own Mark: 5100 - 5000 - 1.
         datedLine: { tradingDate: FRIDAY, evaluation: expect.objectContaining({ remainingOpenPnl: value(Rational.of(99n)), currentMarkedPnl: value(Rational.of(99n)), atEntry: null }) as unknown },
       }),
@@ -135,7 +135,7 @@ describe('browseTrades: Open with current evaluation', () => {
         incrementalRewardToTarget: awaiting,
         conditions: [expect.objectContaining({ result: awaiting }), expect.objectContaining({ result: awaiting })],
         // The 40 shares bought Tuesday, measured from their execution price.
-        atEntry: { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(53n), riskFromEntry: Rational.of(220n), rewardFromEntry: Rational.of(120n) },
+        atEntry: { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(53n), riskFromEntry: Rational.of(220n), rewardFromEntry: Rational.of(120n), riskFromEntryInPlanR: Rational.of(44n, 75n), rewardFromEntryInPlanR: Rational.of(8n, 25n) },
         // The 100 shares held at Monday's close, valued with Monday's Mark: 5200 - 5000 - 1.
         datedLine: { tradingDate: REVIEW_DATE, evaluation: expect.objectContaining({ remainingOpenPnl: value(Rational.of(199n)), atEntry: null }) as unknown },
       }),
@@ -279,7 +279,7 @@ describe('getTradeDetail: Open with current evaluation', () => {
     expect(view.current).not.toHaveProperty('datedLine');
 
     const lines = (await openDetail(stack.views, missing.tradeId)).view.current;
-    expect(lines.evaluation.atEntry).toEqual({ label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(52n), riskFromEntry: Rational.of(180n), rewardFromEntry: Rational.of(160n) });
+    expect(lines.evaluation.atEntry).toEqual({ label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(52n), riskFromEntry: Rational.of(180n), rewardFromEntry: Rational.of(160n), riskFromEntryInPlanR: Rational.of(12n, 25n), rewardFromEntryInPlanR: Rational.of(32n, 75n) });
     expect(lines.datedLine).toEqual({ tradingDate: FRIDAY, evaluation: expect.objectContaining({ remainingOpenPnl: value(Rational.of(99n)) }) as unknown });
     expect(lines).not.toHaveProperty('mark');
   });

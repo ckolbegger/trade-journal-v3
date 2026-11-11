@@ -259,7 +259,7 @@ describe('Mark-to-Market Valuation (P77, P78, P80)', () => {
     // Source: trade-views/current-evaluation.test.ts, 'should return Unavailable figures naming the Instrument and date when the
     // Mark is Missing, with the dated last-close and at-entry lines (P13)': the 100 shares held at Friday's close, valued with
     // Friday's own Mark, 5100 - 5000 - 1; the 40 shares bought after it measured from their execution price.
-    expect(valuation.evaluation.atEntry).toEqual({ label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(52n), riskFromEntry: Rational.of(180n), rewardFromEntry: Rational.of(160n) });
+    expect(valuation.evaluation.atEntry).toEqual({ label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(52n), riskFromEntry: Rational.of(180n), rewardFromEntry: Rational.of(160n), riskFromEntryInPlanR: Rational.of(12n, 25n), rewardFromEntryInPlanR: Rational.of(32n, 75n) });
     expect(valuation.datedLine).toEqual({
       tradingDate: '2026-10-09',
       evaluation: expect.objectContaining({ remainingOpenPnl: value(Rational.of(99n)), currentMarkedPnl: value(Rational.of(99n)), atEntry: null }) as unknown,

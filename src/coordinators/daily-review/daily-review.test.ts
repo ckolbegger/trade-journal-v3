@@ -738,6 +738,8 @@ describe('getTrade', () => {
       averageEntry: Rational.of(503n, 10n),
       riskFromEntry: Rational.of(112n),
       rewardFromEntry: Rational.of(228n),
+      riskFromEntryInPlanR: Rational.of(56n, 125n),
+      rewardFromEntryInPlanR: Rational.of(114n, 125n),
     });
 
     // A Trade with no exposure at that close, though Friday's Mark exists, has no dated line.
