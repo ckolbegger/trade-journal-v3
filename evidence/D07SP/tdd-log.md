@@ -262,3 +262,37 @@ Real tree: `npm run lint` exit 0, `npm run lint:deps` OK, `npm run verify:wordin
 | src/domain/trade-analysis/evaluate.ts | 8 / 2 | 8 / 2 |
 | src/domain/instrument/index.ts | 6 / 0 | 6 / 0 |
 | src/domain/instrument/instrument.test.ts (domain test) | 6 / 0 | 6 / 0 |
+
+## T7SP.9-B2 (expiration-comparison selectors see only the direct operand)
+
+Fix: `eslint.deps.config.js` builds each selector with `isExpiration(side)`, a `:matches(...)` over `[<side>(.expression){0..3}.property.name='expiration']`, so as, !, satisfies, <T> and ?. wrappers (all hold the operand in `.expression`, as `wrapperPaths` in eslint.wording.config.js) are looked through, up to three deep. Still two selectors, still exported as `expirationComparisonSelectors`. Computed access (B3) untouched.
+
+Snippets linted via stdin as src/coordinators/trade-views/trade-views.ts. Cell = whether the expiration-comparison message appears (the `npx eslint` main config also exits 1 on unrelated undeclared-name noise, so the message is the signal).
+
+| Snippet | Want | main before | deps before | main after | deps after |
+|---|---|---|---|---|---|
+| (a) `date > (leg.instrument.expiration as string)` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| (b) `date > leg?.instrument?.expiration` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| (c) `date > leg.instrument.expiration!` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| (d) `(a.expiration as string) < b.expiration` | pass | rejected (WRONG) | rejected (WRONG) | pass | pass |
+| `date > leg.instrument.expiration` | reject | rejected | rejected | rejected | rejected |
+| `a.expiration < b.expiration` | pass | pass | pass | pass | pass |
+| `b.expiration < (i.expiration as string)` | pass | rejected (WRONG) | rejected (WRONG) | pass | pass |
+| `a?.expiration < b!.expiration` | pass | rejected (WRONG) | rejected (WRONG) | pass | pass |
+| `date > (x.expiration satisfies string)` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| `date > (<string>x.expiration)` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| `date > leg?.instrument.expiration` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+| `(x.expiration as string) > date` | reject | pass (WRONG) | pass (WRONG) | rejected | rejected |
+
+Real tree after: `npm run lint` 0, `npm run lint:deps` 0, `npm run verify:wording` 0, `npm run typecheck` 0 (rule fires on no real code).
+
+### no-restricted-syntax selector counts (total / expiration), unchanged from B1 After
+| File | Count |
+|---|---|
+| src/ui/AppShell.tsx | 33 / 2 |
+| src/ui/calculation-words.ts | 3 / 2 |
+| src/ui/format.test.ts | 1 / 0 |
+| src/coordinators/trade-views/trade-views.ts | 3 / 2 |
+| src/domain/trade-analysis/evaluate.ts | 8 / 2 |
+| src/domain/instrument/index.ts | 6 / 0 |
+| src/domain/instrument/instrument.test.ts | 6 / 0 |

@@ -16,13 +16,18 @@ export const noIdentitySelector = {
 const relational = 'BinaryExpression[operator=/^(<|<=|>|>=)$/]';
 const expirationMessage =
   'expiration-comparison: ask the instrument module (expiredOn, settlementDueOn in src/domain/instrument/), never compare a date with .expiration.';
+// An operand wrapped in as, !, satisfies, <T> or ?. is still that operand: TSAsExpression, TSNonNullExpression,
+// TSSatisfiesExpression, TSTypeAssertion and ChainExpression all hold it in .expression (the same looking-through
+// as wrapperPaths in eslint.wording.config.js). Up to three wrappers deep.
+const isExpiration = (side) =>
+  `:matches(${[0, 1, 2, 3].map((depth) => `[${side}${'.expression'.repeat(depth)}.property.name='expiration']`).join(', ')})`;
 export const expirationComparisonSelectors = [
   {
-    selector: `${relational}[left.property.name='expiration']:not([right.property.name='expiration'])`,
+    selector: `${relational}${isExpiration('left')}:not(${isExpiration('right')})`,
     message: expirationMessage,
   },
   {
-    selector: `${relational}[right.property.name='expiration']:not([left.property.name='expiration'])`,
+    selector: `${relational}${isExpiration('right')}:not(${isExpiration('left')})`,
     message: expirationMessage,
   },
 ];
