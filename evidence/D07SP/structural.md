@@ -588,3 +588,43 @@ The browser tier printed by `browser-auto 6c5687c2` was `browser tier: task (no 
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto 982da791` printed `browser tier: task (no changed path since 982da791 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.17 Trade Views: Detail carries the held quantity and the expiration line (decision 105)
+
+**Committed as `75aaee66`.**
+- `OpenTradeDetail` gains `heldQuantity: Rational`: the sum of the Positions' signed quantities, set in `detailWithoutValuation`. `ClosedTradeDetail` extends `OpenTradeDetail`, so it carries the field too, at 0.
+- `PlannedTradeDetail` gains `contractExpiration?: ContractExpiration` (`{ status: 'Expires' | 'Expired'; date }`), inherited by the Open and Closed views. `date` is the stored `instrument.expiration`.
+- The coordinator decides the line as `TradeDetail.tsx:316-322` does:
+  - Planned, or Open with no settlement panel: Expires;
+  - Open with a settlement panel: no line;
+  - Closed: Expired only when its Terminal Disposition includes an `Expiration`;
+  - stock: no field.
+- The coordinator has its own local `closedByExpiration`. The UI's helper stays for `TradeList.tsx` (out of scope).
+- No new read.
+
+**Cases.** The six cases are in `tests/integration/d7sp/trade-detail-finished.test.ts`, with log rows in `tdd-log.md` under T7SP.17. Cases 1, 2, 3 and 5 went red first. Cases 4 and 6 passed on their first run, built by cases 2 and 5; each failed by assertion under a mutation:
+- case 4: `settlement.length === 0` replaced with `true`;
+- case 6: the mechanism test negated.
+
+Case names were rephrased minimally for `-t` ("Positions", "contract"). Case 6 was run with its name cut before "(decision 94)".
+
+**Existing expectations extended (additive only).**
+- `trade-summary.test.ts:154`'s sorted key list for the Open stock Detail gained `'heldQuantity'`. It is still `toEqual`.
+- Three typed Detail builders gained `heldQuantity`, because the type now requires it: one in `tests/support/open-detail-fixtures.ts`, two in `option-detail-fixtures.ts`.
+
+No existing value, request list, fixture dump or text changed.
+
+**ocr on `75aaee66`** (session 748fe749; `ocr/T7SP.17-75aaee66.json`): no findings. Reviewer's notes, not findings:
+- The coordinator's decision matches the UI's in every lifecycle, including stored-and-facts disagreements and the Incoherent view.
+- `closedByExpiration` now exists twice, once in the UI and once in the coordinator. The UI copy goes from Detail in T7SP.18, and `TradeList.tsx` keeps it.
+
+**Cumulative run `t7sp-17`** (2026-11-10, on `75aaee66`). The outputs are in `suite-runs/t7sp-17-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 97 files, 202 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.0 s), plus `e2e/d7sp` 1 passed (2.4 s) |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto daf2635e` printed `browser tier: task (no changed path since daf2635e is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
