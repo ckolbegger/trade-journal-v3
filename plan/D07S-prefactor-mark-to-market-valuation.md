@@ -265,7 +265,7 @@ The first case goes red on today's missing line. In the same commit, `settlement
 | Task | Verification (exact) | Expected result |
 |---|---|---|
 | T7SP.2 The entry checks call the rules | `npm run typecheck`, `npx vitest run src/domain src/modules/market-data`, `npm run test:integration -- d7` | `derive.ts:438` and `:455`, `plan.ts:187`, `market-data.ts:408`, `section.ts:50` and `bench-generator.ts:662` call `expiredOn` or its negation. Every case passes unchanged, including D7's `AfterExpiration`, `SettlementTimeInvalid` and `ContractAlreadyExpired` cases. |
-| T7SP.7 Trade Views value through the module | `npm run typecheck`, `npx vitest run src/coordinators/trade-views`, `npm run test:integration`; `grep -n 'instrumentsOf\|afterExpiration\|primaryFrameOf\|evaluateCurrent\|closedCurrent\|currentFrames' src/coordinators/trade-views/trade-views.ts` | `browseTrades` and `getTradeDetail` open one read session per call and value each Trade through the module. Every case passes unchanged, including `d7/query-count` and `d7/open-list-query-count` with their exact request lists. The grep prints nothing. |
+| T7SP.7 Trade Views value through the module | `npm run typecheck`, `npx vitest run src/coordinators/trade-views`, `npm run test:integration`; `grep -n 'instrumentsOf\|afterExpiration\|primaryFrameOf\|evaluateCurrent\|closedCurrent\|currentFrames' src/coordinators/trade-views/trade-views.ts` | `browseTrades` and `getTradeDetail` open one read session per call and value each Trade through the module. Every case passes unchanged, including `d7/query-count` and `d7/open-list-query-count` with their exact request lists. The grep prints nothing. **Amended by decision 103 (revision 73):** the due Detail's list in `d7/query-count.test.ts:97` drops exactly its frame reads. Each Trade Views unit case that stubs `marketData.query` is either removed, where a T7SP.6 case covers it, or rewritten at the read session and checked with a mutation. The evidence lists every changed or removed case, with its old and new form or its covering case. |
 | T7SP.9 The expiration-comparison lint rule | `npm run lint:deps`; then, in a scratch commit, add `if (date > leg.instrument.expiration) {}` to `src/coordinators/trade-views/trade-views.ts`, run it again, and drop the commit | The first run passes. The planted run fails at that file and line with the rule's message. `daily-review.ts:351`'s sort of two expirations passes. |
 | T7SP.10 Fixture views | `npm run verify:fixtures`; `git diff claude-opus-5.5-pre-d7sp -- tests/fixtures` | If v6's Review view holds an option Trade that gains a dated line, `expected-views.json` gains exactly that field, its values from the module, and the task's evidence lists it. Every `dump.json` is byte-identical. If no fixture Trade gains one, nothing changes and the evidence records why. |
 | T7SP.11 Browser: the option dated line in the Review | `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | One case: O-C bought Monday, Review Tuesday 17:00 with the call's Monday Mark only. The card shows a "Mon Oct 12 close" group with its figures at 320 and 1280 px, with no sideways scroll. A mutation (the coordinator omits the line for options) makes it fail, then is restored. |
@@ -293,7 +293,7 @@ The prefactor is complete when all of the following hold. Then the Progress sect
 
 ### 6.1 Unit and integration cases that stay unchanged
 
-Through T7SP.2 to T7SP.8, every existing case keeps its expected values and shapes. A case that fails is a defect to investigate, not an expectation to change. The exceptions are `settlement.test.ts:236`'s flipped expectation (T7SP.8, P83), T7SP.10's fixture field (P83), T7SP.12's removals (P85) and T7SP.13's (P89), each listed in its task's evidence.
+Through T7SP.2 to T7SP.8, every existing case keeps its expected values and shapes. A case that fails is a defect to investigate, not an expectation to change. The exceptions are `settlement.test.ts:236`'s flipped expectation (T7SP.8, P83), T7SP.10's fixture field (P83), T7SP.12's removals (P85) and T7SP.13's (P89), each listed in its task's evidence. Decision 103 (revision 73) adds T7SP.7's: the due Detail's request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session.
 
 ### 6.2 New integration and browser files
 
@@ -361,6 +361,11 @@ On the draft, 2026-11-10:
 18. **O2:** no browser critic.
 19. **O3:** run the latency harness once.
 20. **Added task:** clear tech debt item 4 (D5R2's due-classification cases) after T7SP.12 and before the latency harness (P89, T7SP.13).
+
+During T7SP.7, 2026-11-10 (decision 103, revision 73):
+
+21. **The due Detail makes fewer reads:** an expired contract's Detail reads no frame, and `d7/query-count.test.ts:97`'s list drops those reads.
+22. **Stub cases:** rewrite each case that stubs `marketData.query` at the read session, with a mutation check, and trim now the ones the module's suite already covers.
 
 ---
 
