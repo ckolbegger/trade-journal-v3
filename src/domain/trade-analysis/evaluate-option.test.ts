@@ -12,8 +12,8 @@ const MNO = { kind: 'Stock', symbol: 'MNO' } as const;
 // Monday 2026-10-12 closes at 20:00Z.
 const MONDAY_CLOSE = '2026-10-12T20:00:00Z';
 
-function derivedState(record: TradeAnalysisRecord): DerivedTradeState {
-  const result = derive({ record });
+function derivedState(record: TradeAnalysisRecord, valuationDate?: string): DerivedTradeState {
+  const result = derive(valuationDate === undefined ? { record } : { record, valuationDate });
   if (result.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(result)}`);
   return result;
 }
@@ -165,13 +165,13 @@ const THURSDAY_CLOSE = '2026-11-19T21:00:00Z';
 describe('Settlement Due (P25, A111)', () => {
   it('should return O-S as Due (2 contracts short, 2026-11-20) for frames 2026-11-20 and 2026-11-23, with normal figures on 2026-11-20 and, on 2026-11-23, no requirement and every current figure Unavailable(SettlementDue); NotYetDue for 2026-11-19; and nothing after E-S', () => {
     const record = osRecord([OS_S1]);
-    const state = derivedState(record);
+    const stateOn = (date: string) => derivedState(record, date);
     const evaluateOn = (date: string, close: string) =>
-      evaluate({ state, frame: missingFrame(OS_CONTRACT, date, close), underlyingFrame: missingFrame(MNO, date, close) });
+      evaluate({ state: stateOn(date), frame: missingFrame(OS_CONTRACT, date, close), underlyingFrame: missingFrame(MNO, date, close) });
     const item = (status: 'Due' | 'NotYetDue') => [{ instrument: OS_CONTRACT, quantity: q(-2n), expiration: '2026-11-20', status }];
     const items = (e: ReturnType<typeof evaluate>) => e.settlement.map((s) => ({ ...s, quantity: frac(s.quantity) }));
     expect(items(evaluateOn('2026-11-19', THURSDAY_CLOSE))).toEqual(item('NotYetDue'));
-    const onExpiration = evaluate({ state, frame: frameOf(OS_CONTRACT, '0.50', '2026-11-20', FRIDAY_CLOSE), underlyingFrame: frameOf(MNO, '47.00', '2026-11-20', FRIDAY_CLOSE) });
+    const onExpiration = evaluate({ state: stateOn('2026-11-20'), frame: frameOf(OS_CONTRACT, '0.50', '2026-11-20', FRIDAY_CLOSE), underlyingFrame: frameOf(MNO, '47.00', '2026-11-20', FRIDAY_CLOSE) });
     expect(items(onExpiration)).toEqual(item('Due'));
     expect(exact(onExpiration.marketValue)).toBe(q(-100n));
     expect(exact(onExpiration.ongoingRiskToStop)).toBe(q(500n));
@@ -193,7 +193,7 @@ describe('Settlement Due (P25, A111)', () => {
     expect(after.incrementalRewardToTarget).toEqual(due);
     expect(after.maximumIncrementalReward).toEqual(due);
     expect(after.conditions.map((c) => c.result)).toEqual([due, due]);
-    const expired = evaluate({ state: derivedState(osRecord([OS_S1, OS_ES])), frame: missingFrame(OS_CONTRACT, '2026-11-23', NEXT_MONDAY_CLOSE) });
+    const expired = evaluate({ state: derivedState(osRecord([OS_S1, OS_ES]), '2026-11-23'), frame: missingFrame(OS_CONTRACT, '2026-11-23', NEXT_MONDAY_CLOSE) });
     expect(expired.settlement).toEqual([]);
   });
 });

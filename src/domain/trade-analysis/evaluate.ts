@@ -3,7 +3,7 @@ import { instrumentKey, multiplierOf, type Instrument, type OptionInstrument } f
 import type { Instant } from '../time/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
-import { contractStatusesOf, type ContractStatus, type DerivedTradeState, type EntryQuality, type OpenLot } from './derive.ts';
+import { type ContractStatus, type DerivedTradeState, type EntryQuality, type OpenLot } from './derive.ts';
 import { currentExpirationView, expirationValueAt } from './payoff.ts';
 import type { ConditionBasis, PlanBaseline } from './plan.ts';
 
@@ -195,11 +195,8 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   if (state.valuationDate !== undefined && state.valuationDate !== date) {
     throw new Error(`evaluate: the frame's trading date ${date} differs from the state's valuation date ${state.valuationDate}`);
   }
-  // TEMPORARY FALLBACK, removed by T7SP.8 (A192): a state derived without a valuation date has no statuses,
-  // so they are worked out at the frame's date with the function derive uses.
-  const contractStatuses = state.valuationDate !== undefined ? state.contractStatuses : contractStatusesOf(state.positions, date);
   const contractStatusOf = (instrument: Instrument): ContractStatus | undefined =>
-    contractStatuses.find((s) => instrumentKey(s.instrument) === instrumentKey(instrument))?.status;
+    state.contractStatuses.find((s) => instrumentKey(s.instrument) === instrumentKey(instrument))?.status;
   const quantity = sum(lots.map((l) => l.quantity));
   // Money formulas use quantity x multiplier x price; the Trade's one Instrument sets the multiplier (A99).
   const multiplier = Rational.of(BigInt(multiplierOf(state.positions[0]?.instrument ?? frame.instrument)));

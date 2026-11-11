@@ -186,3 +186,15 @@ Rows 1 and 2 are the closed-views.test.ts cases and 3 is the 9th (retry) case; t
 - note: stub-case table (decision 104, part 2): every Daily Review unit case that stubs `marketData.query` was checked. Rewritten at the read session: `settlement.test.ts:253` "should give an unavailable settlement time to an item whose expiration date is outside calendar coverage, ..." (mutation above). Unchanged and still effective, since they intercept `ResolveSession`, which the coordinator still queries, or fail the first query after a commit: `save.test.ts:89` and `:489`, `save-marks.test.ts:158` and `:184`. None trimmed.
 - note: the fallback in `evaluate.ts` is NOT removed. Removing it (statuses from `state.contractStatuses` only) fails one existing domain case, `src/domain/trade-analysis/evaluate-option.test.ts:166` "should return O-S as Due (2 contracts short, 2026-11-20) for frames 2026-11-20 and 2026-11-23 ...", because it derives its state without a valuation date and evaluates it at three dates; that is outside decision 104's allowance, so it is reported for the main session. Everything else (full unit and integration suites) passed with the fallback removed.
 - refactor: `eligibleTrades` takes `{ session, withGaps }` instead of a bare session; `framesOnly` is replaced by `reviewFrames` over the session; `gapsOf` merges the per-Trade gaps by Instrument. No test names rephrased beyond the characters noted; the :236 case was renamed with its flipped expectation.
+
+## T7SP.8 (fallback removal, structural)
+
+- Removed the temporary dateless fallback and its comment from `src/domain/trade-analysis/evaluate.ts`; `evaluate` now reads `state.contractStatuses` (empty for a dateless state, as derive makes it). The unused `contractStatusesOf` import went with it.
+- Test setup, `src/domain/trade-analysis/evaluate-option.test.ts`, case "should return O-S as Due (2 contracts short, 2026-11-20) for frames 2026-11-20 and 2026-11-23 ...":
+  - before: `const state = derivedState(record);` (dateless) used for all three evaluations; last line `derivedState(osRecord([OS_S1, OS_ES]))` (dateless).
+  - after: `const stateOn = (date) => derivedState(record, date);` each evaluation uses `stateOn(<its frame date>)` (11-19, 11-20, 11-23); last line `derivedState(osRecord([OS_S1, OS_ES]), '2026-11-23')`. The helper `derivedState` gained an optional `valuationDate` that goes to `derive`. Name and every expected value and assertion unchanged.
+- Commands and results:
+  - `npm run typecheck`: exit 0
+  - `npx vitest run src/domain src/coordinators`: 50 files, 544 tests passed
+  - `npm run test:integration`: 96 files, 196 tests passed
+  - `grep -n "T7SP.8" src/domain/trade-analysis/evaluate.ts`: no output (grep exit 1)
