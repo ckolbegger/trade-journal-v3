@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 27640,
+    "input_tokens": 27458,
+    "output_tokens": 182,
+    "cache_read_tokens": 7680,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/support/option-detail-fixtures.ts",
+      "files": [
+        "src/itg/relocated/support/option-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "a1594529-b8be-4dd9-ba98-31e6f2577471",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a1594529-b8be-4dd9-ba98-31e6f2577471",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "d94a3b5a",
+      "resolved_base": "63a2276862208af4920254114e89029c24e8df24",
+      "resolved_head": "d94a3b5a161a9aced8548ae14df74123d4887d6b",
+      "exact_range": "63a2276862208af4920254114e89029c24e8df24..d94a3b5a161a9aced8548ae14df74123d4887d6b",
+      "source_artifact_sha256": "99575641b1bb6b01e3b61069dbfaaf748a8cb8568fd635211d4530154ab9dfd0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5ad8674d9e967915ba55f04c454249455925e0d1caab9ec1dceeeb0382d30a2e",
+          "path": "src/itg/relocated/support/option-detail-fixtures.ts",
+          "fingerprint": "53af93919de104caef06454f5c3098ec0eb301173a711df838179ef6f1ac59e6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5ad8674d9e967915ba55f04c454249455925e0d1caab9ec1dceeeb0382d30a2e",
+          "path": "src/itg/relocated/support/option-detail-fixtures.ts",
+          "fingerprint": "53af93919de104caef06454f5c3098ec0eb301173a711df838179ef6f1ac59e6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 14517
+  }
+}

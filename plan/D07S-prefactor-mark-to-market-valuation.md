@@ -405,8 +405,8 @@ During T7SP.8, 2026-11-10 (decision 104, revision 74):
 | T7SP.5 | Done | `5438bfb7`; B1 `40442940`; B2 `f0316f62`; B3 `5921ea19`; B4 `3998e749` |
 | T7SP.6 | Done | `23edc84b`; B1 `b5398b91` |
 | T7SP.7 | Done | `4f95ab6c` (under decision 103, revision 73 `5c836aee`); B1 `f9fea5ef` |
-| T7SP.8 | In progress from `f9fea5ef` | |
-| T7SP.9 | Not started | |
+| T7SP.8 | Done | `e8b78874`, `bc47a037` (under decision 104, revision 74 `549301ba`); cumulative-run fix `6767ed6e` |
+| T7SP.9 | In progress from `6767ed6e` | |
 | T7SP.10 | Not started | |
 | T7SP.11 | Not started | |
 | T7SP.12 | Not started | |

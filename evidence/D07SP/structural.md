@@ -328,3 +328,62 @@ Reviewer's note, not a finding: the session exposes `closeInstant` but not `prev
 | Checks | 14 of 14 exit 0 |
 
 The browser tier printed by `browser-auto b5398b91` was `browser tier: task (no changed path since b5398b91 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.8 Daily Review values through the module (behavioral)
+
+**First attempt (2026-11-10, from `f9fea5ef`): stopped, nothing committed.** Three stop conditions:
+- `d7/query-count.test.ts:87`: the live Review baseline gained 4 `meta.get`, because the session opened one snapshot per Stale lookup and per gaps scan.
+- `settlement.test.ts:253` stubs `marketData.query`, which the read session never calls.
+- The breakdown assumed `ReviewTradeItem.datedLastClose`, but only `getTrade`'s card (`DailyTradeReview`) has the field.
+
+The user decided all three as **decision 104, plan revision 74** (`549301ba`, tag `claude-opus-5.5-plan-r74`):
+- the session shares a date's snapshot;
+- Daily Review's stub cases move to the session;
+- the dated line goes on the card only, and P84's proof is retargeted.
+
+**Second attempt: `e8b78874`.** The red/green rows are in `tdd-log.md` under T7SP.8.
+- **Market Data case "should cost one meta.get per date read ...":** red with an assertion failure, then green. All T7SP.5 session cases still pass, including binding and snapshot-id equality. The live Review baseline's `meta.get` is 13, as under `recover`; the first attempt gave 17.
+- **Daily Review, case 1 (card dated line):** red, then green. `settlement.test.ts:236` was flipped in the same commit and renamed, because its old name stated the absence:
+
+  | | Assertion |
+  |---|---|
+  | Old | `datedLastClose` undefined |
+  | New | `datedLastClose.tradingDate` 2026-11-19, ABC's put at Thursday's Mark 1.3, `currentMarkedPnl` a Value |
+
+  The Underlying's frame at that close is Missing, so the line keeps only the contract's Values.
+- **Daily Review, case 2, and the three proof cases** in `d7sp/review-query-count.test.ts`: **first-run passes**. Each went red under a mutation, with an assertion failure, and is logged.
+- **Daily Review, case 3:** recorded as the suite run.
+- **Two module cases added for the new pieces:** `skipDatedLine`, and one snapshot for a Trade's frames and gaps. Both went red, then green.
+- **`settlement.test.ts:253`:** rewritten at the read session (`openReadSession` wrapped, `settlementTime` stubbed). It went red under a mutation of `settlementItems` before it counted.
+- **Other stub cases:** `save.test.ts:89` and `:489`, and `save-marks.test.ts:158` and `:184`, intercept `ResolveSession`, which the coordinator still calls. They are still effective and unchanged. No cases were trimmed.
+- **Save recheck:** unchanged. The save's check opens its own session, reads only the Review date's frames, and does not call `valueTrade`. Tech debt item 1 is not triggered.
+- **Open:** passes `skipDatedLine: true`, so it makes no read for a dated line. Only `getTrade` computes the line.
+- **Flagged:** `getTrade` derives the requested Trade twice: the eligibility derive at the Review date, then `valueTrade`. The eligibility derive can't stay dateless, because its requirements choose the Instruments whose frames bind to the overview's snapshot.
+
+**Fallback removal: `bc47a037` (structural).** `evaluate`'s dateless fallback is deleted.
+- One existing case relied on it: `evaluate-option.test.ts:166`, which evaluates one dateless state at three dates, contradicting A192. Its **setup only** now derives at each evaluation's date. Its name, expected values and assertions are unchanged, and the before and after are in `tdd-log.md`.
+- I judged this within the plan, since T7SP.8 is planned to remove the fallback and A192 states that no `evaluate` call takes a dateless state. It is listed in the open questions.
+- Verification: `typecheck` 0; `src/domain` plus `src/coordinators` 544 pass; integration 196 pass. The grep for "T7SP.8" in `evaluate.ts` prints nothing.
+
+**ocr on `549301ba..bc47a037`** (session e6f80493, gpt-6.1-sol, 4 files reviewed, 7 excluded; `ocr/T7SP.8-e8b78874-bc47a037.json`): 1 finding, dismissed.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `evaluate.ts:199` | With the fallback removed, a dateless state has empty statuses, so a live option reads as `Due` and an expired one is valued from its Mark. | Wrong. Every production `evaluate` call derives at a date: `value-trade.ts:79` and `:82`, and `dated-line.ts:46`. The dateless derives (`daily-review.ts:290` and `:608`, `trade-views.ts:846`, the workflows) never reach `evaluate` (A192). | Dismissed |
+
+Reviewer's note, not a finding: `evaluate` still accepts a dateless state at the type level. That is hardening only.
+
+**Cumulative run `t7sp-8`** (on `bc47a037`): unit failed 3 of 1479, all in `src/ui/screens/TradeDetailOptions.test.tsx`: two cases missing "Expires Fri 20 Nov 2026", and one missing "Value at expiration at MNO's latest close". Integration passed 196 of 196, the task-tier browser run passed 5 (11.4 s), and checks passed 14 of 14. Outputs are in `suite-runs/t7sp-8-*.txt`.
+
+**Cumulative-run fix `6767ed6e`** (test setup only): the shared fixture `tests/support/option-detail-fixtures.ts` built both option Details from a dateless `derive` and evaluated that state, which `bc47a037`'s fallback removal (A192) no longer supports. Both builders now derive at their valuation date: the Open Detail at `frames.tradingDate`, and the Closed Detail at its terminal date. No name, expected value or assertion changed, and no production path evaluates a dateless state. Logged in `tdd-log.md` under "T7SP.8 (cumulative-run fix)". The ocr review was relocated (test-support file), session a1594529, `ocr/T7SP.8-fix-6767ed6e.json`: no findings.
+
+**Cumulative run `t7sp-8-r2`** (2026-11-10, on `6767ed6e`). Outputs are in `suite-runs/t7sp-8-r2-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.9 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+The browser tier printed by `browser-auto f9fea5ef` was `browser tier: task (no changed path since f9fea5ef is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
