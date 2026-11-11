@@ -363,3 +363,39 @@ Playwright case, logged by hand. Spec: `e2e/d7sp/review-dated-line.spec.ts`; ser
 | T7SP.11 | O-C bought Monday, Review Tuesday 17:00 with the call's Monday Mark only: a "Mon Oct 12 close" group with its figures at 320 and 1280 px, no sideways scroll | first run (pass) | `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | 1 passed. First-run pass, flagged for the user: T7SP.8 built the behavior (option cards fill `datedLastClose`). At 320 and 1280 px the group's figures read `+$98.70 · +0.25R`, `Mark missing: XYZ, Mon Oct 12`, `$500.00 · 1.25R`, `Mark missing: XYZ, Mon Oct 12`. | |
 | T7SP.11 | same | mutation | `npm run build:faults` then `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | 1 failed. Mutation: `getTrade` in `src/coordinators/daily-review/daily-review.ts` (line 644) passes `skipDatedLine: true` to `valueTrade`, so no Trade gets a dated line. | `Error: 320 px  expect(locator).toBeVisible() failed ... getByRole('group', { name: 'Mon Oct 12 close' })  Expected: visible ... element(s) not found` |
 | T7SP.11 | same | green (restored) | `npm run build:faults` then `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | 1 passed; `git diff -- src` empty after the restore. The figures assertion was then tightened from a count of 4 to the four texts above and rerun: 1 passed. | |
+
+## T7SP.12 Trim the coordinator cases that moved
+
+Structural task (tests only, P85). Line numbers are before the trim.
+
+### Removed cases
+
+| File:line (before) | Case name | Behaviour | Covering T7SP.6 case | Wiring case kept in that coordinator |
+|---|---|---|---|---|
+| `src/coordinators/trade-views/option-views.test.ts:300` | should carry the Settlement Due item on an Open option row on the expiration date after the settlement time, as Detail does, and none the day before | the Due item on the expiration date | value-trade.test.ts:144 "should value O-C at Fri 11-20 from its contract's Mark, with a Due settlement item" (and :125 for the item after expiration) | option-views.test.ts:339 (rewritten at the read session: the Open page and Detail carry the module's settlement items through `settlementTime`) and :133 (Detail on Friday carries the item; its Thursday half keeps the NotYetDue evaluation and an empty item list) |
+| `src/coordinators/trade-views/option-views.test.ts:456` | should still report a missing contract Mark on the expiration date itself | MarkMissing, on the expiration date the Mark is still read | value-trade.test.ts:79 "should value DEF with its Mark missing as Unavailable(MarkMissing, ...)" and :144 (the Mark is read on the expiration date) | current-evaluation.test.ts:77 (the Open item carries `markResolution` Missing with its Stale context and every figure Unavailable MarkMissing) and option-views.test.ts:251 (an option's dated line carries Unavailable MarkMissing) |
+
+### Kept as ambiguous (partly module-owned, partly coordinator-owned), or the single wiring case
+
+Every file below keeps its cases: each module-owned behaviour already has exactly one wiring case in its coordinator, or the case is not covered by a T7SP.6 case.
+
+- option-views.test.ts:133 (O-S Friday and Thursday): also asserts lifecycle, positionChanges and both payoff views (ADR 0007), which are coordinator-owned; the Friday Due item is the Detail wiring case.
+- option-views.test.ts:157 (Closed O-C): Terminal Disposition, Option Disposition Timing and `payoffOf` are coordinator-owned; the NotApplicable(NoRemainingPosition) is one assertion among them.
+- option-views.test.ts:184 (Underlying Mark on the option Detail): the wiring case for figures from the Underlying's frame; no module case asserts the view field.
+- option-views.test.ts:196 (dated line on Detail and the Open list item): the wiring case for the option dated line.
+- option-views.test.ts:222 (Monday dated line with XYZ marked on both days): the same behaviour as value-trade.test.ts:269, but the module case has no Tuesday Mark for XYZ, so only this one distinguishes XYZ's Monday frame from its current one. Kept.
+- option-views.test.ts:240, :251, :267 (no dated line when XYZ is Missing; Underlying-dependent figures MarkMissing on the dated line; the at-entry dated line at Tuesday's close): no T7SP.6 case builds these scenarios. Kept.
+- option-views.test.ts:285 (Planned option Trade): the Planned payoff is coordinator-owned.
+- option-views.test.ts:315, :339, :354, :403, :421, :432 (rewritten at the read session, T7SP.7): wiring cases and query-count proofs.
+- option-views.test.ts:445: the single wiring case for SettlementDue after expiration with no Mark resolution; :467 and the rest are Debt cases, coordinator-owned.
+- current-evaluation.test.ts:36 (item figures), :229 (Detail figures with Mark provenance and per-Instrument coverage), :77 (MarkMissing, dated line and at-entry line), :341 (NotCovered on the item and on Detail): each is the only case in the file for its behaviour, so each is the wiring case. :114 (AwaitingClose) has no T7SP.6 case. :145, :170, :287, :306 are derive-count, coherence-retry, journal and no-read cases.
+- settlement.test.ts:110, :133, :147 (Settlement family, completion blockers, ordering, walk bands), :179 and :206 (the card: Settlement panel and progress, `payoffOf` views, a card's Settlement Due item after the expiration session), :219, :290, :315: ordering, bands, labels, payoff and progress panels are coordinator-owned, and the module-owned figures in :110, :179 and :206 are the single wiring cases for the Review. :237 and :253 are protected (T7SP.8).
+
+### Commands and counts
+
+| Command | Before | After |
+|---|---|---|
+| `npx vitest run src/coordinators` | 27 files, 325 cases | 27 files, 323 cases |
+| `npm run test:integration` | not run before the change (tests only, nothing under `tests/` or `src` non-test touched) | 96 files, 196 cases pass |
+
+Also run on the edited file: `npx eslint src/coordinators/trade-views/option-views.test.ts` and `npm run typecheck`, both exit 0. No import or constant became unused.

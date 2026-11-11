@@ -297,21 +297,6 @@ describe('getTradeDetail: Planned option Trade (T7.23)', () => {
 });
 
 describe('browseTrades: option rows', () => {
-  it('should carry the Settlement Due item on an Open option row on the expiration date after the settlement time, as Detail does, and none the day before', async () => {
-    const friday = await optionStack(FRIDAY_1700);
-    const tradeId = await friday.openCashSecuredPut();
-    const thursday = await optionStack(THURSDAY_1700);
-    await thursday.openCashSecuredPut();
-    await thursday.stack.saveMark('MNO', '46.00', '2026-11-19');
-
-    const onExpiration = await friday.tradeViews.browseTrades({ lifecycle: 'Open' });
-    const before = await thursday.tradeViews.browseTrades({ lifecycle: 'Open' });
-    if (onExpiration.kind !== 'Ready' || before.kind !== 'Ready') throw new Error('expected Ready pages');
-
-    expect(onExpiration.view.items).toEqual([expect.objectContaining({ settlement: [{ tradeId, instrument: MNO_PUT, quantity: Rational.of(-2n), expiration: '2026-11-20', settlementTime: { kind: 'Value', value: FRIDAY_1600 } }] })]);
-    expect(before.view.items).toEqual([expect.objectContaining({ settlement: [] })]);
-  }, 60_000);
-
   it('should look up the Open page settlement times concurrently', async () => {
     const fixture = await optionStack(FRIDAY_1700);
     const first = await fixture.openCashSecuredPut();
@@ -451,15 +436,6 @@ describe('getTradeDetail: no Mark is requested after the expiration date (T7.32-
     expect(detail.settlement).toHaveLength(1);
     expect(detail.current.evaluation.settlement).toEqual([expect.objectContaining({ status: 'Due' })]);
     expect(detail.current).not.toHaveProperty('markResolution');
-  }, 60_000);
-
-  it('should still report a missing contract Mark on the expiration date itself', async () => {
-    const friday = await optionStack(FRIDAY_1700);
-    const tradeId = await friday.openCashSecuredPut();
-
-    const detail = openDetail(await friday.tradeViews.getTradeDetail({ tradeId }));
-
-    expect(detail.current.markResolution).toEqual(expect.objectContaining({ kind: 'Missing' }));
   }, 60_000);
 });
 
