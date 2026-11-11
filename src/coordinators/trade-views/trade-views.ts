@@ -1,9 +1,6 @@
-import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
 import {
   derive,
-  evaluate,
   type ExpirationPayoffs,
-  type TradeEvaluationInput,
   type AtEntryFigures,
   type CalculationResult,
   type ConditionStatus,
@@ -30,12 +27,12 @@ import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSu
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
-import type { MarkFrame, MarketData, MarkResolution } from '../../modules/market-data/index.ts';
+import type { MarkFrame, MarketData, MarketDataReadSession, MarkResolution } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { payoffOf } from '../settlement.ts';
-import { datedCloseOf, datedLineOf, observationFrame, settlementTimeOf, type DatedLine, type SettlementItem } from '../valuation/index.ts';
+import { valueTrade, type DatedLine, type SettlementItem } from '../valuation/index.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;
@@ -447,51 +444,14 @@ function closedSummaryOf(analysis: TradeAnalysisRecord, derived: DerivedTradeSta
   return entered.compare(Rational.of(0n)) === 0 ? undefined : optionSummary(contract, side, entered);
 }
 
-// The current frame of an Instrument, or the as-of date when it lies outside session-policy coverage.
-type CurrentFrame = MarkFrame | { readonly date: string; readonly instrumentKey: string };
-// An option's dated line needs its Underlying's frame at the dated close.
-interface HistoricalNeed {
-  readonly tradingDate: string;
-  readonly underlying: string;
-}
+// The Expected Mark Date and the resolution of the Mark that values the Trade, as the module read them. None outside
+// session-policy coverage (decision 54); no resolution when no frame was read: after expiration or with no Position.
+type ExpectedMark = Pick<OpenCurrentFigures, 'expectedMarkDate' | 'markResolution'>;
 
-// The Instruments a Trade's current figures need: an option's own contract and its Underlying (A110), otherwise the Underlying.
-const instrumentsOf = (analysis: TradeAnalysisRecord): string[] => {
-  const contract = analysis.plan.legs[0]!.instrument;
-  return contract.kind === 'Option' ? [instrumentKey(contract), analysis.plan.underlying] : [analysis.plan.underlying];
-};
+const expectedMarkOf = (session: MarketDataReadSession, frame: MarkFrame | undefined): ExpectedMark =>
+  session.covered ? { expectedMarkDate: session.tradingDate, ...(frame && { markResolution: frame.resolution }) } : {};
 
-// Whether the Trade's contract expired before the date: no Mark is required for it then (A110).
-const afterExpiration = (analysis: TradeAnalysisRecord, date: string): boolean => {
-  const contract = analysis.plan.legs[0]!.instrument;
-  return contract.kind === 'Option' && date > contract.expiration;
-};
-
-// The frame of the Instrument whose Mark values the Trade: the contract for an option, the Underlying for stock.
-const primaryFrameOf = (frames: readonly CurrentFrame[], analysis: TradeAnalysisRecord): CurrentFrame => {
-  const key = instrumentsOf(analysis)[0]!;
-  const found = frames.find((f) => f.instrumentKey === key);
-  if (!found) throw new Error(`Market Data returned no frame for ${key}`);
-  return found;
-};
-
-// The Trade evaluated at the frames of its Instruments; an option's contract is the frame and its Underlying the underlyingFrame.
-function evaluateCurrent(derived: DerivedTradeState, analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[]): TradeEvaluation {
-  const contract = analysis.plan.legs[0]!.instrument;
-  const observation = (instrument: Instrument): TradeEvaluationInput['frame'] => {
-    const found = frames.find((f) => f.instrumentKey === instrumentKey(instrument));
-    if (!found) throw new Error(`Market Data returned no frame for ${instrumentKey(instrument)}`);
-    return 'resolution' in found ? observationFrame(found) : { instrument, date: found.date };
-  };
-  return evaluate({
-    state: derived,
-    frame: observation(contract),
-    ...(contract.kind === 'Option' && { underlyingFrame: observation({ kind: 'Stock', symbol: analysis.plan.underlying }) }),
-  });
-}
-
-function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frames: readonly CurrentFrame[], evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): OpenTradeItem {
-  const frame = primaryFrameOf(frames, analysis);
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, expected: ExpectedMark, evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): OpenTradeItem {
   // The signed open quantity at the quantity-weighted Open Lot price.
   const lots = derived.positions.flatMap((p) => p.openLots);
   const openQuantity = sum(lots.map((lot) => lot.quantity));
@@ -511,7 +471,7 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
     integrity: derived.findings.length === 0 ? 'Agrees' : 'Disagrees',
     lastActivity: summary.lastActivity ?? summary.planTime,
     current: {
-      ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
+      ...expected,
       remainingOpenPnl: evaluation.remainingOpenPnl,
       currentMarkedPnl: evaluation.currentMarkedPnl,
       currentMarkedPnlInPlanR: evaluation.currentMarkedPnlInPlanR,
@@ -590,9 +550,8 @@ function inFactOrder(analysis: TradeAnalysisRecord, derived: DerivedTradeState):
     .map((pc) => ({ ...pc, executions: [...pc.executions].sort(byRank) }));
 }
 
-// The closes around the Expected Mark Date, as its frame carries them (A75); none outside session-policy coverage.
-const closesOf = (frame: CurrentFrame): SessionCloses | undefined =>
-  'resolution' in frame ? { previousClose: frame.previousCloseInstant, close: frame.closeInstant } : undefined;
+// The closes around the Expected Mark Date, as its frame carries them (A75).
+const closesOf = (frame: MarkFrame): SessionCloses => ({ previousClose: frame.previousCloseInstant, close: frame.closeInstant });
 
 // Each Outstanding Debt's due status against the Expected Mark Date E (A69): Due when its anchor is at
 // or before the close of the session before E, in the next Review when it is at or before E's close,
@@ -630,14 +589,6 @@ export function feeReconciliationOf(derived: DerivedTradeState): FeeReconciliati
 // Option Disposition Timing belongs to option Trades; a stock Trade carries none.
 const optionTimingOf = (analysis: TradeAnalysisRecord, derived: DerivedTradeState) =>
   analysis.plan.legs[0]!.instrument.kind === 'Option' ? { optionDispositionTiming: derived.optionDispositionTiming } : {};
-
-// A Closed Trade holds no Lot, so every Mark-dependent figure is NotApplicable(NoRemainingPosition) whatever the date:
-// it is evaluated at its terminal date, with no frame and no Mark (A92).
-function closedCurrent(analysis: TradeAnalysisRecord, derived: DerivedTradeState): ClosedCurrentEvaluation {
-  const date = terminalTimeOf(analysis, derived).slice(0, 10);
-  const evaluation = evaluateCurrent(derived, analysis, instrumentsOf(analysis).map((instrumentKey) => ({ date, instrumentKey })));
-  return { coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }], evaluation };
-}
 
 function closedDetail(open: Omit<OpenTradeDetail, 'current'>, current: ClosedCurrentEvaluation, analysis: TradeAnalysisRecord, derived: DerivedTradeState, closeReason: CloseReasonLabel | undefined): ClosedTradeDetail {
   return {
@@ -698,69 +649,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     };
   }
 
-  // The frames at the Expected Mark Date for the current instant, one per Instrument.
-  // Outside session-policy coverage there are no frames, only the as-of exchange date.
-  async function currentFrames(keys: readonly string[]): Promise<{ readonly frames: readonly CurrentFrame[]; readonly snapshotId?: string }> {
-    if (keys.length === 0) return { frames: [] };
-    const instruments = [...new Set(keys)].sort();
-    const asOf = deps.clock.now();
-    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf }, instruments });
-    const uncovered = result.kind === 'Rejected' ? result.issues.find((issue) => issue.code === 'SessionPolicyCoverage') : undefined;
-    const date = uncovered?.date;
-    if (date !== undefined) return { frames: instruments.map((instrumentKey) => ({ date, instrumentKey })) };
-    if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the current frames`);
-    return { frames: result.frames, snapshotId: result.snapshotId };
-  }
-
-  // The dated close line (D4's mechanism): a stock's from its own frame, an option's from the contract's frame and the
-  // Underlying's frame at that same dated close, whatever the Underlying's state on the frame date (A110).
-  // The Underlying's frame comes from the current frames when they are for that date, else from `historical`; an option
-  // whose Underlying frame is in neither has no dated line, the way an uncovered session leaves the current frames bare.
-  function datedLineWith(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation, historical: ReadonlyMap<string, MarkFrame>): DatedLine | undefined {
-    if (!('resolution' in frame)) return undefined;
-    if (analysis.plan.legs[0]!.instrument.kind === 'Stock') return datedLineOf(analysis, frame, evaluation);
-    const tradingDate = datedCloseOf(frame, evaluation);
-    if (tradingDate === undefined) return undefined;
-    const underlyingFrame = currentUnderlyingAt(analysis, frames, tradingDate) ?? historical.get(historicalKey(tradingDate, analysis.plan.underlying));
-    return underlyingFrame && datedLineOf(analysis, frame, evaluation, underlyingFrame);
-  }
-
-  const historicalKey = (tradingDate: string, underlying: string) => `${tradingDate}|${underlying}`;
-
-  const currentUnderlyingAt = (analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], tradingDate: string) =>
-    frames.find((f): f is MarkFrame => f.instrumentKey === analysis.plan.underlying && 'resolution' in f && f.tradingDate === tradingDate);
-
-  // The Underlying frame an option's dated line still needs from Market Data, when the current frames lack it.
-  function historicalNeedOf(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): HistoricalNeed | undefined {
-    if (!('resolution' in frame) || analysis.plan.legs[0]!.instrument.kind === 'Stock') return undefined;
-    const tradingDate = datedCloseOf(frame, evaluation);
-    if (tradingDate === undefined || currentUnderlyingAt(analysis, frames, tradingDate)) return undefined;
-    return { tradingDate, underlying: analysis.plan.underlying };
-  }
-
-  // The Underlyings' frames at their dated closes: one Historical request per distinct date, carrying every Underlying
-  // that date needs (A111). A session-policy coverage rejection leaves that date without frames and so its Trades without
-  // a dated line; any other answer that is not Frames throws. Unlike the coverage issue `currentFrames` checks, the
-  // Historical one carries no `date`, so any `SessionPolicyCoverage` rejection is absorbed.
-  async function historicalFrames(needs: readonly HistoricalNeed[]): Promise<ReadonlyMap<string, MarkFrame>> {
-    const byDate = new Map<string, Set<string>>();
-    for (const { tradingDate, underlying } of needs) byDate.set(tradingDate, (byDate.get(tradingDate) ?? new Set()).add(underlying));
-    const answers = await Promise.all(
-      [...byDate].map(async ([tradingDate, underlyings]) => ({ tradingDate, result: await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate }, instruments: [...underlyings].sort() }) })),
-    );
-    const found = new Map<string, MarkFrame>();
-    for (const { tradingDate, result } of answers) {
-      if (result.kind === 'Rejected' && result.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) continue;
-      if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the historical frames at ${tradingDate}`);
-      for (const f of result.frames) if (f.tradingDate === tradingDate) found.set(historicalKey(tradingDate, f.instrumentKey), f);
-    }
-    return found;
-  }
-
-  async function datedLineOfTrade(analysis: TradeAnalysisRecord, frames: readonly CurrentFrame[], frame: CurrentFrame, evaluation: TradeEvaluation): Promise<DatedLine | undefined> {
-    const need = historicalNeedOf(analysis, frames, frame, evaluation);
-    return datedLineWith(analysis, frames, frame, evaluation, await historicalFrames(need ? [need] : []));
-  }
+  // One read session at the current instant per operation; its snapshot id for its own date, once its reads have resolved.
+  const openSession = () => deps.marketData.openReadSession({ kind: 'Current', asOf: deps.clock.now() });
+  const snapshotIdOf = (session: MarketDataReadSession): string | undefined => session.binding().snapshotIds[session.tradingDate];
 
   // The closes around the Expected Mark Date, for the due status of a Closed Trade's Debt. Market Data gives them
   // on the Instrument's frame; the frame's Mark is not read. Anything but frames, coverage rejections included,
@@ -771,15 +662,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     return frame && closesOf(frame);
   }
 
-  // The contracts the evaluation finds Due, each with its settlement time from Market Data (A111).
-  async function settlementItemsOf(tradeId: string, evaluation: TradeEvaluation): Promise<SettlementItem[]> {
-    const due = evaluation.settlement.filter((item) => item.status === 'Due');
-    return Promise.all(due.map(async ({ instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: await settlementTimeOf(deps.marketData, instrument, expiration) })));
-  }
-
   // The effective Mark revision's provenance, as Market Data describes it on the frame.
-  function markProvenance(frame: CurrentFrame): MarkProvenance | undefined {
-    if (!('resolution' in frame) || frame.resolution.kind !== 'Available') return undefined;
+  function markProvenance(frame: MarkFrame | undefined): MarkProvenance | undefined {
+    if (!frame || frame.resolution.kind !== 'Available') return undefined;
     const { source, revisionId, revisionNumber, price, savedAt, correctionReason } = frame.resolution.mark;
     return { source, revisionId, revisionNumber, price, savedAt, ...(correctionReason !== undefined && { correctionReason }) };
   }
@@ -836,8 +721,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         ]);
         const page = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
         const narrative = page.items;
-        // Derived once and reused for every figure in the view.
-        const derived = derive({ record: analysis });
+        // Valued once through the module, at the session's date, and its state reused for every figure in the view.
+        const session = await openSession();
+        const valuation = await valueTrade(session, analysis);
         const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
         const { plan } = analysis;
         const stored: Omit<IncoherentTradeDetail, 'lifecycle' | 'recordedPositionChanges' | 'deviations' | 'findings' | 'journal'> = {
@@ -860,17 +746,18 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           },
         };
         // Facts that cannot be replayed are surfaced with their findings, never repaired or computed.
-        if (derived.kind === 'IncoherentFacts') {
+        if (valuation.kind === 'Unavailable') {
           const view: IncoherentTradeDetail = {
             ...stored,
             lifecycle: { stored: analysis.storedLifecycle },
             recordedPositionChanges: analysis.positionChanges,
             deviations: analysis.recordedDeviations ?? [],
-            findings: derived.findings,
+            findings: valuation.findings,
             journal: narrative,
           };
           return { binding, view };
         }
+        const derived = valuation.state;
         const planned: Omit<PlannedTradeDetail, 'journal'> = {
           ...stored,
           lifecycle: { stored: analysis.storedLifecycle, agreement: derived.agreement },
@@ -890,29 +777,27 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         if (analysis.storedLifecycle === 'Closed' && derived.expectedLifecycle === 'Closed') {
           const closeReason = analysis.closeReason && (await closeReasonOf(analysis.closeReason.closeReasonId));
           const closes = narrative.some((item) => item.kind === 'Debt') ? await sessionCloses(analysis.plan.underlying) : undefined;
-          // A Closed Trade holds nothing, so no contract is awaiting settlement.
-          const view = closedDetail(detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, []), closedCurrent(analysis, derived), analysis, derived, closeReason);
+          // A Closed Trade holds nothing, so no contract is awaiting settlement. Its evaluation is at its terminal date, with no read (A92).
+          const closedEvaluation = valuation.evaluation;
+          const current: ClosedCurrentEvaluation = { coverage: [{ instrument: closedEvaluation.observation.instrument, coverage: closedEvaluation.coverage }], evaluation: closedEvaluation };
+          const view = closedDetail(detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, []), current, analysis, derived, closeReason);
           return { binding, view };
         }
-        const { frames, snapshotId } = await currentFrames(instrumentsOf(analysis));
-        const frame = primaryFrameOf(frames, analysis);
-        const evaluation = evaluateCurrent(derived, analysis, frames);
-        const mark = markProvenance(frame);
-        const underlyingFrame = analysis.plan.legs[0]!.instrument.kind === 'Option' ? frames.find((f) => f.instrumentKey === analysis.plan.underlying) : undefined;
-        const underlyingMark = underlyingFrame && markProvenance(underlyingFrame);
-        const datedLine = await datedLineOfTrade(analysis, frames, frame, evaluation);
+        const { evaluation, settlement, frame, underlyingFrame, datedLine } = valuation;
         const current: OpenCurrentEvaluation = {
-          // After its expiration date an option requires no Mark, so Detail reports none missing (A110, as the Review does).
-          ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, ...(!afterExpiration(analysis, frame.tradingDate) && { markResolution: frame.resolution }) }),
-          ...optional('mark', mark),
-          ...optional('underlyingMark', underlyingMark),
+          // After its expiration date an option requires no Mark, so the module reads none and Detail reports none missing (A110, as the Review does).
+          ...expectedMarkOf(session, frame),
+          ...optional('mark', markProvenance(frame)),
+          ...optional('underlyingMark', markProvenance(underlyingFrame)),
           coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
           evaluation,
           ...optional('datedLine', datedLine),
         };
-        const settlement = await settlementItemsOf(analysis.tradeId, evaluation);
-        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closesOf(frame)), lastActivity, settlement), current };
-        return { binding, view, ...optional('marketDataSnapshotId', snapshotId) };
+        // The closes behind a Debt's due status come from the frame read; with none (after expiration, or no Position), from Market Data's frame for the Underlying.
+        const hasDebt = narrative.some((item) => item.kind === 'Debt');
+        const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying) : undefined;
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), current };
+        return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
     },
 
@@ -942,47 +827,30 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           account: label(summary.accountId)?.label ?? '',
           institution: label(summary.accountId)?.institution?.label ?? '',
         });
-        // Each Trade on the page is derived once.
-        const derivations = records.map(({ summary, analysis }) => ({ summary, analysis, derived: derive({ record: analysis }) }));
-        const { frames, snapshotId } =
-          request.lifecycle === 'Open'
-            ? await currentFrames(derivations.flatMap(({ analysis, derived }) => (derived.kind === 'Derived' ? instrumentsOf(analysis) : [])))
-            : { frames: [] };
+        // The Open page values each Trade through the module in one read session, which reads each date and Instrument once
+        // for every Trade on the page (A191); the Planned and Closed pages derive each Trade once and read no Market Data.
+        const session = request.lifecycle === 'Open' ? await openSession() : undefined;
+        const valuations = session ? await Promise.all(records.map(({ analysis }) => valueTrade(session, analysis))) : [];
         // A Closed page reads no Market Data: Close Reason labels, and the Trades with an Outstanding reflection.
         const closeReasons = request.lifecycle === 'Closed' ? await closeReasonsOf(records.map((r) => r.analysis)) : new Map<string, CloseReasonLabel>();
         const owed = request.lifecycle === 'Closed' ? await tradesWithOutstandingDebt() : new Set<string>();
-        // On the Open page, each Trade is evaluated once; the contracts it finds due for settlement are the ones Detail shows.
-        const evaluations = new Map<string, { readonly evaluation: TradeEvaluation; readonly settlement: readonly SettlementItem[]; readonly datedLine: DatedLine | undefined }>();
-        if (request.lifecycle === 'Open') {
-          // Each Trade is evaluated once; the Underlying frames the dated lines need are asked for once per distinct date.
-          const evaluated = derivations.flatMap(({ summary, analysis, derived }) =>
-            derived.kind === 'Derived' ? [{ tradeId: summary.tradeId, analysis, evaluation: evaluateCurrent(derived, analysis, frames), frame: primaryFrameOf(frames, analysis) }] : [],
-          );
-          // The settlement lookups run together, beside the Historical reads, which they don't depend on; the entries keep the page's order.
-          const [historical, settlements] = await Promise.all([
-            historicalFrames(evaluated.flatMap(({ analysis, frame, evaluation }) => historicalNeedOf(analysis, frames, frame, evaluation) ?? [])),
-            Promise.all(evaluated.map(({ tradeId, evaluation }) => settlementItemsOf(tradeId, evaluation))),
-          ]);
-          evaluated.forEach(({ tradeId, analysis, evaluation, frame }, i) => {
-            evaluations.set(tradeId, { evaluation, settlement: settlements[i]!, datedLine: datedLineWith(analysis, frames, frame, evaluation, historical) });
-          });
-        }
-        const items = derivations.map(({ summary, analysis, derived }) => {
+        const items = records.map(({ summary, analysis }, i) => {
+          const valuation = valuations[i];
+          if (session && valuation) {
+            if (valuation.kind !== 'Valued') return incoherentItem(summary, analysis, labelsOf(summary));
+            return openItem(summary, analysis, valuation.state, labelsOf(summary), expectedMarkOf(session, valuation.frame), valuation.evaluation, valuation.settlement, valuation.datedLine);
+          }
+          const derived = derive({ record: analysis });
           if (request.lifecycle === 'Closed') {
             const closeReason = analysis.closeReason && closeReasons.get(analysis.closeReason.closeReasonId);
             return derived.kind === 'Derived'
               ? closedItem(summary, analysis, derived, labelsOf(summary), closeReason, owed.has(summary.tradeId))
               : incoherentClosedItem(summary, analysis, labelsOf(summary), closeReason, owed.has(summary.tradeId));
           }
-          if (request.lifecycle === 'Open') {
-            if (derived.kind !== 'Derived') return incoherentItem(summary, analysis, labelsOf(summary));
-            const { evaluation, settlement, datedLine } = evaluations.get(summary.tradeId)!;
-            return openItem(summary, analysis, derived, labelsOf(summary), frames, evaluation, settlement, datedLine);
-          }
           // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
           return derived.kind === 'Derived' ? plannedItem(summary, analysis, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));
         }) as TradeBrowseItem<L>[];
-        return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding, ...optional('marketDataSnapshotId', snapshotId) };
+        return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding, ...optional('marketDataSnapshotId', session && snapshotIdOf(session)) };
       });
     },
   };

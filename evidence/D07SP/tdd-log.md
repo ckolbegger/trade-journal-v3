@@ -104,3 +104,49 @@ Every `it should` case from the D7S prefactor breakdown, section 3, run red and 
 | T7SP.6 | all cases | refactor | n/a | n/a | Moved valuation.ts to valuation/dated-line.ts and settlementTimeOf, SettlementItem and SettlementTime to valuation/settlement.ts (SettlementTime is now an alias of Market Data's); callers' imports updated, payoffOf stays in coordinators/settlement.ts. Case 6 grew observationsOf into one place that names what each branch reads (frames, a Missing frame after expiration, an uncovered date, none for a Closed or empty Trade); unreadObservations serves outside coverage, Closed and no-Position alike. Extra case beyond the plan: "should value a Planned Trade holding no Position with no read ..." (red TypeError on the missing guard, green after). Test types the facade through onboardedAt because lint:deps forbids src/coordinators importing src/app. Test names rephrased only where the apostrophes in "can't" and "Mark's" are escaped in source. |
 | T7SP.6-B1 | should reject a valuation at the session's close when the session has no close | red | `npx vitest run src/coordinators/valuation/value-trade.test.ts -t "should reject a valuation at the session's close when the session has no close"` | exit 1; Tests  1 failed, 12 skipped (13) | AssertionError: promise resolved "{ kind: 'Valued', …(4) }" instead of rejecting  |
 | T7SP.6-B1 | should reject a valuation at the session's close when the session has no close | green | `npx vitest run src/coordinators/valuation/value-trade.test.ts -t "should reject a valuation at the session's close when the session has no close"` | exit 0; Tests  1 passed, 12 skipped (13) |  |
+
+## T7SP.7 Trade Views value through the module (structural; decision 103)
+
+Structural task: no red/green rows. Second attempt, from the saved first-attempt-2 patch; Trade Views now opens one `openReadSession` per `browseTrades` (Open page only) and per `getTradeDetail` call, values each Trade with `valueTrade` (no `factsAtClose`), and takes the derived state from the valuation (no second derive). The Planned and Closed pages derive once per Trade and open no session.
+
+### Verification
+| Command | Result |
+|---|---|
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |
+| `npx vitest run src/coordinators/trade-views` | exit 0; 7 files, 62 tests passed (the 63 before is 62 after trimming one case) |
+| `npx vitest run src/coordinators/valuation` | exit 0; 1 file, 13 tests passed |
+| `npm run test:integration` | exit 0; 94 files, 191 tests passed (d7/open-list-query-count unchanged and green) |
+| `npx vitest run --project unit` | exit 0; 1539 passed (every `derive`-count case in current-evaluation.test.ts and open-views.test.ts passes unchanged) |
+| `grep -n 'instrumentsOf\|afterExpiration\|primaryFrameOf\|evaluateCurrent\|closedCurrent\|currentFrames' src/coordinators/trade-views/trade-views.ts` | prints nothing (grep exit 1) |
+
+### Due Detail request list (`tests/integration/d7/query-count.test.ts`, the due Detail case)
+Measured on a fresh launch, tally per store and method.
+- Old (24 requests): `meta.get` 12, `trades.get` 2, `catalog.getAll` 1, `journalEntries.getAll` 1, `journalDeclines.getAll` 1, `journalDebts.getAll` 1, `journalDefinitions.getAll` 1, `journalTypes.getAll` 1, `observations.getAll` 2, `observations.openCursor` 2.
+- New (18 requests): `meta.get` 10, `trades.get` 2, `catalog.getAll` 1, `journalEntries.getAll` 1, `journalDeclines.getAll` 1, `journalDebts.getAll` 1, `journalDefinitions.getAll` 1, `journalTypes.getAll` 1.
+- Dropped: both `observations.getAll` (the date-wide frame read and the A111 Historical read), the two `openCursor` of the Stale Mark lookup, and 2 `meta.get` (the Stale lookup's snapshot, and the snapshot of the date-wide read; the live Detail's 11 `meta.get` includes the latter). FLAGGED: decision 103's text names "the `observations.getAll`" and "`meta.get` +1"; the actual frame reads were 2 `getAll` and 2 `meta.get`. All four removed requests are frame-read requests, so the list drops exactly what its frame reads made. The live Detail's `PINNED` list and every other request are unchanged. The case's name changed from "bar one observations read" to "bar the frame reads"; its comment was rewritten (the old comment's 24-request arithmetic was false).
+
+### Stub cases (decision 103 text counted 8; a 9th, the retry case in current-evaluation.test.ts, also stubbed `query` and is included here per the coordinator's direction)
+| # | Case (file) | Fate | Old stub | New stub / covering case | Mutation and failing output |
+|---|---|---|---|---|---|
+| 1 | closed-views: should return the Closed Detail with its Closed fields when Market Data rejects the frames for a reason other than coverage | Trimmed | `marketData.query` rejects | Covered by T7SP.6 "should value a Closed Trade at its terminal date with no read..."; the wiring case "should show no saved Mark, no Expected Mark Date, and no Market Data snapshot in the Closed Detail" stays. FLAGGED: Detail now opens a session for every form, so a Market Data whose `openReadSession` rejects (an invalid as-of, unreachable with the real clock) would reject a Closed Detail; the removed case pinned the old no-dependence. | n/a |
+| 2 | closed-views: should classify the Outstanding Debt of a Closed Trade when Market Data answers and leave it without a due status when it does not | Rewritten | `{ query: rejecting }` as the whole Market Data | `{ ...stack.marketData, query: rejecting }`; the coordinator's `sessionCloses` still uses `query` for a Debt's closes | `sessionCloses` throws when the result is not Frames: `AssertionError`-free run gave `Error: Market Data returned no frames` (runtime exception) |
+| 3 | current-evaluation: should bind the Trade, Journal, and Catalog revisions ... after 3 retries (9th) | Rewritten | race at `marketData.query` | race at `marketData.openReadSession` (first call writes); `queries` is 2 and `raced` is 3, counted at the session | retry loop limited to one attempt (`attempt < 1`): `AssertionError: expected false to deeply equal { databaseName: 'tj-ws-id-0013', ... }` |
+| 4 | option-views: should look up the Open page settlement times concurrently | Rewritten | `query` counts in-flight `ResolveSession` | `session.settlementTime` wrapped to count in-flight lookups (peak 2) | Open page values Trades in a sequential loop: `AssertionError: expected 1 to be 2` (the mutation also left 2 type errors; vitest ran it and failed at runtime) |
+| 5 | option-views: should give an unavailable settlement time for an expiration date outside calendar coverage and still list every Open Trade | Rewritten | `query` rejects `ResolveSession` with coverage | `session.settlementTime` returns the Unavailable(SessionPolicyNotCovered) value | Open item given `[]` instead of `valuation.settlement`: `AssertionError: expected [ { tradeId: 'id-0016', ... } ] to deeply equal [ ObjectContaining{...} ]` |
+| 6 | option-views: should return Open, Planned, and Closed rows ... reading Market Data only for Open rows | Rewritten | `query` counter | `openReadSession` counter (0 after Planned and Closed pages, more than 0 after Open) | A session opened for every lifecycle: `AssertionError: expected 2 to be +0 // Object.is equality` |
+| 7 | option-views: should keep the Open page Ready and give the affected option Trade no dated line when Market Data rejects the Historical request | Rewritten | `query` rejects Historical with `SessionPolicyCoverage` | `session.historicalFrames` returns `[]` (a date with no frames); no T7SP.6 case covers an absent Underlying frame, so it was not trimmed | Open page throws when an option's valuation has no dated line: `Error: no dated line` |
+| 8 | option-views: should throw when Market Data rejects the Historical request for any reason but session-policy coverage | Rewritten | `query` rejects Historical with `NotASession` | `session.historicalFrames` rejects with an Error naming the Historical request (the `/Historical\|Market Data/` regex alone is satisfied by the stub's message, so the `rejects` assertion is what catches an absorbing coordinator) | `valueTrade(...)` rejection swallowed into an Unavailable valuation on the Open page: `AssertionError: promise resolved "{ kind: 'Ready', ...(2) }" instead of rejecting` |
+| 9 | option-views: should throw from Trade Detail when Market Data rejects the Historical request for any reason but session-policy coverage | Rewritten | as 8, on Detail | as 8, on Detail | Detail's `valueTrade(...)` rejection swallowed likewise: `AssertionError: promise resolved "{ kind: 'Ready', view: { ...(9) }, ...(1) }" instead of rejecting` |
+
+Each mutation was restored by Edit and the coordinator diff was confirmed equal to the pre-mutation state.
+
+Rows 1 and 2 are the closed-views.test.ts cases and 3 is the 9th (retry) case; the other six are the option-views.test.ts cases, so rows 1 and 2 plus 4 to 9 are decision 103's 8.
+
+### Flagged: Detail with an Open lifecycle and no open Position
+- Detail no longer carries `markResolution` for it (no frame is read for a Trade holding nothing). Decision 103 sanctions this for the Open page only.
+- Reachable only on a lifecycle disagreement (stored Open, facts Closed, as in the T6.14-B2 case), since a stored Open Trade with all contracts disposed replays Closed. Not past expiration is then immaterial.
+- `specs/design/trade-views-and-reporting.md` `getTradeDetail` requires no Mark resolution there: it says "The coordinator derives once and reuses state. Closed/Abandoned detail does not require current Marks." No existing case failed on it.
+- Also: an Open item or Detail past expiration carries `expectedMarkDate` (from the session) but no `markResolution`, unchanged for Detail and sanctioned for the Open page.

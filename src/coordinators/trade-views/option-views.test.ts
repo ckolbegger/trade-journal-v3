@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { instrumentKey } from '../../domain/instrument/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
+import type { MarketData, MarketDataReadSession } from '../../modules/market-data/index.ts';
 import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/reference-catalog/index.ts';
 import { reviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, ExpirationMember, PositionChangeMember } from '../trade-workflows/index.ts';
@@ -26,6 +27,15 @@ const money = (text: string) => {
   const [whole, cents = ''] = text.split('.');
   return Rational.of(BigInt(`${whole}${cents.padEnd(2, '0')}`), 100n);
 };
+
+// The Market Data whose read sessions answer as the real ones do, except for the methods `wrap` replaces (decision 103).
+const withSession = <M extends { openReadSession(context: Parameters<MarketData['openReadSession']>[0]): Promise<MarketDataReadSession> }>(marketData: M, wrap: (session: MarketDataReadSession) => Partial<MarketDataReadSession>): M => ({
+  ...marketData,
+  openReadSession: async (context: Parameters<MarketData['openReadSession']>[0]) => {
+    const session = await marketData.openReadSession(context);
+    return { ...session, ...wrap(session) };
+  },
+});
 
 async function optionStack(now: string) {
   const stack = await reviewStack(now);
@@ -306,17 +316,15 @@ describe('browseTrades: option rows', () => {
     const second = await fixture.openCashSecuredPut();
     let inFlight = 0;
     let peak = 0;
-    const marketData = {
-      ...fixture.stack.marketData,
-      query: async (query: Parameters<typeof fixture.stack.marketData.query>[0]) => {
-        if (query.kind !== 'ResolveSession') return fixture.stack.marketData.query(query);
+    const marketData = withSession(fixture.stack.marketData, (session) => ({
+      settlementTime: async (contract) => {
         inFlight += 1;
         peak = Math.max(peak, inFlight);
         await new Promise((resolve) => setTimeout(resolve, 5));
         inFlight -= 1;
-        return fixture.stack.marketData.query(query);
+        return session.settlementTime(contract);
       },
-    };
+    }));
     const views = createTradeViews({ ...fixture.stack, marketData });
 
     const page = await views.browseTrades({ lifecycle: 'Open' });
@@ -329,13 +337,9 @@ describe('browseTrades: option rows', () => {
   it('should give an unavailable settlement time for an expiration date outside calendar coverage and still list every Open Trade', async () => {
     const fixture = await optionStack(FRIDAY_1700);
     const tradeId = await fixture.openCashSecuredPut();
-    const marketData = {
-      ...fixture.stack.marketData,
-      query: (query: Parameters<typeof fixture.stack.marketData.query>[0]) =>
-        query.kind === 'ResolveSession' ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'SessionPolicyCoverage' as const }] }) : fixture.stack.marketData.query(query),
-    };
+    const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: MNO_PUT, date: '2026-11-20' } as const;
+    const marketData = withSession(fixture.stack.marketData, () => ({ settlementTime: () => Promise.resolve(uncovered) }));
     const views = createTradeViews({ ...fixture.stack, marketData });
-    const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', instrument: MNO_PUT, date: '2026-11-20' };
 
     const page = await views.browseTrades({ lifecycle: 'Open' });
     const detail = openDetail(await views.getTradeDetail({ tradeId }));
@@ -352,7 +356,7 @@ describe('browseTrades: option rows', () => {
     const soldAndExpiredId = await fixture.closeLongCall();
     const expiredId = await fixture.closeCashSecuredPut();
     let reads = 0;
-    const marketData = { ...fixture.stack.marketData, query: (query: Parameters<typeof fixture.stack.marketData.query>[0]) => { reads += 1; return fixture.stack.marketData.query(query); } };
+    const marketData = { ...fixture.stack.marketData, openReadSession: (context: Parameters<typeof fixture.stack.marketData.openReadSession>[0]) => { reads += 1; return fixture.stack.marketData.openReadSession(context); } };
     const views = createTradeViews({ ...fixture.stack, marketData });
     const call = { kind: 'Option', direction: 'Long', contracts: Rational.of(2n), expiration: '2026-11-20', strike: '55', right: 'Call' } as const;
     const put = { kind: 'Option', direction: 'Short', contracts: Rational.of(2n), expiration: '2026-11-20', strike: '45', right: 'Put' } as const;
@@ -399,13 +403,8 @@ describe('browseTrades: a failing Historical answer for the dated close (T7.30-B
     const tradeId = await tuesday.openLongCallAtMonday();
     await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
     await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
-    const marketData = {
-      ...tuesday.stack.marketData,
-      query: (query: Parameters<typeof tuesday.stack.marketData.query>[0]) =>
-        query.kind === 'ResolveFrames' && query.context.kind === 'Historical'
-          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'SessionPolicyCoverage' as const }] })
-          : tuesday.stack.marketData.query(query),
-    };
+    // A date outside coverage has no frames: the session answers none for it.
+    const marketData = withSession(tuesday.stack.marketData, () => ({ historicalFrames: () => Promise.resolve([]) }));
     const views = createTradeViews({ ...tuesday.stack, marketData });
 
     const list = await views.browseTrades({ lifecycle: 'Open' });
@@ -422,13 +421,7 @@ describe('browseTrades: a failing Historical answer for the dated close (T7.30-B
     await tuesday.openLongCallAtMonday();
     await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
     await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
-    const marketData = {
-      ...tuesday.stack.marketData,
-      query: (query: Parameters<typeof tuesday.stack.marketData.query>[0]) =>
-        query.kind === 'ResolveFrames' && query.context.kind === 'Historical'
-          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'NotASession' as const }] })
-          : tuesday.stack.marketData.query(query),
-    };
+    const marketData = withSession(tuesday.stack.marketData, () => ({ historicalFrames: () => Promise.reject(new Error('Market Data rejected the Historical request: NotASession')) }));
     const views = createTradeViews({ ...tuesday.stack, marketData });
 
     await expect(views.browseTrades({ lifecycle: 'Open' })).rejects.toThrow(/Historical|Market Data/);
@@ -439,13 +432,7 @@ describe('browseTrades: a failing Historical answer for the dated close (T7.30-B
     const tradeId = await tuesday.openLongCallAtMonday();
     await tuesday.stack.saveMark(instrumentKey(XYZ_CALL), '2.20', '2026-10-12');
     await tuesday.stack.saveMark('XYZ', '52.00', '2026-10-12');
-    const marketData = {
-      ...tuesday.stack.marketData,
-      query: (query: Parameters<typeof tuesday.stack.marketData.query>[0]) =>
-        query.kind === 'ResolveFrames' && query.context.kind === 'Historical'
-          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'NotASession' as const }] })
-          : tuesday.stack.marketData.query(query),
-    };
+    const marketData = withSession(tuesday.stack.marketData, () => ({ historicalFrames: () => Promise.reject(new Error('Market Data rejected the Historical request: NotASession')) }));
     const views = createTradeViews({ ...tuesday.stack, marketData });
 
     await expect(views.getTradeDetail({ tradeId })).rejects.toThrow(/Historical|Market Data/);

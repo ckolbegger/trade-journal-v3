@@ -94,7 +94,7 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL]);
   });
 
-  it('should issue the same Trade Detail requests, bar one observations read, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
+  it('should issue the same Trade Detail requests, bar the frame reads, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
     const { d, app: first } = await onboardedAt(MONDAY_NEXT_1700);
     let app = first;
     const dueId = await earlyCall(app);
@@ -118,16 +118,12 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     // Exact counts per store and method. The live contract has a Mark at the clock's date, so it takes the usual marked path: 20 requests.
     const PINNED = { 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': 11, 'observations.getAll': 1, 'trades.get': 2 };
     expect(live.tally).toEqual(PINNED);
-    // The expired contract's settlement time is a calendar answer (`ResolveSession`), not a stored read. Its own last Mark is
-    // dated its expiration, older than the clock, so the Detail also looks that Mark up: 1 `meta.get` and 2 `openCursor` on
-    // `observations` that the live Trade does not make (without that Mark, probed by hand, the Detail made only 1 cursor more
-    // than the live one). The plan allows one more `observations` request for the due Trade (A111's Historical frame); anything
-    // else, or fewer, is a defect, so the due Detail is 24 requests: the live 20, those 3 Mark reads, and at most 1 `getAll`.
-    const MARK_LOOKUP = { 'meta.get': 1, 'observations.openCursor': 2 };
-    const extra = (due.tally['observations.getAll'] ?? 0) - PINNED['observations.getAll'];
-    expect(extra).toBeGreaterThanOrEqual(0);
-    expect(extra).toBeLessThanOrEqual(1);
-    expect(due.tally).toEqual({ ...PINNED, 'meta.get': PINNED['meta.get'] + MARK_LOOKUP['meta.get'], 'observations.openCursor': MARK_LOOKUP['observations.openCursor'], 'observations.getAll': PINNED['observations.getAll'] + extra });
+    // The expired contract's settlement time is a calendar answer (`ResolveSession`), not a stored read, and after its expiration
+    // date the Mark-to-Market Valuation module reads no frame (decision 103): none for the contract, none for XYZ, and no Stale Mark
+    // lookup. So the due Detail makes exactly the live one's requests less those the live one's frame read makes: its date-wide
+    // `observations.getAll` and the `meta.get` of that read's snapshot. 18 requests (decision 103; before it, 24: the live 20, the
+    // Mark lookup's 1 `meta.get` and 2 `openCursor`, and 1 more `getAll` for A111's Historical frame).
+    expect(due.tally).toEqual({ 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': PINNED['meta.get'] - 1, 'trades.get': 2 });
     expect('settlement' in live.view && live.view.settlement).toEqual([]);
     expect('settlement' in due.view && due.view.settlement).toHaveLength(1);
   });

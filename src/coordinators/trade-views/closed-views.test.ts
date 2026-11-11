@@ -235,23 +235,6 @@ describe('getTradeDetail: Closed', () => {
 });
 
 describe('getTradeDetail: Closed reads no Market Data and requires no Mark (T6.14-B1)', () => {
-  it('should return the Closed Detail with its Closed fields when Market Data rejects the frames for a reason other than coverage', async () => {
-    const t = await tradeA();
-    await t.x1();
-    await t.x2();
-    const rejecting = { query: () => Promise.resolve({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] }) } as never;
-
-    const result = await createTradeViews({ ...t.stack, marketData: rejecting }).getTradeDetail({ tradeId: t.trade.tradeId });
-    if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
-    if (!('terminalDisposition' in result.view)) throw new Error('expected the Closed form of Detail');
-
-    expect(result.view.lifecycle).toEqual({ stored: 'Closed', agreement: { kind: 'Agrees' } });
-    expect(result.view.realizedToDate).toEqual(money('248.00'));
-    expect(result.view.realizedR).toEqual(value(Rational.of(124n, 125n)));
-    expect(result.view.closeReason).toEqual(t.closeReason);
-    expect(result.view.terminalTime).toBe(X2_TIME);
-  });
-
   it('should show no saved Mark, no Expected Mark Date, and no Market Data snapshot in the Closed Detail', async () => {
     const t = await tradeA();
     await t.x1();
@@ -283,8 +266,8 @@ describe('getTradeDetail: Closed reads no Market Data and requires no Mark (T6.1
     const answered = await createTradeViews(stack).getTradeDetail({ tradeId: trades.L! });
     expect(debtOf(answered)).toEqual([expect.objectContaining({ kind: 'Debt', dueStatus: 'DueInNextReview' })]);
 
-    const rejecting = { query: () => Promise.resolve({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] }) } as never;
-    const rejected = await createTradeViews({ ...stack, marketData: rejecting }).getTradeDetail({ tradeId: trades.L! });
+    const rejecting = { query: () => Promise.resolve({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] }) } as unknown as Pick<typeof stack.marketData, 'query'>;
+    const rejected = await createTradeViews({ ...stack, marketData: { ...stack.marketData, ...rejecting } }).getTradeDetail({ tradeId: trades.L! });
     const [debt] = debtOf(rejected);
     expect(debt).toEqual(expect.objectContaining({ kind: 'Debt' }));
     expect(debt).not.toHaveProperty('dueStatus');

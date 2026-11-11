@@ -192,10 +192,10 @@ describe('browseTrades: Open with current evaluation', () => {
     let queries = 0;
     const racing = {
       ...stack.marketData,
-      query: async (query: Parameters<typeof stack.marketData.query>[0]) => {
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
         queries++;
         if (queries === 1) await stack.confirm({ ...PLAN, symbol: 'ABC' });
-        return stack.marketData.query(query);
+        return stack.marketData.openReadSession(context);
       },
     };
     const retried = await createTradeViews({ ...stack, marketData: racing }).browseTrades({ lifecycle: 'Open' });
@@ -207,10 +207,10 @@ describe('browseTrades: Open with current evaluation', () => {
     let raced = 0;
     const always = {
       ...stack.marketData,
-      query: async (query: Parameters<typeof stack.marketData.query>[0]) => {
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
         raced++;
         await stack.confirm({ ...PLAN, symbol: `R${raced}` });
-        return stack.marketData.query(query);
+        return stack.marketData.openReadSession(context);
       },
     };
     expect(await createTradeViews({ ...stack, marketData: always }).browseTrades({ lifecycle: 'Open' })).toEqual({ kind: 'ChangedDuringAssembly' });
