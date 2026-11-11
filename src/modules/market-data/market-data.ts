@@ -785,7 +785,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         const promise = new Promise<T>((resolve, reject) => { settle = { resolve, reject }; });
         return { ...settle, promise };
       };
-      interface Batch { readonly evidence: Map<string, Waiting<Evidence>>; readonly scans: Map<string, Waiting<HistoricalGaps>> }
+      // A scan's exposure is the earliest any call in its batch asked.
+      interface Scan { exposure: string; readonly asked: Waiting<HistoricalGaps> }
+      interface Batch { readonly evidence: Map<string, Waiting<Evidence>>; readonly scans: Map<string, Scan> }
       const observed = new Map<string, Awaited<ReturnType<typeof observationsOn>>>();
       const collecting = new Map<string, Batch>();
       const running = new Map<string, Promise<void>>();
@@ -803,13 +805,12 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           // A scan alone reads no frame, so it reads none of the date's observations.
           const onDate = known ?? (keys.length > 0 ? await observationsOn(tx, date) : undefined);
           const evidence = onDate ? await Promise.all(keys.map((key) => instrumentEvidence(tx, date, onDate, key))) : [];
-          const earliestExposure = `${deps.sessionPolicy.identity.coverage.first}T00:00:00Z`;
-          const gaps = await Promise.all(scanned.map((instrumentKey) => historicalGaps(tx, [{ instrumentKey, earliestExposure }], date).then(({ gaps }) => gaps[0]!)));
+          const gaps = await Promise.all(scanned.map((instrumentKey) => historicalGaps(tx, [{ instrumentKey, earliestExposure: batch.scans.get(instrumentKey)!.exposure }], date).then(({ gaps }) => gaps[0]!)));
           return { onDate, evidence, gaps };
         });
         if (value.onDate) observed.set(date, value.onDate);
         keys.forEach((key, i) => batch.evidence.get(key)!.resolve(value.evidence[i]!));
-        scanned.forEach((key, i) => batch.scans.get(key)!.resolve(value.gaps[i]!));
+        scanned.forEach((key, i) => batch.scans.get(key)!.asked.resolve(value.gaps[i]!));
       }
       // The batch collecting a date's reads is read in a microtask, after the run that asked has asked everything it will.
       function batchOf(date: string): Batch {
@@ -822,7 +823,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             collecting.delete(date);
             // A date's batches are read one after another, so a later one sees what the earlier read.
             const read = (running.get(date) ?? Promise.resolve()).then(() => readBatch(date, made)).catch((error: unknown) => {
-              for (const asked of [...made.evidence.values(), ...made.scans.values()]) asked.reject(error);
+              for (const asked of [...made.evidence.values(), ...[...made.scans.values()].map((scan) => scan.asked)]) asked.reject(error);
             });
             running.set(date, read);
           });
@@ -855,18 +856,24 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           return framed.kind === 'Frames' ? framed.frames : [];
         });
       };
-      // Each Instrument is scanned once, from the first covered date, which no exposure precedes; each call's exposure narrows that scan's answer.
+      // Each Instrument's scan starts at the earliest exposure asked of it in its batch. A call at or after the cached scan's
+      // exposure reuses it, narrowed to its own; a call from an earlier exposure than a read scan's scans again and replaces it.
       const lastHistorical = Temporal.PlainDate.from(day.date).subtract({ days: 1 }).toString();
-      const scans = new Map<string, Promise<HistoricalGaps>>();
-      const scanOf = (instrumentKey: string) => {
-        let read = scans.get(instrumentKey);
-        if (!read) {
-          const asked = waiting<HistoricalGaps>();
-          batchOf(day.date).scans.set(instrumentKey, asked);
-          read = asked.promise;
-          scans.set(instrumentKey, read);
+      const scans = new Map<string, { readonly batch: Batch; readonly scan: Scan }>();
+      const scanOf = (instrumentKey: string, exposure: string) => {
+        const cached = scans.get(instrumentKey);
+        const earlier = cached !== undefined && Temporal.Instant.compare(Temporal.Instant.from(exposure), Temporal.Instant.from(cached.scan.exposure)) < 0;
+        if (cached && !earlier) return cached.scan.asked.promise;
+        const batch = batchOf(day.date);
+        // A scan still collecting in this batch is lowered to the earlier exposure, so the batch reads once.
+        if (cached && cached.batch === batch) {
+          cached.scan.exposure = exposure;
+          return cached.scan.asked.promise;
         }
-        return read;
+        const scan: Scan = { exposure, asked: waiting<HistoricalGaps>() };
+        batch.scans.set(instrumentKey, scan);
+        scans.set(instrumentKey, { batch, scan });
+        return scan.asked.promise;
       };
       // The keys the answered gap lookups listed, each once.
       const gapKeys = new Map<string, BoundKey>();
@@ -901,7 +908,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
               .map(async ([instrumentKey, earliestExposure]) => {
                 // An exposure with no relevant session reads nothing, as recover does.
                 const none = relevantSessions(earliestExposure, lastHistorical).relevant.length === 0;
-                const gaps = none ? { instrumentKey, missing: [], acknowledged: [], revisions: {}, acknowledgments: {}, closes: {} } : await scanOf(instrumentKey);
+                const gaps = none ? { instrumentKey, missing: [], acknowledged: [], revisions: {}, acknowledgments: {}, closes: {} } : await scanOf(instrumentKey, earliestExposure);
                 const exposure = Temporal.Instant.from(earliestExposure);
                 const relevant = (date: string) => Temporal.Instant.compare(Temporal.Instant.from(gaps.closes[date]!), exposure) >= 0;
                 const only = <T,>(byDate: Readonly<Record<string, T>>) => Object.fromEntries(Object.entries(byDate).filter(([date]) => relevant(date)));

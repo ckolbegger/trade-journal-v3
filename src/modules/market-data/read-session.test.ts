@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { IDBFactory } from 'fake-indexeddb';
+import { describe, expect, it, vi } from 'vitest';
+import { IDBFactory, IDBIndex, IDBKeyRange } from 'fake-indexeddb';
 import { instrumentOf, type OptionInstrument } from '../../domain/instrument/index.ts';
 import { nyseSessionPolicy } from '../../domain/session-policy/index.ts';
 import { fixedClock } from '../../domain/time/index.ts';
@@ -178,7 +178,7 @@ describe('the read session (P78, P79)', () => {
     expect(gaps[3]).toEqual(await recovered([laterOpened]));
   });
 
-  it("should scan an Instrument's gaps once when a later call asks from an earlier exposure, answering each call as recover does", async () => {
+  it("should scan an Instrument's gaps again from an earlier exposure that a later call asks for, answering each call as recover does", async () => {
     const { marketData } = await setup();
     await marketData.save(mark('MNO', '2026-10-08'));
     await marketData.save({ intention: 'AssertUnavailable', instrumentKey: 'MNO', tradingDate: '2026-10-09', reason: 'no quote', expectedResolutionRevision: 'None' });
@@ -192,7 +192,7 @@ describe('the read session (P78, P79)', () => {
     };
     const session = await marketData.openReadSession(context);
     const { result: gaps, requests } = await countRequests(async () => [await session.gaps([late]), await session.gaps([early])]);
-    expect(requests.filter((r) => r.on === 'index' && r.method === 'getAll')).toHaveLength(1);
+    expect(requests.filter((r) => r.on === 'index' && r.method === 'getAll')).toHaveLength(2);
     expect(gaps[0]).toEqual(await recovered([late]));
     expect(gaps[1]).toEqual(await recovered([early]));
   });
@@ -326,6 +326,51 @@ describe('the read session (P78, P79)', () => {
       expect(resolved.kind).toBe('Rejected');
       expect(frames).toEqual([]);
       expect(requests).toEqual([]);
+    }
+  });
+});
+
+describe("the read session's gaps scan (decision 106)", () => {
+  // The lower bound of each index range read, as [instrumentKey, date], while `run` runs.
+  async function scanLowerBounds<T>(run: () => Promise<T>) {
+    // The spy calls through to the real read.
+    const spy = vi.spyOn(IDBIndex.prototype, 'getAll');
+    try {
+      const result = await run();
+      const lowers = spy.mock.calls.flatMap(([range]) => (range instanceof IDBKeyRange ? [range.lower as unknown] : []));
+      return { result, lowers };
+    } finally {
+      spy.mockRestore();
+    }
+  }
+  const context = { kind: 'Review' as const, reviewDate: '2026-10-12' };
+
+  it('should scan an Instrument from the earliest exposure asked, reading no stored observation before it', async () => {
+    const { marketData } = await setup();
+    await marketData.save(mark('MNO', '2026-10-01'));
+    await marketData.save(mark('MNO', '2026-10-08'));
+    const exposed = { instrumentKey: 'MNO', earliestExposure: '2026-10-09T14:00:00Z' };
+    const session = await marketData.openReadSession(context);
+    const { result, lowers } = await scanLowerBounds(() => session.gaps([exposed]));
+    expect(lowers).toEqual([['MNO', '2026-10-09']]);
+    const recovered = await marketData.recover({ context, instruments: [exposed] });
+    if (recovered.kind !== 'Recovered') throw new Error('expected recovery');
+    expect(result).toEqual(recovered.gaps);
+  });
+
+  it('should scan an Instrument once from the earlier exposure when two calls in the same run ask from different exposures', async () => {
+    const { marketData } = await setup();
+    await marketData.save(mark('MNO', '2026-10-08'));
+    await marketData.save({ intention: 'AssertUnavailable', instrumentKey: 'MNO', tradingDate: '2026-10-09', reason: 'no quote', expectedResolutionRevision: 'None' });
+    const late = { instrumentKey: 'MNO', earliestExposure: '2026-10-09T14:00:00Z' };
+    const early = { instrumentKey: 'MNO', earliestExposure: '2026-10-07T14:00:00Z' };
+    const session = await marketData.openReadSession(context);
+    const { result, lowers } = await scanLowerBounds(() => Promise.all([session.gaps([late]), session.gaps([early])]));
+    expect(lowers).toEqual([['MNO', '2026-10-07']]);
+    for (const [i, instruments] of [[late], [early]].entries()) {
+      const recovered = await marketData.recover({ context, instruments });
+      if (recovered.kind !== 'Recovered') throw new Error('expected recovery');
+      expect(result[i]).toEqual(recovered.gaps);
     }
   });
 });
