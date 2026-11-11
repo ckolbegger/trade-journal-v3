@@ -270,3 +270,42 @@ Case "should reject a valuation at the session's close when the session has no c
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 3998e749`: `browser tier: task (no changed path since 3998e749 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7SP.7 Trade Views value through the module (structural)
+
+**First attempt (2026-11-10), from `b5398b91`: stopped, nothing committed.** Two stop conditions:
+- After expiration, the module reads no frame (P80, P81). So the due Detail in `d7/query-count.test.ts:97` made fewer requests, and that proof treats fewer as a defect.
+- 8 Trade Views unit cases stub `marketData.query`, which the read session never calls.
+
+The user decided both as **decision 103, plan revision 73** (`5c836aee`, tag `claude-opus-5.5-plan-r73`):
+- The due Detail drops exactly its frame reads.
+- Each stub case is trimmed now, where a T7SP.6 case covers it, or otherwise rewritten at the read session with a mutation check.
+
+**Second attempt: stopped once, then resumed.** A 9th stub case, `current-evaluation.test.ts:170` (the coherence retry race), wasn't in decision 103's count of 8. The amended T7SP.7 row and the handoff's section 3 both cover "each Trade Views unit case that stubs `marketData.query`", so I resumed the subagent with this case rewritten at `openReadSession`.
+
+**Committed as `4f95ab6c`.** The verifications are in `tdd-log.md`'s T7SP.7 section.
+- **Results:** typecheck, `tsc6`, `lint` and `lint:deps` exit 0. `src/coordinators/trade-views` passes 62 (63 before, minus 1 trimmed). `src/coordinators/valuation` passes 13. Integration passes 191 of 191. The grep prints nothing.
+- **Due Detail request list:**
+  - Old: 24 requests, with `meta.get` 12, `observations.getAll` 2 and `observations.openCursor` 2.
+  - New: 18 requests, with `meta.get` 10 and no `observations` requests. Every other request, and the live Detail's `PINNED` list, is unchanged.
+  - Decision 103's text named one `getAll`, one extra `meta.get` and two `openCursor`. The actual drop is 2 `getAll` (the date-wide read and A111's Historical read), 2 `meta.get` (the Stale lookup's and the date read's snapshot) and 2 `openCursor`. All of these are frame reads, which the decision sanctions ("drops exactly the requests its frame reads made").
+- **Stub cases (9):**
+  - 1 trimmed: `closed-views.test.ts`, "...when Market Data rejects the frames for a reason other than coverage". It is covered by T7SP.6's Closed Trade case, plus the existing Closed Detail wiring case.
+  - 8 rewritten, each red under a mutation:
+    - 1 in `closed-views.test.ts`;
+    - 1 in `current-evaluation.test.ts`;
+    - 6 in `option-views.test.ts`, using a `withSession` helper.
+  - Each case's mutation and its failing output are in `tdd-log.md`.
+- **Flags (to the open questions):**
+  1. A Closed Detail now opens a read session, as every Detail does. If `openReadSession` rejected, it would reject; that needs an invalid as-of, which the real clock can't produce. No Closed Detail request list changed.
+  2. A Detail for an Open-lifecycle Trade with no open Position no longer carries `markResolution`. That state is reachable only when the stored lifecycle and the facts disagree. The spec requires no Mark resolution there ("Closed/Abandoned detail does not require current Marks"), and no case failed.
+  3. The Open page after expiration, or with no Position, no longer carries `markResolution`, as decision 103 sanctions. No screen shows it there.
+  4. A Debt's due status with no frame falls back to the existing `sessionCloses` query, only when a Debt is present and the session is covered. The Open-list proof is unchanged.
+
+**ocr on `4f95ab6c`** (session 27fc77ce, gpt-6.1-sol, 1 file reviewed, 5 excluded; `ocr/T7SP.7-4f95ab6c.json`): 1 finding.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `trade-views.ts:798` | For an expired option, or a Trade with no Position, that has a Debt, the `sessionCloses` fallback issues a `ResolveFrames` read the module avoids. It also samples `clock.now()` a second time, so the Debt's due status can be classified against a different session than `expectedMarkDate`. | Valid, with a failure scenario: a read just before 16:00 ET and a fallback just after. | Bug task T7SP.7-B1 |
+
+Reviewer's note, not a finding: the session exposes `closeInstant` but not `previousCloseInstant`, so taking the closes from the open session may need more than the session offers today.
