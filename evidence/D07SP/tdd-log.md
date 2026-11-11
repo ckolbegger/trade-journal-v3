@@ -335,3 +335,21 @@ Extra: `date > (leg.instrument['expiration']!)` rejected under both.
 Real tree after: `npm run lint` 0, `npm run lint:deps` 0, `npm run verify:wording` 0, `npm run typecheck` 0 (rule fires on no real code).
 
 `npx eslint --print-config` per-file no-restricted-syntax counts (total / expiration) unchanged from B2: AppShell.tsx 33 / 2, calculation-words.ts 3 / 2, format.test.ts 1 / 0, trade-views.ts 3 / 2, evaluate.ts 8 / 2, instrument/index.ts 6 / 0, instrument.test.ts 6 / 0.
+
+## T7SP.10 Fixture views
+
+Structural task. Commands and results:
+
+- `npm run verify:fixtures` -> exit 0; all six fixtures (workspace-v1 to v6) open Ready with views equal to their snapshots (full output as printed by the command).
+- `git diff claude-opus-5.5-pre-d7sp -- tests/fixtures` -> empty (0 bytes); `git diff --stat claude-opus-5.5-pre-d7sp -- tests/fixtures` -> empty. Every `dump.json` is byte-identical.
+
+What `verify:fixtures` compares: `compareSnapshot` (tools/fixtures/snapshot-compare.ts) checks the current views against the snapshot field by field over the fields the snapshot holds. A field the current release adds is allowed. So passing does not settle whether a card gained a field; a new `datedLastClose` on a card would pass silently. I therefore computed the current views directly (a scratch probe outside the repository that reuses `viewsOf`, which opens Review, then calls `getTrade` per Trade, as the tool does) and compared each card with the snapshot.
+
+Option Trades in each fixture's Review view (the `reviewTrades` cards, from `getTrade`):
+
+- workspace-v5: the Review holds 5 Open Trades (fx-0046, fx-0114, fx-0129, fx-0072, fx-0089), all stock Trades. No option Trades (options arrive at schema 6). Actual `datedLastClose` on fx-0046, fx-0072, fx-0089, matching the snapshot; none on fx-0114, fx-0129, matching it.
+- workspace-v6: 6 Open Trades (fx-0174, fx-0049, fx-0117, fx-0132, fx-0075, fx-0092). One is an option Trade: fx-0174 (XYZ call 55, expiring 2026-11-20, the review date). The others are stock Trades; the 3 existing `datedLastClose` lines are on fx-0049, fx-0075, fx-0092, unchanged.
+- Why fx-0174 does not gain a line: its contract's Mark resolution on the review date is `Missing` with no Stale context (Marks family item XYZ261120C00055000, `resolution: {kind: Missing}`, no `stale`), and no Lot has an exact close before it, so no Lot opened after an exact close. Its card's evaluation is `MarkMissing`. The computed card has no `datedLastClose`, same as the snapshot.
+- The option Trades in v6's Planned and Closed lists (fx-0217, fx-0189, fx-0203) are not in the Review view and have no card.
+
+Conclusion: no fixture Trade gains a dated line; nothing changed in `tests/fixtures`.
