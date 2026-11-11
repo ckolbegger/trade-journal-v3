@@ -217,6 +217,12 @@ export interface TradeDetailRequest {
   readonly tradeId: string;
 }
 
+export interface ContractExpiration {
+  readonly status: 'Expires' | 'Expired';
+  // The contract's expiration date as stored.
+  readonly date: string;
+}
+
 export interface PlannedTradeDetail {
   readonly tradeId: string;
   readonly factRevision: number;
@@ -238,6 +244,8 @@ export interface PlannedTradeDetail {
   readonly payoff: ExpirationPayoffs;
   // The planned quantity at the intended entry (Planned form) or the open Position (Open form).
   readonly summary?: TradeSummary;
+  // An option Trade's expiration line (decision 105): absent for stock, and for an Open contract whose Settlement Due panel says so.
+  readonly contractExpiration?: ContractExpiration;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
   readonly journal: readonly NarrativeEntry[];
 }
@@ -301,6 +309,8 @@ export interface FeeReconciliation {
 export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   // Signed net quantity and Open Lots per Instrument; each Lot carries its unconsumed opening fee.
   readonly positions: readonly InstrumentPosition[];
+  // The sum of the Positions' signed quantities (decision 105), so the UI does not total them.
+  readonly heldQuantity: Rational;
   readonly lotMatches: readonly LotMatchView[];
   // The sum of the Lot Matches' realized amounts, independent of any Mark (A92).
   readonly realizedToDate: Rational;
@@ -428,6 +438,14 @@ const optionContractOf = (analysis: TradeAnalysisRecord) => {
   const instrument = analysis.plan.legs[0]!.instrument;
   return instrument.kind === 'Option' ? instrument : undefined;
 };
+
+const expirationLineOf = (analysis: TradeAnalysisRecord, status: ContractExpiration['status']): ContractExpiration | undefined => {
+  const contract = optionContractOf(analysis);
+  return contract && { status, date: contract.expiration };
+};
+
+const closedByExpiration = (derived: DerivedTradeState) =>
+  derived.terminalDisposition.kind === 'Value' && derived.terminalDisposition.value.some(({ mechanism }) => mechanism === 'Expiration');
 
 const plannedSummaryOf = (analysis: TradeAnalysisRecord): TradeSummary => plannedTradeSummary(analysis.plan.legs);
 
@@ -595,6 +613,8 @@ function closedDetail(open: Omit<OpenTradeDetail, 'current'>, current: ClosedCur
     ...open,
     // The entered quantity, since no Lot is open (decision 48).
     ...optional('summary', closedSummaryOf(analysis, derived)),
+    // Expired only when an Expiration disposed of contracts; a Trade only Executions closed has no line (decision 94, row 23.19).
+    ...optional('contractExpiration', closedByExpiration(derived) ? expirationLineOf(analysis, 'Expired') : undefined),
     current,
     terminalDisposition: derived.terminalDisposition,
     ...optionTimingOf(analysis, derived),
@@ -617,6 +637,7 @@ function detailWithoutValuation(
     ...planned,
     settlement,
     positions: derived.positions,
+    heldQuantity: sum(derived.positions.map((p) => p.quantity)),
     lotMatches: lotMatchViews(derived),
     realizedToDate: derived.realizedToDate,
     feeReconciliation: feeReconciliationOf(derived),
@@ -770,7 +791,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // A Trade that is Planned by both its stored lifecycle and its facts keeps D1's Detail, whose
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
         if (analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned') {
-          const view: TradeDetailView = { ...planned, summary: plannedSummaryOf(analysis), journal: narrative.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
+          const view: TradeDetailView = { ...planned, summary: plannedSummaryOf(analysis), ...optional('contractExpiration', expirationLineOf(analysis, 'Expires')), journal: narrative.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
           return { binding, view };
         }
         const lastActivity = s.lastActivity ?? s.planTime;
@@ -799,7 +820,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // The closes behind a Debt's due status come from the frame read; with none (after expiration, or no Position), from Market Data's frame for the Underlying.
         const hasDebt = narrative.some((item) => item.kind === 'Debt');
         const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying, asOf) : undefined;
-        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), current };
+        // A contract due for settlement has its panel, which says so, so it has no line (decision 105).
+        const expiration = settlement.length === 0 ? expirationLineOf(analysis, 'Expires') : undefined;
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
     },

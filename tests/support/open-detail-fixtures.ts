@@ -78,6 +78,7 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     baseline: derived.baseline,
     summary: openSummary(derived.positions),
     positions: derived.positions,
+    heldQuantity: derived.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)),
     lotMatches: lotMatchViews(derived),
     realizedToDate: derived.realizedToDate,
     feeReconciliation: feeReconciliationOf(derived),
