@@ -229,3 +229,36 @@ Wiring: `noIdentityRules` (all of src) and `domainPurityRules` (src/domain) repe
 | `full-suite.sh` checks count (5 fixed + verify:* scripts) | 14, unchanged |
 
 Deviation: the plant was not committed. The pre-commit hook (lint) would reject it and `git commit --no-verify` is blocked, so it was applied to the working tree, linted, and reverted with Edit. No scratch commit exists and no reset was needed.
+
+## T7SP.9-B1 (expiration selectors missing from non-test src/ui under npm run lint)
+
+Fix: `eslint.config.js` builds `wordingWithExpirationRules` (wordingRules with its identity and wording selectors kept, then `expirationComparisonSelectors` appended) and uses it in place of `wordingRules`. `eslint.wording.config.js` is untouched (verify:wording standalone is unchanged).
+
+Correction to the finding: `lint:deps` (`eslint.deps.config.js`, which has no wording entry) already rejects the plant in src/ui; only the merged `npm run lint` config lost the selectors. Checked: planted line linted with `-c eslint.deps.config.js` as src/ui/AppShell.tsx exits 1 with the rule message.
+
+Planted line (stdin, `--stdin-filename src/ui/AppShell.tsx`): `export function f(date: string, leg: { instrument: { expiration: string } }) { return date > leg.instrument.expiration; }`
+
+### Red (before)
+```
+--- planted in src/ui/AppShell.tsx (stdin)
+exit 0
+```
+`npm run lint` exit 0, `npm run lint:deps` "lint:deps OK (src)" on the real tree.
+
+### Green (after)
+```
+  1:87  error  expiration-comparison: ask the instrument module (expiredOn, settlementDueOn in src/domain/instrument/), never compare a date with .expiration  no-restricted-syntax
+exit 1
+```
+Real tree: `npm run lint` exit 0, `npm run lint:deps` OK, `npm run verify:wording` exit 0, `npm run typecheck` exit 0 (the rule fires on no real src/ui code).
+
+### no-restricted-syntax selector counts (`npx eslint --print-config`; total / expiration)
+| File | Before | After |
+|---|---|---|
+| src/ui/AppShell.tsx (non-test ui) | 31 / 0 | 33 / 2 |
+| src/ui/calculation-words.ts | 3 / 2 | 3 / 2 |
+| src/ui/format.test.ts (ui test) | 1 / 0 | 1 / 0 |
+| src/coordinators/trade-views/trade-views.ts | 3 / 2 | 3 / 2 |
+| src/domain/trade-analysis/evaluate.ts | 8 / 2 | 8 / 2 |
+| src/domain/instrument/index.ts | 6 / 0 | 6 / 0 |
+| src/domain/instrument/instrument.test.ts (domain test) | 6 / 0 | 6 / 0 |
