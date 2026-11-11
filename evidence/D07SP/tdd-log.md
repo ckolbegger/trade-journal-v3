@@ -491,3 +491,15 @@ The T7SP.17 rows above sit at the end of the T7SP.16 section because tdd.sh appe
 ### Typed fixture builders extended (additive)
 
 `tests/support/open-detail-fixtures.ts` and `tests/support/option-detail-fixtures.ts` (three builders of `OpenTradeDetail` and `ClosedTradeDetail`) failed `npm run typecheck` for the missing required `heldQuantity`. Each gained `heldQuantity`, the sum of `derived.positions` quantities. No existing value changed.
+
+## T7SP.18 Trade Detail reads the finished fields (decision 105)
+
+Structural task; no cases, so no red or green rows. Verification:
+
+- `grep -n '\.reduce(\|\.div(\|\.add(\|closedByExpiration' src/ui/screens/TradeDetail.tsx`: before, lines 32, 314, 316, 446 and 1112; after, no output (exit 1).
+- `npm run typecheck`: exit 0.
+- `npx vitest run src/ui`: 36 files, 580 tests passed (before the builder extension below, 2 failed for the missing `contractExpiration`).
+- `npx vitest run src`: 125 files, 1479 tests passed.
+- `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run verify:wording`: each exit 0.
+
+Typed fixture builder extended (additive): `tests/support/option-detail-fixtures.ts`, `optionOpenDetail` gained `contractExpiration` (Expires, the contract's stored date, when no settlement item is Due) and `optionClosedDetail` gained it (Expired, when the Terminal Disposition includes an Expiration). No test file or expectation changed.

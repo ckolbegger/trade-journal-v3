@@ -29,7 +29,7 @@ import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlTex
 import { contractCount, exerciseIntentText, expirationDate, holdingText, settlementTime } from './option-words.ts';
 import { executionWhat } from './execution-line.ts';
 import { clearHandedOver, handedOverConfirmed } from './confirmed-handoff.ts';
-import { closedByExpiration, closedViaOption, timingWords } from './option-disposition.ts';
+import { closedViaOption, timingWords } from './option-disposition.ts';
 import { LotMatchesTable } from './LotMatchesTable.tsx';
 import { OwedDebtItem } from './OwedDebtItem.tsx';
 import { PayoffView } from './PayoffView.tsx';
@@ -311,15 +311,14 @@ function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | O
   const stop = view.plan.stops[0];
   const target = view.plan.targets[0];
   const contract = leg?.instrument.kind === 'Option' ? leg.instrument : undefined;
-  const held = 'positions' in view ? view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)) : Rational.of(0n);
-  const settlementPanel = 'settlement' in view && view.settlement.length > 0;
-  const expired = 'terminalDisposition' in view && view.terminalDisposition.kind === 'Value' && closedByExpiration(view.terminalDisposition.value);
+  const held = 'heldQuantity' in view ? view.heldQuantity : Rational.of(0n);
+  const expiration = view.contractExpiration;
   return (
     <section className="card summary-card" aria-label="Summary">
       {view.summary && <p className="summary-text number"><TradeText text={tradeSummary(view.summary, timeZone)} /></p>}
       {/* A contract due for settlement has its panel. A Closed Trade shows "Expired" only when its Terminal Disposition
           includes an expiration; one only the trader's Executions disposed of shows no line (decision 94, row 23.19). */}
-      {contract && !settlementPanel && (!('terminalDisposition' in view) ? <p>{`Expires ${expirationDate(contract.expiration)}`}</p> : expired && <p>{`Expired ${expirationDate(contract.expiration)}`}</p>)}
+      {expiration && <p>{`${expiration.status} ${expirationDate(expiration.date)}`}</p>}
       {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
       <dl className="figure-grid">
         {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
@@ -442,16 +441,16 @@ function DatedSection({ line }: { readonly line: NonNullable<OpenTradeDetail['cu
 }
 
 // Lots bought after the last close with an exact Mark: risk and reward measured from their prices, never a P&L (A54).
-function AtEntrySection({ atEntry, oneR, option }: { readonly atEntry: NonNullable<Evaluation['atEntry']>; readonly oneR: Rational; readonly option: boolean }) {
-  const inR = (dollars: Rational) => `${money(dollars)} · ${rMultiple(dollars.div(oneR))}`;
+function AtEntrySection({ atEntry, option }: { readonly atEntry: NonNullable<Evaluation['atEntry']>; readonly option: boolean }) {
+  const inR = (dollars: Rational, planR: Rational) => `${money(dollars)} · ${rMultiple(planR)}`;
   return (
     <section className="card" aria-labelledby="at-entry-heading">
       <h2 id="at-entry-heading">At entry</h2>
       <dl className="figure-grid">
         <Figure term="Quantity">{option ? contractCount(quantity(abs(atEntry.quantity))) : `${quantity(atEntry.quantity)} shares`}</Figure>
         <Figure term="Average entry">{money(atEntry.averageEntry)}</Figure>
-        <Figure term="Risk from entry">{inR(atEntry.riskFromEntry)}</Figure>
-        <Figure term="Reward from entry">{inR(atEntry.rewardFromEntry)}</Figure>
+        <Figure term="Risk from entry">{inR(atEntry.riskFromEntry, atEntry.riskFromEntryInPlanR)}</Figure>
+        <Figure term="Reward from entry">{inR(atEntry.rewardFromEntry, atEntry.rewardFromEntryInPlanR)}</Figure>
       </dl>
     </section>
   );
@@ -624,7 +623,7 @@ function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly faca
     <>
       <ValuationSection tradeId={view.tradeId} current={view.current} timeZone={timeZone} />
       {view.current.datedLine && <DatedSection line={view.current.datedLine} />}
-      {view.current.evaluation.atEntry && <AtEntrySection atEntry={view.current.evaluation.atEntry} oneR={view.baseline.oneR} option={view.plan.legs[0]?.instrument.kind === 'Option'} />}
+      {view.current.evaluation.atEntry && <AtEntrySection atEntry={view.current.evaluation.atEntry} option={view.plan.legs[0]?.instrument.kind === 'Option'} />}
       <RiskRewardSection evaluation={view.current.evaluation} baseline={view.baseline} option={view.plan.legs[0]?.instrument.kind === 'Option'} symbol={view.plan.underlying} />
       <section className="card" aria-labelledby="position-heading">
         <h2 id="position-heading">Position</h2>
@@ -1109,7 +1108,7 @@ function JournalSection({
 function EntryQualitySection({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
   const quality = view.entryQuality;
   const resolution = view.entryResolution;
-  const entered = view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n));
+  const entered = view.heldQuantity;
   const planned = view.plan.legs[0]?.quantity ?? '';
   const resolvedAt = resolution.kind === 'Resolved' ? view.positionChanges.find((c) => c.factId === resolution.positionChangeId) : undefined;
   return (

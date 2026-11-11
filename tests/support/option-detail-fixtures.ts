@@ -144,6 +144,7 @@ export function optionOpenDetail(which: OptionTradeName, positionChanges: readon
     deviations: record.recordedDeviations ?? [],
     findings: derived.findings,
     journal: [],
+    ...(evaluation.settlement.every((item) => item.status !== 'Due') && { contractExpiration: { status: 'Expires' as const, date: contract.expiration } }),
     current: {
       expectedMarkDate: frames.tradingDate,
       markResolution:
@@ -193,6 +194,8 @@ export function optionClosedDetail(which: OptionTradeName, positionChanges: read
     deviations: record.recordedDeviations ?? [],
     findings: derived.findings,
     journal: [],
+    ...(derived.terminalDisposition.kind === 'Value' &&
+      derived.terminalDisposition.value.some(({ mechanism }) => mechanism === 'Expiration') && { contractExpiration: { status: 'Expired' as const, date: contract.expiration } }),
     current: { coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }], evaluation },
     terminalDisposition: derived.terminalDisposition,
     optionDispositionTiming: derived.optionDispositionTiming,
