@@ -62,8 +62,8 @@ const LABELS = {
   'O-S': { strategy: 'Cash-Secured Put', account: 'Roth IRA', institution: 'Fidelity' },
 } as const;
 
-function plannedPart(which: OptionTradeName, record: TradeAnalysisRecord) {
-  const derived = derive({ record });
+function plannedPart(which: OptionTradeName, record: TradeAnalysisRecord, valuationDate?: string) {
+  const derived = derive(valuationDate === undefined ? { record } : { record, valuationDate });
   if (derived.kind !== 'Derived') throw new Error('incoherent fixture');
   const { plan } = record;
   const planned: Omit<PlannedTradeDetail, 'journal'> = {
@@ -113,7 +113,7 @@ const frameOf = (instrument: OptionInstrument | { readonly kind: 'Stock'; readon
 // An Open option Trade valued at the frames' close, with its Settlement Due items once the expiration date has come.
 export function optionOpenDetail(which: OptionTradeName, positionChanges: readonly PositionChangeFact[], frames: OptionFrames, options: OptionDetailOptions = {}): OpenTradeDetail {
   const record = recordOf(which, positionChanges, 'Open', options);
-  const { derived, planned } = plannedPart(which, record);
+  const { derived, planned } = plannedPart(which, record, frames.tradingDate);
   const contract = contractOf(which);
   const evaluation = evaluate({
     state: derived,
@@ -164,10 +164,11 @@ export function optionOpenDetail(which: OptionTradeName, positionChanges: readon
 // A Closed option Trade: no Mark, no current figure, Terminal Disposition and Option Disposition Timing from the facts.
 export function optionClosedDetail(which: OptionTradeName, positionChanges: readonly PositionChangeFact[], closeReason?: ClosedTradeDetail['closeReason']): ClosedTradeDetail {
   const record = recordOf(which, positionChanges, 'Closed');
-  const { derived, planned } = plannedPart(which, record);
-  if (derived.terminalTime === null) throw new Error('incoherent fixture');
+  const undated = plannedPart(which, record);
+  if (undated.derived.terminalTime === null) throw new Error('incoherent fixture');
+  const date = undated.derived.terminalTime.slice(0, 10);
+  const { derived, planned } = plannedPart(which, record, date);
   const contract = contractOf(which);
-  const date = derived.terminalTime.slice(0, 10);
   const evaluation = evaluate({ state: derived, frame: { instrument: contract, date }, underlyingFrame: { instrument: { kind: 'Stock', symbol: record.plan.underlying }, date } });
   const leg = record.plan.legs[0]!;
   const entered = sum(derived.facts.filter((fact) => fact.action === (leg.side === 'Long' ? 'Buy' : 'Sell')).map((fact) => decimal(fact.quantity)));
@@ -194,7 +195,7 @@ export function optionClosedDetail(which: OptionTradeName, positionChanges: read
     terminalDisposition: derived.terminalDisposition,
     optionDispositionTiming: derived.optionDispositionTiming,
     ...(closeReason && { closeReason }),
-    terminalTime: derived.terminalTime,
+    terminalTime: undated.derived.terminalTime,
     realizedR: derived.realizedR,
   };
 }

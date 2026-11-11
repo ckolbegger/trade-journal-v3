@@ -198,3 +198,10 @@ Rows 1 and 2 are the closed-views.test.ts cases and 3 is the 9th (retry) case; t
   - `npx vitest run src/domain src/coordinators`: 50 files, 544 tests passed
   - `npm run test:integration`: 96 files, 196 tests passed
   - `grep -n "T7SP.8" src/domain/trade-analysis/evaluate.ts`: no output (grep exit 1)
+
+## T7SP.8 (cumulative-run fix)
+
+- Cause: test setup only. `tests/support/option-detail-fixtures.ts` built its Trade Details (`optionOpenDetail`, `optionClosedDetail`) from a dateless `derive({ record })` and passed that state to `evaluate`. Before `bc47a037` (removal of evaluate's dateless fallback, A192) `evaluate` filled in contract statuses itself; after it, a dateless state has empty `contractStatuses`, so the contract was never PastExpiration/Expiring and the expiration line and "value at expiration at ... latest close" wording were missing. No production path evaluates a dateless state (value-trade and dated-line derive at their date). The three `TradeDetailOptions.test.tsx` failures were the only symptom.
+- Change: `plannedPart` takes an optional `valuationDate`; `optionOpenDetail` derives at `frames.tradingDate`; `optionClosedDetail` derives at the terminal date (taken from a first dateless derive, as before) and keeps `terminalTime` from that first state. No test name, expected value or assertion changed.
+- Before: `plannedPart(which, record)` -> `derive({ record })`. After: `plannedPart(which, record, valuationDate)` -> `derive({ record, valuationDate })` for both builders.
+- Verification: `npx vitest run src/ui/screens/TradeDetailOptions.test.tsx` 18 passed; `npx vitest run src/ui src/domain src/coordinators` 86 files / 1124 passed; `npm run typecheck` exit 0; `npm run test:integration` 96 files / 196 passed.
