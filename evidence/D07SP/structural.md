@@ -676,3 +676,35 @@ No test file or expectation changed. One test-support builder was extended addit
 The cold start p95 (+4%) and the Closed page p95 (−25%) are within 10%.
 
 **Stopped for the user (section 5, condition 5).** The likely cause, which the user agreed with: since T7SP.5-B1, the session's gaps scan reads each Instrument from coverage start, and since T7SP.8 the Review open reads through the session. Decided as decision 106 (revision 76): T7SP.19 scans from the earliest exposure, then T7SP.14 reruns.
+
+## T7SP.19 Market Data: the read session scans gaps from the earliest exposure (decision 106)
+
+**Committed as `fc4fa791`.** Only `src/modules/market-data/market-data.ts` changed in source.
+- A `Scan { exposure, asked }` replaces the batch's per-Instrument waiting promise. `readBatch` passes each scan's own exposure to `historicalGaps`, in place of `coverage.first`.
+- A call at or after a cached scan's exposure reuses it.
+- A call asking earlier, while that scan's batch is still collecting, lowers the scan's exposure.
+- A call asking earlier than a scan from an earlier batch starts a new scan, which replaces the cached one.
+
+**Cases**, in `read-session.test.ts`, under "the read session's gaps scan (decision 106)". Both went red first, so there are no first-run passes:
+- "should scan an Instrument from the earliest exposure asked, reading no stored observation before it": red `expected [ [ 'MNO', '2024-01-02' ] ] to deeply equal [ [ 'MNO', '2026-10-09' ] ]`. A `vi.spyOn` on `IDBIndex.prototype.getAll` calls through.
+- "should scan an Instrument once from the earlier exposure when two calls in the same run ask from different exposures": red `expected [ [ 'MNO', '2026-10-09' ] ] to deeply equal [ [ 'MNO', '2026-10-07' ] ]`.
+
+**Changed existing case (decision 106).** T7SP.5-B1's case was renamed "should scan an Instrument's gaps again from an earlier exposure that a later call asks for, answering each call as recover does". Its `getAll` count went from 1 to 2, and its answer assertions are unchanged. No query-count proof changed.
+
+**ocr on `fc4fa791`** (session 05c23cb5; `ocr/T7SP.19-fc4fa791.json`): no findings.
+- **The three races the brief named.** The reviewer found that none can happen:
+  - lowering after a batch is read (the batch leaves `collecting` when its read is queued);
+  - reusing a scan later than the call;
+  - an earlier caller left narrower by a replaced cache entry.
+- **Reviewer's note, Doubtful, not an ocr finding.** If a Mark is saved between two scans of the same Instrument in one session, `gapKeys` (keyed `instrument@date`) keeps the later scan's revision for a date the earlier answer used. A single scan per session could not bind a key twice. This is listed under the open questions; under the rules it is not a bug task.
+
+**Cumulative run `t7sp-19`** (2026-11-11, on `fc4fa791`). The outputs are in `suite-runs/t7sp-19-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1481 tests passed |
+| Node integration | 97 files, 202 tests passed |
+| Browser (Chromium), task tier | `@every-task` 5 passed (11.9 s), then `e2e/d7sp`; 6 passed in all |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto f2b987dc` printed `browser tier: task (no changed path since f2b987dc is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.

@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 35451,
+    "input_tokens": 35252,
+    "output_tokens": 199,
+    "cache_read_tokens": 15488,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/modules/market-data/market-data.ts",
+      "files": [
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "05c23cb5-cbb4-4433-9b82-a8891680dfd2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "05c23cb5-cbb4-4433-9b82-a8891680dfd2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fc4fa791",
+      "resolved_base": "e0cb406b4d514cb25b6c20ae78d3b2d59faf7117",
+      "resolved_head": "fc4fa7918e40d3708d72622c90277cece7f68a6f",
+      "exact_range": "e0cb406b4d514cb25b6c20ae78d3b2d59faf7117..fc4fa7918e40d3708d72622c90277cece7f68a6f",
+      "source_artifact_sha256": "bb96b3746459145586490454db709a9dd88febd4c6429d97be22e0c41327aadd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "ddca0a3400a8f7819041a4ed59fc8c3f344cb2f3ceb13cf9700323d52c8900d9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "ddca0a3400a8f7819041a4ed59fc8c3f344cb2f3ceb13cf9700323d52c8900d9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 17579
+  }
+}

@@ -518,6 +518,6 @@ During T7SP.14, 2026-11-11 (decision 106, revision 76):
 | T7SP.16 | Done | `8008446f`; expectations fix `daf2635e` |
 | T7SP.17 | Done | `75aaee66` |
 | T7SP.18 | Done | `a719c7e5` |
-| T7SP.19 | In progress from `f2b987dc` | |
-| T7SP.14 | First run stopped (O3), Review open about 10x slower than D7; rerun after T7SP.19 (decision 106) | `f2b987dc` (first run's evidence) |
+| T7SP.19 | Done | `fc4fa791` |
+| T7SP.14 | Rerun in progress from `fc4fa791`. The first run stopped (O3), with the Review open about 10x slower than D7 (decision 106) | `f2b987dc` (first run's evidence) |
 | T7SP.15 | Not started | |
