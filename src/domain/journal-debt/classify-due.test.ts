@@ -20,6 +20,15 @@ describe('classifyDue (A166, D5 A63)', () => {
     expect(classifyDue('2026-10-20T15:00:00Z', closes)).toBe('DueInReviewAfterNext');
   });
 
+  it('should compare an anchor written with a New York offset as an instant, not as text', () => {
+    // 16:30 New York is 20:30Z, after the 20:00Z close, though it sorts before it as a string.
+    expect(classifyDue('2026-10-12T16:30:00-04:00', closes)).toBe('DueInReviewAfterNext');
+    // 16:00 New York is exactly the 20:00Z close, and 16:30 on Friday is 20:30Z, after the previous close.
+    expect(classifyDue('2026-10-12T16:00:00-04:00', closes)).toBe('DueInNextReview');
+    expect(classifyDue('2026-10-09T16:30:00-04:00', closes)).toBe('DueInNextReview');
+    expect(classifyDue('2026-10-09T16:00:00-04:00', closes)).toBe('Due');
+  });
+
   it('should return no classification when there are no closes (decision 56)', () => {
     expect(classifyDue('2026-10-08T15:00:00Z', undefined)).toBeUndefined();
   });

@@ -92,22 +92,6 @@ describe('owed reflections resolved elsewhere (A68)', () => {
   }, 60_000);
 });
 
-describe('due classification (A75)', () => {
-  it('should classify a Debt as later when its anchor, written with a New York offset, is after the previous session close', async () => {
-    const stack = await reviewStack(TUESDAY_1700);
-    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
-    // Monday 16:30 New York is 20:30Z, after the 20:00Z close, though it sorts before it as a string.
-    await stack.fill(trade, '2026-10-12T16:30:00-04:00', '100', '50.10', { kind: 'Defer' });
-    await stack.saveMark('XYZ', '52.00', '2026-10-13');
-    await stack.saveAction(trade.tradeId, 'Hold', '2026-10-13');
-
-    const review = ready(await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }));
-    const walk = review.families[1]!;
-    if (walk.family !== 'Trades') throw new Error('no Trades family');
-    expect(walk.trades.map(reflectionCounts)).toEqual([{ due: 0, later: 1 }]);
-  }, 60_000);
-});
-
 describe('due classification without frames (A75)', () => {
   it('should report a due reflection for a walked Trade that needs no Mark frame', async () => {
     const stack = await reviewStack(TUESDAY_1700);

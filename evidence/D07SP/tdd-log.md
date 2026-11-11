@@ -399,3 +399,44 @@ Every file below keeps its cases: each module-owned behaviour already has exactl
 | `npm run test:integration` | not run before the change (tests only, nothing under `tests/` or `src` non-test touched) | 96 files, 196 cases pass |
 
 Also run on the edited file: `npx eslint src/coordinators/trade-views/option-views.test.ts` and `npm run typecheck`, both exit 0. No import or constant became unused.
+
+## T7SP.13 Trim D5R2's due-classification cases
+
+Structural task (tests only, P89, tech debt item 4). Line numbers are before the trim.
+
+### Mapping: coordinator due-classification assertions against `classifyDue` cases
+
+| Assertion | `classifyDue` case that covers it | Disposition |
+|---|---|---|
+| debt-status.test.ts:44 D-1 Due (with its field shape) | "should return Due for an anchor before the previous close..." | Kept: the Due case |
+| debt-status.test.ts:45 D-2 Due | same Due case | Removed (repeats D-1) |
+| debt-status.test.ts:46 D-7 DueInNextReview at Tuesday 17:00 | "should return DueInNextReview..." | Kept: the next-Review case |
+| debt-status.test.ts:47 T-H D-6 DueInNextReview | same | Removed (repeats D-7) |
+| debt-status.test.ts:50 midday D-1 DueInNextReview | same | Removed (repeats D-7) |
+| debt-status.test.ts:51 midday D-7 DueInReviewAfterNext | "should return DueInReviewAfterNext..." | Kept: the after-next case |
+| debt-status.test.ts:82 no dueStatus outside session-policy coverage | "should return no classification when there are no closes (decision 56)" | Kept: decision 56's no-frame case, which proves the coordinator passes the closes |
+| reflections.test.ts:96 anchor with a New York offset, counted later | none: no `classifyDue` case used an offset (the offset case in the owed-group suite goes through `compareOwed`, not `classifyDue`) | Removed here, moved to classify-due.test.ts |
+| reflections.test.ts:24-30 and :50 (due and later counts, D-1/D-2/D-7 classification) | each classification is covered by the Due, next-Review and after-next cases | Kept untouched: the Debt-fixture wiring cases, not boundary cases |
+| reflections.test.ts:122 (walked Trade with no frame reports Due) | Due case | Kept: it tests that a Trade with no recoverable frame still gets a due reflection, not a boundary |
+
+### Removed cases
+
+- reflections.test.ts "due classification (A75): should classify a Debt as later when its anchor, written with a New York offset, is after the previous session close" (whole case, moved below).
+- debt-status.test.ts "Debt status (A69)" first case: the assertions for D-2 Due, T-H D-6 DueInNextReview and midday D-1 DueInNextReview; the case's name was shortened to match. Its remaining expected values are unchanged.
+
+### Moved case
+
+classify-due.test.ts "should compare an anchor written with a New York offset as an instant, not as text" (four offset anchors: Monday 16:30-04:00 is DueInReviewAfterNext, Monday 16:00-04:00 and Friday 16:30-04:00 are DueInNextReview, Friday 16:00-04:00 is Due).
+
+- Red under mutation: `atOrBefore` in `src/domain/journal-debt/index.ts` changed to `return a <= b;` (a string comparison). Command: `npx vitest run src/domain/journal-debt/classify-due.test.ts -t "should compare an anchor written with a New York offset as an instant, not as text"`. Result: 1 failed, 7 skipped. `AssertionError: expected 'DueInNextReview' to be 'DueInReviewAfterNext'`.
+- Restored; `git diff -- src/domain/journal-debt/index.ts` is empty.
+- Green: same command after the restore (and the full run below): passes.
+
+### Commands and counts
+
+| Command | Before | After |
+|---|---|---|
+| `npx vitest run src/domain/journal-debt src/coordinators/daily-review src/coordinators/trade-views` | 19 files, 215 cases | 19 files, 215 cases (one case removed from reflections.test.ts, one added to classify-due.test.ts) |
+| `npm run test:integration` | 96 files, 196 cases | 96 files, 196 cases |
+
+`git diff --stat` touches only the three test files and this log. Lint on `src/coordinators` and `src/domain/journal-debt`, and `npm run typecheck`, exit 0.
