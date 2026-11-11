@@ -141,10 +141,15 @@ Each date-wide read and each Stale-context or gap lookup is its own read transac
 | T7SP.11 | Browser: the option dated line in the Review | test | S | T7SP.8 | `e2e/d7sp/review-dated-line.spec.ts` |
 | T7SP.12 | Trim the coordinator cases that moved | structural | S | T7SP.7, T7SP.8 | the trimmed suites |
 | T7SP.13 | Trim D5R2's due-classification cases (tech debt item 4) | structural | S | T7SP.12 | the trimmed suites, `classify-due.test.ts` |
-| T7SP.14 | Latency harness (O3) | test | S | T7SP.13 | `bench:run` |
+| T7SP.16 | Trade Analysis: the at-entry figures in Plan R (decision 105) | domain | S | T7SP.4 | `TradeAnalysis.evaluate` |
+| T7SP.17 | Trade Views: Detail carries the held quantity and the expiration line (decision 105) | application | S | T7SP.7 | `TradeViewsAndReporting.getTradeDetail` |
+| T7SP.18 | Trade Detail reads the finished fields (decision 105) | structural | S | T7SP.16, T7SP.17 | existing UI cases; a grep of `TradeDetail.tsx` |
+| T7SP.14 | Latency harness (O3) | test | S | T7SP.18 | `bench:run` |
 | T7SP.15 | Gate run | verification | S | all | `suite-runner`, full tier |
 
-**15 tasks.** The tasks run in this order, one at a time, each delegated to `tdd-task` with an ocr review of its commit, as `implementing.md` describes. T7SP.5 and T7SP.6 can't run in parallel with anything that touches their seams. Only T7SP.8 and T7SP.11 touch what the UI reads, so `browser-auto` picks the full tier for them.
+**Amended by decision 105 (revision 75):** T7SP.16 to T7SP.18 (candidate 2, Trade Detail as a finished read) run after T7SP.13 and before T7SP.14, in the Progress section's order. They are numbered after T7SP.15 so no existing ID moves. T7SP.18 touches `src/ui/`, so `browser-auto` picks the full tier for it.
+
+**15 tasks** at drafting, 18 with decision 105. The tasks run in this order, one at a time, each delegated to `tdd-task` with an ocr review of its commit, as `implementing.md` describes. T7SP.5 and T7SP.6 can't run in parallel with anything that touches their seams. Only T7SP.8 and T7SP.11 touch what the UI reads, so `browser-auto` picks the full tier for them.
 
 **Size check** (drafting guide): 15 tasks (not over 25); no schema change; three open questions at drafting, all since answered (fewer than five). No split is proposed.
 
@@ -277,6 +282,66 @@ The last case goes red on T7SP.5's session and is fixed in this task, so every e
 
 The first case goes red on today's missing line. In the same commit, `settlement.test.ts:236` (the T7.24 case that pins the absence, section 1.5) flips: its `datedLastClose` becomes ABC's put at Thursday's close with ABC's Thursday frame, and the task's evidence records the old and new expectation. The structural part (`reviewItem` and `figuresOf` calling the module, `settlementItems` taking times from it, `save`'s binding check opening its own session) keeps every other case green, which the third `describe` case records as the suite run.
 
+### Trade Detail as a finished read (decision 105, revision 75)
+
+Candidate 2 of the architecture review, added at the user's direction on 2026-11-10. ADR 0001 says the UI consumes finished reads and doesn't calculate domain results. `src/ui/screens/TradeDetail.tsx` still decides three things itself, found by this lookup:
+
+```text
+$ grep -n "\.reduce(\|\.div(\|\.add(\|closedByExpiration" src/ui/screens/TradeDetail.tsx
+32:   import { closedByExpiration, closedViaOption, timingWords } from './option-disposition.ts';
+314:  const held = 'positions' in view ? view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)) : Rational.of(0n);
+316:  const expired = 'terminalDisposition' in view && ... && closedByExpiration(view.terminalDisposition.value);
+446:  const inR = (dollars: Rational) => `${money(dollars)} · ${rMultiple(dollars.div(oneR))}`;
+1112: const entered = view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n));
+```
+
+- **The held quantity** (lines 314 and 1112) sums the Positions' signed quantities for the Summary card and for Entry Quality's "n of m entered".
+- **The R division** (line 446) divides the at-entry risk and reward by the Plan's 1R. Every other R figure already comes from `evaluate` as a `Measure` or an `…InPlanR` field.
+- **The expiration line** (lines 316 to 322) chooses among "Expires <date>", "Expired <date>" and no line. It goes by the lifecycle, whether a Settlement Due panel shows, and whether the Terminal Disposition includes an Expiration (decision 94, row 23.19).
+
+**Shapes.** The changes are additive only, so `compareSnapshot` (`tools/fixtures/snapshot-compare.ts`, which allows fields a newer release adds) keeps every fixture view valid. Lookups:
+- `grep -c riskFromEntry tests/fixtures/workspace-v*/expected-views.json` gives v4 2, v5 9 and v6 12. These existing fields keep their values. The new `riskFromEntryInPlanR` and `rewardFromEntryInPlanR` are added beside them.
+- `grep -rln "heldQuantity\|contractExpiration\|FromEntryInPlanR" tests/fixtures tools src` finds none.
+- `expirationLine` is already a UI helper name (`src/ui/screens/execution-line.ts`), so the view field is `contractExpiration`.
+
+**Texts.** No visible text changes. Today's texts are pinned by `e2e/d2/open-position.spec.ts`, `e2e/d4/breach-overrun.spec.ts`, `src/ui/screens/TradeDetail.test.tsx` and `TradeDetailOptions.test.tsx`, which must pass unchanged.
+
+**Out of scope:**
+- `TradeList.tsx:349`'s own `closedByExpiration` use (the Trades list, not Detail);
+- the quantity words (Short/Long from a sign, candidate 3), Terminal Disposition words (candidate 4) and the terminal Position Change's owner (candidate 5).
+
+#### T7SP.16 Trade Analysis: the at-entry figures in Plan R
+
+Seam: `TradeAnalysis.evaluate`, with the existing at-entry fixtures in `src/domain/trade-analysis/` (Lots opened after the frame's close).
+
+```text
+describe("at-entry figures in Plan R (decision 105)")
+  it should give the at-entry risk from entry in Plan R, the risk from entry divided by the Plan's 1R
+  it should give the at-entry reward from entry in Plan R the same way, for an option Trade with the multiplier in the dollars
+```
+
+`AtEntryFigures` gains `riskFromEntryInPlanR` and `rewardFromEntryInPlanR` (`Rational`), divided by `state.baseline.oneR` as `measure` does at `evaluate.ts:273`. The existing fields keep their values. The second case may pass on its first run once the first is green, in which case its mutation check is to drop the multiplier from the reward's dollars.
+
+#### T7SP.17 Trade Views: Detail carries the held quantity and the expiration line
+
+Seam: `TradeViewsAndReporting.getTradeDetail`, with D2's stock fixture and D7's option fixtures (`tests/integration/d7/support.ts`; O-C, O-S, and E-S for an expiration).
+
+```text
+describe("Trade Detail as a finished read (decision 105)")
+  it should give an Open stock Trade's Detail its held quantity, the sum of its Positions' signed quantities
+  it should give an Open option Trade's Detail the expiration line Expires with its contract's expiration date
+  it should give a Planned option Trade's Detail the expiration line Expires
+  it should give no expiration line to an Open option Trade whose contract is Settlement Due, since its panel says so
+  it should give a Closed option Trade whose Terminal Disposition includes an Expiration the line Expired with the date
+  it should give no expiration line to a Closed option Trade that only Executions disposed of (decision 94)
+```
+
+The Open and Closed Detail views gain:
+- `heldQuantity: Rational`, signed, on the Open view;
+- `contractExpiration?: { status: 'Expires' | 'Expired'; date: string }`, on option Trades' Planned, Open and Closed views.
+
+A stock Trade's Detail has no `contractExpiration`. The coordinator decides the line exactly as `TradeDetail.tsx:316-322` does today. Every existing case passes unchanged, including the query-count proofs, because no new read is made.
+
 ---
 
 ## 4. Structural tasks
@@ -290,6 +355,7 @@ The first case goes red on today's missing line. In the same commit, `settlement
 | T7SP.11 Browser: the option dated line in the Review | `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | One case: O-C bought Monday, Review Tuesday 17:00 with the call's Monday Mark only. The card shows a "Mon Oct 12 close" group with its figures at 320 and 1280 px, with no sideways scroll. A mutation (the coordinator omits the line for options) makes it fail, then is restored. |
 | T7SP.12 Trim the coordinator cases that moved | `npx vitest run src/coordinators`, `npm run test:integration`; the evidence lists each removed case and the T7SP.6 case that covers it | Valuation cases in `option-views.test.ts`, `current-evaluation.test.ts` and `daily-review/settlement.test.ts` that T7SP.6 covers are removed, keeping one case per coordinator for each behaviour (it calls the module and passes its result through). Query-count proofs and integration suites are not trimmed. |
 | T7SP.13 Trim D5R2's due-classification cases (P89) | First list every due-classification assertion in `reflections.test.ts` and `debt-status.test.ts` against the `classifyDue` case that covers it, in the evidence. Then `npx vitest run src/domain/journal-debt src/coordinators/daily-review src/coordinators/trade-views`, `npm run test:integration` | Each coordinator suite keeps one case per classification, and Trade Views keeps decision 56's no-frame case. An assertion with no covering `classifyDue` case moves to `classify-due.test.ts` as a new case, which goes red under a mutation of `classifyDue` before it counts. `git diff --stat` touches only test files. Tech debt item 4 is marked resolved by this task. |
+| T7SP.18 Trade Detail reads the finished fields (decision 105) | `npm run typecheck`, `npx vitest run src/ui`; `grep -n '\.reduce(\|\.div(\|\.add(\|closedByExpiration' src/ui/screens/TradeDetail.tsx` | `SummaryCard` takes the held quantity and the expiration line from the view, `EntryQualitySection` takes the held quantity, and `AtEntrySection` takes the at-entry figures in Plan R from the evaluation (no `oneR` prop). Every UI case and browser spec passes unchanged; no visible text changes. The grep prints nothing (today it prints lines 314, 316, 446 and 1112, and the `closedByExpiration` import at 32). `TradeList.tsx`'s own `closedByExpiration` use stays (out of scope). |
 | T7SP.14 Latency harness | `npm run bench:run`, results to `evidence/D07SP/bench.md` beside D7's | Every measured step within 10% of `evidence/D07/bench.md`, or the gate stops for the user's decision (O3). The harness's row comparisons pass. |
 | T7SP.15 Gate run | `full-suite.sh evidence/D07SP t7sp-15-full` (full tier), by `suite-runner` | Unit, integration and browser suites pass, with every static and verify check. Counts and wall times recorded in `evidence/D07SP/structural.md`. |
 
@@ -392,6 +458,10 @@ During T7SP.8, 2026-11-10 (decision 104, revision 74):
 24. **Daily Review stub cases:** rewrite them at the read session, as decision 103 did for Trade Views.
 25. **The dated line:** compute it on `getTrade`'s card only. The Review open makes no dated-line read, and P84's proof is retargeted to match.
 
+During T7SP.12, 2026-11-10 (decision 105, revision 75):
+
+26. **Candidate 2 joins the prefactor:** "insert tasks for the 2nd architecture candidate, Make Trade Detail a finished read. Insert them after T7SP.13 and complete the work before doing the latency benchmark and full-tier run." Tasks T7SP.16 to T7SP.18.
+
 ---
 
 ## 10. Progress
@@ -411,5 +481,8 @@ During T7SP.8, 2026-11-10 (decision 104, revision 74):
 | T7SP.11 | Done | `6c5687c2` |
 | T7SP.12 | In progress from `6c5687c2` | |
 | T7SP.13 | Not started | |
+| T7SP.16 | Not started | |
+| T7SP.17 | Not started | |
+| T7SP.18 | Not started | |
 | T7SP.14 | Not started | |
 | T7SP.15 | Not started | |

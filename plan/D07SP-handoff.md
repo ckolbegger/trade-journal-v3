@@ -4,7 +4,7 @@
 
 Written 2026-11-10, after plan revision 72. [D07-handoff.md](D07-handoff.md) is the record of D7's session; its section 7 and the D7 breakdown's Progress section list every D7 task, commit, decision and flagged item.
 
-This session **implements the D7S prefactor, "One Mark-to-Market Valuation"**, under the frozen plan at revision 74 (revision 72's breakdown plus decision 103, taken during T7SP.7, and decision 104, taken during T7SP.8). The breakdown is [D07S-prefactor-mark-to-market-valuation.md](D07S-prefactor-mark-to-market-valuation.md): 15 tasks (T7SP.1 to T7SP.15), agreed by the user on 2026-11-10 after an architecture review of D7's commits (decisions 101 and 102). Task status lives in the breakdown's Progress section (decision 100).
+This session **implements the D7S prefactor, "One Mark-to-Market Valuation"**, under the frozen plan at revision 75 (revision 72's breakdown plus decision 103, taken during T7SP.7, decision 104, taken during T7SP.8, and decision 105, which adds T7SP.16 to T7SP.18 for Trade Detail as a finished read, taken during T7SP.12). The breakdown is [D07S-prefactor-mark-to-market-valuation.md](D07S-prefactor-mark-to-market-valuation.md): 15 tasks (T7SP.1 to T7SP.15), agreed by the user on 2026-11-10 after an architecture review of D7's commits (decisions 101 and 102). Task status lives in the breakdown's Progress section (decision 100).
 
 Where things stand:
 - **D7:** complete, tagged `claude-opus-5.5-d7` (`7e50d82`). Its gate run (`t7-32-b7-gate`) passed 1438 unit, 191 integration and 183 browser tests (119 in `browser-1`, 64 in `browser-2`), with every check.
@@ -27,7 +27,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `5181` |
-| Frozen plan | tag `claude-opus-5.5-plan-r74` (revision 74; the prefactor started at `claude-opus-5.5-plan-r72`) |
+| Frozen plan | tag `claude-opus-5.5-plan-r75` (revision 75; the prefactor started at `claude-opus-5.5-plan-r72`) |
 | Code the prefactor builds on | tag `claude-opus-5.5-d7` (`7e50d82`) |
 | Prefactor starting point | tag `claude-opus-5.5-pre-d7sp` (the commit that added this note) |
 
@@ -97,7 +97,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r75 and the next decision is 105 (revision 73, decision 103, was taken during T7SP.7; revision 74, decision 104, during T7SP.8). Editing the breakdown's Progress section alone is not a revision (decision 100).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r76 and the next decision is 106 (revision 73, decision 103, was taken during T7SP.7; revision 74, decision 104, during T7SP.8; revision 75, decision 105, during T7SP.12). Editing the breakdown's Progress section alone is not a revision (decision 100).
 
 ## 3. Prefactor specifics
 
@@ -176,8 +176,8 @@ Never push.
 
 ## 6. Out of scope
 
-- Any deliverable other than the D7S prefactor, unless the user says otherwise. In particular, **D7S's breakdown** is drafted in a later session, from `claude-opus-5.5-d7sp`; its numbering starts at P90, A195 and decision 105 (decisions 103 and 104 were taken by revisions 73 and 74).
-- **Candidate 2 of the architecture review** (Trade Detail as a finished read: held quantity, R division and the expiration line decided in `TradeDetail.tsx`), and candidates 3 to 5 (quantity words, Terminal Disposition words, the terminal Position Change's owner). The user kept them out of this prefactor.
+- Any deliverable other than the D7S prefactor, unless the user says otherwise. In particular, **D7S's breakdown** is drafted in a later session, from `claude-opus-5.5-d7sp`; its numbering starts at P90, A195 and decision 106 (decisions 103 to 105 were taken by revisions 73 to 75).
+- **Candidate 2 of the architecture review** (Trade Detail as a finished read) is now **in scope**, as T7SP.16 to T7SP.18 (decision 105, revision 75). Candidates 3 to 5 (quantity words, Terminal Disposition words, the terminal Position Change's owner). The user kept them out of this prefactor.
 - **The Pricing Provider** behind the read session (D11). The session serves `recover`'s gaps but no provider fetch is built.
 - **`previewMarkChange` and `replayTrade`** (A190), which D11 and D9 build on the module.
 - **Upgrade tests** (decision 76; tech debt item 10).
@@ -192,7 +192,7 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 - **T7SP.14:** since T7SP.8 (`e8b78874`, decision 104), the read session runs a date's frames, Stale-context lookups and gaps scans in one snapshot, as `recover` does, so the Review open's `meta.get` is unchanged (13 in `d7/query-count.test.ts:87`'s live baseline). The Review open skips the dated line (`skipDatedLine`); only `getTrade` reads for it.
 - **T7SP.14:** T7SP.5-B1 (`40442940`) makes the session's one gaps scan per Instrument run from the session policy's coverage start (2024-01-01), not from the exposure, so a later call with an earlier exposure needs no second scan. The request lists are unchanged, but each scan reads every stored observation of that Instrument since coverage start, where `recover` reads from the aggregated earliest exposure. When Daily Review's `open` switches to the session (T7SP.8), the records read per Review open grow with each Instrument's whole history (the growth tech debt item 3 describes). T7SP.14 measures it against `evidence/D07/bench.md`; more than 10% slower on a measured step stops the gate for the user (section 5, condition 5).
-- **T7SP.12:** decision 103 already trimmed one Trade Views case: `closed-views.test.ts`, "...when Market Data rejects the frames for a reason other than coverage". It also rewrote 8 stub cases at the read session (`evidence/D07SP/tdd-log.md`, T7SP.7). T7SP.8 rewrote `settlement.test.ts:253` at the read session and trimmed nothing. Trim only what remains, and keep the rewritten cases as each coordinator's wiring cases.
+- **T7SP.16 to T7SP.18 (decision 105):** these run after T7SP.13 and before T7SP.14, in the Progress section's order. Every change is additive (new view and evaluation fields), so no fixture, text, request list or existing case changes. T7SP.18 touches `src/ui/`, so its cumulative run is full tier. The view field is `contractExpiration`, because `expirationLine` is already a UI helper in `execution-line.ts`.
 - **T7SP.10 to T7SP.15 (any lint change):** since T7SP.9 (`552d0d06`, B1 `96660874`), every `no-restricted-syntax` entry under `src/` that isn't exempt (test files and `src/domain/instrument/` are exempt) must spread `expirationComparisonSelectors` from `eslint.deps.config.js`. That includes the `src/ui` wording entry in `eslint.config.js` (`wordingWithExpirationRules`). The wording block relies on the identity selector staying first in `wordingRules` (`.slice(1)`).
 - **T7SP.13:** item 4 says each suite keeps one case per classification plus decision 56's no-frame case in Trade Views. Check `reflections.test.ts:96` (an anchor with a New York offset) against `classify-due.test.ts` before removing it; if no domain case covers an offset, move it there.
 
