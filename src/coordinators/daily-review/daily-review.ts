@@ -1,16 +1,16 @@
 import { Temporal } from 'temporal-polyfill';
 import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
 import { openTradeSummary } from '../../domain/trade-summary.ts';
-import { derive, evaluate, type ObservationFrame, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, type DerivedTradeState, type IncoherentFacts, type LifecycleState, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, compareDueAnchors, compareOwed, owedStandingOf, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import type { DebtProjection, Journal, ObligationOutcome } from '../../modules/journal/index.ts';
-import type { EvidenceBinding, FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
+import type { EvidenceBinding, FrameContext, HistoricalGaps, MarketData, MarketDataIssue, MarketDataReadSession } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
 import { payoffOf } from '../settlement.ts';
-import { datedLineOf, observationFrame, settlementTimeOf } from '../valuation/index.ts';
+import { valueTrade, type TradeValuation } from '../valuation/index.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
   ActionForm,
@@ -80,12 +80,16 @@ function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying'
 
 type Derivation = ReturnType<typeof derive>;
 
+type ValuedTrade = Extract<TradeValuation, { readonly kind: 'Valued' }>;
+
 // One Trade the index selected and confirmed Open at the cutoff, with both derivations of it.
 interface EligibleTrade {
   readonly summary: BrowseRecord['summary'];
   readonly analysis: BrowseRecord['analysis'];
   readonly derivation: Derivation;
   readonly integrity: Derivation;
+  // The Trade valued at the Review's close through Mark-to-Market Valuation, once its facts replay under both derivations.
+  readonly valuation?: ValuedTrade;
 }
 
 // The Marks the eligible Trades require: each Instrument once, at its earliest relevant date.
@@ -198,26 +202,16 @@ export interface DailyReview {
   };
 }
 
-// The Trade's place in the walk and, when its facts replay, its evaluation at the Review-date frame.
-function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade, frames: readonly MarkFrame[], review: { readonly reviewDate: string; readonly cutoff: string }) {
+// The Trade's place in the walk and, when its facts replay, its evaluation at the Review date, as the module valued it.
+function reviewItem({ summary, analysis, derivation, integrity, valuation }: EligibleTrade) {
   const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
   // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
-  if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), evaluation: undefined };
-  if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), evaluation: undefined };
-  const contract = analysis.plan.legs[0]!.instrument;
-  // After its expiration date an option requires no Mark, so Market Data was not asked for a frame: the Review
-  // supplies one at its own date and cutoff with no Mark, and the evaluation answers Settlement Due (A110).
-  const frameOf = (instrument: Instrument): ObservationFrame => {
-    const found = frames.find((f) => f.instrumentKey === instrumentKey(instrument));
-    if (found) return observationFrame(found);
-    if (contract.kind === 'Stock') throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
-    return { instrument, tradingDate: review.reviewDate, closeInstant: review.cutoff, resolution: { kind: 'Missing' } };
-  };
-  const underlyingFrame = contract.kind === 'Option' ? frameOf({ kind: 'Stock', symbol: analysis.plan.underlying }) : undefined;
-  const evaluation = evaluate({ state: derivation, frame: frameOf(contract), ...(underlyingFrame && { underlyingFrame }) });
-  const held = openTradeSummary(contract, derivation);
-  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, evaluation, integrity.findings) };
-  return { item, evaluation };
+  if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), valuation: undefined };
+  if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), valuation: undefined };
+  if (!valuation) throw new Error(`Trade ${summary.tradeId} was not valued`);
+  const held = openTradeSummary(analysis.plan.legs[0]!.instrument, derivation);
+  const item: ReviewTradeItem = { ...identity, ...(held && { summary: held }), ...attentionOf(derivation, valuation.evaluation, integrity.findings) };
+  return { item, valuation };
 }
 
 // The Trade's summary on an owed-reflection card, from all its facts: Closed with its realized figures and Close Reason,
@@ -239,18 +233,16 @@ function owedSummary(lifecycle: LifecycleState, state: DerivedTradeState, analys
   };
 }
 
-// What replaying the Trade yields at the Review-date frame.
-function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: readonly MarkFrame[], evaluation: TradeEvaluation) {
-  const frame = frames.find((f) => f.instrumentKey === entry.analysis.plan.underlying);
-  const summary = openTradeSummary(entry.analysis.plan.legs[0]!.instrument, state);
-  if (!frame) {
-    // After its expiration date an option requires no Mark, so Market Data returned no frame (A110).
-    if (entry.analysis.plan.legs[0]!.instrument.kind === 'Option') return { ...(summary && { summary }), evaluation };
-    throw new Error(`Market Data returned no frame for ${entry.analysis.plan.underlying}`);
-  }
-  // The dated line values Long Stock from the Underlying's frame; an option's frame is its contract's, so it has none here (A110).
-  const datedLastClose = entry.analysis.plan.legs[0]!.instrument.kind === 'Stock' ? datedLineOf(entry.analysis, frame, evaluation) : undefined;
-  return { ...(summary && { summary }), frame, evaluation, ...(datedLastClose && { datedLastClose }) };
+// What replaying the Trade yields at the Review-date frame, with the dated line the module found (P83).
+function figuresOf(analysis: TradeAnalysisRecord, valuation: ValuedTrade) {
+  const contract = analysis.plan.legs[0]!.instrument;
+  const summary = openTradeSummary(contract, valuation.state);
+  // The card shows the Underlying's frame: a stock's own, an option's paired one.
+  const frame = contract.kind === 'Stock' ? valuation.frame : valuation.underlyingFrame;
+  const { evaluation, datedLine } = valuation;
+  // After its expiration date an option requires no Mark, so the module read no frame (A110).
+  if (!frame && contract.kind === 'Stock') throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
+  return { ...(summary && { summary }), ...(frame && { frame }), evaluation, ...(datedLine && { datedLastClose: datedLine }) };
 }
 
 export function createDailyReview(deps: DailyReviewDeps): DailyReview {
@@ -285,17 +277,24 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // Integrity (A59) is whether the stored Trade agrees with all its facts, so it comes from a
   // second derivation with no cutoff; the cutoff derivation decides eligibility, state, and evaluation.
   // Undefined when a Trade commit expired the eligibility cursor.
-  async function eligibleTrades(cutoff: string, reviewDate: string): Promise<EligibleTrade[] | undefined> {
+  // With a read session, each Trade whose facts replay is valued through the module at the session's close, which derives it
+  // once (the cutoff derivation is the valuation's state); the integrity derivation stays here (A192). Without one, the cutoff
+  // derivation is made here, for a read that only needs the Trades' requirements.
+  // The open takes no dated line (decision 104) and, with `withGaps`, the gaps of each Trade's Instruments; every Trade is
+  // valued in one synchronous run, so their frames and gap scans share the Review date's read snapshot.
+  async function eligibleTrades(cutoff: string, reviewDate: string, read?: { readonly session: MarketDataReadSession; readonly withGaps: boolean }): Promise<EligibleTrade[] | undefined> {
     const records = await eligibleRecords(cutoff);
     if (!records) return undefined;
-    return records
-      .map(({ summary, analysis }) => ({
-        summary,
-        analysis,
-        derivation: derive({ record: analysis, cutoff, valuationDate: reviewDate }),
-        integrity: derive({ record: analysis }),
-      }))
-      .filter(({ derivation }) => derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');
+    const entries = await Promise.all(
+      records.map(async ({ summary, analysis }): Promise<EligibleTrade> => {
+        const integrity = derive({ record: analysis });
+        if (!read || integrity.kind !== 'Derived') return { summary, analysis, integrity, derivation: derive({ record: analysis, cutoff, valuationDate: reviewDate }) };
+        const valuation = await valueTrade(read.session, analysis, { factsAtClose: true, skipDatedLine: true, withGaps: read.withGaps });
+        if (valuation.kind === 'Unavailable') return { summary, analysis, integrity, derivation: { kind: 'IncoherentFacts', findings: valuation.findings } };
+        return { summary, analysis, integrity, derivation: valuation.state, valuation };
+      }),
+    );
+    return entries.filter(({ derivation }) => derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');
   }
 
   // The module reads are separate transactions, so a read is accepted only if the Workspace is
@@ -314,12 +313,21 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'ChangedDuringAssembly' };
   }
 
-  // Today's frames in the shape of a recovery, without the gaps; the resolution revisions are today's keys only.
-  async function framesOnly(reviewDate: string, instruments: readonly string[]) {
-    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
-    if (frames.kind === 'Rejected') return frames;
-    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
-    return { kind: 'Recovered' as const, frames: frames.frames, previousCloseInstant: frames.previousCloseInstant, resolutions: frames.frames.map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate, resolutionRevision: frames.resolutionRevisions[instrumentKey] ?? ('None' as const) })), gaps: [], snapshotId: frames.snapshotId };
+  // The Review date's frames of the Instruments, each read once through the session, with the previous close and the snapshot
+  // and evidence binding of what was read. The session has no frame to take the previous close from when no Instrument is
+  // needed, so Market Data's frames for no Instrument give it. A save calls it on a session of its own that reads nothing
+  // else, so the evidence binding it rechecks holds the frames' keys alone.
+  async function reviewFrames(read: MarketDataReadSession, reviewDate: string, instruments: readonly string[]) {
+    const frames = await read.frames([...instruments].sort());
+    const [first] = frames;
+    if (first) {
+      const { evidenceBinding, snapshotIds } = read.binding();
+      return { kind: 'Frames' as const, frames, previousCloseInstant: first.previousCloseInstant, snapshotId: snapshotIds[reviewDate]!, evidenceBinding };
+    }
+    const none = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments: [] });
+    if (none.kind === 'Rejected') return none;
+    if (none.kind !== 'Frames') throw new Error(`unexpected frames result: ${none.kind}`);
+    return { kind: 'Frames' as const, frames, previousCloseInstant: none.previousCloseInstant, snapshotId: none.snapshotId, evidenceBinding: none.evidenceBinding };
   }
 
   // The Trades outside the walk with an Outstanding reflection, due or not (P20, A89), in the group's order. Each is one
@@ -345,11 +353,28 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   // The option contracts the walked Trades still hold at or past expiration, by expiration date then Trade identity (A112).
-  async function settlementItems(ranked: readonly { readonly item: ReviewTradeItem; readonly evaluation: TradeEvaluation | undefined }[]): Promise<SettlementItem[]> {
-    const due = ranked
-      .flatMap(({ item, evaluation }) => (evaluation?.settlement ?? []).filter((s) => s.status === 'Due').map((s) => ({ tradeId: item.tradeId, ...s })))
+  // The module lists each Trade's items with their settlement times; they are put in that order here.
+  const settlementItems = (ranked: readonly { readonly valuation: ValuedTrade | undefined }[]): SettlementItem[] =>
+    ranked
+      .flatMap(({ valuation }) => valuation?.settlement ?? [])
       .sort((a, b) => (a.expiration === b.expiration ? (a.tradeId < b.tradeId ? -1 : Number(a.tradeId > b.tradeId)) : a.expiration < b.expiration ? -1 : 1));
-    return Promise.all(due.map(async ({ tradeId, instrument, quantity, expiration }) => ({ tradeId, instrument, quantity, expiration, settlementTime: await settlementTimeOf(deps.marketData, instrument, expiration) })));
+
+  // Each Instrument's gaps once, as one recovery over every walked Trade lists them: each Trade's answer is its Instrument's scan
+  // narrowed to its own exposure, so the union of the answers is the one the earliest exposure gives.
+  function gapsOf(entries: readonly EligibleTrade[]): HistoricalGaps[] {
+    const byInstrument = new Map<string, HistoricalGaps[]>();
+    for (const found of entries.flatMap(({ valuation }) => valuation?.gaps ?? [])) byInstrument.set(found.instrumentKey, [...(byInstrument.get(found.instrumentKey) ?? []), found]);
+    const union = (lists: readonly (readonly string[])[]) => [...new Set(lists.flat())].sort();
+    return [...byInstrument]
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([instrumentKey, answers]) => ({
+        instrumentKey,
+        missing: union(answers.map((a) => a.missing)),
+        acknowledged: union(answers.map((a) => a.acknowledged)),
+        revisions: Object.assign({}, ...answers.map((a) => a.revisions)) as HistoricalGaps['revisions'],
+        acknowledgments: Object.assign({}, ...answers.map((a) => a.acknowledgments)) as HistoricalGaps['acknowledgments'],
+        closes: Object.assign({}, ...answers.map((a) => a.closes)) as HistoricalGaps['closes'],
+      }));
   }
 
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
@@ -360,15 +385,17 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (session.kind === 'Rejected') return session;
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
-    const derivations = await eligibleTrades(cutoff, reviewDate);
+    // One read session for the whole pass: each Trade is valued through the module, and each date and Instrument is read once.
+    const read = await deps.marketData.openReadSession({ kind: 'Review', reviewDate });
+    const derivations = await eligibleTrades(cutoff, reviewDate, { session: read, withGaps });
     if (!derivations) return { kind: 'Expired' };
     const { requirements, earliest } = observationNeeds(derivations);
-    const instruments = [...earliest].map(([key, earliestExposure]) => ({ instrumentKey: key, earliestExposure }));
-    // With no walked Trade there is no Instrument to scan for gaps; the frames call still gives the previous close the owed group needs.
-    const recovered = withGaps && derivations.length > 0
-      ? await deps.marketData.recover({ context: { kind: 'Review', reviewDate }, instruments })
-      : await framesOnly(reviewDate, instruments.map((i) => i.instrumentKey));
-    if (recovered.kind === 'Rejected') throw new Error('Market Data rejected the Review recovery request');
+    // The frames the valuations read, in one answer; with no walked Trade there is no Instrument to scan for gaps, and the
+    // answer still gives the previous close the owed group needs.
+    const recovered = await reviewFrames(read, reviewDate, [...earliest.keys()]);
+    if (recovered.kind === 'Rejected') throw new Error('Market Data rejected the Review frames request');
+    const gaps = gapsOf(derivations);
+    const resolutionRevisionOf = (key: string) => read.binding().evidenceBinding.find((bound) => bound.instrumentKey === key && bound.tradingDate === reviewDate)?.resolutionRevision ?? 'None';
 
     // Each key a frame or gap names is a requirement's Instrument, so the Instrument is the Trades' own (K18).
     const instrumentOfKey = (key: string): Instrument => requirements.find((r) => instrumentKey(r.instrument) === key)!.instrument;
@@ -379,15 +406,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         tradingDate,
         trades: requirements.filter((r) => instrumentKey(r.instrument) === key).map((r) => r.tradeId),
         resolution,
-        resolutionRevision: recovered.resolutions.find((r) => r.instrumentKey === key)?.resolutionRevision ?? 'None',
+        resolutionRevision: resolutionRevisionOf(key),
         task: resolution.kind === 'Missing' ? 'Manual' : null,
       }),
     );
-    const ranked = derivations
-      .map((trade) => reviewItem(trade, recovered.frames, { reviewDate, cutoff }))
-      .sort((a, b) => byAttention(a.item, b.item));
-    const settlement = await settlementItems(ranked);
-    const earlier = recovered.gaps
+    const ranked = derivations.map(reviewItem).sort((a, b) => byAttention(a.item, b.item));
+    const settlement = settlementItems(ranked);
+    const earlier = gaps
       .filter((g) => g.missing.length + g.acknowledged.length > 0)
       .map(
         (g): HistoricalGapGroup => ({
@@ -433,10 +458,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       return cardProgress({ resolved: rows.length - needed, needed }, reflectionsOf(tradeId), !(tradeId in actions.actions), settlementDue);
     };
     const walked = ranked.map(
-      ({ item, evaluation }): WalkedTrade => ({
+      ({ item, valuation }): WalkedTrade => ({
         ...item,
         progress: progressOf(item.tradeId, settlement.some((s) => s.tradeId === item.tradeId)),
-        ...(evaluation && { figures: { riskToStop: evaluation.ongoingRiskToStop, pnl: evaluation.currentMarkedPnl, rewardRiskNow: evaluation.rewardRiskNow } }),
+        ...(valuation && { figures: { riskToStop: valuation.evaluation.ongoingRiskToStop, pnl: valuation.evaluation.currentMarkedPnl, rewardRiskNow: valuation.evaluation.rewardRiskNow } }),
       }),
     );
     const families: ReviewFamily[] = [
@@ -475,7 +500,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         kind: 'CompleteWithUnavailableMarks',
         instruments: acknowledged.map((row) => row.instrument),
         trades: affected.map(({ item }) => item.tradeId),
-        families: unavailableFamilies(affected.flatMap(({ evaluation }) => (evaluation ? [evaluation] : []))),
+        families: unavailableFamilies(affected.flatMap(({ valuation }) => (valuation ? [valuation.evaluation] : []))),
       };
     };
     const completion = completionOf();
@@ -489,12 +514,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
-  // The same Review-date frames request as the overview's recovery, so its snapshot is comparable.
-  async function reviewFrames(eligible: readonly EligibleTrade[], reviewDate: string, binding: ReviewBinding) {
-    const instruments = [...observationNeeds(eligible).earliest.keys()];
-    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
+  // The same Review-date frames as the overview's, so its snapshot is comparable.
+  async function boundFrames(read: MarketDataReadSession, eligible: readonly EligibleTrade[], reviewDate: string, binding: ReviewBinding) {
+    const frames = await reviewFrames(read, reviewDate, [...observationNeeds(eligible).earliest.keys()]);
     if (frames.kind === 'Rejected') return frames;
-    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
     if (frames.snapshotId !== binding.marketDataSnapshotId) return { kind: 'ReviewChanged' as const };
     return frames;
   }
@@ -563,7 +586,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   // The card of a Trade outside the walk with an Outstanding reflection (A90): bound like a walked card, but with no evaluation.
-  async function assembleOwedCard(request: GetDailyTradeReviewRequest, eligible: readonly EligibleTrade[], reviewDate: string, cutoff: string): Promise<TradePass> {
+  async function assembleOwedCard(request: GetDailyTradeReviewRequest, read: MarketDataReadSession, eligible: readonly EligibleTrade[], reviewDate: string, cutoff: string): Promise<TradePass> {
     const { tradeId, binding } = request;
     // A Trade the overview did not list as owing a reflection is no card of this Review.
     if ((binding.outstandingDebts[tradeId] ?? []).length === 0) return { kind: 'ReviewChanged' };
@@ -575,7 +598,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const summary = stored.projection as BrowseRecord['summary'];
     const analysis = input.projection as TradeAnalysisRecord;
     if (input.factRevision !== binding.factRevisions[tradeId]) return { kind: 'ReviewChanged' };
-    const frames = await reviewFrames(eligible, reviewDate, binding);
+    const frames = await boundFrames(read, eligible, reviewDate, binding);
     if (frames.kind !== 'Frames') return frames;
     const outstanding = await boundDebts(tradeId, binding);
     if (!outstanding) return { kind: 'ReviewChanged' };
@@ -607,19 +630,23 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (session.kind === 'Rejected') return session;
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
+    const read = await deps.marketData.openReadSession({ kind: 'Review', reviewDate });
     const eligible = await eligibleTrades(cutoff, reviewDate);
     if (!eligible) return { kind: 'Expired' };
-    const entry = eligible.find(({ analysis }) => analysis.tradeId === request.tradeId);
-    if (!entry) return assembleOwedCard(request, eligible, reviewDate, cutoff);
-    const { summary, analysis } = entry;
+    const found = eligible.find(({ analysis }) => analysis.tradeId === request.tradeId);
+    if (!found) return assembleOwedCard(request, read, eligible, reviewDate, cutoff);
+    const { summary, analysis } = found;
     if (analysis.factRevision !== request.binding.factRevisions[analysis.tradeId]) return { kind: 'ReviewChanged' };
-    const frames = await reviewFrames(eligible, reviewDate, request.binding);
+    // Every eligible Trade's Instruments are read, so the snapshot is the overview's; only this Trade is valued.
+    const frames = await boundFrames(read, eligible, reviewDate, request.binding);
     if (frames.kind !== 'Frames') return frames;
     const labels = await labelsOf(summary);
-    const { item, evaluation } = reviewItem(entry, frames.frames, { reviewDate, cutoff });
+    const valued = found.derivation.kind === 'Derived' && found.integrity.kind === 'Derived' ? await valueTrade(read, analysis, { factsAtClose: true }) : undefined;
+    const entry: EligibleTrade = valued?.kind === 'Valued' ? { ...found, valuation: valued } : found;
+    const { item, valuation } = reviewItem(entry);
     // Facts that cannot be replayed have no figures.
-    const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
-    const settlement = await settlementItems([{ item, evaluation }]);
+    const figures = valuation ? figuresOf(analysis, valuation) : {};
+    const settlement = settlementItems([{ valuation }]);
     const payoff = entry.derivation.kind === 'Derived' ? payoffOf(analysis, entry.derivation) : undefined;
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
     // The Trade's Outstanding Debt, each classified against the closes around the Review Date (A63).
@@ -718,14 +745,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
     if (session.kind === 'Rejected') return { done: session };
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
+    // Its own read session, which reads the Review date's frames of every eligible Instrument and nothing else, so the keys it
+    // binds are the ones the save has always rechecked; no Trade is valued, since the check takes no figure from one.
+    const read = await deps.marketData.openReadSession({ kind: 'Review', reviewDate: binding.reviewDate });
     const eligible = await eligibleTrades(session.closeInstant, binding.reviewDate);
     if (!eligible) return { retry: true };
     const entry = eligible.find(({ analysis }) => analysis.tradeId === binding.tradeId);
-    // The same request as the overview's recovery, so its snapshot is comparable.
-    const instruments = [...observationNeeds(eligible).earliest.keys()];
-    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: binding.reviewDate }, instruments });
+    // The same frames as the overview's, so its snapshot is comparable.
+    const frames = await reviewFrames(read, binding.reviewDate, [...observationNeeds(eligible).earliest.keys()]);
     if (frames.kind === 'Rejected') return { done: frames };
-    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
     const stale = entry?.analysis.factRevision !== binding.factRevision || frames.snapshotId !== binding.marketDataSnapshotId;
     const evidence = { marketDataSnapshotId: frames.snapshotId, frames: frames.frames, ...(entry && { factRevision: entry.analysis.factRevision }) };
     // Settled through `coherently`, so the Workspace is also the same before and after; the binding's Workspace is compared by database name.

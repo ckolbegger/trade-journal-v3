@@ -234,7 +234,7 @@ describe('the Instrument of a Marks row (K18)', () => {
 });
 
 describe('the dated last close of an option card (T7.24 known defect)', () => {
-  it('should give an option card no dated last close when its contract has only a Stale context, since the Underlying frame is not the contract', async () => {
+  it('should give an option card the dated last close of its Stale context valued at that close, flipping the T7.24 absence', async () => {
     const { stack, t4 } = await settlementFixture(FRIDAY_1700, false);
     // The Long Put has a Mark only for Thursday, so Friday's contract Mark is Missing with that Stale context.
     await stack.saveMark(instrumentKey(ABC_PUT), '1.30', '2026-11-19');
@@ -243,7 +243,11 @@ describe('the dated last close of an option card (T7.24 known defect)', () => {
     const card = await cardOf(stack, FRIDAY_1700, t4);
 
     expect(card.evaluation?.staleContext).toEqual(expect.objectContaining({ tradingDate: '2026-11-19', price: '1.3' }));
-    expect(card.datedLastClose).toBeUndefined();
+    // T7SP.8 (P83) flips the T7.24 expectation, which was `datedLastClose` undefined: the option card now carries the Long Put at
+    // Thursday's close, valued with that session's Mark of the contract and ABC's frame at the same close (ABC has no Thursday Mark).
+    expect(card.datedLastClose?.tradingDate).toBe('2026-11-19');
+    expect(card.datedLastClose?.evaluation.observation).toEqual(expect.objectContaining({ instrument: ABC_PUT, tradingDate: '2026-11-19', mark: expect.objectContaining({ price: '1.3' }) as unknown }));
+    expect(card.datedLastClose?.evaluation.currentMarkedPnl.kind).toBe('Value');
   }, 60_000);
 });
 
@@ -255,13 +259,20 @@ describe('settlement items outside and inside calendar coverage (D7 Q1)', () => 
     const OLD_CALL = { kind: 'Option', symbol: 'BCD', root: 'BCD', expiration: '2026-11-13', right: 'Call', strike: '30', multiplier: 100 } as const;
     const old = await confirm('strategy.long-call', '2026-11-02T14:00:00Z', { underlying: 'BCD', legs: [{ side: 'Long', instrument: OLD_CALL, quantity: '1', intendedEntry: '1.00' }], stops: [{ kind: 'UnderlyingPrice', price: '27.00' }], targets: [{ kind: 'UnderlyingPrice', price: '35.00' }], exerciseIntent: 'NotAuthorized' });
     await record(old.tradeId, optionFill(old.tradeId, OLD_CALL, 'Buy', '2026-11-03T15:00:00Z', '1', '1.00', '0.65'));
-    // The calendar does not cover that expiration date (a stand-in for a date outside 2024 to 2028): Market Data refuses its session.
+    // The calendar does not cover that expiration date (a stand-in for a date outside 2024 to 2028): the read session, which
+    // gives the Review its settlement times (decision 104), answers that date's time as Unavailable(SessionPolicyNotCovered).
     const marketData = {
       ...stack.marketData,
-      query: (query: Parameters<typeof stack.marketData.query>[0]) =>
-        query.kind === 'ResolveSession' && query.context.kind === 'Historical' && query.context.tradingDate === OLD_CALL.expiration
-          ? Promise.resolve({ kind: 'Rejected' as const, issues: [{ field: 'tradingDate' as const, code: 'SessionPolicyCoverage' as const }] })
-          : stack.marketData.query(query),
+      openReadSession: async (context: Parameters<typeof stack.marketData.openReadSession>[0]) => {
+        const session = await stack.marketData.openReadSession(context);
+        return {
+          ...session,
+          settlementTime: (contract: OptionInstrument) =>
+            contract.expiration === OLD_CALL.expiration
+              ? Promise.resolve({ kind: 'Unavailable' as const, reason: 'SessionPolicyNotCovered' as const, instrument: contract, date: contract.expiration })
+              : session.settlementTime(contract),
+        };
+      },
     };
     const dailyReview = createDailyReview({ ...stack, marketData });
 

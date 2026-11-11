@@ -290,6 +290,38 @@ describe('Mark-to-Market Valuation (P77, P78, P80)', () => {
     expect(requests.filter((r) => r.store === 'observations' && r.method === 'getAll')).toHaveLength(2);
   });
 
+  // Beyond the planned cases (reported, T7SP.8, decision 104): the Review's open needs no dated line, so a caller can skip it.
+  it('should value O-C with no dated line and no read for it when asked to skip the dated line', async () => {
+    const { app, analysisOf, open } = await book('2026-10-13T21:00:00Z');
+    const tradeId = await twoCalls(app);
+    await saveMark(app, instrumentKey(XYZ_CALL), MONDAY, '2.20');
+    await saveMark(app, 'XYZ', MONDAY, '52.00');
+    const analysis = await analysisOf(tradeId);
+    const asOf = { kind: 'Current' as const, asOf: '2026-10-13T21:00:00Z' };
+
+    const { result: valuation, requests } = await countRequests(async () => valueTrade(await open(asOf), analysis, { skipDatedLine: true }));
+    const withLine = await valueTrade(await open(asOf), analysis);
+
+    if (valuation.kind !== 'Valued' || withLine.kind !== 'Valued') throw new Error('expected Valued');
+    expect(withLine.datedLine?.tradingDate).toBe(MONDAY);
+    expect(valuation.datedLine).toBeUndefined();
+    // Only Tuesday's frames are read: no earlier date's observations.
+    expect(requests.filter((r) => r.store === 'observations' && r.method === 'getAll')).toHaveLength(1);
+    expect(valuation.evaluation).toEqual(withLine.evaluation);
+  });
+
+  // Beyond the planned cases (reported, T7SP.8, decision 104): the frames and gaps a recovering session reads for a Trade share the date's snapshot, as recover's do.
+  it('should read the frames and gaps of a Trade in one snapshot when the session recovers', async () => {
+    const { app, analysisOf, open } = await book('2026-10-13T21:00:00Z');
+    const tradeId = await twoCalls(app);
+    const session = await open({ kind: 'Review', reviewDate: '2026-10-13' });
+    const analysis = await analysisOf(tradeId);
+
+    const { requests } = await countRequests(() => valueTrade(session, analysis, { factsAtClose: true, withGaps: true }));
+
+    expect(requests.filter((r) => r.store === 'meta' && r.method === 'get')).toHaveLength(1);
+  });
+
   // Beyond the planned cases (reported): a Trade holding no Position that is not Closed has nothing derive requires.
   it('should value a Planned Trade holding no Position with no read, its Mark-dependent figures NotApplicable(NoRemainingPosition)', async () => {
     const { app, analysisOf, open } = await book(MONDAY_1700);

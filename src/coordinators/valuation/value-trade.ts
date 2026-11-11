@@ -9,6 +9,8 @@ export interface ValuationOptions {
   readonly factsAtClose?: boolean;
   // Also list the required Instruments' gaps, as a session that recovers does.
   readonly withGaps?: boolean;
+  // Leave the dated line out, and make no read for it: the Review's open shows none.
+  readonly skipDatedLine?: boolean;
 }
 
 export type TradeValuation =
@@ -84,10 +86,13 @@ export async function valueTrade(session: MarketDataReadSession, analysis: Trade
     return { kind: 'Valued', state, evaluation: evaluate({ state, frame, ...(underlyingFrame && { underlyingFrame }) }), settlement: [], gaps: [] };
   }
   const state = open;
-  const { frame, underlyingFrame, read } = await observationsOf(session, state, analysis);
+  // Asked together, the frames and the gaps share the date's read snapshot, as `recover`'s do (A193).
+  const [{ frame, underlyingFrame, read }, gaps] = await Promise.all([
+    observationsOf(session, state, analysis),
+    options.withGaps ? session.gaps(state.observationRequirements.map((r) => ({ instrumentKey: instrumentKey(r.instrument), earliestExposure: r.earliestRelevance }))) : [],
+  ]);
   const evaluation = evaluate({ state, frame, ...(underlyingFrame && { underlyingFrame }) });
-  const datedLine = read && (await datedLineFor(session, analysis, read.frame, evaluation));
-  const gaps = options.withGaps ? await session.gaps(state.observationRequirements.map((r) => ({ instrumentKey: instrumentKey(r.instrument), earliestExposure: r.earliestRelevance }))) : [];
+  const datedLine = read && !options.skipDatedLine && (await datedLineFor(session, analysis, read.frame, evaluation));
   return { kind: 'Valued', state, evaluation, settlement: await settlementOf(session, analysis.tradeId, evaluation), gaps, ...read, ...(datedLine && { datedLine }) };
 }
 

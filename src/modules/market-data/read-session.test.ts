@@ -274,6 +274,25 @@ describe('the read session (P78, P79)', () => {
     for (const key of expected) expect(evidenceBinding).toContainEqual(key);
   });
 
+  it('should cost one meta.get per date read with the Stale-context lookups and gaps scans of that date inside it as recover does', async () => {
+    const { marketData } = await setup();
+    for (const key of ['AAA', 'BBB']) await marketData.save(mark(key, '2026-10-08'));
+    const context = { kind: 'Review' as const, reviewDate: '2026-10-12' };
+    // Both Instruments are Missing at the Review date with a Stale context, so each frame looks one up, and each is scanned for gaps.
+    const instruments = ['AAA', 'BBB'].map((instrumentKey) => ({ instrumentKey, earliestExposure: '2026-10-07T14:00:00Z' }));
+    const baseline = await countRequests(() => marketData.recover({ context, instruments }));
+    const session = await marketData.openReadSession(context);
+    // One operation's calls made together share the date's snapshot, as `recover` reads frames and gaps in one.
+    const { result: [frames, gaps], requests } = await countRequests(() => Promise.all([session.frames(['AAA', 'BBB']), session.gaps(instruments)]));
+    const metaGets = (all: { store: string; method: string }[]) => all.filter((r) => r.store === 'meta' && r.method === 'get');
+    expect(metaGets(baseline.requests)).toHaveLength(1);
+    expect(metaGets(requests)).toEqual(metaGets(baseline.requests));
+    expect(requests).toEqual(baseline.requests);
+    if (baseline.result.kind !== 'Recovered') throw new Error('expected recovery');
+    expect(frames).toEqual(baseline.result.frames);
+    expect(gaps).toEqual(baseline.result.gaps);
+  });
+
   it('should read a Mark saved after the session closed only in a new session', async () => {
     const { marketData } = await setup();
     const context: FrameContext = { kind: 'Current', asOf: TUESDAY_NOON };

@@ -776,28 +776,68 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         return { tradingDate, covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
       }
       const { day } = resolved;
-      // Each date's observations are read once, on the first call that asks for it.
-      const observations = new Map<string, Promise<Awaited<ReturnType<typeof observationsOn>>>>();
-      const observationsOf = (date: string) => {
-        let read = observations.get(date);
-        if (!read) {
-          read = deps.persistence.readSnapshot(['observations'], (tx) => observationsOn(tx, date)).then(({ value }) => value);
-          observations.set(date, read);
-        }
-        return read;
+      // The reads asked of a date in one synchronous run share one read snapshot, as `recover` reads a date's frames, Stale
+      // contexts and gaps in one (A193); a later run is a second snapshot, opened only when it has something left to read.
+      type Evidence = ReturnType<typeof evidenceOf>;
+      type Waiting<T> = { readonly resolve: (value: T) => void; readonly reject: (reason: unknown) => void; readonly promise: Promise<T> };
+      const waiting = <T,>(): Waiting<T> => {
+        let settle!: Pick<Waiting<T>, 'resolve' | 'reject'>;
+        const promise = new Promise<T>((resolve, reject) => { settle = { resolve, reject }; });
+        return { ...settle, promise };
       };
+      interface Batch { readonly evidence: Map<string, Waiting<Evidence>>; readonly scans: Map<string, Waiting<HistoricalGaps>> }
+      const observed = new Map<string, Awaited<ReturnType<typeof observationsOn>>>();
+      const collecting = new Map<string, Batch>();
+      const running = new Map<string, Promise<void>>();
+      async function readBatch(date: string, batch: Batch) {
+        const keys = [...batch.evidence.keys()].sort();
+        const scanned = [...batch.scans.keys()].sort();
+        const known = observed.get(date);
+        // With the date's observations in hand, a snapshot is needed only for a Stale lookup or a scan.
+        const staleNeeded = known !== undefined && keys.some((key) => !recordOf(known, key)?.effectiveMarkId);
+        if (known !== undefined && !staleNeeded && scanned.length === 0) {
+          keys.forEach((key) => batch.evidence.get(key)!.resolve(evidenceOf(date, key, recordOf(known, key), undefined)));
+          return;
+        }
+        const { value } = await deps.persistence.readSnapshot(['observations'], async (tx) => {
+          // A scan alone reads no frame, so it reads none of the date's observations.
+          const onDate = known ?? (keys.length > 0 ? await observationsOn(tx, date) : undefined);
+          const evidence = onDate ? await Promise.all(keys.map((key) => instrumentEvidence(tx, date, onDate, key))) : [];
+          const earliestExposure = `${deps.sessionPolicy.identity.coverage.first}T00:00:00Z`;
+          const gaps = await Promise.all(scanned.map((instrumentKey) => historicalGaps(tx, [{ instrumentKey, earliestExposure }], date).then(({ gaps }) => gaps[0]!)));
+          return { onDate, evidence, gaps };
+        });
+        if (value.onDate) observed.set(date, value.onDate);
+        keys.forEach((key, i) => batch.evidence.get(key)!.resolve(value.evidence[i]!));
+        scanned.forEach((key, i) => batch.scans.get(key)!.resolve(value.gaps[i]!));
+      }
+      // The batch collecting a date's reads is read in a microtask, after the run that asked has asked everything it will.
+      function batchOf(date: string): Batch {
+        let batch = collecting.get(date);
+        if (!batch) {
+          const made: Batch = { evidence: new Map(), scans: new Map() };
+          batch = made;
+          collecting.set(date, made);
+          void Promise.resolve().then(() => {
+            collecting.delete(date);
+            // A date's batches are read one after another, so a later one sees what the earlier read.
+            const read = (running.get(date) ?? Promise.resolve()).then(() => readBatch(date, made)).catch((error: unknown) => {
+              for (const asked of [...made.evidence.values(), ...made.scans.values()]) asked.reject(error);
+            });
+            running.set(date, read);
+          });
+        }
+        return batch;
+      }
       // Each Instrument's evidence at a date, with its Stale context looked up at most once.
-      const evidence = new Map<string, Promise<ReturnType<typeof evidenceOf>>>();
+      const evidence = new Map<string, Promise<Evidence>>();
       const evidenceAt = (date: string, instrumentKey: string) => {
         const id = JSON.stringify([date, instrumentKey]);
         let read = evidence.get(id);
         if (!read) {
-          read = (async () => {
-            const record = recordOf(await observationsOf(date), instrumentKey);
-            if (record?.effectiveMarkId) return evidenceOf(date, instrumentKey, record, undefined);
-            const { value: source } = await deps.persistence.readSnapshot(['observations'], (tx) => staleSourceOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date }));
-            return evidenceOf(date, instrumentKey, record, source);
-          })();
+          const asked = waiting<Evidence>();
+          batchOf(date).evidence.set(instrumentKey, asked);
+          read = asked.promise;
           evidence.set(id, read);
         }
         return read;
@@ -821,10 +861,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const scanOf = (instrumentKey: string) => {
         let read = scans.get(instrumentKey);
         if (!read) {
-          const earliestExposure = `${deps.sessionPolicy.identity.coverage.first}T00:00:00Z`;
-          read = deps.persistence
-            .readSnapshot(['observations'], (tx) => historicalGaps(tx, [{ instrumentKey, earliestExposure }], day.date))
-            .then(({ value }) => value.gaps[0]!);
+          const asked = waiting<HistoricalGaps>();
+          batchOf(day.date).scans.set(instrumentKey, asked);
+          read = asked.promise;
           scans.set(instrumentKey, read);
         }
         return read;
