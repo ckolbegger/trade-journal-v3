@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
-import { domainPurityRules, noIdentityRules } from './eslint.deps.config.js';
+import { domainPurityRules, expirationExemptRules, noIdentityRules } from './eslint.deps.config.js';
 import { wordingRules } from './eslint.wording.config.js';
 
 export default defineConfig(
@@ -20,6 +20,7 @@ export default defineConfig(
   reactHooks.configs.flat.recommended,
   noIdentityRules,
   domainPurityRules,
+  ...expirationExemptRules,
   wordingRules,
   {
     files: ['**/*.js'],

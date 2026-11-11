@@ -11,52 +11,87 @@ export const noIdentitySelector = {
   message: 'no-identity: support is decided by functional checks, never browser or OS identity.',
 };
 
+// P82: a relational comparison with an .expiration member on one side and anything else on the other is the
+// expiration rule written by hand. A comparison of two expirations (a sort) passes.
+const relational = 'BinaryExpression[operator=/^(<|<=|>|>=)$/]';
+const expirationMessage =
+  'expiration-comparison: ask the instrument module (expiredOn, settlementDueOn in src/domain/instrument/), never compare a date with .expiration.';
+export const expirationComparisonSelectors = [
+  {
+    selector: `${relational}[left.property.name='expiration']:not([right.property.name='expiration'])`,
+    message: expirationMessage,
+  },
+  {
+    selector: `${relational}[right.property.name='expiration']:not([left.property.name='expiration'])`,
+    message: expirationMessage,
+  },
+];
+
+const domainPuritySelectors = [
+  {
+    selector: "MemberExpression[object.name='Date'][property.name='now']",
+    message: 'domain-purity: read time from an injected clock, never Date.now.',
+  },
+  {
+    selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+    message: 'domain-purity: read time from an injected clock, never new Date().',
+  },
+  {
+    selector: "MemberExpression[object.name='Math'][property.name='random']",
+    message: 'domain-purity: no randomness in pure analysis.',
+  },
+  {
+    selector: "MemberExpression[object.name='Temporal'][property.name='Now']",
+    message: 'domain-purity: read time from an injected clock, never Temporal.Now.',
+  },
+  {
+    selector: "MemberExpression[property.name='randomUUID']",
+    message: 'domain-purity: identities are injected, never generated in pure analysis.',
+  },
+];
+
+const domainPurityGlobals = {
+  'no-restricted-globals': [
+    'error',
+    ...['indexedDB', 'localStorage', 'sessionStorage', 'caches', 'fetch', 'navigator'].map((name) => ({
+      name,
+      message: `domain-purity: pure analysis performs no I/O (${name}).`,
+    })),
+  ],
+};
+
 export const noIdentityRules = {
   files: ['**/src/**/*.{ts,tsx}'],
   rules: {
-    'no-restricted-syntax': ['error', noIdentitySelector],
+    'no-restricted-syntax': ['error', noIdentitySelector, ...expirationComparisonSelectors],
   },
 };
 
 export const domainPurityRules = {
   files: ['**/src/domain/**/*.{ts,tsx}'],
   rules: {
-    'no-restricted-syntax': [
-      'error',
-      noIdentitySelector,
-      {
-        selector: "MemberExpression[object.name='Date'][property.name='now']",
-        message: 'domain-purity: read time from an injected clock, never Date.now.',
-      },
-      {
-        selector: "NewExpression[callee.name='Date'][arguments.length=0]",
-        message: 'domain-purity: read time from an injected clock, never new Date().',
-      },
-      {
-        selector: "MemberExpression[object.name='Math'][property.name='random']",
-        message: 'domain-purity: no randomness in pure analysis.',
-      },
-      {
-        selector: "MemberExpression[object.name='Temporal'][property.name='Now']",
-        message: 'domain-purity: read time from an injected clock, never Temporal.Now.',
-      },
-      {
-        selector: "MemberExpression[property.name='randomUUID']",
-        message: 'domain-purity: identities are injected, never generated in pure analysis.',
-      },
-    ],
-    'no-restricted-globals': [
-      'error',
-      ...['indexedDB', 'localStorage', 'sessionStorage', 'caches', 'fetch', 'navigator'].map((name) => ({
-        name,
-        message: `domain-purity: pure analysis performs no I/O (${name}).`,
-      })),
-    ],
+    'no-restricted-syntax': ['error', noIdentitySelector, ...expirationComparisonSelectors, ...domainPuritySelectors],
+    ...domainPurityGlobals,
   },
 };
+
+// The expiration rule's exemptions (P82): test files, and src/domain/instrument/ where the rule lives. Domain
+// files among them keep the purity rules.
+export const expirationExemptRules = [
+  {
+    files: ['**/src/**/*.test.{ts,tsx}'],
+    ignores: ['**/src/domain/**'],
+    rules: { 'no-restricted-syntax': ['error', noIdentitySelector] },
+  },
+  {
+    files: ['**/src/domain/instrument/**/*.{ts,tsx}', '**/src/domain/**/*.test.{ts,tsx}'],
+    rules: { 'no-restricted-syntax': ['error', noIdentitySelector, ...domainPuritySelectors], ...domainPurityGlobals },
+  },
+];
 
 export default [
   { files: ['**/*.{ts,tsx}'], languageOptions: { parser: tseslint.parser } },
   noIdentityRules,
   domainPurityRules,
+  ...expirationExemptRules,
 ];

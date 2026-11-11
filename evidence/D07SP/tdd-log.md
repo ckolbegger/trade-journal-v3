@@ -205,3 +205,27 @@ Rows 1 and 2 are the closed-views.test.ts cases and 3 is the 9th (retry) case; t
 - Change: `plannedPart` takes an optional `valuationDate`; `optionOpenDetail` derives at `frames.tradingDate`; `optionClosedDetail` derives at the terminal date (taken from a first dateless derive, as before) and keeps `terminalTime` from that first state. No test name, expected value or assertion changed.
 - Before: `plannedPart(which, record)` -> `derive({ record })`. After: `plannedPart(which, record, valuationDate)` -> `derive({ record, valuationDate })` for both builders.
 - Verification: `npx vitest run src/ui/screens/TradeDetailOptions.test.tsx` 18 passed; `npx vitest run src/ui src/domain src/coordinators` 86 files / 1124 passed; `npm run typecheck` exit 0; `npm run test:integration` 96 files / 196 passed.
+
+## T7SP.9 The expiration-comparison lint rule (structural)
+
+Selector (`expirationComparisonSelectors` in `eslint.deps.config.js`; relational is `BinaryExpression[operator=/^(<|<=|>|>=)$/]`), two entries so that a comparison of two expirations (a sort) passes:
+
+- `<relational>[left.property.name='expiration']:not([right.property.name='expiration'])`
+- `<relational>[right.property.name='expiration']:not([left.property.name='expiration'])`
+
+Message: "expiration-comparison: ask the instrument module (expiredOn, settlementDueOn in src/domain/instrument/), never compare a date with .expiration."
+
+Wiring: `noIdentityRules` (all of src) and `domainPurityRules` (src/domain) repeat `noIdentitySelector`, then the expiration selectors (and the purity selectors for domain). `expirationExemptRules` (new, also added to `eslint.config.js` after `domainPurityRules`, since `npm run lint` merges these entries) exempts non-domain `src/**/*.test.{ts,tsx}` (identity only) and `src/domain/instrument/**` plus domain tests (identity, purity selectors and globals, no expiration rule).
+
+| Command | Result |
+|---|---|
+| `npm run lint:deps` | exit 0, "lint:deps OK (src)": the rule passes on today's tree (no product hit, so no code change) |
+| planted `if (date > leg.instrument.expiration) {}` in `trade-views.ts` (a typed `plantedP82(date, leg)` function), `npm run lint:deps` | exit 1: `src/coordinators/trade-views/trade-views.ts:53:7 expiration-comparison: ask the instrument module (expiredOn, settlementDueOn in src/domain/instrument/), never compare a date with .expiration.` |
+| plant reverted | `git status --short` clean |
+| `daily-review.ts` sort of two expirations (`a.expiration < b.expiration`, line 360 in `src/coordinators/daily-review/daily-review.ts`) | passes in the first `lint:deps` run (no message) |
+| `npm run lint` | exit 0 (also ran as the pre-commit hook) |
+| `npm run verify:wording` | exit 0 |
+| `npm run typecheck`; `npx tsc6 --noEmit` | exit 0; exit 0 |
+| `full-suite.sh` checks count (5 fixed + verify:* scripts) | 14, unchanged |
+
+Deviation: the plant was not committed. The pre-commit hook (lint) would reject it and `git commit --no-verify` is blocked, so it was applied to the working tree, linted, and reverted with Edit. No scratch commit exists and no reset was needed.
