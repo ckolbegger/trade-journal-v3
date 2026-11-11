@@ -190,11 +190,10 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 ### Notes for later tasks
 
-- **T7SP.9:** T7SP.8 removed `evaluate`'s dateless fallback (`bc47a037`), so the rule needs no exemption for it. Every production `evaluate` call derives at a date (`value-trade.ts`, `dated-line.ts`); the dateless derives (`daily-review.ts`, `trade-views.ts`, the workflows) never reach `evaluate` (A192).
 - **T7SP.14:** since T7SP.8 (`e8b78874`, decision 104), the read session runs a date's frames, Stale-context lookups and gaps scans in one snapshot, as `recover` does, so the Review open's `meta.get` is unchanged (13 in `d7/query-count.test.ts:87`'s live baseline). The Review open skips the dated line (`skipDatedLine`); only `getTrade` reads for it.
 - **T7SP.14:** T7SP.5-B1 (`40442940`) makes the session's one gaps scan per Instrument run from the session policy's coverage start (2024-01-01), not from the exposure, so a later call with an earlier exposure needs no second scan. The request lists are unchanged, but each scan reads every stored observation of that Instrument since coverage start, where `recover` reads from the aggregated earliest exposure. When Daily Review's `open` switches to the session (T7SP.8), the records read per Review open grow with each Instrument's whole history (the growth tech debt item 3 describes). T7SP.14 measures it against `evidence/D07/bench.md`; more than 10% slower on a measured step stops the gate for the user (section 5, condition 5).
 - **T7SP.12:** decision 103 already trimmed one Trade Views case: `closed-views.test.ts`, "...when Market Data rejects the frames for a reason other than coverage". It also rewrote 8 stub cases at the read session (`evidence/D07SP/tdd-log.md`, T7SP.7). T7SP.8 rewrote `settlement.test.ts:253` at the read session and trimmed nothing. Trim only what remains, and keep the rewritten cases as each coordinator's wiring cases.
-- **T7SP.9:** start from the throwaway rule in the breakdown's section 1.5, and keep `noIdentitySelector` and the domain-purity selectors in the same `no-restricted-syntax` entry (section 3).
+- **T7SP.10 to T7SP.15 (any lint change):** since T7SP.9 (`552d0d06`, B1 `96660874`), every `no-restricted-syntax` entry under `src/` that isn't exempt (test files and `src/domain/instrument/` are exempt) must spread `expirationComparisonSelectors` from `eslint.deps.config.js`. That includes the `src/ui` wording entry in `eslint.config.js` (`wordingWithExpirationRules`). The wording block relies on the identity selector staying first in `wordingRules` (`.slice(1)`).
 - **T7SP.13:** item 4 says each suite keeps one case per classification plus decision 56's no-frame case in Trade Views. Check `reflections.test.ts:96` (an anchor with a New York offset) against `classify-due.test.ts` before removing it; if no domain case covers an offset, move it there.
 
 ### Open questions
@@ -227,6 +226,15 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
   - `settlement.test.ts:236` was renamed with its flip, because the old name stated the absence. The new line keeps only contract Values, because ABC has no Thursday Mark.
   - `getTrade` derives the requested Trade twice (eligibility at the Review date, then `valueTrade`). The eligibility derive must carry the date, because its requirements choose the frames that bind to the overview's snapshot.
 - **T7SP.8, dismissed ocr finding:** `evaluate.ts:199`, "a dateless state reads a live option as `Due`" (Wrong: no production `evaluate` call takes a dateless state, A192).
+- **T7SP.9, deviations:**
+  - The planted violation was linted in the working tree and then reverted, not in a scratch commit, because the pre-commit lint rejects it and `--no-verify` is blocked.
+  - `eslint.config.js` was changed as well as `eslint.deps.config.js`, so that `npm run lint` exempts tests and the Instrument module and, since B1, covers `src/ui`.
+- **T7SP.9, bug tasks:** three, from one ocr review:
+  - B1 (`96660874`): `src/ui` under `npm run lint` lacked the rule.
+  - B2 (`e66521f6`): wrapped operands slipped through, and a wrapped sort was rejected.
+  - B3 (`85121bb5`): computed `['expiration']` was missed, and `dates[expiration]` was flagged.
+
+  Known limits that remain: more than 3 stacked wrappers, and a template-literal key, which the B3 reviewer noted (not an ocr finding).
 - **T7SP.7-B1, kept read:** with a Debt, an expired or no-Position Detail still makes a `ResolveFrames` read for the closes, outside `binding()` and `marketDataSnapshotId`, as the Closed Detail does (decision 56). Removing it needs `previousCloseInstant` from Market Data, which is a spec change.
 - **T7SP.5, dismissed ocr finding:** a nested ternary at `market-data.ts:768` (style, low), judged Wrong: no such rule in the repo.
 - **T7SP.5-B1, dismissed ocr finding:** a claimed TS7053 type error at `market-data.ts:863`, judged Wrong: `npm run typecheck` passes on the commit.

@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 10416,
+    "input_tokens": 10323,
+    "output_tokens": 93,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "eslint.config.js",
+      "files": [
+        "eslint.config.js"
+      ]
+    }
+  ],
+  "session_id": "4c1e171d-3f98-449b-a529-3f70ddcdf09d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4c1e171d-3f98-449b-a529-3f70ddcdf09d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "96660874",
+      "resolved_base": "552d0d0659cf3d5370b96ca106e20ee5af22362d",
+      "resolved_head": "96660874562f7b966936b8f3286d2d625dc0c451",
+      "exact_range": "552d0d0659cf3d5370b96ca106e20ee5af22362d..96660874562f7b966936b8f3286d2d625dc0c451",
+      "source_artifact_sha256": "e3fe43fa47b6c6f6cfaa44f5b1b7ef7d08cd173d8b88c29a19d7742fab3b62d8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "74c0138701226058c218dc8bcbdd5f266ab1df3771fd649cf767b63271fe3087",
+          "path": "eslint.config.js",
+          "fingerprint": "06e842f35b51cbe078d599a45dfe67d77fa38639c33a114894388886ae5747c2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "74c0138701226058c218dc8bcbdd5f266ab1df3771fd649cf767b63271fe3087",
+          "path": "eslint.config.js",
+          "fingerprint": "06e842f35b51cbe078d599a45dfe67d77fa38639c33a114894388886ae5747c2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8712
+  }
+}

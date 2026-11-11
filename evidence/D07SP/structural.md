@@ -387,3 +387,81 @@ Reviewer's note, not a finding: `evaluate` still accepts a dateless state at the
 | Checks | 14 of 14 exit 0 |
 
 The browser tier printed by `browser-auto f9fea5ef` was `browser tier: task (no changed path since f9fea5ef is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.9 The expiration-comparison lint rule (structural)
+
+**Committed as `552d0d06`**, with the verification in `tdd-log.md` under T7SP.9.
+- **The rule:** two `no-restricted-syntax` selectors in `eslint.deps.config.js`. A relational `BinaryExpression` whose left or right side is an `.expiration` member fails, unless the other side is one too, as in a sort of two expirations. It applies outside `src/domain/instrument/` and outside test files, which keep their existing selectors. `npm run lint:deps` passes on the tree.
+- **Planted violation:** `trade-views.ts:53:7` failed with "expiration-comparison: ask the instrument module (expiredOn, settlementDueOn in src/domain/instrument/), never compare a date with .expiration."
+- **Sort check:** the sort of two expirations (`daily-review.ts:360`, which section 1.5 calls `:351`) passes.
+- **Other checks:** `lint`, `verify:wording`, `typecheck` and `tsc6` exit 0. There are still 14 checks.
+- **Deviations from the plan:**
+  - The planted run used the working tree, not a scratch commit, because the pre-commit lint rejects the plant and `--no-verify` is blocked. The plant was reverted, and `git status` was clean afterwards.
+  - `eslint.config.js` also changed, with one import and one spread of `expirationExemptRules`, so that `npm run lint` exempts test files and the Instrument module. The handoff's section 3 notes that `lint` shares this config.
+  - The purity selectors and globals moved into shared constants, with their contents unchanged.
+
+**Cumulative run `t7sp-9`** (2026-11-10, on `552d0d06`). Outputs are in `suite-runs/t7sp-9-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.7 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+The browser tier printed by `browser-auto 6767ed6e` was `browser tier: task (no changed path since 6767ed6e is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+**ocr on `552d0d06`** (session df2e97b2, gpt-6.1-sol, 2 files reviewed; `ocr/T7SP.9-552d0d06.json`): 3 findings, each becoming a bug task, run one at a time. The reviewer confirmed with `--print-config` that no existing selector was dropped from any file group.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `eslint.config.js:23` | `wordingRules` replaces `no-restricted-syntax` for non-test `src/ui` files, so the expiration rule doesn't apply there. | Valid: `date > i.expiration` linted as `src/ui/AppShell.tsx` passes. | Bug task T7SP.9-B1 |
+| medium | `eslint.deps.config.js:21` | The selectors see only the direct operand. A wrapped expiration slips through (`(x.expiration as string)`, `x?.expiration`), and a wrapped two-expiration sort is rejected. | Valid: both checked. | Bug task T7SP.9-B2 |
+| medium | `eslint.deps.config.js:21` | Without `computed=false`, `i['expiration']` is missed, and `dates[expiration]` would be flagged. | Valid for the miss (checked); the false positive is Doubtful, since no such code exists. | Bug task T7SP.9-B3 |
+
+**T7SP.9-B1** (`96660874`): the non-test `src/ui` group under `npm run lint` now carries the 2 expiration selectors (`wordingWithExpirationRules` in `eslint.config.js`).
+- **Red:** a planted `date > leg.instrument.expiration`, linted through stdin as `src/ui/AppShell.tsx`, exited 0. The gap was narrower than ocr's claim: `lint:deps` already rejected it.
+- **Green:** the same plant exits 1 with the rule's message. `lint`, `lint:deps`, `verify:wording`, `typecheck` and `tsc6` exit 0 on the tree.
+- **Selector counts:** only `src/ui/AppShell.tsx` changed, from 31 to 33 (0 to 2 expiration).
+
+**ocr on `96660874`** (session 4c1e171d; `ocr/T7SP.9-B1-96660874.json`): no findings. The reviewer re-checked every file group with `--print-config` and confirmed no selector was dropped. Reviewer's note, not a finding: the wording block relies on the identity selector staying first in `wordingRules` (`.slice(1)`), and nothing guards that order.
+
+**T7SP.9-B2** (`e66521f6`): the two expiration selectors now look through `TSAsExpression`, `TSNonNullExpression`, `TSSatisfiesExpression`, `TSTypeAssertion` and `ChainExpression` up to three deep (`isExpiration(side)` with `:matches`), as `wrapperPaths` does in the wording config.
+- **Red, then green,** under both configs:
+
+  | Snippet | Before | After |
+  |---|---|---|
+  | `date > (x.expiration as string)` | passed (wrong) | rejected |
+  | `date > x?.expiration` | passed (wrong) | rejected |
+  | `date > x.expiration!` | passed (wrong) | rejected |
+  | `(a.expiration as string) < b.expiration` | rejected (wrong) | passes |
+
+  `tdd-log.md` has further snippets that went the same way.
+- **Selector counts:** unchanged from B1. `lint`, `lint:deps`, `verify:wording` and `typecheck` exit 0, and the rule fires on no real code.
+- **Known limit:** four or more stacked wrappers pass, the same cap as the wording config.
+
+**ocr on `e66521f6`** (session 49f7da39; `ocr/T7SP.9-B2-e66521f6.json`): no findings. The reviewer exercised the selectors through ESLint's `Linter` API across `src/ui`, `src/coordinators` and the domain, and confirmed with `--print-config` that no selector was dropped.
+
+**T7SP.9-B3** (`85121bb5`): at every wrapper depth from 0 to 3, `isExpiration` matches a non-computed `.expiration` (`computed=false`) or a computed `['expiration']` string literal (`computed=true`, `property.value`). Red, then green, under both configs:
+
+| Snippet | Before | After |
+|---|---|---|
+| `date > x['expiration']` | passed (wrong) | rejected |
+| `date > (x['expiration'] as string)` | passed (wrong) | rejected |
+| `date > dates[expiration]` | flagged (wrong) | passes |
+| `a['expiration'] < b.expiration` | flagged (wrong) | passes |
+
+The ocr finding's Doubtful half proved real: `date > dates[expiration]` was flagged before the fix. All 12 B2 snippets behave as recorded. Counts are unchanged, and `lint`, `lint:deps`, `verify:wording`, `typecheck` and `tsc6` all exit 0. There were no first-run passes.
+
+**ocr on `85121bb5`** (session 9f8bf240; `ocr/T7SP.9-B3-85121bb5.json`): no findings. The reviewer re-ran the forms and wrapper combinations through ESLint's `Linter` and confirmed that no selector was dropped. Reviewer's note, not a finding: a template-literal key (`` x[`expiration`] ``) passes; it is rare, and no code uses it.
+
+**Cumulative run `t7sp-9-b3`** (2026-11-10, on `85121bb5`, after B1–B3). Outputs are in `suite-runs/t7sp-9-b3-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.7 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+The browser tier printed by `browser-auto 6767ed6e` was `browser tier: task (no changed path since 6767ed6e is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
