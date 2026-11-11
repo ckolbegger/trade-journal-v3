@@ -309,3 +309,22 @@ The user decided both as **decision 103, plan revision 73** (`5c836aee`, tag `cl
 | medium | `trade-views.ts:798` | For an expired option, or a Trade with no Position, that has a Debt, the `sessionCloses` fallback issues a `ResolveFrames` read the module avoids. It also samples `clock.now()` a second time, so the Debt's due status can be classified against a different session than `expectedMarkDate`. | Valid, with a failure scenario: a read just before 16:00 ET and a fallback just after. | Bug task T7SP.7-B1 |
 
 Reviewer's note, not a finding: the session exposes `closeInstant` but not `previousCloseInstant`, so taking the closes from the open session may need more than the session offers today.
+
+**T7SP.7-B1** (`f9fea5ef`): `getTradeDetail` now samples the clock once per call. The same instant opens the read session and feeds the `sessionCloses` fallback, so a Debt's due status and `expectedMarkDate` come from one session. The Closed Detail passes the same instant and is otherwise unchanged.
+- The new case "should classify a Debt against the closes of the session the Detail was opened at when the clock crosses that session close during the read" went red as `expected [ 'Due' ] to deeply equal [ 'DueInNextReview' ]`, then green.
+- Three earlier red rows failed on the fixture and are noted invalid in `tdd-log.md`.
+- **Kept:** the fallback's `ResolveFrames` read. `classifyDue` needs the previous close, which only a frames result carries, and neither `ResolveSession` nor the read session exposes it. Removing the read would change Market Data's interface, a spec change. So with a Debt, an expired or no-Position Detail still makes that read, outside `binding()` and `marketDataSnapshotId`, as the Closed Detail already does (decision 56). This goes to the open questions.
+- Every request list is unchanged: integration passes 191 of 191.
+
+**ocr on `f9fea5ef`** (session 6ab67c31, gpt-6.1-sol, 1 file reviewed, 2 excluded; `ocr/T7SP.7-B1-f9fea5ef.json`): no findings.
+
+**Cumulative run `t7sp-7`** (2026-11-10, on `f9fea5ef`, after B1). Outputs are in `suite-runs/t7sp-7-*.txt`; `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1476 tests passed (T7SP.7 trimmed 1 case; B1 added 1) |
+| Node integration | 94 files, 191 tests passed |
+| Browser (Chromium), task tier | 5 passed (12.1 s); no `e2e/d7sp` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+The browser tier printed by `browser-auto b5398b91` was `browser tier: task (no changed path since b5398b91 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
