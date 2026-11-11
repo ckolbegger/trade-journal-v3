@@ -2,6 +2,13 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 76: the commit tagged `claude-opus-5.5-plan-r76` (revision 75 plus decision 106). T7SP.14's benchmark measured the Review open about 10x slower than D7, because since T7SP.5-B1 the read session scans each Instrument's gaps from coverage start. New task T7SP.19 scans from the earliest exposure asked in a batch, and scans again only when a later call asks from an earlier exposure. Then T7SP.14 reruns against D7.
+  - T7SP.5-B1's case changes from one read to two.
+  - No other existing case, request list, fixture or `specs/` passage changes.
+  - The breakdown's task graph, sections 3, 6.1 and 9, and Progress are amended.
+  - D7S's numbering starts at decision 107.
+
+  Decided by the user on 2026-11-11, after T7SP.14 stopped on O3.
 - Revision 75: the commit tagged `claude-opus-5.5-plan-r75` (revision 74 plus decision 105). Trade Detail as a finished read, candidate 2 of the architecture review, joins the D7S prefactor as T7SP.16 to T7SP.18, run after T7SP.13 and before the latency harness and the gate:
   - the at-entry figures gain their Plan R;
   - the Detail views gain the held quantity and the contract's expiration line;

@@ -144,12 +144,15 @@ Each date-wide read and each Stale-context or gap lookup is its own read transac
 | T7SP.16 | Trade Analysis: the at-entry figures in Plan R (decision 105) | domain | S | T7SP.4 | `TradeAnalysis.evaluate` |
 | T7SP.17 | Trade Views: Detail carries the held quantity and the expiration line (decision 105) | application | S | T7SP.7 | `TradeViewsAndReporting.getTradeDetail` |
 | T7SP.18 | Trade Detail reads the finished fields (decision 105) | structural | S | T7SP.16, T7SP.17 | existing UI cases; a grep of `TradeDetail.tsx` |
-| T7SP.14 | Latency harness (O3) | test | S | T7SP.18 | `bench:run` |
+| T7SP.19 | Market Data: the read session scans gaps from the earliest exposure (decision 106) | module | S | T7SP.5-B1, T7SP.8 | `MarketData.openReadSession` |
+| T7SP.14 | Latency harness (O3) | test | S | T7SP.18, T7SP.19 | `bench:run` |
 | T7SP.15 | Gate run | verification | S | all | `suite-runner`, full tier |
 
 **Amended by decision 105 (revision 75):** T7SP.16 to T7SP.18 (candidate 2, Trade Detail as a finished read) run after T7SP.13 and before T7SP.14, in the Progress section's order. They are numbered after T7SP.15 so no existing ID moves. T7SP.18 touches `src/ui/`, so `browser-auto` picks the full tier for it.
 
-**15 tasks** at drafting, 18 with decision 105. The tasks run in this order, one at a time, each delegated to `tdd-task` with an ocr review of its commit, as `implementing.md` describes. T7SP.5 and T7SP.6 can't run in parallel with anything that touches their seams. Only T7SP.8 and T7SP.11 touch what the UI reads, so `browser-auto` picks the full tier for them.
+**Amended by decision 106 (revision 76):** T7SP.14's first run (`f2b987dc`) stopped on O3, with the Review open about 10x slower than D7. T7SP.19 runs next, then T7SP.14 reruns, then T7SP.15.
+
+**15 tasks** at drafting, 18 with decision 105, 19 with decision 106. The tasks run in this order, one at a time, each delegated to `tdd-task` with an ocr review of its commit, as `implementing.md` describes. T7SP.5 and T7SP.6 can't run in parallel with anything that touches their seams. Only T7SP.8 and T7SP.11 touch what the UI reads, so `browser-auto` picks the full tier for them.
 
 **Size check** (drafting guide): 15 tasks (not over 25); no schema change; three open questions at drafting, all since answered (fewer than five). No split is proposed.
 
@@ -342,6 +345,33 @@ The Open and Closed Detail views gain:
 
 A stock Trade's Detail has no `contractExpiration`. The coordinator decides the line exactly as `TradeDetail.tsx:316-322` does today. Every existing case passes unchanged, including the query-count proofs, because no new read is made.
 
+### T7SP.19 Market Data: the read session scans gaps from the earliest exposure (decision 106, revision 76)
+
+**Why.** T7SP.14's first `bench:run` (`f2b987dc`) measured the Review open at about 2 s, against D7's 0.2 s:
+- Review status went from 210 ms to 2014 ms;
+- opening the first card went from a 154.9 ms median to 1841.3 ms.
+
+Since T7SP.5-B1 (`40442940`), the session scans each Instrument from the session policy's coverage start: `market-data.ts`'s `readBatch` passes `coverage.first` as the exposure. Since T7SP.8, the Review open reads through the session, so it reads every stored observation of each Instrument since 2024-01-01. D7's `recover` read from the earliest exposure.
+
+**The change.** In `openReadSession`:
+- A batch's scan of an Instrument starts at the earliest exposure any call in that batch asked for it. Calls in one synchronous run share a batch (T7SP.8), and `valueTrade` asks for the gaps together with the frames. So the Review open's Trades share one scan per Instrument, from their earliest exposure, as `recover`'s did.
+- A call at or after a finished or pending scan's exposure reuses that scan, narrowed to its own exposure (as today).
+- A call that asks from an earlier exposure than a finished scan scans again from that exposure. That is one more read, and the new scan replaces the cached one.
+
+Seam: `MarketData.openReadSession` on `fake-indexeddb` with the request counter, in `src/modules/market-data/read-session.test.ts`.
+
+```text
+describe("the read session's gaps scan (decision 106)")
+  it should scan an Instrument from the earliest exposure asked, reading no stored observation before it
+  it should scan an Instrument once from the earlier exposure when two calls in the same run ask from different exposures
+```
+
+The first case's red shows the read starting before the exposure: assert on the index read's lower bound, through the request counter or a spy. The second case may pass on its first run once the first is green; its mutation check is to take the later exposure.
+
+**The one existing case that changes:** T7SP.5-B1's "should scan an Instrument's gaps once when a later call asks from an earlier exposure, answering each call as recover does". It becomes "should scan an Instrument's gaps again from an earlier exposure that a later call asks for, answering each call as recover does", and its expected `getAll` count goes from 1 to 2. Its answers stay equal to `recover`'s.
+
+**Unchanged.** Every other case is unchanged, and every query-count proof keeps its exact request lists (D2, D4, D5, D5R, D6, D7, D7SP's `review-query-count`). If one changes, stop and report. `recover` itself is untouched.
+
 ---
 
 ## 4. Structural tasks
@@ -378,7 +408,7 @@ The prefactor is complete when all of the following hold. Then the Progress sect
 
 ### 6.1 Unit and integration cases that stay unchanged
 
-Through T7SP.2 to T7SP.8, every existing case keeps its expected values and shapes. A case that fails is a defect to investigate, not an expectation to change. The exceptions are `settlement.test.ts:236`'s flipped expectation (T7SP.8, P83), T7SP.10's fixture field (P83), T7SP.12's removals (P85) and T7SP.13's (P89), each listed in its task's evidence. Decision 103 (revision 73) adds T7SP.7's: the due Detail's request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session. Decision 104 (revision 74) extends that to Daily Review's unit cases that stub `marketData.query`, starting with `settlement.test.ts:253`.
+Through T7SP.2 to T7SP.8, every existing case keeps its expected values and shapes. A case that fails is a defect to investigate, not an expectation to change. The exceptions are `settlement.test.ts:236`'s flipped expectation (T7SP.8, P83), T7SP.10's fixture field (P83), T7SP.12's removals (P85) and T7SP.13's (P89), each listed in its task's evidence. Decision 103 (revision 73) adds T7SP.7's: the due Detail's request list in `d7/query-count.test.ts:97`, and the Trade Views unit cases that stub `marketData.query`, each removed or rewritten at the read session. Decision 104 (revision 74) extends that to Daily Review's unit cases that stub `marketData.query`, starting with `settlement.test.ts:253`. Decision 106 (revision 76) adds T7SP.19's change to T7SP.5-B1's case in `read-session.test.ts`: a later, earlier exposure is read again, so the case expects 2 reads instead of 1.
 
 ### 6.2 New integration and browser files
 
@@ -462,6 +492,10 @@ During T7SP.12, 2026-11-10 (decision 105, revision 75):
 
 26. **Candidate 2 joins the prefactor:** "insert tasks for the 2nd architecture candidate, Make Trade Detail a finished read. Insert them after T7SP.13 and complete the work before doing the latency benchmark and full-tier run." Tasks T7SP.16 to T7SP.18.
 
+During T7SP.14, 2026-11-11 (decision 106, revision 76):
+
+27. **The O3 regression:** the user agreed the cause is the gaps scan from coverage start, and asked: "How hard would it be to fix it so the scan only runs from earliest exposure and retest with that fix?" Then: "Yes, go ahead with the revision and fix." Task T7SP.19, then T7SP.14's rerun.
+
 ---
 
 ## 10. Progress
@@ -484,5 +518,6 @@ During T7SP.12, 2026-11-10 (decision 105, revision 75):
 | T7SP.16 | Done | `8008446f`; expectations fix `daf2635e` |
 | T7SP.17 | Done | `75aaee66` |
 | T7SP.18 | Done | `a719c7e5` |
-| T7SP.14 | In progress from `a719c7e5` | |
+| T7SP.19 | In progress from `f2b987dc` | |
+| T7SP.14 | First run stopped (O3), Review open about 10x slower than D7; rerun after T7SP.19 (decision 106) | `f2b987dc` (first run's evidence) |
 | T7SP.15 | Not started | |

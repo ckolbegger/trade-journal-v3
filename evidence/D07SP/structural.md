@@ -656,3 +656,23 @@ No test file or expectation changed. One test-support builder was extended addit
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto 75aaee66` printed `browser tier: full (first matching path since 75aaee66: src/ui/screens/TradeDetail.tsx)`. Ports 5175, 9341 and 9342 were free before and after. `TradeList.test.tsx:125` passed, so tech debt item 11 did not trigger.
+
+## T7SP.14 Latency harness, first run (stopped on O3)
+
+**Committed as `f2b987dc`**: `evidence/D07SP/bench.md` holds run 1's report and the section "Against D7 (T7SP.14)", which also has run 2's figures.
+- Two `bench:run` runs at `41798f0e`. The cached generator-6 profile was reused, and port 4175 was free before and after.
+- `tools/bench-run.ts:43` writes `evidence/D07/bench.md`. Each output was moved aside and D7's file restored with `git checkout`; `git diff --quiet -- evidence/D07` exits 0.
+- Both runs printed `bench:run OK`. Both gated budgets passed (cold p95 134.5 and 135.5 of 2,500 ms; warm p95 65.4 and 65.1 of 1,500 ms), and every row comparison passed.
+
+**Steps more than 10% slower than D7, in both runs** (D7, then run 1 and run 2, in ms):
+- Warm switch p95: 47.0 → 65.4, 65.1 (+39%).
+- Review status before the runs: 210 → 2014, 2134. After the runs: 206 → 1794, 2212.
+- First card median: 154.9 → 1841.3, 1828.9. p95: 165.7 → 1888.2, 1865.3.
+- Save Marks median: 149.5 → 191.1, 189.4. p95: 151.9 → 235.6, 217.6.
+- Action save median: 124.1 → 187.1, 238.2. p95: 160.8 → 240.8, 254.4.
+- Closed page median: 87.0 → 114.0, 114.0.
+- Cold Action save median: 132.0 → 239.8, 218.6.
+
+The cold start p95 (+4%) and the Closed page p95 (−25%) are within 10%.
+
+**Stopped for the user (section 5, condition 5).** The likely cause, which the user agreed with: since T7SP.5-B1, the session's gaps scan reads each Instrument from coverage start, and since T7SP.8 the Review open reads through the session. Decided as decision 106 (revision 76): T7SP.19 scans from the earliest exposure, then T7SP.14 reruns.
