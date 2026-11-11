@@ -353,3 +353,13 @@ Option Trades in each fixture's Review view (the `reviewTrades` cards, from `get
 - The option Trades in v6's Planned and Closed lists (fx-0217, fx-0189, fx-0203) are not in the Review view and have no card.
 
 Conclusion: no fixture Trade gains a dated line; nothing changed in `tests/fixtures`.
+
+## T7SP.11 Browser: the option dated line in the Review
+
+Playwright case, logged by hand. Spec: `e2e/d7sp/review-dated-line.spec.ts`; served build `dist-faults` (rebuilt with `npm run build:faults` before each run).
+
+| Task | Case | Phase | Command | Outcome | Failure excerpt |
+|---|---|---|---|---|---|
+| T7SP.11 | O-C bought Monday, Review Tuesday 17:00 with the call's Monday Mark only: a "Mon Oct 12 close" group with its figures at 320 and 1280 px, no sideways scroll | first run (pass) | `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | 1 passed. First-run pass, flagged for the user: T7SP.8 built the behavior (option cards fill `datedLastClose`). At 320 and 1280 px the group's figures read `+$98.70 · +0.25R`, `Mark missing: XYZ, Mon Oct 12`, `$500.00 · 1.25R`, `Mark missing: XYZ, Mon Oct 12`. | |
+| T7SP.11 | same | mutation | `npm run build:faults` then `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | 1 failed. Mutation: `getTrade` in `src/coordinators/daily-review/daily-review.ts` (line 644) passes `skipDatedLine: true` to `valueTrade`, so no Trade gets a dated line. | `Error: 320 px  expect(locator).toBeVisible() failed ... getByRole('group', { name: 'Mon Oct 12 close' })  Expected: visible ... element(s) not found` |
+| T7SP.11 | same | green (restored) | `npm run build:faults` then `npx playwright test e2e/d7sp/review-dated-line.spec.ts` | 1 passed; `git diff -- src` empty after the restore. The figures assertion was then tightened from a count of 4 to the four texts above and rerun: 1 passed. | |
