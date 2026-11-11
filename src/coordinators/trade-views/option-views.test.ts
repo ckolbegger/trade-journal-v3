@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { instrumentKey } from '../../domain/instrument/index.ts';
+import { fixedClock } from '../../domain/time/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { D5_JOURNAL_MANIFEST, type ReflectionDisposition } from '../../modules/journal/index.ts';
 import type { MarketData, MarketDataReadSession } from '../../modules/market-data/index.ts';
@@ -14,7 +15,8 @@ const THURSDAY_1700 = '2026-11-19T22:00:00Z';
 const FRIDAY_1600 = '2026-11-20T21:00:00Z';
 const FRIDAY_1700 = '2026-11-20T22:00:00Z';
 const MONDAY_NOV_23_1700 = '2026-11-23T22:00:00Z';
-const MONDAY_PLAN = '2026-10-12T13:00:00Z';
+const TUESDAY_NOV_24_1700 = '2026-11-24T22:00:00Z';
+const MONDAY_PLAN ='2026-10-12T13:00:00Z';
 const MONDAY_10 = '2026-10-12T14:00:00Z';
 const MONDAY_11 = '2026-10-12T15:00:00Z';
 const TUESDAY_10 = '2026-10-13T14:00:00Z';
@@ -458,5 +460,35 @@ describe('getTradeDetail: no Mark is requested after the expiration date (T7.32-
     const detail = openDetail(await friday.tradeViews.getTradeDetail({ tradeId }));
 
     expect(detail.current.markResolution).toEqual(expect.objectContaining({ kind: 'Missing' }));
+  }, 60_000);
+});
+
+describe('getTradeDetail: a Debt past expiration takes its due status at the session own as-of (T7SP.7-B1)', () => {
+  it('should classify a Debt against the closes of the session the Detail was opened at when the clock crosses that session close during the read', async () => {
+    const monday = await optionStack(TUESDAY_NOV_24_1700); // the stack's own clock, for recording; the views get their own below
+    const tradeId = await monday.confirm('strategy.cash-secured-put', { underlying: 'MNO', legs: [{ side: 'Short', instrument: MNO_PUT, quantity: '-2', intendedEntry: '1.20' }], stops: [{ kind: 'UnderlyingPrice', price: '42.00' }], targets: [{ kind: 'UnderlyingPrice', price: '50.00' }] });
+    // The fill's reflection is deferred; it is after Friday's close, so the Debt falls due at Monday's close. Both contracts stay open past expiration.
+    const current = await monday.stack.tradeRecord.getRecord({ tradeId, projection: 'AnalysisInput' });
+    if (current.kind !== 'Found') throw new Error('no Trade');
+    const legId = (current.projection as unknown as { plan: { legs: { factId: string }[] } }).plan.legs[0]!.factId;
+    const recorded = await monday.stack.tradeWorkflows.recordPositionChange({
+      originTradeId: tradeId,
+      trades: [{ tradeId, expectedFactRevision: current.factRevision }],
+      members: monday.fill(tradeId, MNO_PUT, 'Sell', '2026-11-20T21:05:00Z', '2', '1.25', '1.30')(legId),
+      reflection: { kind: 'Defer' },
+    });
+    if (recorded.kind !== 'Recorded') throw new Error(`expected Recorded, got ${recorded.kind}`);
+    const dueStatuses = (view: OpenTradeDetail) => view.journal.flatMap((item) => (item.kind === 'Debt' ? [item.dueStatus] : []));
+    // The Monday session, past the expiration date, is the latest completed at 15:59:59 on Tuesday; the Tuesday session is from 17:00.
+    const before = '2026-11-24T20:59:59Z';
+    const reference = openDetail(await createTradeViews({ ...monday.stack, clock: fixedClock(before) }).getTradeDetail({ tradeId }));
+    let samples = 0;
+    const advancing = { now: () => (samples++ === 0 ? before : TUESDAY_NOV_24_1700) };
+
+    const detail = openDetail(await createTradeViews({ ...monday.stack, clock: advancing }).getTradeDetail({ tradeId }));
+
+    expect(reference.current).not.toHaveProperty('markResolution');
+    expect(dueStatuses(reference)).toEqual(['DueInNextReview']);
+    expect(dueStatuses(detail)).toEqual(dueStatuses(reference));
   }, 60_000);
 });

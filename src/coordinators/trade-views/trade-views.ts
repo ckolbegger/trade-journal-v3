@@ -24,7 +24,7 @@ import {
 } from '../../domain/trade-analysis/index.ts';
 import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
-import type { Clock } from '../../domain/time/index.ts';
+import type { Clock, Instant } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
 import type { MarkFrame, MarketData, MarketDataReadSession, MarkResolution } from '../../modules/market-data/index.ts';
@@ -650,14 +650,16 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
   }
 
   // One read session at the current instant per operation; its snapshot id for its own date, once its reads have resolved.
-  const openSession = () => deps.marketData.openReadSession({ kind: 'Current', asOf: deps.clock.now() });
+  const openSession = (asOf: Instant = deps.clock.now()) => deps.marketData.openReadSession({ kind: 'Current', asOf });
   const snapshotIdOf = (session: MarketDataReadSession): string | undefined => session.binding().snapshotIds[session.tradingDate];
 
   // The closes around the Expected Mark Date, for the due status of a Closed Trade's Debt. Market Data gives them
   // on the Instrument's frame; the frame's Mark is not read. Anything but frames, coverage rejections included,
   // leaves no closes, and the Debt carries no status (decision 56): a Closed Detail does not depend on Market Data.
-  async function sessionCloses(symbol: string): Promise<SessionCloses | undefined> {
-    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments: [symbol] });
+  // `asOf` is the instant the caller's own session was opened at, so that the closes are those of its session. The
+  // closes cannot come from the read session, which gives the close of its own session but not the one before it.
+  async function sessionCloses(symbol: string, asOf: Instant): Promise<SessionCloses | undefined> {
+    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf }, instruments: [symbol] });
     const frame = result.kind === 'Frames' ? result.frames[0] : undefined;
     return frame && closesOf(frame);
   }
@@ -722,7 +724,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const page = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
         const narrative = page.items;
         // Valued once through the module, at the session's date, and its state reused for every figure in the view.
-        const session = await openSession();
+        const asOf = deps.clock.now();
+        const session = await openSession(asOf);
         const valuation = await valueTrade(session, analysis);
         const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
         const { plan } = analysis;
@@ -776,7 +779,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // disagreement gets the Open form, which carries the LifecycleDisagreement (A96).
         if (analysis.storedLifecycle === 'Closed' && derived.expectedLifecycle === 'Closed') {
           const closeReason = analysis.closeReason && (await closeReasonOf(analysis.closeReason.closeReasonId));
-          const closes = narrative.some((item) => item.kind === 'Debt') ? await sessionCloses(analysis.plan.underlying) : undefined;
+          const closes = narrative.some((item) => item.kind === 'Debt') ? await sessionCloses(analysis.plan.underlying, asOf) : undefined;
           // A Closed Trade holds nothing, so no contract is awaiting settlement. Its evaluation is at its terminal date, with no read (A92).
           const closedEvaluation = valuation.evaluation;
           const current: ClosedCurrentEvaluation = { coverage: [{ instrument: closedEvaluation.observation.instrument, coverage: closedEvaluation.coverage }], evaluation: closedEvaluation };
@@ -795,7 +798,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         };
         // The closes behind a Debt's due status come from the frame read; with none (after expiration, or no Position), from Market Data's frame for the Underlying.
         const hasDebt = narrative.some((item) => item.kind === 'Debt');
-        const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying) : undefined;
+        const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying, asOf) : undefined;
         const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
