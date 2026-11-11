@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 20887,
+    "input_tokens": 20655,
+    "output_tokens": 232,
+    "cache_read_tokens": 5760,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/daily-review/daily-review.ts",
+        "src/itg/relocated/trade-views/current-evaluation.ts",
+        "src/itg/relocated/valuation/value-trade.ts"
+      ]
+    }
+  ],
+  "session_id": "2bced63f-fcc5-4c89-a7ef-720005ffef55",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2bced63f-fcc5-4c89-a7ef-720005ffef55",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "bbfc79726efa959d7802f340524bec5512eee0ca",
+      "resolved_base": "ae88792322f68d82b23dbf1cd36d7411a2e99fce",
+      "resolved_head": "bbfc79726efa959d7802f340524bec5512eee0ca",
+      "exact_range": "ae88792322f68d82b23dbf1cd36d7411a2e99fce..bbfc79726efa959d7802f340524bec5512eee0ca",
+      "source_artifact_sha256": "d65ad72f2b540142da9ebe69b37ffbd33149403bdf8b447b47d841c3d1868860"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "27a82e2e416bbd4fcda1442b6820bf31a2cf3490af63474b5b32bddcfcf7237e",
+          "path": "src/itg/relocated/daily-review/daily-review.ts",
+          "fingerprint": "d825f5c220eb01e7cd88691ed364c19b506342ab4360467e59eb8c54b34a30a7"
+        },
+        {
+          "item_id": "6a5bfa864cb4a6787ba4964a4f0f156e6747a7a9619958575cdf27d65ca5caea",
+          "path": "src/itg/relocated/valuation/value-trade.ts",
+          "fingerprint": "ac18ca16320f64a51d5003388b56d92136e7b0f2cf71d897671b544a4ea5fd5e"
+        },
+        {
+          "item_id": "9d7cdd47d6c840fa9791f23d0779c435335378dfcf364011ced52eb3c831372d",
+          "path": "src/itg/relocated/trade-views/current-evaluation.ts",
+          "fingerprint": "baf5ad4bee9c4f7dbb7bd532e5171b6cc7a75dd77f4b0f8e7e5bf9e21ab86f4a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "27a82e2e416bbd4fcda1442b6820bf31a2cf3490af63474b5b32bddcfcf7237e",
+          "path": "src/itg/relocated/daily-review/daily-review.ts",
+          "fingerprint": "d825f5c220eb01e7cd88691ed364c19b506342ab4360467e59eb8c54b34a30a7"
+        },
+        {
+          "item_id": "6a5bfa864cb4a6787ba4964a4f0f156e6747a7a9619958575cdf27d65ca5caea",
+          "path": "src/itg/relocated/valuation/value-trade.ts",
+          "fingerprint": "ac18ca16320f64a51d5003388b56d92136e7b0f2cf71d897671b544a4ea5fd5e"
+        },
+        {
+          "item_id": "9d7cdd47d6c840fa9791f23d0779c435335378dfcf364011ced52eb3c831372d",
+          "path": "src/itg/relocated/trade-views/current-evaluation.ts",
+          "fingerprint": "baf5ad4bee9c4f7dbb7bd532e5171b6cc7a75dd77f4b0f8e7e5bf9e21ab86f4a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 12455
+  }
+}

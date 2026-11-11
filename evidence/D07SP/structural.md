@@ -558,3 +558,33 @@ The browser tier printed by `browser-auto 6c5687c2` was `browser tier: task (no 
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto 85feaef2` printed `browser tier: task (no changed path since 85feaef2 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.16 Trade Analysis: the at-entry figures in Plan R (decision 105)
+
+**Committed as `8008446f`** (feature), with fix `daf2635e` (test expectations only). `AtEntryFigures` gains `riskFromEntryInPlanR` and `rewardFromEntryInPlanR`: the at-entry dollars divided by `state.baseline.oneR`, as `measure` does. `atEntryOf` takes `oneR`. The existing fields keep their values. Both planned cases went red first (`tdd-log.md`, T7SP.16), so there are no first-run passes.
+
+**Existing expectations extended (additive only).** Six whole-object `toEqual` expectations of an AtEntry line gained the two fields. Every existing value, assertion form and case name is unchanged:
+- `tests/integration/d4/intraday.test.ts:30`, in `8008446f`;
+- in `daf2635e`, after run `t7sp-16` failed them (the task's own run covered `src/domain` and integration only):
+  - `current-evaluation.test.ts`, three cases (1R 375: risk 180 is 12/25 and reward 160 is 32/75; awaiting, risk 220 is 44/75 and reward 120 is 8/25);
+  - `value-trade.test.ts`, the Stale-context dated-line case (12/25, 32/75);
+  - `daily-review.test.ts`, `getTrade` P13 (1R 250: risk 112 is 56/125 and reward 228 is 114/125).
+
+  The plan's text ("no existing case changes") missed these whole-object expectations. That was a drafting miss.
+
+**ocr on `8008446f`** (session 7dc1361c; `ocr/T7SP.16-8008446f.json`): no findings. Reviewer's note, not a finding: a zero `oneR` can't reach `evaluate` (`NoPositiveRisk` at plan acceptance), and `Rational.div` would throw rather than return NaN. The new divisions run on the no-mark path too, which matters only if that invariant breaks.
+
+**ocr on `daf2635e`** (relocated, because the commit is test-only; session 2bced63f; `ocr/T7SP.16-fix-daf2635e.json`): no findings. The reviewer checked all five literals by hand against their fixtures.
+
+**Cumulative run `t7sp-16`** (2026-11-10, on `8008446f`): **failed**. The 5 unit cases above failed on the added fields only; integration, the browser suites and the checks passed. Outputs are in `suite-runs/t7sp-16-*.txt`.
+
+**Cumulative run `t7sp-16-r2`** (2026-11-10, on `daf2635e`). The outputs are in `suite-runs/t7sp-16-r2-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1479 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (10.0 s), plus `e2e/d7sp` 1 passed (2.4 s) |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto 982da791` printed `browser tier: task (no changed path since 982da791 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.

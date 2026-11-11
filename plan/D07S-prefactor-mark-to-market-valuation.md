@@ -481,8 +481,8 @@ During T7SP.12, 2026-11-10 (decision 105, revision 75):
 | T7SP.11 | Done | `6c5687c2` |
 | T7SP.12 | Done | `85feaef2` |
 | T7SP.13 | Done | `982da791` (tech debt item 4 resolved) |
-| T7SP.16 | In progress from `982da791` | |
-| T7SP.17 | Not started | |
+| T7SP.16 | Done | `8008446f`; expectations fix `daf2635e` |
+| T7SP.17 | In progress from `daf2635e` | |
 | T7SP.18 | Not started | |
 | T7SP.14 | Not started | |
 | T7SP.15 | Not started | |
