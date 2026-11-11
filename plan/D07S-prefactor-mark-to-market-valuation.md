@@ -479,8 +479,8 @@ During T7SP.12, 2026-11-10 (decision 105, revision 75):
 | T7SP.9 | Done | `552d0d06`; B1 `96660874`; B2 `e66521f6`; B3 `85121bb5` |
 | T7SP.10 | Done | `10f52cf2` (no fixture change; evidence only) |
 | T7SP.11 | Done | `6c5687c2` |
-| T7SP.12 | In progress from `6c5687c2` | |
-| T7SP.13 | Not started | |
+| T7SP.12 | Done | `85feaef2` |
+| T7SP.13 | In progress from `85feaef2` | |
 | T7SP.16 | Not started | |
 | T7SP.17 | Not started | |
 | T7SP.18 | Not started | |

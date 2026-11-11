@@ -514,3 +514,27 @@ The browser tier printed by `browser-auto 85121bb5` was `browser tier: task (no 
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto 10f52cf2` printed `browser tier: full (first matching path since 10f52cf2: e2e/d7sp/review-dated-line.spec.ts)`. Ports 5175, 9341 and 9342 were free before and after. `TradeList.test.tsx:125` passed, so tech debt item 11 did not trigger.
+
+## T7SP.12 Trim the coordinator cases that moved (structural)
+
+**Committed as `85feaef2`.** Two cases were removed, both from `option-views.test.ts`; `tdd-log.md` under T7SP.12 has the table:
+- "Settlement Due item on an Open option row on the expiration date, and none the day before", covered by `value-trade.test.ts:144` and `:125`, with the wiring kept in `option-views:339` and `:133`;
+- "still reports a missing contract Mark on the expiration date itself", covered by `value-trade.test.ts:79` and `:144`, with the wiring kept in `current-evaluation:77` and `option-views:251`.
+
+Nothing was removed from `current-evaluation.test.ts` or `settlement.test.ts`: each module-owned behaviour there already has one case, and the rest are coordinator-owned. The ambiguous cases were kept, with their reasons in the log. `src/coordinators` went from 325 cases to 323.
+
+**ocr on `85feaef2`** (relocated, because the commit is test-only; session 35ac7799; `ocr/T7SP.12-85feaef2.json`): no findings. The reviewer's notes are not findings and became no bug tasks:
+- The Open page no longer has a case with a real `Value` settlement time, or one with `settlement: []` the day before. The reviewer rates this Doubtful; the module passes `valuation.settlement` straight through.
+- The kept wiring case for a missing Mark is a stock Trade's. No coordinator case now asserts a Missing contract Mark on an option's expiration date. The reviewer rates this Doubtful, since the module owns that decision.
+- The comment at `value-trade.test.ts:144` cites the removed case by name.
+
+**Cumulative run `t7sp-12`** (2026-11-10, on `85feaef2`). The outputs are in `suite-runs/t7sp-12-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1477 tests passed |
+| Node integration | 96 files, 196 tests passed |
+| Browser (Chromium), task tier | 5 passed (11.7 s), plus `e2e/d7sp` 1 passed (2.5 s) |
+| Checks | 14 of 14 exit 0 |
+
+The browser tier printed by `browser-auto 6c5687c2` was `browser tier: task (no changed path since 6c5687c2 is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
