@@ -285,3 +285,16 @@ Browser tier printed by `browser-auto 7a8486b6`: `browser tier: full (first matc
 | plant removed, `npm run lint` | exit 0 |
 | `npx vitest run tools` | 4 files, 74 passed (`tools/condition-rules.test.ts`: 10, including expiration, wording and purity hits kept beside the condition hit) |
 | `npm run lint:deps`, `npm run verify:wording`, `npm run typecheck`, `npx tsc6 --noEmit` | exit 0 each |
+
+**ocr review of `0d85bc9b`** (`ocr/T7S.11-0d85bc9b.json`): 0 comments.
+
+**Cumulative run `t7s-11`** (2026-11-12, on `0d85bc9b`), outputs in `suite-runs/t7s-11-*.txt`, `run-complete.sh`: run complete. Run at the full tier on purpose, so it is also T7S.12's full run before the checkpoint critic (no commit between it and the critic but evidence).
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1507 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), full tier | `browser-1` 119 passed (4.6 min); `browser-2` 65 passed (3.9 min) |
+| Checks | 14 of 14 exit 0 |
+
+`browser-auto 74ac6e82` printed `browser tier: task (no changed path since 74ac6e82 is on the full-tier list)` and also ran that tier (`suite-runs/t7s-11-browser.txt`, 5 passed, 10.8s). Ports 5175, 9341, 9342 free before and after.
