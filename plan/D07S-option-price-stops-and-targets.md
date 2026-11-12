@@ -438,8 +438,8 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | T7S.7 | Done | `ef641c00`; F1 `7feef7dc` |
 | T7S.8 | Done | `4f347d43`; B1 `743defbe`; B2 `f3340232`; F1 `bb461313` |
 | T7S.9 | Done | `1e5a2a45`; B1 `7a8486b6` |
-| T7S.10 | In progress from `7a8486b6` | |
-| T7S.11 | Not started | |
+| T7S.10 | Done | `74ac6e82` |
+| T7S.11 | In progress from `74ac6e82` | |
 | T7S.12 | Not started | |
 | T7S.13 | Not started | |
 | T7S.15 | Not started | |

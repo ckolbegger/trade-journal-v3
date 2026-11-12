@@ -244,3 +244,32 @@ T7S.9-B1 done in `7a8486b6` (test support only): red (settlement time 2026-11-20
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto bb461313`: `browser tier: full (first matching path since bb461313: src/ui/screens/PlanForm.tsx)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.10 UI: Review card conditions and list badges
+
+Behavioral, commit `74ac6e82`; two cases (`TradeListOptions.test.tsx` one badge per role, red `expected [ …(2) ] to have a length of 1 but got 2`; `ReviewCard.test.tsx` W8 conditions list, red `Unable to find … role "list" and name "Conditions"`), each then green; run in the reverse of the planned order; no first-run pass. The card case builds Wednesday from `optionOpenDetail('O-S2', [OS2_S1], …)`; its Unavailable variant drops the MNO Mark, so both Underlying conditions read "Mark missing: MNO, Wed Oct 14". Direction from `conditionDirection` with the leg from `trade.summary`; a stock card is worded as Long Stock (Stop below, Target above), as no stock direction helper exists in the UI. `TradeList.tsx`'s `StatusBadges` shows one badge per role (`.some`).
+
+Existing tests touched as a consequence of W8 (the card now reads `evaluation.conditions`), no figure changed: `conditions: []` added to the hand-built evaluation fixtures of `CardFigures.test.tsx`, `CardMarks.test.tsx`, `ReviewOptionMarks.test.tsx`, `ReviewCard.test.tsx` and `ReviewCards.test.tsx` (109 cases had failed without it). `CardFigures.test.tsx:95`, `:99` unchanged. No e2e locator or expectation matches the new list (grep reported in the return).
+
+Provisional words (listed in the handoff's open questions for the user's approval):
+1. A Breached or Reached condition reads "<status>, $X beyond" only when its Overrun is above zero; a zero Overrun reads bare ("Reached"). This extends W8's "Breached, $20.00 beyond" to Targets ("Reached, $X beyond").
+2. An option-price Target line: "Target on the option price at or below $0.30: Active" (W7's naming; W8 shows only the Stop form).
+3. The "Conditions" list heading is an `h4`, as the card's "At entry" group.
+4. A stock card's Target line: "Target at or above $X: <status>" (W8 shows only the stock Stop form).
+
+**ocr review of `74ac6e82`** (`ocr/T7S.10-74ac6e82.json`): 1 comment, dismissed.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| low | `src/ui/screens/CardFigures.tsx:53` | The `direction` line nests the stock Stop/Target ternary inside the option/stock ternary | Valid as style only; the logic is correct | Dismissed: no failure scenario (style; the repo declined `no-nested-ternary`, D5R handoff); listed in the handoff's open questions |
+
+**Cumulative run `t7s-10`** (2026-11-12, on `74ac6e82`), outputs in `suite-runs/t7s-10-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1507 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), full tier | `browser-1` 119 passed (4.7 min); `browser-2` 65 passed (3.9 min) |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 7a8486b6`: `browser tier: full (first matching path since 7a8486b6: src/ui/screens/CardFigures.tsx)`. Ports 5175, 9341, 9342 free before and after.

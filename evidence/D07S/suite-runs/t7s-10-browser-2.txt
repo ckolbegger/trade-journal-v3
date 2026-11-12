@@ -1,0 +1,121 @@
+
+> trade-journal-v3@0.0.0 test:e2e:2
+> npm run build:faults && npm run build:releases && playwright test e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 --grep-invert @release-history
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.4 building client environment for faults...
+transforming...
+✓ 181 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-BoVSYqTO.css   14.32 kB │ gzip:   3.69 kB
+dist-faults/assets/faults-g5ZEBTd-.js    1.78 kB │ gzip:   0.89 kB
+dist-faults/assets/index-9KslIb1n.js   726.59 kB │ gzip: 215.07 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 107ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases: d2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d2-de3fa276a263 (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39)
+build:releases: d4 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d4-4ab43d58931f (claude-opus-5.5-d4 at 4ab43d58931f2966d6a2d05f6b41be9bc239dd1c)
+build:releases: d5r2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d5r2-765ac1ea59f3 (claude-opus-5.5-d5r2 at 765ac1ea59f36e7d9923362f655c94bbef90e404)
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases OK: v1, v2, v2-corrupt, d1, d2, d4, d5r2, d6 in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-BoVSYqTO.css
+
+Running 65 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d5/detail-debt.spec.ts:7:3 › B5.3 Reflect on Trade Detail › should show Due in the Review after next before, Deferred, answered with Tuesday 12:30 after, and list no reflection for it in Wednesday’s Review (2.2s)
+  ✓   2 [chromium] › e2e/d5/due-timing.spec.ts:7:3 › B5.4 Due timing › should list the reflection as due in the next Review in Monday’s Review, which reaches Complete, and list it as Due in Tuesday’s (2.0s)
+  ✓   3 [chromium] › e2e/d5/due-timing.spec.ts:33:3 › B5.5 Facts never blocked › should save an entry with Reflect now while a reflection is due and still list the first reflection in the Review (1.9s)
+  ✓   4 [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged (2.3s)
+  ✓   5 [chromium] › e2e/d5/faults.spec.ts:58:3 › B5.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed Debt answer, and record no Entry (2.0s)
+  ✓   6 [chromium] › e2e/d5/kill-offline.spec.ts:9:3 › B5.7 Kill after commit › should keep the Entry and the Settled version after the browser is killed once a Debt answer’s result renders, and no longer list the reflection in the Review (2.3s)
+  ✓   7 [chromium] › e2e/d5/kill-offline.spec.ts:54:3 › B5.8 Offline cold restart (AC-DEL-001) › should record a deferred entry and answer it on Trade Detail offline, and keep both across another offline restart (2.4s)
+  ✓   8 [chromium] › e2e/d5/no-save.spec.ts:40:3 › B5.11 Nothing saved without Save (AC-JOUR-001) › should store no Position Change, Entry, decline, Debt change, or Web Storage value after typing in the entry form’s dispositions and a Debt answer, resizing, leaving, and restarting (2.9s)
+  ✓   9 [chromium] › e2e/d5/responsive.spec.ts:17:3 › B5.12 Responsive and accessible › should keep a half-filled Debt answer through 390 px and back, switching layout at 960 px (1.8s)
+  ✓  10 [chromium] › e2e/d5/responsive.spec.ts:44:3 › B5.12 Responsive and accessible › should report no WCAG 2.1 AA violations on the entry form in each disposition, the Review card, the Debt form, and Detail, name each reflection state in text, and resolve a reflection by keyboard alone (8.2s)
+  ✓  11 [chromium] › e2e/d5/review-debt.spec.ts:36:3 › B5.1 Defer, then answer in the Review › should show Reflection owed on Detail, the reflection as due in the next Review on Monday, Due and Incomplete until answered on Tuesday, and after relaunch Complete with the Debt Settled and an Entry carrying settledDebtId (3.3s)
+  ✓  12 [chromium] › e2e/d5/review-debt.spec.ts:80:3 › B5.2 Decline in the Review › should read Complete after declining with a reason in Tuesday’s Review, show Declined later with the reason on Detail, and store a decline with settledDebtId (2.7s)
+  ✓  13 [chromium] › e2e/d5r/durability.spec.ts:10:3 › B5R.9 Kill after Save Marks › should keep the Marks after the browser is killed once the rows render from the result, and show the card with them saved (3.9s)
+  ✓  14 [chromium] › e2e/d5r/durability.spec.ts:47:3 › B5R.10 Offline and Recovery Only (faults build) › should save Marks offline after a full stop and keep them across another offline restart (AC-DEL-001) (4.5s)
+  ✓  15 [chromium] › e2e/d5r/durability.spec.ts:77:3 › B5R.10 Offline and Recovery Only (faults build) › should open every card read only in Recovery Only, with no inputs or Save buttons, and leave the probe unchanged (4.2s)
+  ✓  16 [chromium] › e2e/d5r/marks.spec.ts:8:3 › B5R.3 Shared Mark › should move T-A’s collapsed slider at once when XYZ is saved in T-F’s card, show XYZ saved there as also held, and store one observation (3.5s)
+  ✓  17 [chromium] › e2e/d5r/marks.spec.ts:39:3 › B5R.4 Invalid price saves nothing › should show the issue beside the invalid row with focus on it and keep every draft with nothing stored, then save all three once it is fixed (3.5s)
+  ✓  18 [chromium] › e2e/d5r/marks.spec.ts:76:3 › B5R.5 Unsaved work holds the card › should keep the card open with the message while a price is typed, open the other card after Discard, and write nothing (3.1s)
+  ✓  19 [chromium] › e2e/d5r/marks.spec.ts:100:3 › B5R.8 Changed evidence › should show a Conflict with the other tab’s value, keep the draft, and write nothing from the first tab (3.6s)
+  ✓  20 [chromium] › e2e/d5r/responsive-a11y.spec.ts:9:3 › B5R.11 Responsive and accessible › should keep drafts and the open panel through 390 px and back, put the slider on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus (6.9s)
+  ✓  21 [chromium] › e2e/d5r/responsive-a11y.spec.ts:102:3 › B5R.11 Responsive and accessible › should keep the slider beside the header while the card's header is at least 40rem wide, with T-A's header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px (3.2s)
+  ✓  22 [chromium] › e2e/d5r/responsive-a11y.spec.ts:159:3 › B5R.11 Responsive and accessible › should keep the bottom navigation above the Open list's sticky cells at 375 and 320 px, so its Review and Trades links take the click (6.3s)
+  ✓  23 [chromium] › e2e/d5r/review.spec.ts:9:3 › B5R.1 Review end to end on cards › should open the first card not Done on load, update the figures and sliders from Save Marks, open the next card in place after each Action, and read Done and Complete after relaunch with the Marks, the settled Entry and five Action Entries stored (5.4s)
+  ✓  24 [chromium] › e2e/d5r/review.spec.ts:77:3 › B5R.2 Opening far down the list › should open the 18th card where it is, with its header and first input in the viewport without scrolling, and collapse the card that was open (9.7s)
+  ✓  25 [chromium] › e2e/d5r/sliders.spec.ts:9:3 › B5R.6 Missing-Mark link › should open the Review with T-C’s card open on its Marks panel and focus on DEF when the Open list’s Mark missing link is followed (3.1s)
+  ✓  26 [chromium] › e2e/d5r/sliders.spec.ts:30:3 › B5R.12 Missing-Mark link on a shared Instrument › should open the linked Trade’s own card on its Marks panel with focus on XYZ, and leave the other XYZ card collapsed, when the Open list’s Mark missing link of the Trade that is not the first holder is followed (3.0s)
+  ✓  27 [chromium] › e2e/d5r/sliders.spec.ts:60:3 › B5R.7 Slider states › should draw T-A’s dot right of its entry tick, T-B’s dot pinned at the Stop end in the pinned shape, T-C’s track grey with no dot, each with the description T5R.7 states (3.8s)
+  ✓  28 [chromium] › e2e/d6/close-review.spec.ts:41:3 › B6.2 Close Review deferred to the Review › should list both closed Trades as due in the next Review on Tuesday, drop Trade 1 once answered there, show Trade 2 as Due and Incomplete until answered on Wednesday, and store two Close Review Entries naming their Debts and the Daily Review (5.5s)
+  ✓  29 [chromium] › e2e/d6/exit-action.spec.ts:9:3 › B6.5 Exit link › should save Exit with Intent in the Review with no Record the exit offered, record the exit from Trade Detail, and still walk T-A in Monday’s Review with its Exit Action (2.4s)
+  ✓  30 [chromium] › e2e/d6/exit-requirements.spec.ts:6:3 › B6.3 Close requirements › should show Choose a Close Reason beside the group with focus on the issues and the values kept, then save once a reason is chosen (2.4s)
+  ✓  31 [chromium] › e2e/d6/exit-requirements.spec.ts:82:3 › B6.4 Oversell › should refuse an exit of 101 shares on a 100-share Position with The position has only 100 shares beside the row and save nothing (2.8s)
+  ✓  32 [chromium] › e2e/d6/exit.spec.ts:10:3 › B6.1 Partial then final exit › should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record (3.4s)
+  ✓  33 [chromium] › e2e/d6/kill.spec.ts:9:3 › B6.7 Kill after commit › should keep the Closed lifecycle, the Sell Executions, the Close Reason, and both reflection outcomes after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches (2.4s)
+  ✓  34 [chromium] › e2e/d6/no-save.spec.ts:48:3 › B6.11 Nothing saved without Save (AC-JOUR-001) › should store no Position Change, Close Reason, Entry, decline, Debt, or Web Storage value after typing a full exit with a Close Reason and both reflections, resizing, leaving, and restarting (3.0s)
+  ✓  35 [chromium] › e2e/d6/offline.spec.ts:11:3 › B6.8 Offline cold restart (AC-DEL-001) › should record a partial and then a full exit offline after a full stop, and keep both across another offline restart (3.2s)
+  ✓  36 [chromium] › e2e/d6/responsive-a11y.spec.ts:28:3 › B6.12 Responsive and accessible › should keep a half-filled full exit through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the exit form, the Closed list in each state, Closed Detail, Open Detail with Lot Matches and the owed-reflection cards, say signed P&L and Closed via in text, and record a full exit by keyboard alone (16.8s)
+  ✓  37 [chromium] › e2e/d6/responsive-a11y.spec.ts:195:3 › B6.12 Responsive and accessible › should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail (2.7s)
+  ✓  38 [chromium] › e2e/d6/responsive-a11y.spec.ts:245:3 › B6.12 Responsive and accessible › should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px (2.4s)
+  ✓  39 [chromium] › e2e/d6/responsive-a11y.spec.ts:289:3 › B6.12 Responsive and accessible › should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px (2.6s)
+  ✓  40 [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged (3.5s)
+  ✓  41 [chromium] › e2e/d6/runtime-failure.spec.ts:73:3 › B6.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed exit and its answers, and record no Position Change (2.3s)
+stale-debt: {"documents":3000,"openRows":100,"churnedMs":0.5,"freshMs":0.40000057220458984}
+  ✓  42 [chromium] › e2e/d6/stale-debt.spec.ts:16:1 › should keep the Outstanding Debt index read within a small factor of a fresh database after Debts are created and resolved (1.9s)
+stale-index: {"documents":3000,"openRows":100,"churnedMs":1.1999998092651367,"freshMs":1.1000003814697266}
+  ✓  43 [chromium] › e2e/d6/stale-index.spec.ts:17:1 › should keep the Open-range index read within a small factor of a fresh database after Trades churn through Plan, entries and exit (4.1s)
+  ✓  44 [chromium] › e2e/d7/confirm-option-plan.spec.ts:6:3 › T7.31-F1 confirming an option Plan › should render the confirmed option Plan Detail with its Planned payoff and 1R straight after Confirm Plan, with no page error (969ms)
+  ✓  45 [chromium] › e2e/d7/kill.spec.ts:8:3 › B7.8 Kill after commit › should keep the Closed lifecycle, the Expiration, and both reflection outcomes after the browser is killed once an Expiration result renders (1.9s)
+  ✓  46 [chromium] › e2e/d7/marks-zero.spec.ts:14:3 › B7.6 Marks of 0 › should save a Mark of 0 for the MNO put and for KLM stock with the note, refuse -1 for ABC with A price cannot be negative., and store two Mark revisions (3.2s)
+  ✓  47 [chromium] › e2e/d7/no-save.spec.ts:52:3 › B7.12 Nothing saved without Save (AC-JOUR-001) › should store no Trade, Expiration, Entry, decline, Debt, or Web Storage value after typing an option Plan and an expiration form, resizing, leaving, and restarting (2.8s)
+  ✓  48 [chromium] › e2e/d7/offline.spec.ts:10:3 › B7.9 Offline cold restart (AC-DEL-001) › should confirm an option Plan, record an entry, and record an Expiration offline after a full stop, and keep all three across another offline restart (2.6s)
+  ✓  49 [chromium] › e2e/d7/payoff-chart-layout.spec.ts:51:3 › T7.32-B2 Payoff chart layout › should print no two chart text labels over each other on the Long Call and Cash-Secured Put Planned charts at 1280, 375 and 320 px (1.4s)
+  ✓  50 [chromium] › e2e/d7/payoff-chart-layout.spec.ts:65:3 › T7.32-B2 Payoff chart layout › should render chart text at 10 px or more at 320 px (1.3s)
+  ✓  51 [chromium] › e2e/d7/payoff-chart-layout.spec.ts:77:3 › T7.32-B2 Payoff chart layout › should keep a negative payoff table amount on one line at 320 px (1.2s)
+  ✓  52 [chromium] › e2e/d7/plan-open.spec.ts:6:3 › B7.1 Plan and open a Long Call › should show 1R $400.00 and the Planned payoff with Breakeven 57.00 after confirmation, then Open with 2 contracts, Entry Quality risk $401.30 and the Current payoff Breakeven 57.01 after two entries, and store the option Instrument, conditions holding only their triggers and Exercise Intent NotAuthorized after a relaunch (2.1s)
+  ✓  53 [chromium] › e2e/d7/plan-validation.spec.ts:6:3 › B7.5 Plan validation › should reject a Long Call Stop of 61 above the breakeven and the Target 60 with both errors beside the Stop and focus on the summary, keep the values, and save nothing after a reload (1.0s)
+  ✓  54 [chromium] › e2e/d7/responsive-a11y.spec.ts:28:3 › B7.13 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the option Plan, Execution and expiration forms, both payoff views in every state, option Detail with and without Settlement Due, and the Review settlement panel, and show Settlement Due and Not applicable as text with a table beside every chart (15.0s)
+  ✓  55 [chromium] › e2e/d7/responsive-a11y.spec.ts:123:3 › B7.13 Responsive and accessible › should record an Expiration by keyboard alone, with a visible focus ring on every stop (3.1s)
+  ✓  56 [chromium] › e2e/d7/review-expiration.spec.ts:13:3 › B7.3 Expiration from the Review › should record T-1 expiration from its card Settlement panel with Close Review Reflect later and return with Back to the Review, to find T-1 under owed reflections, T-3 still showing the assignment explanation and the Review Incomplete, with one Expiration fact and one Debt stored (4.0s)
+  ✓  57 [chromium] › e2e/d7/runtime-failure.spec.ts:11:3 › B7.10 Recovery Only (faults build) › should keep the lists, option Detail, both payoff views and the Review readable with no Record expiration, Record entry, or Plan confirmation, and leave the probe unchanged (3.2s)
+  ✓  58 [chromium] › e2e/d7/runtime-failure.spec.ts:53:3 › B7.11 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed expiration and its answers, and record no Position Change (2.1s)
+  ✓  59 [chromium] › e2e/d7/settlement-due.spec.ts:13:3 › B7.4 Settlement Due on Detail › should show the Settlement Due panel on Friday and on Monday with the Trade Open and no current dollar figures on Monday, then record the expiration to Closed via expiration of 2 contracts, Fully held to expiration (3.4s)
+  ✓  60 [chromium] › e2e/d7/short-put.spec.ts:9:3 › B7.2 Cash-Secured Put › should refuse Buy to close 3 of 2 short contracts with the position-only-has-2 error and save nothing, then close 1 @ 0.60 to Open with 1 short contract and realized $63.70 (3.1s)
+  ✓  61 [chromium] › e2e/d7p/layout.spec.ts:57:3 › T7P.11 Layout of the worded reasons › should show both finding sentences in full in the Trade Detail findings table at 320 and 375 px (4.4s)
+  ✓  62 [chromium] › e2e/d7p/layout.spec.ts:83:3 › T7P.11 Layout of the worded reasons › should keep the Facts cannot be replayed and Mark missing badges inside their cells in the Trades list at 320 and 375 px (4.3s)
+  ✓  63 [chromium] › e2e/d7p/layout.spec.ts:116:3 › T7P.11 Layout of the worded reasons › should show Mark missing and Awaiting the close in full in an Open Detail at 320 and 375 px (2.6s)
+  ✓  64 [chromium] › e2e/d7p/layout.spec.ts:168:3 › T7P.11 Layout of the worded reasons › should show the attention sentences, slider figures and blockers in full in the Review at 320 and 375 px (5.0s)
+  ✓  65 [chromium] › e2e/d7sp/review-dated-line.spec.ts:11:3 › B7SP.11 The option dated line in the Review › should show O-C bought Monday, in the Tuesday 17:00 Review with the calls Monday Mark only, a Mon Oct 12 close group with its figures at 320 and 1280 px and no sideways scroll (2.1s)
+
+  65 passed (3.9m)
+EXIT 0

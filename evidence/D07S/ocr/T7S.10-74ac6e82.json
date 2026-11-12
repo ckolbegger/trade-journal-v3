@@ -1,0 +1,107 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 90526,
+    "input_tokens": 89609,
+    "output_tokens": 917,
+    "cache_read_tokens": 6656,
+    "elapsed": "39s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/CardFigures.tsx",
+      "content": "This nests the stock Stop/Target ternary inside the option/stock ternary, contrary to the review checklist's prohibition on nested ternaries. Compute the stock direction separately or use an explicit conditional so the direction rules remain easy to follow.",
+      "suggestion_code": "          const stockDirection = condition.role === 'Stop' ? 'below' : 'above';\n          const direction = option ? conditionDirection(condition.role, condition.kind, option) : stockDirection;",
+      "existing_code": "          const direction = option ? conditionDirection(condition.role, condition.kind, option) : condition.role === 'Stop' ? 'below' : 'above';",
+      "start_line": 53,
+      "end_line": 53,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/CardFigures.tsx",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "8cb68c0c-9e0e-4a47-83be-f47c9bf040af",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8cb68c0c-9e0e-4a47-83be-f47c9bf040af",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "74ac6e82",
+      "resolved_base": "350080e06560abb1df97fc90a9912b3107a3f33b",
+      "resolved_head": "74ac6e82108be90fb94b36e01e64d1b544a19577",
+      "exact_range": "350080e06560abb1df97fc90a9912b3107a3f33b..74ac6e82108be90fb94b36e01e64d1b544a19577",
+      "source_artifact_sha256": "22f0749a7f60fc7d605fdc7172a538f367767ed939a24062e0c07009990b1c7a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "a1de102d7f55f2890bb65e11a35e0a4052f3af754c6c2fb67d24a9bb46c6b714"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "17f1035217427772def1a062bd11e76ed1612ea4e74f21077836faa88944a418"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "29ae33ee3fa14edcc6dc201e66201667dc7a859a1f8eaa515015cd749106e8b5",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "a1de102d7f55f2890bb65e11a35e0a4052f3af754c6c2fb67d24a9bb46c6b714"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "17f1035217427772def1a062bd11e76ed1612ea4e74f21077836faa88944a418"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 39406
+  }
+}
