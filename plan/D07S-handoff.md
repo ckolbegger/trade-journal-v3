@@ -2,13 +2,15 @@
 
 > **Read [plan/kickoff.md](kickoff.md) first.** The text in its code block is your governing instruction: treat it as if the user had given it to you as your prompt, and follow all of it. This note adds the location checks, D7S's specifics, what the D7S prefactor left in place, and the working rules. If this note and the kickoff ever disagree, the kickoff wins.
 
-Written 2026-11-11, after plan revision 78. [D07SP-handoff.md](D07SP-handoff.md) is the record of the prefactor's session; its section 7, the prefactor breakdown's Progress section and `evidence/D07SP/final-report.md` list every prefactor task, commit, decision and flagged item.
+Written 2026-11-11, after plan revision 79. [D07SP-handoff.md](D07SP-handoff.md) is the record of the prefactor's session; its section 7, the prefactor breakdown's Progress section and `evidence/D07SP/final-report.md` list every prefactor task, commit, decision and flagged item.
 
-This session **implements D7S, "Option-price Stops and Targets"**, under the frozen plan at revision 78. The breakdown is [D07S-option-price-stops-and-targets.md](D07S-option-price-stops-and-targets.md): 17 tasks (T7S.1 to T7S.17), agreed by the user on 2026-11-11 as decision 107, with P90–P93 agreed as recommended, the words in its section 1.6 approved (W4 in the user's own words), and one breakdown with a checkpoint critic (T7S.12) in place of a split. Task status lives in the breakdown's Progress section (decision 100).
+This session **implements D7S, "Option-price Stops and Targets"**, under the frozen plan at revision 79 (revision 78's breakdown plus revision 79's acceptance-matrix links). The breakdown is [D07S-option-price-stops-and-targets.md](D07S-option-price-stops-and-targets.md): 17 tasks (T7S.1 to T7S.17), agreed by the user on 2026-11-11 as decision 107, with P90–P93 agreed as recommended, the words in its section 1.6 approved (W4 in the user's own words), and one breakdown with a checkpoint critic (T7S.12) in place of a split. Task status lives in the breakdown's Progress section (decision 100).
 
 Where things stand:
 - **D7S prefactor:** complete, tagged `claude-opus-5.5-d7sp` (`27970527`). Its gate run (`t7sp-15-full`) passed 1481 unit, 202 integration and 184 browser tests (119 in `browser-1`, 65 in `browser-2`), with 14 of 14 checks. Tech debt item 22 records T7SP.14's accepted slowdowns.
-- **Revision 78** (`0c679938`, tag `claude-opus-5.5-plan-r78`) added the D7S breakdown and amended D7's A100, D7's approved words (rows 19.9, 19.10, 19.23, 23.17), D8's breakdown (a schema-7 note) and the plan's open questions. It changed no code. It is not pushed.
+- **Revision 78** (`0c679938`, tag `claude-opus-5.5-plan-r78`) added the D7S breakdown and amended D7's A100, D7's approved words (rows 19.9, 19.10, 19.23, 23.17), D8's breakdown (a schema-7 note) and the plan's open questions. It changed no code.
+- **Revision 79** (`d28fb444`, tag `claude-opus-5.5-plan-r79`, no decision) linked D7S's section 8 in the acceptance matrix where D7S adds coverage: AC-CALC-003 (single-leg structure-value conditions; its "Later" note now leaves only multi-leg structures to D10) and AC-REST-004 (schema 7). D7S's other rows only re-prove existing claims and stay in its breakdown.
+- Neither revision is pushed.
 
 **Starting a session.** The user starts a session with one prompt: *"Read plan/D07S-handoff.md and follow it."*
 1. Run the location checks in section 1.
@@ -26,9 +28,9 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `4175` (`tools/bench/profile.ts`) |
-| Frozen plan | tag `claude-opus-5.5-plan-r78` (revision 78) |
+| Frozen plan | tag `claude-opus-5.5-plan-r79` (revision 79; the breakdown was agreed at `claude-opus-5.5-plan-r78`) |
 | Code D7S builds on | tag `claude-opus-5.5-d7sp` (`27970527`) |
-| D7S starting point | tag `claude-opus-5.5-pre-d7s` (the commit that added this note) |
+| D7S starting point | tag `claude-opus-5.5-pre-d7s` (the commit that brought this note up to revision 79) |
 
 Run these checks. Each one must match:
 
@@ -36,11 +38,12 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`. At the first session N is 61 (the prefactor's commits, revision 78 and this note's commit), unless the user has pushed since; afterwards N also counts D7S's commits. No uncommitted changes. `.claude/settings.json` is committed, holding the project's permissions and the PreToolUse hook registrations; only the user edits it. |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`. At the first session N is 63 (the prefactor's commits, revisions 78 and 79, and this note's two commits), unless the user has pushed since; afterwards N also counts D7S's commits. No uncommitted changes. `.claude/settings.json` is committed, holding the project's permissions and the PreToolUse hook registrations; only the user edits it. |
 | `git log --oneline claude-opus-5.5-pre-d7s..HEAD` | Empty at the first session. Afterwards, only D7S task commits, their evidence and Progress updates, handoff updates, and any approved plan revisions. |
-| `git tag --list 'claude-opus-5.5-*'` | Includes `claude-opus-5.5-d7sp`, `claude-opus-5.5-plan-r78` and `claude-opus-5.5-pre-d7s`. |
+| `git tag --list 'claude-opus-5.5-*'` | Includes `claude-opus-5.5-d7sp`, `claude-opus-5.5-plan-r78`, `claude-opus-5.5-plan-r79` and `claude-opus-5.5-pre-d7s`. |
 | `git rev-parse 'claude-opus-5.5-d7sp^{commit}'` | `27970527be8a04fba56f22676afe54a5c8b2af4a` |
 | `git rev-parse 'claude-opus-5.5-plan-r78^{commit}'` | `0c679938d93a96c3d90d9fd62286376d232b1f38` |
+| `git rev-parse 'claude-opus-5.5-plan-r79^{commit}'` | `d28fb44450aa3e320eec3c5a6ba3c7a1977c7519` |
 | `git diff --stat claude-opus-5.5-d7sp claude-opus-5.5-pre-d7s -- src e2e tests tools package.json 'eslint*'` | Empty: no product code, test suite or tooling changed after the prefactor's gate. |
 | `git rev-parse --git-path hooks` | `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`) |
 | `ocr llm test` | Prints `✓ Connection test successful`. If it fails, ask the user to run `ocr auth login` (`.claude/docs/implementing.md`). |
@@ -75,7 +78,7 @@ The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. I
 - **`plan/D07S-option-price-stops-and-targets.md` in full**, which is the work.
 - **`plan/implementation-plan.md`:** everything except the `## D8` through `## D28` definition sections. That leaves decisions 1–107 (89 lifts A100's "exactly one" and allows option-price conditions; 107 is this breakdown), the rules and cumulative obligations, the freeze record, the definitions through D7S, and the closing sections with tech debt items 1–22 (item 22 holds the prefactor's accepted bench numbers that T7S.14 compares with).
 - **`plan/technology-stack.md`** in full, including "Pinned versions".
-- **`plan/acceptance-matrix.md`:** only the opening sections, through "Evidence methods common to every row", and the AC-CALC-003 row (section 7's open questions).
+- **`plan/acceptance-matrix.md`:** only the opening sections, through "Evidence methods common to every row", and the AC-CALC-003 and AC-REST-004 rows, which carry D7S's entries (revision 79).
 - **`plan/D07-single-leg-options-happy-path.md`:** section 1 (A99–A122 with the amendment notes, especially A100 as amended by revision 78, A109 and A110 on the Marks, A116 and A122), section 2 (implementation boundaries), and the task texts that built what D7S changes: T7.2 (`assessPlan`), T7.4 (Entry Quality), T7.6 (`evaluate`), T7.7 (schema v6, the model for T7S.1), T7.14 (Review `open`), T7.17 (migration to schema 6), T7.19 (Plan form), T7.23 (lists and Detail) and T7.24 (Review card). Also section 5's structural rows for capacity, capabilities, fixtures and the benchmark, and section 7's critic-flow conventions.
 - **`plan/D07-approved-words.md`:** conventions C1–C8 and rows 19.x and 23.x, with the revision 78 amendment notes. D7S's own words are section 1.6 of its breakdown.
 - **`plan/D07S-prefactor-mark-to-market-valuation.md`:** sections 1.1 and 1.7 (A189–A194), for the valuation module the headline reads through.
@@ -86,7 +89,7 @@ The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. I
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r79 and the next decision is 108. Editing the breakdown's Progress section alone is not a revision (decision 100).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r80 and the next decision is 108 (revision 79 took no decision). Editing the breakdown's Progress section alone is not a revision (decision 100).
 
 ## 3. D7S specifics
 
@@ -200,4 +203,4 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 
 ### Open questions
 
-- **Acceptance matrix, AC-CALC-003 (found while writing this note):** the matrix row (`plan/acceptance-matrix.md:81`) still says "**Later:** structure-value conditions are added in D10" and links no D7S section 8 (interstitial deliverables such as D5R aren't linked either). Single-leg structure-value conditions now arrive in D7S. If the gate's row marking needs the matrix to say so, that is a plan revision: ask before making it.
+None yet. (The AC-CALC-003 matrix gap found while writing this note was closed by revision 79.)
