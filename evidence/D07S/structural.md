@@ -322,3 +322,15 @@ Critic-2 on `427d3396` (`critic-2.md`): C7S.1–C7S.4 PASS, no defects (C7S.4 wi
 - `npm run verify:fixtures` (exit 0): v1 to v6 "migrated to 7 ... views equal", `workspace-v7: schema 7, opened without migration, views equal`, then `verify:fixtures OK: workspace-v1 ... workspace-v7 open Ready at schema 7 ...`. A v7 content check (at least two StructureValue conditions among the Open details' Plan stops and targets) sits beside the v6 one.
 - `git diff --stat` over `tests/fixtures/workspace-v1` to `workspace-v6`: empty.
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: each exit 0. `npx vitest run tools`: 4 files, 74 tests passed.
+
+**ocr review of `b3776f7f`** (`ocr/T7S.13-b3776f7f.json`): 1 comment, a bug task.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tools/verify-fixtures.ts:136` | The v7 content check counts `StructureValue` conditions across every detail (Planned, Open, Closed), though A204 and the code's comment require them in the Open details | Valid: the filter has no lifecycle test; today only `fx-0223` (Open) holds them, so the frozen fixture passes correctly, but the guard is looser than A204 | Bug task T7S.13-B1 |
+
+**T7S.13-B1** The v7 content check counts only Open details. Defect: a v7 snapshot whose two `StructureValue` conditions sit on a Planned or Closed Trade, with none on an Open one, passes `verify:fixtures`' v7 content check, though A204 requires at least two in its Open details. Case: `it should fail the v7 content check when the StructureValue conditions are only on Planned or Closed details`. (The v6 check above it counts every detail the same way; it predates D7S and isn't changed here: listed in the handoff's open questions.)
+
+T7S.13-B1 done in `9b7ecce2` (log row `930964e7`): red (`expected 3 to be less than 2`) then green; the check is now `openStructureValueCount(expected)` in `tools/fixture-views.ts` (details with `lifecycle.stored === 'Open'`), used by `verify-fixtures.ts`; `verify:fixtures` exits 0, `tests/fixtures` unchanged. Flagged: the second case ("should count the two StructureValue conditions on the frozen v7 Open detail") passed on its first run; mutation (filter on `'Planned'`) failed it with `AssertionError: expected 0 to be greater than or equal to 2`, restored. **ocr review of `9b7ecce2`** (`ocr/T7S.13-B1-9b7ecce2.json`): 0 comments.
+
+**Cumulative run `t7s-13`** (2026-11-12, on `930964e7`), outputs in `suite-runs/t7s-13-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1508 passed; integration 97 files, 202 passed; browser task tier (`browser-auto d34f6670`: `browser tier: task (no changed path since d34f6670 is on the full-tier list)`) `@every-task` 5 passed (11.1s); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after.

@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 12709,
+    "input_tokens": 12579,
+    "output_tokens": 130,
+    "cache_read_tokens": 1664,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/fixture-views.ts",
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "3327e2bd-b34b-4e4c-a687-b12cfd77727a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3327e2bd-b34b-4e4c-a687-b12cfd77727a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9b7ecce2",
+      "resolved_base": "b3776f7fa7e676fe3f8bbb1cace9f5751fcd0830",
+      "resolved_head": "9b7ecce2f455174bc32e1ca265e59ffef1e0893a",
+      "exact_range": "b3776f7fa7e676fe3f8bbb1cace9f5751fcd0830..9b7ecce2f455174bc32e1ca265e59ffef1e0893a",
+      "source_artifact_sha256": "378512ed459c9ed864ad74e09f4737274178f882c5c1919db2009eaaeebd3843"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "e69a0bba1bba5e85ec454b71d84dc0723c0356da3dace10431c5edd6b9ab9b10"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "62900ffd92d7bc25865fe4be51c42d58ed4bb74c41f85460062d512499c4a092"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "184a0b6d6f5bd952d7fb39aca04ab4433fb499d6bf761263f347fda8d032440a",
+          "path": "tools/fixture-views.ts",
+          "fingerprint": "e69a0bba1bba5e85ec454b71d84dc0723c0356da3dace10431c5edd6b9ab9b10"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "62900ffd92d7bc25865fe4be51c42d58ed4bb74c41f85460062d512499c4a092"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 10084
+  }
+}

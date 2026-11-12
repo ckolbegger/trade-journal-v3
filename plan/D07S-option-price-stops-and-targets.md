@@ -441,8 +441,8 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | T7S.10 | Done | `74ac6e82` |
 | T7S.11 | Done | `0d85bc9b` |
 | T7S.12 | Done (critic-1 FAIL, critic-2 PASS) | B1 `d34f6670` |
-| T7S.13 | In progress from `d34f6670` | |
-| T7S.15 | Not started | |
+| T7S.13 | Done | `b3776f7f`; B1 `9b7ecce2`, `930964e7` |
+| T7S.15 | In progress from `930964e7` | |
 | T7S.16 | Not started | |
 | T7S.14 | Not started | |
 | T7S.17 | Not started | |
