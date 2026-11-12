@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D7S](implementation-plan.md#d7s--option-price-stops-and-targets). The definition (story, capability set, introductions, acceptance claim) stays there and is not repeated here. D7S builds on D7's option Plans, `assessPlan`, `evaluate` and Plan form (A99–A122, P24 recorded as decision 31; [D7 breakdown](D07-single-leg-options-happy-path.md)), D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), decision 87), and the D7S prefactor's Mark-to-Market Valuation ([D7S prefactor breakdown](D07S-prefactor-mark-to-market-valuation.md), decision 101). It is drafted from the tag `claude-opus-5.5-d7sp` (commit `27970527`).
 
-Status: **breakdown agreed by the user on 2026-11-11** (plan revision 78, decision 107). P90–P93 and the size check's choice of one breakdown with a checkpoint critic (section 1.4) were agreed as recommended, and the words in section 1.6 were approved the same day. The amendments in section 1.2 are applied. Everything else is written against those decisions and the working assumptions below. The next plan decision is 108.
+Status: **breakdown agreed by the user on 2026-11-11** (plan revision 78, decision 107). P90–P93 and the size check's choice of one breakdown with a checkpoint critic (section 1.4) were agreed as recommended, and the words in section 1.6 were approved the same day. The amendments in section 1.2 are applied. Everything else is written against those decisions and the working assumptions below. **Amended by decision 108 (revision 80, 2026-11-11):** T7S.3 runs straight after T7S.1, and T7S.2 after T7S.3 (section 3). The next plan decision is 109.
 
 ---
 
@@ -85,7 +85,7 @@ measurementValue, extraConditions: no hits
 tools: verify-fixtures.ts, fixture-views.ts, bench-expected-rows.ts, bench-run.ts, capacity/: no condition fields
 ```
 
-`compareSnapshot` (`tools/fixtures/snapshot-compare.ts`) compares only the keys a snapshot holds. A v1–v6 Trade keeps its single `UnderlyingPrice` conditions, `valueAtExpiration` stays on them, and D7S adds no field to a basis (A196 uses a helper, not a field). So **no v1–v6 expected view changes**, and the v6 content check in `verify-fixtures.ts:122` still holds. `SCHEMA_VERSION` is read by `verify-capabilities.ts:69`, `verify-fixtures.ts`, `verify-capacity.ts:16`, `measure-capacity.ts:41`, `fixtures-freeze.ts:31`, `bench-generate.ts:38`, `bench-run.ts:81`, `bench-partial.ts:90` and `verify-releases.ts:41`. Of these, only `verify:capacity` runs in every task's checks and fails at schema 7 until re-measured, so T7S.2 runs straight after T7S.1 (D7 instead carried that known failure from T7.7 to T7.26). `verify:releases` checks `d6` against `SCHEMA_VERSION`, but no release is built (decision 76), so it doesn't run. `bench:run` refuses a dataset stamped schema 6 until T7S.14 regenerates it, and it is not in the cumulative run.
+`compareSnapshot` (`tools/fixtures/snapshot-compare.ts`) compares only the keys a snapshot holds. A v1–v6 Trade keeps its single `UnderlyingPrice` conditions, `valueAtExpiration` stays on them, and D7S adds no field to a basis (A196 uses a helper, not a field). So **no v1–v6 expected view changes**, and the v6 content check in `verify-fixtures.ts:122` still holds. `SCHEMA_VERSION` is read by `verify-capabilities.ts:69`, `verify-fixtures.ts`, `verify-capacity.ts:16`, `measure-capacity.ts:41`, `fixtures-freeze.ts:31`, `bench-generate.ts:38`, `bench-run.ts:81`, `bench-partial.ts:90` and `verify-releases.ts:41`. Of these, only `verify:capacity` runs in every task's checks and fails at schema 7 until re-measured, so T7S.2 runs straight after T7S.1 (D7 instead carried that known failure from T7.7 to T7.26). **Amended by decision 108 (revision 80):** T7S.2's measurement confirms option-price conditions through the facade, which needs T7S.3, so T7S.3 runs straight after T7S.1 and T7S.2 after it; T7S.3 alone carries the known failure. `verify:releases` checks `d6` against `SCHEMA_VERSION`, but no release is built (decision 76), so it doesn't run. `bench:run` refuses a dataset stamped schema 6 until T7S.14 regenerates it, and it is not in the cumulative run.
 
 **Checks.** T7S.11's rule, run as a throwaway config on `src` (non-test files): `no-restricted-syntax` on `MemberExpression[computed=true][property.type='Literal']` whose object is a member named `stops`, `targets`, `stopBasis` or `targetBasis`. Hits, and what happens to each:
 
@@ -144,7 +144,7 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | Task | Title | Layer | Kind | Blocked by | Public seam under test |
 |---|---|---|---|---|---|
 | T7S.1 | Persistence: schema 7 and the `v6→v7` transform | persistence | B | — | internal `Persistence`, `migrationChain` |
-| T7S.2 | Capacity basis re-measured at schema 7 | test/infrastructure | S | T7S.1 | `measure:capacity`, `verify:capacity` |
+| T7S.2 | Capacity basis re-measured at schema 7 | test/infrastructure | S | T7S.1, T7S.3 (decision 108) | `measure:capacity`, `verify:capacity` |
 | T7S.3 | Trade Analysis: `assessPlan` with option-price conditions | domain | B | — | `TradeAnalysis.assessPlan` |
 | T7S.4 | Trade Analysis: `evaluate` per condition and the headline | domain | B | T7S.3 | `TradeAnalysis.evaluate` |
 | T7S.5 | Trade Analysis: Entry Quality from the headline conditions | domain | B | T7S.3 | `TradeAnalysis.derive` |
@@ -161,7 +161,7 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T7S.16 | Browser integration suite (Chromium) | test | S | T7S.8–T7S.13 | `test:e2e` |
 | T7S.17 | Independent browser-critic gate | test | S | all | fresh critic report |
 
-**Run order:** T7S.1, T7S.2, T7S.3, T7S.4, T7S.5, T7S.6, T7S.7, T7S.8, T7S.9, T7S.10, T7S.11, T7S.12, T7S.13, T7S.15, T7S.16, T7S.14, T7S.17. The schema comes first, so no commit stores an option-price condition at schema 6, and T7S.2 follows it at once, so no task's checks carry a known `verify:capacity` failure. The benchmark runs after the suites, so a fix found by them is measured. Every UI task takes its words from section 1.6.
+**Run order:** T7S.1, T7S.2, T7S.3, T7S.4, T7S.5, T7S.6, T7S.7, T7S.8, T7S.9, T7S.10, T7S.11, T7S.12, T7S.13, T7S.15, T7S.16, T7S.14, T7S.17. The schema comes first, so no commit stores an option-price condition at schema 6, and T7S.2 follows it at once, so no task's checks carry a known `verify:capacity` failure. **Amended by decision 108 (revision 80):** the run order is T7S.1, T7S.3, T7S.2, T7S.4, then as above, because T7S.2's measurement confirms option-price conditions through the facade, which T7S.3 builds. T7S.3's checks carry the known `verify:capacity` failure, recorded and not fixed. The benchmark runs after the suites, so a fix found by them is measured. Every UI task takes its words from section 1.6.
 
 ---
 
@@ -312,7 +312,7 @@ Structural (section 5).
 
 | Task | Exact verification | Expected result | Notes |
 |---|---|---|---|
-| T7S.2 Capacity basis | `npm run measure:capacity`, then `npm run verify:capacity` | The basis is measured at schema 7. The option phase's 600 option Plans hold option-price conditions in A203's mix, so the measured bytes include them. `verify:capacity` exits 0. | Runs straight after T7S.1 (section 1.5, shapes). |
+| T7S.2 Capacity basis | `npm run measure:capacity`, then `npm run verify:capacity` | The basis is measured at schema 7. The option phase's 600 option Plans hold option-price conditions in A203's mix, so the measured bytes include them. `verify:capacity` exits 0. | Runs straight after T7S.1 (section 1.5, shapes). **Amended by decision 108 (revision 80):** runs straight after T7S.3, which T7S.1 precedes. |
 | T7S.7 Capability manifest | `npm run verify:capabilities` | The manifest reports schema 7 and `StructureValueCondition` on `confirmPlan` (A202), and equals the reachable operations. | |
 | T7S.11 Source check | Add `eslint.conditions.config.js` with section 1.5's selector and message, merged into `eslint.config.js`; plant `plan.stops[0]` in a non-test file under `src/`; `npm run lint` | With the plant, `lint` fails naming the planted line; without it, `lint` exits 0, and the throwaway run's 17 hits (section 1.5) are gone. | `tools/wording-rules.test.ts`'s pattern: a test in `tools/` lints a planted source string, so the plant is never committed. |
 | T7S.12 Checkpoint critic | Fresh critic agent per section 7, flows C7S.1–C7S.4 | A structured report. Defects become bug tasks before the structural tail. | Section 1.4. |
@@ -430,8 +430,8 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | Task | Status | Commits |
 |---|---|---|
 | T7S.1 | In progress from `ad11e458` | |
-| T7S.2 | Not started | |
 | T7S.3 | Not started | |
+| T7S.2 | Not started | |
 | T7S.4 | Not started | |
 | T7S.5 | Not started | |
 | T7S.6 | Not started | |

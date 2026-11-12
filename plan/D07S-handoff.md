@@ -28,7 +28,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `4175` (`tools/bench/profile.ts`) |
-| Frozen plan | tag `claude-opus-5.5-plan-r79` (revision 79; the breakdown was agreed at `claude-opus-5.5-plan-r78`) |
+| Frozen plan | tag `claude-opus-5.5-plan-r80` (revision 80, decision 108's run order; the breakdown was agreed at `claude-opus-5.5-plan-r78`, and revision 79 linked its matrix rows) |
 | Code D7S builds on | tag `claude-opus-5.5-d7sp` (`27970527`) |
 | D7S starting point | tag `claude-opus-5.5-pre-d7s` (the commit that brought this note up to revision 79) |
 
@@ -89,13 +89,13 @@ The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. I
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r80 and the next decision is 108 (revision 79 took no decision). Editing the breakdown's Progress section alone is not a revision (decision 100).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r81 and the next decision is 109 (revision 80 took decision 108, the run order below). Editing the breakdown's Progress section alone is not a revision (decision 100).
 
 ## 3. D7S specifics
 
 - **Setup before T7S.1:** create `evidence/D07S/` with `tdd-log.md` (with its note that rows are single-case runs; `tdd.sh` maps `T7S.n` to this folder and refuses to run without it), `structural.md` and `provenance.md`. Briefs take `evidence/D07S` as the evidence directory. `full-suite.sh --current-folder evidence/D07S` prints `e2e/d7s`, so the browser cases go in `e2e/d7s/` and the Node cases in `tests/integration/d7s/`.
-- **Order.** The Progress section's order, one task at a time: T7S.1 to T7S.13, then T7S.15, T7S.16, T7S.14 and the gate T7S.17. Mark a row "In progress from `<commit>`" before its brief; that commit is the base for `browser-auto`.
-- **T7S.2 runs straight after T7S.1.** `verify:capacity` is in every task's checks and fails at a new schema version until the basis is re-measured (breakdown section 1.5, shapes). Between T7S.1's commit and T7S.2's, that one check failing is expected; record it, don't fix it in T7S.1. After T7S.2 every check passes again. D7 carried this failure from T7.7 to T7.26; D7S must not.
+- **Order.** The Progress section's order, one task at a time: T7S.1, T7S.3, T7S.2, T7S.4 to T7S.13, then T7S.15, T7S.16, T7S.14 and the gate T7S.17 (decision 108, revision 80). Mark a row "In progress from `<commit>`" before its brief; that commit is the base for `browser-auto`.
+- **T7S.3 runs straight after T7S.1, and T7S.2 straight after T7S.3 (decision 108).** `verify:capacity` is in every task's checks and fails at a new schema version until the basis is re-measured (breakdown section 1.5, shapes). T7S.2's measurement confirms option-price conditions through the facade, which T7S.3 builds. Between T7S.1's commit and T7S.2's, that one check failing is expected; record it, don't fix it in T7S.1 or T7S.3. After T7S.2 every check passes again. D7 carried this failure from T7.7 to T7.26; D7S carries it through T7S.3 only.
 - **Schema 7 is an identity transform.** `v6→v7` only drops private fields for the rebuild, as `src/persistence/migrations/v5-to-v6.ts` does (A199). No store, index or record shape changes.
 - **Fixtures.** **Never regenerate a v1–v6 dump or snapshot.** No v1–v6 expected view changes (section 1.5, shapes); a changed one is a defect to fix. T7S.13 alone freezes `workspace-v7/` with A204's content.
 - **What must not change.** Every existing query-count proof keeps its exact request lists, and every existing case keeps its expected values, except the expectations section 1.5's "Texts" table names, each in the task it names (`plan-option.test.ts:158` and `:161` and `tests/integration/d7/rejections.test.ts:68`–`:83` in T7S.3; `PlanForm.test.tsx:582` and `plan-issues.test.ts:27` in T7S.8; `TradeDetailOptions.test.tsx:272`–`:276`, `:286` and `:287` in T7S.9). A changed request list or expected value anywhere else is a defect to fix, never an expectation to update. A stock Trade and a one-condition-per-role option Trade must give D7's figures unchanged (P91).
@@ -200,7 +200,11 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 - **T7S.1 to T7S.17 (any lint change):** since T7SP.9 (`552d0d06`, B1 `96660874`), every `no-restricted-syntax` entry under `src/` that isn't exempt must spread `expirationComparisonSelectors` from `eslint.deps.config.js`, including the `src/ui` wording entry in `eslint.config.js` (`wordingWithExpirationRules`), which relies on the identity selector staying first in `wordingRules` (`.slice(1)`).
 - **T7S.4 to T7S.10:** since T7SP.16 (`8008446f`), the AtEntry line carries `riskFromEntryInPlanR` and `rewardFromEntryInPlanR`, and since T7SP.17 (`75aaee66`) Detail carries `heldQuantity` and the expiration line. Several unit cases compare whole AtEntry objects with `toEqual` (`intraday.test.ts:30` and five coordinator cases); a new field on the line must be added to them additively, as T7SP.16 did.
 - **T7S.6 and T7S.10:** since T7SP.8 (`e8b78874`, decision 104), the read session runs a date's frames, Stale-context lookups and gaps scans in one snapshot, and the Review open skips the dated line (`skipDatedLine`); only `getTrade` reads for it.
+- **T7S.14 (user's direction, 2026-11-11):** tech debt item 22's trigger fires here. Before T7S.14's own bench, make its control run (a): build `claude-opus-5.5-pre-d7sp` in a scratch clone and run `bench:run` back to back with the current head on the same machine, recording both. No bisect or fix unasked. Stop condition 6 is relaxed by the user: a step 10% to under 35% slower than `evidence/D07SP/bench-r3.md` is recorded in `bench.md` and the final report and the session continues; a step 35% or more slower stops the session and is reported.
+- **T7S.3 to T7S.5 (tech debt item 14):** its trigger, "the first change to any of the three" direction rules, fires in these tasks. Raised with the user on 2026-11-11, not yet answered. Until answered, don't fix it: each task reuses its module's existing direction helper and adds no new copy.
+- **T7S.8 to T7S.10:** words no approved row covers are still a stop (asked on 2026-11-11, not yet answered).
 
 ### Open questions
 
-None yet. (The AC-CALC-003 matrix gap found while writing this note was closed by revision 79.)
+- Tech debt item 14's trigger fired with T7S.3–T7S.5 (see the note above): fix in D7S or leave for D10? Asked 2026-11-11, unanswered.
+- A standing rule for uncovered words overnight (provisional words for later approval, or stop)? Asked 2026-11-11, unanswered.
