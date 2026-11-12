@@ -125,7 +125,7 @@ export const ROUTES = [
       'ReferenceCatalog.resolve',
       'Journal.getDefinitions',
     ],
-    variants: { 'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut'] },
+    variants: { 'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut', 'StructureValueCondition'] },
     navigation: true,
     readOnly: false,
   },

@@ -377,7 +377,7 @@ describe('Installed Capability Manifest', () => {
         'Journal.getDefinitions': [],
         'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
         'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
-        'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut'],
+        'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut', 'StructureValueCondition'],
         'TradeWorkflows.recordPositionChange': [
           'Opening',
           'Increase',

@@ -141,3 +141,13 @@ Behavioral, commit `edbc03a5`; one case in `src/coordinators/daily-review/option
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto f7590645`: `browser tier: task (no changed path since f7590645 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.7 Installed Capability Manifest for D7S
+
+Structural. Schema 7 was already reported since T7S.1 (`SCHEMA_VERSION`). Changes: `TradeWorkflows.confirmPlan` gains the variant `StructureValueCondition` (A202) in `src/coordinators/workspace/capabilities.ts`; `src/app/routes.ts` (route `new-plan`) lists it so the tool finds the installed variant presented by a route (the tool fails on an installed variant no route presents); the manifest equality assertion in `src/coordinators/workspace/workspace.test.ts` follows. No other operation or variant changed; no domain or facade code touched.
+
+| Command | Result |
+|---|---|
+| `npm run verify:capabilities` | exit 0: `verify:capabilities OK: 19 operations, 11 variant-qualified, 9 routes, 4 Entry Types, schema 7, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29` |
+| `npx vitest run src/coordinators/workspace src/app` | exit 0; 3 files, 49 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |

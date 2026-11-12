@@ -38,7 +38,8 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   // D5 P17, A64: resolve one Debt by Answer or Decline, from Trade Detail (Source Trade Detail).
   'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
   // D7: a Plan of a single option Leg, with its payoff in the result.
-  'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut'],
+  // D7S A202: a Plan may carry option-price (StructureValue) conditions.
+  'TradeWorkflows.confirmPlan': ['LongStock', 'LongCall', 'LongPut', 'CashSecuredPut', 'StructureValueCondition'],
   // D2 A18: opening and increase Buys of a Stock serving its Planned Leg, every member in one
   // Trade, with the Position Change Reflection completed or declined. D5: or deferred.
   // D6: a Sell reduces or closes the Position; the exit that leaves nothing open carries a Close Reason
