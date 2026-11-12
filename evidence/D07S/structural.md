@@ -124,3 +124,20 @@ Behavioral, commit `f7590645`; one case in `src/domain/trade-analysis/entry.test
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 51d84965`: `browser tier: task (no changed path since 51d84965 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.6 Daily Review: pressure and range position from the headline conditions
+
+Behavioral, commit `edbc03a5`; one case in `src/coordinators/daily-review/option-attention.test.ts` (apostrophes dropped from the name), red (pressure from S-u's value at expiration 4.00: at-entry risk 550, share 19/55) then green. No first-run pass. Arithmetic (tdd-log note): at entry risk −2 × 100 × (1.25 − 3.60) = 470, reward −2 × 100 × (0.50 − 1.25) = 150; Tuesday risk 360, reward 260; pressure Losing (470 − 360) / 470 = 11/47; range position now 360/620 = 18/31, at entry 470/620 = 47/62. `riskRewardOf` measures from `measurementOf(headlineBasisOf(...))`; signed-quantity arithmetic unchanged.
+
+**ocr review of `edbc03a5`** (`ocr/T7S.6-edbc03a5.json`): 0 comments.
+
+**Cumulative run `t7s-6`** (2026-11-12, on `edbc03a5`), outputs in `suite-runs/t7s-6-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1494 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), task tier | `@every-task` 5 passed (10.9s); no `e2e/d7s` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto f7590645`: `browser tier: task (no changed path since f7590645 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
