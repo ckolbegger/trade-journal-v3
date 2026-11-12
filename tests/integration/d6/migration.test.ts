@@ -31,7 +31,7 @@ describe('I6.1 migrate earlier fixtures', () => {
       const opened = await app.Workspace.initialize({});
       if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
       expect(opened.receipt.migration).toEqual(
-        expect.objectContaining({ fromVersion: version, toVersion: 6, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
+        expect.objectContaining({ fromVersion: version, toVersion: 7, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
       expect(opened.receipt.seeds.catalog).toEqual({ manifestVersion: 3, additions: [...OPTION_STRATEGIES, ...CLOSE_REASONS] });
       expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 5, additions: JOURNAL_ADDITIONS[version] });
@@ -40,7 +40,7 @@ describe('I6.1 migrate earlier fixtures', () => {
 
       const again = await restart(app, d);
       const status = await again.Workspace.getStatus();
-      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([6, newDatabase]);
+      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([7, newDatabase]);
 
       // A98 (extends A73): every earlier field equals the fixture's snapshot, and the migrated Workspace
       // has no exit, Close Reason, Close Review, or Closed Trade.
@@ -90,7 +90,7 @@ describe('I6.2 migration failure and retry', () => {
     // The cause is removed, then Retry is initialize again.
     await rawUpdate(d.factory, source, 'journalDebts', original.debtId, (debt) => ({ ...debt, definitionId: original.definitionId }));
     const retried = await app.Workspace.initialize({});
-    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 4, toVersion: 6 }));
+    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 4, toVersion: 7 }));
     const again = await restart(app, d);
     expect((await again.Workspace.getStatus()).kind).toBe('Ready');
   }, 60_000);

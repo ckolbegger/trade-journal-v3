@@ -11,7 +11,7 @@ describe('I7.14 Fresh initialization at schema 6', () => {
     const app = await launch(d);
     const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });
     if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
-    expect(opened.status.schemaVersion).toBe(6);
+    expect(opened.status.schemaVersion).toBe(7);
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.catalog.manifestVersion).toBe(3);

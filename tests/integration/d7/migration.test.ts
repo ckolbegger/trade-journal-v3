@@ -17,7 +17,7 @@ describe('migration to schema 6', () => {
       const opened = await app.Workspace.initialize({});
       if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
       expect(opened.receipt.migration).toEqual(
-        expect.objectContaining({ fromVersion: version, toVersion: 6, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
+        expect.objectContaining({ fromVersion: version, toVersion: 7, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
       expect(Object.keys(opened.receipt.migration!.counts).length).toBeGreaterThan(0);
       expect(opened.receipt.seeds.catalog.manifestVersion).toBe(3);
@@ -25,7 +25,7 @@ describe('migration to schema 6', () => {
 
       const again = await restart(app, d);
       const status = await again.Workspace.getStatus();
-      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([6, opened.receipt.migration!.databaseName]);
+      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([7, opened.receipt.migration!.databaseName]);
       expect(await currentDatabase(d.factory)).toBe(opened.receipt.migration!.databaseName);
 
       const strategies = await again.ReferenceCatalog.query({ family: 'Strategy' });
@@ -86,7 +86,7 @@ describe('migration failure and retry', () => {
     // The cause is removed, then Retry is initialize again (AC-REST-004, re-proven).
     await rawUpdate(d.factory, source, 'trades', trade.tradeId, damage(original));
     const retried = await app.Workspace.initialize({});
-    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 5, toVersion: 6 }));
+    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 5, toVersion: 7 }));
     const again = await restart(app, d);
     expect((await again.Workspace.getStatus()).kind).toBe('Ready');
   }, 60_000);

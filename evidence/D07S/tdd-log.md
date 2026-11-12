@@ -6,3 +6,6 @@ Every `it should` case from the D7S breakdown, section 4, run red and then green
 
 | Task | Case | Phase | Command | Outcome | Failure excerpt |
 |---|---|---|---|---|---|
+| T7S.1 | should open a schema-6 database holding an option Trade at schema 7 | red | `npx vitest run src/persistence/schema-v7.test.ts -t "should open a schema-6 database holding an option Trade at schema 7"` | exit 1; Tests  1 failed (1) | AssertionError: expected { kind: 'KnownWorkspace', …(3) } to deeply equal { kind: 'OlderSchema', …(2) }  |
+| T7S.1 | should open a schema-6 database holding an option Trade at schema 7 | green | `npx vitest run src/persistence/schema-v7.test.ts -t "should open a schema-6 database holding an option Trade at schema 7"` | exit 0; Tests  1 passed (1) |  |
+| T7S.1 | (all) | refactor | `npx vitest run src tests/integration` | exit 0; 223 files, 1684 passed | note: no refactor needed (v6-to-v7.ts mirrors v5-to-v6.ts, three lines). No test names rephrased beyond dropping punctuation; no assertion added beyond the planned wording except the store-name list and the v1 chain meta schema 7. Existing tests moved to version 7 with names unchanged. |

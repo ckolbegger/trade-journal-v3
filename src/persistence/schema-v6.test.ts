@@ -131,8 +131,8 @@ describe('schema v6 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 6 }));
-    expect(await rawGetAll(created.databaseName, 'meta')).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 6 }]));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 7 }));
+    expect(await rawGetAll(created.databaseName, 'meta')).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 7 }]));
 
     // The schema 5 layout, unchanged: the v5 stores, the byInstrumentDate and byLifecycleTerminal indexes.
     const stores = await layout(created.databaseName);
@@ -163,7 +163,7 @@ describe('v5 → v6 transform (A118, decision 84)', () => {
       expect(await rawGetAll(candidate, store)).toEqual([{ ...value, revision: 1 }]);
     }
     expect(await rawGetAll(candidate, 'meta')).toEqual(
-      expect.arrayContaining([{ key: 'schema', schemaVersion: 6 }, { key: 'settings', timeZone: 'America/New_York', revision: 1 }]),
+      expect.arrayContaining([{ key: 'schema', schemaVersion: 7 }, { key: 'settings', timeZone: 'America/New_York', revision: 1 }]),
     );
 
     // A v1 Workspace passes through every step to v6 in one candidate.
