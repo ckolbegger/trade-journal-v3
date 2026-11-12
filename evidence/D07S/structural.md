@@ -341,3 +341,11 @@ T7S.13-B1 done in `9b7ecce2` (log row `930964e7`): red (`expected 3 to be less t
 - `npm run test:integration` (exit 0): 103 files, 218 passed (was 97 files, 202 before; the 16 new tests are I7S.1 six versions plus I7S.2 and I7S.9 in `migration`, 2 in `confirm-plan`, 3 in `conditions`, and one each in `review`, `rebuild` and `runtime`).
 - `.claude/scripts/acceptance-commands.sh plan/D07S-option-price-stops-and-targets.md` (exit 1): 11 commands checked, 1 failed. Every `npm run test:integration -- d7s/...` row names real tests (`conditions` 3, `confirm-plan` 2, `migration` 8, `rebuild` 1, `runtime` 1); `verify:capabilities` and `bench:run` scripts present. The one failure is `npx playwright test e2e/d7s/responsive-a11y.spec.ts` ("playwright --list exited 1, no tests"), which T7S.16 writes.
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: each exit 0.
+
+**ocr review of `be46f856`** (relocated to `src/itg/relocated/d7s/`, scratch commit `b4a8658f`; `ocr/T7S.15-be46f856.json`): 1 comment, dismissed.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| medium | `src/itg/relocated/d7s/conditions.ts:4` | The suites are not registered with either Vitest project, so `npm run test:integration` runs none of I7S.1–I7S.11 | Wrong (relocation artifact): only the scratch copy is unregistered; the real files at `tests/integration/d7s/*.test.ts` match `vite.config.ts:20`'s `tests/integration/**/*.test.ts`, and the run shows 103 files, 218 tests | Dismissed (Wrong); listed in the handoff's open questions |
+
+**Cumulative run `t7s-15`** (2026-11-12, on `be46f856`), outputs in `suite-runs/t7s-15-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1508 passed; integration 103 files, 218 passed; browser task tier (`browser-auto 930964e7`: `browser tier: task (no changed path since 930964e7 is on the full-tier list)`) `@every-task` 5 passed (10.6s); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after.

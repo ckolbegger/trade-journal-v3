@@ -1,0 +1,159 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 1,
+    "total_tokens": 214413,
+    "input_tokens": 212571,
+    "output_tokens": 1842,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m15s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_find": 3,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7s/conditions.ts",
+      "content": "These suites are not registered with either Vitest project: vite.config.ts includes only `src/**/*.test.{ts,tsx}` for unit tests and `tests/integration/**/*.test.ts` for integration tests, and no registered entry point imports these relocated modules. Consequently, `npm run test:integration` (including the documented `-- d7s/conditions` filter) executes none of I7S.1–I7S.11. Register the six suite files with the integration project or add discoverable integration entry points that import them.",
+      "existing_code": "import { describe, expect, it } from 'vitest';",
+      "start_line": 4,
+      "end_line": 4,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D7s relocated integration workflow and supporting runtime",
+      "files": [
+        "src/itg/relocated/d7s/conditions.ts",
+        "src/itg/relocated/d7s/confirm-plan.ts",
+        "src/itg/relocated/d7s/migration.ts",
+        "src/itg/relocated/d7s/rebuild.ts",
+        "src/itg/relocated/d7s/review.ts",
+        "src/itg/relocated/d7s/runtime.ts",
+        "src/itg/relocated/d7s/support.ts"
+      ]
+    }
+  ],
+  "session_id": "9b8ba5f6-88c7-4746-937a-40502e2c3e62",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9b8ba5f6-88c7-4746-937a-40502e2c3e62",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "2299db5d65d9f5c0e56dc4ad902876867ed2e380",
+      "resolved_head": "b4a8658fd36eaf5f4a13885b8a9c3b28f59be8e3",
+      "exact_range": "2299db5d65d9f5c0e56dc4ad902876867ed2e380..b4a8658fd36eaf5f4a13885b8a9c3b28f59be8e3",
+      "source_artifact_sha256": "1f4cd4934a90d8a9936395d0b1104dd1a8d9c8191cbe2282c9d1f357d3ab5461"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "42064837746517c7b8eb7db4e65affbd8c43e09d08468cf3332086b7f3711e9f",
+          "path": "src/itg/relocated/d7s/migration.ts",
+          "fingerprint": "677b8d991e509725e2681f370cc6fe42961e78bb2cccaf872171a91cd6b20296"
+        },
+        {
+          "item_id": "4999bfb9d9d436e8cca81676de76d65c5c4d0098900d944d968ac4a7a5eec689",
+          "path": "src/itg/relocated/d7s/confirm-plan.ts",
+          "fingerprint": "036eef518dd246ffa6de4d6f545d49470de9e7fc576a4dd1c8cdaf1493dcc88c"
+        },
+        {
+          "item_id": "4ffe27d8553b53b5c31520b5ee00a3b23aa5a9a4d4d50ee6b3ec98923ddbdf3e",
+          "path": "src/itg/relocated/d7s/review.ts",
+          "fingerprint": "81594e5c590093bab687ef51ee298ad949f1e2d73b1aa2a5082ff2a995776037"
+        },
+        {
+          "item_id": "5d1279009868cc34be2056426b36c2f9d65964e015eb6e0fc0b16930c678455c",
+          "path": "src/itg/relocated/d7s/runtime.ts",
+          "fingerprint": "01b18d963d8b294035a7144be17a388257083eccbc6bdf182065ee790841a50d"
+        },
+        {
+          "item_id": "a7b13b0aa65293aae966dc3757abe5efe942342be266b944ef8c9584dd1a0457",
+          "path": "src/itg/relocated/d7s/support.ts",
+          "fingerprint": "42cce2db505629e42e16f569c1dc08d716c0c3dbd30df05ac5d4642f737f0464"
+        },
+        {
+          "item_id": "ed744103709f32745dc4482bf531d514f8ab4bd5e2155a09ad5eaac2b8c4a8e9",
+          "path": "src/itg/relocated/d7s/rebuild.ts",
+          "fingerprint": "37d7ddb54cc83d66e638bf1f50fb7022980581a3ea5f8d84620afc878542c93c"
+        },
+        {
+          "item_id": "fca2bfe99fd805eca615acf1cc1cf77241562888e9e09fa608309efe42be2b7d",
+          "path": "src/itg/relocated/d7s/conditions.ts",
+          "fingerprint": "2b9505bb52d6aea2f1cd376962fb43da43e4dc471394da7eeb6156b7065a6518"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "42064837746517c7b8eb7db4e65affbd8c43e09d08468cf3332086b7f3711e9f",
+          "path": "src/itg/relocated/d7s/migration.ts",
+          "fingerprint": "677b8d991e509725e2681f370cc6fe42961e78bb2cccaf872171a91cd6b20296"
+        },
+        {
+          "item_id": "4999bfb9d9d436e8cca81676de76d65c5c4d0098900d944d968ac4a7a5eec689",
+          "path": "src/itg/relocated/d7s/confirm-plan.ts",
+          "fingerprint": "036eef518dd246ffa6de4d6f545d49470de9e7fc576a4dd1c8cdaf1493dcc88c"
+        },
+        {
+          "item_id": "4ffe27d8553b53b5c31520b5ee00a3b23aa5a9a4d4d50ee6b3ec98923ddbdf3e",
+          "path": "src/itg/relocated/d7s/review.ts",
+          "fingerprint": "81594e5c590093bab687ef51ee298ad949f1e2d73b1aa2a5082ff2a995776037"
+        },
+        {
+          "item_id": "5d1279009868cc34be2056426b36c2f9d65964e015eb6e0fc0b16930c678455c",
+          "path": "src/itg/relocated/d7s/runtime.ts",
+          "fingerprint": "01b18d963d8b294035a7144be17a388257083eccbc6bdf182065ee790841a50d"
+        },
+        {
+          "item_id": "a7b13b0aa65293aae966dc3757abe5efe942342be266b944ef8c9584dd1a0457",
+          "path": "src/itg/relocated/d7s/support.ts",
+          "fingerprint": "42cce2db505629e42e16f569c1dc08d716c0c3dbd30df05ac5d4642f737f0464"
+        },
+        {
+          "item_id": "ed744103709f32745dc4482bf531d514f8ab4bd5e2155a09ad5eaac2b8c4a8e9",
+          "path": "src/itg/relocated/d7s/rebuild.ts",
+          "fingerprint": "37d7ddb54cc83d66e638bf1f50fb7022980581a3ea5f8d84620afc878542c93c"
+        },
+        {
+          "item_id": "fca2bfe99fd805eca615acf1cc1cf77241562888e9e09fa608309efe42be2b7d",
+          "path": "src/itg/relocated/d7s/conditions.ts",
+          "fingerprint": "2b9505bb52d6aea2f1cd376962fb43da43e4dc471394da7eeb6156b7065a6518"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 75274
+  }
+}
