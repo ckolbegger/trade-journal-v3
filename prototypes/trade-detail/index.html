@@ -366,7 +366,7 @@ const STATES = {
 
   held: {
     label: 'Held 6 sessions', clock: 'Thu Nov 12, 6:15 pm', planTime: 'Wed Nov 4, 9:45 am', resolved: 'Wed Nov 4, 10:20 am',
-    open: 1, avg: 7.35, realized: 313.70, openPnl: 425.00, feesPaid: 1.95, feeLeft: 0.65,
+    open: 1, avg: 7.35, realized: 313.70, openPnl: 424.35, feesPaid: 1.95, feeLeft: 0.65,
     executions: [
       { date: 'Tue Nov 10', time: '11:30 am', text: 'Sell to close 1 @ $10.50', fee: 0.65 },
       { date: 'Wed Nov 4', time: '10:20 am', text: 'Buy to open 2 @ $7.35', fee: 1.30 },
@@ -408,7 +408,7 @@ const STATES = {
 
   breached: {
     label: 'Stop breached', clock: 'Thu Nov 12, 6:15 pm', planTime: 'Wed Nov 4, 9:45 am', resolved: 'Wed Nov 4, 10:20 am',
-    open: 2, avg: 7.35, realized: 0, openPnl: -760, feesPaid: 1.30, feeLeft: 1.30,
+    open: 2, avg: 7.35, realized: 0, openPnl: -761.30, feesPaid: 1.30, feeLeft: 1.30,
     executions: [{ date: 'Wed Nov 4', time: '10:20 am', text: 'Buy to open 2 @ $7.35', fee: 1.30 }],
     lots: [{ opened: 'Wed Nov 4, 10:20 am', qty: 2, price: 7.35, fee: 1.30 }],
     today: { date: 'Thu Nov 12', u: 143.10, o: 3.55 },
@@ -454,7 +454,7 @@ const cond = (s, id) => ({ ...PLAN.conditions.find((c) => c.id === id), ...s.con
 function identity(s, extra = '') {
   const status = s.cond.so.status === 'Breached' ? '<span class="badge b-stop">Stop breached</span>' : '';
   return `<div class="ident"><h2>${PLAN.symbol}</h2><span class="badge b-open">${PLAN.strategy}, Open</span>${status}
-    <span class="sub">${PLAN.contract}, expires ${PLAN.expires} (${PLAN.daysLeft} days)</span>
+    <span class="sub">Strike ${PLAN.strike}</span><span class="sub">Expires ${PLAN.expires} (${PLAN.daysLeft} days)</span>
     <span class="sub">${PLAN.account}</span>${extra}</div>`;
 }
 
@@ -567,7 +567,7 @@ function payoff(s, { w = 560, h = 210, legend = true } = {}) {
 }
 
 function marksGrid(s, exclude = []) {
-  const days = s.sessions.filter((d) => !exclude.includes(d.date) && !d.pending).slice().reverse();
+  const days = s.sessions.filter((d) => !exclude.includes(d.date) && !d.pending);
   if (!days.length) return '<p class="muted small">No earlier sessions yet.</p>';
   const miss = days.filter((d) => d.missing).length;
   const cell = (d, k) => (d.missing ? `<td class="miss"><input aria-label="${k === 'u' ? 'NVDA' : 'Call'} close for ${d.date}" placeholder="add"></td>` : `<td>${k === 'o' ? '$' : ''}${d[k].toFixed(2)}</td>`);
@@ -662,7 +662,7 @@ function viewA3(s) {
 }
 
 /* ---------- B: day-by-day timeline (the bolder look) ---------- */
-function dayCards(s) {
+function dayCards(s, { inputs = true, exec = true } = {}) {
   const out = [];
   const list = s.sessions;
   for (let i = 0; i < list.length; i++) {
@@ -673,15 +673,15 @@ function dayCards(s) {
       out.push(`<article class="day gap" aria-label="${run.length} session${run.length > 1 ? 's' : ''} without Marks">
         <div class="when">${run.length > 1 ? run[run.length - 1].date + ' to ' + run[0].date : d.rel || d.date}</div>
         <h4>${run.length > 1 ? run.length + ' sessions' : d.date} without Marks</h4>
-        <p class="small muted">Optional. Add closes here if you have them.</p>
-        ${run.map((r) => `<div class="gap-row"><span>${r.date}</span><input aria-label="NVDA close ${r.date}" placeholder="NVDA"><input aria-label="Call close ${r.date}" placeholder="Call"></div>`).join('')}
-        ${eventsFor(s, run.map((r) => r.date))}
+        ${inputs ? `<p class="small muted">Optional. Add closes here if you have them.</p>
+        ${run.map((r) => `<div class="gap-row"><span>${r.date}</span><input aria-label="NVDA close ${r.date}" placeholder="NVDA"><input aria-label="Call close ${r.date}" placeholder="Call"></div>`).join('')}` : ''}
+        ${eventsFor(s, run.map((r) => r.date), null, { exec, answer: !inputs })}
       </article>`);
       continue;
     }
     if (d.pending) {
       out.push(`<article class="day" aria-label="${d.date}"><div class="when">${d.rel}, ${d.date}</div><h4>Session still open</h4>
-        <p class="small">Marks open after the 4:00 pm close.</p>${eventsFor(s, [d.date])}</article>`);
+        <p class="small">Marks open after the 4:00 pm close.</p>${eventsFor(s, [d.date], null, { exec, answer: !inputs })}</article>`);
       continue;
     }
     const next = list.slice(i + 1).find((x) => !x.missing && !x.pending);
@@ -691,17 +691,17 @@ function dayCards(s) {
       ${i === 0 ? '<h4>Today’s close</h4>' : `<h4 class="dpnl ${dir(d.pnl)}">${money(d.pnl)}</h4>
       ${change != null ? `<div class="small ${dir(change)}">${signed(change)} since ${next.date}</div>` : '<div class="small muted">First close</div>'}`}
       <dl class="closes"><dt>NVDA close</dt><dd>${d.u.toFixed(2)}</dd><dt>Call Mark</dt><dd>$${d.o.toFixed(2)}</dd></dl>
-      ${eventsFor(s, [d.date])}
+      ${eventsFor(s, [d.date], null, { exec, answer: !inputs })}
     </article>`);
   }
   return out.join('');
 }
 
-function eventsFor(s, dates, alert) {
+function eventsFor(s, dates, alert, { exec = true, answer = false } = {}) {
   const ev = [];
   if (alert) ev.push(`<li class="ev-alert">${alert}</li>`);
-  s.executions.filter((e) => dates.includes(e.date)).forEach((e) => ev.push(`<li class="ev-exec">${e.time}: ${e.text}, fee $${e.fee.toFixed(2)}</li>`));
-  s.journal.filter((j) => dates.includes(j.date)).forEach((j) => ev.push(`<li class="${j.owed ? 'ev-owed' : ''}"><strong>${j.type}</strong>${j.owed ? ` <span class="badge ${j.owed === 'Due now' ? 'b-warn' : 'b-quiet'}">${j.owed}</span>` : ''}<br>${esc(j.body)}</li>`));
+  if (exec) s.executions.filter((e) => dates.includes(e.date)).forEach((e) => ev.push(`<li class="ev-exec">${e.time}: ${e.text}, fee $${e.fee.toFixed(2)}</li>`));
+  s.journal.filter((j) => dates.includes(j.date)).forEach((j) => ev.push(`<li class="${j.owed ? 'ev-owed' : ''}"><strong>${j.type}</strong>${j.owed ? ` <span class="badge ${j.owed === 'Due now' ? 'b-warn' : 'b-quiet'}">${j.owed}</span>${answer ? ' <button class="pill-btn" type="button">Answer</button>' : ''}` : ''}<br>${esc(j.body)}</li>`));
   return ev.length ? `<ul class="events">${ev.join('')}</ul>` : '';
 }
 
@@ -725,7 +725,7 @@ function viewB(s) {
 }
 
 /* ---------- C: cockpit ---------- */
-const DRAWERS = ['Today', 'Position', 'Plan and entry', 'Payoff', 'History', 'Journal'];
+const DRAWERS = ['Today', 'Position', 'Plan and entry', 'Price History', 'Journal', 'Payoff'];
 let drawer = 'Today';
 
 function viewC(s) {
@@ -753,10 +753,11 @@ function viewC(s) {
     Position: positionBody(s, { realized: false }),
     'Plan and entry': planEntryBody(s),
     Payoff: payoff(s),
-    History: marksGrid(s, excl),
-    Journal: journalList(s, 4),
+    'Price History': marksGrid(s, excl),
+    Journal: `<div class="tl-head" style="margin-top:0"><h3 class="sec-title" style="margin:0">Sessions, newest first</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
+      <div class="rail-x" id="rail" tabindex="0" aria-label="Sessions, newest first">${dayCards(s, { inputs: false, exec: false })}</div>`,
   };
-  const counts = { History: missingCount(s, excl) || '', Journal: owedCount(s) ? owedCount(s) + ' owed' : '' };
+  const counts = { 'Price History': missingCount(s, excl) || '', Journal: owedCount(s) ? owedCount(s) + ' owed' : '' };
   return `<p class="intent">Cockpit. A rail that always shows the state of play, and drawers for the detail. On a phone the rail becomes the top of the page.</p>
   <div class="cockpit">
     <aside class="c-rail" aria-label="State of play">
