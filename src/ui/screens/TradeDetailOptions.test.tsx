@@ -305,6 +305,11 @@ describe('Trade Detail: every condition (W6, W7)', () => {
     }
   });
 
+  it('should stamp an O-S2 Due settlement item with the close of its own expiration session, 2026-12-18', () => {
+    const detail = optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-12-18', closeInstant: '2026-12-18T21:00:00Z', contractMark: '0.10', underlyingMark: '43.20' });
+    expect(detail.settlement.map((item) => [item.expiration, item.settlementTime])).toEqual([['2026-12-18', { kind: 'Value', value: '2026-12-18T21:00:00Z' }]]);
+  });
+
   it('should list Wednesdays O-S2 conditions as four rows, Stop on MNO Active 60.00 with value at expiration 4.00 and 2.20 on MNO, Stop on the option price at 3.60 Breached with Overrun 20.00 and a dash in both option columns, then both Targets', async () => {
     // Wednesday 10-14: MNO 43.20, the put 3.70.
     renderView(optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', underlyingMark: '43.20' }));

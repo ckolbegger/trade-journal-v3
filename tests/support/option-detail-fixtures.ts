@@ -12,8 +12,14 @@ import type { OptionInstrument } from '../../src/domain/instrument/index.ts';
 
 export type OptionTradeName = 'O-C' | 'O-S' | 'O-S2';
 
-// Friday 2026-11-20 16:00 New York, the close of the expiration session.
-const SETTLEMENT_TIME = { kind: 'Value', value: '2026-11-20T21:00:00Z' } as const;
+// The close of the expiration session, 16:00 New York on the expiration date (20:00Z in daylight time, otherwise 21:00Z).
+// Computed here rather than through the market calendar, which is asynchronous and needs a MarketData.
+function settlementTimeOf(expiration: string): { readonly kind: 'Value'; readonly value: string } {
+  const hourInNewYork = (iso: string) =>
+    new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hourCycle: 'h23' }).format(new Date(iso));
+  const daylight = `${expiration}T20:00:00Z`;
+  return { kind: 'Value', value: hourInNewYork(daylight) === '16' ? daylight : `${expiration}T21:00:00Z` };
+}
 
 const contractOf = (which: OptionTradeName): OptionInstrument => (which === 'O-C' ? OC_CONTRACT : which === 'O-S2' ? OS2_CONTRACT : OS_CONTRACT);
 
@@ -136,7 +142,7 @@ export function optionOpenDetail(which: OptionTradeName, positionChanges: readon
     lastActivity: positionChanges.at(-1)?.economicTime ?? record.plan.economicTime,
     settlement: evaluation.settlement
       .filter((item) => item.status === 'Due')
-      .map(({ instrument, quantity, expiration }) => ({ tradeId: 'trade-1', instrument, quantity, expiration, settlementTime: SETTLEMENT_TIME })),
+      .map(({ instrument, quantity, expiration }) => ({ tradeId: 'trade-1', instrument, quantity, expiration, settlementTime: settlementTimeOf(expiration) })),
     positionChanges,
     entryStatus: derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering',
     entryResolution: derived.entryResolution,
