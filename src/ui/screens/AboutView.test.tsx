@@ -51,7 +51,7 @@ describe('About this release', () => {
       'Offline copy complete: passed',
     ]);
     const capabilities = screen.getByRole('region', { name: 'Installed capabilities' });
-    expect(within(capabilities).getByText('TradeWorkflows.confirmPlan (LongStock, LongCall, LongPut, CashSecuredPut)')).toBeTruthy();
+    expect(within(capabilities).getByText('TradeWorkflows.confirmPlan (LongStock, LongCall, LongPut, CashSecuredPut, StructureValueCondition)')).toBeTruthy();
     expect(within(capabilities).getByText(/Strategies: strategy.long-stock/)).toBeTruthy();
   });
 
