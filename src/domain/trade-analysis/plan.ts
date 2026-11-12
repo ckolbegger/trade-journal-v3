@@ -13,7 +13,9 @@ export interface PlannedLegInput {
   readonly intendedEntry: string;
 }
 
-export type ConditionInput = { readonly kind: 'UnderlyingPrice'; readonly price: string };
+// An Underlying-price condition, or an option-price one (a price per share of the contract, A195; "structure
+// value" in the spec). Only an option Plan may hold the second kind.
+export type ConditionInput = { readonly kind: 'UnderlyingPrice' | 'StructureValue'; readonly price: string };
 
 export interface PlanInput {
   readonly underlying: string;
@@ -36,8 +38,14 @@ export interface ConditionBasis {
   // Monetary distance from intended entry to this condition's boundary.
   readonly distance: Rational;
   // An option condition's measurement basis, derived from its Underlying trigger: the contract's
-  // value at expiration at that price (P24, A100). Absent for stock.
+  // value at expiration at that price (P24, A100). Absent for stock and for an option-price condition,
+  // which is measured at its own price (A196).
   readonly valueAtExpiration?: Rational;
+}
+
+// A condition's measurement value: the value at expiration when it has one, its own price otherwise (A196).
+export function measurementOf(basis: ConditionBasis): Rational {
+  return basis.valueAtExpiration ?? positive(basis.condition.price)!;
 }
 
 // The frozen Plan Baseline: intended entry against every original Stop and Target, with the
@@ -67,11 +75,18 @@ export interface PlanIssue {
     | 'ExerciseIntentNotApplicable'
     | 'ContractQuantityNotWhole'
     | 'ContractAlreadyExpired'
-    | 'ConditionCountNotOne'
+    | 'ConditionKindRepeated'
+    | 'ConditionKindNotApplicable'
     | ContractIssue;
   // An option rejection that names a breakeven carries it here (A100); a rejection for more than
   // one Stop or Target names the conditions beyond the first of each kind.
-  readonly details?: { readonly breakeven?: Rational; readonly extraConditions?: readonly ConditionInput[] };
+  // An option Plan's NoPositiveRisk and TargetNotBeyondEntry name the condition at fault: its role, its
+  // 1-based position in Plan order, and its kind (A196).
+  readonly details?: {
+    readonly breakeven?: Rational;
+    readonly extraConditions?: readonly ConditionInput[];
+    readonly condition?: { readonly role: 'Stop' | 'Target'; readonly position: number; readonly kind: ConditionInput['kind'] };
+  };
 }
 
 export type PlanAssessment =
@@ -164,10 +179,11 @@ function boundary(
   trigger: Rational,
   kind: 'Stop' | 'Target',
 ): ConditionBasis {
-  const value = valueAtTrigger(leg.instrument, trigger);
+  const optionPrice = condition.kind === 'StructureValue';
+  const value = optionPrice ? trigger : valueAtTrigger(leg.instrument, trigger);
   const gain = leg.side === 'Long' ? value.sub(entry) : entry.sub(value);
   const scaled = (kind === 'Target' ? gain : Rational.of(0n).sub(gain)).mul(contracts).mul(Rational.of(BigInt(multiplierOf(leg.instrument))));
-  return leg.instrument.kind === 'Stock'
+  return leg.instrument.kind === 'Stock' || optionPrice
     ? { condition: { ...condition }, distance: scaled }
     : { condition: { ...condition }, distance: scaled, valueAtExpiration: value };
 }
@@ -194,8 +210,11 @@ function assessContract(leg: PlannedLegInput, economicTime: Instant, issue: (cod
 export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   const { plan } = input;
   const issues: PlanIssue[] = [];
+  // De-duplicated by code and condition (A196).
+  const same = (a?: PlanIssue['details']) => (i: PlanIssue) =>
+    i.details?.condition?.role === a?.condition?.role && i.details?.condition?.position === a?.condition?.position;
   const issue = (code: PlanIssue['code'], details?: PlanIssue['details']) => {
-    if (!issues.some((i) => i.code === code)) issues.push(details ? { code, details } : { code });
+    if (!issues.some((i) => i.code === code && same(details)(i))) issues.push(details ? { code, details } : { code });
   };
 
   const shapeMismatch = !matchesShape(plan.legs, input.strategyShape);
@@ -228,11 +247,12 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   // Long Stock management requires one original Stop and one original Target (D1 A1).
   if (plan.stops.length === 0) issue('MissingStop');
   if (plan.targets.length === 0) issue('MissingTarget');
-  // An option Plan has exactly one Underlying-price Stop and one Target (A100).
-  if (first?.instrument.kind === 'Option') {
-    const extraConditions = [...plan.stops.slice(1), ...plan.targets.slice(1)].map((c) => ({ ...c }));
-    if (extraConditions.length > 0) issue('ConditionCountNotOne', { extraConditions });
-  }
+  // Only an option Plan may hold an option-price condition (A195).
+  if (first?.instrument.kind !== 'Option' && [...plan.stops, ...plan.targets].some((c) => c.kind === 'StructureValue')) issue('ConditionKindNotApplicable');
+  // At most one condition of each kind per role (P90); a second of a kind present is an extra.
+  const repeats = (conditions: readonly ConditionInput[]) => conditions.filter((c, i) => conditions.findIndex((o) => o.kind === c.kind) !== i);
+  const extraConditions = [...repeats(plan.stops), ...repeats(plan.targets)].map((c) => ({ ...c }));
+  if (extraConditions.length > 0) issue('ConditionKindRepeated', { extraConditions });
 
   const leg = plan.legs[0]!;
   const quantity = contractsOf(leg);
@@ -251,15 +271,22 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
   // The Underlying Stop lies below the Target for a bullish Strategy and above it for a bearish one.
   if (leg.instrument.kind === 'Option') {
     const bullish = (leg.side === 'Long') === (leg.instrument.right === 'Call');
-    const misordered = stops.some((s) => targets.some((t) => (bullish ? s.price!.compare(t.price!) >= 0 : s.price!.compare(t.price!) <= 0)));
+    const underlying = (cs: typeof stops) => cs.filter((c) => c.condition.kind === 'UnderlyingPrice');
+    const misordered = underlying(stops).some((s) => underlying(targets).some((t) => (bullish ? s.price!.compare(t.price!) >= 0 : s.price!.compare(t.price!) <= 0)));
     if (misordered) issue('StopTargetOrder');
   }
-  // Original Planned Risk must be positive: it is exactly 1R.
-  // An option's rejection for no positive risk names its breakeven (A100).
+  // Each condition must lie beyond intended entry on its own (A196): a Stop's distance is a risk and a
+  // Target's a reward, and the nearest of each is 1R and the Original Planned Reward. An option Plan's
+  // issue names its condition; only an Underlying-price one names the breakeven (A100).
   const breakeven = breakevenOf(leg, entry);
-  if (nearest(stopBasis).compare(zero) <= 0) issue('NoPositiveRisk', breakeven && { breakeven });
-  // A Long Stock Target must lie above intended entry (D1 A1).
-  if (nearest(targetBasis).compare(zero) <= 0) issue('TargetNotBeyondEntry', breakeven && { breakeven });
+  const perCondition = (role: 'Stop' | 'Target', basis: readonly ConditionBasis[], code: 'NoPositiveRisk' | 'TargetNotBeyondEntry') =>
+    basis.forEach((b, i) => {
+      if (b.distance.compare(zero) > 0) return;
+      const named = b.condition.kind === 'UnderlyingPrice' && breakeven ? { breakeven } : {};
+      issue(code, leg.instrument.kind === 'Option' ? { ...named, condition: { role, position: i + 1, kind: b.condition.kind } } : undefined);
+    });
+  perCondition('Stop', stopBasis, 'NoPositiveRisk');
+  perCondition('Target', targetBasis, 'TargetNotBeyondEntry');
   if (issues.length > 0) return { kind: 'Rejected', issues };
 
   const frozen = normalizePlan(plan, canonical);

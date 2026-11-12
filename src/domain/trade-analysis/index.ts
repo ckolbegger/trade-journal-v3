@@ -1,5 +1,6 @@
 export {
   assessPlan,
+  measurementOf,
   type ConditionBasis,
   type ConditionInput,
   type PlanAssessment,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
-import { assessPlan, type PlanAssessmentInput } from './index.ts';
+import { assessPlan, measurementOf, type PlanAssessmentInput } from './index.ts';
 
 const r = (n: bigint, d = 1n) => Rational.of(n, d);
 
@@ -155,10 +155,10 @@ describe('assessPlan: option condition count', () => {
   it('should reject an option Plan with two Stops or two Targets, naming the extra condition', () => {
     const two = (price: string) => [{ kind: 'UnderlyingPrice', price: '48.00' }, { kind: 'UnderlyingPrice', price }] as const;
     expect(rejection(longCall({ stops: two('47.00') }))).toEqual([
-      { code: 'ConditionCountNotOne', details: { extraConditions: [{ kind: 'UnderlyingPrice', price: '47.00' }] } },
+      { code: 'ConditionKindRepeated', details: { extraConditions: [{ kind: 'UnderlyingPrice', price: '47.00' }] } },
     ]);
     expect(rejection(longCall({ targets: [{ kind: 'UnderlyingPrice', price: '60.00' }, { kind: 'UnderlyingPrice', price: '65.00' }] }))).toEqual([
-      { code: 'ConditionCountNotOne', details: { extraConditions: [{ kind: 'UnderlyingPrice', price: '65.00' }] } },
+      { code: 'ConditionKindRepeated', details: { extraConditions: [{ kind: 'UnderlyingPrice', price: '65.00' }] } },
     ]);
   });
 });
@@ -204,5 +204,95 @@ describe('NoPositiveRisk names the breakeven on every option Strategy (A100)', (
     const put = rejection(longPut({ stops: [{ kind: 'UnderlyingPrice', price: '48.00' }] })).filter((i) => i.code === 'NoPositiveRisk');
     expect(put).toHaveLength(1);
     expect(put[0]?.details?.breakeven?.equals(r(97n, 2n))).toBe(true);
+  });
+});
+
+// O-C2 and O-S2 (D7S): both kinds of condition, contracts expiring 2026-12-18.
+const UNDERLYING = (price: string) => ({ kind: 'UnderlyingPrice', price }) as const;
+const OPTION_PRICE = (price: string) => ({ kind: 'StructureValue', price }) as const;
+const oc2 = (overrides: Partial<PlanAssessmentInput['plan']> = {}) =>
+  longCall({
+    legs: [{ side: 'Long', instrument: contract('XYZ', '55', 'Call', '2026-12-18'), quantity: '2', intendedEntry: '2.00' }],
+    stops: [UNDERLYING('48.00'), OPTION_PRICE('1.00')],
+    targets: [UNDERLYING('60.00'), OPTION_PRICE('4.00')],
+    ...overrides,
+  });
+const os2 = (overrides: Partial<PlanAssessmentInput['plan']> = {}) =>
+  cashSecuredPut({
+    legs: [{ side: 'Short', instrument: contract('MNO', '45', 'Put', '2026-12-18'), quantity: '-2', intendedEntry: '1.20' }],
+    stops: [UNDERLYING('41.00'), OPTION_PRICE('3.60')],
+    targets: [UNDERLYING('44.50'), OPTION_PRICE('0.30')],
+    ...overrides,
+  });
+
+describe('assessPlan: option-price conditions (decision 89, A195, A196)', () => {
+  it('should accept O-C2 with 1R $200 from the option-price Stop, reward $400 from the option-price Target, ratio 2, and four per-condition bases in Plan order, the Underlying ones carrying values at expiration 0 and 5.00 and the option-price ones none; and accept O-S2 with 1R $480 from S-o, reward $140 from T-u and ratio 7/24, its option-price conditions left out of StopTargetOrder', () => {
+    const { baseline } = accepted(oc2());
+    expect(baseline.oneR.equals(r(200n))).toBe(true);
+    expect(baseline.originalPlannedReward.equals(r(400n))).toBe(true);
+    expect(baseline.rewardRiskRatio.equals(r(2n))).toBe(true);
+    expect(baseline.stopBasis.map((b) => [b.condition.kind, b.distance.equals(r(b.condition.kind === 'UnderlyingPrice' ? 400n : 200n))])).toEqual([
+      ['UnderlyingPrice', true],
+      ['StructureValue', true],
+    ]);
+    expect(baseline.targetBasis.map((b) => [b.condition.kind, b.distance.equals(r(b.condition.kind === 'UnderlyingPrice' ? 600n : 400n))])).toEqual([
+      ['UnderlyingPrice', true],
+      ['StructureValue', true],
+    ]);
+    expect(baseline.stopBasis[0]?.valueAtExpiration?.equals(r(0n))).toBe(true);
+    expect(baseline.targetBasis[0]?.valueAtExpiration?.equals(r(5n))).toBe(true);
+    expect(baseline.stopBasis[1]).not.toHaveProperty('valueAtExpiration');
+    expect(baseline.targetBasis[1]).not.toHaveProperty('valueAtExpiration');
+    expect(measurementOf(baseline.stopBasis[1]!).equals(r(1n))).toBe(true);
+    expect(measurementOf(baseline.stopBasis[0]!).equals(r(0n))).toBe(true);
+
+    // O-S2's option-price Stop 3.60 sits above its Underlying Target's 44.50 only as numbers: they are not compared.
+    const short = accepted(os2()).baseline;
+    expect(short.oneR.equals(r(480n))).toBe(true);
+    expect(short.originalPlannedReward.equals(r(140n))).toBe(true);
+    expect(short.rewardRiskRatio.equals(r(7n, 24n))).toBe(true);
+    expect(short.stopBasis.map((b) => b.distance.equals(r(b.condition.kind === 'UnderlyingPrice' ? 560n : 480n)))).toEqual([true, true]);
+    expect(short.targetBasis.map((b) => b.distance.equals(r(b.condition.kind === 'UnderlyingPrice' ? 140n : 180n)))).toEqual([true, true]);
+  });
+
+  it('should reject O-C2 with its option-price Stop at 2.50 and its Underlying Stop at 58.00 with two NoPositiveRisk issues, each naming its condition (Stop 2 StructureValue with no breakeven; Stop 1 UnderlyingPrice with the breakeven 57.00), and O-S2 with its option-price Target at 1.50 with TargetNotBeyondEntry naming Target 2', () => {
+    const issues = rejection(oc2({ stops: [UNDERLYING('58.00'), OPTION_PRICE('2.50')] }));
+    expect(issues).toHaveLength(2);
+    expect(issues.every((i) => i.code === 'NoPositiveRisk')).toBe(true);
+    const second = issues.find((i) => i.details?.condition?.kind === 'StructureValue');
+    expect(second?.details?.condition).toEqual({ role: 'Stop', position: 2, kind: 'StructureValue' });
+    expect(second?.details?.breakeven).toBeUndefined();
+    const first = issues.find((i) => i.details?.condition?.kind === 'UnderlyingPrice');
+    expect(first?.details?.condition).toEqual({ role: 'Stop', position: 1, kind: 'UnderlyingPrice' });
+    expect(first?.details?.breakeven?.equals(r(57n))).toBe(true);
+
+    const target = rejection(os2({ targets: [UNDERLYING('44.50'), OPTION_PRICE('1.50')] }));
+    expect(target).toHaveLength(1);
+    expect(target[0]?.code).toBe('TargetNotBeyondEntry');
+    expect(target[0]?.details?.condition).toEqual({ role: 'Target', position: 2, kind: 'StructureValue' });
+    expect(target[0]?.details?.breakeven).toBeUndefined();
+  });
+
+  it('should reject an option Plan with two option-price Stops, or two Underlying Targets, with ConditionKindRepeated naming the extra conditions', () => {
+    expect(rejection(oc2({ stops: [UNDERLYING('48.00'), OPTION_PRICE('1.00'), OPTION_PRICE('0.50')] }))).toEqual([
+      { code: 'ConditionKindRepeated', details: { extraConditions: [OPTION_PRICE('0.50')] } },
+    ]);
+    expect(rejection(oc2({ targets: [UNDERLYING('60.00'), OPTION_PRICE('4.00'), UNDERLYING('65.00')] }))).toEqual([
+      { code: 'ConditionKindRepeated', details: { extraConditions: [UNDERLYING('65.00')] } },
+    ]);
+  });
+
+  it('should reject T-A with an option-price Stop added with ConditionKindNotApplicable', () => {
+    const stock: PlanAssessmentInput = {
+      strategyShape: { roles: [{ side: 'Long', instrument: 'Stock', ratio: 1 }] },
+      economicTime: PLAN_TIME,
+      plan: {
+        underlying: 'XYZ',
+        legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', intendedEntry: '50.00' }],
+        stops: [UNDERLYING('45.00'), OPTION_PRICE('1.00')],
+        targets: [UNDERLYING('60.00')],
+      },
+    };
+    expect(rejection(stock).map((i) => i.code)).toEqual(['ConditionKindNotApplicable']);
   });
 });

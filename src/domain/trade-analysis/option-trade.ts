@@ -83,6 +83,54 @@ export const osRecord = (positionChanges: readonly PositionChangeFact[] = []): T
     positionChanges,
   );
 
+// D7S's both-kinds Trades (breakdown, section 4); their contracts expire Friday 2026-12-18.
+export const OC2_CONTRACT: OptionInstrument = { ...OC_CONTRACT, expiration: '2026-12-18' };
+export const OS2_CONTRACT: OptionInstrument = { ...OS_CONTRACT, expiration: '2026-12-18' };
+
+// O-C2: Plan 2 contracts at 2.00. Stops: XYZ at or below 48.00 (value 0, $400), option at or below 1.00 ($200).
+// Targets: XYZ at or above 60.00 (value 5.00, $600), option at or above 4.00 ($400). 1R $200, reward $400.
+export const oc2Record = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
+  record(
+    {
+      economicTime: '2026-10-12T13:00:00Z',
+      underlying: 'XYZ',
+      thesis: 'Breakout.',
+      invalidation: 'Below 48 or the option at 1.00.',
+      legs: [{ factId: OC_LEG_ID, side: 'Long', instrument: OC2_CONTRACT, quantity: '2', intendedEntry: '2.00' }],
+      stops: [
+        { factId: 'stop-1', kind: 'UnderlyingPrice', price: '48.00' },
+        { factId: 'stop-2', kind: 'StructureValue', price: '1.00' },
+      ],
+      targets: [
+        { factId: 'target-1', kind: 'UnderlyingPrice', price: '60.00' },
+        { factId: 'target-2', kind: 'StructureValue', price: '4.00' },
+      ],
+    },
+    positionChanges,
+  );
+
+// O-S2: Plan -2 contracts at 1.20 credit. Stops: S-u MNO at or below 41.00 ($560), S-o option at or above 3.60
+// ($480). Targets: T-u MNO at or above 44.50 ($140), T-o option at or below 0.30 ($180). 1R $480, reward $140.
+export const os2Record = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
+  record(
+    {
+      economicTime: '2026-10-12T13:00:00Z',
+      underlying: 'MNO',
+      thesis: 'Support holds.',
+      invalidation: 'Below 41 or the put at 3.60.',
+      legs: [{ factId: OS_LEG_ID, side: 'Short', instrument: OS2_CONTRACT, quantity: '-2', intendedEntry: '1.20' }],
+      stops: [
+        { factId: 'stop-s1', kind: 'UnderlyingPrice', price: '41.00' },
+        { factId: 'stop-s2', kind: 'StructureValue', price: '3.60' },
+      ],
+      targets: [
+        { factId: 'target-s1', kind: 'UnderlyingPrice', price: '44.50' },
+        { factId: 'target-s2', kind: 'StructureValue', price: '0.30' },
+      ],
+    },
+    positionChanges,
+  );
+
 // O-P: the Long Put on ABC, 1 contract at 1.50, Stop ABC at or above 55.00, Target ABC at or below 45.00.
 export const opRecord = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
   record(
