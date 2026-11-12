@@ -19,6 +19,17 @@ export const signedContracts = (open: Rational): string => {
 export const holdingText = (side: 'Long' | 'Short', amount: string | number, instrument: OptionInstrument): string =>
   `${side} ${contractCount(amount)} of ${instrumentLabel(instrument)}`;
 
+// A Long Call and a Cash-Secured Put gain as the Underlying rises; a Long Put as it falls.
+export const isBullish = (role: { readonly right: 'Call' | 'Put'; readonly side: 'Long' | 'Short' }): boolean => (role.right === 'Call') === (role.side === 'Long');
+
+// Which side of its price a Stop or Target is at (W1, W6): an Underlying price follows the Strategy's direction, an
+// option price the side held, since a long option's Stop is a fall in its price and a short one's a rise.
+export const conditionDirection = (
+  role: 'Stop' | 'Target',
+  kind: 'UnderlyingPrice' | 'StructureValue',
+  leg: { readonly right: 'Call' | 'Put'; readonly side: 'Long' | 'Short' },
+): 'below' | 'above' => ((kind === 'UnderlyingPrice' ? isBullish(leg) : leg.side === 'Long') === (role === 'Stop') ? 'below' : 'above');
+
 // A long option Plan's Exercise Intent (A119).
 export const exerciseIntentText = (intent: 'Authorized' | 'NotAuthorized'): string => (intent === 'Authorized' ? 'Authorized in advance' : 'Not authorized in advance');
 

@@ -26,7 +26,7 @@ import { useRuntime } from '../runtime.tsx';
 import type { UnavailableReason } from '../../domain/calculation-result/index.ts';
 import { findingWords, instrumentLabel, text, unavailableWords } from '../calculation-words.ts';
 import { calculation, closedViaSale, dollarsAndR, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
-import { contractCount, exerciseIntentText, expirationDate, holdingText, settlementTime } from './option-words.ts';
+import { conditionDirection, contractCount, exerciseIntentText, expirationDate, holdingText, settlementTime } from './option-words.ts';
 import { executionWhat } from './execution-line.ts';
 import { clearHandedOver, handedOverConfirmed } from './confirmed-handoff.ts';
 import { closedViaOption, timingWords } from './option-disposition.ts';
@@ -67,8 +67,26 @@ type PlannedLeg = PlannedTradeDetail['plan']['legs'][number];
 const legText = (leg: PlannedLeg): string =>
   leg.instrument.kind === 'Option' ? holdingText(leg.side, leg.quantity, leg.instrument) : `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`;
 
-// A Stop or Target trigger: an option's is an Underlying price (C3), a stock's a price in dollars.
-const triggerText = (leg: PlannedLeg | undefined, triggerPrice: string): string => (leg?.instrument.kind === 'Option' ? decimalUnderlyingPrice(triggerPrice) : price(triggerPrice));
+type PlannedCondition = PlannedTradeDetail['plan']['stops'][number];
+
+// A Plan's Stops or Targets, one line per condition in Plan order (W6). A stock's is its price in dollars; an option's
+// reads "MNO at or below 41.00" for an Underlying price (C3) and "Option at or above $3.60" for an option price.
+function ConditionLines({ role, conditions, leg, symbol }: { readonly role: 'Stop' | 'Target'; readonly conditions: readonly PlannedCondition[]; readonly leg: PlannedLeg | undefined; readonly symbol: string }) {
+  const option = leg?.instrument.kind === 'Option' ? { right: leg.instrument.right, side: leg.side } : undefined;
+  return (
+    <>
+      {conditions.map((condition) => (
+        <div key={condition.factId}>
+          {option
+            ? condition.kind === 'StructureValue'
+              ? `Option at or ${conditionDirection(role, condition.kind, option)} ${price(condition.price)}`
+              : `${symbol} at or ${conditionDirection(role, condition.kind, option)} ${decimalUnderlyingPrice(condition.price)}`
+            : price(condition.price)}
+        </div>
+      ))}
+    </>
+  );
+}
 
 const abs = (value: Rational): Rational => (value.compare(Rational.of(0n)) < 0 ? Rational.of(0n).sub(value) : value);
 
@@ -152,8 +170,6 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
 
   const { view } = state;
   const leg = view.plan.legs[0];
-  const stop = view.plan.stops[0];
-  const target = view.plan.targets[0];
   const entry = view.journal[0];
   const closed = 'terminalDisposition' in view;
   return (
@@ -190,8 +206,8 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
           <Figure term="Leg" plain>{leg ? legText(leg) : ''}</Figure>
           {view.plan.exerciseIntent && <Figure term="Exercise Intent" plain>{exerciseIntentText(view.plan.exerciseIntent)}</Figure>}
           <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>
-          <Figure term="Stop">{stop ? triggerText(leg, stop.price) : ''}</Figure>
-          <Figure term="Target">{target ? triggerText(leg, target.price) : ''}</Figure>
+          <Figure term="Stop"><ConditionLines role="Stop" conditions={view.plan.stops} leg={leg} symbol={view.plan.underlying} /></Figure>
+          <Figure term="Target"><ConditionLines role="Target" conditions={view.plan.targets} leg={leg} symbol={view.plan.underlying} /></Figure>
           <Figure term="Plan time" plain>{localTime(view.plan.planTime, timeZone)}</Figure>
           <Figure term="Account" plain>{`${view.labels.institution} — ${view.labels.account}`}</Figure>
         </dl>
@@ -308,8 +324,6 @@ function PayoffSections({ view }: { readonly view: PlannedTradeDetail | OpenTrad
 // and always their label.
 function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | OpenTradeDetail | ClosedTradeDetail; readonly timeZone: string }) {
   const leg = view.plan.legs[0];
-  const stop = view.plan.stops[0];
-  const target = view.plan.targets[0];
   const contract = leg?.instrument.kind === 'Option' ? leg.instrument : undefined;
   const held = 'heldQuantity' in view ? view.heldQuantity : Rational.of(0n);
   const expiration = view.contractExpiration;
@@ -339,8 +353,8 @@ function SummaryCard({ view, timeZone }: { readonly view: PlannedTradeDetail | O
           </>
         )}
         {!('positionChanges' in view) && <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>}
-        <Figure term="Stop" tone="stop">{stop ? triggerText(leg, stop.price) : ''}</Figure>
-        <Figure term="Target" tone="target">{target ? triggerText(leg, target.price) : ''}</Figure>
+        <Figure term="Stop" tone="stop"><ConditionLines role="Stop" conditions={view.plan.stops} leg={leg} symbol={view.plan.underlying} /></Figure>
+        <Figure term="Target" tone="target"><ConditionLines role="Target" conditions={view.plan.targets} leg={leg} symbol={view.plan.underlying} /></Figure>
         {!('positionChanges' in view) && (
           <>
             <Figure term="1R">{money(view.baseline.oneR)}</Figure>
@@ -501,12 +515,13 @@ function RiskRewardSection({
             {evaluation.conditions.map((condition) => {
               const { result } = condition;
               const reading = result.kind === 'Value' ? result.value : undefined;
+              const optionPrice = condition.kind === 'StructureValue';
               // The frozen basis of this Stop or Target: its id is its role and 1-based position.
               const basis = (condition.role === 'Stop' ? baseline.stopBasis : baseline.targetBasis)[Number(condition.id.split('-')[1]) - 1];
               return (
                 <tr key={condition.id}>
-                  <td>{condition.role}</td>
-                  <td className="number">{option ? decimalUnderlyingPrice(condition.boundary) : price(condition.boundary)}</td>
+                  <td>{option ? `${condition.role} on ${optionPrice ? 'the option price' : symbol}` : condition.role}</td>
+                  <td className="number">{option && !optionPrice ? decimalUnderlyingPrice(condition.boundary) : price(condition.boundary)}</td>
                   <td>{reading ? reading.status : calculation(result, () => '')}</td>
                   <td className="number">{reading ? measureText(reading.distance) : '—'}</td>
                   <td className="number">{reading ? (reading.overrun ? measureText(reading.overrun) : 'None') : '—'}</td>

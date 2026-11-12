@@ -5,17 +5,17 @@ import type { ClosedTradeDetail, OpenTradeDetail, PlannedTradeDetail, PositionCh
 import { payoffOf } from '../../src/coordinators/settlement.ts';
 import { feeReconciliationOf, lotMatchViews } from '../../src/coordinators/trade-views/index.ts';
 import { derive, evaluate, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
-import { ocRecord, osRecord, OC_CONTRACT, OS_CONTRACT } from '../../src/domain/trade-analysis/option-trade.ts';
+import { ocRecord, os2Record, osRecord, OC_CONTRACT, OS_CONTRACT, OS2_CONTRACT } from '../../src/domain/trade-analysis/option-trade.ts';
 import { optionSummary } from '../../src/domain/trade-summary.ts';
 import { Rational } from '../../src/domain/values/index.ts';
 import type { OptionInstrument } from '../../src/domain/instrument/index.ts';
 
-export type OptionTradeName = 'O-C' | 'O-S';
+export type OptionTradeName = 'O-C' | 'O-S' | 'O-S2';
 
 // Friday 2026-11-20 16:00 New York, the close of the expiration session.
 const SETTLEMENT_TIME = { kind: 'Value', value: '2026-11-20T21:00:00Z' } as const;
 
-const contractOf = (which: OptionTradeName): OptionInstrument => (which === 'O-C' ? OC_CONTRACT : OS_CONTRACT);
+const contractOf = (which: OptionTradeName): OptionInstrument => (which === 'O-C' ? OC_CONTRACT : which === 'O-S2' ? OS2_CONTRACT : OS_CONTRACT);
 
 export interface OptionDetailOptions {
   readonly recordedDeviations?: readonly RecordedDeviation[];
@@ -27,7 +27,7 @@ function recordOf(
   storedLifecycle: TradeAnalysisRecord['storedLifecycle'],
   options: OptionDetailOptions = {},
 ): TradeAnalysisRecord {
-  const record = which === 'O-C' ? ocRecord(positionChanges) : osRecord(positionChanges);
+  const record = which === 'O-C' ? ocRecord(positionChanges) : which === 'O-S2' ? os2Record(positionChanges) : osRecord(positionChanges);
   // O-C is a long option, which carries an Exercise Intent (A100); the Cash-Secured Put carries none.
   const plan = which === 'O-C' ? { ...record.plan, exerciseIntent: 'NotAuthorized' as const } : record.plan;
   return { ...record, storedLifecycle, plan, ...(options.recordedDeviations && { recordedDeviations: options.recordedDeviations }) };
@@ -60,6 +60,7 @@ const decimal = (text: string) => {
 const LABELS = {
   'O-C': { strategy: 'Long Call', account: 'Roth IRA', institution: 'Fidelity' },
   'O-S': { strategy: 'Cash-Secured Put', account: 'Roth IRA', institution: 'Fidelity' },
+  'O-S2': { strategy: 'Cash-Secured Put', account: 'Roth IRA', institution: 'Fidelity' },
 } as const;
 
 function plannedPart(which: OptionTradeName, record: TradeAnalysisRecord, valuationDate?: string) {

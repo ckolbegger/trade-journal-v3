@@ -3,9 +3,9 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
-import { ocExcess, optionClosedDetail, optionOpenDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
+import { ocExcess, optionClosedDetail, optionOpenDetail, optionPlannedDetail, type OptionFrames } from '../../../tests/support/option-detail-fixtures.ts';
 import { incoherentDetailOf, openDetailOf, PC1, PC2, X1 } from '../../../tests/support/open-detail-fixtures.ts';
-import { ocChange, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_ES, OS_S1, osChange } from '../../../tests/support/option-trade-fixtures.ts';
+import { ocChange, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_ES, OS_S1, OS2_S1, osChange } from '../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -268,12 +268,12 @@ describe('option Trade Detail conditions (row 23.17)', () => {
       return within(row).getAllByRole('cell')[headers.indexOf(header)]?.textContent;
     };
     expect(headers).toEqual(expect.arrayContaining(['Value at expiration', 'Distance on XYZ']));
-    expect(cell('Stop', 'Boundary')).toBe('48.00');
-    expect(cell('Stop', 'Value at expiration')).toBe('$0.00');
-    expect(cell('Stop', 'Distance on XYZ')).toBe('4.00');
-    expect(cell('Target', 'Boundary')).toBe('60.00');
-    expect(cell('Target', 'Value at expiration')).toBe('$5.00');
-    expect(cell('Target', 'Distance on XYZ')).toBe('8.00');
+    expect(cell('Stop on XYZ', 'Boundary')).toBe('48.00');
+    expect(cell('Stop on XYZ', 'Value at expiration')).toBe('$0.00');
+    expect(cell('Stop on XYZ', 'Distance on XYZ')).toBe('4.00');
+    expect(cell('Target on XYZ', 'Boundary')).toBe('60.00');
+    expect(cell('Target on XYZ', 'Value at expiration')).toBe('$5.00');
+    expect(cell('Target on XYZ', 'Distance on XYZ')).toBe('8.00');
   });
 });
 
@@ -283,11 +283,41 @@ describe('option Trade Detail triggers (convention C3)', () => {
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
     for (const card of ['Plan', 'Summary']) {
       const region = screen.getByRole('region', { name: card });
-      expect(termValue(region, 'Stop')).toBe('48.00');
-      expect(termValue(region, 'Target')).toBe('60.00');
+      expect(termValue(region, 'Stop')).toBe('XYZ at or below 48.00');
+      expect(termValue(region, 'Target')).toBe('XYZ at or above 60.00');
     }
     // The intended entry is a premium per share, so it keeps its dollar sign.
     expect(termValue(screen.getByRole('region', { name: 'Plan' }), 'Intended entry')).toBe('$2.00');
+  });
+});
+
+describe('Trade Detail: every condition (W6, W7)', () => {
+  // The lines under a term, one per condition in Plan order.
+  const linesOf = (region: HTMLElement, term: string) => Array.from(within(region).getByText(term, { selector: 'dt' }).nextElementSibling?.children ?? []).map((line) => line.textContent);
+
+  it('should show a Planned O-S2s Stop as MNO at or below 41.00 and Option at or above $3.60 and its Target as MNO at or above 44.50 and Option at or below $0.30', async () => {
+    renderView(optionPlannedDetail('O-S2'));
+    await screen.findByRole('heading', { name: 'MNO', level: 1 });
+    for (const card of ['Plan', 'Summary']) {
+      const region = screen.getByRole('region', { name: card });
+      expect(linesOf(region, 'Stop')).toEqual(['MNO at or below 41.00', 'Option at or above $3.60']);
+      expect(linesOf(region, 'Target')).toEqual(['MNO at or above 44.50', 'Option at or below $0.30']);
+    }
+  });
+
+  it('should list Wednesdays O-S2 conditions as four rows, Stop on MNO Active 60.00 with value at expiration 4.00 and 2.20 on MNO, Stop on the option price at 3.60 Breached with Overrun 20.00 and a dash in both option columns, then both Targets', async () => {
+    // Wednesday 10-14: MNO 43.20, the put 3.70.
+    renderView(optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', underlyingMark: '43.20' }));
+    const table = within(await screen.findByRole('region', { name: 'Stop and Target conditions' })).getByRole('table');
+    const headers = within(table).getAllByRole('columnheader').map((h) => h.textContent);
+    const rows = within(table).getAllByRole('row').slice(1).map((r) => within(r).getAllByRole('cell').map((c) => c.textContent ?? ''));
+    expect(rows.map((r) => r[headers.indexOf('Condition')])).toEqual(['Stop on MNO', 'Stop on the option price', 'Target on MNO', 'Target on the option price']);
+    const column = (row: number, header: string) => rows[row]![headers.indexOf(header)];
+    expect([column(0, 'Boundary'), column(0, 'Status'), column(0, 'Value at expiration'), column(0, 'Distance on MNO')]).toEqual(['41.00', 'Active', '$4.00', '2.20']);
+    expect(column(0, 'Distance')).toMatch(/^\$60\.00/);
+    expect([column(1, 'Boundary'), column(1, 'Status'), column(1, 'Value at expiration'), column(1, 'Distance on MNO')]).toEqual(['$3.60', 'Breached', '—', '—']);
+    expect(column(1, 'Overrun')).toMatch(/^\$20\.00/);
+    expect([column(2, 'Boundary'), column(3, 'Boundary')]).toEqual(['44.50', '$0.30']);
   });
 });
 

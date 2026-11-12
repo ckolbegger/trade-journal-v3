@@ -15,6 +15,7 @@ import { describeIssues, type FieldIssue } from './plan-issues.ts';
 import { AMBIGUOUS_TIME, INVALID_TIME, LOCAL_TIME_CODES, minuteOf, NONEXISTENT_TIME } from './local-time.ts';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 import { plural } from './ReviewCard.tsx';
+import { conditionDirection, isBullish } from './option-words.ts';
 
 const PLAN_TIME_MESSAGES = {
   InvalidLocalTime: `The Plan time ${INVALID_TIME}`,
@@ -85,9 +86,6 @@ function conditions(underlying: string, optionPrice: string, isOption: boolean) 
 }
 
 const OPTION_TRIGGER_CODES: ReadonlySet<string> = new Set(['NoPositiveRisk', 'TargetNotBeyondEntry', 'StopTargetOrder']);
-
-// A Long Call and a Cash-Secured Put gain as the Underlying rises; a Long Put as it falls. Read from the role.
-const isBullish = (role: NonNullable<ReturnType<typeof optionRoleOf>>) => (role.right === 'Call') === (role.side === 'Long');
 
 // The Long Stock Plan: one long Stock leg, one Stop, one Target (D1 A1), and the completed
 // Plan Reflection. Nothing typed here is stored until Confirm Plan succeeds.
@@ -261,7 +259,6 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   // of the triggers and whether the entry is a credit come from the role, never from the Strategy's name.
   const shape = strategies.find((s) => s.id === fields.strategyId)?.shape;
   const option = optionRoleOf(shape);
-  const bullish = option ? isBullish(option) : true;
 
   // Only what the form can judge from the values themselves clears on edit; the server's other
   // issues (the chosen Account, the Plan time) stay until the next submit. An option's trigger
@@ -384,10 +381,10 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         <div className="risk-grid">
           {input('quantity', option ? 'Contracts' : 'Quantity', 'decimal')}
           {input('entry', option ? 'Intended entry price (per share)' : 'Intended entry', 'decimal', cashHint)}
-          {input('stop', option ? `Stop (${underlying} at or ${bullish ? 'below' : 'above'})` : 'Stop', 'decimal')}
-          {option && input('stopOption', `Stop (option price at or ${option.side === 'Long' ? 'below' : 'above'})`, 'decimal')}
-          {input('target', option ? `Target (${underlying} at or ${bullish ? 'above' : 'below'})` : 'Target', 'decimal')}
-          {option && input('targetOption', `Target (option price at or ${option.side === 'Long' ? 'above' : 'below'})`, 'decimal')}
+          {input('stop', option ? `Stop (${underlying} at or ${conditionDirection('Stop', 'UnderlyingPrice', option)})` : 'Stop', 'decimal')}
+          {option && input('stopOption', `Stop (option price at or ${conditionDirection('Stop', 'StructureValue', option)})`, 'decimal')}
+          {input('target', option ? `Target (${underlying} at or ${conditionDirection('Target', 'UnderlyingPrice', option)})` : 'Target', 'decimal')}
+          {option && input('targetOption', `Target (option price at or ${conditionDirection('Target', 'StructureValue', option)})`, 'decimal')}
         </div>
         {option && (
           <p className="hint">
