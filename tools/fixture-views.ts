@@ -149,3 +149,9 @@ export function optionViolations(views: unknown, hasOpenTrades: boolean, hasRevi
   }
   return out;
 }
+
+// The number of StructureValue Stop and Target conditions in the Plans of a snapshot's Open details (A204).
+export function openStructureValueCount(expected: unknown): number {
+  const held = expected as { details?: { lifecycle?: { stored?: string }; plan?: { stops?: { kind?: string }[]; targets?: { kind?: string }[] } }[] };
+  return (held.details ?? []).filter((detail) => detail.lifecycle?.stored === 'Open').flatMap((detail) => [...(detail.plan?.stops ?? []), ...(detail.plan?.targets ?? [])]).filter((condition) => condition.kind === 'StructureValue').length;
+}

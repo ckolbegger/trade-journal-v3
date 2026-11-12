@@ -9,7 +9,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
-import { closeViolations, debtViolations, optionViolations, withWalkedReflections } from './fixture-views.ts';
+import { closeViolations, debtViolations, openStructureValueCount, optionViolations, withWalkedReflections } from './fixture-views.ts';
 import { compareSnapshot } from './fixtures/snapshot-compare.ts';
 import { closedViewsOf, debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
@@ -132,8 +132,7 @@ for (const name of fixtures) {
   }
   if (dump.schemaVersion === 7) {
     // The v7 snapshot must hold what T7S.13 froze (A204): O-S2's two StructureValue conditions among its Open details' Plans.
-    const held = expected as { details?: { plan?: { stops?: { kind?: string }[]; targets?: { kind?: string }[] } }[] };
-    const structureValues = (held.details ?? []).flatMap((detail) => [...(detail.plan?.stops ?? []), ...(detail.plan?.targets ?? [])]).filter((condition) => condition.kind === 'StructureValue').length;
+    const structureValues = openStructureValueCount(expected);
     if (structureValues < 2) {
       problems.push(`${name}: expected-views.json holds ${structureValues} StructureValue conditions in its Open details, fewer than 2 (A204)`);
       continue;

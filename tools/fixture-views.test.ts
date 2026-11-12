@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { closeViolations, debtViolations, optionViolations, withWalkedReflections } from './fixture-views.ts';
+import { readFileSync } from 'node:fs';
+import { closeViolations, debtViolations, openStructureValueCount, optionViolations, withWalkedReflections } from './fixture-views.ts';
 
 const viewsWithPanel = (panel: Record<string, unknown>) => ({
   debts: [],
@@ -94,5 +95,20 @@ describe('fixture views', () => {
 
   it('should report a missing Review Trade list when the Workspace has a Review', () => {
     expect(optionViolations(optionViews(optionDetail, { reviewTrades: undefined }), true, true)).toEqual(['reviewTrades (missing)']);
+  });
+});
+
+describe('v7 content check', () => {
+  const sv = { kind: 'StructureValue' };
+  const detail = (stored: string, stops: unknown[], targets: unknown[]) => ({ lifecycle: { stored }, plan: { stops, targets } });
+
+  it('should fail the v7 content check when the StructureValue conditions are only on Planned or Closed details', () => {
+    const planted = { details: [detail('Planned', [sv], [sv]), detail('Closed', [sv], []), detail('Open', [{ kind: 'Price' }], [])] };
+    expect(openStructureValueCount(planted)).toBeLessThan(2);
+  });
+
+  it('should count the two StructureValue conditions on the frozen v7 Open detail', () => {
+    const frozen: unknown = JSON.parse(readFileSync(new URL('../tests/fixtures/workspace-v7/expected-views.json', import.meta.url), 'utf8'));
+    expect(openStructureValueCount(frozen)).toBeGreaterThanOrEqual(2);
   });
 });
