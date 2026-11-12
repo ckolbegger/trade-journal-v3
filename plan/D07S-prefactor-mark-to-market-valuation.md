@@ -519,5 +519,5 @@ During T7SP.14, 2026-11-11 (decision 106, revision 76):
 | T7SP.17 | Done | `75aaee66` |
 | T7SP.18 | Done | `a719c7e5` |
 | T7SP.19 | Done | `fc4fa791` |
-| T7SP.14 | Rerun in progress from `fc4fa791`. The first run stopped (O3), with the Review open about 10x slower than D7 (decision 106) | `f2b987dc` (first run's evidence) |
+| T7SP.14 | Stopped again (O3), awaiting the user's decision. The first run had the Review open about 10x slower than D7 (decision 106). After T7SP.19 the rerun has 11 of 13 steps more than 10% slower (Review open +47–74%, saves +44–73%, warm switch +38%, Closed median +30%) | `f2b987dc` (first run); `9c0d14d0` (rerun, runs 2 and 3) |
 | T7SP.15 | Not started | |
