@@ -72,3 +72,21 @@ Ports 5175, 9341 and 9342 free before and after.
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 Basis change (schema 6 to 7): M 916073043 to 912516132 bytes; required quota 2748219129 to 2737548396. Bytes per option Trade with Plan Reflection 3679.57 to 3597.65; JSON bytes per option Trade 2522.22 to 2571.23 (up, as the conditions add content); option-Plan overhead ratio 1.4589 to 1.3992 (down). Stored bytes per option Trade fell because the measured overhead ratio fell by more than the JSON grew; the measurement is the source of truth.
+
+**ocr review of `f40e99e5`** (`ocr/T7S.2-f40e99e5.json`): 2 comments, both dismissed (no failure scenario, `implementing.md`):
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| low | `tools/capacity/measure-page.ts:727` | `entryPrice` repeats the entry-price expression that `legs[].intendedEntry` computes, so the two could drift | Valid as a maintainability point; the two agree today, checked after `toFixed(2)` | Dismissed: no failure scenario (only future drift in a measurement tool); listed in the handoff's open questions |
+| low | `tools/capacity/measure-page.ts:744` | nested ternaries picking the Underlying Stop price should be a lookup | Doubtful: the ternary predates the commit and was only moved | Dismissed: no failure scenario, style only, pre-existing code |
+
+**Cumulative run `t7s-2`** (2026-11-12, on `f40e99e5`), outputs in `suite-runs/t7s-2-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 126 files, 1486 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), full tier | `browser-1` 119 passed (4.8 min); `browser-2` 65 passed (4.1 min) |
+| Checks | 14 of 14 exit 0 (`verify:capacity` passes again at schema 7) |
+
+Browser tier printed by `browser-auto dd1a89e8`: `browser tier: full (first matching path since dd1a89e8: src/delivery/capacity-basis.json)`. Ports 5175, 9341, 9342 free before and after.

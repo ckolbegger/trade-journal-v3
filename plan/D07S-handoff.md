@@ -209,4 +209,5 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 ### Open questions
 
 - Provisional words awaiting the user's approval (user's direction 2026-11-11): none yet.
+- T7S.2's two ocr comments (`tools/capacity/measure-page.ts:727` duplicated entry-price expression; `:744` nested ternaries) dismissed as maintainability notes with no failure scenario (`evidence/D07S/structural.md`, T7S.2).
 - Possible timing flake, not tech debt item 11: `src/ui/screens/ReviewCards.test.tsx:670` and `:694` ("links (A161)", focus read synchronously after `findByRole`) failed in run `t7s-1` while an ocr review ran alongside, and passed alone and in a whole-file run. Not fixed; a fix task (failing test first) if it fails again.
