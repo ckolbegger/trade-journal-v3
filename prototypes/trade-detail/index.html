@@ -242,8 +242,12 @@ details.q > summary .s { font-size: 0.95rem; color: var(--ink); }
 .c-rail { position: sticky; top: 168px; display: grid; gap: 12px; }
 .c-rail .card { padding: 14px 16px; }
 .c-pnl { font-size: 2rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.c-conds { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 0.86rem; }
-.c-conds li { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; }
+.c-conds { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 0.86rem; }
+.c-conds li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px; align-items: center; }
+.c-conds li + li { padding-top: 10px; border-top: 1px solid var(--line); }
+.c-conds .fig { font-weight: 700; }
+.c-conds .cw { grid-column: 1 / -1; white-space: nowrap; font-weight: 600; }
+.c-conds .cx { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); }
 .c-conds .st { font-size: 0.78rem; }
 .drawer-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .drawer-tabs button { border: 1px solid var(--muted); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-height: 38px; font-size: 0.9rem; }
@@ -728,8 +732,21 @@ function viewC(s) {
   const excl = [s.today?.date, s.prev?.date].filter(Boolean);
   const conds = ['so', 'su', 'to', 'tu'].map((id) => {
     const c = cond(s, id);
-    const v = c.status === 'Waiting' ? '' : c.status === 'Breached' ? `<strong class="down">Breached</strong>` : `${money(c.dist)}${c.nearest ? ' <span class="near">nearest</span>' : ''}`;
-    return `<li><span><span class="badge ${c.role === 'Stop' ? 'b-stop' : 'b-target'}">${c.role}</span> ${c.text}</span><span class="fig">${v}</span></li>`;
+    const stop = c.role === 'Stop';
+    const at = c.kind === 'o' ? `if the option closes at $${c.price.toFixed(2)}` : `if NVDA is at ${c.price.toFixed(2)} at expiration`;
+    let v, why;
+    if (c.status === 'Waiting') {
+      v = '';
+      why = '';
+    } else if (c.status === 'Breached') {
+      v = '<span class="down">Breached</span>';
+      why = `Today’s close is ${money(c.overrun)} (${R(c.overrunR)}) of Trade P&L past this Stop.`;
+    } else {
+      v = `<span class="${stop ? 'down' : 'up'}">${signed(stop ? -c.dist : c.dist)}</span>`;
+      why = `Change in Trade P&L from today’s close ${at} (${stop ? MINUS : '+'}${R(c.distR)}).`;
+    }
+    return `<li><span><span class="badge ${stop ? 'b-stop' : 'b-target'}">${c.role}</span>${c.nearest ? '<span class="near">nearest</span>' : ''}</span><span class="fig">${v}</span>
+      <span class="cw">${c.text}</span>${why ? `<span class="cx">${why}</span>` : ''}</li>`;
   }).join('');
   const body = {
     Today: `<h3 class="sec-title">Closes: today against ${s.prev ? esc(s.prev.rel.toLowerCase()) : 'entry'}</h3>${compare(s, { pnl: false })}<h3 class="sec-title" style="margin-top:18px">Where the prices sit</h3>${tracksBlock(s, { lines: false })}`,
