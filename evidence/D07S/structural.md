@@ -23,6 +23,7 @@ Spec reading (decision 45, A205): `plan/spec-reading/D07.md`. No other spec sect
 |---|---|---|---|
 | critic-1 (T7S.12 checkpoint; brief from `critic-brief.md`, general-purpose at medium effort) | `critic-1.md` | C7S.1–C7S.4 | FAIL, 1 high defect; 129,709 tokens, 47 tool calls, 5 min 40 s |
 | critic-2 (T7S.12 checkpoint after B1; same brief, plus several C7S.4 combinations; general-purpose at medium effort) | `critic-2.md` | C7S.1–C7S.4 | PASS, no defects; 138,386 tokens, 40 tool calls, 5 min 5 s |
+| critic-3 (T7S.17 gate; brief from `critic-brief.md` with the d1 to d7s and d7p helpers, the clock pins and the Marks-after-close rule; general-purpose at medium effort) | `critic-3.md` | C7S.1–C7S.6 and 375/320 px | PASS, no defects; 155,945 tokens, 48 tool calls, 6 min 48 s |
 
 ## T7S.1 Persistence: schema 7 and the `v6→v7` transform
 
@@ -403,3 +404,10 @@ The profile generated at 04:36 is not affected: `dist-bench/assets/bench-generat
 Every step is within 10% of r3 (slowest +5.2%), so the user's 10% and 35% thresholds do not fire. Note: generation ran 1.9x slower per session than D7's (24.0 s against 12.7 s, mostly `review.save`) while the measured Review steps match r3; the generation's slowdown is not explained by these steps and was not investigated.
 
 **Cumulative run `t7s-14`** (2026-11-12, 09:34 to 09:44 EST, on `feabbab3`; the uncommitted changes were evidence text only), outputs in `suite-runs/t7s-14-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1509 passed; integration 103 files, 218 passed; browser full tier (`browser-auto b2d60eb3`: `browser tier: full (first matching path since b2d60eb3: src/app/bench-generator.ts)`) `browser-1` 119 passed (4.7 m), `browser-2` 71 passed (4.3 m); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after. This full-tier run also stands as T7S.17's pre-critic full run: only evidence and plan text change after it.
+
+## T7S.17 Independent browser-critic gate
+
+- **Full run before the critic:** `t7s-14` (full tier, on `feabbab3`, all passing; see T7S.14). Only evidence and plan text changed between it and the critic's commit `4cd9101c`. Decision 76: no `test:e2e:release-history` run.
+- **`acceptance-commands.sh plan/D07S-option-price-stops-and-targets.md`:** exit 0, 11 commands checked, 0 failed, 0 procedure rows.
+- **Critic-3 on `4cd9101c` (`critic-3.md`):** C7S.1 to C7S.6 and the 375/320 px pass all PASS, no defects. Under `critic-brief.md`, "After each critic", a PASS with no defects closes the gate on that critic, because the full run before it stands; no fixes are needed. Ports: nothing on 5175 afterwards.
+- Critic-3's minor observations (not defects) are listed in the handoff's open questions and the final report. Observation 2 (an invalid option price such as "0" shows alone in a submit, and a wrong-side option-price Stop gets W4 only after it is fixed) resembles critic-1's checkpoint defect in kind, but the critic judged it a two-round display in which each shown error sits beside its field; it is raised with the user, not made a bug task.

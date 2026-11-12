@@ -379,21 +379,21 @@ The critic receives the frozen `specs/`, the plan index, the D1 to D7 breakdowns
 
 ## 8. Acceptance matrix rows
 
-Status values: `planned`, `covered`, `intentionally not advertised`. All rows are `planned`. AC-DEL rows cite Chromium evidence; other engines are **pending RC** (decision 19).
+Status values: `planned`, `covered`, `intentionally not advertised`. All rows are `covered` at the gate (T7S.17, 2026-11-12, critic-3 PASS). AC-DEL rows cite Chromium evidence; other engines are **pending RC** (decision 19).
 
 | Scenario | Deliverable | Tasks | TDD / structural | Integration case and fixture | Critic flow | Command or procedure | Expected result and durable-state proof | Failure / nonmutation / restart evidence | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| AC-CALC-003 (partial: structure-value conditions on single-leg options, one crossed Stop and one reached Target at once) | D7S | T7S.3, T7S.4, T7S.9, T7S.10 | T7S.4 both groups | I7S.4; B7S.3 | C7S.2, C7S.3 | `npm run test:integration -- d7s/conditions` | Each condition's independent status and detail; headline Ongoing Risk, Worst-Case, Incremental Reward and Plan R follow the remaining Position and zero on crossing; Overrun disclosed; Deviation set empty | Lifecycle unchanged across restarts | planned (structures in D10, revision in D17) |
-| AC-CALC-002 (partial: an option Trade with the Underlying Mark Missing, re-proven with option-price conditions) | D7S | T7S.4 | T7S.4 availability case | I7S.5 | — | `npm run test:integration -- d7s/conditions` | Option-price conditions and valuation Values; Underlying conditions Unavailable naming MNO; headline per P91 | — | planned |
-| AC-PLAN-001 (re-proven: option-price conditions) | D7S | T7S.3, T7S.8 | T7S.3 case 1 | I7S.3; B7S.1 | C7S.1, C7S.2 | `npm run test:integration -- d7s/confirm-plan` | One Trade with four conditions, frozen basis, positive 1R, in one commit | Restart | planned |
-| AC-PLAN-002 (re-proven: option-price rejections) | D7S | T7S.3, T7S.8 | T7S.3 rejection cases | I7S.7; B7S.2 | C7S.4 | `npm run test:integration -- d7s/confirm-plan` | Typed issues naming each failing condition | Dumps unchanged | planned |
-| AC-REST-004 (partial: schema 7) | D7S | T7S.1 | T7S.1 case | I7S.1, I7S.2, I7S.9 | — | `npm run test:integration -- d7s/migration` | Old stores unchanged on failure; never Ready; Retry activates | Restart | planned ("exportable" in D8) |
-| AC-RESP-001 (cumulative) | D7S | T7S.3 | — | I7S.3 | — | `npm run test:integration -- d7s/confirm-plan` | The confirmation result equals durable state | — | planned |
-| AC-REBUILD-001 (cumulative) | D7S | T7S.1 | — | I7S.10 | — | `npm run test:integration -- d7s/rebuild` | Equal normalized views; rebuilt indexes identical | — | planned |
-| AC-DEL-004, AC-DEL-006 (cumulative) | D7S | T7S.3 | — | I7S.11 | — | `npm run test:integration -- d7s/runtime` | `RuntimeNotWritable` at both boundaries | Dumps unchanged | planned; real-state **pending RC** |
-| AC-CAP-001 (cumulative) | D7S | T7S.7 | `verify:capabilities` | — | C7S.6 | `npm run verify:capabilities` | Manifest equals reachable operations, schema 7 | — | planned |
-| AC-UI-001, AC-UI-002 (cumulative) | D7S | T7S.8–T7S.10 | — | B7S.5 | C7S.6 | `npx playwright test e2e/d7s/responsive-a11y.spec.ts` | State kept across resize; axe clean | — | planned |
-| AC-PERF-001 (cumulative) | D7S | T7S.14 | structural | A203 dataset | — | `npm run bench:run` | Budgets met with option-price conditions in the mix; compared with D7SP r3 | — | planned |
+| AC-CALC-003 (partial: structure-value conditions on single-leg options, one crossed Stop and one reached Target at once) | D7S | T7S.3, T7S.4, T7S.9, T7S.10 | T7S.4 both groups | I7S.4; B7S.3 | C7S.2, C7S.3 | `npm run test:integration -- d7s/conditions` | Each condition's independent status and detail; headline Ongoing Risk, Worst-Case, Incremental Reward and Plan R follow the remaining Position and zero on crossing; Overrun disclosed; Deviation set empty | Lifecycle unchanged across restarts | covered (D7S, Chromium, 2026-11-12; structures in D10, revision in D17) |
+| AC-CALC-002 (partial: an option Trade with the Underlying Mark Missing, re-proven with option-price conditions) | D7S | T7S.4 | T7S.4 availability case | I7S.5 | — | `npm run test:integration -- d7s/conditions` | Option-price conditions and valuation Values; Underlying conditions Unavailable naming MNO; headline per P91 | — | covered (D7S, 2026-11-12) |
+| AC-PLAN-001 (re-proven: option-price conditions) | D7S | T7S.3, T7S.8 | T7S.3 case 1 | I7S.3; B7S.1 | C7S.1, C7S.2 | `npm run test:integration -- d7s/confirm-plan` | One Trade with four conditions, frozen basis, positive 1R, in one commit | Restart | covered (D7S, 2026-11-12) |
+| AC-PLAN-002 (re-proven: option-price rejections) | D7S | T7S.3, T7S.8 | T7S.3 rejection cases | I7S.7; B7S.2 | C7S.4 | `npm run test:integration -- d7s/confirm-plan` | Typed issues naming each failing condition | Dumps unchanged | covered (D7S, 2026-11-12) |
+| AC-REST-004 (partial: schema 7) | D7S | T7S.1 | T7S.1 case | I7S.1, I7S.2, I7S.9 | — | `npm run test:integration -- d7s/migration` | Old stores unchanged on failure; never Ready; Retry activates | Restart | covered (D7S, 2026-11-12; "exportable" in D8) |
+| AC-RESP-001 (cumulative) | D7S | T7S.3 | — | I7S.3 | — | `npm run test:integration -- d7s/confirm-plan` | The confirmation result equals durable state | — | covered (D7S, 2026-11-12) |
+| AC-REBUILD-001 (cumulative) | D7S | T7S.1 | — | I7S.10 | — | `npm run test:integration -- d7s/rebuild` | Equal normalized views; rebuilt indexes identical | — | covered (D7S, 2026-11-12) |
+| AC-DEL-004, AC-DEL-006 (cumulative) | D7S | T7S.3 | — | I7S.11 | — | `npm run test:integration -- d7s/runtime` | `RuntimeNotWritable` at both boundaries | Dumps unchanged | covered (D7S, 2026-11-12); real-state **pending RC** |
+| AC-CAP-001 (cumulative) | D7S | T7S.7 | `verify:capabilities` | — | C7S.6 | `npm run verify:capabilities` | Manifest equals reachable operations, schema 7 | — | covered (D7S, 2026-11-12) |
+| AC-UI-001, AC-UI-002 (cumulative) | D7S | T7S.8–T7S.10 | — | B7S.5 | C7S.6 | `npx playwright test e2e/d7s/responsive-a11y.spec.ts` | State kept across resize; axe clean | — | covered (D7S, 2026-11-12) |
+| AC-PERF-001 (cumulative) | D7S | T7S.14 | structural | A203 dataset | — | `npm run bench:run` | Budgets met with option-price conditions in the mix; compared with D7SP r3 | — | covered (D7S, 2026-11-12) |
 
 ---
 
@@ -445,4 +445,4 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | T7S.15 | Done | `be46f856` |
 | T7S.16 | Done | `52439579` |
 | T7S.14 | Done (control run skipped at the user's direction; every step within 10% of D7SP r3) | `a91c5f94`; B1 `a4b84749`; bench `feabbab3` |
-| T7S.17 | In progress from `feabbab3` | |
+| T7S.17 | Done (critic-3 PASS, no defects) | evidence and tag `claude-opus-5.5-d7s` |
