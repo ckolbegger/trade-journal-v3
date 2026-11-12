@@ -6,6 +6,7 @@ This file holds bugs the user finds by hand between deliverables. Each one is wr
 |---|---|---|---|---|
 | BUG-1 | The exercise checkbox is drawn as a full-width text box | 2026-11-12, user, after the D7S tag | Low (cosmetic) | Open |
 | BUG-2 | The option Plan's Expiration date is a plain text box: no date picker, US dates rejected, and a corrected date still shows the error | 2026-11-12, user, after the D7S tag | Moderate (misleads; the trader can finish only by guessing the format) | Open |
+| BUG-3 | Risk from entry and Actual initial risk read $0.00 when the fill is beyond the headline option-price Stop, though another Stop is still live and the whole premium is at risk | 2026-11-12, user, after the D7S tag | High (a figure is wrong) | Open; needs the user's decision on A197 first |
 
 ---
 
@@ -109,3 +110,67 @@ Each assertion fails today on the width, as the screenshot shows.
 **Out of scope:**
 - The Plan time field.
 - The Execution and Mark date fields. Check them while there, and report any that is a plain text date, rather than changing it.
+
+---
+
+## BUG-3: Risk from entry reads $0.00 when the fill is beyond the headline option-price Stop
+
+**Found:** 2026-11-12, by the user, on Trade Detail's "At entry" card, testing `claude-opus-5.5-d7s` (`795159cd`). In the user's words: "Risk from Entry is listed as $0.00, when in fact the full premium paid for the call is at risk. This should say $735.00."
+
+**Introduced by:** D7S A197, as built by T7S.4 (`51d84965`, at-entry figures) and T7S.5 (`f7590645`, Entry Quality). The code follows A197 as written, so this is a gap in the rule, not only in the code.
+
+**Reproduced by the main session** (production build on `localhost:5175`, scratch Chromium profile, clock Thu 2026-11-12 14:00 New York). The Plan is the one in the user's screenshot:
+- Long Call NVDA 18 Dec 2026 150, 1 contract, intended entry 15.00;
+- Stop NVDA at or below 140.00, and option price at or below 7.50;
+- Target NVDA at or above 200, and option price at or above 50.00.
+
+Then one entry: Buy to open 1 at **7.35**, fee 0. The user's actual fill isn't known; $735.00 on 1 contract implies 7.35.
+
+| Where | Shows | Expected |
+|---|---|---|
+| Summary card, "Actual initial risk" | $0.00 | $735.00 |
+| At entry, "Risk from entry" | $0.00 · 0.00R | $735.00 · 0.98R |
+| Entry Quality, "Actual initial risk" | $0.00 · 0.00R | $735.00 · 0.98R |
+| Entry Quality, "Reward : risk" | "Not applicable: entry at or beyond the Stop" | 5.80 ($4,265.00 / $735.00) |
+| Plan Baseline, 1R | $750.00 | $750.00 (unchanged: the baseline is frozen at confirmation) |
+| Current Expiration Payoff | "Max loss $735.00 for NVDA from 0.00 to 150.00" | (already right) |
+
+**Cause:**
+- `atEntryOf` (`src/domain/trade-analysis/evaluate.ts:173`–`:189`) computes `max(0, Σ contracts × 100 × (fill − stop))`.
+- Its `stop` (`:216`) is `measurementOf(headlineBasisOf(state.baseline.stopBasis))`: the Plan Baseline's headline Stop. That is the condition nearest the **intended** entry (A197), here the option-price Stop at 7.50, since $750 is nearer than NVDA 140's $1,500.
+- The fill at 7.35 is already beyond that Stop, so the difference is negative and clamps to $0.00.
+- The other Stop, NVDA 140 (whose value at expiration is 0.00), is still live and is where the whole $735 premium is lost. It is never considered.
+- Entry Quality reads the same headline (T7S.5), so it shows the same $0.00 and calls the ratio Not applicable.
+
+**Why it matters:**
+- An entry is never "riskless" while any Stop lies beyond the fill. The card tells the trader they have nothing at risk on a $735 position.
+- D7S made this reachable: with a single Stop (D7 and earlier), "entry at or beyond the Stop" really meant no Stop was left.
+
+**Decision needed first (it amends D7S A197; plan revision r82, decision 109).** A197 fixes the at-entry measurement at the Plan Baseline's headline. The options:
+1. **(Recommended, and what the user expects)** At entry, measure each role against the nearest of **its conditions not yet crossed at the fill**. Conditions are independent OR, so the first one still ahead is the one that would end the Trade.
+   - Here the 7.50 option Stop is crossed at entry, so NVDA 140 governs: $735.00 · 0.98R.
+   - Only when every Stop of the role is crossed at the fill does the figure fall back to $0.00 and "entry at or beyond the Stop", as today.
+   - The Plan Baseline, 1R, and the Review's headline pressure (A197) are unchanged.
+2. Keep A197 and show the crossed state instead of $0.00, for example "Stop crossed at entry". The figure stays blind to the live Stop, so the user's $735 would still not be shown.
+
+**Fix, once option 1 is approved:**
+- In `evaluate.ts`, pick the at-entry Stop and Target by a helper beside `headlineBasisOf` in `plan.ts`. It takes the Plan Baseline's basis list and an entry price, and returns the nearest basis whose measurement lies beyond that price on the role's side.
+- For an Underlying condition, use its value at expiration, as `measurementOf` does today. The side comes from the existing direction (`isLongOption`, D7S rules; no new copy of the direction rule, tech debt item 14).
+- Per lot, or at the average entry if the lots are measured together. Today's `atEntryOf` sums per lot, so keep per lot.
+- Entry Quality (`derive.ts`, T7S.5) uses the same helper, so its "Actual initial risk", reward and ratio agree with the At entry card.
+
+**Tests first, each failing before the fix:**
+- **Unit** (`src/domain/trade-analysis/evaluate-conditions.test.ts`, beside T7S.4's cases): the Long Call above, filled 1 at 7.35:
+  - `atEntry.riskFromEntry` is 735 and `riskFromEntryInPlanR` is 0.98, to the cent and to the hundredth as the screens round.
+  - With a fill of 14.00, risk is $650.00, still measured to the 7.50 option Stop. This guards the unchanged case.
+  - A Cash-Secured Put mirror, with the sides reversed: O-S2 filled at a price beyond its option-price Stop 3.60, for example 3.70. Risk is then measured to the MNO 41 Stop's value at expiration.
+- **Unit** (Entry Quality, `derive` tests from T7S.5): the same fill gives Actual initial risk 735 and a ratio of 5.80.
+- **Browser** (Chromium, `e2e/d7s/`): plan as above, record 1 at 7.35, then check that Trade Detail reads "Risk from entry $735.00 · 0.98R" and the summary card "Actual initial risk $735.00".
+
+**Keep passing:** every T7S.4 and T7S.5 case and section 4's figures. In O-S2 after S1′, the fill 1.25 is short of the 3.60 option Stop, so it still gives $470.00 · 0.98R. Also every D7 and stock at-entry case: a single Stop is unchanged.
+
+**Words:** none new. "Not applicable: entry at or beyond the Stop" keeps its meaning (every Stop is crossed at the fill).
+
+**Out of scope, raised for the user:**
+- Recording an entry that is already beyond one of the Plan's own Stops gives no warning. A note at entry may be worth a decision.
+- With the intended entry at 15.00 and a fill at 7.35, Entry Quality reads "Slippage −$765.00", which is correct but large. If the Plan's intended entry was a typo, the trader has no way to correct it before D17 (Management Revision).
