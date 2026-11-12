@@ -17,11 +17,11 @@ test.describe('B7.5 Plan validation', () => {
     const stopError = page.locator('#stop-error');
     await expect(stopError).toContainText('The Stop must be below the breakeven, 57.00, so the Plan has a positive risk.');
     await expect(stopError).toContainText('The Stop must be below the Target.');
-    await expect(page.getByLabel(/^Stop \(/)).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByLabel(/^Stop \((?!option price)/)).toHaveAttribute('aria-invalid', 'true');
 
     // The values are kept.
-    await expect(page.getByLabel(/^Stop \(/)).toHaveValue('61');
-    await expect(page.getByLabel(/^Target \(/)).toHaveValue('60');
+    await expect(page.getByLabel(/^Stop \((?!option price)/)).toHaveValue('61');
+    await expect(page.getByLabel(/^Target \((?!option price)/)).toHaveValue('60');
     await expect(page.getByLabel('Strike')).toHaveValue('55');
     await expect(page.getByLabel('Expiration date')).toHaveValue('2026-11-20');
     await expect(page.getByLabel('Contracts')).toHaveValue('2');

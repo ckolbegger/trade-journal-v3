@@ -74,3 +74,5 @@ Every `it should` case from the D7S breakdown, section 4, run red and then green
 | T7S.8-B2 | should place the price fields in the order Stop on the Underlying | red | `npx vitest run src/ui/screens/PlanForm.test.tsx -t "should place the price fields in the order Stop on the Underlying"` | exit 1; Tests  1 failed, 40 skipped (41) | AssertionError: expected +0 to be truthy  |
 | T7S.8-B2 | should place the price fields in the order Stop on the Underlying | green | `npx vitest run src/ui/screens/PlanForm.test.tsx -t "should place the price fields in the order Stop on the Underlying"` | exit 0; Tests  1 passed, 40 skipped (41) |  |
 | T7S.8-B2 | refactor | none; no change beyond the one-line reorder |
+| T7S.8-F1 | e2e/d7/plan-open.spec.ts | red | `npx playwright test e2e/d7/plan-open.spec.ts` | exit 1; 1 failed | locator.fill: Error: strict mode violation: getByLabel(/^Stop \(/) resolved to 2 elements |  |
+| T7S.8-F1 | e2e/d7/plan-open.spec.ts, plan-validation.spec.ts | green | `npx playwright test e2e/d7/plan-open.spec.ts e2e/d7/plan-validation.spec.ts` | exit 0; 2 passed | npm run test:e2e:2: 65 passed |  |

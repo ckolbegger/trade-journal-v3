@@ -56,8 +56,8 @@ export async function fillOptionPlan(page: Page, values: OptionPlanValues): Prom
   await page.getByLabel('Strike').fill(values.strike);
   await page.getByLabel('Contracts').fill(values.contracts);
   await page.getByLabel('Intended entry price (per share)').fill(values.entry);
-  await page.getByLabel(/^Stop \(/).fill(values.stop);
-  await page.getByLabel(/^Target \(/).fill(values.target);
+  await page.getByLabel(/^Stop \((?!option price)/).fill(values.stop);
+  await page.getByLabel(/^Target \((?!option price)/).fill(values.target);
   if (values.planTime) await page.getByLabel('Plan time').fill(values.planTime);
   await page.getByLabel('Why this trade, why now?').fill('Earnings run-up with defined risk.');
   await page.getByLabel('What would invalidate the thesis?').fill('A close below the Stop.');
