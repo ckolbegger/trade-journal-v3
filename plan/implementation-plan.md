@@ -126,7 +126,7 @@ Protocol Phase 6, adapted by decision 40.
 | Item | Record |
 |---|---|
 | Repository path | `plan/implementation-plan.md` on branch `claude-opus-5.5` of `ckolbegger/trade-journal-v3`, worktree `worktrees/claude-opus-5.5` |
-| Immutable revision | **Revision 76**: the commit tagged `claude-opus-5.5-plan-r76` (revision 75 plus decision 106: the read session scans an Instrument's gaps from the earliest exposure asked, not from coverage start, as T7SP.19, before T7SP.14's rerun). Every revision, newest first, is in [revisions.md](revisions.md). A new revision adds its entry at the top there and replaces this one. Revisions are tagged `claude-opus-5.5-plan-r<n>`. |
+| Immutable revision | **Revision 77**: the commit tagged `claude-opus-5.5-plan-r77` (revision 76 plus tech debt item 22: T7SP.14's remaining O3 slowdowns against D7 are accepted and recorded, and the prefactor goes on to its gate). Every revision, newest first, is in [revisions.md](revisions.md). A new revision adds its entry at the top there and replaces this one. Revisions are tagged `claude-opus-5.5-plan-r<n>`. |
 | Stack and versions | [technology-stack.md](technology-stack.md), Profile A, with ["Pinned versions"](technology-stack.md#pinned-versions) (decision 42) |
 | Browser and OS provenance | Chromium 153.0.8010.12, Firefox 155.0, and WebKit 26.6 as bundled with Playwright 1.63.0, on macOS 26.6.2 (25G83) arm64. This is provenance, not a support allowlist. |
 | Task graph and boundaries | The 33 ordered deliverables in the summary table (27, plus D5R from revision 20, D5R2 from revision 28, the D6 prefactor from revision 30, the D7 prefactor from revision 42, D7S from revision 54 and the D7S prefactor from revision 72; revision 72 also corrects the count, which revision 54 left at 31). Task graphs for D1, D2, D4–D8, D5R, D5R2 and the D6, D7 and D7S prefactors are in their breakdown files; D9–D28 get theirs by revision (decision 40). |
@@ -1546,3 +1546,24 @@ Its repeats (D-2, T-H's D-6 and the midday D-1) were removed. `reflections.test.
 19. **One earlier-date read per spread (decision 97; recorded 2026-11-08, at the user's direction).** D7's Open page makes one extra `Historical` `observations` read per distinct earlier close date that an option Trade's dated line needs, carrying every Underlying needed at that date. When multi-leg options arrive (D10), a spread's dated line needs every leg's contract and the Underlying at that earlier close. The read for that date should pick them all up in a single read, not one per leg or per contract, so the budget stays one read per distinct date. **Trigger:** D10's breakdown, when it extends the dated line and the Open page's query count to multi-leg Trades.
 20. **Exercise and assignment need the Underlying's close on the expiration date (decision 99; recorded 2026-11-08, at the user's direction).** D7's settlement item needs no price read: the contract names its strike and expiration, the trader's records give the open quantity, and the settlement time is the expiration session's close from the session policy. D7's Expiration records contracts expiring unexercised. Exercise and assignment (D20) depend on where the Underlying closed that day against the strike, and a cash-settled option pays the difference from the Underlying's settlement price. So D20's settlement needs the Underlying's close on the expiration date: at most one stored read per Underlying per distinct expiration date, never one per Trade or per contract. **Trigger:** D20's breakdown, when it adds exercise and assignment to the settlement family and Trade Detail.
 21. **The payoff view builds its own value-at-expiration sentence (D7, T7.32-B7; recorded 2026-11-08, at the user's direction).** A122's line "If XYZ is at 57.50 at expiration: +$148.05" has one shared builder, `valueAtCloseText` in `src/ui/screens/payoff-text.ts`, which the Review card (`CardFigures.tsx`) uses since B7. Trade Detail's `PayoffView.tsx` still assembles the same sentence inline from `underlyingPrice` and `signedMoney`, so the wording lives in two places and could drift (convention C1: one wording per concept). A fix points `PayoffView` at `valueAtCloseText`, with no change to the words, and the existing Detail and card tests prove the text is unchanged. **Trigger:** the next task that changes `PayoffView.tsx` or the payoff wording, and at the latest D10's breakdown, when spreads extend the payoff view.
+22. **The D7S prefactor left the measured steps 30 to 75% slower than D7 (T7SP.14, O3; recorded 2026-11-11, at the user's decision to accept the numbers).**
+    - **Measured.** `bench:run` after T7SP.19 (`evidence/D07SP/bench-r2.md` and `bench-r3.md`, commit `9c0d14d0`) was compared with `evidence/D07/bench.md` (2026-11-08). Two runs agreed:
+      - Review status: 210 → 309–332 ms (+47–61%);
+      - first card median: 154.9 → 268 ms (+73%);
+      - Save Marks median: 149.5 → 215 ms (+44%);
+      - Action save median: 124.1 → 189–193 ms (+52–56%);
+      - cold Action save median: 132.0 → 228 ms (+73%);
+      - warm switch p95: 47.0 → 65 ms (+38%);
+      - Closed page median: 87 → 114 ms (+30%).
+
+      Cold start p95 (+4–5%) and the Closed page p95 (−26%) are within 10%. Both gated budgets pass (cold 135 of 2,500 ms, warm 65 of 1,500 ms), and every row comparison passes. T7SP.19 (decision 106) had already removed the 10x Review open regression caused by the gaps scan from coverage start.
+    - **Not yet known.** How much of this is the environment. D7 was measured on 2026-11-08, and no control run of D7's code was made on the same machine on 2026-11-11. The Closed page does no valuation read, yet it is 30% slower at the median, which points partly at the machine.
+    - **Suspected product causes** (from reading the code; unmeasured):
+      - the read session's per-call batching and per-Instrument `ResolveFrames` assembly (T7SP.5, T7SP.7) on the Open list and the Review;
+      - `getTrade`'s double `derive` (T7SP.8);
+      - the post-save rebuild through the session (T7SP.8).
+    - **Proposed fixes:**
+      - (a) **Control first.** Build `claude-opus-5.5-pre-d7sp` in a scratch clone and run `bench:run` on the same machine back to back with the current head, so the comparison is like for like.
+      - (b) **Bisect**, if (a) shows a real regression. Bench at T7SP.5-B4, T7SP.7, T7SP.8 and T7SP.19 to pin each step's cost to a commit.
+      - (c) Fix what (b) names, each fix with a before-and-after bench.
+    - **Trigger:** before D7S's latency harness, or sooner if a deliverable's bench shows further growth on these steps.

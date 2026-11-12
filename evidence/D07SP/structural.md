@@ -708,3 +708,23 @@ The cold start p95 (+4%) and the Closed page p95 (−25%) are within 10%.
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto f2b987dc` printed `browser tier: task (no changed path since f2b987dc is on the full-tier list)`. Ports 5175, 9341 and 9342 were free before and after.
+
+## T7SP.14 Latency harness, rerun after T7SP.19 (accepted by the user)
+
+**Committed as `9c0d14d0`.** Run 2 is `evidence/D07SP/bench-r2.md`, with the section "Against D7 (T7SP.14 rerun, after T7SP.19)". Run 3 is `bench-r3.md`.
+- Both runs were at `f1fe480e`, with the cached generator-6 profile, and each printed `bench:run OK`.
+- Gated: cold p95 134.9 and 136.5 of 2,500 ms; warm p95 65.3 and 64.9 of 1,500 ms. Every row comparison passed.
+- D7's `evidence/D07/bench.md` was restored after each run and is unchanged.
+
+**Against D7** (ms; D7, then the first run, runs 2 and 3):
+- Review status before: 210, 2014, 309, 321.
+- First card median: 154.9, 1841.3, 268.7, 268.1.
+- Save Marks median: 149.5, 191.1, 214.5, 216.1.
+- Action save median: 124.1, 187.1, 188.9, 193.3.
+- Cold Action save median: 132.0, 239.8, 228.5, 227.2.
+- Warm switch p95: 47.0, 65.4, 65.3, 64.9.
+- Closed page median: 87.0, 114.0, 114.0, 113.0.
+- Cold start p95: 129.8, 134.5, 134.9, 136.5 (within 10%).
+- Closed page p95: 163.0, 122.0, 120.0, 116.0 (within 10%).
+
+T7SP.19 cut the Review open about 6x. Eleven of thirteen steps are still more than 10% slower than D7, so the gate stopped again. The user accepted the numbers on 2026-11-11 ("Accept the new numbers and record them as tech debt"). They are recorded as tech debt item 22 (revision 77), with a same-machine control run of D7's code and a bisect as the proposed next steps.

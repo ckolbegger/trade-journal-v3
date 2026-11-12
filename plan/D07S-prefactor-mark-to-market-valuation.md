@@ -496,6 +496,10 @@ During T7SP.14, 2026-11-11 (decision 106, revision 76):
 
 27. **The O3 regression:** the user agreed the cause is the gaps scan from coverage start, and asked: "How hard would it be to fix it so the scan only runs from earliest exposure and retest with that fix?" Then: "Yes, go ahead with the revision and fix." Task T7SP.19, then T7SP.14's rerun.
 
+After T7SP.14's rerun, 2026-11-11 (revision 77):
+
+28. **The remaining O3 slowdowns:** "Accept the new numbers and record them as tech debt. Then do the gate run, D8 follow-up grep and final report." Recorded as tech debt item 22.
+
 ---
 
 ## 10. Progress
@@ -519,5 +523,5 @@ During T7SP.14, 2026-11-11 (decision 106, revision 76):
 | T7SP.17 | Done | `75aaee66` |
 | T7SP.18 | Done | `a719c7e5` |
 | T7SP.19 | Done | `fc4fa791` |
-| T7SP.14 | Stopped again (O3), awaiting the user's decision. The first run had the Review open about 10x slower than D7 (decision 106). After T7SP.19 the rerun has 11 of 13 steps more than 10% slower (Review open +47–74%, saves +44–73%, warm switch +38%, Closed median +30%) | `f2b987dc` (first run); `9c0d14d0` (rerun, runs 2 and 3) |
-| T7SP.15 | Not started | |
+| T7SP.14 | Done, with the user's acceptance (revision 77, tech debt item 22). The first run had the Review open about 10x slower than D7 (decision 106). After T7SP.19, 11 of 13 steps are still more than 10% slower; the gated budgets pass | `f2b987dc` (first run); `9c0d14d0` (rerun, runs 2 and 3) |
+| T7SP.15 | In progress from `9c0d14d0` | |

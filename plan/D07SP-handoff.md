@@ -27,7 +27,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `5181` |
-| Frozen plan | tag `claude-opus-5.5-plan-r76` (revision 76; the prefactor started at `claude-opus-5.5-plan-r72`) |
+| Frozen plan | tag `claude-opus-5.5-plan-r77` (revision 77; the prefactor started at `claude-opus-5.5-plan-r72`) |
 | Code the prefactor builds on | tag `claude-opus-5.5-d7` (`7e50d82`) |
 | Prefactor starting point | tag `claude-opus-5.5-pre-d7sp` (the commit that added this note) |
 
@@ -84,7 +84,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 
 **The frozen plan (scoped):**
 - **`plan/D07S-prefactor-mark-to-market-valuation.md` in full**, which is the work.
-- **`plan/implementation-plan.md`:** everything except the `## D8` through `## D28` definition sections. That leaves the decisions 1–102 (101 and 102 are this work; 97 and 99 set the Open page's dated-line reads and the settlement time), the rules and cumulative obligations, the freeze record, the definitions through D7S, and the closing sections with tech debt items 1–21 (item 4 is cleared by T7SP.13).
+- **`plan/implementation-plan.md`:** everything except the `## D8` through `## D28` definition sections. That leaves the decisions 1–102 (101 and 102 are this work; 97 and 99 set the Open page's dated-line reads and the settlement time), the rules and cumulative obligations, the freeze record, the definitions through D7S, and the closing sections with tech debt items 1–22 (item 4 is cleared by T7SP.13; item 22 records T7SP.14's accepted slowdowns).
 - **`plan/technology-stack.md`** in full, including "Pinned versions".
 - **`plan/acceptance-matrix.md`:** only the opening sections, through "Evidence methods common to every row". The prefactor adds no row and changes no status (breakdown, section 7).
 - **`plan/D07-single-leg-options-happy-path.md`:** section 1 (A99–A122, especially A110 observation requirements, A111 and A112 settlement, with the amendment notes), section 2 (implementation boundaries), the T7.6, T7.14, T7.15, T7.16 and T7.29 task text (they built what the prefactor moves), and section 6.1's I7.15 row. Not the UI tasks.
@@ -97,7 +97,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r77 and the next decision is 107 (revision 73, decision 103, was taken during T7SP.7; revision 74, decision 104, during T7SP.8; revision 75, decision 105, during T7SP.12; revision 76, decision 106, during T7SP.14). Editing the breakdown's Progress section alone is not a revision (decision 100).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r78 and the next decision is 107 (revision 73, decision 103, was taken during T7SP.7; revision 74, decision 104, during T7SP.8; revision 75, decision 105, during T7SP.12; revision 76, decision 106, during T7SP.14; revision 77, tech debt item 22 with no decision, after T7SP.14's rerun). Editing the breakdown's Progress section alone is not a revision (decision 100).
 
 ## 3. Prefactor specifics
 
@@ -191,7 +191,6 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
 ### Notes for later tasks
 
 - **T7SP.14:** since T7SP.8 (`e8b78874`, decision 104), the read session runs a date's frames, Stale-context lookups and gaps scans in one snapshot, as `recover` does, so the Review open's `meta.get` is unchanged (13 in `d7/query-count.test.ts:87`'s live baseline). The Review open skips the dated line (`skipDatedLine`); only `getTrade` reads for it.
-- **T7SP.14 rerun:** `tools/bench-run.ts:43` writes to `evidence/D07/bench.md`. Each run's output is moved to `evidence/D07SP/` and D7's file is restored with `git checkout`. The first run's report is `evidence/D07SP/bench.md`; the rerun writes `evidence/D07SP/bench-r2.md`. The first run also showed, beyond the Review open, the warm switch p95 at 47.0 to 65.4 ms, saves 27 to 92% slower, and the Closed page median at 87 to 114 ms. The Open list does no gaps scan, so these may have another cause. Any step still more than 10% slower stops the gate for the user again, with the numbers.
 - **T7SP.10 to T7SP.15 (any lint change):** since T7SP.9 (`552d0d06`, B1 `96660874`), every `no-restricted-syntax` entry under `src/` that isn't exempt (test files and `src/domain/instrument/` are exempt) must spread `expirationComparisonSelectors` from `eslint.deps.config.js`. That includes the `src/ui` wording entry in `eslint.config.js` (`wordingWithExpirationRules`). The wording block relies on the identity selector staying first in `wordingRules` (`.slice(1)`).
 
 ### Open questions
@@ -245,6 +244,7 @@ Task status and commits are in the breakdown's Progress section (decision 100). 
   - `trade-summary.test.ts:154`'s key list and three typed Detail builders gained `heldQuantity`. These are additive only, as T7SP.16's were.
 - **T7SP.18, test-support builder:** `option-detail-fixtures.ts`'s Open builder gives Expires when no settlement item is Due, where the coordinator requires an empty settlement list. That difference is test support only (`evidence/D07SP/structural.md`, T7SP.18).
 - **T7SP.14, first run stopped on O3:** the Review open was about 10x slower than D7, because of the gaps scan from coverage start. The user decided decision 106 (revision 76, `e0cb406b`, tag `claude-opus-5.5-plan-r76`): T7SP.19, then the rerun.
+- **T7SP.14, rerun accepted:** after T7SP.19, 11 of 13 measured steps are still more than 10% slower than D7 (Review open +47–74%, saves +44–73%, warm switch +38%, Closed median +30%). The gated budgets pass. The user accepted the numbers (revision 77, tech debt item 22). No control run of D7's code on the same machine was made, so the environment's share is unknown.
 - **T7SP.19, reviewer's note (Doubtful, not an ocr finding):** with a Mark saved between two scans of one Instrument in one session (a later call asking from an earlier exposure), `gapKeys` keeps the later scan's revision for a date the earlier answer used. A single scan per session could not bind a key twice; before T7SP.5-B1 the session also rescanned.
 - **T7SP.7-B1, kept read:** with a Debt, an expired or no-Position Detail still makes a `ResolveFrames` read for the closes, outside `binding()` and `marketDataSnapshotId`, as the Closed Detail does (decision 56). Removing it needs `previousCloseInstant` from Market Data, which is a spec change.
 - **T7SP.5, dismissed ocr finding:** a nested ternary at `market-data.ts:768` (style, low), judged Wrong: no such rule in the repo.

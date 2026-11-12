@@ -2,6 +2,13 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 77: the commit tagged `claude-opus-5.5-plan-r77` (revision 76 plus tech debt item 22). T7SP.14's rerun after T7SP.19 still had 11 of 13 measured steps more than 10% slower than D7:
+  - Review open: +47–74%;
+  - saves: +44–73%;
+  - warm switch: +38%;
+  - Closed page median: +30%.
+
+  Both gated budgets pass. The user accepted the numbers. They are recorded as tech debt item 22, with a control run of D7's code and a bisect as the proposed next steps, and the prefactor goes on to T7SP.15. No decision: D7S's numbering still starts at decision 107. The breakdown's section 9 and Progress are amended. `specs/` is unchanged. Decided by the user on 2026-11-11.
 - Revision 76: the commit tagged `claude-opus-5.5-plan-r76` (revision 75 plus decision 106). T7SP.14's benchmark measured the Review open about 10x slower than D7, because since T7SP.5-B1 the read session scans each Instrument's gaps from coverage start. New task T7SP.19 scans from the earliest exposure asked in a batch, and scans again only when a later call asks from an earlier exposure. Then T7SP.14 reruns against D7.
   - T7SP.5-B1's case changes from one read to two.
   - No other existing case, request list, fixture or `specs/` passage changes.
