@@ -40,3 +40,20 @@ Behavioral (1 case, red then green, in `tdd-log.md`). Commit `1627e865`. Red: th
 Browser tier printed by `browser-auto ad11e458`: `browser tier: full (first matching path since ad11e458: src/persistence/migrations/index.ts)`. Ports 5175, 9341, 9342 free before and after.
 
 Unit failures: `src/ui/screens/ReviewCards.test.tsx:670` and `:694` ("links (A161)": the focused row's region `contains(document.activeElement)`, expected true). Reproduced with targeted runs in the main session: `npx vitest run src/ui/screens/ReviewCards.test.tsx -t "links"` 11 passed, and the whole file 50 of 50. The cases read focus synchronously after `findByRole`, and the unit stage ran while T7S.1's ocr review was running, so this is read as a timing flake under load, not a T7S.1 defect (T7S.1 changed persistence only). Not fixed; listed in the handoff's open questions, and it becomes a fix task (failing test first, `waitFor` on focus) if it fails again.
+
+## T7S.3 Trade Analysis: `assessPlan` with option-price conditions
+
+Behavioral (4 cases, red then green, in `tdd-log.md`); run straight after T7S.1 (decision 108). Commit `dd1a89e8`. Reds: case 1 `expected Accepted, got ConditionCountNotOne, StopTargetOrder, TargetNotBeyondEntry`; case 2 one `NoPositiveRisk` where two were expected; case 3 the code word still `ConditionCountNotOne`; case 4 `expected Rejected, got Accepted`. No first-run passes. `ConditionInput` gains `StructureValue`; option-price measurement at its own price; per-condition `NoPositiveRisk` and `TargetNotBeyondEntry` with `details.condition` (role, 1-based position, kind), de-duplicated by code and condition; `StopTargetOrder` over Underlying conditions only; `ConditionKindRepeated` replaces `ConditionCountNotOne` for every Plan; `ConditionKindNotApplicable` on a stock Plan; `measurementOf` exported. Expectations changed as section 1.5's Texts table names: `plan-option.test.ts:158`, `:161` and `tests/integration/d7/rejections.test.ts:68`–`:83` (test name's code word too). `plan-issues.ts` and `plan-issues.test.ts:27` unchanged (the sentence map is string-keyed, so the typecheck didn't force a change); T7S.8 owns them. Subagent notes: the facade passes only `breakeven` through, so `details.condition` doesn't reach the UI yet (T7S.8); a stock Plan with two conditions of one kind is now `ConditionKindRepeated`. Direction: the existing helper reused, no new copy (tech debt item 14, user's decision).
+
+**ocr review** (`ocr/T7S.3-dd1a89e8.json`): No findings (3 files reviewed).
+
+**Cumulative run `t7s-3`** (2026-11-12, on `dd1a89e8` with the handoff edit uncommitted), outputs in `suite-runs/t7s-3-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 126 files, 1486 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), task tier | 5 passed (11.3 s); no `e2e/d7s` folder yet |
+| Checks | 13 of 14 exit 0; `verify:capacity` the expected failure until T7S.2 (decision 108) |
+
+Browser tier printed by `browser-auto 6582ea5b`: `browser tier: task (no changed path since 6582ea5b is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after. The `ReviewCards.test.tsx` focus cases that failed in `t7s-1` passed.

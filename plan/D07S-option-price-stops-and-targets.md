@@ -430,8 +430,8 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | Task | Status | Commits |
 |---|---|---|
 | T7S.1 | Done | `1627e865` |
-| T7S.3 | In progress from `6582ea5b` | |
-| T7S.2 | Not started | |
+| T7S.3 | Done | `dd1a89e8` |
+| T7S.2 | In progress from `dd1a89e8` | |
 | T7S.4 | Not started | |
 | T7S.5 | Not started | |
 | T7S.6 | Not started | |
