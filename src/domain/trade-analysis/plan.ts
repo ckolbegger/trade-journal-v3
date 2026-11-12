@@ -134,8 +134,13 @@ function normalizePlan(plan: PlanInput, canonical?: OptionInstrument): PlanInput
   };
 }
 
+// A role's headline condition: the nearest boundary in the Plan Baseline, Plan order breaking a tie (A197).
+export function headlineBasisOf(basis: readonly ConditionBasis[]): ConditionBasis {
+  return basis.reduce((nearestSoFar, b) => (b.distance.compare(nearestSoFar.distance) < 0 ? b : nearestSoFar));
+}
+
 function nearest(basis: readonly ConditionBasis[]): Rational {
-  return basis.map((b) => b.distance).reduce((min, d) => (d.compare(min) < 0 ? d : min));
+  return headlineBasisOf(basis).distance;
 }
 
 // The leg's nonzero quantity as a magnitude: a stock quantity is positive, an option's is signed by

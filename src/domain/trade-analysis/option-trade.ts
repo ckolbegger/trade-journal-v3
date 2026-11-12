@@ -131,6 +131,10 @@ export const os2Record = (positionChanges: readonly PositionChangeFact[] = []): 
     positionChanges,
   );
 
+// S1' (O-S2) Monday 10:00 Sell 2 @ 1.25 fee 1.30, and P1' (O-C2) Monday 10:00 Buy 2 @ 2.00 fee 1.30.
+export const OS2_S1 = positionChange('pc-s1', 1, [optionExecution(OS_LEG_ID, OS2_CONTRACT, 'ex-pc-s1', '2026-10-12T14:00:00Z', 2, 'Sell', '2', '1.25', '1.30')]);
+export const OC2_P1 = positionChange('pc-p1', 1, [optionExecution(OC_LEG_ID, OC2_CONTRACT, 'ex-pc-p1', '2026-10-12T14:00:00Z', 2, 'Buy', '2', '2.00', '1.30')]);
+
 // O-P: the Long Put on ABC, 1 contract at 1.50, Stop ABC at or above 55.00, Target ABC at or below 45.00.
 export const opRecord = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
   record(

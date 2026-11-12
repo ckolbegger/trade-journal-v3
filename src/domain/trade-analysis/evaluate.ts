@@ -5,7 +5,7 @@ import { parseDecimal, Rational } from '../values/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { type ContractStatus, type DerivedTradeState, type EntryQuality, type OpenLot } from './derive.ts';
 import { currentExpirationView, expirationValueAt } from './payoff.ts';
-import type { ConditionBasis, PlanBaseline } from './plan.ts';
+import { headlineBasisOf, measurementOf, type ConditionBasis, type PlanBaseline } from './plan.ts';
 
 // The exact Mark revision a figure was valued with.
 export interface MarkEvidence {
@@ -65,7 +65,7 @@ export interface ConditionReading {
 export interface ConditionStatus {
   readonly id: string;
   readonly role: 'Stop' | 'Target';
-  readonly kind: 'UnderlyingPrice';
+  readonly kind: 'UnderlyingPrice' | 'StructureValue';
   readonly boundary: string;
   readonly result: CalculationResult<ConditionReading>;
 }
@@ -210,10 +210,11 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const openingFees = sum(lots.map((l) => l.unconsumedOpeningFee));
   // Realized at the cutoff by derive: a Value that does not depend on the Mark (A92).
   const realized = state.realizedToDate;
-  // Before D17 a Trade has its Plan's single original Stop (D1 A1). An option's measurement values are the
-  // contract's values at expiration at the triggers (P24); a stock's are the trigger prices themselves.
-  const stop = state.baseline.stopBasis[0]!.valueAtExpiration ?? decimal(state.baseline.stopBasis[0]!.condition.price);
-  const target = state.baseline.targetBasis[0]!.valueAtExpiration ?? decimal(state.baseline.targetBasis[0]!.condition.price);
+  // The at-entry line is measured at each role's headline condition in the Plan Baseline (A197). An Underlying
+  // condition's measurement value is the contract's value at expiration there (P24), a stock's or an
+  // option-price condition's is its own price (A196).
+  const stop = measurementOf(headlineBasisOf(state.baseline.stopBasis));
+  const target = measurementOf(headlineBasisOf(state.baseline.targetBasis));
   const option = state.positions.map((p) => p.instrument).find((i): i is OptionInstrument => i.kind === 'Option');
   // Lots opened after the frame's close cannot be valued with its Mark (P12).
   const openedAfter = (close: Instant) =>
@@ -327,29 +328,15 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       underlying: { distance: atLeastZero(toward), beyond: crossed ? ZERO.sub(toward) : null },
     };
   };
-  const optionConditionOf = (role: 'Stop' | 'Target', index: number, basis: ConditionBasis): ConditionStatus => ({
+  // A condition read at the contract's own Mark (stock, or an option-price condition): the distance is the
+  // quantity x multiplier x price difference toward the boundary, and the quantity's sign carries the side (A198).
+  const conditionOf = (role: 'Stop' | 'Target', index: number, boundary: string, kind: ConditionStatus['kind']): ConditionStatus => ({
     id: `${role.toLowerCase()}-${index + 1}`,
     role,
-    kind: 'UnderlyingPrice',
-    boundary: basis.condition.price,
-    result: markedWithUnderlying((mark, price, source): ConditionReading => {
-      const r = optionReadingOf(role, decimal(basis.condition.price), basis.valueAtExpiration!, mark, price);
-      return {
-        status: statusOf(role, r.crossed),
-        distance: measure(r.amount),
-        overrun: r.overrun && measure(r.overrun),
-        evidence: { instrument: underlyingInstrument, date: underlyingDate, mark: source },
-        underlying: r.underlying,
-      };
-    }),
-  });
-  const conditionOf = (role: 'Stop' | 'Target', index: number, boundary: string): ConditionStatus => ({
-    id: `${role.toLowerCase()}-${index + 1}`,
-    role,
-    kind: 'UnderlyingPrice',
+    kind,
     boundary,
     result: marked((mark, source): ConditionReading => {
-      const toward = quantity.mul(role === 'Stop' ? mark.sub(decimal(boundary)) : decimal(boundary).sub(mark));
+      const toward = quantity.mul(multiplier).mul(role === 'Stop' ? mark.sub(decimal(boundary)) : decimal(boundary).sub(mark));
       const crossed = toward.compare(ZERO) <= 0;
       return {
         status: statusOf(role, crossed),
@@ -359,12 +346,46 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       };
     }),
   });
-  const ongoingRiskToStop = option
-    ? markedWithUnderlying((mark, price) => optionReadingOf('Stop', decimal(state.baseline.stopBasis[0]!.condition.price), stop, mark, price).amount)
-    : marked((mark) => atLeastZero(quantity.mul(mark.sub(stop))));
-  const incrementalRewardToTarget = option
-    ? markedWithUnderlying((mark, price) => optionReadingOf('Target', decimal(state.baseline.targetBasis[0]!.condition.price), target, mark, price).amount)
-    : marked((mark) => atLeastZero(quantity.mul(target.sub(mark))));
+  const optionConditionOf = (role: 'Stop' | 'Target', index: number, basis: ConditionBasis): ConditionStatus => {
+    if (basis.condition.kind === 'StructureValue') return conditionOf(role, index, basis.condition.price, 'StructureValue');
+    return {
+      id: `${role.toLowerCase()}-${index + 1}`,
+      role,
+      kind: 'UnderlyingPrice',
+      boundary: basis.condition.price,
+      result: markedWithUnderlying((mark, price, source): ConditionReading => {
+        const r = optionReadingOf(role, decimal(basis.condition.price), basis.valueAtExpiration!, mark, price);
+        return {
+          status: statusOf(role, r.crossed),
+          distance: measure(r.amount),
+          overrun: r.overrun && measure(r.overrun),
+          evidence: { instrument: underlyingInstrument, date: underlyingDate, mark: source },
+          underlying: r.underlying,
+        };
+      }),
+    };
+  };
+  const conditions: readonly ConditionStatus[] = option
+    ? [
+        ...state.baseline.stopBasis.map((basis, i) => optionConditionOf('Stop', i, basis)),
+        ...state.baseline.targetBasis.map((basis, i) => optionConditionOf('Target', i, basis)),
+      ]
+    : [
+        ...state.baseline.stopBasis.map((basis, i) => conditionOf('Stop', i, basis.condition.price, 'UnderlyingPrice')),
+        ...state.baseline.targetBasis.map((basis, i) => conditionOf('Target', i, basis.condition.price, 'UnderlyingPrice')),
+      ];
+  // The headline is the minimum distance over a role's conditions, returned only when the readings that are
+  // available already fix it: every condition is a Value, or some available distance is zero. Otherwise it is
+  // the first Unavailable condition's result in Plan order (P91).
+  const headlineOf = (role: 'Stop' | 'Target'): CalculationResult<Rational> => {
+    const results = conditions.filter((c) => c.role === role).map((c) => c.result);
+    const distances = results.flatMap((r) => (r.kind === 'Value' ? [r.value.distance.dollars] : []));
+    const unresolved = results.find((r) => r.kind !== 'Value');
+    if (unresolved && !distances.some((d) => d.compare(ZERO) === 0)) return unresolved;
+    return value(distances.reduce((min, d) => (d.compare(min) < 0 ? d : min)));
+  };
+  const ongoingRiskToStop = headlineOf('Stop');
+  const incrementalRewardToTarget = headlineOf('Target');
   const inPlanR = (result: CalculationResult<Rational>): CalculationResult<Rational> =>
     result.kind === 'Value' ? value(result.value.div(state.baseline.oneR)) : result;
   // At expiration a long option loses its value; the short Put is put the shares, worth the strike less the Mark (A109).
@@ -384,7 +405,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   // The Current Expiration Payoff read at the Underlying's exact Mark; never a Stale price, and never a
   // valuation (A122).
   const expirationValueAtUnderlyingClose = (): CalculationResult<ExpirationValueAtClose> => {
-    if (state.baseline.stopBasis[0]!.valueAtExpiration === undefined) return { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' };
+    if (option === undefined) return { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' };
     if (lots.length === 0) return noRemainingPosition;
     if (pastExpiration) return unavailable;
     if (!underlyingMark) return underlyingUnavailable();
@@ -424,15 +445,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     worstCaseOngoingRiskInPlanR: inPlanR(worstCaseOngoingRisk),
     incrementalRewardToTargetInPlanR: inPlanR(incrementalRewardToTarget),
     maximumIncrementalReward: maximumIncrementalReward(),
-    conditions: option
-      ? [
-          ...state.baseline.stopBasis.map((basis, i) => optionConditionOf('Stop', i, basis)),
-          ...state.baseline.targetBasis.map((basis, i) => optionConditionOf('Target', i, basis)),
-        ]
-      : [
-          ...state.baseline.stopBasis.map((basis, i) => conditionOf('Stop', i, basis.condition.price)),
-          ...state.baseline.targetBasis.map((basis, i) => conditionOf('Target', i, basis.condition.price)),
-        ],
+    conditions,
     expirationValueAtUnderlyingClose: expirationValueAtUnderlyingClose(),
     settlement: state.positions.flatMap((p): SettlementItem[] =>
       p.instrument.kind === 'Option' && p.openLots.length > 0
