@@ -125,6 +125,7 @@ function tradeReview(walked: WalkedTrade, over: Partial<DailyTradeReview> = {}):
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     evaluation: {
       kind: 'Evaluated',
+      conditions: [],
       valuationDate: '2026-10-12',
       coverage: { kind: 'Available', revisionId: 'r1', revisionNumber: 1 },
       observation: { instrument: symbol, tradingDate: '2026-10-12', mark: { revisionId: 'r1', revisionNumber: 1, price: '52.00' } },

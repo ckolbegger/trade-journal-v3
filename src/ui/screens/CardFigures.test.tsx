@@ -19,6 +19,7 @@ const planBaseline = { kind: 'Value' as const, value: { originalPlannedRisk: Rat
 function evaluation(over: Record<string, unknown> = {}): Evaluation {
   return {
     kind: 'Evaluated',
+    conditions: [],
     valuationDate: '2026-10-12',
     observation: { instrument: symbol, tradingDate: '2026-10-12', mark: { revisionId: 'r1', revisionNumber: 1, price: '52.00' } },
     currentMarkedPnl: value(180n),

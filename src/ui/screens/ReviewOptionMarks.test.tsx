@@ -146,6 +146,7 @@ const value = (n: bigint, d = 1n) => ({ kind: 'Value' as const, value: Rational.
 const optionEvaluation = (): Evaluation =>
   ({
     kind: 'Evaluated',
+    conditions: [],
     valuationDate: DATE,
     coverage: { kind: 'Available', revisionId: 'r1', revisionNumber: 1 },
     observation: { instrument: MNO_PUT, tradingDate: DATE, mark: { revisionId: 'r1', revisionNumber: 1, price: '0.45' } },

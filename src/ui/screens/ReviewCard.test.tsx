@@ -5,6 +5,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
+import { optionOpenDetail } from '../../../tests/support/option-detail-fixtures.ts';
+import { OS2_S1 } from '../../../tests/support/option-trade-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
@@ -59,6 +61,7 @@ const symbol = { kind: 'Stock' as const, symbol: 'XYZ' };
 function evaluation(over: Record<string, unknown> = {}): Evaluation {
   return {
     kind: 'Evaluated',
+    conditions: [],
     valuationDate: '2026-10-12',
     coverage: { kind: 'Available', revisionId: 'r1', revisionNumber: 1 },
     observation: { instrument: symbol, tradingDate: '2026-10-12', mark: { revisionId: 'r1', revisionNumber: 1, price: '52.00' } },
@@ -1622,5 +1625,38 @@ describe('panels (A152)', () => {
     renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
     const bare = await openTrade(user, 'XYZ');
     expect(within(panelHeader(bare, 'Reflections')).getByText('None')).toBeTruthy();
+  });
+});
+
+describe('Review card: conditions (W8)', () => {
+  // Wednesday 10-14 (breakdown section 4): MNO 43.20, the put 3.70. The card's Trade is O-S2, a Cash-Secured Put.
+  const wednesday = (underlyingMark?: string) => {
+    const detail = optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', ...(underlyingMark && { underlyingMark }) });
+    return tradeReview('t1', 'MNO', { summary: detail.summary!, evaluation: detail.current.evaluation });
+  };
+  const conditionLines = (card: HTMLElement) => {
+    const list = within(card).getByRole('list', { name: 'Conditions' });
+    return within(list).getAllByRole('listitem').map((line) => line.textContent);
+  };
+
+  it('should list O-S2s four conditions on Wednesdays card with their status, Stop on the option price at or above 3.60 Breached, 20.00 beyond, and an Unavailable condition by its reasons figure', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'MNO')]), wednesday('43.20')));
+    expect(conditionLines(await openTrade(user, 'MNO'))).toEqual([
+      'Stop on MNO at or below 41.00: Active',
+      'Stop on the option price at or above $3.60: Breached, $20.00 beyond',
+      'Target on MNO at or above 44.50: Active',
+      'Target on the option price at or below $0.30: Active',
+    ]);
+    cleanup();
+
+    // No MNO Mark: the two Underlying-price conditions have no reading, and say why as the figures do.
+    renderWalk(walkFacade(ready([item('t1', 'MNO')]), wednesday()));
+    expect(conditionLines(await openTrade(user, 'MNO'))).toEqual([
+      'Stop on MNO at or below 41.00: Mark missing: MNO, Wed Oct 14',
+      'Stop on the option price at or above $3.60: Breached, $20.00 beyond',
+      'Target on MNO at or above 44.50: Mark missing: MNO, Wed Oct 14',
+      'Target on the option price at or below $0.30: Active',
+    ]);
   });
 });

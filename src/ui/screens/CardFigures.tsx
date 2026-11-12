@@ -1,8 +1,10 @@
 import { useId, type ReactNode } from 'react';
 import type { DailyTradeReview } from '../../app/types.ts';
 import { instrumentLabel } from '../calculation-words.ts';
-import { decimalMoney, money, ratio, shortDate } from '../format.ts';
+import { Rational } from '../../domain/values/index.ts';
+import { decimalMoney, decimalUnderlyingPrice, money, ratio, shortDate } from '../format.ts';
 import { calculation, dollarsAndR, pnlText } from '../figures.ts';
+import { conditionDirection } from './option-words.ts';
 import { payoffSummary, valueAtCloseText } from './payoff-text.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
@@ -33,6 +35,32 @@ function Figures({ evaluation, children }: { readonly evaluation: Evaluation; re
   );
 }
 
+// The card's Conditions (W8), one line per Stop or Target in Plan order: what it is on, its boundary, then its status, or the
+// reason's figure when it has no reading. A zero Overrun says nothing beyond the status. An option Trade's sides come from its
+// summary; a stock Trade is Long Stock, whose Stop is below and Target above.
+function Conditions({ trade, evaluation }: { readonly trade: DailyTradeReview; readonly evaluation: Evaluation }) {
+  const uid = useId();
+  const { summary } = trade;
+  if (evaluation.conditions.length === 0) return null;
+  const option = summary?.kind === 'Option' ? { right: summary.right, side: summary.direction } : undefined;
+  if (evaluation.observation.instrument.kind === 'Option' && !option) return null;
+  return (
+    <div>
+      <h4 id={`${uid}-conditions`}>Conditions</h4>
+      <ul aria-labelledby={`${uid}-conditions`}>
+        {evaluation.conditions.map((condition) => {
+          const optionPrice = condition.kind === 'StructureValue';
+          const direction = option ? conditionDirection(condition.role, condition.kind, option) : condition.role === 'Stop' ? 'below' : 'above';
+          const on = option ? `${condition.role} on ${optionPrice ? 'the option price' : trade.underlying}` : condition.role;
+          const boundary = option && !optionPrice ? decimalUnderlyingPrice(condition.boundary) : decimalMoney(condition.boundary);
+          const status = calculation(condition.result, ({ status: word, overrun }) => (overrun && overrun.dollars.compare(Rational.of(0n)) > 0 ? `${word}, ${money(overrun.dollars)} beyond` : word));
+          return <li key={condition.id}>{`${on} at or ${direction} ${boundary}: ${status}`}</li>;
+        })}
+      </ul>
+    </div>
+  );
+}
+
 // The open card's figures, read from a getTrade result (A158): the Review-date figures with Reward : risk now and planned (P40),
 // then the dated last close (D4 P12, P13) and the at-entry lots, each in its own group. A figure that is not a Value reads in words.
 export function CardFigures({ trade }: CardFiguresProps) {
@@ -53,6 +81,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
             <Figure term="Reward : risk now">{calculation(evaluation.rewardRiskNow, ratio)}</Figure>
             <Figure term="Reward : risk planned">{calculation(evaluation.planBaseline, (baseline) => ratio(baseline.rewardRiskRatio))}</Figure>
           </Figures>
+          <Conditions trade={trade} evaluation={evaluation} />
         </>
       )}
       {/* An option's Current payoff in one line; a Trade with no option, or no position left, has none to show. */}

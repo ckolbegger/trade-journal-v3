@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
@@ -278,19 +278,19 @@ function StatusBadges({ current, settlement }: { readonly current: Current; read
           <Badge tone="warning">{unavailableLabel({ reason: 'SettlementDue', instrument: settlement[0].instrument, expiration: settlement[0].expiration })}</Badge>
         </>
       )}
-      {current.conditions.map((c) => {
-        if (c.result.kind !== 'Value') return null;
-        const { status } = c.result.value;
-        const badge = c.role === 'Stop' && status === 'Breached' ? <Badge tone="warning">Stop breached</Badge> : c.role === 'Target' && status === 'Reached' ? <Badge tone="info">Target reached</Badge> : null;
-        return (
-          badge && (
-            <Fragment key={c.id}>
-              {' '}
-              {badge}
-            </Fragment>
-          )
-        );
-      })}
+      {/* One badge per role, however many of its conditions are crossed (A201). */}
+      {current.conditions.some((c) => c.role === 'Stop' && c.result.kind === 'Value' && c.result.value.status === 'Breached') && (
+        <>
+          {' '}
+          <Badge tone="warning">Stop breached</Badge>
+        </>
+      )}
+      {current.conditions.some((c) => c.role === 'Target' && c.result.kind === 'Value' && c.result.value.status === 'Reached') && (
+        <>
+          {' '}
+          <Badge tone="info">Target reached</Badge>
+        </>
+      )}
     </>
   );
 }

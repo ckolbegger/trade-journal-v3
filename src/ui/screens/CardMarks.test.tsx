@@ -234,6 +234,7 @@ const XYZ_SYMBOL = { kind: 'Stock' as const, symbol: 'XYZ' };
 // T-A's card as the save result evaluates it, with XYZ 52.00.
 const EVALUATED = {
   kind: 'Evaluated',
+  conditions: [],
   valuationDate: MONDAY,
   coverage: { kind: 'Available', revisionId: 'r1', revisionNumber: 1 },
   observation: { instrument: XYZ_SYMBOL, tradingDate: MONDAY, mark: { revisionId: 'r1', revisionNumber: 1, price: '52.00' } },

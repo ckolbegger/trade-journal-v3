@@ -110,3 +110,33 @@ describe('option rows (A119)', () => {
     expect(at('ABC', 'Close Reason')).toBe('Not needed');
   });
 });
+
+describe('Open list: one badge per role (A201)', () => {
+  it('should show one Stop breached badge on a row whose two Stops are both Breached', async () => {
+    const reading = (status: 'Active' | 'Breached') => ({
+      kind: 'Value' as const,
+      value: { status, distance: { dollars: Rational.of(0n), planR: Rational.of(0n) }, overrun: status === 'Breached' ? { dollars: Rational.of(10n), planR: Rational.of(1n, 48n) } : null },
+    });
+    const condition = (id: string, role: 'Stop' | 'Target', kind: 'UnderlyingPrice' | 'StructureValue', status: 'Active' | 'Breached') => ({ id, role, kind, boundary: '41.00', result: reading(status) });
+    renderList(
+      [
+        {
+          ...openItem,
+          tradeId: 'trade-o',
+          underlying: 'MNO',
+          strategy: 'Cash-Secured Put',
+          summary: shortPut,
+          current: {
+            ...openItem.current,
+            conditions: [condition('stop-1', 'Stop', 'UnderlyingPrice', 'Breached'), condition('stop-2', 'Stop', 'StructureValue', 'Breached'), condition('target-1', 'Target', 'UnderlyingPrice', 'Active')],
+          },
+        },
+      ],
+      'Open',
+    );
+    const open = await screen.findByRole('region', { name: 'Open Trades' });
+    const row = rowOf(open, 'MNO');
+    expect(within(row).getAllByText('Stop breached', { selector: '.badge' })).toHaveLength(1);
+    expect(within(row).queryByText('Target reached', { selector: '.badge' })).toBeNull();
+  });
+});
