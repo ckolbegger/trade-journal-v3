@@ -217,3 +217,30 @@ Failures: 18 `browser-2` cases (`e2e/d7/` confirm-option-plan, kill, marks-zero,
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 7feef7dc`: `browser tier: full (first matching path since 7feef7dc: e2e/d7/plan-validation.spec.ts)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.9 UI: Trade Detail shows every condition
+
+Behavioral, commit `1e5a2a45`; two cases in `src/ui/screens/TradeDetailOptions.test.tsx`, red then green; no first-run pass. Named expectation changes: `:286`–`:287` to W6 ("XYZ at or below 48.00", "XYZ at or above 60.00") with case 1; `:272`–`:276` to W7 rows ("Stop on XYZ", "Target on XYZ") with case 2. Direction: no shareable helper existed, so `isBullish` moved from `PlanForm.tsx` to `src/ui/screens/option-words.ts` with `conditionDirection(role, kind, leg)`; the form's W1 labels and Detail's W6 lines both use it (no second copy). `TradeDetail.tsx:155`–`156` and `:311`–`312` first-condition reads gone; `triggerText` removed as unused; `:505` kept. Test support: `OptionTradeName` gains `'O-S2'`; `option-trade-fixtures.ts` re-exports `OS2_S1`. No e2e expectation reads a changed text. Provisional words: none.
+
+**ocr review of `1e5a2a45`** (`ocr/T7S.9-1e5a2a45.json`): 3 comments.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tests/support/option-detail-fixtures.ts:13` | With O-S2 added, `optionOpenDetail` stamps every Due settlement item with the fixed 2026-11-20 `SETTLEMENT_TIME` (line 16, used at 139), though O-S2 expires 2026-12-18 | Doubtful: real in the code; no current assertion sees it | Bug task T7S.9-B1 (failure scenario: an O-S2 Detail built at or after 2026-12-18 shows a Due item settled 2026-11-20) |
+| low | `src/ui/screens/TradeDetail.tsx:80` | `ConditionLines` nests a ternary; suggests early returns | Valid as style only; behaviour matches W6 | Dismissed: no failure scenario (style; the repo declined `no-nested-ternary`, D5R handoff) |
+| low | `tests/support/option-detail-fixtures.ts:18` | `contractOf` and `recordOf` chain ternaries; suggests a keyed lookup | Valid as style only, test fixture code | Dismissed: no failure scenario |
+
+**T7S.9-B1** Settlement time from each Due item's own expiration. Defect: `optionOpenDetail('O-S2', [OS2_S1], <an as-of at or after O-S2's expiration session close>)` gives a Due settlement item whose `settlementTime` is 2026-11-20 21:00Z, not the close of its own expiration session, 2026-12-18. Case: `it should stamp an O-S2 Due settlement item with the close of its own expiration session, 2026-12-18`.
+
+T7S.9-B1 done in `7a8486b6` (test support only): red (settlement time 2026-11-20T21:00:00Z, not 2026-12-18T21:00:00Z) then green, case in `TradeDetailOptions.test.tsx`. No production helper was importable (`settlementTimeOf` in `src/coordinators/valuation/settlement.ts` is async and needs MarketData), so the fixture's fixed `SETTLEMENT_TIME` became a local `settlementTimeOf(expiration)` (16:00 New York, by `Intl`, no holiday calendar). **ocr review of `7a8486b6`** (relocated, `ocr/T7S.9-B1-7a8486b6.json`): 0 comments.
+
+**Cumulative run `t7s-9`** (2026-11-12, on `7a8486b6`), outputs in `suite-runs/t7s-9-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1505 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), full tier | `browser-1` 119 passed (4.7 min); `browser-2` 65 passed (3.9 min) |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto bb461313`: `browser tier: full (first matching path since bb461313: src/ui/screens/PlanForm.tsx)`. Ports 5175, 9341, 9342 free before and after.

@@ -1,0 +1,156 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 3,
+    "total_tokens": 98975,
+    "input_tokens": 97697,
+    "output_tokens": 1278,
+    "cache_read_tokens": 8320,
+    "elapsed": "54s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "This adds a nested ternary, which the review checklist explicitly prohibits. Extract the condition text into a helper with early returns for stock, option-price, and underlying-price conditions.",
+      "existing_code": "          {option\n            ? condition.kind === 'StructureValue'\n              ? `Option at or ${conditionDirection(role, condition.kind, option)} ${price(condition.price)}`\n              : `${symbol} at or ${conditionDirection(role, condition.kind, option)} ${decimalUnderlyingPrice(condition.price)}`\n            : price(condition.price)}",
+      "start_line": 80,
+      "end_line": 84,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "tests/support/option-detail-fixtures.ts",
+      "content": "Both contractOf and recordOf now use nested ternaries, contrary to the checklist. Use a keyed lookup for contracts and record factories, or explicit branches, to keep the three fixture variants readable.",
+      "existing_code": "const contractOf = (which: OptionTradeName): OptionInstrument =\u003e (which === 'O-C' ? OC_CONTRACT : which === 'O-S2' ? OS2_CONTRACT : OS_CONTRACT);",
+      "start_line": 18,
+      "end_line": 18,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "tests/support/option-detail-fixtures.ts",
+      "content": "Adding O-S2 to all detail builders exposes an incorrect settlement timestamp: OS2_CONTRACT expires on 2026-12-18, but optionOpenDetail still assigns the fixed SETTLEMENT_TIME of 2026-11-20 to every Due item. An O-S2 fixture evaluated at expiration therefore reports settlement a month before expiration. Derive the settlement instant from the selected contract's expiration (and exchange timezone), or supply a per-contract settlement time.",
+      "existing_code": "export type OptionTradeName = 'O-C' | 'O-S' | 'O-S2';",
+      "start_line": 13,
+      "end_line": 13,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Option plan and trade UI wording with related test fixtures",
+      "files": [
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/option-words.ts",
+        "tests/support/option-detail-fixtures.ts",
+        "tests/support/option-trade-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "1ad77323-122e-416e-a048-f80a0896e8da",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1ad77323-122e-416e-a048-f80a0896e8da",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1e5a2a45",
+      "resolved_base": "31d1226b8bdbef8019f59711d81f1b4d52fc4ce8",
+      "resolved_head": "1e5a2a45e0e2d5c4f1764822543016bdf1e5a34e",
+      "exact_range": "31d1226b8bdbef8019f59711d81f1b4d52fc4ce8..1e5a2a45e0e2d5c4f1764822543016bdf1e5a34e",
+      "source_artifact_sha256": "fbed2581a11da4423271c4e4c50bc9dc549d4cbc7a96644446f05da26d696819"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "d45ea97d2055a3f8abf55636e75d0e355d091720389abccea10e78d6d0f8cec1"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "917febcd3647db0a932a0e63197e857728f149bee4b71280c0ccd9db1fb5ad90"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "8dd6349dfa887669c24de0eeb41b0b7dafd4d6ef25e60828c3f2d3f52dc2ae42"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "ed1ace02434b8b17f52267707737a5d70c138325c6836cbb939e420584094d94"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "d26ea12991e7c66b5dbb134b5128ebbc7dc9f61df013a0dba3168755fec7c16b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0236ccc2001b9ac3cac674ad13825db33f97d9bc101aa4d5291b8633b61e9f68",
+          "path": "tests/support/option-trade-fixtures.ts",
+          "fingerprint": "d45ea97d2055a3f8abf55636e75d0e355d091720389abccea10e78d6d0f8cec1"
+        },
+        {
+          "item_id": "4adfc6ce34b9e063c4fd2e824910468c856c2592999d55587510f5a894e22511",
+          "path": "src/ui/screens/option-words.ts",
+          "fingerprint": "917febcd3647db0a932a0e63197e857728f149bee4b71280c0ccd9db1fb5ad90"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "8dd6349dfa887669c24de0eeb41b0b7dafd4d6ef25e60828c3f2d3f52dc2ae42"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "ed1ace02434b8b17f52267707737a5d70c138325c6836cbb939e420584094d94"
+        },
+        {
+          "item_id": "f66f9e3ee9ca6044a2f7fd9c019d794883606129cc4f7148f8a367a6a4c8e8f1",
+          "path": "tests/support/option-detail-fixtures.ts",
+          "fingerprint": "d26ea12991e7c66b5dbb134b5128ebbc7dc9f61df013a0dba3168755fec7c16b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 54229
+  }
+}
