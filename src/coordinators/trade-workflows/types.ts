@@ -48,5 +48,9 @@ export interface WorkflowIssue {
   // The quantity open at the point a Sell exceeds it (ExceedsOpenQuantity, P22).
   readonly available?: Rational;
   // The breakeven an option Plan rejection names (NoPositiveRisk, TargetNotBeyondEntry; A100).
-  readonly details?: { readonly breakeven: Rational };
+  // `condition` names the Stop or Target the rejection is about: its role, 1-based Plan position and kind (A196).
+  readonly details?: {
+    readonly breakeven?: Rational;
+    readonly condition?: { readonly role: 'Stop' | 'Target'; readonly position: number; readonly kind: 'UnderlyingPrice' | 'StructureValue' };
+  };
 }

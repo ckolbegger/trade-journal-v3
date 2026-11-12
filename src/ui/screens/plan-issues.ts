@@ -14,17 +14,38 @@ export interface Issue {
   readonly field?: string;
   readonly code: string;
   // The breakeven an option rejection names (A100).
-  readonly details?: { readonly breakeven?: Rational };
+  // `condition` names the Stop or Target an option-price rejection is about (A196).
+  readonly details?: {
+    readonly breakeven?: Rational;
+    readonly condition?: { readonly role: 'Stop' | 'Target'; readonly position: number; readonly kind: string };
+  };
 }
 
 // The option Plan being confirmed, as far as the wording goes: a bullish Strategy (Long Call,
 // Cash-Secured Put) puts its Stop below its Target, and a bearish one (Long Put) above it.
 export interface OptionPlan {
   readonly bullish: boolean;
+  // A short option (the Cash-Secured Put) reverses its option-price Stop and Target against a long one.
+  readonly short?: boolean;
+}
+
+// An option-price condition's rejection goes beside its own field (W4, W5), against the option's side.
+function optionPriceIssue(issue: Issue, { short }: OptionPlan): FieldIssue | undefined {
+  if (issue.details?.condition?.kind !== 'StructureValue') return undefined;
+  if (issue.code === 'NoPositiveRisk') {
+    return { field: 'stopOption', message: `The option-price Stop must be ${short ? 'above' : 'below'} the intended entry price to calculate Risk properly.` };
+  }
+  if (issue.code === 'TargetNotBeyondEntry') {
+    return { field: 'targetOption', message: `The option-price Target must be ${short ? 'below' : 'above'} the intended entry price.` };
+  }
+  return undefined;
 }
 
 // One sentence per code (rows 19.12 to 19.23); the breakeven is an Underlying price, two decimals (C3).
-function optionIssue(issue: Issue, { bullish }: OptionPlan): FieldIssue | undefined {
+function optionIssue(issue: Issue, option: OptionPlan): FieldIssue | undefined {
+  const { bullish } = option;
+  const optionPrice = optionPriceIssue(issue, option);
+  if (optionPrice) return optionPrice;
   const breakeven = issue.details?.breakeven && formatDecimal(issue.details.breakeven, 2);
   const below = bullish ? 'below' : 'above';
   const fixed: Record<string, FieldIssue> = {
@@ -51,7 +72,7 @@ const OPTION_SENTENCES: Record<string, FieldIssue> = {
   InvalidRight: { field: 'right', message: 'The type must be Call or Put.' },
   ExerciseIntentRequired: { field: 'exerciseIntent', message: 'Say whether you plan to exercise this option if it is in the money.' },
   ExerciseIntentNotApplicable: { field: 'exerciseIntent', message: 'Only a long option takes an exercise intent.' },
-  ConditionCountNotOne: { field: 'stop', message: 'An option Plan takes one Stop and one Target.' },
+  ConditionKindRepeated: { field: 'stop', message: 'A Plan takes at most one Stop and one Target of each kind.' },
 };
 
 const ANALYSIS: Record<string, FieldIssue> = {
@@ -63,11 +84,12 @@ const ANALYSIS: Record<string, FieldIssue> = {
   MissingInstrument: { field: 'symbol', message: 'Enter a stock symbol, such as XYZ or BRK.B.' },
   UnderlyingMismatch: { field: 'symbol', message: 'The leg must be in the Plan’s symbol.' },
   StrategyShapeMismatch: { field: 'strategy', message: 'This Plan does not fit the chosen Strategy.' },
+  ConditionKindNotApplicable: { field: 'stop', message: 'A stock Plan takes no option-price Stop or Target.' },
 };
 
-export type PriceField = 'entry' | 'stop' | 'target';
+export type PriceField = 'entry' | 'stop' | 'target' | 'stopOption' | 'targetOption';
 
-const PRICE_LABEL = { entry: 'an intended entry', stop: 'a Stop', target: 'a Target' } as const;
+const PRICE_LABEL = { entry: 'an intended entry', stop: 'a Stop', target: 'a Target', stopOption: 'an option', targetOption: 'an option' } as const;
 
 // The domain reports InvalidPrice once, without saying which price failed, so the form says which
 // submitted prices fail the domain's rule (`failing`); the issue goes to each of them, and to the

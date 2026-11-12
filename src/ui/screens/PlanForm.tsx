@@ -62,6 +62,9 @@ interface Fields {
   readonly entry: string;
   readonly stop: string;
   readonly target: string;
+  // An option Plan's option-price Stop and Target, beside the Underlying ones (P92).
+  readonly stopOption: string;
+  readonly targetOption: string;
   readonly planTime: string;
 }
 
@@ -69,6 +72,16 @@ interface Fields {
 function optionRoleOf(shape: StrategyShape | undefined) {
   const role = shape?.roles[0];
   return role && role.instrument !== 'Stock' ? { side: role.side, right: role.instrument } : undefined;
+}
+
+// A role's conditions in Plan order: the Underlying price first, then the option price. An option Plan
+// submits only the fields filled; a stock Plan always submits its one price, empty or not (P92).
+function conditions(underlying: string, optionPrice: string, isOption: boolean) {
+  const filled = (text: string) => !isOption || text.trim() !== '';
+  return [
+    ...(filled(underlying) ? [{ kind: 'UnderlyingPrice' as const, price: underlying.trim() }] : []),
+    ...(isOption && filled(optionPrice) ? [{ kind: 'StructureValue' as const, price: optionPrice.trim() }] : []),
+  ];
 }
 
 const OPTION_TRIGGER_CODES: ReadonlySet<string> = new Set(['NoPositiveRisk', 'TargetNotBeyondEntry', 'StopTargetOrder']);
@@ -100,6 +113,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     entry: '',
     stop: '',
     target: '',
+    stopOption: '',
+    targetOption: '',
     planTime: toWorkspaceLocal(defaultInstant, timeZone),
   }));
   const set = (name: keyof Fields) => (value: string) => setFields((f) => ({ ...f, [name]: value }));
@@ -162,6 +177,19 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     const strategy = strategies.find((s) => s.id === fields.strategyId);
     const symbol = fields.symbol.trim().toUpperCase();
     const submitted = optionRoleOf(strategy?.shape);
+    // An option Plan needs a price in at least one field of each role; nothing is submitted without it (W3).
+    if (submitted) {
+      const on = symbol || 'the Underlying';
+      const missing: FieldIssue[] = [
+        ...(conditions(fields.stop, fields.stopOption, true).length === 0 ? [{ field: 'stop', message: `Enter a Stop on ${on}, an option price, or both.`, code: 'MissingStop' }] : []),
+        ...(conditions(fields.target, fields.targetOption, true).length === 0 ? [{ field: 'target', message: `Enter a Target on ${on}, an option price, or both.`, code: 'MissingTarget' }] : []),
+      ];
+      if (missing.length > 0) {
+        setIssues(missing);
+        setReported({ fields, answers });
+        return;
+      }
+    }
     // Only the selected Strategy's fields are submitted: an option Plan's leg is signed by its role's
     // side (A100), and a long option's checkbox is an explicit Authorized or NotAuthorized.
     const leg =
@@ -190,8 +218,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       plan: {
         underlying: symbol,
         legs: [leg],
-        stops: [{ kind: 'UnderlyingPrice', price: fields.stop.trim() }],
-        targets: [{ kind: 'UnderlyingPrice', price: fields.target.trim() }],
+        stops: conditions(fields.stop, fields.stopOption, !!submitted),
+        targets: conditions(fields.target, fields.targetOption, !!submitted),
         ...(strategy?.shape && exerciseIntentApplies(strategy.shape) && { exerciseIntent: exercise ? 'Authorized' : 'NotAuthorized' }),
       },
       reflection: { definitionId: definition.id, answers },
@@ -203,8 +231,13 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         describeIssues(
           result.issues,
           definition,
-          (['entry', 'stop', 'target'] as const).filter((name) => !positiveDecimal(fields[name])),
-          submitted && { bullish: isBullish(submitted) },
+          // An option Plan submits only the prices filled, so an empty one cannot be what failed; a stock Plan has no option prices.
+          (['entry', 'stop', 'target', 'stopOption', 'targetOption'] as const).filter((name) => {
+            const optionOnly = name === 'stopOption' || name === 'targetOption';
+            const submittedPrice = submitted ? name === 'entry' || fields[name].trim() !== '' : !optionOnly;
+            return submittedPrice && !positiveDecimal(fields[name]);
+          }),
+          submitted && { bullish: isBullish(submitted), short: submitted.side === 'Short' },
         ),
       );
       setReported({ fields, answers });
@@ -242,7 +275,15 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     const entry = positiveDecimal(fields.entry);
     const stop = positiveDecimal(fields.stop);
     const target = positiveDecimal(fields.target);
+    // W3 goes once either price of its role is filled.
+    if (option && (issue.code === 'MissingStop' || issue.code === 'MissingTarget')) {
+      const role = issue.code === 'MissingStop' ? 'stop' : 'target';
+      return conditions(fields[role], fields[`${role}Option`], true).length > 0;
+    }
     switch (issue.field) {
+      case 'stopOption':
+      case 'targetOption':
+        return changed(issue.field) && !!positiveDecimal(fields[issue.field]);
       case 'symbol':
         return changed('symbol') && isValidSymbol(fields.symbol);
       case 'quantity':
@@ -273,6 +314,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   );
 
   const underlying = fields.symbol.trim().toUpperCase() || 'Underlying';
+  const symbolOrUnderlying = fields.symbol.trim().toUpperCase() || 'the Underlying';
   const contracts = positiveDecimal(fields.quantity);
   const premium = positiveDecimal(fields.entry);
   const cashHint =
@@ -343,8 +385,14 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
           {input('entry', option ? 'Intended entry price (per share)' : 'Intended entry', 'decimal', cashHint)}
           {input('stop', option ? `Stop (${underlying} at or ${bullish ? 'below' : 'above'})` : 'Stop', 'decimal')}
           {input('target', option ? `Target (${underlying} at or ${bullish ? 'above' : 'below'})` : 'Target', 'decimal')}
+          {option && input('stopOption', `Stop (option price at or ${option.side === 'Long' ? 'below' : 'above'})`, 'decimal')}
+          {option && input('targetOption', `Target (option price at or ${option.side === 'Long' ? 'above' : 'below'})`, 'decimal')}
         </div>
-        {option && <p className="hint">Risk and reward are measured by the option&apos;s value at expiration at these prices</p>}
+        {option && (
+          <p className="hint">
+            Enter a price on {symbolOrUnderlying}, an option price, or both. A price on {symbolOrUnderlying} is measured by the option&apos;s value at expiration there; an option price is measured as entered. The nearer one sets the risk or reward.
+          </p>
+        )}
         {option && option.side === 'Short' && <p className="hint">The app doesn&apos;t check that you have the cash to buy the shares if you&apos;re assigned.</p>}
         {shape && exerciseIntentApplies(shape) && (
           <label>

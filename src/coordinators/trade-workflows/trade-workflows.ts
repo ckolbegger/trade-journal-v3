@@ -90,8 +90,9 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       const assessment = shape ? assessPlan({ strategyShape: shape, economicTime: command.economicTime, plan: command.plan }) : undefined;
       if (assessment?.kind === 'Rejected') {
         for (const issue of assessment.issues) {
-          // A rejection that names the breakeven passes it on, so the form can say it (A100).
-          issues.push({ source: 'TradeAnalysis', code: issue.code, ...(issue.details?.breakeven && { details: { breakeven: issue.details.breakeven } }) });
+          // A rejection that names the breakeven or the condition at fault passes them on, so the form can say them (A100, A196).
+          const { breakeven, condition } = issue.details ?? {};
+          issues.push({ source: 'TradeAnalysis', code: issue.code, ...((breakeven || condition) && { details: { ...(breakeven && { breakeven }), ...(condition && { condition }) } }) });
         }
       }
       if (issues.length > 0 || !assessment || assessment.kind !== 'Accepted' || reflection.kind !== 'Prepared') {

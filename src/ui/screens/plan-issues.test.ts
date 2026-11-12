@@ -24,7 +24,7 @@ describe('option plan issues', () => {
       InvalidRight: ['right', 'The type must be Call or Put.'],
       ExerciseIntentRequired: ['exerciseIntent', 'Say whether you plan to exercise this option if it is in the money.'],
       ExerciseIntentNotApplicable: ['exerciseIntent', 'Only a long option takes an exercise intent.'],
-      ConditionCountNotOne: ['stop', 'An option Plan takes one Stop and one Target.'],
+      ConditionKindRepeated: ['stop', 'A Plan takes at most one Stop and one Target of each kind.'],
     };
     for (const [code, [field, message]] of Object.entries(expected)) {
       expect(describeOption(code)).toMatchObject({ field, message, code });
@@ -33,6 +33,14 @@ describe('option plan issues', () => {
 });
 
 describe('plan issues', () => {
+  it('should word ConditionKindNotApplicable on the stock form without the Check the Plan fallback', () => {
+    expect(describeIssues([{ source: 'TradeAnalysis', code: 'ConditionKindNotApplicable' }], definition, [])[0]).toMatchObject({
+      field: 'stop',
+      message: 'A stock Plan takes no option-price Stop or Target.',
+      code: 'ConditionKindNotApplicable',
+    });
+  });
+
   it('should word the invalid price issue with an article that fits each price label', () => {
     expect(messages(['entry'])).toEqual(['Enter an intended entry price greater than zero, with at most 6 decimal places.']);
     expect(messages(['stop'])).toEqual(['Enter a Stop price greater than zero, with at most 6 decimal places.']);

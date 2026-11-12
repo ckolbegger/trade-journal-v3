@@ -102,7 +102,11 @@ describe('confirmPlan: option Plans (AC-PLAN-001)', () => {
         { source: 'ReferenceCatalog', field: 'account', code: 'UnknownReference' },
         { source: 'Journal', field: 'prompt.plan-reflection.thesis', code: 'RequiredAnswerMissing' },
         { source: 'TradeAnalysis', code: 'ContractAlreadyExpired' },
-        { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n) } },
+        {
+          source: 'TradeAnalysis',
+          code: 'NoPositiveRisk',
+          details: { breakeven: Rational.of(57n), condition: { role: 'Stop', position: 1, kind: 'UnderlyingPrice' } },
+        },
       ]),
     );
     expect(await dumpAll(stack.factory)).toEqual(before);
@@ -119,9 +123,22 @@ describe('confirmPlan: option Plans (AC-PLAN-001)', () => {
     const breakeven = { breakeven: Rational.of(57n) };
     expect(result.issues).toEqual(
       expect.arrayContaining([
-        { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: breakeven },
-        { source: 'TradeAnalysis', code: 'TargetNotBeyondEntry', details: breakeven },
+        { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { ...breakeven, condition: { role: 'Stop', position: 1, kind: 'UnderlyingPrice' } } },
+        { source: 'TradeAnalysis', code: 'TargetNotBeyondEntry', details: { ...breakeven, condition: { role: 'Target', position: 1, kind: 'UnderlyingPrice' } } },
       ]),
     );
+  });
+
+  it('should pass on a rejected condition role, position and kind, with no breakeven for an option-price one', async () => {
+    const { stack, longCall } = await optionStack();
+    const base = command(stack, longCall);
+    const result = await stack.tradeWorkflows.confirmPlan({
+      ...base,
+      plan: { ...base.plan, stops: [{ kind: 'UnderlyingPrice', price: '48.00' }, { kind: 'StructureValue', price: '2.50' }] },
+    });
+    if (result.kind !== 'Rejected') throw new Error(`expected Rejected, got ${result.kind}`);
+    expect(result.issues).toEqual([
+      { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { condition: { role: 'Stop', position: 2, kind: 'StructureValue' } } },
+    ]);
   });
 });

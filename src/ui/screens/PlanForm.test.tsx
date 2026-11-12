@@ -579,7 +579,11 @@ describe('option Strategies (A116)', () => {
     await user.type(screen.getByLabelText('Underlying'), 'xyz');
     expect(screen.getByLabelText('Stop (XYZ at or below)')).toBeTruthy();
     expect(screen.getByLabelText('Target (XYZ at or above)')).toBeTruthy();
-    expect(screen.getByText("Risk and reward are measured by the option's value at expiration at these prices")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Enter a price on XYZ, an option price, or both. A price on XYZ is measured by the option's value at expiration there; an option price is measured as entered. The nearer one sets the risk or reward.",
+      ),
+    ).toBeTruthy();
     expect(screen.getByLabelText<HTMLInputElement>('I plan to exercise this option if it is in the money').checked).toBe(false);
     expect(screen.queryByLabelText('Symbol')).toBeNull();
   });
@@ -621,8 +625,8 @@ describe('option Strategies (A116)', () => {
     await user.type(screen.getByLabelText('Underlying'), 'abc');
     await user.type(screen.getByLabelText('Contracts'), '1');
     await user.type(screen.getByLabelText('Intended entry price (per share)'), '1.50');
-    await user.type(screen.getByLabelText(/^Stop/), '40');
-    await user.type(screen.getByLabelText(/^Target/), '60');
+    await user.type(screen.getByLabelText(/^Stop \(ABC/), '40');
+    await user.type(screen.getByLabelText(/^Target \(ABC/), '60');
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
   }
@@ -692,6 +696,9 @@ describe('option Strategies (A116)', () => {
       affected: [],
     } as never);
     const user = await chooseStrategy('Long Call');
+    // An option Plan needs a price in a Stop and a Target field before it submits (W3).
+    await user.type(screen.getByLabelText('Stop (Underlying at or below)'), '48.00');
+    await user.type(screen.getByLabelText('Target (Underlying at or above)'), '60.00');
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     expect(await screen.findByText('1R $400.00')).toBeTruthy();
     expect(screen.getByText('Detail trade-7 for Roth IRA: Earnings run-up.')).toBeTruthy();
@@ -784,6 +791,131 @@ describe('option Strategies (A116)', () => {
   });
 });
 
+describe('option Plan form: Stop and Target kinds (P92)', () => {
+  const W2 = (name: string) =>
+    `Enter a price on ${name}, an option price, or both. A price on ${name} is measured by the option's value at expiration there; an option price is measured as entered. The nearer one sets the risk or reward.`;
+  const errorOf = (label: string) => document.getElementById(screen.getByLabelText(label).getAttribute('aria-describedby') ?? '')?.textContent;
+
+  // Fills the contract, the entry and the Reflection; the four price fields are left to each case.
+  async function fillContract(strategy: string, symbol: string, expiration: string, strike: string, contracts: string, entry: string) {
+    const user = await chooseStrategy(strategy);
+    await user.type(screen.getByLabelText('Underlying'), symbol);
+    await user.type(screen.getByLabelText('Expiration date'), expiration);
+    await user.type(screen.getByLabelText('Strike'), strike);
+    await user.type(screen.getByLabelText('Contracts'), contracts);
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), entry);
+    await user.type(screen.getByLabelText('Why this trade, why now?'), 'Premium on a level.');
+    await user.type(screen.getByLabelText('What would invalidate the thesis?'), 'A close below 41.');
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Conviction' })).getByLabelText('4'));
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
+    return user;
+  }
+
+  it('should show, for the Cash-Secured Put on MNO, the fields Stop MNO at or below, Stop option price at or above, Target MNO at or above and Target option price at or below with W2 note, and submit O-S2 as two Stops and two Targets in that order with their kinds', async () => {
+    const facade = renderForm(optionFacade());
+    const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
+    confirm.mockResolvedValue({ kind: 'Rejected', issues: [], binding: {} } as never);
+    const user = await chooseStrategy('Cash-Secured Put');
+    expect(screen.getByText(W2('the Underlying'))).toBeTruthy();
+    await user.type(screen.getByLabelText('Underlying'), 'mno');
+    expect(screen.getByText(W2('MNO'))).toBeTruthy();
+    await user.type(screen.getByLabelText('Expiration date'), '2026-12-18');
+    await user.type(screen.getByLabelText('Strike'), '45');
+    await user.type(screen.getByLabelText('Contracts'), '2');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '1.20');
+    await user.type(screen.getByLabelText('Stop (MNO at or below)'), '41.00');
+    await user.type(screen.getByLabelText('Stop (option price at or above)'), '3.60');
+    await user.type(screen.getByLabelText('Target (MNO at or above)'), '44.50');
+    await user.type(screen.getByLabelText('Target (option price at or below)'), '0.30');
+    await user.type(screen.getByLabelText('Why this trade, why now?'), 'Premium on a level.');
+    await user.type(screen.getByLabelText('What would invalidate the thesis?'), 'A close below 41.');
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Conviction' })).getByLabelText('4'));
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(confirm.mock.calls[0]![0].plan).toMatchObject({
+      stops: [
+        { kind: 'UnderlyingPrice', price: '41.00' },
+        { kind: 'StructureValue', price: '3.60' },
+      ],
+      targets: [
+        { kind: 'UnderlyingPrice', price: '44.50' },
+        { kind: 'StructureValue', price: '0.30' },
+      ],
+    });
+    // The new fields keep their values across a Strategy switch (A116).
+    await user.selectOptions(screen.getByLabelText('Strategy'), 'Long Stock');
+    await user.selectOptions(screen.getByLabelText('Strategy'), 'Long Put');
+    expect(screen.getByLabelText<HTMLInputElement>('Stop (option price at or below)').value).toBe('3.60');
+    expect(screen.getByLabelText<HTMLInputElement>('Target (option price at or above)').value).toBe('0.30');
+  });
+
+  it('should submit only the filled fields, so a Long Call with only Stop option price at or below 1.00 and Target XYZ at or above 60.00 sends one option-price Stop and one Underlying Target', async () => {
+    const facade = renderForm(optionFacade());
+    const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
+    confirm.mockResolvedValue({ kind: 'Rejected', issues: [], binding: {} } as never);
+    const user = await fillContract('Long Call', 'xyz', '2026-12-18', '55', '2', '2.00');
+    await user.type(screen.getByLabelText('Stop (option price at or below)'), '1.00');
+    await user.type(screen.getByLabelText('Target (XYZ at or above)'), '60.00');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    const plan = confirm.mock.calls[0]![0].plan;
+    expect(plan.stops).toEqual([{ kind: 'StructureValue', price: '1.00' }]);
+    expect(plan.targets).toEqual([{ kind: 'UnderlyingPrice', price: '60.00' }]);
+  });
+
+  it('should show W3 beside Stop MNO at or below when both Stop fields are empty, without submitting', async () => {
+    const facade = renderForm(optionFacade());
+    const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
+    const user = await fillContract('Cash-Secured Put', 'mno', '2026-12-18', '45', '2', '1.20');
+    await user.type(screen.getByLabelText('Target (MNO at or above)'), '44.50');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(errorOf('Stop (MNO at or below)')).toBe('Enter a Stop on MNO, an option price, or both.');
+    expect(screen.getByLabelText('Stop (option price at or above)').getAttribute('aria-describedby')).toBeNull();
+    expect(screen.getByLabelText('Target (MNO at or above)').getAttribute('aria-describedby')).toBeNull();
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('should put a rejected option-price condition error beside its own field, W4 for NoPositiveRisk on Stop 2 and W5 for TargetNotBeyondEntry on Target 2, and W10 for an option price that is not a positive decimal', async () => {
+    const at = (code: string, role: string, position: number) => ({ source: 'TradeAnalysis', code, details: { condition: { role, position, kind: 'StructureValue' } } });
+    const rejected = (strategy: string, issues: readonly unknown[]) => {
+      const facade = renderForm(optionFacade());
+      vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({ kind: 'Rejected', issues, binding: {} } as never);
+      return fillContract(strategy, 'xyz', '2026-12-18', '55', '2', '2.00');
+    };
+    const confirmRejected = async (user: ReturnType<typeof userEvent.setup>) => {
+      await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+      await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    };
+    const long = await rejected('Long Call', [at('NoPositiveRisk', 'Stop', 2), at('TargetNotBeyondEntry', 'Target', 2)]);
+    await long.type(screen.getByLabelText('Stop (XYZ at or below)'), '48.00');
+    await long.type(screen.getByLabelText('Stop (option price at or below)'), '2.50');
+    await long.type(screen.getByLabelText('Target (XYZ at or above)'), '60.00');
+    await long.type(screen.getByLabelText('Target (option price at or above)'), '1.50');
+    await confirmRejected(long);
+    expect(errorOf('Stop (option price at or below)')).toBe('The option-price Stop must be below the intended entry price to calculate Risk properly.');
+    expect(errorOf('Target (option price at or above)')).toBe('The option-price Target must be above the intended entry price.');
+    expect(screen.getByLabelText('Stop (XYZ at or below)').getAttribute('aria-describedby')).toBeNull();
+    expect(screen.getByLabelText('Target (XYZ at or above)').getAttribute('aria-describedby')).toBeNull();
+    // The short Strategy reverses both directions.
+    cleanup();
+    const short = await rejected('Cash-Secured Put', [at('NoPositiveRisk', 'Stop', 1), at('TargetNotBeyondEntry', 'Target', 1)]);
+    await short.type(screen.getByLabelText('Stop (option price at or above)'), '0.50');
+    await short.type(screen.getByLabelText('Target (option price at or below)'), '3.00');
+    await confirmRejected(short);
+    expect(errorOf('Stop (option price at or above)')).toBe('The option-price Stop must be above the intended entry price to calculate Risk properly.');
+    expect(errorOf('Target (option price at or below)')).toBe('The option-price Target must be below the intended entry price.');
+    // W10: the domain's InvalidPrice does not say which price failed, so the form says which option prices do.
+    cleanup();
+    const invalid = await rejected('Long Call', [{ source: 'TradeAnalysis', code: 'InvalidPrice' }]);
+    await invalid.type(screen.getByLabelText('Stop (XYZ at or below)'), '48.00');
+    await invalid.type(screen.getByLabelText('Stop (option price at or below)'), '0');
+    await invalid.type(screen.getByLabelText('Target (option price at or above)'), '1.1234567');
+    await confirmRejected(invalid);
+    expect(errorOf('Stop (option price at or below)')).toBe('Enter an option price greater than zero, with at most 6 decimal places.');
+    expect(errorOf('Target (option price at or above)')).toBe('Enter an option price greater than zero, with at most 6 decimal places.');
+    expect(screen.getByLabelText('Stop (XYZ at or below)').getAttribute('aria-describedby')).toBeNull();
+  });
+});
+
 describe('option Plan receipt (A116)', () => {
   it('should render the confirmed option Plan Planned payoff from the result with PayoffView, beside its 1R', async () => {
     const facade = optionFacade();
@@ -850,6 +982,9 @@ describe('option Plan receipt (A116)', () => {
       affected: [],
     } as never);
     const user = await chooseStrategy('Long Call');
+    // An option Plan needs a price in a Stop and a Target field before it submits (W3).
+    await user.type(screen.getByLabelText('Stop (Underlying at or below)'), '48.00');
+    await user.type(screen.getByLabelText('Target (Underlying at or above)'), '60.00');
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     expect(await screen.findByText('1R')).toBeTruthy();
     const chart = await screen.findByRole('img', { name: 'Planned payoff at expiration by XYZ price' });

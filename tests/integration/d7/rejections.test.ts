@@ -62,7 +62,11 @@ describe('I7.8 Rejections write nothing', () => {
     }
     // The breakeven is named on the two risk issues (A100).
     const noRisk = await rejectedPlan(app, d, cases[0]![1]);
-    expect(noRisk).toEqual(expect.arrayContaining([{ source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n) } }]));
+    expect(noRisk).toEqual(
+      expect.arrayContaining([
+        { source: 'TradeAnalysis', code: 'NoPositiveRisk', details: { breakeven: Rational.of(57n), condition: { role: 'Stop', position: 1, kind: 'UnderlyingPrice' } } },
+      ]),
+    );
   }, 60_000);
 
   it('should reject a second Stop and a second Target each with ConditionKindRepeated, and each invalid contract with its contract issue code, leaving the dump unchanged', async () => {
