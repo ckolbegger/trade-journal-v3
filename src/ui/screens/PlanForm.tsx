@@ -183,7 +183,19 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         ...(conditions(fields.target, fields.targetOption, true).length === 0 ? [{ field: 'target', message: `Enter a Target on ${on}, an option price, or both.`, code: 'MissingTarget' }] : []),
       ];
       if (missing.length > 0) {
-        setIssues(missing);
+        // The option-price errors the form can decide itself show with W3 from the same save (W4, W5): a price
+        // on the wrong side of a valid intended entry, contact included, as the domain judges it (A196).
+        const entry = positiveDecimal(fields.entry);
+        const wrongSide = (role: 'Stop' | 'Target', text: string) => {
+          const price = positiveDecimal(text);
+          if (!entry || !price) return [];
+          const order = price.compare(entry);
+          const wrong = conditionDirection(role, 'StructureValue', submitted) === 'below' ? order >= 0 : order <= 0;
+          const code = role === 'Stop' ? 'NoPositiveRisk' : 'TargetNotBeyondEntry';
+          return wrong ? [{ source: 'TradeAnalysis', code, details: { condition: { role, position: 0, kind: 'StructureValue' } } }] : [];
+        };
+        const wrong = [...wrongSide('Stop', fields.stopOption), ...wrongSide('Target', fields.targetOption)];
+        setIssues([...describeIssues(wrong, definition, [], { bullish: isBullish(submitted), short: submitted.side === 'Short' }), ...missing]);
         setReported({ fields, answers });
         return;
       }

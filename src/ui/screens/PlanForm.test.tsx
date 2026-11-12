@@ -888,6 +888,26 @@ describe('option Plan form: Stop and Target kinds (P92)', () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
+  it('should show W4 beside a wrong-side option-price Stop together with W3 beside the empty Target, from one save, without submitting', async () => {
+    const facade = renderForm(optionFacade());
+    const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
+    const user = await fillContract('Long Call', 'xyz', '2026-12-18', '55', '2', '2.00');
+    await user.type(screen.getByLabelText('Stop (option price at or below)'), '2.50');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(errorOf('Stop (option price at or below)')).toBe('The option-price Stop must be below the intended entry price to calculate Risk properly.');
+    expect(errorOf('Target (XYZ at or above)')).toBe('Enter a Target on XYZ, an option price, or both.');
+    expect(confirm).not.toHaveBeenCalled();
+    // The Cash-Secured Put reverses the sides: a wrong-side option-price Target with a missing Stop gives W5 with W3.
+    cleanup();
+    const putFacade = renderForm(optionFacade());
+    const put = await fillContract('Cash-Secured Put', 'mno', '2026-12-18', '45', '2', '1.20');
+    await put.type(screen.getByLabelText('Target (option price at or below)'), '1.20');
+    await put.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    expect(errorOf('Target (option price at or below)')).toBe('The option-price Target must be below the intended entry price.');
+    expect(errorOf('Stop (MNO at or below)')).toBe('Enter a Stop on MNO, an option price, or both.');
+    expect(vi.mocked(putFacade.TradeWorkflows.confirmPlan)).not.toHaveBeenCalled();
+  });
+
   it('should put a rejected option-price condition error beside its own field, W4 for NoPositiveRisk on Stop 2 and W5 for TargetNotBeyondEntry on Target 2, and W10 for an option price that is not a positive decimal', async () => {
     const at = (code: string, role: string, position: number) => ({ source: 'TradeAnalysis', code, details: { condition: { role, position, kind: 'StructureValue' } } });
     const rejected = (strategy: string, issues: readonly unknown[]) => {
