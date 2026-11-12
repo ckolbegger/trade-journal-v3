@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 7431,
+    "input_tokens": 7372,
+    "output_tokens": 59,
+    "cache_read_tokens": 3328,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "code_search": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/app/bench.ts",
+      "files": [
+        "src/app/bench.ts"
+      ]
+    }
+  ],
+  "session_id": "356e5e83-71fb-4607-9499-992f51992588",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "356e5e83-71fb-4607-9499-992f51992588",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a4b84749",
+      "resolved_base": "a91c5f94c8077d841f125135e95b0f5e7ce7ec0f",
+      "resolved_head": "a4b847495ea70f3ce01b64c00967bc0a76c00cd1",
+      "exact_range": "a91c5f94c8077d841f125135e95b0f5e7ce7ec0f..a4b847495ea70f3ce01b64c00967bc0a76c00cd1",
+      "source_artifact_sha256": "fac6091ef9f5c481811f46b11ba745fc553260b6b9c58096e77b52b99b15f356"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "1eadc6755892d00b7168d47f9a13ba0bb958755962a43cadc7f64c994a9a5142"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "1eadc6755892d00b7168d47f9a13ba0bb958755962a43cadc7f64c994a9a5142"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6147
+  }
+}

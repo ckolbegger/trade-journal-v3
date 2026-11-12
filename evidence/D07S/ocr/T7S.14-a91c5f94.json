@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 95845,
+    "input_tokens": 95038,
+    "output_tokens": 807,
+    "cache_read_tokens": 9984,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/bench.ts",
+      "content": "Please bump BENCH_GENERATOR_MARKER alongside the version (or derive it from the version). tools/bench-generate.ts checks the built JavaScript for that marker before generation, but stamps the resulting profile with the source's BENCH_GENERATOR_VERSION. Keeping the v6 marker allows an existing v6 dist-bench build to pass this check and generate the old condition mix while being stamped as generator 7; subsequent runs will then reuse that incorrect profile.",
+      "existing_code": "export const BENCH_GENERATOR_VERSION = 7;",
+      "start_line": 15,
+      "end_line": 15,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/bench-generator.ts",
+        "src/app/bench.ts"
+      ]
+    }
+  ],
+  "session_id": "cdcf27b8-c746-4fb6-8c5b-bf1eafc83dc3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cdcf27b8-c746-4fb6-8c5b-bf1eafc83dc3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a91c5f94",
+      "resolved_base": "3449773c6a3f3c6f9a7f57910bf543d121b28a2b",
+      "resolved_head": "a91c5f94c8077d841f125135e95b0f5e7ce7ec0f",
+      "exact_range": "3449773c6a3f3c6f9a7f57910bf543d121b28a2b..a91c5f94c8077d841f125135e95b0f5e7ce7ec0f",
+      "source_artifact_sha256": "aa968d20e942cd92b4711782a5925568e2569288af00565b0ac0549c3095c02c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "90da25b971a5de1c9de329f0d845a0958257aeaea4aa56aabbde61202860ae84",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "69de2b88778c1ff828c57bb9a028fad6a804e6c9931b3307f89bf218d831c4f2"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "295378f1bf189df30a4c208dfe895c99945f0f9de5f99b79f74b839a3a5cdb1f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "69de2b88778c1ff828c57bb9a028fad6a804e6c9931b3307f89bf218d831c4f2"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "295378f1bf189df30a4c208dfe895c99945f0f9de5f99b79f74b839a3a5cdb1f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 42659
+  }
+}

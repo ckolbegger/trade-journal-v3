@@ -367,3 +367,39 @@ T7S.13-B1 done in `9b7ecce2` (log row `930964e7`): red (`expected 3 to be less t
 Reviewer notes (not ocr findings, no bug tasks): B7S.5's status-as-text check on the Detail conditions table asserts only a non-empty cell (the Review card lines check the words); B7S.5's focus-ring check relies on D2's `tabTo`.
 
 **Cumulative run `t7s-16`** (2026-11-12, on `52439579`; the uncommitted changes were evidence and handoff text only), outputs in `suite-runs/t7s-16-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1508 passed; integration 103 files, 218 passed; browser full tier (`browser-auto be46f856`: `browser tier: full (first matching path since be46f856: e2e/d7s/conditions.spec.ts)`) `browser-1` 119 passed (4.7 m), `browser-2` 71 passed (4.2 m); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.14 Benchmark at schema 7
+
+**Phase 1 committed as `a91c5f94`** (`src/app/bench.ts`, `src/app/bench-generator.ts`, `bench/dataset.json`, `bench/expected-open-rows.json`).
+- `BENCH_GENERATOR_VERSION` 6 → 7. A203's mix is keyed on the Trade's place among the option Trades (`optionsBefore(i) % 10`; option Trades are exactly `i % 10 < 3`, so `i % 10` can't be the key), mirroring `tools/capacity/measure-page.ts`. Mix 0 is option-price only (Stop and Target); mix 1 to 3 adds an option-price Stop beside the Underlying Stop. Prices come from the existing `premiumOf` and `isLongOption` (no new copy of the direction rule; tech debt item 14 stays with D10): long options Stop entry − 1.00, Target entry + 3.00; Cash-Secured Put Stop entry + 1.00, Target entry − 0.50; entries run 1.20 to 6.00, so every price is positive with 2 decimals.
+- `bench-generator.test.ts` covers only `schedule`, so no red-first case was written; the verification is section 5's commands. Its 8 cases pass; typecheck, `tsc6`, lint, `lint:deps` exit 0.
+- **Dataset** (`bench/dataset.json`): generator 7, schema 7, as-of `2026-11-20T22:00:00Z`, review date 2026-11-20, origin `localhost:4175`, Apple M4 Max, Chromium 153.0.8010.12. Counts identical to generator 6: 25,000 Trades (24,700 Closed, 200 Open, 100 Planned), 97,127 position changes, 187,435 executions, 7,500 option Trades (3,000 Long Call, 2,000 Long Put, 2,500 Cash-Secured Put). Every one of the 7,500 option Plans was accepted by `confirmPlan`. By construction 750 hold only option-price conditions, 2,250 an option-price Stop beside the Underlying Stop, 4,500 unchanged (not counted from the stored Plans). `expected-open-rows.json` changed only by fresh Trade ids and the order that follows from them.
+- **Generation:** a first `bench:generate` failed after about a minute ("page.evaluate: Execution context was destroyed, most likely because of a navigation", `tools/bench-generate.ts:86`); rerun unchanged. The rerun ran 04:36 to 09:28 EST, `generationMs` 17,478,432 (4 h 51 min), about 24.0 s per session, flat (23.5 s at session 350, 24.0 s at 725). `review.save` took 16,411 s of it. D7's T7.28 generation (generator 6) ran 9,227 s at 12.7 s per session, so this is about 1.9x slower per session. Not investigated: the generator change touches only option Plan conditions, and machine load wasn't controlled. It is consistent with tech debt item 22's slower Review saves.
+- **Control run skipped** at the user's direction (2026-11-12): this generation deleted the cached generator-6 profile (`tools/bench-generate.ts:60`), and regenerating it for `claude-opus-5.5-pre-d7sp` would cost about 2.5 hours more.
+
+**ocr review of `a91c5f94`** (session cdcf27b8; `bench/dataset.json` and `bench/expected-open-rows.json` excluded as generated data; `ocr/T7S.14-a91c5f94.json`): 1 comment, a bug task.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| medium | `src/app/bench.ts:15` | `BENCH_GENERATOR_VERSION` is 7 but `BENCH_GENERATOR_MARKER` is still `tj-bench-generator-v6`, so `bench:generate`'s bundle check (`tools/bench-generate.ts:55`) passes on a stale v6 bench build, which would generate the old mix stamped as generator 7 | Valid: the v5→v6 commit bumped the marker with the version | **Bug task T7S.14-B1** |
+
+The profile generated at 04:36 is not affected: `dist-bench/assets/bench-generator-CnF9Uy-v.js` was built at 04:36:43, after the change, and contains `StructureValue`. Staleness in `bench:run` (`tools/bench-run.ts:80`) is judged by generator and schema versions only, and nothing checks `benchRelease`, so B1 needs no rebuild or regeneration. Reviewer notes (not findings): the mix key is deterministic (`optionsBefore(i)` depends only on `i`); every generated option price is positive with 2 decimals (long Stop 1.00–5.00, Target 5.00–9.00; Cash-Secured Put Stop 2.20 or 3.20, Target 0.70 or 1.70); the doc comment above the marker lacks a "Version 7" line.
+
+**T7S.14-B1 committed as `a4b84749`**: `BENCH_GENERATOR_MARKER` is `'tj-bench-generator-v7'` (a plain literal, with the "Version 7" doc line). Case "should name the current generator version so a stale bench build fails the bundle check" (`src/app/bench-generator.test.ts`, describe "bench generator marker"): red `expected 'tj-bench-generator-v6' to be 'tj-bench-generator-v7'`, then green; the file passes 9 of 9. No first-run pass. No rebuild or regeneration. **ocr review of `a4b84749`** (session 356e5e83; `ocr/T7S.14-B1-a4b84749.json`): no findings.
+
+**Benchmark committed as `feabbab3`** (`evidence/D07S/bench.md`): one `npm run bench:run` on `a4b84749`, written 2026-11-12T14:33:27Z, cached generator-7 profile reused (no regeneration), `bench:run OK`. D7's `evidence/D07/bench.md` restored; `git diff --quiet -- evidence/D07` exits 0. Port 4175 free before; no vitest, bench or test browser running; CPU before: Activity Monitor 91%, Chrome Helper 37%; after: Activity Monitor 91% (16 cores). No control run (user's direction 2026-11-12), so machine drift is unknown; the dataset differs from r3's (generator 7 with A203's mix against generator 6).
+
+| Measure | D7SP r3 | T7S.14 | Change |
+|---|---|---|---|
+| Cold start p95 (gated, 2,500 ms) | 136.5 | 130.0 | −4.8% |
+| Warm switch p95 (gated, 1,500 ms) | 64.9 | 63.5 | −2.2% |
+| Review status before / after | 321 / 332 | 322 / 293 | +0.3% / −11.7% |
+| First card median / p95 | 268.1 / 288.7 | 272.4 / 302.8 | +1.6% / +4.9% |
+| Save Marks median / p95 | 216.1 / 219.3 | 193.5 / 217.5 | −10.5% / −0.8% |
+| Action save median / p95 (also the warm Daily Trade Review Action save) | 193.3 / 243.4 | 189.0 / 191.7 | −2.2% / −21.2% |
+| Closed page median / p95 | 113.0 / 116.0 | 114.0 / 122.0 | +0.9% / +5.2% |
+| Cold Daily Trade Review Action save median / p95 | 227.2 / 229.2 | 227.2 / 227.3 | 0.0% / −0.8% |
+
+Every step is within 10% of r3 (slowest +5.2%), so the user's 10% and 35% thresholds do not fire. Note: generation ran 1.9x slower per session than D7's (24.0 s against 12.7 s, mostly `review.save`) while the measured Review steps match r3; the generation's slowdown is not explained by these steps and was not investigated.
+
+**Cumulative run `t7s-14`** (2026-11-12, 09:34 to 09:44 EST, on `feabbab3`; the uncommitted changes were evidence text only), outputs in `suite-runs/t7s-14-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1509 passed; integration 103 files, 218 passed; browser full tier (`browser-auto b2d60eb3`: `browser tier: full (first matching path since b2d60eb3: src/app/bench-generator.ts)`) `browser-1` 119 passed (4.7 m), `browser-2` 71 passed (4.3 m); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after. This full-tier run also stands as T7S.17's pre-critic full run: only evidence and plan text change after it.
