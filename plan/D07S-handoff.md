@@ -89,7 +89,7 @@ The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. I
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r81 and the next decision is 109 (revision 80 took decision 108, the run order below). Editing the breakdown's Progress section alone is not a revision (decision 100).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r82 and the next decision is 109 (revision 80 took decision 108, the run order below; revision 81, 2026-11-12, deferred tech debt item 14 to D10's cleanup at the user's direction). Editing the breakdown's Progress section alone is not a revision (decision 100).
 
 ## 3. D7S specifics
 
