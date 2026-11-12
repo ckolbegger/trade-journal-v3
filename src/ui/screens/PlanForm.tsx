@@ -283,7 +283,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     switch (issue.field) {
       case 'stopOption':
       case 'targetOption':
-        return changed(issue.field) && !!positiveDecimal(fields[issue.field]);
+        // An emptied option price is valid while its role's Underlying price is filled (P92).
+        return changed(issue.field) && (!!positiveDecimal(fields[issue.field]) || (fields[issue.field].trim() === '' && !!fields[issue.field === 'stopOption' ? 'stop' : 'target'].trim()));
       case 'symbol':
         return changed('symbol') && isValidSymbol(fields.symbol);
       case 'quantity':

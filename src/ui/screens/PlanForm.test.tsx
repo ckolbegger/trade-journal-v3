@@ -914,6 +914,25 @@ describe('option Plan form: Stop and Target kinds (P92)', () => {
     expect(errorOf('Target (option price at or above)')).toBe('Enter an option price greater than zero, with at most 6 decimal places.');
     expect(screen.getByLabelText('Stop (XYZ at or below)').getAttribute('aria-describedby')).toBeNull();
   });
+
+  it('should clear W10 beside an option-price field once the field is emptied while its roles Underlying price is filled', async () => {
+    const facade = renderForm(optionFacade());
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({ kind: 'Rejected', issues: [{ source: 'TradeAnalysis', code: 'InvalidPrice' }], binding: {} } as never);
+    const user = await fillContract('Cash-Secured Put', 'mno', '2026-12-18', '45', '2', '1.20');
+    await user.type(screen.getByLabelText('Stop (MNO at or below)'), '41.00');
+    await user.type(screen.getByLabelText('Stop (option price at or above)'), 'abc');
+    await user.type(screen.getByLabelText('Target (MNO at or above)'), '44.50');
+    await user.type(screen.getByLabelText('Target (option price at or below)'), 'abc');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const w10 = 'Enter an option price greater than zero, with at most 6 decimal places.';
+    expect(errorOf('Stop (option price at or above)')).toBe(w10);
+    expect(errorOf('Target (option price at or below)')).toBe(w10);
+    await user.clear(screen.getByLabelText('Stop (option price at or above)'));
+    await user.clear(screen.getByLabelText('Target (option price at or below)'));
+    expect(screen.getByLabelText('Stop (option price at or above)').getAttribute('aria-describedby')).toBeNull();
+    expect(screen.getByLabelText('Target (option price at or below)').getAttribute('aria-describedby')).toBeNull();
+  });
 });
 
 describe('option Plan receipt (A116)', () => {
