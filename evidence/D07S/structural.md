@@ -22,6 +22,7 @@ Spec reading (decision 45, A205): `plan/spec-reading/D07.md`. No other spec sect
 | Critic | Report | Flows | Result |
 |---|---|---|---|
 | critic-1 (T7S.12 checkpoint; brief from `critic-brief.md`, general-purpose at medium effort) | `critic-1.md` | C7S.1–C7S.4 | FAIL, 1 high defect; 129,709 tokens, 47 tool calls, 5 min 40 s |
+| critic-2 (T7S.12 checkpoint after B1; same brief, plus several C7S.4 combinations; general-purpose at medium effort) | `critic-2.md` | C7S.1–C7S.4 | PASS, no defects; 138,386 tokens, 40 tool calls, 5 min 5 s |
 
 ## T7S.1 Persistence: schema 7 and the `v6→v7` transform
 
@@ -311,3 +312,5 @@ Critic minor observation 1 (the Detail conditions table scrolls inside its own b
 T7S.12-B1 done in `d34f6670`: red (`expected undefined to be 'The option-price Stop must be below t…'`) then green; the case covers a Long Call (W4 with W3) and a Cash-Secured Put (W5 with W3), `confirmPlan` not called. In the "role missing" branch the form now also decides option-price wrong-side errors itself (positive entry and option price; `conditionDirection(role, 'StructureValue', leg)`; contact counts as wrong side), with sentences from `describeIssues` fed `NoPositiveRisk`/`TargetNotBeyondEntry` with `details.condition.kind` 'StructureValue', so no W4/W5 sentence or direction rule is copied. They stay until the next save, as the server's do. `assessPlan`, the facade and Underlying checks unchanged. Browser specs on the screen (plan-validation, plan-open, no-save, responsive-a11y): 5 passed. **ocr review of `d34f6670`** (`ocr/T7S.12-B1-d34f6670.json`): 0 comments.
 
 **Cumulative run `t7s-12-b1`** (2026-11-12, on `d34f6670`, full tier as the run after the last fix), outputs in `suite-runs/t7s-12-b1-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1508 passed; integration 97 files, 202 passed; `browser-1` 119 passed (4.7 min), `browser-2` 65 passed (4.0 min); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after. Critic-1 reported a high defect, so a fresh critic follows (`critic-brief.md`, "After each critic").
+
+Critic-2 on `427d3396` (`critic-2.md`): C7S.1–C7S.4 PASS, no defects (C7S.4 with 11 combinations, each from one save, nothing stored). The checkpoint closes on critic-2, as the full run before it (`t7s-12-b1`) stands. Its minor observations are listed in the handoff's open questions; none is a defect.
