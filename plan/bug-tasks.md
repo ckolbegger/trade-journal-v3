@@ -5,6 +5,7 @@ This file holds bugs the user finds by hand between deliverables. Each one is wr
 | ID | Title | Found | Severity | Status |
 |---|---|---|---|---|
 | BUG-1 | The exercise checkbox is drawn as a full-width text box | 2026-11-12, user, after the D7S tag | Low (cosmetic) | Open |
+| BUG-2 | The option Plan's Expiration date is a plain text box: no date picker, US dates rejected, and a corrected date still shows the error | 2026-11-12, user, after the D7S tag | Moderate (misleads; the trader can finish only by guessing the format) | Open |
 
 ---
 
@@ -58,3 +59,53 @@ Each assertion fails today on the width, as the screenshot shows.
 **Words:** none change. "I plan to exercise this option if it is in the money" is D7's approved text.
 
 **Out of scope:** the payoff chart's SVG width at narrow viewports (critic-2, observation 6), and any other form control.
+
+---
+
+## BUG-2: the Expiration date has no date picker, rejects US dates, and keeps its error after a fix
+
+**Found:** 2026-11-12, by the user, testing the production build of `claude-opus-5.5-d7s` (`795159cd`) on the option Plan form, section "Contract". The user entered "11/20/2026" and then "2026-11-20"; "neither is accepted", and they expected a date picker.
+
+**Introduced by:** D7 T7.19 (`551ca046`), the option Plan form's contract fields.
+
+**Reproduced by the main session** (production build on `localhost:5175`, real clock 2026-11-12, a scratch Chromium profile; Long Call NVDA, strike 150.00, 1 contract at 15.00, Stop NVDA 140.00, Target NVDA 200):
+1. Expiration "2026-11-20" entered once and Confirm Plan: **accepted**. The Plan confirms and Trade Detail opens.
+2. Expiration "11/20/2026" and Confirm Plan: **rejected**, with "Enter an expiration date in the years 2000 to 2099." beside the field. The message is misleading, because 2026 is in range.
+3. Then the field cleared and "2026-11-20" typed: the field still shows the error and `aria-invalid="true"`, as if the new date were rejected too. Only a second Confirm Plan clears it, and that save **succeeds**. This is why "2026-11-20" looks refused.
+
+**Cause:**
+- The field is a plain text input. `{input('expiration', 'Expiration date')}` at `src/ui/screens/PlanForm.tsx:383` goes through the shared `input` helper (`:315`–`:319`), which sets no `type`. So there is no picker, and the text is passed through as typed (`:213`, `fields.expiration.trim()`).
+- `validateOptionContract` (`src/domain/instrument/index.ts:97`) rightly accepts only an ISO `YYYY-MM-DD` date from 2000 to 2099, because the contract key stores the date. Any locale format fails as `InvalidExpiration`.
+- `InvalidExpiration` is not among the issues the form clears on edit, so its error stays until the next submit. T7S.8's flagged clearing rules cover only W3 and the option-price `InvalidPrice`.
+
+**Expected:**
+- **A date picker:** `type="date"` on the Expiration field, the browser's native control. The form already uses a native `type="datetime-local"` for Plan time (`PlanForm.tsx:367`), so this follows the same pattern.
+  - The browser shows the date in the trader's locale (11/20/2026 in the US) and always hands the form ISO `2026-11-20`, so locale formats can no longer be rejected.
+  - Set `min="2000-01-01"` and `max="2099-12-31"` to match the contract key's range.
+- **The error clears when the field changes:** an `InvalidExpiration` beside the field goes away once the field holds a valid date, as `InvalidPrice` does for an option price.
+- **Message:** keep "Enter an expiration date in the years 2000 to 2099." It now only ever shows for an empty date or one outside that range, which is what it says. No new words.
+- **No domain change:** `validateOptionContract` keeps accepting ISO dates only.
+
+**Tests first, each failing before the fix:**
+- **Unit, `src/ui/screens/PlanForm.test.tsx`:**
+  - The Expiration field is a date input (`type="date"`, `min` 2000-01-01, `max` 2099-12-31).
+  - After a Confirm Plan with an empty Expiration shows `InvalidExpiration`, changing the field to `2026-12-18` removes the error and `aria-invalid` before any new submit.
+- **Browser, Chromium,** in the D7 spec that plans a Long Call (`e2e/d7/plan-open.spec.ts`):
+  - Confirm Plan with the Expiration empty shows the error beside the field.
+  - Then `fill('2026-11-20')`: the error is gone before resubmitting.
+  - Then Confirm Plan opens Trade Detail, with the contract's expiration line reading "Expires Fri 20 Nov 2026" (D7 row 23.19).
+  - Playwright's `fill` on a date input takes ISO text, so the existing helpers (`fillOptionPlan` in `e2e/d7/support.ts:55`, and the 4 `getByLabel('Expiration date')` uses) keep working unchanged.
+
+**Keep passing:**
+- Every D7, D7S and D7SP case that enters an expiration.
+- axe on the form, and the 375 and 320 px layout (`e2e/d7p` helpers). The native date control must not cause sideways scroll.
+- Keyboard entry: Tab into the field, type the date segments, and use the picker button.
+
+**Note for other engines (pending RC, decision 19):**
+- Every browser this app targets has a native date input with a picker: Chromium, Firefox and WebKit.
+- iOS Safari opens a wheel picker.
+- No date-picker library is needed.
+
+**Out of scope:**
+- The Plan time field.
+- The Execution and Mark date fields. Check them while there, and report any that is a plain text date, rather than changing it.
