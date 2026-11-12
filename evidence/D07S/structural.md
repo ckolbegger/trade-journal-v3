@@ -357,3 +357,13 @@ T7S.13-B1 done in `9b7ecce2` (log row `930964e7`): red (`expected 3 to be less t
 - All five cases passed on their first run (B7S.1 after a fixture-locator fix); each was mutation-checked (`tdd-log.md`).
 - `npm run test:e2e` (exit 0): `browser-1` 119 passed in 4.7 min; `browser-2` 71 passed in 4.2 min (was 65; +6 D7S cases: 2 plan, 2 conditions, 2 responsive-a11y). Nothing on ports 5175, 9341, 9342 before or after.
 - `.claude/scripts/acceptance-commands.sh plan/D07S-option-price-stops-and-targets.md`: exit 0, 11 commands checked, 0 failed.
+
+**ocr review of `52439579`** (relocated to `src/itg/relocated/d7s/`, scratch commit `11d343cb`; `ocr/T7S.16-52439579.json`): 1 comment, dismissed.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| high | `src/itg/relocated/d7s/plan.ts:8` | The D7S browser tests are not discoverable by Playwright, because `testDir` is `e2e` and the files are plain `.ts` outside it | Wrong (relocation artifact): the real files are `e2e/d7s/*.spec.ts`, inside the discovered tree; `npm run test:e2e` ran them (`browser-2` 65 to 71) | Dismissed (Wrong); listed in the handoff's open questions |
+
+Reviewer notes (not ocr findings, no bug tasks): B7S.5's status-as-text check on the Detail conditions table asserts only a non-empty cell (the Review card lines check the words); B7S.5's focus-ring check relies on D2's `tabTo`.
+
+**Cumulative run `t7s-16`** (2026-11-12, on `52439579`; the uncommitted changes were evidence and handoff text only), outputs in `suite-runs/t7s-16-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1508 passed; integration 103 files, 218 passed; browser full tier (`browser-auto be46f856`: `browser tier: full (first matching path since be46f856: e2e/d7s/conditions.spec.ts)`) `browser-1` 119 passed (4.7 m), `browser-2` 71 passed (4.2 m); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after.

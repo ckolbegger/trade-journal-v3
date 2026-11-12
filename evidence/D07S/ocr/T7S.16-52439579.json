@@ -1,0 +1,136 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 393253,
+    "input_tokens": 390877,
+    "output_tokens": 2376,
+    "cache_read_tokens": 62720,
+    "elapsed": "2m2s"
+  },
+  "tool_calls": {
+    "total": 35,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_find": 6,
+      "file_read": 15
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 14,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/d7s/conditions.ts,src/itg/relocated/d7s/plan.ts,src/itg/relocated/d7s/responsive-a11y.ts,src/itg/relocated/d7s/support.ts",
+        "arguments": "{\"file_path\": \"src/ui/screens/ReviewCards.tsx\", \"start_line\": 1, \"end_line\": 120}",
+        "error": "file \"src/ui/screens/ReviewCards.tsx\" not found: git show 11d343cb80c8e40c97731152a54a4a2321ee9e70:src/ui/screens/ReviewCards.tsx: exit status 128: fatal: path 'src/ui/screens/ReviewCards.tsx' does not exist in '11d343cb80c8e40c97731152a54a4a2321ee9e70'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d7s/plan.ts",
+      "content": "None of the new D7S browser tests are discoverable by the current runner: playwright.config.ts restricts testDir to `e2e` and retains the default `.spec`/`.test` filename matching, whereas these files live under `src/itg/relocated/d7s` with plain `.ts` names. The package scripts also do not include this suite. Consequently B7S.1–B7S.5 never run in the browser test commands. Move/rename the three test files into the discovered tree and include D7S in the intended command, or explicitly configure discovery and execution for this location.",
+      "existing_code": "test.describe('B7S.1 Plan a Cash-Secured Put with both kinds', () =\u003e {",
+      "start_line": 8,
+      "end_line": 8,
+      "category": "test",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D7S relocated integration conditions, planning, accessibility, and support",
+      "files": [
+        "src/itg/relocated/d7s/conditions.ts",
+        "src/itg/relocated/d7s/plan.ts",
+        "src/itg/relocated/d7s/responsive-a11y.ts",
+        "src/itg/relocated/d7s/support.ts"
+      ]
+    }
+  ],
+  "session_id": "8bcadffd-643b-4e8d-a7a9-63d18c6a612d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8bcadffd-643b-4e8d-a7a9-63d18c6a612d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "11d343cb",
+      "resolved_base": "d24e68488ae921cf3eaab7165df886f7722529d9",
+      "resolved_head": "11d343cb80c8e40c97731152a54a4a2321ee9e70",
+      "exact_range": "d24e68488ae921cf3eaab7165df886f7722529d9..11d343cb80c8e40c97731152a54a4a2321ee9e70",
+      "source_artifact_sha256": "8627d2047a9b5e1a1d247f2654f7655bf27ae36a034e21b34be6cbf133ebdd28"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2eb8189ce3f9f42a39cbcd787d0a2eedc6ae9597a7866ee250379d5eb6a3c89c",
+          "path": "src/itg/relocated/d7s/responsive-a11y.ts",
+          "fingerprint": "fa3a758e7537d4435cf0f7543843c9ce418845da9d13e9466f0cf495ad198319"
+        },
+        {
+          "item_id": "746952f6d6d528aefed0968182a1c44df5fe8f7192216dc130d723727edd0425",
+          "path": "src/itg/relocated/d7s/plan.ts",
+          "fingerprint": "7ab9584804ce3de38ce721e140b1caf6ed7c1836826eb3b0e514144096e09b40"
+        },
+        {
+          "item_id": "a7b13b0aa65293aae966dc3757abe5efe942342be266b944ef8c9584dd1a0457",
+          "path": "src/itg/relocated/d7s/support.ts",
+          "fingerprint": "037a175bfb404a5fb1410446d9b190556c3420367dd4b4624b91822e7aa5c60d"
+        },
+        {
+          "item_id": "fca2bfe99fd805eca615acf1cc1cf77241562888e9e09fa608309efe42be2b7d",
+          "path": "src/itg/relocated/d7s/conditions.ts",
+          "fingerprint": "3eb7cac9de7ca7db3fc1cc5ea8faa0715d6c3b6b520c93b919d65ce4a2a7377b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2eb8189ce3f9f42a39cbcd787d0a2eedc6ae9597a7866ee250379d5eb6a3c89c",
+          "path": "src/itg/relocated/d7s/responsive-a11y.ts",
+          "fingerprint": "fa3a758e7537d4435cf0f7543843c9ce418845da9d13e9466f0cf495ad198319"
+        },
+        {
+          "item_id": "746952f6d6d528aefed0968182a1c44df5fe8f7192216dc130d723727edd0425",
+          "path": "src/itg/relocated/d7s/plan.ts",
+          "fingerprint": "7ab9584804ce3de38ce721e140b1caf6ed7c1836826eb3b0e514144096e09b40"
+        },
+        {
+          "item_id": "a7b13b0aa65293aae966dc3757abe5efe942342be266b944ef8c9584dd1a0457",
+          "path": "src/itg/relocated/d7s/support.ts",
+          "fingerprint": "037a175bfb404a5fb1410446d9b190556c3420367dd4b4624b91822e7aa5c60d"
+        },
+        {
+          "item_id": "fca2bfe99fd805eca615acf1cc1cf77241562888e9e09fa608309efe42be2b7d",
+          "path": "src/itg/relocated/d7s/conditions.ts",
+          "fingerprint": "3eb7cac9de7ca7db3fc1cc5ea8faa0715d6c3b6b520c93b919d65ce4a2a7377b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 122117
+  }
+}
