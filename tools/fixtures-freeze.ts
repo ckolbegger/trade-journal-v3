@@ -7,7 +7,8 @@
 // shortfall, a Trade closed Monday with a completed Close Review and one closed Tuesday with a deferred one.
 // Schema 6 (D7 T7.27) adds the single-leg option Trades as of Friday 2026-11-20 17:00 America/New_York: O-C
 // through X1 (Settlement Due), O-S expired with a deferred Close Review, O-P closed by Q1, and a Planned
-// Long Call with Exercise Intent Authorized.
+// Long Call with Exercise Intent Authorized. Schema 7 (D7S T7S.13, A204) adds O-S2 (Cash-Secured Put on MNO, 45 Put expiring
+// 2026-12-18, two Stops and two Targets of both kinds) after S1', with Friday 11-20 Marks of MNO 44.60 and the put 3.65.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -369,8 +370,8 @@ const optionStrategy = (productKey: string) => {
   if (!found) throw new Error(`no Strategy ${productKey}`);
   return found;
 };
-const optionContract = (symbol: string, right: 'Call' | 'Put', strike: string) =>
-  ({ kind: 'Option', symbol, root: symbol, expiration: '2026-11-20', right, strike, multiplier: 100 }) as const;
+const optionContract = (symbol: string, right: 'Call' | 'Put', strike: string, expiration = '2026-11-20') =>
+  ({ kind: 'Option', symbol, root: symbol, expiration, right, strike, multiplier: 100 }) as const;
 interface OptionStep {
   readonly member: 'Execution' | 'Expiration';
   readonly action?: 'Buy' | 'Sell';
@@ -390,6 +391,8 @@ async function optionTrade(options: {
   readonly intendedEntry: string;
   readonly stop: string;
   readonly target: string;
+  readonly stops?: readonly { readonly kind: 'UnderlyingPrice' | 'StructureValue'; readonly price: string }[];
+  readonly targets?: readonly { readonly kind: 'UnderlyingPrice' | 'StructureValue'; readonly price: string }[];
   readonly exerciseIntent?: 'Authorized' | 'NotAuthorized';
   readonly planTime: string;
   readonly steps: readonly OptionStep[];
@@ -406,8 +409,8 @@ async function optionTrade(options: {
     plan: {
       underlying: symbol,
       legs: [{ side: options.side, instrument: options.instrument, quantity: options.quantity, intendedEntry: options.intendedEntry }],
-      stops: [{ kind: 'UnderlyingPrice', price: options.stop }],
-      targets: [{ kind: 'UnderlyingPrice', price: options.target }],
+      stops: options.stops ?? [{ kind: 'UnderlyingPrice', price: options.stop }],
+      targets: options.targets ?? [{ kind: 'UnderlyingPrice', price: options.target }],
       ...(options.exerciseIntent && { exerciseIntent: options.exerciseIntent }),
     },
     reflection: {
@@ -510,9 +513,29 @@ await optionTrade({
   steps: [],
 });
 
+// Schema 7 (D7S T7S.13, A204): O-S2, the Cash-Secured Put on MNO with both condition kinds (breakdown, section 4), contract expiring
+// 2026-12-18 so it is not due at the as-of instant. Plan -2 at 1.20, confirmed Monday 10-12 09:00 with S-u MNO 41.00, S-o option 3.60,
+// T-u MNO 44.50, T-o option 0.30; S1' Monday 10:00 Sell 2 @ 1.25, fee 1.30. Friday 11-20's Marks: MNO 44.60 and the put 3.65.
+await optionTrade({
+  strategyKey: 'strategy.cash-secured-put',
+  accountIndex: 2,
+  instrument: optionContract('MNO', 'Put', '45', '2026-12-18'),
+  side: 'Short',
+  quantity: '-2',
+  intendedEntry: '1.20',
+  stop: '41.00',
+  target: '44.50',
+  stops: [{ kind: 'UnderlyingPrice', price: '41.00' }, { kind: 'StructureValue', price: '3.60' }],
+  targets: [{ kind: 'UnderlyingPrice', price: '44.50' }, { kind: 'StructureValue', price: '0.30' }],
+  planTime: '2026-10-12T13:00:00Z',
+  steps: [{ member: 'Execution', action: 'Sell', quantity: '2', price: '1.25', fee: '1.30', economicTime: '2026-10-12T14:00:00Z', reflection: complete('as-planned', 'calm', 4) }],
+});
+await manualMark('MNO', '2026-11-20', '44.60');
+await manualMark('MNO261218P00045000', '2026-11-20', '3.65');
+
 const dump: WorkspaceDump = { schemaVersion: SCHEMA_VERSION, generatorVersion: GENERATOR_VERSION, asOf: AS_OF, databases: await dumpDatabases(factory) };
 const views = await viewsOf(app, SCHEMA_VERSION, AS_OF);
 await mkdir(dir, { recursive: true });
 await writeFile(path.join(dir, 'dump.json'), `${JSON.stringify(dump, null, 2)}\n`);
 await writeFile(path.join(dir, 'expected-views.json'), `${JSON.stringify(views, null, 2)}\n`);
-console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length + 2} Open and 2 Closed stock Trades plus 4 option Trades, ${accounts.length} Accounts)`);
+console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length + 2} Open and 2 Closed stock Trades plus 5 option Trades, ${accounts.length} Accounts)`);

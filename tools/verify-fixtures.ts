@@ -130,6 +130,15 @@ for (const name of fixtures) {
       continue;
     }
   }
+  if (dump.schemaVersion === 7) {
+    // The v7 snapshot must hold what T7S.13 froze (A204): O-S2's two StructureValue conditions among its Open details' Plans.
+    const held = expected as { details?: { plan?: { stops?: { kind?: string }[]; targets?: { kind?: string }[] } }[] };
+    const structureValues = (held.details ?? []).flatMap((detail) => [...(detail.plan?.stops ?? []), ...(detail.plan?.targets ?? [])]).filter((condition) => condition.kind === 'StructureValue').length;
+    if (structureValues < 2) {
+      problems.push(`${name}: expected-views.json holds ${structureValues} StructureValue conditions in its Open details, fewer than 2 (A204)`);
+      continue;
+    }
+  }
   const differences = compareSnapshot(views, expected);
   if (differences.length > 0) {
     problems.push(`${name}: views differ from expected-views.json at ${differences.join(', ')}`);
