@@ -1,4 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
+import { headlineBasisOf, measurementOf } from '../../domain/trade-analysis/index.ts';
 import type { CalculationResult, DerivedTradeState, IntegrityFinding, TradeEvaluation, UnavailableReason } from '../../domain/trade-analysis/index.ts';
 import { multiplierOf } from '../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
@@ -50,9 +51,9 @@ function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): Ri
   if (reward.kind === 'Unavailable') return reward;
   if (risk.kind !== 'Value' || reward.kind !== 'Value' || evaluation.observation.mark === null) throw new Error('A pressure input is neither a Value nor Unavailable');
   const lots = state.positions.flatMap((p) => p.openLots);
-  const [stopBasis, targetBasis] = [state.baseline.stopBasis[0]!, state.baseline.targetBasis[0]!];
-  const stop = stopBasis.valueAtExpiration ?? decimal(stopBasis.condition.price);
-  const target = targetBasis.valueAtExpiration ?? decimal(targetBasis.condition.price);
+  // Each role's headline condition (A197), the one `evaluate`'s own headline measures.
+  const stop = measurementOf(headlineBasisOf(state.baseline.stopBasis));
+  const target = measurementOf(headlineBasisOf(state.baseline.targetBasis));
   const multiplier = Rational.of(BigInt(multiplierOf(state.positions[0]!.instrument)));
   const quantity = sum(lots.map((l) => l.quantity));
   const averageCost = sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity);

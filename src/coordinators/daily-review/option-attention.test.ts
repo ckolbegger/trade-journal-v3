@@ -15,7 +15,8 @@ const MONDAY_11 = '2026-10-12T15:00:00Z';
 
 const XYZ_CALL = { kind: 'Option', symbol: 'XYZ', root: 'XYZ', expiration: '2026-11-20', right: 'Call', strike: '55', multiplier: 100 } as const;
 const MNO_PUT = { kind: 'Option', symbol: 'MNO', root: 'MNO', expiration: '2026-11-20', right: 'Put', strike: '45', multiplier: 100 } as const;
-type Contract = typeof XYZ_CALL | typeof MNO_PUT;
+const MNO_PUT_DEC = { kind: 'Option', symbol: 'MNO', root: 'MNO', expiration: '2026-12-18', right: 'Put', strike: '45', multiplier: 100 } as const;
+type Contract = typeof XYZ_CALL | typeof MNO_PUT | typeof MNO_PUT_DEC;
 
 async function strategyOf(stack: ReviewStack, productKey: string): Promise<StrategyRecord> {
   const strategies = await stack.catalog.query({ family: 'Strategy' });
@@ -85,6 +86,31 @@ async function figures(stack: ReviewStack, tradeId: string) {
 }
 
 const r = (n: bigint, d: bigint) => Rational.of(n, d);
+
+// D7S section 4's O-S2 (MNO 18 Dec 2026 45 Put, short, both condition kinds) after S1', on Tuesday 10-13.
+describe('pressure with several conditions (A197)', () => {
+  it('should give O-S2 in Tuesday 10-13 Review a pressure toward the Stop of 11/47, from S-o at-entry risk $470 and its current $360, with the range position measured between S-o and T-u', async () => {
+    const { stack, confirm, fill } = await fixture();
+    const tradeId = await confirm('strategy.cash-secured-put', {
+      underlying: 'MNO',
+      legs: [{ side: 'Short', instrument: MNO_PUT_DEC, quantity: '-2', intendedEntry: '1.20' }],
+      stops: [{ kind: 'UnderlyingPrice', price: '41.00' }, { kind: 'StructureValue', price: '3.60' }],
+      targets: [{ kind: 'UnderlyingPrice', price: '44.50' }, { kind: 'StructureValue', price: '0.30' }],
+    });
+    await fill(tradeId, MNO_PUT_DEC, 'Sell', MONDAY_10, '2', '1.25', '1.30');
+    await stack.saveMark(instrumentKey(MNO_PUT_DEC), '1.80', TUESDAY);
+    await stack.saveMark('MNO', '44.00', TUESDAY);
+
+    const { basis, walkedRange, cardRange } = await figures(stack, tradeId);
+
+    // At entry: risk -2 x 100 x (1.25 - 3.60) = 470, reward -2 x 100 x (0.50 - 1.25) = 150. Now: risk 360, reward 260.
+    // Pressure: (470 - 360) / 470 = 11/47. Range position: now 360 / 620 = 18/31, at entry 470 / 620 = 47/62.
+    expect(basis).toEqual({ kind: 'Value', value: { side: 'Losing', share: r(11n, 47n), atEntry: r(470n, 1n), now: r(360n, 1n) } });
+    for (const range of [walkedRange, cardRange]) {
+      expect(range).toEqual({ kind: 'Value', value: { now: r(18n, 31n), atEntry: r(47n, 62n) } });
+    }
+  }, 60_000);
+});
 
 describe('pressure and range position for options (decision 88)', () => {
   it('should give O-C after PC1 and PC2, with the call at 2.40 and XYZ 52.00, pressure 2/15 on its winning side and range position 12/25 now, 2/5 at entry', async () => {
