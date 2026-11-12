@@ -1,0 +1,142 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 158909,
+    "input_tokens": 156849,
+    "output_tokens": 2060,
+    "cache_read_tokens": 9088,
+    "elapsed": "1m19s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 12,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PlanForm.tsx",
+      "content": "Clearing an invalid optional option price leaves its InvalidPrice error visible even when the corresponding Underlying price remains filled. For example, submit a valid Underlying Stop with option Stop `0`, then delete `0`: the condition will no longer be submitted, but this branch requires a positive decimal to dismiss its error. Also treat an emptied optional field as corrected when its role still has another condition.",
+      "existing_code": "      case 'stopOption':\n      case 'targetOption':\n        return changed(issue.field) \u0026\u0026 !!positiveDecimal(fields[issue.field]);",
+      "start_line": 284,
+      "end_line": 286,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PlanForm.tsx",
+      "content": "The risk grid has two columns, so this order places the Underlying Stop beside the Underlying Target and the option Stop beside the option Target. P92 requires each role's Underlying field followed by its option-price field beside it. Render Stop, option Stop, Target, option Target for option strategies while retaining the stock layout.",
+      "existing_code": "          {option \u0026\u0026 input('stopOption', `Stop (option price at or ${option.side === 'Long' ? 'below' : 'above'})`, 'decimal')}\n          {option \u0026\u0026 input('targetOption', `Target (option price at or ${option.side === 'Long' ? 'above' : 'below'})`, 'decimal')}",
+      "start_line": 388,
+      "end_line": 389,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade workflow coordination and types",
+      "files": [
+        "src/coordinators/trade-workflows/trade-workflows.ts",
+        "src/coordinators/trade-workflows/types.ts"
+      ]
+    },
+    {
+      "label": "Plan form and issue handling",
+      "files": [
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/plan-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "1ea62391-2f6b-4e64-9239-86166ca32a8c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1ea62391-2f6b-4e64-9239-86166ca32a8c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4f347d43",
+      "resolved_base": "3512f05751d70bbc77801d114d88f4fc72a04b6e",
+      "resolved_head": "4f347d43e9742461600d51a4285057ee67046ce2",
+      "exact_range": "3512f05751d70bbc77801d114d88f4fc72a04b6e..4f347d43e9742461600d51a4285057ee67046ce2",
+      "source_artifact_sha256": "63b346e8204df005aaedf917c0b09e2032164835ece07cbe5b7088a71f1e53df"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "89115e623ae75eecbc823b93f963a07513d9bb125dbac123317ba357016cd9cc",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "802d10cb4841b1e85c1de23b7ce4305f982daa9f547a1b5037bde4d257466df6"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "0be517aa0fdd5319ef471f2929ee3fe59c683509c984ea8ff62bcf1da074201a"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "a326aa37ed4e4020de3e96e8e5615f9923d4a669886436f9bf4f8bc9fabb6f77"
+        },
+        {
+          "item_id": "ed041faad684a3fa521c6e4f72152772c27e8a4e20e0c5bcac79e41f806fd1a9",
+          "path": "src/coordinators/trade-workflows/types.ts",
+          "fingerprint": "460bcd1ac888c8dec42ed8ed3d0138cd5d1929a74e8c0a86d48fab6c97ada490"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "89115e623ae75eecbc823b93f963a07513d9bb125dbac123317ba357016cd9cc",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "802d10cb4841b1e85c1de23b7ce4305f982daa9f547a1b5037bde4d257466df6"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "0be517aa0fdd5319ef471f2929ee3fe59c683509c984ea8ff62bcf1da074201a"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "a326aa37ed4e4020de3e96e8e5615f9923d4a669886436f9bf4f8bc9fabb6f77"
+        },
+        {
+          "item_id": "ed041faad684a3fa521c6e4f72152772c27e8a4e20e0c5bcac79e41f806fd1a9",
+          "path": "src/coordinators/trade-workflows/types.ts",
+          "fingerprint": "460bcd1ac888c8dec42ed8ed3d0138cd5d1929a74e8c0a86d48fab6c97ada490"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 79059
+  }
+}

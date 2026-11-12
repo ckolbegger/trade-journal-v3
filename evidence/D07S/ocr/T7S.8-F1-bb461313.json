@@ -1,0 +1,92 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 34206,
+    "input_tokens": 34003,
+    "output_tokens": 203,
+    "cache_read_tokens": 1664,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/d7/plan-validation.ts",
+        "src/itg/relocated/d7/support.ts"
+      ]
+    }
+  ],
+  "session_id": "439599ad-d1c8-4153-85e6-b12147c82867",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "439599ad-d1c8-4153-85e6-b12147c82867",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "b72b98f8",
+      "resolved_base": "00d674ae99bf7bf0f3810beef2cab762963220cc",
+      "resolved_head": "b72b98f8df9b8c593f249045aedabb4c55aef3e0",
+      "exact_range": "00d674ae99bf7bf0f3810beef2cab762963220cc..b72b98f8df9b8c593f249045aedabb4c55aef3e0",
+      "source_artifact_sha256": "da683298a0e5ee65c4f4eff168b900340ce9cfb07b48a6745371ac2aeb2dd8e3"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a8b40c4a39cc453bdfad6520b228876462f14454c7342425ef73e5192a4b3b0",
+          "path": "src/itg/relocated/d7/support.ts",
+          "fingerprint": "98ecf5cc0e5511ecc22f019b620731fe993ced0b518581e1511e97a66c529fe5"
+        },
+        {
+          "item_id": "5ade06feecf2983695f70b9ef27f6d59bc6c0d24c0890c7145219fee43fcaf52",
+          "path": "src/itg/relocated/d7/plan-validation.ts",
+          "fingerprint": "67c4734d52f6f3554079b0639c9aecc3a46a47b75f5bbb0e90bcd955fbc531b3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a8b40c4a39cc453bdfad6520b228876462f14454c7342425ef73e5192a4b3b0",
+          "path": "src/itg/relocated/d7/support.ts",
+          "fingerprint": "98ecf5cc0e5511ecc22f019b620731fe993ced0b518581e1511e97a66c529fe5"
+        },
+        {
+          "item_id": "5ade06feecf2983695f70b9ef27f6d59bc6c0d24c0890c7145219fee43fcaf52",
+          "path": "src/itg/relocated/d7/plan-validation.ts",
+          "fingerprint": "67c4734d52f6f3554079b0639c9aecc3a46a47b75f5bbb0e90bcd955fbc531b3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21810
+  }
+}

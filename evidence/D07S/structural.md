@@ -170,3 +170,50 @@ Failure: `src/ui/screens/AboutView.test.tsx:54` "About this release > should sho
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto edbc03a5`: `browser tier: full (first matching path since edbc03a5: src/app/routes.ts)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.8 UI: option Plan form with both kinds
+
+Behavioral, commit `4f347d43`; four planned cases in `src/ui/screens/PlanForm.test.tsx`, each red then green (`tdd-log.md`); no first-run pass. Named expectation changes: `PlanForm.test.tsx:582` (the A116 Long Call case) to W2; `plan-issues.test.ts:27` from `ConditionCountNotOne` to W9's `ConditionKindRepeated`, plus one small case for `ConditionKindNotApplicable` on the stock form (W9). Supporting case for case 4 (facade pass-through of `details.condition`, as the handoff's T7S.8 note foresaw): `src/coordinators/trade-workflows/confirm-plan-options.test.ts` "should pass on a rejected condition role, position and kind, with no breakeven for an option-price one", red then green. `WorkflowIssue.details` widened to `{ breakeven?; condition? }` (it was `{ breakeven }`, not carrying `condition` by type as the note assumed).
+
+Other existing tests touched, each a consequence of the planned behaviour, with no expected figure changed:
+- `details.condition` passed on: two cases in `confirm-plan-options.test.ts` and `tests/integration/d7/rejections.test.ts:65` gain `condition` additively (as T7SP.16 did for AtEntry fields).
+- `PlanForm.test.tsx`'s `submitRejected` helper matched `/^Stop/`, which now finds two fields; narrowed to `/^Stop \(ABC/` and `/^Target \(ABC/`.
+- Two option Plan cases (hand-over to Trade Detail; the Planned payoff) submitted an empty form; W3 now blocks that client-side (case 3), so they type the Underlying Stop and Target first.
+
+W10: `assessPlan`'s `InvalidPrice` carries no condition, so the form checks option prices client-side, as D7 does for its price fields; only filled prices are checked.
+
+Flagged (behaviour without a planned case of its own): W3 clears once either price of its role is filled; an `InvalidPrice` beside an option-price field clears once that field holds a positive decimal; the option-price `NoPositiveRisk` and `TargetNotBeyondEntry` stay until the next submit (existing `OPTION_TRIGGER_CODES`). Only W3's clearing has a regression guard (the stock case).
+
+Provisional words: none; every phrase is W1–W5, W9, W10 or a D7 row.
+
+**ocr review of `4f347d43`** (`ocr/T7S.8-4f347d43.json`): 2 comments, both bug tasks.
+
+| Severity | Location | Claim | Reviewer's assessment | Outcome |
+|---|---|---|---|---|
+| medium | `src/ui/screens/PlanForm.tsx:284` | Clearing an invalid optional option-price field leaves its `InvalidPrice` error while the role's Underlying price is filled | Valid: `corrected` clears a `stopOption`/`targetOption` error only when the field holds a positive decimal; an emptied field, valid under P92, keeps the stale error until the next submit | Bug task T7S.8-B1 |
+| low | `src/ui/screens/PlanForm.tsx:388` | In the two-column risk grid the order Stop, Target, option Stop, option Target puts the Underlying Stop beside the Underlying Target, not beside its option-price field | Doubtful: confirmed against `app.css:353`'s two columns; P92 says the option-price field sits beside the Underlying field, and case 1 lists Stop, option Stop, Target, option Target | Bug task T7S.8-B2 |
+
+**T7S.8-B1** Stale option-price error after emptying the field. Defect: on a Cash-Secured Put with "Stop (MNO at or below)" 41.00, typing "abc" in "Stop (option price at or above)" and submitting shows W10; emptying that field leaves W10 showing, though an empty option-price field is valid while its role's Underlying price is filled (P92). Case: `it should clear W10 beside an option-price field once the field is emptied while its role's Underlying price is filled`.
+
+**T7S.8-B2** Each option-price field beside its own Underlying field. Defect: at a width where the risk grid has two columns, "Stop (MNO at or below)" sits beside "Target (MNO at or above)" and the option-price fields share the next row, so the option-price field is not beside the Underlying field it pairs with (P92), against case 1's order. Case: `it should place the price fields in the order Stop on the Underlying, Stop option price, Target on the Underlying, Target option price, so each option-price field sits beside its Underlying field`.
+
+T7S.8-B1 done in `743defbe`: red (`expected 'stopOption-error' to be null`) then green, both roles covered; the option-price branch of `corrected` also clears when the field is emptied and its role's Underlying field is filled. **ocr review of `743defbe`** (`ocr/T7S.8-B1-743defbe.json`): 0 comments.
+
+T7S.8-B2 done in `f3340232`: red (`expected +0 to be truthy`, DOM order) then green; the grid's order is now quantity, entry, Stop, Stop option price, Target, Target option price, so its two columns pair each role's fields with no CSS change; submit order unchanged. **ocr review of `f3340232`** (`ocr/T7S.8-B2-f3340232.json`): 0 comments.
+
+**Cumulative run `t7s-8`** (2026-11-12, on `f3340232`): unit 127 files, 1502 passed; integration 202 passed; browser full tier (`browser-auto 7feef7dc`: `first matching path since 7feef7dc: src/ui/screens/PlanForm.tsx`) `browser-1` 119 passed (4.8 min), `browser-2` 18 failed, 47 passed (3.5 min); checks 14 of 14 exit 0. Outputs in `suite-runs/t7s-8-*.txt`.
+
+Failures: 18 `browser-2` cases (`e2e/d7/` confirm-option-plan, kill, marks-zero, no-save, offline, payoff-chart-layout ×3, plan-open, plan-validation, responsive-a11y ×2, review-expiration, runtime-failure ×2, settlement-due, short-put; `e2e/d7sp/review-dated-line`), all `locator.fill: Error: strict mode violation: getByLabel(/^Stop \(/) resolved to 2 elements`. Reproduced in the main session with `npx playwright test e2e/d7/plan-open.spec.ts` (1 failed, same error). Cause: the option Plan form now has "Stop (XYZ at or below)" and "Stop (option price at or below)" (W1), and `e2e/d7/support.ts:59`–`:60` and `e2e/d7/plan-validation.spec.ts:20`, `:23`, `:24` locate by `/^Stop \(/` and `/^Target \(/`. Section 1.5's Texts lookup grepped the label strings, not these regex locators. Fix task **T7S.8-F1**: narrow those locators to the Underlying fields; no expected value changes.
+
+**T7S.8-F1** (`bb461313`, test-only): `e2e/d7/support.ts:59`–`:60` and `plan-validation.spec.ts:20`, `:23`, `:24` locate `/^Stop \((?!option price)/` and `/^Target \((?!option price)/`; no other locator in `e2e/` needed it; no expected value changed. Red (`plan-open.spec.ts`, strict-mode violation) then green; `npm run test:e2e:2` 65 passed. **ocr review of `bb461313`** (relocated, `ocr/T7S.8-F1-bb461313.json`): 0 comments.
+
+**Cumulative run `t7s-8-f1`** (2026-11-12, on `bb461313`), outputs in `suite-runs/t7s-8-f1-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1502 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), full tier | `browser-1` 119 passed (4.9 min); `browser-2` 65 passed (4.1 min) |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 7feef7dc`: `browser tier: full (first matching path since 7feef7dc: e2e/d7/plan-validation.spec.ts)`. Ports 5175, 9341, 9342 free before and after.
