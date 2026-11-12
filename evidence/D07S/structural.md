@@ -21,6 +21,7 @@ Spec reading (decision 45, A205): `plan/spec-reading/D07.md`. No other spec sect
 
 | Critic | Report | Flows | Result |
 |---|---|---|---|
+| critic-1 (T7S.12 checkpoint; brief from `critic-brief.md`, general-purpose at medium effort) | `critic-1.md` | C7S.1–C7S.4 | FAIL, 1 high defect; 129,709 tokens, 47 tool calls, 5 min 40 s |
 
 ## T7S.1 Persistence: schema 7 and the `v6→v7` transform
 
@@ -298,3 +299,15 @@ Browser tier printed by `browser-auto 7a8486b6`: `browser tier: full (first matc
 | Checks | 14 of 14 exit 0 |
 
 `browser-auto 74ac6e82` printed `browser tier: task (no changed path since 74ac6e82 is on the full-tier list)` and also ran that tier (`suite-runs/t7s-11-browser.txt`, 5 passed, 10.8s). Ports 5175, 9341, 9342 free before and after.
+
+## T7S.12 Checkpoint critic
+
+Full run before the critic: `t7s-11` (full tier on `0d85bc9b`, all green; only evidence commits since). Critic-1 on `41d8d68f` (`critic-1.md`): C7S.1, C7S.2, C7S.3 PASS; C7S.4 FAIL; overall FAIL with one high defect. The critic could not write `test-results/critic-d07s-1/report.md` (the harness refused subagent report files), so `critic-1.md` records its final message verbatim with a note.
+
+**T7S.12-B1** (critic-1 defect 1, high) A wrong-side option-price Stop gets no error while a Target is missing. Steps: Long Call XYZ 55, 2 @ 2.00; "Stop (option price at or below)" 2.50; both Target fields empty; Confirm Plan. Expected (C7S.4 "Errors beside the right fields"; B7S.2 "W4 beside 'Stop (option price at or below)' and W3 beside 'Target (XYZ at or above)'" from the same save). Actual: only W3; W4 appears only on a second save after a Target is filled. Cause per the critic: `PlanForm.tsx:179`–`189` returns early with only MissingStop/MissingTarget and doesn't submit (T7S.8 case 3), and `assessPlan` (`plan.ts:269`) stops before the per-condition checks when MissingTarget is present. Case: `it should show W4 beside a wrong-side option-price Stop together with W3 beside the empty Target, from one save, without submitting`.
+
+Critic minor observation 1 (the Detail conditions table scrolls inside its own box at 375 and 320 px; D7's 7-column layout, with D7S's longer first-column labels) is listed as an observation, not a defect; recorded in the handoff's open questions.
+
+T7S.12-B1 done in `d34f6670`: red (`expected undefined to be 'The option-price Stop must be below t…'`) then green; the case covers a Long Call (W4 with W3) and a Cash-Secured Put (W5 with W3), `confirmPlan` not called. In the "role missing" branch the form now also decides option-price wrong-side errors itself (positive entry and option price; `conditionDirection(role, 'StructureValue', leg)`; contact counts as wrong side), with sentences from `describeIssues` fed `NoPositiveRisk`/`TargetNotBeyondEntry` with `details.condition.kind` 'StructureValue', so no W4/W5 sentence or direction rule is copied. They stay until the next save, as the server's do. `assessPlan`, the facade and Underlying checks unchanged. Browser specs on the screen (plan-validation, plan-open, no-save, responsive-a11y): 5 passed. **ocr review of `d34f6670`** (`ocr/T7S.12-B1-d34f6670.json`): 0 comments.
+
+**Cumulative run `t7s-12-b1`** (2026-11-12, on `d34f6670`, full tier as the run after the last fix), outputs in `suite-runs/t7s-12-b1-*.txt`, `run-complete.sh`: run complete. Unit 127 files, 1508 passed; integration 97 files, 202 passed; `browser-1` 119 passed (4.7 min), `browser-2` 65 passed (4.0 min); checks 14 of 14 exit 0. Ports 5175, 9341, 9342 free before and after. Critic-1 reported a high defect, so a fresh critic follows (`critic-brief.md`, "After each critic").
