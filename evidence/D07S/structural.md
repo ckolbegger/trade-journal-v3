@@ -273,3 +273,15 @@ Provisional words (listed in the handoff's open questions for the user's approva
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto 7a8486b6`: `browser tier: full (first matching path since 7a8486b6: src/ui/screens/CardFigures.tsx)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.11 Source check
+
+`eslint.conditions.config.js` exports `conditionIndexSelectors` (one selector: a literal computed index on a member or identifier named `stops`, `targets`, `stopBasis` or `targetBasis`). It is spread into every non-exempt `no-restricted-syntax` entry under `src/`: `noIdentityRules`, `domainPurityRules` and the `src/domain/instrument/` non-test entry (split from the domain-test entry in `eslint.deps.config.js`), and `wordingWithExpirationRules` in `eslint.config.js` (identity selector still first, `.slice(1)` kept). Test files and `tools/` are outside.
+
+| Command | Result |
+|---|---|
+| `npm run lint` (no plant) | exit 0: the 17 hits of section 1.5 are gone |
+| `npm run lint` with `plan.stops[0]` in a scratch `src/coordinators/zz-plant.ts` | exit 1: `src/coordinators/zz-plant.ts` `1:55  error  condition-index: a Plan holds several conditions; use every condition, or headlineBasisOf / measurementOf from Trade Analysis (A197), ...  no-restricted-syntax` |
+| plant removed, `npm run lint` | exit 0 |
+| `npx vitest run tools` | 4 files, 74 passed (`tools/condition-rules.test.ts`: 10, including expiration, wording and purity hits kept beside the condition hit) |
+| `npm run lint:deps`, `npm run verify:wording`, `npm run typecheck`, `npx tsc6 --noEmit` | exit 0 each |

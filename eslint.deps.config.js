@@ -1,6 +1,7 @@
 // Purity and no-identity rules (D1 A17). Used by `npm run lint:deps` on its own and merged into
 // the main ESLint configuration so `npm run lint` enforces them too.
 import tseslint from 'typescript-eslint';
+import { conditionIndexSelectors } from './eslint.conditions.config.js';
 
 const identity = 'userAgent|userAgentData|platform|vendor';
 
@@ -75,14 +76,14 @@ const domainPurityGlobals = {
 export const noIdentityRules = {
   files: ['**/src/**/*.{ts,tsx}'],
   rules: {
-    'no-restricted-syntax': ['error', noIdentitySelector, ...expirationComparisonSelectors],
+    'no-restricted-syntax': ['error', noIdentitySelector, ...expirationComparisonSelectors, ...conditionIndexSelectors],
   },
 };
 
 export const domainPurityRules = {
   files: ['**/src/domain/**/*.{ts,tsx}'],
   rules: {
-    'no-restricted-syntax': ['error', noIdentitySelector, ...expirationComparisonSelectors, ...domainPuritySelectors],
+    'no-restricted-syntax': ['error', noIdentitySelector, ...expirationComparisonSelectors, ...conditionIndexSelectors, ...domainPuritySelectors],
     ...domainPurityGlobals,
   },
 };
@@ -96,7 +97,15 @@ export const expirationExemptRules = [
     rules: { 'no-restricted-syntax': ['error', noIdentitySelector] },
   },
   {
-    files: ['**/src/domain/instrument/**/*.{ts,tsx}', '**/src/domain/**/*.test.{ts,tsx}'],
+    files: ['**/src/domain/instrument/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': ['error', noIdentitySelector, ...conditionIndexSelectors, ...domainPuritySelectors],
+      ...domainPurityGlobals,
+    },
+  },
+  {
+    files: ['**/src/domain/**/*.test.{ts,tsx}'],
     rules: { 'no-restricted-syntax': ['error', noIdentitySelector, ...domainPuritySelectors], ...domainPurityGlobals },
   },
 ];

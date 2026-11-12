@@ -2,15 +2,16 @@ import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
+import { conditionIndexSelectors } from './eslint.conditions.config.js';
 import { domainPurityRules, expirationComparisonSelectors, expirationExemptRules, noIdentityRules } from './eslint.deps.config.js';
 import { wordingRules } from './eslint.wording.config.js';
 
 // wordingRules sets no-restricted-syntax for non-test src/ui files, which replaces the options of the entries
-// above, so the expiration selectors (P82) are repeated here after its identity and wording selectors.
+// above, so the expiration (P82) and condition-index selectors are repeated here after its identity and wording selectors.
 const wordingWithExpirationRules = {
   ...wordingRules,
   rules: {
-    'no-restricted-syntax': ['error', ...wordingRules.rules['no-restricted-syntax'].slice(1), ...expirationComparisonSelectors],
+    'no-restricted-syntax': ['error', ...wordingRules.rules['no-restricted-syntax'].slice(1), ...expirationComparisonSelectors, ...conditionIndexSelectors],
   },
 };
 
