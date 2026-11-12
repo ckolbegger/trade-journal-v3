@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 84236,
+    "input_tokens": 82896,
+    "output_tokens": 1340,
+    "cache_read_tokens": 7680,
+    "elapsed": "58s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade analysis evaluation and planning",
+      "files": [
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/index.ts",
+        "src/domain/trade-analysis/option-trade.ts",
+        "src/domain/trade-analysis/plan.ts"
+      ]
+    }
+  ],
+  "session_id": "11740980-740a-447c-b7a7-043553719a8b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "11740980-740a-447c-b7a7-043553719a8b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "51d84965",
+      "resolved_base": "1d1bd0151f6b2474f7998534a2d3dbb81b580534",
+      "resolved_head": "51d8496537633cc394fff930e5ad4499f3c4483f",
+      "exact_range": "1d1bd0151f6b2474f7998534a2d3dbb81b580534..51d8496537633cc394fff930e5ad4499f3c4483f",
+      "source_artifact_sha256": "c7de5c03443b3fa22538d5c3adcd814a20116db9fcdc63f35700c48d73ae5262"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "2a2bffe62834148ef08e50468f19845725c3d11fab665c6290f2a210e870a094"
+        },
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "fa94d46361a14e8ad86277d7905476db78d9adc3c78d36757fbb8835a32e02e1"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "92102d15dafd41035128172d136000399bbf2df1d0db71bf721f9fa679a936f2"
+        },
+        {
+          "item_id": "e3568abba3ad9fd5d760a2828ba583f0fb046da316fea9e0c1800af3e6d91f35",
+          "path": "src/domain/trade-analysis/option-trade.ts",
+          "fingerprint": "c508ed939c917eb3a4857c649589347c125cfb3ed4f9d2bdbae9adf04adfb238"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "2a2bffe62834148ef08e50468f19845725c3d11fab665c6290f2a210e870a094"
+        },
+        {
+          "item_id": "3a18321cdb8efd565c73e076f12865034d0152dd4183a1aeefabc17c740724d5",
+          "path": "src/domain/trade-analysis/plan.ts",
+          "fingerprint": "fa94d46361a14e8ad86277d7905476db78d9adc3c78d36757fbb8835a32e02e1"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "92102d15dafd41035128172d136000399bbf2df1d0db71bf721f9fa679a936f2"
+        },
+        {
+          "item_id": "e3568abba3ad9fd5d760a2828ba583f0fb046da316fea9e0c1800af3e6d91f35",
+          "path": "src/domain/trade-analysis/option-trade.ts",
+          "fingerprint": "c508ed939c917eb3a4857c649589347c125cfb3ed4f9d2bdbae9adf04adfb238"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 57876
+  }
+}

@@ -90,3 +90,20 @@ Basis change (schema 6 to 7): M 916073043 to 912516132 bytes; required quota 274
 | Checks | 14 of 14 exit 0 (`verify:capacity` passes again at schema 7) |
 
 Browser tier printed by `browser-auto dd1a89e8`: `browser tier: full (first matching path since dd1a89e8: src/delivery/capacity-basis.json)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.4 Trade Analysis: `evaluate` per condition and the headline
+
+Behavioral, commit `51d84965`; six cases in `src/domain/trade-analysis/evaluate-conditions.test.ts`, red and green in `tdd-log.md`. Flagged: case 2 (O-C2 after P1′) passed on its first run; mutation `crossed = toward.compare(ZERO) < 0` in `conditionOf` failed it with an AssertionError on `target-2`, restored. Case 4's first run was an invalid red (the headline's zero clause had been coded during case 3); the clause was removed, the case went red with an AssertionError, and green on restoring it. Case names rephrase `$` amounts ("zero", "470 dollars", "150 dollars") for `-t`. No existing expectation changed; `ConditionStatus.kind` already existed and was widened. Added `headlineBasisOf` (plan.ts, exported) and test Executions `OS2_S1`, `OC2_P1`.
+
+**ocr review of `51d84965`** (`ocr/T7S.4-51d84965.json`): 0 comments.
+
+**Cumulative run `t7s-4`** (2026-11-12, on `51d84965`), outputs in `suite-runs/t7s-4-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1492 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), task tier | `@every-task` 5 passed (11.1s); no `e2e/d7s` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto f40e99e5`: `browser tier: task (no changed path since f40e99e5 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
