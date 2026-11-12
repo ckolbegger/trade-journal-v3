@@ -57,8 +57,8 @@ Every user-visible phrase D7's remaining tasks need, approved by the user in one
 | 19.6 | label; contract count | "Contracts" |
 | 19.7 | label; intended entry price per share | "Intended entry price (per share)". The screens say "price", never "premium". |
 | 19.8 | hint beside the price; cash amount at 1 contract, and for the Cash-Secured Put | "= $150.00 for 1 contract"; "= $240.00 credit for 2 contracts" (C1, C8) |
-| 19.9 | label; the Stop as an Underlying trigger; the direction comes from the Strategy | Long Call and Cash-Secured Put: "Stop (XYZ at or below)"; Long Put: "Stop (ABC at or above)"; with no symbol typed yet: "Stop (Underlying at or below)" |
-| 19.10 | label; the Target trigger | Long Call and Cash-Secured Put: "Target (XYZ at or above)"; Long Put: "Target (ABC at or below)" |
+| 19.9 | label; the Stop as an Underlying trigger; the direction comes from the Strategy | Long Call and Cash-Secured Put: "Stop (XYZ at or below)"; Long Put: "Stop (ABC at or above)"; with no symbol typed yet: "Stop (Underlying at or below)". **Amended by decision 107 (revision 78):** these labels stay, and the option-price fields beside them take D7S's W1, with D7S's W2 as the note under the price fields ([D7S breakdown](D07S-option-price-stops-and-targets.md), section 1.6). |
+| 19.10 | label; the Target trigger | Long Call and Cash-Secured Put: "Target (XYZ at or above)"; Long Put: "Target (ABC at or below)". **Amended by decision 107 (revision 78):** as row 19.9. |
 | 19.11 | note, shown when Cash-Secured Put is chosen (A101: cash coverage isn't proven) | "The app doesn't check that you have the cash to buy the shares if you're assigned." |
 | 19.12 | field error beside Target; `TargetNotBeyondEntry` with `breakeven`, Long Put | "The Target must be below the breakeven, 48.50." (Long Call and Cash-Secured Put: A100's "The Target must be above the breakeven, 57.00.") |
 | 19.13 | field error beside Stop; `NoPositiveRisk` with `breakeven` | Cash-Secured Put and Long Call: "The Stop must be below the breakeven, 43.80, so the Plan has a positive risk."; Long Put: "The Stop must be above the breakeven, 48.50, so the Plan has a positive risk." |
@@ -71,7 +71,7 @@ Every user-visible phrase D7's remaining tasks need, approved by the user in one
 | 19.20 | field error beside Underlying; `RootTooLong` (root over 6 characters) | "Options can be recorded only on symbols of up to 6 characters, not counting a “.”." |
 | 19.21 | field error beside Underlying; `MissingInstrument` on an option Plan | "Enter the Underlying symbol, such as XYZ or BRK.B." |
 | 19.22 | field error beside the price; `InvalidPrice` on the option entry | "Enter an intended entry price greater than zero, with at most 6 decimal places." (existing) |
-| 19.23 | field error; codes this form can't produce | `InvalidRight`: "The type must be Call or Put." `ExerciseIntentRequired`: "Say whether you plan to exercise this option if it is in the money." `ExerciseIntentNotApplicable`: "Only a long option takes an exercise intent." `ConditionCountNotOne`: "An option Plan takes one Stop and one Target." No option code falls back to "Check the Plan." |
+| 19.23 | field error; codes this form can't produce | `InvalidRight`: "The type must be Call or Put." `ExerciseIntentRequired`: "Say whether you plan to exercise this option if it is in the money." `ExerciseIntentNotApplicable`: "Only a long option takes an exercise intent." `ConditionCountNotOne`: "An option Plan takes one Stop and one Target." No option code falls back to "Check the Plan." **Amended by decision 107 (revision 78):** `ConditionCountNotOne` and its sentence are removed; `ConditionKindRepeated` and `ConditionKindNotApplicable` take D7S's W9 ([D7S breakdown](D07S-option-price-stops-and-targets.md), section 1.6). |
 
 ### T7.20 UI: option Execution form (`PositionChangeForm.tsx`, `position-change-issues.ts`, receipts)
 
@@ -157,7 +157,7 @@ Every user-visible phrase D7's remaining tasks need, approved by the user in one
 | 23.14 | Closed list Disposition cell, with Option Disposition Timing | "Closed via buyback", "Closed via buyback and expiration"; timing after a middle dot in the same cell: "Closed via sale and expiration · Mixed", "Closed via expiration · Fully held to expiration" |
 | 23.15 | Closed list Close Reason cell; a Trade closed by expiration | "Not needed" |
 | 23.16 | Trade Summary strike with decimals; `Option` summary, strike 52.5 | A strike with decimals shows cents in the Trade Summary: "Long 1 Nov 20 $52.50 Call"; a whole strike stays "$300". The contract label keeps "52.5". |
-| 23.17 | Conditions table for options | Extra columns "Value at expiration" ("$0.00", "$5.00" per share) and "Distance on XYZ" ("4.00") |
+| 23.17 | Conditions table for options | Extra columns "Value at expiration" ("$0.00", "$5.00" per share) and "Distance on XYZ" ("4.00"). **Amended by decision 107 (revision 78):** the Condition column and the option-price rows take D7S's W7, and the Detail Stop and Target figures take its W6 ("XYZ at or below 48.00") ([D7S breakdown](D07S-option-price-stops-and-targets.md), section 1.6). |
 | 23.18 | Valuation section, the Underlying's Mark | Term "Underlying Mark", value "$52.00 · Manual" |
 | 23.19 | the expiration line on a Closed or expired option Trade | **Amended by decision 94 (revision 59), replacing decision 93:** "Expired Fri 20 Nov 2026" when the Trade's Terminal Disposition includes an expiration (it expired, wholly or in part, by no action of the trader); no expiration line when only the trader's Executions disposed of it (it was closed, and its Terminal Disposition, row 23.12, says how, as a Closed stock Trade's does). An open one shows A119's "Expires Fri 20 Nov 2026" until its Settlement Due panel replaces it. |
 

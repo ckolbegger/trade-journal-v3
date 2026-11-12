@@ -2,6 +2,12 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 78: the commit tagged `claude-opus-5.5-plan-r78` (revision 77 plus decision 107). D7S's breakdown, `plan/D07S-option-price-stops-and-targets.md`, is agreed:
+  - P90–P93, A195–A205 and 17 tasks;
+  - one breakdown with a checkpoint critic, not a split;
+  - the words W1–W10 are approved on a review page, W4 in the user's words.
+
+  The amendments are notes in the D7 breakdown's A100, D7 approved-words rows 19.9, 19.10, 19.23 and 23.17, and the D8 breakdown, which moves to schema 7 when D8 starts. The plan's D7S section and summary table link the breakdown, and the D4 breakdown's open question 3 for later breakdowns is resolved for single legs. No retag: D7S reads `plan/spec-reading/D07.md` (A205). `specs/` is unchanged. The next decision is 108. Decided by the user on 2026-11-11.
 - Revision 77: the commit tagged `claude-opus-5.5-plan-r77` (revision 76 plus tech debt item 22). T7SP.14's rerun after T7SP.19 still had 11 of 13 measured steps more than 10% slower than D7:
   - Review open: +47–74%;
   - saves: +44–73%;

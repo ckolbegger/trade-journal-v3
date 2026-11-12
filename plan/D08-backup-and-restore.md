@@ -4,6 +4,8 @@ Definition: [implementation plan, D8](implementation-plan.md#d8--backup-and-rest
 
 Status: **breakdown agreed by the user on 2026-10-17** (the plan as a whole is still a draft). Decisions P29–P35 were agreed on 2026-10-17 and are recorded as plan decisions 33–39. The amendments in section 1.2 were agreed on 2026-10-17 and applied to the plan index, the technology stack, and the D1, D2, D4, D5, D6, and D7 breakdowns. Everything else is written against those decisions and the working assumptions listed below. **Plan revision 6 (decision 46, 2026-10-24)** carries D2 follow-up F12 into this deliverable ([D2, section 11](D02-open-a-long-stock-position.md#11-deferred-follow-ups-plan-revision-6-decision-46)): T8.6's validation cases add a failing-test-first case for each T2.9 section-validator gap (a Position Change naming a missing Execution, duplicate tradeId or Entry id, fact-version continuity), and D2's B2.12 Open-list Error state gets another trigger once the first gap is fixed.
 
+> **Before D8 starts (decision 107, revision 78):** D7S moves the Workspace to schema 7, which admits the option-price (`StructureValue`) condition kind. This breakdown still says schema 6. When D8 starts, its own revision amends P31 and A145 (export schema 7; Restore from schemas 1 through 7), adds `condition.structureValue` to A126's capability footprint, reads every "schema 6" in its cases as schema 7, and takes `workspace-v7/` as the latest fixture ([D7S breakdown](D07S-option-price-stops-and-targets.md), section 1.2).
+
 ---
 
 ## 1. Decisions and clarifications
