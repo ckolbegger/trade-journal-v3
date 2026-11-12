@@ -1,0 +1,95 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 26589,
+    "input_tokens": 26252,
+    "output_tokens": 337,
+    "cache_read_tokens": 7680,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/routes.ts",
+        "src/coordinators/workspace/capabilities.ts"
+      ]
+    }
+  ],
+  "session_id": "53fe95be-1c2d-4fce-bfde-c5904a18844d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "53fe95be-1c2d-4fce-bfde-c5904a18844d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ef641c00",
+      "resolved_base": "83da4731dcd2e3ab777ed0f00c233f76e663ed32",
+      "resolved_head": "ef641c006af95c98c6bc2b5dfa7acd792ce2ec44",
+      "exact_range": "83da4731dcd2e3ab777ed0f00c233f76e663ed32..ef641c006af95c98c6bc2b5dfa7acd792ce2ec44",
+      "source_artifact_sha256": "f22e216d12d3fbb8e5845ff458c627a79ef90e31c68fbaab04c4f71bd28b873c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "780c3f47a32029d2ecf10f111d1a1f4ef8689c58ac206eefef7857400c59feb5"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "e316909e89f641074a6588fd53d35cf33bbcb4c2df532b5fd27987bae6035cdf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "780c3f47a32029d2ecf10f111d1a1f4ef8689c58ac206eefef7857400c59feb5"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "e316909e89f641074a6588fd53d35cf33bbcb4c2df532b5fd27987bae6035cdf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 16638
+  }
+}

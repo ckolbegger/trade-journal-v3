@@ -435,8 +435,8 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | T7S.4 | Done | `51d84965` |
 | T7S.5 | Done | `f7590645` |
 | T7S.6 | Done | `edbc03a5` |
-| T7S.7 | In progress from `edbc03a5` | |
-| T7S.8 | Not started | |
+| T7S.7 | Done | `ef641c00`; F1 `7feef7dc` |
+| T7S.8 | In progress from `7feef7dc` | |
 | T7S.9 | Not started | |
 | T7S.10 | Not started | |
 | T7S.11 | Not started | |

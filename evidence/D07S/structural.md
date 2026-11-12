@@ -151,3 +151,22 @@ Structural. Schema 7 was already reported since T7S.1 (`SCHEMA_VERSION`). Change
 | `npm run verify:capabilities` | exit 0: `verify:capabilities OK: 19 operations, 11 variant-qualified, 9 routes, 4 Entry Types, schema 7, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29` |
 | `npx vitest run src/coordinators/workspace src/app` | exit 0; 3 files, 49 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+
+**Cumulative run `t7s-7`** (2026-11-12, on `ef641c00`): unit 1 failed, 1493 passed; integration 202 passed; browser full tier (`browser-auto edbc03a5`: `first matching path since edbc03a5: src/app/routes.ts`) `browser-1` 119 passed (4.9 min), `browser-2` 65 passed (4.1 min); checks 14 of 14 exit 0. Outputs in `suite-runs/t7s-7-*.txt`.
+
+Failure: `src/ui/screens/AboutView.test.tsx:54` "About this release > should show the application name, …, and the Installed Capability Manifest": `Unable to find an element with the text: TradeWorkflows.confirmPlan (LongStock, LongCall, LongPut, CashSecuredPut)`. Reproduced in the main session by a targeted run (1 failed). Cause: the About view renders the installed manifest, which now lists `StructureValueCondition` on `confirmPlan` (A202); T7S.7 updated `workspace.test.ts`'s manifest expectation but not this one. Fix task **T7S.7-F1**: the expectation gains the variant, additively, as A202 names.
+
+**ocr review of `ef641c00`** (`ocr/T7S.7-ef641c00.json`): 0 comments.
+
+**T7S.7-F1** (`7feef7dc`, test-only): `AboutView.test.tsx:54`'s expected manifest line gains `StructureValueCondition`; the view reads `capabilities.operations` from the installed status (no copy). Red (the existing failure) then green; no other expectation names the old line (grep of `src/`, `tests/`, `e2e/`). **ocr review of `7feef7dc`** (relocated, `ocr/T7S.7-F1-7feef7dc.json`): 0 comments.
+
+**Cumulative run `t7s-7-f1`** (2026-11-12, on `7feef7dc`), outputs in `suite-runs/t7s-7-f1-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1494 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), full tier | `browser-1` 119 passed (4.8 min); `browser-2` 65 passed (4.0 min) |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto edbc03a5`: `browser tier: full (first matching path since edbc03a5: src/app/routes.ts)`. Ports 5175, 9341, 9342 free before and after.
