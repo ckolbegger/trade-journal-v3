@@ -57,3 +57,18 @@ Behavioral (4 cases, red then green, in `tdd-log.md`); run straight after T7S.1 
 | Checks | 13 of 14 exit 0; `verify:capacity` the expected failure until T7S.2 (decision 108) |
 
 Browser tier printed by `browser-auto 6582ea5b`: `browser tier: task (no changed path since 6582ea5b is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after. The `ReviewCards.test.tsx` focus cases that failed in `t7s-1` passed.
+
+## T7S.2 Capacity basis
+
+Structural. `tools/capacity/measure-page.ts` `measureOptionPhase` now gives the 600 option Plans A203's option-price mix by `n % 10`: 10% (slot 0) hold only option-price conditions (a `StructureValue` Stop and Target); 30% (slots 1 to 3) hold a `StructureValue` Stop beside the Underlying Stop; the rest are unchanged. Prices sit on the valid side of the entry: Long Call and Long Put Stop = entry - 1.00, Target = entry + 3.00; Cash-Secured Put Stop = entry + 1.00, Target = entry - 0.50. All 600 confirmed through the facade.
+
+Ports 5175, 9341 and 9342 free before and after.
+
+| Command | Result |
+|---|---|
+| `npm run measure:capacity` | exit 0; `measure:capacity OK: M 912516132 bytes, required quota 2737548396 bytes` (chromium 153.0.8010.12, about 11 minutes) |
+| `npm run verify:capacity` | exit 0; `verify:capacity OK: required quota 2737548396 = 3 × 912516132, schema 7` |
+| `npx vitest run tests/integration/d7/capacity-profile.test.ts` | 1 passed (no pinned figure changed) |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Basis change (schema 6 to 7): M 916073043 to 912516132 bytes; required quota 2748219129 to 2737548396. Bytes per option Trade with Plan Reflection 3679.57 to 3597.65; JSON bytes per option Trade 2522.22 to 2571.23 (up, as the conditions add content); option-Plan overhead ratio 1.4589 to 1.3992 (down). Stored bytes per option Trade fell because the measured overhead ratio fell by more than the JSON grew; the measurement is the source of truth.

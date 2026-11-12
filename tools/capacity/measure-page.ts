@@ -720,6 +720,13 @@ async function measureOptionPhase(app: Application, workspace: string, context: 
     if (long && exerciseIntent === 'Authorized') authorized++;
     const strategy = strategyByKind[kind];
     const quantity = 2;
+    // A203's option-price mix: 30% of the Plans hold an option-price Stop beside the Underlying Stop, 10% only option-price conditions.
+    const mix = n % 10;
+    const optionOnly = mix === 0;
+    const optionStop = mix >= 1 && mix <= 3;
+    const entryPrice = long ? 2 + (n % 5) : 1.2 + (n % 2);
+    const optionStopPrice = (long ? entryPrice - 1 : entryPrice + 1).toFixed(2);
+    const optionTargetPrice = (long ? entryPrice + 3 : entryPrice - 0.5).toFixed(2);
     const confirmed = await app.TradeWorkflows.confirmPlan({
       accountId: context.accountId,
       accountRevision: context.accountRevision,
@@ -733,8 +740,13 @@ async function measureOptionPhase(app: Application, workspace: string, context: 
             ? { side: 'Long', instrument, quantity: String(quantity), intendedEntry: `${2 + (n % 5)}.00` }
             : { side: 'Short', instrument, quantity: String(-quantity), intendedEntry: `${1 + (n % 2)}.20` },
         ],
-        stops: [{ kind: 'UnderlyingPrice', price: kind === 'LongCall' ? `${u - 3}.00` : kind === 'LongPut' ? `${u + 3}.00` : `${u - 6}.00` }],
-        targets: [{ kind: 'UnderlyingPrice', price: kind === 'LongCall' ? `${u + 12}.00` : kind === 'LongPut' ? `${u - 12}.00` : `${u + 5}.00` }],
+        stops: [
+          ...(optionOnly ? [] : [{ kind: 'UnderlyingPrice' as const, price: kind === 'LongCall' ? `${u - 3}.00` : kind === 'LongPut' ? `${u + 3}.00` : `${u - 6}.00` }]),
+          ...(optionOnly || optionStop ? [{ kind: 'StructureValue' as const, price: optionStopPrice }] : []),
+        ],
+        targets: optionOnly
+          ? [{ kind: 'StructureValue' as const, price: optionTargetPrice }]
+          : [{ kind: 'UnderlyingPrice' as const, price: kind === 'LongCall' ? `${u + 12}.00` : kind === 'LongPut' ? `${u - 12}.00` : `${u + 5}.00` }],
         ...(long && { exerciseIntent }),
       },
       reflection: {
