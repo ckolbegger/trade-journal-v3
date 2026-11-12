@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Detail prototypes</title>
+<style>
+/* The app's own tokens (src/ui/app.css), so the layouts are judged, not a new look. */
+:root {
+  --ground: #f7f3ea;
+  --card: #ffffff;
+  --ink: #1c1b19;
+  --muted: #55524b;
+  --line: #d9d3c5;
+  --focus: #1f5fbf;
+  --warning-ground: #fff4dd;
+  --warning-line: #b26b00;
+  --stop: #a3261b;
+  --stop-ground: #f7e3e0;
+  --target: #1d6b34;
+  --target-ground: #e2f0e5;
+  --info-ground: #e4edfa;
+  --info-ink: #163b75;
+  --neutral-ground: #ece7da;
+  --tint: #f3efe6;
+  --radius: 14px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+  line-height: 1.45;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.num, td, .fig { font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.2; }
+p { margin: 0; }
+
+/* Prototype chrome */
+.proto-bar { position: sticky; top: 0; z-index: 5; background: var(--ground); border-bottom: 1px solid var(--line); }
+.proto-inner { max-width: 1120px; margin: 0 auto; padding: 14px 16px 0; }
+.proto-head { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; }
+.proto-head h1 { font-size: 1.15rem; }
+.proto-head p { color: var(--muted); font-size: 0.9rem; max-width: 62ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin: 12px 0 0; }
+.seg { display: inline-flex; border: 1px solid var(--muted); border-radius: 999px; padding: 2px; background: var(--card); }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 0.88rem; min-height: 36px; }
+.seg button[aria-checked='true'] { background: var(--ink); color: #fff; }
+.seg-label { font-size: 0.85rem; color: var(--muted); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; margin-top: 10px; scrollbar-width: thin; }
+.tabs button { border: 0; background: none; padding: 10px 14px 9px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; font-size: 0.95rem; color: var(--muted); }
+.tabs button[aria-selected='true'] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 650; }
+.tabs small { display: block; font-size: 0.75rem; font-weight: 400; }
+.audit { margin: 10px 0 12px; font-size: 0.88rem; }
+.audit summary { cursor: pointer; color: var(--muted); }
+.audit table { border-collapse: collapse; margin-top: 8px; background: var(--card); border-radius: 10px; overflow: hidden; }
+.audit th, .audit td { text-align: left; padding: 5px 12px; border-bottom: 1px solid var(--line); }
+
+main { max-width: 1120px; margin: 0 auto; padding: 18px 16px 64px; }
+.intent { color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; max-width: 75ch; }
+
+/* Shared pieces */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+.stack > * + * { margin-top: 14px; }
+.ident { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.ident h2 { font-size: 1.6rem; }
+.ident .sub { color: var(--muted); }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.b-open { color: var(--info-ink); background: var(--info-ground); }
+.b-stop { color: var(--stop); background: var(--stop-ground); }
+.b-target { color: var(--target); background: var(--target-ground); }
+.b-warn { color: #7a4a00; background: var(--warning-ground); border-color: var(--warning-line); }
+.b-quiet { color: var(--muted); background: var(--tint); border-color: var(--line); }
+.todo { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.todo li { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 10px; font-size: 0.9rem; border: 1px solid var(--line); background: var(--card); }
+.todo li.alert { border-color: var(--stop); background: var(--stop-ground); color: var(--stop); font-weight: 600; }
+.todo li.due { border-color: var(--warning-line); background: var(--warning-ground); }
+.todo li.info { border-color: #9db6e0; background: var(--info-ground); color: var(--info-ink); }
+.sec-title { font-size: 1rem; font-weight: 650; margin-bottom: 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.up { color: var(--target); }
+.down { color: var(--stop); }
+
+table.cmp { width: 100%; border-collapse: collapse; }
+table.cmp th, table.cmp td { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+table.cmp th:first-child, table.cmp td:first-child { text-align: left; }
+table.cmp thead th { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+table.cmp tbody th { font-weight: 500; white-space: nowrap; }
+table.cmp tr.total td, table.cmp tr.total th { font-weight: 700; font-size: 1.05rem; border-bottom: 0; }
+.waiting { padding: 14px; border-radius: 10px; background: var(--info-ground); color: var(--info-ink); }
+
+dl.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; margin: 0; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.kv-group + .kv-group { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.kv-group h4 { font-size: 0.9rem; margin-bottom: 8px; }
+
+/* Price tracks: the only place Stops and Targets appear */
+.tracks { display: grid; gap: 18px; }
+.track-block h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 30px; }
+.track { position: relative; height: 10px; border-radius: 999px; background: var(--neutral-ground); margin: 0 6px; }
+.zone { position: absolute; top: 0; bottom: 0; }
+.zone.z-stop { background: #e9b3ab; border-radius: 999px 0 0 999px; left: 0; }
+.zone.z-target { background: #9fcfaa; border-radius: 0 999px 999px 0; right: 0; }
+.mk { position: absolute; top: 50%; transform: translate(-50%, -50%); }
+.mk .dot { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 3px solid var(--card); box-shadow: 0 0 0 1px var(--ink); }
+.mk.entry .dot { background: var(--card); width: 12px; height: 12px; border: 2px solid var(--muted); box-shadow: none; }
+.mk.prev .dot { background: #8f8a7e; width: 10px; height: 10px; border: 2px solid var(--card); box-shadow: none; }
+.mk .lab { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.mk.now .lab { bottom: 18px; font-weight: 700; font-size: 0.85rem; }
+.mk.entry .lab { bottom: 15px; color: var(--muted); }
+.mk.prev .lab { top: 14px; color: var(--muted); }
+.edge { position: absolute; top: -4px; bottom: -4px; width: 2px; transform: translateX(-1px); }
+.edge.e-stop { background: var(--stop); }
+.edge.e-target { background: var(--target); }
+.track-ends { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin: 6px 6px 0; }
+.conds { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.conds li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline; font-size: 0.9rem; }
+.conds .what { min-width: 0; }
+.conds .how { text-align: right; font-variant-numeric: tabular-nums; }
+.conds .was { display: block; font-size: 0.78rem; color: var(--muted); }
+.near { font-size: 0.72rem; font-weight: 700; color: var(--info-ink); background: var(--info-ground); border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+.extremes { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 4px 24px; }
+
+/* Accordions */
+details.acc { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+details.acc > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 13px 18px; min-height: 48px; }
+details.acc > summary::-webkit-details-marker { display: none; }
+details.acc > summary .t { font-weight: 650; }
+details.acc > summary .s { margin-left: auto; color: var(--muted); font-size: 0.88rem; text-align: right; }
+details.acc > summary::after { content: ''; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); margin: -4px 4px 0 4px; transition: transform 0.15s; flex: none; }
+details.acc[open] > summary::after { transform: rotate(225deg); margin-top: 4px; }
+details.acc > .body { padding: 2px 18px 18px; }
+@media (prefers-reduced-motion: reduce) { details.acc > summary::after { transition: none; } }
+
+table.lots, table.grid { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+table.lots th, table.lots td, table.grid th, table.grid td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.lots th:first-child, table.lots td:first-child, table.grid th:first-child { text-align: left; }
+table.lots thead th, table.grid thead th { color: var(--muted); font-weight: 500; font-size: 0.8rem; }
+.scroll-x { overflow-x: auto; }
+table.grid td.miss { color: var(--muted); }
+table.grid input { width: 70px; font: inherit; font-size: 0.85rem; padding: 3px 6px; border: 1px dashed var(--muted); border-radius: 6px; background: var(--tint); text-align: right; }
+.grid-note { font-size: 0.82rem; color: var(--muted); margin-top: 8px; }
+
+ol.journal { list-style: none; margin: 0; padding: 0; }
+ol.journal > li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 2px 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+ol.journal > li:last-child { border-bottom: 0; }
+.j-when { font-size: 0.8rem; color: var(--muted); }
+.j-type { font-weight: 600; font-size: 0.92rem; }
+.j-body { font-size: 0.9rem; }
+.j-meta { font-size: 0.8rem; color: var(--muted); }
+details.more > summary { cursor: pointer; padding: 10px 0 0; color: var(--info-ink); font-size: 0.9rem; }
+.pill-btn { border: 1px solid var(--ink); background: var(--card); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 0.82rem; min-height: 32px; }
+
+.foot { color: var(--muted); font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 4px 2px; }
+svg.payoff { width: 100%; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.85rem; margin-top: 6px; }
+.sw { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--ink); vertical-align: middle; margin-right: 6px; }
+.sw.dash { border-top: 2px dashed #8f8a7e; }
+
+/* A: today first */
+.a-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 14px; }
+
+/* A2: dense sheet */
+.dense { font-size: 0.86rem; }
+.dense .card { padding: 12px 14px; }
+.dense .sec-title { font-size: 0.86rem; margin-bottom: 6px; }
+.dense-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dense-grid .span2 { grid-column: span 2; }
+.dense-grid .span3 { grid-column: 1 / -1; }
+.dense table.lots td:first-child { white-space: normal; }
+.dense .ident h2 { font-size: 1.25rem; }
+.dense dl.kv { gap: 3px 12px; }
+.dense .track-block h4 { margin-bottom: 26px; }
+.dense ol.journal > li { padding: 6px 0; grid-template-columns: 84px minmax(0, 1fr); }
+
+/* A3: questions */
+details.q > summary .t { font-size: 1.02rem; }
+details.q > summary .s { font-size: 0.95rem; color: var(--ink); }
+.q-needs { border-left: 4px solid var(--warning-line); }
+
+/* B: timeline, the bolder tab */
+.band { background: var(--ink); color: #f7f3ea; border-radius: 18px; padding: 22px 24px 20px; }
+.band .muted, .band .sub { color: #c9c3b6; }
+.band-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 30px; align-items: flex-end; }
+.band h2 { font-size: 2.1rem; letter-spacing: -0.01em; }
+.big { font-size: 3rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.big-sub { font-size: 1rem; font-weight: 600; margin-top: 6px; }
+.band .up { color: #8fd6a2; }
+.band .down { color: #f2a196; }
+.band .badge.b-open { color: #f7f3ea; background: transparent; }
+.band .badge.b-stop { color: #ffd2cb; background: transparent; }
+.band .tracks { margin-top: 26px; gap: 24px; }
+.band .track { height: 16px; background: #3a3833; }
+.band .zone.z-stop { background: #8c3329; }
+.band .zone.z-target { background: #2f6f40; }
+.band .mk .dot { width: 22px; height: 22px; background: #f7f3ea; border: 4px solid var(--ink); box-shadow: 0 0 0 2px #f7f3ea; }
+.band .mk.entry .dot { background: var(--ink); border: 2px solid #c9c3b6; width: 14px; height: 14px; box-shadow: none; }
+.band .mk.prev .dot { background: #8f8a7e; border-color: var(--ink); width: 12px; height: 12px; box-shadow: none; }
+.band .mk.now .lab { bottom: 24px; font-size: 1rem; }
+.band .mk.entry .lab, .band .mk.prev .lab, .band .track-ends { color: #c9c3b6; }
+.band .edge { top: -6px; bottom: -6px; width: 3px; }
+.band .edge.e-stop { background: #f2a196; }
+.band .edge.e-target { background: #8fd6a2; }
+.band .conds li { font-size: 0.92rem; }
+.band .conds .was { color: #c9c3b6; }
+.band .near { background: #f7f3ea; color: var(--ink); }
+.band .extremes { border-top-color: #4a4740; }
+.band .track-block h4 { color: #f7f3ea; }
+.band .holding { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.92rem; color: #e5dfd2; }
+.band .todo li { background: transparent; color: #f7f3ea; border-color: #6b675e; }
+.band .todo li.alert { background: #8c3329; border-color: #f2a196; color: #fff; }
+.band .todo li.due { background: #5a4214; border-color: #e0a640; }
+.band .todo li.info { background: #1d3459; border-color: #7ea2dc; color: #fff; }
+.tl-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 22px 0 10px; }
+.tl-head h3 { font-size: 1.3rem; }
+.tl-nav { display: flex; gap: 6px; }
+.tl-nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--ink); background: var(--card); cursor: pointer; font-size: 1.1rem; }
+.rail-x { align-items: start; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 300px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 14px; scrollbar-width: thin; }
+.day { scroll-snap-align: start; background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--ink); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.day.gap { border-top-color: #b8b1a1; background: var(--tint); }
+.day.alert { border-top-color: var(--stop); }
+.day.plan { border-top-color: var(--info-ink); }
+.day .when { font-size: 0.8rem; color: var(--muted); }
+.day h4 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; }
+.day .closes { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 0.9rem; }
+.day .closes dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.day .closes dt { color: var(--muted); }
+.day .dpnl { font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.events { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 0.88rem; }
+.events li { border-left: 3px solid var(--line); padding-left: 9px; }
+.events li.ev-exec { border-left-color: var(--ink); }
+.events li.ev-alert { border-left-color: var(--stop); color: var(--stop); font-weight: 600; }
+.events li.ev-owed { border-left-color: var(--warning-line); }
+.gap-row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; font-size: 0.85rem; }
+.gap-row input { width: 64px; font: inherit; font-size: 0.85rem; padding: 4px 6px; border: 1px dashed var(--muted); border-radius: 6px; background: var(--card); text-align: right; }
+
+/* C: cockpit */
+.cockpit { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; align-items: start; }
+.c-rail { position: sticky; top: 168px; display: grid; gap: 12px; }
+.c-rail .card { padding: 14px 16px; }
+.c-pnl { font-size: 2rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.c-conds { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 0.86rem; }
+.c-conds li { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; }
+.c-conds .st { font-size: 0.78rem; }
+.drawer-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.drawer-tabs button { border: 1px solid var(--muted); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-height: 38px; font-size: 0.9rem; }
+.drawer-tabs button[aria-selected='true'] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.drawer-tabs .count { font-size: 0.75rem; margin-left: 4px; opacity: 0.8; }
+
+@media (max-width: 860px) {
+  .a-grid, .cockpit { grid-template-columns: minmax(0, 1fr); }
+  .dense-grid { grid-template-columns: minmax(0, 1fr); }
+  .dense-grid .span2, .dense-grid .span3 { grid-column: auto; }
+  .c-rail { position: static; }
+  .big { font-size: 2.4rem; }
+  .band { padding: 18px 16px; }
+  .band h2 { font-size: 1.6rem; }
+}
+@media (max-width: 480px) {
+  ol.journal > li { grid-template-columns: minmax(0, 1fr); }
+  .conds li { grid-template-columns: auto minmax(0, 1fr); }
+  .conds .how { grid-column: 2; text-align: left; }
+  details.acc > summary { flex-wrap: wrap; }
+  details.acc > summary .s { margin-left: 0; text-align: left; flex-basis: 100%; order: 3; }
+  .rail-x { grid-auto-columns: 84vw; }
+  table.cmp tbody th { white-space: normal; }
+  table.cmp th, table.cmp td { padding: 8px 4px; }
+  .proto-head p { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="proto-bar">
+  <div class="proto-inner">
+    <div class="proto-head">
+      <h1>Trade Detail: five compact layouts</h1>
+      <p>A prototype with made-up figures for one NVDA Long Call. Choose a state, then compare the layouts. In every layout each figure appears in exactly one place.</p>
+    </div>
+    <div class="controls">
+      <span class="seg-label" id="state-label">Trade state</span>
+      <div class="seg" role="radiogroup" aria-labelledby="state-label" id="states"></div>
+    </div>
+    <details class="audit">
+      <summary>What today's page repeats</summary>
+      <table>
+        <thead><tr><th>Figure</th><th>Shown on today's page</th></tr></thead>
+        <tbody>
+          <tr><td>Stop and Target conditions</td><td>3 times (summary, Plan, conditions table)</td></tr>
+          <tr><td>Average entry</td><td>3 times (summary, At entry, Entry Quality)</td></tr>
+          <tr><td>Quantity</td><td>3 times (summary, At entry, Position)</td></tr>
+          <tr><td>Risk at entry</td><td>3 times (summary, At entry, Entry Quality)</td></tr>
+          <tr><td>Opening fees</td><td>3 times (summary, Position, Valuation)</td></tr>
+          <tr><td>1R and original reward</td><td>2 times each (Plan Baseline, Risk and reward)</td></tr>
+          <tr><td>"Mark missing" notice</td><td>Once per figure, about 8 times</td></tr>
+          <tr><td>Breakeven and max loss</td><td>2 payoff charts with near-identical tables</td></tr>
+        </tbody>
+      </table>
+    </details>
+    <div class="tabs" role="tablist" aria-label="Layouts" id="tabs"></div>
+  </div>
+</header>
+<main id="stage" tabindex="-1"></main>
+
+<script>
+'use strict';
+
+/* ---------- Formatting ---------- */
+const MINUS = '−';
+const fmt2 = (n) => Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n) => (n < 0 ? MINUS : '') + '$' + fmt2(n);
+const signed = (n) => (n > 0 ? '+' : n < 0 ? MINUS : '') + '$' + fmt2(n);
+const sNum = (n) => (n > 0 ? '+' : n < 0 ? MINUS : '') + fmt2(n);
+const R = (n) => n.toFixed(2) + 'R';
+const dir = (n) => (n > 0 ? 'up' : n < 0 ? 'down' : '');
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+/* ---------- The Plan, shared by every state ---------- */
+const PLAN = {
+  symbol: 'NVDA', strategy: 'Long Call', account: 'Fidelity, Roth IRA',
+  contract: 'NVDA 18 Dec 2026 150 Call', expires: 'Fri 18 Dec 2026', daysLeft: 36,
+  contracts: 2, intended: 7.40, exercise: 'Not authorized in advance',
+  oneR: 740, reward: 1480, rr: 2.0, breakeven: 157.40, maxLoss: 1480, strike: 150,
+  conditions: [
+    { id: 'su', role: 'Stop', kind: 'u', text: 'NVDA at or below 140.00', price: 140, planned: 1480 },
+    { id: 'so', role: 'Stop', kind: 'o', text: 'Option at or below $3.70', price: 3.70, planned: 740 },
+    { id: 'tu', role: 'Target', kind: 'u', text: 'NVDA at or above 175.00', price: 175, planned: 3520 },
+    { id: 'to', role: 'Target', kind: 'o', text: 'Option at or above $14.80', price: 14.80, planned: 1480 },
+  ],
+  entryQuality: { risk: 731.30, riskR: 0.99, reward: 1488.70, rewardR: 2.01, rr: 2.04, slippage: -10, size: '1× planned' },
+  why: 'Breakout over 148 ahead of the December data-centre print. A call caps the loss at the premium.',
+  invalid: 'A close back below 140.',
+};
+
+const planReflection = (date, time) => ({ date, time, type: 'Plan Reflection', body: PLAN.why, meta: 'Invalidated by: ' + PLAN.invalid + ' Conviction 4, Calm.' });
+const entryReflection = (date, time) => ({ date, time, type: 'Entry reflection', body: 'Filled a nickel under the limit.', meta: 'As planned, Calm, confidence 4.' });
+const action = (date, choice, note) => ({ date, time: '6:10 pm', type: 'Daily Action: ' + choice, body: note });
+
+/* ---------- Three states ---------- */
+const STATES = {
+  entered: {
+    label: 'Entered today', clock: 'Thu Nov 12, 2:30 pm', planTime: 'Thu Nov 12, 1:40 pm', resolved: 'Thu Nov 12, 2:05 pm',
+    open: 2, avg: 7.35, realized: 0, openPnl: null, feesPaid: 1.30, feeLeft: 1.30,
+    executions: [{ date: 'Thu Nov 12', time: '2:05 pm', text: 'Buy to open 2 @ $7.35', fee: 1.30 }],
+    lots: [{ opened: 'Thu Nov 12, 2:05 pm', qty: 2, price: 7.35, fee: 1.30 }],
+    today: null, prev: null, pnl: null,
+    cond: { su: { status: 'Waiting' }, so: { status: 'Waiting' }, tu: { status: 'Waiting' }, to: { status: 'Waiting' } },
+    worst: null,
+    payoff: { n: 2, offset: -1471.30, be: 157.36, maxLoss: 1471.30, now: null },
+    sessions: [{ date: 'Thu Nov 12', rel: 'Today', pending: true }],
+    todo: [
+      { cls: 'info', text: 'First Marks are due after today’s 4:00 pm close' },
+      { cls: '', text: '1 reflection owed, due in Friday’s Review' },
+    ],
+    journal: [
+      { date: 'Thu Nov 12', time: '2:05 pm', type: 'Entry reflection', body: 'Deferred.', owed: 'Due in Friday’s Review', meta: '' },
+      planReflection('Thu Nov 12', '1:40 pm'),
+    ],
+  },
+
+  held: {
+    label: 'Held 6 sessions', clock: 'Thu Nov 12, 6:15 pm', planTime: 'Wed Nov 4, 9:45 am', resolved: 'Wed Nov 4, 10:20 am',
+    open: 1, avg: 7.35, realized: 313.70, openPnl: 425.00, feesPaid: 1.95, feeLeft: 0.65,
+    executions: [
+      { date: 'Tue Nov 10', time: '11:30 am', text: 'Sell to close 1 @ $10.50', fee: 0.65 },
+      { date: 'Wed Nov 4', time: '10:20 am', text: 'Buy to open 2 @ $7.35', fee: 1.30 },
+    ],
+    lots: [{ opened: 'Wed Nov 4, 10:20 am', qty: 1, price: 7.35, fee: 0.65 }],
+    today: { date: 'Thu Nov 12', u: 157.90, o: 11.60 },
+    prev: { date: 'Tue Nov 10', rel: 'Tue Nov 10', gap: 'Wed Nov 11 has no Marks, so today is compared with Tue Nov 10.', u: 155.20, o: 10.40 },
+    pnl: 738.05, pnlPrev: 618.05,
+    cond: {
+      su: { status: 'Active', dist: 1160, distR: 1.57, was: 1040, away: 17.90, vae: 0 },
+      so: { status: 'Active', dist: 790, distR: 1.07, was: 670, nearest: true },
+      tu: { status: 'Active', dist: 1340, distR: 1.81, was: 1460, away: 17.10, vae: 25 },
+      to: { status: 'Active', dist: 320, distR: 0.43, was: 440, nearest: true },
+    },
+    worst: { v: 1160, r: 1.57 },
+    payoff: { n: 1, offset: -421.95, be: 154.22, maxLoss: 421.95, now: 157.90 },
+    sessions: [
+      { date: 'Thu Nov 12', rel: 'Today', u: 157.90, o: 11.60, pnl: 738.05 },
+      { date: 'Wed Nov 11', rel: 'Yesterday', missing: true },
+      { date: 'Tue Nov 10', u: 155.20, o: 10.40, pnl: 618.05 },
+      { date: 'Mon Nov 9', missing: true },
+      { date: 'Fri Nov 6', missing: true },
+      { date: 'Thu Nov 5', u: 151.80, o: 8.90, pnl: 308.70 },
+      { date: 'Wed Nov 4', u: 149.10, o: 7.60, pnl: 48.70 },
+    ],
+    todo: [
+      { cls: 'due', text: 'Reflection due for the Tue Nov 10 exit' },
+    ],
+    journal: [
+      action('Thu Nov 12', 'Hold', 'Trend intact. Next decision near $14.80.'),
+      { date: 'Tue Nov 10', time: '11:30 am', type: 'Exit reflection', body: 'Deferred.', owed: 'Due now', meta: '' },
+      action('Tue Nov 10', 'Hold', 'Sold one into the gap this morning; holding the rest.'),
+      action('Thu Nov 5', 'Hold', 'Above 150. Nothing to do.'),
+      action('Wed Nov 4', 'Hold', 'First day green.'),
+      entryReflection('Wed Nov 4', '10:20 am'),
+      planReflection('Wed Nov 4', '9:45 am'),
+    ],
+  },
+
+  breached: {
+    label: 'Stop breached', clock: 'Thu Nov 12, 6:15 pm', planTime: 'Wed Nov 4, 9:45 am', resolved: 'Wed Nov 4, 10:20 am',
+    open: 2, avg: 7.35, realized: 0, openPnl: -760, feesPaid: 1.30, feeLeft: 1.30,
+    executions: [{ date: 'Wed Nov 4', time: '10:20 am', text: 'Buy to open 2 @ $7.35', fee: 1.30 }],
+    lots: [{ opened: 'Wed Nov 4, 10:20 am', qty: 2, price: 7.35, fee: 1.30 }],
+    today: { date: 'Thu Nov 12', u: 143.10, o: 3.55 },
+    prev: { date: 'Wed Nov 11', rel: 'Yesterday', note: 'Wed Nov 11', u: 146.40, o: 4.90 },
+    pnl: -761.30, pnlPrev: -491.30,
+    cond: {
+      su: { status: 'Active', dist: 710, distR: 0.96, was: 980, away: 3.10, vae: 0 },
+      so: { status: 'Breached', overrun: 30, overrunR: 0.04, wasText: 'Active, $240.00 away' },
+      tu: { status: 'Active', dist: 4290, distR: 5.80, was: 4020, away: 31.90, vae: 25 },
+      to: { status: 'Active', dist: 2250, distR: 3.04, was: 1980, nearest: true },
+    },
+    worst: { v: 710, r: 0.96 },
+    payoff: { n: 2, offset: -1471.30, be: 157.36, maxLoss: 1471.30, now: 143.10 },
+    sessions: [
+      { date: 'Thu Nov 12', rel: 'Today', u: 143.10, o: 3.55, pnl: -761.30, alert: 'Option Stop breached at $3.55' },
+      { date: 'Wed Nov 11', rel: 'Yesterday', u: 146.40, o: 4.90, pnl: -491.30 },
+      { date: 'Tue Nov 10', u: 148.00, o: 5.80, pnl: -311.30 },
+      { date: 'Mon Nov 9', u: 150.20, o: 6.70, pnl: -131.30 },
+      { date: 'Fri Nov 6', u: 151.00, o: 7.20, pnl: -31.30 },
+      { date: 'Thu Nov 5', u: 149.60, o: 7.10, pnl: -51.30 },
+      { date: 'Wed Nov 4', u: 149.10, o: 7.60, pnl: 48.70 },
+    ],
+    todo: [
+      { cls: 'alert', text: 'Stop breached: the option closed at $3.55, below $3.70' },
+      { cls: 'due', text: 'Today’s Action is not recorded' },
+    ],
+    journal: [
+      action('Wed Nov 11', 'Hold', 'Watching 140. The option Stop is close.'),
+      action('Tue Nov 10', 'Hold', 'Pullback on volume. Plan still valid.'),
+      action('Mon Nov 9', 'Hold', 'Back to entry.'),
+      action('Fri Nov 6', 'Hold', 'Flat.'),
+      action('Thu Nov 5', 'Hold', 'Quiet day.'),
+      action('Wed Nov 4', 'Hold', 'First day green.'),
+      entryReflection('Wed Nov 4', '10:20 am'),
+      planReflection('Wed Nov 4', '9:45 am'),
+    ],
+  },
+};
+
+const cond = (s, id) => ({ ...PLAN.conditions.find((c) => c.id === id), ...s.cond[id] });
+
+/* ---------- Shared components ---------- */
+function identity(s, extra = '') {
+  const status = s.cond.so.status === 'Breached' ? '<span class="badge b-stop">Stop breached</span>' : '';
+  return `<div class="ident"><h2>${PLAN.symbol}</h2><span class="badge b-open">${PLAN.strategy}, Open</span>${status}
+    <span class="sub">${PLAN.contract}, expires ${PLAN.expires} (${PLAN.daysLeft} days)</span>
+    <span class="sub">${PLAN.account}</span>${extra}</div>`;
+}
+
+const todoList = (s) => `<ul class="todo" aria-label="Needs you">${s.todo.map((t) => `<li class="${t.cls}">${esc(t.text)}</li>`).join('')}</ul>`;
+
+function compare(s, { pnl = true } = {}) {
+  if (!s.today) {
+    return `<div class="waiting"><strong>No Marks yet.</strong> This Trade opened today at ${s.resolved.split(', ')[1]}. Its first Marks, and every figure that needs them, arrive with today's close at 4:00 pm.</div>`;
+  }
+  const row = (label, a, b, f, cls = '') => `<tr class="${cls}"><th scope="row">${label}</th><td>${f(a)}</td><td>${f(b)}</td><td class="${dir(b - a)}">${f === money ? signed(b - a) : sNum(b - a)}</td></tr>`;
+  const p = (n) => n.toFixed(2);
+  return `<table class="cmp"><thead><tr><th scope="col"></th><th scope="col">${esc(s.prev.rel)}${s.prev.note && s.prev.note !== s.prev.rel ? `<br><span class="small">${esc(s.prev.note)}</span>` : ''}</th><th scope="col">Today</th><th scope="col">Change</th></tr></thead><tbody>
+    ${row('NVDA close', s.prev.u, s.today.u, p)}
+    ${row('Call Mark', s.prev.o, s.today.o, (n) => '$' + p(n))}
+    ${pnl ? row('Trade P&amp;L', s.pnlPrev, s.pnl, money, 'total') : ''}
+  </tbody></table>${s.prev.gap ? `<p class="grid-note">${esc(s.prev.gap)}</p>` : ''}`;
+}
+
+/* Markers carry no numbers: the closes live in the comparison table or the day cards. */
+function track({ title, min, max, stop, target, entry, now, prev, f, prevLabel }) {
+  const pct = (v) => (((v - min) / (max - min)) * 100).toFixed(2) + '%';
+  return `<div class="track-block"><h4>${title}</h4>
+    <div class="track" role="img" aria-label="${title}: Stop ${f(stop)}, Target ${f(target)}${now != null ? ', now ' + f(now) : ''}">
+      <span class="zone z-stop" style="width:${pct(stop)}"></span>
+      <span class="zone z-target" style="left:${pct(target)}"></span>
+      <span class="edge e-stop" style="left:${pct(stop)}"></span>
+      <span class="edge e-target" style="left:${pct(target)}"></span>
+      ${entry != null ? `<span class="mk entry" style="left:${pct(entry)}"><span class="dot"></span><span class="lab">entry</span></span>` : ''}
+      ${prev != null ? `<span class="mk prev" style="left:${pct(prev)}"><span class="dot"></span><span class="lab">${prevLabel}</span></span>` : ''}
+      ${now != null ? `<span class="mk now" style="left:${pct(now)}"><span class="dot"></span><span class="lab">now</span></span>` : ''}
+    </div>
+    <div class="track-ends"><span>${f(min)}</span><span>${f(max)}</span></div></div>`;
+}
+
+function condLine(s, id, { was = true } = {}) {
+  const c = cond(s, id);
+  const badge = `<span class="badge ${c.role === 'Stop' ? 'b-stop' : 'b-target'}">${c.role}</span>`;
+  let how;
+  if (c.status === 'Waiting') how = '';
+  else if (c.status === 'Breached') how = `<strong class="down">Breached</strong>, ${money(c.overrun)} · ${R(c.overrunR)} beyond${was ? `<span class="was">Yesterday: ${esc(c.wasText)}</span>` : ''}`;
+  else how = `${money(c.dist)} · ${R(c.distR)} to go${c.nearest ? '<span class="near">nearest</span>' : ''}${was ? `<span class="was">${s.prev.rel}: ${money(c.was)}</span>` : ''}`;
+  const extra = c.kind === 'u' && c.away != null ? `<span class="was">${c.away.toFixed(2)} away on NVDA; the option is worth $${c.vae.toFixed(2)} at expiration there</span>` : '';
+  return `<li>${badge}<span class="what">${c.text.replace(/^NVDA |^Option /, '')}${extra}</span><span class="how">${how}</span></li>`;
+}
+
+function tracksBlock(s, opts = {}) {
+  const prevLabel = s.prev ? (s.prev.rel === 'Yesterday' ? 'yesterday' : s.prev.date.split(' ').slice(0, 1)[0]) : '';
+  const optTrack = track({ title: 'Option price', min: 0, max: 17, stop: 3.70, target: 14.80, entry: s.avg, now: s.today?.o, prev: opts.prev === false ? null : s.prev?.o, prevLabel, f: (v) => '$' + v.toFixed(2) });
+  const undTrack = track({ title: 'NVDA', min: 130, max: 185, stop: 140, target: 175, now: s.today?.u, prev: opts.prev === false ? null : s.prev?.u, prevLabel, f: (v) => v.toFixed(2) });
+  const lines = (ids) => `<ul class="conds">${ids.map((id) => condLine(s, id, { was: opts.was !== false })).join('')}</ul>`;
+  if (opts.lines === false) return `<div class="tracks">${optTrack}${undTrack}</div>`;
+  return `<div class="tracks"><div>${optTrack}${lines(['so', 'to'])}</div><div>${undTrack}${lines(['su', 'tu'])}</div></div>${extremes(s)}`;
+}
+
+function extremes(s) {
+  const worst = s.worst ? `<span><strong>Worst case:</strong> ${money(s.worst.v)} · ${R(s.worst.r)} if the call expires worthless</span>` : '<span>Distances to each condition and the worst case arrive with today’s close.</span>';
+  return `<div class="extremes">${worst}<span><strong>Max reward:</strong> no cap above</span></div>`;
+}
+
+function positionBody(s, { realized = true } = {}) {
+  const lots = `<div class="scroll-x"><table class="lots"><thead><tr><th scope="col">Open lot</th><th scope="col">Contracts</th><th scope="col">Price</th><th scope="col">Fee left</th></tr></thead><tbody>
+    ${s.lots.map((l) => `<tr><td>${l.opened}</td><td>${l.qty}</td><td>$${l.price.toFixed(2)}</td><td>$${l.fee.toFixed(2)}</td></tr>`).join('')}</tbody></table></div>`;
+  const ex = `<h4 class="small" style="margin:14px 0 6px">Executions</h4><ol class="journal">${s.executions.map((e) => `<li><span class="j-when">${e.date}<br>${e.time}</span><span class="j-body">${e.text}, fee $${e.fee.toFixed(2)}</span></li>`).join('')}</ol>`;
+  const figs = `<dl class="kv" style="margin-top:12px">
+    ${s.openPnl != null ? `<dt>Open P&amp;L</dt><dd class="${dir(s.openPnl)}">${signed(s.openPnl)}</dd>` : '<dt>Open P&amp;L</dt><dd class="muted">after today’s close</dd>'}
+    ${realized ? `<dt>Realized</dt><dd>${signed(s.realized)}</dd>` : ''}
+    <dt>Fees paid</dt><dd>$${s.feesPaid.toFixed(2)}</dd></dl>`;
+  return lots + figs + ex;
+}
+
+function planEntryBody(s) {
+  const q = PLAN.entryQuality;
+  return `<div class="kv-group"><h4>Plan, set ${s.planTime}</h4><dl class="kv">
+      <dt>Intended entry</dt><dd>${PLAN.contracts} contracts @ $${PLAN.intended.toFixed(2)}</dd>
+      <dt>1R (original risk)</dt><dd>${money(PLAN.oneR)}</dd>
+      <dt>Original reward</dt><dd>${money(PLAN.reward)}</dd>
+      <dt>Planned reward : risk</dt><dd>${PLAN.rr.toFixed(2)}</dd>
+      <dt>Exercise</dt><dd>${PLAN.exercise}</dd></dl></div>
+    <div class="kv-group"><h4>Entry, resolved ${s.resolved}</h4><dl class="kv">
+      <dt>Average fill</dt><dd>$${s.avg.toFixed(2)}</dd>
+      <dt>Actual initial risk</dt><dd>${money(q.risk)} · ${R(q.riskR)}</dd>
+      <dt>Actual initial reward</dt><dd>${money(q.reward)} · ${R(q.rewardR)}</dd>
+      <dt>Actual reward : risk</dt><dd>${q.rr.toFixed(2)}</dd>
+      <dt>Slippage</dt><dd class="up">${signed(q.slippage)} (better than planned)</dd>
+      <dt>Size</dt><dd>${q.size}, filled as planned</dd></dl></div>`;
+}
+
+function payoff(s, { w = 560, h = 210, legend = true } = {}) {
+  const x0 = 125, x1 = 185, pad = { l: 46, r: 12, t: 12, b: 28 };
+  const cur = (x) => s.payoff.n * 100 * Math.max(0, x - PLAN.strike) + s.payoff.offset;
+  const pln = (x) => PLAN.contracts * 100 * Math.max(0, x - PLAN.strike) - PLAN.maxLoss;
+  const ys = [cur(x0), cur(x1), pln(x0), pln(x1)];
+  const y0 = Math.min(...ys) * 1.1, y1 = Math.max(...ys) * 1.05;
+  const X = (x) => pad.l + ((x - x0) / (x1 - x0)) * (w - pad.l - pad.r);
+  const Y = (y) => pad.t + (1 - (y - y0) / (y1 - y0)) * (h - pad.t - pad.b);
+  const path = (fn) => `M${X(x0)},${Y(fn(x0))} L${X(PLAN.strike)},${Y(fn(PLAN.strike))} L${X(x1)},${Y(fn(x1))}`;
+  const ticks = [130, 140, 150, 160, 170, 180];
+  const nowLine = s.payoff.now ? `<line x1="${X(s.payoff.now)}" x2="${X(s.payoff.now)}" y1="${pad.t}" y2="${h - pad.b}" stroke="var(--focus)" stroke-dasharray="3 3"/><text x="${X(s.payoff.now) + 4}" y="${pad.t + 10}" font-size="11" fill="var(--info-ink)">NVDA now ${s.payoff.now.toFixed(2)}</text>` : '';
+  const svg = `<svg class="payoff" viewBox="0 0 ${w} ${h}" role="img" aria-label="Payoff at expiration by NVDA price. Breakeven ${s.payoff.be.toFixed(2)}, maximum loss ${money(s.payoff.maxLoss)}.">
+    <line x1="${pad.l}" x2="${w - pad.r}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)"/>
+    <text x="${pad.l - 6}" y="${Y(0) + 4}" font-size="11" text-anchor="end" fill="var(--muted)">$0</text>
+    ${ticks.map((t) => `<text x="${X(t)}" y="${h - 8}" font-size="11" text-anchor="middle" fill="var(--muted)">${t}</text>`).join('')}
+    <path d="${path(pln)}" fill="none" stroke="#8f8a7e" stroke-width="2" stroke-dasharray="6 4"/>
+    <path d="${path(cur)}" fill="none" stroke="var(--ink)" stroke-width="3"/>
+    <circle cx="${X(s.payoff.be)}" cy="${Y(0)}" r="4.5" fill="var(--ink)"/>
+    ${nowLine}
+  </svg>`;
+  const leg = legend ? `<div class="legend"><span><span class="sw"></span>Now: breakeven ${s.payoff.be.toFixed(2)}, max loss ${money(s.payoff.maxLoss)}</span><span><span class="sw dash"></span>As planned: breakeven ${PLAN.breakeven.toFixed(2)}, max loss ${money(PLAN.maxLoss)}</span></div>` : '';
+  return svg + leg;
+}
+
+function marksGrid(s, exclude = []) {
+  const days = s.sessions.filter((d) => !exclude.includes(d.date) && !d.pending).slice().reverse();
+  if (!days.length) return '<p class="muted small">No earlier sessions yet.</p>';
+  const miss = days.filter((d) => d.missing).length;
+  const cell = (d, k) => (d.missing ? `<td class="miss"><input aria-label="${k === 'u' ? 'NVDA' : 'Call'} close for ${d.date}" placeholder="add"></td>` : `<td>${k === 'o' ? '$' : ''}${d[k].toFixed(2)}</td>`);
+  return `<div class="scroll-x"><table class="grid"><thead><tr><th scope="col">Session</th>${days.map((d) => `<th scope="col">${d.date.replace(/^\w+ /, '')}<br>${d.date.split(' ')[0]}</th>`).join('')}</tr></thead><tbody>
+    <tr><th scope="row">NVDA</th>${days.map((d) => cell(d, 'u')).join('')}</tr>
+    <tr><th scope="row">Call</th>${days.map((d) => cell(d, 'o')).join('')}</tr>
+    <tr><th scope="row">Trade P&amp;L</th>${days.map((d) => `<td class="${d.missing ? 'miss' : dir(d.pnl)}">${d.missing ? '—' : money(d.pnl)}</td>`).join('')}</tr>
+  </tbody></table></div>${miss ? '<p class="grid-note">Optional: missing Marks never block a Review.</p>' : ''}`;
+}
+
+function journalEntry(j) {
+  const owed = j.owed ? ` <span class="badge ${j.owed === 'Due now' ? 'b-warn' : 'b-quiet'}">${j.owed}</span> <button class="pill-btn" type="button">Answer</button>` : '';
+  return `<li><span class="j-when">${j.date}<br>${j.time}</span><div><div class="j-type">${j.type}${owed}</div><div class="j-body">${esc(j.body)}</div>${j.meta ? `<div class="j-meta">${esc(j.meta)}</div>` : ''}</div></li>`;
+}
+
+function journalList(s, first = 2) {
+  const shown = s.journal.slice(0, first), rest = s.journal.slice(first);
+  return `<ol class="journal">${shown.map(journalEntry).join('')}</ol>${rest.length ? `<details class="more"><summary>Show ${rest.length} earlier entr${rest.length > 1 ? 'ies' : 'y'}</summary><ol class="journal">${rest.map(journalEntry).join('')}</ol></details>` : ''}`;
+}
+
+const owedCount = (s) => s.journal.filter((j) => j.owed).length;
+const missingCount = (s, exclude = []) => s.sessions.filter((d) => d.missing && !exclude.includes(d.date)).length;
+const footer = () => `<div class="foot"><span>No Deviations recorded.</span><span>Planned leg filled as planned.</span></div>`;
+
+const acc = (title, summary, body, open = false, cls = 'acc') => `<details class="${cls}"${open ? ' open' : ''}><summary><span class="t">${title}</span><span class="s">${summary}</span></summary><div class="body">${body}</div></details>`;
+
+/* ---------- A: today first ---------- */
+function viewA(s) {
+  const excl = [s.today?.date, s.prev?.date].filter(Boolean);
+  const miss = missingCount(s, excl);
+  return `<p class="intent">Today first. Today's Marks against the last ones on top, Stops and Targets drawn once as two price tracks, everything else folded away with its headline on the fold.</p>
+  <div class="stack">
+    ${identity(s)}
+    ${todoList(s)}
+    <div class="a-grid">
+      <section class="card" aria-labelledby="a-today"><h3 class="sec-title" id="a-today">Today against ${s.prev ? esc(s.prev.rel.toLowerCase() === 'yesterday' ? 'yesterday' : s.prev.rel) : 'entry'}</h3>${compare(s)}</section>
+      <section class="card" aria-labelledby="a-cond"><h3 class="sec-title" id="a-cond">Stops and Targets</h3>${tracksBlock(s)}</section>
+    </div>
+    ${acc('Position', `${s.open} of ${PLAN.contracts} contracts open${s.realized ? ', realized ' + signed(s.realized) : ''}`, positionBody(s, { realized: false }))}
+    ${acc('Plan and entry', 'Filled at full size, better than planned', planEntryBody(s))}
+    ${acc('Payoff at expiration', 'Planned and current, on one chart', payoff(s))}
+    ${acc('Earlier Marks', miss ? `${miss} without Marks (optional)` : s.today ? 'All sessions marked' : 'None yet', marksGrid(s, excl))}
+    ${acc(`Journal (${s.journal.length})`, `Latest ${s.journal[0].date}`, journalList(s))}
+    ${footer()}
+  </div>`;
+}
+
+/* ---------- A2: dense sheet ---------- */
+function viewA2(s) {
+  const excl = [s.today?.date, s.prev?.date].filter(Boolean);
+  return `<p class="intent">Dense sheet. Everything open at once on one desktop screen, smaller type, no folds. The journal shows one line per entry.</p>
+  <div class="dense stack">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">${identity(s)}${todoList(s)}</div>
+    <div class="dense-grid">
+      <section class="card"><h3 class="sec-title">Today against ${s.prev ? esc(s.prev.rel) : 'entry'}</h3>${compare(s)}</section>
+      <section class="card span2"><h3 class="sec-title">Stops and Targets</h3>${tracksBlock(s, { was: false })}</section>
+      <section class="card"><h3 class="sec-title">Position: ${s.open} of ${PLAN.contracts} open</h3>${positionBody(s)}</section>
+      <section class="card"><h3 class="sec-title">Plan and entry</h3>${planEntryBody(s)}</section>
+      <section class="card"><h3 class="sec-title">Payoff at expiration</h3>${payoff(s, { w: 360, h: 170 })}</section>
+      <section class="card span3"><h3 class="sec-title">Earlier Marks</h3>${marksGrid(s, excl)}</section>
+      <section class="card span3"><h3 class="sec-title">Journal (${s.journal.length})</h3>
+        <ol class="journal">${s.journal.map((j) => `<li><span class="j-when">${j.date}</span><span class="j-body"><strong>${j.type}.</strong> ${esc(j.body)}${j.owed ? ` <span class="badge ${j.owed === 'Due now' ? 'b-warn' : 'b-quiet'}">${j.owed}</span>` : ''}</span></li>`).join('')}</ol></section>
+    </div>
+    ${footer()}
+  </div>`;
+}
+
+/* ---------- A3: grouped by question ---------- */
+function viewA3(s) {
+  const excl = [s.today?.date, s.prev?.date].filter(Boolean);
+  const miss = missingCount(s, excl);
+  const doing = !s.today ? 'Not known until today’s close'
+    : `<span class="${dir(s.pnl - s.pnlPrev)}">${signed(s.pnl - s.pnlPrev)}</span> since ${s.prev.rel === 'Yesterday' ? 'yesterday' : s.prev.date}, <strong>${money(s.pnl)}</strong> in all`;
+  const room = s.cond.so.status === 'Breached' ? '<span class="down">The option Stop is breached</span>; NVDA’s Stop still holds'
+    : s.today ? 'All four active; the option-price Stop and Target are nearest' : 'Waiting for the first Marks';
+  const qs = [
+    ['How is it doing today?', doing, compare(s, { pnl: false }), true],
+    ['How much room before I’m out?', room, tracksBlock(s), true],
+    ['What do I hold?', `${s.open} of ${PLAN.contracts} contracts${s.realized ? ', ' + signed(s.realized) + ' banked' : ''}`, positionBody(s, { realized: false })],
+    ['Did I get in as planned?', 'Better than planned, full size', planEntryBody(s)],
+    ['What happens at expiration?', s.payoff.now ? `NVDA is ${(s.payoff.now - s.payoff.be >= 0 ? 'above' : 'below')} breakeven` : 'See the payoff', payoff(s)],
+    ['Which earlier sessions lack Marks?', miss ? `${miss}, all optional` : 'None', marksGrid(s, excl)],
+    ['What have I written?', `${s.journal.length} entries${owedCount(s) ? ', ' + owedCount(s) + ' owed' : ''}`, journalList(s, 3)],
+  ];
+  return `<p class="intent">Grouped by the question a trader asks. Each fold answers its question in its header, so most visits end without opening anything.</p>
+  <div class="stack">
+    ${identity(s)}
+    <section class="card q-needs" aria-labelledby="needs"><h3 class="sec-title" id="needs">Needs you</h3>${todoList(s)}</section>
+    ${qs.map(([t, a, b, open]) => acc(t, a, b, open, 'acc q')).join('')}
+    ${footer()}
+  </div>`;
+}
+
+/* ---------- B: day-by-day timeline (the bolder look) ---------- */
+function dayCards(s) {
+  const out = [];
+  const list = s.sessions;
+  for (let i = 0; i < list.length; i++) {
+    const d = list[i];
+    if (d.missing) {
+      const run = [d];
+      while (list[i + 1]?.missing) run.push(list[++i]);
+      out.push(`<article class="day gap" aria-label="${run.length} session${run.length > 1 ? 's' : ''} without Marks">
+        <div class="when">${run.length > 1 ? run[run.length - 1].date + ' to ' + run[0].date : d.rel || d.date}</div>
+        <h4>${run.length > 1 ? run.length + ' sessions' : d.date} without Marks</h4>
+        <p class="small muted">Optional. Add closes here if you have them.</p>
+        ${run.map((r) => `<div class="gap-row"><span>${r.date}</span><input aria-label="NVDA close ${r.date}" placeholder="NVDA"><input aria-label="Call close ${r.date}" placeholder="Call"></div>`).join('')}
+        ${eventsFor(s, run.map((r) => r.date))}
+      </article>`);
+      continue;
+    }
+    if (d.pending) {
+      out.push(`<article class="day" aria-label="${d.date}"><div class="when">${d.rel}, ${d.date}</div><h4>Session still open</h4>
+        <p class="small">Marks open after the 4:00 pm close.</p>${eventsFor(s, [d.date])}</article>`);
+      continue;
+    }
+    const next = list.slice(i + 1).find((x) => !x.missing && !x.pending);
+    const change = next ? d.pnl - next.pnl : null;
+    out.push(`<article class="day${d.alert ? ' alert' : ''}" aria-label="${d.date}">
+      <div class="when">${d.rel ? d.rel + ', ' : ''}${d.date}</div>
+      ${i === 0 ? '<h4>Today’s close</h4>' : `<h4 class="dpnl ${dir(d.pnl)}">${money(d.pnl)}</h4>
+      ${change != null ? `<div class="small ${dir(change)}">${signed(change)} since ${next.date}</div>` : '<div class="small muted">First close</div>'}`}
+      <dl class="closes"><dt>NVDA close</dt><dd>${d.u.toFixed(2)}</dd><dt>Call Mark</dt><dd>$${d.o.toFixed(2)}</dd></dl>
+      ${eventsFor(s, [d.date])}
+    </article>`);
+  }
+  return out.join('');
+}
+
+function eventsFor(s, dates, alert) {
+  const ev = [];
+  if (alert) ev.push(`<li class="ev-alert">${alert}</li>`);
+  s.executions.filter((e) => dates.includes(e.date)).forEach((e) => ev.push(`<li class="ev-exec">${e.time}: ${e.text}, fee $${e.fee.toFixed(2)}</li>`));
+  s.journal.filter((j) => dates.includes(j.date)).forEach((j) => ev.push(`<li class="${j.owed ? 'ev-owed' : ''}"><strong>${j.type}</strong>${j.owed ? ` <span class="badge ${j.owed === 'Due now' ? 'b-warn' : 'b-quiet'}">${j.owed}</span>` : ''}<br>${esc(j.body)}</li>`));
+  return ev.length ? `<ul class="events">${ev.join('')}</ul>` : '';
+}
+
+function viewB(s) {
+  const pnl = s.today ? `<div><div class="big ${dir(s.pnl)}">${money(s.pnl)}</div><div class="big-sub ${dir(s.pnl - s.pnlPrev)}">${signed(s.pnl - s.pnlPrev)} since ${s.prev.rel === 'Yesterday' ? 'yesterday' : s.prev.date}</div></div>`
+    : `<div><div class="big-sub">Trade P&amp;L arrives with today’s close</div></div>`;
+  return `<p class="intent">Day by day, in a bolder look. One band says where the Trade stands now; below it each session is a card, newest first, holding its own Marks, fills and journal entries. Sessions without Marks merge into one card.</p>
+  <div class="stack">
+    <section class="band" aria-label="Now">
+      <div class="band-top"><div>${identity(s)}</div>${pnl}</div>
+      <div style="margin-top:16px">${todoList(s)}</div>
+      ${tracksBlock(s, { was: false })}
+      <div class="holding"><span>${s.open} of ${PLAN.contracts} contracts open</span>${s.realized ? `<span>Realized ${signed(s.realized)}</span>` : ''}<span>Fees paid $${s.feesPaid.toFixed(2)}</span></div>
+    </section>
+    <div class="tl-head"><h3>Sessions</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
+    <div class="rail-x" id="rail" tabindex="0" aria-label="Sessions, newest first">${dayCards(s)}</div>
+    ${acc('Plan and entry', 'Filled at full size, better than planned', planEntryBody(s))}
+    ${acc('Payoff at expiration', 'Planned and current, on one chart', payoff(s))}
+    ${footer()}
+  </div>`;
+}
+
+/* ---------- C: cockpit ---------- */
+const DRAWERS = ['Today', 'Position', 'Plan and entry', 'Payoff', 'History', 'Journal'];
+let drawer = 'Today';
+
+function viewC(s) {
+  const excl = [s.today?.date, s.prev?.date].filter(Boolean);
+  const conds = ['so', 'su', 'to', 'tu'].map((id) => {
+    const c = cond(s, id);
+    const v = c.status === 'Waiting' ? '' : c.status === 'Breached' ? `<strong class="down">Breached</strong>` : `${money(c.dist)}${c.nearest ? ' <span class="near">nearest</span>' : ''}`;
+    return `<li><span><span class="badge ${c.role === 'Stop' ? 'b-stop' : 'b-target'}">${c.role}</span> ${c.text}</span><span class="fig">${v}</span></li>`;
+  }).join('');
+  const body = {
+    Today: `<h3 class="sec-title">Closes: today against ${s.prev ? esc(s.prev.rel.toLowerCase()) : 'entry'}</h3>${compare(s, { pnl: false })}<h3 class="sec-title" style="margin-top:18px">Where the prices sit</h3>${tracksBlock(s, { lines: false })}`,
+    Position: positionBody(s, { realized: false }),
+    'Plan and entry': planEntryBody(s),
+    Payoff: payoff(s),
+    History: marksGrid(s, excl),
+    Journal: journalList(s, 4),
+  };
+  const counts = { History: missingCount(s, excl) || '', Journal: owedCount(s) ? owedCount(s) + ' owed' : '' };
+  return `<p class="intent">Cockpit. A rail that always shows the state of play, and drawers for the detail. On a phone the rail becomes the top of the page.</p>
+  <div class="cockpit">
+    <aside class="c-rail" aria-label="State of play">
+      <div class="card">${identity(s)}</div>
+      <div class="card"><div class="c-pnl ${s.today ? dir(s.pnl) : ''}">${s.today ? money(s.pnl) : '—'}</div>
+        <div class="small ${s.today ? dir(s.pnl - s.pnlPrev) : 'muted'}">${s.today ? signed(s.pnl - s.pnlPrev) + ' since ' + (s.prev.rel === 'Yesterday' ? 'yesterday' : s.prev.date) : 'Trade P&amp;L after today’s close'}</div>
+        <div class="small muted" style="margin-top:6px">${s.open} of ${PLAN.contracts} contracts open${s.realized ? ', realized ' + signed(s.realized) : ''}</div></div>
+      <div class="card"><h3 class="sec-title">Conditions</h3><ul class="c-conds">${conds}</ul>${extremes(s)}</div>
+      <div class="card">${todoList(s)}</div>
+    </aside>
+    <section>
+      <div class="drawer-tabs" role="tablist" aria-label="Detail">${DRAWERS.map((d) => `<button type="button" role="tab" id="dt-${d.replace(/\W/g, '')}" aria-selected="${d === drawer}" aria-controls="drawer" data-drawer="${d}">${d}${counts[d] ? `<span class="count">${counts[d]}</span>` : ''}</button>`).join('')}</div>
+      <div class="card" id="drawer" role="tabpanel" aria-labelledby="dt-${drawer.replace(/\W/g, '')}">${body[drawer]}</div>
+      <div style="margin-top:12px">${footer()}</div>
+    </section>
+  </div>`;
+}
+
+/* ---------- Wiring ---------- */
+const VIEWS = [
+  { id: 'a', name: 'A. Today first', note: 'folds', render: viewA },
+  { id: 'a2', name: 'A2. Dense sheet', note: 'all open', render: viewA2 },
+  { id: 'a3', name: 'A3. By question', note: 'answers on the folds', render: viewA3 },
+  { id: 'b', name: 'B. Timeline', note: 'bolder look', render: viewB },
+  { id: 'c', name: 'C. Cockpit', note: 'rail and drawers', render: viewC },
+];
+const state = { scenario: 'held', view: 'a' };
+try { Object.assign(state, JSON.parse(localStorage.getItem('td-proto') || '{}')); } catch (e) { /* storage unavailable */ }
+const save = () => { try { localStorage.setItem('td-proto', JSON.stringify(state)); } catch (e) { /* storage unavailable */ } };
+
+function renderChrome() {
+  document.getElementById('states').innerHTML = Object.entries(STATES).map(([k, v]) => `<button type="button" role="radio" aria-checked="${k === state.scenario}" data-state="${k}" tabindex="${k === state.scenario ? 0 : -1}">${v.label}</button>`).join('');
+  document.getElementById('tabs').innerHTML = VIEWS.map((v) => `<button type="button" role="tab" id="tab-${v.id}" aria-selected="${v.id === state.view}" aria-controls="stage" tabindex="${v.id === state.view ? 0 : -1}" data-view="${v.id}">${v.name}<small>${v.note}</small></button>`).join('');
+}
+
+function render() {
+  renderChrome();
+  const s = STATES[state.scenario];
+  const stage = document.getElementById('stage');
+  stage.setAttribute('role', 'tabpanel');
+  stage.setAttribute('aria-labelledby', 'tab-' + state.view);
+  stage.innerHTML = `<p class="small muted" style="margin-bottom:10px">Clock: ${s.clock}, New York.</p>` + VIEWS.find((v) => v.id === state.view).render(s);
+  save();
+}
+
+function arrowMove(e, attr, list, key) {
+  if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+  const i = list.indexOf(state[key]);
+  const n = e.key === 'Home' ? 0 : e.key === 'End' ? list.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + list.length) % list.length;
+  state[key] = list[n];
+  render();
+  document.querySelector(`[${attr}="${list[n]}"]`).focus();
+  e.preventDefault();
+}
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.state) { state.scenario = b.dataset.state; render(); document.querySelector(`[data-state="${state.scenario}"]`).focus(); }
+  else if (b.dataset.view) { state.view = b.dataset.view; render(); document.querySelector(`[data-view="${state.view}"]`).focus(); }
+  else if (b.dataset.drawer) { drawer = b.dataset.drawer; render(); document.querySelector(`[data-drawer="${drawer}"]`).focus(); }
+  else if (b.dataset.scroll) { const r = document.getElementById('rail'); r.scrollBy({ left: r.clientWidth * 0.9, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+});
+document.getElementById('states').addEventListener('keydown', (e) => arrowMove(e, 'data-state', Object.keys(STATES), 'scenario'));
+document.getElementById('tabs').addEventListener('keydown', (e) => arrowMove(e, 'data-view', VIEWS.map((v) => v.id), 'view'));
+document.addEventListener('keydown', (e) => { if (e.target.closest?.('.drawer-tabs')) { const i = DRAWERS.indexOf(drawer); if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { drawer = DRAWERS[(i + (e.key === 'ArrowRight' ? 1 : -1) + DRAWERS.length) % DRAWERS.length]; render(); document.querySelector(`[data-drawer="${drawer}"]`).focus(); e.preventDefault(); } } });
+
+render();
+</script>
+</body>
+</html>
