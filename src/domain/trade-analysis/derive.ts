@@ -3,7 +3,7 @@ import type { Instant } from '../time/index.ts';
 import type { CalculationResult, ExecutionDescription, ExpirationDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
 import { expiredOn, instrumentKey, multiplierOf, settlementDueOn, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
-import { frozenBaseline, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
+import { frozenBaseline, headlineBasisOf, measurementOf, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
 export type LifecycleState = 'Planned' | 'Open' | 'Closed' | 'Abandoned';
 
@@ -772,9 +772,10 @@ function entryQualityOf(
   const fees = total(window, (e) => decimal(e.fee));
   const average = cost.div(quantity);
   const leg = plan.legs[0]!;
-  // An option measures each condition by its value at expiration (A105); stock by its trigger price.
-  const stop = baseline.stopBasis[0]!.valueAtExpiration ?? decimal(plan.stops[0]!.price);
-  const target = baseline.targetBasis[0]!.valueAtExpiration ?? decimal(plan.targets[0]!.price);
+  // Each role is measured at its headline condition (A197): an Underlying one by its value at expiration
+  // (A105), a stock or option-price one by its trigger price.
+  const stop = measurementOf(headlineBasisOf(baseline.stopBasis));
+  const target = measurementOf(headlineBasisOf(baseline.targetBasis));
   // Long exposure gains as the price rises; a short one reverses every price difference.
   const direction = Rational.of(leg.side === 'Long' ? 1n : -1n);
   const scale = Rational.of(BigInt(multiplierOf(leg.instrument)));

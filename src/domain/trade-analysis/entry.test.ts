@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type CalculationResult, type DerivedTradeState, type EntryQualityFigures, type TradeAnalysisRecord } from './index.ts';
+import { OS2_S1, os2Record } from './option-trade.ts';
 import { execution, PC1, PC2, PC3, positionChange, referenceRecord } from './reference-trade.ts';
 
 // The derived state of a coherent record.
@@ -112,5 +113,17 @@ describe('Planned-Leg Fulfillment', () => {
 
   it('should report FilledWithDeviation after PC3', () => {
     expect(fulfillment(referenceRecord([PC1, PC2, PC3]))).toEqual([{ plannedLegId: 'leg-1', fulfillment: 'FilledWithDeviation' }]);
+  });
+});
+
+describe('Entry Quality with several conditions (A197)', () => {
+  it('should derive O-S2 Entry Quality after S1 prime from S-o and T-u: actual initial risk 471.30 (4713/4800 R), actual initial reward 148.70, slippage -10.00', () => {
+    const f = figures(os2Record([OS2_S1]));
+    // S-o (option 3.60, 480 dollars) is nearer than S-u; T-u (value at expiration 0.50, 140 dollars) nearer than T-o.
+    expect(exact(f.actualInitialRisk)).toBe(q(4713n, 10n));
+    expect(exact(f.riskInPlanR)).toBe(q(4713n, 4800n));
+    expect(exact(f.actualInitialReward)).toBe(q(1487n, 10n));
+    expect(exact(f.slippage)).toBe(q(-10n));
+    expect(f.flags).toEqual([]);
   });
 });
