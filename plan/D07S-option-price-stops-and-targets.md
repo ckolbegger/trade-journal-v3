@@ -433,8 +433,8 @@ Status, not plan: editing this section is not a plan revision (decision 100). Th
 | T7S.3 | Done | `dd1a89e8` |
 | T7S.2 | Done | `f40e99e5` |
 | T7S.4 | Done | `51d84965` |
-| T7S.5 | In progress from `51d84965` | |
-| T7S.6 | Not started | |
+| T7S.5 | Done | `f7590645` |
+| T7S.6 | In progress from `f7590645` | |
 | T7S.7 | Not started | |
 | T7S.8 | Not started | |
 | T7S.9 | Not started | |

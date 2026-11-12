@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 14316,
+    "input_tokens": 14209,
+    "output_tokens": 107,
+    "cache_read_tokens": 3840,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/domain/trade-analysis/derive.ts",
+      "files": [
+        "src/domain/trade-analysis/derive.ts"
+      ]
+    }
+  ],
+  "session_id": "3f36ea06-2619-411b-841d-2f7ffd64dfa7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3f36ea06-2619-411b-841d-2f7ffd64dfa7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f7590645",
+      "resolved_base": "6f7444f38be4b920789a809bc7c8dc35849a33ea",
+      "resolved_head": "f75906456d88830365c6df8bfb1381a7341f2147",
+      "exact_range": "6f7444f38be4b920789a809bc7c8dc35849a33ea..f75906456d88830365c6df8bfb1381a7341f2147",
+      "source_artifact_sha256": "e612a2e57d8d29b47e50e6bf2ae3302a4c8ef8ae5e14a1e282558e06c84b4ed0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.7",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "56adf0fceab1c366a238611271b3bd562858cc1b94cdf9107f81d26466daa752"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "56adf0fceab1c366a238611271b3bd562858cc1b94cdf9107f81d26466daa752"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 7409
+  }
+}

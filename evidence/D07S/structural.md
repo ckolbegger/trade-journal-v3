@@ -107,3 +107,20 @@ Behavioral, commit `51d84965`; six cases in `src/domain/trade-analysis/evaluate-
 | Checks | 14 of 14 exit 0 |
 
 Browser tier printed by `browser-auto f40e99e5`: `browser tier: task (no changed path since f40e99e5 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
+
+## T7S.5 Trade Analysis: Entry Quality from the headline conditions
+
+Behavioral, commit `f7590645`; one case in `src/domain/trade-analysis/entry.test.ts` (name rephrased: "S1 prime", `$` dropped), red (`expected '5513/10' to be '4713/10'`, the old first-condition S-u measurement) then green. No first-run pass. `entryQualityOf` measures from `measurementOf(headlineBasisOf(...))` for both roles; direction still from `leg.side`.
+
+**ocr review of `f7590645`** (`ocr/T7S.5-f7590645.json`): 0 comments.
+
+**Cumulative run `t7s-5`** (2026-11-12, on `f7590645`), outputs in `suite-runs/t7s-5-*.txt`, `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1493 passed |
+| Node integration | 97 files, 202 passed |
+| Browser (Chromium), task tier | `@every-task` 5 passed (10.8s); no `e2e/d7s` folder yet |
+| Checks | 14 of 14 exit 0 |
+
+Browser tier printed by `browser-auto 51d84965`: `browser tier: task (no changed path since 51d84965 is on the full-tier list)`. Ports 5175, 9341, 9342 free before and after.
