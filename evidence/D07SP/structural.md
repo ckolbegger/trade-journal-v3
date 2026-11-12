@@ -728,3 +728,24 @@ The cold start p95 (+4%) and the Closed page p95 (−25%) are within 10%.
 - Closed page p95: 163.0, 122.0, 120.0, 116.0 (within 10%).
 
 T7SP.19 cut the Review open about 6x. Eleven of thirteen steps are still more than 10% slower than D7, so the gate stopped again. The user accepted the numbers on 2026-11-11 ("Accept the new numbers and record them as tech debt"). They are recorded as tech debt item 22 (revision 77), with a same-machine control run of D7's code and a bisect as the proposed next steps.
+
+## T7SP.15 Gate run (full tier)
+
+**Cumulative run `t7sp-15-full`** (2026-11-11, on `aa8c4056`, `browser-full`). The outputs are in `suite-runs/t7sp-15-full-*.txt`, and `run-complete.sh` reports the run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 125 files, 1481 tests passed |
+| Node integration | 97 files, 202 tests passed |
+| Browser (Chromium), full tier | browser-1 119 passed (4.8 m); browser-2 65 passed (4.1 m) |
+| Checks | 14 of 14 exit 0 (typecheck, tsc6, lint, lint:deps, build, verify:hooks, verify:release, verify:capabilities, verify:releases, verify:no-fault-hooks, verify:capacity, verify:fixtures, verify:session-policy, verify:wording) |
+
+Ports 5175, 9341 and 9342 were free before and after. `TradeList.test.tsx:125` passed, so tech debt item 11 did not trigger. Tech debt item 1 did not trigger either: the Review save's recheck is unchanged.
+
+**Other gate conditions (breakdown section 5):**
+- T7SP.1 to T7SP.19 are committed, and every ocr finding is resolved (bug tasks, or dismissed with reasons).
+- `git diff claude-opus-5.5-pre-d7sp -- src/persistence` is empty.
+- `git diff claude-opus-5.5-pre-d7sp -- tests/fixtures` is empty, so every `dump.json` is unchanged.
+- `npm run lint` and `lint:deps`, with the expiration-comparison rule, exit 0. The Instrument module and test files are exempt.
+
+**D8 follow-up** (section 5, "Then"). None of these appears in `plan/D08-backup-and-restore.md`, 0 hits each: `coordinators/valuation.ts`, `settlementTimeOf`, `instrumentsOf`, `afterExpiration`, `primaryFrameOf`, `evaluateCurrent`, `closedCurrent` and `currentFrames`. No plan revision is needed.

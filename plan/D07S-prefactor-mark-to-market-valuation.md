@@ -524,4 +524,4 @@ After T7SP.14's rerun, 2026-11-11 (revision 77):
 | T7SP.18 | Done | `a719c7e5` |
 | T7SP.19 | Done | `fc4fa791` |
 | T7SP.14 | Done, with the user's acceptance (revision 77, tech debt item 22). The first run had the Review open about 10x slower than D7 (decision 106). After T7SP.19, 11 of 13 steps are still more than 10% slower; the gated budgets pass | `f2b987dc` (first run); `9c0d14d0` (rerun, runs 2 and 3) |
-| T7SP.15 | In progress from `9c0d14d0` | |
+| T7SP.15 | Done | gate run `t7sp-15-full` on `aa8c4056`; D8 follow-up: no hits; tag `claude-opus-5.5-d7sp` |
