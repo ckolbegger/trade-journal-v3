@@ -12,7 +12,7 @@
 // the long-option Plans are Authorized, and the as-of instant moves to Friday 2026-11-20 17:00 New York with four Open
 // option Trades Settlement Due.
 export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v6';
-export const BENCH_GENERATOR_VERSION = 6;
+export const BENCH_GENERATOR_VERSION = 7;
 export const BENCH_SEED = 20211011;
 // The generator's clock starts here and only moves forward with the generated Economic Times.
 // Every simulated session is inside session-policy coverage (decision 51).

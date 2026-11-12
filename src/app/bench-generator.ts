@@ -906,6 +906,14 @@ async function generate(options: { readonly sessions?: number } = {}) {
         // Underlying's level `u`; Long Calls and Cash-Secured Puts rise to the Target, Long Puts fall to it.
         const u = 40 + (i % 160);
         const premium = option ? premiumOf(i, option.kind) : 0;
+        // A203's option-price mix, by the Trade's place among the option Trades: 10% hold only option-price conditions,
+        // 30% an option-price Stop beside the Underlying Stop. A long option's Stop is below the entry and its Target above; the short Put reverses both.
+        const mix = option ? optionsBefore(i) % 10 : -1;
+        const optionOnly = mix === 0;
+        const optionStop = mix >= 1 && mix <= 3;
+        const optionLong = option !== undefined && isLongOption(option.kind);
+        const optionStopPrice = { kind: 'StructureValue' as const, price: cents(optionLong ? premium - 100 : premium + 100) };
+        const optionTargetPrice = { kind: 'StructureValue' as const, price: cents(optionLong ? premium + 300 : premium - 50) };
         const plan = option
           ? {
               underlying: symbol,
@@ -914,8 +922,13 @@ async function generate(options: { readonly sessions?: number } = {}) {
                   ? { side: 'Long' as const, instrument: contractOf(i, symbol, option), quantity: String(option.contracts), intendedEntry: cents(premium) }
                   : { side: 'Short' as const, instrument: contractOf(i, symbol, option), quantity: String(-option.contracts), intendedEntry: cents(premium) },
               ],
-              stops: [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u - 3 : option.kind === 'LongPut' ? u + 3 : u - 6}.00` }],
-              targets: [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u + 12 : option.kind === 'LongPut' ? u - 12 : u + 5}.00` }],
+              stops: [
+                ...(optionOnly ? [] : [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u - 3 : option.kind === 'LongPut' ? u + 3 : u - 6}.00` }]),
+                ...(optionOnly || optionStop ? [optionStopPrice] : []),
+              ],
+              targets: optionOnly
+                ? [optionTargetPrice]
+                : [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u + 12 : option.kind === 'LongPut' ? u - 12 : u + 5}.00` }],
               ...(isLongOption(option.kind) && { exerciseIntent: option.authorized ? ('Authorized' as const) : ('NotAuthorized' as const) }),
             }
           : {
