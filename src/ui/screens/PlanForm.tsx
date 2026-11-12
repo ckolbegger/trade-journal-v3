@@ -385,8 +385,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
           {input('quantity', option ? 'Contracts' : 'Quantity', 'decimal')}
           {input('entry', option ? 'Intended entry price (per share)' : 'Intended entry', 'decimal', cashHint)}
           {input('stop', option ? `Stop (${underlying} at or ${bullish ? 'below' : 'above'})` : 'Stop', 'decimal')}
-          {input('target', option ? `Target (${underlying} at or ${bullish ? 'above' : 'below'})` : 'Target', 'decimal')}
           {option && input('stopOption', `Stop (option price at or ${option.side === 'Long' ? 'below' : 'above'})`, 'decimal')}
+          {input('target', option ? `Target (${underlying} at or ${bullish ? 'above' : 'below'})` : 'Target', 'decimal')}
           {option && input('targetOption', `Target (option price at or ${option.side === 'Long' ? 'above' : 'below'})`, 'decimal')}
         </div>
         {option && (

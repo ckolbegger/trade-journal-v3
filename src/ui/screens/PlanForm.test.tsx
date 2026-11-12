@@ -849,6 +849,20 @@ describe('option Plan form: Stop and Target kinds (P92)', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Target (option price at or above)').value).toBe('0.30');
   });
 
+  it('should place the price fields in the order Stop on the Underlying, Stop option price, Target on the Underlying, Target option price, so each option-price field sits beside its Underlying field', async () => {
+    renderForm(optionFacade());
+    await chooseStrategy('Long Call');
+    const fields = [
+      screen.getByLabelText('Stop (Underlying at or below)'),
+      screen.getByLabelText('Stop (option price at or below)'),
+      screen.getByLabelText('Target (Underlying at or above)'),
+      screen.getByLabelText('Target (option price at or above)'),
+    ];
+    for (let i = 0; i < fields.length - 1; i++) {
+      expect(fields[i]!.compareDocumentPosition(fields[i + 1]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
   it('should submit only the filled fields, so a Long Call with only Stop option price at or below 1.00 and Target XYZ at or above 60.00 sends one option-price Stop and one Underlying Target', async () => {
     const facade = renderForm(optionFacade());
     const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
