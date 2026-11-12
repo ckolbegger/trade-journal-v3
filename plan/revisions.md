@@ -2,6 +2,11 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 79: the commit tagged `claude-opus-5.5-plan-r79` (revision 78, no decision). The acceptance matrix links D7S's section 8 where D7S adds coverage:
+  - AC-CALC-003 gains a D7S entry (partial: structure-value conditions on single-leg options, one crossed Stop and one reached Target at once), and its "Later" note now says D10 adds structure-value conditions on multi-leg structures, not all of them. That note had contradicted the plan's D7S definition and D4's scope note.
+  - AC-REST-004 gains a D7S entry for schema 7, as D4 to D7 have for schemas 3 to 6.
+
+  D7S's other section 8 rows only re-prove existing claims and stay in its breakdown, as D5R's and D5R2's did. The D7S handoff's open question is closed. `specs/` is unchanged. The next decision is still 108. Decided by the user on 2026-11-11.
 - Revision 78: the commit tagged `claude-opus-5.5-plan-r78` (revision 77 plus decision 107). D7S's breakdown, `plan/D07S-option-price-stops-and-targets.md`, is agreed:
   - P90–P93, A195–A205 and 17 tasks;
   - one breakdown with a checkpoint critic, not a split;
