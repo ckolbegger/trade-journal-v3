@@ -11,7 +11,10 @@
 // Cash-Secured Put 10%), 40% of the Closed option Trades end by Expiration (30% of those after a partial exit), 10% of
 // the long-option Plans are Authorized, and the as-of instant moves to Friday 2026-11-20 17:00 New York with four Open
 // option Trades Settlement Due.
-export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v6';
+// Version 7 (D7S T7S.14, A203): of the option Plans, 30% add an option-price Stop beside the Underlying Stop and 10%
+// hold only option-price conditions, keyed on the Trade's place among the option Trades.
+// The marker is a plain string literal: `bench-generate` searches the built bundle for it, and it must change with the version.
+export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v7';
 export const BENCH_GENERATOR_VERSION = 7;
 export const BENCH_SEED = 20211011;
 // The generator's clock starts here and only moves forward with the generated Economic Times.

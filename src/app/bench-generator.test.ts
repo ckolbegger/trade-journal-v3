@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { countHeld, schedule } from './bench-generator.ts';
+import { BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION } from './bench.ts';
 import type { Instrument } from '../domain/instrument/index.ts';
 
 const MINUTE = 60_000;
@@ -127,5 +128,11 @@ describe('bench generator Open book instruments', () => {
       stock('BBB'),
     ]);
     expect(counts).toEqual({ open: 3, shared: 1 });
+  });
+});
+
+describe('bench generator marker', () => {
+  it('should name the current generator version so a stale bench build fails the bundle check', () => {
+    expect(BENCH_GENERATOR_MARKER).toBe(`tj-bench-generator-v${BENCH_GENERATOR_VERSION}`);
   });
 });
