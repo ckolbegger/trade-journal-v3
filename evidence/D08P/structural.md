@@ -413,3 +413,17 @@ Lane `d08p/t8p3`, 2026-11-13. Types and one lint rule only; no behavior.
 | `npm run lint` with `src/ui/cockpit/rail/plant.types.ts` importing `../../../app/types.ts` (removed afterwards) | exit 1: `no-restricted-imports ... cockpit-import: app/types is imported only by a *.props.ts adapter (A216)` |
 
 Added: `src/coordinators/trade-views/replay-view.ts`; `nearest?: true` on `ConditionStatus`; `days?: number` on `ContractExpiration`; the props types under `src/ui/cockpit/` (rail: identity, pnl, conditions, needs-you; drawers: today, position, plan-risk, payoff, price-history, journal; root: track, footer); `eslint.cockpit.config.js`; `tools/cockpit-rules.test.ts`.
+
+### T8P.3 ocr review and merge
+
+ocr on `80743173` (in the lane): session `b0a304d6-2d46-4dda-a86a-84bc6b4bfe21`, model gpt-6.1-sol, 17 files reviewed (2 excluded: `structural.md` and the test file), 0 comments. **No findings.** One ocr warning: a `file_read` of `tsconfig.app.json`, which doesn't exist at this commit, failed. Raw output: [ocr/T8P.3-80743173.json](ocr/T8P.3-80743173.json).
+
+Lane tier: [suite-runs/T8P.3-unit.txt](suite-runs/T8P.3-unit.txt), `-integration`, `-checks` and the `-lane` marker. 138 files and 1519 unit tests; 103 files and 218 integration tests; 14 of 14 checks; exit 0 throughout. `run-complete.sh evidence/D08P T8P.3` in the lane: run complete.
+
+**Merge.** `d08p/t8p3` was rebased onto `claude-opus-5.5` (`268e6e92`) with no conflict; git merged this file's appends. The rebase brought in only plan and evidence commits, no code, so the lane tier wasn't rerun. Then `claude-opus-5.5` was fast-forwarded to `fe83cd1c` (rebased hashes `bba8b2bc` for the task and `fe83cd1c` for the lane tier), and the lane worktree and branch were removed.
+
+**Implementation-level decisions accepted from T8P.3's summary:**
+- The A216 rule also exempts `*.props.test.*` files, since each lane's adapter test needs view types.
+- The globs `track*` and `footer*` in section 4.2 are read as relative to `src/ui/cockpit/`, so `track.types.ts` (D1) and `footer.types.ts` (D3) sit at the cockpit root, as `journal-cards.ts` does (A214).
+- `replay-view.ts` isn't yet re-exported from `trade-views/index.ts`. BV (T8P.10, T8P.11) adds the export and the facade type.
+- `journal.types.ts` holds a React type for `renderForm` (the one-form-at-a-time rule).

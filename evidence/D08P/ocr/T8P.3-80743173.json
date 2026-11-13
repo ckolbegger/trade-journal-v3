@@ -1,0 +1,302 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 17 selected item(s).",
+  "summary": {
+    "files_reviewed": 17,
+    "comments": 0,
+    "total_tokens": 71475,
+    "input_tokens": 70384,
+    "output_tokens": 1091,
+    "cache_read_tokens": 14976,
+    "elapsed": "25s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 3,
+        "tool_name": "file_read",
+        "file_path": "eslint.cockpit.config.js,eslint.config.js",
+        "arguments": "{\"file_path\": \"tsconfig.app.json\"}",
+        "error": "file \"tsconfig.app.json\" not found: git show 80743173d1f86b796f29a5cc6974b204c95e7f6e:tsconfig.app.json: exit status 128: fatal: path 'tsconfig.app.json' does not exist in '80743173d1f86b796f29a5cc6974b204c95e7f6e'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Cockpit ESLint configuration",
+      "files": [
+        "eslint.cockpit.config.js",
+        "eslint.config.js"
+      ]
+    },
+    {
+      "label": "Trade replay view coordination and evaluation",
+      "files": [
+        "src/coordinators/trade-views/replay-view.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/trade-analysis/evaluate.ts"
+      ]
+    },
+    {
+      "label": "Cockpit drawer data contracts",
+      "files": [
+        "src/ui/cockpit/drawers/journal.types.ts",
+        "src/ui/cockpit/drawers/payoff.types.ts",
+        "src/ui/cockpit/drawers/plan-risk.types.ts",
+        "src/ui/cockpit/drawers/position.types.ts",
+        "src/ui/cockpit/drawers/price-history.types.ts",
+        "src/ui/cockpit/drawers/today.types.ts"
+      ]
+    },
+    {
+      "label": "Cockpit rail data contracts",
+      "files": [
+        "src/ui/cockpit/rail/conditions.types.ts",
+        "src/ui/cockpit/rail/identity.types.ts",
+        "src/ui/cockpit/rail/needs-you.types.ts",
+        "src/ui/cockpit/rail/pnl.types.ts"
+      ]
+    },
+    {
+      "label": "Cockpit track and footer data contracts",
+      "files": [
+        "src/ui/cockpit/footer.types.ts",
+        "src/ui/cockpit/track.types.ts"
+      ]
+    }
+  ],
+  "session_id": "b0a304d6-2d46-4dda-a86a-84bc6b4bfe21",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b0a304d6-2d46-4dda-a86a-84bc6b4bfe21",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "80743173",
+      "resolved_base": "c5d2eb2ebfb601ff8d39ed5115661339a40a3b03",
+      "resolved_head": "80743173d1f86b796f29a5cc6974b204c95e7f6e",
+      "exact_range": "c5d2eb2ebfb601ff8d39ed5115661339a40a3b03..80743173d1f86b796f29a5cc6974b204c95e7f6e",
+      "source_artifact_sha256": "8b96346c935433fce6a8c9f918f89078d5cfcb85680f4a65ca1e89a6ad6d6c15"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d60b4889ae8b40cf74bf36f8c2bcc7edaedb94a7a88aa4417e952f5439a6310",
+          "path": "src/ui/cockpit/drawers/plan-risk.types.ts",
+          "fingerprint": "18a5fbbd97f8a5836c22a8c0c64adbcea0fdf5602e02d3e2cfc497600989ea7b"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "e7b341d0bea0480e471f0567bdbcb371ba995abd2b543241a353bbc3f77696c5"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "6f1973a5e663b6f5b834dc96d06e86d8ce963acab4d592e279951fe9bd332ed6"
+        },
+        {
+          "item_id": "325c56aacc63b089dd246541534dbf6b4fffa2edb041b099c93d98de5e9998b8",
+          "path": "src/ui/cockpit/track.types.ts",
+          "fingerprint": "6eca31957d9a6e04ca472eba4d92cc95e2657cf06263b3ffcec1a7acdb55b0c1"
+        },
+        {
+          "item_id": "36929d6fb7ed25af6be2a65d495c393863186e35fe0b9825684d58aa75ce5d6a",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "59a1a08ef01aec05e49ab0ff88f1411d9a181dbd6e997cf1a254b334aa34ecf8"
+        },
+        {
+          "item_id": "584ec8e0f52c3bc07ad2d67c83d43d2d4b848ce33cd965265746f838d631cb24",
+          "path": "src/ui/cockpit/rail/pnl.types.ts",
+          "fingerprint": "614edabaac2b0109b1614de9e2df17a4afed826d855347abb686aec3d821b5b9"
+        },
+        {
+          "item_id": "5c4e53554ce04237299483dbde2cdcf2cc51979cfa8426133108ec08a9552f90",
+          "path": "src/ui/cockpit/rail/conditions.types.ts",
+          "fingerprint": "43d435903ce2a03dd36a42080e12fd49279bf3d04787c9e4f421650aec3cd4bf"
+        },
+        {
+          "item_id": "74c0138701226058c218dc8bcbdd5f266ab1df3771fd649cf767b63271fe3087",
+          "path": "eslint.config.js",
+          "fingerprint": "b6d57c46cad877fa8acd5827bd6f1427abe029e9f7680f1d3febc1a47d235ebe"
+        },
+        {
+          "item_id": "866fc0f941509ba61e5176c20efa2818ca3e9ecb514da636a50cfbaccda7ac32",
+          "path": "src/ui/cockpit/drawers/position.types.ts",
+          "fingerprint": "e47738359672d27ef382a04538347bed49b8c9b744ff7277084fb6754275cbba"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "b12c7f13ee593df8dfbe5ed60bf6bcb0c94b17e20e45d32e3e4480d0edfb88a0"
+        },
+        {
+          "item_id": "8da192cc0b3fce45aa939d593a8f801ce759d878d4d680a95042b1b036f890cc",
+          "path": "src/ui/cockpit/footer.types.ts",
+          "fingerprint": "c301841250e139e7f3b75f6f8ed84ec3b049080a8c2492859957be4cc9d15808"
+        },
+        {
+          "item_id": "91e5af8ce0b06cafd0874279d0fa6cdd8757ed3bce5a29ac8c19b00580831088",
+          "path": "src/ui/cockpit/rail/needs-you.types.ts",
+          "fingerprint": "e2ebbcc08d0958c25a79276ec121b1474a3419fe502144b2f7f6814ef98b4bc1"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "f6c42607bb1b6e1f27ef1abfebc2065491e81149f512789e29f7a401bffd6d7c"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "5bce71c7697c39f69a383c241692b7b43d1a8fd1d37f81c9a4858d12c04c4725"
+        },
+        {
+          "item_id": "d9df069a5c280b7991975ec63f20b138b55e29b1e534720771d431a826074092",
+          "path": "src/ui/cockpit/drawers/payoff.types.ts",
+          "fingerprint": "df69d4221c45afcac333cc8936bedec946e73e5b8a1e2a8e17e583f770c5a2e0"
+        },
+        {
+          "item_id": "e0e2765bd0ebb7e0a6c1f21ec5596a2b23874dce660b1e1c02338c170e5aaf2f",
+          "path": "eslint.cockpit.config.js",
+          "fingerprint": "adda88411111a5edf5e6eb90d5c2b60bd64b210f2a09fa44b585f6f48b7992b1"
+        },
+        {
+          "item_id": "eb124f3b0b7c52d4aa187202ec543b74b984f61312fd394881e743b3373e2c65",
+          "path": "src/ui/cockpit/rail/identity.types.ts",
+          "fingerprint": "8531082814dd5d273e50baea66892709d6ae91c929fa7ddf6b126c68b33e419e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d60b4889ae8b40cf74bf36f8c2bcc7edaedb94a7a88aa4417e952f5439a6310",
+          "path": "src/ui/cockpit/drawers/plan-risk.types.ts",
+          "fingerprint": "18a5fbbd97f8a5836c22a8c0c64adbcea0fdf5602e02d3e2cfc497600989ea7b"
+        },
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "e7b341d0bea0480e471f0567bdbcb371ba995abd2b543241a353bbc3f77696c5"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "6f1973a5e663b6f5b834dc96d06e86d8ce963acab4d592e279951fe9bd332ed6"
+        },
+        {
+          "item_id": "325c56aacc63b089dd246541534dbf6b4fffa2edb041b099c93d98de5e9998b8",
+          "path": "src/ui/cockpit/track.types.ts",
+          "fingerprint": "6eca31957d9a6e04ca472eba4d92cc95e2657cf06263b3ffcec1a7acdb55b0c1"
+        },
+        {
+          "item_id": "36929d6fb7ed25af6be2a65d495c393863186e35fe0b9825684d58aa75ce5d6a",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "59a1a08ef01aec05e49ab0ff88f1411d9a181dbd6e997cf1a254b334aa34ecf8"
+        },
+        {
+          "item_id": "584ec8e0f52c3bc07ad2d67c83d43d2d4b848ce33cd965265746f838d631cb24",
+          "path": "src/ui/cockpit/rail/pnl.types.ts",
+          "fingerprint": "614edabaac2b0109b1614de9e2df17a4afed826d855347abb686aec3d821b5b9"
+        },
+        {
+          "item_id": "5c4e53554ce04237299483dbde2cdcf2cc51979cfa8426133108ec08a9552f90",
+          "path": "src/ui/cockpit/rail/conditions.types.ts",
+          "fingerprint": "43d435903ce2a03dd36a42080e12fd49279bf3d04787c9e4f421650aec3cd4bf"
+        },
+        {
+          "item_id": "74c0138701226058c218dc8bcbdd5f266ab1df3771fd649cf767b63271fe3087",
+          "path": "eslint.config.js",
+          "fingerprint": "b6d57c46cad877fa8acd5827bd6f1427abe029e9f7680f1d3febc1a47d235ebe"
+        },
+        {
+          "item_id": "866fc0f941509ba61e5176c20efa2818ca3e9ecb514da636a50cfbaccda7ac32",
+          "path": "src/ui/cockpit/drawers/position.types.ts",
+          "fingerprint": "e47738359672d27ef382a04538347bed49b8c9b744ff7277084fb6754275cbba"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "b12c7f13ee593df8dfbe5ed60bf6bcb0c94b17e20e45d32e3e4480d0edfb88a0"
+        },
+        {
+          "item_id": "8da192cc0b3fce45aa939d593a8f801ce759d878d4d680a95042b1b036f890cc",
+          "path": "src/ui/cockpit/footer.types.ts",
+          "fingerprint": "c301841250e139e7f3b75f6f8ed84ec3b049080a8c2492859957be4cc9d15808"
+        },
+        {
+          "item_id": "91e5af8ce0b06cafd0874279d0fa6cdd8757ed3bce5a29ac8c19b00580831088",
+          "path": "src/ui/cockpit/rail/needs-you.types.ts",
+          "fingerprint": "e2ebbcc08d0958c25a79276ec121b1474a3419fe502144b2f7f6814ef98b4bc1"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "f6c42607bb1b6e1f27ef1abfebc2065491e81149f512789e29f7a401bffd6d7c"
+        },
+        {
+          "item_id": "c86bede55e682a60063ef80cbeae2ab273f7fe4e803c557b0515a5f8aae21104",
+          "path": "src/ui/cockpit/drawers/price-history.types.ts",
+          "fingerprint": "5bce71c7697c39f69a383c241692b7b43d1a8fd1d37f81c9a4858d12c04c4725"
+        },
+        {
+          "item_id": "d9df069a5c280b7991975ec63f20b138b55e29b1e534720771d431a826074092",
+          "path": "src/ui/cockpit/drawers/payoff.types.ts",
+          "fingerprint": "df69d4221c45afcac333cc8936bedec946e73e5b8a1e2a8e17e583f770c5a2e0"
+        },
+        {
+          "item_id": "e0e2765bd0ebb7e0a6c1f21ec5596a2b23874dce660b1e1c02338c170e5aaf2f",
+          "path": "eslint.cockpit.config.js",
+          "fingerprint": "adda88411111a5edf5e6eb90d5c2b60bd64b210f2a09fa44b585f6f48b7992b1"
+        },
+        {
+          "item_id": "eb124f3b0b7c52d4aa187202ec543b74b984f61312fd394881e743b3373e2c65",
+          "path": "src/ui/cockpit/rail/identity.types.ts",
+          "fingerprint": "8531082814dd5d273e50baea66892709d6ae91c929fa7ddf6b126c68b33e419e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "5599cd3ffbc927f308721c201f52b26f4689f15cdb554a7603248a16a7c85c02",
+          "path": "evidence/D08P/structural.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "ecc6f6e5297005433227fa0dac370067a6a779d5d0aeaa72561b0021aa80a50a",
+          "path": "tools/cockpit-rules.test.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 25033
+  }
+}
