@@ -1,5 +1,5 @@
 import {
-  AT_10, checkForUpdate, closeTheTrade, confirmReference, deferEntry, detail, expect, fillRows, identity, launchAt, MONDAY_1700, onboardedPage, openClosedTab, openDrawer, openExitForm, openTradeFromOpenList, probe,
+  AT_10, checkForUpdate, closeTheTrade, confirmReference, deferEntry, detail, expect, fillRows, identity, launchAt, MONDAY_1700, onboardedPage, openClosedTab, openExitForm, openTradeFromOpenList, probe,
   recordEntry, reloadFromNotice, rootOf, sell, SECOND_PLAN, test, valueOf, watchUpdatingAcrossDocuments, workspaceNames,
 } from './support.ts';
 
@@ -34,7 +34,6 @@ test.describe('B6.6 Update from D5R2 with data', { tag: '@release-history' }, ()
     // The earlier data is intact: both Trades are Open, and the deferred reflection is still owed.
     await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'XYZ', exact: true })).toBeVisible();
     await openTradeFromOpenList(page, 'ABC');
-    await openDrawer(page, 'Journal');
     await expect(detail.reflectionOwed(page)).toBeVisible();
 
     // A full exit closes the Trade.

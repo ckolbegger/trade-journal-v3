@@ -1,0 +1,9 @@
+# D08P TDD log, T8P.15-B1
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| Task | Case | Phase | Command | Outcome | Failure excerpt |
+|---|---|---|---|---|---|
+| T8P.15-B1 | should select the Journal drawer and open that Debt.s form when Reflect now is chosen in Needs you | red | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "should select the Journal drawer and open that Debt.s form when Reflect now is chosen in Needs you"` | exit 1; Tests  1 failed, 8 skipped (9) | TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Reflect now"  |
+| T8P.15-B1 | should select the Journal drawer and open that Debt.s form when Reflect now is chosen in Needs you | green | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "should select the Journal drawer and open that Debt.s form when Reflect now is chosen in Needs you"` | exit 0; Tests  1 passed, 8 skipped (9) |  |
+| T8P.15-B1 | note: also changed (a11y and wiring side effects) | note | `npx vitest run src/ui` | exit 0; 64 files, 676 passed. needs-you.tsx: the alert is a `div role="alert"` inside its `li`, so the list's children are all list items (axe `list`, e2e/d4/responsive-a11y). Cockpit.test.tsx and Journal.test.tsx: the Journal drawer's "Reflect now" reads are scoped to the Journal tabpanel, since the rail now offers a second one. e2e: reflectionOwed, closeReviewOwed, closeReviewOwedHeading, dueNote and reflectNowButton in rail-b.ts now read the Needs you card; journalReflectNowButton (includeHidden, #drawer-panel-journal) added for the read-only absence checks. | |

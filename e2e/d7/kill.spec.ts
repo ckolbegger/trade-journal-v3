@@ -1,5 +1,5 @@
 import {
-  BASE_URL, createShortPutTrade, detail, entriesOf, expect, factsOf, firstPage, FRIDAY_NOV_1700, onboardedPage, openDrawer, pinClock, probe, receiptResult, recordExpiration, spawnedBrowser, test, tradesOf, valueOf, workspaceOf,
+  BASE_URL, createShortPutTrade, detail, entriesOf, expect, factsOf, firstPage, FRIDAY_NOV_1700, onboardedPage, pinClock, probe, receiptResult, recordExpiration, spawnedBrowser, test, tradesOf, valueOf, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -32,7 +32,6 @@ test.describe('B7.8 Kill after commit', () => {
       await expect(detail.heading(page, 'MNO')).toBeVisible();
       await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via expiration of 2 contracts');
       // Both reflections are answered: nothing is owed.
-      await openDrawer(page, 'Journal');
       await expect(detail.reflectionOwed(page)).toHaveCount(0);
       await expect(detail.closeReviewOwed(page)).toHaveCount(0);
 

@@ -263,7 +263,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     );
     const user = userEvent.setup();
     await openDrawer(user, 'Journal');
-    await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+    await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
 
     const form = await screen.findByRole('form', { name: 'Reflection' });
     expect(facade.Journal.getDefinitions).toHaveBeenCalledWith({ revision: 'def-pcr-1' });
@@ -315,7 +315,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       );
       const user = userEvent.setup();
       await openDrawer(user, 'Journal');
-      await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+      await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
       const form = await screen.findByRole('form', { name: 'Reflection' });
       if (button === 'Answer') {
         await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getAllByRole('radio')[0] as HTMLElement);
@@ -439,14 +439,14 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       return form;
     };
 
-    await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+    await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
     const form = await answerMode();
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     await user.click(within(form).getByRole('button', { name: 'Cancel' }));
     expect(onDirtyChange).toHaveBeenLastCalledWith(false);
 
     onDirtyChange.mockClear();
-    await user.click(screen.getByRole('button', { name: 'Reflect now' }));
+    await user.click(within(screen.getByRole('tabpanel', { name: 'Journal' })).getByRole('button', { name: 'Reflect now' }));
     await answerMode();
     expect(onDirtyChange).toHaveBeenLastCalledWith(true);
     await user.click(screen.getByRole('button', { name: 'Decline' }));
@@ -474,7 +474,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     );
     const user = userEvent.setup();
     await openDrawer(user, 'Journal');
-    await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+    await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
     await user.click(await screen.findByRole('button', { name: 'Decline' }));
 
     const saved = await screen.findByRole('region', { name: 'Saved reflection' });

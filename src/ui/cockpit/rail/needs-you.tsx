@@ -10,7 +10,14 @@ export interface NeedsYouShellProps extends ShellProps {
 }
 
 function Item({ item }: { readonly item: NeedsYouItem }) {
-  if (item.kind === 'Alert') return <li role="alert">{item.text}</li>;
+  // The alert is inside its list item, so the list's every child stays a list item.
+  if (item.kind === 'Alert') {
+    return (
+      <li>
+        <div role="alert">{item.text}</div>
+      </li>
+    );
+  }
   if (item.kind === 'Note') return <li>{item.text}</li>;
   if (item.kind === 'MarkMissing') {
     return (

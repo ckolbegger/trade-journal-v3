@@ -1,7 +1,7 @@
 // Trade Detail reads of rail lane R2: Conditions (Risk to stop, Reward to target, the Conditions table, Worst case, Max reward) and Needs
 // you (the Settlement Due panel, Record expiration, the owed reflections). Each read goes through the current layout, scoped to its card.
 import type { Locator, Page } from '@playwright/test';
-import { figureIn, journalRegion, regionOf, valueIn } from './scope.ts';
+import { detailRoot, figureIn, journalRegion, regionOf, valueIn } from './scope.ts';
 
 const riskReward = (page: Page): Locator => regionOf(page, 'Risk and reward');
 
@@ -29,13 +29,16 @@ export const settlementDueHeading = (page: Page): Locator => settlementDuePanel(
 export const settlementDueValue = (page: Page, term: string): Locator => valueIn(settlementDuePanel(page), term);
 export const recordExpirationLink = (page: Page): Locator => settlementDuePanel(page).getByRole('link', { name: 'Record expiration' });
 
-// Needs you: the owed reflections, which the Journal card lists until the rail's card does.
-export const reflectionOwed = (page: Page): Locator => journalRegion(page).getByText('Reflection owed');
+// Needs you: the owed reflections, listed in the rail's card (W7). Reflect now there selects the Journal drawer and opens the form on its card.
+export const reflectionOwed = (page: Page): Locator => needsYouCard(page).getByText('Reflection owed');
+export const closeReviewOwed = (page: Page): Locator => needsYouCard(page).getByRole('heading', { name: /^Close Review/, level: 3 });
+export const closeReviewOwedHeading = (page: Page): Locator => needsYouCard(page).getByRole('heading', { name: 'Close Review Reflection owed', level: 3 });
+export const dueNote = (page: Page, text: string, exact = false): Locator => needsYouCard(page).getByText(text, { exact });
+export const reflectNowButton = (page: Page): Locator => needsYouCard(page).getByRole('button', { name: 'Reflect now' });
+
+// The Journal card's own items, which hold the forms. `includeHidden` so an absence read holds while another drawer is selected.
 export const reflectionOwedExact = (page: Page): Locator => journalRegion(page).getByText('Reflection owed', { exact: true });
-export const closeReviewOwed = (page: Page): Locator => journalRegion(page).getByText('Close Review owed');
-export const closeReviewOwedHeading = (page: Page): Locator => journalRegion(page).getByRole('heading', { name: 'Close Review Reflection owed', level: 3 });
-export const dueNote = (page: Page, text: string, exact = false): Locator => journalRegion(page).getByText(text, { exact });
-export const reflectNowButton = (page: Page): Locator => journalRegion(page).getByRole('button', { name: 'Reflect now' });
+export const journalReflectNowButton = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true });
 export const declineButton = (page: Page): Locator => journalRegion(page).getByRole('button', { name: 'Decline', exact: true });
 export const answerButton = (page: Page): Locator => journalRegion(page).getByRole('button', { name: 'Answer', exact: true });
 export const debtForm = (page: Page): Locator => journalRegion(page).getByRole('form', { name: 'Reflection' });

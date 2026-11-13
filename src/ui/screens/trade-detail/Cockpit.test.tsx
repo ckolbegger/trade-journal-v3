@@ -133,14 +133,14 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       revision: 'debt-1-rev-1',
       dueStatus: 'Due',
     };
-    const renderOwed = () => {
+    const renderOwed = (writable = true) => {
       const facade = facadeDouble();
       vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [debt] }), binding: {} } as never);
       vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
       vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
       const onDirtyChange = vi.fn();
       render(
-        <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <RuntimeContext.Provider value={{ writable, report: () => undefined }}>
           <MemoryRouter initialEntries={['/trades/trade-1']}>
             <Routes>
               <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" onDirtyChange={onDirtyChange} />} />
@@ -151,11 +151,31 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       return onDirtyChange;
     };
 
+    it("should select the Journal drawer and open that Debt's form when Reflect now is chosen in Needs you", async () => {
+      const user = userEvent.setup();
+      renderOwed();
+      const needsYou = await screen.findByRole('region', { name: 'Needs you' });
+      expect(selectedTab()).toBe('Today');
+      await user.click(within(needsYou).getByRole('button', { name: 'Reflect now' }));
+      expect(selectedTab()).toBe('Journal');
+      // The form opens on the Debt's card in the Journal drawer, not in the rail.
+      const form = await within(screen.getByRole('tabpanel', { name: 'Journal' })).findByRole('form', { name: 'Reflection' });
+      expect(form).toBeTruthy();
+      expect(within(needsYou).queryByRole('form', { name: 'Reflection', hidden: true })).toBeNull();
+      cleanup();
+
+      // Read only, no Reflect now is offered anywhere on the page, the hidden drawers included.
+      renderOwed(false);
+      await screen.findByRole('region', { name: 'Needs you' });
+      expect(within(screen.getByRole('region', { name: 'Needs you' })).getByText('Position Change Reflection Reflection owed')).toBeTruthy();
+      expect([...document.querySelectorAll('button')].filter((button) => button.textContent === 'Reflect now')).toEqual([]);
+    });
+
     it('should keep an unsaved reflection when the reader moves to another drawer and back', async () => {
       const user = userEvent.setup();
       const onDirtyChange = renderOwed();
       await openDrawer(user, 'Journal');
-      await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+      await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
       const form = await screen.findByRole('form', { name: 'Reflection' });
       await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText('Reactive'));
       expect(onDirtyChange).toHaveBeenLastCalledWith(true);
@@ -172,7 +192,7 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       const user = userEvent.setup();
       renderOwed();
       await openDrawer(user, 'Journal');
-      await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+      await user.click(await within(await screen.findByRole('tabpanel', { name: 'Journal' })).findByRole('button', { name: 'Reflect now' }));
       await user.click(await screen.findByRole('button', { name: 'Decline' }));
       await screen.findByRole('region', { name: 'Saved reflection' });
 

@@ -79,7 +79,7 @@
   border-top: 0;
 }
 
-.needs-you-list > li[role='alert'] {
+.needs-you-list [role='alert'] {
   font-weight: 600;
   color: var(--stop);
 }

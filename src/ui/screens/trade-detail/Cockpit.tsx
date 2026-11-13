@@ -13,6 +13,7 @@ import { PlanRiskDrawer } from '../../cockpit/drawers/plan-risk.tsx';
 import { PositionDrawer } from '../../cockpit/drawers/position.tsx';
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
+import { localTime } from '../../format.ts';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 import { RiskRewardSection } from './RiskReward.tsx';
 import { SummaryCard } from './Summary.tsx';
@@ -64,7 +65,19 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
     <RiskRewardSection evaluation={open.current.evaluation} baseline={open.baseline} option={open.plan.legs[0]?.instrument.kind === 'Option'} symbol={open.plan.underlying} />
   );
 
-  const panelOf = (drawer: Drawer): ReactNode => {
+  // "Reflect now" in Needs you (A217): select the Journal drawer and open that Debt's form on its card. Every drawer stays mounted, so the
+  // Debt's own "Reflect now" is there to choose, and it keeps the one-form-at-a-time rule (it is disabled while another form is open).
+  const reflectNow = (debtId: string) => {
+    const debt = view.journal.find((item) => 'kind' in item && item.kind === 'Debt' && item.id === debtId);
+    if (!debt) return;
+    setSelected('Journal');
+    const moment = `Position Change at ${localTime(debt.momentTime, timeZone)}`;
+    const items = [...(document.getElementById(`drawer-panel-${tabId('Journal')}`)?.querySelectorAll('li') ?? [])];
+    const card = items.find((item) => item.querySelector('h3')?.textContent?.includes(debt.entryType) && item.textContent?.includes(moment));
+    [...(card?.querySelectorAll('button') ?? [])].find((button) => button.textContent === 'Reflect now')?.click();
+  };
+
+  const panelOf =(drawer: Drawer): ReactNode => {
     switch (drawer) {
       case 'Today':
         return (
@@ -106,7 +119,7 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
       <section className="cockpit-rail" aria-label="State of play">
         <IdentityCard {...shell} />
         {!('recordedPositionChanges' in view) && <SummaryCard view={view} timeZone={timeZone} />}
-        <NeedsYou {...shell} />
+        <NeedsYou {...shell} onReflectNow={reflectNow} />
         <PnlCard {...shell} />
         <ConditionsCard {...shell} />
       </section>

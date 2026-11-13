@@ -51,6 +51,7 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await expect(detail.closeReviewOwedHeading(page)).toBeVisible();
     await expect(detail.reflectionOwedExact(page)).toBeVisible();
     await expect(detail.reflectNowButton(page)).toHaveCount(0);
+    await expect(detail.journalReflectNowButton(page)).toHaveCount(0);
     await expect(detail.declineButton(page)).toHaveCount(0);
     await expect(detail.recordExitLink(page)).toHaveCount(0);
 
