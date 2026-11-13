@@ -1,0 +1,32 @@
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 7 tests using 1 worker
+
+[1/7] [chromium] › e2e/d4/correct-mark.spec.ts:6:3 › B4.4 Correct a Mark › should show Corrected with the reason and +$130.00 on the Detail, with two revisions stored
+[2/7] [chromium] › e2e/d4/expected-mark.spec.ts:12:3 › B4.5 Expected Mark Date (AC-MARK-001) › should show Missing with the stale Friday Mark as context and no current dollar figure at Tuesday noon, then Available for Oct 12 and not stale after Monday is entered
+[3/7] [chromium] › e2e/d6/exit.spec.ts:10:3 › B6.1 Partial then final exit › should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record
+[4/7] [chromium] › e2e/d6/responsive-a11y.spec.ts:28:3 › B6.12 Responsive and accessible › should keep a half-filled full exit through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the exit form, the Closed list in each state, Closed Detail, Open Detail with Lot Matches and the owed-reflection cards, say signed P&L and Closed via in text, and record a full exit by keyboard alone
+[5/7] [chromium] › e2e/d6/responsive-a11y.spec.ts:196:3 › B6.12 Responsive and accessible › should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail
+[6/7] [chromium] › e2e/d6/responsive-a11y.spec.ts:247:3 › B6.12 Responsive and accessible › should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px
+[7/7] [chromium] › e2e/d6/responsive-a11y.spec.ts:292:3 › B6.12 Responsive and accessible › should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px
+  7 passed (33.2s)
+browser exit=0
