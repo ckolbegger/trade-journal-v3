@@ -82,6 +82,7 @@ describe('Conditions card (W5, W6)', () => {
       ...waiting,
       current: {
         ...waiting.current,
+        firstMarksDue: '2026-10-12',
         evaluation: { ...waiting.current.evaluation, conditions: waiting.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable' as const, reason: 'AwaitingClose' as const, after: '2026-10-12' } })) },
       },
     };
@@ -163,6 +164,7 @@ describe('Conditions card (W5, W6)', () => {
       ...waiting,
       current: {
         ...waiting.current,
+        firstMarksDue: '2026-10-12',
         evaluation: { ...waiting.current.evaluation, conditions: waiting.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable' as const, reason: 'AwaitingClose' as const, after: '2026-10-12' } })) },
       },
     };
@@ -176,5 +178,27 @@ describe('Conditions card (W5, W6)', () => {
     const planned = blocks(renderCard(optionPlannedDetail('O-S2')));
     expect(planned.map((item) => item.querySelector('.condition-text')?.textContent)).toEqual(['MNO at or below 41.00', 'Option at or above $3.60', 'MNO at or above 44.50', 'Option at or below $0.30']);
     expect(planned.every((item) => item.querySelector('.condition-figure') === null && item.querySelector('.condition-why') === null)).toBe(true);
+  });
+});
+
+describe('Conditions card: first Marks pending (revision 90)', () => {
+  it('should show the reason on row 1, not the first-Marks note, when shares were added after an earlier Mark', () => {
+    // Shares bought after an earlier session's Marks: every condition waits for the next close, but Trade Views states no `firstMarksDue`,
+    // because an earlier Mark has valued the Trade.
+    const base = os2(TUESDAY);
+    const awaiting = base.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable' as const, reason: 'AwaitingClose' as const, after: '2026-10-13' } }));
+    const view: OpenTradeDetail = { ...base, current: { ...base.current, evaluation: { ...base.current.evaluation, conditions: awaiting } } };
+    expect(view.current).not.toHaveProperty('firstMarksDue');
+    const container = renderCard(view);
+    const items = blocks(container);
+    expect(items).toHaveLength(4);
+    for (const item of items) {
+      expect(item.querySelector('.condition-figure')?.textContent).toBe('Awaiting close');
+      expect(item.querySelector('.condition-why')).toBeNull();
+    }
+    const summary = within(container).getByRole('list', { name: 'Worst case and Max reward' });
+    const lines = within(summary).getAllByRole('listitem').map((item) => item.textContent ?? '');
+    expect(lines.map((line) => line.split(':')[0])).toEqual(['Worst case', 'Max reward']);
+    expect(container.textContent).not.toContain('arrive with the first Marks');
   });
 });

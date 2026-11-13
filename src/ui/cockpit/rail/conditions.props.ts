@@ -1,5 +1,4 @@
 import type { OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
-import { isMarkLacking } from '../../calculation-words.ts';
 import { dollarsAndR, unavailableLabel } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, rMultiple, shortDate } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
@@ -94,10 +93,10 @@ function openProps(view: OpenTradeDetail): ConditionsCardProps {
   const { evaluation } = view.current;
   // Once the contract expired its conditions are no longer measured (W6).
   if (view.settlement.length > 0) return { conditions: unmeasured(plan), summary: [{ text: EXPIRED }] };
-  // Nothing can be measured and no Mark is merely missing: the Trade is waiting for its first session to end.
-  const waiting = evaluation.conditions.length > 0 && evaluation.conditions.every((c) => c.result.kind === 'Unavailable' && !isMarkLacking(c.result));
-  const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting && evaluation.coverage.kind !== 'NotCovered'));
-  if (waiting && evaluation.coverage.kind !== 'NotCovered') return { conditions, summary: [{ text: BEFORE_MARKS }] };
+  // Trade Views states when no Mark has valued the Trade yet (revision 90); the card infers nothing from the waiting figures.
+  const waiting = view.current.firstMarksDue !== undefined;
+  const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting));
+  if (waiting) return { conditions, summary: [{ text: BEFORE_MARKS }] };
   // A Closed Detail has no open Position to measure.
   if ('terminalDisposition' in view) return { conditions, summary: [] };
   const worst = dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR);

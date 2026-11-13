@@ -1,7 +1,6 @@
 import { createElement } from 'react';
 import type { ClosedTradeDetail, OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { isMarkLacking } from '../../calculation-words.ts';
 import { calculation, closedViaSale, FACTS_INCOHERENT_FIGURE, signed } from '../../figures.ts';
 import { money, quantity, rMultiple, shortDate } from '../../format.ts';
 import { closedViaOption, timingWords } from '../../screens/option-disposition.ts';
@@ -35,19 +34,12 @@ function openLineOf(view: PlannedTradeDetail | OpenTradeDetail): string {
   return `${quantity(held)} of ${leg?.quantity ?? ''} shares open`;
 }
 
-// Whether an Open Trade has no Marks yet: it was entered after the last close, so nothing is valued, and the only Mark it waits for is today's.
-// The same signals the Today drawer reads. T8P.28 replaces this with the explicit Trade Views field, and every reader with it.
-export function hasNoMarksYet(view: OpenTradeDetail): boolean {
-  const { current } = view;
-  const pnl = current.evaluation.currentMarkedPnl;
-  const unmarked = pnl.kind === 'Unavailable' && !isMarkLacking(pnl);
-  return !current.datedLine && current.evaluation.atEntry !== null && current.expectedMarkDate !== undefined && view.settlement.length === 0 && unmarked;
-}
-
 function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined): Omit<PnlCardProps, 'name'> {
   const pnl = view.current.evaluation.currentMarkedPnl;
   const change = replay?.sessions.at(-1)?.change;
-  if (hasNoMarksYet(view)) return { figure: NO_FIGURE, line: "Trade P&L once today's session ends", openLine: openLineOf(view) };
+  // Before any Marks, Trade Views names the session whose close brings them (revision 90); the card infers nothing.
+  const { firstMarksDue } = view.current;
+  if (firstMarksDue !== undefined) return { figure: NO_FIGURE, line: `Trade P&L once the ${shortDate(firstMarksDue)} session ends`, openLine: openLineOf(view) };
   // A contract due for settlement has no figure: its reason names the contract, and the line says what the figure waits for.
   if (view.settlement.length > 0 && pnl.kind === 'Unavailable') return { figure: calculation(pnl, money), line: 'Trade P&L once the expiration is recorded' };
   return {

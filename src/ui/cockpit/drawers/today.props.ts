@@ -2,7 +2,7 @@ import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
 import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import type { Rational } from '../../../domain/values/index.ts';
 import { decimalMoney, decimalUnderlyingPrice, localTime, money, quantity, rMultiple, shortDate, underlyingPrice } from '../../format.ts';
-import { isMarkLacking } from '../../calculation-words.ts';
+import { toWorkspaceLocal } from '../../../domain/time/index.ts';
 import { calculation, dollarsAndR, pnlText, signed } from '../../figures.ts';
 import { contractCount, conditionDirection } from '../../screens/option-words.ts';
 import { abs, type Evaluation } from '../../screens/trade-detail/words.ts';
@@ -213,16 +213,18 @@ function atEntryOf(atEntry: NonNullable<Evaluation['atEntry']>, optionTrade: boo
 const clockTime = (instant: string, timeZone: string): string =>
   new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone }).format(new Date(instant)).replace(/\s?([AP])M$/, (_, half: string) => ` ${half.toLowerCase()}m`);
 
-// Before any Marks: nothing was held at an earlier session's Marks, and every lot is at entry. The figure is then unavailable because it
-// awaits the close, which is what is left once a missing Mark, the calendar and the Settlement Due are set aside (words stay in calculation-words).
+// "Fri Oct 9" in the Workspace zone.
+const openedDate = (instant: string, timeZone: string): string => shortDate(toWorkspaceLocal(instant, timeZone).split('T')[0] ?? '');
+
+// Before any Marks Trade Views names the session whose close brings them (`firstMarksDue`, revision 90); the drawer infers nothing. The
+// opening is the opening Position Change's, in the Workspace zone.
 function noMarksTextOf(view: OpenTradeDetail, timeZone: string): string | undefined {
-  const { evaluation, datedLine, expectedMarkDate } = view.current;
-  const { currentMarkedPnl } = evaluation;
-  if (datedLine || !evaluation.atEntry || expectedMarkDate === undefined || view.settlement.length > 0) return undefined;
-  if (currentMarkedPnl.kind !== 'Unavailable' || isMarkLacking(currentMarkedPnl)) return undefined;
+  const { firstMarksDue } = view.current;
+  if (firstMarksDue === undefined) return undefined;
   const resolved = view.entryResolution.kind === 'Resolved' ? view.entryResolution.positionChangeId : undefined;
   const opened = view.positionChanges.find((c) => c.factId === resolved) ?? view.positionChanges[0];
-  return `No Marks yet. This Trade opened today${opened ? ` at ${clockTime(opened.economicTime, timeZone)}` : ''}. Its first Marks, and every figure that needs them, are due once today's session ends.`;
+  const when = opened ? ` ${openedDate(opened.economicTime, timeZone)} at ${clockTime(opened.economicTime, timeZone)}` : '';
+  return `No Marks yet. This Trade opened${when}. Its first Marks, and every figure that needs them, are due once the ${shortDate(firstMarksDue)} session ends.`;
 }
 
 export function todayProps(input: TodayInput): TodayDrawerProps {

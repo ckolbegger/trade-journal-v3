@@ -67,14 +67,22 @@ describe('P&L card (W3, W4)', () => {
     expect(within(card).getByText('1 of 2 contracts open')).toBeTruthy();
   });
 
-  it('should show "—" and "Trade P&L once today\'s session ends" before any Marks, and the Planned words on a Planned Detail', () => {
-    // Shares bought after the close the figures are valued at, with no earlier Mark: nothing is marked yet.
+  it('should show "—" and "Trade P&L once the Mon Oct 12 session ends" before any Marks, and the Planned words on a Planned Detail', () => {
+    // Shares bought after the close the figures are valued at, with no earlier Mark: nothing is marked yet, and Trade Views says when the
+    // first Marks arrive (revision 90).
     const afterClose = positionChange('pc-9', 3, [execution('ex-9', '2026-10-12T21:00:00Z', 4, '40', '50.30', '1.00')]);
     const monday = { instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: MON_CLOSE, previousCloseInstant: '2026-10-09T20:00:00Z', resolution: { kind: 'Missing' } } as const;
-    const card = show(openDetailAt([afterClose], monday), sinceMonday);
+    const unmarked = openDetailAt([afterClose], monday);
+    const card = show({ ...unmarked, current: { ...unmarked.current, firstMarksDue: '2026-10-12' } }, sinceMonday);
     expect(card.querySelector('.pnl-figure')?.textContent).toBe('—');
-    expect(card.querySelector('.pnl-line')?.textContent).toBe("Trade P&L once today's session ends");
+    expect(card.querySelector('.pnl-line')?.textContent).toBe('Trade P&L once the Mon Oct 12 session ends');
     expect(within(card).getByText('40 of 100 shares open')).toBeTruthy();
+    cleanup();
+
+    // The same Detail without the field is not inferred to be unmarked.
+    const uninferred = show(unmarked, sinceMonday);
+    expect(uninferred.querySelector('.pnl-figure')?.textContent).not.toBe('—');
+    expect(uninferred.querySelector('.pnl-line')).toBeNull();
     cleanup();
 
     // The same Detail with an earlier close's dated line has Marks, so the figure says why it waits for the next close.

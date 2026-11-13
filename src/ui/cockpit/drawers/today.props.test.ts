@@ -132,15 +132,23 @@ describe('Today drawer (W8)', () => {
   });
 
   it('should show "No Marks yet." before any Marks', () => {
-    // 60 shares bought Monday 10:00 New York, after Friday's session, which was the last one with Marks to read.
+    // 40 shares bought Friday 4:30 pm New York, after Friday's close: the first Marks arrive with Monday's session, which Trade Views states
+    // (revision 90). The opening is the opening Position Change's, so its date is not the session's.
+    const afterClose = positionChange('pc-9', 3, [execution('ex-9', '2026-10-09T20:30:00Z', 4, '40', '50.30', '1.00')]);
     const friday = { instrumentKey: 'XYZ', tradingDate: '2026-10-09', closeInstant: '2026-10-09T20:00:00Z', previousCloseInstant: '2026-10-08T20:00:00Z', resolution: { kind: 'Missing' } } as const;
-    drawer(openDetailAt([PC1], friday), replayOf([]));
-    expect(screen.getByText("No Marks yet. This Trade opened today at 10:00 am. Its first Marks, and every figure that needs them, are due once today's session ends.")).toBeTruthy();
+    const unmarked = openDetailAt([afterClose], friday);
+    drawer({ ...unmarked, current: { ...unmarked.current, firstMarksDue: '2026-10-12' } }, replayOf([]));
+    expect(screen.getByText('No Marks yet. This Trade opened Fri Oct 9 at 4:30 pm. Its first Marks, and every figure that needs them, are due once the Mon Oct 12 session ends.')).toBeTruthy();
     expect(screen.queryByRole('table')).toBeNull();
     expect(screen.queryByRole('region', { name: /^At the .* Marks$/ })).toBeNull();
     // The tracks still show where the Stop and the Target sit, with no "now".
     expect(screen.getByRole('heading', { name: 'Where the price sits' })).toBeTruthy();
     expect(screen.getByRole('img', { name: /^XYZ: Stop \$.*, Target \$[\d.,]+$/ })).toBeTruthy();
+    cleanup();
+
+    // Without the field nothing is inferred from the waiting figures.
+    drawer(unmarked, replayOf([]));
+    expect(screen.queryByText(/No Marks yet/)).toBeNull();
   });
 
   it('should show "At the Mon Oct 12 Marks" and At entry in their existing figures', () => {
