@@ -810,7 +810,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.16 | 1 | D1 | In progress from `7cd16391` | |
 | T8P.19 | 1 | D4 | In progress from `f0c9948d` | |
 | T8P.18 | 1 | D3 | In progress from `f0c9948d` | |
-| T8P.20 | 1 | D5 | Not started | |
+| T8P.20 | 1 | D5 | In progress from `3b6a0e76` | |
 | T8P.21 | 1 | D6 | Not started | |
 | T8P.22 | 2 | — | Not started | |
 | T8P.27 | 2 | — | Not started | |
