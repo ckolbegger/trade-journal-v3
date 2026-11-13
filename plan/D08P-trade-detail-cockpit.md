@@ -840,8 +840,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.7 | 1 | BA | Done | `1a80e469`; B1 `a2099b64`; lane tier `07d20724` |
 | T8P.8 | 1 | BM | Done | `5439bfb0`; B1 `ca59697a`, B2 `6cf43890`, B3 `5c9dd2f3`; lane tier `957499ac` |
 | T8P.9 | 1 | BV | Done | `61bba50a`; titles `36dd9c2e`; B8P.3 days `f4bde124`; lane tier `02e4c721` |
-| T8P.10 | 1 | BV | In progress from `aa8bfddd` | |
-| T8P.11 | 1 | BV | Not started | |
+| T8P.10 | 1 | BV | Done | `8f9f4419`; lane tier `f5764bc6`; revision 93 `ba5b5e63`; lane tier `283e7996` |
+| T8P.11 | 1 | BV | In progress from `283e7996` | |
 | T8P.14 | 1 | R2 | Done | `2705ba83`; titles `9c2d460b`; B2, B3 `e48ca024`; lane tier `f51809c3` (B1 moved to T8P.29) |
 | T8P.15 | 1 | R2 | In progress from `aa8bfddd` | |
 | T8P.12 | 1 | R1 | Done | `3ca9819b`; titles `0c96414f`; B1 `b6a439cf`; lane tier and specs `f995af22` |
