@@ -677,3 +677,22 @@ Six lanes from `12a396c0` (Progress rows say `ac089378`; only plan and evidence 
 - **Test data.** Section 5 says "a cockpit fixture builder joins `tests/support/`", but no lane owns `tests/support/`. UI lanes import existing fixtures read-only, and build new view data inside their own `*.props.test.ts`, the only file under `src/ui/cockpit/` that A216 lets import `app/types`. A lane needing a shared new fixture stops. T8P.22 or T8P.27 may consolidate.
 - **Shared spec files.** A lane edits only its owned files, plus the spec and unit-test lines section 1.5 assigns to its task (and, for D2, the seven spec lines T8P.5's note names). Other lanes change other lines of the same file, as section 4.2 expects.
 - **Optional fields from parallel lanes.** R2 tests `nearest`, and R1 tests `days`, with view data that carries the field (typed since T8P.3), and shows nothing extra when it is absent. The backend lanes fill the fields.
+
+### Merge run 3 (`merge-3`, after T8P.5)
+
+The complete cumulative run on `9027c247`, by `suite-runner`, with `browser-auto 64cd1bd8`. The tier was full, since the first matching path was `e2e/d2/cockpit-layout.spec.ts`. Evidence commit: `c903e711`; it also carried the main session's uncommitted wave-1 note in this file. `run-complete.sh`: run complete. Ports were free before and after.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 152 files, 1540 tests passed, exit 0 | [suite-runs/merge-3-unit.txt](suite-runs/merge-3-unit.txt) |
+| Node integration | 103 files, 218 tests passed, exit 0 | [suite-runs/merge-3-integration.txt](suite-runs/merge-3-integration.txt) |
+| Browser, full tier, browser-1 | 128 passed (6.5 min), exit 0 | [suite-runs/merge-3-browser-1.txt](suite-runs/merge-3-browser-1.txt) |
+| Browser, full tier, browser-2 | 74 passed (4.7 min), exit 0 | [suite-runs/merge-3-browser-2.txt](suite-runs/merge-3-browser-2.txt) |
+| Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/merge-3-checks.txt](suite-runs/merge-3-checks.txt) |
+
+### User decisions during wave 1 (2026-11-13)
+
+- **T8P.6 stopped.** The new `nearest` failed one strict expectation in lane BV's `current-evaluation.test.ts`. The user chose "Add nearest to that helper".
+- **T8P.9** had changed two strict expectations in `tests/integration/d7sp/trade-detail-finished.test.ts` to `days: 1`, which no row allowed. The user chose "Approve, plus a general rule".
+
+Both are plan revision 88 (section 1.5, "Shapes").

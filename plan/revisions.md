@@ -2,6 +2,12 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 88: the commit tagged `claude-opus-5.5-plan-r88` (revision 87, no decision). D08P's section 1.5 "Shapes" assumed no expected value would change for the additive `nearest` (A207) and `days` (A208). It missed existing tests that compare whole objects strictly.
+  - T8P.6 adds `nearest: true` to `current-evaluation.test.ts`'s `reading` helper (two conditions; the only line it changes in lane BV's file).
+  - T8P.9 adds `days: 1` to two lines of `tests/integration/d7sp/trade-detail-finished.test.ts`.
+  - The rule for the rest of D08P: when a strict expectation fails only because one of those two fields now appears, the task adds exactly that field with its correct value and lists the line, and the main session checks it. Any other unnamed change still stops the task.
+
+  Rejected: loosening the checks to partial matches; hiding `nearest` from `browseTrades`. No acceptance scenario changes status, no durable compatibility changes, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-13.
 - Revision 87: the commit tagged `claude-opus-5.5-plan-r87` (revision 86, no decision). T8P.5's section in D08P's breakdown gains the cockpit layout's two re-anchored geometry checks. The prototype's layout puts a 320 px rail beside the drawers, with the banner across both, and bug task T8P.5-B2 adds it. That layout broke two `e2e/d2/ui-alignment.spec.ts` checks that measured the stacked page. Each keeps its meaning but measures against its new container:
   - T2.60-B4's storage icon is at the far right of the rail's identity card, the title row it now sits in.
   - T2.64's Fulfillment value aligns with the description-list values in the drawer column above it, not the Summary card in the rail.
