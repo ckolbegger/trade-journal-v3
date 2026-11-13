@@ -1110,3 +1110,20 @@ Commits `d0d9be84` (task) and `68464489` (lane tier: 1602 unit, 222 integration,
 - **ocr** (`7751d39b..e8e6c228`): session `c956183a-d321-43f6-90a6-b8745bcb3cff`, 2 files, 0 comments; relocated `392bd6ce-5767-4157-99d7-3cf52b3b07ff`, 0 comments. Raw output: [ocr/T8P.15-B2-e8e6c228.json](ocr/T8P.15-B2-e8e6c228.json), [ocr/T8P.15-B2-e8e6c228-relocated.json](ocr/T8P.15-B2-e8e6c228-relocated.json). Clean.
 - **T8P.15 rebase.** Lane R2 was rebased onto `175da9ed`, which brought in T8P.10 and T8P.11 code. The lane tier `T8P.15-rebase` is running.
 - The rebased lane tier `T8P.15-rebase` passed (1634 unit, 222 integration, 14 of 14; run complete). Fast-forwarded, and lane R2 stays for T8P.29.
+
+## T8P.29 The readers of "no Marks yet" (lane `d08p-r2`)
+
+Commits `5341fb77` (task), `681e8788` (lane tier: 1635 unit, 222 integration, 14 of 14; run complete) and `697d1bfc` (mutation rows).
+- **Cases, each red then green, with no first-run pass:**
+  - The Conditions case. Red: `expected undefined to be 'Awaiting close'`.
+  - T8P.13's case 3, retitled word for word to revision 91's W3 words. Red: `expected 'Trade P&L once today's session ends' to be 'Trade P&L once the Mon Oct 12 session…'`.
+  - T8P.16's before-Marks case, title kept since it doesn't quote the old words. Red: `Unable to find an element with the text: No Marks yet. This Trade opened Fri Oct 9 at 4:30 pm. …`. This carries T8P.16-B2's fix.
+- **Field-removal mutations** (section 5, requested by the main session after the first report), restored afterwards:
+  - P&L: `pnl.props.test.tsx:77`, `expected 'Awaiting the close after Mon Oct 12' to be '—'`.
+  - Today: `today.props.test.ts:141`, `Unable to find an element with the text: No Marks yet. …`.
+  - Conditions: `conditions.props.test.ts:95`, `expected <span …> to be null`.
+- **Expected values changed, both named by revision 91:**
+  - `pnl.props.test.tsx` case 3's line (W3).
+  - `today.props.test.ts`'s "No Marks yet." text (W8). Its double is now an opening at Fri Oct 9 20:30Z with `firstMarksDue` `2026-10-12`.
+  - Two Conditions doubles gained `firstMarksDue`, with no expectation changed. No spec held the old words.
+- **Inferences removed:** `hasNoMarksYet` (`pnl.props.ts`), the `waiting` inference (`conditions.props.ts`), `noMarksTextOf` (`today.props.ts`), and three unused `isMarkLacking` imports. Each double without the field now asserts the before-Marks words are absent.
