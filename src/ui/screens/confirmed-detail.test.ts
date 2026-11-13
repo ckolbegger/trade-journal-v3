@@ -60,7 +60,7 @@ describe('confirmedDetail', () => {
     expect(detail.payoff).toBe(optionSuccess.postCommit.payoff);
   });
 
-  it('should show Expires on the handed-over Planned Detail without a read', () => {
+  it('should show "Expires" on the handed-over Planned Detail without a read', () => {
     const contractExpiration = { status: 'Expires', date: '2026-11-20', days: 39 } as const;
     const withLine = { ...optionSuccess, postCommit: { ...optionSuccess.postCommit, contractExpiration } } as unknown as ConfirmedResult;
     const detail = confirmedDetail(withLine, { prompts: [] } as unknown as EntryDefinitionRecord, { strategy: '', account: '', institution: '' });

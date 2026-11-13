@@ -8,7 +8,7 @@ import {
 const EXPIRATION_FRIDAY_0900_NY = '2026-12-18T14:00:00Z';
 
 describe('expiration line: days (A208)', () => {
-  it('should give an Open O-S2 line Expires 2026-12-18 with 66 days on Tue 10-13', async () => {
+  it("should give an Open O-S2's line \"Expires\" 2026-12-18 with 66 days on Tue 10-13", async () => {
     const { app } = await onboardedAt(TUESDAY_1700_NY);
     const tradeId = await openOs2(app);
 
@@ -44,7 +44,7 @@ describe('expiration line: days (A208)', () => {
 });
 
 describe('just-confirmed Plan: expiration line (A209, tech debt item 23)', () => {
-  it('should carry the expiration line in confirmPlan post-commit result, equal to the Planned Detail read afterwards', async () => {
+  it("should carry the expiration line in confirmPlan's post-commit result, equal to the Planned Detail read afterwards", async () => {
     const { app } = await onboardedAt(TUESDAY_1700_NY);
 
     const confirmed = await confirmOs2(app);
