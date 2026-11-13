@@ -59,5 +59,22 @@ printf '$ npx playwright test\n' >"$t/task2/suite-runs/x-browser.txt"
 verdict task2 x
 [[ $code != 0 && "$out" == *"run INCOMPLETE"* ]] || bad "a task-tier run with an unfinished browser file was not reported INCOMPLETE: $out"
 
+# Case B20: a task-tier run under a label that earlier held a lane-tier run, browser stage not run, is
+# INCOMPLETE. Drives the real full-suite.sh marker handling from a scratch git repo: browser-auto with a
+# base whose diff touches package.json picks the full tier and runs nothing, so it is cheap.
+mk stale x unit integration checks
+echo "TIER lane" >"$t/stale/suite-runs/x-lane.txt"
+repo="$t/repo"
+mkdir "$repo"
+git -C "$repo" init -q
+git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m base
+base=$(git -C "$repo" rev-parse HEAD)
+echo '{}' >"$repo/package.json"
+git -C "$repo" add package.json
+git -C "$repo" -c user.name=t -c user.email=t@t commit -q -m pkg
+(cd "$repo" && "$here/full-suite.sh" "$t/stale" x browser-auto "$base" >/dev/null 2>&1)
+verdict stale x
+[[ $code != 0 && "$out" == *"run INCOMPLETE"* ]] || bad "a non-lane run under a label with an old lane marker, browser stage not run, was not reported INCOMPLETE: $out"
+
 (( fail == 0 )) && echo "PASS: run-complete.sh reads the lane tier only from its marker"
 exit $fail

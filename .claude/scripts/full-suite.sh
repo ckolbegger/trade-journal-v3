@@ -91,7 +91,8 @@ out="$dir/suite-runs"
 label=$2
 mkdir -p "$out"
 # The lane marker run-complete.sh reads: only a run that has it is judged as the lane tier.
-[[ "$stage" == lane ]] && echo "TIER lane" >"$out/$label-lane.txt"
+# Only the lane stage writes it; every other stage removes an older one, so the tier follows the latest stages.
+if [[ "$stage" == lane ]]; then echo "TIER lane" >"$out/$label-lane.txt"; else rm -f "$out/$label-lane.txt"; fi
 summary='Test Files |^ *Tests |^ *[0-9]+ (passed|failed|skipped|flaky|did not run)'
 failed=0
 
