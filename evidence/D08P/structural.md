@@ -45,6 +45,7 @@ Worktree and branch names the Agent tool gives each lane task (handoff, section 
 | T8P.16 | D1 (wave 1) | `.claude/worktrees/d08p-d1` | `d08p/d1` | `f0c9948d` |
 | T8P.19 | D4 (wave 1) | `.claude/worktrees/d08p-d4` | `d08p/d4` | `3b6a0e76` |
 | T8P.18 | D3 (wave 1) | `.claude/worktrees/d08p-d3` | `d08p/d3` | `3b6a0e76` |
+| T8P.20 | D5 (wave 1) | `.claude/worktrees/d08p-d5` | `d08p/d5` | `1242cd09` |
 
 ## T8P.1 Swarm tooling
 
