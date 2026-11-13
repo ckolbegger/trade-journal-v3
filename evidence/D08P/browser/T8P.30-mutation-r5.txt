@@ -1,0 +1,67 @@
+
+Running 4 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged (7.5s)
+  ✓  2 [chromium] › e2e/d5/faults.spec.ts:59:3 › B5.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed Debt answer, and record no Entry (1.9s)
+  ✘  3 [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged (8.4s)
+  ✓  4 [chromium] › e2e/d6/runtime-failure.spec.ts:77:3 › B6.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed exit and its answers, and record no Position Change (2.4s)
+
+
+  1) [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: /^Journal \(\d+\)$/, includeHidden: true }).getByRole('button', { name: 'Answer', exact: true, includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: /^Journal \(\d+\)$/, includeHidden: true }).getByRole('button', { name: 'Answer', exact: true, includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: /^Journal \(\d+\)$/, includeHidden: true }).getByRole('button', { name: 'Answer', exact: true, includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      49 |     await expect(detail.anywhere(() => detail.declineButton(page))).toHaveCount(0);
+      50 |     await expect(detail.anywhere(() => detail.debtForm(page))).toHaveCount(0);
+    > 51 |     await expect(detail.anywhere(() => detail.answerButton(page))).toHaveCount(0);
+         |                                                                    ^
+      52 |
+      53 |     expect(await probe(page)).toEqual(before);
+      54 |     await context.close();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d5/faults.spec.ts:51:68
+
+    Error Context: test-results/d5-faults-B5-9-Recovery-On-86c06-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  2) [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      54 |     await expect(detail.anywhere(() => detail.journalReflectNowButton(page))).toHaveCount(0);
+      55 |     await expect(detail.anywhere(() => detail.declineButton(page))).toHaveCount(0);
+    > 56 |     await expect(detail.anywhere(() => detail.recordExitLink(page))).toHaveCount(0);
+         |                                                                      ^
+      57 |
+      58 |     // The partly closed Trade's Open Detail shows its Lot Match and the realized figure, with no Record exit.
+      59 |     // (Navigation stays inside the app: a new page load without ?faults=control would be Writable again.)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d6/runtime-failure.spec.ts:56:70
+
+    Error Context: test-results/d6-runtime-failure-B6-9-Re-ef16a-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  2 failed
+    [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged 
+    [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged 
+  2 passed (21.1s)

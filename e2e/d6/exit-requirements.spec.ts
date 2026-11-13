@@ -91,7 +91,7 @@ test.describe('B6.4 Oversell', () => {
     await openTradeFromOpenList(again, 'XYZ');
     await openDrawer(again, 'Position');
     await expect(detail.positionValue(again)).toHaveText('100 shares of XYZ');
-    await expect(detail.lotMatchesHeading(again)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.lotMatchesHeading(again))).toHaveCount(0);
     await relaunched.close();
   });
 });

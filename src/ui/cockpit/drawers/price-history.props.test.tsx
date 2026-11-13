@@ -118,7 +118,7 @@ describe('Price History (W9, P99)', () => {
     expect(opened).toBe(1);
     const whole = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined)} />);
     expect(whole.container.textContent).not.toContain('without Marks');
-    expect(within(whole.container).queryByRole('link')).toBeNull();
+    expect(within(whole.container).queryByRole('link', { hidden: true })).toBeNull();
     expect(priceHistoryTabCount(replay([MON, WED, THU]))).toBe(0);
   });
 });

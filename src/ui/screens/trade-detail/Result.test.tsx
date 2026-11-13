@@ -48,10 +48,10 @@ describe('Closed Trade Detail', () => {
     expect(within(journal).getByText('Holding to the target paid.')).toBeTruthy();
 
     // No Open-only section, Mark, or Expected Mark Date; no way to record another entry or exit.
-    for (const name of ['Valuation', 'Risk and reward', 'Position']) expect(screen.queryByRole('region', { name })).toBeNull();
+    for (const name of ['Valuation', 'Risk and reward', 'Position']) expect(screen.queryByRole('region', { name, hidden: true })).toBeNull();
     for (const text of ['Expected Mark Date', 'Mark', 'Open P&L']) expect(screen.queryByText(text)).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record entry', hidden: true })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record exit', hidden: true })).toBeNull();
   });
 });
 

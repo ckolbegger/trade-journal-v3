@@ -99,7 +99,7 @@ test.describe('B5.2 Decline in the Review', () => {
     await openDrawer(page, 'Journal');
     await expect(detail.journal(page).getByText('Declined later', { exact: true })).toBeVisible();
     await expect(detail.journal(page).getByText('Too rushed to write it up.')).toBeVisible();
-    await expect(detail.reflectionOwed(page)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
 
     const workspace = workspaceOf(await probe(page))!;
     const debts = debtsOf(workspace);

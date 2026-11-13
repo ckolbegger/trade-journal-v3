@@ -1,0 +1,67 @@
+
+Running 4 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged (8.6s)
+  ✓  2 [chromium] › e2e/d6/runtime-failure.spec.ts:77:3 › B6.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed exit and its answers, and record no Position Change (2.4s)
+  ✘  3 [chromium] › e2e/d7/runtime-failure.spec.ts:11:3 › B7.10 Recovery Only (faults build) › should keep the lists, option Detail, both payoff views and the Review readable with no Record expiration, Record entry, or Plan confirmation, and leave the probe unchanged (7.9s)
+  ✓  4 [chromium] › e2e/d7/runtime-failure.spec.ts:55:3 › B7.11 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed expiration and its answers, and record no Position Change (2.1s)
+
+
+  1) [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      66 |     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+      67 |     await expect(detail.positionRealizedToDate(page)).toContainText('$39.10');
+    > 68 |     await expect(detail.anywhere(() => detail.recordExitLink(page))).toHaveCount(0);
+         |                                                                      ^
+      69 |     await expect(detail.anywhere(() => detail.recordEntryLink(page))).toHaveCount(0);
+      70 |
+      71 |     expect(await probe(page)).toEqual(before);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d6/runtime-failure.spec.ts:68:70
+
+    Error Context: test-results/d6-runtime-failure-B6-9-Re-ef16a-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  2) [chromium] › e2e/d7/runtime-failure.spec.ts:11:3 › B7.10 Recovery Only (faults build) › should keep the lists, option Detail, both payoff views and the Review readable with no Record expiration, Record entry, or Plan confirmation, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').locator('header').getByRole('link', { name: 'Record exit', includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      33 |     await expect(detail.settlementDueHeading(page)).toBeVisible();
+      34 |     const links = detail.anywhere(() => [detail.recordExpirationLink(page), detail.recordEntryLink(page), detail.recordExitLink(page)]);
+    > 35 |     for (const link of links) await expect(link).toHaveCount(0);
+         |                                                  ^
+      36 |
+      37 |     // The write route is dropped: no New Plan to confirm from.
+      38 |     await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' })).toHaveCount(0);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d7/runtime-failure.spec.ts:35:50
+
+    Error Context: test-results/d7-runtime-failure-B7-10-R-66b34-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  2 failed
+    [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged 
+    [chromium] › e2e/d7/runtime-failure.spec.ts:11:3 › B7.10 Recovery Only (faults build) › should keep the lists, option Detail, both payoff views and the Review readable with no Record expiration, Record entry, or Plan confirmation, and leave the probe unchanged 
+  2 passed (21.8s)

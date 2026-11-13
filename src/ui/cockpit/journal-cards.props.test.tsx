@@ -87,7 +87,7 @@ describe('Journal session cards (W10–W13, A214)', () => {
     const [declined] = within(tuesday).getAllByRole('listitem');
     expect(within(declined!).getByText('Reflection declined')).toBeTruthy();
     expect(termValue(declined!, 'Reason')).toBe('Same plan, second fill.');
-    expect(within(wednesday).queryByRole('listitem')).toBeNull();
+    expect(within(wednesday).queryByRole('listitem', { hidden: true })).toBeNull();
   });
 
   it('should merge back-to-back sessions without Marks into one card', () => {
@@ -281,7 +281,7 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(within(monday).getByRole('button', { name: 'Decline' }).hasAttribute('disabled')).toBe(true);
 
     await user.click(within(tuesday).getByRole('button', { name: 'Cancel' }));
-    expect(within(tuesday).queryByRole('form')).toBeNull();
+    expect(within(tuesday).queryByRole('form', { hidden: true })).toBeNull();
     expect(within(monday).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
   });
 });

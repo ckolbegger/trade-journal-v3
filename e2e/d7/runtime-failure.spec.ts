@@ -31,7 +31,8 @@ test.describe('B7.10 Recovery Only (faults build)', () => {
     await expect(detail.payoff(page, 'Planned')).toContainText('Breakeven 57.00');
     await expect(detail.payoff(page, 'Current')).toBeVisible();
     await expect(detail.settlementDueHeading(page)).toBeVisible();
-    for (const link of [detail.recordExpirationLink(page), detail.recordEntryLink(page), detail.recordExitLink(page)]) await expect(link).toHaveCount(0);
+    const links = detail.anywhere(() => [detail.recordExpirationLink(page), detail.recordEntryLink(page), detail.recordExitLink(page)]);
+    for (const link of links) await expect(link).toHaveCount(0);
 
     // The write route is dropped: no New Plan to confirm from.
     await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' })).toHaveCount(0);

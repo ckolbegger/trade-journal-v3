@@ -24,8 +24,8 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     await expect(detail.journal(page).getByText('Deferred, answered', { exact: true })).toBeVisible();
     await expect(detail.journal(page).getByText('Answered', { exact: true })).toBeVisible();
     await expect(detail.journal(page).getByText('2026-10-13 12:30')).toBeVisible();
-    await expect(detail.reflectionOwed(page)).toHaveCount(0);
-    await expect(detail.dueNote(page, 'Due in the Review after next')).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.dueNote(page, 'Due in the Review after next'))).toHaveCount(0);
 
     const workspace = workspaceOf(await probe(page))!;
     expect(debtsOf(workspace)).toHaveLength(1);

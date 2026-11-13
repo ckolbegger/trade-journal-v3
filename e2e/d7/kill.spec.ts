@@ -32,8 +32,8 @@ test.describe('B7.8 Kill after commit', () => {
       await expect(detail.heading(page, 'MNO')).toBeVisible();
       await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via expiration of 2 contracts');
       // Both reflections are answered: nothing is owed.
-      await expect(detail.reflectionOwed(page)).toHaveCount(0);
-      await expect(detail.closeReviewOwed(page)).toHaveCount(0);
+      await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
+      await expect(detail.anywhere(() => detail.closeReviewOwed(page))).toHaveCount(0);
 
       const workspace = workspaceOf(await probe(page))!;
       const [trade] = tradesOf(workspace);

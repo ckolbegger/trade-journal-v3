@@ -72,7 +72,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     // Open Long Call Detail without Settlement Due: both payoff views have chart and table; the Current one offsets the realized amount.
     await page.goto(`/trades/${t1.tradeId}`);
     await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
-    await expect(detail.settlementDueHeading(page)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.settlementDueHeading(page))).toHaveCount(0);
     await expectPayoffChart(page, 'Planned');
     await expectPayoffChart(page, 'Current');
     await expect(detail.payoffTable(page, /^Current payoff at expiration by XYZ price, including \+\$88\.70 realized to date$/)).toBeVisible();

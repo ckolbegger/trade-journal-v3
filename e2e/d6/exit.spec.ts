@@ -35,8 +35,8 @@ test.describe('B6.1 Partial then final exit', () => {
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
     await expect(detail.positionRealizedToDate(page)).toContainText('$55.90');
     await expect(detail.lifecycle(page, 'Open')).toBeVisible();
-    await expect(detail.resultHeading(page)).toHaveCount(0);
-    await expect(detail.resultValue(page, 'Close Reason')).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.resultHeading(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.resultValue(page, 'Close Reason'))).toHaveCount(0);
 
     // Tuesday 14:05: Record exit with two rows (50 and 20 @ 53.00). The Closing section appears once 70 is entered.
     await setClock(context, page, TUESDAY_1405);

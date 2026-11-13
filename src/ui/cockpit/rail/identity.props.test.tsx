@@ -85,7 +85,7 @@ describe('identity card (W2)', () => {
 
   it('should offer Record entry and Record exit only while Writable, and neither on an incoherent Detail', () => {
     const incoherent = incoherentDetailOf([PC1], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'UnknownPlannedLeg' }]);
-    const links = () => screen.queryAllByRole('link').filter((l) => /^Record /.test(l.textContent ?? '')).map((l) => [l.textContent, l.getAttribute('href')]);
+    const links = () => screen.queryAllByRole('link', { hidden: true }).filter((l) => /^Record /.test(l.textContent ?? '')).map((l) => [l.textContent, l.getAttribute('href')]);
 
     show(openDetailOf([PC1]));
     expect(links()).toEqual([['Record entry', '/trades/trade-1/record-entry'], ['Record exit', '/trades/trade-1/record-entry?action=Sell']]);

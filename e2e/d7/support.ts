@@ -169,7 +169,7 @@ export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current')
 export async function expectPayoffNotApplicable(page: Page, kind: 'Planned' | 'Current', reason: RegExp): Promise<void> {
   await openDrawer(page, 'Payoff');
   await expect(detail.payoffDrawer(page).getByText(reason)).toBeVisible(READY);
-  await expect(detail.payoff(page, kind)).toHaveCount(0);
+  await expect(detail.anywhere(() => detail.payoff(page, kind))).toHaveCount(0);
 }
 
 // The Workspace's stored Journal Entries (by their entry type key).

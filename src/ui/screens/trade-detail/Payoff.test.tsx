@@ -125,7 +125,7 @@ describe('Long Stock Trade Detail payoff sections (K1)', () => {
     // One line (W14), not one for each view.
     const section = screen.getByRole('region', { name: 'Expiration Payoff' });
     expect(section.textContent).toBe('Expiration Payoff: Not applicable: no option expiration');
-    expect(within(section).queryByRole('img')).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Planned Expiration Payoff' })).toBeNull();
+    expect(within(section).queryByRole('img', { hidden: true })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Planned Expiration Payoff', hidden: true })).toBeNull();
   });
 });

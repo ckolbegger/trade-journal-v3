@@ -33,7 +33,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     for (const term of ['Risk to stop', 'Reward to target']) await expect(detail.riskFigure(page, term)).toHaveText('Mark missing: XYZ, Mon Oct 12');
     // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
     await openDrawer(page, 'Today');
-    await expect(detail.todayFigure(page, 'Mark')).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.todayFigure(page, 'Mark'))).toHaveCount(0);
     await expect(detail.datedFigure(page, 'At the Fri Oct 9 Marks', 'Mark')).toHaveText('$51.20');
 
     // The Review lists Monday's Mark; entering it makes the Detail Available.

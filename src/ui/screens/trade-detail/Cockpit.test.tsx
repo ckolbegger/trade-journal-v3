@@ -35,9 +35,14 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     expect(rail.contains(tablist)).toBe(false);
     expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
     expect(selectedTab()).toBe('Today');
-    // Only the selected drawer is mounted: Today holds the Valuation, and Position's content is absent.
+    // Every shown drawer is mounted and the unselected ones are hidden (T8P.5-B1): Today holds the Valuation, and Position's content is present
+    // in its own hidden panel, where an accessible query without `hidden: true` cannot see it.
     const panel = screen.getByRole('tabpanel', { name: 'Today' });
     expect(within(panel).getByRole('region', { name: 'Valuation' })).toBeTruthy();
+    const position = document.getElementById('drawer-panel-position')!;
+    expect(position.hidden).toBe(true);
+    expect(within(position).getByRole('region', { name: 'Open Lots', hidden: true })).toBeTruthy();
+    expect(within(position).getByRole('region', { name: 'Position', hidden: true })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'Open Lots' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Position' })).toBeNull();
   });

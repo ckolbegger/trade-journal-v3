@@ -27,6 +27,6 @@ describe('price track (A215)', () => {
       ['75%', '25%'],
     ]);
     expect(track.querySelector<HTMLElement>('.mk')?.style.left).toBe('50%');
-    expect(screen.queryByRole('list')).toBeNull();
+    expect(screen.queryByRole('list', { hidden: true })).toBeNull();
   });
 });

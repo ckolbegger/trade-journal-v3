@@ -1,7 +1,7 @@
 // Trade Detail reads of rail lane R2: Conditions (Risk to stop, Reward to target, the Conditions table, Worst case, Max reward) and Needs
 // you (the Settlement Due panel, Record expiration, the owed reflections). Each read goes through the current layout, scoped to its card.
 import type { Locator, Page } from '@playwright/test';
-import { detailRoot, figureIn, journalRegion, regionOf, valueIn } from './scope.ts';
+import { detailRoot, figureIn, journalRegion, regionOf, roleOf, valueIn } from './scope.ts';
 
 const riskReward = (page: Page): Locator => regionOf(page, 'Risk and reward');
 
@@ -25,24 +25,24 @@ export const needsYouCard = (page: Page): Locator => regionOf(page, 'Needs you')
 
 // Needs you: the Settlement Due panel.
 export const settlementDuePanel = (page: Page): Locator => regionOf(page, /^Settlement Due/);
-export const settlementDueHeading = (page: Page): Locator => settlementDuePanel(page).getByRole('heading', { name: /^Settlement Due/ });
+export const settlementDueHeading = (page: Page): Locator => roleOf(settlementDuePanel(page), 'heading', { name: /^Settlement Due/ });
 export const settlementDueValue = (page: Page, term: string): Locator => valueIn(settlementDuePanel(page), term);
-export const recordExpirationLink = (page: Page): Locator => settlementDuePanel(page).getByRole('link', { name: 'Record expiration' });
+export const recordExpirationLink = (page: Page): Locator => roleOf(settlementDuePanel(page), 'link', { name: 'Record expiration' });
 
 // Needs you: the owed reflections, listed in the rail's card (W7). Reflect now there selects the Journal drawer and opens the form on its card.
 export const reflectionOwed = (page: Page): Locator => needsYouCard(page).getByText('Reflection owed');
-export const closeReviewOwed = (page: Page): Locator => needsYouCard(page).getByRole('heading', { name: /^Close Review/, level: 3 });
+export const closeReviewOwed = (page: Page): Locator => roleOf(needsYouCard(page), 'heading', { name: /^Close Review/, level: 3 });
 export const closeReviewOwedHeading = (page: Page): Locator => needsYouCard(page).getByRole('heading', { name: 'Close Review Reflection owed', level: 3 });
 export const dueNote = (page: Page, text: string, exact = false): Locator => needsYouCard(page).getByText(text, { exact });
-export const reflectNowButton = (page: Page): Locator => needsYouCard(page).getByRole('button', { name: 'Reflect now' });
+export const reflectNowButton = (page: Page): Locator => roleOf(needsYouCard(page), 'button', { name: 'Reflect now' });
 
 // The Journal card's own items, which hold the forms. `includeHidden` so an absence read holds while another drawer is selected.
 export const reflectionOwedExact = (page: Page): Locator => journalRegion(page).getByText('Reflection owed', { exact: true });
 export const journalReflectNowButton = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true });
-export const declineButton = (page: Page): Locator => journalRegion(page).getByRole('button', { name: 'Decline', exact: true });
-export const answerButton = (page: Page): Locator => journalRegion(page).getByRole('button', { name: 'Answer', exact: true });
-export const debtForm = (page: Page): Locator => journalRegion(page).getByRole('form', { name: 'Reflection' });
-export const savedReflection = (page: Page): Locator => journalRegion(page).getByRole('region', { name: 'Saved reflection' });
+export const declineButton = (page: Page): Locator => roleOf(journalRegion(page), 'button', { name: 'Decline', exact: true });
+export const answerButton = (page: Page): Locator => roleOf(journalRegion(page), 'button', { name: 'Answer', exact: true });
+export const debtForm = (page: Page): Locator => roleOf(journalRegion(page), 'form', { name: 'Reflection' });
+export const savedReflection = (page: Page): Locator => roleOf(journalRegion(page), 'region', { name: 'Saved reflection' });
 // An owed Debt item for the Position Change at a local time.
 export const owedItem = (page: Page, when: string): Locator =>
-  journalRegion(page).locator('li', { has: page.getByRole('heading', { level: 3 }), hasText: `Position Change at ${when}` }).last();
+  journalRegion(page).locator('li', { has: roleOf(page, 'heading', { level: 3 }), hasText: `Position Change at ${when}` }).last();

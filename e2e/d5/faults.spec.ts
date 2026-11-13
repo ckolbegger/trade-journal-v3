@@ -44,11 +44,11 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await openTradeFromOpenList(page);
     await expect(detail.reflectionOwed(page)).toBeVisible();
-    await expect(detail.reflectNowButton(page)).toHaveCount(0);
-    await expect(detail.journalReflectNowButton(page)).toHaveCount(0);
-    await expect(detail.declineButton(page)).toHaveCount(0);
-    await expect(detail.debtForm(page)).toHaveCount(0);
-    await expect(detail.answerButton(page)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.reflectNowButton(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.journalReflectNowButton(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.declineButton(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.debtForm(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.answerButton(page))).toHaveCount(0);
 
     expect(await probe(page)).toEqual(before);
     await context.close();

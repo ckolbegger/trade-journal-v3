@@ -8,7 +8,7 @@ import * as plan from './plan.ts';
 import * as position from './position.ts';
 import * as railA from './rail-a.ts';
 import * as railB from './rail-b.ts';
-import { detailRoot, regionOf } from './scope.ts';
+import { anywhere, detailRoot, regionOf } from './scope.ts';
 import * as today from './today.ts';
 
 export type DrawerName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
@@ -64,6 +64,7 @@ const CARDS = '.trade-detail :is(.card, .table-scroll):not([hidden] *)';
 const TABLES = '.trade-detail table:not([hidden] *)';
 
 export const detail = {
+  anywhere,
   ...railA,
   ...railB,
   ...today,

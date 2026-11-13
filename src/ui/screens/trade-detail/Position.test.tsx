@@ -49,7 +49,7 @@ describe('Open Trade Detail', () => {
         .getAllByRole('button')
         .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
     ).toEqual(['Buy 60 XYZ @ $50.10 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details']);
-    expect(screen.queryByRole('region', { name: 'Position Changes' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Position Changes', hidden: true })).toBeNull();
   });
 
   it('should show Position Change Reflections with snapshot labels and declines as Reflection declined with the reason', async () => {
@@ -83,7 +83,7 @@ describe('Open Trade Detail', () => {
     expect(within(decline).getByText('Reflection declined')).toBeTruthy();
     expect(termValue(decline, 'Reason')).toBe('Same plan, second fill.');
     // The narrative is the Journal section's alone: no separate Plan Reflection region.
-    expect(screen.queryByRole('region', { name: 'Plan Reflection' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Plan Reflection', hidden: true })).toBeNull();
   });
 });
 
@@ -120,9 +120,9 @@ describe('Executions', () => {
     ]);
     // The fee is in the expanded details only.
     expect(within(section).queryByText(/fee|\$1\.00|\$0\.50/i)).toBeNull();
-    expect(screen.queryByRole('table', { name: 'Executions' })).toBeNull();
-    expect(screen.queryByRole('heading', { level: 3, name: /^Position Change at/ })).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Position Changes' })).toBeNull();
+    expect(screen.queryByRole('table', { name: 'Executions', hidden: true })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 3, name: /^Position Change at/, hidden: true })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Position Changes', hidden: true })).toBeNull();
   });
 
   it('should give each row a disclosure button named for its Execution, collapsed by default with aria-expanded false', async () => {
@@ -276,13 +276,13 @@ describe('Open Trade Detail after a partial exit', () => {
 
     renderView(openDetailOf([PC1, PC2, X1]), false);
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
-    expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record exit', hidden: true })).toBeNull();
     cleanup();
 
     // Nothing to exit before an entry: a Planned Detail offers Record entry alone.
     renderView(plannedDetail, true);
     await screen.findByRole('link', { name: 'Record entry' });
-    expect(screen.queryByRole('link', { name: 'Record exit' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record exit', hidden: true })).toBeNull();
   });
 });
 

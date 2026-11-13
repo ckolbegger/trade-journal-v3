@@ -39,7 +39,7 @@ describe('Payoff drawer (W14)', () => {
     expect(within(chart).queryByText('Now')).toBeNull();
     expect(within(drawer).getByText('Not applicable: no open position').closest('p')?.textContent).toBe('Now: Not applicable: no open position');
     expect(within(drawer).getByRole('region', { name: 'Planned Expiration Payoff' })).toBeTruthy();
-    expect(within(drawer).queryByRole('region', { name: 'Current Expiration Payoff' })).toBeNull();
+    expect(within(drawer).queryByRole('region', { name: 'Current Expiration Payoff', hidden: true })).toBeNull();
     expect(within(drawer).getAllByRole('table')).toHaveLength(1);
   });
 
@@ -48,8 +48,8 @@ describe('Payoff drawer (W14)', () => {
     const drawer = screen.getByRole('region', { name: 'Expiration Payoff' });
     expect(within(drawer).getByText('Not applicable: no option expiration').closest('p')?.textContent).toBe('Expiration Payoff: Not applicable: no option expiration');
     expect(drawer.textContent).toBe('Expiration Payoff: Not applicable: no option expiration');
-    expect(within(drawer).queryByRole('img')).toBeNull();
-    expect(within(drawer).queryByRole('table')).toBeNull();
+    expect(within(drawer).queryByRole('img', { hidden: true })).toBeNull();
+    expect(within(drawer).queryByRole('table', { hidden: true })).toBeNull();
   });
 
   it("should state the value at expiration at the latest Mark through valueAtCloseText, as \"Value at expiration at MNO's latest Mark\" on Detail and the Review card", () => {

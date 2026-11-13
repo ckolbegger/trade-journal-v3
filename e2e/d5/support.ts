@@ -56,7 +56,7 @@ async function expectSavedReflection(page: Page, form: Locator, card: CardRef | 
     saved = (await reachPanel(page, card, 'Reflections')).getByRole('region', { name: 'Saved reflection' });
   }
   await expect(saved).toBeVisible();
-  await expect(onDetail ? detail.debtForm(page) : debtForm(page)).toHaveCount(0);
+  await expect(onDetail ? detail.anywhere(() => detail.debtForm(page)) : debtForm(page)).toHaveCount(0);
 }
 
 // Where a form with no card is: on a Trade Detail (read through `detail`), or elsewhere on the page, as in the Review's owed list.

@@ -50,10 +50,10 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await openDrawer(page, 'Journal');
     await expect(detail.closeReviewOwedHeading(page)).toBeVisible();
     await expect(detail.reflectionOwedExact(page)).toBeVisible();
-    await expect(detail.reflectNowButton(page)).toHaveCount(0);
-    await expect(detail.journalReflectNowButton(page)).toHaveCount(0);
-    await expect(detail.declineButton(page)).toHaveCount(0);
-    await expect(detail.recordExitLink(page)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.reflectNowButton(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.journalReflectNowButton(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.declineButton(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.recordExitLink(page))).toHaveCount(0);
 
     // The partly closed Trade's Open Detail shows its Lot Match and the realized figure, with no Record exit.
     // (Navigation stays inside the app: a new page load without ?faults=control would be Writable again.)
@@ -65,8 +65,8 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await expect(detail.positionValue(page)).toHaveText('60 shares of ABC');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
     await expect(detail.positionRealizedToDate(page)).toContainText('$39.10');
-    await expect(detail.recordExitLink(page)).toHaveCount(0);
-    await expect(detail.recordEntryLink(page)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.recordExitLink(page))).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.recordEntryLink(page))).toHaveCount(0);
 
     expect(await probe(page)).toEqual(before);
     await context.close();

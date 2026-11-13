@@ -154,8 +154,8 @@ describe('Conditions card (W5, W6)', () => {
 
   it('should say beneath the conditions when their distances arrive: before Marks, on a Planned Detail and once the contract expired, and show nothing beneath a Closed Detail', () => {
     const notes = (view: TradeDetailView) => {
-      const summary = within(renderCard(view)).queryByRole('list', { name: 'Worst case and Max reward' });
-      const lines = summary ? within(summary).queryAllByRole('listitem').map((item) => item.textContent) : [];
+      const summary = within(renderCard(view)).queryByRole('list', { name: 'Worst case and Max reward', hidden: true });
+      const lines = summary ? within(summary).queryAllByRole('listitem', { hidden: true }).map((item) => item.textContent) : [];
       cleanup();
       return lines;
     };

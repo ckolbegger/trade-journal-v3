@@ -111,7 +111,7 @@ test.describe('incoherent Trade Detail', () => {
     const panel = detail.factsIncoherent(app);
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('New entries cannot be recorded for this Trade until its records agree.');
-    await expect(detail.recordEntryLink(app)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.recordEntryLink(app))).toHaveCount(0);
 
     // A direct link to the entry route shows the explanation and a way back, not the form.
     await app.goto(`${new URL(app.url()).pathname}/record-entry`);

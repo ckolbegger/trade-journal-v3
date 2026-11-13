@@ -7,8 +7,8 @@ async function expectTradeDetail(page: Page, tradeId: string): Promise<void> {
   await expect(detail.heading(page, PLAN.symbol)).toBeVisible(READY);
   await openDrawer(page, 'Position');
   await expect(detail.executions(page, 2)).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Record entry', level: 1 })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Save entry' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Record entry', level: 1, includeHidden: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Save entry', includeHidden: true })).toHaveCount(0);
 }
 
 test.describe('reload after save', () => {

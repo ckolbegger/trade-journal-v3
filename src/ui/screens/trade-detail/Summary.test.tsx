@@ -93,7 +93,7 @@ describe('summary card', () => {
   it('should show no summary figures on an incoherent Detail, leaving the Facts cannot be replayed panel first', async () => {
     renderView(incoherentDetailOf([PC1, PC2], [{ factId: 'ex-1', kind: 'Execution', instrument: { kind: 'Stock', symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy', quantity: '60', reason: 'NonpositiveQuantity' }]));
     const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
-    expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Summary', hidden: true })).toBeNull();
     const regions = screen.getAllByRole('region').filter((r) => r.getAttribute('aria-label') === null || r.tagName === 'SECTION');
     expect(regions[0]).toBe(panel);
   });

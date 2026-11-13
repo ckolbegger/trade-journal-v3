@@ -38,7 +38,7 @@ test.describe('B2.9 Recovery Only (faults build)', () => {
     await expect(detail.position(page)).toContainText('60 shares of XYZ');
     await openDrawer(page, 'Plan and Risk');
     await expect(detail.entryQuality(page)).toContainText('Entry not yet resolved: 60 of 100 entered');
-    await expect(detail.recordEntryLink(page)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.recordEntryLink(page))).toHaveCount(0);
     expect(await probe(page)).toEqual(before);
     await context.close();
   });
@@ -61,7 +61,7 @@ test.describe('F6 direct entry-form link (faults build)', () => {
     await expect(page.getByText("This browser can't save right now, so an entry can't be recorded.")).toBeVisible();
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(page).toHaveURL(new RegExp(`/trades/${tradeId}$`));
-    await expect(page.getByRole('heading', { name: "Record entry isn't available" })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: "Record entry isn't available", includeHidden: true })).toHaveCount(0);
     await context.close();
   });
 });

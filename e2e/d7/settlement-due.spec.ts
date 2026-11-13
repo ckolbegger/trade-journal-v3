@@ -58,7 +58,7 @@ test.describe('B7.4 Settlement Due on Detail', () => {
     await expect(detail.heading(again, 'MNO')).toBeVisible();
     await expect(detail.resultValue(again, 'Terminal Disposition')).toHaveText('Closed via expiration of 2 contracts');
     await expect(detail.resultValue(again, 'Option Disposition Timing')).toContainText('Fully held to expiration');
-    await expect(detail.settlementDueHeading(again)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.settlementDueHeading(again))).toHaveCount(0);
     await monday.close();
 
     // Durable state, after a relaunch: Closed, with one Expiration and no Execution beyond the sale.

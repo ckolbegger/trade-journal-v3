@@ -80,7 +80,7 @@ test.describe('B5.8 Offline cold restart (AC-DEL-001)', () => {
     await expect(reopened.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await openDrawer(reopened, 'Journal');
     await expect(detail.journal(reopened).getByText('Deferred, answered', { exact: true })).toBeVisible();
-    await expect(detail.reflectionOwed(reopened)).toHaveCount(0);
+    await expect(detail.anywhere(() => detail.reflectionOwed(reopened))).toHaveCount(0);
     const workspace = workspaceOf(await probe(reopened))!;
     expect(debtsOf(workspace)).toHaveLength(1);
     expect(entriesWithSettledDebt(workspace)).toHaveLength(1);

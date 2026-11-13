@@ -26,7 +26,7 @@ describe('Plan and Risk drawer and footer (P96)', () => {
     const terms = Array.from(container.querySelectorAll('dt')).map((term) => term.textContent);
     for (const once of ['Intended entry', 'Stop', 'Target', '1R (original risk)', 'Original reward']) expect(terms.filter((term) => term === once)).toHaveLength(1);
     for (const summaryOnly of ['Net cost', 'Quantity', 'Entry', 'Opening fees', '1R']) expect(terms).not.toContain(summaryOnly);
-    expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Summary', hidden: true })).toBeNull();
   });
 
   it('should show the entry as not entered on a Planned Detail', () => {

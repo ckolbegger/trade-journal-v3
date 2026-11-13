@@ -15,7 +15,7 @@ describe('Trade Detail', () => {
     vi.mocked(missing.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'NotFound' });
     renderDetail(missing);
     expect(await screen.findByRole('heading', { name: 'Trade not found' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Retry', hidden: true })).toBeNull();
     cleanup();
 
     const failing = facadeDouble();
@@ -39,7 +39,7 @@ describe('Open Trade Detail', () => {
 
       renderView(view, false);
       await screen.findByRole('heading', { name: 'XYZ', level: 1 });
-      expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
+      expect(screen.queryByRole('link', { name: 'Record entry', hidden: true })).toBeNull();
       cleanup();
     }
   });
@@ -51,7 +51,7 @@ describe('incoherent Trade Detail', () => {
   it('should not offer Record entry on an IncoherentTradeDetail, while a coherent Open or Planned Detail still offers it', async () => {
     renderView(incoherent(), true);
     await screen.findByRole('region', { name: "Facts can't be replayed" });
-    expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Record entry', hidden: true })).toBeNull();
     cleanup();
 
     for (const view of [openDetailOf([PC1]), plannedDetail] as TradeDetailView[]) {

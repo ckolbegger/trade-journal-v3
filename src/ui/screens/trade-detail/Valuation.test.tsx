@@ -115,7 +115,7 @@ describe('missing or later evidence (P12, P13)', () => {
     renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'AcknowledgedUnavailable', acknowledgment, stale: monContext } as never)));
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
     expect(within(valuation).getByText('Mark acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price')).toBeTruthy();
-    expect(within(valuation).queryByRole('link')).toBeNull();
+    expect(within(valuation).queryByRole('link', { hidden: true })).toBeNull();
     expect(within(valuation).queryByText(/Mark missing for/)).toBeNull();
     expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Acknowledged unavailable: XYZ, Tue Oct 13');
     expect(within(valuation).getByText(/^Stale context: \$51\.20/)).toBeTruthy();

@@ -1,0 +1,217 @@
+
+Running 13 tests using 1 worker
+
+  ✘   1 [chromium] › e2e/d2/after-save.spec.ts:15:3 › reload after save › should replace the entry form history entry with the Trade Detail once saved, so reload, Back and Forward never show the form (6.5s)
+  ✘   2 [chromium] › e2e/d5/detail-debt.spec.ts:7:3 › B5.3 Reflect on Trade Detail › should show Due in the Review after next before, Deferred, answered with Tuesday 12:30 after, and list no reflection for it in Wednesday’s Review (6.7s)
+  ✘   3 [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged (7.6s)
+  ✓   4 [chromium] › e2e/d5/faults.spec.ts:59:3 › B5.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed Debt answer, and record no Entry (2.0s)
+  ✓   5 [chromium] › e2e/d5/kill-offline.spec.ts:9:3 › B5.7 Kill after commit › should keep the Entry and the Settled version after the browser is killed once a Debt answer’s result renders, and no longer list the reflection in the Review (2.5s)
+  ✘   6 [chromium] › e2e/d5/kill-offline.spec.ts:54:3 › B5.8 Offline cold restart (AC-DEL-001) › should record a deferred entry and answer it on Trade Detail offline, and keep both across another offline restart (7.4s)
+  ✘   7 [chromium] › e2e/d6/exit.spec.ts:10:3 › B6.1 Partial then final exit › should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record (7.4s)
+  ✘   8 [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged (8.5s)
+  ✓   9 [chromium] › e2e/d6/runtime-failure.spec.ts:77:3 › B6.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed exit and its answers, and record no Position Change (2.4s)
+  ✘  10 [chromium] › e2e/d7/responsive-a11y.spec.ts:29:3 › B7.13 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the option Plan, Execution and expiration forms, both payoff views in every state, option Detail with and without Settlement Due, and the Review settlement panel, and show Settlement Due and Not applicable as text with a table beside every chart (11.2s)
+  ✓  11 [chromium] › e2e/d7/responsive-a11y.spec.ts:124:3 › B7.13 Responsive and accessible › should record an Expiration by keyboard alone, with a visible focus ring on every stop (3.0s)
+  ✓  12 [chromium] › e2e/d7/runtime-failure.spec.ts:11:3 › B7.10 Recovery Only (faults build) › should keep the lists, option Detail, both payoff views and the Review readable with no Record expiration, Record entry, or Plan confirmation, and leave the probe unchanged (3.1s)
+  ✓  13 [chromium] › e2e/d7/runtime-failure.spec.ts:55:3 › B7.11 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed expiration and its answers, and record no Position Change (2.0s)
+
+
+  1) [chromium] › e2e/d2/after-save.spec.ts:15:3 › reload after save › should replace the entry form history entry with the Trade Detail once saved, so reload, Back and Forward never show the form 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('button', { name: 'Save entry', includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('button', { name: 'Save entry', includeHidden: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Save entry', includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+       9 |   await expect(detail.executions(page, 2)).toBeVisible();
+      10 |   await expect(page.getByRole('heading', { name: 'Record entry', level: 1, includeHidden: true })).toHaveCount(0);
+    > 11 |   await expect(page.getByRole('button', { name: 'Save entry', includeHidden: true })).toHaveCount(0);
+         |                                                                                       ^
+      12 | }
+      13 |
+      14 | test.describe('reload after save', () => {
+        at expectTradeDetail (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d2/after-save.spec.ts:11:87)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d2/after-save.spec.ts:31:5
+
+    Error Context: test-results/d2-after-save-reload-after-7fa5f-Forward-never-show-the-form-chromium/error-context.md
+
+  2) [chromium] › e2e/d5/detail-debt.spec.ts:7:3 › B5.3 Reflect on Trade Detail › should show Due in the Review after next before, Deferred, answered with Tuesday 12:30 after, and list no reflection for it in Wednesday’s Review 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByText('Reflection owed')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByText('Reflection owed') with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByText('Reflection owed')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      25 |     await expect(detail.journal(page).getByText('Answered', { exact: true })).toBeVisible();
+      26 |     await expect(detail.journal(page).getByText('2026-10-13 12:30')).toBeVisible();
+    > 27 |     await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
+         |                                                                      ^
+      28 |     await expect(detail.anywhere(() => detail.dueNote(page, 'Due in the Review after next'))).toHaveCount(0);
+      29 |
+      30 |     const workspace = workspaceOf(await probe(page))!;
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d5/detail-debt.spec.ts:27:70
+
+    Error Context: test-results/d5-detail-debt-B5-3-Reflec-00f57-or-it-in-Wednesday’s-Review-chromium/error-context.md
+
+  3) [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      46 |     await expect(detail.reflectionOwed(page)).toBeVisible();
+      47 |     await expect(detail.anywhere(() => detail.reflectNowButton(page))).toHaveCount(0);
+    > 48 |     await expect(detail.anywhere(() => detail.journalReflectNowButton(page))).toHaveCount(0);
+         |                                                                               ^
+      49 |     await expect(detail.anywhere(() => detail.declineButton(page))).toHaveCount(0);
+      50 |     await expect(detail.anywhere(() => detail.debtForm(page))).toHaveCount(0);
+      51 |     await expect(detail.anywhere(() => detail.answerButton(page))).toHaveCount(0);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d5/faults.spec.ts:48:79
+
+    Error Context: test-results/d5-faults-B5-9-Recovery-On-86c06-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  4) [chromium] › e2e/d5/kill-offline.spec.ts:54:3 › B5.8 Offline cold restart (AC-DEL-001) › should record a deferred entry and answer it on Trade Detail offline, and keep both across another offline restart 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByText('Reflection owed')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByText('Reflection owed') with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByText('Reflection owed')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      81 |     await openDrawer(reopened, 'Journal');
+      82 |     await expect(detail.journal(reopened).getByText('Deferred, answered', { exact: true })).toBeVisible();
+    > 83 |     await expect(detail.anywhere(() => detail.reflectionOwed(reopened))).toHaveCount(0);
+         |                                                                          ^
+      84 |     const workspace = workspaceOf(await probe(reopened))!;
+      85 |     expect(debtsOf(workspace)).toHaveLength(1);
+      86 |     expect(entriesWithSettledDebt(workspace)).toHaveLength(1);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d5/kill-offline.spec.ts:83:74
+
+    Error Context: test-results/d5-kill-offline-B5-8-Offli-9aed2-oss-another-offline-restart-chromium/error-context.md
+
+  5) [chromium] › e2e/d6/exit.spec.ts:10:3 › B6.1 Partial then final exit › should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: 'Trade P&L', exact: true, includeHidden: true }).locator('dt:text-is("Close Reason") + dd')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: 'Trade P&L', exact: true, includeHidden: true }).locator('dt:text-is("Close Reason") + dd') with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: 'Trade P&L', exact: true, includeHidden: true }).locator('dt:text-is("Close Reason") + dd')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      37 |     await expect(detail.lifecycle(page, 'Open')).toBeVisible();
+      38 |     await expect(detail.anywhere(() => detail.resultHeading(page))).toHaveCount(0);
+    > 39 |     await expect(detail.anywhere(() => detail.resultValue(page, 'Close Reason'))).toHaveCount(0);
+         |                                                                                   ^
+      40 |
+      41 |     // Tuesday 14:05: Record exit with two rows (50 and 20 @ 53.00). The Closing section appears once 70 is entered.
+      42 |     await setClock(context, page, TUESDAY_1405);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d6/exit.spec.ts:39:83
+
+    Error Context: test-results/d6-exit-B6-1-Partial-then--45cb0-ct-with-no-Lot-Match-record-chromium/error-context.md
+
+  6) [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').locator('#drawer-panel-journal').getByRole('button', { name: 'Reflect now', includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      52 |     await expect(detail.reflectionOwedExact(page)).toBeVisible();
+      53 |     await expect(detail.anywhere(() => detail.reflectNowButton(page))).toHaveCount(0);
+    > 54 |     await expect(detail.anywhere(() => detail.journalReflectNowButton(page))).toHaveCount(0);
+         |                                                                               ^
+      55 |     await expect(detail.anywhere(() => detail.declineButton(page))).toHaveCount(0);
+      56 |     await expect(detail.anywhere(() => detail.recordExitLink(page))).toHaveCount(0);
+      57 |
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d6/runtime-failure.spec.ts:54:79
+
+    Error Context: test-results/d6-runtime-failure-B6-9-Re-ef16a-d-leave-the-probe-unchanged-chromium/error-context.md
+
+  7) [chromium] › e2e/d7/responsive-a11y.spec.ts:29:3 › B7.13 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the option Plan, Execution and expiration forms, both payoff views in every state, option Detail with and without Settlement Due, and the Review settlement panel, and show Settlement Due and Not applicable as text with a table beside every chart 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: /^Settlement Due/, includeHidden: true }).getByRole('heading', { name: /^Settlement Due/, includeHidden: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: /^Settlement Due/, includeHidden: true }).getByRole('heading', { name: /^Settlement Due/, includeHidden: true }) with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: /^Settlement Due/, includeHidden: true }).getByRole('heading', { name: /^Settlement Due/, includeHidden: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      73 |     await page.goto(`/trades/${t1.tradeId}`);
+      74 |     await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    > 75 |     await expect(detail.anywhere(() => detail.settlementDueHeading(page))).toHaveCount(0);
+         |                                                                            ^
+      76 |     await expectPayoffChart(page, 'Planned');
+      77 |     await expectPayoffChart(page, 'Current');
+      78 |     await expect(detail.payoffTable(page, /^Current payoff at expiration by XYZ price, including \+\$88\.70 realized to date$/)).toBeVisible();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d7/responsive-a11y.spec.ts:75:76
+
+    Error Context: test-results/d7-responsive-a11y-B7-13-R-649d7--a-table-beside-every-chart-chromium/error-context.md
+
+  7 failed
+    [chromium] › e2e/d2/after-save.spec.ts:15:3 › reload after save › should replace the entry form history entry with the Trade Detail once saved, so reload, Back and Forward never show the form 
+    [chromium] › e2e/d5/detail-debt.spec.ts:7:3 › B5.3 Reflect on Trade Detail › should show Due in the Review after next before, Deferred, answered with Tuesday 12:30 after, and list no reflection for it in Wednesday’s Review 
+    [chromium] › e2e/d5/faults.spec.ts:9:3 › B5.9 Recovery Only (faults build) › should show the Outstanding Debt on Detail and in the Review with no Reflect now, Decline, or Save, and leave the probe unchanged 
+    [chromium] › e2e/d5/kill-offline.spec.ts:54:3 › B5.8 Offline cold restart (AC-DEL-001) › should record a deferred entry and answer it on Trade Detail offline, and keep both across another offline restart 
+    [chromium] › e2e/d6/exit.spec.ts:10:3 › B6.1 Partial then final exit › should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record 
+    [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged 
+    [chromium] › e2e/d7/responsive-a11y.spec.ts:29:3 › B7.13 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the option Plan, Execution and expiration forms, both payoff views in every state, option Detail with and without Settlement Due, and the Review settlement panel, and show Settlement Due and Not applicable as text with a table beside every chart 
+  6 passed (1.2m)

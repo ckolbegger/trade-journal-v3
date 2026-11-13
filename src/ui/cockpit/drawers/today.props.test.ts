@@ -139,8 +139,8 @@ describe('Today drawer (W8)', () => {
     const unmarked = openDetailAt([afterClose], friday);
     drawer({ ...unmarked, current: { ...unmarked.current, firstMarksDue: '2026-10-12' } }, replayOf([]));
     expect(screen.getByText('No Marks yet. This Trade opened Fri Oct 9 at 4:30 pm. Its first Marks, and every figure that needs them, are due once the Mon Oct 12 session ends.')).toBeTruthy();
-    expect(screen.queryByRole('table')).toBeNull();
-    expect(screen.queryByRole('region', { name: /^At the .* Marks$/ })).toBeNull();
+    expect(screen.queryByRole('table', { hidden: true })).toBeNull();
+    expect(screen.queryByRole('region', { name: /^At the .* Marks$/, hidden: true })).toBeNull();
     // The tracks still show where the Stop and the Target sit, with no "now".
     expect(screen.getByRole('heading', { name: 'Where the price sits' })).toBeTruthy();
     expect(screen.getByRole('img', { name: /^XYZ: Stop \$.*, Target \$[\d.,]+$/ })).toBeTruthy();
@@ -158,7 +158,7 @@ describe('Today drawer (W8)', () => {
     drawer(openDetailAt([PC1, afterMarks], monday));
 
     const dated = screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' });
-    expect(screen.queryByRole('region', { name: 'At Mon Oct 12 close' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'At Mon Oct 12 close', hidden: true })).toBeNull();
     expect(within(dated).getAllByRole('term').map((term) => term.textContent)).toEqual([
       'Mark',
       'Realized to date',
@@ -192,7 +192,7 @@ describe('Today drawer (W8)', () => {
     expect(termValue(target!, 'Value at expiration')).toBe('$0.50');
     expect(termValue(target!, 'Distance on MNO')).toBe('1.50');
     // The option-price track carries no such lines: its conditions are in the Conditions card.
-    expect(within(screen.getByRole('img', { name: /^Option price:/ }).closest('.track-block') as HTMLElement).queryByRole('list')).toBeNull();
+    expect(within(screen.getByRole('img', { name: /^Option price:/ }).closest('.track-block') as HTMLElement).queryByRole('list', { hidden: true })).toBeNull();
   });
 });
 

@@ -192,7 +192,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     await openDrawer(user, 'Journal');
     const readOnly = await screen.findByRole('region', { name: 'Journal (3)' });
     expect(within(readOnly).getAllByText('Reflection owed')).toHaveLength(3);
-    expect(within(readOnly).queryByRole('button')).toBeNull();
+    expect(within(readOnly).queryByRole('button', { hidden: true })).toBeNull();
   });
 
   it('should show a settled reflection once, marked "Deferred, answered" with its time, and a declined one once, marked "Declined later"', async () => {
@@ -352,7 +352,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     await openDrawer(user, 'Journal');
     const readOnly = await screen.findByRole('region', { name: 'Journal (1)' });
     expect(within(readOnly).getByText('Reflection owed')).toBeTruthy();
-    expect(within(readOnly).queryByRole('button')).toBeNull();
+    expect(within(readOnly).queryByRole('button', { hidden: true })).toBeNull();
   });
 
   it('should keep one Debt form open at a time, disabling the other Debts actions until it is cancelled or resolved', async () => {
@@ -379,7 +379,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     expect(within(second).getByRole('button', { name: 'Decline' }).hasAttribute('disabled')).toBe(true);
 
     await user.click(within(first).getByRole('button', { name: 'Cancel' }));
-    expect(within(first).queryByRole('form')).toBeNull();
+    expect(within(first).queryByRole('form', { hidden: true })).toBeNull();
     expect(within(first).getByRole('button', { name: 'Reflect now' })).toBeTruthy();
     expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
 
@@ -409,7 +409,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       vi.mocked(facade.Journal.getDefinitions).mockImplementation(failure as never);
       await user.click(within(first).getByRole('button', { name: 'Reflect now' }));
       expect((await within(first).findByRole('alert')).textContent).toContain('This reflection could not be opened.');
-      expect(within(first).queryByRole('form')).toBeNull();
+      expect(within(first).queryByRole('form', { hidden: true })).toBeNull();
       expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
       expect(within(second).getByRole('button', { name: 'Decline' }).hasAttribute('disabled')).toBe(false);
     }

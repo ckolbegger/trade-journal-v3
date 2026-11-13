@@ -1,0 +1,64 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/d6/kill.spec.ts:9:3 › B6.7 Kill after commit › should keep the Closed lifecycle, the Sell Executions, the Close Reason, and both reflection outcomes after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches (7.4s)
+  ✘  2 [chromium] › e2e/d7/kill.spec.ts:8:3 › B7.8 Kill after commit › should keep the Closed lifecycle, the Expiration, and both reflection outcomes after the browser is killed once an Expiration result renders (7.1s)
+
+
+  1) [chromium] › e2e/d6/kill.spec.ts:9:3 › B6.7 Kill after commit › should keep the Closed lifecycle, the Sell Executions, the Close Reason, and both reflection outcomes after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByRole('heading', { name: /^Close Review/, includeHidden: true, level: 3 })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByRole('heading', { name: /^Close Review/, includeHidden: true, level: 3 }) with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByRole('heading', { name: /^Close Review/, includeHidden: true, level: 3 })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      47 |       // Both reflections are answered: nothing is owed.
+      48 |       await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
+    > 49 |       await expect(detail.anywhere(() => detail.closeReviewOwed(page))).toHaveCount(0);
+         |                                                                         ^
+      50 |
+      51 |       const workspace = workspaceOf(await probe(page))!;
+      52 |       const [trade] = tradesOf(workspace);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d6/kill.spec.ts:49:73
+
+    Error Context: test-results/d6-kill-B6-7-Kill-after-co-ce4ee-derive-the-same-Lot-Matches-chromium/error-context.md
+
+  2) [chromium] › e2e/d7/kill.spec.ts:8:3 › B7.8 Kill after commit › should keep the Closed lifecycle, the Expiration, and both reflection outcomes after the browser is killed once an Expiration result renders 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByRole('heading', { name: /^Close Review/, includeHidden: true, level: 3 })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByRole('heading', { name: /^Close Review/, includeHidden: true, level: 3 }) with timeout 5000ms
+      - waiting for locator('.trade-detail').getByRole('region', { name: 'Needs you', exact: true, includeHidden: true }).getByRole('heading', { name: /^Close Review/, includeHidden: true, level: 3 })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      34 |       // Both reflections are answered: nothing is owed.
+      35 |       await expect(detail.anywhere(() => detail.reflectionOwed(page))).toHaveCount(0);
+    > 36 |       await expect(detail.anywhere(() => detail.closeReviewOwed(page))).toHaveCount(0);
+         |                                                                         ^
+      37 |
+      38 |       const workspace = workspaceOf(await probe(page))!;
+      39 |       const [trade] = tradesOf(workspace);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-ax/e2e/d7/kill.spec.ts:36:73
+
+    Error Context: test-results/d7-kill-B7-8-Kill-after-co-07fb3-n-Expiration-result-renders-chromium/error-context.md
+
+  2 failed
+    [chromium] › e2e/d6/kill.spec.ts:9:3 › B6.7 Kill after commit › should keep the Closed lifecycle, the Sell Executions, the Close Reason, and both reflection outcomes after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches 
+    [chromium] › e2e/d7/kill.spec.ts:8:3 › B7.8 Kill after commit › should keep the Closed lifecycle, the Expiration, and both reflection outcomes after the browser is killed once an Expiration result renders 

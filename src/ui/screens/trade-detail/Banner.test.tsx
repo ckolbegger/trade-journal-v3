@@ -17,7 +17,7 @@ describe('Open Trade Detail', () => {
     renderView(openDetailOf([PC1, PC2]));
     await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Position' });
-    expect(screen.queryByRole('region', { name: 'Records disagree' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Records disagree', hidden: true })).toBeNull();
     cleanup();
 
     renderView(openDetailOf([PC1, PC2, PC3], { storedLifecycle: 'Planned' }));
@@ -93,7 +93,7 @@ describe('Open Trade Detail', () => {
       ['Sell of 120 XYZ on Wed Oct 14, 10:30 is more than the 100 shares in the position'],
       ['Position Change on Wed Oct 14, 10:30 shares its identity with another record'],
     ]);
-    expect(screen.queryByRole('region', { name: 'Records disagree' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Records disagree', hidden: true })).toBeNull();
   });
 
   it('should show the Facts cannot be replayed region naming each fact that cannot be replayed, with the Plan, recorded Position Changes and Journal but no derived figures, when the facts are incoherent', async () => {
@@ -128,9 +128,9 @@ describe('Open Trade Detail', () => {
     await openDrawer(user, 'Journal');
     expect(within(screen.getByRole('region', { name: /^Journal/ })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
-    expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Position Change Reflection', hidden: true })).toBeNull();
     for (const derived of ['Plan Baseline', 'Position', 'Entry Quality', 'Planned-Leg Fulfillment', 'Deviations']) {
-      expect(screen.queryByRole('region', { name: derived })).toBeNull();
+      expect(screen.queryByRole('region', { name: derived, hidden: true })).toBeNull();
     }
   });
 });
