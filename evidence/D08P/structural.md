@@ -728,3 +728,27 @@ In the lane: session `5a764ad7-abf6-43b1-9f4f-83a6e9988529`, model gpt-6.1-sol, 
 Bug tasks, run by the task's agent in the lane:
 - **T8P.8-B1.** Case: *it should give the series on the first covered session without a previous session.*
 - **T8P.8-B2.** Case: *it should read a series's history and its final point in one snapshot.*
+
+## T8P.6 Nearest condition (lane `d08p-ba`): reviews and merge
+
+Task summary:
+- Cases 1 and 2 had genuine reds. In case 1, the first green failed on wrongly guessed condition ids, so the test was corrected and the failed green row kept.
+- Cases 3 and 4 were first-run passes, flagged: the Value-headline guard and `find`'s first match. Their mutations failed with assertions (mark a non-Value headline's first condition; `findLast`), and both were restored.
+- Revision 88's line is in `current-evaluation.test.ts` (`cf94431d` after the rebase).
+- O-S2's condition ids are `stop-1`, `stop-2`, `target-1` and `target-2`, in Plan order.
+- The lane tier after the fix: 1544 unit, 218 integration, 14 of 14 checks; `run-complete.sh`: run complete.
+
+**ocr on `12a396c0..ba8a2079`.** Session `04f83818-2624-4ed0-a2a0-214024f72ecd`, model gpt-6.1-sol. 1 file reviewed (`evaluate.ts`), 3 excluded (two tests, one log), 0 comments. **No findings.** The reviewer notes the run was short (6 s, one file read). Raw output: [ocr/T8P.6-12a396c0..ba8a2079.json](ocr/T8P.6-12a396c0..ba8a2079.json).
+
+**Merge.** Rebased onto `claude-opus-5.5` with no conflict, bringing in only plan and evidence, so the lane tier wasn't rerun. Fast-forwarded to `eb08ab37`. Rebased hashes: `3c234ab6` (task), `cf94431d` (revision 88 line), `eb08ab37` (lane tier). The lane was removed.
+
+## T8P.9 ocr review (`12a396c0..83ddb848`)
+
+Session `c6c984a3-a560-4128-afb9-d40da9dff4ab`, model gpt-6.1-sol. 6 files reviewed (the five product files and `package.json`), 9 excluded (four tests and specs, five evidence files), 0 comments. **No findings.** Raw output: [ocr/T8P.9-12a396c0..83ddb848.json](ocr/T8P.9-12a396c0..83ddb848.json).
+
+T8P.9 waits to merge until T8P.12 (the identity card, which shows the days) has merged. B8P.3 is then extended to "Expires Fri 18 Dec 2026 (… days)", as section 7.2 requires.
+
+Other T8P.9 points accepted from its summary:
+- Its two flagged first-run passes, with assertion mutations.
+- `trade-workflows.ts` importing `expirationLineOf` from the Trade Views index (`lint:deps` accepts it).
+- Its titles restored word for word (`83ddb848`).

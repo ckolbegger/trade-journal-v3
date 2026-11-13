@@ -1,0 +1,192 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 47962,
+    "input_tokens": 47374,
+    "output_tokens": 588,
+    "cache_read_tokens": 9984,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade views, workflows, and confirmation detail integration",
+      "files": [
+        "src/coordinators/trade-views/index.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/trade-workflows/trade-workflows.ts",
+        "src/domain/instrument/index.ts",
+        "src/ui/screens/confirmed-detail.ts"
+      ]
+    },
+    {
+      "label": "Package metadata update",
+      "files": [
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "c6c984a3-a560-4128-afb9-d40da9dff4ab",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c6c984a3-a560-4128-afb9-d40da9dff4ab",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "12a396c0",
+      "requested_head": "83ddb848",
+      "resolved_base": "12a396c05b2226214c0f559d8c8a1702ae19242e",
+      "resolved_head": "83ddb8480b8fb3e4c67c2cff9eabf845bf86d4df",
+      "exact_range": "12a396c05b2226214c0f559d8c8a1702ae19242e..83ddb8480b8fb3e4c67c2cff9eabf845bf86d4df",
+      "source_artifact_sha256": "4c73e076234b7d04dbac7777eb89c776893337a51117aded07eeec81511e5af4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6a93ffd8da68cbdc388f76ec6683faef9baaf3863c8671ee8d0fa9fcfe917595",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "f98720fb526480b26219c56bc52f64c7f03b60341e4bc5dad0c893dc4488c0b8"
+        },
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "1475eb421f77c6e00dfdf63af6b81aaa4d7ad77ce026b7e714ca5bf09385ea05"
+        },
+        {
+          "item_id": "b7dc8e5a80db585c27b91838d9c35e2ea83c9e5449378c7254c049324b675c39",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "1202ba7bf10c92857edbc851c80ea06c42420400791dd27dcec327fd8e84ce14"
+        },
+        {
+          "item_id": "d45044869ae85245cdb68c7a6ca13bac1e573d951e1644d011eaaab91b741808",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "c78335077700c7109731f4798ac8c3ebe9cfbb8cbb82f628cf10ac02da358fd1"
+        },
+        {
+          "item_id": "da199272376c1ceee43a7073d4b33a176f4cd0a7955b07a10d8fd7f7016eea0b",
+          "path": "src/domain/instrument/index.ts",
+          "fingerprint": "7c935c9c6275e254be7c79f78a1eddd47370c1b01bd0c2fb9caba0e5366eaa39"
+        },
+        {
+          "item_id": "e3c7cbe310881d0348390239b00c219aa81fd9d09b83da3f90f33ba209ea7b6a",
+          "path": "package.json",
+          "fingerprint": "642816a34163c3697d3815c2724852718b5683cc58bfbfabb1147c2ef1877691"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6a93ffd8da68cbdc388f76ec6683faef9baaf3863c8671ee8d0fa9fcfe917595",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "f98720fb526480b26219c56bc52f64c7f03b60341e4bc5dad0c893dc4488c0b8"
+        },
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "1475eb421f77c6e00dfdf63af6b81aaa4d7ad77ce026b7e714ca5bf09385ea05"
+        },
+        {
+          "item_id": "b7dc8e5a80db585c27b91838d9c35e2ea83c9e5449378c7254c049324b675c39",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "1202ba7bf10c92857edbc851c80ea06c42420400791dd27dcec327fd8e84ce14"
+        },
+        {
+          "item_id": "d45044869ae85245cdb68c7a6ca13bac1e573d951e1644d011eaaab91b741808",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "c78335077700c7109731f4798ac8c3ebe9cfbb8cbb82f628cf10ac02da358fd1"
+        },
+        {
+          "item_id": "da199272376c1ceee43a7073d4b33a176f4cd0a7955b07a10d8fd7f7016eea0b",
+          "path": "src/domain/instrument/index.ts",
+          "fingerprint": "7c935c9c6275e254be7c79f78a1eddd47370c1b01bd0c2fb9caba0e5366eaa39"
+        },
+        {
+          "item_id": "e3c7cbe310881d0348390239b00c219aa81fd9d09b83da3f90f33ba209ea7b6a",
+          "path": "package.json",
+          "fingerprint": "642816a34163c3697d3815c2724852718b5683cc58bfbfabb1147c2ef1877691"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "15fcd4ae96590c62e0b4cdbff3962df90356305f7bf801d7f904d844570d5d24",
+          "path": "tests/integration/d8p/detail.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "55e3040595f1a8264a0c9cfe42def468da2e727c0eacfe0755a46c568e576005",
+          "path": "evidence/D08P/suite-runs/T8P.9-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "58fc7488047ea1f676158b39b0b8e7a8b2809446acc07a14936f75febc1b1d19",
+          "path": "evidence/D08P/tdd-log/T8P.9.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "62187e3278e7befe14d49c9fb46b171f8d3d9c57d35f4cac7321a737fd7e1a37",
+          "path": "src/ui/screens/confirmed-detail.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "813ccbcabcdf3ac0b949a1f9fd1a4a12d6b3ed6de8f3c3f8371bb6e697e812b6",
+          "path": "evidence/D08P/suite-runs/T8P.9-lane.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "93b7a064b795d6285742c8798e1a88db2940243a463e23590332a4232487c500",
+          "path": "e2e/d8p/planned.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ba5d6699d37e85700f46f9c4570947daead5e68569273e5620db916e4fcf7574",
+          "path": "evidence/D08P/suite-runs/T8P.9-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "c250938087b4f61452c31b26fcdccdc82f16bd5d1482055a57c2e332e174cf61",
+          "path": "evidence/D08P/suite-runs/T8P.9-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "e9f53949240d76a437485d1ff5442db937904f5acf491e254c6b1ed321385f54",
+          "path": "tests/integration/d7sp/trade-detail-finished.test.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 21455
+  }
+}
