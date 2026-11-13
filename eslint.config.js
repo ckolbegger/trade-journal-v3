@@ -16,7 +16,7 @@ const wordingWithExpirationRules = {
 };
 
 export default defineConfig(
-  globalIgnores(['dist', 'dist-*', 'coverage', 'test-results', 'playwright-report', 'tools/dep-fixtures']),
+  globalIgnores(['dist', 'dist-*', 'coverage', 'test-results', 'playwright-report', 'tools/dep-fixtures', '.claude/worktrees/**']),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   {

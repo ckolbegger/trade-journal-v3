@@ -33,3 +33,33 @@ Worktree and branch names the Agent tool gives each lane task (handoff, section 
 
 | Task | Lane | Worktree | Branch | Base |
 |---|---|---|---|---|
+
+## T8P.1 Swarm tooling
+
+No product code. Changed: `.claude/scripts/tdd.sh`, `full-suite.sh`, `run-complete.sh`; new `.claude/scripts/with-browser-lock.sh` and `lane-setup.sh`; `eslint.config.js` (`.claude/worktrees/**` in `globalIgnores`); the text of section 9 applied to `.claude/docs/implementing.md`, `.claude/agents/tdd-task.md` and `.claude/agents/suite-runner.md`.
+
+**1. `tdd.sh`, one file per task.** Run for `T8P.1` and `T8P.6-B1-R1` (a bug-fix ID shape), each with the harmless unit case `should authorize 10 percent of the long-option Plans and no other` in `src/app/bench-generator.test.ts`: `green exit=0 | Tests 1 passed, 8 skipped (9)`. Two files appeared, `evidence/D08P/tdd-log/T8P.1.md` and `evidence/D08P/tdd-log/T8P.6-B1-R1.md`, each with its header, the column header row copied from `evidence/D08P/tdd-log.md`, and one row; `evidence/D08P/tdd-log.md` itself was unchanged. Both probe files were then removed (they aren't TDD evidence). The deliverable log's absence still refuses (the existing check is untouched).
+
+**2. `with-browser-lock.sh`.** Lock: directory `tj-browser-lock-5175` under the user's temp directory (`getconf DARWIN_USER_TEMP_DIR`, symlinks resolved with `pwd -P`; `$TMPDIR` is only a fallback), with the holder's PID in `pid`. Two callers, the first holding for 5 s and exiting 7:
+
+```
+A start 23:51:51
+A holds 23:51:51
+B start 23:51:52
+with-browser-lock: waiting for the lock held by process 31343 (/private/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-browser-lock-5175)
+A done 23:51:56
+A exit 7          <- the command's exit code passes through
+with-browser-lock: acquired
+B holds 23:51:57
+B exit 0
+```
+
+Killed holder (`kill -9` of the script; the lock directory stayed, PID file 31502): the next caller, started from `/` with `TMPDIR=/tmp`, printed `taking over the lock left by dead process 31502`, ran, and released (`lock after: released`). A holder sent SIGTERM exits 143 and the lock is released. The path is the same from any directory and any `$TMPDIR` because it comes from `getconf DARWIN_USER_TEMP_DIR`, not the environment or cwd (the run from `/` with a different `TMPDIR` found and took over the same directory).
+
+**3. `lane-setup.sh`** on a scratch worktree `.claude/worktrees/t8p1-probe` (branch `scratch/t8p1-probe`, from HEAD). Run from the main root it refuses (`is not under a .claude/worktrees/ directory`, exit 2). In the lane: source root derived from the lane path; `node_modules` cloned with `cp -c -R`; `dist-releases` cloned the same way (see the finding below); `tools/install-hooks.sh` run; `.env.local` copied and `DEV_PORT=5175` confirmed; `git rev-parse --git-path hooks` printed `.githooks`. Rerunning leaves existing files alone. Finding: the first lane-tier run failed `verify:releases` (ENOENT on `dist-releases/v1`), because the checks stage reads the gitignored `dist-releases/`. `lane-setup.sh` now clones it. No other gitignored file is needed by the unit, integration or checks stages (`.cache/` and `dist-faults/`, `dist-bench/` aren't read there; `dist/` is rebuilt by `npm run build`). The new scripts were copied into the scratch worktree from the main worktree (they were not yet committed).
+
+**4. `full-suite.sh evidence/D08P t8p-1-lane-probe lane`** in the scratch worktree: unit exit 0 (127 files, 1519 tests), integration exit 0 (103 files, 218 tests), checks 14 of 14 exit 0 (after the `dist-releases` fix). It wrote `t8p-1-lane-probe-unit.txt`, `-integration.txt` and `-checks.txt` under the lane's `evidence/D08P/suite-runs/` (they went with the worktree). `run-complete.sh evidence/D08P t8p-1-lane-probe` printed `unit: finished`, `integration: finished`, `checks: finished`, `run complete`, exit 0. The browser stages (`browser-1`, `browser-2`, `browser-task` and its builds) now run through `with-browser-lock.sh`; `browser-auto` runs the task tier through `browser_task`, so it is wrapped too. No browser command ran in this task.
+
+**5. `npm run lint` in the main worktree with the scratch worktree present:** exit 0, and the debug log shows ESLint calculated config for the `.claude/worktrees` directory only and linted none of its files. Other commands checked with the scratch worktree present: `npx vitest list --filesOnly` (unfiltered, `src`, `tests/integration`) lists 0 files under `.claude/worktrees` (the project's include patterns are anchored at the root), `npm run lint:deps` exit 0, `npm run verify:wording` and `npm run verify:hooks` ok. None needed an exclude.
+
+**6. Cleanup:** `git worktree remove --force .claude/worktrees/t8p1-probe`, `git branch -D scratch/t8p1-probe`; `.claude/worktrees` is absent, and `git worktree list` has no entry under this worktree's `.claude/`. Nothing listens on 5175; the lock directory is absent.

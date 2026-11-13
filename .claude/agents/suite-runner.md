@@ -17,12 +17,13 @@ The task prompt gives you:
   - `browser-auto <base>`: after a task. It picks the tier from the files changed since `<base>` and prints a line `browser tier: full (…)` or `browser tier: task (…)`. On the task tier it also runs it. On the full tier it runs nothing and prints `next: run stages browser-1 and browser-2`; you then make those two calls (step 2).
   - `browser-full`: the full tier, before every critic and in a deliverable's browser-suite task. You run the stages `browser-1` and then `browser-2` (decision 98, revision 65).
   - `browser-task`: the task tier only (the `@every-task` tests, plus the current deliverable's `e2e/` folder when it exists).
+  - `lane <worktree>`: the lane tier (swarm deliverables, decision 111). You run the unit, integration and checks stages inside that worktree (`cd <worktree>` first, so `full-suite.sh` runs from its root), with no browser: one call, `<worktree>/.claude/scripts/full-suite.sh <evidence-dir> <label> lane`. Skip every port check and every browser stage. `run-complete.sh` accepts the three files (unit, integration, checks). In the report, drop the browser row and write "Browser tier: none (lane tier)".
 
 If the evidence directory or label is missing, infer the evidence directory from the most recent `evidence/D*` folder and use `run-<YYYYMMDD-HHMM>` as the label. If the browser stage is missing, use `browser-full`. Say so in your report.
 
 ## Steps
 
-1. Confirm nothing listens on 5175 (every test server) or on 9341 and 9342 (the Chromium that the D5 and D5R kill tests spawn; one left over makes their next launch fail). Use `lsof -nP -iTCP:<port> -sTCP:LISTEN`. If one is busy, report what holds it and stop; it isn't yours to stop.
+1. Confirm nothing listens on 5175 (every test server) or on 9341 and 9342 (the Chromium that the D5 and D5R kill tests spawn; one left over makes their next launch fail). Run the check inside the browser lock, so a lane's browser run cannot start between the check and your run: `.claude/scripts/with-browser-lock.sh sh -c 'for p in 5175 9341 9342; do lsof -nP -iTCP:$p -sTCP:LISTEN; done'` (any output means a port is busy). If one is busy, report what holds it and stop; it isn't yours to stop. (`full-suite.sh` takes the same lock around each browser stage, so waiting for another run's lock is normal and the stages never overlap.)
 2. Run the suite one stage per Bash call, in this order, every call in the foreground with the Bash tool's `timeout` set to 600000. Never use `run_in_background`:
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> unit`
    - `.claude/scripts/full-suite.sh <evidence-dir> <label> integration`
@@ -36,7 +37,7 @@ If the evidence directory or label is missing, infer the evidence directory from
 
    Each call writes its file (`<label>-unit.txt`, `<label>-integration.txt`, `<label>-browser-1.txt`, `<label>-browser-2.txt`, `<label>-browser.txt` for the task tier, or `<label>-checks.txt`) and prints a summary. Run every stage even when an earlier one fails. Do not run the suites any other way. Start no call with `run_in_background`, `&` or `nohup`, and never wait in a loop (`sleep`, `until`, `while`, `pgrep`, `ps`). The harness may still move a long foreground call to the background after about 180 s: then wait for its completion notice, which is the only wait. A stage that exceeds the 600000 ms timeout is a failure to report.
 3. Run `.claude/scripts/run-complete.sh <evidence-dir> <label>`. It exits 0 and prints "run complete" only when every stage file for the run's tier exists (unit, integration, browser-1, browser-2 and checks for the full tier; unit, integration, browser and checks for the task tier) and every command in them has finished. If it prints "run INCOMPLETE", a stage is still running: end your turn without calling SubagentHandback and without any report. You get exactly one handback, so a "waiting" handback would use it up and your real report would be refused. The completion notice wakes you; then rerun this step. Never write the report until this check prints "run complete". (A stage that hit the 600000 ms timeout is the one exception: if it has an EXIT line this check sees it as finished; report it as a failure.)
-4. Repeat step 1's port check. When you finish, no process you started may still be running.
+4. Repeat step 1's port check, again inside the lock. When you finish, no process you started may still be running.
 5. If every command exited 0, go to the report.
 6. If something failed, read just enough of the failing output file to name each failure: run `grep -n` through Bash for `FAIL`, `✘`, `Error`, or `EXIT [1-9]`, then Read a narrow range around each hit. Do not rerun anything.
 

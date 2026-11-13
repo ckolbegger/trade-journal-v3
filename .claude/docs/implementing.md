@@ -24,7 +24,7 @@ Also before the first task, run `ocr llm test`. It must print `✓ Connection te
 
 Delegate every implementation task to its own fresh `tdd-task` subagent (`.claude/agents/tdd-task.md`). This covers every behavioral and structural task. The only exceptions are the cumulative runs, which go to `suite-runner`, and the browser-critic gate, which has its own fresh-critic rules; brief each critic from `.claude/docs/critic-brief.md`.
 
-- Use one subagent per task, never one per case. Run tasks one at a time, in the order of the breakdown's Progress section (decision 100). The next task is the first row not marked "Done". Before its brief, mark that row "In progress from `<commit>`", using `git rev-parse --short HEAD`; that commit is A180's base. Editing the Progress section is not a plan revision.
+- Use one subagent per task, never one per case. Run tasks one at a time, in the order of the breakdown's Progress section (decision 100). The next task is the first row not marked "Done". In a swarm deliverable, the Progress table also has Wave and Lane columns. Tasks run wave by wave. Within a wave, every lane runs at once, up to the breakdown's agent cap, and each lane runs its own rows one at a time in order. A task starts when every task it is blocked by is merged into the deliverable branch. The next task of a lane is its first row not marked "Done". Only the main session edits the table. Before its brief, mark that row "In progress from `<commit>`", using `git rev-parse --short HEAD`; that commit is A180's base. Editing the Progress section is not a plan revision.
 - Write each brief from the reading, without opening the task's code. The brief gives:
   - the task ID, its title, and its kind (behavioral or structural);
   - the breakdown section to read in full, and the exact number of cases it lists;
@@ -51,6 +51,20 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
 4. Record the returned table in `evidence/D<nn>/structural.md`.
 5. Mark the task's Progress row "Done" with its commits: the task's own, then its bug tasks, suite-failure fixes and their rounds, by ID (`B1 <hash>; F1 <hash>; B1-R1 <hash>`). In the handoff, put each warning for a later task in its own bullet under "Notes for later tasks", beginning with the IDs of the tasks it is for ("For T7.19, T7.23: …"). Then commit everything (evidence, raw ocr outputs, the breakdown's Progress section, handoff), and start the next task without waiting.
 6. Add any flagged item, such as a first-run pass or a dismissed finding, to the handoff's open questions for the final report. A deliverable runs from one prompt to its gate: the session stops only for the conditions the handoff lists under "Running a whole deliverable".
+
+## Running a swarm deliverable
+
+Applies only to a deliverable whose breakdown has a lane column (decision 111).
+
+- Dispatch each lane task to a fresh `tdd-task` with `isolation: "worktree"`, on a lane worktree `.claude/worktrees/<dnn>-<lane>` and branch `<dnn>/<lane>`, set up by `.claude/scripts/lane-setup.sh`. These worktrees belong to this implementation. Never open any other worktree.
+- The brief adds the lane, its owned files (the breakdown's section 4.2), and the lane's base commit.
+- Review each lane commit with `ocr-review` as today. ocr bug tasks run in the same lane.
+- A lane task is mergeable when its ocr is clean and its lane tier (unit, integration and checks, run in the lane worktree) passed. Rebase the lane branch onto the deliverable branch and fast-forward it there. If the rebase changed any file the task didn't own, rerun the lane tier first.
+- **Merge runs:** when no merge is pending and at least one task has merged since the last run, send the complete cumulative run to `suite-runner` on the deliverable branch with `browser-auto <last run's commit>`. A failure is pinned to a merged task by a targeted run, and fixed in that task's lane.
+- Run the full tier before every critic, unchanged.
+- Merges, merge runs and critics are serial on the main session. Lanes keep working meanwhile.
+
+The tools: `.claude/scripts/lane-setup.sh` (run first inside the lane worktree: clones `node_modules`, installs the hooks, copies `.env.local`), `.claude/scripts/full-suite.sh <evidence-dir> <label> lane` (the lane tier), and `.claude/scripts/with-browser-lock.sh <command…>` (serializes every user of port 5175; `full-suite.sh` already wraps its browser stages in it). `tdd.sh` writes `evidence/<Dnn>/tdd-log/<task>.md`, one file per task.
 
 ## Writing the next deliverable's handoff
 

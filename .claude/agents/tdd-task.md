@@ -9,7 +9,7 @@ You implement one task of the Trade Journal V3 plan and nothing else. The main s
 
 ## Boundaries
 
-- Work in this repository's root (`git rev-parse --show-toplevel`) on its current branch. Everything you read lives inside it: this worktree's files and this branch's history only, never another worktree, another branch, or a tag other than the ones the brief names.
+- Work in the root `git rev-parse --show-toplevel` gives you, on its current branch. In a swarm this is your lane worktree and lane branch. Edit only the files your brief's lane owns. Everything you read lives inside it: this worktree's files and this branch's history only, never another worktree, another branch, or a tag other than the ones the brief names.
 - `specs/` and `plan/` are read-only. When the task would need anything that departs from `specs/`, the frozen plan, or the breakdown's case wording and assumptions, stop and report it without changing anything.
 - Build only the brief's task. Its scope limits name what later tasks own.
 - Refer to document sections in words, never with the "§" sign.
@@ -24,19 +24,19 @@ These hold for every task; briefs don't repeat them.
 - **Browser runs:**
   - one foreground Bash call each, with `timeout` 600000;
   - when the harness moves a long call to the background, wait for its completion notice;
-  - one browser run at a time, since every server uses port 5175;
+  - run every browser command through `.claude/scripts/with-browser-lock.sh`, which serializes all users of port 5175. In a lane, run only the spec files your task changes;
   - before and after each run, confirm nothing listens on 5175 (every test server) or on 9341 and 9342 (the Chromium that the D5 and D5R kill tests spawn; one left over makes their next launch fail). Use `lsof -nP -iTCP:<port> -sTCP:LISTEN`, and leave other processes alone.
 - **Mutations of served CSS or code** take effect only after rebuilding the folder the test serves. That is `npm run build:faults` for `dist-faults`, or the release build for a `dist-releases/` folder. Rebuild again after restoring.
 - **Staging:** stage your task's files by name. `.claude/settings.json` and `.claude/settings.local.json` (the user's) and `plan/*handoff.md` (the main session's) stay unedited and unstaged.
 
 ## `tdd.sh`
 
-Run every red and green with `.claude/scripts/tdd.sh red|green <task> <test file> "<test name>"`, never with a hand-written `vitest` command. It runs the one case, prints one summary line, and appends the row to `evidence/D<nn>/tdd-log.md`, taking `<nn>` from the task ID (T2.2 → D02).
+Run every red and green with `.claude/scripts/tdd.sh red|green <task> <test file> "<test name>"`, never with a hand-written `vitest` command. It runs the one case, prints one summary line, and appends the row to `evidence/D<nn>/tdd-log/<task>.md`, one file per task, taking `<nn>` from the task ID (T2.2 → D02).
 
 - Run it as a command on its own. When it is chained with another `vitest` command, the output-filter hook replaces its summary line.
-- It refuses to run without `tdd-log.md`. If the file is missing, create it with a note that its rows are single-case runs.
+- It refuses to run without the deliverable's `tdd-log.md`. If the file is missing, create it with a note that its rows are single-case runs. It creates the task's own file, with a header, on the first run.
 - Parentheses, quotes, and `$` in test names break its `-t` filtering, so leave them out.
-- It writes only red and green rows. Append first-run-pass notes and the refactor row to the log yourself.
+- It writes to `evidence/<Dnn>/tdd-log/<task>.md`. It writes only red and green rows. Append first-run-pass notes and the refactor row to that task file yourself.
 
 ## Steps
 
@@ -77,7 +77,7 @@ With every case green, review the task's code as a separate step and refactor wh
 
 ### 4. Checks
 
-Run `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:deps`. Done when all four exit 0 and anything you caused is fixed. The full cumulative suite belongs to `suite-runner`, which the main session dispatches.
+Run `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:deps`. Done when all four exit 0 and anything you caused is fixed. The full cumulative suite belongs to `suite-runner`, which the main session dispatches. In a swarm, also run `.claude/scripts/full-suite.sh <evidence-dir> <task> lane` and report its result.
 
 ### 5. Commit
 

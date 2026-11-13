@@ -1,6 +1,6 @@
 #!/bin/bash
 # Runs the complete cumulative suite and writes the full outputs as evidence.
-# Usage: .claude/scripts/full-suite.sh <evidence-dir> <label> [unit|integration|browser-1|browser-2|browser-task|checks]
+# Usage: .claude/scripts/full-suite.sh <evidence-dir> <label> [unit|integration|browser-1|browser-2|browser-task|checks|lane]
 #        .claude/scripts/full-suite.sh <evidence-dir> <label> browser-auto <base>
 #   e.g. .claude/scripts/full-suite.sh evidence/D02 t2.5-recordPositionChange browser-1
 # With a stage, runs only that stage, so each stage fits in one foreground Bash call
@@ -28,11 +28,16 @@
 # Writes <evidence-dir>/suite-runs/<label>-{unit,integration,browser-1,browser-2,checks}.txt
 # (full tier) or <label>-{unit,integration,browser,checks}.txt (task tier)
 # and prints a short summary. Exits non-zero if any command failed.
+# Lane tier (decision 111): `<evidence-dir> <label> lane` runs the unit, integration and checks
+#   stages, no browser, in the current root (a lane worktree), writing <label>-{unit,integration,checks}.txt.
+# Every browser command runs inside .claude/scripts/with-browser-lock.sh, which serializes all
+#   users of port 5175 (the test servers, the tj-release cache and the CDP ports 9341 and 9342).
 set -u
+lock="$(cd "$(dirname "$0")" && pwd)/with-browser-lock.sh"
 cd "$(git rev-parse --show-toplevel)" || exit 2
 
 usage() {
-  echo "usage: $0 <evidence-dir> <label> [unit|integration|browser-1|browser-2|browser-task|checks]" >&2
+  echo "usage: $0 <evidence-dir> <label> [unit|integration|browser-1|browser-2|browser-task|checks|lane]" >&2
   echo "       $0 <evidence-dir> <label> browser-auto <base>" >&2
   echo "       $0 --current-folder <evidence-dir>" >&2
   echo "       $0 --choose-tier <base>" >&2
@@ -73,10 +78,10 @@ esac
 [[ $# -eq 2 || $# -eq 3 || ( $# -eq 4 && "${3:-}" == browser-auto ) ]] || usage
 stage=${3:-}
 case "$stage" in
-  ''|unit|integration|browser-1|browser-2|browser-task|checks) [[ $# -le 3 ]] || usage ;;
+  ''|unit|integration|browser-1|browser-2|browser-task|checks|lane) [[ $# -le 3 ]] || usage ;;
   browser-auto) [[ $# -eq 4 ]] || usage ;;
   browser) echo "the stage browser no longer exists (decision 98, revision 65): run the full browser tier as two calls, browser-1 and then browser-2" >&2; exit 2 ;;
-  *) echo "unknown stage: $stage (expected unit, integration, browser-1, browser-2, browser-task, browser-auto or checks)" >&2; exit 2 ;;
+  *) echo "unknown stage: $stage (expected unit, integration, browser-1, browser-2, browser-task, browser-auto, checks or lane)" >&2; exit 2 ;;
 esac
 # Accept evidence/D02, evidence/D02/, or evidence/D02/suite-runs alike.
 dir=${1%/}
@@ -90,13 +95,14 @@ failed=0
 echo "date: $(date '+%Y-%m-%d %H:%M %Z')"
 echo "commit: $(git rev-parse --short HEAD)$( [[ -n $(git status --porcelain) ]] && echo ' + uncommitted changes')"
 
-want() { [[ -z "$stage" || "$stage" == "$1" ]]; }
+want() { [[ -z "$stage" || "$stage" == "$1" || ( "$stage" == lane && "$1" != browser-* ) ]]; }
 
-suite() { # name, command
+suite() { # name, command; the browser stages run inside the browser lock
   want "$1" || return 0
-  local file="$out/$label-$1.txt"
+  local file="$out/$label-$1.txt" wrap=()
+  [[ "$1" == browser-* ]] && wrap=("$lock")
   : >"$file"
-  bash -c "$2" >"$file" 2>&1
+  ${wrap[@]+"${wrap[@]}"} bash -c "$2" >"$file" 2>&1
   local ec=$?
   echo "EXIT $ec" >>"$file"
   (( ec == 0 )) || failed=1
@@ -114,12 +120,12 @@ browser_task() {
   [[ -d "$current" ]] && cmd2="npx playwright test $(printf '%q' "$current") --grep-invert \"@every-task|@release-history\""
 
   echo "\$ $cmd1" >"$file"
-  bash -c "$cmd1" >>"$file" 2>&1
+  "$lock" bash -c "$cmd1" >>"$file" 2>&1
   ec1=$?
   echo "EXIT $ec1" >>"$file"
   if [[ -n "$cmd2" ]]; then
     echo "\$ $cmd2" >>"$file"
-    bash -c "$cmd2" >>"$file" 2>&1
+    "$lock" bash -c "$cmd2" >>"$file" 2>&1
     ec2=$?
     echo "EXIT $ec2" >>"$file"
   fi
