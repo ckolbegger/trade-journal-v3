@@ -372,3 +372,9 @@ ocr: session `7d22fbb9-f842-416e-a251-ba206bdb2013`, model gpt-6.1-sol, 2 files 
 | medium | test | `.claude/scripts/it-titles.test.sh:23` | The scratch `vitest.config.mjs` leaves `allowOnly` at its default (false when `CI` is set), so the b1 fixture's `it.only` makes collection fail under CI. | Valid: `CI=1 bash .claude/scripts/it-titles.test.sh b1` failed with `FAIL: b1: exit 1`. |
 
 - **T8P.2-B4** (round 3 of T8P.2's bug tasks; if its review still leaves findings, the session stops). Case: *it should pass the `it.only` fixture with `CI` set.*
+
+### T8P.2-B4 (`bf91aea7`), round 3
+
+Fix: the shell test's scratch `vitest.config.mjs` sets `allowOnly: true`. `it-titles.sh` is unchanged, so a real `it.only` under `src/` still fails collection in CI. Red: `CI=1 bash .claude/scripts/it-titles.test.sh b1`, giving `FAIL: b1: exit 1`. Green: the same command, then the whole test with and without `CI`. Rows are in [tdd-log/T8P.2-B4.md](tdd-log/T8P.2-B4.md).
+
+ocr: session `3901471b-1ca8-4597-b6bf-d8fb4c7b5292`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the log), 0 comments. **No findings.** Raw output: [ocr/T8P.2-B4-bf91aea7.json](ocr/T8P.2-B4-bf91aea7.json). T8P.2's bug tasks are closed.
