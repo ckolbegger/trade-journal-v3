@@ -35,6 +35,13 @@ Worktree and branch names the Agent tool gives each lane task (handoff, section 
 |---|---|---|---|---|
 | T8P.3 | d08p-t8p3 (wave 0) | `.claude/worktrees/d08p-t8p3` | `d08p/t8p3` | `c5d2eb2e` |
 | T8P.4 | d08p-t8p4 (wave 0) | `.claude/worktrees/d08p-t8p4` | `d08p/t8p4` | `c5d2eb2e` |
+| T8P.5 | d08p-t8p5 (wave 0) | `.claude/worktrees/d08p-t8p5` | `d08p/t8p5` | `64cd1bd8` |
+| T8P.6 | BA (wave 1) | `.claude/worktrees/d08p-ba` | `d08p/ba` | `12a396c0` |
+| T8P.8 | BM (wave 1) | `.claude/worktrees/d08p-bm` | `d08p/bm` | `12a396c0` |
+| T8P.9 | BV (wave 1) | `.claude/worktrees/d08p-bv` | `d08p/bv` | `12a396c0` |
+| T8P.14 | R2 (wave 1) | `.claude/worktrees/d08p-r2` | `d08p/r2` | `12a396c0` |
+| T8P.12 | R1 (wave 1) | `.claude/worktrees/d08p-r1` | `d08p/r1` | `12a396c0` |
+| T8P.17 | D2 (wave 1) | `.claude/worktrees/d08p-d2` | `d08p/d2` | `12a396c0` |
 
 ## T8P.1 Swarm tooling
 
