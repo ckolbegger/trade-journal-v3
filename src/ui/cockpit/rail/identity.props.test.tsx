@@ -37,7 +37,7 @@ function show(view: TradeDetailView, writable = true) {
 const open = () => longCall(optionOpenDetail('O-C', [OC_PC1], TUESDAY), { status: 'Expires', date: '2026-12-18', days: 36 });
 
 describe('identity card (W2)', () => {
-  it('should show the symbol once as the page heading, Long Call, Open, Strike 150, Expires Fri 18 Dec 2026 with 36 days, and the account', () => {
+  it(`should show the symbol once as the page heading, "Long Call, Open", "Strike 150", "Expires Fri 18 Dec 2026 (36 days)" and the account`, () => {
     show(open());
     expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual(['XYZ']);
     const badge = document.querySelector('.badge');
@@ -48,7 +48,7 @@ describe('identity card (W2)', () => {
     expect(screen.getByText('Fidelity — Roth IRA')).toBeTruthy();
   });
 
-  it('should show 1 day and today, Expired Fri 20 Nov 2026 on a Closed option Trade, and no strike or expiration line on stock', () => {
+  it(`should show "(1 day)" and "(today)", "Expired Fri 20 Nov 2026" on a Closed option Trade, and no strike or expiration line on stock`, () => {
     show(longCall(optionOpenDetail('O-C', [OC_PC1], TUESDAY), { status: 'Expires', date: '2026-12-18', days: 1 }));
     expect(screen.getByText('Expires Fri 18 Dec 2026 (1 day)')).toBeTruthy();
     cleanup();
