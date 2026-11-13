@@ -52,11 +52,10 @@ test.describe('B7S.5 Responsive and accessible', () => {
     // Detail's conditions: every status is a word in its row.
     await page.goto(`/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
-    const table = detail.conditionsTable(page);
-    await expect(table).toBeVisible(READY);
-    const statuses = table.locator('tbody tr td:nth-child(3)');
-    await expect(statuses).toHaveCount(4);
-    for (const status of await statuses.all()) await expect(status).toHaveText(/\S/);
+    const conditions = detail.conditionBlocks(page);
+    await expect(conditions.first()).toBeVisible(READY);
+    await expect(conditions).toHaveCount(4);
+    for (const condition of await conditions.all()) await expect(condition).toContainText(/(Stop|Target)[\s\S]*(−\$|\+\$|Breached|Reached|Mark missing)/);
     await accessibleAtBothWidths(page, 'Detail conditions');
 
     // The Review card's conditions, after the Tuesday Marks: each line names its status in words.

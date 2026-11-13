@@ -22,7 +22,7 @@ async function markSession(profile: Parameters<typeof launchAt>[0], instant: str
 }
 
 test.describe('B7S.3 Detail and list on Thursday', () => {
-  test('should show one Stop breached and one Target reached badge on the Open list row, and Detail conditions with the option-price Stop Breached and the MNO Target Reached and Risk to stop and Reward to target $0.00', async ({ profile }) => {
+  test('should show one Stop breached and one Target reached badge on the Open list row, and Detail conditions with the option-price Stop Breached and the MNO Target Reached and Worst case and Max reward beneath', async ({ profile }) => {
     test.setTimeout(540_000);
     // Tuesday 10:30: O-S2 created through the UI with S1'.
     const { context: setup, page: setupPage } = await onboardedAt(profile, TUESDAY_1030);
@@ -47,14 +47,13 @@ test.describe('B7S.3 Detail and list on Thursday', () => {
 
     await page.goto(`/trades/${trade.tradeId}`);
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
-    const table = detail.conditionsTable(page);
-    const cells = async (name: string): Promise<string[]> => (await table.getByRole('row', { name }).getByRole('cell').allTextContents()).slice(0, 3);
-    expect(await cells('Stop on MNO')).toEqual(['Stop on MNO', '41.00', 'Active']);
-    expect(await cells('Stop on the option price')).toEqual(['Stop on the option price', '$3.60', 'Breached']);
-    expect(await cells('Target on MNO')).toEqual(['Target on MNO', '44.50', 'Reached']);
-    expect(await cells('Target on the option price')).toEqual(['Target on the option price', '$0.30', 'Active']);
-    await expect(detail.riskToStop(page)).toContainText('$0.00');
-    await expect(detail.rewardToTarget(page)).toContainText('$0.00');
+    // The rail's Conditions card (W5, W6): each condition's figure is its distance, or Breached or Reached, and Worst case and Max reward sit beneath.
+    await expect(detail.conditionBlocks(page)).toHaveCount(4);
+    await expect(detail.conditionBlock(page, 'MNO at or below 41.00')).toContainText('−$70.00');
+    await expect(detail.conditionBlock(page, 'Option at or above $3.60')).toContainText('Breached');
+    await expect(detail.conditionBlock(page, 'MNO at or above 44.50')).toContainText('Reached');
+    await expect(detail.conditionBlock(page, 'Option at or below $0.30')).toContainText('+$670.00');
+    await expect(detail.conditionsSummary(page).getByRole('listitem')).toHaveText(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00']);
     await context.close();
   });
 });

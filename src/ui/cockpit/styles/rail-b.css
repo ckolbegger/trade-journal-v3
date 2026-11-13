@@ -1,1 +1,64 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* Rail lane R2 (D08P T8P.14, T8P.15): the Conditions card and the Needs you card. Colour only reinforces the words, which always show. */
+.conditions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.conditions-list > li {
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.conditions-list > li:first-child {
+  border-top: 0;
+}
+
+.condition-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.condition-role {
+  font-weight: 600;
+}
+
+.condition-role.stop,
+.condition-figure.loss {
+  color: var(--stop);
+}
+
+.condition-role.target,
+.condition-figure.gain {
+  color: var(--target);
+}
+
+/* The figure sits at the right of row 1. */
+.condition-figure {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+/* Row 2 is one line, however long the condition. */
+.condition-text {
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.condition-why {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.875em;
+}
+
+.conditions-summary {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.conditions-summary .summary-label {
+  font-weight: 600;
+}

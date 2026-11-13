@@ -12,6 +12,14 @@ export const rewardToTarget = (page: Page): Locator => valueIn(riskReward(page),
 export const conditionsTable = (page: Page): Locator => riskReward(page).getByRole('table', { name: 'Conditions' });
 export const conditionRow = (page: Page, name: string | RegExp): Locator => conditionsTable(page).getByRole('row', { name });
 
+// The rail's Conditions card (W5, W6): one block per condition in Plan order, then Worst case and Max reward, or the note that stands in for them.
+// The legacy Risk and reward block above still shows until T8P.22 retires it.
+export const conditionsCard = (page: Page): Locator => regionOf(page, 'Conditions');
+export const conditionBlocks = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Conditions', exact: true }).getByRole('listitem');
+// The block of the condition whose row 2 reads `text` ("MNO at or below 41.00").
+export const conditionBlock = (page: Page, text: string): Locator => conditionBlocks(page).filter({ has: page.getByText(text, { exact: true }) });
+export const conditionsSummary = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Worst case and Max reward' });
+
 // Needs you: the Settlement Due panel.
 export const settlementDuePanel = (page: Page): Locator => regionOf(page, /^Settlement Due/);
 export const settlementDueHeading = (page: Page): Locator => settlementDuePanel(page).getByRole('heading', { name: /^Settlement Due/ });
