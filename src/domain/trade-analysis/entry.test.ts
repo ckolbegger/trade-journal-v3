@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type CalculationResult, type DerivedTradeState, type EntryQualityFigures, type TradeAnalysisRecord } from './index.ts';
-import { OS2_S1, os2Record } from './option-trade.ts';
+import { nvdaRecord, OS2_S1, os2Record } from './option-trade.ts';
 import { execution, PC1, PC2, PC3, positionChange, referenceRecord } from './reference-trade.ts';
 
 // The derived state of a coherent record.
@@ -124,6 +124,13 @@ describe('Entry Quality with several conditions (A197)', () => {
     expect(exact(f.riskInPlanR)).toBe(q(4713n, 4800n));
     expect(exact(f.actualInitialReward)).toBe(q(1487n, 10n));
     expect(exact(f.slippage)).toBe(q(-10n));
+    expect(f.flags).toEqual([]);
+  });
+
+  it('should derive Entry Quality for a Long Call filled at 7.35, beyond its 7.50 option Stop, from the NVDA 140 Stop: actual initial risk 735 and reward : risk 5.80 (4265 / 735), not the entry-at-or-beyond-Stop flag (BUG-3)', () => {
+    const f = figures(nvdaRecord('7.35'));
+    expect(exact(f.actualInitialRisk)).toBe(q(735n));
+    expect(exact(f.actualRewardRisk)).toBe(q(4265n, 735n));
     expect(f.flags).toEqual([]);
   });
 });

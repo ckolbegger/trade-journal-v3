@@ -3,7 +3,7 @@ import type { Instant } from '../time/index.ts';
 import type { CalculationResult, ExecutionDescription, ExpirationDescription, IncoherentFact, NotApplicableReason } from '../calculation-result/index.ts';
 import { expiredOn, instrumentKey, multiplierOf, settlementDueOn, type OptionInstrument, type StockInstrument } from '../instrument/index.ts';
 import { parseDecimal, Rational } from '../values/index.ts';
-import { frozenBaseline, headlineBasisOf, measurementOf, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
+import { frozenBaseline, measurementAheadOf, type ConditionInput, type PlanBaseline, type PlannedLegInput } from './plan.ts';
 
 export type LifecycleState = 'Planned' | 'Open' | 'Closed' | 'Abandoned';
 
@@ -772,12 +772,13 @@ function entryQualityOf(
   const fees = total(window, (e) => decimal(e.fee));
   const average = cost.div(quantity);
   const leg = plan.legs[0]!;
-  // Each role is measured at its headline condition (A197): an Underlying one by its value at expiration
-  // (A105), a stock or option-price one by its trigger price.
-  const stop = measurementOf(headlineBasisOf(baseline.stopBasis));
-  const target = measurementOf(headlineBasisOf(baseline.targetBasis));
   // Long exposure gains as the price rises; a short one reverses every price difference.
-  const direction = Rational.of(leg.side === 'Long' ? 1n : -1n);
+  const side = leg.side === 'Long' ? 1 : -1;
+  const direction = Rational.of(BigInt(side));
+  // Each role is measured at the nearest condition still ahead of the average entry (BUG-3, decision 109): an
+  // Underlying one by its value at expiration (A105), a stock or option-price one by its trigger price.
+  const stop = measurementAheadOf(baseline.stopBasis, average, 'Stop', side);
+  const target = measurementAheadOf(baseline.targetBasis, average, 'Target', side);
   const scale = Rational.of(BigInt(multiplierOf(leg.instrument)));
   const flags: EntryFlag[] = [];
   if (average.sub(stop).mul(direction).compare(zero) <= 0) flags.push('EntryAtOrBeyondStop');

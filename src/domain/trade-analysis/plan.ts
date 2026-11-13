@@ -139,6 +139,17 @@ export function headlineBasisOf(basis: readonly ConditionBasis[]): ConditionBasi
   return basis.reduce((nearestSoFar, b) => (b.distance.compare(nearestSoFar.distance) < 0 ? b : nearestSoFar));
 }
 
+// A role's measurement at a fill: the nearest condition whose measurement lies beyond the fill on the role's side
+// (BUG-3, decision 109). `direction` is +1 for long exposure, -1 for short. When every condition is crossed at the
+// fill, the headline's measurement, so the caller's distance is not positive.
+export function measurementAheadOf(basis: readonly ConditionBasis[], fill: Rational, role: 'Stop' | 'Target', direction: 1 | -1): Rational {
+  // How far the condition lies ahead of the fill; not positive when it is crossed.
+  const gapOf = (b: ConditionBasis) => (role === 'Stop' ? fill.sub(measurementOf(b)) : measurementOf(b).sub(fill)).mul(Rational.of(BigInt(direction)));
+  const ahead = basis.filter((b) => gapOf(b).compare(Rational.of(0n)) > 0);
+  if (ahead.length === 0) return measurementOf(headlineBasisOf(basis));
+  return measurementOf(ahead.reduce((nearestSoFar, b) => (gapOf(b).compare(gapOf(nearestSoFar)) < 0 ? b : nearestSoFar)));
+}
+
 function nearest(basis: readonly ConditionBasis[]): Rational {
   return headlineBasisOf(basis).distance;
 }

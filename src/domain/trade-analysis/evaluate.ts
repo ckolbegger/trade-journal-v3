@@ -5,7 +5,7 @@ import { parseDecimal, Rational } from '../values/index.ts';
 import type { CalculationResult } from '../calculation-result/index.ts';
 import { type ContractStatus, type DerivedTradeState, type EntryQuality, type OpenLot } from './derive.ts';
 import { currentExpirationView, expirationValueAt } from './payoff.ts';
-import { headlineBasisOf, measurementOf, type ConditionBasis, type PlanBaseline } from './plan.ts';
+import { measurementAheadOf, type ConditionBasis, type PlanBaseline } from './plan.ts';
 
 // The exact Mark revision a figure was valued with.
 export interface MarkEvidence {
@@ -170,12 +170,19 @@ function decimal(text: string): Rational {
 const value = <T>(v: T): CalculationResult<T> => ({ kind: 'Value', value: v });
 
 // Risk and reward of lots measured from their execution prices, never called valuation or P&L (A54).
-function atEntryOf(lots: readonly OpenLot[], stop: Rational, target: Rational, multiplier: Rational, oneR: Rational): AtEntryFigures | null {
+// Each lot is measured to the nearest Stop and Target of the Plan Baseline still ahead of its own fill (BUG-3,
+// decision 109); a lot's quantity sign is its side.
+function atEntryOf(lots: readonly OpenLot[], baseline: PlanBaseline, multiplier: Rational, oneR: Rational): AtEntryFigures | null {
   if (lots.length === 0) return null;
   const quantity = sum(lots.map((l) => l.quantity));
   const nonnegative = (r: Rational) => (r.compare(ZERO) > 0 ? r : ZERO);
-  const riskFromEntry = nonnegative(sum(lots.map((l) => l.quantity.mul(multiplier).mul(l.price.sub(stop)))));
-  const rewardFromEntry = nonnegative(sum(lots.map((l) => l.quantity.mul(multiplier).mul(target.sub(l.price)))));
+  const directionOf = (l: OpenLot) => (l.quantity.compare(ZERO) > 0 ? 1 : -1);
+  const riskFromEntry = nonnegative(
+    sum(lots.map((l) => l.quantity.mul(multiplier).mul(l.price.sub(measurementAheadOf(baseline.stopBasis, l.price, 'Stop', directionOf(l)))))),
+  );
+  const rewardFromEntry = nonnegative(
+    sum(lots.map((l) => l.quantity.mul(multiplier).mul(measurementAheadOf(baseline.targetBasis, l.price, 'Target', directionOf(l)).sub(l.price)))),
+  );
   return {
     label: 'AtEntry',
     quantity,
@@ -210,11 +217,6 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const openingFees = sum(lots.map((l) => l.unconsumedOpeningFee));
   // Realized at the cutoff by derive: a Value that does not depend on the Mark (A92).
   const realized = state.realizedToDate;
-  // The at-entry line is measured at each role's headline condition in the Plan Baseline (A197). An Underlying
-  // condition's measurement value is the contract's value at expiration there (P24), a stock's or an
-  // option-price condition's is its own price (A196).
-  const stop = measurementOf(headlineBasisOf(state.baseline.stopBasis));
-  const target = measurementOf(headlineBasisOf(state.baseline.targetBasis));
   const option = state.positions.map((p) => p.instrument).find((i): i is OptionInstrument => i.kind === 'Option');
   // Lots opened after the frame's close cannot be valued with its Mark (P12).
   const openedAfter = (close: Instant) =>
@@ -455,7 +457,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     observation: { instrument: frame.instrument, tradingDate: date, mark: usableMark },
     deviations: [],
     coveredSubtotal: null,
-    atEntry: atEntryOf(atEntryLots, stop, target, multiplier, state.baseline.oneR),
+    atEntry: atEntryOf(atEntryLots, state.baseline, multiplier,state.baseline.oneR),
     planBaseline: { kind: 'Value', value: state.baseline },
     oneR: value(state.baseline.oneR),
     entryQuality: state.entryQuality,

@@ -135,6 +135,31 @@ export const os2Record = (positionChanges: readonly PositionChangeFact[] = []): 
 export const OS2_S1 = positionChange('pc-s1', 1, [optionExecution(OS_LEG_ID, OS2_CONTRACT, 'ex-pc-s1', '2026-10-12T14:00:00Z', 2, 'Sell', '2', '1.25', '1.30')]);
 export const OC2_P1 = positionChange('pc-p1', 1, [optionExecution(OC_LEG_ID, OC2_CONTRACT, 'ex-pc-p1', '2026-10-12T14:00:00Z', 2, 'Buy', '2', '2.00', '1.30')]);
 
+// BUG-3 (decision 109): Long Call NVDA 18 Dec 2026 150, 1 contract at 15.00, one Buy to open 1 at `fill`, fee 0.
+// Stops: NVDA at or below 140.00 (value 0, $1,500), option at or below 7.50 ($750). Targets: NVDA at or above
+// 200.00 (value 50.00), option at or above 50.00. 1R $750.
+export const NVDA_LEG_ID = 'leg-nvda';
+export const NVDA_CALL: OptionInstrument = { kind: 'Option', symbol: 'NVDA', root: 'NVDA', expiration: '2026-12-18', strike: '150', right: 'Call', multiplier: 100 };
+export const nvdaRecord = (fill: string): TradeAnalysisRecord =>
+  record(
+    {
+      economicTime: '2026-10-12T13:00:00Z',
+      underlying: 'NVDA',
+      thesis: 'Breakout.',
+      invalidation: 'Below 140 or the option at 7.50.',
+      legs: [{ factId: NVDA_LEG_ID, side: 'Long', instrument: NVDA_CALL, quantity: '1', intendedEntry: '15.00' }],
+      stops: [
+        { factId: 'stop-1', kind: 'UnderlyingPrice', price: '140.00' },
+        { factId: 'stop-2', kind: 'StructureValue', price: '7.50' },
+      ],
+      targets: [
+        { factId: 'target-1', kind: 'UnderlyingPrice', price: '200.00' },
+        { factId: 'target-2', kind: 'StructureValue', price: '50.00' },
+      ],
+    },
+    [positionChange('pc-n1', 1, [optionExecution(NVDA_LEG_ID, NVDA_CALL, 'ex-pc-n1', '2026-10-12T14:00:00Z', 2, 'Buy', '1', fill, '0')])],
+  );
+
 // O-P: the Long Put on ABC, 1 contract at 1.50, Stop ABC at or above 55.00, Target ABC at or below 45.00.
 export const opRecord = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
   record(

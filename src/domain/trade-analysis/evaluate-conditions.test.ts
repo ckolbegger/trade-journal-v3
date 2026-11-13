@@ -3,7 +3,8 @@ import type { Instrument } from '../instrument/index.ts';
 import { Rational } from '../values/index.ts';
 import { derive, type CalculationResult, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
 import { evaluate, type ConditionStatus, type ObservationFrame } from './evaluate.ts';
-import { OC2_CONTRACT, OC2_P1, OS2_CONTRACT, OS2_S1, oc2Record, os2Record } from './option-trade.ts';
+import { NVDA_CALL, OC2_CONTRACT, OC2_P1, OS2_CONTRACT, OS2_S1, OS_LEG_ID, nvdaRecord, oc2Record, optionExecution, os2Record } from './option-trade.ts';
+import { positionChange } from './reference-trade.ts';
 
 const XYZ = { kind: 'Stock', symbol: 'XYZ' } as const;
 const MNO = { kind: 'Stock', symbol: 'MNO' } as const;
@@ -118,5 +119,28 @@ describe('evaluate: the headline across conditions (P91, A197)', () => {
     // Short 2 puts struck 45 at MNO 44.00 are worth the intrinsic 1.00 each, with S1' opened at 1.25 less its fee.
     expect(e.expirationValueAtUnderlyingClose).toMatchObject({ kind: 'Value', value: { underlyingPrice: Rational.of(44n) } });
     expect(e.expirationValueAtUnderlyingClose.kind === 'Value' && frac(e.expirationValueAtUnderlyingClose.value.value)).toBe(q(4870n, 100n));
+  });
+});
+
+// BUG-3, decision 109: the at-entry line is measured to the nearest condition of each role still ahead of the fill.
+const NVDA = { kind: 'Stock', symbol: 'NVDA' } as const;
+const nvdaAtEntry = (fill: string) =>
+  evaluate({ state: derivedState(nvdaRecord(fill), '2026-10-12'), frame: frameOf(NVDA_CALL, '2026-10-12'), underlyingFrame: frameOf(NVDA, '2026-10-12') }).atEntry;
+
+describe('evaluate: the at-entry line past a crossed condition (BUG-3, decision 109)', () => {
+  it('should measure a Long Call filled at 7.35, beyond its 7.50 option Stop, to the NVDA 140 Stop at value 0: risk from entry $735.00, 0.98 R of 1R $750', () => {
+    const atEntry = nvdaAtEntry('7.35');
+    expect(atEntry?.riskFromEntry).toEqual(Rational.of(735n));
+    expect(atEntry && frac(atEntry.riskFromEntryInPlanR)).toBe(q(49n, 50n));
+  });
+
+  it('should still measure the same Plan filled at 14.00 to the 7.50 option Stop: risk from entry $650.00', () => {
+    expect(nvdaAtEntry('14.00')?.riskFromEntry).toEqual(Rational.of(650n));
+  });
+
+  it('should measure O-S2 sold 2 at 3.70, beyond its 3.60 option Stop, to the MNO 41 Stop at value 4.00: risk from entry $60.00', () => {
+    const sold = positionChange('pc-s1', 1, [optionExecution(OS_LEG_ID, OS2_CONTRACT, 'ex-pc-s1', '2026-10-12T14:00:00Z', 2, 'Sell', '2', '3.70', '0')]);
+    const e = evaluate({ state: derivedState(os2Record([sold]), '2026-10-12'), frame: frameOf(OS2_CONTRACT, '2026-10-12'), underlyingFrame: frameOf(MNO, '2026-10-12', '44.00') });
+    expect(e.atEntry?.riskFromEntry).toEqual(Rational.of(60n));
   });
 });
