@@ -48,6 +48,8 @@ Worktree and branch names the Agent tool gives each lane task (handoff, section 
 | T8P.20 | D5 (wave 1) | `.claude/worktrees/d08p-d5` | `d08p/d5` | `1242cd09` |
 | T8P.7 | BA (wave 1) | `.claude/worktrees/d08p-ba` | `d08p/ba` | `7a253b4f` |
 | T8P.21 | D6 (wave 1) | `.claude/worktrees/d08p-d6` | `d08p/d6` | `89d079dd` |
+| T8P.15 | R2 (wave 1) | `.claude/worktrees/d08p-r2` | `d08p/r2` | `aa8bfddd` |
+| T8P.10 | BV (wave 1, same lane) | `.claude/worktrees/d08p-bv` | `d08p/bv` | `aa8bfddd` |
 
 ## T8P.1 Swarm tooling
 
@@ -1041,3 +1043,5 @@ Commits `d0d9be84` (task) and `68464489` (lane tier: 1602 unit, 222 integration,
 **T8P.28 ocr** (`d0d9be84`): session `e593e452-158a-4b98-87c1-a9786bb9c977`, 2 files, 0 comments; relocated `105df68c-f40d-404e-a0ff-4d57f053fb14`, 2 files, 0 comments. Raw output: [ocr/T8P.28-d0d9be84.json](ocr/T8P.28-d0d9be84.json), [ocr/T8P.28-d0d9be84-relocated.json](ocr/T8P.28-d0d9be84-relocated.json). Clean. Rebased onto `bb10b0dc` (brings in T8P.13 and T8P.21 code): `135a6651` (task), `45a24354`; the rebased lane tier `T8P.28-rebase` is running, and the fast-forward waits for merge run 5 to finish in the main worktree.
 
 **Merge run 5** at `bb10b0dc` (`browser-auto dab6bc5b`; the merges of T8P.16, T8P.13 and T8P.21): unit 1614, integration 222, checks 14 of 14, browser tier 1 128 passed and tier 2 75 passed, no failures and no flakes; run complete. Outputs: `suite-runs/merge-5-*.txt`. The next merge run is `browser-auto bb10b0dc`.
+
+**T8P.28 merge.** After merge run 5 finished, lane BV was rebased onto `158e80ba` (evidence only, no code) and fast-forwarded: `e163c073` (task), `ed2568fd`, `aa8bfddd` (the rebased lane tier `T8P.28-rebase`: 1618 unit, 222 integration, 14 of 14; run complete). Lane BV stays for T8P.10. T8P.15 (new lane R2 at `aa8bfddd`) and T8P.10 (lane BV) started with fresh agents. The next merge run is `browser-auto bb10b0dc`, and it covers T8P.28.
