@@ -6,7 +6,7 @@ This file holds bugs the user finds by hand between deliverables. Each one is wr
 |---|---|---|---|---|
 | BUG-1 | The exercise checkbox is drawn as a full-width text box | 2026-11-12, user, after the D7S tag | Low (cosmetic) | Open |
 | BUG-2 | The option Plan's Expiration date is a plain text box: no date picker, US dates rejected, and a corrected date still shows the error | 2026-11-12, user, after the D7S tag | Moderate (misleads; the trader can finish only by guessing the format) | Open |
-| BUG-3 | Risk from entry and Actual initial risk read $0.00 when the fill is beyond the headline option-price Stop, though another Stop is still live and the whole premium is at risk | 2026-11-12, user, after the D7S tag | High (a figure is wrong) | Open; needs the user's decision on A197 first |
+| BUG-3 | Risk from entry and Actual initial risk read $0.00 when the fill is beyond the headline option-price Stop, though another Stop is still live and the whole premium is at risk | 2026-11-12, user, after the D7S tag | High (a figure is wrong) | In progress; option 1 approved, A197 amended by decision 109 (revision 82) |
 
 ---
 
@@ -146,7 +146,7 @@ Then one entry: Buy to open 1 at **7.35**, fee 0. The user's actual fill isn't k
 - An entry is never "riskless" while any Stop lies beyond the fill. The card tells the trader they have nothing at risk on a $735 position.
 - D7S made this reachable: with a single Stop (D7 and earlier), "entry at or beyond the Stop" really meant no Stop was left.
 
-**Decision needed first (it amends D7S A197; plan revision r82, decision 109).** A197 fixes the at-entry measurement at the Plan Baseline's headline. The options:
+**Decided: option 1, approved by the user on 2026-11-12 (decision 109, plan revision 82, amending D7S A197).** A197 fixes the at-entry measurement at the Plan Baseline's headline. The options:
 1. **(Recommended, and what the user expects)** At entry, measure each role against the nearest of **its conditions not yet crossed at the fill**. Conditions are independent OR, so the first one still ahead is the one that would end the Trade.
    - Here the 7.50 option Stop is crossed at entry, so NVDA 140 governs: $735.00 · 0.98R.
    - Only when every Stop of the role is crossed at the fill does the figure fall back to $0.00 and "entry at or beyond the Stop", as today.
