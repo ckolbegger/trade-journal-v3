@@ -4,8 +4,8 @@ This file holds bugs the user finds by hand between deliverables. Each one is wr
 
 | ID | Title | Found | Severity | Status |
 |---|---|---|---|---|
-| BUG-1 | The exercise checkbox is drawn as a full-width text box | 2026-11-12, user, after the D7S tag | Low (cosmetic) | Open |
-| BUG-2 | The option Plan's Expiration date is a plain text box: no date picker, US dates rejected, and a corrected date still shows the error | 2026-11-12, user, after the D7S tag | Moderate (misleads; the trader can finish only by guessing the format) | Open |
+| BUG-1 | The exercise checkbox is drawn as a full-width text box | 2026-11-12, user, after the D7S tag | Low (cosmetic) | Done 2026-11-12: `c906920b`; run `bug-1-2` passed (`evidence/D07S/structural.md`) |
+| BUG-2 | The option Plan's Expiration date is a plain text box: no date picker, US dates rejected, and a corrected date still shows the error | 2026-11-12, user, after the D7S tag | Moderate (misleads; the trader can finish only by guessing the format) | Done 2026-11-12: `2bef1d4e`; run `bug-1-2` passed (`evidence/D07S/structural.md`) |
 | BUG-3 | Risk from entry and Actual initial risk read $0.00 when the fill is beyond the headline option-price Stop, though another Stop is still live and the whole premium is at risk | 2026-11-12, user, after the D7S tag | High (a figure is wrong) | Done 2026-11-12: decision 109 (revision 82); `2b66f603`, B1 `d85016bb`, B2 `f6b33ed4`; run `bug-3` passed (`evidence/D07S/structural.md`) |
 
 ---

@@ -482,3 +482,17 @@ Subagent's notes (not ocr findings):
 - No other plain-text date field remains: the Mark date is not an input, and the Execution time is already `datetime-local`.
 
 ocr on `2bef1d4e` (`ocr/BUG-2-2bef1d4e.json`): **No findings.**
+
+### BUG-1 and BUG-2 cumulative run: `bug-1-2` (on `8476a30a`)
+
+Browser tier: full (`browser-auto 736dcc8a`: "first matching path since 736dcc8a: e2e/d7/plan-open.spec.ts"). `run-complete.sh evidence/D07S bug-1-2`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1519 tests passed |
+| Node integration | 103 files, 218 tests passed |
+| Browser `browser-1` | 119 passed (4.8 min) |
+| Browser `browser-2` | 74 passed (4.4 min) |
+| Checks | 14 of 14 exit 0 |
+
+BUG-1 (`c906920b`) and BUG-2 (`2bef1d4e`) are closed. `claude-opus-5.5-d7s` moves to the closing commit at the user's direction, so the D7S tag includes the three post-gate bug fixes.
