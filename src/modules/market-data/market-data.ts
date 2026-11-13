@@ -947,8 +947,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           // Both reads are asked in this one run, so they share one read snapshot.
           const scanning = first === undefined ? undefined : scanOf(instrumentKey, first.close);
           const reading = end < day.date ? undefined : evidenceFor(context, day, [instrumentKey]);
-          const scanned = scanning === undefined ? [] : (await scanning).points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
-          const [read] = (await reading) ?? [];
+          // Awaited together: when the batch's read fails, both reject, and neither is left unobserved.
+          const [scan, evidence] = await Promise.all([scanning, reading]);
+          const scanned = scan === undefined ? [] : scan.points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
+          const [read] = evidence ?? [];
           return read === undefined ? scanned : [...scanned, seriesPoint(day.date, day.close, resolve(read.record, read.stale))];
         },
         gaps(instruments) {

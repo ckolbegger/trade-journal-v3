@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { nyseSessionPolicy } from '../../domain/session-policy/index.ts';
 import { fixedClock } from '../../domain/time/index.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
@@ -711,6 +711,26 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
     expect(result.map((p) => p.kind)).toEqual(['Available', 'Missing', 'Missing', 'Available']);
     // The scan of the history and the read of the session's date are asked in one run, so they are one read snapshot.
     expect(requests.filter((r) => r.on === 'transaction')).toHaveLength(1);
+  });
+
+  it("should reject a series once, with no unhandled rejection, when its snapshot read fails", async () => {
+    const { marketData, persistence } = await setup();
+    const session = await marketData.openReadSession(current);
+    const unhandled: unknown[] = [];
+    const listen = (reason: unknown) => void unhandled.push(reason);
+    process.on('unhandledRejection', listen);
+    const failure = new Error('snapshot read failed');
+    const read = vi.spyOn(persistence, 'readSnapshot').mockRejectedValue(failure);
+    try {
+      // Both of the series's reads come from the one batch that fails.
+      await expect(session.series('MNO', '2026-10-07', '2026-10-12')).rejects.toBe(failure);
+      // An unhandled rejection is reported after the microtasks and a macrotask have run.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(unhandled).toEqual([]);
+    } finally {
+      read.mockRestore();
+      process.off('unhandledRejection', listen);
+    }
   });
 
   it("should read an Instrument's stored Marks once per read session, sharing the gaps scan with the Detail's frames", async () => {
