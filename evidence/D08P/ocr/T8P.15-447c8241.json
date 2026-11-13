@@ -1,0 +1,174 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 252651,
+    "input_tokens": 250137,
+    "output_tokens": 2514,
+    "cache_read_tokens": 35584,
+    "elapsed": "1m47s"
+  },
+  "tool_calls": {
+    "total": 36,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 17,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/rail/needs-you.props.ts",
+      "content": "The production caller in `Cockpit.tsx` renders `\u003cNeedsYou {...shell} /\u003e`, where `shell` contains only `view` and `timeZone`; no production code supplies `onReflectNow`. Consequently, this condition hides “Reflect now” for every outstanding debt even in writable mode, so the new card cannot open the required Journal form. Wire the shell callback to select the Journal drawer and open the specific debt form, and cover that flow through the actual Cockpit rather than only a mocked callback.",
+      "existing_code": "    ...(options.writable \u0026\u0026 onReflectNow \u0026\u0026 { onReflectNow: () =\u003e onReflectNow(debt.id) }),",
+      "start_line": 31,
+      "end_line": 31,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit rail needs-you feature, conditions, styling, and E2E support",
+      "files": [
+        "e2e/support/detail/rail-b.ts",
+        "src/ui/cockpit/rail/conditions.props.ts",
+        "src/ui/cockpit/rail/needs-you.props.ts",
+        "src/ui/cockpit/rail/needs-you.tsx",
+        "src/ui/cockpit/rail/needs-you.types.ts",
+        "src/ui/cockpit/styles/rail-b.css"
+      ]
+    }
+  ],
+  "session_id": "a4badfe0-5a8c-4614-aff6-6f375476e145",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a4badfe0-5a8c-4614-aff6-6f375476e145",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "447c8241",
+      "resolved_base": "aa8bfdddfef7c4395608b9fd9e79c8c77db5216b",
+      "resolved_head": "447c82411ed8fa4051640d187c810453f53ef0ea",
+      "exact_range": "aa8bfdddfef7c4395608b9fd9e79c8c77db5216b..447c82411ed8fa4051640d187c810453f53ef0ea",
+      "source_artifact_sha256": "d67cfccb7aa8a4b2d849124706532a7258578e82f65967c048c29c7c9e78b004"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ff0e4978907606ef2648845885ae2f4599422a8bb84c86a48cccb0b7dfb26c0",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "67d2d01f3adff8f42afd1ef518242ecdeee393f8a899ad3e7abee5bbe3d202af"
+        },
+        {
+          "item_id": "277ee69e9fa7e08b46cb60fb97f62e58ab5a867c3ccb111117eca259cde59f66",
+          "path": "src/ui/cockpit/rail/needs-you.tsx",
+          "fingerprint": "b356d46519dbd1ce9a1eae6b01599d176be74fe49de75d9007bb915c157d9cee"
+        },
+        {
+          "item_id": "7495c05a82ace2fd3f1d797db35d7767ca7c3700853ec3bb55a01790a62d5cc2",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "eca98898e8b78141699ef9a5bca13ad81960e30807d8e3b21de7d85830deec9b"
+        },
+        {
+          "item_id": "91e5af8ce0b06cafd0874279d0fa6cdd8757ed3bce5a29ac8c19b00580831088",
+          "path": "src/ui/cockpit/rail/needs-you.types.ts",
+          "fingerprint": "61751136df93ebc500e0eea9329be878759d93362b2738c7c9ab8aceefe2d76c"
+        },
+        {
+          "item_id": "99a5dcfc3fa6accda036957803f199282ebd53d3e96cc3cb09b6201be2281cee",
+          "path": "src/ui/cockpit/rail/needs-you.props.ts",
+          "fingerprint": "acded5852df4f4517e3dfd6073a99a8741ef0af656e01fa9054230027693888d"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "7624516110098d831656cf71c2696b8536cc9a698bf267666aace328b326118b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ff0e4978907606ef2648845885ae2f4599422a8bb84c86a48cccb0b7dfb26c0",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "67d2d01f3adff8f42afd1ef518242ecdeee393f8a899ad3e7abee5bbe3d202af"
+        },
+        {
+          "item_id": "277ee69e9fa7e08b46cb60fb97f62e58ab5a867c3ccb111117eca259cde59f66",
+          "path": "src/ui/cockpit/rail/needs-you.tsx",
+          "fingerprint": "b356d46519dbd1ce9a1eae6b01599d176be74fe49de75d9007bb915c157d9cee"
+        },
+        {
+          "item_id": "7495c05a82ace2fd3f1d797db35d7767ca7c3700853ec3bb55a01790a62d5cc2",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "eca98898e8b78141699ef9a5bca13ad81960e30807d8e3b21de7d85830deec9b"
+        },
+        {
+          "item_id": "91e5af8ce0b06cafd0874279d0fa6cdd8757ed3bce5a29ac8c19b00580831088",
+          "path": "src/ui/cockpit/rail/needs-you.types.ts",
+          "fingerprint": "61751136df93ebc500e0eea9329be878759d93362b2738c7c9ab8aceefe2d76c"
+        },
+        {
+          "item_id": "99a5dcfc3fa6accda036957803f199282ebd53d3e96cc3cb09b6201be2281cee",
+          "path": "src/ui/cockpit/rail/needs-you.props.ts",
+          "fingerprint": "acded5852df4f4517e3dfd6073a99a8741ef0af656e01fa9054230027693888d"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "7624516110098d831656cf71c2696b8536cc9a698bf267666aace328b326118b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1b2ea52d82c680e947cfe9c209497c48df4909d3b5abef4a1f9cb91bf41196a1",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "7b7b43bd5aace0812a09a79f8e75a4a90b528793f840469a3f893fe9d5819452",
+          "path": "src/ui/cockpit/rail/needs-you.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "8332ef1442450b9997aabfe40988b41aa84c07aec277d347537800aad865d572",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "c3e104c9795a171aae560469a41059df9d34b4dded5cdcda177bcbdfc0bf4f21",
+          "path": "src/ui/cockpit/rail/needs-you.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "fd793938e626fc70721b8a565579a2713f0fef64a2b3b3dc82bb997ae5b6ebf8",
+          "path": "evidence/D08P/tdd-log/T8P.15.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 106581
+  }
+}

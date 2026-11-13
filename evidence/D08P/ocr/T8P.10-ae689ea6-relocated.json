@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 166984,
+    "input_tokens": 165428,
+    "output_tokens": 1556,
+    "cache_read_tokens": 32768,
+    "elapsed": "1m12s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/trade-views/replay-trade.ts",
+      "content": "This suite references an API that is not present in the current tree: the trade-views barrel does not export TradeReplayView, and TradeViews exposes only browseTrades and getTradeDetail, not replayTrade. Because tsconfig.json includes src, this breaks `npm run typecheck`; executing the suite would also fail at the replayTrade calls. Include the corresponding implementation and public exports with these tests.",
+      "existing_code": "import { createTradeViews, type TradeReplayView } from '../../../coordinators/trade-views/index.ts';",
+      "start_line": 10,
+      "end_line": 10,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/trade-views/replay-trade.ts",
+      "content": "None of these scenarios are discovered by the configured test projects. vite.config.ts includes only `src/**/*.test.{ts,tsx}` for unit tests and `tests/integration/**/*.test.ts` for integration tests, so this `.ts` file under src/itg is excluded from both. Move it to `tests/integration/trade-views/replay-trade.test.ts` (adjusting imports), or explicitly configure its discovery so the integration command actually runs these regressions.",
+      "existing_code": "describe('replayTrade (A212, A213)', () =\u003e {",
+      "start_line": 131,
+      "end_line": 131,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/trade-views/replay-trade.ts",
+      "files": [
+        "src/itg/relocated/trade-views/replay-trade.ts"
+      ]
+    }
+  ],
+  "session_id": "c2549399-81e8-41f0-af52-06286794411c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c2549399-81e8-41f0-af52-06286794411c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "1d252843",
+      "resolved_base": "8967de7e92214cb2a4c00272d46dbeb852ba9f18",
+      "resolved_head": "1d252843387a08da928d95bb609a2153bdce1c9a",
+      "exact_range": "8967de7e92214cb2a4c00272d46dbeb852ba9f18..1d252843387a08da928d95bb609a2153bdce1c9a",
+      "source_artifact_sha256": "24e5f71057a7d0b302c1a4f5905ca7f17edff77ac3894a36fc2107ad5317af7a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2f8c373eba37f4291c624e6cfd906df8a20d858ad5b48507cf4aca7edd5e9e6e",
+          "path": "src/itg/relocated/trade-views/replay-trade.ts",
+          "fingerprint": "687eea6d3184ae6dc0eb1c90de3742eb4b3a29f6a36beb4c643949b04e8f7d34"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2f8c373eba37f4291c624e6cfd906df8a20d858ad5b48507cf4aca7edd5e9e6e",
+          "path": "src/itg/relocated/trade-views/replay-trade.ts",
+          "fingerprint": "687eea6d3184ae6dc0eb1c90de3742eb4b3a29f6a36beb4c643949b04e8f7d34"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 72057
+  }
+}

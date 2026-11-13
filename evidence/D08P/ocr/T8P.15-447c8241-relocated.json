@@ -1,0 +1,111 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 120854,
+    "input_tokens": 119450,
+    "output_tokens": 1404,
+    "cache_read_tokens": 18688,
+    "elapsed": "59s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/rail/needs-you.props.tsx",
+      "content": "This new suite is never discovered by the configured test commands: vite.config.ts includes only src/**/*.test.{ts,tsx} for unit tests and tests/integration/**/*.test.ts for integration tests, and there are no imports of this relocated file. The existing src/ui/cockpit/rail/needs-you.props.test.tsx still contains these same cases, so adding this copy does not establish a runnable relocated suite. Wire the relocated files into test discovery (with the required jsdom environment), or use a discovered test filename/location. The new bounded-reward test in relocated/rail/conditions.props.ts is likewise outside both include patterns.",
+      "existing_code": "describe('Needs you (W7)', () =\u003e {",
+      "start_line": 37,
+      "end_line": 37,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/rail/conditions.props.ts",
+        "src/itg/relocated/rail/needs-you.props.tsx"
+      ]
+    }
+  ],
+  "session_id": "27e6f848-d033-4de3-8f8e-2ec381d54262",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "27e6f848-d033-4de3-8f8e-2ec381d54262",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ead2a604dbe8a84238eae85850374f1c50668cf3",
+      "resolved_head": "0c1031a1b8fa72d9a814d85088edacc65d9372d6",
+      "exact_range": "ead2a604dbe8a84238eae85850374f1c50668cf3..0c1031a1b8fa72d9a814d85088edacc65d9372d6",
+      "source_artifact_sha256": "5ef196b2ead5a44c945ecb3e2337db249dbd5ebaea66caffe297c0093e481c90"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "49dbe45f82cbb04d63b9ca4b45b7622ef911fa468dbf80574a51d568ab1f7a9f",
+          "path": "src/itg/relocated/rail/needs-you.props.tsx",
+          "fingerprint": "39f775522be5f6161465c3891389aa59f2f2340a50166d09e624e3539dce2a41"
+        },
+        {
+          "item_id": "53d777f6d7970b7aeb0c34f8b1d4a64ef1ff8e6f88ba466b48c5d40572856e9c",
+          "path": "src/itg/relocated/rail/conditions.props.ts",
+          "fingerprint": "91098d3df7724d0b30a2d5e4f4ea1f2e974dc62f378fd7ff4f85b3871df9b9ca"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "49dbe45f82cbb04d63b9ca4b45b7622ef911fa468dbf80574a51d568ab1f7a9f",
+          "path": "src/itg/relocated/rail/needs-you.props.tsx",
+          "fingerprint": "39f775522be5f6161465c3891389aa59f2f2340a50166d09e624e3539dce2a41"
+        },
+        {
+          "item_id": "53d777f6d7970b7aeb0c34f8b1d4a64ef1ff8e6f88ba466b48c5d40572856e9c",
+          "path": "src/itg/relocated/rail/conditions.props.ts",
+          "fingerprint": "91098d3df7724d0b30a2d5e4f4ea1f2e974dc62f378fd7ff4f85b3871df9b9ca"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "d7f4592bfa3d3fe0150c90c605aa87a005b4891b687be45b8e61deb7f38a4b37",
+          "path": "src/itg/relocated/rail/needs-you.tsx",
+          "exclude_reason": "deleted"
+        }
+      ]
+    },
+    "elapsed_ms": 58931
+  }
+}

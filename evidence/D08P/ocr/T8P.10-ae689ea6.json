@@ -1,0 +1,148 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 152899,
+    "input_tokens": 150764,
+    "output_tokens": 2135,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m16s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_search": 7,
+      "file_find": 1,
+      "file_read": 13
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 15,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/trade-views/index.ts,src/coordinators/trade-views/replay-trade.ts,src/coordinators/trade-views/replay-view.ts,src/coordinators/trade-views/trade-views.ts,src/coordinators/trade-views/view-types.ts",
+        "arguments": "{\"file_path\": \"src/domain/time/instant.ts\"}",
+        "error": "file \"src/domain/time/instant.ts\" not found: git show ae689ea620d88e8d0b3cd5c4e80d62527055d138:src/domain/time/instant.ts: exit status 128: fatal: path 'src/domain/time/instant.ts' does not exist in 'ae689ea620d88e8d0b3cd5c4e80d62527055d138'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade view coordination and replay trade support",
+      "files": [
+        "src/coordinators/trade-views/index.ts",
+        "src/coordinators/trade-views/replay-trade.ts",
+        "src/coordinators/trade-views/replay-view.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/trade-views/view-types.ts"
+      ]
+    }
+  ],
+  "session_id": "475b08cf-99ff-493d-bbd2-a26629a634f4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "475b08cf-99ff-493d-bbd2-a26629a634f4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "ae689ea6",
+      "resolved_base": "aa8bfdddfef7c4395608b9fd9e79c8c77db5216b",
+      "resolved_head": "ae689ea620d88e8d0b3cd5c4e80d62527055d138",
+      "exact_range": "aa8bfdddfef7c4395608b9fd9e79c8c77db5216b..ae689ea620d88e8d0b3cd5c4e80d62527055d138",
+      "source_artifact_sha256": "d400e7641db9e384cad163f06dfe796fa66cea85fc2edc04dd2209bf2485f047"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "03f7482b46909bbf0ebd978fb592d5c14e4439e7f3514c3c4df755e9bb237a3c",
+          "path": "src/coordinators/trade-views/view-types.ts",
+          "fingerprint": "dc8767e5fe0ea315091bb5cc80063d66c34066b9eb11b76427f811dc4a43bf36"
+        },
+        {
+          "item_id": "2b259b4938e8fec39f8709a160ab9888e3a31d8e4564150ad927aef60d294e4e",
+          "path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "eebade36088fa56b9fd15651269c221e3bb942ec3f6efaeb9ca3fd21fd4a2e39"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "6899534e0419199d133e155533ffb6ce034a058335d8e65aad4b1c4fdc064151"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "a961ea2a4f28dc52dbacf8206176619ac586bf92723abf61b70f66e798eff583"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "05c5d201979bab893e7783922121d215ad89ecd4b16dce6a3c193261b4575807"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "03f7482b46909bbf0ebd978fb592d5c14e4439e7f3514c3c4df755e9bb237a3c",
+          "path": "src/coordinators/trade-views/view-types.ts",
+          "fingerprint": "dc8767e5fe0ea315091bb5cc80063d66c34066b9eb11b76427f811dc4a43bf36"
+        },
+        {
+          "item_id": "2b259b4938e8fec39f8709a160ab9888e3a31d8e4564150ad927aef60d294e4e",
+          "path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "eebade36088fa56b9fd15651269c221e3bb942ec3f6efaeb9ca3fd21fd4a2e39"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "6899534e0419199d133e155533ffb6ce034a058335d8e65aad4b1c4fdc064151"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "a961ea2a4f28dc52dbacf8206176619ac586bf92723abf61b70f66e798eff583"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "05c5d201979bab893e7783922121d215ad89ecd4b16dce6a3c193261b4575807"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2f4e7f140a80d692e3a17f6967fdd4367eea292e73af1a986c71231df333462e",
+          "path": "evidence/D08P/tdd-log/T8P.10.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 75957
+  }
+}

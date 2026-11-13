@@ -1045,3 +1045,29 @@ Commits `d0d9be84` (task) and `68464489` (lane tier: 1602 unit, 222 integration,
 **Merge run 5** at `bb10b0dc` (`browser-auto dab6bc5b`; the merges of T8P.16, T8P.13 and T8P.21): unit 1614, integration 222, checks 14 of 14, browser tier 1 128 passed and tier 2 75 passed, no failures and no flakes; run complete. Outputs: `suite-runs/merge-5-*.txt`. The next merge run is `browser-auto bb10b0dc`.
 
 **T8P.28 merge.** After merge run 5 finished, lane BV was rebased onto `158e80ba` (evidence only, no code) and fast-forwarded: `e163c073` (task), `ed2568fd`, `aa8bfddd` (the rebased lane tier `T8P.28-rebase`: 1618 unit, 222 integration, 14 of 14; run complete). Lane BV stays for T8P.10. T8P.15 (new lane R2 at `aa8bfddd`) and T8P.10 (lane BV) started with fresh agents. The next merge run is `browser-auto bb10b0dc`, and it covers T8P.28.
+
+## T8P.15 Needs you (lane `d08p-r2`) and T8P.10 `replayTrade` (lane `d08p-bv`); revision 93
+
+**T8P.15.** Commits `447c8241` (task) and `86e94f0b` (lane tier: 1624 unit, 222 integration, 14 of 14; run complete). Seven cases red then green, no first-run pass. Case 4 reads `view.current.firstMarksDue` (formatted with `shortDate`), and its second half drops the field from the double and expects "Nothing needs you now.". Its first red row is marked "Not a red" (an Edit had missed, so the filter matched no test).
+- **Expectations changed, checked by the main session:**
+  - "Max reward: $730.00" became "Max reward: $730.00 · 1.52R" in `conditions.props.test.ts` (T8P.14's case 7) and `e2e/d7s/conditions.spec.ts:56`. The basis is revision 89 (T8P.15 shows the R) and W6; the spec line is in section 1.5's reach table for the Conditions card (`d7s/conditions :48–57`).
+  - `needs-you.test.tsx` (T8P.5's placeholder equality check) was deleted, as its comment said T8P.15 would replace it.
+- Changed public names: `NeedsYouItem`'s `Debt.onReflectNow` is optional, `MarkMissing.reviewTo` is a route, and `SettlementDue` has `notes` and `recordExpirationTo`. Also new: `needsYouProps`, `needsYouPropsOf`, `NeedsYouShellProps`, and `crossingWords` (`conditions.props.ts`).
+- **ocr** (`447c8241`): session `a4badfe0-5a8c-4614-aff6-6f375476e145`, 6 files, 1 comment; relocated `27e6f848-d033-4de3-8f8e-2ec381d54262`, 2 files, 1 comment. Raw output: [ocr/T8P.15-447c8241.json](ocr/T8P.15-447c8241.json), [ocr/T8P.15-447c8241-relocated.json](ocr/T8P.15-447c8241-relocated.json).
+  - Valid: `Cockpit.tsx` passes no `onReflectNow`, so the rail's Reflect now never appears (A217). This became **T8P.15-B1**. Its fix needs the shell and the Journal cards, so it went to the user, who chose "Fix now in lane R2" (revision 93).
+  - The relocated comment (suites not discovered) is a relocation artifact, dismissed as Wrong.
+- **Main session's browser run in the lane** (both tiers, since T8P.15 moves content about 15 specs read): tier 2 75 of 75; tier 1 127 of 128. The failure is `d4/responsive-a11y:114`, "Detail Available (Stop Breached, Unbounded)", axe `list: .needs-you-list` (a non-`<li>` child in the Needs you list). It went back to the same agent with B1.
+
+**T8P.10.** Commits `ae689ea6` (task) and `c3dff363` (lane tier: integration 222, 14 of 14; unit had one load flake in `TradeList.test.tsx`, which passed alone 3 of 3).
+- Cases 1, 2, 4, 5 and 6 red then green. Case 4's first red was a fixture error (`CloseReasonRequired`), fixed before the valid red.
+- **Flagged first-run pass:** case 3. Its mutation sent a late item to the last completed session, and it failed with an `AssertionError`.
+- No existing expectation changed. Reads per call: one `openReadSession` and one `series` per distinct Instrument, growing with Instruments only. A Planned, never-exposed or incoherent Trade reads no Market Data.
+- Reshaped T8P.3 types: `ReplayMark.resolution` became `ReplayMarkResolution` (price and revision only, from A210's series). `view-types.ts` breaks a `replay-view.ts` ⇄ `trade-views.ts` cycle, with the moved names re-exported unchanged.
+- The agent's own choices, carried in the handoff's "For T8P.22 (from T8P.10)" note: items after a Closed Trade's final session stay in it, a Review Date before the first session goes to the Plan list, and replayed Debts carry no `dueStatus`.
+- **The provenance conflict:** `TodayReplay` (T8P.16) needs each replayed Mark's source, saved time and correction reason for T8P.16's planned case, and A210 gave only price and revision. It went to the user, who chose "Series carries provenance" (revision 93). The same agent was resumed with two cases.
+- **ocr** (`ae689ea6`): session `475b08cf-99ff-493d-bbd2-a26629a634f4`, 5 files, 0 comments; relocated `c2549399-81e8-41f0-af52-06286794411c`, 2 comments, both relocation artifacts (an unbuilt barrel at the scratch base, and an undiscovered file), dismissed as Wrong. Raw output: [ocr/T8P.10-ae689ea6.json](ocr/T8P.10-ae689ea6.json), [ocr/T8P.10-ae689ea6-relocated.json](ocr/T8P.10-ae689ea6-relocated.json).
+
+**Revision 93** (`8785b649`, tag `claude-opus-5.5-plan-r93`):
+- Series points carry the effective Mark revision's `source`, `savedAt` and `reason` (A210), and T8P.10 adds that with two cases.
+- Lane R2 may edit `Cockpit.tsx` and `journal-cards.tsx` for T8P.15-B1 only.
+- `specs/` is unchanged. Lane BV (T8P.10's two commits only) was rebased onto it, to `092719ba` and `538d0f72`.
