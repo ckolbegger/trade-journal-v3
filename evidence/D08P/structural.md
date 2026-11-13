@@ -769,3 +769,35 @@ Lane tier (`ee47e047`): 1546 unit, 218 integration, 14 of 14 checks; `run-comple
 | medium | bug | `market-data.ts:950-951` | `series` awaits `scanning`, then `reading`. When the shared batch's snapshot read fails, both reject, and `reading` has no handler once the first await throws: an unhandled rejection. | Valid: `batchOf`'s `.catch` rejects every promise in the batch. `Promise.all` fixes it. |
 
 Bug task **T8P.8-B3**. Case: *it should reject a series once, with no unhandled rejection, when its snapshot read fails.* This is round 3 for T8P.8: if its review still has findings, the session stops for the user.
+
+## T8P.12 Identity card (lane `d08p-r1`)
+
+Commits on `d08p/r1`:
+- `7ab5ae7b` (the task);
+- `003262eb` (lane tier);
+- `f2cafc21` (titles restored word for word);
+- `8de8139e` (lane tier rerun, all passed). An earlier rerun, `df6a2bb0`, recorded a one-off timing flake in `ReviewCards.test.tsx` ("should open the first card holding XYZ in attention order…", 135 ms under load). That case passes alone (50 of 50) and on the rerun.
+
+TDD rows: [tdd-log/T8P.12.md](tdd-log/T8P.12.md). Case 3 was a first-run pass, flagged: the mutation reads `contractExpiration` only with `positionChanges`, and fails with an element-not-found.
+
+**Accepted as implementation-level:**
+- `identity.types.ts` is reshaped: actions carry `to: string`, and `backTo` keeps "Back to Trades".
+- Badge expectations change to "<Strategy>, <Lifecycle>" under section 1.5's `header .badge` row: unit lines in six `trade-detail/*.test.tsx` files, and seven e2e lines in six specs. The `lifecycle` helper matches the trailing ", Open".
+- The expiration lookups in `Summary.test.tsx` are scoped to the Summary region.
+- T8P.5's placeholder test is deleted.
+- `IdentityCardFromView` takes the shell's `timeZone` and doesn't use it.
+
+### T8P.12 ocr review (`12a396c0..f2cafc21`)
+
+- In place: session `6ce77482-0d9a-4366-9601-7424d899ecd2`, 5 files reviewed, 19 excluded, 2 comments.
+- Relocated (14 test and spec files under `src/itg/d08p/`, scratch commits `aef26546` and `6439eec1`): session `a1060edc-024d-48d8-8eb1-b411ba5e846a`, 14 files reviewed, 2 comments.
+- Model gpt-6.1-sol. Raw output: [ocr/T8P.12-12a396c0..f2cafc21.json](ocr/T8P.12-12a396c0..f2cafc21.json) and [-relocated](ocr/T8P.12-12a396c0..f2cafc21-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `identity.props.ts:28` | `expiration.days` is always undefined with real data, since `expirationLineOf` returns no `days`, so the counts never show. | Wrong for this task: T8P.9 adds `days` to `expirationLineOf` (reviewed clean, merging right after T8P.12), and T8P.12 handles it correctly when present. B8P.3 is extended to the days words when T8P.9 merges, which proves it end to end. |
+| low | maintainability | `identity.props.ts:11` | `daysText` nests a ternary. | Valid, style only. |
+| high | bug | `src/itg/d08p/rail/identity.props.tsx:11-12` | The imports don't resolve. | Wrong: a relocation artifact. The real file's imports resolve. |
+| medium | test | `src/itg/d08p/rail/identity.props.tsx:39` | No Vitest project discovers the suite. | Wrong: a relocation artifact (`.test` was dropped from the copy's name). |
+
+Bug task **T8P.12-B1** (finding 2). Case: *it should choose the days text without a nested conditional.* A refactor, kept green.

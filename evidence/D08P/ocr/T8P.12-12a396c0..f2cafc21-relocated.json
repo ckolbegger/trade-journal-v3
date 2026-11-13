@@ -1,0 +1,272 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 2,
+    "total_tokens": 199834,
+    "input_tokens": 196978,
+    "output_tokens": 2856,
+    "cache_read_tokens": 36096,
+    "elapsed": "1m31s"
+  },
+  "tool_calls": {
+    "total": 42,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 4,
+      "file_read": 29,
+      "file_read_diff": 1
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 20,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d08p/e2e-d2/durability.ts,src/itg/d08p/e2e-d2/open-position.ts,src/itg/d08p/e2e-d2/responsive-a11y.ts",
+        "arguments": "{\"file_path\":\"src/itg/d08p/e2e-d2/support.ts\",\"start_line\":1,\"end_line\":65}",
+        "error": "file \"src/itg/d08p/e2e-d2/support.ts\" not found: git show 6439eec113fa1f89d3db469b46496f346ec2e828:src/itg/d08p/e2e-d2/support.ts: exit status 128: fatal: path 'src/itg/d08p/e2e-d2/support.ts' does not exist in '6439eec113fa1f89d3db469b46496f346ec2e828'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/d08p/rail/identity.props.tsx",
+      "content": "These imports cannot resolve in the submitted tree: `../../runtime.tsx` points to the nonexistent `src/itg/runtime.tsx`, and `./identity.tsx` is now empty and exports no `IdentityCard`. The existing runtime and component live under `src/ui`. This makes `npm run typecheck` fail and prevents the suite from loading if selected. Import the actual production modules (or provide the intended implementation and exports).",
+      "existing_code": "import { RuntimeContext } from '../../runtime.tsx';\nimport { IdentityCard } from './identity.tsx';",
+      "start_line": 11,
+      "end_line": 12,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d08p/rail/identity.props.tsx",
+      "content": "This suite is not discovered by either configured Vitest project: `unit` only includes `src/**/*.test.{ts,tsx}`, and `integration` only includes `tests/integration/**/*.test.ts`. Consequently all four W2 checks are skipped by the test scripts. Rename this test to a matching test filename or explicitly include this path in the appropriate project's configuration.",
+      "existing_code": "describe('identity card (W2)', () =\u003e {",
+      "start_line": 39,
+      "end_line": 39,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D2 end-to-end trade and accessibility scenarios",
+      "files": [
+        "src/itg/d08p/e2e-d2/durability.ts",
+        "src/itg/d08p/e2e-d2/open-position.ts",
+        "src/itg/d08p/e2e-d2/responsive-a11y.ts"
+      ]
+    },
+    {
+      "label": "D7 end-to-end plan and settlement scenarios",
+      "files": [
+        "src/itg/d08p/e2e-d7/plan-open.ts",
+        "src/itg/d08p/e2e-d7/settlement-due.ts",
+        "src/itg/d08p/e2e-d7/short-put.ts"
+      ]
+    },
+    {
+      "label": "Rail identity component and property tests",
+      "files": [
+        "src/itg/d08p/rail/identity.props.tsx",
+        "src/itg/d08p/rail/identity.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail presentation components",
+      "files": [
+        "src/itg/d08p/trade-detail/Banner.tsx",
+        "src/itg/d08p/trade-detail/Identity.tsx",
+        "src/itg/d08p/trade-detail/Plan.tsx",
+        "src/itg/d08p/trade-detail/Position.tsx",
+        "src/itg/d08p/trade-detail/Result.tsx",
+        "src/itg/d08p/trade-detail/Summary.tsx"
+      ]
+    }
+  ],
+  "session_id": "a1060edc-024d-48d8-8eb1-b411ba5e846a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a1060edc-024d-48d8-8eb1-b411ba5e846a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "aef2654684077d829f0cb67a772d54eca69d21b0",
+      "resolved_head": "6439eec113fa1f89d3db469b46496f346ec2e828",
+      "exact_range": "aef2654684077d829f0cb67a772d54eca69d21b0..6439eec113fa1f89d3db469b46496f346ec2e828",
+      "source_artifact_sha256": "6715813706505e27b56639b334fedd59f0e834236b1f6ef6eb2bca219b066ada"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "03bd927a55f6c892201c68cfd132def788ce7f981f9a8fa491b722b21b4bc3be",
+          "path": "src/itg/d08p/trade-detail/Plan.tsx",
+          "fingerprint": "be3fc6ea95ddfac44ec91d26d6f271dca3dc1a49855f735fc3d2661ed5fe1299"
+        },
+        {
+          "item_id": "0c7f13ed7f51240aad69ae04d4b4533e6e99680ba07959d9ed92cfcb2841fff7",
+          "path": "src/itg/d08p/rail/identity.props.tsx",
+          "fingerprint": "0693bd39596550a6baecd41711ca950bc8240dfa415692cef4129d546e1c499f"
+        },
+        {
+          "item_id": "10c537dcbee4241e7162cf4cb525d69065897700c2a791af3dc5511a8a8ffee1",
+          "path": "src/itg/d08p/trade-detail/Position.tsx",
+          "fingerprint": "d061279cd35addb7e6fbd5a4a1d91b977bead8c6153e613a17c1840795329d87"
+        },
+        {
+          "item_id": "1a565d83738852a7c3dcbb1101e5c8d7f75439615760adb708c08e989bf3019c",
+          "path": "src/itg/d08p/trade-detail/Result.tsx",
+          "fingerprint": "8ec07dee8470a4995eb759bd940ae44d331f1b015f25fd6df5725cc26fac93dd"
+        },
+        {
+          "item_id": "2d3b999548122aff391ae9b7a6e08ed41983b7323fb0e4ec47582473fd7af5e9",
+          "path": "src/itg/d08p/e2e-d2/durability.ts",
+          "fingerprint": "75bde1faa6651741e7779d39f7dee49bdb85d3d84acfe1eb843f5f8dc8f2b96f"
+        },
+        {
+          "item_id": "303fa215e8ef26451a721295c645bb7fa7fbedf2370f1ac3c624353bb8ef797c",
+          "path": "src/itg/d08p/trade-detail/Summary.tsx",
+          "fingerprint": "c3bf5c21d2f5e64d1a71cbdc03bb290cba07684110fa5a3a658fe4fb705f38b9"
+        },
+        {
+          "item_id": "59738adcde62de065d1fa43ac87a6b943e0656fe32f04e47ccab7289111ec57a",
+          "path": "src/itg/d08p/trade-detail/Banner.tsx",
+          "fingerprint": "c6a2ae631b66444afcb2e8d44c810f4b949fef14005290fbdd263ec0a25c32cc"
+        },
+        {
+          "item_id": "6e6c80cade08788ed03659602bd59fb07fd2516e6effbacea8992c96bc3f3a03",
+          "path": "src/itg/d08p/e2e-d2/responsive-a11y.ts",
+          "fingerprint": "716713994122650932dd9bdc263409d8fc40ddca6fe226c7e3edc796e3e5d21b"
+        },
+        {
+          "item_id": "782b4b8ee40c4024a4b5298df3004c8ae661947ca40c6d10e047f39cc5d809a6",
+          "path": "src/itg/d08p/trade-detail/Identity.tsx",
+          "fingerprint": "ec70c73720c36b81d9cb4d5ebe41b2edfc25ed050f23cabb74e98ac598b66dc0"
+        },
+        {
+          "item_id": "8ca0c4c9c1e0f4d835515ebbdcaa2abc96cf5dcdb726267150afa1288bcac7bb",
+          "path": "src/itg/d08p/e2e-d7/plan-open.ts",
+          "fingerprint": "0bc7830daa9c8a3093f26bd580542543bd5f27f30b2c8f6de85b9868de91b352"
+        },
+        {
+          "item_id": "985171ae586ab62b20a545b9574ead8d684918cbe11e07aa54c8de791173e66f",
+          "path": "src/itg/d08p/rail/identity.tsx",
+          "fingerprint": "36823407ce0bf8d27cce3cc56232dfd156202f4a07e329470c4ee5c18c3313e4"
+        },
+        {
+          "item_id": "bdb9f348cc0ebf690e40ae481370ee442b9e43355781fa4f848bada239b330a3",
+          "path": "src/itg/d08p/e2e-d7/settlement-due.ts",
+          "fingerprint": "0a1dd2e2ccfe1a4fe97491c102b68425e6897f4b1772033dfaa0708d12d269c3"
+        },
+        {
+          "item_id": "f0e7846478517d694c83daf5c3edbcde0bdf41964840c2e47a62ae987092d7ec",
+          "path": "src/itg/d08p/e2e-d2/open-position.ts",
+          "fingerprint": "f3a6086c9583d255fcf8184f44b3578d1efc24c2338f89a38814e3bf204379bb"
+        },
+        {
+          "item_id": "f1b876ee3654f2292c02230242a7b6f7ffb9d11e95765fd1e558fdf57c518d3a",
+          "path": "src/itg/d08p/e2e-d7/short-put.ts",
+          "fingerprint": "0efb20c16b5d4c658ed5a430b51e1a0ae8cb3c708bb7bdcbea425ec7adf9a1c3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "03bd927a55f6c892201c68cfd132def788ce7f981f9a8fa491b722b21b4bc3be",
+          "path": "src/itg/d08p/trade-detail/Plan.tsx",
+          "fingerprint": "be3fc6ea95ddfac44ec91d26d6f271dca3dc1a49855f735fc3d2661ed5fe1299"
+        },
+        {
+          "item_id": "0c7f13ed7f51240aad69ae04d4b4533e6e99680ba07959d9ed92cfcb2841fff7",
+          "path": "src/itg/d08p/rail/identity.props.tsx",
+          "fingerprint": "0693bd39596550a6baecd41711ca950bc8240dfa415692cef4129d546e1c499f"
+        },
+        {
+          "item_id": "10c537dcbee4241e7162cf4cb525d69065897700c2a791af3dc5511a8a8ffee1",
+          "path": "src/itg/d08p/trade-detail/Position.tsx",
+          "fingerprint": "d061279cd35addb7e6fbd5a4a1d91b977bead8c6153e613a17c1840795329d87"
+        },
+        {
+          "item_id": "1a565d83738852a7c3dcbb1101e5c8d7f75439615760adb708c08e989bf3019c",
+          "path": "src/itg/d08p/trade-detail/Result.tsx",
+          "fingerprint": "8ec07dee8470a4995eb759bd940ae44d331f1b015f25fd6df5725cc26fac93dd"
+        },
+        {
+          "item_id": "2d3b999548122aff391ae9b7a6e08ed41983b7323fb0e4ec47582473fd7af5e9",
+          "path": "src/itg/d08p/e2e-d2/durability.ts",
+          "fingerprint": "75bde1faa6651741e7779d39f7dee49bdb85d3d84acfe1eb843f5f8dc8f2b96f"
+        },
+        {
+          "item_id": "303fa215e8ef26451a721295c645bb7fa7fbedf2370f1ac3c624353bb8ef797c",
+          "path": "src/itg/d08p/trade-detail/Summary.tsx",
+          "fingerprint": "c3bf5c21d2f5e64d1a71cbdc03bb290cba07684110fa5a3a658fe4fb705f38b9"
+        },
+        {
+          "item_id": "59738adcde62de065d1fa43ac87a6b943e0656fe32f04e47ccab7289111ec57a",
+          "path": "src/itg/d08p/trade-detail/Banner.tsx",
+          "fingerprint": "c6a2ae631b66444afcb2e8d44c810f4b949fef14005290fbdd263ec0a25c32cc"
+        },
+        {
+          "item_id": "6e6c80cade08788ed03659602bd59fb07fd2516e6effbacea8992c96bc3f3a03",
+          "path": "src/itg/d08p/e2e-d2/responsive-a11y.ts",
+          "fingerprint": "716713994122650932dd9bdc263409d8fc40ddca6fe226c7e3edc796e3e5d21b"
+        },
+        {
+          "item_id": "782b4b8ee40c4024a4b5298df3004c8ae661947ca40c6d10e047f39cc5d809a6",
+          "path": "src/itg/d08p/trade-detail/Identity.tsx",
+          "fingerprint": "ec70c73720c36b81d9cb4d5ebe41b2edfc25ed050f23cabb74e98ac598b66dc0"
+        },
+        {
+          "item_id": "8ca0c4c9c1e0f4d835515ebbdcaa2abc96cf5dcdb726267150afa1288bcac7bb",
+          "path": "src/itg/d08p/e2e-d7/plan-open.ts",
+          "fingerprint": "0bc7830daa9c8a3093f26bd580542543bd5f27f30b2c8f6de85b9868de91b352"
+        },
+        {
+          "item_id": "985171ae586ab62b20a545b9574ead8d684918cbe11e07aa54c8de791173e66f",
+          "path": "src/itg/d08p/rail/identity.tsx",
+          "fingerprint": "36823407ce0bf8d27cce3cc56232dfd156202f4a07e329470c4ee5c18c3313e4"
+        },
+        {
+          "item_id": "bdb9f348cc0ebf690e40ae481370ee442b9e43355781fa4f848bada239b330a3",
+          "path": "src/itg/d08p/e2e-d7/settlement-due.ts",
+          "fingerprint": "0a1dd2e2ccfe1a4fe97491c102b68425e6897f4b1772033dfaa0708d12d269c3"
+        },
+        {
+          "item_id": "f0e7846478517d694c83daf5c3edbcde0bdf41964840c2e47a62ae987092d7ec",
+          "path": "src/itg/d08p/e2e-d2/open-position.ts",
+          "fingerprint": "f3a6086c9583d255fcf8184f44b3578d1efc24c2338f89a38814e3bf204379bb"
+        },
+        {
+          "item_id": "f1b876ee3654f2292c02230242a7b6f7ffb9d11e95765fd1e558fdf57c518d3a",
+          "path": "src/itg/d08p/e2e-d7/short-put.ts",
+          "fingerprint": "0efb20c16b5d4c658ed5a430b51e1a0ae8cb3c708bb7bdcbea425ec7adf9a1c3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 90881
+  }
+}

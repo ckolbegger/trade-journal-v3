@@ -1,0 +1,246 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 135518,
+    "input_tokens": 133972,
+    "output_tokens": 1546,
+    "cache_read_tokens": 21760,
+    "elapsed": "1m16s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_read": 17
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/rail/identity.props.ts",
+      "content": "`daysText` uses a nested ternary, which is explicitly prohibited by the review checklist. Use early returns for the undefined and zero cases, then return the pluralized day count; this keeps the three display cases explicit.",
+      "suggestion_code": "const daysText = (days: number | undefined): string =\u003e {\n  if (days === undefined) return '';\n  if (days === 0) return ' (today)';\n  return ` (${plural(days, 'day', 'days')})`;\n};",
+      "existing_code": "const daysText = (days: number | undefined): string =\u003e (days === undefined ? '' : days === 0 ? ' (today)' : ` (${plural(days, 'day', 'days')})`);",
+      "start_line": 11,
+      "end_line": 11,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/rail/identity.props.ts",
+      "content": "The countdown is never shown with real Detail data: `expirationLineOf` in `src/coordinators/trade-views/trade-views.ts` returns only `{ status, date }` for both Planned and Open trades, so `expiration.days` is always undefined. The adapter tests inject `days` manually and therefore do not catch this integration gap. Populate `ContractExpiration.days` from the View Moment's exchange-local date for `Expires` views and add a test using a coordinator-produced view, so the required `(36 days)`, `(1 day)`, and `(today)` labels actually appear.",
+      "existing_code": "    ...(expiration ? [`${expiration.status} ${expirationDate(expiration.date)}${daysText(expiration.days)}`] : []),",
+      "start_line": 28,
+      "end_line": 28,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit rail identity card, props, types, and E2E support",
+      "files": [
+        "e2e/support/detail/rail-a.ts",
+        "src/ui/cockpit/rail/identity-card.tsx",
+        "src/ui/cockpit/rail/identity.props.ts",
+        "src/ui/cockpit/rail/identity.tsx",
+        "src/ui/cockpit/rail/identity.types.ts"
+      ]
+    }
+  ],
+  "session_id": "6ce77482-0d9a-4366-9601-7424d899ecd2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6ce77482-0d9a-4366-9601-7424d899ecd2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "12a396c0",
+      "requested_head": "f2cafc21",
+      "resolved_base": "12a396c05b2226214c0f559d8c8a1702ae19242e",
+      "resolved_head": "f2cafc21de9290986c7fce6cd2ae37f85e08c072",
+      "exact_range": "12a396c05b2226214c0f559d8c8a1702ae19242e..f2cafc21de9290986c7fce6cd2ae37f85e08c072",
+      "source_artifact_sha256": "3e5bb4278c8bf332b15260879d544f383eab339ed060439d45c24a3bfa8eb613"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0af3c3f47916a1c8999473b8f03a107b2e193fb5467b7fe6bcea43192026aeb7",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "7fabc005d76afc0b41280e27e87b9d15673946befe9774991297dc2eee4ed936"
+        },
+        {
+          "item_id": "51046e4844e45c83ae83ab4dd097b004c8c99e0a1e2516505d99666b7905b56b",
+          "path": "src/ui/cockpit/rail/identity.props.ts",
+          "fingerprint": "b364716149c9995f1f9561ddaade7957a260227a12f73b3ee41a5b445c577aa8"
+        },
+        {
+          "item_id": "bca3b857acd3cb4204098a5950d95c57f241d577609f7e785452aad04f67b597",
+          "path": "src/ui/cockpit/rail/identity.types.ts",
+          "fingerprint": "3ee1ccf4e49e3b09a461b06a56f839f5b7d4bb5eaba3cebd7d5076e80d2ec0b0"
+        },
+        {
+          "item_id": "edd2a2097438b8b45b237ed50b3d0a5690f7eb299af1d70014939ce885e8dc61",
+          "path": "src/ui/cockpit/rail/identity.tsx",
+          "fingerprint": "c742ed0506eb35c8156aa114bd9d5fad63d01dd8c76860d5d21f9db69889706e"
+        },
+        {
+          "item_id": "fd429efa1c0605a35cd5bb2615b321198aed763ca885a40760ce3271a6c694a5",
+          "path": "src/ui/cockpit/rail/identity-card.tsx",
+          "fingerprint": "c1aa44b2ebbaf38264ce73e1a55313de8059a55b7787565b9a73a43a587acf65"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0af3c3f47916a1c8999473b8f03a107b2e193fb5467b7fe6bcea43192026aeb7",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "7fabc005d76afc0b41280e27e87b9d15673946befe9774991297dc2eee4ed936"
+        },
+        {
+          "item_id": "51046e4844e45c83ae83ab4dd097b004c8c99e0a1e2516505d99666b7905b56b",
+          "path": "src/ui/cockpit/rail/identity.props.ts",
+          "fingerprint": "b364716149c9995f1f9561ddaade7957a260227a12f73b3ee41a5b445c577aa8"
+        },
+        {
+          "item_id": "bca3b857acd3cb4204098a5950d95c57f241d577609f7e785452aad04f67b597",
+          "path": "src/ui/cockpit/rail/identity.types.ts",
+          "fingerprint": "3ee1ccf4e49e3b09a461b06a56f839f5b7d4bb5eaba3cebd7d5076e80d2ec0b0"
+        },
+        {
+          "item_id": "edd2a2097438b8b45b237ed50b3d0a5690f7eb299af1d70014939ce885e8dc61",
+          "path": "src/ui/cockpit/rail/identity.tsx",
+          "fingerprint": "c742ed0506eb35c8156aa114bd9d5fad63d01dd8c76860d5d21f9db69889706e"
+        },
+        {
+          "item_id": "fd429efa1c0605a35cd5bb2615b321198aed763ca885a40760ce3271a6c694a5",
+          "path": "src/ui/cockpit/rail/identity-card.tsx",
+          "fingerprint": "c1aa44b2ebbaf38264ce73e1a55313de8059a55b7787565b9a73a43a587acf65"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "08af541743304755b63019bf21ca3f9f89e6f1de2f5d6de18987864169f58c4e",
+          "path": "src/ui/screens/trade-detail/Identity.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "0fe8c282252c453b824b1aebb9d556d0fe1c0269c34c5d703c0d67435713af5a",
+          "path": "src/ui/screens/trade-detail/Position.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "15e493bba675cb6f32d46d757bd10ca5fba0ab7d5b9daade465aef87bd2bb1d0",
+          "path": "src/ui/screens/trade-detail/Summary.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "24625fcaf770b63c680b2fe0df8f669c3b55e2f713a17cdca36e49129042af79",
+          "path": "evidence/D08P/suite-runs/T8P.12-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "29b5abdd7ae6934c5a1542f047e1a549487f815931f99c919766fb7a623d8fbd",
+          "path": "src/ui/screens/trade-detail/Banner.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "30081eb5a3fdc091623d83ee9a4867d3f0ce4aa3e1513b4e33ad21e9e8526c83",
+          "path": "evidence/D08P/tdd-log/T8P.12.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "399c1bd8718b13f42c817634aa35309ba6340423b7940a8f1cee6daf4f86fc2c",
+          "path": "e2e/d7/short-put.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "640fdb844308d8f8f8ae7a5e90d00c5416773493f391deacec055bca9c8b171f",
+          "path": "e2e/d2/durability.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "70aa7031778338d293ee7f838604812c622daf77c8061c3a0619ae3c2c983e33",
+          "path": "e2e/d7/plan-open.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "724105c9423ed2a67ee95ab9e3eeccdea3c5432c1532d588d8b2f8780ec12204",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "9853bb32abb451a060c83b6578bd8b371e028aead293a7afd181ad983ed0f883",
+          "path": "evidence/D08P/suite-runs/T8P.12-lane.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "b412e3ed621c285c13620fb892f807894a2683d454ce1a35a154f8410292249e",
+          "path": "evidence/D08P/suite-runs/T8P.12-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "b6bef6062597e4c80a219d767c5c3114a04ad4b747a1407c8acf82351a07032a",
+          "path": "evidence/D08P/suite-runs/T8P.12-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "b6f24d810d26369f37ad0f8b92d8e62fd8d6985d91a7a4c255f2bd5536f099bf",
+          "path": "e2e/d2/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "c638659989495cd96a576b5dd15389ea530198befd4b9749c9ea63a4f99568ea",
+          "path": "src/ui/screens/trade-detail/Plan.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "cd4211d499e42173144f902e1f3f863c78e5fbbb204225910e2626c95904d6b7",
+          "path": "src/ui/screens/trade-detail/Result.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d2f2a287eae22d063161f1b8efed44bbe5f22b24827fbbf062e7b4b18dfbe3f2",
+          "path": "src/ui/cockpit/rail/identity.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e3cabba389d5ba3cb590a368e5a37f48a74d487e9c7f3cae2c426278fb3053b8",
+          "path": "e2e/d2/open-position.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ffa7fd8e554236a0f20b4405852f778444c0b81f3f9e3358fce60942708b9038",
+          "path": "src/ui/cockpit/rail/identity.props.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 75660
+  }
+}
