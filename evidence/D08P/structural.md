@@ -204,3 +204,8 @@ ocr: session `238f0f5e-e699-4785-987f-4c7e8bfe4f64`, model gpt-6.1-sol, 2 files 
 | medium | bug | `.claude/scripts/with-browser-lock.sh:84` | `lstart` has one-second resolution, so a remembered PID reused by an unrelated process started in the same second would be admitted and signalled. | Doubtful: needs a PID wrap within one second of the original's start; `%known` is rebuilt every scan. |
 
 **Stop (the user's decision of 2026-11-13: the session stops if round 5 still leaves findings).** The session asks the user how to go on. Still queued: T8P.1-B3 and B4.
+
+**User's decision (2026-11-13), "Last fix, then accept limits".** One final bug task, T8P.1-B19, batches the two findings above. Any finding its review raises on `with-browser-lock.sh` or its test is recorded as an accepted limit of dev tooling, for the final report, with no further rounds. Then B3, B4 and T8P.1's complete cumulative run.
+- **T8P.1-B17** (finding 1). Defect: a `ps` failure or partial listing releases the lock while members may still run. Case: *it should keep the lock, and keep the last known members, when a scan fails, and release only after a scan that succeeds shows no member left.*
+- **T8P.1-B18** (finding 2). Defect: a PID reused within the same second passes the identity check. Case: *it should not treat a process as a remembered member when its PID matches but its identity differs within the same second.*
+- **T8P.1-B19, round 6**, is the batch of B17 and B18.
