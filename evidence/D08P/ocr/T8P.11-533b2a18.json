@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 48989,
+    "input_tokens": 48731,
+    "output_tokens": 258,
+    "cache_read_tokens": 8320,
+    "elapsed": "25s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/compose.ts",
+        "src/app/routes.ts",
+        "src/coordinators/workspace/capabilities.ts"
+      ]
+    }
+  ],
+  "session_id": "5c3eab17-4939-4695-a497-f7c66534646f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5c3eab17-4939-4695-a497-f7c66534646f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "533b2a18",
+      "resolved_base": "283e799681e1370d39c0865b03576a5d2aeebb55",
+      "resolved_head": "533b2a1898657802557f0abd2069771121a026b4",
+      "exact_range": "283e799681e1370d39c0865b03576a5d2aeebb55..533b2a1898657802557f0abd2069771121a026b4",
+      "source_artifact_sha256": "1aa45eb7b3b52d0233fe7b7d4a3110ce626470fdca9d7f8e1dac4fdf626b6ef9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "94461444de2593532c778c9f38f0f50b744fca98c22fafb8f1ec276597761abc"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "580f164546cb123281d062b685cd208d03cbfc01c470b6bde0bb6c9460053c12"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "4d07a24bf99a0fcb0a20d7a9b3e32949860d11462c18b91d2150c18476c33cf4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "94461444de2593532c778c9f38f0f50b744fca98c22fafb8f1ec276597761abc"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "580f164546cb123281d062b685cd208d03cbfc01c470b6bde0bb6c9460053c12"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "4d07a24bf99a0fcb0a20d7a9b3e32949860d11462c18b91d2150c18476c33cf4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ee9dbd1374e52e260096d5c9b62554f9dceb03ae662e44ad23dc6aa5c0cf28d0",
+          "path": "evidence/D08P/tdd-log/T8P.11.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 25244
+  }
+}
