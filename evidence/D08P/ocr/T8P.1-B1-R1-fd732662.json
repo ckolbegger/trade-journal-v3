@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 4,
+    "total_tokens": 71873,
+    "input_tokens": 69748,
+    "output_tokens": 2125,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "The child inherits the wrapper's signal handlers until exec. If the parent forwards TERM during that interval, the child's handler only sets its private `$signalled` flag (`$child` is zero); it then proceeds to exec, and that cancellation is lost. The parent can consequently keep waiting and holding the lock instead of exiting 143. Block the handled signals around fork, restore default dispositions in the child before unblocking, and unblock in the parent after recording the child PID.",
+      "existing_code": "$child = fork();\ndie \"with-browser-lock: fork failed: $!\\n\" unless defined $child;\nif ($child == 0) {",
+      "start_line": 46,
+      "end_line": 48,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "Every flock failure is treated as contention. An unsupported locking operation or another persistent error will therefore poll forever and report a holder even when none exists. Check `$!` immediately after failure, retry contention/interruption as appropriate, and exit with a diagnostic for other errors.",
+      "existing_code": "until (flock($fh, LOCK_EX | LOCK_NB)) {",
+      "start_line": 34,
+      "end_line": 34,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.test.sh",
+      "content": "Killing the surviving command before launching the next caller masks accidental inheritance of the lock descriptor: even an implementation where the command retains the lock can pass this test. After killing only the wrapper, assert with a bounded timeout that another wrapper acquires the lock while the original command is still alive, then clean up that command.",
+      "existing_code": "pkill -P \"$(cat \"$t/h.child\")\" 2\u003e/dev/null; kill \"$(cat \"$t/h.child\")\" 2\u003e/dev/null",
+      "start_line": 20,
+      "end_line": 20,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.test.sh",
+      "content": "This wait has no deadline, and the SIGTERM case likewise waits unconditionally after signaling. A lock-release or signal-forwarding regression can hang the test suite rather than produce a failure. Use bounded completion checks for both cases, then terminate and reap the test processes on timeout before removing the temporary lock path.",
+      "existing_code": "wait \"$pa\" \"$pb\"",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/with-browser-lock.sh",
+        ".claude/scripts/with-browser-lock.test.sh"
+      ]
+    }
+  ],
+  "session_id": "604d2688-7913-4bdc-b860-482ff22159c0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "604d2688-7913-4bdc-b860-482ff22159c0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fd732662",
+      "resolved_base": "7b7621f6715b69dd2b65782858a6f9d6322ca57f",
+      "resolved_head": "fd7326624e20dbbbb7fa8f628793bb1017ae6fbf",
+      "exact_range": "7b7621f6715b69dd2b65782858a6f9d6322ca57f..fd7326624e20dbbbb7fa8f628793bb1017ae6fbf",
+      "source_artifact_sha256": "21501383f4d1ee8cfab200a90b070de2d997edb5964c8865295264685a893e29"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "42244878ce84952ca148ce51359bb9f02587c54d413effcecc2d8f09a55e4529"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "e89e9c207fdc77dca9e1b779a33e67f004c179a474c4eb2e2dd0f8817eb6dfd8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "42244878ce84952ca148ce51359bb9f02587c54d413effcecc2d8f09a55e4529"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "e89e9c207fdc77dca9e1b779a33e67f004c179a474c4eb2e2dd0f8817eb6dfd8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 81808
+  }
+}
