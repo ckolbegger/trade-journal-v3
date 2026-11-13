@@ -36,7 +36,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (the deliverable branch every lane merges into) |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `4175` (D08P runs no benchmark) |
-| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r85` (revision 85 adds T8P.27) |
+| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r86` (revision 85 adds T8P.27; revision 86 tightens its test pairing) |
 | Code D08P builds on | tag `claude-opus-5.5-d7s` (`2240fe1c`) |
 | D08P starting point | tag `claude-opus-5.5-pre-d08p`: the same commit as `plan-r84`, at the user's direction. `claude-opus-5.5-pre-d8p` (`5ae23f94`) marks where the planning session started. |
 
@@ -108,7 +108,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected passages, scenarios and durable compatibility.
 3. Ask for approval.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r86, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27.) Editing the Progress section alone is not a revision.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r87, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27; revision 86 tightened its test pairing.) Editing the Progress section alone is not a revision.
 
 ## 3. D08P specifics
 
@@ -165,7 +165,7 @@ Lanes keep working during merge runs.
 ### Wave 2
 
 1. **T8P.22**, after every wave-1 task has merged. It also retires the three legacy blocks.
-2. **T8P.27** (revision 85): remove the old Detail sections, tests and styles the cockpit no longer renders.
+2. **T8P.27** (revisions 85 and 86): remove the old Detail sections, tests and styles the cockpit no longer renders. The pairing table is committed before any deletion, and the main session checks it row by row before merging.
 3. A full-tier run.
 4. **The checkpoint critic, T8P.23**, on flows C8P.1–C8P.4. Its defects become bug tasks, fixed before the tail.
 5. **T8P.24 ∥ T8P.25.** The Node suite may start as soon as T8P.11 merges, but it is recorded in wave 2's order.
