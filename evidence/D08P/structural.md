@@ -282,3 +282,14 @@ End to end, in a scratch worktree under `.claude/worktrees/`: exit 0, with `node
 ocr: session `53bff592-afbf-4fda-bb24-1e7cd667125e`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 0 comments. **No findings.** Raw output: [ocr/T8P.1-B4-e68ab797.json](ocr/T8P.1-B4-e68ab797.json).
 
 Every T8P.1 bug task is closed: B20 and B4 are clean, and the lock wrapper's last findings are accepted limits AL-1 to AL-4.
+
+### T8P.1 complete cumulative run (`t8p-1`)
+
+Run on `f2ab6560` (main worktree; the only uncommitted change was the handoff's notes), 2026-11-13 08:52 EST. Browser stage `browser-auto 4b90de47`, which printed `browser tier: task (no changed path since 4b90de47 is on the full-tier list)`; no `e2e/d8p` folder yet, so only the `@every-task` call ran. Ports 5175, 9341 and 9342 were free before and after. `run-complete.sh evidence/D08P t8p-1`: run complete.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 127 files, 1519 tests passed, exit 0 | [suite-runs/t8p-1-unit.txt](suite-runs/t8p-1-unit.txt) |
+| Node integration | 103 files, 218 tests passed, exit 0 | [suite-runs/t8p-1-integration.txt](suite-runs/t8p-1-integration.txt) |
+| Browser, task tier (Chromium) | 5 passed (11.4 s), exit 0 | [suite-runs/t8p-1-browser.txt](suite-runs/t8p-1-browser.txt) |
+| Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/t8p-1-checks.txt](suite-runs/t8p-1-checks.txt) |

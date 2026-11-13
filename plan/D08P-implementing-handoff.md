@@ -290,11 +290,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- **For T8P.1.**
-  - Add `.claude/worktrees/**` to `globalIgnores` in `eslint.config.js`. `tsconfig.json`'s `include` (src, e2e, tests, tools) already keeps nested worktrees out of `tsc`.
-  - `lane-setup.sh` clones the main worktree's `node_modules` with `cp -c -R` (APFS clone), then runs `tools/install-hooks.sh`.
-  - The lock is a directory in `$TMPDIR` named for port 5175. It also covers the `tj-release` cache and the CDP ports 9341 and 9342.
-  - Apply section 9's text to the three `.claude/` files.
 - **For T8P.2:** move `EXIT_ACTION` and `INCOHERENT_ENTRY_NOTE` to `src/ui/screens/trade-detail/words.ts`, and update `PositionChangeForm.tsx:27`. `it-titles.sh` proves the 98 cases are unchanged.
 - **For T8P.4.** The appendix lists every Detail reader.
   - The `header .badge` reads (d2/durability :43, d2/open-position :39, d2/responsive-a11y :247, d6/exit :36 and :65, d7/settlement-due :38 and :46, d7/short-put :56) go through the identity helper.
@@ -307,4 +302,12 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Open questions
 
-(None yet.)
+- **T8P.1's bug-task rounds (user's decisions, 2026-11-13).**
+  - The handoff's three-round stop was reached on T8P.1's tooling. The user chose to batch the remaining lock-wrapper findings, then allowed one last round, and to accept any further findings on `with-browser-lock.sh` as limits of dev tooling.
+  - Accepted limits AL-1 to AL-4 are listed under "T8P.1-B19" in `evidence/D08P/structural.md`:
+    - a malformed `ps` row in a zero-exit scan can drop a tracked descendant;
+    - the signal dedupe key omits the command line;
+    - a system binary with no readable environment, orphaned within one scan interval, can be missed;
+    - the command runs in a background process group.
+- **First-run pass, T8P.1-B3 case 2** ("it should still report run complete for a lane-tier run"). The old rule already passed a marked lane run. Its mutation check (a scratch copy looking for a differently named marker) failed as expected.
+- **The lock is now a kernel lock** (T8P.1-B1-R1, implementation-level decision). Perl's `flock` on `<DARWIN_USER_TEMP_DIR>/tj-browser-lock-5175.flock` replaced the directory lock that section 9 and the T8P.1 note described, after two ocr rounds found races in its stale-holder takeover.
