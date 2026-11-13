@@ -4,16 +4,18 @@
 # A full-tier run has five files (unit, integration, browser-1, browser-2, checks); a task-tier
 # run, or a run made before decision 98's revision 65, has four (unit, integration, browser, checks).
 # The tier is read from the files: if either browser-1 or browser-2 exists, both are required;
-# otherwise the single browser file is. A run with no browser file at all is a lane tier (decision
-# 111) and needs three: unit, integration, checks. Prints one line per stage and exits 0 only when every
+# otherwise the single browser file is. A run is a lane tier (decision 111), needing three files
+# (unit, integration, checks), only when it has the marker file <label>-lane.txt that full-suite.sh's
+# lane stage writes and no browser file; a run with neither is judged as the task tier, so its missing
+# browser file is named. Prints one line per stage and exits 0 only when every
 # stage file exists, ends with an "EXIT n" line, and has an EXIT line for every command it
 # started (full-suite.sh writes "$ <command>" before each command in a multi-command file).
 set -u
 dir="$1/suite-runs"; label="$2"; incomplete=0
 if [[ -f "$dir/$label-browser-1.txt" || -f "$dir/$label-browser-2.txt" ]]; then
   stages=(unit integration browser-1 browser-2 checks)
-elif [[ ! -f "$dir/$label-browser.txt" ]]; then
-  stages=(unit integration checks) # lane tier (decision 111): no browser file at all
+elif [[ ! -f "$dir/$label-browser.txt" && -f "$dir/$label-lane.txt" ]]; then
+  stages=(unit integration checks) # lane tier (decision 111): only with the marker full-suite.sh's lane stage writes
 else
   stages=(unit integration browser checks)
 fi

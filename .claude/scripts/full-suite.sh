@@ -29,7 +29,8 @@
 # (full tier) or <label>-{unit,integration,browser,checks}.txt (task tier)
 # and prints a short summary. Exits non-zero if any command failed.
 # Lane tier (decision 111): `<evidence-dir> <label> lane` runs the unit, integration and checks
-#   stages, no browser, in the current root (a lane worktree), writing <label>-{unit,integration,checks}.txt.
+#   stages, no browser, in the current root (a lane worktree), writing <label>-{unit,integration,checks}.txt
+#   and the marker <label>-lane.txt ("TIER lane"), which run-complete.sh needs to judge the run as a lane tier.
 # Every browser command runs inside .claude/scripts/with-browser-lock.sh, which serializes all
 #   users of port 5175 (the test servers, the tj-release cache and the CDP ports 9341 and 9342).
 set -u
@@ -89,6 +90,8 @@ dir=${dir%/suite-runs}
 out="$dir/suite-runs"
 label=$2
 mkdir -p "$out"
+# The lane marker run-complete.sh reads: only a run that has it is judged as the lane tier.
+[[ "$stage" == lane ]] && echo "TIER lane" >"$out/$label-lane.txt"
 summary='Test Files |^ *Tests |^ *[0-9]+ (passed|failed|skipped|flaky|did not run)'
 failed=0
 
