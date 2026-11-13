@@ -1,0 +1,183 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 208648,
+    "input_tokens": 207296,
+    "output_tokens": 1352,
+    "cache_read_tokens": 42240,
+    "elapsed": "1m15s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 22
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+      "content": "Match the Journal item by debt ID rather than its rendered heading and time. `localTime` formats only to the minute, so two position changes with the same entry type within that minute produce identical matches. Clicking the second debt's rail action then opens the first debt's form (or does nothing if that form is already open), potentially causing the user to resolve the wrong debt. Pass the requested ID into the Journal's form state, or expose an exact debt-ID DOM target, and cover multiple debts sharing a displayed time.",
+      "existing_code": "    const card = items.find((item) =\u003e item.querySelector('h3')?.textContent?.includes(debt.entryType) \u0026\u0026 item.textContent?.includes(moment));",
+      "start_line": 76,
+      "end_line": 76,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit rail behavior, styling, and end-to-end support",
+      "files": [
+        "e2e/support/detail/rail-b.ts",
+        "src/ui/cockpit/rail/needs-you.tsx",
+        "src/ui/cockpit/styles/rail-b.css",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "a766a80d-4ceb-4d92-9444-e18633746a4d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a766a80d-4ceb-4d92-9444-e18633746a4d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "2a12ffaa",
+      "resolved_base": "86e94f0bd0d054a77a9c9e476431d90ab7068da0",
+      "resolved_head": "2a12ffaa7b7e78b22b1729c0b87ff46e7fa54aeb",
+      "exact_range": "86e94f0bd0d054a77a9c9e476431d90ab7068da0..2a12ffaa7b7e78b22b1729c0b87ff46e7fa54aeb",
+      "source_artifact_sha256": "0ede4e8d93d5c9d2fde218cd01fd72f321306a330fb4269fd1662978625b437d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "277ee69e9fa7e08b46cb60fb97f62e58ab5a867c3ccb111117eca259cde59f66",
+          "path": "src/ui/cockpit/rail/needs-you.tsx",
+          "fingerprint": "6f6fc681e0d65942d385dfcd2692c718ab7ff8b1832798009253e2c15dfa6d49"
+        },
+        {
+          "item_id": "7495c05a82ace2fd3f1d797db35d7767ca7c3700853ec3bb55a01790a62d5cc2",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "9348d774c1d89cfb48b90278416aaa20da6cdfb7afc2df272918125beadd9b15"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "0c4e098e89cb1e2c30dfea5b76138347a98f4c98a88d0acfaed57a452b2cd549"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "4c2e06e973c3e1fe5fc8b665a7c96cb1b85e6be7d0c9d1676ec7a56093854377"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "277ee69e9fa7e08b46cb60fb97f62e58ab5a867c3ccb111117eca259cde59f66",
+          "path": "src/ui/cockpit/rail/needs-you.tsx",
+          "fingerprint": "6f6fc681e0d65942d385dfcd2692c718ab7ff8b1832798009253e2c15dfa6d49"
+        },
+        {
+          "item_id": "7495c05a82ace2fd3f1d797db35d7767ca7c3700853ec3bb55a01790a62d5cc2",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "9348d774c1d89cfb48b90278416aaa20da6cdfb7afc2df272918125beadd9b15"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "0c4e098e89cb1e2c30dfea5b76138347a98f4c98a88d0acfaed57a452b2cd549"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "4c2e06e973c3e1fe5fc8b665a7c96cb1b85e6be7d0c9d1676ec7a56093854377"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4ee67ea1f8fdec0e12c2e8b61867c4c098e306b2babb697a90971ef01ff1491e",
+          "path": "e2e/d5/kill-offline.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6f6b2c21b6df8a5caaf3e892d28b1e644d38cfcc67d0fbbaaef5b146ce9f06d8",
+          "path": "evidence/D08P/tdd-log/T8P.15-B1.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "a90b6ba58c2ff6cd4de6bf2b9493faada64759873964b2d9eeeeb1aefab8ce67",
+          "path": "e2e/d6/update.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ceb6a0a7475d5fae8b65f77a60dafe24c3b2295fb0053a87dc8271232d06cbe3",
+          "path": "e2e/d5/faults.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d1b0434436125f95b927cdbf8d883e22b28d270f07bb22b34419537cdd21677a",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "daa2d5d6a0e0c82c6c662d0f635a58f9637b4724e5f4671e36816f6404541e45",
+          "path": "e2e/d5/detail-debt.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "df3fce92186686a1989ef386c4eff0be281d90130113a1eb9e00411513583bf0",
+          "path": "e2e/d7/kill.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e275b4032529d54bf0974fd9c38aeee8c417090558e2f317fb654e373e9a0234",
+          "path": "e2e/d5/review-debt.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f67951cf5b25d8eb0457d906fbc3279b2eda265d42aee55f5240d5152bf0a487",
+          "path": "e2e/d6/kill.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 74741
+  }
+}
