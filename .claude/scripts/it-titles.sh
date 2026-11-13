@@ -1,25 +1,40 @@
 #!/usr/bin/env bash
-# Lists every `it` title under src/, sorted, one per line (no file names). Run before and after a test-file
-# split and diff the two outputs: an empty diff means the same multiset of titles. Usage: it-titles.sh [dir]
-# Covers it(...), it.skip/only/todo(...) and it.each(table)(...), with single, double or backtick quotes and
-# a title or table spanning lines. A plain it( title is printed bare; any other form is prefixed with its name
-# ("it.each: ", "it.skip: ", ...), so a diff also shows a case changing form. An it.each title is its template.
+# Lists every test case collected by Vitest under src/, sorted, one per line, with no file names. Run before
+# and after a test-file split and diff the two outputs: an empty diff means the same multiset of cases.
+# Usage: it-titles.sh [dir]   (default: <repo>/src; Vitest's root is dir's parent, so its config applies)
+#
+# The cases come from Vitest's own collection (the Node API, `createVitest(...).collect()`), not from parsing
+# source, so every form is covered: it, it.each (one line per concrete case), test, nested describe blocks.
+# The CLI's `vitest list` is not used, because it leaves skipped and todo cases out.
+# Each line is the case's full name, its describe path and title joined by " > ", every character kept, with
+# a backslash written as \\ and a newline as \n so one case stays one line and a multi-line title differs from
+# a single-line one. A case that is not run is prefixed with its mode ("skip: ", "todo: "), so a diff also
+# shows a case being skipped. Vitest does not keep an `.only` mode, so it lists as a plain case, and in a file
+# holding one it marks the file's other cases as skipped.
 set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"
 root="$(git rev-parse --show-toplevel)"
-dir="${1:-$root/src}"
-read -r -d '' prog <<'PERL' || true
-my $str = qr/"(?:\\.|[^"\\])*+"|'(?:\\.|[^'\\])*+'|`(?:\\.|[^`\\])*+`/s;
-my $tbl = qr/(?<t>\((?:[^()"'`]++|$str|(?&t))*+\))/;
-while (/^[ \t]*it(?:\.(\w+))?(?=\s*\()/mg) {
-  my $form = $1;
-  my $at = pos;
-  if (defined $form && $form eq 'each') { /\G\s*$tbl/gc or next; }
-  /\G\s*\(\s*(["'`])((?:\\.|(?!\1).)*+)\1\s*[,)]/gcs or do { pos = $at; next };
-  my $title = $2;
-  $title =~ s/\s*\n\s*/ /g;
-  print((defined $form ? "it.$form: " : "") . "$title\n");
+dir="$(cd "${1:-$root/src}" && pwd -P)"
+read -r -d '' prog <<'JS' || true
+const [vitestNode, dir] = process.argv.slice(1);
+const { createVitest } = await import(vitestNode);
+const vitest = await createVitest('test', { root: dir + '/..', watch: false, run: true, reporters: [] });
+const { testModules, unhandledErrors } = await vitest.collect([dir]);
+let failed = unhandledErrors.length > 0;
+for (const m of testModules) {
+  if (m.state() === 'failed') {
+    failed = true;
+    console.error(`collection failed: ${m.moduleId}`);
+  }
 }
-PERL
-find "$dir" -type f \( -name '*.test.ts' -o -name '*.test.tsx' \) -print0 |
-  xargs -0 perl -0777 -ne "$prog" |
+if (failed) process.exit(1);
+const esc = (s) => s.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+for (const m of testModules)
+  for (const t of m.children.allTests()) {
+    const mode = t.options.mode;
+    console.log((mode === 'run' ? '' : `${mode}: `) + esc(t.fullName));
+  }
+await vitest.close();
+JS
+node --input-type=module -e "$prog" "$here/../../node_modules/vitest/dist/node.js" "$dir" |
   LC_ALL=C sort
