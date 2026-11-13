@@ -1,0 +1,35 @@
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 11 tests using 1 worker
+
+[1/11] [chromium] › e2e/d4/breach-overrun.spec.ts:11:3 › B4.14 Breach, overrun, and intraday lines › should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the close after Mon Oct 12 with Mon Oct 12 close and At entry sections for the 40 shares
+[2/11] [chromium] › e2e/d4/expected-mark.spec.ts:12:3 › B4.5 Expected Mark Date (AC-MARK-001) › should show Missing with the stale Friday Mark as context and no current dollar figure at Tuesday noon, then Available for Oct 12 and not stale after Monday is entered
+[3/11] [chromium] › e2e/d4/responsive-a11y.spec.ts:39:3 › B4.13 Responsive and accessible › should keep a half-filled Action form through 390 px and back, switching layout at 960 px
+[4/11] [chromium] › e2e/d4/responsive-a11y.spec.ts:63:3 › B4.13 Responsive and accessible › should lay the Action choices out as compact chips, each radio inside its label, at 375 and 320 px
+[5/11] [chromium] › e2e/d4/responsive-a11y.spec.ts:96:3 › B4.13 Responsive and accessible › should show a disabled Action chip as disabled with a not-allowed cursor and reduced opacity
+[6/11] [chromium] › e2e/d4/responsive-a11y.spec.ts:114:3 › B4.13 Responsive and accessible › should report no WCAG 2.1 AA violations on the Review, the Action form, the Open list, and Detail in every evaluation state, with each state distinguishable by its words
+[7/11] [chromium] › e2e/d4/responsive-a11y.spec.ts:253:3 › B4.13 Responsive and accessible › should complete a Review using the keyboard only, with visible focus throughout
+[8/11] [chromium] › e2e/d7p/layout.spec.ts:52:3 › T7P.11 Layout of the worded reasons › should show both finding sentences in full in the Trade Detail findings table at 320 and 375 px
+[9/11] [chromium] › e2e/d7p/layout.spec.ts:69:3 › T7P.11 Layout of the worded reasons › should keep the Facts cannot be replayed and Mark missing badges inside their cells in the Trades list at 320 and 375 px
+[10/11] [chromium] › e2e/d7p/layout.spec.ts:85:3 › T7P.11 Layout of the worded reasons › should show Mark missing and Awaiting the close in full in an Open Detail at 320 and 375 px
+[11/11] [chromium] › e2e/d7p/layout.spec.ts:118:3 › T7P.11 Layout of the worded reasons › should show the attention sentences, slider figures and blockers in full in the Review at 320 and 375 px
+  11 passed (50.5s)
