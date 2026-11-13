@@ -34,6 +34,7 @@ Push only when the user asks.
 | `git status -sb` | No uncommitted changes. The branch is level with or ahead of `origin/claude-opus-5.5`. |
 | `git log --oneline -1 claude-opus-5.5-plan-r83` | `527ae49e docs(plan): revision 83, tech debt item 23, …` |
 | `git rev-parse --short 'claude-opus-5.5-d7s^{commit}'` | `2240fe1c` |
+| `git tag --list 'claude-opus-5.5-pre-d8p'` | `claude-opus-5.5-pre-d8p`: D08P's starting point, the commit that added this check. `git log --oneline claude-opus-5.5-pre-d8p..HEAD` is empty at the first session; afterwards it holds only D08P's planning commits. |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 
 If any check fails, stop and ask the user.
