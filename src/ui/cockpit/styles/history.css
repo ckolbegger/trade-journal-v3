@@ -1,1 +1,29 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* The Price History drawer (W9, P99): every session in one table, newest on the left, the row labels pinned while the table scrolls. */
+.price-history {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.price-history th,
+.price-history td {
+  padding: 0.25rem 0.75rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.price-history th:first-child {
+  position: sticky;
+  left: 0;
+  background: inherit;
+  text-align: left;
+}
+.price-history thead th span {
+  display: block;
+  font-weight: normal;
+  color: var(--muted);
+}
+.price-history thead th span:first-child {
+  font-weight: 600;
+  color: inherit;
+}
+.price-history-gaps {
+  color: var(--muted);
+}
