@@ -146,6 +146,8 @@ export interface TradeEvaluation {
   readonly incrementalRewardToTargetInPlanR: CalculationResult<Rational>;
   // A long Stock Position's reward has no ceiling, so this never depends on the Mark.
   readonly maximumIncrementalReward: CalculationResult<Rational>;
+  // The bounded Max reward over 1R, as Worst case's is (revision 89); Unbounded stays Unbounded, with no R.
+  readonly maximumIncrementalRewardInPlanR: CalculationResult<Rational>;
   // Frozen at confirmation and resolved at the Entry Resolution Point, so never Mark-dependent.
   readonly planBaseline: CalculationResult<PlanBaseline>;
   readonly oneR: CalculationResult<Rational>;
@@ -435,6 +437,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     if (ongoingRiskToStop.value.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NoOngoingRisk' };
     return value(incrementalRewardToTarget.value.div(ongoingRiskToStop.value));
   };
+  const maxReward = maximumIncrementalReward();
   return {
     kind: 'Evaluated',
     valuationDate: date,
@@ -455,7 +458,8 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     ongoingRiskToStopInPlanR: inPlanR(ongoingRiskToStop),
     worstCaseOngoingRiskInPlanR: inPlanR(worstCaseOngoingRisk),
     incrementalRewardToTargetInPlanR: inPlanR(incrementalRewardToTarget),
-    maximumIncrementalReward: maximumIncrementalReward(),
+    maximumIncrementalReward: maxReward,
+    maximumIncrementalRewardInPlanR: inPlanR(maxReward),
     conditions: conditionsWithNearest,
     expirationValueAtUnderlyingClose: expirationValueAtUnderlyingClose(),
     settlement: state.positions.flatMap((p): SettlementItem[] =>

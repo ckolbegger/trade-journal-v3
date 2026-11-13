@@ -193,3 +193,21 @@ export const EXPIRATION_CLOSE = '2026-11-20T21:00:00Z';
 // E1 expires O-C's one remaining contract (after PC1 and X1's sale), E-S expires both of O-S's contracts.
 export const OC_E1 = expirationChange('pc-e1', EXPIRATION_CLOSE, 7, OC_CONTRACT, '1');
 export const OS_ES = expirationChange('pc-es', EXPIRATION_CLOSE, 5, OS_CONTRACT, '2');
+
+// O-C3 (D08P): the Long Call on XYZ, 18 Dec 2026 55 Call. Plan 2 contracts at 2.00, Stop the option at or below 1.00,
+// Target XYZ at or above 60.00. Buy 2 @ 2.00 Monday 2026-10-12 10:00 fee 1.30; Sell 1 @ 3.00 Wednesday 10-14 11:00 fee 0.65.
+export const OC3_BUY = positionChange('pc-c3-buy', 1, [optionExecution(OC_LEG_ID, OC2_CONTRACT, 'ex-c3-buy', '2026-10-12T14:00:00Z', 2, 'Buy', '2', '2.00', '1.30')]);
+export const OC3_SELL = positionChange('pc-c3-sell', 3, [optionExecution(OC_LEG_ID, OC2_CONTRACT, 'ex-c3-sell', '2026-10-14T15:00:00Z', 4, 'Sell', '1', '3.00', '0.65')]);
+export const oc3Record = (positionChanges: readonly PositionChangeFact[] = []): TradeAnalysisRecord =>
+  record(
+    {
+      economicTime: '2026-10-12T13:00:00Z',
+      underlying: 'XYZ',
+      thesis: 'Breakout.',
+      invalidation: 'The option at 1.00.',
+      legs: [{ factId: OC_LEG_ID, side: 'Long', instrument: OC2_CONTRACT, quantity: '2', intendedEntry: '2.00' }],
+      stops: [{ factId: 'stop-1', kind: 'StructureValue', price: '1.00' }],
+      targets: [{ factId: 'target-1', kind: 'UnderlyingPrice', price: '60.00' }],
+    },
+    positionChanges,
+  );

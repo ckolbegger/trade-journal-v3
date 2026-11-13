@@ -66,6 +66,15 @@ export {
 } from './derive.ts';
 export type { CalculationResult, NotApplicableReason, UnavailableReason } from '../calculation-result/index.ts';
 export {
+  replay,
+  type ReplayChange,
+  type ReplayInput,
+  type ReplayMark,
+  type ReplayResult,
+  type ReplaySessionInput,
+  type ReplayedSession,
+} from './replay-series.ts';
+export {
   evaluate,
   type AtEntryFigures,
   type ConditionReading,
