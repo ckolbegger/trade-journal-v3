@@ -11,6 +11,12 @@ $ npm run lint
 > trade-journal-v3@0.0.0 lint
 > eslint .
 
+
+/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-r2/src/ui/screens/OwedDebtItem.tsx
+  69:6  warning  React Hook useEffect has missing dependencies: 'blocked', 'definition', 'open', 'request', and 'writable'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
+
 EXIT 0
 $ npm run lint:deps
 
@@ -20,8 +26,8 @@ $ npm run lint:deps
 
 ✔ no dependency violations found (429 modules, 2214 dependencies cruised)
 
-src/ui/screens/OwedDebtItem.tsx:69:5 Definition for rule 'react-hooks/exhaustive-deps' was not found.
-EXIT 1
+lint:deps OK (src)
+EXIT 0
 $ npm run build
 
 > trade-journal-v3@0.0.0 build
@@ -41,7 +47,7 @@ dist/assets/index-Cx6zfrAd.js   758.18 kB │ gzip: 223.89 kB
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 112ms
+✓ built in 111ms
 EXIT 0
 $ npm run verify:hooks
 
@@ -111,10 +117,4 @@ $ npm run verify:wording
 > trade-journal-v3@0.0.0 verify:wording
 > eslint --no-config-lookup -c eslint.wording.config.js src/ui
 
-
-/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-r2/src/ui/screens/OwedDebtItem.tsx
-  69:5  error  Definition for rule 'react-hooks/exhaustive-deps' was not found  react-hooks/exhaustive-deps
-
-✖ 1 problem (1 error, 0 warnings)
-
-EXIT 1
+EXIT 0
