@@ -1,0 +1,29 @@
+with-browser-lock: waiting for the lock held by process 54817 (/private/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-browser-lock-5175.flock)
+with-browser-lock: acquired
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 3 tests using 1 worker
+
+[1/3] [chromium] › e2e/d5r/responsive-a11y.spec.ts:9:3 › B5R.11 Responsive and accessible › should keep drafts and the open panel through 390 px and back, put the slider on its own row at narrow width, report no WCAG 2.1 AA violations, say band, status and Unsaved in text, and complete a card by keyboard with visible focus
+[2/3] [chromium] › e2e/d5r/responsive-a11y.spec.ts:102:3 › B5R.11 Responsive and accessible › should keep the slider beside the header while the card's header is at least 40rem wide, with T-A's header text on at most two lines, and put it on its own full-width row below the text when narrower: beside at 1280, 960 and 760 px, below at 700 and 390 px
+[3/3] [chromium] › e2e/d5r/responsive-a11y.spec.ts:159:3 › B5R.11 Responsive and accessible › should keep the bottom navigation above the Open list's sticky cells at 375 and 320 px, so its Review and Trades links take the click
+  3 passed (19.6s)

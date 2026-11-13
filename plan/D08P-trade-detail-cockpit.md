@@ -823,22 +823,22 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.4 | 0 | — | Done | `4f40c2f3`; tiers `3dcb2d21`; B1–B6 (batched) `3f85170f`; lane tiers `9bfc804e`, `a33a9e9e` (after the rebase) |
 | T8P.5 | 0 | — | Done | `f0c51e60`, `0577e92d`; tiers `aa2c1b96`; B1 `74ef50ce`, `002a78e9`; B3 `e45e6363`; tiers `2e61898b`; B2 `6a9f29e8`; tiers `833ad19a` |
 | T8P.6 | 1 | BA | Done | `3c234ab6`; revision 88 line `cf94431d`; lane tier `eb08ab37` |
-| T8P.7 | 1 | BA | In progress from `eb08ab37` | |
+| T8P.7 | 1 | BA | Done | `1a80e469`; B1 `a2099b64`; lane tier `07d20724` |
 | T8P.8 | 1 | BM | Done | `5439bfb0`; B1 `ca59697a`, B2 `6cf43890`, B3 `5c9dd2f3`; lane tier `957499ac` |
-| T8P.9 | 1 | BV | In progress from `ac089378` | |
+| T8P.9 | 1 | BV | Done | `61bba50a`; titles `36dd9c2e`; B8P.3 days `f4bde124`; lane tier `02e4c721` |
 | T8P.10 | 1 | BV | Not started | |
 | T8P.11 | 1 | BV | Not started | |
-| T8P.14 | 1 | R2 | In progress from `ac089378` | |
+| T8P.14 | 1 | R2 | Done | `2705ba83`; titles `9c2d460b`; B2, B3 `e48ca024`; lane tier `f51809c3` (B1 moved to T8P.29) |
 | T8P.15 | 1 | R2 | Not started | |
 | T8P.12 | 1 | R1 | Done | `3ca9819b`; titles `0c96414f`; B1 `b6a439cf`; lane tier and specs `f995af22` |
-| T8P.13 | 1 | R1 | Not started | |
+| T8P.13 | 1 | R1 | In progress from `df757fc9` | |
 | T8P.17 | 1 | D2 | Done | `057dc498`; follow-up `77d80591`; lane tier `9658f53b` |
 | T8P.16 | 1 | D1 | In progress from `7cd16391` | |
-| T8P.19 | 1 | D4 | In progress from `f0c9948d` | |
+| T8P.19 | 1 | D4 | Done | `4f5e40aa`; PlanForm data `210f9dac`, `298f5ea5`; lane tier `fb324a49` |
 | T8P.18 | 1 | D3 | Done | `ca0191e7`; B1 `a9452c3f`; lane tier `9c424051` |
-| T8P.20 | 1 | D5 | In progress from `3b6a0e76` | |
-| T8P.21 | 1 | D6 | In progress from `7a253b4f` | |
-| T8P.28 | 1 | BV | Not started | |
+| T8P.20 | 1 | D5 | Done | `8d2927cf`; B1 to B3 `e4419e2d`; B4 `5e442c6f`; lane tier `85b90fff` |
+| T8P.21 | 1 | D6 | In progress from `957499ac` | |
+| T8P.28 | 1 | BV | In progress from `85b90fff` | |
 | T8P.29 | 1 | R2 | Not started | |
 | T8P.30 | 1 | AX | Not started | |
 | T8P.22 | 2 | — | Not started | |

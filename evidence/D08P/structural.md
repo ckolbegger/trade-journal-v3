@@ -982,3 +982,25 @@ Bug tasks:
 **Stacked merges.** T8P.7 (BA), T8P.14 (R2) and T8P.19 (D4) are rebased in a stack: BA on `claude-opus-5.5`, R2 on BA, D4 on R2. Each lane tier then runs once on exactly the code it merges with (labels `T8P.7-stack`, `T8P.14-stack`, `T8P.19-stack`).
 
 **User decisions (revisions 90 and 91).** Revision 90 (`f6297cb6`): T8P.28 to T8P.30. Revision 91 (`be54204d`): the before-Marks words always name dates.
+
+## Merge run 4 and the next merges
+
+**Merge run 4** (`dab6bc5b`; suite-runner): unit 1557 of 1557, integration 218 of 218, browser stage 1 128 passed, stage 2 73 passed and 1 failed, checks 14 of 14; run complete. `claude-opus-5.5` moved during the run, so the stages saw different commits (unit `f995af22`, browser `df757fc9` and later, checks `fb324a49`). The failure was `e2e/d5r/responsive-a11y.spec.ts:9` (B5R.11): at 1280 px the slider sat at 2296 px, not below 846 px. **Pinned:** one targeted run on `dab6bc5b` with fresh `build:faults` and `build:releases` passed all 3 B5R.11 tests ([suite-runs/merge-4-b5r11-rerun.txt](suite-runs/merge-4-b5r11-rerun.txt)). It doesn't reproduce. Likely cause: load, with three lane tiers and other lanes' browser runs at once, while the branch moved. The next merge run checks it again.
+
+**T8P.7, T8P.14 and T8P.19, stacked.** Lane tiers on the stack: `T8P.7-stack` 1568 unit, 218 integration, 14 of 14; `T8P.14-stack` 1576 of 1577 unit (one load flake: `PositionChangeForm.test.tsx` "should move focus to the Record entry heading when the form finishes loading", which passed 3 of 3 alone and passed in `T8P.19-stack`, which contains T8P.14's code), 218, 14 of 14; `T8P.19-stack` 1580 unit, 218, 14 of 14. The stack was rebased onto the tip (plan and evidence only) and fast-forwarded to `fb324a49`. Rebased hashes are in the Progress rows. The lanes were removed.
+
+**T8P.9 and T8P.20, stacked.** The B8P.3 extension (`f4bbe83f`, rebased `f4bde124`) reads "Expires Fri 18 Dec 2026 (67 days)" through the identity card before and after the reload. 4 browser tests passed. Its relocated ocr: session `4ac01a3b-3e5f-4516-8e39-1b7e8f5464c1`, 0 comments; the day count checked (67) ([ocr/T8P.9-B8P.3-f4bbe83f-relocated.json](ocr/T8P.9-B8P.3-f4bbe83f-relocated.json)). T8P.20-B4 (`5e3f43eb`, rebased `5e442c6f`): `REVIEW_PATH` from `ROUTES`; round 3 ocr session `1e73b271-9602-429d-ac18-7fcb999832e0`, 0 comments ([ocr/T8P.20-B4-5e3f43eb.json](ocr/T8P.20-B4-5e3f43eb.json)). Lane tiers: `T8P.9-stack` 1581 unit, 222 integration, 14 of 14; `T8P.20-stack` 1588 unit, 222, 14 of 14. Fast-forwarded to `85b90fff`. The lanes were removed.
+
+**T8P.28** is dispatched to a fresh agent in a fresh BV lane from `85b90fff`.
+
+**Main-session slip: the specs reading path.** The briefs for T8P.21, T8P.13 and T8P.28 named `plan/spec-reading/D08P.md`, which doesn't exist. The handoff says to read `plan/spec-reading/D07.md` plus the listed D9 sections. T8P.21 worked from the breakdown and handoff notes; T8P.13 got the correction mid-task; T8P.28's brief was fixed before dispatch.
+
+## T8P.21 Journal session cards (lane `d08p-d6`)
+
+Commits `9ea46ea2` (task) and `cb77bcad` (lane tier: 1563 unit, 218 integration, 14 of 14; run complete). Six cases red then green. Three extra cases: option Mark words, a session with Marks but no Trade P&L, and `journalTabCount` ("1 owed"). No first-run passes, and no existing expectation changed. ocr is running. Its interpretations to check at review and at T8P.22:
+- three cards per page, with off-page cards mounted but hidden (so an open form survives paging);
+- "—" named "No Mark" borrowed from W9;
+- "Today", "Yesterday" and "final session" labels;
+- the reshaped `journal.types.ts`;
+- owed items through the existing `OwedDebtItem`;
+- T8P.22 must stop rendering the old Journal list when it passes a replay.
