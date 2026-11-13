@@ -57,9 +57,11 @@ const storedVersusExpected = (page: Page): Locator => detailRoot(page).getByRole
 const factsTable = (page: Page): Locator => detailRoot(page).getByRole('table', { name: 'Facts that cannot be replayed' });
 
 // Every figure grid's money amounts, and the cards, of the Detail (page-wide reads, scoped to the Detail).
-const figureAmounts = (page: Page): Locator => detailRoot(page).locator('dl.figure-grid dd.number');
-const CARDS = '.trade-detail :is(.card, .table-scroll)';
-const TABLES = '.trade-detail table';
+// The cockpit keeps every drawer mounted and hides the unselected ones (T8P.5-B1), so these reads leave out what a `hidden` panel holds: the same
+// elements as when only the selected drawer was mounted, and none with an empty box.
+const figureAmounts = (page: Page): Locator => detailRoot(page).locator('dl.figure-grid dd.number:not([hidden] *)');
+const CARDS = '.trade-detail :is(.card, .table-scroll):not([hidden] *)';
+const TABLES = '.trade-detail table:not([hidden] *)';
 
 export const detail = {
   ...railA,
