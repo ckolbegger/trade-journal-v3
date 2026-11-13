@@ -1,35 +1,53 @@
 #!/bin/bash
-# Test of with-browser-lock.sh. Case: it should let only one of two callers that find the same dead
-# holder take the lock, while the other waits for it.
-# Two callers both read the dead PID and pause (TJ_BROWSER_LOCK_PAUSE) before the takeover. The first
-# is released and runs a 3 s command; the second is released while it runs and must not start until
-# the first has finished, and the first's lock must still be in place meanwhile.
+# Test of with-browser-lock.sh. Main case: it should let only one of two callers that contend for the
+# lock run at a time, including after a holder was killed with SIGKILL; the other waits, then runs.
+# The lock is a kernel lock, so there is no takeover to stage; the test checks the property itself.
+# Also checks what must keep working: the exit code, release on SIGTERM (143), reentrancy.
 here=$(cd "$(dirname "$0")" && pwd)
+lockw="$here/with-browser-lock.sh"
 t=$(mktemp -d)
 trap 'rm -rf "$t"' EXIT
 export TJ_BROWSER_LOCK_DIR="$t/lock"
-mkdir "$TJ_BROWSER_LOCK_DIR"
-sleep 0 & dead=$!; wait $dead
-echo "$dead" >"$TJ_BROWSER_LOCK_DIR/pid"
-
-TJ_BROWSER_LOCK_PAUSE="$t/a" "$here/with-browser-lock.sh" bash -c "echo a-start >>$t/log; sleep 3; echo a-end >>$t/log" 2>"$t/a.err" &
-pa=$!
-TJ_BROWSER_LOCK_PAUSE="$t/b" "$here/with-browser-lock.sh" bash -c "echo b-start >>$t/log; echo b-end >>$t/log" 2>"$t/b.err" &
-pb=$!
-for _ in $(seq 200); do
-  ls "$t"/a.reached.* "$t"/b.reached.* >/dev/null 2>&1 && break
-  sleep 0.05
-done
-ra=$(ls "$t"/a.reached.* 2>/dev/null | head -1); rb=$(ls "$t"/b.reached.* 2>/dev/null | head -1)
-[[ -n "$ra" && -n "$rb" ]] || { echo "FAIL: callers did not both reach the takeover (setup)"; kill $pa $pb 2>/dev/null; exit 1; }
-: >"$t/a.go.${ra##*.}"
-for _ in $(seq 200); do grep -q a-start "$t/log" 2>/dev/null && break; sleep 0.05; done
-: >"$t/b.go.${rb##*.}"
-sleep 1
 fail=0
-grep -q b-start "$t/log" && { echo "FAIL: second caller ran while the first held the lock"; fail=1; }
-[[ -d "$TJ_BROWSER_LOCK_DIR" ]] || { echo "FAIL: the first caller's lock was removed"; fail=1; }
-wait $pa $pb
-[[ "$(tr '\n' ' ' <"$t/log")" == "a-start a-end b-start b-end " ]] || { echo "FAIL: order was: $(tr '\n' ' ' <"$t/log")"; fail=1; }
-(( fail )) || echo "PASS: one takeover, the other waited"
+bad() { echo "FAIL: $*"; fail=1; }
+waitfor() { for _ in $(seq 200); do eval "$1" && return 0; sleep 0.05; done; return 1; }
+
+# A holder is killed with SIGKILL (its command is left to end by itself, and does not hold the lock).
+"$lockw" bash -c "echo \$\$ >$t/h.child; sleep 30" 2>/dev/null &
+holder=$!
+waitfor "[[ -s $t/h.child ]]" || { echo "FAIL: holder did not start (setup)"; exit 1; }
+kill -9 "$holder"; wait "$holder" 2>/dev/null
+pkill -P "$(cat "$t/h.child")" 2>/dev/null; kill "$(cat "$t/h.child")" 2>/dev/null
+
+# Two callers contend at once: one runs its 2 s command while the other waits, then runs.
+for x in a b; do
+  "$lockw" bash -c "echo $x-start >>$t/log; sleep 2; echo $x-end >>$t/log" 2>"$t/$x.err" &
+  eval "p$x=\$!"
+done
+wait "$pa" "$pb"
+log=$(tr '\n' ' ' <"$t/log")
+[[ "$log" == "a-start a-end b-start b-end " || "$log" == "b-start b-end a-start a-end " ]] \
+  || bad "the callers overlapped or one never ran: $log"
+grep -q "waiting for the lock held by process" "$t/a.err" "$t/b.err" || bad "the waiting caller printed no waiting message"
+
+# The command's exit code is passed through.
+"$lockw" bash -c 'exit 7' 2>/dev/null; [[ $? == 7 ]] || bad "exit code 7 was not passed through"
+
+# SIGTERM to the wrapper ends its command, exits 143 and releases the lock.
+"$lockw" bash -c "echo \$\$ >$t/s.child; exec sleep 30" 2>/dev/null &
+ps_=$!
+waitfor "[[ -s $t/s.child ]]" || bad "SIGTERM case did not start (setup)"
+kill -TERM "$ps_"; wait "$ps_"; code=$?
+[[ $code == 143 ]] || bad "SIGTERM exit was $code, not 143"
+"$lockw" true 2>/dev/null &
+pq=$!
+waitfor "! kill -0 $pq 2>/dev/null" || { bad "the lock was not released after SIGTERM"; kill "$pq"; }
+
+# A command run inside the lock that wraps another command again does not deadlock.
+"$lockw" "$lockw" bash -c "echo nested >$t/nested" 2>/dev/null &
+pn=$!
+waitfor "! kill -0 $pn 2>/dev/null" || { bad "nested wrapper deadlocked"; kill -9 "$pn"; }
+[[ -s "$t/nested" ]] || bad "nested command did not run"
+
+(( fail )) || echo "PASS: one caller at a time, also after a killed holder"
 exit $fail
