@@ -440,3 +440,15 @@ Reviewer's note (not an ocr finding): a missing space after a comma in the new `
 - **Cases:**
   - it should derive actual initial risk per fill when the window's fills straddle a Stop, matching the at-entry line's risk from entry for the same lots
   - it should derive actual initial reward per fill when the window's fills straddle a Target
+
+### BUG-3-B1 done: `d85016bb`
+
+`atEntryOf` clamps each lot's term with `atLeastZero`, then sums. Cases: O-S2 sold 1 at 3.50 and 1 at 4.10 (the second past both Stops) gives risk from entry $10, 1/48 R; NVDA bought 1 at 14.00 and 1 at 55.00 (the second past both Targets) gives reward from entry $3,600, 4.80 R. Both genuine reds (the reward half of the clamp was backed out for case 2's red). No existing expectation changed; `vitest run src` 1515 passed.
+
+ocr on `d85016bb` (`ocr/BUG-3-B1-d85016bb.json`): **No findings.**
+
+### BUG-3-B2 done: `f6b33ed4`
+
+`entryQualityOf` sums a per-fill term clamped at zero, each measured with `measurementAheadOf` at its own fill; the flags hold when the per-fill total before fees is not positive (the old rule for a single fill). Cases: O-S2 window selling 1 at 3.50 and 1 at 4.10 gives actual initial risk $10 (was $40 at the average), matching BUG-3-B1's at-entry figure; NVDA window buying 1 at 14.00 and 1 at 55.00 gives actual initial reward $3,600 (was $3,100). Both genuine reds (the reward half was backed out for case 2's red). No existing expectation changed; `vitest run src` 1517 passed.
+
+ocr on `f6b33ed4` (`ocr/BUG-3-B2-f6b33ed4.json`): **No findings.**
