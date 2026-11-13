@@ -215,7 +215,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await recordEntry(page, [{ quantity: '40', price: '50.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await openDrawer(page, 'Position');
+    await openDrawer(page, 'Today');
     await expect(detail.openPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
     await openDrawer(page, 'Today');
     await expect(detail.datedHeading(page, 'At Mon Oct 12 close')).toBeVisible();

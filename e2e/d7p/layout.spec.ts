@@ -96,7 +96,6 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Today');
     await expect(detail.valuation(page)).toContainText(`Awaiting the close after ${DATE}`, READY);
-    await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `DEF Detail at ${width}`);
@@ -106,7 +105,6 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await openTradeFromOpenList(page, 'ABC');
     await openDrawer(page, 'Today');
     await expect(detail.valuation(page)).toBeVisible(READY);
-    await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `ABC Detail at ${width}`);

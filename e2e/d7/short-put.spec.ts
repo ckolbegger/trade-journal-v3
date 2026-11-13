@@ -54,6 +54,7 @@ test.describe('B7.2 Cash-Secured Put', () => {
     await reopened.goto(`/trades/${tradeId}`);
     await openDrawer(reopened, 'Position');
     await expect(detail.positionValue(reopened)).toHaveText('Short 1 contract of MNO 20 Nov 2026 45 Put');
+    await openDrawer(reopened, 'Today');
     await expect(detail.realizedToDate(reopened)).toContainText('$63.70');
     await expect(detail.lifecycleBadge(reopened)).toHaveText('Open');
     const final = tradesOf(workspaceOf(await probe(reopened))!)[0]!;

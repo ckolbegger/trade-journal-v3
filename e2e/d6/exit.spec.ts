@@ -33,6 +33,7 @@ test.describe('B6.1 Partial then final exit', () => {
     await openDrawer(page, 'Position');
     await expect(detail.positionValue(page)).toHaveText('70 shares of XYZ');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+    await openDrawer(page, 'Today');
     await expect(detail.realizedToDate(page)).toContainText('$55.90');
     await expect(detail.lifecycle(page, 'Open')).toBeVisible();
     await expect(detail.resultHeading(page)).toHaveCount(0);

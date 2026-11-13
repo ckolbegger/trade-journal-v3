@@ -63,6 +63,7 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await openDrawer(page, 'Position');
     await expect(detail.positionValue(page)).toHaveText('60 shares of ABC');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+    await openDrawer(page, 'Today');
     await expect(detail.realizedToDate(page)).toContainText('$39.10');
     await expect(detail.recordExitLink(page)).toHaveCount(0);
     await expect(detail.recordEntryLink(page)).toHaveCount(0);

@@ -35,7 +35,7 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await expect(detail.heading(page, 'XYZ')).toBeVisible();
     await expect(detail.summary(page).getByText('Long 140 shares')).toBeVisible();
-    await openDrawer(page, 'Position');
+    await openDrawer(page, 'Today');
     await expect(detail.openPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
     await expect(detail.currentMarkedPnl(page)).toHaveText('Awaiting the close after Mon Oct 12');
     for (const term of ['Risk to stop', 'Worst case', 'Reward to target']) await expect(detail.riskFigure(page, term)).toHaveText('Awaiting the close after Mon Oct 12');
