@@ -116,8 +116,9 @@ You may use read-only `Explore` or `general-purpose` subagents, in parallel, for
 
 **Settled after the prototype session:** "use that view in the daily" meant the **daily Review page**. The idea is a Price History-style grid there for entering several sessions' Marks at once. It is **not part of D08P**; the user leans toward a follow-on task after the Trade Detail refactor, possibly within the component-sharing phase (section 5.5).
 
-**Still open from the prototype session (ask the user):**
-- The Journal session cards repeat each session's Marks, which Price History also shows, and today's and yesterday's Marks sit in the Today drawer too. This conflicts with "one figure, one place". The main session raised it without an answer.
+**Settled: the Journal cards may repeat Marks.** The Journal session cards show each session's Marks, which Price History also shows. The user accepts this as an exception to "one figure, one place".
+
+**A likely follow-on, not part of D08P:** the user will probably want the Journal trimmed to the sessions that matter: those whose Daily Action was something other than Hold, or where the trader wrote a reflection. Design the Journal drawer so this can be added later without rework, for example cards keyed by session with the filter applied over them. Say how merged no-Marks cards would behave under such a filter. List it with the other follow-ons in section 5.5's outline.
 
 ## 5. The main session's preliminary findings (verify each)
 
@@ -263,7 +264,7 @@ Keep it short and lead with the answers:
 3. **The swarm plan:** waves and lanes, how many agents at once, how lanes merge, how ports and browser runs work, and the estimated wall-clock time against serial.
 4. **The process changes** it needs, and what protection each keeps.
 5. **Words to approve**, as a list.
-6. **Open questions** (section 4's remaining one, and any new ones), and the size check's result.
+6. **Open questions** (section 4 leaves none; list any new ones), and the size check's result.
 7. **The commit hash** of the draft.
 
 Then wait for the user.
