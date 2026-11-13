@@ -37,7 +37,7 @@ export interface JournalReplay {
 export type JournalCardsInput = { readonly view?: unknown; readonly timeZone?: string; readonly today?: string } & (
   | { readonly replay?: undefined }
   // 'Incoherent': the facts cannot be replayed, so the Detail's entries are one list (W13).
-  | { readonly replay: JournalReplay | 'Incoherent'; readonly facade: UiFacade; readonly onDirtyChange?: (dirty: boolean) => void }
+  | { readonly replay: JournalReplay | 'Incoherent'; readonly view: TradeDetailView; readonly facade: UiFacade; readonly onDirtyChange?: (dirty: boolean) => void }
 );
 
 const ZERO = Rational.of(0n);
@@ -105,7 +105,7 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
   const { timeZone = 'UTC' } = input;
   if (!input.replay) return undefined;
   const { replay } = input;
-  const view = input.view as TradeDetailView;
+  const { view } = input;
   const { plan } = view;
   const symbol = plan.underlying;
   const items = (journal: readonly TradeDetailNarrativeItem[]) => journal.map((item) => itemOf(item, symbol, timeZone, input.facade, input.onDirtyChange));

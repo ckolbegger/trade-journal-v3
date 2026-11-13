@@ -245,6 +245,12 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(termValue(decline, 'Reason')).toBe('Same plan, second fill.');
   });
 
+  it('should need the Detail view beside a replay, as the input type says', () => {
+    // @ts-expect-error a replay without the Detail's view would throw while the cards are built
+    const withoutView = <JournalCards replay={{ sessions: [], plan: [], pending: null }} facade={facadeDouble()} />;
+    expect(withoutView).toBeTruthy();
+  });
+
   it('should count the reflections owed for the Journal tab, as "1 owed", and none when nothing is owed', () => {
     const owed = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z'), owedDebt('debt-2', 'pc-2', '2026-10-12T15:00:00Z')];
     expect(journalTabCount(openDetailOf([PC1, PC2], { journal: [pc1Reflection, owed[0]!] }))).toBe('1 owed');
