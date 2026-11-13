@@ -66,7 +66,6 @@ export function OwedDebtItem({
     request.handled();
     if (writable && !blocked && !definition) queueMicrotask(() => void open());
     // Only a new request matters, not the item's own changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requested]);
   // The form that took focus is replaced by the saved reflection, so focus moves to it.
   const formArea = useRef<HTMLDivElement>(null);
