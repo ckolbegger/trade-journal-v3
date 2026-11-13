@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router';
+import { ROUTES } from '../../../app/routes.ts';
 import { plural } from '../../format.ts';
 import type { ShellProps } from '../placeholder.ts';
 import { priceHistoryProps, replayOf } from './price-history.props.ts';
 import type { PriceHistoryProps } from './price-history.types.ts';
 
 // The Review route (`review` in src/app/routes.ts); the link's href and the navigation use it together.
-const REVIEW_PATH = '/review';
+const REVIEW_PATH = ROUTES.find((route) => route.id === 'review')!.path;
 
 // W9, P99: every session in one table, newest on the left, with no paging.
 export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenReview }: PriceHistoryProps) {
