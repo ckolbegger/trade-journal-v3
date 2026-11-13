@@ -62,10 +62,13 @@ async function expectSavedReflection(page: Page, form: Locator, card: CardRef | 
 // Where a form with no card is: on a Trade Detail (read through `detail`), or elsewhere on the page, as in the Review's owed list.
 type DebtPlace = 'Detail' | 'page';
 
+// The form of a Debt with no card, by where it is.
+const debtFormWithoutCard = (page: Page, where: DebtPlace): Locator => (where === 'Detail' ? detail.debtForm(page) : debtForm(page));
+
 // Presses Answer and waits for the saved result to replace the form. With a card it reaches that Trade's Reflections
 // panel first; the card is undefined on Trade Detail, which has no card and shows the form on the page, and in the Review's owed list.
 export async function answerDebt(page: Page, card: CardRef | undefined, where: DebtPlace = 'Detail'): Promise<void> {
-  const form = card !== undefined ? await debtFormOf(page, card) : where === 'Detail' ? detail.debtForm(page) : debtForm(page);
+  const form = card !== undefined ? await debtFormOf(page, card) : debtFormWithoutCard(page, where);
   await form.getByRole('button', { name: 'Answer', exact: true }).click();
   await expectSavedReflection(page, form, card, where);
 }

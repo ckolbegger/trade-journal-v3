@@ -7,6 +7,7 @@ import {
   confirmD1Plan,
   confirmReference,
   detail,
+  eachDrawer,
   expect,
   completeReflection,
   expectAccessible,
@@ -32,6 +33,7 @@ import {
   test,
   writeIntegrityFixture,
 } from './support.ts';
+import { leftEdges } from '../support/detail/layout.ts';
 
 // AppShell switches its data-layout at WIDE_LAYOUT_MIN_WIDTH (src/ui/AppShell.tsx); importing that
 // module would pull React into the e2e runner, so the value is repeated here.
@@ -365,16 +367,7 @@ test.describe('T2.38 one content column and side gutters', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(page.getByRole('navigation', { name: 'Primary' })).toHaveAttribute('data-placement', 'sidebar');
     // The Trades table has no card of its own; a Trade Detail reads its first card through `detail.CARDS`.
-    const lefts = (cardSelector = 'main .card, main .table-scroll'): Promise<Record<string, number>> =>
-      page.evaluate((cardSel) => {
-        const left = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().left;
-        const found: Record<string, number | undefined> = {
-          h1: left('main h1'),
-          tablist: left('[role="tablist"]'),
-          card: left(cardSel),
-        };
-        return Object.fromEntries(Object.entries(found).filter(([, x]) => x !== undefined)) as Record<string, number>;
-      }, cardSelector);
+    const lefts = (cardSelector?: string): Promise<Record<string, number>> => leftEdges(page, cardSelector);
     const openDetail = await lefts(detail.CARDS);
     expect(Object.keys(openDetail).sort(), 'Open Detail elements').toEqual(['card', 'h1']);
     for (const [name, x] of Object.entries(openDetail)) expect.soft(Math.abs(x - openDetail['h1']!), `Detail ${name} left ${JSON.stringify(openDetail)}`).toBeLessThanOrEqual(1);
@@ -1346,16 +1339,21 @@ test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
 });
 
 // One label/value row per div of a dl, or per dt/dd pair of a plain dl; Plan Reflection answers are prose.
-const detailRows = (page: Page) =>
-  detail.root(page).locator('dl:not(.answers)').evaluateAll((lists) =>
-    lists.flatMap((list) => {
-      const card = list.closest('section')?.getAttribute('aria-label') ?? list.closest('section')?.querySelector('h2')?.textContent ?? '';
-      const rect = (el: Element) => el.getBoundingClientRect();
-      const wrapped = [...list.children].filter((c) => c.tagName === 'DIV');
-      const pairs = wrapped.length > 0 ? wrapped.map((row) => [row.querySelector('dt')!, row.querySelector('dd')!] as const) : [...list.querySelectorAll(':scope > dt')].map((dt) => [dt, dt.nextElementSibling!] as const);
-      return pairs.map(([dt, dd]) => ({ card, label: dt.textContent ?? '', width: rect(dd).right - rect(dt).left, valueRight: rect(dd).right, valueClass: dd.className }));
-    }),
-  );
+const detailRows = async (page: Page) =>
+  // Every drawer in turn: a drawer's lists exist only while it is open.
+  (
+    await eachDrawer(page, () =>
+      detail.root(page).locator('dl:not(.answers)').evaluateAll((lists) =>
+        lists.flatMap((list) => {
+          const card = list.closest('section')?.getAttribute('aria-label') ?? list.closest('section')?.querySelector('h2')?.textContent ?? '';
+          const rect = (el: Element) => el.getBoundingClientRect();
+          const wrapped = [...list.children].filter((c) => c.tagName === 'DIV');
+          const pairs = wrapped.length > 0 ? wrapped.map((row) => [row.querySelector('dt')!, row.querySelector('dd')!] as const) : [...list.querySelectorAll(':scope > dt')].map((dt) => [dt, dt.nextElementSibling!] as const);
+          return pairs.map(([dt, dd]) => ({ card, label: dt.textContent ?? '', width: rect(dd).right - rect(dt).left, valueRight: rect(dd).right, valueClass: dd.className }));
+        }),
+      ),
+    )
+  ).flat();
 
 test.describe('T2.55-B2 capped Detail label/value rows', () => {
   test('should keep every label/value row on the Planned and Open Details at most 480 px wide at 1280, with the summary values on one right edge', async ({ server, profile }) => {

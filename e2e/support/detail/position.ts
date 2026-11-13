@@ -16,4 +16,4 @@ export const executionRows = (page: Page, count: number): Locator => executions(
 // The figures Valuation holds for the Position, until the Position drawer takes them.
 export const openPnl = (page: Page): Locator => valueIn(regionOf(page, 'Valuation'), 'Open P&L');
 export const openPnlFigure = (page: Page): Locator => figureIn(regionOf(page, 'Valuation'), 'Open P&L');
-export const realizedToDate = (page: Page): Locator => valueIn(detailRoot(page), 'Realized to date');
+export const realizedToDate = (page: Page): Locator => valueIn(regionOf(page, 'Valuation'), 'Realized to date');

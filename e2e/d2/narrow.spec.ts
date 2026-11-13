@@ -3,6 +3,7 @@ import {
   backToTrade,
   confirmReference,
   detail,
+  eachDrawer,
   expect,
   BASE_URL,
   fillPlan,
@@ -83,7 +84,8 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
     await expect(detail.entryQuality(page).getByRole('heading', { name: 'Entry Quality' })).toBeVisible();
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 800 });
-      await expectReflowed(page, `resolved Open Detail at ${width}`, detail.TABLES);
+      // Every drawer in turn: a drawer's tables exist only while it is open.
+      await eachDrawer(page, () => expectReflowed(page, `resolved Open Detail at ${width}`, detail.TABLES));
     }
     await setup.close();
 

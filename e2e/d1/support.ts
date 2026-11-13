@@ -8,7 +8,7 @@ import { detail } from '../support/detail/index.ts';
 
 export { expect };
 // Every later suite's support re-exports this one, so each spec reads Trade Detail through these (plan section 6.3).
-export { detail, openDrawer } from '../support/detail/index.ts';
+export { detail, eachDrawer, openDrawer } from '../support/detail/index.ts';
 
 export const BASE_URL = 'http://localhost:5175';
 export const ZONE = 'America/New_York';

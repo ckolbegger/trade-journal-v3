@@ -13,12 +13,40 @@ import * as today from './today.ts';
 
 export type DrawerName = 'Today' | 'Position' | 'Plan and Risk' | 'Price History' | 'Journal' | 'Payoff';
 
-// Selects a drawer by its tab. A Detail with no tab list (today's layout) shows everything, so this returns at once.
+const DRAWER_NAMES: readonly DrawerName[] = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'];
+
+// A Trade Detail is the page at /trades/<id>. Other pages (the Plan form, the Review) have no Detail and no drawers.
+const onTradeDetail = (page: Page): boolean => /^\/trades\/[^/]+\/?$/.test(new URL(page.url()).pathname);
+
+// Waits until the Detail has loaded, since `count()` does not wait and the tab list is part of the loaded Detail. On a page that is no Trade
+// Detail it returns at once.
+async function settled(page: Page): Promise<void> {
+  if (onTradeDetail(page)) await detailRoot(page).waitFor();
+}
+
+// Selects a drawer by its tab. It first waits for the Detail to finish loading. A loaded Detail with no tab list (today's layout) shows
+// everything, so this then returns.
 export async function openDrawer(page: Page, name: DrawerName): Promise<void> {
+  await settled(page);
   const tabs = detailRoot(page).getByRole('tablist', { name: 'Detail' });
   if ((await tabs.count()) === 0) return;
   const tab = tabs.getByRole('tab', { name });
   if ((await tab.getAttribute('aria-selected')) !== 'true') await tab.click();
+}
+
+// Runs a read once for each drawer the Detail has (each opened in turn), for a measure that must cover every drawer's content. A Detail with
+// no tab list shows everything at once, so the read runs once.
+export async function eachDrawer<T>(page: Page, read: () => Promise<T>): Promise<T[]> {
+  await settled(page);
+  const tabs = detailRoot(page).getByRole('tablist', { name: 'Detail' });
+  if ((await tabs.count()) === 0) return [await read()];
+  const results: T[] = [];
+  for (const name of DRAWER_NAMES) {
+    if ((await tabs.getByRole('tab', { name, exact: true }).count()) === 0) continue;
+    await openDrawer(page, name);
+    results.push(await read());
+  }
+  return results;
 }
 
 // The full-width banners: Records disagree, and Facts can't be replayed.
