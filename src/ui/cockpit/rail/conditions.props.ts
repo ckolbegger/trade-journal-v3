@@ -37,20 +37,22 @@ const glyph = (role: Stated['role']): string => (role === 'Stop' ? '−' : '+');
 // Row 3, muted, for a condition not yet crossed: what the Trade P&L changes by if the Mark (or the Underlying at expiration) reaches the condition.
 function whyText(plan: Plan, condition: Condition, reading: Reading): string {
   const stock = !isOption(plan);
-  const subject = stock
-    ? `${plan.underlying}'s Mark is ${decimalMoney(condition.boundary)}`
-    : condition.kind === 'StructureValue'
-      ? `the option's Mark is ${decimalMoney(condition.boundary)}`
-      : `${plan.underlying} is at ${decimalUnderlyingPrice(condition.boundary)} at expiration`;
-  return `Change in Trade P&L from the ${shortDate(reading.evidence.date)} ${stock ? 'Mark' : 'Marks'} if ${subject} (${glyph(condition.role)}${rMultiple(reading.distance.planR)}).`;
+  return `Change in Trade P&L from the ${shortDate(reading.evidence.date)} ${stock ? 'Mark' : 'Marks'} if ${subjectText(plan, condition)} (${glyph(condition.role)}${rMultiple(reading.distance.planR)}).`;
 }
 
-function measuredItem(plan: Plan, condition: Condition): ConditionItem {
+// What the condition is reached by: a stock's Mark, an option's Mark, or the Underlying at expiration.
+function subjectText(plan: Plan, condition: Condition): string {
+  if (!isOption(plan)) return `${plan.underlying}'s Mark is ${decimalMoney(condition.boundary)}`;
+  if (condition.kind === 'StructureValue') return `the option's Mark is ${decimalMoney(condition.boundary)}`;
+  return `${plan.underlying} is at ${decimalUnderlyingPrice(condition.boundary)} at expiration`;
+}
+
+function measuredItem(plan: Plan, condition: Condition, waiting: boolean): ConditionItem {
   const item: ConditionItem = { id: condition.id, role: condition.role, nearest: condition.nearest === true, text: conditionText(plan, condition) };
   const { result } = condition;
-  // A condition whose Mark is lacking says so, in the label's words. One that is Unavailable for another reason (before the first Mark, past
-  // the expiration) shows rows 1 and 2 only, as does a Closed Detail's.
-  if (result.kind === 'Unavailable' && isMarkLacking(result)) return { ...item, figure: unavailableLabel(result) };
+  // An Unavailable condition says why, in the label's words, except while the Trade waits for its first Mark: then rows 1 and 2 only show, as
+  // on a Closed Detail.
+  if (result.kind === 'Unavailable' && !waiting) return { ...item, figure: unavailableLabel(result) };
   if (result.kind !== 'Value') return item;
   const reading = result.value;
   const figureTone = condition.role === 'Stop' ? ('loss' as const) : ('gain' as const);
@@ -86,9 +88,9 @@ function openProps(view: OpenTradeDetail): ConditionsCardProps {
   const { evaluation } = view.current;
   // Once the contract expired its conditions are no longer measured (W6).
   if (view.settlement.length > 0) return { conditions: unmeasured(plan), summary: [{ text: EXPIRED }] };
-  const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition));
   // Nothing can be measured and no Mark is merely missing: the Trade is waiting for its first session to end.
   const waiting = evaluation.conditions.length > 0 && evaluation.conditions.every((c) => c.result.kind === 'Unavailable' && !isMarkLacking(c.result));
+  const conditions = evaluation.conditions.map((condition) => measuredItem(plan, condition, waiting && evaluation.coverage.kind !== 'NotCovered'));
   if (waiting && evaluation.coverage.kind !== 'NotCovered') return { conditions, summary: [{ text: BEFORE_MARKS }] };
   // A Closed Detail has no open Position to measure.
   if ('terminalDisposition' in view) return { conditions, summary: [] };

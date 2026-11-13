@@ -98,6 +98,28 @@ describe('Conditions card (W5, W6)', () => {
     }
   });
 
+  it('should show any other Unavailable reason at the label length on row 1', () => {
+    // Outside the market calendar there is no Expected Mark Date: every condition is Unavailable for a reason that is neither a missing Mark nor the wait for the first one.
+    const base = os2(TUESDAY);
+    const outside: OpenTradeDetail = {
+      ...base,
+      current: {
+        ...base.current,
+        evaluation: {
+          ...base.current.evaluation,
+          coverage: { kind: 'NotCovered' as const },
+          conditions: base.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable' as const, reason: 'SessionPolicyNotCovered' as const, instrument: base.current.evaluation.observation.instrument, date: '2026-10-13' } })),
+        },
+      },
+    };
+    const items = blocks(renderCard(outside));
+    expect(items).toHaveLength(4);
+    for (const item of items) {
+      expect(within(item).getByText('Outside calendar')).toBeTruthy();
+      expect(item.querySelector('.condition-why')).toBeNull();
+    }
+  });
+
   it('should show Worst case and Max reward beneath the conditions', () => {
     // Thursday 10-15: MNO 44.60, the put 3.65. A Cash-Secured Put's worst case is MNO going to zero.
     const thursday = renderCard(os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' }));
