@@ -427,3 +427,15 @@ Lane tier: [suite-runs/T8P.3-unit.txt](suite-runs/T8P.3-unit.txt), `-integration
 - The globs `track*` and `footer*` in section 4.2 are read as relative to `src/ui/cockpit/`, so `track.types.ts` (D1) and `footer.types.ts` (D3) sit at the cockpit root, as `journal-cards.ts` does (A214).
 - `replay-view.ts` isn't yet re-exported from `trade-views/index.ts`. BV (T8P.10, T8P.11) adds the export and the facade type.
 - `journal.types.ts` holds a React type for `renderForm` (the one-form-at-a-time rule).
+
+### Merge run 1 (`merge-1`, after T8P.3)
+
+On `5fe66fc0`, 2026-11-13 10:21 to 10:32 EST. The "+ uncommitted changes" the later stages printed are this run's own output files. Browser stage `browser-auto 7904cee7` printed `browser tier: full (first matching path since 7904cee7: src/ui/cockpit/drawers/journal.types.ts)`. Ports were free before and after; the final check waited on the lock, which the T8P.4 lane held. `run-complete.sh evidence/D08P merge-1`: run complete.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 138 files, 1519 tests passed, exit 0 | [suite-runs/merge-1-unit.txt](suite-runs/merge-1-unit.txt) |
+| Node integration | 103 files, 218 tests passed, exit 0 | [suite-runs/merge-1-integration.txt](suite-runs/merge-1-integration.txt) |
+| Browser, full tier, browser-1 | 119 passed (4.9 min), exit 0 | [suite-runs/merge-1-browser-1.txt](suite-runs/merge-1-browser-1.txt) |
+| Browser, full tier, browser-2 | 74 passed (4.3 min), exit 0 | [suite-runs/merge-1-browser-2.txt](suite-runs/merge-1-browser-2.txt) |
+| Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/merge-1-checks.txt](suite-runs/merge-1-checks.txt) |
