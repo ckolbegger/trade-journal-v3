@@ -293,3 +293,43 @@ Run on `f2ab6560` (main worktree; the only uncommitted change was the handoff's 
 | Node integration | 103 files, 218 tests passed, exit 0 | [suite-runs/t8p-1-integration.txt](suite-runs/t8p-1-integration.txt) |
 | Browser, task tier (Chromium) | 5 passed (11.4 s), exit 0 | [suite-runs/t8p-1-browser.txt](suite-runs/t8p-1-browser.txt) |
 | Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/t8p-1-checks.txt](suite-runs/t8p-1-checks.txt) |
+
+## T8P.2 Split Trade Detail
+
+Commit `10d63285` (base `cf690cb2`; the Progress row's `f2ab6560` differs only in evidence and plan files). 37 files.
+
+**Implementation-level decisions (brief):**
+- The section files live in `src/ui/screens/trade-detail/`, and `TradeDetail.tsx` stays put as the composition.
+- Shared test helpers are in `trade-detail/test-support.ts`.
+- **Browser verification.** The section 6 row's "full browser tier" is covered by the complete cumulative run that follows the task, since `browser-auto` picks the full tier for UI and style paths. The task itself ran only the computed-style specs before committing, so the tier doesn't run twice.
+
+**Split.** `TradeDetail.tsx` is now 170 lines, composing `Banner`, `Footer`, `Identity`, `Journal`, `Payoff`, `Plan`, `Position`, `Result`, `RiskReward`, `SettlementDue`, `Summary`, `Today` and `Valuation`. Each has its `.test.tsx` beside it, and the shared files are `figure.tsx`, `words.ts` and `test-support.ts`. Valuation, Risk and reward and the Summary card are each their own file (section 4.2). `EXIT_ACTION` and `INCOHERENT_ENTRY_NOTE` are in `words.ts`, and `PositionChangeForm.tsx` imports them from there. `PayoffView` is untouched.
+
+**Cases, 98 (77 + 21), by file:** Journal 20, Position 18, Summary 11, Valuation 8, Plan 7, Banner 6, Identity 6, Footer 5, Payoff 5, RiskReward 5, SettlementDue 3, Result 2, Today 2.
+
+**Moved test helpers:**
+- The Options file's fake-Date hooks became `useFixedClock()`, called first inside each moved Options `describe`.
+- The two old `renderView` helpers became one that includes `timeZone`, which nothing in Detail reads.
+- Case-local helpers left unused in a new file were dropped there.
+
+**Exact verification:**
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` and `npm run lint:deps`: exit 0 (367 modules).
+- `npx vitest run src`: 138 files, 1519 tests passed.
+- `it-titles.sh`, after against before: empty diff, 1513 titles each side.
+- `git diff cf690cb2 -- src/ui/app.css`: 227 lines deleted, 0 added, every deleted non-blank line present in `legacy-detail.css`.
+  - Selectors moved: `.card.integrity`, `ul.narrative` (and `> li + li`), `.back-link`, the `.summary-card` rules, the execution disclosure rules, `ul.executions > li[data-group]`, `.execution-group-mark`, the `.execution-details` and `.execution-reflection` rules (including the narrow media query), `dl.figure-grid` and its children (including the 960 px query), `.trade-detail dl:not(.figure-grid):not(.answers)`, the `dl.answers` rules, `table.lots` and `.table-scroll.lots-scroll`.
+  - Selectors kept in `app.css`: `ul.executions` (and `> li`, `> li:first-child`, `> li.execution-line`, which the receipts use), `.nowrap`, `.chart-scroll`, `.payoff-chart`, `.execution-price` and `.table-scroll`.
+  - The new stylesheet is imported in `src/main.tsx` right after `app.css`.
+- Computed-style browser specs, after `npm run build:faults`, through `with-browser-lock.sh`: `e2e/d2/ui-alignment.spec.ts` and every `responsive*.spec.ts`, 70 passed in 3.6 min. Ports were clear before and after.
+
+### T8P.2 ocr review (`10d63285`)
+
+Session `27262bc7-f707-46e2-9459-5f9c5caa2b87`, model gpt-6.1-sol, 22 files reviewed (15 excluded as test files), 1 comment. Raw output: [ocr/T8P.2-10d63285.json](ocr/T8P.2-10d63285.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `.claude/scripts/it-titles.sh:8` | The pattern needs a quoted title right after `it(`, so `it.each(table)(...)` cases aren't listed, and losing them in a move would still give an empty diff. | Valid: `it.each` is used at `PlanForm.test.tsx:353` and `ReviewCards.test.tsx:774`. It doesn't affect T8P.2's check, since all 98 moved cases are plain `it(...)`, but T8P.5's proof uses the same script. |
+
+Reviewer's answer to the brief's question: no rendering difference found. The section order, every render guard, the props, and the Plan, Baseline, plan-reflection, Position, `Figure` and `ConditionLines` markup all match `cf690cb2`. `useRuntime` moved into `IdentityHeader` and `SettlementDuePanel`. The reviewer found no cascade conflict between moved and remaining rules, though its CSS check was set-wise and doesn't prove the order within the file.
+
+- **T8P.2-B1.** Defect: `it-titles.sh` omits `it.each` cases, so a lost table-driven case would pass the titles proof. Case: *it should list each `it.each` case's title template, and every other `it` form (`it.skip`, `it.only`, `it.todo`), once per occurrence.*
