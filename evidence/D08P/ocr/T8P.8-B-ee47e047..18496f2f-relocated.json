@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 29643,
+    "input_tokens": 29401,
+    "output_tokens": 242,
+    "cache_read_tokens": 8448,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/d08p/market-data/market-data.ts",
+      "files": [
+        "src/itg/d08p/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "868a7ddb-1b6f-4454-884e-69af3d2a7fa5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "868a7ddb-1b6f-4454-884e-69af3d2a7fa5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "808c9669",
+      "resolved_base": "3fdb847298568203afaf4511465a355a0d0979ad",
+      "resolved_head": "808c966947a4f5ba6021945f221d1ba2f84969d8",
+      "exact_range": "3fdb847298568203afaf4511465a355a0d0979ad..808c966947a4f5ba6021945f221d1ba2f84969d8",
+      "source_artifact_sha256": "742f8dd27f0343c47140d39852ff75dd7d65321aeefb095c42793bda6c7b9293"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "84e8d8fc656942fd8e557e787ab3efb3726e1bcdb3c70e5898e2b786605a1098",
+          "path": "src/itg/d08p/market-data/market-data.ts",
+          "fingerprint": "f2b2f00ad817bba238498c3d490ff250b4517f83ba9e5539848bf30488cd068d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "84e8d8fc656942fd8e557e787ab3efb3726e1bcdb3c70e5898e2b786605a1098",
+          "path": "src/itg/d08p/market-data/market-data.ts",
+          "fingerprint": "f2b2f00ad817bba238498c3d490ff250b4517f83ba9e5539848bf30488cd068d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 15163
+  }
+}

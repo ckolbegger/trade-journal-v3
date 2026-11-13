@@ -1,0 +1,161 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 351592,
+    "input_tokens": 348827,
+    "output_tokens": 2765,
+    "cache_read_tokens": 23296,
+    "elapsed": "2m6s"
+  },
+  "tool_calls": {
+    "total": 31,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 14,
+      "file_find": 2,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/price-history.tsx",
+      "content": "This callback navigates to the Trades list (`/`), not the Review, whose installed route is `/review` in `src/app/routes.ts`. Consequently, “Enter Marks in the Review” opens the wrong screen. Use the Review route for both the callback and the anchor's href, and add a router-level assertion (the current test only checks invocation of a supplied callback).",
+      "existing_code": "  return replay ? \u003cPriceHistoryTable {...priceHistoryProps(replay, () =\u003e void navigate('/'))} /\u003e : null;",
+      "start_line": 62,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/styles/history.css",
+      "content": "The table has no horizontal-scroll wrapper, and neither its tabpanel nor `.cockpit-drawers` supplies overflow handling. With 500 nowrap session columns, it therefore widens the document instead of scrolling within the drawer, taking the rest of the page sideways. Wrap the table in a width-constrained `overflow-x: auto` region (the existing `.table-scroll` pattern is available). Also give pinned row headers an opaque background: `background: inherit` currently inherits transparent row backgrounds, allowing scrolling values to show through the labels.",
+      "existing_code": ".price-history {\n  border-collapse: collapse;\n  font-variant-numeric: tabular-nums;\n}",
+      "start_line": 2,
+      "end_line": 5,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/styles/history.css",
+      "content": "The sticky row headers inherit a transparent background from their `\u003ctr\u003e`, so session values remain visible underneath the labels when the table is scrolled horizontally. Give these pinned cells an opaque drawer background (for example, `var(--card)`) and an appropriate stacking order so the Mark and P\u0026L labels remain readable.",
+      "existing_code": "  background: inherit;",
+      "start_line": 15,
+      "end_line": 15,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Price history drawer props, integration, and styling",
+      "files": [
+        "src/itg/d08p/price-history.props.tsx",
+        "src/ui/cockpit/drawers/price-history.props.ts",
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/styles/history.css"
+      ]
+    }
+  ],
+  "session_id": "e34813de-6de8-4e22-838c-9dcc829e87a6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e34813de-6de8-4e22-838c-9dcc829e87a6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "1e953bdc",
+      "resolved_base": "bfc5421f6d05f023d3ff087200b9a3fb80ad5426",
+      "resolved_head": "1e953bdcafe62da166c1e298582dfd5a60d3585b",
+      "exact_range": "bfc5421f6d05f023d3ff087200b9a3fb80ad5426..1e953bdcafe62da166c1e298582dfd5a60d3585b",
+      "source_artifact_sha256": "f021ea14610a0525898797140bc617cbfefe84130545dc56565949e464e40a2d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "27f4c20fbe03ab5fb9668f9c243fb0dc88f6a4a58def686c3bda3a2e31955703",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "fe2d84b356661a58391c26e9ca0330f58aa2b756ca5ebb3f641987afb43f9d4f"
+        },
+        {
+          "item_id": "772e3bb3dc161fe0cd44739828d42f443a3c4457d21c037883ac4bd28fd8d684",
+          "path": "src/itg/d08p/price-history.props.tsx",
+          "fingerprint": "6935ee5cb8a6952eb5bcdc8956d0f13b301e6c2d44dbd5ccdbe0cfa864563b31"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "01226a51ed56493f094749f430954ec6f547ff4c17c03d6d32f4461fa38b1734"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "9df7c5fe8908739642f668c9129d85ae3fb7bd0a5999a858a66f5ea40c2cca0e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "27f4c20fbe03ab5fb9668f9c243fb0dc88f6a4a58def686c3bda3a2e31955703",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "fe2d84b356661a58391c26e9ca0330f58aa2b756ca5ebb3f641987afb43f9d4f"
+        },
+        {
+          "item_id": "772e3bb3dc161fe0cd44739828d42f443a3c4457d21c037883ac4bd28fd8d684",
+          "path": "src/itg/d08p/price-history.props.tsx",
+          "fingerprint": "6935ee5cb8a6952eb5bcdc8956d0f13b301e6c2d44dbd5ccdbe0cfa864563b31"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "01226a51ed56493f094749f430954ec6f547ff4c17c03d6d32f4461fa38b1734"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "9df7c5fe8908739642f668c9129d85ae3fb7bd0a5999a858a66f5ea40c2cca0e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "472ae099f2bcf373debbbfeb3042c0d74198bf78644562b8512dbbed974b97a3",
+          "path": "evidence/D08P/tdd-log/T8P.20.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "6cd70dae799d8ee09c2fb828694a3e3af5d23e92d55836473e5d6703284a2e97",
+          "path": "src/itg/d08p/price-history.tsx",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "bad23c90cf011029de219cab1d72a7f798fc2117eb659085a49bb9a2303a18e1",
+          "path": "src/ui/cockpit/drawers/price-history.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 126190
+  }
+}

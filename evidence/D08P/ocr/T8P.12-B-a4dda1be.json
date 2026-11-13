@@ -1,0 +1,87 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 3412,
+    "input_tokens": 3378,
+    "output_tokens": 34,
+    "cache_read_tokens": 1664,
+    "elapsed": "3s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/rail/identity.props.ts",
+      "files": [
+        "src/ui/cockpit/rail/identity.props.ts"
+      ]
+    }
+  ],
+  "session_id": "0bf4c699-4014-40c6-a7b1-25ad6aaa41b6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0bf4c699-4014-40c6-a7b1-25ad6aaa41b6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a4dda1be",
+      "resolved_base": "8de8139ea4691784dcb54ac778ad56beb4853c17",
+      "resolved_head": "a4dda1be3fc56aea67e9c7a9a1f5b5d8868a0194",
+      "exact_range": "8de8139ea4691784dcb54ac778ad56beb4853c17..a4dda1be3fc56aea67e9c7a9a1f5b5d8868a0194",
+      "source_artifact_sha256": "290b120624df698be151c004d3c464444142595de9397eb3dfa00b7937bd45a2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "335cbfc0a7d55cdd0f19e4d04298f5383c17f26c9cde6bf631903819690a02b5",
+          "path": "src/ui/cockpit/rail/identity.props.ts",
+          "fingerprint": "a2b376832151b23615aadcb6ef1b6c664878bb12860d5ffcd6041bb2972ae031"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "335cbfc0a7d55cdd0f19e4d04298f5383c17f26c9cde6bf631903819690a02b5",
+          "path": "src/ui/cockpit/rail/identity.props.ts",
+          "fingerprint": "a2b376832151b23615aadcb6ef1b6c664878bb12860d5ffcd6041bb2972ae031"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "ec8a71403c0ec6f1514b8264487b1174b2c2686bb1eff65c0541ad1fb27e2653",
+          "path": "evidence/D08P/tdd-log/T8P.12-B.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 3467
+  }
+}

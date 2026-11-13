@@ -857,3 +857,94 @@ Bug tasks:
 **No findings.** The reviewer briefly detached the lane at `48ae877b` by mistake and switched straight back; the lane's branch, HEAD and tree were unchanged.
 
 **Merge.** Rebased onto `claude-opus-5.5` with no conflict. The rebase brought in T8P.6's `evaluate.ts`, so the lane tier is rerun (`T8P.17-rebase`) before the fast-forward. Rebased hashes: `1c7b346c` (task), `4b4e336c` (lane tier), `96723384` (follow-up), `f2839a35` (lane tier rerun).
+
+### T8P.8-B3 round 3 ocr (`ee47e047..18496f2f`)
+
+In place: session `a8cf3b2f-a13d-484b-8e45-892e4b2ea040`, 1 file reviewed (`market-data.ts`), 2 excluded, 0 comments. Relocated (the test file): session `868a7ddb-1b6f-4454-884e-69af3d2a7fa5`, 1 file, 0 comments. Model gpt-6.1-sol. **No findings.** Raw output: [ocr/T8P.8-B-ee47e047..18496f2f.json](ocr/T8P.8-B-ee47e047..18496f2f.json) and [-relocated](ocr/T8P.8-B-ee47e047..18496f2f-relocated.json).
+
+## Merges after merge run 3
+
+**T8P.17.** Rebased onto `claude-opus-5.5` with no conflict. The rebase brought in T8P.6's `evaluate.ts`, so the lane tier was rerun (`T8P.17-rebase`: 1547 unit, 218 integration, 14 of 14 checks; `run-complete.sh`: run complete). Fast-forwarded to `9658f53b`. Rebased hashes: `057dc498` (task), `859517bd` (lane tier), `77d80591` (follow-up), `cfc572eb` (lane tier rerun), `9658f53b` (rebased tier). The lane was removed.
+
+**T8P.8.** Rebased first onto T8P.6 (`T8P.8-rebase`: 1551 unit, 218 integration, 14 of 14), then onto T8P.17, which brought in code again (`T8P.8-rebase2`: 1554 unit, 218 integration, 14 of 14; run complete). Fast-forwarded to `957499ac`. Rebased hashes: `5439bfb0` (task), `becf9efb`, `ca59697a` (B1), `6cf43890` (B2), `a882280f`, `5c9dd2f3` (B3), `cb8e310d`, `923bc499`, `957499ac`. The lane was removed.
+
+**T8P.12.** The rebase onto T8P.17 conflicted in `e2e/d7/short-put.spec.ts`, on adjacent lines with one owner each under section 1.5: T8P.17's Realized to date read (moved back to the Position drawer, as handoff note T8P.17 asks) and T8P.12's lifecycle badge (W2's "Cash-Secured Put, Open"). T8P.12's `openDrawer(reopened, 'Today')` line existed only for the old read from Today, so the resolution keeps T8P.17's read and T8P.12's badge and drops that line. This is not a file two lanes both own (handoff stop 7): each line has one owner. The lane tier was rerun after rebasing onto T8P.8 too (`T8P.12-rebase`: 1557 unit, 218 integration, 14 of 14; run complete). T8P.12's six changed specs passed on the resolved tree (13 tests, [suite-runs/T8P.12-rebase-browser.txt](suite-runs/T8P.12-rebase-browser.txt)). A first run had failed on stale release builds, since the specs serve `build:releases` rather than `dist`. Fast-forwarded to `f995af22`. Rebased hashes: `3ca9819b` (task), `ea517ac4`, `0c96414f` (titles), `e37c12a6`, `7ee44f66`, `b6a439cf` (B1), `0e1e64cc`, `f995af22`. The lane was removed.
+
+### T8P.12-B1 (`a4dda1be`, rebased `b6a439cf`), round 2 ocr
+
+`daysText` uses guarded returns. A refactor kept green: 7 of 7 rail cases before and after. Lane tier `T8P.12-B`: 1543 unit, 218 integration, 14 of 14. ocr session `0bf4c699-4014-40c6-a7b1-25ad6aaa41b6`, 1 file reviewed, 0 comments. **No findings.** Raw output: [ocr/T8P.12-B-a4dda1be.json](ocr/T8P.12-B-a4dda1be.json).
+
+## T8P.18 Plan and Risk drawer and footer (lane `d08p-d3`)
+
+Commits `6bcb636e` (task) and `c9b84488` (lane tier: 1541 unit, 218 integration, 14 of 14; run complete). Browser: 55 and 21 tests passed across the specs reading Plan and Risk and the footer, after `build:releases`, `build:faults` and `build`.
+
+Accepted from its summary:
+- **Two flagged first-run passes** (cases 1 and 3): T8P.5's composed sections already did both. The mutations ran on the lane's replacement code (a label and a W word) and failed with assertions. The old lines are in files outside lane D3.
+- **"Entry not yet resolved: 0 of 100 entered"** on a Planned Detail (case 2): the existing Entry Quality sentence. Moved content keeps its words, so no new word is needed.
+- T8P.5's two path tests replaced by the three cases; no existing expected value changed.
+- `plan-risk.types.ts` and `footer.types.ts` reshaped to carry the moved sections' markup.
+
+**ocr on `6bcb636e`.** In place: session `78607390-0b63-45c7-a0b2-05a90ecd8bd2`, 6 files reviewed, 1 comment. Relocated (2 tests): session `76ef9e62-14e7-4a5d-8c1d-8be91f9b9f6d`, 0 comments. Raw output: [ocr/T8P.18-6bcb636e.json](ocr/T8P.18-6bcb636e.json) and [-relocated](ocr/T8P.18-6bcb636e-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| low | maintainability | `plan-risk.tsx:13` | The row value is a nested ternary. | Valid, style only. |
+
+Bug task **T8P.18-B1**. Case: *it should choose the row value without a nested conditional.* A refactor, kept green.
+
+## T8P.20 Price History drawer (lane `d08p-d5`)
+
+Commits `c0df748c` (task) and `66c34bf8` (lane tier: 1544 unit, 218 integration, 14 of 14; run complete). Accepted:
+- case 4's flagged first-run pass (mutation `.slice(0, 60)` failed on the header count);
+- one extra case for the shell wiring;
+- a local `ReplaySource` type in `price-history.props.ts`, since `lint:deps` bars a UI import of `replay-view.ts` and the Trade Views index doesn't export `TradeReplayView` (T8P.22 swaps it for the facade type);
+- `priceHistoryTabCount` exported for T8P.22;
+- `plural()` for "1 session without Marks".
+
+**ocr on `c0df748c`.** In place: session `5363e5d8-d907-448a-881a-a34f1ef69666`, 3 files reviewed, 3 comments. Relocated: session `e34813de-6de8-4e22-838c-9dcc829e87a6`, 4 files, the same three. Raw output: [ocr/T8P.20-c0df748c.json](ocr/T8P.20-c0df748c.json) and [-relocated](ocr/T8P.20-c0df748c-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `price-history.tsx:62` | "Enter Marks in the Review" navigates to `/` (Trades), and its `href` is `/`. | Valid: `/review` is the Review route. |
+| medium | bug | `price-history.tsx:12` | No horizontal scroll container, so a long history widens the page. | Valid. |
+| medium | bug | `history.css:15` | The pinned row labels use `background: inherit` on a transparent row, so values show through. | Valid. |
+
+Bug tasks: **T8P.20-B1** (*it should open the Review from Enter Marks in the Review.*), **T8P.20-B2** (*it should scroll a long history inside the drawer, not the page.*), **T8P.20-B3** (*it should keep the pinned row labels opaque over scrolled values.*).
+
+## T8P.7 Replay slice and Max reward's R (lane `d08p-ba`)
+
+Commits `6443e319` (task) and `d5c0dd60` (lane tier: 1553 unit, 218 integration, 14 of 14; run complete). Accepted:
+- two flagged first-run passes (Tuesday, mutation `realizedToDate` for `currentMarkedPnl`; Long Stock, mutation `frames.slice(1)`), both failing with assertions;
+- two extra cases T8P.10 needs (a flat final session; facts that can't be replayed give `NotApplicable` with `FactsIncoherent`);
+- revision 89's case, with no revision 88 lines needed;
+- the public types for T8P.10, as the summary lists them. `ReplayMark.resolution` is `ObservationFrame['resolution']`, which T8P.10 maps to the view's `MarkResolution`.
+
+**ocr on `6443e319`.** In place: session `e598a68c-09c5-43a6-ab45-00bb898ad352`, 4 files reviewed, 1 comment. Relocated (the test): session `5051329e-811f-480c-96cc-26d177ae2003`, 1 comment. Raw output: [ocr/T8P.7-6443e319.json](ocr/T8P.7-6443e319.json) and [-relocated](ocr/T8P.7-6443e319-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `replay-series.ts:112-113` | The `find(...)!` for the held Instrument's frame is undefined when a session lacks it, and `evaluate` throws. | Valid, low practical impact (the input contract asks for every frame), but one bad session crashes a whole replay. |
+| medium | test | relocated `replay-series.ts:1` | No Vitest project discovers the suite. | Wrong: a relocation artifact. |
+
+Bug task **T8P.7-B1**. Case: *it should give that session an unavailable Trade P&L, not throw, when its frames lack the held Instrument's.* The reviewer's note that `tradePnlOf` values only the first position with open lots is not an ocr finding; the B1 agent reports whether a multi-leg Trade can reach `replay` in D08P.
+
+## T8P.16 Today drawer (lane `d08p-d1`)
+
+Commits `7f9df7eb` (task) and `45595501` (lane tier, green; run complete). The six Today-reading specs passed (14 tests). No first-run passes. Accepted:
+- the "At the Mon Oct 12 Marks" expectation changes under section 1.5's "At Mon Oct 12 close" row (T8P.16, W19), including four hits the row's location list missed, all the same dated heading;
+- a local `TodayReplay` type (as T8P.20's);
+- the reshaped `today.types.ts` and `track.types.ts`;
+- track markers showing only "entry", "now" and the earlier date, without the prototype's end-price labels.
+
+"No Marks yet" is inferred in `today.props.ts`. Revision 90 replaces the inference with a Trade Views field. ocr is running.
+
+## User decisions (2026-11-13, during wave 1)
+
+- **Absence checks.** "If something should be gone, check it isn't there (even if hidden). If something should just be hidden, check that it is hidden." Applies to every task's new checks from now on (briefs and bug-task messages carry it) and to the existing ones, through revision 90's T8P.29.
+- **"No Marks yet" (option A).** Trade Views states it explicitly, and the Today drawer and the Conditions card read it instead of inferring it. Revision 90's T8P.28. T8P.14-B1 is withdrawn from lane R2 and becomes T8P.28's card case.
+- **T8P.19's chart.** The values stay in the text tables beneath the one chart, with no breakeven or ray labels on it. To be reworked later if disliked.
+- **Agents.** A new task gets a fresh agent; a bug fix goes back to the agent that wrote the task.
+
+## T8P.19 follow-up
+
+The lane tier's one failure was `PlanForm.test.tsx`'s receipt case. Its mocked Planned Detail used `ocPayoffs()`, an Open Trade's payoff with held lots, so the one chart carried both captions. Section 1.5 says that file's expectations are unchanged, so the agent may change only that case's mock to the payoff a Planned Detail really has, with every expect line kept. If it still fails, the task stops.

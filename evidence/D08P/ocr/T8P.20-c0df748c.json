@@ -1,0 +1,162 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 182656,
+    "input_tokens": 179980,
+    "output_tokens": 2676,
+    "cache_read_tokens": 33792,
+    "elapsed": "1m51s"
+  },
+  "tool_calls": {
+    "total": 33,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 15,
+      "file_find": 3,
+      "file_read": 14
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 28,
+        "tool_name": "file_read",
+        "file_path": "src/ui/cockpit/drawers/price-history.props.ts,src/ui/cockpit/drawers/price-history.tsx,src/ui/cockpit/styles/history.css",
+        "arguments": "{\"file_path\": \"src/domain/instrument/instrument.ts\"}",
+        "error": "file \"src/domain/instrument/instrument.ts\" not found: git show c0df748c50107033fe11a80cea3385fa6214a20d:src/domain/instrument/instrument.ts: exit status 128: fatal: path 'src/domain/instrument/instrument.ts' does not exist in 'c0df748c50107033fe11a80cea3385fa6214a20d'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/price-history.tsx",
+      "content": "The Review action navigates to the Trades list: src/app/routes.ts defines '/' as Trades and '/review' as Review. Navigate to the Review destination and update the anchor's href as well, so both clicking and opening the link in another tab reach mark entry.",
+      "existing_code": "  return replay ? \u003cPriceHistoryTable {...priceHistoryProps(replay, () =\u003e void navigate('/'))} /\u003e : null;",
+      "start_line": 62,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/price-history.tsx",
+      "content": "This table has no horizontal scroll container. The cockpit host only provides a plain tabpanel, and its min-width: 0 grid item does not contain overflow. A 500-session history therefore overflows the page instead of scrolling within the drawer. Wrap the table in a constrained overflow-x: auto region (for example, the existing table-scroll pattern), keeping the gap prompt outside it.",
+      "existing_code": "    \u003ctable className=\"price-history\"\u003e",
+      "start_line": 12,
+      "end_line": 12,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/styles/history.css",
+      "content": "The parent tr has a transparent background, so inheriting it leaves the sticky row labels transparent too. When the history scrolls horizontally, mark values remain visible underneath the labels. Give the pinned cells an opaque surface background and an appropriate stacking order so the labels remain readable.",
+      "existing_code": "  background: inherit;",
+      "start_line": 15,
+      "end_line": 15,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/price-history.props.ts",
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/styles/history.css"
+      ]
+    }
+  ],
+  "session_id": "5363e5d8-d907-448a-881a-a34f1ef69666",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5363e5d8-d907-448a-881a-a34f1ef69666",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c0df748c",
+      "resolved_base": "1242cd091a1110929d5e303a3c45fc3b06d8091a",
+      "resolved_head": "c0df748c50107033fe11a80cea3385fa6214a20d",
+      "exact_range": "1242cd091a1110929d5e303a3c45fc3b06d8091a..c0df748c50107033fe11a80cea3385fa6214a20d",
+      "source_artifact_sha256": "c0e73c0d1e248f30276f4b3ed620b594b97f0df9c349b21b2e5f6085107d6313"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "27f4c20fbe03ab5fb9668f9c243fb0dc88f6a4a58def686c3bda3a2e31955703",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "fe2d84b356661a58391c26e9ca0330f58aa2b756ca5ebb3f641987afb43f9d4f"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "01226a51ed56493f094749f430954ec6f547ff4c17c03d6d32f4461fa38b1734"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "9df7c5fe8908739642f668c9129d85ae3fb7bd0a5999a858a66f5ea40c2cca0e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "27f4c20fbe03ab5fb9668f9c243fb0dc88f6a4a58def686c3bda3a2e31955703",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "fe2d84b356661a58391c26e9ca0330f58aa2b756ca5ebb3f641987afb43f9d4f"
+        },
+        {
+          "item_id": "8676b5afcb634bceb0b3456759a23b2bc4466a318b637ab4f4e37539b7f0aba1",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "01226a51ed56493f094749f430954ec6f547ff4c17c03d6d32f4461fa38b1734"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "9df7c5fe8908739642f668c9129d85ae3fb7bd0a5999a858a66f5ea40c2cca0e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "472ae099f2bcf373debbbfeb3042c0d74198bf78644562b8512dbbed974b97a3",
+          "path": "evidence/D08P/tdd-log/T8P.20.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "bad23c90cf011029de219cab1d72a7f798fc2117eb659085a49bb9a2303a18e1",
+          "path": "src/ui/cockpit/drawers/price-history.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 111278
+  }
+}
