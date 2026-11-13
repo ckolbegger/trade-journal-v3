@@ -1,4 +1,5 @@
-import { confirmOptionPlan, currentTradeId, expect, factsOf, firstPage, launchAt, MONDAY_0900, MONDAY_1105, OC, onboardedAt, probe, recordOptionEntry, test, tradesOf, valueOf, workspaceOf } from './support.ts';
+import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
+import { confirmOptionPlan, currentTradeId, expect, factsOf, fillOptionPlan, firstPage, launchAt, MONDAY_0900, MONDAY_1105, OC, onboardedAt, probe, recordOptionEntry, test, tradesOf, valueOf, workspaceOf } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -48,5 +49,36 @@ test.describe('B7.1 Plan and open a Long Call', () => {
     expect(value('Target')).toEqual({ kind: 'UnderlyingPrice', price: '60' });
     expect(value('Plan')['exerciseIntent']).toBe('NotAuthorized');
     await relaunched.close();
+  });
+});
+
+test.describe('BUG-1 Exercise Intent checkbox', () => {
+  test('should draw the Exercise Intent checkbox small, beside its label text, in a row at least 44 px tall, without sideways scroll at 1280, 375 and 320 px', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { page } = await onboardedAt(profile, MONDAY_0900);
+    await fillOptionPlan(page, OC);
+    const box = page.getByRole('checkbox', { name: 'I plan to exercise this option if it is in the money' });
+    const row = page.locator('label', { has: box });
+    await box.scrollIntoViewIfNeeded();
+    for (const width of [1280, 375, 320]) {
+      await setWidth(page, width);
+      const where = `at ${width} px`;
+      const checkbox = (await box.boundingBox())!;
+      expect(checkbox.width, `checkbox width ${where}`).toBeLessThanOrEqual(32);
+      // The label text's first line box, measured by a range over its text node.
+      const firstLine = await row.evaluate((label) => {
+        const text = [...label.childNodes].find((n) => n.nodeType === Node.TEXT_NODE)!;
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        const line = range.getClientRects()[0]!;
+        return { top: line.top, bottom: line.bottom };
+      });
+      const centre = checkbox.y + checkbox.height / 2;
+      expect(centre, `checkbox centre ${where} is within the text's first line`).toBeGreaterThanOrEqual(firstLine.top);
+      expect(centre, `checkbox centre ${where} is within the text's first line`).toBeLessThanOrEqual(firstLine.bottom);
+      expect((await row.boundingBox())!.height, `label row height ${where}`).toBeGreaterThanOrEqual(44);
+      await expectNoSidewaysScroll(page, where);
+    }
+    await page.context().close();
   });
 });

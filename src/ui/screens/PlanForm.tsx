@@ -405,7 +405,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         )}
         {option && option.side === 'Short' && <p className="hint">The app doesn&apos;t check that you have the cash to buy the shares if you&apos;re assigned.</p>}
         {shape && exerciseIntentApplies(shape) && (
-          <label>
+          <label className="check">
             <input type="checkbox" checked={exercise} onChange={(e) => setExercise(e.target.checked)} />I plan to exercise this option if it is in the money
           </label>
         )}

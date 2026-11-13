@@ -357,6 +357,28 @@ fieldset.execution-row > button.pill {
   align-items: start;
 }
 
+/* A single yes/no checkbox: a flex row with the native box before its text; the whole row is the 44 px target. */
+form label.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+form label.check input {
+  display: inline-block;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  accent-color: var(--ink);
+}
+
 label.chip {
   display: inline-flex;
   align-items: center;
