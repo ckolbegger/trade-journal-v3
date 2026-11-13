@@ -1,19 +1,22 @@
-// W15, W17, P96, A224. Finished display values only (A216).
-type Row = { readonly label: string; readonly value: string };
+import type { ReactNode } from 'react';
+
+// W15, W17, P96, A224. Finished display values only (A216). The Executions, the Settlement, the Result and the Lot Matches table keep their
+// existing interactive parts and their words, so the adapter hands them over as built elements (P96: moved content keeps its words).
+// `plain` is a text value; the others are figures.
+type Row = { readonly label: string; readonly value: string; readonly plain?: boolean };
 type Table = { readonly columns: readonly string[]; readonly rows: readonly (readonly string[])[] };
-type Line = { readonly when: string; readonly text: string };
 
 export interface PositionDrawerProps {
-  readonly openLots?: Table;
-  // "Open P&L" (or "Settlement Due" at the `label` length), "Realized to date" and "Incurred fees".
-  readonly figures: readonly (Row & { readonly tone?: 'gain' | 'loss' })[];
-  // The Trade Summary and Last activity.
+  // The Position, the opening fees and Last activity. Absent on a Closed and an incoherent Detail.
   readonly summary?: readonly Row[];
-  readonly lotMatches?: { readonly table: Table; readonly roundingNote: string };
-  // Folded under a disclosure.
+  readonly openLots?: Table;
+  // "Open P&L" (its value reads "Settlement Due" on a Settlement Due Detail), "Realized to date" and "Incurred fees". Absent on a Closed and an incoherent Detail.
+  readonly figures?: readonly Row[];
+  // A Closed Detail's Result.
+  readonly result?: ReactNode;
+  readonly lotMatches?: { readonly roundingNote: string; readonly table: ReactNode };
   readonly feeReconciliation?: readonly Row[];
-  readonly executions: readonly Line[];
-  readonly settlement: readonly Line[];
-  // The facts as recorded, on an incoherent Detail.
-  readonly recorded?: readonly Line[];
+  // On an incoherent Detail these are the facts as recorded.
+  readonly executions: ReactNode;
+  readonly settlement?: ReactNode;
 }

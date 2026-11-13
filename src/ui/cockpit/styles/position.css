@@ -1,1 +1,18 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* The Position drawer (T8P.17). The fee reconciliation folds under its heading; the heading stays visible and is the disclosure's control. */
+.fee-reconciliation > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+.fee-reconciliation > summary::-webkit-details-marker {
+  display: none;
+}
+.fee-reconciliation > summary h2 {
+  margin: 0;
+}
+.fee-reconciliation[open] > summary svg {
+  transform: rotate(180deg);
+}
