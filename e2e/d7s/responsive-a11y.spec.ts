@@ -81,7 +81,8 @@ test.describe('B7S.5 Responsive and accessible', () => {
     await expect(page.getByLabel('Strategy').locator('option:checked')).toHaveText('Cash-Secured Put');
     const values: [Locator, string][] = [
       [page.getByLabel('Underlying', { exact: true }), OS2.underlying],
-      [page.getByLabel('Expiration date'), OS2.expiration],
+      // A date input takes its segments in the browser's locale order, here month, day, year (BUG-2).
+      [page.getByLabel('Expiration date'), OS2.expiration.replace(/^(\d{4})-(\d\d)-(\d\d)$/, '$2$3$1')],
       [page.getByLabel('Strike'), OS2.strike],
       [page.getByLabel('Contracts'), OS2.contracts],
       [page.getByLabel('Intended entry price (per share)'), OS2.entry],

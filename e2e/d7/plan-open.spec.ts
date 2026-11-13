@@ -52,6 +52,36 @@ test.describe('B7.1 Plan and open a Long Call', () => {
   });
 });
 
+test.describe('BUG-2 Expiration date', () => {
+  test('should show the Expiration error beside an empty date, clear it as soon as 2026-11-20 is filled, and then confirm to a Trade Detail reading Expires Fri 20 Nov 2026', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context: first, page } = await onboardedAt(profile, MONDAY_0900);
+    await fillOptionPlan(page, { ...OC, expiration: '' });
+    const expiration = page.getByLabel('Expiration date');
+    await expect(expiration).toHaveAttribute('type', 'date');
+    await page.getByRole('button', { name: 'Confirm Plan' }).click();
+    await expect(expiration).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('.field', { has: expiration })).toContainText('Enter an expiration date in the years 2000 to 2099.');
+    await expiration.fill('2026-11-20');
+    await expect(expiration).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('.field', { has: expiration })).not.toContainText('Enter an expiration date');
+    await page.getByRole('button', { name: 'Confirm Plan' }).click();
+    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    const tradeId = await currentTradeId(page);
+    await first.close();
+
+    // The contract's expiration line shows on the Open Trade (D7 row 23.19).
+    const context = await launchAt(profile, MONDAY_1105);
+    const detail = await firstPage(context);
+    await detail.goto(`/trades/${tradeId}`);
+    await expect(detail.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    await recordOptionEntry(detail, [{ quantity: '2', price: '2.00', fee: '0.65', time: '2026-10-12T10:00' }]);
+    await detail.goto(`/trades/${tradeId}`);
+    await expect(detail.getByText('Expires Fri 20 Nov 2026')).toBeVisible();
+    await context.close();
+  });
+});
+
 test.describe('BUG-1 Exercise Intent checkbox', () => {
   test('should draw the Exercise Intent checkbox small, beside its label text, in a row at least 44 px tall, without sideways scroll at 1280, 375 and 320 px', async ({ profile }) => {
     test.setTimeout(240_000);

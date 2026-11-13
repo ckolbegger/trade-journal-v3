@@ -1047,3 +1047,44 @@ describe('option Plan receipt (A116)', () => {
     expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
   });
 });
+
+describe('option Plan form: Expiration date (BUG-2)', () => {
+  it('should draw the Expiration date as a date input limited to 2000-01-01 through 2099-12-31', async () => {
+    renderForm(optionFacade());
+    await chooseStrategy('Long Call');
+    const expiration = screen.getByLabelText<HTMLInputElement>('Expiration date');
+    expect(expiration.type).toBe('date');
+    expect(expiration.min).toBe('2000-01-01');
+    expect(expiration.max).toBe('2099-12-31');
+  });
+
+  it('should remove the InvalidExpiration error and aria-invalid once the Expiration date is changed to a valid date, before any new submit', async () => {
+    const facade = renderForm(optionFacade());
+    const confirm = vi.mocked(facade.TradeWorkflows.confirmPlan);
+    confirm.mockResolvedValue({
+      kind: 'Rejected',
+      binding: { databaseName: 'tj-ws-1', contentRevision: 4 },
+      issues: [{ source: 'TradeAnalysis', code: 'InvalidExpiration' }],
+    } as never);
+    const user = await chooseStrategy('Long Call');
+    await user.type(screen.getByLabelText('Underlying'), 'xyz');
+    await user.type(screen.getByLabelText('Strike'), '55');
+    await user.type(screen.getByLabelText('Contracts'), '2');
+    await user.type(screen.getByLabelText('Intended entry price (per share)'), '2.00');
+    await user.type(screen.getByLabelText('Stop (XYZ at or below)'), '48');
+    await user.type(screen.getByLabelText('Target (XYZ at or above)'), '60');
+    await user.type(screen.getByLabelText('Why this trade, why now?'), 'Earnings run-up.');
+    await user.type(screen.getByLabelText('What would invalidate the thesis?'), 'A close below 48.');
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Conviction' })).getByLabelText('4'));
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const expiration = screen.getByLabelText<HTMLInputElement>('Expiration date');
+    expect(expiration.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(expiration.getAttribute('aria-describedby') ?? '')?.textContent).toBe('Enter an expiration date in the years 2000 to 2099.');
+    await user.type(expiration, '2026-12-18');
+    expect(expiration.getAttribute('aria-invalid')).toBeNull();
+    expect(expiration.getAttribute('aria-describedby')).toBeNull();
+    expect(confirm).toHaveBeenCalledTimes(1);
+  });
+});

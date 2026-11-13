@@ -294,6 +294,9 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       case 'targetOption':
         // An emptied option price is valid while its role's Underlying price is filled (P92).
         return changed(issue.field) && (!!positiveDecimal(fields[issue.field]) || (fields[issue.field].trim() === '' && !!fields[issue.field === 'stopOption' ? 'stop' : 'target'].trim()));
+      case 'expiration':
+        // The date input hands over ISO text, or '' for none or an incomplete date; the browser holds it to min and max.
+        return issue.code === 'InvalidExpiration' && changed('expiration') && /^20\d\d-\d\d-\d\d$/.test(fields.expiration);
       case 'symbol':
         return changed('symbol') && isValidSymbol(fields.symbol);
       case 'quantity':
@@ -316,7 +319,13 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     <div className="field">
       <label>
         {label}
-        <input value={fields[name]} inputMode={inputMode} onChange={(e) => set(name)(e.target.value)} {...describedBy(name)} />
+        <input
+          value={fields[name]}
+          inputMode={inputMode}
+          {...(name === 'expiration' && { type: 'date', min: '2000-01-01', max: '2099-12-31' })}
+          onChange={(e) => set(name)(e.target.value)}
+          {...describedBy(name)}
+        />
       </label>
       {hint && <p className="hint">{hint}</p>}
       {fieldError(name)}
