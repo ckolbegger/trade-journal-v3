@@ -270,3 +270,15 @@ ocr: session `e4222aeb-9d44-495b-925d-30c262639f79`, model gpt-6.1-sol, 3 files 
 Fix: in `full-suite.sh`, every non-lane stage removes `<label>-lane.txt` before it works, and only the lane stage writes it. The lane stage's internal unit, integration and checks steps don't clear it. The new case in `run-complete.test.sh` drives the real `full-suite.sh` (`browser-auto` in a scratch repo whose diff picks the full tier and runs nothing). It was red (`FAIL: a non-lane run under a label with an old lane marker… was not reported INCOMPLETE`), then green, with every earlier case green. Rows are in [tdd-log/T8P.1-B20.md](tdd-log/T8P.1-B20.md).
 
 ocr: session `f5d16a22-cc60-4f84-8bf3-9c47e845720d`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 0 comments. **No findings.** Raw output: [ocr/T8P.1-B20-7775984a.json](ocr/T8P.1-B20-7775984a.json).
+
+### T8P.1-B4 (`e68ab797`)
+
+Fix: `lane-setup.sh` derives the source root in a `source_root_of` function (`${1%/.claude/worktrees/*}`, the innermost component), refusing with exit 2 outside any `.claude/worktrees/`. A new `--print-source-root <path>` query prints it and exits before any git or clone work, and the no-argument call is unchanged.
+
+New shell test `.claude/scripts/lane-setup.test.sh`, covering the nested path, the plain path and the refusal. It was red against a scratch copy with the old `%%` (`FAIL: nested path: expected /x/.claude/worktrees/outer, got exit 0: /x`), then green. Rows are in [tdd-log/T8P.1-B4.md](tdd-log/T8P.1-B4.md).
+
+End to end, in a scratch worktree under `.claude/worktrees/`: exit 0, with `node_modules` and `dist-releases` cloned, `.env.local` copied (`DEV_PORT=5175`) and the hooks path `.githooks`. The scratch worktree was then removed.
+
+ocr: session `53bff592-afbf-4fda-bb24-1e7cd667125e`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 0 comments. **No findings.** Raw output: [ocr/T8P.1-B4-e68ab797.json](ocr/T8P.1-B4-e68ab797.json).
+
+Every T8P.1 bug task is closed: B20 and B4 are clean, and the lock wrapper's last findings are accepted limits AL-1 to AL-4.
