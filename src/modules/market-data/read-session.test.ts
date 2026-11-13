@@ -330,6 +330,24 @@ describe('the read session (P78, P79)', () => {
   });
 });
 
+describe('Market Data read session: the next session (revision 92)', () => {
+  it('should name the session after its trading date from the calendar, and none outside coverage', async () => {
+    const { marketData } = await setup();
+    const covered: { context: FrameContext; next: string }[] = [
+      { context: { kind: 'Current', asOf: TUESDAY_NOON }, next: '2026-10-13' },
+      // Friday's next session is Monday, not Saturday.
+      { context: { kind: 'Historical', tradingDate: '2026-10-09' }, next: '2026-10-12' },
+    ];
+    for (const { context, next } of covered) {
+      const { result: session, requests } = await countRequests(() => marketData.openReadSession(context));
+      expect(session.nextSessionDate).toBe(next);
+      expect(requests).toEqual([]);
+    }
+    const outside = await marketData.openReadSession({ kind: 'Current', asOf: '2029-01-05T02:00:00Z' });
+    expect(outside.nextSessionDate).toBeUndefined();
+  });
+});
+
 describe("the read session's gaps scan (decision 106)", () => {
   // The lower bound of each index range read, as [instrumentKey, date], while `run` runs.
   async function scanLowerBounds<T>(run: () => Promise<T>) {

@@ -293,6 +293,8 @@ export type RecoverResult =
 export interface MarketDataReadSession {
   readonly tradingDate: string;
   readonly closeInstant?: string;
+  // The session after `tradingDate`, from the calendar alone; absent outside session-policy coverage (revision 92).
+  readonly nextSessionDate?: string;
   readonly covered: boolean;
   // The session's date, then an earlier one: a frame per Instrument asked, in the order asked, none outside coverage.
   frames(instruments: readonly string[]): Promise<readonly MarkFrame[]>;
@@ -919,9 +921,12 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       };
       // The keys the answered gap lookups listed, each once.
       const gapKeys = new Map<string, BoundKey>();
+      // The calendar alone: unlike a frame's `nextSession`, it is named before that session completes.
+      const next = deps.sessionPolicy.nextSession(day.date);
       return {
         tradingDate: day.date,
         closeInstant: day.close,
+        ...(next.ok && { nextSessionDate: next.value.date }),
         covered: true,
         frames: (instruments) => framesAt(context, day, instruments),
         // Keys and snapshot ids as one `ResolveFrames` per date over every Instrument read on it gives them.

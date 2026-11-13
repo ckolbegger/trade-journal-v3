@@ -468,3 +468,66 @@ describe('getTradeDetail: a Debt past expiration takes its due status at the ses
     expect(dueStatuses(detail)).toEqual(dueStatuses(reference));
   }, 60_000);
 });
+
+describe('Trade Detail: first Marks pending (revision 90)', () => {
+  const XYZ_PLAN = { symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' };
+  const FRIDAY_PLAN = '2026-10-09T13:00:00Z';
+  const FRIDAY_1730 = '2026-10-09T21:30:00Z';
+  const MONDAY_NOON = '2026-10-12T16:00:00Z';
+  const SATURDAY_NOON = '2026-10-10T16:00:00Z';
+  const MONDAY_1700 = '2026-10-12T21:00:00Z';
+  const TUESDAY_NOON = '2026-10-13T16:00:00Z';
+  // Coverage ends 2028-12-31.
+  const OUTSIDE_COVERAGE = '2029-01-03T17:00:00Z';
+
+  type Stack = Awaited<ReturnType<typeof reviewStack>>;
+
+  async function stockDetail(now: string, record: (stack: Stack, trade: Parameters<Stack['fill']>[0]) => Promise<void>, plan: { planTime?: string; shares?: string } = {}) {
+    const stack = await reviewStack(now);
+    const trade = await stack.confirm({ ...XYZ_PLAN, ...plan });
+    await record(stack, trade);
+    return openDetail(await createTradeViews(stack).getTradeDetail({ tradeId: trade.tradeId }));
+  }
+
+  it('should say the first Marks are pending for a Trade opened after the latest close, with the session whose close brings them', async () => {
+    // Opened at 10:00 Monday and viewed at noon: Friday is the latest close, and Monday's close brings the first Marks.
+    const during = await stockDetail(MONDAY_NOON, (stack, trade) => stack.fill(trade, MONDAY_10, '100', '50.00'));
+    // Opened at 17:30 Friday, after the 16:00 close, and viewed on Saturday: the next session is Monday.
+    const afterClose = await stockDetail(SATURDAY_NOON, (stack, trade) => stack.fill(trade, FRIDAY_1730, '100', '50.00'), { planTime: FRIDAY_PLAN });
+
+    expect(during.current).toEqual(expect.objectContaining({ expectedMarkDate: '2026-10-09', firstMarksDue: '2026-10-12' }));
+    expect(afterClose.current).toEqual(expect.objectContaining({ expectedMarkDate: '2026-10-09', firstMarksDue: '2026-10-12' }));
+  }, 60_000);
+
+  it('should not say so once shares are added after an earlier Mark', async () => {
+    // Monday's Mark values the first 100 shares; the 40 bought Tuesday await Tuesday's close, with a dated line.
+    const detail = await stockDetail(
+      TUESDAY_NOON,
+      async (stack, trade) => {
+        await stack.fill(trade, MONDAY_10, '100', '50.00');
+        await stack.fill(trade, TUESDAY_10, '40', '53.00');
+        await stack.saveMark('XYZ', '52.00');
+      },
+      { shares: '150' },
+    );
+
+    expect(detail.current.evaluation.currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12' });
+    expect(detail.current.datedLine).toBeDefined();
+    expect(detail.current).not.toHaveProperty('firstMarksDue');
+  }, 60_000);
+
+  it('should not say so when a Mark is missing, outside session-policy coverage, or once the contract expired', async () => {
+    // Monday's Mark is missing after the close: the figures wait on a Mark, not on a close.
+    const missing = await stockDetail(MONDAY_1700, (stack, trade) => stack.fill(trade, MONDAY_10, '100', '50.00'));
+    const outside = await stockDetail(OUTSIDE_COVERAGE, (stack, trade) => stack.fill(trade, MONDAY_10, '100', '50.00'));
+    const expiredStack = await optionStack(MONDAY_NOV_23_1700);
+    const expired = openDetail(await expiredStack.tradeViews.getTradeDetail({ tradeId: await expiredStack.openCashSecuredPut() }));
+
+    expect(missing.current.evaluation.currentMarkedPnl).toEqual(expect.objectContaining({ kind: 'Unavailable', reason: 'MarkMissing' }));
+    expect(missing.current).not.toHaveProperty('firstMarksDue');
+    expect(outside.current).not.toHaveProperty('expectedMarkDate');
+    expect(outside.current).not.toHaveProperty('firstMarksDue');
+    expect(expired.settlement).toHaveLength(1);
+    expect(expired.current).not.toHaveProperty('firstMarksDue');
+  }, 60_000);
+});

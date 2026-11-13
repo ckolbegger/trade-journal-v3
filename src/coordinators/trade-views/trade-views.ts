@@ -278,6 +278,9 @@ export interface OpenCurrentEvaluation {
   readonly coverage: readonly { readonly instrument: TradeEvaluation['observation']['instrument']; readonly coverage: TradeEvaluation['coverage'] }[];
   readonly evaluation: TradeEvaluation;
   readonly datedLine?: DatedLine;
+  // The trading date whose close brings the Trade's first Marks: present only while no session's Marks have valued it
+  // (no dated line, every Lot at entry, nothing settling) and its figures wait on that close, not on a Mark (revision 90).
+  readonly firstMarksDue?: string;
 }
 
 // An Outstanding Debt in the narrative: "Reflection owed" beside its Position Change, with its snapshot
@@ -472,6 +475,15 @@ type ExpectedMark = Pick<OpenCurrentFigures, 'expectedMarkDate' | 'markResolutio
 
 const expectedMarkOf = (session: MarketDataReadSession, frame: MarkFrame | undefined): ExpectedMark =>
   session.covered ? { expectedMarkDate: session.tradingDate, ...(frame && { markResolution: frame.resolution }) } : {};
+
+// The session after the Expected Mark Date, which the read session names from the calendar, while the Trade awaits its
+// first close: the figures are Unavailable for the close they await (AwaitingClose), no session's Mark has valued any
+// Lot, and no contract is settling.
+function firstMarksDueOf(session: MarketDataReadSession, evaluation: TradeEvaluation, datedLine: DatedLine | undefined, settlement: readonly SettlementItem[]): string | undefined {
+  const { currentMarkedPnl, atEntry } = evaluation;
+  const awaitingClose = currentMarkedPnl.kind === 'Unavailable' && currentMarkedPnl.reason === 'AwaitingClose';
+  return session.covered && awaitingClose && atEntry !== null && !datedLine && settlement.length === 0 ? session.nextSessionDate : undefined;
+}
 
 function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, expected: ExpectedMark, evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): OpenTradeItem {
   // The signed open quantity at the quantity-weighted Open Lot price.
@@ -820,6 +832,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
           evaluation,
           ...optional('datedLine', datedLine),
+          ...optional('firstMarksDue', firstMarksDueOf(session, evaluation, datedLine, settlement)),
         };
         // The closes behind a Debt's due status come from the frame read; with none (after expiration, or no Position), from Market Data's frame for the Underlying.
         const hasDebt = narrative.some((item) => item.kind === 'Debt');
