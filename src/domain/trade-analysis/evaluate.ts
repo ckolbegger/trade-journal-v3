@@ -175,13 +175,13 @@ const value = <T>(v: T): CalculationResult<T> => ({ kind: 'Value', value: v });
 function atEntryOf(lots: readonly OpenLot[], baseline: PlanBaseline, multiplier: Rational, oneR: Rational): AtEntryFigures | null {
   if (lots.length === 0) return null;
   const quantity = sum(lots.map((l) => l.quantity));
-  const nonnegative = (r: Rational) => (r.compare(ZERO) > 0 ? r : ZERO);
   const directionOf = (l: OpenLot) => (l.quantity.compare(ZERO) > 0 ? 1 : -1);
-  const riskFromEntry = nonnegative(
-    sum(lots.map((l) => l.quantity.mul(multiplier).mul(l.price.sub(measurementAheadOf(baseline.stopBasis, l.price, 'Stop', directionOf(l)))))),
+  // A lot with every condition of the role crossed at its fill contributes zero, never a negative term.
+  const riskFromEntry = sum(
+    lots.map((l) => atLeastZero(l.quantity.mul(multiplier).mul(l.price.sub(measurementAheadOf(baseline.stopBasis, l.price, 'Stop', directionOf(l)))))),
   );
-  const rewardFromEntry = nonnegative(
-    sum(lots.map((l) => l.quantity.mul(multiplier).mul(measurementAheadOf(baseline.targetBasis, l.price, 'Target', directionOf(l)).sub(l.price)))),
+  const rewardFromEntry = sum(
+    lots.map((l) => atLeastZero(l.quantity.mul(multiplier).mul(measurementAheadOf(baseline.targetBasis, l.price, 'Target', directionOf(l)).sub(l.price)))),
   );
   return {
     label: 'AtEntry',

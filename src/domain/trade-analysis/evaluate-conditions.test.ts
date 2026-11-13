@@ -124,8 +124,8 @@ describe('evaluate: the headline across conditions (P91, A197)', () => {
 
 // BUG-3, decision 109: the at-entry line is measured to the nearest condition of each role still ahead of the fill.
 const NVDA = { kind: 'Stock', symbol: 'NVDA' } as const;
-const nvdaAtEntry = (fill: string) =>
-  evaluate({ state: derivedState(nvdaRecord(fill), '2026-10-12'), frame: frameOf(NVDA_CALL, '2026-10-12'), underlyingFrame: frameOf(NVDA, '2026-10-12') }).atEntry;
+const nvdaAtEntry = (fill: string, ...laterFills: readonly string[]) =>
+  evaluate({ state: derivedState(nvdaRecord(fill, ...laterFills),'2026-10-12'), frame: frameOf(NVDA_CALL, '2026-10-12'), underlyingFrame: frameOf(NVDA, '2026-10-12') }).atEntry;
 
 describe('evaluate: the at-entry line past a crossed condition (BUG-3, decision 109)', () => {
   it('should measure a Long Call filled at 7.35, beyond its 7.50 option Stop, to the NVDA 140 Stop at value 0: risk from entry $735.00, 0.98 R of 1R $750', () => {
@@ -142,5 +142,23 @@ describe('evaluate: the at-entry line past a crossed condition (BUG-3, decision 
     const sold = positionChange('pc-s1', 1, [optionExecution(OS_LEG_ID, OS2_CONTRACT, 'ex-pc-s1', '2026-10-12T14:00:00Z', 2, 'Sell', '2', '3.70', '0')]);
     const e = evaluate({ state: derivedState(os2Record([sold]), '2026-10-12'), frame: frameOf(OS2_CONTRACT, '2026-10-12'), underlyingFrame: frameOf(MNO, '2026-10-12', '44.00') });
     expect(e.atEntry?.riskFromEntry).toEqual(Rational.of(60n));
+  });
+});
+
+// BUG-3-B1: each lot's term is clamped at zero before the lots are summed.
+describe('evaluate: the at-entry line per lot (BUG-3-B1, decision 109)', () => {
+  it('should give an O-S2 lot sold at 4.10, past both Stops 3.60 and 4.00, a zero risk term, so the lot sold at 3.50 shows its full risk to the 3.60 Stop: risk from entry 10 dollars, 1/48 R of 1R 480 dollars', () => {
+    const sale = (id: string, seq: number, time: string, price: string) =>
+      positionChange(id, seq, [optionExecution(OS_LEG_ID, OS2_CONTRACT, `ex-${id}`, time, seq + 1, 'Sell', '1', price, '0')]);
+    const changes = [sale('pc-s1', 1, '2026-10-12T14:00:00Z', '3.50'), sale('pc-s2', 2, '2026-10-12T14:01:00Z', '4.10')];
+    const e = evaluate({ state: derivedState(os2Record(changes), '2026-10-12'), frame: frameOf(OS2_CONTRACT, '2026-10-12'), underlyingFrame: frameOf(MNO, '2026-10-12', '44.00') });
+    expect(e.atEntry?.riskFromEntry).toEqual(Rational.of(10n));
+    expect(e.atEntry && frac(e.atEntry.riskFromEntryInPlanR)).toBe(q(1n, 48n));
+  });
+
+  it('should give a NVDA lot filled at 55.00, past both Targets at value 50.00, a zero reward term, so the lot filled at 14.00 shows its full reward: reward from entry 3600 dollars, 4.80 R of 1R 750 dollars', () => {
+    const atEntry = nvdaAtEntry('14.00', '55.00');
+    expect(atEntry?.rewardFromEntry).toEqual(Rational.of(3600n));
+    expect(atEntry && frac(atEntry.rewardFromEntryInPlanR)).toBe(q(24n, 5n));
   });
 });
