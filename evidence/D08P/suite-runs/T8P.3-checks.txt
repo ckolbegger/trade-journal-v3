@@ -1,0 +1,114 @@
+$ npm run typecheck
+
+> trade-journal-v3@0.0.0 typecheck
+> tsc
+
+EXIT 0
+$ npx tsc6 --noEmit
+EXIT 0
+$ npm run lint
+
+> trade-journal-v3@0.0.0 lint
+> eslint .
+
+EXIT 0
+$ npm run lint:deps
+
+> trade-journal-v3@0.0.0 lint:deps
+> node tools/lint-deps.ts
+
+
+✔ no dependency violations found (380 modules, 1897 dependencies cruised)
+
+lint:deps OK (src)
+EXIT 0
+$ npm run build
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 196 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-BrO2AAjD.css   14.58 kB │ gzip:   3.74 kB
+dist/assets/index-_eiALMHo.js   727.66 kB │ gzip: 214.83 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 390ms
+EXIT 0
+$ npm run verify:hooks
+
+> trade-journal-v3@0.0.0 verify:hooks
+> sh tools/verify-hooks.sh
+
+verify:hooks: pre-commit hook enabled
+EXIT 0
+$ npm run verify:release
+
+> trade-journal-v3@0.0.0 verify:release
+> node tools/verify-release.ts
+
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-t8p3/dist: release 07058b2c5ffdd3e25a91efd6ecdd41f52a5cf66ff926fed8a1e63dc9648cf3f9, 6 assets
+EXIT 0
+$ npm run verify:capabilities
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 19 operations, 11 variant-qualified, 9 routes, 4 Entry Types, schema 7, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+EXIT 0
+$ npm run verify:releases
+
+> trade-journal-v3@0.0.0 verify:releases
+> node tools/verify-releases.ts
+
+verify:releases OK: v1 53db0622f0cdc2f0945fadc853aa499c720ef3e74e907a6b12e042b442cd89be, v2 6fe7c02fb87e513206013e3ea8a26de5ad3771c3b35deaba2a7390e4d272eff0, v2-corrupt fails only on /assets/index-BrO2AAjD.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 017365441a54b501a8c2ae4eee9a7321be9286c07062ffb16e6607622b4ce94d schema 2, d4 ecd9bbff1f81d60d3da8460b82d81b4a1899931c5ff08a3ac7546a6457232f8e schema 3, d5r2 7720af1b973860eabfa4d02143792cbd571a87dc8969412e41fe5aa708796243 schema 4, d6 c90b6d9b8fbe4845c8e8dd9f4af0c037b3b682d4f87f20a002f94af56636224e schema 7
+EXIT 0
+$ npm run verify:no-fault-hooks
+
+> trade-journal-v3@0.0.0 verify:no-fault-hooks
+> node tools/verify-no-fault-hooks.ts
+
+verify:no-fault-hooks OK: /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-t8p3/dist has no fault or bench hooks
+EXIT 0
+$ npm run verify:capacity
+
+> trade-journal-v3@0.0.0 verify:capacity
+> node tools/verify-capacity.ts
+
+verify:capacity OK: required quota 2737548396 = 3 × 912516132, schema 7
+EXIT 0
+$ npm run verify:fixtures
+
+> trade-journal-v3@0.0.0 verify:fixtures
+> node tools/verify-fixtures.ts
+
+workspace-v1: schema 1, migrated to 7 into tj-ws-verify-0001, views equal
+workspace-v2: schema 2, migrated to 7 into tj-ws-verify-0001, views equal
+workspace-v3: schema 3, migrated to 7 into tj-ws-verify-0001, views equal
+workspace-v4: schema 4, migrated to 7 into tj-ws-verify-0001, views equal
+workspace-v5: schema 5, migrated to 7 into tj-ws-verify-0001, views equal
+workspace-v6: schema 6, migrated to 7 into tj-ws-verify-0001, views equal
+workspace-v7: schema 7, opened without migration, views equal
+verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4, workspace-v5, workspace-v6, workspace-v7 open Ready at schema 7 with views equal to their snapshots
+EXIT 0
+$ npm run verify:session-policy
+
+> trade-journal-v3@0.0.0 verify:session-policy
+> node tools/verify-session-policy.ts
+
+verify:session-policy OK: 5 years (2024-01-01 to 2028-12-31), 1827 dates compared, nyse revision 1 digest 13ff3ef725e71414e2f9bed388b5b59c81964d2ffbd77db2c9a75443b859998b
+EXIT 0
+$ npm run verify:wording
+
+> trade-journal-v3@0.0.0 verify:wording
+> eslint --no-config-lookup -c eslint.wording.config.js src/ui
+
+EXIT 0
