@@ -466,3 +466,19 @@ Browser tier: full (`browser-auto 588ddfd3`: "first matching path since 588ddfd3
 | Checks | 14 of 14 exit 0 |
 
 BUG-3 is closed: `2b66f603`, case 5 evidence `d816522d`, B1 `d85016bb`, B2 `f6b33ed4`. Flagged for the record: BUG-3's cases 2 and 3 were first-run passes, each with a mutation check.
+
+## BUG-1 (after the gate): the exercise checkbox drawn as a full-width box
+
+Base `736dcc8a`. Fix `c906920b`: the Exercise Intent label gets `className="check"`; `form label.check` (a flex row, min-height 44 px) and `form label.check input` (1.25rem square) in `app.css`. Written as `form label.check`, not the write-up's plain `label.check`, to beat the existing `form label` rule's specificity. One browser case (`e2e/d7/plan-open.spec.ts`, describe "BUG-1 Exercise Intent checkbox"): red "checkbox width at 1280 px, Expected <= 32, Received 886", then green; also checked at 375 and 320 px with no sideways scroll. No first-run passes. Subagent's note: the keyboard path (Tab, Space, focus ring) has no case of its own; the native input and the `input:focus-within` rule are unchanged.
+
+ocr on `c906920b` (`ocr/BUG-1-c906920b.json`): **No findings.** (The background was trimmed to 1,900 characters, cutting the write-up's "Keep passing", "Words" and "Out of scope" notes.)
+
+## BUG-2 (after the gate): the Expiration date as a plain text box
+
+Base `c906920b`. Fix `2bef1d4e`: the Expiration field is `type="date"` with min 2000-01-01 and max 2099-12-31; `corrected()` clears `InvalidExpiration` once the changed value matches `20YY-MM-DD`; `ContractAlreadyExpired` stays until the next submit (the server judges it). Cases: unit "date input limited to 2000-01-01 through 2099-12-31" (red: expected 'text' to be 'date'); unit "InvalidExpiration and aria-invalid removed once the date is changed" (first red was a fixture failure, the form was refilled; real red: expected 'true' to be null); browser in `e2e/d7/plan-open.spec.ts`, error beside an empty date, cleared once 2026-11-20 is filled, then a Trade reading "Expires Fri 20 Nov 2026" (red: expected `type="date"`). No first-run passes. `e2e/d7s/responsive-a11y.spec.ts`'s keyboard case now types Expiration as `MMDDYYYY` date segments (en-US), since a date input takes segments.
+
+Subagent's notes (not ocr findings):
+- The browser case checks the "Expires" line on an Open Trade, because the **Planned** Trade Detail showed no Expires line in the browser, though `trade-views.ts:794` sets `contractExpiration` for a Planned Trade. Possibly a latent defect; not investigated. Listed for the user.
+- No other plain-text date field remains: the Mark date is not an input, and the Execution time is already `datetime-local`.
+
+ocr on `2bef1d4e` (`ocr/BUG-2-2bef1d4e.json`): **No findings.**
