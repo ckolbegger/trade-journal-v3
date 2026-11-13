@@ -11,13 +11,22 @@
 # the main checkout and to other implementations' worktrees. Refuses to run anywhere else.
 # Rerunning is safe: an existing node_modules or .env.local is left alone.
 set -eu
+# source_root_of <lane path>: prints the source root, the path before the INNERMOST .claude/worktrees/
+# component (the deliverable worktree may itself sit inside a .claude/worktrees/ directory).
+source_root_of() {
+  case "$1" in
+    */.claude/worktrees/*) echo "${1%/.claude/worktrees/*}" ;;
+    *) echo "lane-setup: $1 is not under a .claude/worktrees/ directory; run this inside a lane worktree" >&2; return 2 ;;
+  esac
+}
+# Query mode for the test: --print-source-root <path> prints the source root and exits, cloning nothing.
+if [[ "${1:-}" == --print-source-root ]]; then
+  source_root_of "${2:?lane-setup: --print-source-root needs a path}"
+  exit
+fi
 root=$(git rev-parse --show-toplevel)
 cd "$root"
-case "$root" in
-  */.claude/worktrees/*) ;;
-  *) echo "lane-setup: $root is not under a .claude/worktrees/ directory; run this inside a lane worktree" >&2; exit 2 ;;
-esac
-source_root=${root%%/.claude/worktrees/*}
+source_root=$(source_root_of "$root") || exit 2
 [[ -f "$source_root/package.json" && -d "$source_root/node_modules" ]] || {
   echo "lane-setup: $source_root is not an installed deliverable worktree (no package.json or node_modules)" >&2; exit 2; }
 [[ "$source_root" != "$root" ]] || { echo "lane-setup: lane root equals its source root" >&2; exit 2; }
