@@ -34,7 +34,7 @@
     "test:integration": "vitest run --project integration",
     "test:e2e": "npm run test:e2e:1 && npm run test:e2e:2",
     "test:e2e:1": "npm run build:faults && npm run build:releases && playwright test e2e/d1 e2e/d2 e2e/d4 e2e/support --grep-invert @release-history",
-    "test:e2e:2": "npm run build:faults && npm run build:releases && playwright test e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 --grep-invert @release-history",
+    "test:e2e:2": "npm run build:faults && npm run build:releases && playwright test e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 e2e/d8p --grep-invert @release-history",
     "test:e2e:release-history": "npm run build:faults && npm run build:releases && playwright test e2e/d1 e2e/d2 e2e/d4 e2e/d5 e2e/d5r e2e/d6 e2e/d7p e2e/d7 --grep @release-history",
     "fixtures:freeze": "node tools/fixtures-freeze.ts",
     "verify:fixtures": "node tools/verify-fixtures.ts",

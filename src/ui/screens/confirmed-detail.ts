@@ -8,7 +8,7 @@ export function confirmedDetail(
   definition: EntryDefinitionRecord,
   labels: PlannedTradeDetail['labels'],
 ): PlannedTradeDetail {
-  const { trade, derivation, entry, payoff } = success.postCommit;
+  const { trade, derivation, entry, payoff, contractExpiration } = success.postCommit;
   const prompts = new Map(definition.prompts.map((p) => [p.id, p]));
   return {
     tradeId: trade.tradeId,
@@ -27,6 +27,7 @@ export function confirmedDetail(
     baseline: derivation.baseline,
     // As Trade Views gives a Planned Detail: the Plan's total quantity at its first leg's intended entry.
     summary: plannedTradeSummary(trade.plan.legs),
+    ...(contractExpiration && { contractExpiration }),
     payoff,
     labels,
     journal: [

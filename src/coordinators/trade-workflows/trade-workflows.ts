@@ -1,7 +1,8 @@
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import { assessPlan, derive, expirationPayoff, type ExpirationPayoffs, type PlanInput } from '../../domain/trade-analysis/index.ts';
+import { assessPlan, derive, expirationPayoff, type ExpirationPayoffs, type PlanInput, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
+import { expirationLineOf, type ContractExpiration } from '../trade-views/index.ts';
 import type { AnswerInput, EntryProjection } from '../../modules/journal/index.ts';
 import { recordPositionChange, type PositionChangeCommand, type PositionChangeResult } from './record-position-change.ts';
 import { beginSemanticTransaction, type BindingCheck, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -24,7 +25,7 @@ export interface ConfirmPlanCommand {
 
 export type ConfirmPlanResult =
   // The accepted Plan's expiration payoff views (the Planned view is the one a Plan form renders).
-  | ({ readonly kind: 'Confirmed' } & TradeMutationSuccess<{ readonly entryId: string }, { readonly entry: EntryProjection; readonly payoff: ExpirationPayoffs }>)
+  | ({ readonly kind: 'Confirmed' } & TradeMutationSuccess<{ readonly entryId: string }, { readonly entry: EntryProjection; readonly payoff: ExpirationPayoffs; readonly contractExpiration?: ContractExpiration }>)
   // Every issue from every participant together; nothing was written.
   | {
       readonly kind: 'Rejected';
@@ -40,6 +41,11 @@ export type ConfirmPlanResult =
 export interface TradeWorkflows {
   confirmPlan(command: ConfirmPlanCommand): Promise<ConfirmPlanResult>;
   recordPositionChange(command: PositionChangeCommand): Promise<PositionChangeResult>;
+}
+
+function expirationLine(trade: TradeAnalysisRecord, viewMoment: Instant): { readonly contractExpiration?: ContractExpiration } {
+  const line = expirationLineOf(trade, 'Expires', viewMoment);
+  return line ? { contractExpiration: line } : {};
 }
 
 function unchangedReference(name: string, id: string, recordRevision: number): BindingCheck {
@@ -146,7 +152,8 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
           lifecycleTransitions: [{ tradeId: trade.tradeId, from: null, to: trade.storedLifecycle }],
           entryId: entry.id,
         },
-        postCommit: { trade, derivation, entry, payoff: expirationPayoff({ plan: trade.plan }) },
+        // The expiration line of a Planned Detail read now, so the handed-over Detail needs no read (A209, tech debt item 23).
+        postCommit: { trade, derivation, entry, payoff: expirationPayoff({ plan: trade.plan }), ...expirationLine(trade, deps.clock.now()) },
         affected: [{ scope: 'TradeList', lifecycle: trade.storedLifecycle }],
       };
     }

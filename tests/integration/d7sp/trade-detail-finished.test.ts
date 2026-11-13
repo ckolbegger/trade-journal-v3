@@ -28,7 +28,7 @@ describe('Trade Detail as a finished read (decision 105)', () => {
 
     const detail = await detailOf(app, tradeId);
 
-    expect('positions' in detail && detail.contractExpiration).toEqual({ status: 'Expires', date: '2026-11-20' });
+    expect('positions' in detail && detail.contractExpiration).toEqual({ status: 'Expires', date: '2026-11-20', days: 1 });
   });
 
   it('should give a Planned option Trade Detail the expiration line Expires', async () => {
@@ -38,7 +38,7 @@ describe('Trade Detail as a finished read (decision 105)', () => {
     const detail = await detailOf(app, tradeId);
 
     expect(detail.lifecycle).toEqual({ stored: 'Planned', agreement: { kind: 'Agrees' } });
-    expect('contractExpiration' in detail && detail.contractExpiration).toEqual({ status: 'Expires', date: '2026-11-20' });
+    expect('contractExpiration' in detail && detail.contractExpiration).toEqual({ status: 'Expires', date: '2026-11-20', days: 1 });
   });
 
   it('should give no expiration line to an Open option Trade whose contract is Settlement Due, since its panel says so', async () => {

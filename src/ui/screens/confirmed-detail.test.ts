@@ -60,6 +60,13 @@ describe('confirmedDetail', () => {
     expect(detail.payoff).toBe(optionSuccess.postCommit.payoff);
   });
 
+  it('should show Expires on the handed-over Planned Detail without a read', () => {
+    const contractExpiration = { status: 'Expires', date: '2026-11-20', days: 39 } as const;
+    const withLine = { ...optionSuccess, postCommit: { ...optionSuccess.postCommit, contractExpiration } } as unknown as ConfirmedResult;
+    const detail = confirmedDetail(withLine, { prompts: [] } as unknown as EntryDefinitionRecord, { strategy: '', account: '', institution: '' });
+    expect(detail.contractExpiration).toEqual(contractExpiration);
+  });
+
   it('should give the just-confirmed Planned Detail the Trade Summary of the Plan, as a Planned list item has', () => {
     const detail = confirmedDetail(success, { prompts: [] } as unknown as EntryDefinitionRecord, { strategy: '', account: '', institution: '' });
     expect(detail.summary).toEqual({ kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(201n, 4n) });

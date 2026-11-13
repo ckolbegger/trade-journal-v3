@@ -22,6 +22,7 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
+import { daysToExpiration } from '../../domain/instrument/index.ts';
 import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock, Instant } from '../../domain/time/index.ts';
@@ -441,9 +442,10 @@ const optionContractOf = (analysis: TradeAnalysisRecord) => {
   return instrument.kind === 'Option' ? instrument : undefined;
 };
 
-const expirationLineOf = (analysis: TradeAnalysisRecord, status: ContractExpiration['status']): ContractExpiration | undefined => {
+// An "Expires" line carries the calendar days from the View Moment's exchange-local date (A208); an "Expired" one does not.
+export const expirationLineOf = (analysis: TradeAnalysisRecord, status: ContractExpiration['status'], viewMoment?: Instant): ContractExpiration | undefined => {
   const contract = optionContractOf(analysis);
-  return contract && { status, date: contract.expiration };
+  return contract && { status, date: contract.expiration, ...(status === 'Expires' && viewMoment && { days: daysToExpiration(contract, viewMoment) }) };
 };
 
 const closedByExpiration = (derived: DerivedTradeState) =>
@@ -793,7 +795,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // A Trade that is Planned by both its stored lifecycle and its facts keeps D1's Detail, whose
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
         if (analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned') {
-          const view: TradeDetailView = { ...planned, summary: plannedSummaryOf(analysis), ...optional('contractExpiration', expirationLineOf(analysis, 'Expires')), journal: narrative.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
+          const view: TradeDetailView = { ...planned, summary: plannedSummaryOf(analysis), ...optional('contractExpiration', expirationLineOf(analysis, 'Expires', asOf)), journal: narrative.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
           return { binding, view };
         }
         const lastActivity = s.lastActivity ?? s.planTime;
@@ -823,7 +825,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const hasDebt = narrative.some((item) => item.kind === 'Debt');
         const closes = !hasDebt ? undefined : frame ? closesOf(frame) : session.covered ? await sessionCloses(analysis.plan.underlying, asOf) : undefined;
         // A contract due for settlement has its panel, which says so, so it has no line (decision 105).
-        const expiration = settlement.length === 0 ? expirationLineOf(analysis, 'Expires') : undefined;
+        const expiration = settlement.length === 0 ? expirationLineOf(analysis, 'Expires', asOf) : undefined;
         const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });

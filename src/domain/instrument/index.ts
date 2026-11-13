@@ -1,5 +1,7 @@
 // The domain's tagged Instrument (A99, decision 77). A Stock's key is its bare symbol; an Option's key
 // is the unpadded OCC symbol built from `root`, never from `symbol`.
+import { Temporal } from 'temporal-polyfill'
+import type { Instant } from '../time/index.ts'
 import { parseDecimal } from '../values/index.ts'
 
 export type StockInstrument = { readonly kind: 'Stock'; readonly symbol: string }
@@ -62,6 +64,12 @@ export function expiredOn(contract: OptionInstrument, date: string): boolean {
 // Settlement is due on or after the expiration date.
 export function settlementDueOn(contract: OptionInstrument, date: string): boolean {
   return date >= contract.expiration
+}
+
+// Calendar days from the exchange-local date of an instant to the contract's expiration date (A208); 0 on the date itself.
+export function daysToExpiration(contract: OptionInstrument, at: Instant): number {
+  const today = Temporal.Instant.from(at).toZonedDateTimeISO('America/New_York').toPlainDate()
+  return today.until(Temporal.PlainDate.from(contract.expiration), { largestUnit: 'days' }).days
 }
 
 export type ContractIssue =
