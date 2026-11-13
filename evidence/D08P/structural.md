@@ -1026,3 +1026,18 @@ Commits `9ea46ea2` (task) and `cb77bcad` (lane tier: 1563 unit, 218 integration,
 - T8P.28 adds the field in lane BV, with one case, then reads it for `firstMarksDue`.
 - S124's character count (2,471 to 2,610) and the reading-cost table are updated, and the reading lists are regenerated. No line moved and no tag changed.
 - Lane BV, which held no commit of T8P.28's, was moved to `58ebbf91`, and T8P.28's agent resumed with the revision.
+
+**T8P.21-B3 ocr** (`66d1d141`): session `92cd5759-0b98-427c-9bb0-7b799b1f02e5`, 1 file, 0 comments; relocated `811e4390-de1d-4759-a02b-88c9cf17ab06`, 2 files, 0 comments. Raw output: [ocr/T8P.21-B3-66d1d141.json](ocr/T8P.21-B3-66d1d141.json), [ocr/T8P.21-B3-66d1d141-relocated.json](ocr/T8P.21-B3-66d1d141-relocated.json). Clean.
+
+**T8P.21 merge.** The rebase onto `5b0bad45` was clean but brought in code (T8P.16, T8P.13). T8P.21 changes no browser spec. The rebased lane tier `T8P.21-rebase` passed (1614 unit, 222 integration, 14 of 14; run complete). Fast-forwarded to `bb10b0dc`. Rebased hashes: `333af6d7` (task), `9b2271ef`, `67a46201` (B1, B2), `54f9d136`, `370a6cd5` (B3), `c3c4c6e6`, `bb10b0dc`. The lane was removed. Merge run 5 (`browser-auto dab6bc5b`) is running.
+
+## T8P.28 Trade Views: `firstMarksDue` (lane `d08p-bv`, revisions 90 and 92)
+
+Commits `d0d9be84` (task) and `68464489` (lane tier: 1602 unit, 222 integration, 14 of 14; run complete). Read session gains `nextSessionDate?: string` (from `sessionPolicy.nextSession(day.date)` when covered and `ok`, absent on the uncovered session); `OpenCurrentEvaluation` gains `firstMarksDue?: string`, set by `firstMarksDueOf(session, evaluation, datedLine, settlement)` in `getTradeDetail` only. The Open list item builds `current` separately, so it does not carry the field.
+- Market Data case red: `expected undefined to be '2026-10-13'`. Case 1 red: a deep-equality failure on `ObjectContaining` (Monday 10:00 fill viewed Monday noon, and Friday 17:30 fill viewed Saturday, both `2026-10-12`).
+- **Flagged first-run passes:** cases 2 and 3, since case 1's code built both behaviours. Mutations: dropping `!datedLine` failed case 2, and dropping the awaiting-close check failed case 3, each with `expected … to not have property "firstMarksDue"`. Both restored.
+- The three cases sit in `option-views.test.ts` (one of the Detail test files the brief named), since the expired-contract fixture is local to it. No existing expectation changed (no revision 88 line), no read-session double needed the field, and no file outside lane BV was touched.
+
+**T8P.28 ocr** (`d0d9be84`): session `e593e452-158a-4b98-87c1-a9786bb9c977`, 2 files, 0 comments; relocated `105df68c-f40d-404e-a0ff-4d57f053fb14`, 2 files, 0 comments. Raw output: [ocr/T8P.28-d0d9be84.json](ocr/T8P.28-d0d9be84.json), [ocr/T8P.28-d0d9be84-relocated.json](ocr/T8P.28-d0d9be84-relocated.json). Clean. Rebased onto `bb10b0dc` (brings in T8P.13 and T8P.21 code): `135a6651` (task), `45a24354`; the rebased lane tier `T8P.28-rebase` is running, and the fast-forward waits for merge run 5 to finish in the main worktree.
+
+**Merge run 5** at `bb10b0dc` (`browser-auto dab6bc5b`; the merges of T8P.16, T8P.13 and T8P.21): unit 1614, integration 222, checks 14 of 14, browser tier 1 128 passed and tier 2 75 passed, no failures and no flakes; run complete. Outputs: `suite-runs/merge-5-*.txt`. The next merge run is `browser-auto bb10b0dc`.

@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 25812,
+    "input_tokens": 25648,
+    "output_tokens": 164,
+    "cache_read_tokens": 6656,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/drawers/journal.props.ts",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts"
+      ]
+    }
+  ],
+  "session_id": "92cd5759-0b98-427c-9bb0-7b799b1f02e5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "92cd5759-0b98-427c-9bb0-7b799b1f02e5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "66d1d141",
+      "resolved_base": "902dffee9342b505af6a06518ddee2c06a493f79",
+      "resolved_head": "66d1d14142bb2f08ecb03f5adcca606a48521f05",
+      "exact_range": "902dffee9342b505af6a06518ddee2c06a493f79..66d1d14142bb2f08ecb03f5adcca606a48521f05",
+      "source_artifact_sha256": "e9b9c5f50cc1d11438ea66abba78ff8a16791baf076a55c24b78994d0ff3bfb0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "da8b562aadd0953a6bcaf15b78add20dcfbecdade129cfaa412dc2430c9ce71d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "da8b562aadd0953a6bcaf15b78add20dcfbecdade129cfaa412dc2430c9ce71d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1dc18f003e74eb83072928bc9264026066fa6de757834fea465e0a10ab39e477",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "69cfbf4d6c272914afd9c7467cea30521e944019961bd09f7ef072ce23c4174f",
+          "path": "evidence/D08P/tdd-log/T8P.21-B.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 12990
+  }
+}

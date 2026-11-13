@@ -842,7 +842,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.19 | 1 | D4 | Done | `4f5e40aa`; PlanForm data `210f9dac`, `298f5ea5`; lane tier `fb324a49` |
 | T8P.18 | 1 | D3 | Done | `ca0191e7`; B1 `a9452c3f`; lane tier `9c424051` |
 | T8P.20 | 1 | D5 | Done | `8d2927cf`; B1 to B3 `e4419e2d`; B4 `5e442c6f`; lane tier `85b90fff` |
-| T8P.21 | 1 | D6 | In progress from `957499ac` | |
+| T8P.21 | 1 | D6 | Done | `333af6d7`; B1, B2 `67a46201`; B3 `370a6cd5`; lane tiers `9b2271ef`, `54f9d136`, `c3c4c6e6`, `bb10b0dc` (after the rebase) |
 | T8P.28 | 1 | BV | In progress from `58ebbf91` (revision 92) | |
 | T8P.29 | 1 | R2 | Not started | |
 | T8P.30 | 1 | AX | Not started | |
