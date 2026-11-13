@@ -21,18 +21,22 @@ import {
   type LifecycleState,
   type PlanBaseline,
   type TradeAnalysisRecord,
+  replay,
 } from '../../domain/trade-analysis/index.ts';
-import { daysToExpiration } from '../../domain/instrument/index.ts';
-import { classifyDue, type DueClassification, type SessionCloses } from '../../domain/journal-debt/index.ts';
+import { daysToExpiration, instrumentKey } from '../../domain/instrument/index.ts';
+import { classifyDue, type SessionCloses } from '../../domain/journal-debt/index.ts';
 import { closedLongStockSummary, openTradeSummary, optionSummary, plannedTradeSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock, Instant } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
+import type { Journal, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
 import type { MarkFrame, MarketData, MarketDataReadSession, MarkResolution } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { payoffOf } from '../settlement.ts';
+import { firstExposureOf, placeJournal, replayInstruments, replaySessions, replayView } from './replay-trade.ts';
+import type { ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
+import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
 import { valueTrade, type DatedLine, type SettlementItem } from '../valuation/index.ts';
 
 export interface TradeViewsDeps {
@@ -196,21 +200,7 @@ export interface TradeBrowseView<L extends 'Planned' | 'Open' | 'Closed'> {
   readonly nextCursor?: string;
 }
 
-// The revisions one coherent view represents.
-export interface ViewBinding {
-  readonly workspace: WorkspaceSnapshotBinding;
-  readonly catalogRevision: number;
-  readonly journalRevision: number;
-  // The Mark evidence a current evaluation read, bound with the Workspace content revision it was read in.
-  readonly marketDataSnapshotId?: string;
-}
-
-export type ReadViewResult<T> =
-  | { readonly kind: 'Ready'; readonly view: T; readonly binding: ViewBinding }
-  // A commit kept racing the assembly; nothing incoherent is returned.
-  | { readonly kind: 'ChangedDuringAssembly' }
-  | { readonly kind: 'NotFound' }
-  | { readonly kind: 'Rejected'; readonly reason: 'CursorExpired' };
+export type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding };
 
 const ASSEMBLY_ATTEMPTS = 3;
 
@@ -282,15 +272,6 @@ export interface OpenCurrentEvaluation {
   // (no dated line, every Lot at entry, nothing settling) and its figures wait on that close, not on a Mark (revision 90).
   readonly firstMarksDue?: string;
 }
-
-// An Outstanding Debt in the narrative: "Reflection owed" beside its Position Change, with its snapshot
-// revision (the NarrativeDebt revision and definition). Without a due status outside session-policy
-// coverage, where there is no Expected Mark Date (decision 56).
-export interface TradeDetailDebt extends NarrativeDebt {
-  readonly dueStatus?: DueClassification;
-}
-
-export type TradeDetailNarrativeItem = NarrativeItem | TradeDetailDebt;
 
 // A derived Lot Match with its Calculation Results (A78, A80): exact rationals, which the display rounds to cents.
 export type LotMatchView = LotMatch & Pick<LotMatchResult, 'disposedAt' | 'allocatedOpeningFee' | 'allocatedDisposalFee' | 'realized'>;
@@ -391,6 +372,8 @@ export interface TradeViews {
   // holding either lifecycle (a tab switch) receives the union.
   browseTrades<L extends 'Planned' | 'Open' | 'Closed'>(request: TradeBrowseRequest<L>): Promise<ReadViewResult<TradeBrowseView<L>>>;
   getTradeDetail(request: TradeDetailRequest): Promise<ReadViewResult<TradeDetailView>>;
+  // The Trade's lifetime session by session (A212): a Workspace moved since the request's binding gives ChangedDuringAssembly.
+  replayTrade(request: ReplayTradeRequest): Promise<ReplayTradeResult>;
 }
 
 // A narrative Entry in D1's Detail shape: the item kind is the narrative's discriminator only.
@@ -729,10 +712,11 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
   // Module reads are separate transactions, so a view is accepted only if the Workspace binding
   // is unchanged across its assembly; otherwise it is retried, a bounded number of times.
   async function coherent<T>(
-    assemble: () => Promise<{ view: T; binding: WorkspaceSnapshotBinding; marketDataSnapshotId?: string } | { rejected: 'CursorExpired' } | { notFound: true }>,
+    assemble: () => Promise<{ view: T; binding: WorkspaceSnapshotBinding; marketDataSnapshotId?: string } | { rejected: 'CursorExpired' } | { notFound: true } | { changed: true }>,
   ): Promise<ReadViewResult<T>> {
     for (let attempt = 0; attempt < ASSEMBLY_ATTEMPTS; attempt++) {
       const assembled = await assemble();
+      if ('changed' in assembled) return { kind: 'ChangedDuringAssembly' };
       if ('rejected' in assembled) return { kind: 'Rejected', reason: assembled.rejected };
       if ('notFound' in assembled) return { kind: 'NotFound' };
       const { view, binding, marketDataSnapshotId } = assembled;
@@ -842,6 +826,36 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
+    },
+
+    async replayTrade(request) {
+      const result = await coherent<TradeReplayView | ReplayNotApplicable>(async () => {
+        const { binding } = await deps.persistence.readSnapshot(['meta'], () => Promise.resolve(null));
+        // A Workspace moved since the Detail this replay sits beside was bound is not read (A212).
+        const bound = request.binding.workspace;
+        if (binding.databaseName !== bound.databaseName || binding.contentRevision !== bound.contentRevision) return { changed: true as const };
+        const record = await deps.tradeRecord.getRecord({ tradeId: request.tradeId, projection: 'AnalysisInput' });
+        if (record.kind === 'NotFound') return { notFound: true as const };
+        const analysis = (record as { projection: TradeAnalysisRecord }).projection;
+        // A Trade never exposed, or whose facts cannot be replayed, reads no Market Data.
+        const whole = derive({ record: analysis });
+        if (whole.kind !== 'Derived') return { binding, view: { kind: 'NotApplicable' as const, reason: 'FactsIncoherent' as const, findings: whole.findings } };
+        if (analysis.positionChanges.length === 0) return { binding, view: { kind: 'NotApplicable' as const, reason: 'NeverExposed' as const } };
+        const { terminalTime } = whole;
+        // One read session: each Instrument's series is one read, whatever the number of sessions replayed.
+        const session = await openSession();
+        const instruments = replayInstruments(analysis);
+        const firstExposure = firstExposureOf(analysis);
+        const series = await Promise.all(instruments.map((instrument) => session.series(instrumentKey(instrument), firstExposure.slice(0, 10), session.tradingDate)));
+        const sessions = replaySessions(instruments, series, firstExposure, terminalTime);
+        const replayed = replay({ record: analysis, sessions: sessions.inputs });
+        if (replayed.kind === 'NotApplicable') return { binding, view: replayed };
+        const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
+        const ended = terminalTime !== null;
+        const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
+        return { binding, view: replayView(analysis.tradeId, instruments, replayed.sessions, sessions, journal, session.nextSessionDate, ended) };
+      });
+      return result.kind === 'Ready' && 'kind' in result.view ? result.view : (result as ReadViewResult<TradeReplayView>);
     },
 
     browseTrades<L extends 'Planned' | 'Open' | 'Closed'>(request: TradeBrowseRequest<L>) {

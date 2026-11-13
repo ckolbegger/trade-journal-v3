@@ -1,8 +1,8 @@
 import type { Instrument } from '../../domain/instrument/index.ts';
 import type { CalculationResult, IncoherentFact } from '../../domain/trade-analysis/index.ts';
 import type { Rational } from '../../domain/values/index.ts';
-import type { MarkResolution } from '../../modules/market-data/index.ts';
-import type { ReadViewResult, TradeDetailNarrativeItem, ViewBinding } from './trade-views.ts';
+import type { AcknowledgmentVersion } from '../../modules/market-data/index.ts';
+import type { ReadViewResult, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
 
 // D08P's slice of `replayTrade` (P94, P95, A211 to A213): per completed session, the Position held, the realized
 // and Trade P&L, the change since the previous session with a figure, each Instrument's Mark or gap, the Position
@@ -21,10 +21,17 @@ export interface ReplayChange {
   readonly dollars: Rational;
 }
 
+// What a session's series point says of an Instrument: its effective Mark (price and revision, as `series` gives them),
+// or a gap (A210). The series carries no provenance (source, saved time), which the Detail's own Mark carries.
+export type ReplayMarkResolution =
+  | { readonly kind: 'Available'; readonly mark: { readonly price: string; readonly revisionNumber: number } }
+  | { readonly kind: 'Missing' }
+  | { readonly kind: 'AcknowledgedUnavailable'; readonly acknowledgment: AcknowledgmentVersion };
+
 // One Instrument's Mark in one session, or the gap that stands in its place. A gap is never filled (A210).
 export interface ReplayMark {
   readonly instrument: Instrument;
-  readonly resolution: MarkResolution;
+  readonly resolution: ReplayMarkResolution;
   // The Mark's change in price since this Instrument's previous Mark; null when it has no previous Mark or none now.
   readonly change: ReplayChange | null;
 }
