@@ -702,6 +702,17 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
     expect(await missing.series('NONE', '2024-01-02', '2024-01-02')).toEqual([{ kind: 'Missing', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z' }]);
   });
 
+  it("should read a series's history and its final point in one snapshot", async () => {
+    const { marketData } = await setup();
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-07', price: '10' }));
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11' }));
+    const session = await marketData.openReadSession(current);
+    const { result, requests } = await countRequests(() => session.series('MNO', '2026-10-07', '2026-10-12'), { transactions: true });
+    expect(result.map((p) => p.kind)).toEqual(['Available', 'Missing', 'Missing', 'Available']);
+    // The scan of the history and the read of the session's date are asked in one run, so they are one read snapshot.
+    expect(requests.filter((r) => r.on === 'transaction')).toHaveLength(1);
+  });
+
   it("should read an Instrument's stored Marks once per read session, sharing the gaps scan with the Detail's frames", async () => {
     const { marketData } = await setup();
     await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-07', price: '10' }));

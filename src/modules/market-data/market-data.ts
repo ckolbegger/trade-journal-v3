@@ -944,10 +944,12 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           if (from > end) return [];
           // The scan starts at the first session on or after `from`, so a scan another call made from an exposure within it is reused.
           const first = relevantSessions(`${from}T00:00:00Z`, lastHistorical).relevant[0];
-          const scanned = first === undefined ? [] : (await scanOf(instrumentKey, first.close)).points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
-          if (end < day.date) return scanned;
-          const [read] = await evidenceFor(context, day, [instrumentKey]);
-          return [...scanned, seriesPoint(day.date, day.close, resolve(read!.record, read!.stale))];
+          // Both reads are asked in this one run, so they share one read snapshot.
+          const scanning = first === undefined ? undefined : scanOf(instrumentKey, first.close);
+          const reading = end < day.date ? undefined : evidenceFor(context, day, [instrumentKey]);
+          const scanned = scanning === undefined ? [] : (await scanning).points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
+          const [read] = (await reading) ?? [];
+          return read === undefined ? scanned : [...scanned, seriesPoint(day.date, day.close, resolve(read.record, read.stale))];
         },
         gaps(instruments) {
           const earliest = new Map<string, string>();
