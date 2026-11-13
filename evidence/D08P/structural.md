@@ -543,3 +543,58 @@ The complete cumulative run on `64cd1bd8`, by `suite-runner`, with `browser-auto
 | Browser, full tier, browser-1 | 119 passed (4.9 min), exit 0 | [suite-runs/merge-2-browser-1.txt](suite-runs/merge-2-browser-1.txt) |
 | Browser, full tier, browser-2 | 74 passed (4.5 min), exit 0 | [suite-runs/merge-2-browser-2.txt](suite-runs/merge-2-browser-2.txt) |
 | Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/merge-2-checks.txt](suite-runs/merge-2-checks.txt) |
+
+## T8P.5 Cockpit shell (lane `d08p-t8p5`)
+
+Commits on `d08p/t8p5`, base `64cd1bd8`:
+- `4c2d49da` (the shell);
+- `b960f9ac` (seven e2e specs read the legacy Valuation through Today);
+- `9ac7cb06` (its run outputs).
+
+TDD rows: [tdd-log/T8P.5.md](tdd-log/T8P.5.md). The five cases' reds:
+- `Unable to find role="region" and name "State of play"`;
+- a `TypeError` reading `view.settlement` on a Planned view (a runtime exception from the missing Planned branch);
+- `expected [ 'Today', … ] to not include 'Today'`;
+- the incoherent tab list's deep-equal;
+- `expected 'Today' to be 'Position'`.
+
+**Flagged: code written ahead of red.** The agent wrote the whole shell while greening case 1. For cases 2 to 5 it reverted each case's own code to see a genuine red, then restored it. This is recorded as a note row in the log, and carried to the final report.
+
+**Verification by the task.**
+- A complete cumulative run in the lane (`T8P.5-{unit,integration,browser-1,browser-2,checks}.txt`, all exit 0); `run-complete.sh`: run complete.
+- `it-titles.sh` diff: additions only, 18 titles (the 5 cases, plus 13 path-file cases: 8 re-exports and 5 placeholders).
+- Section 6.3's diff script (in the session scratchpad, `check-moved-diffs.mjs`): all 9 changed test files add only `openDrawer` lines, user setup and the import edit, and remove nothing else. That is 53 cases and 57 lines: Journal 22, Position 18, Plan and Risk 8, Payoff 8, Today 1.
+
+**Implementation-level decisions accepted from the summary:**
+- **More than one `openDrawer` line in some cases.** Section 6.3's "only that line" is read as "only `openDrawer` lines". Cases that render twice or read two drawers have 2 or 3 lines; the script proves nothing else changed.
+- **`PlanForm.test.tsx` gains 1 Payoff line**, since its receipt test renders the whole Detail.
+- **The Needs-you debt reads are reached in the specs, not the helpers.** `await openDrawer(page, 'Journal')` is added once before the first debt read in 9 specs: d5/detail-debt, faults, review-debt, responsive, kill-offline; d6/kill, update, runtime-failure; d7/kill. The helpers return Locators and can't click.
+- **Seven specs read the legacy Valuation through Today**, not Position: d4/breach-overrun, expected-mark, responsive-a11y; d6/exit, runtime-failure; d7/short-put; d7p/layout. T8P.17 flips them back with `position.ts` (handoff note).
+- **`src/ui/cockpit/styles/shell.css`** is new and belongs to the shell, so no lane edits it. It holds the tab-wrap rule, without which six tabs overflowed 320 px.
+- **Placeholders render nothing:** `rail/pnl`, `rail/conditions`, `drawers/price-history`, `journal-cards`, `track` (`(props: ShellProps) => null`). The other 8 paths re-export a composition from `screens/trade-detail/Composed.tsx`.
+- **Legacy blocks:**
+  - The Summary card is in the rail, except on an incoherent Detail.
+  - On Open, Valuation and Risk and reward are in Today.
+  - On Settlement Due, they sit atop Position, the default.
+  - Closed, Planned and incoherent have neither block.
+- **Price History** shows on Open, Settlement Due and Closed, and not on Planned or incoherent, as the cases imply.
+- **Stale release builds.** The task's first d2 and d4 runs passed against stale `dist-releases` builds; only runs after `build:releases` count.
+
+### T8P.5 ocr review (`64cd1bd8..b960f9ac`)
+
+In the lane: session `8e86b2ec-104d-4d5e-8678-87a592b75b0b`, model gpt-6.1-sol, ocr v1.13.9. 30 files reviewed, 39 excluded (tests and specs, by ocr's own exclusions), 5 comments. One harmless warning: a failed read of `src/ui/main.tsx`. Raw output: [ocr/T8P.5-64cd1bd8..b960f9ac.json](ocr/T8P.5-64cd1bd8..b960f9ac.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `Cockpit.tsx:130` | Changing drawers unmounts the Journal drawer and its open `DebtForm`, discarding an unsaved reflection and clearing the leave-page guard. | Valid. It is new: the old page kept the Journal mounted. It follows from the brief's "mount only the selected panel", which was the main session's implementation-level choice. |
+| medium | bug | `Cockpit.tsx:98` | A saved reflection's resolved state lives in `OwedDebtItem`'s local state, so after a drawer round trip the debt shows "Reflection owed" again. | Valid. Same cause. |
+| medium | bug | `styles/shell.css:2` | Nothing lays out `.cockpit-rail` beside `.cockpit-drawers`, so the rail stacks above the drawers at every width. | Valid. |
+| medium | bug | `Cockpit.tsx:118` | No wide layout, and no full-width banner rule. | Valid. The same gap as the row above, so the two make one bug task. |
+| medium | bug | `Cockpit.tsx:136` | The tabpanel needs `tabIndex={0}`, since Plan and Risk and Price History have no focusable first content. | Valid, minor (the WAI-ARIA tabs pattern). |
+
+Bug tasks, run one after another by one agent in the lane, each with its own red, green and commit, then one ocr over the range:
+- **T8P.5-B1** (findings 1 and 2). Every drawer panel stays mounted, and the inactive ones are `hidden`. This replaces the brief's mount-only-the-selected choice, and also makes text-query absence assertions meaningful again. Cases:
+  - *it should keep an unsaved reflection when the reader moves to another drawer and back*;
+  - *it should still show a saved reflection as saved after moving to another drawer and back*.
+- **T8P.5-B2** (findings 3 and 4). Case: *it should place the rail beside the drawers at a wide viewport, with the banner across both, and stack them at a narrow one.*
+- **T8P.5-B3** (finding 5). Case: *it should let the keyboard reach the selected drawer's panel.*
