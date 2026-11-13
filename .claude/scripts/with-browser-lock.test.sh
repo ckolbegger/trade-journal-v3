@@ -43,6 +43,19 @@ kill -TERM "$ps_"; wait "$ps_"; code=$?
 pq=$!
 waitfor "! kill -0 $pq 2>/dev/null" || { bad "the lock was not released after SIGTERM"; kill "$pq"; }
 
+# SIGTERM to the wrapper ends every descendant of the command, not only the command, before the lock is released.
+"$lockw" sh -c "sleep 60 & echo \$! >$t/g.pid; wait" 2>/dev/null &
+pg=$!
+waitfor "[[ -s $t/g.pid ]]" || bad "grandchild case did not start (setup)"
+gc=$(cat "$t/g.pid" 2>/dev/null)
+kill -TERM "$pg"
+waitfor "! kill -0 $pg 2>/dev/null" || { bad "wrapper did not exit after SIGTERM (grandchild case)"; kill -9 "$pg"; }
+"$lockw" sh -c "kill -0 $gc 2>/dev/null && echo alive >$t/g.alive" 2>/dev/null &
+pq2=$!
+waitfor "! kill -0 $pq2 2>/dev/null" || { bad "second caller never got the lock (grandchild case)"; kill -9 "$pq2"; }
+[[ -e "$t/g.alive" ]] && bad "a grandchild of the command outlived the wrapper's SIGTERM and the lock was released"
+kill -9 "$gc" 2>/dev/null
+
 # A command run inside the lock that wraps another command again does not deadlock.
 "$lockw" "$lockw" bash -c "echo nested >$t/nested" 2>/dev/null &
 pn=$!

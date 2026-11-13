@@ -8,7 +8,9 @@
 # wrapper dies, whatever the cause (SIGKILL included), so there is no takeover, no stale-lock check and
 # no age limit. The file's content is the holder's PID, read only for the waiting message; it never
 # decides who holds the lock. The command's exit code is passed through (128+n when a signal n ended it).
-# On INT, TERM or HUP the wrapper sends TERM to the command, waits for it, and exits with its status.
+# On INT, TERM or HUP the wrapper sends TERM to the command's whole process group (the
+# command runs in its own group), waits for it, gives the group 5 s to end, KILLs what remains, and only
+# then exits with the command's status and releases the lock.
 # The temp directory is the user's own (`getconf DARWIN_USER_TEMP_DIR`, symlinks resolved), not the
 # current $TMPDIR, so every process of this user finds the same lock whichever worktree or sandbox
 # it runs from. TJ_BROWSER_LOCK_DIR overrides the lock file's path (for tests of this script only).
@@ -29,7 +31,7 @@ use Fcntl qw(:flock O_RDWR O_CREAT);
 my $lock = shift @ARGV;
 sysopen(my $fh, $lock, O_RDWR | O_CREAT, 0644) or do { print STDERR "with-browser-lock: cannot open $lock: $!\n"; exit 2 };
 my ($child, $signalled, $waiting) = (0, 0, 1);
-$SIG{$_} = sub { exit 130 if $waiting; $signalled = 1; kill "TERM", $child if $child } for qw(INT TERM HUP);
+$SIG{$_} = sub { exit 130 if $waiting; $signalled = 1; kill "TERM", -$child if $child } for qw(INT TERM HUP);
 my $announced = 0;
 until (flock($fh, LOCK_EX | LOCK_NB)) {
   unless ($announced) {
@@ -46,12 +48,22 @@ $waiting = 0;
 $child = fork();
 die "with-browser-lock: fork failed: $!\n" unless defined $child;
 if ($child == 0) {
+  setpgrp(0, 0);                    # own process group, so the wrapper can signal every descendant
   $ENV{TJ_BROWSER_LOCK_HELD} = 1;   # $fh is close-on-exec, so the command does not hold the lock
   { no warnings "exec"; exec { $ARGV[0] } @ARGV; }
   print STDERR "with-browser-lock: cannot run $ARGV[0]: $!\n";
   exit 127;
 }
-kill "TERM", $child if $signalled;
+setpgrp($child, $child);            # also from this side, so the group exists whichever process runs first
+kill "TERM", -$child if $signalled;
 while (1) { my $r = waitpid($child, 0); last if $r == $child || ($r == -1 && !$!{EINTR}); }
-exit(($? & 127) ? 128 + ($? & 127) : $? >> 8);
+my $status = $?;
+if ($signalled) {
+  # Release the lock only once no process of the command group is left: TERM was sent, give the group
+  # 5 s to end, then KILL what remains.
+  my $deadline = time + 5;
+  while (kill(0, -$child) && time < $deadline) { select(undef, undef, undef, 0.05); }
+  if (kill(0, -$child)) { kill "KILL", -$child; my $stop = time + 5; select(undef, undef, undef, 0.05) while kill(0, -$child) && time < $stop; }
+}
+exit(($status & 127) ? 128 + ($status & 127) : $status >> 8);
 ' -- "$lock" "$@"
