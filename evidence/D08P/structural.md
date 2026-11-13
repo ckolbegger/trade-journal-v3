@@ -1071,3 +1071,11 @@ Commits `d0d9be84` (task) and `68464489` (lane tier: 1602 unit, 222 integration,
 - Series points carry the effective Mark revision's `source`, `savedAt` and `reason` (A210), and T8P.10 adds that with two cases.
 - Lane R2 may edit `Cockpit.tsx` and `journal-cards.tsx` for T8P.15-B1 only.
 - `specs/` is unchanged. Lane BV (T8P.10's two commits only) was rebased onto it, to `092719ba` and `538d0f72`.
+
+**T8P.10, revision 93.** `74890b15` (code) and `b79c5602` (lane tier `T8P.10-R93`: 1626 unit, 222 integration, 14 of 14; run complete, and no TradeList flake this time). Both cases red then green, with no first-run pass. `SeriesPoint`'s Available kind gains `source`, `savedAt` and an optional `reason`. The replay's Available `mark` gains `source`, `savedAt` and an optional `correctionReason`. A throwaway assignment `(view: TradeReplayView): TodayReplay => view` type-checked and was deleted, so T8P.16's `TodayReplay` accepts the real view.
+- Two strict ReadSeries expectations in `market-data.test.ts` each gained exactly `source: 'Manual', savedAt: TUESDAY_NOON` ("should return each completed session from the earliest exposure…" and "should give the series on the first covered session without a previous session").
+- Revision 93's entry did not repeat revisions 89 and 90's sentence putting the new fields under revision 88's rule. The main session's message did say so, and it checked both lines as exactly the additive fields with their correct values. No other expected value changed.
+
+**T8P.10 revision 93 ocr** (`74890b15`): session `8b6f00b5-cb51-44ca-8e1a-1d35294d17af`, 3 files, 0 comments; relocated `d8590889-b825-418e-8c5e-a07133358255`, 2 comments, both relocation artifacts (the scratch base held the parent's production code), dismissed as Wrong. Raw output: [ocr/T8P.10-R93-74890b15.json](ocr/T8P.10-R93-74890b15.json), [ocr/T8P.10-R93-74890b15-relocated.json](ocr/T8P.10-R93-74890b15-relocated.json). Clean.
+
+**T8P.10 merge.** Lane BV's base `8785b649` already held every code change on `claude-opus-5.5`; what followed is evidence only. So its lane tier `T8P.10-R93` is the tier for the merged code. Rebased onto the evidence commit and fast-forwarded. Lane BV stays for T8P.11.

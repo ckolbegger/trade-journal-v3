@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 28781,
+    "input_tokens": 28572,
+    "output_tokens": 209,
+    "cache_read_tokens": 4992,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/replay-trade.ts",
+        "src/coordinators/trade-views/replay-view.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "8b6f00b5-cb51-44ca-8e1a-1d35294d17af",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8b6f00b5-cb51-44ca-8e1a-1d35294d17af",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "74890b15",
+      "resolved_base": "538d0f72f28d2b4f32cefdb7e2e03c9aae7f35c3",
+      "resolved_head": "74890b15c96d3f2d32b8538b896ffcb34ce5e869",
+      "exact_range": "538d0f72f28d2b4f32cefdb7e2e03c9aae7f35c3..74890b15c96d3f2d32b8538b896ffcb34ce5e869",
+      "source_artifact_sha256": "2e2ef74633ef2dd7ab0b6888b6a50cf53ef11589c1e4aa5368f698b989aa7943"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2b259b4938e8fec39f8709a160ab9888e3a31d8e4564150ad927aef60d294e4e",
+          "path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "6755bfd0a36bc843039d0455239a09efaa5031a6af9063872548033d5476067e"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "6b5b649ea05eb6c9d99d0f2e787cc71ab38e90ba8bafcecb8831b081c132cf26"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "211b6872bb0c53fb1b2fc64da5b492461b115816505e111c79566dbd077a650a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2b259b4938e8fec39f8709a160ab9888e3a31d8e4564150ad927aef60d294e4e",
+          "path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "6755bfd0a36bc843039d0455239a09efaa5031a6af9063872548033d5476067e"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "6b5b649ea05eb6c9d99d0f2e787cc71ab38e90ba8bafcecb8831b081c132cf26"
+        },
+        {
+          "item_id": "93d04e7e222932950b3c4a67d3e43488fa370fb9d3fb3f1786e0dabaaf197e6a",
+          "path": "src/coordinators/trade-views/replay-view.ts",
+          "fingerprint": "211b6872bb0c53fb1b2fc64da5b492461b115816505e111c79566dbd077a650a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "59ca2d9484cc0200afbbabb84256cb4a6842d1abe5f8175593cd29fce9b91929",
+          "path": "evidence/D08P/tdd-log/T8P.10-R93.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "cebc4e57f51469e8b3f54198fd5c82c8ce03505b9cfb7cb6445698d314c0f6c5",
+          "path": "src/modules/market-data/market-data.test.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 12305
+  }
+}
