@@ -253,6 +253,21 @@ details.q > summary .s { font-size: 0.95rem; color: var(--ink); }
 .drawer-tabs button { border: 1px solid var(--muted); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-height: 38px; font-size: 0.9rem; }
 .drawer-tabs button[aria-selected='true'] { background: var(--ink); color: #fff; border-color: var(--ink); }
 .drawer-tabs .count { font-size: 0.75rem; margin-left: 4px; opacity: 0.8; }
+/* C additions (D08P planning): actions, integrity banner, result rows, sub-headings */
+.c-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.c-actions a { text-decoration: none; color: inherit; display: inline-flex; align-items: center; }
+.c-actions .primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.c-banner { grid-column: 1 / -1; border: 1px solid var(--stop); background: var(--stop-ground); border-radius: var(--radius); padding: 14px 18px; }
+.c-banner h3 { font-size: 1rem; margin-bottom: 6px; color: var(--stop); }
+.c-banner p + p, .c-banner p + .scroll-x { margin-top: 6px; }
+.c-banner table { margin-top: 8px; background: var(--card); }
+.c-settle { border-color: var(--warning-line); background: var(--warning-ground); }
+.c-settle h3 { font-size: 1rem; margin-bottom: 8px; }
+.c-quiet { color: var(--muted); font-size: 0.86rem; }
+.c-sub { font-size: 0.85rem; font-weight: 650; margin: 16px 0 6px; }
+details.c-more > summary { cursor: pointer; color: var(--info-ink); font-size: 0.9rem; margin-top: 12px; }
+.seg { flex-wrap: wrap; border-radius: 18px; }
+.proto-note { margin: 0 0 12px; padding: 8px 12px; border-left: 4px solid var(--info-ink); background: var(--info-ground); color: var(--info-ink); font-size: 0.86rem; max-width: 80ch; }
 
 @media (max-width: 860px) {
   .a-grid, .cockpit { grid-template-columns: minmax(0, 1fr); }
@@ -542,11 +557,11 @@ function planEntryBody(s) {
       <dt>Size</dt><dd>${q.size}, filled as planned</dd></dl></div>`;
 }
 
-function payoff(s, { w = 560, h = 210, legend = true } = {}) {
+function payoff(s, { w = 560, h = 210, legend = true, current = true } = {}) {
   const x0 = 125, x1 = 185, pad = { l: 46, r: 12, t: 12, b: 28 };
   const cur = (x) => s.payoff.n * 100 * Math.max(0, x - PLAN.strike) + s.payoff.offset;
   const pln = (x) => PLAN.contracts * 100 * Math.max(0, x - PLAN.strike) - PLAN.maxLoss;
-  const ys = [cur(x0), cur(x1), pln(x0), pln(x1)];
+  const ys = current ? [cur(x0), cur(x1), pln(x0), pln(x1)] : [pln(x0), pln(x1)];
   const y0 = Math.min(...ys) * 1.1, y1 = Math.max(...ys) * 1.05;
   const X = (x) => pad.l + ((x - x0) / (x1 - x0)) * (w - pad.l - pad.r);
   const Y = (y) => pad.t + (1 - (y - y0) / (y1 - y0)) * (h - pad.t - pad.b);
@@ -558,11 +573,12 @@ function payoff(s, { w = 560, h = 210, legend = true } = {}) {
     <text x="${pad.l - 6}" y="${Y(0) + 4}" font-size="11" text-anchor="end" fill="var(--muted)">$0</text>
     ${ticks.map((t) => `<text x="${X(t)}" y="${h - 8}" font-size="11" text-anchor="middle" fill="var(--muted)">${t}</text>`).join('')}
     <path d="${path(pln)}" fill="none" stroke="#8f8a7e" stroke-width="2" stroke-dasharray="6 4"/>
-    <path d="${path(cur)}" fill="none" stroke="var(--ink)" stroke-width="3"/>
-    <circle cx="${X(s.payoff.be)}" cy="${Y(0)}" r="4.5" fill="var(--ink)"/>
-    ${nowLine}
+    ${current ? `<path d="${path(cur)}" fill="none" stroke="var(--ink)" stroke-width="3"/>
+    <circle cx="${X(s.payoff.be)}" cy="${Y(0)}" r="4.5" fill="var(--ink)"/>` : ''}
+    ${current ? nowLine : ''}
   </svg>`;
-  const leg = legend ? `<div class="legend"><span><span class="sw"></span>Now: breakeven ${s.payoff.be.toFixed(2)}, max loss ${money(s.payoff.maxLoss)}</span><span><span class="sw dash"></span>As planned: breakeven ${PLAN.breakeven.toFixed(2)}, max loss ${money(PLAN.maxLoss)}</span></div>` : '';
+  const now = current ? `<span><span class="sw"></span>Now: breakeven ${s.payoff.be.toFixed(2)}, max loss ${money(s.payoff.maxLoss)}</span>` : `<span class="muted">${esc(current === false ? 'Now: Not applicable: no open position' : '')}</span>`;
+  const leg = legend ? `<div class="legend">${now}<span><span class="sw dash"></span>As planned: breakeven ${PLAN.breakeven.toFixed(2)}, max loss ${money(PLAN.maxLoss)}</span></div>` : '';
   return svg + leg;
 }
 
@@ -728,50 +744,300 @@ function viewB(s) {
 const DRAWERS = ['Today', 'Position', 'Plan and entry', 'Price History', 'Journal', 'Payoff'];
 let drawer = 'Today';
 
-function viewC(s) {
-  const excl = [s.today?.date, s.prev?.date].filter(Boolean);
+/* The cockpit draws one model per state (D08P planning). The three original states are adapted from their data,
+   with the decided changes: "Mark" wording, a read-only Price History that includes the latest session and links
+   to the Review, no "Today's Action is not recorded" item, and the Record entry / Record exit links. The other
+   states are written out directly. Drawers with nothing to show for a state are left out. */
+const kvRows = (rows) => `<dl class="kv">${rows.map(([t, v, cls = '']) => `<dt>${t}</dt><dd class="${cls}">${v}</dd>`).join('')}</dl>`;
+const kvGroup = (title, rows) => `<div class="kv-group"><h4>${title}</h4>${kvRows(rows)}</div>`;
+const tbl = (cls, head, rows, caption = '') => `<div class="scroll-x"><table class="${cls}">${caption ? `<caption class="sr-only">${caption}</caption>` : ''}<thead><tr>${head.map((h) => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const csub = (t) => `<h4 class="c-sub">${t}</h4>`;
+const actions = (list) => (list.length ? `<div class="c-actions">${list.map(([t, primary]) => `<a href="#" onclick="return false" class="pill-btn${primary ? ' primary' : ''}">${t}</a>`).join('')}</div>` : '');
+const identCard = (m) => `<div class="ident"><h2>${m.symbol}</h2><span class="badge b-open">${m.what}</span>${(m.badges || []).map(([cls, t]) => `<span class="badge ${cls}">${t}</span>`).join('')}
+    ${m.lines.map((l) => `<span class="sub">${l}</span>`).join('')}</div>${actions(m.actions || [])}`;
+const condItem = (c) => `<li><span><span class="badge ${c.role === 'Stop' ? 'b-stop' : 'b-target'}">${c.role}</span>${c.nearest ? '<span class="near">nearest</span>' : ''}</span><span class="fig">${c.fig || ''}</span>
+      <span class="cw">${c.text}</span>${c.why ? `<span class="cx">${c.why}</span>` : ''}</li>`;
+const todoCard = (items) => (items.length ? `<ul class="todo" aria-label="Needs you">${items.map((t) => `<li class="${t.cls || ''}">${t.html || esc(t.text)}</li>`).join('')}</ul>` : '<p class="c-quiet">Nothing needs you now.</p>');
+const reviewLink = (missing) => `<p class="grid-note">${missing ? `${missing} session${missing > 1 ? 's' : ''} without Marks. ` : ''}<a href="#" onclick="return false">Enter Marks in the Review</a></p>`;
+
+// Sessions as columns, newest on the left; a missing Mark is a gap. cols: [{ date, cells: [{ t, cls } | null, …] }]
+function historyGrid(rowNames, cols) {
+  if (!cols.length) return '<p class="c-quiet">No sessions yet: the first one ends with the Trade’s first close.</p>';
+  const head = `<tr><th scope="col">Session</th>${cols.map((c) => `<th scope="col">${c.date.replace(/^\w+ /, '')}<br>${c.date.split(' ')[0]}</th>`).join('')}</tr>`;
+  const body = rowNames.map((name, i) => `<tr><th scope="row">${name}</th>${cols.map((c) => (c.cells[i] == null ? '<td class="miss">—</td>' : `<td class="${c.cells[i].cls || ''}">${c.cells[i].t}</td>`)).join('')}</tr>`).join('');
+  return `<div class="scroll-x"><table class="grid"><thead>${head}</thead><tbody>${body}</tbody></table></div>${reviewLink(cols.filter((c) => c.cells.slice(0, -1).some((x) => x == null)).length)}`;
+}
+
+// Session cards, newest first. cards: [{ cls, when, title, titleCls, change, changeCls, marks: [[label, value]], entries: [{ type, body, owed, warn }] }]
+function sessionCards(cards) {
+  const card = (c) => `<article class="day${c.cls ? ' ' + c.cls : ''}" aria-label="${esc(c.when)}">
+      <div class="when">${c.when}</div>${c.title ? `<h4 class="${c.titleCls || ''}">${c.title}</h4>` : ''}${c.change ? `<div class="small ${c.changeCls || ''}">${c.change}</div>` : ''}
+      ${c.marks?.length ? `<dl class="closes">${c.marks.map(([l, v]) => `<dt>${l}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
+      ${c.note ? `<p class="small muted">${c.note}</p>` : ''}
+      ${c.entries?.length ? `<ul class="events">${c.entries.map((e) => `<li class="${e.owed ? 'ev-owed' : ''}"><strong>${e.type}</strong>${e.owed ? ` <span class="badge ${e.warn ? 'b-warn' : 'b-quiet'}">${e.owed}</span> <button class="pill-btn" type="button">Answer</button>` : ''}<br>${esc(e.body)}</li>`).join('')}</ul>` : ''}
+    </article>`;
+  return `<div class="tl-head" style="margin-top:0"><div class="tl-nav"><button type="button" aria-label="Newer sessions" data-scroll="back">‹</button></div><h3 class="sec-title" style="margin:0 auto 0 4px">Sessions, newest first</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
+      <div class="rail-x" id="rail" tabindex="0" aria-label="Sessions, newest first">${cards.map(card).join('')}</div>`;
+}
+
+const markWords = (html) => html.replace(/NVDA close/g, 'NVDA Mark').replace(/Today’s close/g, 'Today’s Marks').replace(/<h4>Session still open<\/h4>/g, '<h4>Session still open</h4>').replace(/Marks open after the 4:00 pm close\./g, 'Its Marks are due once this session ends.');
+
+// The original three states (entered today, held, Stop breached), adapted.
+function protoModel(s) {
+  const latest = s.today?.date;
   const conds = ['so', 'su', 'to', 'tu'].map((id) => {
     const c = cond(s, id);
     const stop = c.role === 'Stop';
-    const at = c.kind === 'o' ? `if the option closes at $${c.price.toFixed(2)}` : `if NVDA is at ${c.price.toFixed(2)} at expiration`;
-    let v, why;
-    if (c.status === 'Waiting') {
-      v = '';
-      why = '';
-    } else if (c.status === 'Breached') {
-      v = '<span class="down">Breached</span>';
-      why = `Today’s close is ${money(c.overrun)} (${R(c.overrunR)}) of Trade P&L past this Stop.`;
-    } else {
-      v = `<span class="${stop ? 'down' : 'up'}">${signed(stop ? -c.dist : c.dist)}</span>`;
-      why = `Change in Trade P&L from today’s close ${at} (${stop ? MINUS : '+'}${R(c.distR)}).`;
-    }
-    return `<li><span><span class="badge ${stop ? 'b-stop' : 'b-target'}">${c.role}</span>${c.nearest ? '<span class="near">nearest</span>' : ''}</span><span class="fig">${v}</span>
-      <span class="cw">${c.text}</span>${why ? `<span class="cx">${why}</span>` : ''}</li>`;
-  }).join('');
-  const body = {
-    Today: `<h3 class="sec-title">Closes: today against ${s.prev ? esc(s.prev.rel.toLowerCase()) : 'entry'}</h3>${compare(s, { pnl: false })}<h3 class="sec-title" style="margin-top:18px">Where the prices sit</h3>${tracksBlock(s, { lines: false })}`,
-    Position: positionBody(s),
-    'Plan and entry': planEntryBody(s),
-    Payoff: payoff(s),
-    'Price History': marksGrid(s, excl),
-    Journal: `<div class="tl-head" style="margin-top:0"><div class="tl-nav"><button type="button" aria-label="Newer sessions" data-scroll="back">‹</button></div><h3 class="sec-title" style="margin:0 auto 0 4px">Sessions, newest first</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
-      <div class="rail-x" id="rail" tabindex="0" aria-label="Sessions, newest first">${dayCards(s, { inputs: false, exec: false })}</div>`,
+    const at = c.kind === 'o' ? `if the option’s Mark is $${c.price.toFixed(2)}` : `if NVDA is at ${c.price.toFixed(2)} at expiration`;
+    if (c.status === 'Waiting') return { role: c.role, text: c.text };
+    if (c.status === 'Breached') return { role: c.role, text: c.text, fig: '<span class="down">Breached</span>', why: `The ${latest} Mark is ${money(c.overrun)} (${R(c.overrunR)}) of Trade P&amp;L past this Stop.` };
+    return { role: c.role, text: c.text, nearest: c.nearest, fig: `<span class="${stop ? 'down' : 'up'}">${signed(stop ? -c.dist : c.dist)}</span>`, why: `Change in Trade P&amp;L from the ${latest} Marks ${at} (${stop ? MINUS : '+'}${R(c.distR)}).` };
+  });
+  const todo = s.todo
+    .filter((t) => !/Action is not recorded/.test(t.text))
+    .map((t) => ({ ...t, text: t.text.replace('First Marks are due after today’s 4:00 pm close', 'First Marks are due once today’s session ends').replace('the option closed at $3.55, below $3.70', 'the option’s Mark is $3.55, at or below $3.70') }));
+  const cols = s.sessions.filter((d) => !d.pending).map((d) => ({ date: d.date, cells: d.missing ? [null, null, null] : [{ t: d.u.toFixed(2) }, { t: '$' + d.o.toFixed(2) }, { t: money(d.pnl), cls: dir(d.pnl) }] }));
+  const missing = cols.filter((c) => c.cells[0] == null).length;
+  const today = s.today
+    ? `<h3 class="sec-title">Marks: ${s.today.date} against ${esc(s.prev.date)}</h3>${compare(s, { pnl: false }).replace('NVDA close', 'NVDA Mark')}<h3 class="sec-title" style="margin-top:18px">Where the prices sit</h3>${tracksBlock(s, { lines: false })}`
+    : `<div class="waiting"><strong>No Marks yet.</strong> This Trade opened today at ${s.resolved.split(', ')[1]}. Its first Marks, and every figure that needs them, are due once today’s session ends.</div><h3 class="sec-title" style="margin-top:18px">Where the prices sit</h3>${tracksBlock(s, { lines: false })}`;
+  return {
+    ident: { symbol: PLAN.symbol, what: `${PLAN.strategy}, Open`, badges: s.cond.so.status === 'Breached' ? [['b-stop', 'Stop breached']] : [], lines: [`Strike ${PLAN.strike}`, `Expires ${PLAN.expires} (${PLAN.daysLeft} days)`, PLAN.account], actions: [['Record entry', true], ['Record exit']] },
+    pnl: s.today
+      ? { big: money(s.pnl), cls: dir(s.pnl), line: `<span class="${dir(s.pnl - s.pnlPrev)}">${signed(s.pnl - s.pnlPrev)} since ${s.prev.date}</span>`, open: `${s.open} of ${PLAN.contracts} contracts open` }
+      : { big: '—', line: '<span class="muted">Trade P&amp;L once today’s session ends</span>', open: `${s.open} of ${PLAN.contracts} contracts open` },
+    conds,
+    extremes: s.worst ? extremes(s) : '<div class="extremes"><span>Distances to each condition and the worst case arrive with the first Marks.</span><span><strong>Max reward:</strong> no cap above</span></div>',
+    todo,
+    drawers: {
+      Today: today,
+      Position: positionBody(s),
+      'Plan and entry': planEntryBody(s),
+      'Price History': historyGrid(['NVDA Mark', 'Call Mark', 'Trade P&amp;L'], cols),
+      Journal: markWords(sessionCardsFromProto(s)),
+      Payoff: payoff(s),
+    },
+    counts: { 'Price History': missing || '', Journal: owedCount(s) ? owedCount(s) + ' owed' : '' },
+    footer: footer(),
   };
-  const counts = { 'Price History': missingCount(s, excl) || '', Journal: owedCount(s) ? owedCount(s) + ' owed' : '' };
+}
+const sessionCardsFromProto = (s) => `<div class="tl-head" style="margin-top:0"><div class="tl-nav"><button type="button" aria-label="Newer sessions" data-scroll="back">‹</button></div><h3 class="sec-title" style="margin:0 auto 0 4px">Sessions, newest first</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
+      <div class="rail-x" id="rail" tabindex="0" aria-label="Sessions, newest first">${dayCards(s, { inputs: false, exec: false })}</div>`;
+
+const ACCOUNT = PLAN.account;
+const planReflectionEntry = { type: 'Plan Reflection', body: PLAN.why };
+const nvdaPlanBody = (extra = '') => kvGroup('Plan, set Wed Nov 4, 9:45 am', [
+  ['Contract', PLAN.contract], ['Intended entry', `${PLAN.contracts} contracts @ $${PLAN.intended.toFixed(2)}`], ['1R (original risk)', money(PLAN.oneR)],
+  ['Original reward', money(PLAN.reward)], ['Planned reward : risk', PLAN.rr.toFixed(2)], ['Exercise', PLAN.exercise],
+]) + extra;
+const nvdaConds = () => PLAN.conditions.slice().sort((a, b) => (a.role === b.role ? (a.kind === 'o' ? -1 : 1) : a.role === 'Stop' ? -1 : 1)).map((c) => ({ role: c.role, text: c.text }));
+
+/* The states the cockpit had not shown (D08P planning, section 6 step 2 of the handoff). */
+const MODELS = {
+  planned: () => ({
+    note: 'A Planned Trade: no Position, so no Today or Position drawer, no Price History, and only the planned payoff. Tech debt item 23: the Expires line shows here too.',
+    ident: { symbol: 'NVDA', what: 'Long Call, Planned', lines: ['Strike 150', 'Expires Fri 18 Dec 2026 (36 days)', ACCOUNT], actions: [['Record entry', true]] },
+    pnl: { big: '—', line: '<span class="muted">Trade P&amp;L once the entry is recorded and marked</span>', open: '0 of 2 contracts open' },
+    conds: nvdaConds(),
+    extremes: '<div class="extremes"><span>Distances to each condition arrive with the first Marks after entry.</span></div>',
+    todo: [],
+    drawers: {
+      'Plan and entry': nvdaPlanBody(kvGroup('Entry', [['Status', 'Not entered']])),
+      Journal: sessionCards([{ cls: 'plan', when: 'Planned Thu Nov 12, 1:40 pm', title: 'Plan', entries: [planReflectionEntry] }]),
+      Payoff: payoff(STATES.entered, { current: false }),
+    },
+    counts: {},
+    footer: '',
+  }),
+
+  stock: () => ({
+    note: 'A Long Stock Trade: one Mark per session, one price track, no strike or expiration, and Payoff not applicable.',
+    ident: { symbol: 'XYZ', what: 'Long Stock, Open', lines: ['Fidelity, Individual'], actions: [['Record entry', true], ['Record exit']] },
+    pnl: { big: '$219.00', cls: 'up', line: '<span class="up">+$50.00 since Wed Nov 11</span>', open: '100 of 100 shares open' },
+    conds: [
+      { role: 'Stop', text: 'XYZ at or below $47.50', fig: '<span class="down">−$480.00</span>', why: 'Change in Trade P&amp;L from the Thu Nov 12 Mark if XYZ’s Mark is $47.50 (−1.92R).' },
+      { role: 'Target', text: 'XYZ at or above $56.00', fig: '<span class="up">+$370.00</span>', why: 'Change in Trade P&amp;L from the Thu Nov 12 Mark if XYZ’s Mark is $56.00 (+1.48R).' },
+    ],
+    extremes: '<div class="extremes"><span><strong>Worst case:</strong> $5,230.00 · 20.92R if XYZ goes to zero</span><span><strong>Max reward:</strong> no cap above</span></div>',
+    todo: [],
+    drawers: {
+      Today: `<h3 class="sec-title">Marks: Thu Nov 12 against Wed Nov 11</h3>${tbl('cmp', ['', 'Wed Nov 11', 'Thu Nov 12', 'Change'], [['XYZ Mark', '$51.80', '$52.30', '<span class="up">+$0.50</span>']])}
+        <h3 class="sec-title" style="margin-top:18px">Where the price sits</h3><div class="tracks">${track({ title: 'XYZ', min: 45, max: 58, stop: 47.5, target: 56, entry: 50.1, now: 52.3, prev: 51.8, prevLabel: 'yesterday', f: (v) => '$' + v.toFixed(2) })}</div>`,
+      Position: tbl('lots', ['Open lot', 'Shares', 'Price', 'Fee left'], [['Wed Nov 4, 10:00 am', '100', '$50.10', '$1.00']]) + `<dl class="kv" style="margin-top:12px"><dt>Open P&amp;L</dt><dd class="up">+$219.00</dd><dt>Realized</dt><dd>$0.00</dd><dt>Fees paid</dt><dd>$1.00</dd></dl>`
+        + csub('Executions') + '<ol class="journal"><li><span class="j-when">Wed Nov 4<br>10:00 am</span><span class="j-body">Buy 100 XYZ @ $50.10</span></li></ol>',
+      'Plan and entry': kvGroup('Plan, set Wed Nov 4, 9:30 am', [['Intended entry', '100 shares @ $50.00'], ['1R (original risk)', '$250.00'], ['Original reward', '$600.00'], ['Planned reward : risk', '2.40']])
+        + kvGroup('Entry, resolved Wed Nov 4, 10:00 am', [['Average fill', '$50.10'], ['Actual initial risk', '$261.00 · 1.04R'], ['Actual initial reward', '$589.00 · 2.36R'], ['Actual reward : risk', '2.26'], ['Slippage', '<span class="down">−$10.00</span>'], ['Size', '1× planned, filled as planned']]),
+      'Price History': historyGrid(['XYZ Mark', 'Trade P&amp;L'], [
+        { date: 'Thu Nov 12', cells: [{ t: '$52.30' }, { t: '$219.00', cls: 'up' }] }, { date: 'Wed Nov 11', cells: [{ t: '$51.80' }, { t: '$169.00', cls: 'up' }] },
+        { date: 'Tue Nov 10', cells: [null, null] }, { date: 'Mon Nov 9', cells: [{ t: '$50.90' }, { t: '$79.00', cls: 'up' }] },
+        { date: 'Fri Nov 6', cells: [{ t: '$50.40' }, { t: '$29.00', cls: 'up' }] }, { date: 'Thu Nov 5', cells: [{ t: '$49.90' }, { t: '−$21.00', cls: 'down' }] },
+        { date: 'Wed Nov 4', cells: [{ t: '$50.20' }, { t: '$9.00', cls: 'up' }] },
+      ]),
+      Journal: sessionCards([
+        { when: 'Today, Thu Nov 12', title: 'Today’s Mark', marks: [['XYZ Mark', '$52.30']], entries: [{ type: 'Daily Action: Hold', body: 'Holding above 52.' }] },
+        { when: 'Yesterday, Wed Nov 11', title: '$169.00', titleCls: 'dpnl up', change: '+$90.00 since Mon Nov 9', changeCls: 'up', marks: [['XYZ Mark', '$51.80']] },
+        { cls: 'gap', when: 'Tue Nov 10', title: 'Tue Nov 10 without Marks' },
+        { when: 'Mon Nov 9', title: '$79.00', titleCls: 'dpnl up', change: '+$50.00 since Fri Nov 6', changeCls: 'up', marks: [['XYZ Mark', '$50.90']] },
+        { when: 'Wed Nov 4', title: '$9.00', titleCls: 'dpnl up', change: 'First Mark', marks: [['XYZ Mark', '$50.20']], entries: [{ type: 'Entry reflection', body: 'Filled a dime over the limit.' }, { type: 'Plan Reflection', body: 'Base breakout on volume.' }] },
+      ]),
+      Payoff: '<p class="c-quiet">Expiration payoff: Not applicable: no option expiration.</p>',
+    },
+    counts: { 'Price History': 1 },
+    footer: footer().replace('Planned leg filled as planned.', 'Planned leg filled as planned.'),
+  }),
+
+  lots: () => ({
+    note: 'Several lots: two open lots after one sale. The Position drawer shows the lots, the one Lot Match, the fee reconciliation (folded) and every Execution.',
+    ident: { symbol: 'NVDA', what: 'Long Call, Open', lines: ['Strike 150', 'Expires Fri 18 Dec 2026 (36 days)', ACCOUNT], actions: [['Record entry', true], ['Record exit']] },
+    pnl: { big: '$902.40', cls: 'up', line: '<span class="up">+$240.00 since Tue Nov 10</span>', open: '2 of 3 contracts open' },
+    conds: [
+      { role: 'Stop', nearest: true, text: 'Option at or below $3.70', fig: '<span class="down">−$1,580.00</span>', why: 'Change in Trade P&amp;L from the Thu Nov 12 Marks if the option’s Mark is $3.70 (−1.42R).' },
+      { role: 'Stop', text: 'NVDA at or below 140.00', fig: '<span class="down">−$2,320.00</span>', why: 'Change in Trade P&amp;L from the Thu Nov 12 Marks if NVDA is at 140.00 at expiration (−2.09R).' },
+      { role: 'Target', nearest: true, text: 'Option at or above $14.80', fig: '<span class="up">+$640.00</span>', why: 'Change in Trade P&amp;L from the Thu Nov 12 Marks if the option’s Mark is $14.80 (+0.58R).' },
+      { role: 'Target', text: 'NVDA at or above 175.00', fig: '<span class="up">+$2,680.00</span>', why: 'Change in Trade P&amp;L from the Thu Nov 12 Marks if NVDA is at 175.00 at expiration (+2.41R).' },
+    ],
+    extremes: '<div class="extremes"><span><strong>Worst case:</strong> $2,320.00 · 2.09R if the call expires worthless</span><span><strong>Max reward:</strong> no cap above</span></div>',
+    todo: [{ cls: 'due', text: 'Reflection due for the Tue Nov 10 exit' }],
+    drawers: {
+      Today: `<h3 class="sec-title">Marks: Thu Nov 12 against Tue Nov 10</h3>${tbl('cmp', ['', 'Tue Nov 10', 'Thu Nov 12', 'Change'], [['NVDA Mark', '155.20', '157.90', '<span class="up">+2.70</span>'], ['Call Mark', '$10.40', '$11.60', '<span class="up">+$1.20</span>']])}<p class="grid-note">Wed Nov 11 has no Marks, so Thu Nov 12 is compared with Tue Nov 10.</p>`,
+      Position: tbl('lots', ['Open lot', 'Contracts', 'Price', 'Fee left'], [['Thu Nov 5, 11:05 am', '1', '$8.10', '$0.65'], ['Mon Nov 9, 2:40 pm', '1', '$9.20', '$0.65']])
+        + '<dl class="kv" style="margin-top:12px"><dt>Open P&amp;L</dt><dd class="up">+$588.70</dd><dt>Realized</dt><dd class="up">+$313.70</dd><dt>Fees paid</dt><dd>$2.60</dd></dl>'
+        + csub('Lot Matches') + tbl('lots', ['Sold', 'Contracts', 'Opened at', 'Closed at', 'Realized'], [['Tue Nov 10, 11:30 am', '1', '$7.35 (Wed Nov 4)', '$10.50', '+$313.70']])
+        + '<p class="grid-note">Each match’s amount is rounded to the cent for display.</p>'
+        + `<details class="c-more"><summary>Fee reconciliation</summary>${kvRows([['Incurred fees', '$2.60'], ['Opening fees incurred', '$1.95'], ['Opening fees allocated to Lot Matches', '$0.65'], ['Opening fees unconsumed', '$1.30'], ['Disposal fees incurred', '$0.65'], ['Disposal fees allocated to Lot Matches', '$0.65']])}</details>`
+        + csub('Executions') + `<ol class="journal">${[['Tue Nov 10', '11:30 am', 'Sell to close 1 NVDA 18 Dec 2026 150 Call @ $10.50'], ['Mon Nov 9', '2:40 pm', 'Buy to open 1 NVDA 18 Dec 2026 150 Call @ $9.20'], ['Thu Nov 5', '11:05 am', 'Buy to open 1 NVDA 18 Dec 2026 150 Call @ $8.10'], ['Wed Nov 4', '10:20 am', 'Buy to open 1 NVDA 18 Dec 2026 150 Call @ $7.35']].map(([d, t, x]) => `<li><span class="j-when">${d}<br>${t}</span><span class="j-body">${x}</span></li>`).join('')}</ol>`,
+      'Plan and entry': nvdaPlanBody(kvGroup('Entry, resolved Mon Nov 9, 2:40 pm', [['Average fill', '$8.22'], ['Size', '1× planned (3 contracts), filled as planned']])),
+      Journal: '<p class="c-quiet">As in the Held state.</p>',
+      'Price History': '<p class="c-quiet">As in the Held state.</p>',
+      Payoff: payoff(STATES.held),
+    },
+    counts: { Journal: '1 owed' },
+    footer: footer(),
+    openDrawer: 'Position',
+  }),
+
+  settlement: () => ({
+    note: 'Settlement Due: the contract expired Fri Dec 18 and 1 is still held. The Settlement Due panel replaces the Expires line and leads Needs you; figures that need a Mark say why once.',
+    clock: 'Mon Dec 21, 6:15 pm',
+    ident: { symbol: 'NVDA', what: 'Long Call, Open', lines: ['Strike 150', ACCOUNT], actions: [['Record entry', true], ['Record exit']] },
+    pnl: { big: '<span style="font-size:1.05rem;font-weight:700">Settlement Due: NVDA 18 Dec 2026 150 Call</span>', line: '<span class="muted">Trade P&amp;L once the expiration is recorded</span>', open: '1 of 2 contracts open' },
+    conds: nvdaConds(),
+    extremes: '<div class="extremes"><span>The contract expired, so its conditions are no longer measured.</span></div>',
+    todo: [{ cls: 'due', html: `<div><strong>Settlement Due</strong>${kvRows([['Contract', 'NVDA 18 Dec 2026 150 Call'], ['Quantity', 'Long 1 contract'], ['Expired', 'Fri Dec 18'], ['Settlement time', 'Fri Dec 18, 16:00']])}<p class="small" style="margin-top:6px;font-weight:400">If it was exercised, this release can’t record the exercise yet, so this Trade stays open until a later release can.</p>${actions([['Record expiration', true]])}</div>` }],
+    drawers: {
+      Position: tbl('lots', ['Open lot', 'Contracts', 'Price', 'Fee left'], [['Wed Nov 4, 10:20 am', '1', '$7.35', '$0.65']]) + '<dl class="kv" style="margin-top:12px"><dt>Open P&amp;L</dt><dd class="muted">Settlement Due</dd><dt>Realized</dt><dd class="up">+$313.70</dd><dt>Fees paid</dt><dd>$1.95</dd></dl>',
+      'Plan and entry': nvdaPlanBody(),
+      'Price History': '<p class="c-quiet">As in the Held state, ending Fri Dec 18, the last session the contract traded.</p>',
+      Journal: '<p class="c-quiet">As in the Held state.</p>',
+      Payoff: '<p class="c-quiet">Current: Settlement Due: NVDA 18 Dec 2026 150 Call. The planned line stays as drawn in the other states.</p>',
+    },
+    counts: {},
+    footer: footer(),
+  }),
+
+  closedExit: () => ({
+    note: 'Closed by sale: no expiration line (the trader’s Executions disposed of it), no Today drawer, the Result in the rail, and conditions listed without figures.',
+    clock: 'Mon Nov 16, 6:15 pm',
+    ident: { symbol: 'NVDA', what: 'Long Call, Closed', lines: ['Strike 150', ACCOUNT], actions: [] },
+    pnl: { big: '$817.40', cls: 'up', line: '<span class="up">+1.10R</span> <span class="muted">realized, final</span>', open: '0 of 2 contracts open' },
+    result: kvRows([['Terminal Disposition', 'Closed via sale of 2 contracts'], ['Option Disposition Timing', 'Fully disposed before expiration: 2 before expiration, 0 at expiration'], ['Close Reason', 'Target reached']]),
+    conds: nvdaConds(),
+    extremes: '',
+    todo: [{ cls: 'due', text: 'Close Review owed, due in Tuesday’s Review' }],
+    drawers: {
+      Position: '<dl class="kv"><dt>Fees paid</dt><dd>$2.60</dd></dl>' + csub('Lot Matches') + tbl('lots', ['Sold', 'Contracts', 'Opened at', 'Closed at', 'Realized'], [['Fri Nov 13, 10:05 am', '1', '$7.35 (Wed Nov 4)', '$12.40', '+$503.70'], ['Tue Nov 10, 11:30 am', '1', '$7.35 (Wed Nov 4)', '$10.50', '+$313.70']])
+        + `<details class="c-more"><summary>Fee reconciliation</summary>${kvRows([['Incurred fees', '$2.60'], ['Opening fees incurred', '$1.30'], ['Opening fees allocated to Lot Matches', '$1.30'], ['Opening fees unconsumed', '$0.00'], ['Disposal fees incurred', '$1.30'], ['Disposal fees allocated to Lot Matches', '$1.30']])}</details>`
+        + csub('Executions') + `<ol class="journal">${[['Fri Nov 13', '10:05 am', 'Sell to close 1 NVDA 18 Dec 2026 150 Call @ $12.40'], ['Tue Nov 10', '11:30 am', 'Sell to close 1 NVDA 18 Dec 2026 150 Call @ $10.50'], ['Wed Nov 4', '10:20 am', 'Buy to open 2 NVDA 18 Dec 2026 150 Call @ $7.35']].map(([d, t, x]) => `<li><span class="j-when">${d}<br>${t}</span><span class="j-body">${x}</span></li>`).join('')}</ol>`,
+      'Plan and entry': nvdaPlanBody(kvGroup('Entry, resolved Wed Nov 4, 10:20 am', [['Average fill', '$7.35'], ['Actual initial risk', '$731.30 · 0.99R'], ['Size', '1× planned, filled as planned']])),
+      'Price History': historyGrid(['NVDA Mark', 'Call Mark', 'Trade P&amp;L'], [
+        { date: 'Fri Nov 13', cells: [{ t: '161.20' }, { t: '$12.40' }, { t: '$817.40', cls: 'up' }] }, { date: 'Thu Nov 12', cells: [{ t: '157.90' }, { t: '$11.60' }, { t: '$738.05', cls: 'up' }] },
+        { date: 'Wed Nov 11', cells: [null, null, null] }, { date: 'Tue Nov 10', cells: [{ t: '155.20' }, { t: '$10.40' }, { t: '$618.05', cls: 'up' }] },
+      ]),
+      Journal: sessionCards([
+        { when: 'Fri Nov 13, final session', title: '$817.40', titleCls: 'dpnl up', change: '+$79.35 since Thu Nov 12', changeCls: 'up', marks: [['NVDA Mark', '161.20'], ['Call Mark', '$12.40']], entries: [{ type: 'Exit reflection', body: 'Took the second contract at the target zone.' }, { type: 'Close Review', body: 'Owed.', owed: 'Due in Tuesday’s Review' }] },
+        { when: 'Thu Nov 12', title: '$738.05', titleCls: 'dpnl up', change: '+$120.00 since Tue Nov 10', changeCls: 'up', marks: [['NVDA Mark', '157.90'], ['Call Mark', '$11.60']], entries: [{ type: 'Daily Action: Hold', body: 'Next decision near $14.80.' }] },
+      ]),
+      Payoff: payoff(STATES.held, { current: false }),
+    },
+    counts: { Journal: '1 owed' },
+    footer: footer(),
+    openDrawer: 'Position',
+  }),
+
+  closedExpired: () => ({
+    note: 'Closed by expiration: a Cash-Secured Put that expired worthless. "Expired" replaces "Expires", and the Position drawer lists the Expiration apart from the Executions.',
+    clock: 'Mon Nov 23, 6:15 pm',
+    ident: { symbol: 'MNO', what: 'Cash-Secured Put, Closed', lines: ['Strike 45', 'Expired Fri 20 Nov 2026', ACCOUNT], actions: [] },
+    pnl: { big: '$248.70', cls: 'up', line: '<span class="up">+0.52R</span> <span class="muted">realized, final</span>', open: '0 of 2 contracts open' },
+    result: kvRows([['Terminal Disposition', 'Closed via expiration of 2 contracts'], ['Option Disposition Timing', 'Fully held to expiration: 0 before expiration, 2 at expiration']]),
+    conds: [{ role: 'Stop', text: 'MNO at or below 41.00' }, { role: 'Stop', text: 'Option at or above $3.60' }, { role: 'Target', text: 'MNO at or above 44.50' }, { role: 'Target', text: 'Option at or below $0.30' }],
+    extremes: '',
+    todo: [],
+    drawers: {
+      Position: '<dl class="kv"><dt>Fees paid</dt><dd>$1.30</dd></dl>' + csub('Settlement (1)') + '<ol class="journal"><li><span class="j-when">Fri Nov 20<br>4:00 pm</span><span class="j-body">Expiration of 2 MNO 20 Nov 2026 45 Put</span></li></ol>'
+        + csub('Executions') + '<ol class="journal"><li><span class="j-when">Mon Oct 12<br>10:00 am</span><span class="j-body">Sell to open 2 MNO 20 Nov 2026 45 Put @ $1.25</span></li></ol>',
+      'Plan and entry': kvGroup('Plan, set Mon Oct 12, 9:00 am', [['Contract', 'MNO 20 Nov 2026 45 Put'], ['Intended entry', '2 contracts @ $1.20'], ['1R (original risk)', '$480.00'], ['Original reward', '$140.00'], ['Planned reward : risk', '0.29']]),
+      'Price History': '<p class="c-quiet">Sessions Mon Oct 12 to Fri Nov 20, as in the other states.</p>',
+      Journal: '<p class="c-quiet">Session cards as in the other states, ending Fri Nov 20.</p>',
+      Payoff: '<p class="c-quiet">Current: Not applicable: no open position. The planned line (breakeven 43.80) is drawn dashed, alone.</p>',
+    },
+    counts: {},
+    footer: footer(),
+    openDrawer: 'Position',
+  }),
+
+  incoherent: () => ({
+    note: 'Facts that cannot be replayed: the finding leads the page across both columns; nothing derived is shown, so no Today, Price History or Payoff drawer, and no Record links.',
+    banner: `<div class="c-banner" role="region" aria-label="Facts can’t be replayed"><h3>Facts can’t be replayed</h3><p>Viewing this Trade does not change its records.</p><p>These recorded facts cannot be replayed, so the Position, entry, and fulfillment figures are unavailable.</p><p>New entries cannot be recorded for this Trade until its records agree.</p>${tbl('lots', ['Finding'], [['Sell to close 3 NVDA 18 Dec 2026 150 Call on Tue Nov 10 exceeds the 2 contracts held.']])}</div>`,
+    ident: { symbol: 'NVDA', what: 'Long Call, Open', lines: ['Strike 150', 'Expires Fri 18 Dec 2026 (36 days)', ACCOUNT], actions: [] },
+    pnl: { big: '<span style="font-size:1.05rem;font-weight:700">Not available</span>', line: '<span class="muted">Trade P&amp;L</span>', open: '' },
+    conds: nvdaConds(),
+    extremes: '',
+    todo: [],
+    drawers: {
+      Position: csub('Recorded Executions') + '<ol class="journal"><li><span class="j-when">Tue Nov 10<br>11:30 am</span><span class="j-body">Sell to close 3 NVDA 18 Dec 2026 150 Call @ $10.50</span></li><li><span class="j-when">Wed Nov 4<br>10:20 am</span><span class="j-body">Buy to open 2 NVDA 18 Dec 2026 150 Call @ $7.35</span></li></ol>',
+      'Plan and entry': nvdaPlanBody(),
+      Journal: sessionCards([{ cls: 'plan', when: 'Every entry, newest first', title: 'Journal', note: 'Without a replay there are no sessions, so the entries are one list.', entries: [{ type: 'Exit reflection', body: 'Sold into the gap.' }, { type: 'Entry reflection', body: 'Filled a nickel under the limit.' }, planReflectionEntry] }]),
+    },
+    counts: {},
+    footer: '',
+    openDrawer: 'Position',
+  }),
+};
+
+// Shown on the C. Cockpit tab only; the other tabs keep their three states.
+[
+  ['planned', 'Planned', 'Thu Nov 12, 2:30 pm'],
+  ['stock', 'Stock, held', 'Thu Nov 12, 6:15 pm'],
+  ['lots', 'Several lots', 'Thu Nov 12, 6:15 pm'],
+  ['settlement', 'Settlement Due', 'Mon Dec 21, 6:15 pm'],
+  ['closedExit', 'Closed by sale', 'Mon Nov 16, 6:15 pm'],
+  ['closedExpired', 'Closed by expiration', 'Mon Nov 23, 6:15 pm'],
+  ['incoherent', 'Facts can’t be replayed', 'Thu Nov 12, 6:15 pm'],
+].forEach(([key, label, clock]) => { STATES[key] = { label, clock, cockpitOnly: true, model: MODELS[key] }; });
+const visibleStates = () => Object.keys(STATES).filter((k) => state.view === 'c' || !STATES[k].cockpitOnly);
+
+function viewC(s) {
+  const m = s.model ? s.model() : protoModel(s);
+  const names = DRAWERS.filter((d) => d in m.drawers);
+  if (!names.includes(drawer)) drawer = names[0];
   return `<p class="intent">Cockpit. A rail that always shows the state of play, and drawers for the detail. On a phone the rail becomes the top of the page.</p>
+  ${m.note ? `<p class="proto-note">${m.note}</p>` : ''}
   <div class="cockpit">
+    ${m.banner || ''}
     <aside class="c-rail" aria-label="State of play">
-      <div class="card">${identity(s)}</div>
-      <div class="card"><div class="c-pnl ${s.today ? dir(s.pnl) : ''}">${s.today ? money(s.pnl) : '—'}</div>
-        <div class="small ${s.today ? dir(s.pnl - s.pnlPrev) : 'muted'}">${s.today ? signed(s.pnl - s.pnlPrev) + ' since ' + (s.prev.rel === 'Yesterday' ? 'yesterday' : s.prev.date) : 'Trade P&amp;L after today’s close'}</div>
-        <div class="small muted" style="margin-top:6px">${s.open} of ${PLAN.contracts} contracts open</div></div>
-      <div class="card"><h3 class="sec-title">Conditions</h3><ul class="c-conds">${conds}</ul>${extremes(s)}</div>
-      <div class="card">${todoList(s)}</div>
+      <div class="card">${identCard(m.ident)}</div>
+      <div class="card"><div class="c-pnl ${m.pnl.cls || ''}">${m.pnl.big}</div>
+        <div class="small">${m.pnl.line}</div>
+        ${m.pnl.open ? `<div class="small muted" style="margin-top:6px">${m.pnl.open}</div>` : ''}
+        ${m.result ? `<div style="margin-top:12px">${m.result}</div>` : ''}</div>
+      <div class="card"><h3 class="sec-title">Conditions</h3><ul class="c-conds">${m.conds.map(condItem).join('')}</ul>${m.extremes}</div>
+      <div class="card"><h3 class="sec-title">Needs you</h3>${todoCard(m.todo)}</div>
     </aside>
     <section>
-      <div class="drawer-tabs" role="tablist" aria-label="Detail">${DRAWERS.map((d) => `<button type="button" role="tab" id="dt-${d.replace(/\W/g, '')}" aria-selected="${d === drawer}" aria-controls="drawer" data-drawer="${d}">${d}${counts[d] ? `<span class="count">${counts[d]}</span>` : ''}</button>`).join('')}</div>
-      <div class="card" id="drawer" role="tabpanel" aria-labelledby="dt-${drawer.replace(/\W/g, '')}">${body[drawer]}</div>
-      <div style="margin-top:12px">${footer()}</div>
+      <div class="drawer-tabs" role="tablist" aria-label="Detail">${names.map((d) => `<button type="button" role="tab" id="dt-${d.replace(/\W/g, '')}" aria-selected="${d === drawer}" aria-controls="drawer" data-drawer="${d}">${d}${m.counts[d] ? `<span class="count">${m.counts[d]}</span>` : ''}</button>`).join('')}</div>
+      <div class="card" id="drawer" role="tabpanel" aria-labelledby="dt-${drawer.replace(/\W/g, '')}">${m.drawers[drawer]}</div>
+      ${m.footer ? `<div style="margin-top:12px">${m.footer}</div>` : ''}
     </section>
   </div>`;
 }
@@ -789,11 +1055,12 @@ try { Object.assign(state, JSON.parse(localStorage.getItem('td-proto') || '{}'))
 const save = () => { try { localStorage.setItem('td-proto', JSON.stringify(state)); } catch (e) { /* storage unavailable */ } };
 
 function renderChrome() {
-  document.getElementById('states').innerHTML = Object.entries(STATES).map(([k, v]) => `<button type="button" role="radio" aria-checked="${k === state.scenario}" data-state="${k}" tabindex="${k === state.scenario ? 0 : -1}">${v.label}</button>`).join('');
+  document.getElementById('states').innerHTML = Object.entries(STATES).filter(([k]) => visibleStates().includes(k)).map(([k, v]) => `<button type="button" role="radio" aria-checked="${k === state.scenario}" data-state="${k}" tabindex="${k === state.scenario ? 0 : -1}">${v.label}</button>`).join('');
   document.getElementById('tabs').innerHTML = VIEWS.map((v) => `<button type="button" role="tab" id="tab-${v.id}" aria-selected="${v.id === state.view}" aria-controls="stage" tabindex="${v.id === state.view ? 0 : -1}" data-view="${v.id}">${v.name}<small>${v.note}</small></button>`).join('');
 }
 
 function render() {
+  if (!STATES[state.scenario] || !visibleStates().includes(state.scenario)) state.scenario = 'held';
   renderChrome();
   const s = STATES[state.scenario];
   const stage = document.getElementById('stage');
@@ -816,7 +1083,7 @@ function arrowMove(e, attr, list, key) {
 document.addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
-  if (b.dataset.state) { state.scenario = b.dataset.state; render(); document.querySelector(`[data-state="${state.scenario}"]`).focus(); }
+  if (b.dataset.state) { state.scenario = b.dataset.state; const od = STATES[state.scenario].model?.().openDrawer; if (od) drawer = od; render(); document.querySelector(`[data-state="${state.scenario}"]`).focus(); }
   else if (b.dataset.view) { state.view = b.dataset.view; render(); document.querySelector(`[data-view="${state.view}"]`).focus(); }
   else if (b.dataset.drawer) { drawer = b.dataset.drawer; render(); document.querySelector(`[data-drawer="${drawer}"]`).focus(); }
   else if (b.dataset.scroll) {
@@ -825,9 +1092,9 @@ document.addEventListener('click', (e) => {
     r.scrollBy({ left: r.clientWidth * 0.9 * (b.dataset.scroll === 'back' ? -1 : 1), behavior });
   }
 });
-document.getElementById('states').addEventListener('keydown', (e) => arrowMove(e, 'data-state', Object.keys(STATES), 'scenario'));
+document.getElementById('states').addEventListener('keydown', (e) => arrowMove(e, 'data-state', visibleStates(), 'scenario'));
 document.getElementById('tabs').addEventListener('keydown', (e) => arrowMove(e, 'data-view', VIEWS.map((v) => v.id), 'view'));
-document.addEventListener('keydown', (e) => { if (e.target.closest?.('.drawer-tabs')) { const i = DRAWERS.indexOf(drawer); if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { drawer = DRAWERS[(i + (e.key === 'ArrowRight' ? 1 : -1) + DRAWERS.length) % DRAWERS.length]; render(); document.querySelector(`[data-drawer="${drawer}"]`).focus(); e.preventDefault(); } } });
+document.addEventListener('keydown', (e) => { if (e.target.closest?.('.drawer-tabs')) { const shown = [...document.querySelectorAll('[data-drawer]')].map((x) => x.dataset.drawer); const i = shown.indexOf(drawer); if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { drawer = shown[(i + (e.key === 'ArrowRight' ? 1 : -1) + shown.length) % shown.length]; render(); document.querySelector(`[data-drawer="${drawer}"]`).focus(); e.preventDefault(); } } });
 
 render();
 </script>
