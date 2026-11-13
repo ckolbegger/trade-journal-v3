@@ -1,13 +1,19 @@
 // @vitest-environment jsdom
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { MemoryRouter, Route, Routes } from 'react-router';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { closedDetailOf } from '../../../../tests/support/closed-detail-fixtures.ts';
+import { facadeDouble } from '../../../../tests/support/facade-double.ts';
 import { incoherentDetailOf, openDetailOf, PC1, PC2, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OS_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
+import { reflectionDefinition } from '../../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { renderView, useFixedClock } from './test-support.ts';
+import type { TradeDetailDebt } from '../../../app/types.ts';
+import { RuntimeContext } from '../../runtime.tsx';
+import { TradeDetail } from '../TradeDetail.tsx';
+import { openDrawer, renderView, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
@@ -102,5 +108,70 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     expectOn('Today');
     // One tab stop: only the selected tab is in the tab order.
     expect(screen.getAllByRole('tab').filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
+  });
+
+  describe('a Journal drawer left and returned to', () => {
+    const debt: TradeDetailDebt = {
+      kind: 'Debt',
+      id: 'debt-1',
+      entryType: 'Position Change Reflection',
+      entryTypeKey: 'entry-type.position-change-reflection',
+      source: 'Position Change',
+      anchor: { kind: 'Trade', tradeId: 'trade-1' },
+      momentTime: '2026-10-12T14:00:00Z',
+      positionChangeId: 'pc-1',
+      definitionId: 'def-pcr-1',
+      dueAnchor: '2026-10-13T20:00:00Z',
+      revision: 'debt-1-rev-1',
+      dueStatus: 'Due',
+    };
+    const renderOwed = () => {
+      const facade = facadeDouble();
+      vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [debt] }), binding: {} } as never);
+      vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+      vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
+      const onDirtyChange = vi.fn();
+      render(
+        <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+          <MemoryRouter initialEntries={['/trades/trade-1']}>
+            <Routes>
+              <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" onDirtyChange={onDirtyChange} />} />
+            </Routes>
+          </MemoryRouter>
+        </RuntimeContext.Provider>,
+      );
+      return onDirtyChange;
+    };
+
+    it('should keep an unsaved reflection when the reader moves to another drawer and back', async () => {
+      const user = userEvent.setup();
+      const onDirtyChange = renderOwed();
+      await openDrawer(user, 'Journal');
+      await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+      const form = await screen.findByRole('form', { name: 'Reflection' });
+      await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText('Reactive'));
+      expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+      await openDrawer(user, 'Plan and Risk');
+      // The leave-page guard stays registered while the answers are held.
+      expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+      await openDrawer(user, 'Journal');
+      const again = screen.getByRole('form', { name: 'Reflection' });
+      expect(within(within(again).getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText<HTMLInputElement>('Reactive').checked).toBe(true);
+    });
+
+    it('should still show a saved reflection as saved after moving to another drawer and back', async () => {
+      const user = userEvent.setup();
+      renderOwed();
+      await openDrawer(user, 'Journal');
+      await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+      await user.click(await screen.findByRole('button', { name: 'Decline' }));
+      await screen.findByRole('region', { name: 'Saved reflection' });
+
+      await openDrawer(user, 'Plan and Risk');
+      await openDrawer(user, 'Journal');
+      expect(screen.getByRole('region', { name: 'Saved reflection' })).toBeTruthy();
+      expect(screen.queryByText('Reflection owed')).toBeNull();
+    });
   });
 });

@@ -1,0 +1,12 @@
+# D08P TDD log, T8P.5-B
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| Task | Case | Phase | Command | Outcome | Failure excerpt |
+|---|---|---|---|---|---|
+| T8P.5-B | T8P.5-B1: it should keep an unsaved reflection when the reader moves to another drawer and back | note | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "it should keep an unsaved reflection when the reader moves to another drawer and back"` | exit 0; Tests  7 skipped (7) | Not a red: the filter carried the "it" prefix, which the case title does not contain, so no case ran. Rerun below without it. |
+| T8P.5-B | T8P.5-B1: should still show a saved reflection as saved after moving to another drawer and back | red | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "should still show a saved reflection as saved after moving to another drawer and back"` | exit 1; Tests  1 failed, 6 skipped (7) | TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "Saved reflection"  |
+| T8P.5-B | T8P.5-B1: should keep an unsaved reflection when the reader moves to another drawer and back | red | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "should keep an unsaved reflection when the reader moves to another drawer and back"` | exit 1; Tests  1 failed, 6 skipped (7) | AssertionError: expected last "vi.fn()" call to have been called with [ true ]  |
+| T8P.5-B | T8P.5-B1: should keep an unsaved reflection when the reader moves to another drawer and back | green | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "should keep an unsaved reflection when the reader moves to another drawer and back"` | exit 0; Tests  1 passed, 6 skipped (7) |  |
+| T8P.5-B | T8P.5-B1: should still show a saved reflection as saved after moving to another drawer and back | green | `npx vitest run src/ui/screens/trade-detail/Cockpit.test.tsx -t "should still show a saved reflection as saved after moving to another drawer and back"` | exit 0; Tests  1 passed, 6 skipped (7) |  |
+| T8P.5-B | T8P.5-B1: refactor | refactor | `npx vitest run src/ui/screens/trade-detail` | exit 0; 14 files, 105 passed | The drawer switch became `panelOf(drawer)`, called for every shown drawer; each tab now carries `aria-controls`. No test rephrased beyond dropping the leading "it" from the filter; the unsaved case also asserts the leave-page guard stays registered (`onDirtyChange` last called with true) after the move. |

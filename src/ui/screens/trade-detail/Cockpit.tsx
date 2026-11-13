@@ -64,45 +64,40 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
     <RiskRewardSection evaluation={open.current.evaluation} baseline={open.baseline} option={open.plan.legs[0]?.instrument.kind === 'Option'} symbol={open.plan.underlying} />
   );
 
-  let panel: ReactNode;
-  switch (current) {
-    case 'Today':
-      panel = (
-        <>
-          {legacyValuation}
-          <TodayDrawer {...shell} />
-          {legacyRiskReward}
-        </>
-      );
-      break;
-    case 'Position':
-      panel = (
-        <>
-          {!hasToday && legacyValuation}
-          {!hasToday && open && <TodayDrawer {...shell} />}
-          {!hasToday && legacyRiskReward}
-          <PositionDrawer {...shell} />
-        </>
-      );
-      break;
-    case 'Plan and Risk':
-      panel = <PlanRiskDrawer {...shell} />;
-      break;
-    case 'Price History':
-      panel = <PriceHistory {...shell} />;
-      break;
-    case 'Journal':
-      panel = (
-        <>
-          <JournalCards {...shell} />
-          <JournalDrawer facade={facade} {...shell} {...(onDirtyChange && { onDirtyChange })} />
-        </>
-      );
-      break;
-    case 'Payoff':
-      panel = <PayoffDrawer {...shell} />;
-      break;
-  }
+  const panelOf = (drawer: Drawer): ReactNode => {
+    switch (drawer) {
+      case 'Today':
+        return (
+          <>
+            {legacyValuation}
+            <TodayDrawer {...shell} />
+            {legacyRiskReward}
+          </>
+        );
+      case 'Position':
+        return (
+          <>
+            {!hasToday && legacyValuation}
+            {!hasToday && open && <TodayDrawer {...shell} />}
+            {!hasToday && legacyRiskReward}
+            <PositionDrawer {...shell} />
+          </>
+        );
+      case 'Plan and Risk':
+        return <PlanRiskDrawer {...shell} />;
+      case 'Price History':
+        return <PriceHistory {...shell} />;
+      case 'Journal':
+        return (
+          <>
+            <JournalCards {...shell} />
+            <JournalDrawer facade={facade} {...shell} {...(onDirtyChange && { onDirtyChange })} />
+          </>
+        );
+      case 'Payoff':
+        return <PayoffDrawer {...shell} />;
+    }
+  };
 
   return (
     <>
@@ -124,8 +119,7 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
               role="tab"
               id={`drawer-tab-${tabId(name)}`}
               aria-selected={name === current}
-              // Only the selected drawer's panel is mounted, so only it is referenced.
-              aria-controls={name === current ? `drawer-panel-${tabId(name)}` : undefined}
+              aria-controls={`drawer-panel-${tabId(name)}`}
               tabIndex={name === current ? 0 : -1}
               onClick={() => setSelected(name)}
             >
@@ -133,9 +127,12 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
             </button>
           ))}
         </div>
-        <div role="tabpanel" id={`drawer-panel-${tabId(current)}`} aria-labelledby={`drawer-tab-${tabId(current)}`}>
-          {panel}
-        </div>
+        {/* Every shown drawer stays mounted and the others carry `hidden`, so an unsaved reflection and a saved one survive a change of drawer. */}
+        {shown.map((name) => (
+          <div key={name} role="tabpanel" id={`drawer-panel-${tabId(name)}`} aria-labelledby={`drawer-tab-${tabId(name)}`} hidden={name !== current}>
+            {panelOf(name)}
+          </div>
+        ))}
         <DetailFooter {...shell} />
       </div>
     </>
