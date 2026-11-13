@@ -1004,3 +1004,25 @@ Commits `9ea46ea2` (task) and `cb77bcad` (lane tier: 1563 unit, 218 integration,
 - the reshaped `journal.types.ts`;
 - owed items through the existing `OwedDebtItem`;
 - T8P.22 must stop rendering the old Journal list when it passes a replay.
+
+## The T8P.16 and T8P.13 merges, T8P.21's reviews, and revision 92
+
+**T8P.16 merge.** ocr round 2 on the B1, B3 and B4 fix was clean (session `1826f69d-3bdc-41d9-b1fb-d1c4436254ba`, relocated `05a9fa84-0338-42c6-a39e-519ff8bd361c`; [ocr/T8P.16-B-r2.json](ocr/T8P.16-B-r2.json)). The rebase onto `ab329f1a` conflicted in `e2e/d4/expected-mark.spec.ts`: T8P.17 had moved the Open P&L read into the Position drawer, and T8P.16 had changed the dated heading to "At the Fri Oct 9 Marks" (W19). Each line had one owner, so the main session kept both (section 4.2). The rebased lane tier `T8P.16-rebase` passed (1598 unit, 222 integration, 14 of 14; run complete), and so did the four Today-reading specs (`d4/expected-mark`, `d4/breach-overrun`, `d4/responsive-a11y`, `d7p/layout`: 11 of 11) on fresh release builds. Fast-forwarded to `d2cdfc88`. Rebased hashes: `d8691e0e` (task), `a4dcf05c`, `6780b82c` (B1, B3, B4), `257e8a77`, `d2cdfc88`. The lane was removed.
+
+**T8P.13 ocr** (`3b304ea4`): session `18a8333e-7d33-4deb-bca8-5ab2301aefbb`, 5 files, 0 comments; relocated `171a7159-8f36-480a-a87d-ffa0e33c32d8`, 5 files, 2 comments, both relocation artifacts (unresolved imports, and a file name outside Vitest's include patterns), dismissed as Wrong. Raw output: [ocr/T8P.13-3b304ea4.json](ocr/T8P.13-3b304ea4.json), [ocr/T8P.13-3b304ea4-relocated.json](ocr/T8P.13-3b304ea4-relocated.json). No bug task. Its five titles match the breakdown word for word. Case 3 keeps "today's session", since revision 91 gives that retitle to T8P.29.
+
+**T8P.13 merge.** The rebase onto `d2cdfc88` was clean but brought in code. The rebased lane tier `T8P.13-rebase` passed (1602 unit, 222 integration, 14 of 14; run complete), and so did its four specs (`d4/expected-mark`, `d4/correct-mark`, `d6/exit`, `d6/responsive-a11y`: 7 of 7) on fresh release builds. Then rebased onto `58ebbf91` (revision 92, plan and spec text only) and fast-forwarded to `3308a842`. Hashes: `83d5c09b` (task), `56fbb391`, `3308a842`. The lane was removed.
+
+**T8P.21 reviews, after the ocr limit was reset.**
+- The full rerun of `9ea46ea2`: session `5e97eda3-2a99-4e24-b72a-efab451f9acf`, 4 files, 3 comments; relocated `6ff8b470-89cd-4fc0-a12d-d40128d0b721`, 1 comment. Raw output: [ocr/T8P.21-9ea46ea2-rerun.json](ocr/T8P.21-9ea46ea2-rerun.json), [ocr/T8P.21-9ea46ea2-rerun-relocated.json](ocr/T8P.21-9ea46ea2-rerun-relocated.json).
+  - Findings 1 and 2 repeat B1 (the card page is not reconciled with the list) and B2 (saved entries lose their status and their Answered or Declined time), already fixed in `c085a279`.
+  - Finding 3, Valid and new: `JournalCardsInput` leaves `view` optional beside a `replay`, and `journalCards` then reads `view.plan`, so a type-correct call without a view throws. Nothing calls it that way yet. It became **T8P.21-B3**, sent to the same agent.
+  - The relocated comment (the `show` helper's `object` cast and `unknown[]` fixtures) is Doubtful as a defect. The test's header makes the loose types deliberate, so it was dismissed as a style preference, not a wrong result.
+- Round 2 on `c085a279` (B1, B2): session `2554ed6d-65ff-486a-9592-d0712e3cf542`, 0 comments; relocated `a3e7f9be-4887-437d-aaca-21254430e752`, 0 comments. Raw output: [ocr/T8P.21-B-c085a279-r2.json](ocr/T8P.21-B-c085a279-r2.json), [ocr/T8P.21-B-c085a279-r2-relocated.json](ocr/T8P.21-B-c085a279-r2-relocated.json).
+- **T8P.21-B3:** `66d1d141` (the replay branch requires `view: TradeDetailView`, and the cast is gone). Red was type-level: `npm run typecheck` reported `TS2578: Unused '@ts-expect-error' directive` on a replay-without-view call. Lane tier `ffacdaf3` (1566 unit, 218 integration, 14 of 14; run complete). ocr is running. T8P.22 must pass `view` whenever it passes `replay`.
+
+**Revision 92** (`58ebbf91`, tag `claude-opus-5.5-plan-r92`), the user's choice "Add a calendar read":
+- Market Data's read session names the session after its trading date, from the calendar alone (`nextSessionDate`), and none outside coverage. That is one clause in `specs/design/market-data.md`'s read-session paragraph.
+- T8P.28 adds the field in lane BV, with one case, then reads it for `firstMarksDue`.
+- S124's character count (2,471 to 2,610) and the reading-cost table are updated, and the reading lists are regenerated. No line moved and no tag changed.
+- Lane BV, which held no commit of T8P.28's, was moved to `58ebbf91`, and T8P.28's agent resumed with the revision.

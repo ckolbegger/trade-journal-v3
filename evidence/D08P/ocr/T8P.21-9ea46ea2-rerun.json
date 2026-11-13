@@ -1,0 +1,156 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 186420,
+    "input_tokens": 184164,
+    "output_tokens": 2256,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m44s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/journal-cards.tsx",
+      "content": "Pagination is never reset or clamped when the replay changes. After navigating to a later page, rerendering with fewer cards can hide every card. In particular, switching to `replay: 'Incoherent'` leaves its single list hidden and removes the pagination controls, so the user cannot recover. Reset/clamp the effective page when the card count or replay mode changes, and add a rerender regression test.",
+      "existing_code": "  const [page, setPage] = useState(0);",
+      "start_line": 106,
+      "end_line": 106,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/journal.props.ts",
+      "content": "The input contract permits a replay and facade without a view, but `journalCards` immediately reads `view.plan` whenever a replay is present. Thus a type-correct `\u003cJournalCards replay={replay} facade={facade} /\u003e` throws during rendering. Require a valid view in the replay-bearing branch (while preserving the no-argument placeholder branch), or guard the missing view before dereferencing it.",
+      "existing_code": "export type JournalCardsInput = { readonly view?: unknown; readonly timeZone?: string; readonly today?: string } \u0026 (",
+      "start_line": 37,
+      "end_line": 37,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/journal.props.ts",
+      "content": "Saved reflections lose their resolution/edit history in this adapter: every item gets empty badges, declines always say “Reflection declined”, and later resolutions are labeled only “Authored” (or omitted when the formatted times match). The existing JournalSection preserves `edited`, `answeredLater`, and `declinedLater`, including explicit Answered/Declined timestamps. Map those fields into badges/details/declined and render `item.badges` in Item so deferred answers and later declines remain distinguishable from immediate reflections.",
+      "existing_code": "    badges: [],\n    details,\n    answers: item.kind === 'Entry' ? item.responses.map((response) =\u003e ({ prompt: response.prompt, answer: answerText(response.answer) })) : [],\n    ...(item.kind === 'Decline' \u0026\u0026 { declined: { badge: 'Reflection declined', reason: item.reason ?? 'No reason given' } }),",
+      "start_line": 87,
+      "end_line": 90,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit journal drawer properties, types, cards, and styling",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/cockpit/drawers/journal.types.ts",
+        "src/ui/cockpit/journal-cards.tsx",
+        "src/ui/cockpit/styles/journal.css"
+      ]
+    }
+  ],
+  "session_id": "5e97eda3-2a99-4e24-b72a-efab451f9acf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5e97eda3-2a99-4e24-b72a-efab451f9acf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "9ea46ea2",
+      "resolved_base": "957499ac8f25e9e35a2a18286bc461e7025f6599",
+      "resolved_head": "9ea46ea27a2b1a42f3639d95926543fa9672fb4d",
+      "exact_range": "957499ac8f25e9e35a2a18286bc461e7025f6599..9ea46ea27a2b1a42f3639d95926543fa9672fb4d",
+      "source_artifact_sha256": "82c800e401759a02ea95fdf2589ad15716a1df42f659ef30706f23364e0d8d8a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "36929d6fb7ed25af6be2a65d495c393863186e35fe0b9825684d58aa75ce5d6a",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "00fe5e6d0c05488c81753a85a0838837dea6dab7093f6e806cf56f078696eadc"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "b4d0b00cbfa02d484a1e140999c8624e33e238c070a4da1e16f3f6ed37d6e33d"
+        },
+        {
+          "item_id": "a75c7ff61d08956a08090255f6b2f3d9637e8b3e7b33f042eed0108a2a3de3f5",
+          "path": "src/ui/cockpit/styles/journal.css",
+          "fingerprint": "f6dcc7f42addbd3f5815ef3e3c1508fce819053472a1383b18d27399793de191"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "6aff45856fa0a027ae85531ee53b535d66464cf11b00e6ebd5239960e7470247"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "36929d6fb7ed25af6be2a65d495c393863186e35fe0b9825684d58aa75ce5d6a",
+          "path": "src/ui/cockpit/drawers/journal.types.ts",
+          "fingerprint": "00fe5e6d0c05488c81753a85a0838837dea6dab7093f6e806cf56f078696eadc"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "b4d0b00cbfa02d484a1e140999c8624e33e238c070a4da1e16f3f6ed37d6e33d"
+        },
+        {
+          "item_id": "a75c7ff61d08956a08090255f6b2f3d9637e8b3e7b33f042eed0108a2a3de3f5",
+          "path": "src/ui/cockpit/styles/journal.css",
+          "fingerprint": "f6dcc7f42addbd3f5815ef3e3c1508fce819053472a1383b18d27399793de191"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "6aff45856fa0a027ae85531ee53b535d66464cf11b00e6ebd5239960e7470247"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1dc18f003e74eb83072928bc9264026066fa6de757834fea465e0a10ab39e477",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "72ab6e34e74709124d07723820b3fcbf40916b0f5552001c3bb761b2e7f340e4",
+          "path": "evidence/D08P/tdd-log/T8P.21.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 103622
+  }
+}

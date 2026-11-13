@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 38430,
+    "input_tokens": 38188,
+    "output_tokens": 242,
+    "cache_read_tokens": 6656,
+    "elapsed": "23s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/today.props.ts",
+        "src/ui/cockpit/styles/today.css",
+        "src/ui/cockpit/track.tsx"
+      ]
+    }
+  ],
+  "session_id": "1826f69d-3bdc-41d9-b1fb-d1c4436254ba",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1826f69d-3bdc-41d9-b1fb-d1c4436254ba",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "299d1636",
+      "resolved_base": "455955016e378eb688f58944c53d5ba81f32bcfd",
+      "resolved_head": "299d1636bfa5cf8dc9ee3a260b430730ae11e134",
+      "exact_range": "455955016e378eb688f58944c53d5ba81f32bcfd..299d1636bfa5cf8dc9ee3a260b430730ae11e134",
+      "source_artifact_sha256": "0b40f47cf71b71dcc6fb20e99e86a1b4b36bc2e739461193f00f7ba349a47b4a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "16b16e0c97fc199ada1c40fd0534b5ae67e7a25fc37a0bfe18f5ee8047520325"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "5eeaff9abce21a61aeb18c6d6c7e728165a06b382f6f89b22b9ab4d869e8f4af"
+        },
+        {
+          "item_id": "ad983e22bcae865b3010e4b263f3ded597f6b64df9f744e0c3969e94a6c8c813",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "2c53751b8b08b013f0b5d03ddb89e9196f78d98646ef535eedce866cc43a922d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "16b16e0c97fc199ada1c40fd0534b5ae67e7a25fc37a0bfe18f5ee8047520325"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "5eeaff9abce21a61aeb18c6d6c7e728165a06b382f6f89b22b9ab4d869e8f4af"
+        },
+        {
+          "item_id": "ad983e22bcae865b3010e4b263f3ded597f6b64df9f744e0c3969e94a6c8c813",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "2c53751b8b08b013f0b5d03ddb89e9196f78d98646ef535eedce866cc43a922d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ec00dc97f179d90f5a87e20e6e308428ca70a2e9599f5f2b69d7c16dbd520ded",
+          "path": "evidence/D08P/tdd-log/T8P.16-B.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 22707
+  }
+}

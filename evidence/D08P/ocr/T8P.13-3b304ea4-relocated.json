@@ -1,0 +1,174 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 121164,
+    "input_tokens": 119493,
+    "output_tokens": 1671,
+    "cache_read_tokens": 18304,
+    "elapsed": "1m2s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 4,
+      "file_read": 14
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 9,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/rail/pnl.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/rail/pnl.tsx\"}",
+        "error": "file \"src/itg/relocated/rail/pnl.tsx\" not found: git show 6350f32b9b4d4d2eed1568e345fe36568fb77878:src/itg/relocated/rail/pnl.tsx: exit status 128: fatal: path 'src/itg/relocated/rail/pnl.tsx' does not exist in '6350f32b9b4d4d2eed1568e345fe36568fb77878'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/rail/pnl.props.ts",
+      "content": "These imports do not resolve from the relocated directory: `./pnl.props.ts` imports this file itself, which exports no `PnlReplay`, and `./pnl.tsx` does not exist. The test-support import above also resolves to a nonexistent `src/itg/screens/...` path. Since tsconfig includes all of `src`, this breaks `npm run typecheck`. Import `PnlReplay` and `PnlCardFromView` from `src/ui/cockpit/rail/pnl.props.ts` (aliasing the latter if needed), and update the test-support path to its `src/ui/screens/...` location.",
+      "existing_code": "import type { PnlReplay } from './pnl.props.ts';\nimport { PnlCard } from './pnl.tsx';",
+      "start_line": 13,
+      "end_line": 14,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/rail/pnl.props.ts",
+      "content": "This file contains a test suite but its name does not match either Vitest project's include patterns (`src/**/*.test.{ts,tsx}` or `tests/integration/**/*.test.ts`). Consequently neither test command runs these new assertions. Rename it to a matching test filename or explicitly include this location in the intended project.",
+      "existing_code": "describe('P\u0026L card (W3, W4)', () =\u003e {",
+      "start_line": 43,
+      "end_line": 43,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D4 mark integration fixtures",
+      "files": [
+        "src/itg/relocated/d4/correct-mark.ts",
+        "src/itg/relocated/d4/expected-mark.ts"
+      ]
+    },
+    {
+      "label": "D6 exit and responsive accessibility fixtures",
+      "files": [
+        "src/itg/relocated/d6/exit.ts",
+        "src/itg/relocated/d6/responsive-a11y.ts"
+      ]
+    },
+    {
+      "label": "Rail panel properties",
+      "files": [
+        "src/itg/relocated/rail/pnl.props.ts"
+      ]
+    }
+  ],
+  "session_id": "171a7159-8f36-480a-a87d-ffa0e33c32d8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "171a7159-8f36-480a-a87d-ffa0e33c32d8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "3524318423cf573b73296eb5926a124b7c432aa7",
+      "requested_head": "6350f32b9b4d4d2eed1568e345fe36568fb77878",
+      "resolved_base": "3524318423cf573b73296eb5926a124b7c432aa7",
+      "resolved_head": "6350f32b9b4d4d2eed1568e345fe36568fb77878",
+      "exact_range": "3524318423cf573b73296eb5926a124b7c432aa7..6350f32b9b4d4d2eed1568e345fe36568fb77878",
+      "source_artifact_sha256": "1d92dc057ad979d979da4e990d17fa13c17eda6f260125e4dc28f9c28cbb45b7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "19cc5bd4cc1d5ce38af7b21d9d1f61befe0480ed8843b505a48a48a40b6c0b81",
+          "path": "src/itg/relocated/d4/expected-mark.ts",
+          "fingerprint": "e3ebb74ac46eb58de6c6ba91c3278596553562cac1b2ff38c4658399eb852431"
+        },
+        {
+          "item_id": "2aa38fb0d46cfdd863cb2e71701a21f6976f38c7a4dac1f497466d1eb019af59",
+          "path": "src/itg/relocated/d6/responsive-a11y.ts",
+          "fingerprint": "6a17170ac6c37c8f317d8644f763d4ca2b14ed61aa24fbfc7b7763e041a60f76"
+        },
+        {
+          "item_id": "6835cfc4436b04767d89f4543ea648a1aa5e600b081137740a87a9c72c4534f6",
+          "path": "src/itg/relocated/rail/pnl.props.ts",
+          "fingerprint": "e69216bcf8e51ac311c2c964fefce703723a551468bc74fe2509536d6ea1ff29"
+        },
+        {
+          "item_id": "9e13ca758e7e075d5c48b75095e3171abe56964edf3e199c4296a153fa123c7c",
+          "path": "src/itg/relocated/d6/exit.ts",
+          "fingerprint": "58ba7fed7b6419a6562cea7e38097b1df0244b18b3f68640a8ef3eb34005c928"
+        },
+        {
+          "item_id": "eb91d8ae99df64b580cbfc3220b25e2123433a9698585258c37c8d5459413edc",
+          "path": "src/itg/relocated/d4/correct-mark.ts",
+          "fingerprint": "31eea310a02963b1914baad2668b0de9fa6fe37db3d244d343b436b25f43b63b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "19cc5bd4cc1d5ce38af7b21d9d1f61befe0480ed8843b505a48a48a40b6c0b81",
+          "path": "src/itg/relocated/d4/expected-mark.ts",
+          "fingerprint": "e3ebb74ac46eb58de6c6ba91c3278596553562cac1b2ff38c4658399eb852431"
+        },
+        {
+          "item_id": "2aa38fb0d46cfdd863cb2e71701a21f6976f38c7a4dac1f497466d1eb019af59",
+          "path": "src/itg/relocated/d6/responsive-a11y.ts",
+          "fingerprint": "6a17170ac6c37c8f317d8644f763d4ca2b14ed61aa24fbfc7b7763e041a60f76"
+        },
+        {
+          "item_id": "6835cfc4436b04767d89f4543ea648a1aa5e600b081137740a87a9c72c4534f6",
+          "path": "src/itg/relocated/rail/pnl.props.ts",
+          "fingerprint": "e69216bcf8e51ac311c2c964fefce703723a551468bc74fe2509536d6ea1ff29"
+        },
+        {
+          "item_id": "9e13ca758e7e075d5c48b75095e3171abe56964edf3e199c4296a153fa123c7c",
+          "path": "src/itg/relocated/d6/exit.ts",
+          "fingerprint": "58ba7fed7b6419a6562cea7e38097b1df0244b18b3f68640a8ef3eb34005c928"
+        },
+        {
+          "item_id": "eb91d8ae99df64b580cbfc3220b25e2123433a9698585258c37c8d5459413edc",
+          "path": "src/itg/relocated/d4/correct-mark.ts",
+          "fingerprint": "31eea310a02963b1914baad2668b0de9fa6fe37db3d244d343b436b25f43b63b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "c9d5e3ab6d8a5176d918e610f4689873c2ace9b50e837880980660864a4bff1b",
+          "path": "src/itg/relocated/rail/pnl.ts",
+          "exclude_reason": "deleted"
+        }
+      ]
+    },
+    "elapsed_ms": 61763
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 69244,
+    "input_tokens": 67863,
+    "output_tokens": 1381,
+    "cache_read_tokens": 6656,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 13,
+        "tool_name": "file_read",
+        "file_path": "e2e/support/detail/rail-a.ts,src/ui/cockpit/rail/pnl-card.tsx,src/ui/cockpit/rail/pnl.props.ts,src/ui/cockpit/rail/pnl.tsx,src/ui/cockpit/styles/rail-a.css",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/styles/index.css\"}",
+        "error": "file \"src/ui/cockpit/styles/index.css\" not found: git show 3b304ea4ee1ad8ecb44fddeaeee7e2bfbdab43d6:src/ui/cockpit/styles/index.css: exit status 128: fatal: path 'src/ui/cockpit/styles/index.css' does not exist in '3b304ea4ee1ad8ecb44fddeaeee7e2bfbdab43d6'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Cockpit rail P\u0026L card, props, styling, and end-to-end support",
+      "files": [
+        "e2e/support/detail/rail-a.ts",
+        "src/ui/cockpit/rail/pnl-card.tsx",
+        "src/ui/cockpit/rail/pnl.props.ts",
+        "src/ui/cockpit/rail/pnl.tsx",
+        "src/ui/cockpit/styles/rail-a.css"
+      ]
+    }
+  ],
+  "session_id": "18a8333e-7d33-4deb-bca8-5ab2301aefbb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "18a8333e-7d33-4deb-bca8-5ab2301aefbb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "3b304ea4",
+      "resolved_base": "df757fc968485a82120c8e93849681d4e247ee8e",
+      "resolved_head": "3b304ea4ee1ad8ecb44fddeaeee7e2bfbdab43d6",
+      "exact_range": "df757fc968485a82120c8e93849681d4e247ee8e..3b304ea4ee1ad8ecb44fddeaeee7e2bfbdab43d6",
+      "source_artifact_sha256": "b838bf3a5f3c09c767b5c5d29f08a649590234a9a6c4f0bc5f1d8ff6fa0fb36f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "11f485bbc7cc791e2fd529570c9fd782105d7113cbb14d3e706d6cbe22345192",
+          "path": "src/ui/cockpit/rail/pnl.tsx",
+          "fingerprint": "64018354e47c3976085e7611558d273ceb9fd3b42fd5c615d201d933a0768108"
+        },
+        {
+          "item_id": "a009bc980755c4200936f5980741adccbbcace08e3ea5b6bb7e323780e4e7462",
+          "path": "src/ui/cockpit/rail/pnl-card.tsx",
+          "fingerprint": "a70ca73f90b3306cbba2fd63bf3317f1c12975ea719dade99a3e834a53cb0089"
+        },
+        {
+          "item_id": "a9d12a11a90ec12b54f02f8a6075bf7cfde76fe13e49482e476e0b8ebb9329f0",
+          "path": "src/ui/cockpit/rail/pnl.props.ts",
+          "fingerprint": "8ce211612f34c3e6245c5a4d6003bcf7bb1cf90f9c981bd9ecf1f39e51b067ee"
+        },
+        {
+          "item_id": "d75497bd420e8a9ca6ecfd870324aa7cd1edf17030b5f026298016dc24c3982b",
+          "path": "src/ui/cockpit/styles/rail-a.css",
+          "fingerprint": "eb82a60ee8e68fa213d2cc3ce756cb371b9b30979cee08f5dbb66267b403f8bd"
+        },
+        {
+          "item_id": "e8d79a0b3e66588e2d75a5ee1ad34b9a2844f9087652b6e174433ee583d059de",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "4f94207ddcdd54d15e5e96b8be4a53f863b0ca984cab9d7bf4f5242767db9e70"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "11f485bbc7cc791e2fd529570c9fd782105d7113cbb14d3e706d6cbe22345192",
+          "path": "src/ui/cockpit/rail/pnl.tsx",
+          "fingerprint": "64018354e47c3976085e7611558d273ceb9fd3b42fd5c615d201d933a0768108"
+        },
+        {
+          "item_id": "a009bc980755c4200936f5980741adccbbcace08e3ea5b6bb7e323780e4e7462",
+          "path": "src/ui/cockpit/rail/pnl-card.tsx",
+          "fingerprint": "a70ca73f90b3306cbba2fd63bf3317f1c12975ea719dade99a3e834a53cb0089"
+        },
+        {
+          "item_id": "a9d12a11a90ec12b54f02f8a6075bf7cfde76fe13e49482e476e0b8ebb9329f0",
+          "path": "src/ui/cockpit/rail/pnl.props.ts",
+          "fingerprint": "8ce211612f34c3e6245c5a4d6003bcf7bb1cf90f9c981bd9ecf1f39e51b067ee"
+        },
+        {
+          "item_id": "d75497bd420e8a9ca6ecfd870324aa7cd1edf17030b5f026298016dc24c3982b",
+          "path": "src/ui/cockpit/styles/rail-a.css",
+          "fingerprint": "eb82a60ee8e68fa213d2cc3ce756cb371b9b30979cee08f5dbb66267b403f8bd"
+        },
+        {
+          "item_id": "e8d79a0b3e66588e2d75a5ee1ad34b9a2844f9087652b6e174433ee583d059de",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "4f94207ddcdd54d15e5e96b8be4a53f863b0ca984cab9d7bf4f5242767db9e70"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1e3ff1da3d4924b987f5ccea389cd2d8d1f9877e1eed2b0f91fe203c57d5b913",
+          "path": "evidence/D08P/tdd-log/T8P.13.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "430d3deff7015089ef860c71744e21c5b4617d9b1f006e741323548a0f8081c6",
+          "path": "e2e/d4/correct-mark.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "684deb3d6b4a1ad7ab74cb5485d052215454ffb484c0fe6c60474ae5e0c84c06",
+          "path": "src/ui/cockpit/rail/pnl.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "91ff58367ec3d2a15928ef8f8ebb92bd93f8907b895057902f78bfa677b32f23",
+          "path": "e2e/d6/exit.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e0f92c04a14e3fa2fbeac53f784875c9f2e0e24f657520a9963d8539c115898c",
+          "path": "src/ui/cockpit/rail/pnl.props.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 46348
+  }
+}

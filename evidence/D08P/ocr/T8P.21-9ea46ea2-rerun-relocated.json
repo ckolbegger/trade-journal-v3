@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 95678,
+    "input_tokens": 94386,
+    "output_tokens": 1292,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m0s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d08p/journal-cards.props.tsx",
+      "content": "Casting the entire props bag to `object` hides the replay contract from TypeScript. In particular, `JournalCardsInput` requires `facade` whenever `replay` is supplied, but most calls through `show` omit it; they pass only because these cases do not exercise an owed item's actions. The `unknown[]` fixtures also allow malformed replay items to go unnoticed. Type the replay builders with `JournalReplay`/`JournalReplaySession` and supply a facade double by default, then pass the props without this cast so contract changes are checked.",
+      "existing_code": "const show = (replay: unknown, extra: Record\u003cstring, unknown\u003e = {}) =\u003e render(\u003cJournalCards {...({ view, timeZone: ZONE, today: '2026-11-30', replay, ...extra } as object)} /\u003e);",
+      "start_line": 59,
+      "end_line": 59,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/d08p/journal-cards.props.tsx",
+      "files": [
+        "src/itg/d08p/journal-cards.props.tsx"
+      ]
+    }
+  ],
+  "session_id": "6ff8b470-89cd-4fc0-a12d-d40128d0b721",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6ff8b470-89cd-4fc0-a12d-d40128d0b721",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "9ea46ea27a2b1a42f3639d95926543fa9672fb4d",
+      "resolved_head": "4515c50c681ec74c3f1869a78c3eb81cfa13e5d2",
+      "exact_range": "9ea46ea27a2b1a42f3639d95926543fa9672fb4d..4515c50c681ec74c3f1869a78c3eb81cfa13e5d2",
+      "source_artifact_sha256": "2e710f2807b63c548d221620308051f0dc5eb77e7074263dacf9f480e4fe8df2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e2020051d7f0809cfb56017830792a35974fb8e5f463a443d88574de599173ce",
+          "path": "src/itg/d08p/journal-cards.props.tsx",
+          "fingerprint": "dd71e6e8934b032ba934205bde2550b5fe13c23e08fdb96ef65d0283c710f9f1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e2020051d7f0809cfb56017830792a35974fb8e5f463a443d88574de599173ce",
+          "path": "src/itg/d08p/journal-cards.props.tsx",
+          "fingerprint": "dd71e6e8934b032ba934205bde2550b5fe13c23e08fdb96ef65d0283c710f9f1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 60354
+  }
+}

@@ -836,14 +836,14 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.14 | 1 | R2 | Done | `2705ba83`; titles `9c2d460b`; B2, B3 `e48ca024`; lane tier `f51809c3` (B1 moved to T8P.29) |
 | T8P.15 | 1 | R2 | Not started | |
 | T8P.12 | 1 | R1 | Done | `3ca9819b`; titles `0c96414f`; B1 `b6a439cf`; lane tier and specs `f995af22` |
-| T8P.13 | 1 | R1 | In progress from `df757fc9` | |
+| T8P.13 | 1 | R1 | Done | `83d5c09b`; lane tiers `56fbb391`, `3308a842` (after the rebase) |
 | T8P.17 | 1 | D2 | Done | `057dc498`; follow-up `77d80591`; lane tier `9658f53b` |
-| T8P.16 | 1 | D1 | In progress from `7cd16391` | |
+| T8P.16 | 1 | D1 | Done | `d8691e0e`; B1, B3, B4 `6780b82c`; lane tiers `a4dcf05c`, `257e8a77`, `d2cdfc88` (after the rebase); B2 moved to T8P.29 |
 | T8P.19 | 1 | D4 | Done | `4f5e40aa`; PlanForm data `210f9dac`, `298f5ea5`; lane tier `fb324a49` |
 | T8P.18 | 1 | D3 | Done | `ca0191e7`; B1 `a9452c3f`; lane tier `9c424051` |
 | T8P.20 | 1 | D5 | Done | `8d2927cf`; B1 to B3 `e4419e2d`; B4 `5e442c6f`; lane tier `85b90fff` |
 | T8P.21 | 1 | D6 | In progress from `957499ac` | |
-| T8P.28 | 1 | BV | In progress from `85b90fff` | |
+| T8P.28 | 1 | BV | In progress from `58ebbf91` (revision 92) | |
 | T8P.29 | 1 | R2 | Not started | |
 | T8P.30 | 1 | AX | Not started | |
 | T8P.22 | 2 | — | Not started | |

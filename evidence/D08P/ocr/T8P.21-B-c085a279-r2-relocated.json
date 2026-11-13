@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 36864,
+    "input_tokens": 36670,
+    "output_tokens": 194,
+    "cache_read_tokens": 4992,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/cockpit/journal-cards.props.tsx",
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/cockpit/journal-cards.tsx"
+      ]
+    }
+  ],
+  "session_id": "a3e7f9be-4887-437d-aaca-21254430e752",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a3e7f9be-4887-437d-aaca-21254430e752",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "de87b57b",
+      "resolved_base": "8ef86dcc4d6831a5f2ec8049886fbe6bbc616bf7",
+      "resolved_head": "de87b57b0475a2d38cf326c262174caf70cd5076",
+      "exact_range": "8ef86dcc4d6831a5f2ec8049886fbe6bbc616bf7..de87b57b0475a2d38cf326c262174caf70cd5076",
+      "source_artifact_sha256": "a8dab27d06db3ff491765b3bf479124946c08e5dc5f542626b4b826b516484bf"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "701c0de590bd4ba6558d2c9ae1431b37da279f3f7a4c4df207fee1e787242f32",
+          "path": "src/itg/relocated/cockpit/journal-cards.props.tsx",
+          "fingerprint": "77c8abba7de1baa7b47795941b642c022dbc01c85053213af09fce3f6e08b774"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "160b9caf7ea9425a9d11642da0253deebf0b20456b8cb25aa6f9c2c0ba0f610e"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "01c3c6d2a6a67db3cd35992c259e6b1eaaa9b3f1e6f9668b06339c43eb4601e2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "701c0de590bd4ba6558d2c9ae1431b37da279f3f7a4c4df207fee1e787242f32",
+          "path": "src/itg/relocated/cockpit/journal-cards.props.tsx",
+          "fingerprint": "77c8abba7de1baa7b47795941b642c022dbc01c85053213af09fce3f6e08b774"
+        },
+        {
+          "item_id": "8ecc008bbb6c9e6e322f69b9ad1d0d9dba27db95c0ac2185937a7a93f257f755",
+          "path": "src/ui/cockpit/journal-cards.tsx",
+          "fingerprint": "160b9caf7ea9425a9d11642da0253deebf0b20456b8cb25aa6f9c2c0ba0f610e"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "01c3c6d2a6a67db3cd35992c259e6b1eaaa9b3f1e6f9668b06339c43eb4601e2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 13020
+  }
+}
