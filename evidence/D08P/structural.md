@@ -398,3 +398,18 @@ Unit and integration ran at `5cbcec4e`, and browser and checks at `7904cee7` (a 
 The first lane pair (T8P.3, T8P.4) was dispatched with the Agent tool's `isolation: "worktree"`, as section 9 says. The tool created both worktrees under the main checkout (`trade-journal-v3/.claude/worktrees/agent-…`), based on `4185bae7`, which has no `plan/` and no `.claude/scripts/`. Both agents stopped at lane rule 1 (`lane-setup.sh`: exit 127) without changing anything, and the tool removed both worktrees and branches.
 
 **The user chose "Main session creates lanes".** The main session runs `git worktree add .claude/worktrees/d08p-<lane> -b d08p/<lane> <head>` inside this worktree, which is section 9's path and branch. It then dispatches each `tdd-task` without the isolation flag, told to work only in that lane's absolute path and to start with `lane-setup.sh`. Only the mechanism differs from section 9. T8P.3 and T8P.4 have no lane name in section 4.2, so their lanes are `d08p-t8p3` and `d08p-t8p4`.
+
+## T8P.3 Types and rule
+
+Lane `d08p/t8p3`, 2026-11-13. Types and one lint rule only; no behavior.
+
+| Command | Result |
+|---|---|
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` (no planted import) | exit 0 |
+| `npm run lint:deps` | exit 0 (380 modules, no violations) |
+| `npx vitest run tools/cockpit-rules.test.ts` | 6 passed: an `app/types` or `coordinators/**` import fails in a non-props cockpit file, and passes in `*.props.ts`, its test, and elsewhere |
+| `npm run lint` with `src/ui/cockpit/rail/plant.types.ts` importing `../../../app/types.ts` (removed afterwards) | exit 1: `no-restricted-imports ... cockpit-import: app/types is imported only by a *.props.ts adapter (A216)` |
+
+Added: `src/coordinators/trade-views/replay-view.ts`; `nearest?: true` on `ConditionStatus`; `days?: number` on `ContractExpiration`; the props types under `src/ui/cockpit/` (rail: identity, pnl, conditions, needs-you; drawers: today, position, plan-risk, payoff, price-history, journal; root: track, footer); `eslint.cockpit.config.js`; `tools/cockpit-rules.test.ts`.

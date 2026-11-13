@@ -221,6 +221,8 @@ export interface ContractExpiration {
   readonly status: 'Expires' | 'Expired';
   // The contract's expiration date as stored.
   readonly date: string;
+  // Calendar days from the View Moment's exchange-local date to `date` (A208); present only for "Expires", 0 on the date itself.
+  readonly days?: number;
 }
 
 export interface PlannedTradeDetail {

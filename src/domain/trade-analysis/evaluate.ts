@@ -68,6 +68,8 @@ export interface ConditionStatus {
   readonly kind: 'UnderlyingPrice' | 'StructureValue';
   readonly boundary: string;
   readonly result: CalculationResult<ConditionReading>;
+  // A207: set on the one condition per role whose Value distance sets that role's headline, only while that headline is positive.
+  readonly nearest?: true;
 }
 
 export interface TradeEvaluationInput {
