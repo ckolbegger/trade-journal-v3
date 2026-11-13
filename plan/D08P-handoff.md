@@ -114,8 +114,9 @@ You may use read-only `Explore` or `general-purpose` subagents, in parallel, for
 
 **Wording.** The prototype labels the Underlying's figure "NVDA close" and the option's "Call Mark". Both are **Marks**: a Mark is a session's closing price, which the trader enters. Use the app's term, "Mark", throughout.
 
+**Settled after the prototype session:** "use that view in the daily" meant the **daily Review page**. The idea is a Price History-style grid there for entering several sessions' Marks at once. It is **not part of D08P**; the user leans toward a follow-on task after the Trade Detail refactor, possibly within the component-sharing phase (section 5.5).
+
 **Still open from the prototype session (ask the user):**
-- The user suggested using the Price History view "in the daily". The main session asked whether that meant the daily Review page or the cockpit's Today drawer, and got no answer.
 - The Journal session cards repeat each session's Marks, which Price History also shows, and today's and yesterday's Marks sit in the Today drawer too. This conflicts with "one figure, one place". The main session raised it without an answer.
 
 ## 5. The main session's preliminary findings (verify each)
@@ -226,6 +227,8 @@ The user wants this as a further set of tasks once Trade Detail is finalized. Th
 
 In this draft, outline the sharing phase only: candidate components, candidate screens, and its own gate. Don't break it into tasks yet.
 
+One candidate follow-on is already known: **the Price History grid on the daily Review page, for entering several sessions' Marks at once** (section 4). Unlike Trade Detail's read-only Price History, it saves Marks, so it goes through the Review's existing Mark saving (`DailyReview.save`, `SaveReviewMarks`) with its validation, corrections and acknowledgments. List it in the outline, and say whether it needs any backend change.
+
 ## 6. How to plan
 
 1. **Verify section 5 by lookup** and correct anything that's wrong. Record the lookups' output in the draft, as the drafting guide requires.
@@ -260,7 +263,7 @@ Keep it short and lead with the answers:
 3. **The swarm plan:** waves and lanes, how many agents at once, how lanes merge, how ports and browser runs work, and the estimated wall-clock time against serial.
 4. **The process changes** it needs, and what protection each keeps.
 5. **Words to approve**, as a list.
-6. **Open questions** (section 4's two, and any new ones), and the size check's result.
+6. **Open questions** (section 4's remaining one, and any new ones), and the size check's result.
 7. **The commit hash** of the draft.
 
 Then wait for the user.
