@@ -145,3 +145,7 @@ ocr: session `20e96c54-58dc-41d1-8869-f3084c12f93b`, model gpt-6.1-sol, 2 files 
 | medium | test | `.claude/scripts/with-browser-lock.test.sh:65-66` | The new case checks only that the wrapper exits and the lock is free. It never checks that the TERM-ignoring command was killed, or the wrapper's status (137), so a wrapper that merely exits on TERM would pass and leave the command running. | Valid: the command's PID is saved in `i.pid` but never checked with `kill -0`, and the wrapper isn't reaped for its status. The reviewer judged the production change correct. |
 
 **Stop (handoff, section 2, condition 5; `implementing.md`, "a third round of bug tasks on the same task still leaves findings").** This is the review of a round-3 fix, and it still leaves a finding. The session stops here and asks the user how to go on. Still queued: T8P.1-B3, B4, B5, B6, B7, B8, B10, and this finding.
+
+**User's decision (2026-11-13), "Batch and continue".** All the remaining lock findings are fixed in one bug task with one review, then B3 and B4. Further ocr findings on these tooling scripts keep becoming bug tasks, and the session stops again if a fifth round still leaves findings.
+- **T8P.1-B11** (the finding above). Defect in the test: a wrapper that merely exits on TERM, leaving the command running, would pass. Case: *it should leave no process of a TERM-ignoring command running, and exit 137, once the grace period has passed.*
+- **T8P.1-B12, round 4**, is the batch: B5, B6, B7, B8, B10 and B11, each case as written above, in one commit, reviewed once.
