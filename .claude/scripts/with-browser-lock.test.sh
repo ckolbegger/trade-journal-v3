@@ -56,6 +56,18 @@ waitfor "! kill -0 $pq2 2>/dev/null" || { bad "second caller never got the lock 
 [[ -e "$t/g.alive" ]] && bad "a grandchild of the command outlived the wrapper's SIGTERM and the lock was released"
 kill -9 "$gc" 2>/dev/null
 
+# A command that ignores TERM is KILLed once the grace period has passed, and the lock is released.
+TJ_BROWSER_LOCK_GRACE=1 "$lockw" sh -c "trap '' TERM; echo \$\$ >$t/i.pid; while :; do sleep 1; done" 2>/dev/null &
+pi=$!
+waitfor "[[ -s $t/i.pid ]]" || bad "TERM-ignoring case did not start (setup)"
+ip=$(cat "$t/i.pid" 2>/dev/null)
+kill -TERM "$pi"
+waitfor "! kill -0 $pi 2>/dev/null" || bad "wrapper did not exit after SIGTERM to a command that ignores it"
+if kill -0 "$pi" 2>/dev/null; then kill -9 "$pi"; pkill -9 -P "$ip" 2>/dev/null; kill -9 "$ip" 2>/dev/null; fi
+"$lockw" true 2>/dev/null &
+pq3=$!
+waitfor "! kill -0 $pq3 2>/dev/null" || { bad "the lock was not released after SIGTERM to a command that ignores it"; kill -9 "$pq3"; }
+
 # A command run inside the lock that wraps another command again does not deadlock.
 "$lockw" "$lockw" bash -c "echo nested >$t/nested" 2>/dev/null &
 pn=$!
