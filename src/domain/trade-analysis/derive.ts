@@ -775,17 +775,26 @@ function entryQualityOf(
   // Long exposure gains as the price rises; a short one reverses every price difference.
   const side = leg.side === 'Long' ? 1 : -1;
   const direction = Rational.of(BigInt(side));
-  // Each role is measured at the nearest condition still ahead of the average entry (BUG-3, decision 109): an
-  // Underlying one by its value at expiration (A105), a stock or option-price one by its trigger price.
-  const stop = measurementAheadOf(baseline.stopBasis, average, 'Stop', side);
-  const target = measurementAheadOf(baseline.targetBasis, average, 'Target', side);
   const scale = Rational.of(BigInt(multiplierOf(leg.instrument)));
-  const flags: EntryFlag[] = [];
-  if (average.sub(stop).mul(direction).compare(zero) <= 0) flags.push('EntryAtOrBeyondStop');
-  if (target.sub(average).mul(direction).compare(zero) <= 0) flags.push('EntryAtOrBeyondTarget');
   const nonnegative = (r: Rational) => (r.compare(zero) > 0 ? r : zero);
-  const risk = nonnegative(quantity.mul(scale).mul(average.sub(stop)).mul(direction)).add(fees);
-  const reward = nonnegative(quantity.mul(scale).mul(target.sub(average)).mul(direction)).sub(fees);
+  // Each fill is measured to the nearest condition of each role still ahead of that fill (BUG-3, decision 109): an
+  // Underlying one by its value at expiration (A105), a stock or option-price one by its trigger price. A fill with
+  // every condition crossed adds nothing.
+  const riskBeforeFees = total(window, (e) => {
+    const fill = decimal(e.price);
+    const stop = measurementAheadOf(baseline.stopBasis, fill, 'Stop', side);
+    return nonnegative(decimal(e.quantity).mul(scale).mul(fill.sub(stop)).mul(direction));
+  });
+  const rewardBeforeFees = total(window, (e) => {
+    const fill = decimal(e.price);
+    const target = measurementAheadOf(baseline.targetBasis, fill, 'Target', side);
+    return nonnegative(decimal(e.quantity).mul(scale).mul(target.sub(fill)).mul(direction));
+  });
+  const flags: EntryFlag[] = [];
+  if (riskBeforeFees.compare(zero) <= 0) flags.push('EntryAtOrBeyondStop');
+  if (rewardBeforeFees.compare(zero) <= 0) flags.push('EntryAtOrBeyondTarget');
+  const risk = riskBeforeFees.add(fees);
+  const reward = rewardBeforeFees.sub(fees);
   return {
     kind: 'Value',
     value: {

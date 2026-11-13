@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type CalculationResult, type DerivedTradeState, type EntryQualityFigures, type TradeAnalysisRecord } from './index.ts';
-import { nvdaRecord, OS2_S1, os2Record } from './option-trade.ts';
+import { NVDA_CALL, NVDA_LEG_ID, nvdaRecord, OS2_CONTRACT, OS2_S1, OS_LEG_ID, optionExecution, os2Record } from './option-trade.ts';
 import { execution, PC1, PC2, PC3, positionChange, referenceRecord } from './reference-trade.ts';
 
 // The derived state of a coherent record.
@@ -132,5 +132,22 @@ describe('Entry Quality with several conditions (A197)', () => {
     expect(exact(f.actualInitialRisk)).toBe(q(735n));
     expect(exact(f.actualRewardRisk)).toBe(q(4265n, 735n));
     expect(f.flags).toEqual([]);
+  });
+});
+
+// BUG-3-B2: the window's fills are each measured to the nearest condition ahead of that fill (decision 109).
+describe('Entry Quality per fill (BUG-3-B2, decision 109)', () => {
+  it('should derive O-S2 actual initial risk 10 dollars when the window sells 1 at 3.50 and 1 at 4.10, the second past both Stops, matching the at-entry risk from entry for the same lots', () => {
+    const sale = (id: string, seq: number, price: string) => optionExecution(OS_LEG_ID, OS2_CONTRACT, `ex-${id}`, `2026-10-12T14:0${seq}:00Z`, seq + 1, 'Sell', '1', price, '0');
+    const window = positionChange('pc-s1', 1, [sale('s1', 1, '3.50'), sale('s2', 2, '4.10')]);
+    // The lot at 3.50 reaches its 3.60 Stop (10 dollars); the lot at 4.10 has both Stops crossed and adds nothing.
+    expect(exact(figures(os2Record([window])).actualInitialRisk)).toBe(q(10n));
+  });
+
+  it('should derive NVDA actual initial reward 3600 dollars when the window buys 1 at 14.00 and 1 at 55.00, the second past both Targets at value 50.00', () => {
+    const buy = (id: string, n: number, price: string) => optionExecution(NVDA_LEG_ID, NVDA_CALL, `ex-${id}`, `2026-10-12T14:0${n}:00Z`, n + 1, 'Buy', '1', price, '0');
+    const window = positionChange('pc-n1', 1, [buy('n1', 1, '14.00'), buy('n2', 2, '55.00')]);
+    // The lot at 14.00 reaches 50.00 (3600 dollars); the lot at 55.00 has both Targets crossed and adds nothing.
+    expect(exact(figures({ ...nvdaRecord('14.00'), positionChanges: [window] }).actualInitialReward)).toBe(q(3600n));
   });
 });
