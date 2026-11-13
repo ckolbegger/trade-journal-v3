@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -133,9 +133,9 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       revision: 'debt-1-rev-1',
       dueStatus: 'Due',
     };
-    const renderOwed = (writable = true) => {
+    const renderOwed = (writable = true, debts: readonly TradeDetailDebt[] = [debt]) => {
       const facade = facadeDouble();
-      vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [debt] }), binding: {} } as never);
+      vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: debts }), binding: {} } as never);
       vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
       vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
       const onDirtyChange = vi.fn();
@@ -169,6 +169,29 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       await screen.findByRole('region', { name: 'Needs you' });
       expect(within(screen.getByRole('region', { name: 'Needs you' })).getByText('Position Change Reflection Reflection owed')).toBeTruthy();
       expect([...document.querySelectorAll('button')].filter((button) => button.textContent === 'Reflect now')).toEqual([]);
+    });
+
+    it("should open the chosen Debt's form when two Debts of one Entry Type fall in the same minute", async () => {
+      const user = userEvent.setup();
+      // Two Position Change Reflections 30 seconds apart, so the same minute on the clock.
+      const first: TradeDetailDebt = { ...debt, id: 'debt-1', revision: 'debt-1-rev-1', positionChangeId: 'pc-1', momentTime: '2026-10-12T14:00:10Z' };
+      const second: TradeDetailDebt = { ...debt, id: 'debt-2', revision: 'debt-2-rev-1', positionChangeId: 'pc-2', momentTime: '2026-10-12T14:00:40Z' };
+      renderOwed(true, [first, second]);
+      const needsYou = await screen.findByRole('region', { name: 'Needs you' });
+      await user.click(within(needsYou).getAllByRole('button', { name: 'Reflect now' })[1]!);
+      const journal = screen.getByRole('tabpanel', { name: 'Journal' });
+      await within(journal).findByRole('form', { name: 'Reflection' });
+      // The form is on the second Debt's item, and the first Debt's item has none, hidden or not.
+      const items = [...journal.querySelectorAll('li')].filter((item) => item.querySelector('h3')?.textContent?.includes('Reflection owed'));
+      expect(items).toHaveLength(2);
+      expect(items[0]!.querySelector('form')).toBeNull();
+      expect(items[1]!.querySelector('form')).not.toBeNull();
+      // A second Reflect now on the same Debt works again once its form is closed.
+      await user.click(within(items[1] as HTMLElement).getByRole('button', { name: 'Cancel' }));
+      expect(items[1]!.querySelector('form')).toBeNull();
+      await user.click(within(needsYou).getAllByRole('button', { name: 'Reflect now' })[1]!);
+      await waitFor(() => expect(items[1]!.querySelector('form')).not.toBeNull());
+      expect(items[0]!.querySelector('form')).toBeNull();
     });
 
     it('should keep an unsaved reflection when the reader moves to another drawer and back', async () => {

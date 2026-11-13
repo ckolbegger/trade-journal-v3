@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import type { EntryDefinitionRecord, TradeDetailDebt } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
@@ -11,6 +11,14 @@ import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult 
 // due status as text (absent outside session-policy coverage) and, while Writable, the ways to resolve it.
 // Reflect now and Decline both open the same form, loaded at the Debt's snapshot revision; the form has
 // its own Decline, with the optional reason.
+// A request from outside the item to open one Debt's form (A217: "Reflect now" in the rail's Needs you card). The Debt it names opens its own form
+// under the one-form-at-a-time rule and calls `handled`, so the request clears and the same Debt can be requested again.
+export interface ReflectRequest {
+  readonly debtId?: string;
+  readonly handled: () => void;
+}
+export const ReflectRequestContext = createContext<ReflectRequest>({ handled: () => undefined });
+
 export function OwedDebtItem({
   facade,
   debt,
@@ -50,6 +58,16 @@ export function OwedDebtItem({
     setOpenFailed(true);
     onClose();
   };
+  // A request for this Debt opens its form, unless another form is open or the Runtime is read only; either way the request is handled.
+  const request = useContext(ReflectRequestContext);
+  const requested = request.debtId === debt.id;
+  useEffect(() => {
+    if (!requested) return;
+    request.handled();
+    if (writable && !blocked && !definition) queueMicrotask(() => void open());
+    // Only a new request matters, not the item's own changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requested]);
   // The form that took focus is replaced by the saved reflection, so focus moves to it.
   const formArea = useRef<HTMLDivElement>(null);
   // What the save returned: the item is relabelled from it, without reading the Trade again.

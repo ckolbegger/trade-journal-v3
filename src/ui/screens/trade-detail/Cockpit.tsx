@@ -13,7 +13,7 @@ import { PlanRiskDrawer } from '../../cockpit/drawers/plan-risk.tsx';
 import { PositionDrawer } from '../../cockpit/drawers/position.tsx';
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
 import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
-import { localTime } from '../../format.ts';
+import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 import { RiskRewardSection } from './RiskReward.tsx';
 import { SummaryCard } from './Summary.tsx';
@@ -65,17 +65,14 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
     <RiskRewardSection evaluation={open.current.evaluation} baseline={open.baseline} option={open.plan.legs[0]?.instrument.kind === 'Option'} symbol={open.plan.underlying} />
   );
 
-  // "Reflect now" in Needs you (A217): select the Journal drawer and open that Debt's form on its card. Every drawer stays mounted, so the
-  // Debt's own "Reflect now" is there to choose, and it keeps the one-form-at-a-time rule (it is disabled while another form is open).
+  // "Reflect now" in Needs you (A217): select the Journal drawer and hand the Debt's id down. Every drawer stays mounted, and that Debt's own
+  // item opens its form under the one-form-at-a-time rule, then clears the request so the same Debt can be requested again.
+  const [reflecting, setReflecting] = useState<string>();
   const reflectNow = (debtId: string) => {
-    const debt = view.journal.find((item) => 'kind' in item && item.kind === 'Debt' && item.id === debtId);
-    if (!debt) return;
     setSelected('Journal');
-    const moment = `Position Change at ${localTime(debt.momentTime, timeZone)}`;
-    const items = [...(document.getElementById(`drawer-panel-${tabId('Journal')}`)?.querySelectorAll('li') ?? [])];
-    const card = items.find((item) => item.querySelector('h3')?.textContent?.includes(debt.entryType) && item.textContent?.includes(moment));
-    [...(card?.querySelectorAll('button') ?? [])].find((button) => button.textContent === 'Reflect now')?.click();
+    setReflecting(debtId);
   };
+  const request = { ...(reflecting !== undefined && { debtId: reflecting }), handled: () => setReflecting(undefined) };
 
   const panelOf =(drawer: Drawer): ReactNode => {
     switch (drawer) {
@@ -113,7 +110,7 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
   };
 
   return (
-    <>
+    <ReflectRequestContext.Provider value={request}>
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="cockpit-rail" aria-label="State of play">
@@ -148,7 +145,7 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
         ))}
         <DetailFooter {...shell} />
       </div>
-    </>
+    </ReflectRequestContext.Provider>
   );
 }
 
