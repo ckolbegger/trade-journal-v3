@@ -754,3 +754,18 @@ Other T8P.9 points accepted from its summary:
 - Its two flagged first-run passes, with assertion mutations.
 - `trade-workflows.ts` importing `expirationLineOf` from the Trade Views index (`lint:deps` accepts it).
 - Its titles restored word for word (`83ddb848`).
+
+### T8P.8-B1 and B2 (`3e6a679d`, `1994c211`), round 2 ocr
+
+- **B1.** `series` no longer uses `framesAt`'s `!`: a new `evidenceFor` reads the date's evidence and records it for `binding()`. Red: `TypeError: Cannot read properties of undefined (reading 'resolution')`.
+- **B2.** `scanOf` and `evidenceFor` are queued in one synchronous run. Red: two transactions where one was expected.
+
+Lane tier (`ee47e047`): 1546 unit, 218 integration, 14 of 14 checks; `run-complete.sh`: run complete. The task notes that `tdd.sh` writes the test name, not the bug ID, so note rows name the bug.
+
+**Round 2 ocr on `5dab1848..1994c211`.** Session `54f9cf44-a832-4050-8c7f-aa827d6e6d47`, model gpt-6.1-sol, 1 file reviewed, 2 excluded, 1 comment. Raw output: [ocr/T8P.8-B-5dab1848..1994c211.json](ocr/T8P.8-B-5dab1848..1994c211.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `market-data.ts:950-951` | `series` awaits `scanning`, then `reading`. When the shared batch's snapshot read fails, both reject, and `reading` has no handler once the first await throws: an unhandled rejection. | Valid: `batchOf`'s `.catch` rejects every promise in the batch. `Promise.all` fixes it. |
+
+Bug task **T8P.8-B3**. Case: *it should reject a series once, with no unhandled rejection, when its snapshot read fails.* This is round 3 for T8P.8: if its review still has findings, the session stops for the user.

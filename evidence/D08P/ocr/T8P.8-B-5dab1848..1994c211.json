@@ -1,0 +1,106 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 43494,
+    "input_tokens": 43072,
+    "output_tokens": 422,
+    "cache_read_tokens": 8320,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "Await both reads with Promise.all before processing their results. If the shared readSnapshot rejects, both `scanning` and `reading` reject, but awaiting `scanning` exits `series` before a rejection handler is attached to `reading`. This produces an unhandled rejection even when the caller catches the series error (and can terminate Node processes). Promise.all preserves the shared batch while handling both failures.",
+      "existing_code": "          const scanned = scanning === undefined ? [] : (await scanning).points.filter((p) =\u003e p.tradingDate \u003e= from \u0026\u0026 p.tradingDate \u003c= end);\n          const [read] = (await reading) ?? [];",
+      "start_line": 950,
+      "end_line": 951,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/modules/market-data/market-data.ts",
+      "files": [
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "54f9cf44-a832-4050-8c7f-aa827d6e6d47",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "54f9cf44-a832-4050-8c7f-aa827d6e6d47",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "5dab1848",
+      "requested_head": "1994c211",
+      "resolved_base": "5dab1848ca10a879936db3b50a0d56f7de108183",
+      "resolved_head": "1994c2117784355a662672692ff1c2202d419700",
+      "exact_range": "5dab1848ca10a879936db3b50a0d56f7de108183..1994c2117784355a662672692ff1c2202d419700",
+      "source_artifact_sha256": "747083866c7b3cce06098f4305b899209edeee6669c2ce56fe2bb29928668070"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "45fd420400be092839d6d2d0e453a8c72b24da5005a526b5e6626f2880b951ca"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "45fd420400be092839d6d2d0e453a8c72b24da5005a526b5e6626f2880b951ca"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "10e04fe49b494baf1b9579cf3bc494662d2767f038a0528916679106ec91eef4",
+          "path": "evidence/D08P/tdd-log/T8P.8-B.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "ebd5b90501158ee35edd3893256a1b97c07e634ffc38e3524b18ab58c3737559",
+          "path": "src/modules/market-data/market-data.test.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 24348
+  }
+}
