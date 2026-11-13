@@ -598,3 +598,36 @@ Bug tasks, run one after another by one agent in the lane, each with its own red
   - *it should still show a saved reflection as saved after moving to another drawer and back*.
 - **T8P.5-B2** (findings 3 and 4). Case: *it should place the rail beside the drawers at a wide viewport, with the banner across both, and stack them at a narrow one.*
 - **T8P.5-B3** (finding 5). Case: *it should let the keyboard reach the selected drawer's panel.*
+
+### T8P.5-B1 and B3 (`9e226c5b`, `86f85156`, `fdc9b1e5`), and B2 stopped
+
+**T8P.5-B1** (`9e226c5b`, with `86f85156` for e2e). Every shown drawer's panel stays mounted, and the unselected ones are `hidden`.
+- Reds:
+  - the unsaved-reflection case: `onDirtyChange` last called with true failed;
+  - the saved-reflection case: the "Saved reflection" region was missing, since the remounted panel showed "Reflection owed".
+- One wrong-filter run (the `-t` filter included "it ", so no case ran) is logged as a note, not a red.
+- `86f85156` appends `:not([hidden] *)` to `detail.CARDS`, `TABLES` and `figureAmounts` in `e2e/support/detail/index.ts`, so page-wide measures see the same elements as before. The hidden panels' cards had zero boxes and failed the 16 px gutter check. This is outside the brief's scope list, but mechanical and in its own commit, so it is accepted.
+
+**T8P.5-B3** (`fdc9b1e5`). Every panel has `tabIndex={0}`. Red: `expected -1 to be +0`.
+
+**Runs** (`cdc75a72`):
+- typecheck, tsc6, lint and lint:deps exit 0;
+- lane tier: 1540 unit, 218 integration, 14 of 14 checks;
+- browser-1 127 passed, browser-2 74 passed;
+- `run-complete.sh`: run complete;
+- `it-titles.sh`: only the three new titles.
+
+**Absence assertions that still can't see what they rule out** (B1's report; not ocr findings, so no bug task):
+- `Cockpit.test.tsx:41-42` (Open Lots and Position regions, with a stale comment above);
+- `Banner.test.tsx:133` (the derived-region loop with Journal open);
+- `Result.test.tsx:51` (the `'Position'` region).
+
+These are role queries, which skip hidden panels. Carried to the final report.
+
+**T8P.5-B2 stopped, as the brief required.** The prototype layout (a 320 px rail beside a `minmax(0,1fr)` drawer column, the banner across both, one column at 860 px and below) passed its new spec, `e2e/d2/cockpit-layout.spec.ts`. Its red was "rail right edge, wide", received 1214. But it broke two `ui-alignment.spec.ts` checks:
+- :216 T2.60-B4, the icon at 608 against the column's right edge;
+- :1777 T2.64, the Fulfillment value at 1123 against the Summary values at 585.
+
+The work is saved in the session scratchpad's `b2/`.
+
+**The user's decision (2026-11-13), "Keep the intent, re-anchor".** Plan revision 87: both checks keep their meaning and measure against their new container. B2 resumes with its layout and those two changes.

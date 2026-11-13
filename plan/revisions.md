@@ -2,6 +2,11 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 87: the commit tagged `claude-opus-5.5-plan-r87` (revision 86, no decision). T8P.5's section in D08P's breakdown gains the cockpit layout's two re-anchored geometry checks. The prototype's layout puts a 320 px rail beside the drawers, with the banner across both, and bug task T8P.5-B2 adds it. That layout broke two `e2e/d2/ui-alignment.spec.ts` checks that measured the stacked page. Each keeps its meaning but measures against its new container:
+  - T2.60-B4's storage icon is at the far right of the rail's identity card, the title row it now sits in.
+  - T2.64's Fulfillment value aligns with the description-list values in the drawer column above it, not the Summary card in the rail.
+
+  The rejected choices were a full-width title row (it departs from the prototype, and the Fulfillment check would still change) and deferring the layout to T8P.22. No acceptance scenario changes status, no durable compatibility changes, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-13.
 - Revision 86: the commit tagged `claude-opus-5.5-plan-r86` (revision 85, no decision). T8P.27's test pairing is tightened in its section 6 row:
   - The pairing table is written and committed before any test is deleted.
   - A covering cockpit case must assert the same expected values (the same text or figure, in the same state) as the removed case. Where none does, the assertion moves into the cockpit component's test file, red then green, rather than being dropped.

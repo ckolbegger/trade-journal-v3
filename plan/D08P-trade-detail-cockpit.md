@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D08P](implementation-plan.md#d08p--the-trade-detail-cockpit). D08P is the **D8 prefactor**: Trade Detail is rebuilt to match the "C. Cockpit" tab of `prototypes/trade-detail/index.html` before any more functionality is built. It builds on D7S's Trade Detail (T7S.9, every condition), the D7S prefactor's Mark-to-Market Valuation and read session (decisions 101, 104 to 106), D5R's precedent for a prototype-driven redesign (decision 65), and D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), conventions C1 to C8). It is drafted from `claude-opus-5.5-pre-d8p`.
 
-Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row.
+Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5).
 
 The prototype is a picture of the screen, not a specification. Where it differs from the specs or the plan, this breakdown says which wins (P96, section 1.6).
 
@@ -346,6 +346,12 @@ describe("Trade Detail cockpit (W1, A217)")
   it should show the Facts can't be replayed region across the page above the rail on an incoherent Detail, with only Position, Plan and Risk and Journal
   it should move between the shown drawers with the arrow keys, Home and End, and keep focus on the selected tab
 ```
+
+**The layout's two re-anchored geometry checks (revision 87, the user's decision of 2026-11-13).** The prototype's layout puts a 320 px rail beside a `minmax(0, 1fr)` drawer column, with the full-width banner above both and one column at narrow widths. Bug task T8P.5-B2 adds it. Two `e2e/d2/ui-alignment.spec.ts` checks measured the stacked page, so each keeps its meaning but measures against its new container:
+- **T2.60-B4** (:216, the storage icon at the far right of the title row). On the Detail, the icon's right edge matches the right edge of the title row it sits in, which is now the rail's identity card, not the page column.
+- **T2.64** (:1777, the Fulfillment row). The Fulfillment value's right edge matches the right edges of the description-list values in the drawer column above it, not the Summary card's values, which now sit in the rail.
+
+No other expected value changes.
 
 ### T8P.6 Trade Analysis: each role's nearest condition
 
