@@ -5,7 +5,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, ratio, shortDate } from '../format.ts';
 import { calculation, dollarsAndR, pnlText } from '../figures.ts';
 import { conditionDirection } from './option-words.ts';
-import { payoffSummary, valueAtCloseText } from './payoff-text.ts';
+import { payoffSummary, valueAtCloseTerm, valueAtCloseText } from './payoff-text.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
 
@@ -91,7 +91,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
       {atClose?.kind === 'Value' && <p>{valueAtCloseText(trade.underlying, atClose.value)}</p>}
       {atClose?.kind === 'Unavailable' && (
         <dl>
-          <Figure term={`Value at expiration at ${trade.underlying}'s latest close`}>{calculation(atClose, () => '')}</Figure>
+          <Figure term={valueAtCloseTerm(trade.underlying)}>{calculation(atClose, () => '')}</Figure>
         </dl>
       )}
       {evaluation?.atEntry && (

@@ -37,8 +37,8 @@ describe('Trade Detail of a just-confirmed Plan after a reload', () => {
     expect(within(baseline).getByText('1R (original risk)', { selector: 'dt' }).nextElementSibling?.textContent).toBe('$400.00');
     // The Planned payoff comes from the read, since the cloned state is not used (T7.23).
     await openDrawer(user, 'Payoff');
-    const payoff = screen.getByRole('region', { name: 'Planned Expiration Payoff' });
-    expect(within(payoff).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Planned Expiration Payoff' })).getByRole('table', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
   });
 });
 
@@ -62,7 +62,8 @@ describe('Trade Detail of a Plan just confirmed in this session', () => {
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
     await openDrawer(user, 'Payoff');
-    expect(within(screen.getByRole('region', { name: 'Planned Expiration Payoff' })).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Planned Expiration Payoff' })).getByRole('table', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
     // Used once: a later visit to the same Trade takes the normal read.
     cleanup();
     mount();
@@ -78,12 +79,15 @@ describe('option Trade Detail payoff sections (A119, A122)', () => {
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
     await openDrawer(user, 'Payoff');
     const planned = await screen.findByRole('region', { name: 'Planned Expiration Payoff' });
-    expect(within(planned).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
+    expect(within(planned).getByRole('table', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
 
     const current = screen.getByRole('region', { name: 'Current Expiration Payoff' });
-    expect(within(current).getByRole('img', { name: /^Current payoff at expiration by XYZ price/ })).toBeTruthy();
+    expect(within(current).getByRole('table', { name: /^Current payoff at expiration by XYZ price/ })).toBeTruthy();
+    // One chart for both lines, named by both tables' captions.
+    expect(screen.getAllByRole('img')).toHaveLength(1);
+    expect(screen.getByRole('img', { name: /^Planned payoff at expiration by XYZ price Current payoff at expiration by XYZ price/ })).toBeTruthy();
     // 1 contract bought at 1.90 with its 0.65 fee, worth nothing at 52.00, and 88.70 realized by the sale.
-    expect(within(current).getByText('If XYZ is at 52.00 at expiration: −$101.95')).toBeTruthy();
+    expect(screen.getByText('If XYZ is at 52.00 at expiration: −$101.95')).toBeTruthy();
 
     // The expiration views are their own sections: no Mark-to-Market figure repeats them.
     await openDrawer(user, 'Today');
@@ -100,14 +104,14 @@ describe('option Trade Detail value at expiration without a number (row 23.11)',
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { ...THURSDAY, underlyingMark: undefined }));
     await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
-    expect(termIn("Value at expiration at XYZ's latest close")).toBe('Mark missing: XYZ, Thu Nov 19');
+    expect(termIn("Value at expiration at XYZ's latest Mark")).toBe('Mark missing: XYZ, Thu Nov 19');
     cleanup();
 
     // The Monday after expiration, with no Mark for the expired contract.
     renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', underlyingMark: '46.00' }));
     await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'MNO', level: 1 });
-    expect(termIn("Value at expiration at MNO's latest close")).toBe('Settlement Due: MNO 20 Nov 2026 45 Put');
+    expect(termIn("Value at expiration at MNO's latest Mark")).toBe('Settlement Due: MNO 20 Nov 2026 45 Put');
   });
 });
 
@@ -118,10 +122,10 @@ describe('Long Stock Trade Detail payoff sections (K1)', () => {
     renderView(openDetailOf([PC1, PC2]));
     await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
-    for (const heading of ['Planned Expiration Payoff', 'Current Expiration Payoff']) {
-      const section = screen.getByRole('region', { name: heading });
-      expect(within(section).getByText('Not applicable: no option expiration')).toBeTruthy();
-      expect(within(section).queryByRole('img')).toBeNull();
-    }
+    // One line (W14), not one for each view.
+    const section = screen.getByRole('region', { name: 'Expiration Payoff' });
+    expect(section.textContent).toBe('Expiration Payoff: Not applicable: no option expiration');
+    expect(within(section).queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Planned Expiration Payoff' })).toBeNull();
   });
 });

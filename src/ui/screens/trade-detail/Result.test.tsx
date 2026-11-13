@@ -66,6 +66,6 @@ describe('closed option Trade Detail (A119)', () => {
     expect(within(result).queryByText('Close Reason', { selector: 'dt' })).toBeNull();
     // A Closed Trade's Current payoff has nothing left to show.
     await openDrawer(user, 'Payoff');
-    expect(within(screen.getByRole('region', { name: 'Current Expiration Payoff' })).getByText('Not applicable: no open position')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Expiration Payoff' })).getByText('Not applicable: no open position').closest('p')?.textContent).toBe('Now: Not applicable: no open position');
   });
 });

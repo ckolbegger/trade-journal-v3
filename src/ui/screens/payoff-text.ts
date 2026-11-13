@@ -70,6 +70,9 @@ export function payoffSummary(view: ExpirationPayoffView): string {
 export const valueAtCloseText = (symbol: string, atClose: { readonly underlyingPrice: Rational; readonly value: Rational }): string =>
   `If ${symbol} is at ${underlyingPrice(atClose.underlyingPrice)} at expiration: ${signedMoney(atClose.value)}`;
 
+// "Value at expiration at XYZ's latest Mark" (W18), the term of the figure that says why there is no number; Trade Detail and the Review card both use it.
+export const valueAtCloseTerm = (symbol: string): string => `Value at expiration at ${symbol}'s latest Mark`;
+
 // The chart text at the last ray: a rising ray continues rising, a flat one stays at its value (row 22.13).
 export function lastRayText(last: PayoffSegment): string {
   const sense = last.slope.compare(ZERO);

@@ -1,1 +1,32 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* The Payoff drawer (D08P T8P.19, W14): one chart, the Planned line dashed and the Now line solid, and a text-equivalent table for each line. */
+.payoff-drawer h3 {
+  margin: 1rem 0 0.5rem;
+}
+
+/* The chart keeps its own size (13px text at 640 wide) and scrolls inside the drawer rather than shrinking with the page. */
+.payoff-drawer .payoff-chart-scroll {
+  overflow-x: auto;
+}
+
+.payoff-drawer .payoff-chart {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+}
+
+.payoff-drawer .payoff-chart text {
+  font-size: 13px;
+  fill: currentColor;
+}
+
+/* The arrow and the latest-Mark point follow the page ink in light and dark alike. */
+.payoff-drawer .payoff-arrow,
+.payoff-drawer .payoff-marker {
+  fill: currentColor;
+}
+
+/* "Now: Not applicable: no open position" and the stock Trade's one line. */
+.payoff-drawer .payoff-now-line > span:first-child {
+  font-weight: 600;
+}

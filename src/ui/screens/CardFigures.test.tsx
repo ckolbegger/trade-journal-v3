@@ -93,16 +93,16 @@ describe('value at expiration at the Underlying latest close (A122)', () => {
   it('should word the figure as Trade Detail does when the Underlying Mark is missing or the contract is past its expiration date', () => {
     const missingMark = { kind: 'Unavailable', reason: 'MarkMissing', instrument: symbol, date: '2026-11-19' };
     const first = render(<CardFigures trade={withPayoff(missingMark)} />);
-    expect(termIn(first.container, "Value at expiration at XYZ's latest close")).toBe('Mark missing: XYZ, Thu Nov 19');
+    expect(termIn(first.container, "Value at expiration at XYZ's latest Mark")).toBe('Mark missing: XYZ, Thu Nov 19');
     cleanup();
     const due = { kind: 'Unavailable', reason: 'SettlementDue', instrument: { kind: 'Option', underlying: 'XYZ', expiration: '2026-11-20', strike: '55', right: 'Call' } };
     const second = render(<CardFigures trade={withPayoff(due)} />);
-    expect(termIn(second.container, "Value at expiration at XYZ's latest close")).toMatch(/^Settlement Due: /);
+    expect(termIn(second.container, "Value at expiration at XYZ's latest Mark")).toMatch(/^Settlement Due: /);
   });
 
   it('should show no such line on a stock Trade', () => {
     const { container: root } = render(<CardFigures trade={trade({ evaluation: evaluation({ expirationValueAtUnderlyingClose: { kind: 'NotApplicable', reason: 'NoOptionExpirationAnchor' } }) })} />);
     expect(root.textContent).not.toMatch(/at expiration/);
-    expect(root.textContent).not.toMatch(/latest close/);
+    expect(root.textContent).not.toMatch(/latest Mark/);
   });
 });

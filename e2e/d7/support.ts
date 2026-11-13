@@ -152,25 +152,24 @@ export async function recordExpiration(page: Page, closeReview: 'later' | 'now' 
   await expect(page.getByRole('heading', { name: 'Expiration recorded', level: 1 })).toBeVisible(READY);
 }
 
-// A payoff view with a value: its chart (labelled by the table's caption) and the table that is the chart's text equivalent.
+// A payoff line with a value: the drawer's one chart (named by the captions of the tables it draws) and the table that is that line's text
+// equivalent.
 export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current'): Promise<void> {
   await openDrawer(page, 'Payoff');
-  const region = detail.payoff(page, kind);
-  await expect(region.getByRole('img', { name: new RegExp(`^${kind} payoff at expiration by `) })).toBeVisible(READY);
-  const table = region.getByRole('table', { name: new RegExp(`^${kind} payoff at expiration by `) });
+  await expect(detail.payoffChart(page).filter({ visible: true })).toHaveCount(1, READY);
+  await expect(detail.payoffChart(page)).toHaveAccessibleName(new RegExp(`${kind} payoff at expiration by `));
+  const table = detail.payoff(page, kind).getByRole('table', { name: new RegExp(`^${kind} payoff at expiration by `) });
   await expect(table).toBeVisible();
   await expect(table.getByRole('columnheader')).toHaveCount(3);
   expect(await table.locator('tbody tr').count()).toBeGreaterThan(0);
 }
 
-// A payoff view that does not apply: text naming the reason, with no chart and no table, so the state is not colour alone.
+// A payoff line that does not apply: text naming the reason ("Now: Not applicable: no open position", or a stock Trade's one line), with no
+// table for that line, so the state is not colour alone.
 export async function expectPayoffNotApplicable(page: Page, kind: 'Planned' | 'Current', reason: RegExp): Promise<void> {
   await openDrawer(page, 'Payoff');
-  const region = detail.payoff(page, kind);
-  await expect(region).toBeVisible(READY);
-  await expect(region.getByText(reason)).toBeVisible();
-  await expect(region.getByRole('img')).toHaveCount(0);
-  await expect(region.getByRole('table')).toHaveCount(0);
+  await expect(detail.payoffDrawer(page).getByText(reason)).toBeVisible(READY);
+  await expect(detail.payoff(page, kind)).toHaveCount(0);
 }
 
 // The Workspace's stored Journal Entries (by their entry type key).
