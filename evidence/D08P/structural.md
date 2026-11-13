@@ -531,3 +531,15 @@ The fix commit was `73510ab2` in the lane; it is `3f85170f` after the rebase. It
 ## T8P.5 in a lane (implementation-level decision)
 
 T8P.5 runs in the lane `d08p-t8p5` (`.claude/worktrees/d08p-t8p5`, branch `d08p/t8p5`, base `3ea6239d`), not in the main worktree. The reason: merge run 2 (after T8P.4) runs on the main worktree at the same time, and a task editing that tree would change what the run tests. The browser lock keeps their browser runs apart. T8P.5 still ends with the full browser tier, because it moves content into drawers across every Detail spec.
+
+### Merge run 2 (`merge-2`, after T8P.4)
+
+The complete cumulative run on `64cd1bd8`, by `suite-runner`, with `browser-auto 5fe66fc0`. The tier was full, since the first matching path was `e2e/d1/plan.spec.ts`. Evidence commit: `d2234dc8`. It ran beside T8P.5's lane, and the browser lock kept them apart. Ports were free before and after. `run-complete.sh`: run complete.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 138 files, 1519 tests passed, exit 0 | [suite-runs/merge-2-unit.txt](suite-runs/merge-2-unit.txt) |
+| Node integration | 103 files, 218 tests passed, exit 0 | [suite-runs/merge-2-integration.txt](suite-runs/merge-2-integration.txt) |
+| Browser, full tier, browser-1 | 119 passed (4.9 min), exit 0 | [suite-runs/merge-2-browser-1.txt](suite-runs/merge-2-browser-1.txt) |
+| Browser, full tier, browser-2 | 74 passed (4.5 min), exit 0 | [suite-runs/merge-2-browser-2.txt](suite-runs/merge-2-browser-2.txt) |
+| Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/merge-2-checks.txt](suite-runs/merge-2-checks.txt) |
