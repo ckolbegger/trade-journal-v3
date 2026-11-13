@@ -411,3 +411,32 @@ Every step is within 10% of r3 (slowest +5.2%), so the user's 10% and 35% thresh
 - **`acceptance-commands.sh plan/D07S-option-price-stops-and-targets.md`:** exit 0, 11 commands checked, 0 failed, 0 procedure rows.
 - **Critic-3 on `4cd9101c` (`critic-3.md`):** C7S.1 to C7S.6 and the 375/320 px pass all PASS, no defects. Under `critic-brief.md`, "After each critic", a PASS with no defects closes the gate on that critic, because the full run before it stands; no fixes are needed. Ports: nothing on 5175 afterwards.
 - Critic-3's minor observations (not defects) are listed in the handoff's open questions and the final report. Observation 2 (an invalid option price such as "0" shows alone in a submit, and a wrong-side option-price Stop gets W4 only after it is fixed) resembles critic-1's checkpoint defect in kind, but the critic judged it a two-round display in which each shown error sits beside its field; it is raised with the user, not made a bug task.
+
+## BUG-3 (after the gate): at-entry figures skip conditions crossed at the fill (decision 109, revision 82)
+
+Base `588ddfd3`. Implementation `2b66f603` (`measurementAheadOf` in `plan.ts`; `atEntryOf` in `evaluate.ts` and Entry Quality in `derive.ts` use it). Cases 2 and 3 were first-run passes, each with a mutation check (assertion failures) logged in `tdd-log.md`; listed for the final report. The browser case's first red ran against a stale preview on 5175 (pid 2619); the user had it stopped, and case 5 is rerun on a clean port.
+
+### ocr on `2b66f603` (`ocr/BUG-3-2b66f603.json`)
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| high | `src/domain/trade-analysis/evaluate.ts:183-185` | The at-entry sums are clamped only after summing, so a lot whose conditions are all crossed adds a negative term that cancels another lot's live risk or reward | Valid → BUG-3-B1 |
+| high | `src/domain/trade-analysis/derive.ts:780-781` | Entry Quality picks its conditions at the window's average entry, not per fill, so fills straddling a condition give a different figure from decision 109's per-lot rule | Valid → BUG-3-B2 |
+
+Reviewer's note (not an ocr finding): a missing space after a comma in the new `atEntryOf` call.
+
+### BUG-3-B1: per-lot fallback to zero in the at-entry line
+
+- **Finding:** `atEntryOf` sums every lot's distance and clamps the total at zero. When `measurementAheadOf` falls back to the headline because all of a role's conditions are crossed at a lot's fill, that lot's term is negative and offsets the other lots' live distances.
+- **Defect:** with two lots straddling a condition, Risk (or Reward) from entry understates the live figure, down to $0.00 while risk remains. Decision 109 makes the fallback to zero per lot.
+- **Cases:**
+  - it should give a lot whose Stops are all crossed at its fill a zero risk term, so another lot's live risk to its Stop is shown in full
+  - it should give a lot whose Targets are all crossed at its fill a zero reward term, so another lot's live reward is shown in full
+
+### BUG-3-B2: Entry Quality measured per fill, not at the window average
+
+- **Finding:** `entryQualityOf` picks the Stop and Target with `measurementAheadOf` at the window's weighted-average entry.
+- **Defect:** fills on both sides of a condition give a different actual initial risk (and reward) from the at-entry line's per-lot figure, against decision 109's "per lot" for both.
+- **Cases:**
+  - it should derive actual initial risk per fill when the window's fills straddle a Stop, matching the at-entry line's risk from entry for the same lots
+  - it should derive actual initial reward per fill when the window's fills straddle a Target
