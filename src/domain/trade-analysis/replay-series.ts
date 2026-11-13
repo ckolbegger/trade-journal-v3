@@ -109,6 +109,12 @@ function tradePnlOf(state: DerivedTradeState, session: ReplaySessionInput): Calc
   const held = state.positions.find((p) => p.openLots.length > 0)?.instrument;
   // Nothing held: the Trade P&L is what was realized, and no Mark is needed.
   if (!held) return { kind: 'Value', value: state.realizedToDate };
-  const frame = session.frames.find((f) => instrumentKey(f.instrument) === instrumentKey(held))!;
+  // A session without the held Instrument's frame has a Missing Mark for it: a gap, never a crash.
+  const frame: ObservationFrame = session.frames.find((f) => instrumentKey(f.instrument) === instrumentKey(held)) ?? {
+    instrument: held,
+    tradingDate: session.tradingDate,
+    closeInstant: session.closeInstant,
+    resolution: { kind: 'Missing' },
+  };
   return evaluate({ state, frame }).currentMarkedPnl;
 }

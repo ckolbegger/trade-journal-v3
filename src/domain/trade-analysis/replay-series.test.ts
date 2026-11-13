@@ -111,6 +111,17 @@ describe('replay: per-session results (A211)', () => {
     expect(tuesday!.change && frac(tuesday!.change.dollars)).toBe(frac(tuesday!.realizedPnl.sub(Rational.of(3000n, 100n))));
   });
 
+  // Bug task T8P.7-B1 (ocr): a session whose frames lack the held Instrument's is a gap, not a crash.
+  it("it should give that session an unavailable Trade P&L, not throw, when its frames lack the held Instrument's.", () => {
+    const sessions: readonly ReplaySessionInput[] = [
+      OC3_SESSIONS[0]!,
+      { tradingDate: DATE.tue, closeInstant: CLOSE.tue, frames: [missing(XYZ, DATE.tue, CLOSE.tue)] },
+    ];
+    const [, tuesday] = replayed(replay({ record: oc3Record([OC3_BUY, OC3_SELL]), sessions }));
+    expect(tuesday!.tradePnl).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: CALL, date: DATE.tue });
+    expect(tuesday!.change).toBeNull();
+  });
+
   // Added beyond the planned cases: facts that cannot be replayed give no figure.
   it('should return Not applicable naming each finding when the facts cannot be replayed', () => {
     const result = replay({ record: referenceRecord([X1]), sessions: [] });
