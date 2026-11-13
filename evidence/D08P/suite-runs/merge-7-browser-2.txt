@@ -51,3 +51,4 @@ Running 75 tests using 1 worker
 
   ✓   1 [chromium] › e2e/d5/detail-debt.spec.ts:7:3 › B5.3 Reflect on Trade Detail › should show Due in the Review after next before, Deferred, answered with Tuesday 12:30 after, and list no reflection for it in Wednesday’s Review (2.2s)
   ✓   2 [chromium] › e2e/d5/due-timing.spec.ts:7:3 › B5.4 Due timing › should list the reflection as due in the next Review in Monday’s Review, which reaches Complete, and list it as Due in Tuesday’s (2.1s)
+  ✓   3 [chromium] › e2e/d5/due-timing.spec.ts:33:3 › B5.5 Facts never blocked › should save an entry with Reflect now while a reflection is due and still list the first reflection in the Review (2.0s)
