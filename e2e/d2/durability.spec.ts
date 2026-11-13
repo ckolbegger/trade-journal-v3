@@ -39,7 +39,7 @@ test.describe('B2.7 kill after commit', () => {
       const page = await firstPage(relaunched.context);
       await page.goto(`${BASE_URL}/`);
       await openTradeFromOpenList(page);
-      await expect(detail.lifecycleBadge(page)).toHaveText('Open');
+      await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Open');
       await openDrawer(page, 'Position');
       await expect(detail.executions(page, 2).getByRole('button')).toHaveCount(2);
       await openDrawer(page, 'Journal');

@@ -29,7 +29,7 @@ describe('Open Trade Detail', () => {
     const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
-    expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByText('Long Stock, Open', { selector: '.badge' })).toBeTruthy();
     await openDrawer(user, 'Position');
 
     const position = screen.getByRole('region', { name: 'Position' });

@@ -1,2 +1,2 @@
-// The rail's identity card: today the Detail's header (T8P.5); T8P.12 replaces it.
-export { IdentityCardBlock as IdentityCard } from '../../screens/trade-detail/Composed.tsx';
+// The rail's identity card: the shell renders it with the Detail's view and zone, and the adapter turns them into the card's plain props.
+export { IdentityCardFromView as IdentityCard } from './identity.props.ts';

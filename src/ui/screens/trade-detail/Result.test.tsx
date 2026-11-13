@@ -17,7 +17,7 @@ describe('Closed Trade Detail', () => {
     const user = userEvent.setup();
     renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: CLOSE_REASON, journal: [closeReviewEntry] }), true);
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
-    expect(screen.getByText('Closed', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByText('Long Stock, Closed', { selector: '.badge' })).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Summary' }).querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.18');
 
     const result = screen.getByRole('region', { name: 'Result' });

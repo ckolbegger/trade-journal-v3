@@ -25,7 +25,7 @@ describe('Open Trade Detail', () => {
       name: 'Records disagree',
     });
     // The stored lifecycle stays shown as stored; the disagreement is a separate concept.
-    expect(screen.getByText('Planned', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByText('Long Stock, Planned', { selector: '.badge' })).toBeTruthy();
     expect(rowsOf(within(panel).getByRole('table', { name: 'Stored versus expected' }))).toEqual([
       ['Lifecycle', 'Planned', 'Open'],
       ['Entry Size Deviation, Position Change at 2026-10-12 14:00', 'None', '20 shares'],
@@ -115,7 +115,7 @@ describe('Open Trade Detail', () => {
     ]);
     expect(within(panel).getByText('Viewing this Trade does not change its records.')).toBeTruthy();
     expect(within(panel).getByText(/position, entry, and fulfillment figures are unavailable/i)).toBeTruthy();
-    expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByText('Long Stock, Open', { selector: '.badge' })).toBeTruthy();
     await openDrawer(user, 'Plan and Risk');
     expect(screen.getByRole('region', { name: 'Plan' })).toBeTruthy();
     await openDrawer(user, 'Position');

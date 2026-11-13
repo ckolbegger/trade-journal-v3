@@ -248,7 +248,7 @@ test.describe('B2.12 responsive and accessible', () => {
     await page.keyboard.press('Enter');
     await openDrawer(page, 'Position');
     await expect(detail.position(page)).toContainText('60 shares of XYZ');
-    await expect(detail.lifecycleBadge(page)).toHaveText('Open');
+    await expect(detail.lifecycleBadge(page)).toHaveText('Long Stock, Open');
     await context.close();
   });
 });

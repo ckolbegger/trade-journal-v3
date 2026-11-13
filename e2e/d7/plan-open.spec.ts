@@ -32,7 +32,7 @@ test.describe('B7.1 Plan and open a Long Call', () => {
     const reopened = await firstPage(relaunched);
     await reopened.goto(`/trades/${tradeId}`);
     await expect(detail.heading(reopened, 'XYZ')).toBeVisible();
-    await expect(detail.lifecycleBadge(reopened)).toHaveText('Open');
+    await expect(detail.lifecycleBadge(reopened)).toHaveText('Long Call, Open');
     await openDrawer(reopened, 'Position');
     await expect(detail.positionValue(reopened)).toHaveText('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
     await openDrawer(reopened, 'Plan and Risk');

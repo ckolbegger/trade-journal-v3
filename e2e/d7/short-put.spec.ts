@@ -55,7 +55,7 @@ test.describe('B7.2 Cash-Secured Put', () => {
     await openDrawer(reopened, 'Position');
     await expect(detail.positionValue(reopened)).toHaveText('Short 1 contract of MNO 20 Nov 2026 45 Put');
     await expect(detail.positionRealizedToDate(reopened)).toContainText('$63.70');
-    await expect(detail.lifecycleBadge(reopened)).toHaveText('Open');
+    await expect(detail.lifecycleBadge(reopened)).toHaveText('Cash-Secured Put, Open');
     const final = tradesOf(workspaceOf(await probe(reopened))!)[0]!;
     expect(final.lifecycle).toBe('Open');
     expect(factsOf(final, 'Execution').map((f) => [f.versions.at(-1)!.value['action'], f.versions.at(-1)!.value['quantity']])).toEqual([['Sell', '2'], ['Buy', '1']]);

@@ -1,7 +1,9 @@
 // W2, A221. Finished display values only (A216): no view, coordinator or `app/types` import.
+// T8P.12 changed two things the frozen type left open: an action is a link, so it carries `to` where it carried `onSelect`, and the card
+// carries `backTo`, the way back to the Trades tab the Trade is listed under, which the Detail's header has always held.
 export interface IdentityAction {
   readonly label: 'Record entry' | 'Record exit';
-  readonly onSelect: () => void;
+  readonly to: string;
 }
 
 export interface IdentityCardProps {
@@ -14,4 +16,6 @@ export interface IdentityCardProps {
   readonly lines: readonly string[];
   // Only while Writable, and none on an incoherent Detail.
   readonly actions: readonly IdentityAction[];
+  // Where "Back to Trades" goes.
+  readonly backTo: string;
 }

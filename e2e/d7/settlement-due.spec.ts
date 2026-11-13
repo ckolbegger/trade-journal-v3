@@ -33,7 +33,7 @@ test.describe('B7.4 Settlement Due on Detail', () => {
     await expect(detail.settlementDueValue(page, 'Expired')).toHaveText('Fri Nov 20');
     await expect(detail.settlementDueValue(page, 'Settlement time')).toHaveText('Fri Nov 20, 16:00');
     await expect(panel).toContainText("If it was assigned, this release can't record the assignment yet, so this Trade stays open until a later release can.");
-    await expect(detail.lifecycleBadge(page)).toHaveText('Open');
+    await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Open');
     await friday.close();
 
     // Monday 17:00, after a relaunch: the same panel and lifecycle; no current dollar figure, each saying why.
@@ -41,7 +41,7 @@ test.describe('B7.4 Settlement Due on Detail', () => {
     const again = await firstPage(monday);
     await again.goto(`/trades/${tradeId}`);
     await expect(detail.settlementDueHeading(again)).toBeVisible();
-    await expect(detail.lifecycleBadge(again)).toHaveText('Open');
+    await expect(detail.lifecycleBadge(again)).toHaveText('Cash-Secured Put, Open');
     await openDrawer(again, 'Position');
     await expect(detail.openPnl(again)).toHaveText(`Settlement Due: ${PUT}`);
     await expect(detail.currentMarkedPnl(again)).toHaveText(`Settlement Due: ${PUT}`);

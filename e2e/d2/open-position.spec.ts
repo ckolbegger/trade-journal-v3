@@ -35,7 +35,7 @@ test.describe('B2.1 open a position', () => {
     const again = await firstPage(relaunched);
     await again.goto('/');
     await openTradeFromOpenList(again);
-    await expect(detail.lifecycleBadge(again)).toHaveText('Open');
+    await expect(detail.lifecycleBadge(again)).toHaveText('Long Stock, Open');
     await openDrawer(again, 'Position');
     await expect(detail.position(again)).toContainText('60 shares of XYZ');
     await expect(detail.openLots(again).locator('tbody tr')).toHaveCount(2);

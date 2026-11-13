@@ -18,7 +18,7 @@ describe('Trade Detail', () => {
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
     renderDetail(facade);
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
-    expect(screen.getByText('Planned', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByText('Long Stock, Planned', { selector: '.badge' })).toBeTruthy();
     const plan = screen.getByRole('region', { name: 'Plan' });
     const value = (term: string) => within(plan).getByText(term, { selector: 'dt' }).nextElementSibling?.textContent;
     expect(value('Leg')).toBe('Long 100 shares of XYZ');

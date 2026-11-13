@@ -65,7 +65,7 @@ describe('incoherent Trade Detail', () => {
 describe('badge meanings', () => {
   it('should give the lifecycle badge the info tone', async () => {
     renderView(openDetailOf([PC1, PC2]));
-    expect((await screen.findByText('Open', { selector: '.badge' })).getAttribute('data-tone')).toBe('info');
+    expect((await screen.findByText('Long Stock, Open', { selector: '.badge' })).getAttribute('data-tone')).toBe('info');
   });
 });
 

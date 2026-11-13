@@ -6,7 +6,8 @@ import { detailRoot, figureIn, regionOf, valueIn } from './scope.ts';
 export const heading = (page: Page, name: string): Locator => detailRoot(page).getByRole('heading', { name, level: 1 });
 export const identityCard = (page: Page): Locator => detailRoot(page).locator('header');
 export const lifecycleBadge = (page: Page): Locator => identityCard(page).locator('.badge');
-export const lifecycle = (page: Page, text: string): Locator => identityCard(page).getByText(text, { exact: true });
+// The lifecycle word, read from the badge's "<Strategy>, <Lifecycle>" (W2).
+export const lifecycle = (page: Page, text: string): Locator => lifecycleBadge(page).filter({ hasText: new RegExp(`, ${text}$`) });
 export const recordEntryLink = (page: Page): Locator => identityCard(page).getByRole('link', { name: 'Record entry' });
 export const recordExitLink = (page: Page): Locator => identityCard(page).getByRole('link', { name: 'Record exit' });
 

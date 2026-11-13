@@ -126,7 +126,7 @@ describe('option Trade Detail (A119)', () => {
     await openDrawer(user, 'Position');
     const position = screen.getByRole('region', { name: 'Position' });
     expect(termValue(position, 'Position')).toBe('Long 1 contract of XYZ 20 Nov 2026 55 Call');
-    expect(screen.getByText('Expires Fri 20 Nov 2026')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Summary' })).getByText('Expires Fri 20 Nov 2026')).toBeTruthy();
   });
 });
 
@@ -134,13 +134,13 @@ describe('option Trade Detail expiration line (decision 94, row 23.19)', () => {
   useFixedClock();
   it('should show Expired Fri 20 Nov 2026 on a Closed option Trade whose Terminal Disposition includes an expiration, wholly or in part, and no expiration line on one only the trader Executions disposed of, and keep Expires on an Open one', async () => {
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
-    expect(await screen.findByText('Expires Fri 20 Nov 2026')).toBeTruthy();
+    expect(within(await screen.findByRole('region', { name: 'Summary' })).getByText('Expires Fri 20 Nov 2026')).toBeTruthy();
     cleanup();
     // The mixed Trade (a sale plus an expiration) and the wholly expired one: part of the position expired.
     for (const view of [optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]), optionClosedDetail('O-S', [OS_S1, OS_ES])]) {
       renderView(view);
       await screen.findByRole('region', { name: 'Result' });
-      expect(screen.getAllByText(/^Expire[sd] [A-Z][a-z]{2} \d/).map((e) => e.textContent)).toEqual(['Expired Fri 20 Nov 2026']);
+      expect(within(screen.getByRole('region', { name: 'Summary' })).getAllByText(/^Expire[sd] [A-Z][a-z]{2} \d/).map((e) => e.textContent)).toEqual(['Expired Fri 20 Nov 2026']);
       cleanup();
     }
     for (const view of [
