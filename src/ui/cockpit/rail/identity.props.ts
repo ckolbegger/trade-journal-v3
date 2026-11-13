@@ -8,7 +8,11 @@ import { IdentityCardView } from './identity-card.tsx';
 import type { IdentityAction, IdentityCardProps } from './identity.types.ts';
 
 // " (36 days)", " (1 day)" or " (today)"; the count is absent on an Expired line and when the view carries none.
-const daysText = (days: number | undefined): string => (days === undefined ? '' : days === 0 ? ' (today)' : ` (${plural(days, 'day', 'days')})`);
+function daysText(days: number | undefined): string {
+  if (days === undefined) return '';
+  if (days === 0) return ' (today)';
+  return ` (${plural(days, 'day', 'days')})`;
+}
 
 // Recording an entry is an authoritative write, offered where the Trade's facts can be replayed and it isn't Closed. An exit needs a Position
 // to sell, so only an Open Detail offers it.
