@@ -133,3 +133,15 @@ ocr: session `198416d0-84c2-4d8e-87a6-c61351b1dc1a`, model gpt-6.1-sol, 2 files 
 These join round 3 (they come from the review of a round-1 fix, made after round 2):
 - **T8P.1-B9** (finding 1). Defect: a command that ignores TERM keeps the wrapper, and the lock, forever. Case: *it should KILL a command that ignores TERM once the grace period has passed, and then release the lock.*
 - **T8P.1-B10** (finding 2). Defect: a descendant that left the command's process group survives the wrapper's signal and can hold port 5175 after the lock is released. Case: *it should end a descendant that moved to its own process group before releasing the lock when the wrapper receives SIGTERM.*
+
+### T8P.1-B9 (`b5f8cc46`)
+
+Fix: the wait loop polls `waitpid` with WNOHANG every 50 ms. The signal handler records `$sigtime`, and at `$sigtime + $grace` the loop sends KILL to `-$child`. The post-reap wait uses the same deadline. New override: `TJ_BROWSER_LOCK_GRACE` (seconds, default 5, inert unless set). New case: red against `460f3775` (`FAIL: wrapper did not exit after SIGTERM to a command that ignores it`), then green 3 of 3. Rows are in [tdd-log/T8P.1-B9.md](tdd-log/T8P.1-B9.md). Existing cases held; ports were free before and after.
+
+ocr: session `20e96c54-58dc-41d1-8869-f3084c12f93b`, model gpt-6.1-sol, 2 files reviewed (0 excluded), 1 comment. Raw output: [ocr/T8P.1-B9-b5f8cc46.json](ocr/T8P.1-B9-b5f8cc46.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | test | `.claude/scripts/with-browser-lock.test.sh:65-66` | The new case checks only that the wrapper exits and the lock is free. It never checks that the TERM-ignoring command was killed, or the wrapper's status (137), so a wrapper that merely exits on TERM would pass and leave the command running. | Valid: the command's PID is saved in `i.pid` but never checked with `kill -0`, and the wrapper isn't reaped for its status. The reviewer judged the production change correct. |
+
+**Stop (handoff, section 2, condition 5; `implementing.md`, "a third round of bug tasks on the same task still leaves findings").** This is the review of a round-3 fix, and it still leaves a finding. The session stops here and asks the user how to go on. Still queued: T8P.1-B3, B4, B5, B6, B7, B8, B10, and this finding.

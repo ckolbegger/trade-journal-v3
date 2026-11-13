@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 36370,
+    "input_tokens": 35637,
+    "output_tokens": 733,
+    "cache_read_tokens": 8320,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/with-browser-lock.test.sh",
+      "content": "This only checks that the wrapper exits and releases the lock; it never checks that the TERM-ignoring command was killed. A regression that simply exits the wrapper on TERM would pass this case while leaving the command (and its descendants) running indefinitely, because cleanup also runs only when the wrapper is still alive. Reap the wrapper and assert its exit status is 137, and verify that the recorded command PID is no longer running before checking lock acquisition. Clean up the command on assertion failure independently of whether the wrapper survived.",
+      "existing_code": "waitfor \"! kill -0 $pi 2\u003e/dev/null\" || bad \"wrapper did not exit after SIGTERM to a command that ignores it\"\nif kill -0 \"$pi\" 2\u003e/dev/null; then kill -9 \"$pi\"; pkill -9 -P \"$ip\" 2\u003e/dev/null; kill -9 \"$ip\" 2\u003e/dev/null; fi",
+      "start_line": 65,
+      "end_line": 66,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/with-browser-lock.sh",
+        ".claude/scripts/with-browser-lock.test.sh"
+      ]
+    }
+  ],
+  "session_id": "20e96c54-58dc-41d1-8869-f3084c12f93b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "20e96c54-58dc-41d1-8869-f3084c12f93b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b5f8cc46",
+      "resolved_base": "460f3775c235227923309aac1d47be5fafd49eda",
+      "resolved_head": "b5f8cc46e503a39535df082767ba690606a8cd3e",
+      "exact_range": "460f3775c235227923309aac1d47be5fafd49eda..b5f8cc46e503a39535df082767ba690606a8cd3e",
+      "source_artifact_sha256": "858dff1f5662d8fdcd07bae3e5cd9cc15836e8afa7923d5f3092c45d0b5cb15a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "a9fedcf10297b3b0d468970ad19f1250b16e0132032b3429fed5ae7103df14af"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "a396edb9b5319b49ca568c66339ed3ded2127b243d3fef508db2d12f0d72dc55"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "a9fedcf10297b3b0d468970ad19f1250b16e0132032b3429fed5ae7103df14af"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "a396edb9b5319b49ca568c66339ed3ded2127b243d3fef508db2d12f0d72dc55"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34139
+  }
+}
