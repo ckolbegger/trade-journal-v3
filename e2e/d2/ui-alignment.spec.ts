@@ -195,7 +195,9 @@ test.describe('T2.60-B4 storage icon on the page title row', () => {
       const range = document.createRange();
       range.selectNodeContents(h1);
       const main = document.querySelector('main')!;
-      const columnRight = main.getBoundingClientRect().right - parseFloat(getComputedStyle(main).paddingRight);
+      // The Detail's title row sits in the rail's identity card (T8P.5-B2), so its right edge is the row's own, not the page column's.
+      const anchor = viewName === 'Detail' ? h1.parentElement! : main;
+      const columnRight = anchor.getBoundingClientRect().right - parseFloat(getComputedStyle(anchor).paddingRight);
       return {
         name: viewName,
         iconCentre: icon.top + icon.height / 2,
@@ -1800,8 +1802,15 @@ test.describe('T2.64 Detail cards', () => {
           return { width: box.width, valueRight: dt.nextElementSibling!.getBoundingClientRect().right };
         });
         expect(row.width, 'Fulfillment row width').toBeLessThanOrEqual(480.5);
-        const edges = await detail.summary(page).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
-        expect(Math.abs(row.valueRight - Math.max(...edges)), `Fulfillment value right edge ${row.valueRight} vs summary ${edges.join(',')}`).toBeLessThanOrEqual(1);
+        // The values of the description lists above the Fulfillment row in the drawer column (the Summary card now sits in the rail).
+        const edges = await page.evaluate((rowTop) => {
+          // The Journal's prose answers (`dl.answers`) fill their own line, so they are not value columns.
+          return [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl:not(.answers) > dd')]
+            .filter((dd) => dd.getBoundingClientRect().bottom <= rowTop)
+            .map((dd) => dd.getBoundingClientRect().right);
+        }, await fulfillment.locator('dt').first().evaluate((dt) => dt.parentElement!.getBoundingClientRect().top));
+        expect(edges.length, 'description-list values above the Fulfillment row').toBeGreaterThan(0);
+        expect(Math.abs(row.valueRight - Math.max(...edges)), `Fulfillment value right edge ${row.valueRight} vs drawer values ${edges.join(',')}`).toBeLessThanOrEqual(1);
       }
       const pairs = await journal.locator('dl.answers dt').evaluateAll((dts) =>
         dts.map((dt) => {

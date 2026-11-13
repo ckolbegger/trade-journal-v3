@@ -2,3 +2,36 @@
 .cockpit-drawers .tabs {
   flex-wrap: wrap;
 }
+
+/* The cockpit's layout, from the prototype (C: cockpit): a 320 px rail beside the drawers, the banner across both, one column when the
+   viewport is 860 px or narrower. The row gap is 0 because the cards keep their own vertical margins. */
+.trade-detail {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  column-gap: 16px;
+  align-items: start;
+}
+
+.trade-detail > .integrity {
+  grid-column: 1 / -1;
+}
+
+.trade-detail > .cockpit-rail {
+  grid-column: 1;
+}
+
+.trade-detail > .cockpit-drawers {
+  grid-column: 2;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .trade-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trade-detail > .cockpit-rail,
+  .trade-detail > .cockpit-drawers {
+    grid-column: 1;
+  }
+}
