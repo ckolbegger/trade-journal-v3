@@ -452,3 +452,17 @@ ocr on `d85016bb` (`ocr/BUG-3-B1-d85016bb.json`): **No findings.**
 `entryQualityOf` sums a per-fill term clamped at zero, each measured with `measurementAheadOf` at its own fill; the flags hold when the per-fill total before fees is not positive (the old rule for a single fill). Cases: O-S2 window selling 1 at 3.50 and 1 at 4.10 gives actual initial risk $10 (was $40 at the average), matching BUG-3-B1's at-entry figure; NVDA window buying 1 at 14.00 and 1 at 55.00 gives actual initial reward $3,600 (was $3,100). Both genuine reds (the reward half was backed out for case 2's red). No existing expectation changed; `vitest run src` 1517 passed.
 
 ocr on `f6b33ed4` (`ocr/BUG-3-B2-f6b33ed4.json`): **No findings.**
+
+### BUG-3 cumulative run: `bug-3` (on `7004a8c6`)
+
+Browser tier: full (`browser-auto 588ddfd3`: "first matching path since 588ddfd3: e2e/d7s/entry-beyond-stop.spec.ts"). `run-complete.sh evidence/D07S bug-3`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 127 files, 1517 tests passed |
+| Node integration | 103 files, 218 tests passed |
+| Browser `browser-1` | 119 passed (4.8 min) |
+| Browser `browser-2` | 72 passed (4.3 min) |
+| Checks | 14 of 14 exit 0 |
+
+BUG-3 is closed: `2b66f603`, case 5 evidence `d816522d`, B1 `d85016bb`, B2 `f6b33ed4`. Flagged for the record: BUG-3's cases 2 and 3 were first-run passes, each with a mutation check.
