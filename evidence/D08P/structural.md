@@ -495,3 +495,35 @@ Reviewer's spot check (notes, not findings): five moved reads (`d2/open-position
 - **B4** (finding 4). Case: *it should measure every Detail table in every drawer that holds one at narrow width.*
 - **B5** (finding 5). Case: *it should measure the description lists of every drawer that holds them.*
 - **B6** (finding 6). Case: *it should choose `answerDebt`'s scope without a nested conditional.* (Refactor, kept green.)
+
+### T8P.4-B1 to B6 (batched, `3f85170f`) and the merge
+
+The fix commit was `73510ab2` in the lane; it is `3f85170f` after the rebase. Its lane-tier outputs were `0a6d8a6a`, now `9bfc804e`. TDD rows: [tdd-log/T8P.4-B.md](tdd-log/T8P.4-B.md), with 5 reds and 7 greens by hand plus B6's refactor row.
+
+**The stage.** The cases use a new helper self-test, `e2e/support/detail/helpers.spec.ts`. It builds static pages with `setContent`, plus a routed `http://stage.test/trades/t1` page for B1, and needs no app server.
+- **B1.** The tab list is inserted 400 ms after load. Red: the old `openDrawer` skipped the click. Green: `openDrawer` now waits for `.trade-detail`, but only on `/trades/<id>` pages. An earlier version waited everywhere and timed out on `d7/responsive-a11y`, which calls it on the Plan form and the Review. Fixed and rerun, with a note row.
+- **B2.** `lefts` moved to `leftEdges` in `e2e/support/detail/layout.ts`. It excludes a tab list inside `.trade-detail`, and a second case shows a page with no Detail still counts its own tab list.
+- **B3.** `realizedToDate` is scoped to the Valuation card.
+- **B4 and B5.** The new `eachDrawer(page, read)` opens each drawer in turn, and makes one pass when there is no tab list. It is used by `narrow.spec.ts`'s resolved Open Detail measure and by `ui-alignment.spec.ts`'s `detailRows`.
+- **B6.** `debtFormWithoutCard(page, where)` replaces the nested ternary.
+
+**The task's verification.**
+- Real specs rerun through the lock: d2 70 passed; d1, d4, d5 and d5r 76 passed; d6, d7p, d7 and d7s 46 passed plus the 1 `d7/responsive-a11y` failure above, then 10 passed after the fix (that spec and the self-test).
+- typecheck, tsc6, lint and lint:deps: exit 0.
+- Lane tier: 1519 unit, 218 integration, 14 of 14 checks.
+
+**Accepted from the task's notes:**
+- The `npm run test:e2e*` filters don't name `e2e/support`, so the self-test runs only when named. T8P.5's brief adds `e2e/support` to `test:e2e:1`, before any wave-1 lane owns `package.json`.
+- The "disagreeing Open Detail" measure in `narrow.spec.ts` stays a single pass, since its table is the full-width banner, outside every drawer.
+- `eachDrawer` skips a name with no tab, so T8P.5 uses W1's names exactly.
+
+**ocr on `73510ab2`** (test-only, relocated):
+- Scratch commit `e1477360` on base `a77ad88a`.
+- Session `b5f53aac-9f58-40e1-b996-84fde9d31859`, model gpt-6.1-sol, 8 files reviewed (0 excluded), 0 comments. **No findings.**
+- One ocr warning: a guessed `support/detail/core.ts` read failed.
+- Raw output: [ocr/T8P.4-B-73510ab2.json](ocr/T8P.4-B-73510ab2.json).
+
+**Merge.**
+- `d08p/t8p4` was rebased onto `claude-opus-5.5` (`ee43d21b`). The rebase changed one file the task doesn't own: `structural.md` conflicted, since both sides appended. It was resolved by keeping both, with the task's own T8P.4 record placed before the main session's T8P.4 section, its heading restored.
+- The rebase also brought in T8P.3's code (the types and the A216 rule). So the lane tier was rerun on the rebased lane (`full-suite.sh evidence/D08P T8P.4-rebased lane`): 1519 unit, 218 integration and 14 of 14 checks, exit 0, and `run-complete.sh`: run complete. Outputs in `a33a9e9e`.
+- `claude-opus-5.5` was fast-forwarded to `a33a9e9e`. Rebased hashes: `4f40c2f3` (task), `3dcb2d21` (its tiers), `3f85170f` (B1–B6), `9bfc804e` and `a33a9e9e` (lane tiers). The lane worktree and branch were removed.

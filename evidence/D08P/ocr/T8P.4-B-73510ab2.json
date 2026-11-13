@@ -1,0 +1,170 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 78485,
+    "input_tokens": 77006,
+    "output_tokens": 1479,
+    "cache_read_tokens": 6656,
+    "elapsed": "48s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 12
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 4,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d08p/d1/support.ts,src/itg/d08p/d2/narrow.ts,src/itg/d08p/d2/ui-alignment.ts,src/itg/d08p/d5/support.ts,src/itg/d08p/support/detail/helpers.ts,src/itg/d08p/support/detail/index.ts,src/itg/d08p/support/detail/layout.ts,src/itg/d08p/support/detail/position.ts",
+        "arguments": "{\"file_path\": \"src/itg/d08p/support/detail/core.ts\"}",
+        "error": "file \"src/itg/d08p/support/detail/core.ts\" not found: git show e1477360688b279e78f44d0633d1f1c12a52396b:src/itg/d08p/support/detail/core.ts: exit status 128: fatal: path 'src/itg/d08p/support/detail/core.ts' does not exist in 'e1477360688b279e78f44d0633d1f1c12a52396b'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Detail support helpers, layout, and consuming integrations",
+      "files": [
+        "src/itg/d08p/d1/support.ts",
+        "src/itg/d08p/d2/narrow.ts",
+        "src/itg/d08p/d2/ui-alignment.ts",
+        "src/itg/d08p/d5/support.ts",
+        "src/itg/d08p/support/detail/helpers.ts",
+        "src/itg/d08p/support/detail/index.ts",
+        "src/itg/d08p/support/detail/layout.ts",
+        "src/itg/d08p/support/detail/position.ts"
+      ]
+    }
+  ],
+  "session_id": "b5f53aac-9f58-40e1-b996-84fde9d31859",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b5f53aac-9f58-40e1-b996-84fde9d31859",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "e1477360",
+      "resolved_base": "a77ad88a25440054933745b613d5153a019aa155",
+      "resolved_head": "e1477360688b279e78f44d0633d1f1c12a52396b",
+      "exact_range": "a77ad88a25440054933745b613d5153a019aa155..e1477360688b279e78f44d0633d1f1c12a52396b",
+      "source_artifact_sha256": "58f0238a282430fa3ce9182afd9055f2b9530a776d6821a2ae12e9ff8f56030f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "170f3686ebdf8f86515264cfa2089359c7ad42e22ff24949716baca422ed9b19",
+          "path": "src/itg/d08p/support/detail/helpers.ts",
+          "fingerprint": "6d7b629639e0d8e3fc3dec1eace80b3a92422007a7d542f7a3fd47533bebb9e4"
+        },
+        {
+          "item_id": "342a066b0d85a760958f650727353e848d1d7a8c41876ae5c460b23c61275d30",
+          "path": "src/itg/d08p/d2/narrow.ts",
+          "fingerprint": "e1625c0371ba7dcb817ad2cb30ee14a3654d00b5e86535ddbfdf7569d8c2305f"
+        },
+        {
+          "item_id": "3cec94f6ccfd9be72538a117cfddccd8d48d92f0b7f8e316158e20040f4f20fe",
+          "path": "src/itg/d08p/support/detail/index.ts",
+          "fingerprint": "c83e0c59542758ba7bf8a8ba802d828d73b875330389e52658f4e93571afff91"
+        },
+        {
+          "item_id": "762ddc60b57bc3df3864b5fe083764cfda460eb295ad50c8dc9dc3626322fb38",
+          "path": "src/itg/d08p/support/detail/position.ts",
+          "fingerprint": "4c44577c1b55dd0856558eb70f5bdeccd19eebf5eac037c90130bb17e212582f"
+        },
+        {
+          "item_id": "a670876e5bb323e8a1b161c3b870a9816da12927c451de9953797d6d7054107b",
+          "path": "src/itg/d08p/d5/support.ts",
+          "fingerprint": "d7f3102464d8ce12aabddbc3538b886bc672af083486f9ee1850618911444c08"
+        },
+        {
+          "item_id": "c11cd2bcdb24122e026eedc77fd93dfb2c8a3a9bb72292f1f6f0e87bb8ee3417",
+          "path": "src/itg/d08p/d2/ui-alignment.ts",
+          "fingerprint": "8a851ff7fc291ace9427e7565cdb0e20c49522c38cc4ef17f0d75b6d11b5414a"
+        },
+        {
+          "item_id": "db7007b87657c12e1ba5b54800f2d27c2caeecdbf0862c3f6be0d4e4fa5eb3b6",
+          "path": "src/itg/d08p/support/detail/layout.ts",
+          "fingerprint": "15cfbbb9832dbda0a60ff001e020fa3155b1b626c7a52f5fb5bad27c6ab1d54f"
+        },
+        {
+          "item_id": "dbd83b9441fda62fd022289419232b49b845ca94f4fb581f80cb5ba4e1b9f2d2",
+          "path": "src/itg/d08p/d1/support.ts",
+          "fingerprint": "b562ca9607221676b1bf27dfec3659ca9ee6fa0ab7f5e552f26ff35682010a75"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "170f3686ebdf8f86515264cfa2089359c7ad42e22ff24949716baca422ed9b19",
+          "path": "src/itg/d08p/support/detail/helpers.ts",
+          "fingerprint": "6d7b629639e0d8e3fc3dec1eace80b3a92422007a7d542f7a3fd47533bebb9e4"
+        },
+        {
+          "item_id": "342a066b0d85a760958f650727353e848d1d7a8c41876ae5c460b23c61275d30",
+          "path": "src/itg/d08p/d2/narrow.ts",
+          "fingerprint": "e1625c0371ba7dcb817ad2cb30ee14a3654d00b5e86535ddbfdf7569d8c2305f"
+        },
+        {
+          "item_id": "3cec94f6ccfd9be72538a117cfddccd8d48d92f0b7f8e316158e20040f4f20fe",
+          "path": "src/itg/d08p/support/detail/index.ts",
+          "fingerprint": "c83e0c59542758ba7bf8a8ba802d828d73b875330389e52658f4e93571afff91"
+        },
+        {
+          "item_id": "762ddc60b57bc3df3864b5fe083764cfda460eb295ad50c8dc9dc3626322fb38",
+          "path": "src/itg/d08p/support/detail/position.ts",
+          "fingerprint": "4c44577c1b55dd0856558eb70f5bdeccd19eebf5eac037c90130bb17e212582f"
+        },
+        {
+          "item_id": "a670876e5bb323e8a1b161c3b870a9816da12927c451de9953797d6d7054107b",
+          "path": "src/itg/d08p/d5/support.ts",
+          "fingerprint": "d7f3102464d8ce12aabddbc3538b886bc672af083486f9ee1850618911444c08"
+        },
+        {
+          "item_id": "c11cd2bcdb24122e026eedc77fd93dfb2c8a3a9bb72292f1f6f0e87bb8ee3417",
+          "path": "src/itg/d08p/d2/ui-alignment.ts",
+          "fingerprint": "8a851ff7fc291ace9427e7565cdb0e20c49522c38cc4ef17f0d75b6d11b5414a"
+        },
+        {
+          "item_id": "db7007b87657c12e1ba5b54800f2d27c2caeecdbf0862c3f6be0d4e4fa5eb3b6",
+          "path": "src/itg/d08p/support/detail/layout.ts",
+          "fingerprint": "15cfbbb9832dbda0a60ff001e020fa3155b1b626c7a52f5fb5bad27c6ab1d54f"
+        },
+        {
+          "item_id": "dbd83b9441fda62fd022289419232b49b845ca94f4fb581f80cb5ba4e1b9f2d2",
+          "path": "src/itg/d08p/d1/support.ts",
+          "fingerprint": "b562ca9607221676b1bf27dfec3659ca9ee6fa0ab7f5e552f26ff35682010a75"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 48381
+  }
+}
