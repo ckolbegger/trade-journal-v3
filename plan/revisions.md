@@ -2,6 +2,13 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 92: the commit tagged `claude-opus-5.5-plan-r92` (revision 91, no decision). T8P.28 stopped: `firstMarksDue` is the session after the Expected Mark Date (the read session's trading date), and no read Trade Views may make gives it. The frames' `nextSession` is disclosed only once that session is completed, and only Market Data, the session-policy domain and `src/app/compose.ts` may import the session policy (D4's A39).
+  - **The spec:** `specs/design/market-data.md`'s read-session paragraph now says the session names the session after its trading date when it opens, from the calendar alone, with no stored read, and names none outside coverage.
+  - **The code:** `MarketDataReadSession` gains `readonly nextSessionDate?: string`, set at open from the session policy's `nextSession` when covered.
+  - **The task:** T8P.28 makes the addition in `src/modules/market-data/market-data.ts`, which joins lane BV for that one change (lane BM is done). It adds one case to Market Data's tests, red then green, before its own three: under `describe("Market Data read session: the next session (revision 92)")`, `it should name the session after its trading date from the calendar, and none outside coverage`.
+  - **The spec map:** S124's character count is recomputed. No line moved, no tag changed, and the reading lists were regenerated.
+
+  Rejected: Trade Views computing the date from the calendar itself (the session-policy import rule forbids it), and reading a later frame's `nextSession` (it is absent until that session completes). No acceptance scenario changes status, no stored data or durable compatibility changes, and no words change. The next decision is still 112. Decided by the user on 2026-11-13 ("Add a calendar read").
 - Revision 91: the commit tagged `claude-opus-5.5-plan-r91` (revision 90, no decision). T8P.16's code review found that the before-Marks words are false for a Trade entered after an earlier session's close (for example on Friday after the close, viewed on Saturday): "opened today" and "once today's session ends". The words now always name dates, using revision 90's `firstMarksDue` and the opening Position Change's date in the Workspace zone:
   - **W3:** before any Marks, "—" and "Trade P&L once the Mon Oct 12 session ends".
   - **W7:** before Marks, "First Marks are due once the Mon Oct 12 session ends."

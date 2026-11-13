@@ -16,6 +16,8 @@ This table is the source of truth. After changing a tag or class here, regenerat
 
 **Rebased for the D7S prefactor** 2026-11-10, plan revision 72 (decision 101). The revision amended two specs, so the entries after each edit moved: `market-data.md` S121–S128 (S121 and S124 also grew, with `openReadSession`) and `trade-analysis.md` S166–S173 (S166 grew, with `derive`'s contract status). Each moved entry's line range and character count was recomputed from the file (characters, not bytes, as the map counts them; the unmoved entries S122, S123 and S125–S128 kept their counts). `overview.md` and `specs/README.md` changed one digit each, with no change in length or lines. No tag changed. The reading lists and the table below were regenerated from the entries.
 
+**Revision 92** (2026-11-13) added one clause to S124's read-session paragraph (the next session). No line moved, and only S124's character count changed (2,471 to 2,610). No tag changed. The reading lists and the table below were regenerated.
+
 ## Reading cost per deliverable
 
 Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 316,457 bytes (every `.md` file, as of 2026-11-10).
@@ -24,22 +26,22 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|
 | D1 | 151,084 | 42,967 | 194,051 | 81K |
 | D2 | 151,084 | 49,004 | 200,088 | 83K |
-| D4 | 151,084 | 66,494 | 217,578 | 91K |
-| D5 | 151,084 | 66,555 | 217,639 | 91K |
-| D6 | 151,084 | 72,879 | 223,963 | 93K |
-| D7 | 151,084 | 73,766 | 224,850 | 94K |
-| D8 | 151,084 | 57,324 | 208,408 | 87K |
-| D9 (provisional) | 151,084 | 7,870 | 158,954 | 66K |
-| D10 (provisional) | 151,084 | 40,469 | 191,553 | 80K |
-| D11 (provisional) | 151,084 | 21,578 | 172,662 | 72K |
-| D12 (provisional) | 151,084 | 32,616 | 183,700 | 77K |
+| D4 | 151,084 | 66,633 | 217,717 | 91K |
+| D5 | 151,084 | 66,694 | 217,778 | 91K |
+| D6 | 151,084 | 73,018 | 224,102 | 93K |
+| D7 | 151,084 | 73,905 | 224,989 | 94K |
+| D8 | 151,084 | 57,463 | 208,547 | 87K |
+| D9 (provisional) | 151,084 | 8,009 | 159,093 | 66K |
+| D10 (provisional) | 151,084 | 40,608 | 191,692 | 80K |
+| D11 (provisional) | 151,084 | 21,717 | 172,801 | 72K |
+| D12 (provisional) | 151,084 | 32,755 | 183,839 | 77K |
 | D13 (provisional) | 151,084 | 28,578 | 179,662 | 75K |
 | D14 (provisional) | 151,084 | 16,641 | 167,725 | 70K |
-| D15 (provisional) | 151,084 | 32,183 | 183,267 | 76K |
+| D15 (provisional) | 151,084 | 32,322 | 183,406 | 76K |
 | D16 (provisional) | 151,084 | 18,430 | 169,514 | 71K |
 | D17 (provisional) | 151,084 | 22,558 | 173,642 | 72K |
 | D18 (provisional) | 151,084 | 8,307 | 159,391 | 66K |
-| D19 (provisional) | 151,084 | 12,001 | 163,085 | 68K |
+| D19 (provisional) | 151,084 | 12,140 | 163,224 | 68K |
 | D20 (provisional) | 151,084 | 45,101 | 196,185 | 82K |
 | D21 (provisional) | 151,084 | 40,188 | 191,272 | 80K |
 | D22 (provisional) | 151,084 | 29,210 | 180,294 | 75K |
@@ -261,7 +263,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S121 | 3–24 | Contract | 1,346 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D19 | Market Data contract: owns closing evidence, acknowledgments, precedence, recovery, provider config; Pricing Provider port. |
 | S122 | 25–53 | Observation model | 1,456 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D16, D19 | Observation keys and sources, Mark/Daily Bar resolution precedence, Stale context, Expected Mark Date semantics. |
 | S123 | 54–86 | Manual writes and precedence | 2,296 | tagged | D4, D5, D7, D8 | D10, D11, D19 | save intentions: Manual Mark, override, correction, assert/withdraw unavailable; Manual stickiness; provider refresh rules. |
-| S124 | 87–116 | Query contract | 2,471 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated; read session (`openReadSession`, decision 101). |
+| S124 | 87–116 | Query contract | 2,610 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated; read session (`openReadSession`, decision 101). |
 | S125 | 117–139 | Automatic recovery | 1,974 | tagged | D4, D5, D6, D7, D8 | D11 | recover: enumerate sessions, find gaps, bounded provider fetch, Manual preserved, diagnostics only; NotConfigured without provider. |
 | S126 | 140–150 | Daily Bar use | 537 | tagged | D4, D7 | D9, D11, D12 | Daily Bar evidence rules for condition checks (high/low, synchronized Marks); Bars never alter valuation. |
 | S127 | 151–154 | Provider configuration | 550 | tagged | D8 | D11 | Provider configuration: zero or one provider, revisioned views, write-only credential never exported or logged. |
