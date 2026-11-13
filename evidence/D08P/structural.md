@@ -801,3 +801,41 @@ TDD rows: [tdd-log/T8P.12.md](tdd-log/T8P.12.md). Case 3 was a first-run pass, f
 | medium | test | `src/itg/d08p/rail/identity.props.tsx:39` | No Vitest project discovers the suite. | Wrong: a relocation artifact (`.test` was dropped from the copy's name). |
 
 Bug task **T8P.12-B1** (finding 2). Case: *it should choose the days text without a nested conditional.* A refactor, kept green.
+
+## T8P.14 Conditions card (lane `d08p-r2`)
+
+Commits on `d08p/r2`:
+- `b4fdcc87` (the task);
+- `77746a24` (lane tier);
+- `72ae931a` (case titles and B7S.3's title restored word for word);
+- `23ecbbed` (lane tier rerun: 1548 unit, 218 integration, 14 of 14 checks; `run-complete.sh`: run complete).
+
+TDD rows: [tdd-log/T8P.14.md](tdd-log/T8P.14.md). There were no first-run passes. The Underlying wording was written ahead of case 3, so it was reverted for a genuine red and restored (a note row).
+
+**Accepted:**
+- one extra case for W6's notes;
+- expectation changes under the "Risk to stop" and "Table Conditions" rows (`d7s/conditions`, `d7s/responsive-a11y`, `d7/settlement-due :48`);
+- `ConditionsCard` taking shell or plain props;
+- Max reward without an R, which plan revision 89 settles in T8P.7 and T8P.15.
+
+### T8P.14 ocr review (`12a396c0..72ae931a`)
+
+- In place: session `97c40e2c-5adf-4420-bf3d-6e7cf57cc6bb`, 4 files reviewed, 8 excluded, 3 comments.
+- Relocated (5 test and spec files under `src/itg/d08p/`, scratch commits `bd209f2c` and `7f9e2f15`): session `3f9315d4-fad2-48e4-bfe1-c2da46555108`, 5 files reviewed, 5 comments.
+- Model gpt-6.1-sol. Raw output: [ocr/T8P.14-12a396c0..72ae931a.json](ocr/T8P.14-12a396c0..72ae931a.json) and [-relocated](ocr/T8P.14-12a396c0..72ae931a-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `conditions.props.ts:91-92` | The "before any Marks" test also matches AwaitingClose after shares are added following an earlier Mark, so the card says the first Marks haven't arrived and hides Worst case and Max reward. | Valid: `evaluate` returns AwaitingClose for a lot opened after the latest close, as in `d4/breach-overrun`'s Tuesday. The main session flagged this in the brief. |
+| medium | bug | `conditions.props.ts:53-54` | An Unavailable reason that isn't a missing Mark (for example "Outside calendar") is hidden, against W5's "the reason at the `label` length". | Valid, narrow. |
+| low | maintainability | `conditions.props.ts:40-44` | A nested ternary chooses the subject wording. | Valid, style only. |
+| high | test | relocated `d7s/responsive-a11y.ts:55` | `detail.conditionBlocks` isn't exported. | Wrong: a relocation artifact (`rail-b.ts:18` exports it). |
+| high | bug | relocated `d7s/conditions.ts:51` | The three helpers aren't implemented. | Wrong: a relocation artifact (`rail-b.ts:18-21`). |
+| high | bug | relocated `rail/conditions-props.ts:10` | The import resolves to a test module. | Wrong: a relocation name collision. |
+| medium | test | relocated `rail/conditions-props.ts:32` | No Vitest project discovers the suite. | Wrong: a relocation artifact (`.test` was dropped). |
+| high | test | relocated `d7s/responsive-a11y.ts:58` | The assertion runs before any Marks. | Wrong: the regex includes "Mark missing", the Tuesday 17:00 label, and the run passed. |
+
+Bug tasks:
+- **T8P.14-B1** (finding 1). An Unavailable condition that awaits a close after earlier Marks shows its reason on row 1, at the `label` length (W5), with Worst case and Max reward beneath. W6's "Distances to each condition and the worst case arrive with the first Marks." stays only for a Trade with no Mark yet. The signal must come from the view's data (for example its Mark provenance or dated line), not from branching on a reason code outside `calculation-words.ts`. If the view has none, the task stops. Case: *it should show the reason on row 1, not the first-Marks note, when shares were added after an earlier Mark.*
+- **T8P.14-B2** (finding 2). Case: *it should show any other Unavailable reason at the label length on row 1.*
+- **T8P.14-B3** (finding 3). Case: *it should choose the subject wording without a nested conditional.* A refactor, kept green.

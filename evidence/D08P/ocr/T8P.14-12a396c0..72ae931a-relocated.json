@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 5,
+    "total_tokens": 274359,
+    "input_tokens": 270725,
+    "output_tokens": 3634,
+    "cache_read_tokens": 64384,
+    "elapsed": "1m38s"
+  },
+  "tool_calls": {
+    "total": 48,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 5,
+      "file_read": 27,
+      "file_read_diff": 1
+    },
+    "failure": 3,
+    "failure_by_tool": {
+      "file_read": 3
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 8,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d08p/d7s/responsive-a11y.ts",
+        "arguments": "{\"file_path\": \"src/itg/d08p/d7s/support.ts\"}",
+        "error": "file \"src/itg/d08p/d7s/support.ts\" not found: git show 7f9e2f1534ed38cd6a7ff711efbda4d589d03d36:src/itg/d08p/d7s/support.ts: exit status 128: fatal: path 'src/itg/d08p/d7s/support.ts' does not exist in '7f9e2f1534ed38cd6a7ff711efbda4d589d03d36'\n"
+      },
+      {
+        "tool_call_number": 12,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d08p/d7/settlement-due.ts",
+        "arguments": "{\"file_path\":\"src/itg/d08p/d7/support.ts\",\"end_line\":100}",
+        "error": "file \"src/itg/d08p/d7/support.ts\" not found: git show 7f9e2f1534ed38cd6a7ff711efbda4d589d03d36:src/itg/d08p/d7/support.ts: exit status 128: fatal: path 'src/itg/d08p/d7/support.ts' does not exist in '7f9e2f1534ed38cd6a7ff711efbda4d589d03d36'\n"
+      },
+      {
+        "tool_call_number": 36,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d08p/d7s/conditions.ts,src/itg/d08p/rail/conditions-props.ts,src/itg/d08p/rail/conditions.tsx",
+        "arguments": "{\"file_path\": \"src/itg/d08p/d7s/support.ts\", \"start_line\": 1, \"end_line\": 50}",
+        "error": "file \"src/itg/d08p/d7s/support.ts\" not found: git show 7f9e2f1534ed38cd6a7ff711efbda4d589d03d36:src/itg/d08p/d7s/support.ts: exit status 128: fatal: path 'src/itg/d08p/d7s/support.ts' does not exist in '7f9e2f1534ed38cd6a7ff711efbda4d589d03d36'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/d08p/d7s/responsive-a11y.ts",
+      "content": "`detail` does not export `conditionBlocks` (its rail helpers still expose `conditionsTable` and `conditionRow`). Add the corresponding locator helper to the shared Detail API alongside this migration; otherwise this test fails with `detail.conditionBlocks is not a function` before reaching the accessibility checks.",
+      "existing_code": "    const conditions = detail.conditionBlocks(page);",
+      "start_line": 55,
+      "end_line": 55,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d08p/d7s/responsive-a11y.ts",
+      "content": "This assertion runs before `saveSessionMarks`, and `createOs2Trade` records only the entry, not any Marks. W5 explicitly omits the figure before the first Marks (also asserted in the new conditions-props tests), so none of these required distance/status alternatives need appear in a correct card. Save Marks before checking measured statuses, or assert the role/condition-only layout here and check statuses after saving Marks.",
+      "existing_code": "    for (const condition of await conditions.all()) await expect(condition).toContainText(/(Stop|Target)[\\s\\S]*(−\\$|\\+\\$|Breached|Reached|Mark missing)/);",
+      "start_line": 58,
+      "end_line": 58,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d08p/rail/conditions-props.ts",
+      "content": "This resolves to src/itg/d08p/rail/conditions.tsx, which is a test module and does not export ConditionsCard, rather than to the production component. The new import therefore fails typechecking and cannot render the card. Import the production component from src/ui/cockpit/rail (and include its implementation/adapter: the current production component still unconditionally returns null).",
+      "existing_code": "import { ConditionsCard } from './conditions.tsx';",
+      "start_line": 10,
+      "end_line": 10,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d08p/rail/conditions-props.ts",
+      "content": "This new suite is not discovered by either Vitest project: unit tests require src/**/*.test.{ts,tsx}, and integration tests require tests/integration/**/*.test.ts. Consequently none of these acceptance assertions run in the configured test commands. Move/rename the file to a discovered test path or explicitly update test discovery.",
+      "existing_code": "describe('Conditions card (W5, W6)', () =\u003e {",
+      "start_line": 32,
+      "end_line": 32,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d08p/d7s/conditions.ts",
+      "content": "The new conditionBlocks, conditionBlock, and conditionsSummary methods are not implemented in the shared detail helper (e2e/support/detail); it still exposes conditionsTable/conditionRow. These assertions cannot run against the existing helper. Add and export the new card locators alongside this update before switching the browser assertions to them.",
+      "existing_code": "    await expect(detail.conditionBlocks(page)).toHaveCount(4);",
+      "start_line": 51,
+      "end_line": 51,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Conditions logic and rail component props",
+      "files": [
+        "src/itg/d08p/d7s/conditions.ts",
+        "src/itg/d08p/rail/conditions-props.ts",
+        "src/itg/d08p/rail/conditions.tsx"
+      ]
+    },
+    {
+      "label": "Settlement due calculation",
+      "files": [
+        "src/itg/d08p/d7/settlement-due.ts"
+      ]
+    },
+    {
+      "label": "Responsive accessibility",
+      "files": [
+        "src/itg/d08p/d7s/responsive-a11y.ts"
+      ]
+    }
+  ],
+  "session_id": "3f9315d4-fad2-48e4-bfe1-c2da46555108",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3f9315d4-fad2-48e4-bfe1-c2da46555108",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "7f9e2f15",
+      "resolved_base": "bd209f2ce7ee361b61919e24dcba08fb337445c5",
+      "resolved_head": "7f9e2f1534ed38cd6a7ff711efbda4d589d03d36",
+      "exact_range": "bd209f2ce7ee361b61919e24dcba08fb337445c5..7f9e2f1534ed38cd6a7ff711efbda4d589d03d36",
+      "source_artifact_sha256": "4d755713a8c1fa7c92fc324370c8b6b7d87bffaa1f57087985bd46aacf5bc11d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1413787c90ef626f884264e4ec5375646aa0644b852b806fc8555bbbeab60345",
+          "path": "src/itg/d08p/d7s/responsive-a11y.ts",
+          "fingerprint": "57c53024d702b3aab80354c5a09ae089d404b8811d3239151be84ea59e0c9419"
+        },
+        {
+          "item_id": "662692223c8d6731ce7c7d8d1bbf860e11899d4db36016d44e9d4fd4420067e6",
+          "path": "src/itg/d08p/d7/settlement-due.ts",
+          "fingerprint": "5d3ac0e133ae8892b9634a1b1d18745b968ca65aa30b28db1cb57f1207203cc9"
+        },
+        {
+          "item_id": "b0fe674ffa9374f8643701b191de3c77952a0c3e7099f0c11506e20ca9392e30",
+          "path": "src/itg/d08p/rail/conditions-props.ts",
+          "fingerprint": "6d5154f0830a6e9b8cde62dbc429429eb4e13c908b2c1b98aa2291fce54693fc"
+        },
+        {
+          "item_id": "c675c0a853ab9877a9d1e277481837e130b0728ec5a9a07254c7299011e56780",
+          "path": "src/itg/d08p/d7s/conditions.ts",
+          "fingerprint": "11633b4015103fe922052519a582ca973a6da95cccc574df762f1df059fdb077"
+        },
+        {
+          "item_id": "e1f565ed6a056345986c5fe01ecea191f8953aeeca5d6cb2b6652708b4cfffb9",
+          "path": "src/itg/d08p/rail/conditions.tsx",
+          "fingerprint": "f8dedf54f4e4922be42d6d2b5dbd33f0b944e4f14757bf83d55a2efcb543b2d4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1413787c90ef626f884264e4ec5375646aa0644b852b806fc8555bbbeab60345",
+          "path": "src/itg/d08p/d7s/responsive-a11y.ts",
+          "fingerprint": "57c53024d702b3aab80354c5a09ae089d404b8811d3239151be84ea59e0c9419"
+        },
+        {
+          "item_id": "662692223c8d6731ce7c7d8d1bbf860e11899d4db36016d44e9d4fd4420067e6",
+          "path": "src/itg/d08p/d7/settlement-due.ts",
+          "fingerprint": "5d3ac0e133ae8892b9634a1b1d18745b968ca65aa30b28db1cb57f1207203cc9"
+        },
+        {
+          "item_id": "b0fe674ffa9374f8643701b191de3c77952a0c3e7099f0c11506e20ca9392e30",
+          "path": "src/itg/d08p/rail/conditions-props.ts",
+          "fingerprint": "6d5154f0830a6e9b8cde62dbc429429eb4e13c908b2c1b98aa2291fce54693fc"
+        },
+        {
+          "item_id": "c675c0a853ab9877a9d1e277481837e130b0728ec5a9a07254c7299011e56780",
+          "path": "src/itg/d08p/d7s/conditions.ts",
+          "fingerprint": "11633b4015103fe922052519a582ca973a6da95cccc574df762f1df059fdb077"
+        },
+        {
+          "item_id": "e1f565ed6a056345986c5fe01ecea191f8953aeeca5d6cb2b6652708b4cfffb9",
+          "path": "src/itg/d08p/rail/conditions.tsx",
+          "fingerprint": "f8dedf54f4e4922be42d6d2b5dbd33f0b944e4f14757bf83d55a2efcb543b2d4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 98305
+  }
+}

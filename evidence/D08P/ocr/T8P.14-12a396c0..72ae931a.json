@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 193772,
+    "input_tokens": 191284,
+    "output_tokens": 2488,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m51s"
+  },
+  "tool_calls": {
+    "total": 27,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_find": 2,
+      "file_read": 15
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 25,
+        "tool_name": "file_read",
+        "file_path": "e2e/support/detail/rail-b.ts,src/ui/cockpit/rail/conditions.props.ts,src/ui/cockpit/rail/conditions.tsx,src/ui/cockpit/styles/rail-b.css",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/styles/base.css\", \"start_line\": 1, \"end_line\": 80}",
+        "error": "file \"src/ui/cockpit/styles/base.css\" not found: git show 72ae931aecf9e2d9ba9d5bf27f29a42e792df448:src/ui/cockpit/styles/base.css: exit status 128: fatal: path 'src/ui/cockpit/styles/base.css' does not exist in '72ae931aecf9e2d9ba9d5bf27f29a42e792df448'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/rail/conditions.props.ts",
+      "content": "This predicate also matches AwaitingClose after adding to an existing position following the latest close. `evaluate()` returns AwaitingClose whenever any open lot was opened after that close, even if earlier Marks already exist. The card then incorrectly says the first Marks have not arrived and hides the Worst case/Max reward summary. Distinguish the actual before-first-Marks state from waiting for a new close after a position change, and add a test for that latter case.",
+      "existing_code": "  const waiting = evaluation.conditions.length \u003e 0 \u0026\u0026 evaluation.conditions.every((c) =\u003e c.result.kind === 'Unavailable' \u0026\u0026 !isMarkLacking(c.result));\n  if (waiting \u0026\u0026 evaluation.coverage.kind !== 'NotCovered') return { conditions, summary: [{ text: BEFORE_MARKS }] };",
+      "start_line": 91,
+      "end_line": 92,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/rail/conditions.props.ts",
+      "content": "The nested ternary used to choose the subject violates the supplied checklist. Use explicit stock/StructureValue/fallback branches (or a small helper) to keep the three wording cases clear.",
+      "existing_code": "  const subject = stock\n    ? `${plan.underlying}'s Mark is ${decimalMoney(condition.boundary)}`\n    : condition.kind === 'StructureValue'\n      ? `the option's Mark is ${decimalMoney(condition.boundary)}`\n      : `${plan.underlying} is at ${decimalUnderlyingPrice(condition.boundary)} at expiration`;",
+      "start_line": 40,
+      "end_line": 44,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/cockpit/rail/conditions.props.ts",
+      "content": "Unavailable reasons other than missing Marks are silently hidden here. For example, `evaluate()` returns `SessionPolicyNotCovered` for underlying-price conditions when the underlying frame is outside the calendar, even while option-price conditions are measurable. Those rows then show no reason, contrary to W5's label-length Unavailable requirement. Suppress figures specifically for the pre-Marks/expired states, and render `unavailableLabel(result)` for other Unavailable results (including “Outside calendar”).",
+      "existing_code": "  if (result.kind === 'Unavailable' \u0026\u0026 isMarkLacking(result)) return { ...item, figure: unavailableLabel(result) };\n  if (result.kind !== 'Value') return item;",
+      "start_line": 53,
+      "end_line": 54,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit rail conditions UI, styling, and end-to-end support",
+      "files": [
+        "e2e/support/detail/rail-b.ts",
+        "src/ui/cockpit/rail/conditions.props.ts",
+        "src/ui/cockpit/rail/conditions.tsx",
+        "src/ui/cockpit/styles/rail-b.css"
+      ]
+    }
+  ],
+  "session_id": "97c40e2c-5adf-4420-bf3d-6e7cf57cc6bb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "97c40e2c-5adf-4420-bf3d-6e7cf57cc6bb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "12a396c0",
+      "requested_head": "72ae931a",
+      "resolved_base": "12a396c05b2226214c0f559d8c8a1702ae19242e",
+      "resolved_head": "72ae931aecf9e2d9ba9d5bf27f29a42e792df448",
+      "exact_range": "12a396c05b2226214c0f559d8c8a1702ae19242e..72ae931aecf9e2d9ba9d5bf27f29a42e792df448",
+      "source_artifact_sha256": "44d03f84dae2a5b4b1d97b7ccf17058ef6dd0d3f04ea9364457ab1c7e256ae3e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "38d0f6962db962607137a3a1e533ee5783d2b9885ebb19c626bcb6867b613614",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "817cb326607f7b705f0f94807b5efcb0a18ab2439b334cf05d6d311d6e78b1ec"
+        },
+        {
+          "item_id": "908cb1382ebfec48e5c4972c239c7b8cdf4a8419a896bae67fb68bfc2be3cedc",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "4901f957bf1441765d71e754b84f7ab8ece47e42772721022b08fb882bc44645"
+        },
+        {
+          "item_id": "b6c2c431ff9ce22e6a203729e727e19a39bdf14b086c8f51176c905944cad4c3",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "d85378d649d5e5015b8c4afcb6815bf0afac7478568c76c7de68c47b9ef986fa"
+        },
+        {
+          "item_id": "dc80ee098c1dc20ba0534ffd6fb041421d62dde624b6d663a87b80a28af0a1e3",
+          "path": "src/ui/cockpit/rail/conditions.tsx",
+          "fingerprint": "73dcc67f861da404cbfbe86d2fa5ba0c3c43e909cd53deda9c6612e763ad0fa2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "38d0f6962db962607137a3a1e533ee5783d2b9885ebb19c626bcb6867b613614",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "817cb326607f7b705f0f94807b5efcb0a18ab2439b334cf05d6d311d6e78b1ec"
+        },
+        {
+          "item_id": "908cb1382ebfec48e5c4972c239c7b8cdf4a8419a896bae67fb68bfc2be3cedc",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "4901f957bf1441765d71e754b84f7ab8ece47e42772721022b08fb882bc44645"
+        },
+        {
+          "item_id": "b6c2c431ff9ce22e6a203729e727e19a39bdf14b086c8f51176c905944cad4c3",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "d85378d649d5e5015b8c4afcb6815bf0afac7478568c76c7de68c47b9ef986fa"
+        },
+        {
+          "item_id": "dc80ee098c1dc20ba0534ffd6fb041421d62dde624b6d663a87b80a28af0a1e3",
+          "path": "src/ui/cockpit/rail/conditions.tsx",
+          "fingerprint": "73dcc67f861da404cbfbe86d2fa5ba0c3c43e909cd53deda9c6612e763ad0fa2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "33c2020f5df1b177688a0b306f40e44d05ecfc0cffa1b0300875b1f7dbd5e020",
+          "path": "src/ui/cockpit/rail/conditions.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4ac7a146e57ae017dc61894e9b41446d788659921d1c7fc18753a5a0ddc5d052",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "535cef5b06e2b36e580450919038be7542d53afa96ff4a1713eebe480fd5fdaf",
+          "path": "e2e/d7s/conditions.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "724105c9423ed2a67ee95ab9e3eeccdea3c5432c1532d588d8b2f8780ec12204",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "741fb3c4b938378f62f5530454b1e00f55436fd85d70ae592bc83e4888d5ae3d",
+          "path": "evidence/D08P/suite-runs/T8P.14-lane.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "a0ed6d1db7f8fcf19fcfebec09a7349895ce365af4dceb70b8e9ba6ddf20f667",
+          "path": "evidence/D08P/suite-runs/T8P.14-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "bc6f745379722bd0b5c27f575254a6df7779820c2478297f1804e124709f9cff",
+          "path": "evidence/D08P/tdd-log/T8P.14.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "be6e1a7475870f67deed1802b6cb29d79199c36940a24776d5e6e21518fbc86a",
+          "path": "e2e/d7s/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ce360277b0a4945d9f67ab29685c809cd25aeb7e3c93ac4c0d0b4a666100637b",
+          "path": "evidence/D08P/suite-runs/T8P.14-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "e58a654c74e14f26263a0496700f14b9916fd5f0fd017ef9571a47227fc3aee5",
+          "path": "evidence/D08P/suite-runs/T8P.14-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 110630
+  }
+}
