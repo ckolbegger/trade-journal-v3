@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D08P](implementation-plan.md#d08p--the-trade-detail-cockpit). D08P is the **D8 prefactor**: Trade Detail is rebuilt to match the "C. Cockpit" tab of `prototypes/trade-detail/index.html` before any more functionality is built. It builds on D7S's Trade Detail (T7S.9, every condition), the D7S prefactor's Mark-to-Market Valuation and read session (decisions 101, 104 to 106), D5R's precedent for a prototype-driven redesign (decision 65), and D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), conventions C1 to C8). It is drafted from `claude-opus-5.5-pre-d8p`.
 
-Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5). **Revision 88** (the same day) lets strict checks gain the additive `nearest` and `days` fields (section 1.5, "Shapes").
+Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5). **Revision 88** (the same day) lets strict checks gain the additive `nearest` and `days` fields (section 1.5, "Shapes"). **Revision 89** (the same day) gives a bounded Max reward its R: T8P.7 adds it, and T8P.15 shows it (section 5).
 
 The prototype is a picture of the screen, not a specification. Where it differs from the specs or the plan, this breakdown says which wins (P96, section 1.6).
 
@@ -383,7 +383,11 @@ describe("replay: per-session results (A211)")
   it should give each Mark its change since that Instrument's previous Mark, the call +$0.80 since Monday on Wednesday
   it should give a Long Stock Trade one Mark per session and its Trade P&L (D6's T-A)
   it should return Not applicable for a Trade never exposed
+describe("evaluate: Max reward's R (W6, revision 89)")
+  it should give a bounded Max reward its R, as Worst case has, and no R when it is Unbounded above
 ```
+
+**Revision 89 (the user's decision of 2026-11-13).** W6 shows a bounded Max reward as "the amount and R", but the evaluation carried no R for it, and the screen may not compute one (ADR 0001). T8P.7 adds that R to `evaluate`'s Max reward result, built the way Worst case's R is. T8P.15 shows it. It is additive, so revision 88's rule for strict checks covers it too.
 
 ### T8P.8 Market Data: `ReadSeries`
 
@@ -477,7 +481,11 @@ describe("Needs you (W7)")
   it should say "First Marks are due once today's session ends." before any Marks
   it should link a Mark missing at the Expected Mark Date to the Review
   it should hold the Settlement Due panel, with Record expiration only while Writable
+describe("Conditions card: Max reward's R (W6, revision 89)")
+  it should show a bounded Max reward with its R beneath the conditions
 ```
+
+T8P.15 changes the Conditions card (lane R2's T8P.14 code) for this case, after T8P.7 merges (revision 89).
 
 ### T8P.16 Today drawer
 

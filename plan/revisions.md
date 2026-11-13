@@ -2,6 +2,12 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 89: the commit tagged `claude-opus-5.5-plan-r89` (revision 88, no decision). W6 shows a bounded Max reward as the amount and R, but `evaluate` carried no R for Max reward, and the screen may not compute one (ADR 0001).
+  - T8P.7 gains a case: it adds the R to `evaluate`'s Max reward result, as Worst case has, with none when it is Unbounded above.
+  - T8P.15 gains a case: it shows the R on the Conditions card.
+  - The new field falls under revision 88's rule for strict checks.
+
+  Rejected: revising W6 to the amount alone, and deferring the R to a tech debt item. No acceptance scenario changes status, no durable compatibility changes, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-13.
 - Revision 88: the commit tagged `claude-opus-5.5-plan-r88` (revision 87, no decision). D08P's section 1.5 "Shapes" assumed no expected value would change for the additive `nearest` (A207) and `days` (A208). It missed existing tests that compare whole objects strictly.
   - T8P.6 adds `nearest: true` to `current-evaluation.test.ts`'s `reading` helper (two conditions; the only line it changes in lane BV's file).
   - T8P.9 adds `days: 1` to two lines of `tests/integration/d7sp/trade-detail-finished.test.ts`.
