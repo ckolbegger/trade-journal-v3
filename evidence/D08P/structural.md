@@ -175,3 +175,32 @@ Round 5 (under the user's decision: batched, and the session stops if round 5 st
 - **T8P.1-B14** (finding 2). Defect: a stale remembered ID could be signalled after reuse. Case: *it should signal only processes that are still the command's descendants.*
 - **T8P.1-B15** (finding 3). Defect in the test: the masked fork window isn't covered. Case: *it should exit 143 and run no command when the TERM arrives between the fork and the parent's `setpgrp`.*
 - **T8P.1-B16** is the batch of B13, B14 and B15.
+
+### T8P.1-B16 (`a87e8aed`), round 5
+
+Fix:
+- **Token.** The command's environment carries `TJ_BROWSER_LOCK_TOKEN=<wrapper pid>-<random>-<time>`.
+- **Scan.** One `ps -axwwE -o pid,ppid,pgid,stat,lstart,command` runs about once a second while the command runs (about 30 ms each), and every 0.25 s once signalled.
+- **Members** are the processes that carry the token, are in the command's group, are a child of a member, or were seen before with an unchanged start time. `%known` is rebuilt from each scan.
+- **Signals.** A fresh scan precedes every signal, and each identity gets each signal once.
+- **Release.** A drain loop sends TERM, then KILL at the grace deadline, and releases the lock once no member is left.
+
+Checking the suggested design: `ps -E` shows the token for node, including a `detached: true` child with PPID 1, but not for Apple system binaries. Hence token plus scan.
+
+Cases:
+- B13, red against `50e792d7`: a perl double-fork with `setsid`, and a node `detached: true` child, both outliving TERM. A mutation removing the token fails the node sub-case.
+- B14, red with a planted stale PID.
+- B15, the old test passing against a copy without `SIG_BLOCK`. The new test fails against that copy, using `TJ_BROWSER_LOCK_TEST_PARENT_PAUSE`, with `TJ_BROWSER_LOCK_TEST_CHILD_PAUSE` moved inside the masked window.
+
+The test file passed 3 of 3, about 15 s each. Rows are in [tdd-log/T8P.1-B16.md](tdd-log/T8P.1-B16.md). Exits 143, 137, 2 and the command's own code held, and so did the waiting message, reentrancy, path independence and `npm` through the wrapper. Ports were free before and after.
+
+The task's documented limit: a system binary with no readable environment, born and orphaned within one scan interval, can be missed. This supersedes B12's note that descendants were tracked only from the signal on.
+
+ocr: session `238f0f5e-e699-4785-987f-4c7e8bfe4f64`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 2 comments. Raw output: [ocr/T8P.1-B16-a87e8aed.json](ocr/T8P.1-B16-a87e8aed.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `.claude/scripts/with-browser-lock.sh:69` | A ps failure (launch, non-zero exit, unparseable output) reads as "no members left", so the drain loop can release the lock while detached descendants still run, and a partial scan overwrites `%known` and loses orphans. | Valid, with limits: `scan()` returns `{}` when ps can't be opened; `close($ps)` and ps's exit status are never checked. The wrapper fails open. |
+| medium | bug | `.claude/scripts/with-browser-lock.sh:84` | `lstart` has one-second resolution, so a remembered PID reused by an unrelated process started in the same second would be admitted and signalled. | Doubtful: needs a PID wrap within one second of the original's start; `%known` is rebuilt every scan. |
+
+**Stop (the user's decision of 2026-11-13: the session stops if round 5 still leaves findings).** The session asks the user how to go on. Still queued: T8P.1-B3 and B4.
