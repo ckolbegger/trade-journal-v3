@@ -129,7 +129,7 @@ export function Cockpit({ facade, view, timeZone, onDirtyChange }: CockpitProps)
         </div>
         {/* Every shown drawer stays mounted and the others carry `hidden`, so an unsaved reflection and a saved one survive a change of drawer. */}
         {shown.map((name) => (
-          <div key={name} role="tabpanel" id={`drawer-panel-${tabId(name)}`} aria-labelledby={`drawer-tab-${tabId(name)}`} hidden={name !== current}>
+          <div key={name} role="tabpanel" id={`drawer-panel-${tabId(name)}`} aria-labelledby={`drawer-tab-${tabId(name)}`} hidden={name !== current} tabIndex={0}>
             {panelOf(name)}
           </div>
         ))}

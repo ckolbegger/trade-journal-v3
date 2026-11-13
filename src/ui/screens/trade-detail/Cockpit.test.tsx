@@ -110,6 +110,14 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     expect(screen.getAllByRole('tab').filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
   });
 
+  it("should let the keyboard reach the selected drawer's panel", async () => {
+    const user = userEvent.setup();
+    renderView(openDetailOf([PC1, PC2]));
+    await openDrawer(user, 'Plan and Risk');
+    // Plan and Risk has no focusable first content, so the panel itself is a tab stop.
+    expect(screen.getByRole('tabpanel', { name: 'Plan and Risk' }).tabIndex).toBe(0);
+  });
+
   describe('a Journal drawer left and returned to', () => {
     const debt: TradeDetailDebt = {
       kind: 'Debt',
