@@ -741,7 +741,7 @@ function viewB(s) {
 }
 
 /* ---------- C: cockpit ---------- */
-const DRAWERS = ['Today', 'Position', 'Plan and entry', 'Price History', 'Journal', 'Payoff'];
+const DRAWERS = ['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff'];
 let drawer = 'Today';
 
 /* The cockpit draws one model per state (D08P planning). The three original states are adapted from their data,
@@ -812,7 +812,7 @@ function protoModel(s) {
     drawers: {
       Today: today,
       Position: positionBody(s),
-      'Plan and entry': planEntryBody(s),
+      'Plan and Risk':planEntryBody(s),
       'Price History': historyGrid(['NVDA Mark', 'Call Mark', 'Trade P&amp;L'], cols),
       Journal: markWords(sessionCardsFromProto(s)),
       Payoff: payoff(s),
@@ -842,7 +842,7 @@ const MODELS = {
     extremes: '<div class="extremes"><span>Distances to each condition arrive with the first Marks after entry.</span></div>',
     todo: [],
     drawers: {
-      'Plan and entry': nvdaPlanBody(kvGroup('Entry', [['Status', 'Not entered']])),
+      'Plan and Risk':nvdaPlanBody(kvGroup('Entry', [['Status', 'Not entered']])),
       Journal: sessionCards([{ cls: 'plan', when: 'Planned Thu Nov 12, 1:40 pm', title: 'Plan', entries: [planReflectionEntry] }]),
       Payoff: payoff(STATES.entered, { current: false }),
     },
@@ -865,7 +865,7 @@ const MODELS = {
         <h3 class="sec-title" style="margin-top:18px">Where the price sits</h3><div class="tracks">${track({ title: 'XYZ', min: 45, max: 58, stop: 47.5, target: 56, entry: 50.1, now: 52.3, prev: 51.8, prevLabel: 'yesterday', f: (v) => '$' + v.toFixed(2) })}</div>`,
       Position: tbl('lots', ['Open lot', 'Shares', 'Price', 'Fee left'], [['Wed Nov 4, 10:00 am', '100', '$50.10', '$1.00']]) + `<dl class="kv" style="margin-top:12px"><dt>Open P&amp;L</dt><dd class="up">+$219.00</dd><dt>Realized</dt><dd>$0.00</dd><dt>Fees paid</dt><dd>$1.00</dd></dl>`
         + csub('Executions') + '<ol class="journal"><li><span class="j-when">Wed Nov 4<br>10:00 am</span><span class="j-body">Buy 100 XYZ @ $50.10</span></li></ol>',
-      'Plan and entry': kvGroup('Plan, set Wed Nov 4, 9:30 am', [['Intended entry', '100 shares @ $50.00'], ['1R (original risk)', '$250.00'], ['Original reward', '$600.00'], ['Planned reward : risk', '2.40']])
+      'Plan and Risk':kvGroup('Plan, set Wed Nov 4, 9:30 am', [['Intended entry', '100 shares @ $50.00'], ['1R (original risk)', '$250.00'], ['Original reward', '$600.00'], ['Planned reward : risk', '2.40']])
         + kvGroup('Entry, resolved Wed Nov 4, 10:00 am', [['Average fill', '$50.10'], ['Actual initial risk', '$261.00 · 1.04R'], ['Actual initial reward', '$589.00 · 2.36R'], ['Actual reward : risk', '2.26'], ['Slippage', '<span class="down">−$10.00</span>'], ['Size', '1× planned, filled as planned']]),
       'Price History': historyGrid(['XYZ Mark', 'Trade P&amp;L'], [
         { date: 'Thu Nov 12', cells: [{ t: '$52.30' }, { t: '$219.00', cls: 'up' }] }, { date: 'Wed Nov 11', cells: [{ t: '$51.80' }, { t: '$169.00', cls: 'up' }] },
@@ -906,7 +906,7 @@ const MODELS = {
         + '<p class="grid-note">Each match’s amount is rounded to the cent for display.</p>'
         + `<details class="c-more"><summary>Fee reconciliation</summary>${kvRows([['Incurred fees', '$2.60'], ['Opening fees incurred', '$1.95'], ['Opening fees allocated to Lot Matches', '$0.65'], ['Opening fees unconsumed', '$1.30'], ['Disposal fees incurred', '$0.65'], ['Disposal fees allocated to Lot Matches', '$0.65']])}</details>`
         + csub('Executions') + `<ol class="journal">${[['Tue Nov 10', '11:30 am', 'Sell to close 1 NVDA 18 Dec 2026 150 Call @ $10.50'], ['Mon Nov 9', '2:40 pm', 'Buy to open 1 NVDA 18 Dec 2026 150 Call @ $9.20'], ['Thu Nov 5', '11:05 am', 'Buy to open 1 NVDA 18 Dec 2026 150 Call @ $8.10'], ['Wed Nov 4', '10:20 am', 'Buy to open 1 NVDA 18 Dec 2026 150 Call @ $7.35']].map(([d, t, x]) => `<li><span class="j-when">${d}<br>${t}</span><span class="j-body">${x}</span></li>`).join('')}</ol>`,
-      'Plan and entry': nvdaPlanBody(kvGroup('Entry, resolved Mon Nov 9, 2:40 pm', [['Average fill', '$8.22'], ['Size', '1× planned (3 contracts), filled as planned']])),
+      'Plan and Risk':nvdaPlanBody(kvGroup('Entry, resolved Mon Nov 9, 2:40 pm', [['Average fill', '$8.22'], ['Size', '1× planned (3 contracts), filled as planned']])),
       Journal: '<p class="c-quiet">As in the Held state.</p>',
       'Price History': '<p class="c-quiet">As in the Held state.</p>',
       Payoff: payoff(STATES.held),
@@ -926,7 +926,7 @@ const MODELS = {
     todo: [{ cls: 'due', html: `<div><strong>Settlement Due</strong>${kvRows([['Contract', 'NVDA 18 Dec 2026 150 Call'], ['Quantity', 'Long 1 contract'], ['Expired', 'Fri Dec 18'], ['Settlement time', 'Fri Dec 18, 16:00']])}<p class="small" style="margin-top:6px;font-weight:400">If it was exercised, this release can’t record the exercise yet, so this Trade stays open until a later release can.</p>${actions([['Record expiration', true]])}</div>` }],
     drawers: {
       Position: tbl('lots', ['Open lot', 'Contracts', 'Price', 'Fee left'], [['Wed Nov 4, 10:20 am', '1', '$7.35', '$0.65']]) + '<dl class="kv" style="margin-top:12px"><dt>Open P&amp;L</dt><dd class="muted">Settlement Due</dd><dt>Realized</dt><dd class="up">+$313.70</dd><dt>Fees paid</dt><dd>$1.95</dd></dl>',
-      'Plan and entry': nvdaPlanBody(),
+      'Plan and Risk':nvdaPlanBody(),
       'Price History': '<p class="c-quiet">As in the Held state, ending Fri Dec 18, the last session the contract traded.</p>',
       Journal: '<p class="c-quiet">As in the Held state.</p>',
       Payoff: '<p class="c-quiet">Current: Settlement Due: NVDA 18 Dec 2026 150 Call. The planned line stays as drawn in the other states.</p>',
@@ -948,7 +948,7 @@ const MODELS = {
       Position: '<dl class="kv"><dt>Fees paid</dt><dd>$2.60</dd></dl>' + csub('Lot Matches') + tbl('lots', ['Sold', 'Contracts', 'Opened at', 'Closed at', 'Realized'], [['Fri Nov 13, 10:05 am', '1', '$7.35 (Wed Nov 4)', '$12.40', '+$503.70'], ['Tue Nov 10, 11:30 am', '1', '$7.35 (Wed Nov 4)', '$10.50', '+$313.70']])
         + `<details class="c-more"><summary>Fee reconciliation</summary>${kvRows([['Incurred fees', '$2.60'], ['Opening fees incurred', '$1.30'], ['Opening fees allocated to Lot Matches', '$1.30'], ['Opening fees unconsumed', '$0.00'], ['Disposal fees incurred', '$1.30'], ['Disposal fees allocated to Lot Matches', '$1.30']])}</details>`
         + csub('Executions') + `<ol class="journal">${[['Fri Nov 13', '10:05 am', 'Sell to close 1 NVDA 18 Dec 2026 150 Call @ $12.40'], ['Tue Nov 10', '11:30 am', 'Sell to close 1 NVDA 18 Dec 2026 150 Call @ $10.50'], ['Wed Nov 4', '10:20 am', 'Buy to open 2 NVDA 18 Dec 2026 150 Call @ $7.35']].map(([d, t, x]) => `<li><span class="j-when">${d}<br>${t}</span><span class="j-body">${x}</span></li>`).join('')}</ol>`,
-      'Plan and entry': nvdaPlanBody(kvGroup('Entry, resolved Wed Nov 4, 10:20 am', [['Average fill', '$7.35'], ['Actual initial risk', '$731.30 · 0.99R'], ['Size', '1× planned, filled as planned']])),
+      'Plan and Risk':nvdaPlanBody(kvGroup('Entry, resolved Wed Nov 4, 10:20 am', [['Average fill', '$7.35'], ['Actual initial risk', '$731.30 · 0.99R'], ['Size', '1× planned, filled as planned']])),
       'Price History': historyGrid(['NVDA Mark', 'Call Mark', 'Trade P&amp;L'], [
         { date: 'Fri Nov 13', cells: [{ t: '161.20' }, { t: '$12.40' }, { t: '$817.40', cls: 'up' }] }, { date: 'Thu Nov 12', cells: [{ t: '157.90' }, { t: '$11.60' }, { t: '$738.05', cls: 'up' }] },
         { date: 'Wed Nov 11', cells: [null, null, null] }, { date: 'Tue Nov 10', cells: [{ t: '155.20' }, { t: '$10.40' }, { t: '$618.05', cls: 'up' }] },
@@ -976,7 +976,7 @@ const MODELS = {
     drawers: {
       Position: '<dl class="kv"><dt>Fees paid</dt><dd>$1.30</dd></dl>' + csub('Settlement (1)') + '<ol class="journal"><li><span class="j-when">Fri Nov 20<br>4:00 pm</span><span class="j-body">Expiration of 2 MNO 20 Nov 2026 45 Put</span></li></ol>'
         + csub('Executions') + '<ol class="journal"><li><span class="j-when">Mon Oct 12<br>10:00 am</span><span class="j-body">Sell to open 2 MNO 20 Nov 2026 45 Put @ $1.25</span></li></ol>',
-      'Plan and entry': kvGroup('Plan, set Mon Oct 12, 9:00 am', [['Contract', 'MNO 20 Nov 2026 45 Put'], ['Intended entry', '2 contracts @ $1.20'], ['1R (original risk)', '$480.00'], ['Original reward', '$140.00'], ['Planned reward : risk', '0.29']]),
+      'Plan and Risk':kvGroup('Plan, set Mon Oct 12, 9:00 am', [['Contract', 'MNO 20 Nov 2026 45 Put'], ['Intended entry', '2 contracts @ $1.20'], ['1R (original risk)', '$480.00'], ['Original reward', '$140.00'], ['Planned reward : risk', '0.29']]),
       'Price History': '<p class="c-quiet">Sessions Mon Oct 12 to Fri Nov 20, as in the other states.</p>',
       Journal: '<p class="c-quiet">Session cards as in the other states, ending Fri Nov 20.</p>',
       Payoff: '<p class="c-quiet">Current: Not applicable: no open position. The planned line (breakeven 43.80) is drawn dashed, alone.</p>',
@@ -996,7 +996,7 @@ const MODELS = {
     todo: [],
     drawers: {
       Position: csub('Recorded Executions') + '<ol class="journal"><li><span class="j-when">Tue Nov 10<br>11:30 am</span><span class="j-body">Sell to close 3 NVDA 18 Dec 2026 150 Call @ $10.50</span></li><li><span class="j-when">Wed Nov 4<br>10:20 am</span><span class="j-body">Buy to open 2 NVDA 18 Dec 2026 150 Call @ $7.35</span></li></ol>',
-      'Plan and entry': nvdaPlanBody(),
+      'Plan and Risk':nvdaPlanBody(),
       Journal: sessionCards([{ cls: 'plan', when: 'Every entry, newest first', title: 'Journal', note: 'Without a replay there are no sessions, so the entries are one list.', entries: [{ type: 'Exit reflection', body: 'Sold into the gap.' }, { type: 'Entry reflection', body: 'Filled a nickel under the limit.' }, planReflectionEntry] }]),
     },
     counts: {},

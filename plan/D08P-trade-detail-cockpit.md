@@ -1,8 +1,8 @@
 # D08P — The Trade Detail cockpit: task breakdown
 
-Definition: none yet. Once agreed, plan revision 84 adds a D08P row to the deliverable summary and a D08P definition section to the implementation plan (handoff, section 1). D08P is the **D8 prefactor**: Trade Detail is rebuilt to match the "C. Cockpit" tab of `prototypes/trade-detail/index.html` before any more functionality is built. It builds on D7S's Trade Detail (T7S.9, every condition), the D7S prefactor's Mark-to-Market Valuation and read session (decisions 101, 104 to 106), D5R's precedent for a prototype-driven redesign (decision 65), and D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), conventions C1 to C8). It is drafted from `claude-opus-5.5-pre-d8p`.
+Definition: [implementation plan, D08P](implementation-plan.md#d08p--the-trade-detail-cockpit). D08P is the **D8 prefactor**: Trade Detail is rebuilt to match the "C. Cockpit" tab of `prototypes/trade-detail/index.html` before any more functionality is built. It builds on D7S's Trade Detail (T7S.9, every condition), the D7S prefactor's Mark-to-Market Valuation and read session (decisions 101, 104 to 106), D5R's precedent for a prototype-driven redesign (decision 65), and D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), conventions C1 to C8). It is drafted from `claude-opus-5.5-pre-d8p`.
 
-Status: **Draft, not agreed.** Written 2026-11-12 from `plan/D08P-handoff.md`. Decisions P94 to P102, assumptions A206 to A224, the words in section 1.6 and the process amendments in section 9 all wait for the user. Numbering continues from D7S (P90 to P93, A195 to A205); the next plan decision is 110.
+Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112.
 
 The prototype is a picture of the screen, not a specification. Where it differs from the specs or the plan, this breakdown says which wins (P96, section 1.6).
 
@@ -11,6 +11,8 @@ The prototype is a picture of the screen, not a specification. Where it differs 
 ## 1. Decisions and clarifications
 
 ### 1.1 Decisions for this breakdown
+
+**Agreed 2026-11-12 (decision 110):** all nine as recommended.
 
 | # | Question | Recommendation | Alternatives and tradeoff |
 |---|---|---|---|
@@ -24,12 +26,13 @@ The prototype is a picture of the screen, not a specification. Where it differs 
 | P101 | **Size check** (section 1.4). | **Keep one breakdown, with a checkpoint critic (T8P.23)** after the wiring and before the structural tail, as D7S did. | Split at the history seam: D08P-1 (the cockpit on today's reads) and D08P-2 (history). |
 | P102 | **"Close" for a Mark, in moved texts.** The user's rule is "Mark", never "close", for a session's closing price. Two moved texts break it, and the Review card shares one of them. | **Change both now, on Trade Detail and on the Review card together, so C1 holds** (W18, W19). "Value at expiration at MNO's latest close" becomes "… latest Mark". The dated heading "At Mon Oct 12 close" becomes "At the Mon Oct 12 Marks". "Awaiting close" (`calculation-words.ts`, shared by every screen) names a moment, not a price, so it stays. | Leave both texts for the sharing phase: Detail then keeps "close" until later, which goes against the user's rule. |
 
-### 1.2 Amendments to other plan sections (when agreed)
+### 1.2 Amendments to other plan sections (agreed 2026-11-12 and applied in revision 84, except where a task is named)
 
 - **D9 definition.** Its "Introduces" line names `replay`, `query` (`ReadSeries`) and `replayTrade`. Note under it: D08P builds a slice of each (P94, P95, A210 to A213). D9 extends them with condition status per session, markers, the chart and its text equivalent, and audit navigation. D9's AC-MARK-004 claim ("partial: points and gaps") is shared: D08P proves the read and the grid, and D9 the chart.
 - **Deliverable summary.** A D08P row before D8: "The Trade Detail cockpit (decision 110) | 0 (refactor)".
-- **Decision 100, `implementing.md`, `tdd-task.md`, `suite-runner.md`, `tdd.sh`, `full-suite.sh` and the full-run rule.** These are amended for swarm deliverables (section 9), as decision 111.
-- **Tech debt.** Item 23 is resolved by T8P.9, and item 21 by T8P.19.
+- **Decision 100, `implementing.md`, `tdd-task.md`, `suite-runner.md`, `tdd.sh`, `full-suite.sh` and the full-run rule.** These are amended for swarm deliverables (section 9), as decision 111. Decision 100's row carries the amendment note now. **T8P.1** applies section 9's text to the `.claude/` files, together with the tooling that text names.
+- **Tech debt.** Items 21 and 23 carry notes naming the tasks that fix them: T8P.19 and T8P.9.
+- **Acceptance matrix.** AC-MARK-004 gains a D08P entry (section 13), and its "Later" note now names only D9's chart and D11's Daily Bars.
 - **D8 breakdown.** No change. D08P changes no schema, store or fixture (section 1.5, shapes), so D8's schema-7 note (decision 107) stands as it is.
 - **Spec map.** No retag (A218).
 
@@ -50,7 +53,7 @@ These are implementation-level choices that do not reopen product semantics. The
 | A214 | **Merged cards without Marks:** consecutive sessions in which no Instrument has an Available Mark merge into one card. This is a pure presentational grouping in `src/ui/cockpit/journal-cards.ts`, with no arithmetic. **For the later filter** (section 10.3): filter the sessions first, then merge runs of the kept sessions that are consecutive and without Marks. A merged card is shown only when one of its sessions holds an entry the filter keeps; otherwise the filter drops the whole run. |
 | A215 | **Track geometry is presentation.** Placing a price on a horizontal track maps a finished price to a CSS percentage, as `PayoffView` maps Rationals to SVG coordinates and `StopTargetSlider` takes a percentage. Range and position follow the existing chart precedent. No figure is derived. |
 | A216 | **Presentational components:** every new rail card and drawer lives in `src/ui/cockpit/` and takes plain props. Each has a small adapter (`<name>.props.ts`) from the views, owned by the same lane. An ESLint `no-restricted-imports` rule (`eslint.cockpit.config.js`) bars `src/ui/cockpit/**` (excluding `*.props.ts`) from importing `app/types` or `coordinators/**`, so sharing them later is a move, not a rewrite (handoff section 5.5, condition 1). |
-| A217 | **Drawer state:** the selected drawer is component state, not part of the URL. The default drawer is Today on an Open Trade, Plan and entry on a Planned one, and Position on a Closed, Settlement Due or incoherent one. "Reflect now" in Needs you selects the Journal drawer and opens that Debt's form on its card. The existing one-form-at-a-time rule holds. |
+| A217 | **Drawer state:** the selected drawer is component state, not part of the URL. The default drawer is Today on an Open Trade, Plan and Risk on a Planned one, and Position on a Closed, Settlement Due or incoherent one. "Reflect now" in Needs you selects the Journal drawer and opens that Debt's form on its card. The existing one-form-at-a-time rule holds. |
 | A218 | **Reading list:** the implementing session reads `plan/spec-reading/D07.md`, plus these entries of `plan/spec-reading/D09.md`: Trade Analysis `replay`, Market Data's query contract, Trade Views' `replayTrade` and invariants, AC-MARK-004 (S047), and the UI contract's replay line. There is no retag: a `D8P` tag would break `spec-reading-lists.py` (A205's reason). |
 | A219 | **No benchmark task.** AC-PERF-001's gated paths are the cold start and the open list, and neither reads `replayTrade`. A query-count proof (I8P.4) shows that the replay reads each Instrument's series once, and that the Detail's own reads are unchanged. Tech debt item 22 is not triggered. |
 | A220 | **No schema, store, fixture or migration change.** The new view fields are additive, and `compareSnapshot` compares only the keys a snapshot holds (section 1.5, shapes), so no frozen view changes. A changed one stops the task. |
@@ -68,7 +71,7 @@ The graph (section 4) has **26 tasks**, more than 25. Five of the decisions need
 - **D08P-2** covers `ReadSeries`, the `replay` slice, `replayTrade`, Price History, the Journal session cards, the change line, the Today comparison, and the full structural tail.
 - **What D08P-1 leaves unfinished:** the four history parts. Nothing is released for real use between the parts.
 
-**Recommendation: keep one breakdown (P101).** In the swarm, the history lane already runs beside the UI lanes, so a split would add a gate (a full run and a critic) to the middle of the critical path, and build the Journal drawer twice. The checkpoint critic (T8P.23) gives the same early browser look.
+**Agreed 2026-11-12: keep one breakdown (P101).** In the swarm, the history lane already runs beside the UI lanes, so a split would add a gate (a full run and a critic) to the middle of the critical path, and build the Journal drawer twice. The checkpoint critic (T8P.23) gives the same early browser look.
 
 ### 1.5 Lookups (drafting guide)
 
@@ -84,7 +87,7 @@ All run on `claude-opus-5.5-pre-d8p` plus the prototype additions. The full inve
 | Rail: Needs you (Settlement Due panel, Record expiration, "Reflection owed", Reflect now, Decline) | d5/detail-debt, d5/faults, d5/kill-offline, d5/responsive, d5/review-debt :21, d6/update :36–37, d6/runtime-failure :49–51, d7/settlement-due :31–37, :54, d7/runtime-failure, d7/responsive-a11y :99–133, d7/kill, d7/offline, d7/no-save |
 | Today (Valuation's Mark and provenance, "At … close", "At entry") | d4/expected-mark, d4/breach-overrun :24, :47–56, d4/correct-mark :22–24, d4/responsive-a11y :171–225, d4/runtime-failure :59, d7p/layout :94–111 |
 | Position (Position, Open Lots, Open P&L, Realized to date, Lot Matches, Fee reconciliation, Executions, Settlement) | d2/offline :41–44, d2/open-position :40–45, d2/ui-alignment :986–1066, :1214, :1678, :1849, d2/durability :44, d4/runtime-failure :58, d6/exit :33–35, d6/exit-requirements :92–93, d6/kill, d6/offline, d6/responsive-a11y :195–329, d6/runtime-failure :60–63, d7/short-put :29–55, d7/plan-open :34, d7p/layout :98–111 |
-| Plan and entry (Plan, Plan Baseline, Entry Quality, 1R, the Summary's duplicates) | d1/plan :24, d1/responsive-a11y :179, d2/offline :34, :45, d2/open-position :46–113, d2/narrow :80, d2/runtime-failure :39, d2/ui-alignment :1100–1176, :1336–1369, :1736–1757, d7/plan-open :7, :13, :35, d7/confirm-option-plan :15, d7s/plan :14–26, d7s/entry-beyond-stop :20–21, d7s/responsive-a11y :111 |
+| Plan and Risk (Plan, Plan Baseline, Entry Quality, 1R, the Summary's duplicates) | d1/plan :24, d1/responsive-a11y :179, d2/offline :34, :45, d2/open-position :46–113, d2/narrow :80, d2/runtime-failure :39, d2/ui-alignment :1100–1176, :1336–1369, :1736–1757, d7/plan-open :7, :13, :35, d7/confirm-option-plan :15, d7s/plan :14–26, d7s/entry-beyond-stop :20–21, d7s/responsive-a11y :111 |
 | Journal (Plan Reflection, Journal items, debts on the card) | d1/plan :25, :52–53, d1/recovery-only :25, d2/durability :45, d2/open-position :85–87, d2/ui-alignment :1181–1207, :1293–1316, :1780–1801 |
 | Payoff ("Planned/Current Expiration Payoff", "Value at expiration at … latest close") | d7/plan-open :14, :36, d7/confirm-option-plan :16, d7/payoff-chart-layout, d7/responsive-a11y :17–157, d7/settlement-due :50, d7/runtime-failure :28–33 |
 | Footer (Planned-Leg Fulfillment, Deviations) | d2/open-position :81, :84, :105, d2/responsive-a11y :121, d2/ui-alignment :1766–1779, d4/breach-overrun :31 |
@@ -140,13 +143,15 @@ tools: verify-fixtures.ts:46-48 and :134-137 read conditions[].id/result and the
 
 T8P.2 moves them to `src/ui/cockpit/styles/legacy-detail.css`. Selectors shared with other screens stay in `app.css`: `ul.executions`, `.execution-price`, `.chart-scroll`, `.payoff-chart`, `.second-line`, `.nowrap`, `.table-scroll` and `table.trades`.
 
-### 1.6 Approved words (to be approved)
+### 1.6 Approved words
+
+**Approved by the user on 2026-11-12** (decision 110): W2 to W20 as proposed, with W17's recommended choice (keep "Realized to date" and "Incurred fees"). W1 is approved with its third tab renamed **"Plan and Risk"**, the user's words, in place of the proposed "Plan and entry"; the prototype's C. Cockpit tab is renamed to match. Task briefs name the rows they use, and words no row covers still need approval.
 
 Examples use the prototype's NVDA Long Call, D7S's O-S2 (MNO, Cash-Secured Put) and O-C3 (section 5). Conventions C1 to C8 of the D7 approved words apply. An option price has a "$" and two decimals; an Underlying price keeps C3 ("140.00"). Dates use the existing `shortDate` ("Thu Nov 12"). `verify:wording` still applies. Moved content keeps its words (P96).
 
 | # | Where | Proposed words |
 |---|---|---|
-| W1 | Drawer tab list (label "Detail"); rail landmark | Tabs "Today", "Position", "Plan and entry", "Price History", "Journal", "Payoff", in that order, with only the drawers a state shows (A217). Rail landmark: "State of play". A tab may carry a count: Price History the number of sessions without Marks ("2"), and Journal the number owed ("1 owed"). |
+| W1 | Drawer tab list (label "Detail"); rail landmark | Tabs "Today", "Position", "Plan and Risk", "Price History", "Journal", "Payoff", in that order, with only the drawers a state shows (A217). Rail landmark: "State of play". A tab may carry a count: Price History the number of sessions without Marks ("2"), and Journal the number owed ("1 owed"). |
 | W2 | Identity card | Heading: the symbol, "NVDA". Badge: "<Strategy>, <Lifecycle>" ("Long Call, Open"; "Long Stock, Closed"). Lines: "Strike 150"; "Expires Fri 18 Dec 2026 (36 days)", with "(1 day)" and "(today)"; "Expired Fri 20 Nov 2026"; then the account as the current Detail names it. The actions "Record entry" and "Record exit" keep their words. |
 | W3 | P&L card, Open | Accessible name "Trade P&L". Figure "$188.05". Line "+$169.35 since Mon Oct 12". Then "1 of 2 contracts open" (stock: "100 of 100 shares open"; one: "1 of 1 contract open"). With an unavailable Trade P&L, the reason at the `figure` length and no change line. Before any Marks: "—" and "Trade P&L once today's session ends". |
 | W4 | P&L card, other states | Planned: "—", "Trade P&L once the entry is recorded and marked", "0 of 2 contracts open". Settlement Due: "Settlement Due: NVDA 18 Dec 2026 150 Call", then "Trade P&L once the expiration is recorded". Closed: the realized P&L, "+1.10R realized, final", then the Result rows with their existing labels (Terminal Disposition, Option Disposition Timing, Close Reason). Incoherent: "Not available", then "Trade P&L". |
@@ -221,7 +226,7 @@ These are estimates. A behavioral task takes about 35 minutes in `tdd-task`, ocr
 | Plan | Estimate | Where the time goes |
 |---|---|---|
 | **Serial** (decision 100) | About 26 tasks × 52 minutes, plus 3 critics: **about 24 hours** | Every task waits for the one before it, and ends with its own browser run. |
-| **Swarm** (section 4.2) | **About 8.5 to 10 hours** | **Wave 0:** about 2.5 h; T8P.1 ∥ T8P.2, then T8P.3 ∥ T8P.4, then T8P.5. **Wave 1:** about 3 h; 16 tasks at up to 6 at once, with the backend chain T8P.8 ∥ T8P.6 → T8P.7 → T8P.10 → T8P.11 as its longest lane. Merge runs overlap the lanes' work. **Wave 2:** about 3.5 h; the wiring, the checkpoint critic, the two suites at once, then the gate. |
+| **Swarm** (section 4.2) | **About 9 to 10.5 hours** | **Wave 0:** about 3 h; T8P.1, then T8P.2, then T8P.3 ∥ T8P.4, then T8P.5. **Wave 1:** about 3 h; 16 tasks at up to 6 at once, with the backend chain T8P.8 ∥ T8P.6 → T8P.7 → T8P.10 → T8P.11 as its longest lane. Merge runs overlap the lanes' work. **Wave 2:** about 3.5 h; the wiring, the checkpoint critic, the two suites at once, then the gate. |
 
 The gain, about 2.5 times, comes from two places. Wave 1's 16 tasks run in parallel. And the per-task browser run (about 8 minutes, 16 times) is replaced by one run per merge batch.
 
@@ -252,7 +257,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T8P.15 | Rail: Needs you | 1, R2 | B | T8P.14 (lane order) | `NeedsYou`, `needs-you.props` | none |
 | T8P.16 | Today drawer | 1, D1 | B | T8P.5 | `TodayDrawer`, `today.props` | none |
 | T8P.17 | Position drawer | 1, D2 | B | T8P.5 | `PositionDrawer`, `position.props` | none |
-| T8P.18 | Plan and entry drawer, and the footer | 1, D3 | B | T8P.5 | `PlanEntryDrawer`, `DetailFooter` | none |
+| T8P.18 | Plan and Risk drawer, and the footer | 1, D3 | B | T8P.5 | `PlanRiskDrawer`, `DetailFooter` | none |
 | T8P.19 | Payoff drawer: one chart (tech debt item 21) | 1, D4 | B | T8P.5 | `PayoffDrawer` | none |
 | T8P.20 | Price History drawer | 1, D5 | B | T8P.5 | `PriceHistory`, `price-history.props` | none |
 | T8P.21 | Journal drawer: session cards | 1, D6 | B | T8P.5 | `JournalCards`, `journal-cards` | none |
@@ -263,7 +268,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T8P.26 | Independent browser-critic gate | 2 | S | all | fresh critic report | none |
 
 **Run order.**
-- **Wave 0:** T8P.1 ∥ T8P.2, then T8P.3 ∥ T8P.4, then T8P.5.
+- **Wave 0:** T8P.1 alone and first, in the main worktree. The pre-commit hook runs `eslint .`, and until T8P.1's ignore lands, any worktree under `.claude/worktrees/` would be linted with every commit. Then T8P.2, then T8P.3 ∥ T8P.4, then T8P.5. (Corrected in revision 84 before commit; the draft had T8P.1 ∥ T8P.2.)
 - **Wave 1:** every lane at once, up to 6 agents, each lane in its listed order.
   - Backend lanes start first, since they are the longest: BV starts T8P.9 at once and T8P.10 when T8P.7 and T8P.8 are merged.
   - The UI lanes fill the remaining slots in this order: R2, R1, D2, D1, D4, D3, D5, D6.
@@ -279,17 +284,24 @@ A lane is one git worktree (`.claude/worktrees/d08p-<lane>`) on one branch (`d08
 |---|---|---|
 | BA | T8P.6, T8P.7 | `src/domain/trade-analysis/` |
 | BM | T8P.8 | `src/modules/market-data/` |
-| BV | T8P.9, T8P.10, T8P.11 | `src/domain/instrument/`; `src/coordinators/trade-views/`, `trade-workflows/`, `workspace/`; `src/app/`; `src/ui/screens/confirmed-detail.ts`; `tests/integration/` support files it extends |
+| BV | T8P.9, T8P.10, T8P.11 | `package.json`'s `test:e2e:2` (T8P.9); `e2e/d8p/planned.spec.ts`; `src/domain/instrument/`; `src/coordinators/trade-views/`, `trade-workflows/`, `workspace/`; `src/app/`; `src/ui/screens/confirmed-detail.ts`; `tests/integration/` support files it extends |
 | R1 | T8P.12, T8P.13 | `src/ui/cockpit/rail/identity*`, `rail/pnl*`, `styles/rail-a.css`; `e2e/support/detail/rail-a.ts` |
 | R2 | T8P.14, T8P.15 | `src/ui/cockpit/rail/conditions*`, `rail/needs-you*`, `styles/rail-b.css`; `e2e/support/detail/rail-b.ts` |
 | D1 | T8P.16 | `src/ui/cockpit/drawers/today*`, `track*`, `styles/today.css`; `e2e/support/detail/today.ts` |
 | D2 | T8P.17 | `drawers/position*`, `styles/position.css`; `e2e/support/detail/position.ts` |
-| D3 | T8P.18 | `drawers/plan-entry*`, `footer*`, `styles/plan.css`; `e2e/support/detail/plan.ts` |
+| D3 | T8P.18 | `drawers/plan-risk*`, `footer*`, `styles/plan.css`; `e2e/support/detail/plan.ts` |
 | D4 | T8P.19 | `drawers/payoff*`, `styles/payoff.css`; `src/ui/screens/payoff-text.ts`, `CardFigures.tsx:94` (W18); `e2e/support/detail/payoff.ts`, `e2e/d7/support.ts` payoff helpers |
 | D5 | T8P.20 | `drawers/price-history*`, `styles/history.css` |
 | D6 | T8P.21 | `drawers/journal*`, `journal-cards.ts`, `styles/journal.css`; `e2e/support/detail/journal.ts` |
 
-T8P.5 creates every path above as the current section re-exported behind its future name, with its own test file and empty stylesheet. So a lane replaces the content behind a path, and never edits the shell, `src/ui/cockpit/index.css` or a shared helper index. Specs whose expected values change are listed per task in section 1.5. Where two lanes change the same spec file, they change different lines, which git merges. The main session resolves the rare overlap at merge.
+T8P.5 creates every path above as the current section re-exported behind its future name, with its own test file and empty stylesheet. So a lane replaces the content behind a path, and never edits the shell, `src/ui/cockpit/index.css` or a shared helper index.
+
+**Three old sections give figures to several lanes:**
+- the Summary card, to the identity, P&L and Conditions cards, Plan and Risk, and Position;
+- Valuation, to the P&L card, Position and Today;
+- Risk and reward, to the Conditions card, Plan and Risk, and Today.
+
+T8P.5 renders these three as legacy blocks beside the new components: the Summary card in the rail, and the other two in the Today drawer. No wave-1 task deletes them, so a figure never disappears between two lanes' merges. **T8P.22 retires all three** and their CSS, and moves any expectation still reading them to the figure's one place. Specs whose expected values change are listed per task in section 1.5. Where two lanes change the same spec file, they change different lines, which git merges. The main session resolves the rare overlap at merge.
 
 ---
 
@@ -327,10 +339,10 @@ Seam: `TradeDetail` against the facade double. New file `src/ui/screens/trade-de
 
 ```text
 describe("Trade Detail cockpit (W1, A217)")
-  it should show an Open Trade's rail with the identity, P&L, Conditions and Needs you cards beside a Detail tab list of Today, Position, Plan and entry, Price History, Journal and Payoff in that order, with Today selected
-  it should show only Plan and entry, Journal and Payoff on a Planned Detail, with Plan and entry selected
+  it should show an Open Trade's rail with the identity, P&L, Conditions and Needs you cards beside a Detail tab list of Today, Position, Plan and Risk, Price History, Journal and Payoff in that order, with Today selected
+  it should show only Plan and Risk, Journal and Payoff on a Planned Detail, with Plan and Risk selected
   it should leave out Today on a Closed or Settlement Due Detail, and select Position
-  it should show the Facts can't be replayed region across the page above the rail on an incoherent Detail, with only Position, Plan and entry and Journal
+  it should show the Facts can't be replayed region across the page above the rail on an incoherent Detail, with only Position, Plan and Risk and Journal
   it should move between the shown drawers with the arrow keys, Home and End, and keep focus on the selected tab
 ```
 
@@ -374,7 +386,7 @@ describe("ReadSeries (A210, AC-MARK-004)")
 
 ### T8P.9 Expiration line: days, and a just-confirmed Plan
 
-Seams: `getTradeDetail`, `confirmPlan`, and `confirmedDetail`. A208, A209. Tech debt item 23's browser case (B8P.3) is written first and must fail.
+Seams: `getTradeDetail`, `confirmPlan`, and `confirmedDetail`. A208, A209. Tech debt item 23's browser case (B8P.3) is written first and must fail. It is the first D08P spec (`e2e/d8p/planned.spec.ts`), so this task also adds `e2e/d8p` to `test:e2e:2`.
 
 ```text
 describe("expiration line: days (A208)")
@@ -480,12 +492,12 @@ describe("Position drawer (P96)")
   it should show "Settlement Due" as the Open P&L on a Settlement Due Detail
 ```
 
-### T8P.18 Plan and entry drawer, and the footer
+### T8P.18 Plan and Risk drawer, and the footer
 
-Seam: `PlanEntryDrawer` and `DetailFooter`. W16, P96.
+Seam: `PlanRiskDrawer` and `DetailFooter`. W16, P96.
 
 ```text
-describe("Plan and entry drawer and footer (P96)")
+describe("Plan and Risk drawer and footer (P96)")
   it should show the Plan, the Plan Baseline with 1R and the original reward once, and Entry Quality, with no Summary duplicate on the page
   it should show the entry as not entered on a Planned Detail
   it should show Planned-Leg Fulfillment and Deviations below the drawers
@@ -540,7 +552,10 @@ describe("Trade Detail: the replay read (P95)")
   it should not read replayTrade for a Planned or incoherent Detail
   it should show the rest of the cockpit while the replay is pending
   it should show a saved reflection on its card without reading again
+  it should show no Summary card, Valuation section or Risk and reward section, with each of their figures in its one place
 ```
+
+The last case retires the three legacy blocks (section 4.2).
 
 ---
 
@@ -548,14 +563,14 @@ describe("Trade Detail: the replay read (P95)")
 
 | Task | Exact verification | Expected result | Notes |
 |---|---|---|---|
-| T8P.1 Swarm tooling | `tdd.sh` run twice for two task IDs; two concurrent `with-browser-lock.sh true` calls; `lane-setup.sh` on a scratch worktree; `full-suite.sh <dir> <label> lane`; `npm run lint` with a scratch worktree under `.claude/worktrees/` | Rows land in `evidence/D08P/tdd-log/<task>.md`; the second lock waits for the first; the worktree has `node_modules` (an APFS clone, `cp -c`) and the hooks path set; the lane tier writes unit, integration and checks files; `lint` ignores the nested worktree. | Section 9. No product code. `tdd.sh` maps a task ID like `T8P.3` to `evidence/D08P`, as it maps `T2.2` to `evidence/D02`. |
+| T8P.1 Swarm tooling | `tdd.sh` run twice for two task IDs; two concurrent `with-browser-lock.sh true` calls; `lane-setup.sh` on a scratch worktree; `full-suite.sh <dir> <label> lane`; `npm run lint` with a scratch worktree under `.claude/worktrees/` | Rows land in `evidence/D08P/tdd-log/<task>.md`; the second lock waits for the first; the worktree has `node_modules` (an APFS clone, `cp -c`) and the hooks path set; the lane tier writes unit, integration and checks files; `lint` ignores the nested worktree. | Section 9. No product code. It also applies section 9's text to `implementing.md`, `tdd-task.md` and `suite-runner.md` (decision 111). `tdd.sh` already maps `T8P.3` to `evidence/D08P`, and `full-suite.sh` maps `evidence/D08P` to `e2e/d8p`. The per-task logs stay in that folder. |
 | T8P.2 Split | `npm run typecheck`, `npm run lint`, `npm run lint:deps`; `npx vitest run src`; `.claude/scripts/it-titles.sh` before and after; full browser tier | The multiset of `it` titles is unchanged (77 plus 21, in per-section files); every unit and browser test passes unchanged; `app.css` loses only section 1.5's Detail-only selectors. `EXIT_ACTION` and `INCOHERENT_ENTRY_NOTE` move to `trade-detail/words.ts`. The task adds `it-titles.sh`, which lists every `it` title under `src/` sorted. |
 | T8P.3 Types and rule | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint` with and without a planted import | Types compile; the planted import fails `lint`; without it, `lint` exits 0. | `TradeReplayView`, `ReplaySession`, the props of section 4.2's components; `nearest?`, `days?`. |
 | T8P.4 Drawer reach | Full browser tier; `rg -c "openDrawer\|detail\." e2e` | Every case passes before the shell exists (`openDrawer` returns at once when there is no tab list), and every Detail read in section 1.5's reach table goes through `e2e/support/detail/*.ts`. | D5R's decision 65 rule: mechanical only, no expectation changes. |
 | T8P.11 Manifest | `npm run verify:capabilities` | The manifest lists `replayTrade` and equals the reachable operations. | |
 | T8P.23 Checkpoint critic | Fresh critic per section 8, flows C8P.1 to C8P.4 | A structured report. Defects become bug tasks before the tail. | P101. |
 | T8P.24 Node integration suite | `npm run test:integration`, then `.claude/scripts/acceptance-commands.sh plan/D08P-trade-detail-cockpit.md` | Every section 6.1 case of D1 to D08P passes; the script exits 0 for the Node rows. | |
-| T8P.25 Browser integration suite | Add `e2e/d8p` to `test:e2e:2` in `package.json`; `npm run test:e2e`; the acceptance script | Every section 6.2 case of D1 to D08P passes; the script exits 0 for every row. | No existing filter matches `e2e/d8p`. |
+| T8P.25 Browser integration suite | `npm run test:e2e`; the acceptance script | Every section 6.2 case of D1 to D08P passes; the script exits 0 for every row. | No existing filter matches `e2e/d8p`. T8P.9 adds it to `test:e2e:2` with the first D08P spec (B8P.3), so every merge run after T8P.9 includes D08P's specs. |
 | T8P.26 Browser critic | Fresh critic per section 8 | Every flow passes. | Deliverable gate. |
 
 ### 6.3 Moving the earlier cases (the D5R rule)
@@ -616,9 +631,9 @@ It runs `npm run build && npm run preview` (port 5175, under the lock) itself, a
 
 ---
 
-## 9. Process amendments for the swarm (proposed text, not yet applied)
+## 9. Process amendments for the swarm (decision 111)
 
-Proposed as **decision 111**, applying only to deliverables whose breakdown has a lane column. Each paragraph names the protection it keeps.
+Agreed as **decision 111** (revision 84). It applies only to deliverables whose breakdown has a lane column. Decision 100's amendment note is in the plan. **T8P.1 applies the rest** to the files named, together with the tooling they describe, so each file's text is true when it lands. Until T8P.1 merges, wave 0 runs as the D08P implementing handoff says. Each paragraph names the protection it keeps.
 
 **Decision 100, amended.** Insert after "The next task is the first row not marked 'Done'":
 > In a swarm deliverable, the Progress table also has Wave and Lane columns. Tasks run wave by wave. Within a wave, every lane runs at once, up to the breakdown's agent cap, and each lane runs its own rows one at a time in order. A task starts when every task it is blocked by is merged into the deliverable branch. The next task of a lane is its first row not marked "Done". Only the main session edits the table.
@@ -706,15 +721,17 @@ A Price History-style grid on the daily Review page, for entering several sessio
 
 ---
 
-## 12. Open questions for the user
+## 12. Open questions (resolved 2026-11-12)
 
-1. P94 and P95: option A, as a separate `replayTrade` read?
-2. P96 and W17: moved content keeps its words?
-3. P98: assign a second port for parallel browser stages, or keep one port behind the lock?
-4. P99: Price History unpaged, including the latest session?
-5. A223: the per-condition value at expiration and the distance on the Underlying move to the Today drawer?
+All resolved as recommended when the user approved the plan (decision 110):
 
-Plus the words W1 to W20, and P101 (one breakdown or the split).
+1. P94 and P95: option A, with `replayTrade` as a separate read.
+2. P96 and W17: moved content keeps its words, including "Realized to date" and "Incurred fees".
+3. P98: one port, 5175, behind the lock; no second port.
+4. P99: Price History unpaged, including the latest session.
+5. A223: the per-condition value at expiration and the distance on the Underlying move to the Today drawer.
+
+The words W1 to W20 are approved (W1 with "Plan and Risk"), and P101 keeps one breakdown.
 
 ---
 
@@ -748,7 +765,7 @@ Each critic defect is first reproduced by a failing test.
 
 ## 15. Progress
 
-Status, not plan: editing this section is not a plan revision (decision 100, amended by decision 111 once agreed). The main session alone edits it.
+Status, not plan: editing this section is not a plan revision (decision 100, amended by decision 111). The main session alone edits it.
 
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
