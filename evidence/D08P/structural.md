@@ -839,3 +839,21 @@ Bug tasks:
 - **T8P.14-B1** (finding 1). An Unavailable condition that awaits a close after earlier Marks shows its reason on row 1, at the `label` length (W5), with Worst case and Max reward beneath. W6's "Distances to each condition and the worst case arrive with the first Marks." stays only for a Trade with no Mark yet. The signal must come from the view's data (for example its Mark provenance or dated line), not from branching on a reason code outside `calculation-words.ts`. If the view has none, the task stops. Case: *it should show the reason on row 1, not the first-Marks note, when shares were added after an earlier Mark.*
 - **T8P.14-B2** (finding 2). Case: *it should show any other Unavailable reason at the label length on row 1.*
 - **T8P.14-B3** (finding 3). Case: *it should choose the subject wording without a nested conditional.* A refactor, kept green.
+
+### T8P.8-B3 (`18496f2f`)
+
+`series` now awaits `Promise.all([scanning, reading])`: one snapshot, with case 4's request list unchanged. Case: "should reject a series once, with no unhandled rejection, when its snapshot read fails". Red: `AssertionError: expected [ Error: snapshot read failed ] to deeply equal []`. The agent found no other sequential awaits of two promises from one batch in the ReadSeries work. Lane tier (`94470d28`): 1547 unit, 218 integration, 14 of 14 checks; `run-complete.sh`: run complete. Round 3 ocr on `ee47e047..18496f2f` was dispatched.
+
+## T8P.17 Position drawer (lane `d08p-d2`): ocr review
+
+- Product code (`12a396c0..48ae877b`): session `d91ec51b-eab2-4030-973e-756aa0794110`, 5 files reviewed (`position.tsx`, `position.props.ts`, `position.types.ts`, `position.css`, `e2e/support/detail/position.ts`), 14 excluded, 0 comments.
+- Relocated (`position.props.test.tsx`, the removed `position.test.tsx`, the seven flipped specs, scratch base `ffedfa59`): session `6b9b82f0-538b-4d38-9cdd-6c2767054323`, 9 files reviewed, 1 comment.
+- Model gpt-6.1-sol. Raw output: [ocr/T8P.17-12a396c0..48ae877b.json](ocr/T8P.17-12a396c0..48ae877b.json) and [-relocated](ocr/T8P.17-12a396c0..48ae877b-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | relocated `drawers/position.props.tsx:11` | The `./position.tsx` and `test-support.ts` imports don't resolve. | Wrong: a relocation artifact. The real file's imports resolve. |
+
+**No findings.** The reviewer briefly detached the lane at `48ae877b` by mistake and switched straight back; the lane's branch, HEAD and tree were unchanged.
+
+**Merge.** Rebased onto `claude-opus-5.5` with no conflict. The rebase brought in T8P.6's `evaluate.ts`, so the lane tier is rerun (`T8P.17-rebase`) before the fast-forward. Rebased hashes: `1c7b346c` (task), `4b4e336c` (lane tier), `96723384` (follow-up), `f2839a35` (lane tier rerun).

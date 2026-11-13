@@ -1,0 +1,201 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 46636,
+    "input_tokens": 45460,
+    "output_tokens": 1176,
+    "cache_read_tokens": 11008,
+    "elapsed": "45s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Position drawer implementation, props, types, styling, and end-to-end support",
+      "files": [
+        "e2e/support/detail/position.ts",
+        "src/ui/cockpit/drawers/position.props.ts",
+        "src/ui/cockpit/drawers/position.tsx",
+        "src/ui/cockpit/drawers/position.types.ts",
+        "src/ui/cockpit/styles/position.css"
+      ]
+    }
+  ],
+  "session_id": "d91ec51b-eab2-4030-973e-756aa0794110",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d91ec51b-eab2-4030-973e-756aa0794110",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "12a396c0",
+      "requested_head": "48ae877b",
+      "resolved_base": "12a396c05b2226214c0f559d8c8a1702ae19242e",
+      "resolved_head": "48ae877b97d65261012ed0a6d74c5efde946c1cf",
+      "exact_range": "12a396c05b2226214c0f559d8c8a1702ae19242e..48ae877b97d65261012ed0a6d74c5efde946c1cf",
+      "source_artifact_sha256": "63418e904eb2c010fd79e3900c08fbadacc0dfb55ecdedb8f6ec2169fe239f8f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3917e385ef01329c4cd042375e83ba722339dd0b5eda8d1922246dc18de68add",
+          "path": "src/ui/cockpit/drawers/position.types.ts",
+          "fingerprint": "29ab232c0100f8752a91a689349c6ade12e82797744ff771ed2bf0054020856e"
+        },
+        {
+          "item_id": "561deb9d8ecb7ad2933c33220cbefadd0098dc96d5641d2649a7b0fb8f1e06ef",
+          "path": "src/ui/cockpit/styles/position.css",
+          "fingerprint": "a4dcba289cad243fca00e553c09cfcb0f652bc860d980f42b67ce53308c830f0"
+        },
+        {
+          "item_id": "679445a0557445b65b921b3ccaa3894747347c18828325e8ec4fb513c5c7d978",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "e52b6401ae8480a5f172f629799e27a235ca98a020331c4c6dcef2833db05754"
+        },
+        {
+          "item_id": "9ddb50031098caff0d62b2ffe903e3253aaeeed6f03a73ad7fa26d46ac9eb51c",
+          "path": "e2e/support/detail/position.ts",
+          "fingerprint": "bb00e37cc90c134754c6d0c8b274dd2682bc32d0c2750d016ee8ecf082ba54a5"
+        },
+        {
+          "item_id": "bba478d4b8441c7fba64c60c2f0c6d62244b134e10a4fb5ecfffe5de5ed7c75b",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "544fe523ad78de2190156777c49dcc3e8040a3265dda6d0f34e80ce45a3e4a85"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3917e385ef01329c4cd042375e83ba722339dd0b5eda8d1922246dc18de68add",
+          "path": "src/ui/cockpit/drawers/position.types.ts",
+          "fingerprint": "29ab232c0100f8752a91a689349c6ade12e82797744ff771ed2bf0054020856e"
+        },
+        {
+          "item_id": "561deb9d8ecb7ad2933c33220cbefadd0098dc96d5641d2649a7b0fb8f1e06ef",
+          "path": "src/ui/cockpit/styles/position.css",
+          "fingerprint": "a4dcba289cad243fca00e553c09cfcb0f652bc860d980f42b67ce53308c830f0"
+        },
+        {
+          "item_id": "679445a0557445b65b921b3ccaa3894747347c18828325e8ec4fb513c5c7d978",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "e52b6401ae8480a5f172f629799e27a235ca98a020331c4c6dcef2833db05754"
+        },
+        {
+          "item_id": "9ddb50031098caff0d62b2ffe903e3253aaeeed6f03a73ad7fa26d46ac9eb51c",
+          "path": "e2e/support/detail/position.ts",
+          "fingerprint": "bb00e37cc90c134754c6d0c8b274dd2682bc32d0c2750d016ee8ecf082ba54a5"
+        },
+        {
+          "item_id": "bba478d4b8441c7fba64c60c2f0c6d62244b134e10a4fb5ecfffe5de5ed7c75b",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "544fe523ad78de2190156777c49dcc3e8040a3265dda6d0f34e80ce45a3e4a85"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0bda436f13a2b92f0cdee7d41d41fa8687693bec8b0d244eb856e393549caf97",
+          "path": "evidence/D08P/suite-runs/T8P.17-lane.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "14bbb5d540dd3b0f918ad101ae0e5cc75048ca497787b7f41a6281d9163897ee",
+          "path": "src/ui/cockpit/drawers/position.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3210d5c76af702a0974da6e745398826ad17f55da1686fc845acff62e2bebd34",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "399c1bd8718b13f42c817634aa35309ba6340423b7940a8f1cee6daf4f86fc2c",
+          "path": "e2e/d7/short-put.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "49cc2e6f6ab01d867bad1de63f93a106a1b2549ae0d7abbf70c9ff8631a81f51",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6480270cf33aa59065541f8f84b95d1d196f4bc589768dfa1f8b004a1fc5c531",
+          "path": "e2e/d6/exit.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "64f78b00fc752131b7bb3fe66eda99ba271ecf4aa0c63e716f4499583fd88a27",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "688fa38ced5ca45fdd508afa890bf51d3da9d44a1faa6f80b1ab9a0a5dcb14e4",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "7fcc97dc2a93c9cac5424855e8ffe82d3712992cc3e24558956b9a15f73839fa",
+          "path": "evidence/D08P/tdd-log/T8P.17.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "81f7c4d75d9620e39ee26864c2ab29b3c517a962c9ee4eef3152bd709693cb21",
+          "path": "e2e/d7p/layout.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "954b360026e2afd868e9700e9455cc015f099b5eeb7f5fe41fbb8b3910694f8f",
+          "path": "evidence/D08P/suite-runs/T8P.17-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "9d1d405101940e4d159145f96077229f7f8f5b1b408a8889091286d87bd29d71",
+          "path": "evidence/D08P/suite-runs/T8P.17-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "a3cd465081b998eed2bd7a4730f0473873d08843fa025cd772d1f24cd6bc92fa",
+          "path": "src/ui/cockpit/drawers/position.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e6084913df9746bdab1c71749d8406dd08a1df814c302129293cedba59bc8383",
+          "path": "evidence/D08P/suite-runs/T8P.17-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 44827
+  }
+}
