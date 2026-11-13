@@ -1,0 +1,842 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 61 selected item(s).",
+  "summary": {
+    "files_reviewed": 61,
+    "comments": 6,
+    "total_tokens": 1159691,
+    "input_tokens": 1146128,
+    "output_tokens": 13563,
+    "cache_read_tokens": 104832,
+    "elapsed": "2m24s"
+  },
+  "tool_calls": {
+    "total": 169,
+    "by_tool": {
+      "code_comment": 4,
+      "code_search": 23,
+      "file_find": 3,
+      "file_read": 136,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d08p/d5/support.ts",
+      "content": "This nests a second conditional expression inside the first, contrary to the checklist's prohibition on nested ternaries. Use explicit if/else branches for the card, Detail, and page cases so the selector scope is clear.",
+      "suggestion_code": "  let form: Locator;\n  if (card !== undefined) {\n    form = await debtFormOf(page, card);\n  } else if (where === 'Detail') {\n    form = detail.debtForm(page);\n  } else {\n    form = debtForm(page);\n  }",
+      "existing_code": "  const form = card !== undefined ? await debtFormOf(page, card) : where === 'Detail' ? detail.debtForm(page) : debtForm(page);",
+      "start_line": 68,
+      "end_line": 68,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/itg/d08p/d2/narrow.ts",
+      "content": "This scenario opens only Plan and Risk before measuring every Detail table, including Open Lots in Position. Once drawers exist, Position's tables will either be absent (so the loop silently skips them) or hidden (so their zero-sized geometry passes). Open Position at each width and assert its tables are visible before measuring them; measure other table-bearing drawers separately to preserve the existing overflow coverage.",
+      "existing_code": "      await expectReflowed(page, `resolved Open Detail at ${width}`, detail.TABLES);",
+      "start_line": 86,
+      "end_line": 86,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d08p/d2/ui-alignment.ts",
+      "content": "Passing detail.CARDS only scopes the card lookup: lefts still reads the first page-wide tablist and heading. In particular, the Detail tablist that openDrawer supports will add a `tablist` key and fail this exact-key assertion even with correct layout. Move the Detail geometry reads into the scoped helper layer and distinguish drawer navigation from the Trades lifecycle tabs, rather than retaining the assumption that Detail has no tablist.",
+      "existing_code": "    const openDetail = await lefts(detail.CARDS);\n    expect(Object.keys(openDetail).sort(), 'Open Detail elements').toEqual(['card', 'h1']);",
+      "start_line": 378,
+      "end_line": 379,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d08p/support/detail/position.ts",
+      "content": "Scope this value to the Valuation card rather than the entire Detail. DatedSection also renders ValuationFigures, including another `Realized to date` term, whenever a dated line is present. In that state this locator resolves to two `dd` elements and the single-element assertions in the exit suites fail in strict mode. Using `valueIn(regionOf(page, 'Valuation'), 'Realized to date')` also satisfies the required card-scoping contract.",
+      "suggestion_code": "export const realizedToDate = (page: Page): Locator =\u003e valueIn(regionOf(page, 'Valuation'), 'Realized to date');",
+      "existing_code": "export const realizedToDate = (page: Page): Locator =\u003e valueIn(detailRoot(page), 'Realized to date');",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d08p/support/detail/index.ts",
+      "content": "Wait for the Detail root to be attached before checking whether it has tabs. `count()` does not auto-wait, and several callers invoke this immediately after `page.goto()` or `page.reload()`, while TradeDetail initially renders a loading state without `.trade-detail`. Once the drawer shell exists, this can return during loading instead of selecting the requested drawer. Waiting for the root first still allows the current tabless layout to return without a click.",
+      "existing_code": "  if ((await tabs.count()) === 0) return;",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d08p/d2/ui-alignment.ts",
+      "content": "This still measures all Detail definition lists together rather than reading each card in its active drawer. In the capped-row test, only Plan and Risk or Position is opened at a time: lists in other drawers will either disappear from this query or return zero-sized rectangles, so oversized rows can pass unnoticed (and the aggregate row-count assertion can change with drawer mounting). Move these measurements into card-scoped support helpers and open the corresponding drawer before measuring each set of rows, preserving the existing width assertions.",
+      "existing_code": "  detail.root(page).locator('dl:not(.answers)').evaluateAll((lists) =\u003e",
+      "start_line": 1350,
+      "end_line": 1350,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D1 planning, recovery, and accessibility integration",
+      "files": [
+        "src/itg/d08p/d1/plan.ts",
+        "src/itg/d08p/d1/recovery-only.ts",
+        "src/itg/d08p/d1/responsive-a11y.ts",
+        "src/itg/d08p/d1/support.ts"
+      ]
+    },
+    {
+      "label": "D2 position opening, persistence, and UI integration",
+      "files": [
+        "src/itg/d08p/d2/after-save.ts",
+        "src/itg/d08p/d2/durability.ts",
+        "src/itg/d08p/d2/integrity.ts",
+        "src/itg/d08p/d2/narrow.ts",
+        "src/itg/d08p/d2/offline.ts",
+        "src/itg/d08p/d2/open-position.ts",
+        "src/itg/d08p/d2/responsive-a11y.ts",
+        "src/itg/d08p/d2/runtime-failure.ts",
+        "src/itg/d08p/d2/support.ts",
+        "src/itg/d08p/d2/ui-alignment.ts"
+      ]
+    },
+    {
+      "label": "D4 mark validation and breach handling integration",
+      "files": [
+        "src/itg/d08p/d4/breach-overrun.ts",
+        "src/itg/d08p/d4/correct-mark.ts",
+        "src/itg/d08p/d4/expected-mark.ts",
+        "src/itg/d08p/d4/responsive-a11y.ts",
+        "src/itg/d08p/d4/runtime-failure.ts",
+        "src/itg/d08p/d4/support.ts"
+      ]
+    },
+    {
+      "label": "D5 debt detail, review, and fault handling integration",
+      "files": [
+        "src/itg/d08p/d5/detail-debt.ts",
+        "src/itg/d08p/d5/faults.ts",
+        "src/itg/d08p/d5/kill-offline.ts",
+        "src/itg/d08p/d5/responsive.ts",
+        "src/itg/d08p/d5/review-debt.ts",
+        "src/itg/d08p/d5/support.ts"
+      ]
+    },
+    {
+      "label": "D6 exit and close-review integration",
+      "files": [
+        "src/itg/d08p/d6/close-review.ts",
+        "src/itg/d08p/d6/exit-requirements.ts",
+        "src/itg/d08p/d6/exit.ts",
+        "src/itg/d08p/d6/kill.ts",
+        "src/itg/d08p/d6/offline.ts",
+        "src/itg/d08p/d6/responsive-a11y.ts",
+        "src/itg/d08p/d6/runtime-failure.ts",
+        "src/itg/d08p/d6/support.ts",
+        "src/itg/d08p/d6/update.ts"
+      ]
+    },
+    {
+      "label": "D7 option planning, payoff layout, and settlement integration",
+      "files": [
+        "src/itg/d08p/d7/confirm-option-plan.ts",
+        "src/itg/d08p/d7/payoff-chart-layout.ts",
+        "src/itg/d08p/d7/plan-open.ts",
+        "src/itg/d08p/d7/settlement-due.ts",
+        "src/itg/d08p/d7/short-put.ts",
+        "src/itg/d08p/d7/support.ts",
+        "src/itg/d08p/d7p/layout.ts"
+      ]
+    },
+    {
+      "label": "D7 recovery, save behavior, and accessibility integration",
+      "files": [
+        "src/itg/d08p/d7/kill.ts",
+        "src/itg/d08p/d7/no-save.ts",
+        "src/itg/d08p/d7/offline.ts",
+        "src/itg/d08p/d7/responsive-a11y.ts",
+        "src/itg/d08p/d7/runtime-failure.ts"
+      ]
+    },
+    {
+      "label": "D7S plan conditions and entry validation integration",
+      "files": [
+        "src/itg/d08p/d7s/conditions.ts",
+        "src/itg/d08p/d7s/entry-beyond-stop.ts",
+        "src/itg/d08p/d7s/plan.ts",
+        "src/itg/d08p/d7s/responsive-a11y.ts",
+        "src/itg/d08p/d7s/support.ts"
+      ]
+    },
+    {
+      "label": "Shared detail integration support and component helpers",
+      "files": [
+        "src/itg/d08p/support/detail/index.ts",
+        "src/itg/d08p/support/detail/journal.ts",
+        "src/itg/d08p/support/detail/payoff.ts",
+        "src/itg/d08p/support/detail/plan.ts",
+        "src/itg/d08p/support/detail/position.ts",
+        "src/itg/d08p/support/detail/rail-a.ts",
+        "src/itg/d08p/support/detail/rail-b.ts",
+        "src/itg/d08p/support/detail/scope.ts",
+        "src/itg/d08p/support/detail/today.ts"
+      ]
+    }
+  ],
+  "session_id": "d149a62d-d9cd-44b6-b701-308f5f0b5866",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d149a62d-d9cd-44b6-b701-308f5f0b5866",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "9da39cce7cd37d86e3a490de9a516429d3dbfbfb",
+      "resolved_base": "0023ceefa972bbf4aa74e4c2c101a0f9374050db",
+      "resolved_head": "9da39cce7cd37d86e3a490de9a516429d3dbfbfb",
+      "exact_range": "0023ceefa972bbf4aa74e4c2c101a0f9374050db..9da39cce7cd37d86e3a490de9a516429d3dbfbfb",
+      "source_artifact_sha256": "526d5672a8c3f79d27168da18deaaa877d65cd32729387db97338e49370e3ea4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0e58c0c15fd77ae07b921295c69999bdd257c40953f1fa2c874be90bedf1ad5c",
+          "path": "src/itg/d08p/d6/support.ts",
+          "fingerprint": "d7abdd1d39d48eaf20c6a56a11411c6bbe2dfe5f9bef4fc416253120f5d82fa8"
+        },
+        {
+          "item_id": "132343dfe99332cefe7939c522ed31edee07af6b5eaf02feed3931691dd480e7",
+          "path": "src/itg/d08p/d5/responsive.ts",
+          "fingerprint": "aef56971c11b6ed9a5c586c988eb8019c63bd421fdc031a169fee0d1df377600"
+        },
+        {
+          "item_id": "140426d3e27c8154a52898727df4b7c50f595dc17e3bd7e5b07fee27113122f8",
+          "path": "src/itg/d08p/d5/kill-offline.ts",
+          "fingerprint": "e9637db765f9390f51879fd2ec4dfb4b2fcdc62d5994496281f2fdfb2bd93193"
+        },
+        {
+          "item_id": "1413787c90ef626f884264e4ec5375646aa0644b852b806fc8555bbbeab60345",
+          "path": "src/itg/d08p/d7s/responsive-a11y.ts",
+          "fingerprint": "7531a4a89206a93300748c7f2559f0b647a510867b1208634509db55e809a23d"
+        },
+        {
+          "item_id": "1c349cb6459fc785b0aa4e85ef76e5d0da782fb780a819f2b20e60544c225fa9",
+          "path": "src/itg/d08p/d4/responsive-a11y.ts",
+          "fingerprint": "06f97268a62c93a00a50e533740b93f080a2e86741825982e516e4db7b53bf72"
+        },
+        {
+          "item_id": "21789cfa6b895db5d3388e712515d05d775e92b9396712762fb5b81592658437",
+          "path": "src/itg/d08p/d6/update.ts",
+          "fingerprint": "e654d0a7a19d0a2ade8770b76f1119b01671ec9a1a7cd670358a3abc4be313d0"
+        },
+        {
+          "item_id": "327eaa7f5eabb9240b0fab74d762c9447b7dd0957489d0f29616dca18daa5c25",
+          "path": "src/itg/d08p/d2/runtime-failure.ts",
+          "fingerprint": "ccff98a048cca0bcb1acff85c790e9c98493ec477b9ff53455a74917ddb5fff1"
+        },
+        {
+          "item_id": "32ee97bfefa41d3ba69f78080d423000c2ccb2d61610ec38c204a7da58ab1cd4",
+          "path": "src/itg/d08p/d4/support.ts",
+          "fingerprint": "3f836298fbc399a7a26f95a2a8291a17d15394c64d4c825720ca7ed761b5e87f"
+        },
+        {
+          "item_id": "33359bc0880bdcdb2a54a3b77097c4c3c5cac0778f563fd57da90644b20f8ff0",
+          "path": "src/itg/d08p/d7/confirm-option-plan.ts",
+          "fingerprint": "c0e65735f7c424efc7becf7cf619c38be5c572f07153a7d3536a4f4756751c54"
+        },
+        {
+          "item_id": "342a066b0d85a760958f650727353e848d1d7a8c41876ae5c460b23c61275d30",
+          "path": "src/itg/d08p/d2/narrow.ts",
+          "fingerprint": "09c87cbdc00a69323cd7190a9347c41c3ba5b1307f3c6d88a150cf73da65703f"
+        },
+        {
+          "item_id": "355ca10b998fe69efd3a392457df092ee008047ab431d7836e598529274ef027",
+          "path": "src/itg/d08p/d6/exit-requirements.ts",
+          "fingerprint": "24113047485ee5af272165fd09a23e1f7579b6e3515f262d8ad55a2a5bb75696"
+        },
+        {
+          "item_id": "3a29c7b9f139f7c32b7f4f9d31728570e1998197a5609dc50cb4e0f09fde9d99",
+          "path": "src/itg/d08p/d6/close-review.ts",
+          "fingerprint": "87fcfffefcce5877d1ce16347c85e42bfb5f882083469fb4603dc630deb0ced4"
+        },
+        {
+          "item_id": "3b1b2c9f2333ad24953b60f9fdf7d1743d5073d5cea171edc7e9f8be48e025ed",
+          "path": "src/itg/d08p/d7/kill.ts",
+          "fingerprint": "bb072d86c66788a8798e57835f93bf1335f8918288b1c3ba0e85218d755a6700"
+        },
+        {
+          "item_id": "3b518dc9c900bf543d41e57ed85b6bca9fdb4cbbba0a8651c86a424d403112c5",
+          "path": "src/itg/d08p/d2/support.ts",
+          "fingerprint": "1217360cd425412dedc20f4b7227324ad177cba2ad6cd2a5a0cf651785c94131"
+        },
+        {
+          "item_id": "3cec94f6ccfd9be72538a117cfddccd8d48d92f0b7f8e316158e20040f4f20fe",
+          "path": "src/itg/d08p/support/detail/index.ts",
+          "fingerprint": "93b51b553459a65cc99fc9beda7351e278213bf8dd40fb97a16e4dbc46909881"
+        },
+        {
+          "item_id": "40fa6a936b0b98e1f958f394a302bf920f7fc2a64de58a41230ed5d128cec071",
+          "path": "src/itg/d08p/support/detail/plan.ts",
+          "fingerprint": "cfb152039dcd355e77d09516f9ab9e592c1863fa5f0bc630be484a0685f6b68e"
+        },
+        {
+          "item_id": "4196116cf0c91808332b8ea98348c209e0c585968bc5c3c85f3aa925c73dcd7a",
+          "path": "src/itg/d08p/d2/durability.ts",
+          "fingerprint": "1bd3801833d3d189a9f4ff832713308ef058dedb58a6b9732fa07cd4ab3ea040"
+        },
+        {
+          "item_id": "43a8c0df41561c5b57678a950965cf97fce26523a9c112b5400224b6f3051eeb",
+          "path": "src/itg/d08p/d7/support.ts",
+          "fingerprint": "bfc3552a828f786a5b2408c46fd13a2e057460b0a55260fbe3563e009e074679"
+        },
+        {
+          "item_id": "4648825284f596588f7d3bf13ae18598d4637f551f98a69c9036a96256e22372",
+          "path": "src/itg/d08p/d6/offline.ts",
+          "fingerprint": "70f4bc3a8b559afd5dcd9c6800030228617e689d998023e14af815bcb4b2852f"
+        },
+        {
+          "item_id": "48c0c9abc990d1686a013492f11f0032579baa6d0636d98608b646ecb2fa05f1",
+          "path": "src/itg/d08p/d7s/entry-beyond-stop.ts",
+          "fingerprint": "595bb2ca776fc8f0f54cbfe10ea5bb253cfa9d807ee7344c552460069e302a32"
+        },
+        {
+          "item_id": "4b87ebb0a4631534b842d7c010df9927ab1d733f0f9c8781bc9236508268cf7f",
+          "path": "src/itg/d08p/d4/breach-overrun.ts",
+          "fingerprint": "8c04cce50bd920137fbb66a5febd05718a29899cb026229727cbfb13724ea172"
+        },
+        {
+          "item_id": "5492801235ef95ba56ad3255a56dc42f4b18e735655eed41f60c94dee81f9100",
+          "path": "src/itg/d08p/d7/offline.ts",
+          "fingerprint": "49287390fc8ca558e3504190b1d643e952e84d1ed03fdea182937642719ddee3"
+        },
+        {
+          "item_id": "54f7e57b94c3e0b0d1a8a0279f5e8230fd66a2caca241e92c65b21dd0ca92566",
+          "path": "src/itg/d08p/d7/responsive-a11y.ts",
+          "fingerprint": "695ffebdc36067c96d2efb0989a5816ad91c95decff802bf75e2b21b1d4190b7"
+        },
+        {
+          "item_id": "5d638b370c462a7a79028509a9584b138b2b75f8089c0be25fab520fe0048b58",
+          "path": "src/itg/d08p/support/detail/today.ts",
+          "fingerprint": "4e8c534b6fd1421c30212cdddf3c6b4b39c5009a2da57a9f8896b5b1695e3a06"
+        },
+        {
+          "item_id": "5dbf9e7c0986595591924528373ba22a91e3f20f183161183b8f5ce3b49815e0",
+          "path": "src/itg/d08p/d1/recovery-only.ts",
+          "fingerprint": "fbc2bda73ae6be92509e1535b97156e39c40987a891c6aca7b6942b84c1a8287"
+        },
+        {
+          "item_id": "65e18614981657c5db3b1080c27cff91adf1b086bc3fceafa16a70b80260ce2c",
+          "path": "src/itg/d08p/d4/expected-mark.ts",
+          "fingerprint": "4822746830ed7b143ce95d1750dc3a2173c735bb538a4feb27cd714b6d019442"
+        },
+        {
+          "item_id": "662692223c8d6731ce7c7d8d1bbf860e11899d4db36016d44e9d4fd4420067e6",
+          "path": "src/itg/d08p/d7/settlement-due.ts",
+          "fingerprint": "220b0e78951b74c390a83710cb9748fdc86043381101339b5b716a52b0c1b1a1"
+        },
+        {
+          "item_id": "696007c4bd7da860d80b7f25e38850795cf4ddb4021861347055f59291cea492",
+          "path": "src/itg/d08p/support/detail/payoff.ts",
+          "fingerprint": "7917460135305c944c9272bb0466dc67e5fae6409505405fad0b60cb93723a76"
+        },
+        {
+          "item_id": "70183bb7bfb679c0f83324bdc12838f28d6d8acafcc6cddbfa01dc28c6f0d799",
+          "path": "src/itg/d08p/d7/short-put.ts",
+          "fingerprint": "87b1706ff2890e0003c45e997166f2dcc143021d6e3137623ae338221945fb8f"
+        },
+        {
+          "item_id": "7289397cfcd3b3df5c64bf211ded47f07bf883a95a3efa73bedef5549963efeb",
+          "path": "src/itg/d08p/d1/responsive-a11y.ts",
+          "fingerprint": "934b80cf2c758c4740074b4f5ce5563fcfaf4fef016ceb2f37a767607ba4b587"
+        },
+        {
+          "item_id": "7548a8e54bc0093b1e256acf8d5ab47822e95495139e6db3ef0206d164ab3955",
+          "path": "src/itg/d08p/d6/exit.ts",
+          "fingerprint": "a80be51d45a72332bd79a7c41b639be5ef1b7362359de4aff200f004df8ac114"
+        },
+        {
+          "item_id": "762ddc60b57bc3df3864b5fe083764cfda460eb295ad50c8dc9dc3626322fb38",
+          "path": "src/itg/d08p/support/detail/position.ts",
+          "fingerprint": "291d7a7553ecb5d25b3694c843b6516d16034f4d90939cd08efba484bafe4bab"
+        },
+        {
+          "item_id": "7c336f7b791ae11d86382d9c4ce29f565b016a26ccd2b5a8845865176c53c7c4",
+          "path": "src/itg/d08p/d2/responsive-a11y.ts",
+          "fingerprint": "c8f7ec666003a9b6b22acd4970899d75ba08b39a52c9b8fc093afd100aefec3f"
+        },
+        {
+          "item_id": "7d44839f8d0565ee75ccbdc846caf6510aa3b286a430697f76bebdd16c6baf57",
+          "path": "src/itg/d08p/d6/kill.ts",
+          "fingerprint": "ab01c554de9d95bc84b39b486d061fa2e9ebb3a243fa9caa141f941e125c588b"
+        },
+        {
+          "item_id": "85d5c267c836621ddb40860364664a37531d43b2f43b5a0001369fc64586c5c0",
+          "path": "src/itg/d08p/d6/runtime-failure.ts",
+          "fingerprint": "7a812e7e3828d89741960860584e8258bf1861d666291ee4a896cc47e76ace12"
+        },
+        {
+          "item_id": "8619e6bb0400814a1d188d7e8ff78c5bdb01a014782ff75b0d3b69c062e4f0d7",
+          "path": "src/itg/d08p/support/detail/rail-a.ts",
+          "fingerprint": "56a5ebf90376d42053ad6cae32593ce4a1bd54ec95ad7024b382d9494f108c39"
+        },
+        {
+          "item_id": "97457046be790c094fe47b92562af657a0e657be797d491a0a90d86e6829b416",
+          "path": "src/itg/d08p/d4/correct-mark.ts",
+          "fingerprint": "a1e5a2510ea68f9ef5eaaf4234e16fdb8a2ebb0e9c9081a44842789639fca97b"
+        },
+        {
+          "item_id": "9afb81f3c8fc64c4228738d8768104e2962bd40f8be8df9737e544ecbbc771e6",
+          "path": "src/itg/d08p/d2/after-save.ts",
+          "fingerprint": "55df3d3d66446f435e88eaf129a41af246ba0ba6d894762b2dc0518ef4db126d"
+        },
+        {
+          "item_id": "9f62773c3d43b42aa144f05f410e560889f4107c946c618caa3ad896579a9e0a",
+          "path": "src/itg/d08p/d7/no-save.ts",
+          "fingerprint": "19cff32db5f0d6994846e92918396072726c8f893b3a64857482129dfd0204be"
+        },
+        {
+          "item_id": "a17d952d632f854a1cd6945ced219b3a8c64f4955cbf1bc5522c73860b3ae9c2",
+          "path": "src/itg/d08p/d6/responsive-a11y.ts",
+          "fingerprint": "cdf4b1d59086f62e40f0d4ed060cb2e42a7e88f8416c669fc716b8e526379f62"
+        },
+        {
+          "item_id": "a496aab7189afe5067ca9fdd266abea74f1c1eedfabaaf0f8a3c3295ebf271fa",
+          "path": "src/itg/d08p/support/detail/journal.ts",
+          "fingerprint": "501f79951a3e9cf55d430718f7dcaaad539513aa3f75f63473603571450afdaf"
+        },
+        {
+          "item_id": "a6414090dc1d2860a61580dac1277690b520133e0956cc536063d755669708a6",
+          "path": "src/itg/d08p/support/detail/scope.ts",
+          "fingerprint": "258a7281f9bd7a5f7ee536f3f5d73dce1da954b1ecec3fb685085fde36489507"
+        },
+        {
+          "item_id": "a670876e5bb323e8a1b161c3b870a9816da12927c451de9953797d6d7054107b",
+          "path": "src/itg/d08p/d5/support.ts",
+          "fingerprint": "097b34d29088374ea4f5edee609452d65f4c772d8a1dd5aff7a0f465dfba9d66"
+        },
+        {
+          "item_id": "a76778d83157fd2c8483bb33703c396cb11c196239bea98da6d4a4cc4c52cb6d",
+          "path": "src/itg/d08p/support/detail/rail-b.ts",
+          "fingerprint": "280bae29c04f0850bd8e198b9a4bcd7308c74c872faa8519cc57b13c55080f7a"
+        },
+        {
+          "item_id": "adbc7547fce3803f4cb60824c64248f69aab859869494ba426c426677ca3b81d",
+          "path": "src/itg/d08p/d5/faults.ts",
+          "fingerprint": "8a7992e0e6313f88bfcd75032882e3b589406a402fa2170183c861a8c5322b4c"
+        },
+        {
+          "item_id": "af5d797926c88684a2f7e4822fd6fc2eaab4dfd7cbb83d0184aee2bd375a6a6e",
+          "path": "src/itg/d08p/d7s/plan.ts",
+          "fingerprint": "0fad3591583e5821670345675875ca7c2fa8e91f6b44eb074bc7e972d6cc8687"
+        },
+        {
+          "item_id": "bc02d45f3b714b049356f0095a6072c98b97dd60d49dfca6b14c20144f6b2747",
+          "path": "src/itg/d08p/d2/integrity.ts",
+          "fingerprint": "00005d9ac804a7ef436a39c0f47cc0278acf3cdc492e45663c31e61326cb3d84"
+        },
+        {
+          "item_id": "c11cd2bcdb24122e026eedc77fd93dfb2c8a3a9bb72292f1f6f0e87bb8ee3417",
+          "path": "src/itg/d08p/d2/ui-alignment.ts",
+          "fingerprint": "ce96f443801515c9b27530c562996486b5fae7338f2d26f08c583cb84ad1ad1d"
+        },
+        {
+          "item_id": "c4427bfe9af98fd3e0da568cc2980810c1029b80b291241bf30ba904297080e4",
+          "path": "src/itg/d08p/d1/plan.ts",
+          "fingerprint": "f8a79a69b19d26dfb20eecf370c2eaa7743e2fbc0546db91195911775fca9668"
+        },
+        {
+          "item_id": "c5a25404475896d6d3e8fdeceb6aa6083e6aebdab8db596fa717e730ecdbd2ec",
+          "path": "src/itg/d08p/d7/plan-open.ts",
+          "fingerprint": "5be8afe520dee284440d424bfd66d0beb34e9649716acb80d6ac3372c29e3810"
+        },
+        {
+          "item_id": "c6431cd3fd3bccbd8a5c43df3d7a0cd7e9f68f4770b46be3ff10b79394c6e877",
+          "path": "src/itg/d08p/d2/offline.ts",
+          "fingerprint": "8f329c43fb2335b338e36fefa8b54a45ef6c34637134c76352dfec7336aa54cf"
+        },
+        {
+          "item_id": "c675c0a853ab9877a9d1e277481837e130b0728ec5a9a07254c7299011e56780",
+          "path": "src/itg/d08p/d7s/conditions.ts",
+          "fingerprint": "46218c1816e760ec65127655e1252fc3a4cc0ac1aaa44afddcfe533d3a87c7fb"
+        },
+        {
+          "item_id": "d28b544b2ccea0d034f5399b9c8a2292f389072bdb7ded36b796829855d9029e",
+          "path": "src/itg/d08p/d5/review-debt.ts",
+          "fingerprint": "b466f88b867513045bd90a9e9bda1bfa208449f5a6bdec152d5e7cc797dfcfe8"
+        },
+        {
+          "item_id": "d502ac6f81ff41fea63ee5d491bd9ecd41f91421b975cd0e0f4692b3f25921f8",
+          "path": "src/itg/d08p/d7s/support.ts",
+          "fingerprint": "482352620d380bef1c1ad897408902de4d9c5fc22de1906e2d11552a6f127f32"
+        },
+        {
+          "item_id": "dbd83b9441fda62fd022289419232b49b845ca94f4fb581f80cb5ba4e1b9f2d2",
+          "path": "src/itg/d08p/d1/support.ts",
+          "fingerprint": "500cabf150ab5bcb1475c6f15ebd2783a19fd4bda7e2c053f13e28f10340e687"
+        },
+        {
+          "item_id": "e74403a2581ac0dfc9af903a3376676cd1c1ff4f5c8e57ac2612256f4892c4a3",
+          "path": "src/itg/d08p/d4/runtime-failure.ts",
+          "fingerprint": "0650516c5af377fc8bf4e8fd7c5b03ac4ae0b0ad0709ed41cd8a997c4936b3f8"
+        },
+        {
+          "item_id": "e7dbdfe6b97548f3659039b0aa09243831feedc5e118e62d13a8ea6929ff1e1c",
+          "path": "src/itg/d08p/d5/detail-debt.ts",
+          "fingerprint": "b2d36372cbcb9cbfce1164ca8d8e15acbb1aec29d31c25a0dcb81f3f179d2fcc"
+        },
+        {
+          "item_id": "f1be823352d317d0ed4d1d8bf39ec220ed38e5ffeb736cad574180318eb53753",
+          "path": "src/itg/d08p/d7/payoff-chart-layout.ts",
+          "fingerprint": "9d2a9ad900cd5d51c09dbe167ce0b599622ab6477cef617de031f203f38a6f77"
+        },
+        {
+          "item_id": "fab0307d1129865137d358cef16626a82b696e39cdc4753f8ffd8a3c6582f31d",
+          "path": "src/itg/d08p/d7p/layout.ts",
+          "fingerprint": "b9e6a549613c4f8ffb13a8c5add5d36fec696fd74aefebb920b97e5bb6401727"
+        },
+        {
+          "item_id": "fd3a2b6bf050f2937985047141f3d37054fbb97a3189d1974c1aa16d3d061602",
+          "path": "src/itg/d08p/d2/open-position.ts",
+          "fingerprint": "36f3548375b00c5ec5e4cecf82826fa05cf1d383d232d1fd003f33b838ce44be"
+        },
+        {
+          "item_id": "febfaef78e82541ddaababe9d43d035577ae619973addd16d6961e81e774a97c",
+          "path": "src/itg/d08p/d7/runtime-failure.ts",
+          "fingerprint": "ca73062c5fc5f9faa02c96fb640492955dcb5cbd5346ef0f9a6acc84a0c65022"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0e58c0c15fd77ae07b921295c69999bdd257c40953f1fa2c874be90bedf1ad5c",
+          "path": "src/itg/d08p/d6/support.ts",
+          "fingerprint": "d7abdd1d39d48eaf20c6a56a11411c6bbe2dfe5f9bef4fc416253120f5d82fa8"
+        },
+        {
+          "item_id": "132343dfe99332cefe7939c522ed31edee07af6b5eaf02feed3931691dd480e7",
+          "path": "src/itg/d08p/d5/responsive.ts",
+          "fingerprint": "aef56971c11b6ed9a5c586c988eb8019c63bd421fdc031a169fee0d1df377600"
+        },
+        {
+          "item_id": "140426d3e27c8154a52898727df4b7c50f595dc17e3bd7e5b07fee27113122f8",
+          "path": "src/itg/d08p/d5/kill-offline.ts",
+          "fingerprint": "e9637db765f9390f51879fd2ec4dfb4b2fcdc62d5994496281f2fdfb2bd93193"
+        },
+        {
+          "item_id": "1413787c90ef626f884264e4ec5375646aa0644b852b806fc8555bbbeab60345",
+          "path": "src/itg/d08p/d7s/responsive-a11y.ts",
+          "fingerprint": "7531a4a89206a93300748c7f2559f0b647a510867b1208634509db55e809a23d"
+        },
+        {
+          "item_id": "1c349cb6459fc785b0aa4e85ef76e5d0da782fb780a819f2b20e60544c225fa9",
+          "path": "src/itg/d08p/d4/responsive-a11y.ts",
+          "fingerprint": "06f97268a62c93a00a50e533740b93f080a2e86741825982e516e4db7b53bf72"
+        },
+        {
+          "item_id": "21789cfa6b895db5d3388e712515d05d775e92b9396712762fb5b81592658437",
+          "path": "src/itg/d08p/d6/update.ts",
+          "fingerprint": "e654d0a7a19d0a2ade8770b76f1119b01671ec9a1a7cd670358a3abc4be313d0"
+        },
+        {
+          "item_id": "327eaa7f5eabb9240b0fab74d762c9447b7dd0957489d0f29616dca18daa5c25",
+          "path": "src/itg/d08p/d2/runtime-failure.ts",
+          "fingerprint": "ccff98a048cca0bcb1acff85c790e9c98493ec477b9ff53455a74917ddb5fff1"
+        },
+        {
+          "item_id": "32ee97bfefa41d3ba69f78080d423000c2ccb2d61610ec38c204a7da58ab1cd4",
+          "path": "src/itg/d08p/d4/support.ts",
+          "fingerprint": "3f836298fbc399a7a26f95a2a8291a17d15394c64d4c825720ca7ed761b5e87f"
+        },
+        {
+          "item_id": "33359bc0880bdcdb2a54a3b77097c4c3c5cac0778f563fd57da90644b20f8ff0",
+          "path": "src/itg/d08p/d7/confirm-option-plan.ts",
+          "fingerprint": "c0e65735f7c424efc7becf7cf619c38be5c572f07153a7d3536a4f4756751c54"
+        },
+        {
+          "item_id": "342a066b0d85a760958f650727353e848d1d7a8c41876ae5c460b23c61275d30",
+          "path": "src/itg/d08p/d2/narrow.ts",
+          "fingerprint": "09c87cbdc00a69323cd7190a9347c41c3ba5b1307f3c6d88a150cf73da65703f"
+        },
+        {
+          "item_id": "355ca10b998fe69efd3a392457df092ee008047ab431d7836e598529274ef027",
+          "path": "src/itg/d08p/d6/exit-requirements.ts",
+          "fingerprint": "24113047485ee5af272165fd09a23e1f7579b6e3515f262d8ad55a2a5bb75696"
+        },
+        {
+          "item_id": "3a29c7b9f139f7c32b7f4f9d31728570e1998197a5609dc50cb4e0f09fde9d99",
+          "path": "src/itg/d08p/d6/close-review.ts",
+          "fingerprint": "87fcfffefcce5877d1ce16347c85e42bfb5f882083469fb4603dc630deb0ced4"
+        },
+        {
+          "item_id": "3b1b2c9f2333ad24953b60f9fdf7d1743d5073d5cea171edc7e9f8be48e025ed",
+          "path": "src/itg/d08p/d7/kill.ts",
+          "fingerprint": "bb072d86c66788a8798e57835f93bf1335f8918288b1c3ba0e85218d755a6700"
+        },
+        {
+          "item_id": "3b518dc9c900bf543d41e57ed85b6bca9fdb4cbbba0a8651c86a424d403112c5",
+          "path": "src/itg/d08p/d2/support.ts",
+          "fingerprint": "1217360cd425412dedc20f4b7227324ad177cba2ad6cd2a5a0cf651785c94131"
+        },
+        {
+          "item_id": "3cec94f6ccfd9be72538a117cfddccd8d48d92f0b7f8e316158e20040f4f20fe",
+          "path": "src/itg/d08p/support/detail/index.ts",
+          "fingerprint": "93b51b553459a65cc99fc9beda7351e278213bf8dd40fb97a16e4dbc46909881"
+        },
+        {
+          "item_id": "40fa6a936b0b98e1f958f394a302bf920f7fc2a64de58a41230ed5d128cec071",
+          "path": "src/itg/d08p/support/detail/plan.ts",
+          "fingerprint": "cfb152039dcd355e77d09516f9ab9e592c1863fa5f0bc630be484a0685f6b68e"
+        },
+        {
+          "item_id": "4196116cf0c91808332b8ea98348c209e0c585968bc5c3c85f3aa925c73dcd7a",
+          "path": "src/itg/d08p/d2/durability.ts",
+          "fingerprint": "1bd3801833d3d189a9f4ff832713308ef058dedb58a6b9732fa07cd4ab3ea040"
+        },
+        {
+          "item_id": "43a8c0df41561c5b57678a950965cf97fce26523a9c112b5400224b6f3051eeb",
+          "path": "src/itg/d08p/d7/support.ts",
+          "fingerprint": "bfc3552a828f786a5b2408c46fd13a2e057460b0a55260fbe3563e009e074679"
+        },
+        {
+          "item_id": "4648825284f596588f7d3bf13ae18598d4637f551f98a69c9036a96256e22372",
+          "path": "src/itg/d08p/d6/offline.ts",
+          "fingerprint": "70f4bc3a8b559afd5dcd9c6800030228617e689d998023e14af815bcb4b2852f"
+        },
+        {
+          "item_id": "48c0c9abc990d1686a013492f11f0032579baa6d0636d98608b646ecb2fa05f1",
+          "path": "src/itg/d08p/d7s/entry-beyond-stop.ts",
+          "fingerprint": "595bb2ca776fc8f0f54cbfe10ea5bb253cfa9d807ee7344c552460069e302a32"
+        },
+        {
+          "item_id": "4b87ebb0a4631534b842d7c010df9927ab1d733f0f9c8781bc9236508268cf7f",
+          "path": "src/itg/d08p/d4/breach-overrun.ts",
+          "fingerprint": "8c04cce50bd920137fbb66a5febd05718a29899cb026229727cbfb13724ea172"
+        },
+        {
+          "item_id": "5492801235ef95ba56ad3255a56dc42f4b18e735655eed41f60c94dee81f9100",
+          "path": "src/itg/d08p/d7/offline.ts",
+          "fingerprint": "49287390fc8ca558e3504190b1d643e952e84d1ed03fdea182937642719ddee3"
+        },
+        {
+          "item_id": "54f7e57b94c3e0b0d1a8a0279f5e8230fd66a2caca241e92c65b21dd0ca92566",
+          "path": "src/itg/d08p/d7/responsive-a11y.ts",
+          "fingerprint": "695ffebdc36067c96d2efb0989a5816ad91c95decff802bf75e2b21b1d4190b7"
+        },
+        {
+          "item_id": "5d638b370c462a7a79028509a9584b138b2b75f8089c0be25fab520fe0048b58",
+          "path": "src/itg/d08p/support/detail/today.ts",
+          "fingerprint": "4e8c534b6fd1421c30212cdddf3c6b4b39c5009a2da57a9f8896b5b1695e3a06"
+        },
+        {
+          "item_id": "5dbf9e7c0986595591924528373ba22a91e3f20f183161183b8f5ce3b49815e0",
+          "path": "src/itg/d08p/d1/recovery-only.ts",
+          "fingerprint": "fbc2bda73ae6be92509e1535b97156e39c40987a891c6aca7b6942b84c1a8287"
+        },
+        {
+          "item_id": "65e18614981657c5db3b1080c27cff91adf1b086bc3fceafa16a70b80260ce2c",
+          "path": "src/itg/d08p/d4/expected-mark.ts",
+          "fingerprint": "4822746830ed7b143ce95d1750dc3a2173c735bb538a4feb27cd714b6d019442"
+        },
+        {
+          "item_id": "662692223c8d6731ce7c7d8d1bbf860e11899d4db36016d44e9d4fd4420067e6",
+          "path": "src/itg/d08p/d7/settlement-due.ts",
+          "fingerprint": "220b0e78951b74c390a83710cb9748fdc86043381101339b5b716a52b0c1b1a1"
+        },
+        {
+          "item_id": "696007c4bd7da860d80b7f25e38850795cf4ddb4021861347055f59291cea492",
+          "path": "src/itg/d08p/support/detail/payoff.ts",
+          "fingerprint": "7917460135305c944c9272bb0466dc67e5fae6409505405fad0b60cb93723a76"
+        },
+        {
+          "item_id": "70183bb7bfb679c0f83324bdc12838f28d6d8acafcc6cddbfa01dc28c6f0d799",
+          "path": "src/itg/d08p/d7/short-put.ts",
+          "fingerprint": "87b1706ff2890e0003c45e997166f2dcc143021d6e3137623ae338221945fb8f"
+        },
+        {
+          "item_id": "7289397cfcd3b3df5c64bf211ded47f07bf883a95a3efa73bedef5549963efeb",
+          "path": "src/itg/d08p/d1/responsive-a11y.ts",
+          "fingerprint": "934b80cf2c758c4740074b4f5ce5563fcfaf4fef016ceb2f37a767607ba4b587"
+        },
+        {
+          "item_id": "7548a8e54bc0093b1e256acf8d5ab47822e95495139e6db3ef0206d164ab3955",
+          "path": "src/itg/d08p/d6/exit.ts",
+          "fingerprint": "a80be51d45a72332bd79a7c41b639be5ef1b7362359de4aff200f004df8ac114"
+        },
+        {
+          "item_id": "762ddc60b57bc3df3864b5fe083764cfda460eb295ad50c8dc9dc3626322fb38",
+          "path": "src/itg/d08p/support/detail/position.ts",
+          "fingerprint": "291d7a7553ecb5d25b3694c843b6516d16034f4d90939cd08efba484bafe4bab"
+        },
+        {
+          "item_id": "7c336f7b791ae11d86382d9c4ce29f565b016a26ccd2b5a8845865176c53c7c4",
+          "path": "src/itg/d08p/d2/responsive-a11y.ts",
+          "fingerprint": "c8f7ec666003a9b6b22acd4970899d75ba08b39a52c9b8fc093afd100aefec3f"
+        },
+        {
+          "item_id": "7d44839f8d0565ee75ccbdc846caf6510aa3b286a430697f76bebdd16c6baf57",
+          "path": "src/itg/d08p/d6/kill.ts",
+          "fingerprint": "ab01c554de9d95bc84b39b486d061fa2e9ebb3a243fa9caa141f941e125c588b"
+        },
+        {
+          "item_id": "85d5c267c836621ddb40860364664a37531d43b2f43b5a0001369fc64586c5c0",
+          "path": "src/itg/d08p/d6/runtime-failure.ts",
+          "fingerprint": "7a812e7e3828d89741960860584e8258bf1861d666291ee4a896cc47e76ace12"
+        },
+        {
+          "item_id": "8619e6bb0400814a1d188d7e8ff78c5bdb01a014782ff75b0d3b69c062e4f0d7",
+          "path": "src/itg/d08p/support/detail/rail-a.ts",
+          "fingerprint": "56a5ebf90376d42053ad6cae32593ce4a1bd54ec95ad7024b382d9494f108c39"
+        },
+        {
+          "item_id": "97457046be790c094fe47b92562af657a0e657be797d491a0a90d86e6829b416",
+          "path": "src/itg/d08p/d4/correct-mark.ts",
+          "fingerprint": "a1e5a2510ea68f9ef5eaaf4234e16fdb8a2ebb0e9c9081a44842789639fca97b"
+        },
+        {
+          "item_id": "9afb81f3c8fc64c4228738d8768104e2962bd40f8be8df9737e544ecbbc771e6",
+          "path": "src/itg/d08p/d2/after-save.ts",
+          "fingerprint": "55df3d3d66446f435e88eaf129a41af246ba0ba6d894762b2dc0518ef4db126d"
+        },
+        {
+          "item_id": "9f62773c3d43b42aa144f05f410e560889f4107c946c618caa3ad896579a9e0a",
+          "path": "src/itg/d08p/d7/no-save.ts",
+          "fingerprint": "19cff32db5f0d6994846e92918396072726c8f893b3a64857482129dfd0204be"
+        },
+        {
+          "item_id": "a17d952d632f854a1cd6945ced219b3a8c64f4955cbf1bc5522c73860b3ae9c2",
+          "path": "src/itg/d08p/d6/responsive-a11y.ts",
+          "fingerprint": "cdf4b1d59086f62e40f0d4ed060cb2e42a7e88f8416c669fc716b8e526379f62"
+        },
+        {
+          "item_id": "a496aab7189afe5067ca9fdd266abea74f1c1eedfabaaf0f8a3c3295ebf271fa",
+          "path": "src/itg/d08p/support/detail/journal.ts",
+          "fingerprint": "501f79951a3e9cf55d430718f7dcaaad539513aa3f75f63473603571450afdaf"
+        },
+        {
+          "item_id": "a6414090dc1d2860a61580dac1277690b520133e0956cc536063d755669708a6",
+          "path": "src/itg/d08p/support/detail/scope.ts",
+          "fingerprint": "258a7281f9bd7a5f7ee536f3f5d73dce1da954b1ecec3fb685085fde36489507"
+        },
+        {
+          "item_id": "a670876e5bb323e8a1b161c3b870a9816da12927c451de9953797d6d7054107b",
+          "path": "src/itg/d08p/d5/support.ts",
+          "fingerprint": "097b34d29088374ea4f5edee609452d65f4c772d8a1dd5aff7a0f465dfba9d66"
+        },
+        {
+          "item_id": "a76778d83157fd2c8483bb33703c396cb11c196239bea98da6d4a4cc4c52cb6d",
+          "path": "src/itg/d08p/support/detail/rail-b.ts",
+          "fingerprint": "280bae29c04f0850bd8e198b9a4bcd7308c74c872faa8519cc57b13c55080f7a"
+        },
+        {
+          "item_id": "adbc7547fce3803f4cb60824c64248f69aab859869494ba426c426677ca3b81d",
+          "path": "src/itg/d08p/d5/faults.ts",
+          "fingerprint": "8a7992e0e6313f88bfcd75032882e3b589406a402fa2170183c861a8c5322b4c"
+        },
+        {
+          "item_id": "af5d797926c88684a2f7e4822fd6fc2eaab4dfd7cbb83d0184aee2bd375a6a6e",
+          "path": "src/itg/d08p/d7s/plan.ts",
+          "fingerprint": "0fad3591583e5821670345675875ca7c2fa8e91f6b44eb074bc7e972d6cc8687"
+        },
+        {
+          "item_id": "bc02d45f3b714b049356f0095a6072c98b97dd60d49dfca6b14c20144f6b2747",
+          "path": "src/itg/d08p/d2/integrity.ts",
+          "fingerprint": "00005d9ac804a7ef436a39c0f47cc0278acf3cdc492e45663c31e61326cb3d84"
+        },
+        {
+          "item_id": "c11cd2bcdb24122e026eedc77fd93dfb2c8a3a9bb72292f1f6f0e87bb8ee3417",
+          "path": "src/itg/d08p/d2/ui-alignment.ts",
+          "fingerprint": "ce96f443801515c9b27530c562996486b5fae7338f2d26f08c583cb84ad1ad1d"
+        },
+        {
+          "item_id": "c4427bfe9af98fd3e0da568cc2980810c1029b80b291241bf30ba904297080e4",
+          "path": "src/itg/d08p/d1/plan.ts",
+          "fingerprint": "f8a79a69b19d26dfb20eecf370c2eaa7743e2fbc0546db91195911775fca9668"
+        },
+        {
+          "item_id": "c5a25404475896d6d3e8fdeceb6aa6083e6aebdab8db596fa717e730ecdbd2ec",
+          "path": "src/itg/d08p/d7/plan-open.ts",
+          "fingerprint": "5be8afe520dee284440d424bfd66d0beb34e9649716acb80d6ac3372c29e3810"
+        },
+        {
+          "item_id": "c6431cd3fd3bccbd8a5c43df3d7a0cd7e9f68f4770b46be3ff10b79394c6e877",
+          "path": "src/itg/d08p/d2/offline.ts",
+          "fingerprint": "8f329c43fb2335b338e36fefa8b54a45ef6c34637134c76352dfec7336aa54cf"
+        },
+        {
+          "item_id": "c675c0a853ab9877a9d1e277481837e130b0728ec5a9a07254c7299011e56780",
+          "path": "src/itg/d08p/d7s/conditions.ts",
+          "fingerprint": "46218c1816e760ec65127655e1252fc3a4cc0ac1aaa44afddcfe533d3a87c7fb"
+        },
+        {
+          "item_id": "d28b544b2ccea0d034f5399b9c8a2292f389072bdb7ded36b796829855d9029e",
+          "path": "src/itg/d08p/d5/review-debt.ts",
+          "fingerprint": "b466f88b867513045bd90a9e9bda1bfa208449f5a6bdec152d5e7cc797dfcfe8"
+        },
+        {
+          "item_id": "d502ac6f81ff41fea63ee5d491bd9ecd41f91421b975cd0e0f4692b3f25921f8",
+          "path": "src/itg/d08p/d7s/support.ts",
+          "fingerprint": "482352620d380bef1c1ad897408902de4d9c5fc22de1906e2d11552a6f127f32"
+        },
+        {
+          "item_id": "dbd83b9441fda62fd022289419232b49b845ca94f4fb581f80cb5ba4e1b9f2d2",
+          "path": "src/itg/d08p/d1/support.ts",
+          "fingerprint": "500cabf150ab5bcb1475c6f15ebd2783a19fd4bda7e2c053f13e28f10340e687"
+        },
+        {
+          "item_id": "e74403a2581ac0dfc9af903a3376676cd1c1ff4f5c8e57ac2612256f4892c4a3",
+          "path": "src/itg/d08p/d4/runtime-failure.ts",
+          "fingerprint": "0650516c5af377fc8bf4e8fd7c5b03ac4ae0b0ad0709ed41cd8a997c4936b3f8"
+        },
+        {
+          "item_id": "e7dbdfe6b97548f3659039b0aa09243831feedc5e118e62d13a8ea6929ff1e1c",
+          "path": "src/itg/d08p/d5/detail-debt.ts",
+          "fingerprint": "b2d36372cbcb9cbfce1164ca8d8e15acbb1aec29d31c25a0dcb81f3f179d2fcc"
+        },
+        {
+          "item_id": "f1be823352d317d0ed4d1d8bf39ec220ed38e5ffeb736cad574180318eb53753",
+          "path": "src/itg/d08p/d7/payoff-chart-layout.ts",
+          "fingerprint": "9d2a9ad900cd5d51c09dbe167ce0b599622ab6477cef617de031f203f38a6f77"
+        },
+        {
+          "item_id": "fab0307d1129865137d358cef16626a82b696e39cdc4753f8ffd8a3c6582f31d",
+          "path": "src/itg/d08p/d7p/layout.ts",
+          "fingerprint": "b9e6a549613c4f8ffb13a8c5add5d36fec696fd74aefebb920b97e5bb6401727"
+        },
+        {
+          "item_id": "fd3a2b6bf050f2937985047141f3d37054fbb97a3189d1974c1aa16d3d061602",
+          "path": "src/itg/d08p/d2/open-position.ts",
+          "fingerprint": "36f3548375b00c5ec5e4cecf82826fa05cf1d383d232d1fd003f33b838ce44be"
+        },
+        {
+          "item_id": "febfaef78e82541ddaababe9d43d035577ae619973addd16d6961e81e774a97c",
+          "path": "src/itg/d08p/d7/runtime-failure.ts",
+          "fingerprint": "ca73062c5fc5f9faa02c96fb640492955dcb5cbd5346ef0f9a6acc84a0c65022"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 144070
+  }
+}

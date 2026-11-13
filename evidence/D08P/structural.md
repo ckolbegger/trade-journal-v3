@@ -439,3 +439,44 @@ On `5fe66fc0`, 2026-11-13 10:21 to 10:32 EST. The "+ uncommitted changes" the la
 | Browser, full tier, browser-1 | 119 passed (4.9 min), exit 0 | [suite-runs/merge-1-browser-1.txt](suite-runs/merge-1-browser-1.txt) |
 | Browser, full tier, browser-2 | 74 passed (4.3 min), exit 0 | [suite-runs/merge-1-browser-2.txt](suite-runs/merge-1-browser-2.txt) |
 | Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/merge-1-checks.txt](suite-runs/merge-1-checks.txt) |
+
+## T8P.4 Drawer-reach helpers (lane `d08p-t8p4`)
+
+Commits on `d08p/t8p4`: `f48eb077` (helpers and moved reads), `dadd6aeb` (browser and lane tier outputs). New `e2e/support/detail/`: `index.ts` (`openDrawer`, the banner reads, `CARDS`, `TABLES`, `root`), `scope.ts`, `rail-a.ts`, `rail-b.ts`, `today.ts`, `position.ts`, `plan.ts`, `payoff.ts`, `journal.ts`. The specs moved across `e2e/d1`, `d2`, `d4`, `d5`, `d6`, `d7`, `d7p` and `d7s`.
+
+Verification:
+- Browser tier: browser-1 119 passed; browser-2 74 passed on its rerun. The first run failed 2 cases, both fixed: `d6/close-review`'s `answerDebt` (now `where: 'Detail' | 'page'`), and `d7s/entry-beyond-stop`'s `.first()`, which had been the Summary card.
+- `rg -c "openDrawer|detail\." e2e`: 52 files, 460 lines (`openDrawer` alone: 40 files, 136 lines).
+- typecheck, tsc6, lint and lint:deps: exit 0. Lane tier: 1519 unit, 218 integration, 14 of 14 checks. `run-complete.sh`: run complete.
+
+Readers left direct, with the task's reasons:
+- `d1/offline` and `d1/readiness` read only the h1.
+- `d2/migration:71` is the frozen release build.
+- The `ui-alignment` title-geometry reads.
+- `d5/support`'s `fillDebtAnswers`, which is shared with the Review.
+- Receipt and Review reads.
+
+The task's notes for later tasks are carried to the handoff: Needs-you reads scoped to the Journal card; Summary reads; the `d7/plan-open` expiration read.
+
+### T8P.4 ocr review (`f48eb077`, test-only, relocated)
+
+Relocated to `src/itg/d08p/` in a scratch clone (scratch commit `9da39cce`): all 61 changed non-evidence files, with no relocation artifact. Session `d149a62d-d9cd-44b6-b701-308f5f0b5866`, model gpt-6.1-sol, 61 files reviewed (0 excluded), 6 comments. Raw output: [ocr/T8P.4-f48eb077.json](ocr/T8P.4-f48eb077.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `e2e/support/detail/index.ts:19` | `openDrawer` reads `tabs.count()`, which doesn't auto-wait, so right after `goto` or `reload` it can return during loading and skip the click once the tab list exists. | Valid: `short-put.spec.ts:54-55` and `payoff-chart-layout.spec.ts:55-56` call it straight after `goto`. It would become flaky once T8P.5 lands. |
+| medium | test | `e2e/d2/ui-alignment.spec.ts:378-379` | `lefts` still reads the page-wide `[role="tablist"]`, so the Detail tab list will add a key and break the exact `['card','h1']` assertion. | Valid, latent: it breaks when T8P.5 adds the tab list. |
+| medium | bug | `e2e/support/detail/position.ts:19` | `realizedToDate` scopes to the whole Detail, and `DatedSection` renders its own "Realized to date", so a dated line gives two matches (a strict-mode failure). | Valid, latent: not a regression, since the old page-wide read had it too. It should scope to the Valuation card, as `openPnl` does. |
+| medium | test | `e2e/d2/narrow.spec.ts:86` | The scenario opens only Plan and Risk, then measures every Detail table, so after the shell Position's tables go unmeasured. | Doubtful: depends on how T8P.5 mounts drawers. |
+| medium | test | `e2e/d2/ui-alignment.spec.ts:1350` | `detailRows` measures all `dl:not(.answers)` at once, so with drawers it sees only the open drawer's lists. | Doubtful: a possible coverage change after T8P.5. |
+| low | maintainability | `e2e/d5/support.ts:68` | The new `answerDebt` line nests a ternary. | Valid, trivial: style only. |
+
+Reviewer's spot check (notes, not findings): five moved reads (`d2/open-position`, `d6/exit`, `d7/short-put`, `d7/settlement-due`, `d4/expected-mark`) keep their expected values, now scoped. The Open lifecycle read is slightly stricter (`lifecycleBadge` with `toHaveText('Open')`), as the reach table's `header .badge` row intends.
+
+**User's decision (2026-11-13), "Batch into one task".** The six findings are bug tasks T8P.4-B1 to B6, fixed in one task on the T8P.4 lane, reviewed once. The stop rule is unchanged: a third round with findings stops the session.
+- **B1** (finding 1). Case: *it should wait for the Detail to finish loading before deciding whether it has a tab list.*
+- **B2** (finding 2). Case: *it should measure the Detail's cards and heading without counting the Detail tab list.*
+- **B3** (finding 3). Case: *it should read Realized to date from the Valuation card when a dated line is also shown.*
+- **B4** (finding 4). Case: *it should measure every Detail table in every drawer that holds one at narrow width.*
+- **B5** (finding 5). Case: *it should measure the description lists of every drawer that holds them.*
+- **B6** (finding 6). Case: *it should choose `answerDebt`'s scope without a nested conditional.* (Refactor, kept green.)
