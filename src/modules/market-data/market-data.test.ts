@@ -691,6 +691,17 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
     expect(points).toHaveLength(3);
   });
 
+  it('should give the series on the first covered session without a previous session', async () => {
+    const { marketData } = await setup();
+    // 2024-01-02 is the first covered session: it has no previous session, so no frame is framed for it.
+    const first = { kind: 'Historical' as const, tradingDate: '2024-01-02' };
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2024-01-02', price: '9' }));
+    const session = await marketData.openReadSession(first);
+    expect(await session.series('MNO', '2024-01-02', '2024-01-05')).toEqual([{ kind: 'Available', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z', price: '9', revisionNumber: 1 }]);
+    const missing = await marketData.openReadSession(first);
+    expect(await missing.series('NONE', '2024-01-02', '2024-01-02')).toEqual([{ kind: 'Missing', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z' }]);
+  });
+
   it("should read an Instrument's stored Marks once per read session, sharing the gaps scan with the Detail's frames", async () => {
     const { marketData } = await setup();
     await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-07', price: '10' }));

@@ -881,11 +881,16 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       // What the session has read, per date, for its binding.
       const readOn = new Map<string, { context: FrameContext; day: Session; evidence: Map<string, ReturnType<typeof evidenceOf>> }>();
       // Each Instrument's frame is the one `ResolveFrames` gives it alone, in the order asked.
-      const framesAt = async (at: FrameContext, atDay: Session, instruments: readonly string[]) => {
+      // The evidence a date's reads give, recorded for the binding; a frame needs a previous session, the evidence does not.
+      const evidenceFor = async (at: FrameContext, atDay: Session, instruments: readonly string[]) => {
         const read = await Promise.all(instruments.map((instrumentKey) => evidenceAt(atDay.date, instrumentKey)));
         const scope = readOn.get(atDay.date) ?? { context: at, day: atDay, evidence: new Map() };
         readOn.set(atDay.date, scope);
         instruments.forEach((instrumentKey, i) => scope.evidence.set(instrumentKey, read[i]!));
+        return read;
+      };
+      const framesAt = async (at: FrameContext, atDay: Session, instruments: readonly string[]) => {
+        const read = await evidenceFor(at, atDay, instruments);
         return instruments.flatMap((instrumentKey, i) => {
           const framed = frameResult({ kind: 'ResolveFrames', context: at, instruments: [instrumentKey] }, atDay, [instrumentKey], [read[i]!]);
           return framed.kind === 'Frames' ? framed.frames : [];
@@ -941,8 +946,8 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           const first = relevantSessions(`${from}T00:00:00Z`, lastHistorical).relevant[0];
           const scanned = first === undefined ? [] : (await scanOf(instrumentKey, first.close)).points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
           if (end < day.date) return scanned;
-          const [frame] = await framesAt(context, day, [instrumentKey]);
-          return [...scanned, seriesPoint(day.date, day.close, frame!.resolution)];
+          const [read] = await evidenceFor(context, day, [instrumentKey]);
+          return [...scanned, seriesPoint(day.date, day.close, resolve(read!.record, read!.stale))];
         },
         gaps(instruments) {
           const earliest = new Map<string, string>();
