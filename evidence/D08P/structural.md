@@ -378,3 +378,21 @@ ocr: session `7d22fbb9-f842-416e-a251-ba206bdb2013`, model gpt-6.1-sol, 2 files 
 Fix: the shell test's scratch `vitest.config.mjs` sets `allowOnly: true`. `it-titles.sh` is unchanged, so a real `it.only` under `src/` still fails collection in CI. Red: `CI=1 bash .claude/scripts/it-titles.test.sh b1`, giving `FAIL: b1: exit 1`. Green: the same command, then the whole test with and without `CI`. Rows are in [tdd-log/T8P.2-B4.md](tdd-log/T8P.2-B4.md).
 
 ocr: session `3901471b-1ca8-4597-b6bf-d8fb4c7b5292`, model gpt-6.1-sol, 1 file reviewed (1 excluded, the log), 0 comments. **No findings.** Raw output: [ocr/T8P.2-B4-bf91aea7.json](ocr/T8P.2-B4-bf91aea7.json). T8P.2's bug tasks are closed.
+
+### T8P.2 complete cumulative run (`t8p-2`)
+
+Unit and integration ran at `5cbcec4e`, and browser and checks at `7904cee7` (a Progress-only commit landed during the run), 2026-11-13. Browser stage `browser-auto f2ab6560` printed `browser tier: full (first matching path since f2ab6560: src/main.tsx)`, so the runner ran `browser-1` and `browser-2`. Ports 5175, 9341 and 9342 were free before and after. `run-complete.sh evidence/D08P t8p-2`: run complete.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 138 files, 1519 tests passed, exit 0 | [suite-runs/t8p-2-unit.txt](suite-runs/t8p-2-unit.txt) |
+| Node integration | 103 files, 218 tests passed, exit 0 | [suite-runs/t8p-2-integration.txt](suite-runs/t8p-2-integration.txt) |
+| Browser, full tier, browser-1 (Chromium) | 119 passed (4.6 min), exit 0 | [suite-runs/t8p-2-browser-1.txt](suite-runs/t8p-2-browser-1.txt) |
+| Browser, full tier, browser-2 (Chromium) | 74 passed (4.3 min), exit 0 | [suite-runs/t8p-2-browser-2.txt](suite-runs/t8p-2-browser-2.txt) |
+| Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/t8p-2-checks.txt](suite-runs/t8p-2-checks.txt) |
+
+## Lane creation (user's decision, 2026-11-13)
+
+The first lane pair (T8P.3, T8P.4) was dispatched with the Agent tool's `isolation: "worktree"`, as section 9 says. The tool created both worktrees under the main checkout (`trade-journal-v3/.claude/worktrees/agent-…`), based on `4185bae7`, which has no `plan/` and no `.claude/scripts/`. Both agents stopped at lane rule 1 (`lane-setup.sh`: exit 127) without changing anything, and the tool removed both worktrees and branches.
+
+**The user chose "Main session creates lanes".** The main session runs `git worktree add .claude/worktrees/d08p-<lane> -b d08p/<lane> <head>` inside this worktree, which is section 9's path and branch. It then dispatches each `tdd-task` without the isolation flag, told to work only in that lane's absolute path and to start with `lane-setup.sh`. Only the mechanism differs from section 9. T8P.3 and T8P.4 have no lane name in section 4.2, so their lanes are `d08p-t8p3` and `d08p-t8p4`.
