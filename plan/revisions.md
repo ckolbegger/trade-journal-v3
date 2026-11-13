@@ -2,6 +2,12 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 94: the commit tagged `claude-opus-5.5-plan-r94` (revision 93, no decision). ocr found that T8P.15-B1's Reflect now finds the Debt's card on the page by its heading text and a minute-precision time, so two Debts of one type in the same minute open the wrong form. This became bug task T8P.15-B2.
+  - The fix passes the Debt's id down. The shell holds the requested Debt id, the legacy Journal section and the Journal cards pass it to `OwedDebtItem`, and that item opens its own form under the one-form rule. The page lookup goes.
+  - Lane R2 may edit `src/ui/screens/OwedDebtItem.tsx` (an optional prop) and `src/ui/screens/trade-detail/Journal.tsx`, with their tests, for B2 only. No other lane uses either file now.
+  - Rejected: a `data-debt-id` with the page lookup kept, and carrying B2 into T8P.22.
+
+  No acceptance scenario changes status, no stored data or durable compatibility changes, no words change, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-13 ("Pass the Debt id").
 - Revision 93: the commit tagged `claude-opus-5.5-plan-r93` (revision 92, no decision). Two user choices during D08P's wave 1.
   - **Series points carry Mark provenance.**
     - T8P.10 found that A210's series point gives only price and revision, so its replay's Marks carry no provenance. T8P.16's planned case, though, shows each compared Mark "with its change and its provenance, Corrected with its reason".
