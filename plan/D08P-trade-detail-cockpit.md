@@ -782,17 +782,17 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.3 | 0 | — | Done | `bba8b2bc`; lane tier `fe83cd1c` |
 | T8P.4 | 0 | — | Done | `4f40c2f3`; tiers `3dcb2d21`; B1–B6 (batched) `3f85170f`; lane tiers `9bfc804e`, `a33a9e9e` (after the rebase) |
 | T8P.5 | 0 | — | Done | `f0c51e60`, `0577e92d`; tiers `aa2c1b96`; B1 `74ef50ce`, `002a78e9`; B3 `e45e6363`; tiers `2e61898b`; B2 `6a9f29e8`; tiers `833ad19a` |
-| T8P.6 | 1 | BA | Not started | |
+| T8P.6 | 1 | BA | In progress from `ac089378` | |
 | T8P.7 | 1 | BA | Not started | |
-| T8P.8 | 1 | BM | Not started | |
-| T8P.9 | 1 | BV | Not started | |
+| T8P.8 | 1 | BM | In progress from `ac089378` | |
+| T8P.9 | 1 | BV | In progress from `ac089378` | |
 | T8P.10 | 1 | BV | Not started | |
 | T8P.11 | 1 | BV | Not started | |
-| T8P.14 | 1 | R2 | Not started | |
+| T8P.14 | 1 | R2 | In progress from `ac089378` | |
 | T8P.15 | 1 | R2 | Not started | |
-| T8P.12 | 1 | R1 | Not started | |
+| T8P.12 | 1 | R1 | In progress from `ac089378` | |
 | T8P.13 | 1 | R1 | Not started | |
-| T8P.17 | 1 | D2 | Not started | |
+| T8P.17 | 1 | D2 | In progress from `ac089378` | |
 | T8P.16 | 1 | D1 | Not started | |
 | T8P.19 | 1 | D4 | Not started | |
 | T8P.18 | 1 | D3 | Not started | |
