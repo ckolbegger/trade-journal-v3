@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { OfflineReleaseInventory } from '../../src/delivery/inventory.ts';
-import { BASE_URL, expect, fillPlan, firstPage, PLAN, READY, startJournal, ZONE, type PlanValues, type ProbedDatabase } from '../d1/support.ts';
+import { BASE_URL, detail, expect, fillPlan, firstPage, PLAN, READY, startJournal, ZONE, type PlanValues, type ProbedDatabase } from '../d1/support.ts';
 
 export * from '../d1/support.ts';
 
@@ -41,7 +41,7 @@ export async function confirmReference(page: Page, values: PlanValues = PLAN): P
   await fillPlan(page, values);
   await page.getByLabel('Plan time').fill(PLAN_TIME);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(page.getByRole('heading', { name: values.symbol, level: 1 })).toBeVisible();
+  await expect(detail.heading(page, values.symbol)).toBeVisible();
 }
 
 export const executionRow = (page: Page, n: number): Locator => page.getByRole('group', { name: `Execution ${n}`, exact: true });
@@ -49,7 +49,7 @@ export const reflectionSection = (page: Page): Locator => page.getByRole('region
 
 // From a Trade Detail, opens the entry form.
 export async function openEntryForm(page: Page): Promise<void> {
-  await page.getByRole('link', { name: 'Record entry' }).click();
+  await detail.recordEntryLink(page).click();
   await expect(page.getByRole('heading', { name: 'Record entry', level: 1 })).toBeVisible(READY);
   await expect(executionRow(page, 1)).toBeVisible();
 }
@@ -91,13 +91,13 @@ export async function recordEntry(page: Page, rows: readonly Row[], reflection: 
 
 export async function backToTrade(page: Page, symbol = PLAN.symbol): Promise<void> {
   await page.getByRole('link', { name: 'Back to the Trade' }).click();
-  await expect(page.getByRole('heading', { name: symbol, level: 1 })).toBeVisible();
+  await expect(detail.heading(page, symbol)).toBeVisible();
 }
 
 // Opens a Trade's Detail from the Open list.
 export async function openTradeFromOpenList(page: Page, symbol = PLAN.symbol): Promise<void> {
   await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: symbol, exact: true }).click(READY);
-  await expect(page.getByRole('heading', { name: symbol, level: 1 })).toBeVisible();
+  await expect(detail.heading(page, symbol)).toBeVisible();
 }
 
 // ---- Stored records, read through the probe -------------------------------------------------

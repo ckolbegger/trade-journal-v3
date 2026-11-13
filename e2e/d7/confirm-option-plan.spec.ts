@@ -1,4 +1,4 @@
-import { expect, fillOptionPlan, MONDAY_0900, OC, onboardedAt, test, valueOf } from './support.ts';
+import { detail, expect, fillOptionPlan, MONDAY_0900, OC, onboardedAt, openDrawer, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -11,9 +11,11 @@ test.describe('T7.31-F1 confirming an option Plan', () => {
     page.on('pageerror', (error) => errors.push(error.message));
     await fillOptionPlan(page, OC);
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(valueOf(page, '1R (original risk)')).toHaveText('$400.00');
-    await expect(page.getByRole('region', { name: 'Planned Expiration Payoff' })).toContainText('Breakeven 57.00');
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.oneR(page)).toHaveText('$400.00');
+    await openDrawer(page, 'Payoff');
+    await expect(detail.payoff(page, 'Planned')).toContainText('Breakeven 57.00');
     expect(errors).toEqual([]);
     await context.close();
   });

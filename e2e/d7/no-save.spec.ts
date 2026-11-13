@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import {
-  answerCloseReviewIn, answerIn, closeReviewGroup, closingSection, createShortPutTrade, debtsOf, declinesOf, entriesOf, entriesWithSettledDebt, expect, factsOf, fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt,
+  answerCloseReviewIn, answerIn, closeReviewGroup, closingSection, createShortPutTrade, debtsOf, declinesOf, detail, entriesOf, entriesWithSettledDebt, expect, factsOf, fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt,
   OC, onboardedAt, probe, READY, test, tradesOf, workspaceOf,
 } from './support.ts';
 
@@ -75,7 +75,7 @@ test.describe('B7.12 Nothing saved without Save (AC-JOUR-001)', () => {
     // Leave the Plan unsaved for the expiration form of the short Put: answers, a Note, and both dispositions through Decline.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'MNO', exact: true }).click();
-    await page.getByRole('link', { name: 'Record expiration' }).click();
+    await detail.recordExpirationLink(page).click();
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await answerIn(reflection);

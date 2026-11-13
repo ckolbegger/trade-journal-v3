@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  acknowledgeMark, answerIn, cardItem, createTrades, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
-  openExitForm, openReview, openTradeFromOpenList, READY, reachCard, recordEntry, fillRows, sell, setClock, setWidth, sliderOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
+  acknowledgeMark, answerIn, cardItem, createTrades, detail, enterMark, exitReflection, expect, expectInsideCell, expectNoSidewaysScroll, expectShownInFull, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt,
+  openDrawer, openExitForm, openReview, openTradeFromOpenList, READY, reachCard, recordEntry, fillRows, sell, setClock, setWidth, sliderOf, test, tradeCard, TUESDAY_NOON, WIDTHS, writeSellQuantities,
   type Profile,
 } from './support.ts';
 
@@ -54,12 +54,12 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     server.use('dist-faults');
     const { context, page } = await launchScenario(profile);
     await openTradeFromOpenList(page, 'XYZ');
-    const panel = page.getByRole('region', { name: FACTS_INCOHERENT });
+    const panel = detail.factsIncoherent(page);
     await expect(panel).toBeVisible(READY);
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `Detail at ${width}`);
-      const cells = panel.getByRole('table', { name: 'Facts that cannot be replayed' }).locator('tbody td');
+      const cells = detail.factsTable(page).locator('tbody td');
       await expect(cells).toHaveCount(TWO_FINDINGS.length);
       for (const [index, sentence] of TWO_FINDINGS.entries()) await expectShownInFull(cells.nth(index), sentence, `finding ${index + 1} at ${width}`);
     }
@@ -94,21 +94,23 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await openTradeFromOpenList(page, 'DEF');
     await recordEntry(page, [{ quantity: '40', price: '40.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText(`Awaiting the close after ${DATE}`, READY);
-    const valuation = page.getByRole('region', { name: 'Valuation', exact: true });
+    await openDrawer(page, 'Today');
+    await expect(detail.valuation(page)).toContainText(`Awaiting the close after ${DATE}`, READY);
+    await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `DEF Detail at ${width}`);
-      await expectShownInFull(valuation.locator('dt:text-is("Open P&L") + dd'), `Awaiting the close after ${DATE}`, `Awaiting the close at ${width}`);
+      await expectShownInFull(detail.openPnl(page), `Awaiting the close after ${DATE}`, `Awaiting the close at ${width}`);
     }
     await page.goto('/');
     await openTradeFromOpenList(page, 'ABC');
-    const abcValuation = page.getByRole('region', { name: 'Valuation', exact: true });
-    await expect(abcValuation).toBeVisible(READY);
+    await openDrawer(page, 'Today');
+    await expect(detail.valuation(page)).toBeVisible(READY);
+    await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
       await expectNoSidewaysScroll(page, `ABC Detail at ${width}`);
-      await expectShownInFull(abcValuation.locator('dt:text-is("Open P&L") + dd'), MARK_MISSING_ABC, `Mark missing at ${width}`);
+      await expectShownInFull(detail.openPnl(page), MARK_MISSING_ABC, `Mark missing at ${width}`);
     }
     await context.close();
   });

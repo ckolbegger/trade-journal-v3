@@ -1,18 +1,17 @@
-import type { Page } from '@playwright/test';
 import {
   backToTrade,
   confirmReference,
+  detail,
   expect,
   firstPage,
   onboardedPage,
+  openDrawer,
   openTradeFromOpenList,
   PC1,
   PC2,
   recordEntry,
   test,
 } from './support.ts';
-
-const region = (page: Page, name: string) => page.getByRole('region', { name, exact: true });
 
 test.describe('B2.8 offline cold restart', () => {
   test('should open Writable offline, record PC2, and keep it across another offline restart', async ({ server, profile }) => {
@@ -31,18 +30,21 @@ test.describe('B2.8 offline cold restart', () => {
     await expect(page.getByRole('region', { name: /Read only/ })).toHaveCount(0);
     await recordEntry(page, PC2);
     await backToTrade(page);
-    await expect(region(page, 'Entry Quality')).toContainText('$270.00 1.08R');
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.entryQuality(page)).toContainText('$270.00 1.08R');
     await offline.close();
 
     const again = await profile.launch({ offline: true });
     const reopened = await firstPage(again);
     await reopened.goto('/');
     await openTradeFromOpenList(reopened);
-    await expect(region(reopened, 'Position')).toContainText('100 shares of XYZ');
-    await expect(region(reopened, 'Executions (3)').getByRole('button')).toHaveCount(3);
+    await openDrawer(reopened, 'Position');
+    await expect(detail.position(reopened)).toContainText('100 shares of XYZ');
+    await expect(detail.executions(reopened, 3).getByRole('button')).toHaveCount(3);
     await reopened.getByRole('button', { name: /^Buy 40 XYZ @ .* 11:00 details$/ }).click();
-    await expect(region(reopened, 'Executions (3)')).toContainText('2026-10-12 11:00 · 1 Execution');
-    await expect(region(reopened, 'Entry Quality')).toContainText('$270.00 1.08R');
+    await expect(detail.executions(reopened, 3)).toContainText('2026-10-12 11:00 · 1 Execution');
+    await openDrawer(reopened, 'Plan and Risk');
+    await expect(detail.entryQuality(reopened)).toContainText('$270.00 1.08R');
     await again.close();
   });
 });

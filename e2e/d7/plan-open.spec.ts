@@ -1,5 +1,5 @@
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
-import { confirmOptionPlan, currentTradeId, expect, factsOf, fillOptionPlan, firstPage, launchAt, MONDAY_0900, MONDAY_1105, OC, onboardedAt, probe, recordOptionEntry, test, tradesOf, valueOf, workspaceOf } from './support.ts';
+import { confirmOptionPlan, currentTradeId, detail, expect, factsOf, fillOptionPlan, firstPage, launchAt, MONDAY_0900, MONDAY_1105, OC, onboardedAt, openDrawer, probe, recordOptionEntry, test, tradesOf, workspaceOf } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -10,15 +10,17 @@ test.describe('B7.1 Plan and open a Long Call', () => {
     const { context: first, page } = await onboardedAt(profile, MONDAY_0900);
     await confirmOptionPlan(page, OC);
     const tradeId = await currentTradeId(page);
-    await expect(valueOf(page, '1R (original risk)')).toHaveText('$400.00');
-    await expect(page.getByRole('region', { name: 'Planned Expiration Payoff' })).toContainText('Breakeven 57.00');
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.oneR(page)).toHaveText('$400.00');
+    await openDrawer(page, 'Payoff');
+    await expect(detail.payoff(page, 'Planned')).toContainText('Breakeven 57.00');
     await first.close();
 
     // Monday 11:05: Record entry 1 @ 2.10 and 1 @ 1.90.
     const context = await launchAt(profile, MONDAY_1105);
     const again = await firstPage(context);
     await again.goto(`/trades/${tradeId}`);
-    await expect(again.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    await expect(detail.heading(again, 'XYZ')).toBeVisible();
     await recordOptionEntry(again, [
       { quantity: '1', price: '2.10', fee: '0.65', time: '2026-10-12T10:00' },
       { quantity: '1', price: '1.90', fee: '0.65', time: '2026-10-12T11:00' },
@@ -27,16 +29,19 @@ test.describe('B7.1 Plan and open a Long Call', () => {
 
     // Relaunch; open Detail.
     const relaunched = await launchAt(profile, MONDAY_1105);
-    const detail = await firstPage(relaunched);
-    await detail.goto(`/trades/${tradeId}`);
-    await expect(detail.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(detail.locator('header').getByText('Open', { exact: true })).toBeVisible();
-    await expect(valueOf(detail, 'Position')).toHaveText('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
-    await expect(valueOf(detail.getByRole('region', { name: 'Entry Quality' }), 'Actual initial risk')).toContainText('$401.30');
-    await expect(detail.getByRole('region', { name: 'Current Expiration Payoff' })).toContainText('Breakeven 57.01');
+    const reopened = await firstPage(relaunched);
+    await reopened.goto(`/trades/${tradeId}`);
+    await expect(detail.heading(reopened, 'XYZ')).toBeVisible();
+    await expect(detail.lifecycleBadge(reopened)).toHaveText('Open');
+    await openDrawer(reopened, 'Position');
+    await expect(detail.positionValue(reopened)).toHaveText('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
+    await openDrawer(reopened, 'Plan and Risk');
+    await expect(detail.actualInitialRisk(reopened)).toContainText('$401.30');
+    await openDrawer(reopened, 'Payoff');
+    await expect(detail.payoff(reopened, 'Current')).toContainText('Breakeven 57.01');
 
     // Durable state: the option Instrument, conditions holding only their triggers, Exercise Intent NotAuthorized.
-    const [trade] = tradesOf(workspaceOf(await probe(detail))!);
+    const [trade] = tradesOf(workspaceOf(await probe(reopened))!);
     const value = (kind: string) => factsOf(trade!, kind)[0]!.versions.at(-1)!.value;
     expect(trade!.lifecycle).toBe('Open');
     expect(value('PlannedLeg')).toEqual({
@@ -66,18 +71,18 @@ test.describe('BUG-2 Expiration date', () => {
     await expect(expiration).not.toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('.field', { has: expiration })).not.toContainText('Enter an expiration date');
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
     const tradeId = await currentTradeId(page);
     await first.close();
 
     // The contract's expiration line shows on the Open Trade (D7 row 23.19).
     const context = await launchAt(profile, MONDAY_1105);
-    const detail = await firstPage(context);
-    await detail.goto(`/trades/${tradeId}`);
-    await expect(detail.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await recordOptionEntry(detail, [{ quantity: '2', price: '2.00', fee: '0.65', time: '2026-10-12T10:00' }]);
-    await detail.goto(`/trades/${tradeId}`);
-    await expect(detail.getByText('Expires Fri 20 Nov 2026')).toBeVisible();
+    const reopened = await firstPage(context);
+    await reopened.goto(`/trades/${tradeId}`);
+    await expect(detail.heading(reopened, 'XYZ')).toBeVisible();
+    await recordOptionEntry(reopened, [{ quantity: '2', price: '2.00', fee: '0.65', time: '2026-10-12T10:00' }]);
+    await reopened.goto(`/trades/${tradeId}`);
+    await expect(detail.summary(reopened).getByText('Expires Fri 20 Nov 2026')).toBeVisible();
     await context.close();
   });
 });

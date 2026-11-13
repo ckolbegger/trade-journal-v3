@@ -1,17 +1,11 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import {
-  AT_10, backToTrade, confirmReference, debtForm, debtFormOf, declineDebt, deferEntry, enterMark, expect, expectAccessible, fillRows, MONDAY, MONDAY_1100, onboardedAt, openEntryForm, openReview, openTradeFromOpenList, reachCard, READY,
+  AT_10, backToTrade, confirmReference, debtFormOf, declineDebt, deferEntry, detail, enterMark, expect, expectAccessible, fillRows, MONDAY, MONDAY_1100, onboardedAt, openDrawer, openEntryForm, openReview, openTradeFromOpenList, reachCard, READY,
   reflectionSection, reflectionsOf, setClock, tabTo, test, TUESDAY, TUESDAY_1230, TUESDAY_1700, type Row,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
 const at = (time: string, quantity = '10'): Row => ({ quantity, price: '50.00', fee: '1.00', time });
-
-// An owed Debt item on Trade Detail for the Position Change at a local time, and a settled one (an Entry or a
-// decline, which show the moment on its own line) for the same.
-const owedItem = (page: Page, when: string): Locator => page.locator('li', { has: page.getByRole('heading', { level: 3 }), hasText: `Position Change at ${when}` }).last();
-const settledItem = (page: Page, when: string): Locator =>
-  page.locator('li', { has: page.getByRole('heading', { level: 3 }), hasText: new RegExp(`Moment\\s*${when}`) }).last();
 
 test.describe('B5.12 Responsive and accessible', () => {
   test('should keep a half-filled Debt answer through 390 px and back, switching layout at 960 px', async ({ profile }) => {
@@ -72,14 +66,14 @@ test.describe('B5.12 Responsive and accessible', () => {
     await openTradeFromOpenList(page);
     await deferEntry(page, [at('2026-10-13T10:00')]);
     await backToTrade(page);
-    await expect(owedItem(page, '2026-10-13 10:00')).toContainText('Due in the Review after next');
+    await expect(detail.owedItem(page, '2026-10-13 10:00')).toContainText('Due in the Review after next');
 
     // Keyboard only: reflect on the 10:30 Position Change, answer it, and press Answer.
-    const reflectNow = owedItem(page, '2026-10-12 10:30').getByRole('button', { name: 'Reflect now' });
+    const reflectNow = detail.owedItem(page, '2026-10-12 10:30').getByRole('button', { name: 'Reflect now' });
     await reflectNow.scrollIntoViewIfNeeded();
     await tabTo(page, reflectNow);
     await page.keyboard.press('Enter');
-    const form = debtForm(page);
+    const form = detail.debtForm(page);
     await expect(form).toBeVisible();
     await expectAccessible(page, 'Debt form on Trade Detail');
     await tabTo(page, form.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned'));
@@ -91,18 +85,19 @@ test.describe('B5.12 Responsive and accessible', () => {
     await expect(form.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();
     await tabTo(page, form.getByRole('button', { name: 'Answer', exact: true }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('region', { name: 'Saved reflection' })).toBeVisible(READY);
+    await expect(detail.savedReflection(page)).toBeVisible(READY);
 
     // Decline the 10:45 reflection, then read Detail with Outstanding, answered, and declined reflections.
-    await owedItem(page, '2026-10-12 10:45').getByRole('button', { name: 'Decline', exact: true }).click();
+    await detail.owedItem(page, '2026-10-12 10:45').getByRole('button', { name: 'Decline', exact: true }).click();
     await declineDebt(page, 'No time to write it up.', undefined);
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible(READY);
-    await expect(settledItem(page, '2026-10-12 10:30')).toContainText('Deferred, answered');
-    await expect(settledItem(page, '2026-10-12 10:45')).toContainText('Declined later');
-    await expect(owedItem(page, '2026-10-12 10:00')).toContainText('Reflection owed');
-    await expect(owedItem(page, '2026-10-12 10:00')).toContainText('Due in the next Review');
-    await expect(owedItem(page, '2026-10-13 10:00')).toContainText('Due in the Review after next');
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await openDrawer(page, 'Journal');
+    await expect(detail.settledItem(page, '2026-10-12 10:30')).toContainText('Deferred, answered');
+    await expect(detail.settledItem(page, '2026-10-12 10:45')).toContainText('Declined later');
+    await expect(detail.owedItem(page, '2026-10-12 10:00')).toContainText('Reflection owed');
+    await expect(detail.owedItem(page, '2026-10-12 10:00')).toContainText('Due in the next Review');
+    await expect(detail.owedItem(page, '2026-10-13 10:00')).toContainText('Due in the Review after next');
     await expectAccessible(page, 'Detail with Outstanding, answered, and declined reflections');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Detail with Outstanding, answered, and declined reflections, narrow');

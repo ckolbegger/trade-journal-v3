@@ -5,6 +5,7 @@ import {
   completeReflection,
   confirmD1Plan,
   confirmReference,
+  detail,
   executionRow,
   expect,
   expectAccessible,
@@ -13,6 +14,7 @@ import {
   holdTradesStore,
   onboardedD1Page,
   onboardedPage,
+  openDrawer,
   openEntryForm,
   PC1,
   PC2,
@@ -118,7 +120,8 @@ test.describe('B2.12 responsive and accessible', () => {
     await backToTrade(page);
     await recordEntry(page, PC3, { decline: 'Added into strength.' });
     await backToTrade(page);
-    await expect(page.getByRole('region', { name: 'Deviations' })).toContainText('20 shares above plan');
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.deviations(page)).toContainText('20 shares above plan');
     await expectAccessible(page, 'Open Detail, resolved with a Deviation and a decline');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Open Detail, narrow');
@@ -208,7 +211,7 @@ test.describe('B2.12 responsive and accessible', () => {
     const page = await onboardedPage(context);
     await confirmReference(page);
 
-    await tabTo(page, page.getByRole('link', { name: 'Record entry' }));
+    await tabTo(page, detail.recordEntryLink(page));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Record entry', level: 1 })).toBeVisible();
     // Focus follows the navigation: the new view's heading holds it, not the body.
@@ -243,8 +246,9 @@ test.describe('B2.12 responsive and accessible', () => {
 
     await tabTo(page, page.getByRole('link', { name: 'Back to the Trade' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('region', { name: 'Position', exact: true })).toContainText('60 shares of XYZ');
-    await expect(page.locator('header .badge')).toHaveText('Open');
+    await openDrawer(page, 'Position');
+    await expect(detail.position(page)).toContainText('60 shares of XYZ');
+    await expect(detail.lifecycleBadge(page)).toHaveText('Open');
     await context.close();
   });
 });

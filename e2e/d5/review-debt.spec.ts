@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  answerDebt, AT_10, backToTrade, completion, confirmReference, debtFormOf, debtsOf, declineDebt, declinesOf, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, MONDAY_1700,
-  onboardedAt, openReview, openTradeFromOpenList, probe, reachCard, reflectionSection, reflectionsOf, reloadReview, saveAction, setClock, startEntry, status, test, TUESDAY, TUESDAY_1700, workspaceOf,
+  answerDebt, AT_10, backToTrade, completion, confirmReference, debtFormOf, debtsOf, declineDebt, declinesOf, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, MONDAY_1700,
+  onboardedAt, openDrawer, openReview, openTradeFromOpenList, probe, reachCard, reflectionSection, reflectionsOf, reloadReview, saveAction, setClock, startEntry, status, test, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 // Monday 10:05: a deferred entry on the reference Plan. Monday 17:00: the Review's Mark and Hold, Complete without the reflection.
@@ -18,7 +18,7 @@ async function deferredThenMondayReview(profile: Parameters<typeof launchAt>[0])
   await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
   await expect(page.getByText('Reflection owed')).toBeVisible();
   await backToTrade(page);
-  await expect(page.getByText('Reflection owed')).toBeVisible();
+  await expect(detail.reflectionOwed(page)).toBeVisible();
 
   // Monday's Review shows the reflection in XYZ's card as due in the next Review and reads Complete without it.
   await setClock(context, page, MONDAY_1700);
@@ -96,9 +96,10 @@ test.describe('B5.2 Decline in the Review', () => {
     // Detail shows Declined later with the reason.
     await page.goto('/');
     await openTradeFromOpenList(page);
-    await expect(page.getByText('Declined later', { exact: true })).toBeVisible();
-    await expect(page.getByText('Too rushed to write it up.')).toBeVisible();
-    await expect(page.getByText('Reflection owed')).toHaveCount(0);
+    await openDrawer(page, 'Journal');
+    await expect(detail.journal(page).getByText('Declined later', { exact: true })).toBeVisible();
+    await expect(detail.journal(page).getByText('Too rushed to write it up.')).toBeVisible();
+    await expect(detail.reflectionOwed(page)).toHaveCount(0);
 
     const workspace = workspaceOf(await probe(page))!;
     const debts = debtsOf(workspace);

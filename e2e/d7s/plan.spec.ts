@@ -1,4 +1,4 @@
-import { confirmBothKinds, expect, factsOf, fillBothKinds, firstPage, launchAt, MONDAY_0900, MONDAY_1105, OC2, onboardedAt, OS2, probe, stopOptionLabel, targetOptionLabel, test, tradesOf, valueOf, workspaceOf } from './support.ts';
+import { confirmBothKinds, detail, expect, factsOf, fillBothKinds, firstPage, launchAt, MONDAY_0900, MONDAY_1105, OC2, onboardedAt, openDrawer, OS2, probe, stopOptionLabel, targetOptionLabel, test, tradesOf, workspaceOf } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -11,23 +11,26 @@ test.describe('B7S.1 Plan a Cash-Secured Put with both kinds', () => {
     // Monday 09:00: New Plan, Cash-Secured Put, O-S2's terms in all four price fields, reflection; confirm.
     const { context: first, page } = await onboardedAt(profile, MONDAY_0900);
     const tradeId = await confirmBothKinds(page, OS2);
-    await expect(valueOf(page, '1R (original risk)')).toHaveText('$480.00');
-    await expect(valueOf(page, 'Reward : risk').first()).toHaveText('0.29');
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.oneR(page)).toHaveText('$480.00');
+    await expect(detail.summaryValue(page, 'Reward : risk')).toHaveText('0.29');
     await first.close();
 
     // Relaunch; open Detail: W6's four lines, one per condition in Plan order.
     const context = await launchAt(profile, MONDAY_1105);
-    const detail = await firstPage(context);
-    await detail.goto(`/trades/${tradeId}`);
-    await expect(detail.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible();
-    await expect(valueOf(detail, '1R (original risk)')).toHaveText('$480.00');
-    for (const where of ['first', 'last'] as const) {
-      await expect(valueOf(detail, 'Stop')[where]().locator('div')).toHaveText(['MNO at or below 41.00', 'Option at or above $3.60']);
-      await expect(valueOf(detail, 'Target')[where]().locator('div')).toHaveText(['MNO at or above 44.50', 'Option at or below $0.30']);
+    const reopened = await firstPage(context);
+    await reopened.goto(`/trades/${tradeId}`);
+    await expect(detail.heading(reopened, 'MNO')).toBeVisible();
+    await openDrawer(reopened, 'Plan and Risk');
+    await expect(detail.oneR(reopened)).toHaveText('$480.00');
+    // The Summary and the Plan card each show the four lines once (the cockpit shows them in one place).
+    for (const where of [detail.summaryValue, detail.planValue]) {
+      await expect(where(reopened, 'Stop').locator('div')).toHaveText(['MNO at or below 41.00', 'Option at or above $3.60']);
+      await expect(where(reopened, 'Target').locator('div')).toHaveText(['MNO at or above 44.50', 'Option at or below $0.30']);
     }
 
     // Durable state: four conditions with their kinds and prices, in Plan order.
-    const [trade] = tradesOf(workspaceOf(await probe(detail))!);
+    const [trade] = tradesOf(workspaceOf(await probe(reopened))!);
     const conditions = (kind: string) => factsOf(trade!, kind).map((fact) => [fact.versions.at(-1)!.value['kind'], fact.versions.at(-1)!.value['price']]);
     expect(conditions('Stop')).toEqual([['UnderlyingPrice', '41'], ['StructureValue', '3.6']]);
     expect(conditions('Target')).toEqual([['UnderlyingPrice', '44.5'], ['StructureValue', '0.3']]);

@@ -34,7 +34,7 @@ async function answerCloseReviewOnCard(page: Page, symbol: string): Promise<void
   const item = await openOwedCard(page, symbol);
   await item.getByRole('button', { name: /^Reflect on / }).click();
   await answerCloseReviewIn(debtForm(page));
-  await answerDebt(page, undefined);
+  await answerDebt(page, undefined, 'page');
 }
 
 test.describe('B6.2 Close Review deferred to the Review', () => {

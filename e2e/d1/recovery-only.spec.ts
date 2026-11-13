@@ -1,4 +1,4 @@
-import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, PLANNED, probe, READY, test } from './support.ts';
+import { confirmPlan, detail, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, openDrawer, PLANNED, probe, READY, test } from './support.ts';
 
 test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', { tag: '@every-task' }, () => {
   test('should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged', async ({ server, profile }) => {
@@ -22,7 +22,8 @@ test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', { 
       await expect(nav.getByRole('link', { name: 'New Plan' })).toHaveCount(0);
 
       await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ' }).click();
-      await expect(page.getByText('Breakout above the 50-day on volume.')).toBeVisible();
+      await openDrawer(page, 'Journal');
+      await expect(detail.planReflection(page).getByText('Breakout above the 50-day on volume.')).toBeVisible();
       await nav.getByRole('link', { name: 'Accounts' }).click();
       await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible();
       await expect(page.getByRole('button', { name: /Add (Account|Institution)/ })).toHaveCount(0);

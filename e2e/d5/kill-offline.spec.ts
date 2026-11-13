@@ -1,6 +1,6 @@
 import {
-  answerDebt, AT_10, backToTrade, BASE_URL, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005,
-  onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, reflectionsOf, spawnedBrowser, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
+  answerDebt, AT_10, backToTrade, BASE_URL, confirmReference, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005,
+  onboardedAt, onboardedPage, openDrawer, openReview, pinClock, probe, reachCard, reflectionsOf, spawnedBrowser, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const NOT_WRITABLE = { name: /Read only/ };
@@ -65,11 +65,12 @@ test.describe('B5.8 Offline cold restart (AC-DEL-001)', () => {
     await expect(first.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await deferEntry(first, [AT_10]);
     await backToTrade(first);
-    await expect(first.getByText('Reflection owed')).toBeVisible();
-    await first.getByRole('button', { name: 'Reflect now' }).click();
+    await expect(detail.reflectionOwed(first)).toBeVisible();
+    await detail.reflectNowButton(first).click();
     await fillDebtAnswers(first);
     await answerDebt(first, undefined);
-    await expect(first.getByText('Deferred, answered', { exact: true })).toBeVisible();
+    await openDrawer(first, 'Journal');
+    await expect(detail.journal(first).getByText('Deferred, answered', { exact: true })).toBeVisible();
     await offline.close();
 
     // Another offline restart: the Position Change, the Debt, and its answer survive.
@@ -77,12 +78,14 @@ test.describe('B5.8 Offline cold restart (AC-DEL-001)', () => {
     const reopened = await firstPage(again);
     await reopened.goto(detailPath);
     await expect(reopened.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
-    await expect(reopened.getByText('Deferred, answered', { exact: true })).toBeVisible();
-    await expect(reopened.getByText('Reflection owed')).toHaveCount(0);
+    await openDrawer(reopened, 'Journal');
+    await expect(detail.journal(reopened).getByText('Deferred, answered', { exact: true })).toBeVisible();
+    await expect(detail.reflectionOwed(reopened)).toHaveCount(0);
     const workspace = workspaceOf(await probe(reopened))!;
     expect(debtsOf(workspace)).toHaveLength(1);
     expect(entriesWithSettledDebt(workspace)).toHaveLength(1);
-    await expect(reopened.getByRole('region', { name: 'Position', exact: true })).toContainText('100 shares of XYZ');
+    await openDrawer(reopened, 'Position');
+    await expect(detail.position(reopened)).toContainText('100 shares of XYZ');
     await again.close();
   });
 });

@@ -1,4 +1,4 @@
-import { confirmBothKinds, expect, onboardedAt, recordOptionEntry, READY, test, TUESDAY_1030, valueOf, type BothKinds } from './support.ts';
+import { confirmBothKinds, detail, expect, onboardedAt, openDrawer, recordOptionEntry, READY, test, TUESDAY_1030, type BothKinds } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -16,9 +16,10 @@ test.describe('BUG-3 Entry beyond the option-price Stop', () => {
     await confirmBothKinds(page, NVDA_CALL);
     await recordOptionEntry(page, [{ quantity: '1', price: '7.35', fee: '0', time: '2026-10-12T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('heading', { name: 'NVDA', level: 1 })).toBeVisible(READY);
-    await expect(valueOf(page, 'Risk from entry')).toHaveText('$735.00 · 0.98R');
-    await expect(valueOf(page, 'Actual initial risk').first()).toHaveText('$735.00');
+    await expect(detail.heading(page, 'NVDA')).toBeVisible(READY);
+    await openDrawer(page, 'Today');
+    await expect(detail.atEntryFigure(page, 'Risk from entry')).toHaveText('$735.00 · 0.98R');
+    await expect(detail.summaryValue(page, 'Actual initial risk')).toHaveText('$735.00');
     await context.close();
   });
 });

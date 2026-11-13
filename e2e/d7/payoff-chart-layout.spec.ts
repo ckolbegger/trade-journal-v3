@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { confirmOptionPlan, expect, expectPayoffChart, MONDAY_0900, OC, onboardedAt, OS, READY, test } from './support.ts';
+import { confirmOptionPlan, detail, expect, expectPayoffChart, MONDAY_0900, OC, onboardedAt, openDrawer, OS, READY, test } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
 
@@ -34,7 +34,7 @@ function overlaps(boxes: readonly Box[]): string[] {
   return found;
 }
 
-const plannedChart = (page: Page): Locator => page.getByRole('region', { name: 'Planned Expiration Payoff' }).getByRole('img');
+const plannedChart = (page: Page): Locator => detail.payoffChart(page, 'Planned');
 
 async function reachCharts(profile: Parameters<typeof onboardedAt>[0]): Promise<{ page: Page; urls: string[] }> {
   const { page } = await onboardedAt(profile, MONDAY_0900);
@@ -53,6 +53,7 @@ test.describe('T7.32-B2 Payoff chart layout', () => {
     const { page, urls } = await reachCharts(profile);
     for (const url of urls) {
       await page.goto(url);
+      await openDrawer(page, 'Payoff');
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 900 });
         await expect(plannedChart(page)).toBeVisible(READY);
@@ -68,6 +69,7 @@ test.describe('T7.32-B2 Payoff chart layout', () => {
     await page.setViewportSize({ width: 320, height: 900 });
     for (const url of urls) {
       await page.goto(url);
+      await openDrawer(page, 'Payoff');
       await expect(plannedChart(page)).toBeVisible(READY);
       const { fontSizes } = await chartTexts(plannedChart(page));
       expect(Math.min(...fontSizes)).toBeGreaterThanOrEqual(10);
@@ -79,7 +81,8 @@ test.describe('T7.32-B2 Payoff chart layout', () => {
     const { page, urls } = await reachCharts(profile);
     await page.setViewportSize({ width: 320, height: 900 });
     await page.goto(urls[0]!);
-    const cells = page.getByRole('region', { name: 'Planned Expiration Payoff' }).getByRole('table').getByRole('cell', { name: /^−\$/ });
+    await openDrawer(page, 'Payoff');
+    const cells = detail.payoff(page, 'Planned').getByRole('table').getByRole('cell', { name: /^−\$/ });
     await expect(cells.first()).toBeVisible(READY);
     const lines = await cells.evaluateAll((tds) => tds.map((td) => {
       const range = document.createRange();

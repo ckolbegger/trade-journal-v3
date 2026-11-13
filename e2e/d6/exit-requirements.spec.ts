@@ -1,6 +1,6 @@
 import {
-  answerIn, closeReasonGroup, closeReviewGroup, closingSection, createTA, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openExitForm,
-  openTradeFromOpenList, probe, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, valueOf, workspaceOf,
+  answerIn, closeReasonGroup, closeReviewGroup, closingSection, createTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm,
+  openTradeFromOpenList, probe, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -89,8 +89,9 @@ test.describe('B6.4 Oversell', () => {
     const again = await firstPage(relaunched);
     await again.goto('/');
     await openTradeFromOpenList(again, 'XYZ');
-    await expect(valueOf(again, 'Position')).toHaveText('100 shares of XYZ');
-    await expect(again.getByRole('heading', { name: 'Lot Matches' })).toHaveCount(0);
+    await openDrawer(again, 'Position');
+    await expect(detail.positionValue(again)).toHaveText('100 shares of XYZ');
+    await expect(detail.lotMatchesHeading(again)).toHaveCount(0);
     await relaunched.close();
   });
 });

@@ -1,6 +1,6 @@
 import {
-  confirmOptionPlan, currentTradeId, expect, factsOf, fillOptionExit, firstPage, launchAt, MONDAY_0900, MONDAY_1105, onboardedAt, OS, probe, receiptResult, recordOptionEntry, test, tradesOf, TUESDAY_1030, valueOf,
-  workspaceOf,
+  confirmOptionPlan, currentTradeId, detail, expect, factsOf, fillOptionExit, firstPage, launchAt, MONDAY_0900, MONDAY_1105, onboardedAt, openDrawer, OS, probe, receiptResult, recordOptionEntry, test, tradesOf,
+  TUESDAY_1030, valueOf, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -18,7 +18,7 @@ test.describe('B7.2 Cash-Secured Put', () => {
     const second = await launchAt(profile, MONDAY_1105);
     const entryPage = await firstPage(second);
     await entryPage.goto(`/trades/${tradeId}`);
-    await expect(entryPage.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible();
+    await expect(detail.heading(entryPage, 'MNO')).toBeVisible();
     await recordOptionEntry(entryPage, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
     await second.close();
 
@@ -26,7 +26,8 @@ test.describe('B7.2 Cash-Secured Put', () => {
     const context = await launchAt(profile, TUESDAY_1030);
     const page2 = await firstPage(context);
     await page2.goto(`/trades/${tradeId}`);
-    await expect(valueOf(page2, 'Position')).toHaveText('Short 2 contracts of MNO 20 Nov 2026 45 Put');
+    await openDrawer(page2, 'Position');
+    await expect(detail.positionValue(page2)).toHaveText('Short 2 contracts of MNO 20 Nov 2026 45 Put');
     await fillOptionExit(page2, [{ quantity: '3', price: '0.60', fee: '0.65', time: '2026-10-13T10:00' }]);
     await page2.getByRole('button', { name: 'Save exit' }).click();
     await expect(page2.getByRole('heading', { name: 'This exit can’t be saved yet' })).toBeVisible();
@@ -49,12 +50,13 @@ test.describe('B7.2 Cash-Secured Put', () => {
 
     // Relaunch: the Trade is Open with 1 short contract and the realized amount, from stored facts.
     const relaunched = await launchAt(profile, TUESDAY_1030);
-    const detail = await firstPage(relaunched);
-    await detail.goto(`/trades/${tradeId}`);
-    await expect(valueOf(detail, 'Position')).toHaveText('Short 1 contract of MNO 20 Nov 2026 45 Put');
-    await expect(valueOf(detail, 'Realized to date')).toContainText('$63.70');
-    await expect(detail.locator('header').getByText('Open', { exact: true })).toBeVisible();
-    const final = tradesOf(workspaceOf(await probe(detail))!)[0]!;
+    const reopened = await firstPage(relaunched);
+    await reopened.goto(`/trades/${tradeId}`);
+    await openDrawer(reopened, 'Position');
+    await expect(detail.positionValue(reopened)).toHaveText('Short 1 contract of MNO 20 Nov 2026 45 Put');
+    await expect(detail.realizedToDate(reopened)).toContainText('$63.70');
+    await expect(detail.lifecycleBadge(reopened)).toHaveText('Open');
+    const final = tradesOf(workspaceOf(await probe(reopened))!)[0]!;
     expect(final.lifecycle).toBe('Open');
     expect(factsOf(final, 'Execution').map((f) => [f.versions.at(-1)!.value['action'], f.versions.at(-1)!.value['quantity']])).toEqual([['Sell', '2'], ['Buy', '1']]);
     await relaunched.close();

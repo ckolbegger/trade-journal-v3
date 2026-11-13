@@ -2,7 +2,7 @@
 // production d6 release (the current source) as the default served build, the Playwright clock that sets the date, the
 // four-Trade fixture (the five-Trade fixture without T-D) created through the UI, and the Review steps.
 import type { BrowserContext, Locator, Page } from '@playwright/test';
-import { backToTrade, confirmReference, expect, fillPlan, firstPage, onboardedPage, PLAN, READY, recordEntry, test as d1Test, type PlanValues, type Profile, type ProbedDatabase } from '../d2/support.ts';
+import { backToTrade, confirmReference, detail, expect, fillPlan, firstPage, onboardedPage, PLAN, READY, recordEntry, test as d1Test, type PlanValues, type Profile, type ProbedDatabase } from '../d2/support.ts';
 
 export * from '../d2/support.ts';
 
@@ -116,7 +116,7 @@ export async function createTradeAt(page: Page, values: PlanValues, planTime: st
   await fillPlan(page, values);
   await page.getByLabel('Plan time').fill(planTime);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(page.getByRole('heading', { name: values.symbol, level: 1 })).toBeVisible();
+  await expect(detail.heading(page, values.symbol)).toBeVisible();
   const tradeId = await currentTradeId(page);
   for (const [index, [quantity, price, time]] of fills.entries()) {
     if (index > 0) await backToTrade(page, values.symbol);

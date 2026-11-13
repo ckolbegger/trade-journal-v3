@@ -4,8 +4,11 @@
 import { test as base, chromium, expect, type BrowserContext, type Page } from '@playwright/test';
 import path from 'node:path';
 import { startReleaseServer, type ReleaseServer } from '../../tools/release-server.ts';
+import { detail } from '../support/detail/index.ts';
 
 export { expect };
+// Every later suite's support re-exports this one, so each spec reads Trade Detail through these (plan section 6.3).
+export { detail, openDrawer } from '../support/detail/index.ts';
 
 export const BASE_URL = 'http://localhost:5175';
 export const ZONE = 'America/New_York';
@@ -190,7 +193,7 @@ export async function confirmPlan(page: Page, values: PlanValues = PLAN): Promis
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
   await fillPlan(page, values);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(page.getByRole('heading', { name: values.symbol, level: 1 })).toBeVisible();
+  await expect(detail.heading(page, values.symbol)).toBeVisible();
 }
 
 // A fresh profile taken through first run and onboarding, left on the Trades page.

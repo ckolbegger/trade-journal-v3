@@ -1,10 +1,11 @@
-import type { Page } from '@playwright/test';
 import {
   confirmReference,
+  detail,
   expect,
   factsOf,
   firstPage,
   onboardedPage,
+  openDrawer,
   openTradeFromOpenList,
   PC1,
   probe,
@@ -15,8 +16,6 @@ import {
   tradesOf,
   workspaceOf,
 } from './support.ts';
-
-const region = (page: Page, name: string) => page.getByRole('region', { name, exact: true });
 
 test.describe('B2.9 Recovery Only (faults build)', () => {
   test('should keep the Open list and Detail readable with no Record entry, and leave the stores unchanged', async ({ server, profile }) => {
@@ -35,9 +34,11 @@ test.describe('B2.9 Recovery Only (faults build)', () => {
     const row = page.getByRole('table', { name: 'Open Trades' }).getByRole('row', { name: /XYZ/ });
     await expect(row).toContainText('60 of 100');
     await openTradeFromOpenList(page);
-    await expect(region(page, 'Position')).toContainText('60 shares of XYZ');
-    await expect(region(page, 'Entry Quality')).toContainText('Entry not yet resolved: 60 of 100 entered');
-    await expect(page.getByRole('link', { name: 'Record entry' })).toHaveCount(0);
+    await openDrawer(page, 'Position');
+    await expect(detail.position(page)).toContainText('60 shares of XYZ');
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.entryQuality(page)).toContainText('Entry not yet resolved: 60 of 100 entered');
+    await expect(detail.recordEntryLink(page)).toHaveCount(0);
     expect(await probe(page)).toEqual(before);
     await context.close();
   });
@@ -71,7 +72,7 @@ test.describe('B2.10 mid-session failure (faults build)', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await confirmReference(page);
-    await page.getByRole('link', { name: 'Record entry' }).click();
+    await detail.recordEntryLink(page).click();
     const row = page.getByRole('group', { name: 'Execution 1', exact: true });
     await row.getByLabel('Quantity').fill('60');
     await row.getByLabel('Price').fill('50.10');

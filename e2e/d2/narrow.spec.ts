@@ -2,12 +2,14 @@ import type { Page } from '@playwright/test';
 import {
   backToTrade,
   confirmReference,
+  detail,
   expect,
   BASE_URL,
   fillPlan,
   firstPage,
   onboard,
   onboardedPage,
+  openDrawer,
   openPlanned,
   PC1,
   PC2,
@@ -23,14 +25,14 @@ import {
 const WIDTHS = [375, 320] as const;
 
 // The page never scrolls sideways, and every table that renders sits inside its own horizontal
-// scroll container no wider than the viewport.
-async function expectReflowed(page: Page, view: string): Promise<void> {
+// scroll container no wider than the viewport. A Trade Detail passes its own tables (`detail.TABLES`), never every table of the page.
+async function expectReflowed(page: Page, view: string, tables = 'table'): Promise<void> {
   // The layout switches after a resize, so measure once the narrow layout is in place.
   await expect(page.getByRole('navigation', { name: 'Primary' })).toHaveAttribute('data-placement', 'bottom');
-  const layout = await page.evaluate(() => ({
+  const layout = await page.evaluate((selector) => ({
     scrollWidth: document.documentElement.scrollWidth,
     innerWidth: window.innerWidth,
-    tables: [...document.querySelectorAll('table')].map((table) => {
+    tables: [...document.querySelectorAll<HTMLTableElement>(selector)].map((table) => {
       let container = table.parentElement;
       while (container && !['auto', 'scroll'].includes(getComputedStyle(container).overflowX)) container = container.parentElement;
       return {
@@ -39,7 +41,7 @@ async function expectReflowed(page: Page, view: string): Promise<void> {
         containerWidth: container ? container.getBoundingClientRect().right : Infinity,
       };
     }),
-  }));
+  }), tables);
   expect(layout.scrollWidth, `${view} page width`).toBeLessThanOrEqual(layout.innerWidth);
   for (const table of layout.tables) {
     expect(table.scrolls, `${view}: ${table.caption} inside a scroll container`).toBe(true);
@@ -77,10 +79,11 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
     await backToTrade(page);
     await recordEntry(page, PC3, { decline: 'Added into strength.' });
     await backToTrade(page);
-    await expect(page.getByRole('heading', { name: 'Entry Quality' })).toBeVisible();
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.entryQuality(page).getByRole('heading', { name: 'Entry Quality' })).toBeVisible();
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 800 });
-      await expectReflowed(page, `resolved Open Detail at ${width}`);
+      await expectReflowed(page, `resolved Open Detail at ${width}`, detail.TABLES);
     }
     await setup.close();
 
@@ -90,10 +93,10 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
     const app = await firstPage(context);
     await app.goto('/?lifecycle=Planned');
     await app.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click(READY);
-    await expect(app.getByRole('table', { name: 'Stored versus expected' })).toBeVisible();
+    await expect(detail.storedVersusExpected(app)).toBeVisible();
     for (const width of WIDTHS) {
       await app.setViewportSize({ width, height: 800 });
-      await expectReflowed(app, `disagreeing Open Detail at ${width}`);
+      await expectReflowed(app, `disagreeing Open Detail at ${width}`, detail.TABLES);
     }
     await context.close();
   });
@@ -146,10 +149,10 @@ test.describe('critic-2 defects narrow reflow', () => {
           .toBeLessThanOrEqual(width);
       }
     };
-    const expectEachWidth = async (view: string) => {
+    const expectEachWidth = async (view: string, tables?: string) => {
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 800 });
-        await expectReflowed(page, `${view} at ${width}`);
+        await expectReflowed(page, `${view} at ${width}`, tables);
       }
     };
     await page.goto(`${BASE_URL}/`);
@@ -167,8 +170,8 @@ test.describe('critic-2 defects narrow reflow', () => {
     await fillPlan(page);
     await expectEachWidth('New Plan form');
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expectEachWidth('Planned Detail');
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
+    await expectEachWidth('Planned Detail', detail.TABLES);
     await context.close();
   });
 });

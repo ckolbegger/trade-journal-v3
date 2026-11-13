@@ -1,5 +1,5 @@
 import {
-  answerIn, closeTheTrade, createTA, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openClosedTab, openExitForm, openTradeFromOpenList, probe, receiptResult,
+  answerIn, closeTheTrade, createTA, detail, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, MONDAY_1700, onboardedAt, openClosedTab, openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult,
   sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
@@ -30,7 +30,8 @@ test.describe('B6.8 Offline cold restart (AC-DEL-001)', () => {
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible();
     await expect(valueOf(receiptResult(page), 'Realized to date')).toContainText('$55.90');
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(valueOf(page, 'Position')).toHaveText('70 shares of XYZ');
+    await openDrawer(page, 'Position');
+    await expect(detail.positionValue(page)).toHaveText('70 shares of XYZ');
 
     // The full exit of the remaining 70, closing the Trade.
     await openExitForm(page);
@@ -49,9 +50,10 @@ test.describe('B6.8 Offline cold restart (AC-DEL-001)', () => {
     const row = reopened.getByRole('table', { name: 'Closed Trades' }).locator('tbody tr', { hasText: 'XYZ' });
     await expect(row).toContainText('Target Reached');
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(valueOf(reopened, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
-    await expect(valueOf(reopened, 'Close Reason')).toHaveText('Target Reached');
-    await expect(reopened.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).not.toHaveCount(0);
+    await expect(detail.resultValue(reopened, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
+    await expect(detail.resultValue(reopened, 'Close Reason')).toHaveText('Target Reached');
+    await openDrawer(reopened, 'Position');
+    await expect(detail.lotMatches(reopened).locator('tbody tr')).not.toHaveCount(0);
     const workspace = workspaceOf(await probe(reopened))!;
     const [trade] = tradesOf(workspace);
     expect(trade!.lifecycle).toBe('Closed');

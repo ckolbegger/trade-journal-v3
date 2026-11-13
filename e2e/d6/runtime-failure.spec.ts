@@ -1,6 +1,6 @@
 import {
-  answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, createTA, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
-  onboardedAt, openExitForm, openTradeFromOpenList, probe, READY, receiptResult, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, valueOf, workspaceOf,
+  answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, createTA, detail, executionRow, exitReflection, expect, factsOf, FOUR_TRADES, fillRows, firstPage, launchAt, MONDAY_1700,
+  onboardedAt, openDrawer, openExitForm, openTradeFromOpenList, probe, READY, receiptResult, sell, test, tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, TUESDAY_1000_LOCAL, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -42,15 +42,16 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     const row = page.getByRole('table', { name: 'Closed Trades' }).locator('tbody tr', { hasText: 'XYZ' });
     await expect(row).toContainText('Target Reached');
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible(READY);
-    await expect(valueOf(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
-    await expect(valueOf(page, 'Close Reason')).toHaveText('Target Reached');
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(2);
-    await expect(page.getByRole('heading', { name: 'Close Review Reflection owed', level: 3 })).toBeVisible();
-    await expect(page.getByText('Reflection owed', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Reflect now' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Record exit' })).toHaveCount(0);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
+    await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Target Reached');
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(2);
+    await expect(detail.closeReviewOwedHeading(page)).toBeVisible();
+    await expect(detail.reflectionOwedExact(page)).toBeVisible();
+    await expect(detail.reflectNowButton(page)).toHaveCount(0);
+    await expect(detail.declineButton(page)).toHaveCount(0);
+    await expect(detail.recordExitLink(page)).toHaveCount(0);
 
     // The partly closed Trade's Open Detail shows its Lot Match and the realized figure, with no Record exit.
     // (Navigation stays inside the app: a new page load without ?faults=control would be Writable again.)
@@ -58,11 +59,12 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await page.getByRole('tab', { name: 'Open' }).click();
     await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
     await openTradeFromOpenList(page, 'ABC');
-    await expect(valueOf(page, 'Position')).toHaveText('60 shares of ABC');
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
-    await expect(valueOf(page, 'Realized to date')).toContainText('$39.10');
-    await expect(page.getByRole('link', { name: 'Record exit' })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Record entry' })).toHaveCount(0);
+    await openDrawer(page, 'Position');
+    await expect(detail.positionValue(page)).toHaveText('60 shares of ABC');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+    await expect(detail.realizedToDate(page)).toContainText('$39.10');
+    await expect(detail.recordExitLink(page)).toHaveCount(0);
+    await expect(detail.recordEntryLink(page)).toHaveCount(0);
 
     expect(await probe(page)).toEqual(before);
     await context.close();

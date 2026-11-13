@@ -1,5 +1,5 @@
 import {
-  BASE_URL, createShortPutTrade, entriesOf, expect, factsOf, firstPage, FRIDAY_NOV_1700, onboardedPage, pinClock, probe, receiptResult, recordExpiration, spawnedBrowser, test, tradesOf, valueOf, workspaceOf,
+  BASE_URL, createShortPutTrade, detail, entriesOf, expect, factsOf, firstPage, FRIDAY_NOV_1700, onboardedPage, pinClock, probe, receiptResult, recordExpiration, spawnedBrowser, test, tradesOf, valueOf, workspaceOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -12,7 +12,7 @@ test.describe('B7.8 Kill after commit', () => {
       await pinClock(killed.context, FRIDAY_NOV_1700);
       const page = await onboardedPage(killed.context);
       await createShortPutTrade(page);
-      await page.getByRole('link', { name: 'Record expiration' }).click();
+      await detail.recordExpirationLink(page).click();
       await recordExpiration(page, 'now');
       // The result has rendered: the browser is killed right after.
       await expect(valueOf(receiptResult(page), 'Lifecycle')).toHaveText('Closed');
@@ -29,11 +29,11 @@ test.describe('B7.8 Kill after commit', () => {
       const row = page.getByRole('table', { name: 'Closed Trades' }).locator('tbody tr', { hasText: 'MNO' });
       await expect(row).toBeVisible();
       await row.getByRole('link', { name: 'MNO', exact: true }).click();
-      await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible();
-      await expect(valueOf(page, 'Terminal Disposition')).toHaveText('Closed via expiration of 2 contracts');
+      await expect(detail.heading(page, 'MNO')).toBeVisible();
+      await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via expiration of 2 contracts');
       // Both reflections are answered: nothing is owed.
-      await expect(page.getByText('Reflection owed')).toHaveCount(0);
-      await expect(page.getByText('Close Review owed')).toHaveCount(0);
+      await expect(detail.reflectionOwed(page)).toHaveCount(0);
+      await expect(detail.closeReviewOwed(page)).toHaveCount(0);
 
       const workspace = workspaceOf(await probe(page))!;
       const [trade] = tradesOf(workspace);

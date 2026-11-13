@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  cardHeader, createOs2Trade, expect, firstPage, launchAt, onboardedAt, openReview, reachCard, READY, reloadReview, saveSessionMarks, test, tradeCard, TUESDAY, TUESDAY_1030, TUESDAY_1700, WEDNESDAY, WEDNESDAY_1700_NY,
-  THURSDAY, THURSDAY_1700_NY, type TradeRef, valueOf,
+  cardHeader, createOs2Trade, detail, expect, firstPage, launchAt, onboardedAt, openReview, reachCard, READY, reloadReview, saveSessionMarks, test, tradeCard, TUESDAY, TUESDAY_1030, TUESDAY_1700, WEDNESDAY, WEDNESDAY_1700_NY,
+  THURSDAY, THURSDAY_1700_NY, type TradeRef,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -46,15 +46,15 @@ test.describe('B7S.3 Detail and list on Thursday', () => {
     await expect(row.getByText('Target reached', { exact: true })).toHaveCount(1);
 
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
-    const table = page.getByRole('table', { name: 'Conditions' });
+    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    const table = detail.conditionsTable(page);
     const cells = async (name: string): Promise<string[]> => (await table.getByRole('row', { name }).getByRole('cell').allTextContents()).slice(0, 3);
     expect(await cells('Stop on MNO')).toEqual(['Stop on MNO', '41.00', 'Active']);
     expect(await cells('Stop on the option price')).toEqual(['Stop on the option price', '$3.60', 'Breached']);
     expect(await cells('Target on MNO')).toEqual(['Target on MNO', '44.50', 'Reached']);
     expect(await cells('Target on the option price')).toEqual(['Target on the option price', '$0.30', 'Active']);
-    await expect(valueOf(page, 'Risk to stop')).toContainText('$0.00');
-    await expect(valueOf(page, 'Reward to target')).toContainText('$0.00');
+    await expect(detail.riskToStop(page)).toContainText('$0.00');
+    await expect(detail.rewardToTarget(page)).toContainText('$0.00');
     await context.close();
   });
 });

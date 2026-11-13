@@ -440,6 +440,21 @@ On `5fe66fc0`, 2026-11-13 10:21 to 10:32 EST. The "+ uncommitted changes" the la
 | Browser, full tier, browser-2 | 74 passed (4.3 min), exit 0 | [suite-runs/merge-1-browser-2.txt](suite-runs/merge-1-browser-2.txt) |
 | Checks (14 commands) | 14 of 14 exit 0 | [suite-runs/merge-1-checks.txt](suite-runs/merge-1-checks.txt) |
 
+## T8P.4 Drawer reach (lane `d08p/t8p4`), the task's record
+
+Adds `e2e/support/detail/index.ts` (`openDrawer(page, name)`, which returns at once when the Detail has no tab list named "Detail", and the full-width banner reads), one helper file per lane (`rail-a.ts`, `rail-b.ts`, `today.ts`, `position.ts`, `plan.ts`, `payoff.ts`, `journal.ts`; none for Price History) and a shared `scope.ts` (the Detail article, region, value and figure scoping). Every read goes through the current layout, scoped to its card; `detail` (the flat merge of the lane files) and `openDrawer` are re-exported by `e2e/d1/support.ts`, so every later suite's `./support.ts` carries them. `valueOf` (d6/support.ts) now takes a `Locator` only, so a page-wide Detail read no longer type-checks.
+
+| Command | Result |
+|---|---|
+| `.claude/scripts/full-suite.sh evidence/D08P T8P.4 browser-1` | 119 passed (4.7 min), exit 0: [suite-runs/T8P.4-browser-1.txt](suite-runs/T8P.4-browser-1.txt) |
+| `.claude/scripts/full-suite.sh evidence/D08P T8P.4 browser-2` | 74 passed (4.2 min), exit 0: [suite-runs/T8P.4-browser-2.txt](suite-runs/T8P.4-browser-2.txt). The first run failed 2 cases (d6/close-review: `answerDebt(page, undefined)` is also the Review's owed list, so it gained a `where` parameter; d7s/entry-beyond-stop: the first match was the Summary card, so it reads `summaryValue`). Both fixed, then the whole stage rerun. |
+| `rg -c "openDrawer\|detail\." e2e` | 52 files, 460 lines; `openDrawer` alone: 40 files, 136 lines |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each (part of the checks stage) |
+| `.claude/scripts/full-suite.sh evidence/D08P T8P.4 lane` | unit 1519 passed, integration 218 passed, checks 14 of 14 exit 0: [suite-runs/T8P.4-unit.txt](suite-runs/T8P.4-unit.txt), [-integration](suite-runs/T8P.4-integration.txt), [-checks](suite-runs/T8P.4-checks.txt), [-lane](suite-runs/T8P.4-lane.txt) |
+| `.claude/scripts/run-complete.sh evidence/D08P T8P.4` | `run complete` |
+
+Reach-table readers left direct, with the reason: d1/offline and d1/readiness (h1 only, outside the 44); d2/migration :71 (FROZEN release build, h1 only); d2/ui-alignment's `measureTitle` and `h1Top` (they measure the title row's geometry through `main h1`, not Detail content); d5/support `fillDebtAnswers` (page-wide `debtForm`, shared with the Review card's form, which is not a Detail read); `expectShownInFull` (takes the locator its caller scopes). Receipt and Review reads (Result region, Lot Matches on the exit receipt, "Reflection owed" on a receipt) are not Detail reads and stay.
+
 ## T8P.4 Drawer-reach helpers (lane `d08p-t8p4`)
 
 Commits on `d08p/t8p4`: `f48eb077` (helpers and moved reads), `dadd6aeb` (browser and lane tier outputs). New `e2e/support/detail/`: `index.ts` (`openDrawer`, the banner reads, `CARDS`, `TABLES`, `root`), `scope.ts`, `rail-a.ts`, `rail-b.ts`, `today.ts`, `position.ts`, `plan.ts`, `payoff.ts`, `journal.ts`. The specs moved across `e2e/d1`, `d2`, `d4`, `d5`, `d6`, `d7`, `d7p` and `d7s`.

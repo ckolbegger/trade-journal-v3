@@ -1,5 +1,5 @@
 import {
-  answerIn, closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, expect, factsOf, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openReview, openSettlement, probe, READY, test,
+  answerIn, closeReviewGroup, completion, createSettlementFixture, createShortPutTrade, detail, expect, factsOf, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openReview, openSettlement, probe, READY, test,
   tradesOf, TUESDAY_1030, workspaceOf,
 } from './support.ts';
 
@@ -26,11 +26,12 @@ test.describe('B7.10 Recovery Only (faults build)', () => {
     await expect(openTrades).toBeVisible(READY);
     await expect(openTrades.locator('tbody tr', { hasText: 'MNO' })).toBeVisible();
     await openTrades.locator('tbody tr', { hasText: 'XYZ 20 Nov 2026 55 Call' }).getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible(READY);
-    await expect(page.getByRole('region', { name: 'Planned Expiration Payoff' })).toContainText('Breakeven 57.00');
-    await expect(page.getByRole('region', { name: 'Current Expiration Payoff' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /^Settlement Due/ })).toBeVisible();
-    for (const name of ['Record expiration', 'Record entry', 'Record exit']) await expect(page.getByRole('link', { name })).toHaveCount(0);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await openDrawer(page, 'Payoff');
+    await expect(detail.payoff(page, 'Planned')).toContainText('Breakeven 57.00');
+    await expect(detail.payoff(page, 'Current')).toBeVisible();
+    await expect(detail.settlementDueHeading(page)).toBeVisible();
+    for (const link of [detail.recordExpirationLink(page), detail.recordEntryLink(page), detail.recordExitLink(page)]) await expect(link).toHaveCount(0);
 
     // The write route is dropped: no New Plan to confirm from.
     await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' })).toHaveCount(0);
@@ -60,7 +61,7 @@ test.describe('B7.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     const page = await firstPage(context);
     await page.goto('/');
     await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'MNO', exact: true }).click();
-    await page.getByRole('link', { name: 'Record expiration' }).click();
+    await detail.recordExpirationLink(page).click();
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
     await answerIn(reflection);

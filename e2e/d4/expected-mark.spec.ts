@@ -1,11 +1,7 @@
 import type { Page } from '@playwright/test';
-import { createTradeAt, enterMark, expect, FOUR_TRADES, FRIDAY_1700, observationsOf, onboardedAt, openReview, openTradeFromOpenList, probe, setClock, test, TUESDAY_NOON, workspaceOf } from './support.ts';
+import { createTradeAt, detail, enterMark, expect, FOUR_TRADES, FRIDAY_1700, observationsOf, onboardedAt, openDrawer, openReview, openTradeFromOpenList, probe, setClock, test, TUESDAY_NOON, workspaceOf } from './support.ts';
 
 const XYZ = FOUR_TRADES[0]!.plan;
-
-// One figure of a Detail section, by the section's name and the figure's term.
-const figure = (page: Page, section: string, term: string) =>
-  page.getByRole('region', { name: section, exact: true }).locator('div', { has: page.locator('dt', { hasText: new RegExp(`^${term}$`) }) }).locator('dd');
 
 async function openXyz(page: Page): Promise<void> {
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
@@ -24,30 +20,36 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     // Tuesday noon: Monday's Mark is expected and missing; Friday's is stale context only.
     await setClock(context, page, TUESDAY_NOON);
     await openTradeFromOpenList(page, 'XYZ');
-    const valuation = page.getByRole('region', { name: 'Valuation', exact: true });
+    await openDrawer(page, 'Today');
+    const valuation = detail.valuation(page);
     await expect(valuation.getByRole('link', { name: 'Mark missing for XYZ on Mon Oct 12' })).toBeVisible();
     await expect(valuation).toContainText('Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)');
-    await expect(figure(page, 'Valuation', 'Expected Mark Date')).toHaveText('Mon Oct 12');
-    await expect(page.getByRole('heading', { name: 'At Fri Oct 9 close', level: 2 })).toBeVisible();
-    for (const term of ['Open P&L', 'Current Marked Trade P&L']) await expect(figure(page, 'Valuation', term)).toHaveText('Mark missing: XYZ, Mon Oct 12');
-    for (const term of ['Risk to stop', 'Reward to target']) await expect(figure(page, 'Risk and reward', term)).toHaveText('Mark missing: XYZ, Mon Oct 12');
+    await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
+    await expect(detail.datedHeading(page, 'At Fri Oct 9 close')).toBeVisible();
+    await openDrawer(page, 'Position');
+    await expect(detail.openPnlFigure(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
+    await expect(detail.currentMarkedPnl(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
+    for (const term of ['Risk to stop', 'Reward to target']) await expect(detail.riskFigure(page, term)).toHaveText('Mark missing: XYZ, Mon Oct 12');
     // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
-    await expect(figure(page, 'Valuation', 'Mark')).toHaveCount(0);
-    await expect(figure(page, 'At Fri Oct 9 close', 'Mark')).toHaveText('$51.20');
+    await openDrawer(page, 'Today');
+    await expect(detail.todayFigure(page, 'Mark')).toHaveCount(0);
+    await expect(detail.datedFigure(page, 'At Fri Oct 9 close', 'Mark')).toHaveText('$51.20');
 
     // The Review lists Monday's Mark; entering it makes the Detail Available.
     await openReview(page);
     await enterMark(page, 'XYZ', 'Mon Oct 12', '52.00');
     await openXyz(page);
-    await expect(figure(page, 'Valuation', 'Expected Mark Date')).toHaveText('Mon Oct 12');
-    await expect(figure(page, 'Valuation', 'Mark')).toHaveText('$52.00');
-    await expect(figure(page, 'Valuation', 'Current Marked Trade P&L')).toContainText('+$199.00');
+    await openDrawer(page, 'Today');
+    await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
+    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$52.00');
+    await expect(detail.currentMarkedPnl(page)).toContainText('+$199.00');
     await expect(valuation).not.toContainText('Stale context');
     await expect(valuation).not.toContainText('Mark missing');
 
     // Both Marks are durable observation records.
     await page.reload();
-    await expect(figure(page, 'Valuation', 'Mark')).toHaveText('$52.00');
+    await openDrawer(page, 'Today');
+    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$52.00');
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-09', '51.2'], ['2026-10-12', '52']]);
     await context.close();
   });

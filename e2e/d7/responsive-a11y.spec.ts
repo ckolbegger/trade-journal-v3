@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  closeReviewGroup, closingSection, completion, createSettlementFixture, createShortPutTrade, currentTradeId, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
-  fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openEntryForm, openReview, openSettlement, receiptResult, READY, test, tabTo, TUESDAY_1030, valueOf,
+  closeReviewGroup, closingSection, completion, createSettlementFixture, createShortPutTrade, currentTradeId, detail, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
+  fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openEntryForm, openReview, openSettlement, receiptResult, READY, test, tabTo, TUESDAY_1030, valueOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -14,7 +14,8 @@ const NO_OPTION = /^Not applicable: no option expiration$/;
 // Axe at 1280 px and again at 390 px, returning to 1280.
 async function accessibleAtBothWidths(page: Page, state: string): Promise<void> {
   await expectAccessible(page, state);
-  const tables = page.getByRole('table', { name: / payoff at expiration by / });
+  await openDrawer(page, 'Payoff');
+  const tables = detail.payoffTables(page);
   const charts = await tables.count();
   await page.setViewportSize(NARROW);
   // Every payoff chart keeps its table equivalent in view at 390 px too.
@@ -62,7 +63,7 @@ test.describe('B7.13 Responsive and accessible', () => {
     await fillOptionPlan(page, { strategy: 'Long Put', underlying: 'ABC', expiration: '2026-11-20', strike: '50', contracts: '1', entry: '1.50', stop: '55', target: '45', planTime: '2026-10-13T09:00' });
     await accessibleAtBothWidths(page, 'option Plan form');
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'ABC', level: 1 })).toBeVisible(READY);
+    await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
     await expectPayoffChart(page, 'Planned');
     await expectPayoffNotApplicable(page, 'Current', /^Not applicable/);
     await accessibleAtBothWidths(page, 'Planned Long Put Detail, Planned payoff');
@@ -70,24 +71,24 @@ test.describe('B7.13 Responsive and accessible', () => {
 
     // Open Long Call Detail without Settlement Due: both payoff views have chart and table; the Current one offsets the realized amount.
     await page.goto(`/trades/${t1.tradeId}`);
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible(READY);
-    await expect(page.getByRole('heading', { name: /^Settlement Due/ })).toHaveCount(0);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
+    await expect(detail.settlementDueHeading(page)).toHaveCount(0);
     await expectPayoffChart(page, 'Planned');
     await expectPayoffChart(page, 'Current');
-    await expect(page.getByRole('table', { name: /^Current payoff at expiration by XYZ price, including \+\$88\.70 realized to date$/ })).toBeVisible();
+    await expect(detail.payoffTable(page, /^Current payoff at expiration by XYZ price, including \+\$88\.70 realized to date$/)).toBeVisible();
     await accessibleAtBothWidths(page, 'option Detail without Settlement Due');
 
     // The Execution forms: entry and exit.
     await openEntryForm(page);
     await accessibleAtBothWidths(page, 'option entry form');
     await page.goto(`/trades/${t1.tradeId}`);
-    await page.getByRole('link', { name: 'Record exit' }).click();
+    await detail.recordExitLink(page).click();
     await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
     await accessibleAtBothWidths(page, 'option exit form');
 
     // Long Stock Detail: both payoff views say Not applicable in text, with no chart.
     await page.goto(`/trades/${t2.tradeId}`);
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible(READY);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible(READY);
     await expectPayoffNotApplicable(page, 'Planned', NO_OPTION);
     await expectPayoffNotApplicable(page, 'Current', NO_OPTION);
     await accessibleAtBothWidths(page, 'Long Stock Detail, payoff Not applicable');
@@ -97,17 +98,17 @@ test.describe('B7.13 Responsive and accessible', () => {
     const friday = await launchAt(profile, FRIDAY_NOV_1700);
     const due = await firstPage(friday);
     await due.goto(`/trades/${t3.tradeId}`);
-    const panel = due.getByRole('region', { name: /^Settlement Due/ });
+    const panel = detail.settlementDuePanel(due);
     await expect(panel).toBeVisible(READY);
-    await expect(panel.getByRole('heading', { name: /^Settlement Due/ })).toBeVisible();
-    await expect(valueOf(panel, 'Contract')).toHaveText('MNO 20 Nov 2026 45 Put');
+    await expect(detail.settlementDueHeading(due)).toBeVisible();
+    await expect(detail.settlementDueValue(due, 'Contract')).toHaveText('MNO 20 Nov 2026 45 Put');
     await expectPayoffChart(due, 'Planned');
     await expectPayoffChart(due, 'Current');
     await accessibleAtBothWidths(due, 'option Detail with Settlement Due');
     await due.goto(`/trades/${abcId}`);
-    await expect(due.getByRole('heading', { name: 'ABC', level: 1 })).toBeVisible(READY);
+    await expect(detail.heading(due, 'ABC')).toBeVisible(READY);
     await due.goto(`/trades/${t3.tradeId}`);
-    await due.getByRole('link', { name: 'Record expiration' }).click();
+    await detail.recordExpirationLink(due).click();
     await expect(due.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
     await accessibleAtBothWidths(due, 'expiration form');
 
@@ -129,8 +130,8 @@ test.describe('B7.13 Responsive and accessible', () => {
     const context = await launchAt(profile, FRIDAY_NOV_1700);
     const page = await firstPage(context);
     await page.goto(`/trades/${tradeId}`);
-    await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
-    await tabTo(page, page.getByRole('link', { name: 'Record expiration' }));
+    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await tabTo(page, detail.recordExpirationLink(page));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Expiration', level: 1 })).toBeVisible(READY);
     const reflection = page.getByRole('region', { name: 'Reflection on this expiration' });
@@ -151,7 +152,7 @@ test.describe('B7.13 Responsive and accessible', () => {
 
     // The Closed option Detail: the Current view does not apply, in text; the Planned one keeps its chart and table.
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
+    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
     await expectPayoffChart(page, 'Planned');
     await expectPayoffNotApplicable(page, 'Current', /^Not applicable/);
     await accessibleAtBothWidths(page, 'Closed option Detail');

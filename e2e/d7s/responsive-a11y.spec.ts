@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  createOs2Trade, expect, expectAccessible, firstPage, launchAt, MONDAY_0900, onboardedAt, openReview, reachCard, READY, saveSessionMarks, stopOptionLabel, tabTo, targetOptionLabel, test, TUESDAY, TUESDAY_1030, TUESDAY_1700,
-  OS2, valueOf,
+  createOs2Trade, detail, expect, expectAccessible, firstPage, launchAt, MONDAY_0900, onboardedAt, openDrawer, openReview, reachCard, READY, saveSessionMarks, stopOptionLabel, tabTo, targetOptionLabel, test, TUESDAY,
+  TUESDAY_1030, TUESDAY_1700, OS2,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -51,8 +51,8 @@ test.describe('B7S.5 Responsive and accessible', () => {
 
     // Detail's conditions: every status is a word in its row.
     await page.goto(`/trades/${trade.tradeId}`);
-    await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
-    const table = page.getByRole('table', { name: 'Conditions' });
+    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    const table = detail.conditionsTable(page);
     await expect(table).toBeVisible(READY);
     const statuses = table.locator('tbody tr td:nth-child(3)');
     await expect(statuses).toHaveCount(4);
@@ -107,8 +107,9 @@ test.describe('B7S.5 Responsive and accessible', () => {
     await page.keyboard.press('Space');
     await tabTo(page, page.getByRole('button', { name: 'Confirm Plan' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
-    await expect(valueOf(page, '1R (original risk)')).toHaveText('$480.00');
+    await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.oneR(page)).toHaveText('$480.00');
     await context.close();
   });
 });

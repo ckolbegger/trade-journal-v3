@@ -1,5 +1,5 @@
 import {
-  BASE_URL, closeTheTrade, createTA, expect, factsOf, fillRows, firstPage, onboardedPage, openExitForm, openTradeFromOpenList, pinClock, probe, receiptResult, sell, spawnedBrowser, test,
+  BASE_URL, closeTheTrade, createTA, detail, expect, factsOf, fillRows, firstPage, onboardedPage, openDrawer, openExitForm, openTradeFromOpenList, pinClock, probe, receiptResult, sell, spawnedBrowser, test,
   tradesOf, TUESDAY_1405, TUESDAY_1405_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
@@ -39,13 +39,14 @@ test.describe('B6.7 Kill after commit', () => {
       const row = page.getByRole('table', { name: 'Closed Trades' }).locator('tbody tr', { hasText: 'XYZ' });
       await expect(row).toContainText('Target Reached');
       await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-      await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-      await expect(valueOf(page, 'Close Reason')).toHaveText('Target Reached');
-      await expect(valueOf(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
-      expect(await page.getByRole('table', { name: 'Lot Matches' }).locator('tbody').innerText()).toBe(lotMatchesBefore);
+      await expect(detail.heading(page, 'XYZ')).toBeVisible();
+      await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Target Reached');
+      await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
+      await openDrawer(page, 'Position');
+      expect(await detail.lotMatches(page).locator('tbody').innerText()).toBe(lotMatchesBefore);
       // Both reflections are answered: nothing is owed.
-      await expect(page.getByText('Reflection owed')).toHaveCount(0);
-      await expect(page.getByText('Close Review owed')).toHaveCount(0);
+      await expect(detail.reflectionOwed(page)).toHaveCount(0);
+      await expect(detail.closeReviewOwed(page)).toHaveCount(0);
 
       const workspace = workspaceOf(await probe(page))!;
       const [trade] = tradesOf(workspace);

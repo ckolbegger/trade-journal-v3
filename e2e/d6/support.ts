@@ -1,7 +1,7 @@
 // Shared support for the D6 browser suite (plan section 6.2): D5R's helpers (the Playwright clock, the production d6 release as
 // the default served build, the card helpers) plus the exit form's steps, the Closed tab, and the stored records an exit leaves.
 import type { Locator, Page } from '@playwright/test';
-import { executionRow, expect, FOUR_TRADES, createTrades, READY, type ProbedDatabase, type Row } from '../d5r/support.ts';
+import { detail, executionRow, expect, FOUR_TRADES, createTrades, READY, type ProbedDatabase, type Row } from '../d5r/support.ts';
 
 export * from '../d5r/support.ts';
 
@@ -23,7 +23,7 @@ export const sell = (quantity: string, price: string, fee: string, time: string)
 // ---- The exit form (?action=Sell) ---------------------------------------------------------------------------------------
 
 export async function openExitForm(page: Page): Promise<void> {
-  await page.getByRole('link', { name: 'Record exit' }).click();
+  await detail.recordExitLink(page).click();
   await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
   await expect(executionRow(page, 1)).toBeVisible();
 }
@@ -59,8 +59,9 @@ export const receiptResult = (page: Page): Locator => page.getByRole('region', {
 
 // ---- Trade Detail and the Closed tab ------------------------------------------------------------------------------------
 
-// The text of the definition-list value that follows a term, within a scope.
-export const valueOf = (scope: Locator | Page, term: string): Locator => scope.locator(`dt:text-is("${term}") + dd`);
+// The text of the definition-list value that follows a term, within a scope. Never page-wide: a Trade Detail's values are read
+// through `detail` (plan section 6.3), so this takes a card or panel, such as a receipt's Result.
+export const valueOf = (scope: Locator, term: string): Locator => scope.locator(`dt:text-is("${term}") + dd`);
 
 export async function openClosedTab(page: Page): Promise<void> {
   await page.goto('/');

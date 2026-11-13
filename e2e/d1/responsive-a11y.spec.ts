@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Locator, Page } from '@playwright/test';
-import { BASE_URL, expect, firstPage, onboard, onboardedPage, openPlanned, PLAN, profileAt, READY, startJournal, test } from './support.ts';
+import { BASE_URL, detail, expect, firstPage, onboard, onboardedPage, openDrawer, openPlanned, PLAN, profileAt, READY, startJournal, test } from './support.ts';
 
 async function expectAccessible(page: Page, state: string): Promise<void> {
   // @axe-core/playwright types its page against its own playwright-core copy; the object is the same.
@@ -84,7 +84,7 @@ test.describe('B1.15 responsive and accessible', () => {
     await page.getByLabel('Why this trade, why now?').fill(PLAN.thesis);
     await page.getByLabel('What would invalidate the thesis?').fill(PLAN.invalidation);
     await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
+    await expect(detail.heading(page, PLAN.symbol)).toBeVisible();
     await expectAccessible(page, 'Trade Detail');
     await nav(page).getByRole('link', { name: 'Trades' }).click();
     await openPlanned(page);
@@ -175,8 +175,9 @@ test.describe('B1.15 responsive and accessible', () => {
     await expect(emotion.getByLabel('Calm')).toBeChecked();
     await tabTo(page, page.getByRole('button', { name: 'Confirm Plan' }));
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Plan Baseline' }).getByText('$250.00')).toBeVisible();
+    await expect(detail.heading(page, PLAN.symbol)).toBeVisible();
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.planBaseline(page).getByText('$250.00')).toBeVisible();
     await context.close();
   });
 });

@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
-import { BASE_URL, confirmPlan, expect, firstPage, onboardedPage, PLANNED, probe, READY, test, workspaceOf, ZONE } from './support.ts';
+import { BASE_URL, confirmPlan, detail, expect, firstPage, onboardedPage, openDrawer, PLANNED, probe, READY, test, workspaceOf, ZONE } from './support.ts';
 
 test.describe('B1.2 onboarding and first Plan', () => {
   test('should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index', async ({ server, profile }) => {
@@ -19,10 +19,12 @@ test.describe('B1.2 onboarding and first Plan', () => {
     await expect(row).toContainText('$250.00');
     await row.getByRole('link', { name: 'XYZ' }).click();
     // Wait for the Detail: the list's own tab is also named Planned and its row also carries the 1R figure.
-    await expect(again.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(again.getByText('Planned', { exact: true })).toBeVisible();
-    await expect(again.getByRole('region', { name: 'Plan Baseline' }).getByText('$250.00')).toBeVisible();
-    await expect(again.getByText('Breakout above the 50-day on volume.')).toBeVisible();
+    await expect(detail.heading(again, 'XYZ')).toBeVisible();
+    await expect(detail.lifecycle(again, 'Planned')).toBeVisible();
+    await openDrawer(again, 'Plan and Risk');
+    await expect(detail.planBaseline(again).getByText('$250.00')).toBeVisible();
+    await openDrawer(again, 'Journal');
+    await expect(detail.planReflection(again).getByText('Breakout above the 50-day on volume.')).toBeVisible();
 
     const workspace = workspaceOf(await probe(again))!;
     expect(workspace.stores['trades']).toHaveLength(1);
@@ -50,7 +52,8 @@ test.describe('B1.3 kill after commit', { tag: '@every-task' }, () => {
       const page = await firstPage(relaunched.context);
       await page.goto(`${BASE_URL}${PLANNED}`);
       await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ' }).click(READY);
-      await expect(page.getByText('Breakout above the 50-day on volume.')).toBeVisible();
+      await openDrawer(page, 'Journal');
+      await expect(detail.planReflection(page).getByText('Breakout above the 50-day on volume.')).toBeVisible();
       const workspace = workspaceOf(await probe(page))!;
       const trades = workspace.stores['trades'] as { tradeId: string }[];
       const entries = workspace.stores['journalEntries'] as { anchor: { tradeId: string } }[];

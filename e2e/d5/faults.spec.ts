@@ -1,5 +1,5 @@
 import {
-  actionFormOf, AT_10, completion, confirmReference, debtForm, debtFormOf, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
+  actionFormOf, AT_10, completion, confirmReference, debtFormOf, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
   openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
@@ -43,11 +43,11 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     // Detail shows the Debt as owed, with no Reflect now or Decline.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await openTradeFromOpenList(page);
-    await expect(page.getByText('Reflection owed')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Reflect now' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
-    await expect(debtForm(page)).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
+    await expect(detail.reflectionOwed(page)).toBeVisible();
+    await expect(detail.reflectNowButton(page)).toHaveCount(0);
+    await expect(detail.declineButton(page)).toHaveCount(0);
+    await expect(detail.debtForm(page)).toHaveCount(0);
+    await expect(detail.answerButton(page)).toHaveCount(0);
 
     expect(await probe(page)).toEqual(before);
     await context.close();

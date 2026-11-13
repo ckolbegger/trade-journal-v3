@@ -1,6 +1,6 @@
 import {
-  answerIn, closeTheTrade, closingSection, createTA, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, lotMatchRecordsIn, MONDAY_1700, onboardedAt, openClosedTab,
-  openExitForm, openTradeFromOpenList, probe, receiptResult, sell, setClock, test, tradesOf, TUESDAY_1000_LOCAL, TUESDAY_1405, TUESDAY_1405_LOCAL, valueOf, workspaceOf,
+  answerIn, closeTheTrade, closingSection, createTA, detail, executionRow, exitReflection, expect, factsOf, fillRows, firstPage, launchAt, lotMatchRecordsIn, MONDAY_1700, onboardedAt, openClosedTab,
+  openDrawer, openExitForm, openTradeFromOpenList, probe, receiptResult, sell, setClock, test, tradesOf, TUESDAY_1000_LOCAL, TUESDAY_1405, TUESDAY_1405_LOCAL, valueOf, workspaceOf,
 } from './support.ts';
 
 const TUESDAY_1005 = '2026-10-13T14:05:00Z';
@@ -27,15 +27,16 @@ test.describe('B6.1 Partial then final exit', () => {
     await expect(receiptResult(page)).toContainText('Open');
     await expect(valueOf(receiptResult(page), 'Realized to date')).toContainText('$55.90');
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
 
     // Detail: Open, Position 70, one Lot Match, realized $55.90, no Closing section.
-    await expect(valueOf(page, 'Position')).toHaveText('70 shares of XYZ');
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
-    await expect(valueOf(page, 'Realized to date')).toContainText('$55.90');
-    await expect(page.locator('header').getByText('Open', { exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Result' })).toHaveCount(0);
-    await expect(valueOf(page, 'Close Reason')).toHaveCount(0);
+    await openDrawer(page, 'Position');
+    await expect(detail.positionValue(page)).toHaveText('70 shares of XYZ');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+    await expect(detail.realizedToDate(page)).toContainText('$55.90');
+    await expect(detail.lifecycle(page, 'Open')).toBeVisible();
+    await expect(detail.resultHeading(page)).toHaveCount(0);
+    await expect(detail.resultValue(page, 'Close Reason')).toHaveCount(0);
 
     // Tuesday 14:05: Record exit with two rows (50 and 20 @ 53.00). The Closing section appears once 70 is entered.
     await setClock(context, page, TUESDAY_1405);
@@ -63,12 +64,12 @@ test.describe('B6.1 Partial then final exit', () => {
     const row = again.getByRole('table', { name: 'Closed Trades' }).locator('tbody tr', { hasText: 'XYZ' });
     await expect(row).toContainText('Target Reached');
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(again.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(again.locator('header').getByText('Closed', { exact: true })).toBeVisible();
-    await expect(valueOf(again, 'Realized P&L')).toContainText('$248.00');
-    await expect(valueOf(again, 'Realized R')).toContainText('0.99R');
-    await expect(valueOf(again, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
-    await expect(valueOf(again, 'Close Reason')).toHaveText('Target Reached');
+    await expect(detail.heading(again, 'XYZ')).toBeVisible();
+    await expect(detail.lifecycle(again, 'Closed')).toBeVisible();
+    await expect(detail.resultValue(again, 'Realized P&L')).toContainText('$248.00');
+    await expect(detail.resultValue(again, 'Realized R')).toContainText('0.99R');
+    await expect(detail.resultValue(again, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
+    await expect(detail.resultValue(again, 'Close Reason')).toHaveText('Target Reached');
 
     // Durable state: the Sell Executions and the Close Reason fact, and no Lot-Match record.
     const workspace = workspaceOf(await probe(again))!;

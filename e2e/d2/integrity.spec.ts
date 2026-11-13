@@ -1,5 +1,6 @@
 import {
   confirmReference,
+  detail,
   SECOND_PLAN,
   expect,
   firstPage,
@@ -42,8 +43,8 @@ test.describe('B2.13 integrity surfaced', () => {
     await expect(row).toContainText('Records disagree');
 
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(app.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    const panel = app.getByRole('region', { name: 'Records disagree' });
+    await expect(detail.heading(app, 'XYZ')).toBeVisible();
+    const panel = detail.recordsDisagree(app);
     await expect(panel).toBeVisible();
     await expect(panel.getByRole('table', { name: 'Stored versus expected' }).getByRole('row', { name: /Lifecycle/ })).toHaveText(
       /Lifecycle\s*Planned\s*Open/,
@@ -80,8 +81,8 @@ test.describe('Planned list row for an incoherent Trade', () => {
     await expect(table.getByRole('row', { name: /ABC/ })).not.toContainText('Not available');
 
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
-    await expect(app.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(app.getByRole('region', { name: "Facts can't be replayed" })).toBeVisible();
+    await expect(detail.heading(app, 'XYZ')).toBeVisible();
+    await expect(detail.factsIncoherent(app)).toBeVisible();
     expect(await probe(app)).toEqual(before);
     await context.close();
   });
@@ -107,17 +108,17 @@ test.describe('incoherent Trade Detail', () => {
     await expect(app.getByRole('tablist', { name: 'Trades by lifecycle' })).toBeVisible(READY);
     const before = await probe(app);
     await openTradeFromOpenList(app);
-    const panel = app.getByRole('region', { name: "Facts can't be replayed" });
+    const panel = detail.factsIncoherent(app);
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('New entries cannot be recorded for this Trade until its records agree.');
-    await expect(app.getByRole('link', { name: 'Record entry' })).toHaveCount(0);
+    await expect(detail.recordEntryLink(app)).toHaveCount(0);
 
     // A direct link to the entry route shows the explanation and a way back, not the form.
     await app.goto(`${new URL(app.url()).pathname}/record-entry`);
     await expect(app.getByText('New entries cannot be recorded for this Trade until its records agree.')).toBeVisible();
     await expect(app.getByRole('button', { name: 'Save entry' })).toHaveCount(0);
     await app.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(app.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    await expect(detail.heading(app, 'XYZ')).toBeVisible();
     expect(await probe(app)).toEqual(before);
     await context.close();
   });

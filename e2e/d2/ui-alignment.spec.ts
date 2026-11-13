@@ -6,6 +6,7 @@ import {
   checkForUpdate,
   confirmD1Plan,
   confirmReference,
+  detail,
   expect,
   completeReflection,
   expectAccessible,
@@ -14,6 +15,7 @@ import {
   firstPage,
   onboardedD1Page,
   onboardedPage,
+  openDrawer,
   openEntryForm,
   openPlanned,
   PC1,
@@ -228,7 +230,7 @@ test.describe('T2.60-B4 storage icon on the page title row', () => {
           await go('New Plan', 'New Plan');
           await fillPlan(page, PLAN);
           await page.getByRole('button', { name: 'Confirm Plan' }).click();
-          await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
+          await expect(detail.heading(page, PLAN.symbol)).toBeVisible();
         }],
         ['New Plan', () => go('New Plan', 'New Plan')],
         ['About', () => go('About', 'About')],
@@ -287,7 +289,7 @@ test.describe('T2.60-B4 storage icon on the page title row', () => {
           await go('Trades', 'Trades');
           await openPlanned(page);
           await page.getByRole('link', { name: new RegExp(PLAN.symbol) }).first().click();
-          await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
+          await expect(detail.heading(page, PLAN.symbol)).toBeVisible();
         } else await open();
         await expect(page.getByRole('link', { name: NAME })).toHaveCount(0);
         expect(Math.abs((await h1Top(page)) - shown[view]!), `${view} h1 top with and without the icon at ${width}`).toBeLessThanOrEqual(1);
@@ -332,8 +334,8 @@ const GUTTER = 16;
 // Trades has no .card when it lists rows; its table region is the top-level block there.
 const CARDS = '.card, .first-run, .onboarding, .gate, .table-scroll';
 
-// Every top-level card keeps a 16 px side gutter and the page does not scroll sideways.
-async function expectGutters(page: Page, view: string, width: number): Promise<void> {
+// Every top-level card keeps a 16 px side gutter and the page does not scroll sideways. A Trade Detail passes its own cards (`detail.CARDS`).
+async function expectGutters(page: Page, view: string, width: number, cardsSelector = CARDS): Promise<void> {
   await page.setViewportSize({ width, height: 844 });
   await expect
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth), { message: `${view} at ${width} page width` })
@@ -343,7 +345,7 @@ async function expectGutters(page: Page, view: string, width: number): Promise<v
       const box = el.getBoundingClientRect();
       return { name: el.getAttribute('aria-label') ?? el.querySelector('h1, h2')?.textContent ?? el.className, left: box.left, right: box.right };
     });
-  }, CARDS);
+  }, cardsSelector);
   expect(cards.length, `${view} has a card at ${width}`).toBeGreaterThan(0);
   for (const card of cards) {
     expect(card.left, `${view} "${card.name}" left at ${width}`).toBeGreaterThanOrEqual(GUTTER);
@@ -362,19 +364,20 @@ test.describe('T2.38 one content column and side gutters', () => {
     await backToTrade(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(page.getByRole('navigation', { name: 'Primary' })).toHaveAttribute('data-placement', 'sidebar');
-    const lefts = (): Promise<Record<string, number>> =>
-      page.evaluate(() => {
+    // The Trades table has no card of its own; a Trade Detail reads its first card through `detail.CARDS`.
+    const lefts = (cardSelector = 'main .card, main .table-scroll'): Promise<Record<string, number>> =>
+      page.evaluate((cardSel) => {
         const left = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().left;
         const found: Record<string, number | undefined> = {
           h1: left('main h1'),
           tablist: left('[role="tablist"]'),
-          card: left('main .card, main .table-scroll'),
+          card: left(cardSel),
         };
         return Object.fromEntries(Object.entries(found).filter(([, x]) => x !== undefined)) as Record<string, number>;
-      });
-    const detail = await lefts();
-    expect(Object.keys(detail).sort(), 'Open Detail elements').toEqual(['card', 'h1']);
-    for (const [name, x] of Object.entries(detail)) expect.soft(Math.abs(x - detail['h1']!), `Detail ${name} left ${JSON.stringify(detail)}`).toBeLessThanOrEqual(1);
+      }, cardSelector);
+    const openDetail = await lefts(detail.CARDS);
+    expect(Object.keys(openDetail).sort(), 'Open Detail elements').toEqual(['card', 'h1']);
+    for (const [name, x] of Object.entries(openDetail)) expect.soft(Math.abs(x - openDetail['h1']!), `Detail ${name} left ${JSON.stringify(openDetail)}`).toBeLessThanOrEqual(1);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
     const trades = await lefts();
@@ -408,7 +411,7 @@ test.describe('T2.38 one content column and side gutters', () => {
       await confirmReference(page);
       await recordEntry(page, PC1);
       await backToTrade(page);
-      await expectGutters(page, 'Open Detail', width);
+      await expectGutters(page, 'Open Detail', width, detail.CARDS);
       await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
       await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
       await expectGutters(page, 'Trades', width);
@@ -993,7 +996,8 @@ test.describe('T2.50 Executions as expandable rows', () => {
     await confirmReference(page);
     await recordEntry(page, PC1);
     await backToTrade(page);
-    const section = page.getByRole('region', { name: 'Executions (2)', exact: true });
+    await openDrawer(page, 'Position');
+    const section = detail.executions(page, 2);
     await expect(section).toBeVisible(READY);
     await section.getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
     await expect(section.getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ })).toHaveAttribute('aria-expanded', 'true');
@@ -1040,8 +1044,8 @@ test.describe('T2.50 Executions as expandable rows', () => {
     }
     // Open Lots keeps its table with no header cut off by the pinned first column.
     await page.setViewportSize({ width: 320, height: 900 });
-    const headers = await page
-      .getByRole('table', { name: 'Open Lots' })
+    const headers = await detail
+      .openLots(page)
       .evaluate((table) =>
         [...table.querySelectorAll('th')].map((th) => ({
           name: th.textContent ?? '',
@@ -1050,7 +1054,7 @@ test.describe('T2.50 Executions as expandable rows', () => {
           lines: th.getClientRects().length,
         })),
       );
-    const opened = await page.getByRole('table', { name: 'Open Lots' }).evaluate((table) =>
+    const opened = await detail.openLots(page).evaluate((table) =>
       [...table.querySelectorAll('tbody td:first-child')].map((td) => {
         const style = getComputedStyle(td);
         return {
@@ -1062,7 +1066,7 @@ test.describe('T2.50 Executions as expandable rows', () => {
     for (const cell of opened) expect(cell.height, 'Opened date and time on one line').toBeLessThanOrEqual(1.6 * cell.lineHeight);
     for (const th of headers) expect(th.scrollWidth, `${th.name} header not clipped`).toBeLessThanOrEqual(th.clientWidth);
     // Open Lots pins nothing, so its scroll shadow must start at the table edge, not inside it.
-    const pin = await page.getByRole('region', { name: 'Open Lots', exact: true }).evaluate((el) => getComputedStyle(el).getPropertyValue('--pin').trim());
+    const pin = await detail.openLotsRegion(page).evaluate((el) => getComputedStyle(el).getPropertyValue('--pin').trim());
     expect(pin, 'Open Lots pin width').toBe('0px');
     await context.close();
   });
@@ -1104,7 +1108,8 @@ async function openTradeWithJournal(page: Page): Promise<void> {
   await backToTrade(page);
   await recordEntry(page, PC2, { decline: true });
   await backToTrade(page);
-  await expect(page.getByRole('region', { name: 'Entry Quality', exact: true })).toBeVisible(READY);
+  await openDrawer(page, 'Plan and Risk');
+  await expect(detail.entryQuality(page)).toBeVisible(READY);
 }
 
 test.describe('T2.53 Detail, receipt and Accounts styling', () => {
@@ -1116,7 +1121,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
       await expectLayout(page, width);
-      const figures = await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) =>
+      const figures = await detail.summary(page).locator('dd').evaluateAll((els) =>
         els.map((el) => {
           const s = getComputedStyle(el);
           return { text: el.textContent ?? '', size: parseFloat(s.fontSize), weight: Number(s.fontWeight), numeric: s.fontVariantNumeric };
@@ -1137,7 +1142,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await openTradeWithJournal(page);
-    const summary = page.getByRole('region', { name: 'Summary', exact: true });
+    const summary = detail.summary(page);
     const white = channels(await tokenColour(page, '--card'));
     for (const [label, token] of [['Stop', '--stop'], ['Target', '--target']] as const) {
       const term = summary.locator('dt', { hasText: new RegExp(`^${label}$`) });
@@ -1155,8 +1160,8 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await openTradeWithJournal(page);
-    const rowsOf = (name: string) =>
-      page.getByRole('region', { name, exact: true }).locator('dl > div').evaluateAll((els) =>
+    const rowsOf = (name: 'Plan Baseline' | 'Entry Quality') =>
+      (name === 'Plan Baseline' ? detail.planBaseline(page) : detail.entryQuality(page)).locator('dl > div').evaluateAll((els) =>
         els.map((el) => {
           const box = el.getBoundingClientRect();
           return { text: el.textContent ?? '', left: Math.round(box.left), top: Math.round(box.top), width: box.width };
@@ -1183,7 +1188,8 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await confirmReference(page);
-    const section = page.getByRole('region', { name: 'Plan Reflection', exact: true });
+    await openDrawer(page, 'Journal');
+    const section = detail.planReflection(page);
     await expect(section).toBeVisible(READY);
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -1216,7 +1222,8 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await openTradeWithJournal(page);
-    const section = page.getByRole('region', { name: 'Executions (3)', exact: true });
+    await openDrawer(page, 'Position');
+    const section = detail.executions(page, 3);
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1311,8 +1318,10 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await backToTrade(page);
     await recordEntry(page, PC2, { decline: true });
     await backToTrade(page);
-    await expect(page.getByRole('region', { name: 'Journal (3)', exact: true })).toBeVisible(READY);
-    await page.getByRole('region', { name: 'Executions (3)', exact: true }).getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
+    await openDrawer(page, 'Journal');
+    await expect(detail.journalOf(page, 3)).toBeVisible(READY);
+    await openDrawer(page, 'Position');
+    await detail.executions(page, 3).getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
     await eachWidth('Detail');
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Accounts' }).click();
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
@@ -1327,7 +1336,7 @@ test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await confirmReference(page);
-    const summary = page.getByRole('region', { name: 'Summary', exact: true });
+    const summary = detail.summary(page);
     await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
     expect(await summary.locator(':scope > *').first().textContent(), 'first element of the card').toBe('Long 100 shares @ $50.00');
     await page.reload();
@@ -1338,7 +1347,7 @@ test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
 
 // One label/value row per div of a dl, or per dt/dd pair of a plain dl; Plan Reflection answers are prose.
 const detailRows = (page: Page) =>
-  page.locator('main dl:not(.answers)').evaluateAll((lists) =>
+  detail.root(page).locator('dl:not(.answers)').evaluateAll((lists) =>
     lists.flatMap((list) => {
       const card = list.closest('section')?.getAttribute('aria-label') ?? list.closest('section')?.querySelector('h2')?.textContent ?? '';
       const rect = (el: Element) => el.getBoundingClientRect();
@@ -1360,15 +1369,17 @@ test.describe('T2.55-B2 capped Detail label/value rows', () => {
       const rows = await detailRows(page);
       expect(rows.length, `${state} rows`).toBeGreaterThan(8);
       for (const row of rows) expect(row.width, `${state} ${row.card} / ${row.label} width`).toBeLessThanOrEqual(480.5);
-      const edges = (await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right)));
+      const edges = (await detail.summary(page).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right)));
       expect(Math.max(...edges) - Math.min(...edges), `${state} summary value right edges`).toBeLessThanOrEqual(1);
     };
     await check('Planned');
     await recordEntry(page, PC1);
     await backToTrade(page);
-    await expect(page.getByRole('region', { name: 'Entry Quality', exact: true })).toBeVisible(READY);
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.entryQuality(page)).toBeVisible(READY);
     await check('Open');
-    await page.getByRole('region', { name: 'Executions (2)', exact: true }).getByRole('button', { name: /details$/ }).first().click();
+    await openDrawer(page, 'Position');
+    await detail.executions(page, 2).getByRole('button', { name: /details$/ }).first().click();
     await check('Open with an Execution expanded');
     await context.close();
   });
@@ -1562,13 +1573,13 @@ test.describe('T2.62 line breaks', () => {
       ['Open', 'Long 100 shares @ $1,236.70'],
       ['Planned', 'Long 1000 shares @ $1,500.00'],
     ] as const;
-    const summary = page.getByRole('region', { name: 'Summary', exact: true }).locator('.summary-text');
+    const summary = detail.summary(page).locator('.summary-text');
     for (const [kind, expected] of checks) {
       if (kind === 'Planned') {
         await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
         await openPlanned(page);
         await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: 'PLN' }).click(READY);
-        await expect(page.getByRole('heading', { name: 'PLN', level: 1 })).toBeVisible();
+        await expect(detail.heading(page, 'PLN')).toBeVisible();
       }
       for (const width of [320, 340, 390]) {
         await page.setViewportSize({ width, height: 844 });
@@ -1680,7 +1691,8 @@ test.describe('T2.62 line breaks', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await openTradeWithJournal(page);
-    const rows = page.getByRole('region', { name: 'Executions (3)', exact: true }).locator('ul.executions > li .execution-summary');
+    await openDrawer(page, 'Position');
+    const rows = detail.executionRows(page, 3).locator('.execution-summary');
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1749,12 +1761,13 @@ test.describe('T2.63 R lines', () => {
       await expectSecondLinesBelow(receipt, page, 'receipt', width);
     }
     await backToTrade(page);
-    const detail = page.getByRole('region', { name: 'Entry Quality', exact: true });
-    await expect(detail).toBeVisible(READY);
+    await openDrawer(page, 'Plan and Risk');
+    const quality = detail.entryQuality(page);
+    await expect(quality).toBeVisible(READY);
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
-      await expectSecondLinesBelow(detail, page, 'Detail', width);
+      await expectSecondLinesBelow(quality, page, 'Detail', width);
     }
     await context.close();
   });
@@ -1775,9 +1788,11 @@ test.describe('T2.64 Detail cards', () => {
     await page.getByRole('button', { name: 'Save entry' }).click();
     await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
     await backToTrade(page);
-    await expect(page.getByRole('region', { name: 'Entry Quality', exact: true })).toBeVisible(READY);
-    const fulfillment = page.getByRole('region', { name: 'Planned-Leg Fulfillment', exact: true });
-    const journal = page.getByRole('region', { name: /^Journal/ });
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.entryQuality(page)).toBeVisible(READY);
+    const fulfillment = detail.fulfillment(page);
+    await openDrawer(page, 'Journal');
+    const journal = detail.journal(page);
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
@@ -1787,7 +1802,7 @@ test.describe('T2.64 Detail cards', () => {
           return { width: box.width, valueRight: dt.nextElementSibling!.getBoundingClientRect().right };
         });
         expect(row.width, 'Fulfillment row width').toBeLessThanOrEqual(480.5);
-        const edges = await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
+        const edges = await detail.summary(page).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
         expect(Math.abs(row.valueRight - Math.max(...edges)), `Fulfillment value right edge ${row.valueRight} vs summary ${edges.join(',')}`).toBeLessThanOrEqual(1);
       }
       const pairs = await journal.locator('dl.answers dt').evaluateAll((dts) =>
@@ -1853,10 +1868,11 @@ test.describe('T2.67 leftovers', () => {
     await confirmReference(page);
     await recordEntry(page, PC1);
     await backToTrade(page);
+    await openDrawer(page, 'Position');
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
-      const region = page.getByRole('region', { name: 'Open Lots', exact: true });
+      const region = detail.openLotsRegion(page);
       await expect(region).toBeVisible(READY);
       const lots = await region.evaluate((el) => {
         const cells = [...el.querySelectorAll('tr')].flatMap((tr) => [...tr.children]);

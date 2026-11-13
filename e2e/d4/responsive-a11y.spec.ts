@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markRow, MONDAY_1700, onboardedAt, onboardedPage,
-  openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
+  acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, detail, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markRow, MONDAY_1700, onboardedAt, onboardedPage,
+  openDrawer, openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
@@ -9,16 +9,12 @@ const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
 const XYZ = FOUR_TRADES[0]!.plan;
 const JKL = FOUR_TRADES[3]!.plan;
 
-// One figure of a Detail section, by the section's name and the figure's term.
-const figure = (page: Page, section: string, term: string): Locator =>
-  page.getByRole('region', { name: section, exact: true }).locator('div', { has: page.locator('dt', { hasText: new RegExp(`^${term}$`) }) }).locator('dd');
-
 const openList = (page: Page) => page.getByRole('table', { name: 'Open Trades' });
 async function toOpenList(page: Page): Promise<void> {
   await nav(page).getByRole('link', { name: 'Trades' }).click();
   await expect(openList(page)).toBeVisible(READY);
 }
-async function detail(page: Page, symbol: string): Promise<void> {
+async function openDetail(page: Page, symbol: string): Promise<void> {
   await toOpenList(page);
   await openTradeFromOpenList(page, symbol);
 }
@@ -168,15 +164,18 @@ test.describe('B4.13 Responsive and accessible', () => {
 
     // Detail in each evaluation state.
     await openTradeFromOpenList(page, 'ABC');
-    await expect(figure(page, 'Valuation', 'Mark')).toHaveText('$27.50');
-    await expect(figure(page, 'Risk and reward', 'Max reward')).toHaveText('Unbounded above');
+    await openDrawer(page, 'Today');
+    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$27.50');
+    await expect(detail.riskFigure(page, 'Max reward')).toHaveText('Unbounded above');
     await expectAccessible(page, 'Detail Available (Stop Breached, Unbounded)');
-    await detail(page, 'DEF');
-    await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText('Mark acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price');
+    await openDetail(page, 'DEF');
+    await openDrawer(page, 'Today');
+    await expect(detail.valuation(page)).toContainText('Mark acknowledged unavailable for DEF on Mon Oct 12: your acknowledgment, not a price');
     await expectAccessible(page, 'Detail Acknowledged Unavailable');
-    await detail(page, 'JKL');
-    await expect(page.getByRole('region', { name: 'Valuation', exact: true }).getByRole('link', { name: 'Mark missing for JKL on Mon Oct 12' })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText('Stale context: $20.80 from Fri Oct 9 close (stale, not used in any current figure)');
+    await openDetail(page, 'JKL');
+    await openDrawer(page, 'Today');
+    await expect(detail.valuation(page).getByRole('link', { name: 'Mark missing for JKL on Mon Oct 12' })).toBeVisible();
+    await expect(detail.valuation(page)).toContainText('Stale context: $20.80 from Fri Oct 9 close (stale, not used in any current figure)');
     await expectAccessible(page, 'Detail Missing with Stale context');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Detail Missing with Stale context, narrow');
@@ -216,10 +215,12 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openTradeFromOpenList(page, 'XYZ');
     await recordEntry(page, [{ quantity: '40', price: '50.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(figure(page, 'Valuation', 'Open P&L')).toHaveText('Awaiting the close after Mon Oct 12');
-    await expect(page.getByRole('heading', { name: 'At Mon Oct 12 close', level: 2 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'At entry', level: 2 })).toBeVisible();
-    await expect(figure(page, 'At entry', 'Quantity')).toHaveText('40 shares');
+    await openDrawer(page, 'Position');
+    await expect(detail.openPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
+    await openDrawer(page, 'Today');
+    await expect(detail.datedHeading(page, 'At Mon Oct 12 close')).toBeVisible();
+    await expect(detail.atEntryHeading(page)).toBeVisible();
+    await expect(detail.atEntryFigure(page, 'Quantity')).toHaveText('40 shares');
     await expectAccessible(page, 'Detail AwaitingClose with dated and at-entry sections');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Detail AwaitingClose, narrow');

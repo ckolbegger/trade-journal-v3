@@ -2,7 +2,7 @@
 // build (dist-faults, as D7's test fixture sets), and O-S2 and O-C2 from section 4: the Plan form with all four price fields, and each
 // session's Marks for MNO and the put. Both contracts expire Friday 2026-12-18, so nothing in D7S is Settlement Due.
 import type { Page } from '@playwright/test';
-import { currentTradeId, enterMark, expect, fillOptionPlan, optionMarkRow, READY, reachCard, recordOptionEntry, saveMarkPrice, savedOptionMarkRow, type OptionPlanValues, type TradeRef } from '../d7/support.ts';
+import { currentTradeId, detail, enterMark, expect, fillOptionPlan, optionMarkRow, READY, reachCard, recordOptionEntry, saveMarkPrice, savedOptionMarkRow, type OptionPlanValues, type TradeRef } from '../d7/support.ts';
 
 export * from '../d7/support.ts';
 
@@ -44,7 +44,7 @@ export async function fillBothKinds(page: Page, values: BothKinds): Promise<void
 export async function confirmBothKinds(page: Page, values: BothKinds): Promise<string> {
   await fillBothKinds(page, values);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(page.getByRole('heading', { name: values.underlying, level: 1 })).toBeVisible(READY);
+  await expect(detail.heading(page, values.underlying)).toBeVisible(READY);
   return currentTradeId(page);
 }
 
@@ -53,7 +53,7 @@ export async function createOs2Trade(page: Page): Promise<TradeRef> {
   const tradeId = await confirmBothKinds(page, OS2);
   await recordOptionEntry(page, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
   await page.getByRole('link', { name: 'Back to the Trade' }).click();
-  await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
+  await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
   return { symbol: 'MNO', tradeId, label: 'O-S2' };
 }
 

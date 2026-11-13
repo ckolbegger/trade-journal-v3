@@ -2,7 +2,7 @@
 // build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { answerCloseReviewIn, answerIn, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, executionRow, expect, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves d6
+import { answerCloseReviewIn, answerIn, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves d6
 
 export * from '../d6/support.ts';
 
@@ -69,7 +69,7 @@ export async function fillOptionPlan(page: Page, values: OptionPlanValues): Prom
 export async function confirmOptionPlan(page: Page, values: OptionPlanValues): Promise<void> {
   await fillOptionPlan(page, values);
   await page.getByRole('button', { name: 'Confirm Plan' }).click();
-  await expect(page.getByRole('heading', { name: values.underlying, level: 1 })).toBeVisible(READY);
+  await expect(detail.heading(page, values.underlying)).toBeVisible(READY);
 }
 
 // An option Execution form's rows (labelled Contracts and Price (per share)).
@@ -154,7 +154,8 @@ export async function recordExpiration(page: Page, closeReview: 'later' | 'now' 
 
 // A payoff view with a value: its chart (labelled by the table's caption) and the table that is the chart's text equivalent.
 export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current'): Promise<void> {
-  const region = page.getByRole('region', { name: `${kind} Expiration Payoff` });
+  await openDrawer(page, 'Payoff');
+  const region = detail.payoff(page, kind);
   await expect(region.getByRole('img', { name: new RegExp(`^${kind} payoff at expiration by `) })).toBeVisible(READY);
   const table = region.getByRole('table', { name: new RegExp(`^${kind} payoff at expiration by `) });
   await expect(table).toBeVisible();
@@ -164,7 +165,8 @@ export async function expectPayoffChart(page: Page, kind: 'Planned' | 'Current')
 
 // A payoff view that does not apply: text naming the reason, with no chart and no table, so the state is not colour alone.
 export async function expectPayoffNotApplicable(page: Page, kind: 'Planned' | 'Current', reason: RegExp): Promise<void> {
-  const region = page.getByRole('region', { name: `${kind} Expiration Payoff` });
+  await openDrawer(page, 'Payoff');
+  const region = detail.payoff(page, kind);
   await expect(region).toBeVisible(READY);
   await expect(region.getByText(reason)).toBeVisible();
   await expect(region.getByRole('img')).toHaveCount(0);
@@ -181,7 +183,7 @@ export async function createShortPutTrade(page: Page): Promise<string> {
   const tradeId = await currentTradeId(page);
   await recordOptionEntry(page, [{ quantity: '2', price: '1.25', fee: '1.30', time: '2026-10-12T10:00' }]);
   await page.getByRole('link', { name: 'Back to the Trade' }).click();
-  await expect(page.getByRole('heading', { name: 'MNO', level: 1 })).toBeVisible(READY);
+  await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
   return tradeId;
 }
 
@@ -196,7 +198,7 @@ export async function recordOptionEntry(page: Page, rows: readonly Row[]): Promi
 
 // From a Trade Detail, opens the exit form (a Buy to close or Sell to close), fills its rows and its reflection.
 export async function fillOptionExit(page: Page, rows: readonly Row[]): Promise<void> {
-  await page.getByRole('link', { name: 'Record exit' }).click();
+  await detail.recordExitLink(page).click();
   await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
   await fillOptionRows(page, rows);
   const section = page.getByRole('region', { name: 'Reflection on this exit' });

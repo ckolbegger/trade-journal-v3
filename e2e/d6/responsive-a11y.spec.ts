@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, debtForm, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
-  launchAt, MONDAY_1700, onboardedAt, openExitForm, openReview, openTradeFromOpenList, READY, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
+  answerIn, closeReasonGroup, closeTheTrade, closingSection, createTrades, debtForm, detail, executionRow, expect, expectAccessible, exitReflection, FOUR_TRADES, fillRows, firstPage, holdTradesStore,
+  launchAt, MONDAY_1700, onboardedAt, openDrawer, openExitForm, openReview, openTradeFromOpenList, READY, receiptResult, releaseTradesStore, sell, setClock, tabTo, test, TUESDAY_1000_LOCAL, TUESDAY_1405,
   TUESDAY_1405_LOCAL, TUESDAY_1700, valueOf, writeIntegrityFixture,
 } from './support.ts';
 
@@ -88,13 +88,14 @@ test.describe('B6.12 Responsive and accessible', () => {
     await expect(receiptResult(page)).toBeVisible();
     await accessibleAtBothWidths(page, 'Exit receipt');
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
     await accessibleAtBothWidths(page, 'Open Detail with Lot Matches');
 
     // Keyboard only: close ABC at a loss, from its Detail to the receipt.
     await page.goto('/');
     await openTradeFromOpenList(page, 'ABC');
-    const recordExit = page.getByRole('link', { name: 'Record exit' });
+    const recordExit = detail.recordExitLink(page);
     await tabTo(page, recordExit);
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Record exit', level: 1 })).toBeVisible(READY);
@@ -159,10 +160,10 @@ test.describe('B6.12 Responsive and accessible', () => {
 
     // Closed Detail.
     await abc.getByRole('link', { name: 'ABC', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'ABC', level: 1 })).toBeVisible(READY);
-    await expect(valueOf(page, 'Realized P&L')).toHaveText(LOSS);
-    await expect(valueOf(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
-    await expect(valueOf(page, 'Close Reason')).toHaveText('Stop Triggered');
+    await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
+    await expect(detail.resultValue(page, 'Realized P&L')).toHaveText(LOSS);
+    await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
+    await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Stop Triggered');
     await accessibleAtBothWidths(page, 'Closed Detail');
 
     // The Review's owed-reflection cards (Tuesday 17:00), collapsed and with the Close Review form open.
@@ -207,11 +208,12 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
 
     // Each money amount is one line: its height is under 1.5 line heights.
     const expectAmountsOnOneLine = async (state: string): Promise<void> => {
-      const wrapped = await page.locator('dl.figure-grid dd.number').evaluateAll((cells) =>
+      const wrapped = await detail.figureAmounts(page).evaluateAll((cells) =>
         cells.flatMap((cell) => {
           if (!/^[-+−–]?\$[\d,]+\.\d{2}$/.test(cell.textContent ?? '')) return [];
           const height = cell.getBoundingClientRect().height;
@@ -223,7 +225,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     };
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 844 });
-      await expect(page.getByRole('heading', { name: 'Fee reconciliation' })).toBeVisible();
+      await expect(detail.feeReconciliationHeading(page)).toBeVisible();
       await expectAmountsOnOneLine(`Open Detail at ${width} px`);
     }
 
@@ -234,7 +236,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('heading', { name: 'Result' })).toBeVisible(READY);
+    await expect(detail.resultHeading(page)).toBeVisible(READY);
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 844 });
       await expectAmountsOnOneLine(`Closed Detail at ${width} px`);
@@ -257,12 +259,13 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(1);
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
 
     // Each "price on date time" phrase and each signed money amount sits on one line: its text range has one top.
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 844 });
-      const broken = await page.getByRole('table', { name: 'Lot Matches' }).evaluate((table) => {
+      const broken = await detail.lotMatches(page).evaluate((table) => {
         const found: string[] = [];
         const phrases = [/\$[\d,]+\.\d+ on \d{4}-\d{2}-\d{2} \d{2}:\d{2}/g, /[-+−–]?\$[\d,]+\.\d{2}/g];
         const walker = document.createTreeWalker(table.querySelector('tbody')!, NodeFilter.SHOW_TEXT);
@@ -318,7 +321,8 @@ test.describe('B6.12 Responsive and accessible', () => {
     await expectReflowed('Partial exit receipt');
     await page.setViewportSize(WIDE);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(page.getByRole('table', { name: 'Lot Matches' }).locator('tbody tr')).toHaveCount(2);
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(2);
 
     // An exit dated before it: the sales are matched again, and the changed matches are disclosed.
     await recordExit('20', '2026-10-13T09:45');

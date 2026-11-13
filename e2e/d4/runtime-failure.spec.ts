@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, completion, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openReview, probe, reachCard, reachPanel, READY, saveAction, status, test, tradeCard, workspaceOf, markRow } from './support.ts';
+import { actionEntriesOf, actionFormOf, completion, createTrades, detail, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openDrawer, openReview, probe, reachCard, reachPanel, READY, saveAction, status, test, tradeCard, workspaceOf, markRow } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -54,9 +54,11 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     const row = page.getByRole('table', { name: 'Open Trades' }).getByRole('row', { name: /ABC/ });
     await expect(row).toBeVisible();
     await row.getByRole('link', { name: 'ABC', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'ABC', level: 1 })).toBeVisible(READY);
-    await expect(page.getByRole('region', { name: 'Position', exact: true })).toContainText('100 shares of ABC');
-    await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText('Mark missing');
+    await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
+    await openDrawer(page, 'Position');
+    await expect(detail.position(page)).toContainText('100 shares of ABC');
+    await openDrawer(page, 'Today');
+    await expect(detail.valuation(page)).toContainText('Mark missing');
 
     expect(await probe(page)).toEqual(before);
     await context.close();

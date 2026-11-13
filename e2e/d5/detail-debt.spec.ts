@@ -1,5 +1,5 @@
 import {
-  answerDebt, completion, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markRow, onboardedAt, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test, tradeCard,
+  answerDebt, completion, confirmReference, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markRow, onboardedAt, openDrawer, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test, tradeCard,
   TUESDAY, TUESDAY_1005, TUESDAY_1230, WEDNESDAY, WEDNESDAY_1700, workspaceOf,
 } from './support.ts';
 
@@ -11,20 +11,21 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
 
     await setClock(context, page, TUESDAY_1230);
     await openTradeFromOpenList(page);
-    await expect(page.getByText('Reflection owed')).toBeVisible();
-    await expect(page.getByText('Due in the Review after next', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Reflect now' }).click();
+    await expect(detail.reflectionOwed(page)).toBeVisible();
+    await expect(detail.dueNote(page, 'Due in the Review after next', true)).toBeVisible();
+    await detail.reflectNowButton(page).click();
     await fillDebtAnswers(page);
     await answerDebt(page, undefined);
 
     // After the save, and after a reload: answered later, with the time the trader answered.
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
-    await expect(page.getByText('Deferred, answered', { exact: true })).toBeVisible();
-    await expect(page.getByText('Answered', { exact: true })).toBeVisible();
-    await expect(page.getByText('2026-10-13 12:30')).toBeVisible();
-    await expect(page.getByText('Reflection owed')).toHaveCount(0);
-    await expect(page.getByText('Due in the Review after next')).toHaveCount(0);
+    await expect(detail.heading(page, 'XYZ')).toBeVisible();
+    await openDrawer(page, 'Journal');
+    await expect(detail.journal(page).getByText('Deferred, answered', { exact: true })).toBeVisible();
+    await expect(detail.journal(page).getByText('Answered', { exact: true })).toBeVisible();
+    await expect(detail.journal(page).getByText('2026-10-13 12:30')).toBeVisible();
+    await expect(detail.reflectionOwed(page)).toHaveCount(0);
+    await expect(detail.dueNote(page, 'Due in the Review after next')).toHaveCount(0);
 
     const workspace = workspaceOf(await probe(page))!;
     expect(debtsOf(workspace)).toHaveLength(1);

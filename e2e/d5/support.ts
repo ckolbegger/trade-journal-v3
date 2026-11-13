@@ -2,7 +2,7 @@
 // also patches Temporal, the production d6 release as the default served build, the Review steps), plus
 // the deferred entry, the Debt form, the Review card's reflections, and the Debt records read through the probe.
 import type { Locator, Page } from '@playwright/test';
-import { debtFormOf, expect, fillRows, openEntryForm, reachPanel, READY, reflectionSection, type CardRef, type ProbedDatabase, type Row } from '../d4/support.ts';
+import { debtFormOf, detail, expect, fillRows, openEntryForm, reachPanel, READY, reflectionSection, type CardRef, type ProbedDatabase, type Row } from '../d4/support.ts';
 
 export * from '../d4/support.ts';
 
@@ -48,30 +48,34 @@ export async function fillDebtAnswers(page: Page): Promise<void> {
 
 // Waits for the form to go, then shows the saved result. On a card the save also moves the card on to its next panel
 // (A157), so the Reflections panel is reached again, and the result is read inside it, not anywhere on the page.
-async function expectSavedReflection(page: Page, form: Locator, card: CardRef | undefined): Promise<void> {
-  let scope: Locator | Page = page;
+async function expectSavedReflection(page: Page, form: Locator, card: CardRef | undefined, where: DebtPlace): Promise<void> {
+  const onDetail = card === undefined && where === 'Detail';
+  let saved = onDetail ? detail.savedReflection(page) : page.getByRole('region', { name: 'Saved reflection' });
   if (card !== undefined) {
     await expect(form).toBeHidden(READY);
-    scope = await reachPanel(page, card, 'Reflections');
+    saved = (await reachPanel(page, card, 'Reflections')).getByRole('region', { name: 'Saved reflection' });
   }
-  await expect(scope.getByRole('region', { name: 'Saved reflection' })).toBeVisible();
-  await expect(debtForm(page)).toHaveCount(0);
+  await expect(saved).toBeVisible();
+  await expect(onDetail ? detail.debtForm(page) : debtForm(page)).toHaveCount(0);
 }
 
+// Where a form with no card is: on a Trade Detail (read through `detail`), or elsewhere on the page, as in the Review's owed list.
+type DebtPlace = 'Detail' | 'page';
+
 // Presses Answer and waits for the saved result to replace the form. With a card it reaches that Trade's Reflections
-// panel first; the card is undefined only on Trade Detail, which has no card and shows the form on the page.
-export async function answerDebt(page: Page, card: CardRef | undefined): Promise<void> {
-  const form = card === undefined ? debtForm(page) : await debtFormOf(page, card);
+// panel first; the card is undefined on Trade Detail, which has no card and shows the form on the page, and in the Review's owed list.
+export async function answerDebt(page: Page, card: CardRef | undefined, where: DebtPlace = 'Detail'): Promise<void> {
+  const form = card !== undefined ? await debtFormOf(page, card) : where === 'Detail' ? detail.debtForm(page) : debtForm(page);
   await form.getByRole('button', { name: 'Answer', exact: true }).click();
-  await expectSavedReflection(page, form, card);
+  await expectSavedReflection(page, form, card, where);
 }
 
 // Types a reason (when given), presses Decline, and waits for the saved result. The card is undefined only on Trade Detail.
 export async function declineDebt(page: Page, reason: string | undefined, card: CardRef | undefined): Promise<void> {
-  const form = card === undefined ? debtForm(page) : await debtFormOf(page, card);
+  const form = card === undefined ? detail.debtForm(page) : await debtFormOf(page, card);
   if (reason !== undefined) await form.getByLabel('Reason for declining (optional)').fill(reason);
   await form.getByRole('button', { name: 'Decline', exact: true }).click();
-  await expectSavedReflection(page, form, card);
+  await expectSavedReflection(page, form, card, 'Detail');
 }
 
 // ---- Stored records, read through the probe --------------------------------------------------------
