@@ -668,3 +668,12 @@ Rebased hashes:
 - `f0c51e60` (shell), `0577e92d` (e2e Valuation reads), `aa2c1b96` (runs);
 - B1 `74ef50ce` and `002a78e9`; B3 `e45e6363`; runs `2e61898b`;
 - B2 `6a9f29e8`; runs `833ad19a`.
+
+## Wave 1, first dispatch (2026-11-13)
+
+Six lanes from `12a396c0` (Progress rows say `ac089378`; only plan and evidence differ): BV T8P.9, BA T8P.6, BM T8P.8, R2 T8P.14, R1 T8P.12, D2 T8P.17. Merge run 3 (after T8P.5) runs on the main worktree at the same time.
+
+**Implementation-level decisions in the wave-1 briefs:**
+- **Test data.** Section 5 says "a cockpit fixture builder joins `tests/support/`", but no lane owns `tests/support/`. UI lanes import existing fixtures read-only, and build new view data inside their own `*.props.test.ts`, the only file under `src/ui/cockpit/` that A216 lets import `app/types`. A lane needing a shared new fixture stops. T8P.22 or T8P.27 may consolidate.
+- **Shared spec files.** A lane edits only its owned files, plus the spec and unit-test lines section 1.5 assigns to its task (and, for D2, the seven spec lines T8P.5's note names). Other lanes change other lines of the same file, as section 4.2 expects.
+- **Optional fields from parallel lanes.** R2 tests `nearest`, and R1 tests `days`, with view data that carries the field (typed since T8P.3), and shows nothing extra when it is absent. The backend lanes fill the fields.
