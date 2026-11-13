@@ -41,7 +41,7 @@ dist/assets/index-D-yHot5p.js   730.03 kB │ gzip: 215.52 kB
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 106ms
+✓ built in 154ms
 EXIT 0
 $ npm run verify:hooks
 
