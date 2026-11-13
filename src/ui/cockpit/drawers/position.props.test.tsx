@@ -22,7 +22,7 @@ const FRIDAY: OptionFrames = { tradingDate: '2026-11-20', closeInstant: '2026-11
 const OC3_SELL =ocChange('pc-2', '2026-10-14T15:00:00Z', 3, 'Sell', '1', '3.00', '0.65');
 
 describe('Position drawer (P96)', () => {
-  it('should show the open lots, then Open P&L including the open lot opening fee, Realized to date and Incurred fees, O-C3 Wednesday 89.35 and 98.70', () => {
+  it("should show the open lots, then Open P&L including the open lot's opening fee, Realized to date and Incurred fees, O-C3's Wednesday $89.35 and $98.70", () => {
     show(optionOpenDetail('O-C', [OC3_BUY, OC3_SELL], WEDNESDAY));
     const position = screen.getByRole('region', { name: 'Position' });
     const lots = within(position).getByRole('table', { name: 'Open Lots' });
@@ -37,7 +37,9 @@ describe('Position drawer (P96)', () => {
   it('should show the Trade Summary and Last activity', () => {
     show(openDetailOf([PC1, PC2]));
     const position = screen.getByRole('region', { name: 'Position' });
-    expect(termValue(position, 'Trade Summary')).toBe('Long 100 shares @ $50.18');
+    // The Trade Summary text, in the words and markup the Summary card gave it: no label of its own.
+    expect(position.querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.18');
+    expect(within(position).queryByText('Trade Summary')).toBeNull();
     expect(termValue(position, 'Last activity')).toBe('2026-10-12 11:00');
   });
 

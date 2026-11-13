@@ -7,6 +7,8 @@ type Row = { readonly label: string; readonly value: string; readonly plain?: bo
 type Table = { readonly columns: readonly string[]; readonly rows: readonly (readonly string[])[] };
 
 export interface PositionDrawerProps {
+  // The Trade Summary text ("Long 100 shares @ $50.18"), unlabeled as the Summary card showed it.
+  readonly tradeSummary?: string;
   // The Position, the opening fees and Last activity. Absent on a Closed and an incoherent Detail.
   readonly summary?: readonly Row[];
   readonly openLots?: Table;

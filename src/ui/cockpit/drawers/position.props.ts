@@ -28,8 +28,8 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
     ...(closed
       ? { result: createElement(ClosedResultSection, { view }) }
       : {
+          ...(view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
           summary: [
-            ...(view.summary ? [{ label: 'Trade Summary', value: tradeSummary(view.summary, timeZone) }] : []),
             { label: 'Position', value: view.positions.map(positionText).join(', ') },
             { label: 'Opening fees', value: money(fees.incurredOpening) },
             { label: 'Last activity', value: localTime(view.lastActivity, timeZone), plain: true },
