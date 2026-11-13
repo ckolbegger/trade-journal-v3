@@ -350,3 +350,25 @@ Round 2 of T8P.2's bug tasks:
 - **T8P.2-B3** (finding 2). Case: *it should list a multi-line title differently from a single-line title with the same words.*
 
 **Implementation-level decision: one task for both, with a different design.** Both findings come from parsing TypeScript with patterns, and each fix by pattern invites the next edge case, as the T8P.1 lock rounds showed. So B2 and B3 go to one `tdd-task`: `it-titles.sh` lists the cases from Vitest's own collection (`vitest list`) instead of parsing source, printing each case's exact title (with its describe path), so every form and every character survives. One commit, one review. If Vitest's listing proves unworkable, the task falls back to fixing the two patterns.
+
+### T8P.2-B2 and B3 (`f8f59e9f`)
+
+Fix: `it-titles.sh` lists cases from Vitest 4.1.12's Node API (`createVitest(...).collect()`, via `node --input-type=module -e`, about 3 s), since the `vitest list` CLI drops skipped cases.
+- **Output.** One line per collected case: the describe path and title joined by " > ", with `\` escaped as `\\`, newlines as `\n`, and a `skip: ` or `todo: ` prefix. No file name. Sorted with `LC_ALL=C`.
+- **Errors.** A collection error exits 1.
+
+Each fixture runs in a scratch tree with its own config.
+- B2 was red (4 lines expected, none listed), then green.
+- B3 was red (`should multi line` twice), then green.
+- B1's test was moved to the new format.
+- Rows are in [tdd-log/T8P.2-B2.md](tdd-log/T8P.2-B2.md) and [tdd-log/T8P.2-B3.md](tdd-log/T8P.2-B3.md).
+
+On the real tree: 1519 lines at `cf690cb2` (via `git archive`) and 1519 at HEAD, with an empty diff, so T8P.2's moves also kept every describe name. The 4 extra lines over the old 1515 are `it.each` expansion. `it.only` lists as a plain case.
+
+ocr: session `7d22fbb9-f842-416e-a251-ba206bdb2013`, model gpt-6.1-sol, 2 files reviewed (2 excluded, the logs), 1 comment. Raw output: [ocr/T8P.2-B2-B3-f8f59e9f.json](ocr/T8P.2-B2-B3-f8f59e9f.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | test | `.claude/scripts/it-titles.test.sh:23` | The scratch `vitest.config.mjs` leaves `allowOnly` at its default (false when `CI` is set), so the b1 fixture's `it.only` makes collection fail under CI. | Valid: `CI=1 bash .claude/scripts/it-titles.test.sh b1` failed with `FAIL: b1: exit 1`. |
+
+- **T8P.2-B4** (round 3 of T8P.2's bug tasks; if its review still leaves findings, the session stops). Case: *it should pass the `it.only` fixture with `CI` set.*
