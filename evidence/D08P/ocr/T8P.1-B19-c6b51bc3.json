@@ -1,0 +1,113 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 100689,
+    "input_tokens": 98420,
+    "output_tokens": 2269,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m42s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "A zero-exit scan containing the wrapper record is still accepted when other records are malformed or the output is partial. The parser silently skips malformed records, so a scan containing the wrapper but a corrupted remembered descendant row reaches the `%known` rebuild, forgets that live descendant, and can report zero members and release the lock. This violates B17's partial/unparseable-output handling. Track parsing failures and reject incomplete scans without rebuilding `%known`; add a ps-stub case that retains the wrapper row while corrupting a remembered descendant row (the current tests cover only nonzero exit and completely empty output).",
+      "existing_code": "  my $ok = close($ps) \u0026\u0026 $? == 0;\n  return undef unless $ok \u0026\u0026 exists $p{$$};",
+      "start_line": 96,
+      "end_line": 97,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "Use the full identity for signal deduplication as well. The successful-scan branch of `signal_all` still keys `%sent` by PID and `start` only. If a PID is reused within the same second by another actual member (recognized through its token or parent), the new process inherits the previous process's TERM/KILL bookkeeping despite having a different command line. A detached replacement can therefore escape signalling. Key that branch by `id`, consistently with `%known` and the invalid-scan branch, and add a regression case for a replacement that still qualifies as a member.",
+      "existing_code": "    $p{$pid} = { pgid =\u003e $pgid, start =\u003e $start, id =\u003e \"$start\\x01$rest\", token =\u003e ($rest =~ /(?:^|\\s)\\QTJ_BROWSER_LOCK_TOKEN=$token\\E(?:\\s|$)/ ? 1 : 0) };",
+      "start_line": 93,
+      "end_line": 93,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/with-browser-lock.sh",
+        ".claude/scripts/with-browser-lock.test.sh"
+      ]
+    }
+  ],
+  "session_id": "622a540d-01ba-42ab-adba-62d59ec5c532",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "622a540d-01ba-42ab-adba-62d59ec5c532",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c6b51bc3",
+      "resolved_base": "3447a4c19be934b49599452835f2e357e3f1c569",
+      "resolved_head": "c6b51bc3d1c8e61734ee8194835c55b9e19c4639",
+      "exact_range": "3447a4c19be934b49599452835f2e357e3f1c569..c6b51bc3d1c8e61734ee8194835c55b9e19c4639",
+      "source_artifact_sha256": "eef57e6b395729bc2baa28991968bc74c1912897345cf0b7829edf3dee0d7ef2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "5fafa7a3ff3805a711ee005121a584ecbcdf176f64074f4311dc2ef4d50925fd"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "ad1da90fdc39d30b551fc7546b250bc7a0477e2847e85ced8d9e067fb19109ad"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "5fafa7a3ff3805a711ee005121a584ecbcdf176f64074f4311dc2ef4d50925fd"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "ad1da90fdc39d30b551fc7546b250bc7a0477e2847e85ced8d9e067fb19109ad"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 101844
+  }
+}

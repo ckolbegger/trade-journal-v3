@@ -209,3 +209,34 @@ ocr: session `238f0f5e-e699-4785-987f-4c7e8bfe4f64`, model gpt-6.1-sol, 2 files 
 - **T8P.1-B17** (finding 1). Defect: a `ps` failure or partial listing releases the lock while members may still run. Case: *it should keep the lock, and keep the last known members, when a scan fails, and release only after a scan that succeeds shows no member left.*
 - **T8P.1-B18** (finding 2). Defect: a PID reused within the same second passes the identity check. Case: *it should not treat a process as a remembered member when its PID matches but its identity differs within the same second.*
 - **T8P.1-B19, round 6**, is the batch of B17 and B18.
+
+### T8P.1-B19 (`c6b51bc3`), round 6, the last on the lock wrapper
+
+Fix:
+- **B17.** A scan is valid only when ps opened, `close` reports exit 0, the header parsed, and the wrapper's own PID is listed. An invalid scan leaves `%known` as it was and signals the last known identities, plus the command and its group while the command is unreaped. Release happens only after a valid scan shows no member left. If ps keeps failing for 30 s past the KILL deadline, the wrapper releases with a stderr `WARNING … PIDs: …` line, and exits 1 if the command's status was 0.
+- **B18.** A remembered identity is `lstart` plus the full command line.
+
+New test-only hooks, inert unless set: `TJ_BROWSER_LOCK_TEST_PS`, `TJ_BROWSER_LOCK_TEST_PS_FAIL_LIMIT`, `TJ_BROWSER_LOCK_TEST_STALE_SAME_LSTART`.
+
+Red:
+- B17: both stub modes, ps exiting 1 and an empty listing, hung the old script. It never gave up, never signalled the last known member and printed no warning.
+- B18: a planted PID with the same start time but another command line was signalled.
+
+The test file then ran green 3 times, about 30 s each. Rows are in [tdd-log/T8P.1-B19.md](tdd-log/T8P.1-B19.md). Exit 5, path independence, `npm --version`, and the existing cases held. Ports were free before and after.
+
+The task's note: a process that rewrites its own command line drops out of `%known`, but is still found by token, group or parent.
+
+ocr: session `622a540d-01ba-42ab-adba-62d59ec5c532`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 2 comments. Raw output: [ocr/T8P.1-B19-c6b51bc3.json](ocr/T8P.1-B19-c6b51bc3.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `.claude/scripts/with-browser-lock.sh:96-97` | A zero-exit scan that lists the wrapper is accepted even when other rows are malformed; the parser skips unmatched rows, so a remembered descendant with a corrupted row is dropped and the lock can be released. | Valid, low likelihood: it needs ps to exit 0 with a bad row. The reviewer notes that rejecting any unmatched row would also reject a scan where a command line holds a newline. |
+| medium | bug | `.claude/scripts/with-browser-lock.sh:93` | The successful-scan branch dedupes sent signals by PID and start time only, not the full identity B18 introduced, so a same-second reused PID that is still a member can miss a TERM. | Valid, low practical risk: KILL has its own key. |
+
+**Accepted limits (the user's decision of 2026-11-13).** No more bug tasks on the lock wrapper. Both findings are recorded as accepted limits of dev tooling, listed in the handoff's open questions for the final report:
+- **AL-1.** A malformed `ps` row in a zero-exit scan can drop a remembered descendant.
+- **AL-2.** The successful-scan signal dedupe key omits the command line.
+
+Also carried as documented limits:
+- **AL-3** (from B16). A system binary with no readable environment, born and orphaned within one scan interval, can be missed.
+- **AL-4** (from B2). The command runs in a background process group, so a command that reads the terminal would stop.
