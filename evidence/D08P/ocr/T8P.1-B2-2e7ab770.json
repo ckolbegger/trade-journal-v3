@@ -1,0 +1,114 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 72078,
+    "input_tokens": 71005,
+    "output_tokens": 1073,
+    "cache_read_tokens": 13312,
+    "elapsed": "53s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "The escalation deadline is only started after the blocking `waitpid($child, 0)` returns. If the command ignores TERM, or its TERM handler waits for a descendant that ignores TERM, that wait never completes, so this KILL path is unreachable and the wrapper holds the browser lock indefinitely. Start the grace period when the signal is received and poll/reap the child without blocking while enforcing the deadline, then KILL the group and collect the command's status. Add a regression case with a TERM-resistant command (the new test only uses a TERM-sensitive shell and sleep).",
+      "existing_code": "my $status = $?;\nif ($signalled) {",
+      "start_line": 60,
+      "end_line": 61,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "A process group is not the complete descendant tree: a descendant can create another group/session (for example, Node's `spawn(..., { detached: true })`, or a shell with job control enabled). Such a server receives neither this TERM nor the later KILL, and `kill(0, -$child)` can report the original group empty while that server still holds port 5175. This does not meet the stated every-descendant shutdown requirement. Track/terminate descendants that leave the initial group as well, and add a regression case with a grandchild in a separate process group.",
+      "existing_code": "kill \"TERM\", -$child if $signalled;",
+      "start_line": 58,
+      "end_line": 58,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/with-browser-lock.sh",
+        ".claude/scripts/with-browser-lock.test.sh"
+      ]
+    }
+  ],
+  "session_id": "198416d0-84c2-4d8e-87a6-c61351b1dc1a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "198416d0-84c2-4d8e-87a6-c61351b1dc1a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2e7ab770",
+      "resolved_base": "9345c4dfee137bf706c3aaf9e05fe703f9be3c04",
+      "resolved_head": "2e7ab77027224e16f616493113dc3d4f21cecf50",
+      "exact_range": "9345c4dfee137bf706c3aaf9e05fe703f9be3c04..2e7ab77027224e16f616493113dc3d4f21cecf50",
+      "source_artifact_sha256": "8f749bb4b01abbed7d8b9d2553b8596bf2673d9aacc3a3657dc14dafc9a84dff"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "0577c72ec1951068e2a55e7daa42e1e573e73414220feafa3d861f6dd91f252a"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "dfb8cc9d30053679aa94241b06452478ba2bfef13b507a2a20a1f9c49f058a95"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "0577c72ec1951068e2a55e7daa42e1e573e73414220feafa3d861f6dd91f252a"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "dfb8cc9d30053679aa94241b06452478ba2bfef13b507a2a20a1f9c49f058a95"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 52885
+  }
+}

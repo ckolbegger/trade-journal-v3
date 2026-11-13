@@ -118,3 +118,18 @@ Round 3's bug tasks (numbering continues):
 - **T8P.1-B6** (finding 2). Defect: a lock file that can't be locked for any reason other than contention makes the wrapper wait forever and name a holder that doesn't exist. Case: *it should fail with a message, and not wait, when the lock can't be taken for a reason other than another holder.*
 - **T8P.1-B7** (finding 3). Defect in the test: a lock leaked to the command wouldn't be caught. Case: *it should let the next caller run while the killed holder's command is still running.*
 - **T8P.1-B8** (finding 4). Defect in the test: a lock or signal regression hangs the test. Case: *it should fail, not hang, when a caller never finishes.*
+
+### T8P.1-B2 (`2e7ab770`)
+
+Fix: the forked command calls `setpgrp(0,0)` before exec (and the wrapper calls `setpgrp($child,$child)` from its side). Signals go to the group `-$child`. After the child is reaped, a signalled wrapper polls the group for up to 5 s, then sends KILL and polls up to 5 s more. The exit status is still the child's, so 143 on TERM. New case in `with-browser-lock.test.sh`: red against `9345c4df` (`FAIL: a grandchild of the command outlived the wrapper's SIGTERM and the lock was released`), then green three times. Rows are in [tdd-log/T8P.1-B2.md](tdd-log/T8P.1-B2.md). The existing cases held; `npm --version` and an `npm run` through the wrapper exit 0; ports 5175, 9341 and 9342 were free before and after. The task's note: the command now runs in a background process group, so a command that reads the terminal would stop (none of the stages does).
+
+ocr: session `198416d0-84c2-4d8e-87a6-c61351b1dc1a`, model gpt-6.1-sol, 2 files reviewed (0 excluded), 2 comments. Raw output: [ocr/T8P.1-B2-2e7ab770.json](ocr/T8P.1-B2-2e7ab770.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `.claude/scripts/with-browser-lock.sh:59-61` | The 5 s grace period and KILL start only after the blocking `waitpid($child, 0)` returns, so a command that ignores TERM keeps the wrapper and the lock forever. | Valid: reproduced by the reviewer with `sh -c 'trap "" TERM; sleep 40'`, still alive 9 s after TERM. |
+| medium | bug | `.claude/scripts/with-browser-lock.sh:58` | Signalling `-$child` reaches only one process group, so a descendant in another group or session (a Node `spawn(..., {detached: true})`) gets neither TERM nor KILL and can still hold port 5175 after the lock is released. | Valid: the code signals and checks only `-$child`. Playwright starts its browsers detached in their own group, so this is reachable. |
+
+These join round 3 (they come from the review of a round-1 fix, made after round 2):
+- **T8P.1-B9** (finding 1). Defect: a command that ignores TERM keeps the wrapper, and the lock, forever. Case: *it should KILL a command that ignores TERM once the grace period has passed, and then release the lock.*
+- **T8P.1-B10** (finding 2). Defect: a descendant that left the command's process group survives the wrapper's signal and can hold port 5175 after the lock is released. Case: *it should end a descendant that moved to its own process group before releasing the lock when the wrapper receives SIGTERM.*
