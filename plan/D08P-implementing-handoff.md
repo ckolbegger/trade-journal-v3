@@ -291,7 +291,13 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- **For T8P.5:** the three legacy blocks render beside the new components (breakdown section 4.2): the Summary card in the rail, and Valuation and Risk and reward in the Today drawer.
+- **For T8P.12 to T8P.21 (from T8P.5):**
+  - Five paths are placeholders typed `(props: ShellProps) => null` (`src/ui/cockpit/placeholder.ts`): `rail/pnl`, `rail/conditions`, `drawers/price-history`, `journal-cards` and `track`. The other eight re-export a composition from `src/ui/screens/trade-detail/Composed.tsx`.
+  - A lane replacing a path takes the view and time zone through its `.props.ts`, since A216 bars `app/types` from the component.
+  - Every drawer panel stays mounted, with the inactive ones `hidden` (T8P.5-B1), so an open form survives a tab change.
+  - `eachDrawer` skips a tab name it can't find, so keep W1's names exactly.
+- **For T8P.17:** T8P.5 pointed seven specs' Valuation reads at Today, since the legacy Valuation block renders there: d4/breach-overrun, d4/expected-mark, d4/responsive-a11y, d6/exit, d6/runtime-failure, d7/short-put and d7p/layout (two `openDrawer(page, 'Position')` lines removed). When Open P&L and Realized to date move to the Position drawer, flip them back with `e2e/support/detail/position.ts`.
+- **For T8P.15:** the Needs-you debt reads are reached by `await openDrawer(page, 'Journal')` in nine specs: d5/detail-debt, faults, review-debt, responsive, kill-offline; d6/kill, update, runtime-failure; d7/kill. When the debts move to the rail, those lines go with them.
 - **For T8P.12 to T8P.21:** each component's props type is frozen in its own `src/ui/cockpit/**/<name>.types.ts` (T8P.3), inside the lane's owned glob. `track.types.ts` (D1) and `footer.types.ts` (D3) sit at the cockpit root. The A216 rule exempts `*.props.ts` and `*.props.test.*` only. `Row`, `Table` and `Tone` are declared per file, since a shared file would belong to no lane.
 - **For T8P.10, T8P.11:** `src/coordinators/trade-views/replay-view.ts` (T8P.3) isn't re-exported from `trade-views/index.ts` yet. Add the export and the facade type. `ReplayTradeResult` is `ReadViewResult<TradeReplayView> | ReplayNotApplicable`.
 - **For T8P.19:** T8P.3's `PayoffDrawerProps` (finished `{price, value}` points, per-line `rows`, `stockNote`, `valueAtExpiration`) didn't settle how `PayoffView`'s `Rational` drawing becomes plain props. D4 may reshape it.
@@ -299,11 +305,13 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - **For T8P.14, T8P.16:** the per-condition value at expiration and distance on the Underlying move to the Today drawer (A223). Until T8P.22, the legacy Risk and reward block still shows them.
 - **For T8P.19:** `PayoffView` stays as the Plan receipt uses it. The drawer's one chart may be a new component, but its sentence must come from `valueAtCloseText` (tech debt item 21). W18 also changes `CardFigures.tsx:94` and `CardFigures.test.tsx:96`, `:100`, `:106`.
 - **For T8P.9:** T8P.4 left `d7/plan-open`'s "Expires Fri 20 Nov 2026" read scoped to the Summary card (`detail.summary`), so retarget it if the line moves.
-- **For T8P.15:** T8P.4 scoped the Needs-you debt reads in `e2e/support/detail/rail-b.ts` (`reflectionOwed`, `reflectNowButton`, `declineButton`, `answerButton`, `debtForm`, `savedReflection`, `owedItem`) to the Journal card; T8P.5 decides how they're reached, and its report says how.
+- **For T8P.15:** T8P.4 scoped the Needs-you debt reads in `e2e/support/detail/rail-b.ts` (`reflectionOwed`, `reflectNowButton`, `declineButton`, `answerButton`, `debtForm`, `savedReflection`, `owedItem`) to the Journal card.
 - **For T8P.22:** the `d7s/plan` and `d7s/entry-beyond-stop` reads go through `summaryValue` (`rail-a.ts`) and must move with the Summary card. Retire the three legacy blocks and their CSS (`.summary-card`, `.summary-text`), and move any expectation still reading them.
 - **For T8P.27:** T8P.5 re-exports the old `src/ui/screens/trade-detail/` sections behind the cockpit paths, and each wave-1 lane replaces what a path renders without deleting the old file. Find the orphans from `src/main.tsx`'s import graph, not by name. Some old pieces live on inside the new drawers (for example the executions disclosure and the debt forms).
 
 ### Open questions
+
+- **T8P.5: code ahead of red (flagged).** The shell was written whole while greening case 1. Cases 2 to 5 reached a genuine red only by reverting each case's own code, as recorded in a note row of `tdd-log/T8P.5.md`. Case 2's red is a runtime `TypeError` from the missing Planned branch.
 
 - **T8P.1's bug-task rounds (user's decisions, 2026-11-13).**
   - The handoff's three-round stop was reached on T8P.1's tooling. The user chose to batch the remaining lock-wrapper findings, then allowed one last round, and to accept any further findings on `with-browser-lock.sh` as limits of dev tooling.
