@@ -22,9 +22,19 @@ export interface ReplayChange {
 }
 
 // What a session's series point says of an Instrument: its effective Mark (price and revision, as `series` gives them),
-// or a gap (A210). The series carries no provenance (source, saved time), which the Detail's own Mark carries.
+// or a gap (A210), with the effective revision's provenance (revision 93).
 export type ReplayMarkResolution =
-  | { readonly kind: 'Available'; readonly mark: { readonly price: string; readonly revisionNumber: number } }
+  | {
+      readonly kind: 'Available';
+      readonly mark: {
+        readonly price: string;
+        readonly revisionNumber: number;
+        readonly source: 'Manual';
+        readonly savedAt: string;
+        // The reason given when this revision corrected an earlier one (revision 93).
+        readonly correctionReason?: string;
+      };
+    }
   | { readonly kind: 'Missing' }
   | { readonly kind: 'AcknowledgedUnavailable'; readonly acknowledgment: AcknowledgmentVersion };
 

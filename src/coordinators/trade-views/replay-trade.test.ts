@@ -243,3 +243,18 @@ describe('replayTrade (A212, A213)', () => {
     expect(await views.replayTrade({ tradeId, binding: current })).toEqual(expect.objectContaining({ kind: 'Ready' }));
   });
 });
+
+describe('replayTrade: Mark provenance (revision 93)', () => {
+  it("should carry each replayed Mark's source, saved time and correction reason from the series", async () => {
+    const { stack, replay } = await oc3Stack();
+    // Thursday's call Mark (the session's own date) is corrected; Monday's (a scanned session) keeps its first revision.
+    const corrected = await stack.marketData.save({ intention: 'CorrectMark', instrumentKey: instrumentKey(CALL), tradingDate: DATES.thu, price: '3.25', reason: 'Typo', expectedResolutionRevision: 1 });
+    if (corrected.kind !== 'Saved') throw new Error(`expected Saved, got ${corrected.kind}`);
+    const view = ready(await replay());
+
+    const callMark = (i: number) => view.sessions[i]!.marks[1]!.resolution;
+    expect(callMark(0)).toEqual({ kind: 'Available', mark: { price: '2.1', revisionNumber: 1, source: 'Manual', savedAt: THURSDAY_1700 } });
+    expect(callMark(0)).not.toHaveProperty('mark.correctionReason');
+    expect(callMark(3)).toEqual({ kind: 'Available', mark: { price: '3.25', revisionNumber: 2, source: 'Manual', savedAt: THURSDAY_1700, correctionReason: 'Typo' } });
+  });
+});

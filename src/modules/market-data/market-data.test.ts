@@ -643,7 +643,7 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
       ['2026-10-09', 'AcknowledgedUnavailable'],
       ['2026-10-12', 'Available'],
     ]);
-    expect(points[0]).toEqual({ kind: 'Available', tradingDate: '2026-10-07', closeInstant: '2026-10-07T20:00:00Z', price: '10.5', revisionNumber: 1 });
+    expect(points[0]).toEqual({ kind: 'Available', tradingDate: '2026-10-07', closeInstant: '2026-10-07T20:00:00Z', price: '10.5', revisionNumber: 1, source: 'Manual', savedAt: TUESDAY_NOON });
     expect(points[1]).toEqual({ kind: 'Missing', tradingDate: '2026-10-08', closeInstant: '2026-10-08T20:00:00Z' });
     expect(points[2]).toMatchObject({ kind: 'AcknowledgedUnavailable', acknowledgment: { kind: 'Asserted', reason: 'no quote' } });
     expect(points[3]).toMatchObject({ kind: 'Available', price: '11', closeInstant: '2026-10-12T20:00:00Z' });
@@ -697,7 +697,7 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
     const first = { kind: 'Historical' as const, tradingDate: '2024-01-02' };
     await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2024-01-02', price: '9' }));
     const session = await marketData.openReadSession(first);
-    expect(await session.series('MNO', '2024-01-02', '2024-01-05')).toEqual([{ kind: 'Available', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z', price: '9', revisionNumber: 1 }]);
+    expect(await session.series('MNO', '2024-01-02', '2024-01-05')).toEqual([{ kind: 'Available', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z', price: '9', revisionNumber: 1, source: 'Manual', savedAt: TUESDAY_NOON }]);
     const missing = await marketData.openReadSession(first);
     expect(await missing.series('NONE', '2024-01-02', '2024-01-02')).toEqual([{ kind: 'Missing', tradingDate: '2024-01-02', closeInstant: '2024-01-02T21:00:00Z' }]);
   });
@@ -762,5 +762,25 @@ describe('ReadSeries (A210, AC-MARK-004)', () => {
     const reversed = await countRequests(async () => [await first.series('MNO', '2026-10-07', '2026-10-12'), await first.gaps([opened])]);
     expect(scans(reversed.requests)).toHaveLength(1);
     expect(reversed.result[1]).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-08', '2026-10-09'], acknowledged: [], revisions: { '2026-10-08': 'None', '2026-10-09': 'None' }, acknowledgments: {}, closes: { '2026-10-08': '2026-10-08T20:00:00Z', '2026-10-09': '2026-10-09T20:00:00Z' } }]);
+  });
+});
+
+// Revision 93: a series point carries the effective revision's provenance, read with the point and no more.
+describe('ReadSeries: Mark provenance (revision 93)', () => {
+  it("should give each Available point its Mark's source, saved time and correction reason", async () => {
+    const { marketData } = await setup();
+    const current = { kind: 'Current' as const, asOf: TUESDAY_NOON };
+    // 2026-10-08 keeps its first Mark; 2026-10-12 (the session's own date, read as a frame) is corrected.
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-08', price: '10' }));
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11' }));
+    await marketData.save(correct({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11.25', reason: 'Typo', expectedResolutionRevision: 1 }));
+    const result = await marketData.query({ kind: 'ReadSeries', context: current, instrumentKey: 'MNO', from: '2026-10-08', to: '2026-10-12' });
+    if (result.kind !== 'Series') throw new Error(`expected a series, got ${result.kind}`);
+    const [scanned, gap, frame] = result.points;
+    expect(scanned).toMatchObject({ kind: 'Available', source: 'Manual', savedAt: expect.stringMatching(/^20/) as unknown });
+    expect(scanned).not.toHaveProperty('reason');
+    expect(frame).toMatchObject({ kind: 'Available', revisionNumber: 2, source: 'Manual', savedAt: expect.stringMatching(/^20/) as unknown, reason: 'Typo' });
+    // A gap carries no provenance.
+    expect(gap).not.toHaveProperty('source');
   });
 });

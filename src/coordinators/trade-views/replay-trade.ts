@@ -32,7 +32,10 @@ function frameOf(instrument: Instrument, point: SeriesPoint): ObservationFrame {
 }
 
 function resolutionOf(point: SeriesPoint | undefined): ReplayMarkResolution {
-  if (point?.kind === 'Available') return { kind: 'Available', mark: { price: point.price, revisionNumber: point.revisionNumber } };
+  if (point?.kind === 'Available') {
+    const { price, revisionNumber, source, savedAt, reason } = point;
+    return { kind: 'Available', mark: { price, revisionNumber, source, savedAt, ...(reason !== undefined && { correctionReason: reason }) } };
+  }
   if (point?.kind === 'AcknowledgedUnavailable') return { kind: 'AcknowledgedUnavailable', acknowledgment: point.acknowledgment };
   return { kind: 'Missing' };
 }
