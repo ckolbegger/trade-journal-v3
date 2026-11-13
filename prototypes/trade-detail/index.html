@@ -750,7 +750,7 @@ function viewC(s) {
   }).join('');
   const body = {
     Today: `<h3 class="sec-title">Closes: today against ${s.prev ? esc(s.prev.rel.toLowerCase()) : 'entry'}</h3>${compare(s, { pnl: false })}<h3 class="sec-title" style="margin-top:18px">Where the prices sit</h3>${tracksBlock(s, { lines: false })}`,
-    Position: positionBody(s, { realized: false }),
+    Position: positionBody(s),
     'Plan and entry': planEntryBody(s),
     Payoff: payoff(s),
     'Price History': marksGrid(s, excl),
@@ -764,7 +764,7 @@ function viewC(s) {
       <div class="card">${identity(s)}</div>
       <div class="card"><div class="c-pnl ${s.today ? dir(s.pnl) : ''}">${s.today ? money(s.pnl) : '—'}</div>
         <div class="small ${s.today ? dir(s.pnl - s.pnlPrev) : 'muted'}">${s.today ? signed(s.pnl - s.pnlPrev) + ' since ' + (s.prev.rel === 'Yesterday' ? 'yesterday' : s.prev.date) : 'Trade P&amp;L after today’s close'}</div>
-        <div class="small muted" style="margin-top:6px">${s.open} of ${PLAN.contracts} contracts open${s.realized ? ', realized ' + signed(s.realized) : ''}</div></div>
+        <div class="small muted" style="margin-top:6px">${s.open} of ${PLAN.contracts} contracts open</div></div>
       <div class="card"><h3 class="sec-title">Conditions</h3><ul class="c-conds">${conds}</ul>${extremes(s)}</div>
       <div class="card">${todoList(s)}</div>
     </aside>
