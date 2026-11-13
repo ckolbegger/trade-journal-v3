@@ -71,11 +71,13 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Option'],
   // D7: the payoff at the single expiration, and the Settlement Due item.
   'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
+  // D08P A212: a Trade's replay by session, its own read (P95).
+  'TradeViewsAndReporting.replayTrade': [],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
   'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock', 'Option'],
   // D5: frames carry the previous session's close.
-  'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option'],
+  'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose', 'Option', 'ReadSeries'],
   'MarketData.recover': [],
   // D5 P17: owed reflections inside the walk; there is no DailyReview.getDebt.
   // D5R: the walk carries each Trade's range position and the gap groups' Trades; a card carries the Plan

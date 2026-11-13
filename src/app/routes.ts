@@ -56,9 +56,11 @@ export const ROUTES = [
     path: '/trades/:tradeId',
     label: 'Trade',
     // D5 P17: Debt status, and answering or declining an owed reflection here (Source Trade Detail).
-    requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query', 'Journal.save'],
+    // D08P A210, A212: the cockpit's history is the Trade's replay by session, over Market Data's series read.
+    requires: ['TradeViewsAndReporting.getTradeDetail', 'TradeViewsAndReporting.replayTrade', 'MarketData.query', 'Journal.query', 'Journal.save'],
     variants: {
       'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'Closed', 'CurrentEvaluation', 'Debt', 'ExpirationPayoff', 'SettlementDue'],
+      'MarketData.query': ['ReadSeries'],
       'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
       'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
     },

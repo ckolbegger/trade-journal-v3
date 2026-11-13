@@ -1,6 +1,6 @@
 import { createMutationGuard } from '../coordinators/mutation-guard.ts';
 import { createDailyReview } from '../coordinators/daily-review/index.ts';
-import { createTradeViews, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
+import { createTradeViews, type ReplayTradeRequest, type ReplayTradeResult, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
 import { createTradeWorkflows, type PositionChangeCommand } from '../coordinators/trade-workflows/index.ts';
 import { createWorkspace, installedCapabilities, type MigrationStageHooks } from '../coordinators/workspace/index.ts';
 import type { HostPort } from '../delivery/host.ts';
@@ -95,6 +95,7 @@ export async function createApplication(deps: ApplicationDeps) {
       // Generic in the lifecycle, so the Planned, Open and Closed forms are each typed (T2.11, T6.16).
       browseTrades: <L extends 'Planned' | 'Open' | 'Closed'>(request: TradeBrowseRequest<L>) => tradeViews.browseTrades(request),
       getTradeDetail: (request: TradeDetailRequest) => tradeViews.getTradeDetail(request),
+      replayTrade: (request: ReplayTradeRequest): Promise<ReplayTradeResult> => tradeViews.replayTrade(request),
     },
     // Market Data mutates only through the guard; queries and recovery read. DailyReview.save is
     // guarded inside the coordinator, which owns its commit.
