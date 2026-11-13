@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 67131,
+    "input_tokens": 65917,
+    "output_tokens": 1214,
+    "cache_read_tokens": 13696,
+    "elapsed": "37s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 8,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Payoff visualization and trade results",
+      "files": [
+        "src/itg/d08p/drawers/payoff.tsx",
+        "src/itg/d08p/trade-detail/Payoff.tsx",
+        "src/itg/d08p/trade-detail/Result.tsx"
+      ]
+    },
+    {
+      "label": "Planning screens and card figures",
+      "files": [
+        "src/itg/d08p/screens/CardFigures.tsx",
+        "src/itg/d08p/screens/PlanForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "b7e10bd2-0af1-4e1c-8fe5-4e3d09a64f5b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b7e10bd2-0af1-4e1c-8fe5-4e3d09a64f5b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "cb4c4c7ed271584700c36652621fbcaff0d8f418",
+      "resolved_head": "6a156d38daf22531e3a426dc3ec210d2c2dd182b",
+      "exact_range": "cb4c4c7ed271584700c36652621fbcaff0d8f418..6a156d38daf22531e3a426dc3ec210d2c2dd182b",
+      "source_artifact_sha256": "cf6f75a91eb5c4566cbb369b61d211d239f17126add2d4ca3016b1074b065280"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a565d83738852a7c3dcbb1101e5c8d7f75439615760adb708c08e989bf3019c",
+          "path": "src/itg/d08p/trade-detail/Result.tsx",
+          "fingerprint": "fa06a2fb5579c146b889b0c0dd752f83ce07c33f81112a313e88fc92c48fa394"
+        },
+        {
+          "item_id": "1f04e026c1f1b899a3f2e0862977ea4fec14aad033d1df854d2dee3b68c77e79",
+          "path": "src/itg/d08p/trade-detail/Payoff.tsx",
+          "fingerprint": "f70a14e9b05b3cf90f98f79f930cd203d3dec2a70424c5327b63d387575cc70f"
+        },
+        {
+          "item_id": "aebd8fe28a76cfec11a3aaaf13ea05ffbab4b87fa97aac7b432c77614cc20cac",
+          "path": "src/itg/d08p/screens/PlanForm.tsx",
+          "fingerprint": "568d5758648251f4018d4259ad5b459bf621662fb2d4e7dbe259dc1839e17e9d"
+        },
+        {
+          "item_id": "b1d3a89bec97ad78d86390d5f16465d755bc5dcf4bc0a35c3f4bc7fdee17fb78",
+          "path": "src/itg/d08p/drawers/payoff.tsx",
+          "fingerprint": "21dbd9f290abec60b80c8763faca362047c3697a1633059a2bd444cdfb04d071"
+        },
+        {
+          "item_id": "bcf7f275193cf5c0fc790da85e2b124481f19a5d8ef18399f02e0ca492240c56",
+          "path": "src/itg/d08p/screens/CardFigures.tsx",
+          "fingerprint": "807f3b6b9a0c0068da0e0294f5e3ab6331db2eec9e43471491fce7d76e9bac01"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a565d83738852a7c3dcbb1101e5c8d7f75439615760adb708c08e989bf3019c",
+          "path": "src/itg/d08p/trade-detail/Result.tsx",
+          "fingerprint": "fa06a2fb5579c146b889b0c0dd752f83ce07c33f81112a313e88fc92c48fa394"
+        },
+        {
+          "item_id": "1f04e026c1f1b899a3f2e0862977ea4fec14aad033d1df854d2dee3b68c77e79",
+          "path": "src/itg/d08p/trade-detail/Payoff.tsx",
+          "fingerprint": "f70a14e9b05b3cf90f98f79f930cd203d3dec2a70424c5327b63d387575cc70f"
+        },
+        {
+          "item_id": "aebd8fe28a76cfec11a3aaaf13ea05ffbab4b87fa97aac7b432c77614cc20cac",
+          "path": "src/itg/d08p/screens/PlanForm.tsx",
+          "fingerprint": "568d5758648251f4018d4259ad5b459bf621662fb2d4e7dbe259dc1839e17e9d"
+        },
+        {
+          "item_id": "b1d3a89bec97ad78d86390d5f16465d755bc5dcf4bc0a35c3f4bc7fdee17fb78",
+          "path": "src/itg/d08p/drawers/payoff.tsx",
+          "fingerprint": "21dbd9f290abec60b80c8763faca362047c3697a1633059a2bd444cdfb04d071"
+        },
+        {
+          "item_id": "bcf7f275193cf5c0fc790da85e2b124481f19a5d8ef18399f02e0ca492240c56",
+          "path": "src/itg/d08p/screens/CardFigures.tsx",
+          "fingerprint": "807f3b6b9a0c0068da0e0294f5e3ab6331db2eec9e43471491fce7d76e9bac01"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 37060
+  }
+}

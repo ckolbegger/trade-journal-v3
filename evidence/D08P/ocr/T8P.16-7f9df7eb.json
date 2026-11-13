@@ -1,0 +1,243 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 3,
+    "total_tokens": 336162,
+    "input_tokens": 332243,
+    "output_tokens": 3919,
+    "cache_read_tokens": 18304,
+    "elapsed": "2m39s"
+  },
+  "tool_calls": {
+    "total": 43,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 2,
+      "file_read": 26
+    },
+    "failure": 2,
+    "failure_by_tool": {
+      "file_read": 2
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 25,
+        "tool_name": "file_read",
+        "file_path": "e2e/support/detail/today.ts,src/ui/cockpit/drawers/today.props.ts,src/ui/cockpit/drawers/today.tsx,src/ui/cockpit/drawers/today.types.ts,src/ui/cockpit/styles/today.css,src/ui/cockpit/track.tsx,src/ui/cockpit/track.types.ts",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/shell.tsx\"}",
+        "error": "file \"src/ui/cockpit/shell.tsx\" not found: git show 7f9df7ebe000e62e7c4377d79a087cb557a84af8:src/ui/cockpit/shell.tsx: exit status 128: fatal: path 'src/ui/cockpit/shell.tsx' does not exist in '7f9df7ebe000e62e7c4377d79a087cb557a84af8'\n"
+      },
+      {
+        "tool_call_number": 37,
+        "tool_name": "file_read",
+        "file_path": "e2e/support/detail/today.ts,src/ui/cockpit/drawers/today.props.ts,src/ui/cockpit/drawers/today.tsx,src/ui/cockpit/drawers/today.types.ts,src/ui/cockpit/styles/today.css,src/ui/cockpit/track.tsx,src/ui/cockpit/track.types.ts",
+        "arguments": "{\"file_path\": \"src/coordinators/trade-views/detail-view.ts\", \"start_line\": 1, \"end_line\": 240}",
+        "error": "file \"src/coordinators/trade-views/detail-view.ts\" not found: git show 7f9df7ebe000e62e7c4377d79a087cb557a84af8:src/coordinators/trade-views/detail-view.ts: exit status 128: fatal: path 'src/coordinators/trade-views/detail-view.ts' does not exist in '7f9df7ebe000e62e7c4377d79a087cb557a84af8'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/today.props.ts",
+      "content": "The replay change is measured from this instrument's previous available Mark, not necessarily the session displayed in the earlier column. For example, if Wednesday has a stock Mark but no option Mark, Thursday's option change can be relative to Tuesday while the table is headed “Thursday against Wednesday” and shows a dash for Wednesday's option price. Check `mark.change.since === earlier.date` before displaying the change (otherwise show a dash or explicitly identify its different comparison date), and add a mixed-instrument gap test.",
+      "existing_code": "    if (!mark?.change) return '—';\n    return signed(instrument.kind === 'Option' || !optionTrade ? money : underlyingPrice)(mark.change.dollars);",
+      "start_line": 77,
+      "end_line": 78,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/today.props.ts",
+      "content": "These guards do not establish that the Trade opened today. `AwaitingClose` also applies to lots opened after the latest completed close on a previous day: a Trade opened Monday after the close and viewed Tuesday before the close has no dated line and has at-entry figures, so this message incorrectly says it opened today. The same applies across weekends. Compare the opening's workspace-local date with the actual current date, or use date-neutral wording and show the opening date explicitly; cover an overnight opening in the tests.",
+      "existing_code": "  return `No Marks yet. This Trade opened today${opened ? ` at ${clockTime(opened.economicTime, timeZone)}` : ''}. Its first Marks, and every figure that needs them, are due once today's session ends.`;",
+      "start_line": 221,
+      "end_line": 221,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/styles/today.css",
+      "content": "The entry and now labels occupy essentially the same vertical lane (`bottom: 15px` versus `18px`). When the current Mark equals or is close to the average entry price, both labels render on top of each other and become unreadable. Give these labels separate vertical lanes or add collision handling for nearby markers.",
+      "existing_code": ".track .mk.entry .lab {\n  bottom: 15px;\n  color: var(--muted);\n}",
+      "start_line": 104,
+      "end_line": 107,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Today drawer and cockpit track integration",
+      "files": [
+        "e2e/support/detail/today.ts",
+        "src/ui/cockpit/drawers/today.props.ts",
+        "src/ui/cockpit/drawers/today.tsx",
+        "src/ui/cockpit/drawers/today.types.ts",
+        "src/ui/cockpit/styles/today.css",
+        "src/ui/cockpit/track.tsx",
+        "src/ui/cockpit/track.types.ts"
+      ]
+    }
+  ],
+  "session_id": "4dda4c32-ce13-4239-bd53-1b4ff4f88563",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4dda4c32-ce13-4239-bd53-1b4ff4f88563",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7f9df7eb",
+      "resolved_base": "f0c9948dbe94e7090dae3ca26b943accb6977291",
+      "resolved_head": "7f9df7ebe000e62e7c4377d79a087cb557a84af8",
+      "exact_range": "f0c9948dbe94e7090dae3ca26b943accb6977291..7f9df7ebe000e62e7c4377d79a087cb557a84af8",
+      "source_artifact_sha256": "bc0d62a8869113a470b330aff44fdd5663fcc48ca865ae1c049123eb6376057a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "a29d28c87fb33d44030afa2cd21a5743797e48fb95facd37a4a6a9cecdbf3569"
+        },
+        {
+          "item_id": "325c56aacc63b089dd246541534dbf6b4fffa2edb041b099c93d98de5e9998b8",
+          "path": "src/ui/cockpit/track.types.ts",
+          "fingerprint": "592be80b01523dd9e9aa770eb390d49784b4b856467ddb43cc8e556028f21558"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "be6771855edadd2e5bedc7191953bc073ff42df8e190c5c8fd3b0821446bfc6d"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "ba311351bc64ab27373c6b6c4906e2d555ab233e6e6c7af0d38f73fa5c53ee76"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "f53a048b1e93b526fbaa106f94924b234c10571b6112343e07ccecd920f11265"
+        },
+        {
+          "item_id": "ad983e22bcae865b3010e4b263f3ded597f6b64df9f744e0c3969e94a6c8c813",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "42c5b2b7e2107ba70c1a22c62d7831c3fdf68fff5ab50dbb6d39c5d0c89b15f1"
+        },
+        {
+          "item_id": "de4ca41395ecef648650a63a9a9509595c4b44099c70208a18936d6ada1eadba",
+          "path": "e2e/support/detail/today.ts",
+          "fingerprint": "a62814780d0b639e93ee65f8bc1c709a61da13ab8a41c076c446ed00a7e9af4f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "a29d28c87fb33d44030afa2cd21a5743797e48fb95facd37a4a6a9cecdbf3569"
+        },
+        {
+          "item_id": "325c56aacc63b089dd246541534dbf6b4fffa2edb041b099c93d98de5e9998b8",
+          "path": "src/ui/cockpit/track.types.ts",
+          "fingerprint": "592be80b01523dd9e9aa770eb390d49784b4b856467ddb43cc8e556028f21558"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "be6771855edadd2e5bedc7191953bc073ff42df8e190c5c8fd3b0821446bfc6d"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "ba311351bc64ab27373c6b6c4906e2d555ab233e6e6c7af0d38f73fa5c53ee76"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "f53a048b1e93b526fbaa106f94924b234c10571b6112343e07ccecd920f11265"
+        },
+        {
+          "item_id": "ad983e22bcae865b3010e4b263f3ded597f6b64df9f744e0c3969e94a6c8c813",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "42c5b2b7e2107ba70c1a22c62d7831c3fdf68fff5ab50dbb6d39c5d0c89b15f1"
+        },
+        {
+          "item_id": "de4ca41395ecef648650a63a9a9509595c4b44099c70208a18936d6ada1eadba",
+          "path": "e2e/support/detail/today.ts",
+          "fingerprint": "a62814780d0b639e93ee65f8bc1c709a61da13ab8a41c076c446ed00a7e9af4f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0b756cac508f3d5aac94ec957df385b33194f3440df2e51aaa989a4f01197d8e",
+          "path": "src/ui/screens/trade-detail/Valuation.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4ca62b08b3c2d54b873195c74136eb9b0d7c6da9d82e71b8833caf97e0f71477",
+          "path": "src/ui/cockpit/drawers/today.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "754d1a73ca4db598440a6dc0ac896172ed0e8832afe0dbf49d698c2d8eeae73f",
+          "path": "evidence/D08P/tdd-log/T8P.16.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d8101e35e29d90cd83b85e256cccb020f56ac075ce9f5a3b5af4cf406c14e844",
+          "path": "src/ui/screens/trade-detail/Today.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ee17d1ea42b9203150015cfbb443bba5e2c8649d46d5490186271179cd9810aa",
+          "path": "src/ui/cockpit/track.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 158603
+  }
+}

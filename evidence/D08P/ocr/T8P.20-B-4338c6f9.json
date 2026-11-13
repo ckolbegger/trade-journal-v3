@@ -1,0 +1,118 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 137269,
+    "input_tokens": 136731,
+    "output_tokens": 538,
+    "cache_read_tokens": 11648,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/price-history.tsx",
+      "content": "The Review URL is still hardcoded locally, contrary to the checklist's URL-path rule, and duplicates `ROUTES` in `src/app/routes.ts`. Derive this value from the `review` route definition so the href and navigation stay aligned with the registered route when its path changes.",
+      "existing_code": "const REVIEW_PATH = '/review';",
+      "start_line": 8,
+      "end_line": 8,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/price-history.tsx",
+        "src/ui/cockpit/styles/history.css"
+      ]
+    }
+  ],
+  "session_id": "b25831e7-f67b-4f37-aff7-931f839ab070",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b25831e7-f67b-4f37-aff7-931f839ab070",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "4338c6f9~1",
+      "requested_head": "4338c6f9",
+      "resolved_base": "66c34bf8bc006295e1cb3951b02722fe9ae108cb",
+      "resolved_head": "4338c6f964ffa40d7e9fc2247e380655516c6af5",
+      "exact_range": "66c34bf8bc006295e1cb3951b02722fe9ae108cb..4338c6f964ffa40d7e9fc2247e380655516c6af5",
+      "source_artifact_sha256": "10cce7a86ae9138cb760af3d13788a5472b5e3cbcca67e475e4a51f640dfb251"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "062bd3acbee9deaf8e93fd8e9b05a00ea037a344f5ecbcf1ab16a369c3cc61bb",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "98cffc9b760cdd36e727cf46cdb2d5b0fcbaaddb82610d30cb014f58ceedd5c4"
+        },
+        {
+          "item_id": "fcca641c75e1c435898434ec1f45d160cc0686a7e4ad7a6f9df97bd6908441d6",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "6de25b1c589840e433075727925bb7252457d636d5ff7b0bbb9a9d3690df35c8"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "062bd3acbee9deaf8e93fd8e9b05a00ea037a344f5ecbcf1ab16a369c3cc61bb",
+          "path": "src/ui/cockpit/styles/history.css",
+          "fingerprint": "98cffc9b760cdd36e727cf46cdb2d5b0fcbaaddb82610d30cb014f58ceedd5c4"
+        },
+        {
+          "item_id": "fcca641c75e1c435898434ec1f45d160cc0686a7e4ad7a6f9df97bd6908441d6",
+          "path": "src/ui/cockpit/drawers/price-history.tsx",
+          "fingerprint": "6de25b1c589840e433075727925bb7252457d636d5ff7b0bbb9a9d3690df35c8"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "180cecac47551c42380e198c85ee9ce7c0daf9f457dfe128ae8b2e349bc8ed3b",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "99c0fd4b51ca764b273f1a7d477692d0510f734f1b9ba9d6acd79d05c300b9d2",
+          "path": "evidence/D08P/tdd-log/T8P.20-B.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 33515
+  }
+}

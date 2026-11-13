@@ -1,0 +1,332 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 15 selected item(s).",
+  "summary": {
+    "files_reviewed": 15,
+    "comments": 4,
+    "total_tokens": 462613,
+    "input_tokens": 457490,
+    "output_tokens": 5123,
+    "cache_read_tokens": 54528,
+    "elapsed": "2m17s"
+  },
+  "tool_calls": {
+    "total": 53,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 15,
+      "file_find": 2,
+      "file_read": 31,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d08p/drawers/today.props.ts",
+      "content": "Please add a partially marked-session case, e.g. both instruments marked Tuesday, only MNO marked Wednesday, and both marked Thursday. The adapter selects Wednesday as the shared earlier column but renders the put's change since Tuesday without checking `change.since`, so it currently shows a numeric change beside an empty Wednesday put price under a Thursday-versus-Wednesday heading. The all-available/all-missing fixtures here cannot detect that misleading comparison; assert that each change matches its displayed comparison date (or that a different basis is explicitly identified).",
+      "existing_code": "  it('should compare with the latest earlier session with Marks, and name the session that had none', () =\u003e {",
+      "start_line": 85,
+      "end_line": 85,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/today.props.ts",
+      "content": "The replay defines `change` relative to each instrument's previous available Mark, which can precede the shared `earlier` session when only some instruments had Marks there. For example, if Wednesday has an underlying Mark but no option Mark, Thursday's option change can be measured from Tuesday while this table labels the comparison Wednesday and displays `—` in that cell. Check `change.since` against `earlier.date` and either suppress mismatched changes or explicitly display their actual comparison date (with a partial-gap test).",
+      "existing_code": "    return signed(instrument.kind === 'Option' || !optionTrade ? money : underlyingPrice)(mark.change.dollars);",
+      "start_line": 78,
+      "end_line": 78,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/today.props.ts",
+      "content": "These guards establish that the position awaits a close, not that it opened on the current workspace date. A trade opened Monday after the close still takes this branch Tuesday morning (or throughout a holiday/weekend), so the drawer incorrectly says it opened \"today\". Use the opening date in the workspace zone, or date-neutral wording, and avoid promising a session ends today without calendar context.",
+      "existing_code": "  return `No Marks yet. This Trade opened today${opened ? ` at ${clockTime(opened.economicTime, timeZone)}` : ''}. Its first Marks, and every figure that needs them, are due once today's session ends.`;",
+      "start_line": 221,
+      "end_line": 221,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/cockpit/drawers/today.props.ts",
+      "content": "Handle an empty `prices` array before computing the track bounds. An accepted option plan may have only StructureValue conditions; before its first underlying Mark (or when that Mark is missing and no replay comparison exists), the underlying track has no conditions or markers. This produces `min = Infinity` and `max = NaN` and still renders an empty price track. Omit that track when there are no prices, or supply a deliberate finite fallback, and cover the option-price-only/missing-underlying-Mark case.",
+      "existing_code": "  const low = Math.min(...prices);\n  const high = Math.max(...prices);",
+      "start_line": 103,
+      "end_line": 104,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Today drawer UI, props, types, and styling",
+      "files": [
+        "src/ui/cockpit/drawers/today.props.ts",
+        "src/ui/cockpit/drawers/today.tsx",
+        "src/ui/cockpit/drawers/today.types.ts",
+        "src/ui/cockpit/styles/today.css"
+      ]
+    },
+    {
+      "label": "Integrated Today drawer, detail views, and end-to-end coverage",
+      "files": [
+        "e2e/support/detail/today.ts",
+        "src/itg/d08p/detail/Today.tsx",
+        "src/itg/d08p/detail/Valuation.tsx",
+        "src/itg/d08p/drawers/today.props.ts",
+        "src/itg/d08p/drawers/today.tsx",
+        "src/itg/d08p/e2e/breach-overrun.ts",
+        "src/itg/d08p/e2e/expected-mark.ts",
+        "src/itg/d08p/e2e/responsive-a11y.ts"
+      ]
+    },
+    {
+      "label": "Cockpit track integration and shared types",
+      "files": [
+        "src/itg/d08p/cockpit/track.tsx",
+        "src/ui/cockpit/track.tsx",
+        "src/ui/cockpit/track.types.ts"
+      ]
+    }
+  ],
+  "session_id": "d6352625-8b3a-4d3c-9438-4e4b4fcb11f2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d6352625-8b3a-4d3c-9438-4e4b4fcb11f2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "1f844419befd936a0579b79b9e60ca8c82bcb8ac",
+      "resolved_head": "620d87dd70b6b492a541dee70fd0a0636046a6e2",
+      "exact_range": "1f844419befd936a0579b79b9e60ca8c82bcb8ac..620d87dd70b6b492a541dee70fd0a0636046a6e2",
+      "source_artifact_sha256": "fea06b2b2fb2ce51c7c11f4129577075449535ef40ebcf470c99cea616292080"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04b97d7da81d48f110930bccea9577379e24391986d18058d8a6b24da1658116",
+          "path": "src/itg/d08p/detail/Valuation.tsx",
+          "fingerprint": "348c6ef76e6c5aae5e03b9fd1e896919a1b8a533de08aabd3dfcd47b59d29c31"
+        },
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "a29d28c87fb33d44030afa2cd21a5743797e48fb95facd37a4a6a9cecdbf3569"
+        },
+        {
+          "item_id": "1cf45111e143ce7789648b50b1d69b70653242c24f424ee4930c376f2fbb9a4d",
+          "path": "src/itg/d08p/drawers/today.tsx",
+          "fingerprint": "b6a5f12707a5246cf09f150659bc2964cd1ca2d2e286ef7bf2811d5b6230a552"
+        },
+        {
+          "item_id": "325c56aacc63b089dd246541534dbf6b4fffa2edb041b099c93d98de5e9998b8",
+          "path": "src/ui/cockpit/track.types.ts",
+          "fingerprint": "592be80b01523dd9e9aa770eb390d49784b4b856467ddb43cc8e556028f21558"
+        },
+        {
+          "item_id": "46ab355d9c0b3471d4c9c19dc2ce3a183fb08e7139ea271012c242fdc729db5e",
+          "path": "src/itg/d08p/cockpit/track.tsx",
+          "fingerprint": "c4ce2fa29a091a2c05742f305959dc0f52d65263cf1e0f9c5b288cc38a868ed1"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "be6771855edadd2e5bedc7191953bc073ff42df8e190c5c8fd3b0821446bfc6d"
+        },
+        {
+          "item_id": "6111116b31ac11af75ae803bd0137977ad9db1e07dd23aa506722427f3ecc91f",
+          "path": "src/itg/d08p/e2e/breach-overrun.ts",
+          "fingerprint": "8d410414d59f30a43bec70cc0072bda415d5537adc0a0321f0a08b42393f2335"
+        },
+        {
+          "item_id": "7b50c2102fa0c9376e95f0962c4f58d8e9b17ae07a1b4d0d734e181364a7a365",
+          "path": "src/itg/d08p/drawers/today.props.ts",
+          "fingerprint": "0822a4e01459c26aed2001476e9c04d9403145c19bf587782aa00bc20442cf3f"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "ba311351bc64ab27373c6b6c4906e2d555ab233e6e6c7af0d38f73fa5c53ee76"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "f53a048b1e93b526fbaa106f94924b234c10571b6112343e07ccecd920f11265"
+        },
+        {
+          "item_id": "ad983e22bcae865b3010e4b263f3ded597f6b64df9f744e0c3969e94a6c8c813",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "42c5b2b7e2107ba70c1a22c62d7831c3fdf68fff5ab50dbb6d39c5d0c89b15f1"
+        },
+        {
+          "item_id": "cbef1b2dfb6f2ac61f03fea172033bf331fb4c5116c18ac72f3ea429e0235c2d",
+          "path": "src/itg/d08p/detail/Today.tsx",
+          "fingerprint": "c2580b55f09ad7e135c4ba99a5f8dbac439b34145086c90a8109d6c24c3f1a80"
+        },
+        {
+          "item_id": "d4282ba8a49eb5350b73a45ef4472913b59376d9d4f84f3d43d5be049dc4facc",
+          "path": "src/itg/d08p/e2e/expected-mark.ts",
+          "fingerprint": "36b51457a9dc7843c817fb7eff2dc6eb17671608dff2d4eb22c6ce3825c4a49d"
+        },
+        {
+          "item_id": "d463adcf4cb91f6f469d850a1ba2f51c60766b466aeba9911c8eb822058cbceb",
+          "path": "src/itg/d08p/e2e/responsive-a11y.ts",
+          "fingerprint": "75edfc16c7207f2c203b10e9e2c560a75c4caa34be6418586d625a80123a9ad7"
+        },
+        {
+          "item_id": "de4ca41395ecef648650a63a9a9509595c4b44099c70208a18936d6ada1eadba",
+          "path": "e2e/support/detail/today.ts",
+          "fingerprint": "a62814780d0b639e93ee65f8bc1c709a61da13ab8a41c076c446ed00a7e9af4f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04b97d7da81d48f110930bccea9577379e24391986d18058d8a6b24da1658116",
+          "path": "src/itg/d08p/detail/Valuation.tsx",
+          "fingerprint": "348c6ef76e6c5aae5e03b9fd1e896919a1b8a533de08aabd3dfcd47b59d29c31"
+        },
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "a29d28c87fb33d44030afa2cd21a5743797e48fb95facd37a4a6a9cecdbf3569"
+        },
+        {
+          "item_id": "1cf45111e143ce7789648b50b1d69b70653242c24f424ee4930c376f2fbb9a4d",
+          "path": "src/itg/d08p/drawers/today.tsx",
+          "fingerprint": "b6a5f12707a5246cf09f150659bc2964cd1ca2d2e286ef7bf2811d5b6230a552"
+        },
+        {
+          "item_id": "325c56aacc63b089dd246541534dbf6b4fffa2edb041b099c93d98de5e9998b8",
+          "path": "src/ui/cockpit/track.types.ts",
+          "fingerprint": "592be80b01523dd9e9aa770eb390d49784b4b856467ddb43cc8e556028f21558"
+        },
+        {
+          "item_id": "46ab355d9c0b3471d4c9c19dc2ce3a183fb08e7139ea271012c242fdc729db5e",
+          "path": "src/itg/d08p/cockpit/track.tsx",
+          "fingerprint": "c4ce2fa29a091a2c05742f305959dc0f52d65263cf1e0f9c5b288cc38a868ed1"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "be6771855edadd2e5bedc7191953bc073ff42df8e190c5c8fd3b0821446bfc6d"
+        },
+        {
+          "item_id": "6111116b31ac11af75ae803bd0137977ad9db1e07dd23aa506722427f3ecc91f",
+          "path": "src/itg/d08p/e2e/breach-overrun.ts",
+          "fingerprint": "8d410414d59f30a43bec70cc0072bda415d5537adc0a0321f0a08b42393f2335"
+        },
+        {
+          "item_id": "7b50c2102fa0c9376e95f0962c4f58d8e9b17ae07a1b4d0d734e181364a7a365",
+          "path": "src/itg/d08p/drawers/today.props.ts",
+          "fingerprint": "0822a4e01459c26aed2001476e9c04d9403145c19bf587782aa00bc20442cf3f"
+        },
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "ba311351bc64ab27373c6b6c4906e2d555ab233e6e6c7af0d38f73fa5c53ee76"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "f53a048b1e93b526fbaa106f94924b234c10571b6112343e07ccecd920f11265"
+        },
+        {
+          "item_id": "ad983e22bcae865b3010e4b263f3ded597f6b64df9f744e0c3969e94a6c8c813",
+          "path": "src/ui/cockpit/track.tsx",
+          "fingerprint": "42c5b2b7e2107ba70c1a22c62d7831c3fdf68fff5ab50dbb6d39c5d0c89b15f1"
+        },
+        {
+          "item_id": "cbef1b2dfb6f2ac61f03fea172033bf331fb4c5116c18ac72f3ea429e0235c2d",
+          "path": "src/itg/d08p/detail/Today.tsx",
+          "fingerprint": "c2580b55f09ad7e135c4ba99a5f8dbac439b34145086c90a8109d6c24c3f1a80"
+        },
+        {
+          "item_id": "d4282ba8a49eb5350b73a45ef4472913b59376d9d4f84f3d43d5be049dc4facc",
+          "path": "src/itg/d08p/e2e/expected-mark.ts",
+          "fingerprint": "36b51457a9dc7843c817fb7eff2dc6eb17671608dff2d4eb22c6ce3825c4a49d"
+        },
+        {
+          "item_id": "d463adcf4cb91f6f469d850a1ba2f51c60766b466aeba9911c8eb822058cbceb",
+          "path": "src/itg/d08p/e2e/responsive-a11y.ts",
+          "fingerprint": "75edfc16c7207f2c203b10e9e2c560a75c4caa34be6418586d625a80123a9ad7"
+        },
+        {
+          "item_id": "de4ca41395ecef648650a63a9a9509595c4b44099c70208a18936d6ada1eadba",
+          "path": "e2e/support/detail/today.ts",
+          "fingerprint": "a62814780d0b639e93ee65f8bc1c709a61da13ab8a41c076c446ed00a7e9af4f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0b756cac508f3d5aac94ec957df385b33194f3440df2e51aaa989a4f01197d8e",
+          "path": "src/ui/screens/trade-detail/Valuation.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4ca62b08b3c2d54b873195c74136eb9b0d7c6da9d82e71b8833caf97e0f71477",
+          "path": "src/ui/cockpit/drawers/today.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "754d1a73ca4db598440a6dc0ac896172ed0e8832afe0dbf49d698c2d8eeae73f",
+          "path": "evidence/D08P/tdd-log/T8P.16.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "9fc2814396ca8fdc4b4a786543b42eb524301cfcaa0ad2260221dc91be7ee063",
+          "path": "e2e/d4/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d8101e35e29d90cd83b85e256cccb020f56ac075ce9f5a3b5af4cf406c14e844",
+          "path": "src/ui/screens/trade-detail/Today.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ee17d1ea42b9203150015cfbb443bba5e2c8649d46d5490186271179cd9810aa",
+          "path": "src/ui/cockpit/track.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f8565eaf99bb6cb36551c81082e4fdcb90dc46890728697803cf46683c39ccb6",
+          "path": "e2e/d4/breach-overrun.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 137407
+  }
+}

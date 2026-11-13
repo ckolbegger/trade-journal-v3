@@ -948,3 +948,37 @@ Commits `7f9df7eb` (task) and `45595501` (lane tier, green; run complete). The s
 ## T8P.19 follow-up
 
 The lane tier's one failure was `PlanForm.test.tsx`'s receipt case. Its mocked Planned Detail used `ocPayoffs()`, an Open Trade's payoff with held lots, so the one chart carried both captions. Section 1.5 says that file's expectations are unchanged, so the agent may change only that case's mock to the payoff a Planned Detail really has, with every expect line kept. If it still fails, the task stops.
+
+## Second rounds, T8P.16 and T8P.19 reviews, and the T8P.18 merge
+
+**Round 2 reviews, all clean or handled:**
+- **T8P.18-B1** (`45bba179`): session `c8cb316e-2775-40fc-b4a4-d2d29a1ba2c9`, 1 file, 0 comments ([ocr/T8P.18-B-45bba179.json](ocr/T8P.18-B-45bba179.json)).
+- **T8P.14-B2 and B3** (`e5b5d233`): sessions `a7179567-c519-4ac8-b180-f2402db85e6e` and relocated `a75f312a-8a48-407f-8833-56d6d345161b`, 0 comments ([ocr/T8P.14-B-e5b5d233.json](ocr/T8P.14-B-e5b5d233.json)). B2's red: `Unable to find an element with the text: Outside calendar.` The reviewer noted a stale comment in `measuredItem` ("as on a Closed Detail"); T8P.29 rewrites that function.
+- **T8P.7-B1** (`fc1b9ee5`): session `e616cfc4-9ca5-4f04-a57d-beabb85248c5`, 0 comments. The relocated session's one comment is Wrong: a relocation artifact, since the clone kept the parent's `replay-series.ts` ([ocr/T8P.7-B-fc1b9ee5.json](ocr/T8P.7-B-fc1b9ee5.json)). Red: `TypeError: Cannot use 'in' operator to search for 'resolution' in undefined`. On multi-leg Trades, every D08P fixture has one Instrument and `evaluate` already assumes one (A99), so none can reach `replay`.
+- **T8P.20-B1 to B3** (`4338c6f9`): session `b25831e7-f67b-4f37-aff7-931f839ab070`, 1 comment, Valid and minor: `REVIEW_PATH` duplicates the `review` route's path in `ROUTES`. Bug task **T8P.20-B4** (*it should take the Review's path from the routes.*), round 3. B3's test reads `history.css` as text; the reviewer judges it a sound narrow guard but no layout evidence. The scroll region and opaque pin get a browser look once T8P.22 supplies data ([ocr/T8P.20-B-4338c6f9.json](ocr/T8P.20-B-4338c6f9.json)).
+
+**T8P.19 ocr** (`f34448c2~1..91cee061`): session `6f9aaa7b-1336-4fd8-89e7-d8d6163f87f3`, 8 files, 1 comment; relocated `b7e10bd2-0af1-4e1c-8fe5-4e3d09a64f5b`, 0 comments ([ocr/T8P.19-f34448c2..91cee061.json](ocr/T8P.19-f34448c2..91cee061.json)). The one finding (no price tick at a breakeven inside a segment) is Wrong by the user's decision: the values sit in the tables beneath the chart. The PlanForm follow-up: `91cee061` mocks a real Planned Detail's payoff (`current` Not applicable, `NoRemainingPosition`, as `expirationPayoff` gives with no exposure), with every expect line unchanged; lane tier 1543 unit, 218 integration, 14 of 14. `a6119b59` was a transient form that broke `lint:deps`.
+
+**T8P.16 ocr** (`7f9df7eb`): session `4dda4c32-ce13-4239-bd53-1b4ff4f88563`, 7 files, 3 comments; relocated `d6352625-8b3a-4d3c-9438-4e4b4fcb11f2`, 15 files, 4 comments (3 repeats). Raw output: [ocr/T8P.16-7f9df7eb.json](ocr/T8P.16-7f9df7eb.json) and [-relocated](ocr/T8P.16-7f9df7eb-relocated.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `today.props.ts:77-78` | The Change cell uses each Instrument's own previous Mark, which can be older than the column's compared session. | Valid (A211: "need not be the previous session"). |
+| medium | bug | `today.props.ts:221` | "This Trade opened today" never checks that it opened today; a Trade entered after an earlier close takes this branch. | Valid. The words need the user: revision 91. |
+| medium | test | `today.props.test.ts:85` | No partially marked session is tested. | Valid, the same cause as finding 1. |
+| medium | bug | `today.props.ts:103-104` | `trackOf` with no prices gives non-finite positions. | Valid, rare. |
+| low | bug | `today.css:104-107` | The "entry" and "now" labels overlap when the Mark is near the entry. | Valid. |
+
+Bug tasks:
+- **T8P.16-B1** (findings 1 and 3): *it should show a change only against the compared session when an Instrument had no Mark then.*
+- **T8P.16-B3** (finding 4): *it should draw no Underlying track when nothing can be placed on it.*
+- **T8P.16-B4** (finding 5): *it should keep the entry and now labels apart when the Mark is at the entry.*
+- **T8P.16-B2** (finding 2) is carried by T8P.29, with revision 91's words.
+
+**T8P.18 merge.** The rebased lane tier (`T8P.18-rebase`) passed: 1558 unit, 218 integration, 14 of 14. While it ran, the reviewer of T8P.7-B1 ran commands in lane D3 by mistake. It committed the half-written tier files there as "relocated base" (`609280ca`, author `x <a@b>`), though it reported "nothing to commit". The commit held only those four evidence files, with no code. The main session reset the lane to `8e000474`, keeping the files, and committed the finished ones (`9c424051`). Fast-forwarded to `9c424051`. Rebased hashes: `ca0191e7` (task), `7a33e1aa`, `a9452c3f` (B1), `db553ee8`, `9c424051`. The lane was removed.
+
+**Main-session slip.** One shell command included `git worktree list` with its output discarded (`>/dev/null`), against the location rules. Nothing was read from it. A zsh loop also failed to split its arguments, so three rebases ran in the main worktree. Git refused each (unstaged merge-run files), and nothing changed.
+
+**Stacked merges.** T8P.7 (BA), T8P.14 (R2) and T8P.19 (D4) are rebased in a stack: BA on `claude-opus-5.5`, R2 on BA, D4 on R2. Each lane tier then runs once on exactly the code it merges with (labels `T8P.7-stack`, `T8P.14-stack`, `T8P.19-stack`).
+
+**User decisions (revisions 90 and 91).** Revision 90 (`f6297cb6`): T8P.28 to T8P.30. Revision 91 (`be54204d`): the before-Marks words always name dates.

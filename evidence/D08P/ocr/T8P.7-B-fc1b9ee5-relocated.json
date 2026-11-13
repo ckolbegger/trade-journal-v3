@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 52405,
+    "input_tokens": 51896,
+    "output_tokens": 509,
+    "cache_read_tokens": 13440,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/trade-analysis/replay-series.ts",
+      "content": "This regression test still throws with the implementation included in this update. `tradePnlOf` in `src/domain/trade-analysis/replay-series.ts` uses `find(...)!` for the held instrument's frame; these Tuesday frames contain only XYZ, so it passes `undefined` to `evaluate`, which accesses `'resolution' in frame`. Include the missing-frame guard returning `Unavailable/MarkMissing` in the production code alongside this test so the regression passes and the requested fix is delivered.",
+      "existing_code": "    const [, tuesday] = replayed(replay({ record: oc3Record([OC3_BUY, OC3_SELL]), sessions }));\n    expect(tuesday!.tradePnl).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', instrument: CALL, date: DATE.tue });",
+      "start_line": 120,
+      "end_line": 121,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/trade-analysis/replay-series.ts",
+      "files": [
+        "src/itg/relocated/trade-analysis/replay-series.ts"
+      ]
+    }
+  ],
+  "session_id": "b7a079f3-d777-4db9-a251-fa5a105d6185",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b7a079f3-d777-4db9-a251-fa5a105d6185",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "85b3f2923d0e8b9a330dfe9b29372f653debd7a8",
+      "resolved_head": "326060bec94293f83213e7c6c1fc72cc88396802",
+      "exact_range": "85b3f2923d0e8b9a330dfe9b29372f653debd7a8..326060bec94293f83213e7c6c1fc72cc88396802",
+      "source_artifact_sha256": "dbf627be21470b55c74d770a8098a70d19f3df3921863bce09c7a88c4025fedf"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "9bdf3ded57740ebce43bfbd0682500f0b2a6ce150454b1d1eed84d02cbb16da2",
+          "path": "src/itg/relocated/trade-analysis/replay-series.ts",
+          "fingerprint": "f3f967685f6fa4332a3586246d34bc3db3351c5ebbf5dfc28aa8d38dd1003f59"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "9bdf3ded57740ebce43bfbd0682500f0b2a6ce150454b1d1eed84d02cbb16da2",
+          "path": "src/itg/relocated/trade-analysis/replay-series.ts",
+          "fingerprint": "f3f967685f6fa4332a3586246d34bc3db3351c5ebbf5dfc28aa8d38dd1003f59"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 33571
+  }
+}

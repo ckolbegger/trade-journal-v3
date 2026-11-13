@@ -1,0 +1,235 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 1,
+    "total_tokens": 244366,
+    "input_tokens": 241458,
+    "output_tokens": 2908,
+    "cache_read_tokens": 19968,
+    "elapsed": "1m58s"
+  },
+  "tool_calls": {
+    "total": 37,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 14,
+      "file_find": 1,
+      "file_read": 21
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 34,
+        "tool_name": "file_read",
+        "file_path": "e2e/d7/support.ts,e2e/support/detail/payoff.ts,src/ui/cockpit/drawers/payoff.props.ts,src/ui/cockpit/drawers/payoff.tsx,src/ui/cockpit/drawers/payoff.types.ts,src/ui/cockpit/styles/payoff.css,src/ui/screens/CardFigures.tsx,src/ui/screens/payoff-text.ts",
+        "arguments": "{\"file_path\": \"src/ui/cockpit/styles/index.css\"}",
+        "error": "file \"src/ui/cockpit/styles/index.css\" not found: git show 91cee061339e79dbf7899a4d78df7402b0909c9c:src/ui/cockpit/styles/index.css: exit status 128: fatal: path 'src/ui/cockpit/styles/index.css' does not exist in '91cee061339e79dbf7899a4d78df7402b0909c9c'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/payoff.tsx",
+      "content": "Breakevens inside a linear segment disappear from the chart's price labels. `lineOf()` supplies only segment starts and the right endpoint, while the domain constructs segment boundaries at strikes, not at zero crossings. For example, a long call with strike 55 and premium 2 has a breakeven at 57, but this renders only 0 and 55 as ticks. The previous chart included `zeroSet` prices. Carry those prices through the adapter (as separate ticks or interpolated points) and include them here so both series' breakevens remain readable.",
+      "existing_code": "  const prices = [...new Set(lines.flatMap((line) =\u003e line.points.slice(0, -1).map((p) =\u003e p.price)))].sort((a, b) =\u003e a - b);",
+      "start_line": 38,
+      "end_line": 38,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Payoff drawer implementation, presentation, and end-to-end support",
+      "files": [
+        "e2e/d7/support.ts",
+        "e2e/support/detail/payoff.ts",
+        "src/ui/cockpit/drawers/payoff.props.ts",
+        "src/ui/cockpit/drawers/payoff.tsx",
+        "src/ui/cockpit/drawers/payoff.types.ts",
+        "src/ui/cockpit/styles/payoff.css",
+        "src/ui/screens/CardFigures.tsx",
+        "src/ui/screens/payoff-text.ts"
+      ]
+    }
+  ],
+  "session_id": "6f9aaa7b-1336-4fd8-89e7-d8d6163f87f3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6f9aaa7b-1336-4fd8-89e7-d8d6163f87f3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "f34448c2~1",
+      "requested_head": "91cee061",
+      "resolved_base": "3b6a0e76960b7ba4b3cce8cd924f56058bef307b",
+      "resolved_head": "91cee061339e79dbf7899a4d78df7402b0909c9c",
+      "exact_range": "3b6a0e76960b7ba4b3cce8cd924f56058bef307b..91cee061339e79dbf7899a4d78df7402b0909c9c",
+      "source_artifact_sha256": "dedd3a8aa845f400328f4504ed9c0b8c73f0d8e2db79e366dddb58ec44386aeb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "040ad6f0d51244181b5b16ab5409cbde54d95f3666fc91b3880966b6817c0134",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "e7f3bed75b915f8946511239b692695dd6efdbab2c1897f8de361430bd024be9"
+        },
+        {
+          "item_id": "1b31b6f05e0e340f49d7601df3c2dbe4baa09862dd401fe6f92d4e0c260d02f9",
+          "path": "src/ui/cockpit/drawers/payoff.props.ts",
+          "fingerprint": "46aecd4eaa25ecb2d6c3db6f88cbb510f66be47fdde9e9758705e39a0a22ee73"
+        },
+        {
+          "item_id": "1d03ee02a982989193c39e37fe9669c2b3a52ca7734de313b0ff4ff27506f0e5",
+          "path": "src/ui/cockpit/styles/payoff.css",
+          "fingerprint": "30804a13905a99acba4904faa37227818b6380aa826c2bad1774001edf0c08d0"
+        },
+        {
+          "item_id": "45837bfc641592a2fcdfd23d4725c00288ca181a59b17b0af336c47743c0078f",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "ea1faf0abf6eaea74d999f27b65587d411a15b701cacb7dcb08e281a4c2f9b91"
+        },
+        {
+          "item_id": "5de8d65a1c69864cab67f5c0f6f8ba6bc2190f7a76f5d774b9a0838e90f3fa91",
+          "path": "src/ui/cockpit/drawers/payoff.tsx",
+          "fingerprint": "1fc86b58b7edca312773493c0fa128203f2a5d9b554b8275017c333d91963cca"
+        },
+        {
+          "item_id": "9e751630330fbf10a2e39941de8794464178128e7ce83040a5c81b1106ae3ae2",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "423482c331d8d8c49ae1673516e28ac83b0c2b8b5e914453245831ce3b6ee68b"
+        },
+        {
+          "item_id": "b1b5e0811b6c0378597fc7f626c69c5d6b53c4d6b389ab88fa53700435ccd698",
+          "path": "e2e/support/detail/payoff.ts",
+          "fingerprint": "dcfc51c937829a9a7e3a023cc4968e31262bc8f93df21c8faaf1bed720d02409"
+        },
+        {
+          "item_id": "d236811c7a0795e36ad01d0d542265097834b6e5462ef8b86171dafc2cf3a988",
+          "path": "src/ui/cockpit/drawers/payoff.types.ts",
+          "fingerprint": "b32fcd1a7f32f102ed7d498a5ba8e2f66d848839b9ba7c092f260b5b954aead4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "040ad6f0d51244181b5b16ab5409cbde54d95f3666fc91b3880966b6817c0134",
+          "path": "src/ui/screens/payoff-text.ts",
+          "fingerprint": "e7f3bed75b915f8946511239b692695dd6efdbab2c1897f8de361430bd024be9"
+        },
+        {
+          "item_id": "1b31b6f05e0e340f49d7601df3c2dbe4baa09862dd401fe6f92d4e0c260d02f9",
+          "path": "src/ui/cockpit/drawers/payoff.props.ts",
+          "fingerprint": "46aecd4eaa25ecb2d6c3db6f88cbb510f66be47fdde9e9758705e39a0a22ee73"
+        },
+        {
+          "item_id": "1d03ee02a982989193c39e37fe9669c2b3a52ca7734de313b0ff4ff27506f0e5",
+          "path": "src/ui/cockpit/styles/payoff.css",
+          "fingerprint": "30804a13905a99acba4904faa37227818b6380aa826c2bad1774001edf0c08d0"
+        },
+        {
+          "item_id": "45837bfc641592a2fcdfd23d4725c00288ca181a59b17b0af336c47743c0078f",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "ea1faf0abf6eaea74d999f27b65587d411a15b701cacb7dcb08e281a4c2f9b91"
+        },
+        {
+          "item_id": "5de8d65a1c69864cab67f5c0f6f8ba6bc2190f7a76f5d774b9a0838e90f3fa91",
+          "path": "src/ui/cockpit/drawers/payoff.tsx",
+          "fingerprint": "1fc86b58b7edca312773493c0fa128203f2a5d9b554b8275017c333d91963cca"
+        },
+        {
+          "item_id": "9e751630330fbf10a2e39941de8794464178128e7ce83040a5c81b1106ae3ae2",
+          "path": "src/ui/screens/CardFigures.tsx",
+          "fingerprint": "423482c331d8d8c49ae1673516e28ac83b0c2b8b5e914453245831ce3b6ee68b"
+        },
+        {
+          "item_id": "b1b5e0811b6c0378597fc7f626c69c5d6b53c4d6b389ab88fa53700435ccd698",
+          "path": "e2e/support/detail/payoff.ts",
+          "fingerprint": "dcfc51c937829a9a7e3a023cc4968e31262bc8f93df21c8faaf1bed720d02409"
+        },
+        {
+          "item_id": "d236811c7a0795e36ad01d0d542265097834b6e5462ef8b86171dafc2cf3a988",
+          "path": "src/ui/cockpit/drawers/payoff.types.ts",
+          "fingerprint": "b32fcd1a7f32f102ed7d498a5ba8e2f66d848839b9ba7c092f260b5b954aead4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1507a77f31c9ce36bddf8ff1d6189205fc51e52e85a21aec237d699d76c0ab70",
+          "path": "src/ui/screens/PlanForm.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2c5548b25c2c906ec54e6133add1c70e853672e7c77d86ffabc5e497d2f65403",
+          "path": "src/ui/screens/CardFigures.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "67aefd55babda98a6226bc0a987b342009a24c86e72dd3e5fef7f199a5dca1f5",
+          "path": "evidence/D08P/suite-runs/T8P.19-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "75ceb2520b72c9345ef0979563c267c2177178a2733782e532ae03dbc7ad683e",
+          "path": "src/ui/screens/trade-detail/Payoff.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "82116d92e1cd60b290eaa4c1058e0bfe7a77f1a9d2339ed10b79165004221725",
+          "path": "src/ui/cockpit/drawers/payoff.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "824d48d1a322640462bf46907d7160f0cedc53c8f0ca00183f7e3dccc38e46f5",
+          "path": "evidence/D08P/suite-runs/T8P.19-lane.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "c3b69b5c0dfb1a53019a01d904439e624c5d81aa3456247b97f979b8590749e9",
+          "path": "evidence/D08P/tdd-log/T8P.19.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "cd4211d499e42173144f902e1f3f863c78e5fbbb204225910e2626c95904d6b7",
+          "path": "src/ui/screens/trade-detail/Result.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d759fdf9370b6bb410a7621c506bfc1704d8336b26c2210cc09e6edd8b09b047",
+          "path": "evidence/D08P/suite-runs/T8P.19-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "df5d157737888e78d284a5faadc40754671da38b68f619a7a85ce41c26e0a2c3",
+          "path": "evidence/D08P/suite-runs/T8P.19-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 118028
+  }
+}
