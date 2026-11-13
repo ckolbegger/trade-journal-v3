@@ -12,7 +12,7 @@
 .price-history th:first-child {
   position: sticky;
   left: 0;
-  background: inherit;
+  background: var(--card);
   text-align: left;
 }
 .price-history thead th span {

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { fireEvent, render, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { priceHistoryProps, priceHistoryTabCount, type ReplaySource } from './price-history.props.ts';
@@ -41,6 +42,39 @@ describe('Price History (W9, P99)', () => {
       ['Call Mark', '$3.20', '$2.90', '$2.10'],
       ['Trade P&L', '$218.05', '$188.05', '$18.70'],
     ]);
+  });
+
+  // T8P.20-B1 (ocr on c0df748c).
+  it('should open the Review from Enter Marks in the Review', () => {
+    const Where = () => <p data-testid="where">{useLocation().pathname}</p>;
+    const { getByTestId } = render(
+      <MemoryRouter initialEntries={['/trades/t1']}>
+        <PriceHistory view={{ replay: replay([MON, TUE]) }} timeZone="America/New_York" />
+        <Where />
+      </MemoryRouter>,
+    );
+    const link = screen.getByRole('link', { name: 'Enter Marks in the Review' });
+    expect(link.getAttribute('href')).toBe('/review');
+    fireEvent.click(link);
+    expect(getByTestId('where').textContent).toBe('/review');
+  });
+
+  // T8P.20-B2.
+  it('should scroll a long history inside the drawer, not the page', () => {
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED, THU]), () => undefined)} />);
+    const region = within(container).getByRole('region', { name: 'Price History' });
+    expect(region.classList.contains('table-scroll')).toBe(true);
+    expect(region.getAttribute('tabindex')).toBe('0');
+    expect(region.querySelector('table.price-history')).not.toBeNull();
+    expect(container.querySelectorAll('table')).toHaveLength(1);
+  });
+
+  // T8P.20-B3. CSS only: jsdom loads no stylesheet, so this reads the rule's text.
+  it('should keep the pinned row labels opaque over scrolled values', () => {
+    const css = readFileSync('src/ui/cockpit/styles/history.css', 'utf8');
+    const rule = /\.price-history th:first-child\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+    expect(rule).toContain('position: sticky');
+    expect(rule).toMatch(/background:\s*var\(--card\)/);
   });
 
   // Not a planned case: the shell's wiring (T8P.5's ShellProps) until T8P.22 gives the Detail its replay.

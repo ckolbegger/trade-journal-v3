@@ -1,0 +1,14 @@
+# D08P TDD log, T8P.20-B
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| Task | Case | Phase | Command | Outcome | Failure excerpt |
+|---|---|---|---|---|---|
+| T8P.20-B | should open the Review from Enter Marks in the Review | red | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should open the Review from Enter Marks in the Review"` | exit 1; Tests  1 failed, 5 skipped (6) | AssertionError: expected '/' to be '/review' // Object.is equality Expected: "/review"  |
+| T8P.20-B | should open the Review from Enter Marks in the Review | green | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should open the Review from Enter Marks in the Review"` | exit 0; Tests  1 passed, 5 skipped (6) |  |
+| T8P.20-B | should scroll a long history inside the drawer, not the page | red | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should scroll a long history inside the drawer, not the page"` | exit 1; Tests  1 failed, 7 skipped (8) | TestingLibraryElementError: Unable to find an accessible element with the role "region" and name "Price History"  |
+| T8P.20-B | should keep the pinned row labels opaque over scrolled values | red | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should keep the pinned row labels opaque over scrolled values"` | exit 1; Tests  1 failed, 7 skipped (8) | TypeError: The URL must be of scheme file  |
+| T8P.20-B | should keep the pinned row labels opaque over scrolled values | red | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should keep the pinned row labels opaque over scrolled values"` | exit 1; Tests  1 failed, 7 skipped (8) | AssertionError: expected '\n position: sticky;\n left: 0;\n …' to match /background:\s*var\(--card\)/  |
+| T8P.20-B | should scroll a long history inside the drawer, not the page | green | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should scroll a long history inside the drawer, not the page"` | exit 0; Tests  1 passed, 7 skipped (8) |  |
+| T8P.20-B | should keep the pinned row labels opaque over scrolled values | green | `npx vitest run src/ui/cockpit/drawers/price-history.props.test.tsx -t "should keep the pinned row labels opaque over scrolled values"` | exit 0; Tests  1 passed, 7 skipped (8) |  |
+| T8P.20-B | (B2, B3) | note | none | B3 is CSS only: asserted by reading history.css text in jsdom; no browser run was made, and no spec in section 1.5 is assigned to T8P.20 (the drawer has no data on the running app until T8P.22), so the scroll and opaque-pin layout is unchecked in a browser. | |

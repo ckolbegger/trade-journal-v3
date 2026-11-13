@@ -4,11 +4,15 @@ import type { ShellProps } from '../placeholder.ts';
 import { priceHistoryProps, replayOf } from './price-history.props.ts';
 import type { PriceHistoryProps } from './price-history.types.ts';
 
+// The Review route (`review` in src/app/routes.ts); the link's href and the navigation use it together.
+const REVIEW_PATH = '/review';
+
 // W9, P99: every session in one table, newest on the left, with no paging.
 export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenReview }: PriceHistoryProps) {
   if (columns.length === 0) return <p>No sessions yet: the first ends once the Trade's first session ends.</p>;
   return (
     <>
+    <div className="table-scroll" role="region" aria-label="Price History" tabIndex={0}>
     <table className="price-history">
       <thead>
         <tr>
@@ -37,11 +41,12 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
         ))}
       </tbody>
     </table>
+    </div>
     {missingCount > 0 && (
       <p className="price-history-gaps">
         {plural(missingCount, 'session', 'sessions')} without Marks.{' '}
         <a
-          href="/"
+          href={REVIEW_PATH}
           onClick={(event) => {
             event.preventDefault();
             onOpenReview();
@@ -59,5 +64,5 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
 export function PriceHistory({ view }: ShellProps) {
   const navigate = useNavigate();
   const replay = replayOf(view);
-  return replay ? <PriceHistoryTable {...priceHistoryProps(replay, () => void navigate('/'))} /> : null;
+  return replay ? <PriceHistoryTable {...priceHistoryProps(replay, () => void navigate(REVIEW_PATH))} /> : null;
 }
