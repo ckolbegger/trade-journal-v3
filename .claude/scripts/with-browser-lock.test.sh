@@ -114,22 +114,85 @@ bwait "$pq3" 5 || bad "the lock was not released after SIGTERM to a command that
 
 # A TERM that reaches the wrapper before the command has started (the child is held between fork and exec
 # by the test-only pause) exits 143, never runs the command, and releases the lock.
-TJ_BROWSER_LOCK_TEST_CHILD_PAUSE=3 "$lockw" bash -c "echo \$\$ >$t/e.pid; sleep 30" 2>/dev/null &
+TJ_BROWSER_LOCK_TEST_CHILD_PAUSE=1.5 "$lockw" bash -c "echo \$\$ >$t/e.pid; sleep 30" 2>/dev/null &
 pe=$!
 waitfor "[[ \$(cat $t/lock 2>/dev/null) == $pe ]]" 5 || bad "early-TERM case did not start (setup)"
 sleep 0.3
 kill -TERM "$pe"
-if bwait "$pe" 2; then
+if bwait "$pe" 4; then
   wait "$pe"; code=$?
   [[ $code == 143 ]] || bad "exit after a TERM before the command started was $code, not 143"
 else
   bad "wrapper did not exit after a TERM before the command started"
-  sleep 3.5   # let the held command start, so the cleanup finds its PID
+  sleep 1.5   # let the held command start, so the cleanup finds its PID
 fi
 [[ -e "$t/e.pid" ]] && bad "the command ran although it was TERMed before it started"
 "$lockw" true 2>/dev/null &
 pq4=$!
 bwait "$pq4" 5 || bad "the lock was not released after a TERM before the command started"
+
+# A TERM that reaches the wrapper and the command together (the signal to a whole process group) while the
+# wrapper is between the fork and its setpgrp, and the command is still held before its exec, exits 143 and
+# never runs the command. The wrapper holds both signals pending (blocked): without that the command would
+# take the signal through the wrapper's handler, which it inherits at the fork, and run on regardless.
+TJ_BROWSER_LOCK_TEST_CHILD_PAUSE=1 TJ_BROWSER_LOCK_TEST_PARENT_PAUSE=2 \
+  /usr/bin/perl -e 'use POSIX (); POSIX::setsid(); exec @ARGV' "$lockw" bash -c "echo \$\$ >$t/m.pid; sleep 30" 2>/dev/null &
+pm=$!
+waitfor "[[ \$(cat $t/lock 2>/dev/null) == $pm ]]" 5 || bad "masked-window case did not start (setup)"
+sleep 0.3
+kill -TERM -- "-$pm"
+if bwait "$pm" 6; then
+  wait "$pm"; code=$?
+  [[ $code == 143 ]] || bad "exit after a TERM between the fork and the wrapper's setpgrp was $code, not 143"
+else
+  bad "wrapper did not exit after a TERM between the fork and its setpgrp"
+  sleep 2   # let the held command start, so the cleanup finds its PID
+fi
+[[ -e "$t/m.pid" ]] && bad "the command ran although a TERM arrived between the fork and the wrapper's setpgrp"
+"$lockw" true 2>/dev/null &
+pq5=$!
+bwait "$pq5" 5 || bad "the lock was not released after a TERM between the fork and the wrapper's setpgrp"
+
+# A descendant that detached and lost its parent before the signal (it is a child of PID 1 and outside the
+# command's group) is ended before the lock is released. Two ways it can have got there: its parent lived
+# for a while (found by the periodic scan), or died at once and the descendant is a node process that
+# carries the wrapper's environment token.
+cat >"$t/orphan.pl" <<'EOF'
+use POSIX (); POSIX::setsid();
+my $k = fork(); die unless defined $k;
+if (!$k) { open(my $f, ">", $ARGV[0]) or die; print $f $$; close $f; exec "sleep", "60"; }
+select(undef, undef, undef, 1.6); exit 0;
+EOF
+cat >"$t/orphan.js" <<'EOF'
+const c = require("child_process").spawn(process.execPath, ["-e", "setTimeout(() => {}, 60000)"], { detached: true, stdio: "ignore" });
+c.unref(); require("fs").writeFileSync(process.argv[2], String(c.pid));
+EOF
+for kind in perl node; do
+  rm -f "$t/o-$kind.pid"
+  if [[ $kind == perl ]]; then spawn="/usr/bin/perl $t/orphan.pl $t/o-$kind.pid"; else spawn="node $t/orphan.js $t/o-$kind.pid"; fi
+  "$lockw" sh -c "$spawn; sleep 60 & wait" 2>/dev/null &
+  po=$!
+  waitfor "[[ -s $t/o-$kind.pid ]]" || bad "orphaned-descendant case ($kind) did not start (setup)"
+  op=$(cat "$t/o-$kind.pid" 2>/dev/null)
+  waitfor "[[ \$(ps -o ppid= -p $op 2>/dev/null | tr -d ' ') == 1 ]]" 5 || bad "the descendant ($kind) was not orphaned (setup)"
+  kill -TERM "$po"
+  bwait "$po" 10 || bad "wrapper did not exit after SIGTERM (orphaned-descendant case, $kind)"
+  kill -0 "$op" 2>/dev/null && bad "a descendant ($kind) that had lost its parent before the signal outlived the wrapper's SIGTERM and the lock was released"
+done
+
+# Only processes that are still the command's descendants are signalled: a process the test starts that the
+# wrapper wrongly remembers (as if it had a reused PID; the test-only hook plants it with a start time
+# that is not its own) survives the TERM and the KILL after the grace period.
+/usr/bin/perl -e 'use POSIX (); POSIX::setsid(); open(my $f, ">", $ARGV[0]) or die; print $f $$; close $f; exec "sleep", "60"' "$t/u.pid" 2>/dev/null &
+disown $!
+waitfor "[[ -s $t/u.pid ]]" || bad "reused-PID case did not start (setup)"
+up=$(cat "$t/u.pid" 2>/dev/null)
+TJ_BROWSER_LOCK_TEST_STALE_PID=$up TJ_BROWSER_LOCK_GRACE=1 "$lockw" sh -c "trap '' TERM; echo \$\$ >$t/r.pid; while :; do sleep 1; done" 2>/dev/null &
+pr=$!
+waitfor "[[ -s $t/r.pid ]]" || bad "reused-PID case did not start (setup)"
+kill -TERM "$pr"
+bwait "$pr" 10 || bad "wrapper did not exit after SIGTERM (reused-PID case)"
+kill -0 "$up" 2>/dev/null || bad "a process that was not a descendant of the command was signalled after its PID was remembered"
 
 # A lock that cannot be taken for a reason other than another holder fails with a message and does not wait
 # (a FIFO opens but cannot be flocked).
