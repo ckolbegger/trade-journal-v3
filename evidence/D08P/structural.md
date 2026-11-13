@@ -240,3 +240,27 @@ ocr: session `622a540d-01ba-42ab-adba-62d59ec5c532`, model gpt-6.1-sol, 2 files 
 Also carried as documented limits:
 - **AL-3** (from B16). A system binary with no readable environment, born and orphaned within one scan interval, can be missed.
 - **AL-4** (from B2). The command runs in a background process group, so a command that reads the terminal would stop.
+
+### T8P.1-B3 (`d8a39865`)
+
+Fix: `full-suite.sh … lane` writes the marker `<label>-lane.txt` (`TIER lane`). `run-complete.sh` precedence:
+1. browser-1 or browser-2 means the full tier;
+2. otherwise a `browser.txt` means the task tier;
+3. otherwise the marker means the lane tier;
+4. otherwise the task tier, with `browser: missing` named.
+
+New shell test `.claude/scripts/run-complete.test.sh`; one sentence in `suite-runner.md`.
+
+Cases:
+- Case 1 was red against the old scripts (`FAIL: a run with no browser file and no lane marker was not reported INCOMPLETE`), then green.
+- **Case 2 was a first-run pass**: the old rule already passed a marked lane run. Its mutation check, on a scratch copy of the fixed script that looks for a differently named marker, failed with `FAIL: a marked lane-tier run was not reported complete … run INCOMPLETE`. Listed in the open questions.
+
+The test also covers the full tier (5 files) and the task tier (4 files), complete and incomplete. A real lane-tier probe in the main worktree exited 0 (1519 unit, 218 integration, 14 of 14 checks), wrote the marker, and gave "run complete", or "run INCOMPLETE" with the marker moved away. The probe files were deleted. Rows are in [tdd-log/T8P.1-B3.md](tdd-log/T8P.1-B3.md).
+
+ocr: session `e4222aeb-9d44-495b-925d-30c262639f79`, model gpt-6.1-sol, 3 files reviewed (2 excluded: `suite-runner.md` and the log), 1 comment. Raw output: [ocr/T8P.1-B3-d8a39865.json](ocr/T8P.1-B3-d8a39865.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `.claude/scripts/full-suite.sh:94` | The lane marker is never cleared, so a later non-lane run under the same evidence directory and label that never reaches its browser stage still sees the old marker and prints "run complete". | Valid but narrow: it needs a label reused across tiers. |
+
+- **T8P.1-B20** (round 2 of B3's line; the lock wrapper's cap doesn't apply here). Defect: a stale lane marker makes an unfinished full or task run read as a complete lane run. Case: *it should report run INCOMPLETE for a task-tier run under a label that earlier held a lane-tier run, when the browser stage hasn't run.*
