@@ -527,3 +527,7 @@ The fix commit was `73510ab2` in the lane; it is `3f85170f` after the rebase. It
 - `d08p/t8p4` was rebased onto `claude-opus-5.5` (`ee43d21b`). The rebase changed one file the task doesn't own: `structural.md` conflicted, since both sides appended. It was resolved by keeping both, with the task's own T8P.4 record placed before the main session's T8P.4 section, its heading restored.
 - The rebase also brought in T8P.3's code (the types and the A216 rule). So the lane tier was rerun on the rebased lane (`full-suite.sh evidence/D08P T8P.4-rebased lane`): 1519 unit, 218 integration and 14 of 14 checks, exit 0, and `run-complete.sh`: run complete. Outputs in `a33a9e9e`.
 - `claude-opus-5.5` was fast-forwarded to `a33a9e9e`. Rebased hashes: `4f40c2f3` (task), `3dcb2d21` (its tiers), `3f85170f` (B1–B6), `9bfc804e` and `a33a9e9e` (lane tiers). The lane worktree and branch were removed.
+
+## T8P.5 in a lane (implementation-level decision)
+
+T8P.5 runs in the lane `d08p-t8p5` (`.claude/worktrees/d08p-t8p5`, branch `d08p/t8p5`, base `3ea6239d`), not in the main worktree. The reason: merge run 2 (after T8P.4) runs on the main worktree at the same time, and a task editing that tree would change what the run tests. The browser lock keeps their browser runs apart. T8P.5 still ends with the full browser tier, because it moves content into drawers across every Detail spec.

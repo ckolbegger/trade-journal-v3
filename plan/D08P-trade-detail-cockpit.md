@@ -775,7 +775,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.2 | 0 | — | Done | `10d63285`; B1 `5ebf9e2b`; B2+B3 `f8f59e9f`; B4 `bf91aea7` |
 | T8P.3 | 0 | — | Done | `bba8b2bc`; lane tier `fe83cd1c` |
 | T8P.4 | 0 | — | Done | `4f40c2f3`; tiers `3dcb2d21`; B1–B6 (batched) `3f85170f`; lane tiers `9bfc804e`, `a33a9e9e` (after the rebase) |
-| T8P.5 | 0 | — | Not started | |
+| T8P.5 | 0 | — | In progress from `3ea6239d` | |
 | T8P.6 | 1 | BA | Not started | |
 | T8P.7 | 1 | BA | Not started | |
 | T8P.8 | 1 | BM | Not started | |
