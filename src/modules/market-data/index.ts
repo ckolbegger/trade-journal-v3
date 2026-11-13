@@ -27,6 +27,8 @@ export {
   type RecoverDiagnostic,
   type RecoverRequest,
   type RecoverResult,
+  type ReadSeriesQuery,
+  type SeriesPoint,
   type ResolveSessionQuery,
   type ResolvedKey,
 } from './market-data.ts';

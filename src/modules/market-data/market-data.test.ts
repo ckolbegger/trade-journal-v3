@@ -4,6 +4,7 @@ import { fixedClock } from '../../domain/time/index.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import { createPersistence } from '../../persistence/index.ts';
 import { IDBFactory } from 'fake-indexeddb';
+import { countRequests } from '../../../tests/support/request-counter.ts';
 import { sequentialIds } from '../../../tests/support/workspace.ts';
 import { createMarketData, type MarketDataSaveCommand } from './index.ts';
 import type { ObservationRecord } from './records.ts';
@@ -618,5 +619,106 @@ describe('option Marks (P27, A115)', () => {
       issues: [{ field: 'tradingDate', code: 'AfterExpiration' }],
     });
     expect(await stored(persistence)).toEqual(before);
+  });
+});
+
+// T8P.8: ReadSeries (D08P A210, AC-MARK-004). Tuesday noon: the last completed session is Monday 2026-10-12.
+describe('ReadSeries (A210, AC-MARK-004)', () => {
+  const current = { kind: 'Current' as const, asOf: TUESDAY_NOON };
+  const seriesOf = async (marketData: Awaited<ReturnType<typeof setup>>['marketData'], from: string, to: string, instrumentKey = 'MNO') => {
+    const result = await marketData.query({ kind: 'ReadSeries', context: current, instrumentKey, from, to });
+    if (result.kind !== 'Series') throw new Error(`expected a series, got ${result.kind}`);
+    return result.points;
+  };
+
+  it('should return each completed session from the earliest exposure to the end date with the Available Mark, a Missing gap or an Acknowledged gap', async () => {
+    const { marketData } = await setup();
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-07', price: '10.50' }));
+    await marketData.save({ intention: 'AssertUnavailable', instrumentKey: 'MNO', tradingDate: '2026-10-09', reason: 'no quote', expectedResolutionRevision: 'None' });
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11' }));
+    const points = await seriesOf(marketData, '2026-10-07', '2026-10-12');
+    expect(points.map((p) => [p.tradingDate, p.kind])).toEqual([
+      ['2026-10-07', 'Available'],
+      ['2026-10-08', 'Missing'],
+      ['2026-10-09', 'AcknowledgedUnavailable'],
+      ['2026-10-12', 'Available'],
+    ]);
+    expect(points[0]).toEqual({ kind: 'Available', tradingDate: '2026-10-07', closeInstant: '2026-10-07T20:00:00Z', price: '10.5', revisionNumber: 1 });
+    expect(points[1]).toEqual({ kind: 'Missing', tradingDate: '2026-10-08', closeInstant: '2026-10-08T20:00:00Z' });
+    expect(points[2]).toMatchObject({ kind: 'AcknowledgedUnavailable', acknowledgment: { kind: 'Asserted', reason: 'no quote' } });
+    expect(points[3]).toMatchObject({ kind: 'Available', price: '11', closeInstant: '2026-10-12T20:00:00Z' });
+    const session = await marketData.openReadSession(current);
+    expect(await session.series('MNO', '2026-10-07', '2026-10-12')).toEqual(points);
+  });
+
+  it('should end at the last completed session, return nothing after the end date, and never carry a value forward', async () => {
+    const { marketData } = await setup();
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-08', price: '10' }));
+    // Tuesday's session is not completed at noon: asking through Friday 2026-10-16 still ends Monday.
+    const through = await seriesOf(marketData, '2026-10-08', '2026-10-16');
+    expect(through.map((p) => [p.tradingDate, p.kind])).toEqual([
+      ['2026-10-08', 'Available'],
+      ['2026-10-09', 'Missing'],
+      ['2026-10-12', 'Missing'],
+    ]);
+    // The gaps after an Available Mark carry no price and no revision.
+    expect(through.slice(1).every((p) => !('price' in p) && !('revisionNumber' in p))).toBe(true);
+    // An end date before the last session ends there; a range wholly after it, or reversed, is empty.
+    expect((await seriesOf(marketData, '2026-10-08', '2026-10-09')).map((p) => p.tradingDate)).toEqual(['2026-10-08', '2026-10-09']);
+    expect(await seriesOf(marketData, '2026-10-13', '2026-10-16')).toEqual([]);
+    expect(await seriesOf(marketData, '2026-10-09', '2026-10-08')).toEqual([]);
+    // From a weekend the first session after it starts the series.
+    expect((await seriesOf(marketData, '2026-10-10', '2026-10-12')).map((p) => p.tradingDate)).toEqual(['2026-10-12']);
+  });
+
+  it("should give a corrected Mark's effective revision only", async () => {
+    const { marketData } = await setup();
+    // 2026-10-08 is a scanned session; 2026-10-12 is the session's own date, read as a frame.
+    for (const tradingDate of ['2026-10-08', '2026-10-12']) {
+      await marketData.save(initial({ instrumentKey: 'MNO', tradingDate, price: '10' }));
+      await marketData.save(correct({ instrumentKey: 'MNO', tradingDate, price: '10.25', expectedResolutionRevision: 1 }));
+      await marketData.save(correct({ instrumentKey: 'MNO', tradingDate, price: '10.75', reason: 'Typo again', expectedResolutionRevision: 2 }));
+    }
+    const points = await seriesOf(marketData, '2026-10-08', '2026-10-12');
+    expect(points.map((p) => [p.tradingDate, p.kind])).toEqual([
+      ['2026-10-08', 'Available'],
+      ['2026-10-09', 'Missing'],
+      ['2026-10-12', 'Available'],
+    ]);
+    expect(points[0]).toMatchObject({ price: '10.75', revisionNumber: 3 });
+    expect(points[2]).toMatchObject({ price: '10.75', revisionNumber: 3 });
+    // One point per session: the superseded revisions never appear.
+    expect(points).toHaveLength(3);
+  });
+
+  it("should read an Instrument's stored Marks once per read session, sharing the gaps scan with the Detail's frames", async () => {
+    const { marketData } = await setup();
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-07', price: '10' }));
+    await marketData.save(initial({ instrumentKey: 'MNO', tradingDate: '2026-10-12', price: '11' }));
+    const opened = { instrumentKey: 'MNO', earliestExposure: '2026-10-07T14:00:00Z' };
+    // A scan is one range read of an Instrument's history; a date's frames are one range read of the date.
+    const scans = (all: { on: string; method: string }[]) => all.filter((r) => r.on === 'index' && r.method === 'getAll');
+    const dayReads = (all: { on: string; store: string; method: string }[]) => all.filter((r) => r.on === 'store' && r.store === 'observations' && r.method === 'getAll');
+    const detail = await marketData.openReadSession(current);
+    const baseline = await countRequests(async () => [await detail.frames(['MNO']), await detail.gaps([opened])]);
+    expect(scans(baseline.requests)).toHaveLength(1);
+    expect(dayReads(baseline.requests)).toHaveLength(1);
+
+    const session = await marketData.openReadSession(current);
+    const { result, requests } = await countRequests(async () => [
+      await session.frames(['MNO']),
+      await session.gaps([opened]),
+      await session.series('MNO', '2026-10-07', '2026-10-12'),
+      await session.series('MNO', '2026-10-08', '2026-10-12'),
+    ]);
+    // The same requests as the Detail's frames and gaps alone: the series added none.
+    expect(requests).toEqual(baseline.requests);
+    expect(result[2]).toHaveLength(4);
+    expect(result[3]).toHaveLength(3);
+    // A series asked first is scanned once too, and the gaps that follow reuse its scan.
+    const first = await marketData.openReadSession(current);
+    const reversed = await countRequests(async () => [await first.series('MNO', '2026-10-07', '2026-10-12'), await first.gaps([opened])]);
+    expect(scans(reversed.requests)).toHaveLength(1);
+    expect(reversed.result[1]).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-08', '2026-10-09'], acknowledged: [], revisions: { '2026-10-08': 'None', '2026-10-09': 'None' }, acknowledgments: {}, closes: { '2026-10-08': '2026-10-08T20:00:00Z', '2026-10-09': '2026-10-09T20:00:00Z' } }]);
   });
 });

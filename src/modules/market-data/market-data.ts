@@ -177,7 +177,22 @@ export interface ResolveSessionQuery {
   readonly context: FrameContext;
 }
 
-export type MarketDataQuery = ResolveFramesQuery | ResolveSessionQuery;
+// One Instrument's completed sessions from `from` to `to`, ended at the context's session (A210).
+export interface ReadSeriesQuery {
+  readonly kind: 'ReadSeries';
+  readonly context: FrameContext;
+  readonly instrumentKey: string;
+  readonly from: string;
+  readonly to: string;
+}
+
+export type MarketDataQuery = ResolveFramesQuery | ResolveSessionQuery | ReadSeriesQuery;
+
+// One completed session of a series: the effective Mark, or an explicit gap. Nothing is carried forward (A210).
+export type SeriesPoint =
+  | { readonly kind: 'Available'; readonly tradingDate: string; readonly closeInstant: string; readonly price: string; readonly revisionNumber: number }
+  | { readonly kind: 'Missing'; readonly tradingDate: string; readonly closeInstant: string }
+  | { readonly kind: 'AcknowledgedUnavailable'; readonly tradingDate: string; readonly closeInstant: string; readonly acknowledgment: AcknowledgmentVersion };
 
 // One point frame: an Instrument at one session, with that session's close and the next session once completed.
 export interface MarkFrame {
@@ -203,6 +218,7 @@ export type MarketDataQueryResult =
   // The session's trading date and its close, which is the Review Cutoff (P9).
   | { readonly kind: 'Session'; readonly tradingDate: string; readonly closeInstant: string }
   | { readonly kind: 'SnapshotUnchanged'; readonly snapshotId: string; readonly evidenceDigest: string }
+  | { readonly kind: 'Series'; readonly instrumentKey: string; readonly points: readonly SeriesPoint[] }
   | {
       readonly kind: 'Frames';
       readonly frames: readonly MarkFrame[];
@@ -283,6 +299,9 @@ export interface MarketDataReadSession {
   historicalFrames(date: string, instruments: readonly string[]): Promise<readonly MarkFrame[]>;
   // What `recover` returns for the Instruments at the session's date, without a provider fetch; each Instrument is scanned once.
   gaps(instruments: readonly { readonly instrumentKey: string; readonly earliestExposure: string }[]): Promise<readonly HistoricalGaps[]>;
+  // The Instrument's completed sessions from `from` to `to` (ended at the session's date), each an effective Mark or an
+  // explicit gap. It shares the gaps scan with `gaps`, so an Instrument's stored Marks are read once (A210).
+  series(instrumentKey: string, from: string, to: string): Promise<readonly SeriesPoint[]>;
   // The close of the session an expiration date names, or of the latest session before it: the calendar alone, no stored read (decision 99).
   settlementTime(contract: OptionInstrument): Promise<SettlementTime>;
   // Every key the frames read, for `bindEvidence`, and one snapshot id per date read. Call it after the reads have resolved.
@@ -481,9 +500,16 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     return { relevant, beforeCoverage };
   }
 
+  // A session's resolution as a series point: the effective Mark, or an explicit gap with no price (A210).
+  function seriesPoint(tradingDate: string, closeInstant: string, resolution: MarkResolution): SeriesPoint {
+    if (resolution.kind === 'Available') return { kind: 'Available', tradingDate, closeInstant, price: resolution.mark.price, revisionNumber: resolution.mark.revisionNumber };
+    if (resolution.kind === 'AcknowledgedUnavailable') return { kind: 'AcknowledgedUnavailable', tradingDate, closeInstant, acknowledgment: resolution.acknowledgment };
+    return { kind: 'Missing', tradingDate, closeInstant };
+  }
+
   // Per Instrument, the sessions before the Review Date without an effective Mark, from its relevance start (A56).
   // One bounded range read per Instrument, whatever the history length (A47).
-  async function historicalGaps(tx: ReadTransaction, instruments: RecoverRequest['instruments'], reviewDate: string): Promise<{ gaps: HistoricalGaps[]; diagnostics: RecoverDiagnostic[] }> {
+  async function historicalGaps(tx: ReadTransaction, instruments: RecoverRequest['instruments'], reviewDate: string): Promise<{ gaps: HistoricalGaps[]; points: SeriesPoint[][]; diagnostics: RecoverDiagnostic[] }> {
     const lastHistorical = Temporal.PlainDate.from(reviewDate).subtract({ days: 1 }).toString();
     const { coverage } = deps.sessionPolicy.identity;
     // One request entry per Instrument: a Trade's earliest exposure governs (A56).
@@ -517,10 +543,13 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
               ),
               closes: Object.fromEntries(relevant.filter((s) => resolutionOf.get(s.date)?.kind !== 'Available').map((s) => [s.date, s.close])),
             };
-            return { gaps, beforeCoverage };
+            // The same read, as a series: every relevant session, an Available one with its effective Mark (A210).
+            const points = relevant.map((s) => seriesPoint(s.date, s.close, resolutionOf.get(s.date) ?? { kind: 'Missing' }));
+            return { gaps, beforeCoverage, points };
           }),
     );
     return {
+      points: value.map((v) => v.points),
       gaps: value.map((v) => v.gaps),
       diagnostics: value.filter((v) => v.beforeCoverage).map((v): RecoverDiagnostic => ({ kind: 'SessionPolicyCoverage', instrumentKey: v.gaps.instrumentKey, coverage })),
     };
@@ -760,6 +789,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const resolved = resolveDay(query.context);
       if (resolved.kind === 'Rejected') return resolved;
       if (query.kind === 'ResolveSession') return { kind: 'Session', tradingDate: resolved.day.date, closeInstant: resolved.day.close };
+      if (query.kind === 'ReadSeries') {
+        const session = await marketData.openReadSession(query.context);
+        return { kind: 'Series', instrumentKey: query.instrumentKey, points: await session.series(query.instrumentKey, query.from, query.to) };
+      }
       const instruments = [...new Set(query.instruments)].sort();
       const { value: evidence } = await deps.persistence.readSnapshot(['observations'], (tx) => frameEvidence(tx, resolved.day.date, instruments));
       return frameResult(query, resolved.day, instruments, evidence);
@@ -773,7 +806,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         if (!resolved.issues.some((issue) => issue.code === 'SessionPolicyCoverage')) throw new Error(`no read session for ${JSON.stringify(context)}`);
         const tradingDate =
           context.kind === 'Current' ? Temporal.Instant.from(context.asOf).toZonedDateTimeISO('America/New_York').toPlainDate().toString() : context.kind === 'Review' ? context.reviewDate : context.tradingDate;
-        return { tradingDate, covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
+        return { tradingDate, covered: false, frames: () => Promise.resolve([]), historicalFrames: () => Promise.resolve([]), gaps: () => Promise.resolve([]), series: () => Promise.resolve([]), settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)), binding: () => ({ evidenceBinding: [], snapshotIds: {} }) };
       }
       const { day } = resolved;
       // The reads asked of a date in one synchronous run share one read snapshot, as `recover` reads a date's frames, Stale
@@ -786,7 +819,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         return { ...settle, promise };
       };
       // A scan's exposure is the earliest any call in its batch asked.
-      interface Scan { exposure: string; readonly asked: Waiting<HistoricalGaps> }
+      // One scan's one read: the gaps `gaps` answers and the series `series` answers.
+      type Scanned = HistoricalGaps & { readonly points: readonly SeriesPoint[] };
+      interface Scan { exposure: string; readonly asked: Waiting<Scanned> }
       interface Batch { readonly evidence: Map<string, Waiting<Evidence>>; readonly scans: Map<string, Scan> }
       const observed = new Map<string, Awaited<ReturnType<typeof observationsOn>>>();
       const collecting = new Map<string, Batch>();
@@ -805,7 +840,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           // A scan alone reads no frame, so it reads none of the date's observations.
           const onDate = known ?? (keys.length > 0 ? await observationsOn(tx, date) : undefined);
           const evidence = onDate ? await Promise.all(keys.map((key) => instrumentEvidence(tx, date, onDate, key))) : [];
-          const gaps = await Promise.all(scanned.map((instrumentKey) => historicalGaps(tx, [{ instrumentKey, earliestExposure: batch.scans.get(instrumentKey)!.exposure }], date).then(({ gaps }) => gaps[0]!)));
+          const gaps = await Promise.all(scanned.map((instrumentKey) => historicalGaps(tx, [{ instrumentKey, earliestExposure: batch.scans.get(instrumentKey)!.exposure }], date).then(({ gaps, points }): Scanned => ({ ...gaps[0]!, points: points[0]! }))));
           return { onDate, evidence, gaps };
         });
         if (value.onDate) observed.set(date, value.onDate);
@@ -856,13 +891,15 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           return framed.kind === 'Frames' ? framed.frames : [];
         });
       };
-      // Each Instrument's scan starts at the earliest exposure asked of it in its batch. A call at or after the cached scan's
-      // exposure reuses it, narrowed to its own; a call from an earlier exposure than a read scan's scans again and replaces it.
+      // Each Instrument's scan starts at the earliest exposure asked of it in its batch. A call whose first relevant session is
+      // at or after the cached scan's reuses it, narrowed to its own; a call that starts at an earlier session than a read scan's
+      // scans again and replaces it. Exposures within one session read the same sessions, so they share a scan, as `series` and `gaps` do.
       const lastHistorical = Temporal.PlainDate.from(day.date).subtract({ days: 1 }).toString();
+      const firstSessionOf = (exposure: string) => relevantSessions(exposure, lastHistorical).relevant[0]?.date ?? '';
       const scans = new Map<string, { readonly batch: Batch; readonly scan: Scan }>();
       const scanOf = (instrumentKey: string, exposure: string) => {
         const cached = scans.get(instrumentKey);
-        const earlier = cached !== undefined && Temporal.Instant.compare(Temporal.Instant.from(exposure), Temporal.Instant.from(cached.scan.exposure)) < 0;
+        const earlier = cached !== undefined && firstSessionOf(exposure) < firstSessionOf(cached.scan.exposure);
         if (cached && !earlier) return cached.scan.asked.promise;
         const batch = batchOf(day.date);
         // A scan still collecting in this batch is lowered to the earlier exposure, so the batch reads once.
@@ -870,7 +907,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           cached.scan.exposure = exposure;
           return cached.scan.asked.promise;
         }
-        const scan: Scan = { exposure, asked: waiting<HistoricalGaps>() };
+        const scan: Scan = { exposure, asked: waiting<Scanned>() };
         batch.scans.set(instrumentKey, scan);
         scans.set(instrumentKey, { batch, scan });
         return scan.asked.promise;
@@ -896,6 +933,17 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           };
         },
         settlementTime: (contract) => Promise.resolve(calendarSettlementTime(contract)),
+        async series(instrumentKey, from, to) {
+          // The series ends at the session's own date, the last completed session.
+          const end = to < day.date ? to : day.date;
+          if (from > end) return [];
+          // The scan starts at the first session on or after `from`, so a scan another call made from an exposure within it is reused.
+          const first = relevantSessions(`${from}T00:00:00Z`, lastHistorical).relevant[0];
+          const scanned = first === undefined ? [] : (await scanOf(instrumentKey, first.close)).points.filter((p) => p.tradingDate >= from && p.tradingDate <= end);
+          if (end < day.date) return scanned;
+          const [frame] = await framesAt(context, day, [instrumentKey]);
+          return [...scanned, seriesPoint(day.date, day.close, frame!.resolution)];
+        },
         gaps(instruments) {
           const earliest = new Map<string, string>();
           for (const { instrumentKey, earliestExposure } of instruments) {
@@ -908,7 +956,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
               .map(async ([instrumentKey, earliestExposure]) => {
                 // An exposure with no relevant session reads nothing, as recover does.
                 const none = relevantSessions(earliestExposure, lastHistorical).relevant.length === 0;
-                const gaps = none ? { instrumentKey, missing: [], acknowledged: [], revisions: {}, acknowledgments: {}, closes: {} } : await scanOf(instrumentKey, earliestExposure);
+                const gaps: Scanned = none ? { instrumentKey, missing: [], acknowledged: [], revisions: {}, acknowledgments: {}, closes: {}, points: [] } : await scanOf(instrumentKey, earliestExposure);
                 const exposure = Temporal.Instant.from(earliestExposure);
                 const relevant = (date: string) => Temporal.Instant.compare(Temporal.Instant.from(gaps.closes[date]!), exposure) >= 0;
                 const only = <T,>(byDate: Readonly<Record<string, T>>) => Object.fromEntries(Object.entries(byDate).filter(([date]) => relevant(date)));
