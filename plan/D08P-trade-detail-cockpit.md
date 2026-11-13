@@ -771,7 +771,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 |---|---|---|---|---|
 | T8P.1 | 0 | — | Done | `cac803c2`; B1 `f003e616`; B1-R1 `fd732662`; B2 `2e7ab770`; B9 `b5f8cc46`; B12 `7da860a1`; B16 `a87e8aed`; B19 `c6b51bc3`; B3 `d8a39865`; B20 `7775984a`; B4 `e68ab797` |
 | T8P.2 | 0 | — | Done | `10d63285`; B1 `5ebf9e2b`; B2+B3 `f8f59e9f`; B4 `bf91aea7` |
-| T8P.3 | 0 | — | In progress from `c5d2eb2e` | |
+| T8P.3 | 0 | — | Done | `bba8b2bc`; lane tier `fe83cd1c` |
 | T8P.4 | 0 | — | In progress from `c5d2eb2e` | |
 | T8P.5 | 0 | — | Not started | |
 | T8P.6 | 1 | BA | Not started | |
