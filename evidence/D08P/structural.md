@@ -333,3 +333,20 @@ Session `27262bc7-f707-46e2-9459-5f9c5caa2b87`, model gpt-6.1-sol, 22 files revi
 Reviewer's answer to the brief's question: no rendering difference found. The section order, every render guard, the props, and the Plan, Baseline, plan-reflection, Position, `Figure` and `ConditionLines` markup all match `cf690cb2`. `useRuntime` moved into `IdentityHeader` and `SettlementDuePanel`. The reviewer found no cascade conflict between moved and remaining rules, though its CSS check was set-wise and doesn't prove the order within the file.
 
 - **T8P.2-B1.** Defect: `it-titles.sh` omits `it.each` cases, so a lost table-driven case would pass the titles proof. Case: *it should list each `it.each` case's title template, and every other `it` form (`it.skip`, `it.only`, `it.todo`), once per occurrence.*
+
+### T8P.2-B1 (`5ebf9e2b`)
+
+Fix: `it-titles.sh` reads each file whole with Perl and lists `it.each` (with a balanced-parenthesis table), `it.skip`, `it.only`, `it.todo`, template-literal titles and titles that start on the next line. Plain `it(` titles print bare; other forms carry a prefix (`it.each: …`). New shell test `.claude/scripts/it-titles.test.sh`: red against the old script (7 of 11 titles), then green. Rows are in [tdd-log/T8P.2-B1.md](tdd-log/T8P.2-B1.md). Real tree: 1515 titles at both `cf690cb2` (via `git archive`) and HEAD, with an empty diff. The old script gave 1513; the two added are the `it.each` cases.
+
+ocr: session `14f97088-77c8-4524-93aa-0344c5dbc0fa`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 2 comments. Raw output: [ocr/T8P.2-B1-5ebf9e2b.json](ocr/T8P.2-B1-5ebf9e2b.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `.claude/scripts/it-titles.sh:12` | The `it.each` table matcher treats parentheses and quotes inside regex literals or comments as table syntax, so such cases are silently omitted. | Valid: the reviewer's fixture `it.each([/\(/])('regex title', …)` printed nothing. |
+| medium | bug | `.claude/scripts/it-titles.sh:19` | Collapsing newlines and whitespace makes a multi-line backtick title identical to a single-line title, so a change between them passes the diff. | Valid: reproduced by the reviewer. |
+
+Round 2 of T8P.2's bug tasks:
+- **T8P.2-B2** (finding 1). Case: *it should list an `it.each` case whose table holds a regex literal or a comment with brackets or quotes.*
+- **T8P.2-B3** (finding 2). Case: *it should list a multi-line title differently from a single-line title with the same words.*
+
+**Implementation-level decision: one task for both, with a different design.** Both findings come from parsing TypeScript with patterns, and each fix by pattern invites the next edge case, as the T8P.1 lock rounds showed. So B2 and B3 go to one `tdd-task`: `it-titles.sh` lists the cases from Vitest's own collection (`vitest list`) instead of parsing source, printing each case's exact title (with its describe path), so every form and every character survives. One commit, one review. If Vitest's listing proves unworkable, the task falls back to fixing the two patterns.

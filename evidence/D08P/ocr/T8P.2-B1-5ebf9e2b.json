@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 40741,
+    "input_tokens": 38475,
+    "output_tokens": 2266,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m43s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/it-titles.sh",
+      "content": "The table matcher interprets quotes and parentheses inside JavaScript comments and regex literals as table syntax. For example, a valid `it.each([/\\(/])('title', fn)` is omitted because the regex's `(` is treated as a nested expression; an unmatched apostrophe in a table comment likewise prevents matching. These silent omissions undermine the before/after inventory check. Handle comments and regex literals when scanning table boundaries, and add regression fixtures for both.",
+      "existing_code": "my $tbl = qr/(?\u003ct\u003e\\((?:[^()\"'`]++|$str|(?\u0026t))*+\\))/;",
+      "start_line": 12,
+      "end_line": 12,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/it-titles.sh",
+      "content": "Collapsing newlines and surrounding whitespace loses meaningful title content. A backtick title containing `first\\n    second` (an actual newline) and the single-line title `first second` produce identical output, so changing one to the other passes the inventory comparison even though the title changed. Encode newlines and whitespace losslessly while retaining one output line per title, and add a fixture verifying that multiline and single-line titles remain distinguishable.",
+      "existing_code": "  $title =~ s/\\s*\\n\\s*/ /g;",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/it-titles.sh",
+        ".claude/scripts/it-titles.test.sh"
+      ]
+    }
+  ],
+  "session_id": "14f97088-77c8-4524-93aa-0344c5dbc0fa",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "14f97088-77c8-4524-93aa-0344c5dbc0fa",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5ebf9e2b",
+      "resolved_base": "b6738737a10f964ff7c1e26045524450c4001bcb",
+      "resolved_head": "5ebf9e2b29cbe4ab9f78bfd879d8df489cd1cbe7",
+      "exact_range": "b6738737a10f964ff7c1e26045524450c4001bcb..5ebf9e2b29cbe4ab9f78bfd879d8df489cd1cbe7",
+      "source_artifact_sha256": "cdad4b074f0b79fe539e526026282d0646c5cd806f711bafae2f1dbb478f1d8c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "e311e936a5178f47b0222ed64be7ce8e394f975894df8045873a9576d9106cac",
+          "path": ".claude/scripts/it-titles.sh",
+          "fingerprint": "58c832756201171b70d73a05b0b55bbce65b17a8c324eae672587b4fd9b68edc"
+        },
+        {
+          "item_id": "f40a988927cd6a2058d394056ee9df977bceef4e852d61fcd02582147f070844",
+          "path": ".claude/scripts/it-titles.test.sh",
+          "fingerprint": "9e61d2cff47b8064d4d652b97ecda20bf62561fb0de7f1eaa26b250b5ebb9679"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "e311e936a5178f47b0222ed64be7ce8e394f975894df8045873a9576d9106cac",
+          "path": ".claude/scripts/it-titles.sh",
+          "fingerprint": "58c832756201171b70d73a05b0b55bbce65b17a8c324eae672587b4fd9b68edc"
+        },
+        {
+          "item_id": "f40a988927cd6a2058d394056ee9df977bceef4e852d61fcd02582147f070844",
+          "path": ".claude/scripts/it-titles.test.sh",
+          "fingerprint": "9e61d2cff47b8064d4d652b97ecda20bf62561fb0de7f1eaa26b250b5ebb9679"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "730950e8ccc7d4dfcd54e78898916bf8109b07876c9701f41c3966f483fc47b5",
+          "path": "evidence/D08P/tdd-log/T8P.2-B1.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 103068
+  }
+}
