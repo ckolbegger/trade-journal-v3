@@ -44,11 +44,28 @@ while :; do
   fi
   pid=$(cat "$lock/pid" 2>/dev/null || true)
   if [[ -n "$pid" ]] && ! kill -0 "$pid" 2>/dev/null; then
-    # Dead holder: move the lock away (rename is atomic, so one waiter wins), then retry.
-    echo "with-browser-lock: taking over the lock left by dead process $pid" >&2
-    stale="$lock.stale.$$"
-    mv "$lock" "$stale" 2>/dev/null && rm -rf "$stale"
-    continue
+    # Dead holder. Reading the PID and removing the lock are separate steps, so only the waiter that
+    # wins the mkdir of the takeover guard may remove it, and only after re-reading the same dead PID
+    # under the guard. A waiter that read the dead PID earlier then finds the new holder's PID (or no
+    # lock) and removes nothing; a loser of the guard falls through and waits.
+    # TJ_BROWSER_LOCK_PAUSE (tests only): touch $TJ_BROWSER_LOCK_PAUSE.reached.$$ and wait for the
+    # file $TJ_BROWSER_LOCK_PAUSE.go.$$ here, between the check and the takeover.
+    if [[ -n "${TJ_BROWSER_LOCK_PAUSE:-}" ]]; then
+      : >"$TJ_BROWSER_LOCK_PAUSE.reached.$$"
+      while [[ ! -e "$TJ_BROWSER_LOCK_PAUSE.go.$$" ]]; do sleep 0.05; done
+    fi
+    guard="$lock.takeover"
+    if mkdir "$guard" 2>/dev/null; then
+      if [[ "$(cat "$lock/pid" 2>/dev/null || true)" == "$pid" ]]; then
+        echo "with-browser-lock: taking over the lock left by dead process $pid" >&2
+        rm -rf "$lock"
+      fi
+      rmdir "$guard" 2>/dev/null
+      continue
+    fi
+    # A guard left by a taker that crashed is removed after 10 s.
+    gage=$(( $(date +%s) - $(stat -f %m "$guard" 2>/dev/null || date +%s) ))
+    (( gage > 10 )) && rmdir "$guard" 2>/dev/null
   fi
   if [[ -z "$pid" && -d "$lock" ]]; then
     # The holder is between mkdir and writing its PID; a lock with no PID for 10 s was left by a crash.
