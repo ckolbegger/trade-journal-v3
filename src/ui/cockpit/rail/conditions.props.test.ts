@@ -42,7 +42,7 @@ describe('Conditions card (W5, W6)', () => {
     for (const item of items) expect(item.querySelector('.condition-text')?.classList.contains('nowrap')).toBe(true);
   });
 
-  it("should show Tuesday's option-price Stop as −360.00 with nearest and Change in Trade P&L from the Tue Oct 13 Marks if the option's Mark is 3.60 −0.75R", () => {
+  it('should show Tuesday\'s option-price Stop as "−$360.00" with "nearest" and "Change in Trade P&L from the Tue Oct 13 Marks if the option\'s Mark is $3.60 (−0.75R)."', () => {
     const items = blocks(renderCard(withNearest(os2(TUESDAY), 'stop-2', 'target-1')));
     const stop = items[1]!;
     expect(within(stop).getByText('−$360.00')).toBeTruthy();
@@ -52,13 +52,13 @@ describe('Conditions card (W5, W6)', () => {
     expect(items.map((item) => within(item).queryByText('nearest') !== null)).toEqual([false, true, true, false]);
   });
 
-  it('should explain an Underlying condition as … if MNO is at 41.00 at expiration −0.92R', () => {
+  it('should explain an Underlying condition as "… if MNO is at 41.00 at expiration (−0.92R)."', () => {
     const stop = blocks(renderCard(os2(TUESDAY)))[0]!;
     expect(within(stop).getByText('−$440.00')).toBeTruthy();
     expect(within(stop).getByText('Change in Trade P&L from the Tue Oct 13 Marks if MNO is at 41.00 at expiration (−0.92R).')).toBeTruthy();
   });
 
-  it("should show Wednesday's option-price Stop as Breached with The Wed Oct 14 Mark is 20.00 0.04R of Trade P&L past this Stop", () => {
+  it('should show Wednesday\'s option-price Stop as "Breached" with "The Wed Oct 14 Mark is $20.00 (0.04R) of Trade P&L past this Stop."', () => {
     const stop = blocks(renderCard(os2(WEDNESDAY)))[1]!;
     expect(within(stop).getByText('Breached')).toBeTruthy();
     expect(within(stop).getByText('The Wed Oct 14 Mark is $20.00 (0.04R) of Trade P&L past this Stop.')).toBeTruthy();

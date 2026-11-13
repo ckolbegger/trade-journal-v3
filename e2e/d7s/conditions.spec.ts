@@ -22,7 +22,7 @@ async function markSession(profile: Parameters<typeof launchAt>[0], instant: str
 }
 
 test.describe('B7S.3 Detail and list on Thursday', () => {
-  test('should show one Stop breached and one Target reached badge on the Open list row, and Detail conditions with the option-price Stop Breached and the MNO Target Reached and Worst case and Max reward beneath', async ({ profile }) => {
+  test('should show one Stop breached and one Target reached badge on the Open list row, and Detail conditions with the option-price Stop Breached and the MNO Target Reached and Risk to stop and Reward to target $0.00', async ({ profile }) => {
     test.setTimeout(540_000);
     // Tuesday 10:30: O-S2 created through the UI with S1'.
     const { context: setup, page: setupPage } = await onboardedAt(profile, TUESDAY_1030);
