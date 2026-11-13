@@ -290,7 +290,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- **For T8P.2:** move `EXIT_ACTION` and `INCOHERENT_ENTRY_NOTE` to `src/ui/screens/trade-detail/words.ts`, and update `PositionChangeForm.tsx:27`. `it-titles.sh` proves the 98 cases are unchanged.
 - **For T8P.4.** The appendix lists every Detail reader.
   - The `header .badge` reads (d2/durability :43, d2/open-position :39, d2/responsive-a11y :247, d6/exit :36 and :65, d7/settlement-due :38 and :46, d7/short-put :56) go through the identity helper.
   - The order-dependent reads (d7s/plan :15, :24–26; d7s/entry-beyond-stop :21) and the page-wide ones are scoped to their region.
