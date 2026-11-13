@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type CalculationResult, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
 import { evaluate, type ObservationFrame } from './evaluate.ts';
+import { OS2_CONTRACT, OS2_S1, os2Record } from './option-trade.ts';
 import { execution, PC1, PC2, PC3, positionChange, referenceRecord, X1 } from './reference-trade.ts';
 
 const XYZ = { kind: 'Stock', symbol: 'XYZ' } as const;
@@ -486,5 +487,49 @@ describe('Reward : risk now (P40)', () => {
       instrument: { kind: 'Stock', symbol: 'DEF' },
       date: '2026-10-12',
     });
+  });
+});
+
+const MNO = { kind: 'Stock', symbol: 'MNO' } as const;
+const SESSION_CLOSE: Record<string, string> = { '2026-10-13': '2026-10-13T20:00:00Z', '2026-10-14': '2026-10-14T20:00:00Z' };
+function os2FrameOf(instrument: ObservationFrame['instrument'], date: string, price?: string): ObservationFrame {
+  const closeInstant = SESSION_CLOSE[date]!;
+  return price === undefined
+    ? { instrument, tradingDate: date, closeInstant, resolution: { kind: 'Missing' } }
+    : { instrument, tradingDate: date, closeInstant, resolution: { kind: 'Available', mark: { revisionId: `mark-${instrument.kind}`, revisionNumber: 1, price } } };
+}
+// O-S2 after S1' on a session date, with the put's and MNO's Marks (undefined: Missing).
+function os2On(date: string, put: string | undefined, mno: string | undefined, record: TradeAnalysisRecord = os2Record([OS2_S1])) {
+  const state = derive({ record, valuationDate: date });
+  if (state.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(state)}`);
+  return evaluate({ state, frame: os2FrameOf(OS2_CONTRACT, date, put), underlyingFrame: os2FrameOf(MNO, date, mno) });
+}
+const nearestIds = (e: ReturnType<typeof os2On>) => e.conditions.filter((c) => c.nearest === true).map((c) => c.id);
+
+describe('evaluate: the nearest condition (A207)', () => {
+  it("should mark O-S2's option-price Stop and its MNO Target as nearest on Tuesday, and no other condition", () => {
+    expect(nearestIds(os2On('2026-10-13', '1.80', '44.00'))).toEqual(['stop-2', 'target-1']);
+  });
+
+  it('should mark no Stop as nearest on Wednesday, when the option-price Stop is Breached and the headline is zero', () => {
+    const e = os2On('2026-10-14', '3.70', '43.20');
+    expect(e.conditions.filter((c) => c.role === 'Stop' && c.nearest === true)).toEqual([]);
+  });
+
+  it('should mark no condition of a role as nearest when its headline is Unavailable', () => {
+    const e = os2On('2026-10-13', '1.80', undefined);
+    expect(e.ongoingRiskToStop.kind).toBe('Unavailable');
+    expect(e.incrementalRewardToTarget.kind).toBe('Unavailable');
+    expect(nearestIds(e)).toEqual([]);
+  });
+
+  it('should mark the earlier in Plan order when two conditions of a role are equally near', () => {
+    const base = os2Record([OS2_S1]);
+    const tied: TradeAnalysisRecord = {
+      ...base,
+      plan: { ...base.plan, stops: [{ factId: 'stop-a', kind: 'UnderlyingPrice', price: '41.00' }, { factId: 'stop-b', kind: 'UnderlyingPrice', price: '41.00' }] },
+    };
+    const e = os2On('2026-10-13', '1.80', '44.00', tied);
+    expect(e.conditions.filter((c) => c.role === 'Stop').map((c) => c.nearest)).toEqual([true, undefined]);
   });
 });
