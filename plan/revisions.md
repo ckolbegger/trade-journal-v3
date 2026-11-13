@@ -2,6 +2,20 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 93: the commit tagged `claude-opus-5.5-plan-r93` (revision 92, no decision). Two user choices during D08P's wave 1.
+  - **Series points carry Mark provenance.**
+    - T8P.10 found that A210's series point gives only price and revision, so its replay's Marks carry no provenance. T8P.16's planned case, though, shows each compared Mark "with its change and its provenance, Corrected with its reason".
+    - Market Data builds each point from the effective Mark revision it already holds, so an Available point now also carries that revision's `source`, `savedAt` and `reason`, with no extra read.
+    - T8P.10 adds this in `src/modules/market-data/market-data.ts` (lane BV, as for T8P.28), and the replay's Available Mark carries `source`, `savedAt` and an optional `correctionReason`.
+    - T8P.10 gains two cases, one in Market Data's tests and one in `replay-trade.test.ts`.
+    - Rejected: dropping the provenance from T8P.16's case, and reading two point frames in T8P.22.
+  - **Reflect now is wired in wave 1.**
+    - T8P.15's code review (ocr) found that the rail's Reflect now never appears: nothing passes `NeedsYou` its `onReflectNow`.
+    - Bug task T8P.15-B1 (lane R2) wires A217. Lane R2 may edit `src/ui/screens/trade-detail/Cockpit.tsx` and `src/ui/cockpit/journal-cards.tsx`, with their tests, for that fix only. No other wave-1 lane holds either file now: D6 is merged, and the shell is wave 2's.
+    - The nine Journal-drawer debt reads in the handoff's "For T8P.15" note move to the rail with it.
+    - Rejected: carrying the fix into T8P.22.
+
+  `specs/` is unchanged (`ReadSeries` says only "completed-session series with explicit gaps"). No acceptance scenario changes status, no stored data or durable compatibility changes, and no words change. The next decision is still 112. Decided by the user on 2026-11-13 ("Series carries provenance" and "Fix now in lane R2").
 - Revision 92: the commit tagged `claude-opus-5.5-plan-r92` (revision 91, no decision). T8P.28 stopped: `firstMarksDue` is the session after the Expected Mark Date (the read session's trading date), and no read Trade Views may make gives it. The frames' `nextSession` is disclosed only once that session is completed, and only Market Data, the session-policy domain and `src/app/compose.ts` may import the session policy (D4's A39).
   - **The spec:** `specs/design/market-data.md`'s read-session paragraph now says the session names the session after its trading date when it opens, from the calendar alone, with no stored read, and names none outside coverage.
   - **The code:** `MarketDataReadSession` gains `readonly nextSessionDate?: string`, set at open from the session policy's `nextSession` when covered.

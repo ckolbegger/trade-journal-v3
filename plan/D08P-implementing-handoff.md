@@ -36,7 +36,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (the deliverable branch every lane merges into) |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `4175` (D08P runs no benchmark) |
-| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r88` (revision 85 adds T8P.27; revision 86 tightens its test pairing; revision 87 re-anchors two layout checks; revision 88 allows the additive `nearest` and `days` in strict checks; revision 89 adds Max reward's R); `claude-opus-5.5-plan-r90` (revision 90 adds T8P.28 to T8P.30); `claude-opus-5.5-plan-r91` (revision 91: the before-Marks words name dates); `claude-opus-5.5-plan-r92` (revision 92: Market Data's read session names the next session, for T8P.28) |
+| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r88` (revision 85 adds T8P.27; revision 86 tightens its test pairing; revision 87 re-anchors two layout checks; revision 88 allows the additive `nearest` and `days` in strict checks; revision 89 adds Max reward's R); `claude-opus-5.5-plan-r90` (revision 90 adds T8P.28 to T8P.30); `claude-opus-5.5-plan-r91` (revision 91: the before-Marks words name dates); `claude-opus-5.5-plan-r92` (revision 92: Market Data's read session names the next session, for T8P.28); `claude-opus-5.5-plan-r93` (revision 93: series points carry Mark provenance, for T8P.10; lane R2 wires Reflect now, T8P.15-B1) |
 | Code D08P builds on | tag `claude-opus-5.5-d7s` (`2240fe1c`) |
 | D08P starting point | tag `claude-opus-5.5-pre-d08p`: the same commit as `plan-r84`, at the user's direction. `claude-opus-5.5-pre-d8p` (`5ae23f94`) marks where the planning session started. |
 
@@ -108,7 +108,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected passages, scenarios and durable compatibility.
 3. Ask for approval.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r93, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27; revision 86 tightened its test pairing; revision 87 re-anchored two `ui-alignment` checks to the cockpit layout; revision 88 lets strict checks gain the additive `nearest` and `days`; revision 89 gives a bounded Max reward its R, in T8P.7 and T8P.15; revision 90 adds T8P.28 to T8P.30, "no Marks yet" stated by Trade Views and read by three components, and absence checks that prove absence; revision 91 makes the before-Marks words in W3, W7 and W8 name dates; revision 92 gives Market Data's read session `nextSessionDate`, made by T8P.28.) Editing the Progress section alone is not a revision.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r94, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27; revision 86 tightened its test pairing; revision 87 re-anchored two `ui-alignment` checks to the cockpit layout; revision 88 lets strict checks gain the additive `nearest` and `days`; revision 89 gives a bounded Max reward its R, in T8P.7 and T8P.15; revision 90 adds T8P.28 to T8P.30, "no Marks yet" stated by Trade Views and read by three components, and absence checks that prove absence; revision 91 makes the before-Marks words in W3, W7 and W8 name dates; revision 92 gives Market Data's read session `nextSessionDate`, made by T8P.28; revision 93 gives series points the Mark's provenance, made in T8P.10, and lets lane R2 wire Reflect now, T8P.15-B1.) Editing the Progress section alone is not a revision.
 
 ## 3. D08P specifics
 
@@ -307,6 +307,17 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - **For T8P.9:** T8P.4 left `d7/plan-open`'s "Expires Fri 20 Nov 2026" read scoped to the Summary card (`detail.summary`), so retarget it if the line moves.
 - **For T8P.15:** T8P.4 scoped the Needs-you debt reads in `e2e/support/detail/rail-b.ts` (`reflectionOwed`, `reflectNowButton`, `declineButton`, `answerButton`, `debtForm`, `savedReflection`, `owedItem`) to the Journal card.
 - **For T8P.22 (tab counts, main session's decision):** W1's tab counts need the replay, which reaches the Detail only in T8P.22, and the tabs are the shell's, which no lane edits. So T8P.20 and T8P.21 export each count from their path modules, and T8P.22 shows them on the Price History ("2") and Journal ("1 owed") tabs.
+- **For T8P.15-B1 and T8P.22 (Reflect now, revision 93):**
+  - T8P.15's `NeedsYou` takes an optional `onReflectNow(debtId)` and shows no button without it. ocr found that nothing passed it, so A217's Reflect now never appeared in the rail.
+  - Bug task T8P.15-B1 (lane R2, the same agent) wires it. It edits `src/ui/screens/trade-detail/Cockpit.tsx` (drawer state) and `src/ui/cockpit/journal-cards.tsx` (the one-form `active` state), which revision 93 gives lane R2 for this fix only.
+  - The nine `openDrawer(page, 'Journal')` debt reads in the earlier "For T8P.15" note move to the rail with it (`needsYouCard(page)` in `rail-b.ts`).
+  - Until T8P.22 retires the legacy Valuation block, the Detail shows a second "Mark missing for …" link beside the rail's.
+  - The legacy `NeedsYouBlock` (`Composed.tsx`) and `SettlementDuePanel` (`SettlementDue.tsx`) are no longer rendered, which leaves them for T8P.27.
+- **For T8P.22 (from T8P.10):**
+  - `ReplayMark.resolution` is T8P.10's `ReplayMarkResolution`, not `MarkResolution`. With revision 93 its Available Mark carries `price`, `revisionNumber`, `source`, `savedAt` and an optional `correctionReason`, so the Today drawer's `TodayReplay` accepts the real view.
+  - Replayed Debts carry no `dueStatus`.
+  - An item after a Closed Trade's final session stays in that session.
+  - `ViewBinding`, `ReadViewResult`, `TradeDetailDebt` and `TradeDetailNarrativeItem` moved to `trade-views/view-types.ts` to break a cycle, and are re-exported unchanged.
 - **For T8P.22:** the `d7s/plan` and `d7s/entry-beyond-stop` reads go through `summaryValue` (`rail-a.ts`) and must move with the Summary card. Retire the three legacy blocks and their CSS (`.summary-card`, `.summary-text`), and move any expectation still reading them.
 - **For T8P.28 to T8P.30 (revision 90):**
   - T8P.28 is BV's next task after T8P.9 merges, and a fresh agent. It must merge before T8P.10 starts, since both touch `src/coordinators/trade-views/`.
