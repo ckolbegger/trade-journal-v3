@@ -24,7 +24,7 @@ import { ExitReceipt } from './ExitReceipt.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 import { ChoiceGroup, dispositionOf, type Choice } from './reflection-choice.tsx';
 import { LOCAL_TIME_CODES, minuteOf } from './local-time.ts';
-import { EXIT_ACTION, INCOHERENT_ENTRY_NOTE } from './TradeDetail.tsx';
+import { EXIT_ACTION, INCOHERENT_ENTRY_NOTE } from './trade-detail/words.ts';
 
 export interface PositionChangeFormProps {
   readonly facade: UiFacade;

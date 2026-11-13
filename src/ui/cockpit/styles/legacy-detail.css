@@ -1,0 +1,230 @@
+/* The Trade Detail screen's own styles, moved unchanged out of app.css (D08P T8P.2). The cockpit replaces them
+   section by section; T8P.22 deletes what is left. Loaded after app.css, so the cascade order is as it was. */
+
+/* Trade Detail: a records disagreement is set apart; its heading and text carry the meaning. */
+.card.integrity {
+  background: var(--warning-ground);
+  border-color: var(--warning-line);
+}
+
+ul.narrative {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.narrative > li + li {
+  border-top: 1px solid var(--line);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-block-end: 0.5rem;
+}
+
+.summary-card .summary-text {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.summary-card .stop {
+  color: var(--stop);
+}
+
+.summary-card .target {
+  color: var(--target);
+}
+
+/* Summary figures: large, bold, tabular. */
+.summary-card dd {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-card .badge {
+  margin-bottom: 0.5rem;
+}
+
+.execution-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* One phrase, "Buy 30 XYZ @ $50.00", the "@" never parted from its price; the time on its own line. */
+.execution-summary {
+  flex: 1 1 0;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.execution-summary .nowrap {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+
+.execution-toggle .icon {
+  flex: none;
+}
+
+.execution-toggle[aria-expanded='true'] .icon {
+  transform: rotate(180deg);
+}
+
+/* Executions of one Position Change share a rail on their left edge. */
+ul.executions > li[data-group] {
+  border-left: 3px solid var(--line);
+}
+
+.execution-group-mark {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.execution-details {
+  padding: 0.25rem 0 0.75rem;
+}
+
+.execution-details dl dt {
+  font-size: 0.9rem;
+}
+
+.execution-reflection {
+  margin-top: 0.75rem;
+}
+
+.execution-reflection h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 639.98px) {
+  /* A label stacks above its value, so neither shares a narrow line. */
+  .execution-details dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .execution-details dl dd {
+    margin-bottom: 0.4rem;
+  }
+}
+
+/* Plan Baseline and Entry Quality: label and value rows, two columns when the card is wide, each row
+   capped at 480 px. */
+dl.figure-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 480px);
+  gap: 0.35rem 2rem;
+}
+
+@media (min-width: 960px) {
+  dl.figure-grid {
+    grid-template-columns: repeat(2, minmax(0, 480px));
+  }
+}
+
+/* Every other label/value list on the Detail (fulfillment, executions, journal) keeps its dt/dd grid
+   but stops at the same cap, so no row spans the card at wide. Prose answers keep their full width. */
+.trade-detail dl:not(.figure-grid):not(.answers) {
+  max-width: 480px;
+}
+
+/* The summary card and Planned-Leg Fulfillment are one column at every width, so their values share a right edge. */
+.summary-card dl.figure-grid,
+dl.figure-grid.one-column {
+  grid-template-columns: minmax(0, 480px);
+}
+
+dl.figure-grid > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+dl.figure-grid dd {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* A figure breaks only at spaces, never inside a word, so a money amount stays whole and the label beside it wraps instead. */
+dl.figure-grid dd.number {
+  overflow-wrap: normal;
+}
+
+/* Plan Reflection: each answer a prose section under its prompt, divided by a hairline. */
+dl.answers {
+  display: block;
+}
+
+dl.answers > div {
+  display: block;
+  padding: 0.75rem 0;
+}
+
+dl.answers > div + div {
+  border-top: 1px solid var(--line);
+}
+
+dl.answers > div:first-child {
+  padding-top: 0;
+}
+
+dl.answers dt {
+  font-size: 0.9rem;
+}
+
+/* In a Journal item the answers follow the Anchor list and need a gap after it. */
+ul.narrative dl.answers {
+  margin-top: 0.75rem;
+}
+
+dl.answers dd {
+  margin-top: 0.15rem;
+  overflow-wrap: anywhere;
+}
+
+/* Open Lots keeps every header on one line; the region scrolls instead. */
+table.lots th,
+table.lots td {
+  white-space: nowrap;
+}
+
+/* The date and time is wider than the pinned column, so Open Lots does not pin it. */
+.table-scroll.lots-scroll {
+  --pin: 0px;
+  /* Square corners: a radius would clip the last row's bottom border short of the card's row edges. */
+  border-radius: 0;
+}
+
+table.lots th:first-child,
+table.lots td:first-child {
+  position: static;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  border-right: 0;
+}
