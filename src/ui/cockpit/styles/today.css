@@ -27,7 +27,7 @@
 }
 
 .track-block h3 {
-  margin: 0 0 2rem;
+  margin: 0 0 3.5rem;
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -101,8 +101,9 @@
   font-weight: 700;
 }
 
+/* Its own lane above "now", so the two labels stay apart when the Mark is at the entry. */
 .track .mk.entry .lab {
-  bottom: 15px;
+  bottom: 38px;
   color: var(--muted);
 }
 

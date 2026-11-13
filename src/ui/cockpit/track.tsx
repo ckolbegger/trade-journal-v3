@@ -1,5 +1,8 @@
 import type { PriceTrackProps } from './track.types.ts';
 
+// Each marker's label has a lane of its own, so labels never overlap when two markers sit at one price (styles/today.css).
+const LANES = { now: 'above', entry: 'higher', earlier: 'below' } as const;
+
 // A price track (A215): a horizontal bar with its Stop and Target zones and its markers, placed by percentage. The markers carry no prices; the
 // accessible name and the comparison table do.
 export function PriceTrack({ title, accessibleName, min, max, zones, markers, conditionLines }: PriceTrackProps) {
@@ -14,7 +17,9 @@ export function PriceTrack({ title, accessibleName, min, max, zones, markers, co
         {markers.map((marker) => (
           <span key={marker.kind} className={`mk ${marker.kind}`} data-kind={marker.kind} style={{ left: `${pct(marker.price)}%` }}>
             <span className="dot" />
-            <span className="lab">{marker.label}</span>
+            <span className="lab" data-lane={LANES[marker.kind]}>
+              {marker.label}
+            </span>
           </span>
         ))}
       </div>

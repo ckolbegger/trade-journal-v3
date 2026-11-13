@@ -1,0 +1,14 @@
+# D08P TDD log, T8P.16-B
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| Task | Case | Phase | Command | Outcome | Failure excerpt |
+|---|---|---|---|---|---|
+| T8P.16-B | should show a change only against the compared session when an Instrument had no Mark then | red | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should show a change only against the compared session when an Instrument had no Mark then"` | exit 1; Tests  1 failed, 8 skipped (9) | AssertionError: expected [ '—', …(2) ] to deeply equal [ '—', …(2) ]  |
+| T8P.16-B | should draw no Underlying track when nothing can be placed on it | red | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should draw no Underlying track when nothing can be placed on it"` | exit 1; Tests  1 failed, 8 skipped (9) | AssertionError: expected <h3></h3> to be null  |
+| T8P.16-B | should keep the entry and now labels apart when the Mark is at the entry | red | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should keep the entry and now labels apart when the Mark is at the entry"` | exit 1; Tests  1 failed, 8 skipped (9) | AssertionError: expected undefined to be truthy  |
+| T8P.16-B | should show a change only against the compared session when an Instrument had no Mark then | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should show a change only against the compared session when an Instrument had no Mark then"` | exit 0; Tests  1 passed, 8 skipped (9) |  |
+| T8P.16-B | should draw no Underlying track when nothing can be placed on it | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should draw no Underlying track when nothing can be placed on it"` | exit 0; Tests  1 passed, 8 skipped (9) |  |
+| T8P.16-B | should keep the entry and now labels apart when the Mark is at the entry | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should keep the entry and now labels apart when the Mark is at the entry"` | exit 0; Tests  1 passed, 8 skipped (9) |  |
+| T8P.16-B | should draw no Underlying track when nothing can be placed on it | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should draw no Underlying track when nothing can be placed on it"` | exit 0; Tests  1 passed, 8 skipped (9) |  |
+| T8P.16-B | (refactor) | refactor | `npx vitest run src/ui/cockpit src/ui/screens/trade-detail` | exit 0; 129 tests | B4 uses a `data-lane` on each marker label (now above, entry higher, earlier below) with CSS lanes; jsdom cannot assert layout, and no browser spec shows overlapping labels, so the lanes are asserted by attribute only. Browser run of d4/expected-mark, breach-overrun, responsive-a11y and d7p/layout: 11 passed. No first-run passes. |

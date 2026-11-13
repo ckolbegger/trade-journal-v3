@@ -74,8 +74,10 @@ function marksOf({ timeZone, replay }: TodayInput, optionTrade: boolean): TodayD
     return { price: price(instrument, text), provenance: `${source} · ${localTime(savedAt, timeZone)}`, ...(correctionReason !== undefined && { correction: correctionReason }) };
   };
   const change = (instrument: Instrument, mark: ReplayedMark | undefined): string => {
-    if (!mark?.change) return '—';
-    return signed(instrument.kind === 'Option' || !optionTrade ? money : underlyingPrice)(mark.change.dollars);
+    // Only a change against the compared session: an Instrument with no Mark then has its change against an older one.
+    const against = mark?.change;
+    if (!against || against.since !== earlier.date) return '—';
+    return signed(instrument.kind === 'Option' || !optionTrade ? money : underlyingPrice)(against.dollars);
   };
   return {
     heading: `Marks: ${shortDate(now.date)} against ${shortDate(earlier.date)}`,
@@ -98,8 +100,10 @@ function trackOf(
   format: (text: string) => string,
   nowText: string | undefined,
   zeroBased: boolean,
-): PriceTrackProps {
+): PriceTrackProps | undefined {
   const prices = [...conditions.map((c) => Number(c.boundary)), ...[markers.entry, markers.earlier?.price, markers.now].filter((p): p is number => p !== undefined)];
+  // A track with nothing to place on it is not drawn.
+  if (prices.length === 0) return undefined;
   const low = Math.min(...prices);
   const high = Math.max(...prices);
   const margin = ((high - low) || high || 1) / 10;
@@ -160,17 +164,17 @@ function tracksOf({ replay }: TodayInput, view: OpenTradeDetail, optionTrade: bo
   };
   if (!optionTrade) {
     const stock: Instrument = { kind: 'Stock', symbol };
-    return [trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(stock), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, false)];
+    return drawn([trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(stock), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, false)]);
   }
   const underlying: Instrument = { kind: 'Stock', symbol };
-  return [
+  const underlyingTrack = trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...earlierMarker(underlying), ...(underlyingMark && { now: Number(underlyingMark.price) }) }, decimalUnderlyingPrice, underlyingMark?.price, false);
+  return drawn([
     trackOf('Option price', conditionsOf('StructureValue'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(leg.instrument), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, true),
-    {
-      ...trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...earlierMarker(underlying), ...(underlyingMark && { now: Number(underlyingMark.price) }) }, decimalUnderlyingPrice, underlyingMark?.price, false),
-      conditionLines: evaluation.conditions.filter((c) => c.kind === 'UnderlyingPrice').map((condition) => conditionLineOf(view, condition)),
-    },
-  ];
+    underlyingTrack && { ...underlyingTrack, conditionLines: evaluation.conditions.filter((c) => c.kind === 'UnderlyingPrice').map((condition) => conditionLineOf(view, condition)) },
+  ]);
 }
+
+const drawn = (tracks: readonly (PriceTrackProps | undefined)[]): readonly PriceTrackProps[] => tracks.filter((track): track is PriceTrackProps => track !== undefined);
 
 type Row = { readonly label: string; readonly value: string };
 

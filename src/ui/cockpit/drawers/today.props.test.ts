@@ -187,3 +187,46 @@ describe('Today drawer (W8)', () => {
     expect(within(screen.getByRole('img', { name: /^Option price:/ }).closest('.track-block') as HTMLElement).queryByRole('list')).toBeNull();
   });
 });
+
+describe('Today drawer (W8): gaps and crowding (T8P.16-B)', () => {
+  it('should show a change only against the compared session when an Instrument had no Mark then', () => {
+    // Both Instruments marked Tuesday, only MNO on Wednesday, both on Thursday: the put's change on Thursday is since Tuesday.
+    drawer(
+      thursday(),
+      replayOf([
+        session('2026-10-13', [mark(MNO, '42.00'), mark(PUT, '3.00')]),
+        session('2026-10-14', [mark(MNO, '42.50'), mark(PUT, undefined)]),
+        session('2026-10-15', [mark(MNO, '43.00', { since: '2026-10-14', amount: '0.50' }), mark(PUT, '3.20', { since: '2026-10-13', amount: '0.20' })]),
+      ]),
+    );
+    const table = screen.getByRole('table', { name: 'Marks: Thu Oct 15 against Wed Oct 14' });
+    const [mnoRow, putRow] = within(table).getAllByRole('row').slice(1);
+    expect(within(mnoRow!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['42.50Manual · 2026-10-15 16:30', '43.00Manual · 2026-10-15 16:30', '+0.50']);
+    expect(within(putRow!).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['—', '$3.20Manual · 2026-10-15 16:30', '—']);
+    expect(screen.queryByText('+$0.20')).toBeNull();
+  });
+
+  it('should draw no Underlying track when nothing can be placed on it', () => {
+    // An option Plan whose conditions are all option prices, with no Underlying Mark and no earlier session to take one from.
+    const view = thursday();
+    const current = { ...view.current, underlyingMark: undefined };
+    delete current.underlyingMark;
+    const optionPricesOnly = { ...view, current: { ...current, evaluation: { ...current.evaluation, conditions: current.evaluation.conditions.filter((c) => c.kind === 'StructureValue') } } };
+    drawer(optionPricesOnly);
+    expect(screen.getByRole('img', { name: 'Option price: Stop $3.60, Target $0.30, now $3.20' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'MNO', hidden: true })).toBeNull();
+    expect(document.querySelectorAll('.track-block')).toHaveLength(1);
+    expect(document.body.textContent).not.toMatch(/Infinity|NaN|MNO: /);
+  });
+
+  it('should keep the entry and now labels apart when the Mark is at the entry', () => {
+    // The put's Mark is $1.25, the average entry of O-S2's Sell at 1.25: both markers sit at one place on the track.
+    drawer(optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '1.25', underlyingMark: '43.00' }));
+    const track = screen.getByRole('img', { name: /^Option price:/ });
+    const lane = (kind: string) => track.querySelector<HTMLElement>(`.mk[data-kind="${kind}"] .lab`)!.dataset['lane'];
+    expect(track.querySelector<HTMLElement>('.mk[data-kind="entry"]')!.style.left).toBe(track.querySelector<HTMLElement>('.mk[data-kind="now"]')!.style.left);
+    expect(lane('entry')).toBeTruthy();
+    expect(lane('now')).toBeTruthy();
+    expect(lane('entry')).not.toBe(lane('now'));
+  });
+});
