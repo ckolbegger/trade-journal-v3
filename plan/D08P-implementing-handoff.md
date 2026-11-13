@@ -46,8 +46,8 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5 [ahead N]`. At the first session N is 2 (the draft breakdown and revision 84), unless the user has pushed since. Afterwards N also counts D08P's commits. No uncommitted changes. |
-| `git log --oneline claude-opus-5.5-pre-d08p..HEAD` | Empty at the first session. Afterwards: only D08P task and merge commits, their evidence and Progress updates, handoff updates, and any approved plan revisions. |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, possibly followed by `[ahead N]`, where N counts the commits not yet pushed. No uncommitted changes. |
+| `git log --oneline claude-opus-5.5-pre-d08p..HEAD` | At the first session, one commit: "D08P implementing handoff, drawer labels follow the prototype; lane briefs carry the lane rules". Afterwards also: only D08P task and merge commits, their evidence and Progress updates, handoff updates, and any approved plan revisions. |
 | `git tag --list 'claude-opus-5.5-*'` | Includes `claude-opus-5.5-d7s`, `claude-opus-5.5-pre-d8p`, `claude-opus-5.5-plan-r84` and `claude-opus-5.5-pre-d08p`. |
 | `git rev-parse 'claude-opus-5.5-d7s^{commit}'` | `2240fe1c9d6f1c0e1c8fa1846db700eb63fc82c4` |
 | `git rev-parse 'claude-opus-5.5-plan-r84^{commit}' 'claude-opus-5.5-pre-d08p^{commit}'` | The same hash twice. |
@@ -101,7 +101,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
   - section 4's O-S2 data (the examples in T8P.6, T8P.9 and T8P.14).
 - **`plan/D07S-prefactor-mark-to-market-valuation.md`:** sections 1.1 and 1.7, for the valuation module and the read session that `replay` and `ReadSeries` build on.
 - **`plan/D05R-review-redesign.md`:** sections 6.3 and 6.4, the precedent for moving earlier browser cases through shared helpers (decision 65).
-- **The prototype**, `prototypes/trade-detail/index.html`, tab "C. Cockpit", every state. It is a picture, not a specification. The breakdown's P96 and section 1.6 say which wins.
+- **The prototype**, `prototypes/trade-detail/index.html`, tab "C. Cockpit", every state. It is a picture, not a specification. The breakdown's P96 and section 1.6 say which wins, except for drawer labels, where the prototype wins (section 3, "Other rules").
 
 `specs/` and the frozen plan are read-only. If implementation needs a deviation:
 1. Stop before making it.
@@ -174,6 +174,13 @@ Lanes keep working during merge runs.
 
 - **Ports.** Every browser run, wherever it starts, goes through `.claude/scripts/with-browser-lock.sh` once T8P.1 has merged. Before that, only the main worktree runs browsers. Never run two browser suites outside the lock.
 - **Words.** Screens use section 1.6's words: W1 "Today", "Position", "Plan and Risk", "Price History", "Journal", "Payoff". Moved content keeps its words (P96), including "Realized to date" and "Incurred fees". Words no row covers need the user's approval, which is a stop (section 5).
+- **Drawer labels: the prototype wins** (the user's direction, 2026-11-12). Where the breakdown and the prototype's "C. Cockpit" tab disagree on a drawer tab's label, meaning its name or the count it carries, build and test the prototype's label. Record the difference in `structural.md`. It is not a stop. At revision 84 they agree: W1 matches the prototype's `DRAWERS` list and its counts.
+- **Lane briefs carry the lane rules.** T8P.1 changes `.claude/agents/tdd-task.md` and `suite-runner.md` partway through the session, and a running session may keep the definitions it loaded at startup. So every brief for a task in a lane worktree (T8P.3 and T8P.4 onward), and every lane-tier request to `suite-runner`, states the rules itself rather than relying on the amended definitions:
+  - start with `.claude/scripts/lane-setup.sh`;
+  - run only the lane tier, `full-suite.sh <dir> <task> lane`, never a complete cumulative run;
+  - run any browser test through `.claude/scripts/with-browser-lock.sh`;
+  - write red and green rows to `evidence/D08P/tdd-log/<task>.md`;
+  - commit on the lane branch only; the main session rebases and merges.
 - **What must not change.**
   - Every existing case keeps its expected values, except where section 1.5's texts table names the case and the task. Everywhere else, a changed expected value is a defect.
   - Every existing query-count proof keeps its exact request lists. I8P.4 adds new ones.
