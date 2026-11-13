@@ -264,3 +264,9 @@ ocr: session `e4222aeb-9d44-495b-925d-30c262639f79`, model gpt-6.1-sol, 3 files 
 | medium | bug | `.claude/scripts/full-suite.sh:94` | The lane marker is never cleared, so a later non-lane run under the same evidence directory and label that never reaches its browser stage still sees the old marker and prints "run complete". | Valid but narrow: it needs a label reused across tiers. |
 
 - **T8P.1-B20** (round 2 of B3's line; the lock wrapper's cap doesn't apply here). Defect: a stale lane marker makes an unfinished full or task run read as a complete lane run. Case: *it should report run INCOMPLETE for a task-tier run under a label that earlier held a lane-tier run, when the browser stage hasn't run.*
+
+### T8P.1-B20 (`7775984a`)
+
+Fix: in `full-suite.sh`, every non-lane stage removes `<label>-lane.txt` before it works, and only the lane stage writes it. The lane stage's internal unit, integration and checks steps don't clear it. The new case in `run-complete.test.sh` drives the real `full-suite.sh` (`browser-auto` in a scratch repo whose diff picks the full tier and runs nothing). It was red (`FAIL: a non-lane run under a label with an old lane marker… was not reported INCOMPLETE`), then green, with every earlier case green. Rows are in [tdd-log/T8P.1-B20.md](tdd-log/T8P.1-B20.md).
+
+ocr: session `f5d16a22-cc60-4f84-8bf3-9c47e845720d`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 0 comments. **No findings.** Raw output: [ocr/T8P.1-B20-7775984a.json](ocr/T8P.1-B20-7775984a.json).
