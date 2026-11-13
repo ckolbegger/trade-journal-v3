@@ -23,7 +23,7 @@ test.describe('B4.4 Correct a Mark', () => {
     const valuation = detail.valuation(page);
     await expect(valuation).toContainText('Corrected');
     await expect(valuation).toContainText('Misread the closing quote.');
-    await expect(detail.currentMarkedPnl(page)).toContainText('+$130.00');
+    await expect(detail.currentMarkedPnl(page)).toContainText('$130.00');
 
     // Two revisions of the one observation: the initial Mark, then the Correction that supersedes it.
     const [xyz, ...rest] = observationsOf(workspaceOf(await probe(page))!);

@@ -161,7 +161,7 @@ test.describe('B6.12 Responsive and accessible', () => {
     // Closed Detail.
     await abc.getByRole('link', { name: 'ABC', exact: true }).click();
     await expect(detail.heading(page, 'ABC')).toBeVisible(READY);
-    await expect(detail.resultValue(page, 'Realized P&L')).toHaveText(LOSS);
+    await expect(detail.pnlFigure(page)).toHaveText(LOSS);
     await expect(detail.resultValue(page, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
     await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Stop Triggered');
     await accessibleAtBothWidths(page, 'Closed Detail');

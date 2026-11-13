@@ -1,7 +1,7 @@
 // Trade Detail reads of rail lane R1: the identity (the h1, the lifecycle badge, Record entry, Record exit) and the P&L figures. Each
 // read goes through the current layout, scoped to its card. The rail's identity and P&L cards replace the content behind these names (T8P.12, T8P.13).
 import type { Locator, Page } from '@playwright/test';
-import { detailRoot, figureIn, regionOf, valueIn } from './scope.ts';
+import { detailRoot, regionOf, valueIn } from './scope.ts';
 
 export const heading = (page: Page, name: string): Locator => detailRoot(page).getByRole('heading', { name, level: 1 });
 export const identityCard = (page: Page): Locator => detailRoot(page).locator('header');
@@ -15,8 +15,12 @@ export const recordExitLink = (page: Page): Locator => identityCard(page).getByR
 export const summary = (page: Page): Locator => regionOf(page, 'Summary');
 export const summaryValue = (page: Page, term: string): Locator => valueIn(summary(page), term);
 
-// The P&L: the Trade's current Marked P&L (now a figure of Valuation), and the Result a Closed Trade shows.
-export const currentMarkedPnl = (page: Page): Locator => figureIn(regionOf(page, 'Valuation'), 'Current Marked Trade P&L');
-export const result = (page: Page): Locator => regionOf(page, 'Result');
+// The P&L card (W3, W4): its figure (an Open Trade's Trade P&L, a Closed Trade's realized P&L), the line beneath it, and the Result rows a
+// Closed Trade shows. The Position drawer's own Result section stays until T8P.17, so its heading is read apart.
+export const pnlCard = (page: Page): Locator => regionOf(page, 'Trade P&L');
+export const pnlFigure = (page: Page): Locator => pnlCard(page).locator('.pnl-figure');
+export const pnlLine = (page: Page): Locator => pnlCard(page).locator('.pnl-line');
+export const currentMarkedPnl = pnlFigure;
+export const result = (page: Page): Locator => pnlCard(page).locator('.pnl-result');
 export const resultHeading = (page: Page): Locator => detailRoot(page).getByRole('heading', { name: 'Result' });
-export const resultValue = (page: Page, term: string): Locator => valueIn(detailRoot(page), term);
+export const resultValue = (page: Page, term: string): Locator => valueIn(pnlCard(page), term);

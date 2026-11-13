@@ -66,8 +66,8 @@ test.describe('B6.1 Partial then final exit', () => {
     await row.getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(detail.heading(again, 'XYZ')).toBeVisible();
     await expect(detail.lifecycle(again, 'Closed')).toBeVisible();
-    await expect(detail.resultValue(again, 'Realized P&L')).toContainText('$248.00');
-    await expect(detail.resultValue(again, 'Realized R')).toContainText('0.99R');
+    await expect(detail.pnlFigure(again)).toContainText('$248.00');
+    await expect(detail.pnlLine(again)).toContainText('0.99R');
     await expect(detail.resultValue(again, 'Terminal Disposition')).toHaveText('Closed via sale of 100 shares');
     await expect(detail.resultValue(again, 'Close Reason')).toHaveText('Target Reached');
 

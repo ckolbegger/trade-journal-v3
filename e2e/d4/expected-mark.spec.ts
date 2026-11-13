@@ -43,7 +43,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await openDrawer(page, 'Today');
     await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
     await expect(detail.todayFigure(page, 'Mark')).toHaveText('$52.00');
-    await expect(detail.currentMarkedPnl(page)).toContainText('+$199.00');
+    await expect(detail.currentMarkedPnl(page)).toContainText('$199.00');
     await expect(valuation).not.toContainText('Stale context');
     await expect(valuation).not.toContainText('Mark missing');
 

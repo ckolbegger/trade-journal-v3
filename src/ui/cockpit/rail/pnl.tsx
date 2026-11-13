@@ -1,4 +1,2 @@
-import type { ShellProps } from '../placeholder.ts';
-
-// The rail's P&L card. A placeholder until T8P.13: it renders nothing, and the legacy Valuation block still shows the figures.
-export const PnlCard: (props: ShellProps) => null = () => null;
+// The rail's P&L card: the shell renders it with the Detail's view and zone, and the adapter turns them into the card's plain props.
+export { PnlCardFromView as PnlCard } from './pnl.props.ts';

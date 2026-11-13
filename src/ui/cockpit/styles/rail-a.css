@@ -1,1 +1,46 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* The rail's identity and P&L cards (D08P plan section 4.2, lane R1). */
+
+/* The P&L card: the figure large, its change line and the open line beneath in the muted ink, a gain or a loss in its colour. The long reasons
+   an unavailable figure shows wrap inside the 320 px rail rather than widen it. */
+.pnl-card p {
+  margin: 0;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.pnl-figure {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.pnl-line,
+.pnl-open {
+  color: var(--muted);
+}
+
+.pnl-card [data-tone='gain'] {
+  color: var(--target);
+}
+
+.pnl-card [data-tone='loss'] {
+  color: var(--stop);
+}
+
+.pnl-result {
+  margin: 0.75rem 0 0;
+}
+
+.pnl-result div {
+  margin-top: 0.5rem;
+}
+
+.pnl-result dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.pnl-result dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
