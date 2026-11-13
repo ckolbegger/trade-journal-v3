@@ -1,6 +1,6 @@
 import type { OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
 import { isMarkLacking } from '../../calculation-words.ts';
-import { calculation, dollarsAndR, unavailableLabel } from '../../figures.ts';
+import { dollarsAndR, unavailableLabel } from '../../figures.ts';
 import { decimalMoney, decimalUnderlyingPrice, money, rMultiple, shortDate } from '../../format.ts';
 import { conditionDirection } from '../../screens/option-words.ts';
 import type { ShellProps } from '../placeholder.ts';
@@ -23,12 +23,18 @@ const isOption = (plan: Plan): boolean => plan.legs[0]?.instrument.kind === 'Opt
 // A stock Plan's Stop sits below a Long entry and above a Short one; a Target is the other way.
 const stockDirection = (role: Stated['role'], side: Plan['legs'][number]['side'] | undefined): 'below' | 'above' => ((side === 'Short') === (role === 'Stop') ? 'above' : 'below');
 
+// What a condition says of its subject, in D7S's W6 words: "at or above $3.60", "at or below 41.00".
+export function crossingWords(plan: Plan, condition: Stated): string {
+  const leg = plan.legs[0];
+  if (leg?.instrument.kind !== 'Option') return `at or ${stockDirection(condition.role, leg?.side)} ${decimalMoney(condition.boundary)}`;
+  const word = conditionDirection(condition.role, condition.kind, { right: leg.instrument.right, side: leg.side });
+  return `at or ${word} ${condition.kind === 'StructureValue' ? decimalMoney(condition.boundary) : decimalUnderlyingPrice(condition.boundary)}`;
+}
+
 // Row 2: the full condition on one line, in D7S's W6 words.
 function conditionText(plan: Plan, condition: Stated): string {
-  const leg = plan.legs[0];
-  if (leg?.instrument.kind !== 'Option') return `${plan.underlying} at or ${stockDirection(condition.role, leg?.side)} ${decimalMoney(condition.boundary)}`;
-  const word = conditionDirection(condition.role, condition.kind, { right: leg.instrument.right, side: leg.side });
-  return condition.kind === 'StructureValue' ? `Option at or ${word} ${decimalMoney(condition.boundary)}` : `${plan.underlying} at or ${word} ${decimalUnderlyingPrice(condition.boundary)}`;
+  const subject = isOption(plan) && condition.kind === 'StructureValue' ? 'Option' : plan.underlying;
+  return `${subject} ${crossingWords(plan, condition)}`;
 }
 
 // "−" before a Stop's amount, "+" before a Target's: formatting the Measure `evaluate` gave, never arithmetic (A206, ADR 0001).
@@ -99,7 +105,7 @@ function openProps(view: OpenTradeDetail): ConditionsCardProps {
     conditions,
     summary: [
       { label: 'Worst case', text: evaluation.worstCaseOngoingRisk.kind === 'Value' ? `${worst} if ${worstCaseWords(plan)}` : worst },
-      { label: 'Max reward', text: calculation(evaluation.maximumIncrementalReward, money) },
+      { label: 'Max reward', text: dollarsAndR(evaluation.maximumIncrementalReward, evaluation.maximumIncrementalRewardInPlanR) },
     ],
   };
 }

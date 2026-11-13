@@ -62,3 +62,33 @@
 .conditions-summary .summary-label {
   font-weight: 600;
 }
+
+/* Needs you: one list, each item its own block. The words always show; the colour only reinforces an alert. */
+.needs-you-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.needs-you-list > li {
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.needs-you-list > li:first-child {
+  border-top: 0;
+}
+
+.needs-you-list > li[role='alert'] {
+  font-weight: 600;
+  color: var(--stop);
+}
+
+.needs-you-list h3 {
+  margin: 0;
+  font-size: 1em;
+}
+
+.needs-you-list p {
+  margin: 2px 0 0;
+}

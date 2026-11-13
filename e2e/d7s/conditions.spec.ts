@@ -53,7 +53,7 @@ test.describe('B7S.3 Detail and list on Thursday', () => {
     await expect(detail.conditionBlock(page, 'Option at or above $3.60')).toContainText('Breached');
     await expect(detail.conditionBlock(page, 'MNO at or above 44.50')).toContainText('Reached');
     await expect(detail.conditionBlock(page, 'Option at or below $0.30')).toContainText('+$670.00');
-    await expect(detail.conditionsSummary(page).getByRole('listitem')).toHaveText(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00']);
+    await expect(detail.conditionsSummary(page).getByRole('listitem')).toHaveText(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
     await context.close();
   });
 });

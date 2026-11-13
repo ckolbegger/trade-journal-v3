@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
+import { Rational } from '../../../domain/values/index.ts';
 import { ConditionsCard } from './conditions.tsx';
 
 afterEach(cleanup);
@@ -124,7 +125,7 @@ describe('Conditions card (W5, W6)', () => {
     // Thursday 10-15: MNO 44.60, the put 3.65. A Cash-Secured Put's worst case is MNO going to zero.
     const thursday = renderCard(os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' }));
     const summary = within(thursday).getByRole('list', { name: 'Worst case and Max reward' });
-    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00']);
+    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
     // The summary follows the conditions.
     expect(thursday.querySelector('.conditions-list')!.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     cleanup();
@@ -134,6 +135,20 @@ describe('Conditions card (W5, W6)', () => {
     const lines = within(within(call).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem').map((item) => item.textContent);
     expect(lines[0]).toMatch(/^Worst case: \$[\d,.]+ · [\d.]+R if the call expires worthless$/);
     expect(lines[1]).toBe('Max reward: Unbounded above');
+  });
+
+  it('should show a bounded Max reward with its R beneath the conditions', () => {
+    // Thursday 10-15: the Cash-Secured Put's reward is bounded by its premium, and its R is the evaluation's, never computed by the card.
+    const thursday = renderCard(os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' }));
+    const summary = within(thursday).getByRole('list', { name: 'Worst case and Max reward' });
+    expect(within(summary).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Worst case: $8,270.00 · 17.23R if MNO goes to zero', 'Max reward: $730.00 · 1.52R']);
+    cleanup();
+
+    // The R comes from the evaluation: a Max reward whose R is the evaluation's own figure shows that figure.
+    const view = os2({ tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.65', underlyingMark: '44.60' });
+    const changed: OpenTradeDetail = { ...view, current: { ...view.current, evaluation: { ...view.current.evaluation, maximumIncrementalRewardInPlanR: { kind: 'Value', value: Rational.of(3n, 2n) } } } };
+    const lines = within(within(renderCard(changed)).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem').map((item) => item.textContent);
+    expect(lines[1]).toBe('Max reward: $730.00 · 1.50R');
   });
 
   it('should say beneath the conditions when their distances arrive: before Marks, on a Planned Detail and once the contract expired, and show nothing beneath a Closed Detail', () => {

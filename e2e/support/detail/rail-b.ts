@@ -20,6 +20,9 @@ export const conditionBlocks = (page: Page): Locator => conditionsCard(page).get
 export const conditionBlock = (page: Page, text: string): Locator => conditionBlocks(page).filter({ has: page.getByText(text, { exact: true }) });
 export const conditionsSummary = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Worst case and Max reward' });
 
+// Needs you (W7): the rail's card, which holds the Settlement Due panel, the alerts and the owed reflections' headings.
+export const needsYouCard = (page: Page): Locator => regionOf(page, 'Needs you');
+
 // Needs you: the Settlement Due panel.
 export const settlementDuePanel = (page: Page): Locator => regionOf(page, /^Settlement Due/);
 export const settlementDueHeading = (page: Page): Locator => settlementDuePanel(page).getByRole('heading', { name: /^Settlement Due/ });
