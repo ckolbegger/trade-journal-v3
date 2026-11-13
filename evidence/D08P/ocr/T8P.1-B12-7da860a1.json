@@ -1,0 +1,123 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 3,
+    "total_tokens": 91644,
+    "input_tokens": 88836,
+    "output_tokens": 2808,
+    "cache_read_tokens": 8320,
+    "elapsed": "2m14s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "Descendant discovery starts only after a signal, so an already-orphaned detached descendant cannot be found. For example, the command can remain running while an intermediate child forks a setsid browser and exits; by the time TERM arrives, that browser has PPID 1, is outside the command's group, and is absent from %known. The wrapper then releases the lock with the browser still alive. Preserve ownership before ancestry is lost (or use a process-containment mechanism), and add a detached-grandchild test whose intermediate parent exits before TERM.",
+      "existing_code": "  my @queue = grep { exists $pgid{$_} } ($child, keys %known);",
+      "start_line": 56,
+      "end_line": 56,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.sh",
+      "content": "%known retains exited processes and their original group IDs throughout cleanup, and these numeric IDs are signalled again at the grace deadline without identity validation. If an ID is reused during that interval, cleanup can TERM/KILL an unrelated process or group belonging to the user; reused PIDs also seed subsequent ancestry walks. Record and validate process identity (for example, start time), retire stale entries, and verify group ownership before signalling cached groups.",
+      "existing_code": "  for my $p (keys %known) { my $g = $known{$p}; kill $sig, $p; kill $sig, -$g if $g \u003e 1 \u0026\u0026 $g != $own_pgrp; }",
+      "start_line": 66,
+      "end_line": 66,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/with-browser-lock.test.sh",
+      "content": "This delay normally lets the parent finish setpgrp and restore its signal mask before TERM is sent. The child-only pause therefore tests termination before exec, but not a pending signal between fork and parent-side group creation: removing the new signal masking would still pass this case. Add deterministic parent-side synchronization inside the masked fork-to-setpgrp window, deliver TERM there, then resume and assert exit 143 and no command execution.",
+      "existing_code": "sleep 0.3\nkill -TERM \"$pe\"",
+      "start_line": 120,
+      "end_line": 121,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/with-browser-lock.sh",
+        ".claude/scripts/with-browser-lock.test.sh"
+      ]
+    }
+  ],
+  "session_id": "700efb8e-dc65-4a27-a599-1e05de91676c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "700efb8e-dc65-4a27-a599-1e05de91676c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7da860a1",
+      "resolved_base": "3751b4460f30163daa4caf77aebe586590a46ce7",
+      "resolved_head": "7da860a11f853f7822fa4119cee8b1400679238a",
+      "exact_range": "3751b4460f30163daa4caf77aebe586590a46ce7..7da860a11f853f7822fa4119cee8b1400679238a",
+      "source_artifact_sha256": "6fc12ea26129342bd0868de079184cd4e6126c8720506588361fa81f1e75d3b5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.8",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "6b9afd900fa2f5e4f8cea77d3c3392450d540ad26248316e2b8a64c4f7f994e2"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "a7dc07fc33744b8b9f53361973a2260aabbbe8314881dc5d4a10a195449b073b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8fefe96c813ccff8fb94aee1eb1cf830e37521bf2c611a7a491910f64b6cae54",
+          "path": ".claude/scripts/with-browser-lock.sh",
+          "fingerprint": "6b9afd900fa2f5e4f8cea77d3c3392450d540ad26248316e2b8a64c4f7f994e2"
+        },
+        {
+          "item_id": "976eed9be60a3375473556fef0e6c70a247e85d4b2747caf56f8e1314b9013f6",
+          "path": ".claude/scripts/with-browser-lock.test.sh",
+          "fingerprint": "a7dc07fc33744b8b9f53361973a2260aabbbe8314881dc5d4a10a195449b073b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 133541
+  }
+}

@@ -149,3 +149,29 @@ ocr: session `20e96c54-58dc-41d1-8869-f3084c12f93b`, model gpt-6.1-sol, 2 files 
 **User's decision (2026-11-13), "Batch and continue".** All the remaining lock findings are fixed in one bug task with one review, then B3 and B4. Further ocr findings on these tooling scripts keep becoming bug tasks, and the session stops again if a fifth round still leaves findings.
 - **T8P.1-B11** (the finding above). Defect in the test: a wrapper that merely exits on TERM, leaving the command running, would pass. Case: *it should leave no process of a TERM-ignoring command running, and exit 137, once the grace period has passed.*
 - **T8P.1-B12, round 4**, is the batch: B5, B6, B7, B8, B10 and B11, each case as written above, in one commit, reviewed once.
+
+### T8P.1-B12 (`7da860a1`), round 4
+
+Fixes, by case:
+1. **B5.** INT, TERM and HUP are blocked across the fork. The child resets them to default before unblocking; the parent unblocks after `setpgrp` and acts on any pending signal.
+2. **B6.** A `flock` failure other than EWOULDBLOCK or EINTR prints `cannot lock <path>: <err>` and exits 2. Staged with a FIFO.
+3. **B7.** The test runs the next caller while the killed holder's command is still alive.
+4. **B8.** Every wait in the test goes through a bounded `bwait`.
+5. **B10.** A `ps -axo pid=,ppid=,pgid=` walk at signal time, then every 0.25 s while signalled and before release, sends TERM and then KILL at the grace deadline to the group, each known descendant and each descendant's group. Release waits until none is alive.
+6. **B11.** The test checks exit 137 and no process left in the command's group.
+
+Cases 1, 2 and 5 were red against the old script. Cases 3, 4 and 6, the test defects, were red as the old test passing (or hanging) against a deliberately broken scratch script. The test file then passed 3 of 3, about 8 s each. Rows are in [tdd-log/T8P.1-B12.md](tdd-log/T8P.1-B12.md). New test-only knob: `TJ_BROWSER_LOCK_TEST_CHILD_PAUSE`, inert unless set. The task's note: descendants are tracked only from the signal on.
+
+ocr: session `700efb8e-dc65-4a27-a599-1e05de91676c`, model gpt-6.1-sol, 2 files reviewed (1 excluded, the log), 3 comments. Raw output: [ocr/T8P.1-B12-7da860a1.json](ocr/T8P.1-B12-7da860a1.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `.claude/scripts/with-browser-lock.sh:56` | Descendants are found only after a signal, so a detached descendant whose parent exited before the signal (PPID 1) is never found, and the lock is released with it running. | Valid: `snapshot()` runs only once signalled, and such a process is outside the command's group. |
+| medium | bug | `.claude/scripts/with-browser-lock.sh:66` | `%known` keeps stale PIDs and group IDs and re-signals them at the grace deadline, so a reused ID could TERM or KILL an unrelated process. | Doubtful: no identity check before re-signalling; reuse inside the grace window is a theoretical race. |
+| medium | test | `.claude/scripts/with-browser-lock.test.sh:120` | The early-TERM test sends TERM during the child's pause, after the parent has restored its mask, so removing the signal blocking would still pass. | Valid: the fork-to-`setpgrp` window isn't exercised; covering it needs a parent-side hook. |
+
+Round 5 (under the user's decision: batched, and the session stops if round 5 still leaves findings):
+- **T8P.1-B13** (finding 1). Defect: a detached descendant orphaned before the signal survives the wrapper and the lock's release. Case: *it should end a descendant that detached and lost its parent before the signal, before releasing the lock.*
+- **T8P.1-B14** (finding 2). Defect: a stale remembered ID could be signalled after reuse. Case: *it should signal only processes that are still the command's descendants.*
+- **T8P.1-B15** (finding 3). Defect in the test: the masked fork window isn't covered. Case: *it should exit 143 and run no command when the TERM arrives between the fork and the parent's `setpgrp`.*
+- **T8P.1-B16** is the batch of B13, B14 and B15.
