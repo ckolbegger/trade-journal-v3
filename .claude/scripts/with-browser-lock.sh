@@ -26,6 +26,13 @@
 # TJ_BROWSER_LOCK_TEST_PARENT_PAUSE=<seconds> holds the wrapper between the fork and its setpgrp (both with
 # INT, TERM and HUP blocked), and TJ_BROWSER_LOCK_TEST_STALE_PID=<pid> plants a remembered process that
 # is not a descendant.
+# A remembered process is the same one only if its start time and its whole command line are unchanged.
+# A scan is valid only if ps ran, exited 0 and listed the wrapper itself; after an invalid one the last
+# known members are kept and signalled, and the lock is kept. If ps stays broken for 30 s past the KILL
+# deadline the wrapper releases the lock anyway, with a warning on stderr that lists the unverified PIDs,
+# and exits non-zero. Test hooks for this: TJ_BROWSER_LOCK_TEST_PS=<path> replaces ps,
+# TJ_BROWSER_LOCK_TEST_PS_FAIL_LIMIT=<seconds> replaces the 30, TJ_BROWSER_LOCK_TEST_STALE_SAME_LSTART=1
+# (with STALE_PID) plants that process with its real start time and another command line.
 # The temp directory is the user's own (`getconf DARWIN_USER_TEMP_DIR`, symlinks resolved), not the
 # current $TMPDIR, so every process of this user finds the same lock whichever worktree or sandbox
 # it runs from. TJ_BROWSER_LOCK_DIR overrides the lock file's path (for tests of this script only).
@@ -59,40 +66,64 @@ my $token = "$$-" . int(rand(1e9)) . "-" . int(time);
 my %known;   # pid => start time of every process of the command seen so far: what tells it from a reused PID
 my %sent;    # "signal pid start" of each signal already sent, so a process gets each signal once
 my $reaped = 0;
-%known = ($ENV{TJ_BROWSER_LOCK_TEST_STALE_PID} => "stale") if ($ENV{TJ_BROWSER_LOCK_TEST_STALE_PID} // "") =~ /^\d+$/;  # tests only
+my %unverified;   # the last known members, while the latest scan is invalid
+my $plant_same = 0;   # tests only: plant the stale PID with its real start time but another command line
+if (($ENV{TJ_BROWSER_LOCK_TEST_STALE_PID} // "") =~ /^\d+$/) {  # tests only
+  if ($ENV{TJ_BROWSER_LOCK_TEST_STALE_SAME_LSTART}) { $plant_same = $ENV{TJ_BROWSER_LOCK_TEST_STALE_PID} }
+  else { %known = ($ENV{TJ_BROWSER_LOCK_TEST_STALE_PID} => "stale") }
+}
+my $psbin = $ENV{TJ_BROWSER_LOCK_TEST_PS} || "/bin/ps";   # tests only: a stand-in for ps
+my $failmax = ($ENV{TJ_BROWSER_LOCK_TEST_PS_FAIL_LIMIT} // "") =~ /^\d+(\.\d+)?$/ ? $ENV{TJ_BROWSER_LOCK_TEST_PS_FAIL_LIMIT} : 30;
 # The processes that belong to the command right now, as {pid => {pgid, start}}. A process belongs when it
 # is the command, is in the command group, carries the token, is a child of one that belongs (so one in
 # its own group or session is found), or was seen before and its start time is unchanged (so one whose
-# parent died and is now a child of PID 1 stays found). %known is rebuilt from the result, so a PID that
-# ended, even if another process uses it now, is dropped and never signalled.
+# parent died and is now a child of PID 1 stays found). "Seen before" means its start time (one-second
+# resolution) and its whole command line are both unchanged, so a PID reused by another process in the
+# same second does not pass. %known is rebuilt from a valid scan, so a PID that ended, even if another
+# process uses it now, is dropped and never signalled.
+# A scan is valid only when ps started, exited 0 and listed this wrapper itself. An invalid scan returns
+# undef and leaves %known as it was; the caller must not read it as "no member is left".
 sub scan {
-  open(my $ps, "-|", "/bin/ps", "-axwwE", "-o", "pid=,ppid=,pgid=,stat=,lstart=,command=") or return {};
+  open(my $ps, "-|", $psbin, "-axwwE", "-o", "pid=,ppid=,pgid=,stat=,lstart=,command=") or return undef;
   my (%p, %kids);
   while (<$ps>) {
     next unless /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(\w{3}\s+\w{3}\s+\d+\s+[\d:]+\s+\d{4})\s*(.*)$/s;
     my ($pid, $ppid, $pgid, $stat, $start, $rest) = ($1, $2, $3, $4, $5, $6);
     next if $stat =~ /^Z/;
-    $p{$pid} = { pgid => $pgid, start => $start, token => ($rest =~ /(?:^|\s)\QTJ_BROWSER_LOCK_TOKEN=$token\E(?:\s|$)/ ? 1 : 0) };
+    $p{$pid} = { pgid => $pgid, start => $start, id => "$start\x01$rest", token => ($rest =~ /(?:^|\s)\QTJ_BROWSER_LOCK_TOKEN=$token\E(?:\s|$)/ ? 1 : 0) };
     push @{$kids{$ppid}}, $pid;
   }
-  close $ps;
+  my $ok = close($ps) && $? == 0;
+  return undef unless $ok && exists $p{$$};
+  if ($plant_same && exists $p{$plant_same}) { $known{$plant_same} = "$p{$plant_same}{start}\x01planted"; $plant_same = 0; }
   my (%member, @queue);
   my $add = sub { my $x = shift; return if $x == $$ || $member{$x}++; push @queue, $x; };
   for my $x (keys %p) {
     $add->($x) if $p{$x}{token}
       || ($p{$x}{pgid} == $child && ($x != $child || !$reaped))
-      || (($known{$x} // "") eq $p{$x}{start});
+      || (($known{$x} // "") eq $p{$x}{id});
   }
   $add->($child) if !$reaped && exists $p{$child};
   while (defined(my $x = shift @queue)) { $add->($_) for @{$kids{$x} // []}; }
-  %known = map { $_ => $p{$_}{start} } keys %member;
+  %known = map { $_ => $p{$_}{id} } keys %member;
   return { map { $_ => $p{$_} } keys %member };
 }
 # Scan, then send the signal to each process that still belongs to the command and has not had it yet,
-# so a reused PID is never signalled. Returns how many processes belong.
+# so a reused PID is never signalled. Returns how many processes belong, or undef when the scan was
+# invalid: then the signal goes, unverified, to the last known members (and to the command while it is
+# not reaped), and the caller keeps waiting.
 sub signal_all {
   my $sig = shift;
   my $m = scan();
+  if (!defined $m) {
+    my %u = %known; delete $u{$$};
+    if ($reaped) { delete $u{$child} } else { $u{$child} //= "?" }
+    for my $x (keys %u) { kill $sig, $x unless $sent{"$sig $x $u{$x}"}++; }
+    kill $sig, -$child if !$reaped && $child != $own_pgrp;
+    %unverified = %u;
+    return undef;
+  }
+  %unverified = ();
   for my $x (keys %$m) { kill $sig, $x unless $sent{"$sig $x $m->{$x}{start}"}++; }
   kill $sig, -$child if $child != $own_pgrp && grep { $m->{$_}{pgid} == $child } keys %$m;
   return scalar keys %$m;
@@ -158,9 +189,22 @@ act_on_signal();
 if ($signalled) {
   # Release the lock only once nothing that belongs to the command is left, in its group or not:
   # TERM went out, give them until the grace period ends, then KILL what remains and wait up to 5 s more.
+  # When ps cannot be read nothing can be verified: keep the lock and keep signalling the last known
+  # members, and give up only $failmax seconds past the KILL deadline, loudly.
   my ($deadline, $stop) = ($sigtime + $grace, 0);
-  while (signal_all(time >= $deadline ? "KILL" : "TERM")) {
-    if (time >= $deadline) { $stop ||= time + 5; last if time >= $stop; }
+  while (1) {
+    my $n = signal_all(time >= $deadline ? "KILL" : "TERM");
+    if (!defined $n) {
+      if (time >= $deadline + $failmax) {
+        my $l = join(" ", sort { $a <=> $b } keys %unverified);
+        print STDERR "with-browser-lock: WARNING: ps failed for $failmax s past the KILL deadline; releasing the lock with unverified processes of the command, PIDs: $l\n";
+        $status = 1 << 8 unless $status;
+        last;
+      }
+    } else {
+      last unless $n;
+      if (time >= $deadline) { $stop ||= time + 5; last if time >= $stop; }
+    }
     select(undef, undef, undef, 0.2);
   }
 }

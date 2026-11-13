@@ -194,6 +194,60 @@ kill -TERM "$pr"
 bwait "$pr" 10 || bad "wrapper did not exit after SIGTERM (reused-PID case)"
 kill -0 "$up" 2>/dev/null || bad "a process that was not a descendant of the command was signalled after its PID was remembered"
 
+# The start time has one-second resolution, so it alone cannot tell a remembered process from an unrelated one
+# that reuses its PID within the same second. The test-only hook plants the unrelated process's PID with its
+# own start time but another command line; it must survive the TERM and the KILL after the grace period.
+/usr/bin/perl -e 'use POSIX (); POSIX::setsid(); open(my $f, ">", $ARGV[0]) or die; print $f $$; close $f; exec "sleep", "60"' "$t/v.pid" 2>/dev/null &
+disown $!
+waitfor "[[ -s $t/v.pid ]]" || bad "same-second reused-PID case did not start (setup)"
+vp=$(cat "$t/v.pid" 2>/dev/null)
+TJ_BROWSER_LOCK_TEST_STALE_PID=$vp TJ_BROWSER_LOCK_TEST_STALE_SAME_LSTART=1 TJ_BROWSER_LOCK_GRACE=1 "$lockw" sh -c "trap '' TERM; echo \$\$ >$t/w.pid; while :; do sleep 1; done" 2>/dev/null &
+pw=$!
+waitfor "[[ -s $t/w.pid ]]" || bad "same-second reused-PID case did not start (setup)"
+sleep 1.2   # the first scan has planted the PID by now, and a periodic one has run
+kill -TERM "$pw"
+bwait "$pw" 10 || bad "wrapper did not exit after SIGTERM (same-second reused-PID case)"
+kill -0 "$vp" 2>/dev/null || bad "a process with a remembered PID and start time but another command line was signalled"
+
+# When ps cannot be read, the lock is kept and the last known members are still signalled; it is released
+# only after the bounded time (the test shortens it to 3 s past the KILL deadline), with a warning that
+# lists the unverified PIDs and a non-zero exit. A stand-in ps (test-only hook) works until $t/psfail
+# exists, then fails: once by exiting 1, once by exiting 0 with nothing listed (so no wrapper PID in it).
+cat >"$t/ps-stub" <<EOF
+#!/bin/bash
+if [[ -e "$t/psfail" ]]; then
+  [[ "\$(cat $t/psfail)" == exit1 ]] && exit 1
+  exit 0
+fi
+exec /bin/ps "\$@"
+EOF
+chmod +x "$t/ps-stub"
+for mode in exit1 empty; do
+  rm -f "$t/psfail" "$t/x-$mode.pid"
+  TJ_BROWSER_LOCK_TEST_PS="$t/ps-stub" TJ_BROWSER_LOCK_TEST_PS_FAIL_LIMIT=3 TJ_BROWSER_LOCK_GRACE=1 \
+    "$lockw" sh -c "/usr/bin/perl $t/detach.pl $t/x-$mode.pid & wait" 2>"$t/x-$mode.err" &
+  px=$!
+  waitfor "[[ -s $t/x-$mode.pid ]]" || bad "ps-failure case ($mode) did not start (setup)"
+  xp=$(cat "$t/x-$mode.pid" 2>/dev/null)
+  sleep 1.5   # a periodic scan has run and found the descendant
+  echo $mode >"$t/psfail"
+  t0=$(date +%s)
+  kill -TERM "$px"
+  sleep 2.5   # past the KILL deadline (1 s), well inside the bound
+  kill -0 "$px" 2>/dev/null || bad "the wrapper released the lock while ps was failing and its bound had not passed ($mode)"
+  "$lockw" true 2>/dev/null &
+  pq6=$!
+  sleep 0.5
+  kill -0 "$pq6" 2>/dev/null || bad "a second caller got the lock while ps was failing ($mode)"
+  bwait "$px" 10 || bad "the wrapper never gave up on a permanently failing ps ($mode)"
+  wait "$px"; code=$?
+  (( code != 0 )) || bad "the exit after giving up on a failing ps was 0 ($mode)"
+  kill -0 "$xp" 2>/dev/null && bad "the last known descendant was not signalled while ps was failing ($mode)"
+  grep -q "WARNING.*$xp" "$t/x-$mode.err" || bad "no warning naming the unverified PID after a failing ps ($mode)"
+  bwait "$pq6" 5 || bad "the second caller did not get the lock after the wrapper gave up ($mode)"
+  rm -f "$t/psfail"
+done
+
 # A lock that cannot be taken for a reason other than another holder fails with a message and does not wait
 # (a FIFO opens but cannot be flocked).
 mkfifo "$t/fifo"
