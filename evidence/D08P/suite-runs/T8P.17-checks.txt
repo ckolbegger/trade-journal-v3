@@ -18,7 +18,7 @@ $ npm run lint:deps
 > node tools/lint-deps.ts
 
 
-✔ no dependency violations found (412 modules, 2011 dependencies cruised)
+✔ no dependency violations found (412 modules, 2012 dependencies cruised)
 
 lint:deps OK (src)
 EXIT 0
@@ -34,14 +34,14 @@ rendering chunks...
 computing gzip size...
 dist/index.html                   0.50 kB │ gzip:   0.30 kB
 dist/assets/index-EKQWavcp.css   15.31 kB │ gzip:   3.88 kB
-dist/assets/index-D0VkbaOr.js   730.25 kB │ gzip: 215.77 kB
+dist/assets/index-Dcm7oJPW.js   730.33 kB │ gzip: 215.77 kB
 
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 107ms
+✓ built in 121ms
 EXIT 0
 $ npm run verify:hooks
 
@@ -55,7 +55,7 @@ $ npm run verify:release
 > trade-journal-v3@0.0.0 verify:release
 > node tools/verify-release.ts
 
-OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-d2/dist: release 73113f9109cdc4dd4e3ad64b9d790ac000ead06aef33c82bf8085a6aa430cb03, 6 assets
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/.claude/worktrees/d08p-d2/dist: release 970f01d40cf383e56f6e2556fd410547d91cd5e7afa4708457aca957f3b50051, 6 assets
 EXIT 0
 $ npm run verify:capabilities
 
@@ -69,7 +69,7 @@ $ npm run verify:releases
 > trade-journal-v3@0.0.0 verify:releases
 > node tools/verify-releases.ts
 
-verify:releases OK: v1 74e62d160a478dac9e51db72753047005c797529deac49fdaf4d3b03dc85e75d, v2 51054c44df9ca81e8b0640b3d80737bee1997528e831dc4234aaa5ec2c38cd9a, v2-corrupt fails only on /assets/index-EKQWavcp.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 017365441a54b501a8c2ae4eee9a7321be9286c07062ffb16e6607622b4ce94d schema 2, d4 ecd9bbff1f81d60d3da8460b82d81b4a1899931c5ff08a3ac7546a6457232f8e schema 3, d5r2 7720af1b973860eabfa4d02143792cbd571a87dc8969412e41fe5aa708796243 schema 4, d6 4b222b987065ea90d59ca28466bcf2c52e1dbe7f821ae555505eb43f318f7acd schema 7
+verify:releases OK: v1 6b190225c53765bee521025ef7c34e412450e98849b0b9f692b72ca975b1a8e7, v2 0ed3e5b3270bc7cd427679acf0b9d398d01c995e12544cd0c872aaa4adf6fd45, v2-corrupt fails only on /assets/index-EKQWavcp.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 017365441a54b501a8c2ae4eee9a7321be9286c07062ffb16e6607622b4ce94d schema 2, d4 ecd9bbff1f81d60d3da8460b82d81b4a1899931c5ff08a3ac7546a6457232f8e schema 3, d5r2 7720af1b973860eabfa4d02143792cbd571a87dc8969412e41fe5aa708796243 schema 4, d6 70a43f7612ad2257d4e29b3fb7f98baf3ab455a37d0eb9f6683aa6d014be9abd schema 7
 EXIT 0
 $ npm run verify:no-fault-hooks
 
