@@ -44,7 +44,7 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await expect(conditionCell(page, 'Target', 'Status')).toHaveText('Awaiting the close after Mon Oct 12');
 
     // The dated line: the Position held at Monday's close with its own figures.
-    const dated = 'At Mon Oct 12 close';
+    const dated = 'At the Mon Oct 12 Marks';
     await openDrawer(page, 'Today');
     await expect(detail.datedHeading(page, dated)).toBeVisible();
     await expect(detail.datedFigure(page, dated, 'Mark')).toHaveText('$47.00');

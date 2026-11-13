@@ -25,7 +25,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await expect(valuation.getByRole('link', { name: 'Mark missing for XYZ on Mon Oct 12' })).toBeVisible();
     await expect(valuation).toContainText('Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)');
     await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
-    await expect(detail.datedHeading(page, 'At Fri Oct 9 close')).toBeVisible();
+    await expect(detail.datedHeading(page, 'At the Fri Oct 9 Marks')).toBeVisible();
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
     await openDrawer(page, 'Today');
@@ -34,7 +34,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
     await openDrawer(page, 'Today');
     await expect(detail.todayFigure(page, 'Mark')).toHaveCount(0);
-    await expect(detail.datedFigure(page, 'At Fri Oct 9 close', 'Mark')).toHaveText('$51.20');
+    await expect(detail.datedFigure(page, 'At the Fri Oct 9 Marks', 'Mark')).toHaveText('$51.20');
 
     // The Review lists Monday's Mark; entering it makes the Detail Available.
     await openReview(page);

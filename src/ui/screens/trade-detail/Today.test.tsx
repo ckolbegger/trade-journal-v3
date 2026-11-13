@@ -20,7 +20,7 @@ describe('missing or later evidence (P12, P13)', () => {
     expect(termValue(entry, 'Reward from entry')).toBe('$228.00 · 0.91R');
     expect(within(entry).queryByText(/P&L/)).toBeNull();
     // The earlier close keeps its own line, and the current P&L waits for the next close.
-    expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Current Marked Trade P&L')).toBe('+$65.00 · +0.26R');
+    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Current Marked Trade P&L')).toBe('+$65.00 · +0.26R');
     expect(termValue(screen.getByRole('region', { name: 'Valuation' }), 'Current Marked Trade P&L')).toBe('Awaiting the close after Mon Oct 12');
   });
 });

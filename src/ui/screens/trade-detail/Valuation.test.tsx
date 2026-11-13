@@ -63,13 +63,13 @@ describe('valuation', () => {
     renderView(withRealized(120n));
     const gain = await screen.findByRole('region', { name: 'Valuation' });
     expect(termValue(gain, 'Realized to date')).toBe('+$120.00');
-    expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Realized to date')).toBe('+$120.00');
+    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Realized to date')).toBe('+$120.00');
     cleanup();
 
     renderView(withRealized(-75n));
     const loss = await screen.findByRole('region', { name: 'Valuation' });
     expect(termValue(loss, 'Realized to date')).toBe('−$75.00');
-    expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Realized to date')).toBe('−$75.00');
+    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Realized to date')).toBe('−$75.00');
   });
 });
 
@@ -81,7 +81,7 @@ describe('missing or later evidence (P12, P13)', () => {
     expect(within(valuation).getByRole('link', { name: 'Mark missing for XYZ on Tue Oct 13' }).getAttribute('href')).toBe('/review?trade=trade-1&instrument=XYZ');
   });
 
-  it('should show Mark missing for XYZ on Tue Oct 13, the Stale context labelled stale, an At Mon Oct 12 close section with its own figures, and a link to the Review Marks family', async () => {
+  it('should show Mark missing for XYZ on Tue Oct 13, the Stale context labelled stale, an At the Mon Oct 12 Marks section with its own figures, and a link to the Review Marks family', async () => {
     renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext })));
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
     const link = within(valuation).getByRole('link', { name: 'Mark missing for XYZ on Tue Oct 13' });
@@ -89,7 +89,7 @@ describe('missing or later evidence (P12, P13)', () => {
     expect(within(valuation).getByText('Stale context: $51.20 from Mon Oct 12 close (stale, not used in any current figure)')).toBeTruthy();
     expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
 
-    const dated = screen.getByRole('region', { name: 'At Mon Oct 12 close' });
+    const dated = screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' });
     expect(termValue(dated, 'Mark')).toBe('$51.20');
     expect(termValue(dated, 'Open P&L')).toBe('+$100.00');
     expect(termValue(dated, 'Current Marked Trade P&L')).toBe('+$100.00 · +0.40R');

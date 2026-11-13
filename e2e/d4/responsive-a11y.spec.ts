@@ -218,7 +218,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openDrawer(page, 'Position');
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Awaiting the close after Mon Oct 12');
     await openDrawer(page, 'Today');
-    await expect(detail.datedHeading(page, 'At Mon Oct 12 close')).toBeVisible();
+    await expect(detail.datedHeading(page, 'At the Mon Oct 12 Marks')).toBeVisible();
     await expect(detail.atEntryHeading(page)).toBeVisible();
     await expect(detail.atEntryFigure(page, 'Quantity')).toHaveText('40 shares');
     await expectAccessible(page, 'Detail AwaitingClose with dated and at-entry sections');

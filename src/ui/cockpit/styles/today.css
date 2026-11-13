@@ -1,1 +1,131 @@
-/* Empty until the lane that owns it adds rules (D08P plan section 4.2); T8P.5 creates it so `index.css` never changes. */
+/* The Today drawer (T8P.16): the Marks comparison, the price tracks (A215) and the condition lines under them (A223). Colours come from the
+   app's tokens; the prototype's fixed greys and reds are mixed from them so a dark theme follows. */
+
+.cockpit-drawers .waiting {
+  padding: 0.875rem;
+  border-radius: 10px;
+  background: var(--info-ground);
+  color: var(--info-ink);
+}
+
+.cockpit-drawers table.trades .provenance {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.cockpit-drawers .grid-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.cockpit-drawers .tracks {
+  display: grid;
+  gap: 2rem;
+}
+
+.track-block h3 {
+  margin: 0 0 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.track {
+  position: relative;
+  height: 10px;
+  margin: 0 6px;
+  border-radius: 999px;
+  background: var(--neutral-ground);
+}
+
+.track .zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.track .zone.z-stop {
+  background: color-mix(in srgb, var(--stop) 40%, var(--card));
+}
+
+.track .zone.z-target {
+  background: color-mix(in srgb, var(--target) 40%, var(--card));
+}
+
+.track .mk {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.track .mk .dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.track .mk.entry .dot {
+  width: 12px;
+  height: 12px;
+  background: var(--card);
+  border: 2px solid var(--muted);
+  box-shadow: none;
+}
+
+.track .mk.earlier .dot {
+  width: 10px;
+  height: 10px;
+  background: var(--muted);
+  border: 2px solid var(--card);
+  box-shadow: none;
+}
+
+.track .mk .lab {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.track .mk.now .lab {
+  bottom: 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.track .mk.entry .lab {
+  bottom: 15px;
+  color: var(--muted);
+}
+
+.track .mk.earlier .lab {
+  top: 14px;
+  color: var(--muted);
+}
+
+.track-block .conds {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.track-block .conds li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.track-block .conds dl.figure-grid {
+  margin: 0;
+}

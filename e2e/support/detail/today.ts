@@ -1,4 +1,4 @@
-// Trade Detail reads of drawer lane D1 (Today): the Valuation's Mark and its provenance, the dated "At … close" section and "At entry".
+// Trade Detail reads of drawer lane D1 (Today): the Valuation's Mark and its provenance, the dated "At the … Marks" section (W19) and "At entry".
 // Each read goes through the current layout, scoped to its card. Callers open the Today drawer first.
 import type { Locator, Page } from '@playwright/test';
 import { figureIn, regionOf } from './scope.ts';
