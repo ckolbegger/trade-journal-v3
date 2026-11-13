@@ -696,3 +696,31 @@ The complete cumulative run on `9027c247`, by `suite-runner`, with `browser-auto
 - **T8P.9** had changed two strict expectations in `tests/integration/d7sp/trade-detail-finished.test.ts` to `days: 1`, which no row allowed. The user chose "Approve, plus a general rule".
 
 Both are plan revision 88 (section 1.5, "Shapes").
+
+## T8P.8 ReadSeries (lane `d08p-bm`)
+
+Commits on `d08p/bm`: `3d830716` (the task), `5dab1848` (lane tier: 1544 unit, 218 integration, 14 of 14 checks; `run-complete.sh`: run complete). TDD rows: [tdd-log/T8P.8.md](tdd-log/T8P.8.md).
+
+Flagged:
+- **Case 3 was a first-run pass.** Its mutation (the effective revision minus 1) failed with `AssertionError`, and the code was restored.
+- **Case 2 was coded ahead of red.** The clipping was in case 1's code, so it was reverted for a genuine red and restored. The log keeps the earlier "passed" row.
+
+Case 4's red exposed a real double scan when `series` ran before `gaps`, so `scanOf` now compares the first relevant session. The query-count proof keeps its request list.
+
+Public additions, for T8P.10 and T8P.11:
+- `ReadSeriesQuery`, `SeriesPoint` (Available, Missing or AcknowledgedUnavailable), and the `Series` query result;
+- `MarketDataReadSession.series(instrumentKey, from, to)`.
+- `MarketData.query` in `src/app/types.ts` is untouched. T8P.11 adds the facade member.
+
+### T8P.8 ocr review (`3d830716`)
+
+In the lane: session `5a764ad7-abf6-43b1-9f4f-83a6e9988529`, model gpt-6.1-sol, ocr v1.13.9. 2 files reviewed, 2 excluded, 2 comments. Raw output: [ocr/T8P.8-3d830716.json](ocr/T8P.8-3d830716.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `market-data.ts:944-945` | `series` dereferences `frame!.resolution` from `framesAt`, which is empty when the read session is on the first covered session (no previous session), so it throws a TypeError. | Valid: `frameResult` returns `Rejected` there, and `framesAt` drops it. |
+| medium | bug | `market-data.ts:942-944` | `series` awaits `scanOf` before calling `framesAt`, so the history and the final point are read in separate snapshots, against `openReadSession`'s one-snapshot rule. | Valid, narrow. |
+
+Bug tasks, run by the task's agent in the lane:
+- **T8P.8-B1.** Case: *it should give the series on the first covered session without a previous session.*
+- **T8P.8-B2.** Case: *it should read a series's history and its final point in one snapshot.*

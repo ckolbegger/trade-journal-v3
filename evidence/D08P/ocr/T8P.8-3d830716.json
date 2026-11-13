@@ -1,0 +1,127 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 234621,
+    "input_tokens": 232403,
+    "output_tokens": 2218,
+    "cache_read_tokens": 28288,
+    "elapsed": "1m44s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_find": 3,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "When the range includes historical sessions and the session's own date, awaiting `scanOf` before calling `framesAt` forces these reads into separate batches and therefore separate IndexedDB snapshots. A save committed between them can make a single ReadSeries response combine historical points from before the save with the final point from after it. Queue both reads before awaiting either (for example, with `Promise.all`) so an uncached series reads its historical and final points in the same snapshot, consistent with the read-session batching contract.",
+      "existing_code": "          const scanned = first === undefined ? [] : (await scanOf(instrumentKey, first.close)).points.filter((p) =\u003e p.tradingDate \u003e= from \u0026\u0026 p.tradingDate \u003c= end);\n          if (end \u003c day.date) return scanned;\n          const [frame] = await framesAt(context, day, [instrumentKey]);",
+      "start_line": 942,
+      "end_line": 944,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "A valid series request at the first covered session can throw here. `resolveDay` accepts that session, but `frameResult` rejects it when `previousSession(day.date)` is outside coverage, so `framesAt` returns an empty array and `frame!.resolution` dereferences undefined. A series point does not need the previous session: resolve the current date's observation directly, or propagate the coverage rejection explicitly instead of assuming a frame exists. Add a test with the context on the first covered session and a range including that date.",
+      "existing_code": "          const [frame] = await framesAt(context, day, [instrumentKey]);\n          return [...scanned, seriesPoint(day.date, day.close, frame!.resolution)];",
+      "start_line": 944,
+      "end_line": 945,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "5a764ad7-abf6-43b1-9f4f-83a6e9988529",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5a764ad7-abf6-43b1-9f4f-83a6e9988529",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3d830716",
+      "resolved_base": "12a396c05b2226214c0f559d8c8a1702ae19242e",
+      "resolved_head": "3d830716a34b4b254657a2e3e3263f651a3b43b8",
+      "exact_range": "12a396c05b2226214c0f559d8c8a1702ae19242e..3d830716a34b4b254657a2e3e3263f651a3b43b8",
+      "source_artifact_sha256": "55e84245277304e02163f3da1041a347546395c3d100d54c5a678c348abe20e6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "6b082f62d45847b5d2fcd6f303463d8d046d29e45bc2e07ac75ec5308876e8f2"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "432d35ad6ede893664bd4c4f42c23cf98c241583b66f080d49c22ec6e8fa8bd5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "6b082f62d45847b5d2fcd6f303463d8d046d29e45bc2e07ac75ec5308876e8f2"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "432d35ad6ede893664bd4c4f42c23cf98c241583b66f080d49c22ec6e8fa8bd5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b57daecbc340bb2f04dd74fb61de1261735730ee82dc1a41666e73d2cd878d20",
+          "path": "evidence/D08P/tdd-log/T8P.8.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "cebc4e57f51469e8b3f54198fd5c82c8ce03505b9cfb7cb6445698d314c0f6c5",
+          "path": "src/modules/market-data/market-data.test.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 103677
+  }
+}
