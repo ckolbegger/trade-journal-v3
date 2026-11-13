@@ -2,6 +2,12 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 91: the commit tagged `claude-opus-5.5-plan-r91` (revision 90, no decision). T8P.16's code review found that the before-Marks words are false for a Trade entered after an earlier session's close (for example on Friday after the close, viewed on Saturday): "opened today" and "once today's session ends". The words now always name dates, using revision 90's `firstMarksDue` and the opening Position Change's date in the Workspace zone:
+  - **W3:** before any Marks, "—" and "Trade P&L once the Mon Oct 12 session ends".
+  - **W7:** before Marks, "First Marks are due once the Mon Oct 12 session ends."
+  - **W8:** before Marks, "No Marks yet. This Trade opened Fri Oct 9 at 4:30 pm. Its first Marks, and every figure that needs them, are due once the Mon Oct 12 session ends."
+
+  T8P.15's case title takes the W7 words, and T8P.15 waits for T8P.28 so it can read the field. T8P.29 changes the Today drawer's and P&L card's words, and retitles T8P.13's case 3 to the W3 words. Rejected: "today" when true and dates otherwise; dropping the opening time. No acceptance scenario changes status, no durable compatibility changes, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-13 ("Always name dates").
 - Revision 90: the commit tagged `claude-opus-5.5-plan-r90` (revision 89, no decision). Two user directions during D08P's wave 1 become three tasks in the breakdown.
   - **"No Marks yet" is stated, not inferred.** T8P.14's code review found the Conditions card inferring "before the first Marks" from its conditions all awaiting the close. That also matches a Trade whose shares were added after an earlier Mark. The Today drawer (T8P.16) and the P&L card (T8P.13) infer the same state with their own rules.
     - **T8P.28 (lane BV, after T8P.9, before T8P.10):** Trade Views adds `firstMarksDue?: string` to the Open Detail's current evaluation: the trading date whose close brings the Trade's first Marks, present only while no session's Marks have yet valued it. It carries the date because T8P.16's review found that "opened today" is false for a Trade entered after an earlier session's close.

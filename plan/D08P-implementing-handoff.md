@@ -36,7 +36,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (the deliverable branch every lane merges into) |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `4175` (D08P runs no benchmark) |
-| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r88` (revision 85 adds T8P.27; revision 86 tightens its test pairing; revision 87 re-anchors two layout checks; revision 88 allows the additive `nearest` and `days` in strict checks; revision 89 adds Max reward's R); `claude-opus-5.5-plan-r90` (revision 90 adds T8P.28 to T8P.30) |
+| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r88` (revision 85 adds T8P.27; revision 86 tightens its test pairing; revision 87 re-anchors two layout checks; revision 88 allows the additive `nearest` and `days` in strict checks; revision 89 adds Max reward's R); `claude-opus-5.5-plan-r90` (revision 90 adds T8P.28 to T8P.30); `claude-opus-5.5-plan-r91` (revision 91: the before-Marks words name dates) |
 | Code D08P builds on | tag `claude-opus-5.5-d7s` (`2240fe1c`) |
 | D08P starting point | tag `claude-opus-5.5-pre-d08p`: the same commit as `plan-r84`, at the user's direction. `claude-opus-5.5-pre-d8p` (`5ae23f94`) marks where the planning session started. |
 
@@ -108,7 +108,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected passages, scenarios and durable compatibility.
 3. Ask for approval.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r91, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27; revision 86 tightened its test pairing; revision 87 re-anchored two `ui-alignment` checks to the cockpit layout; revision 88 lets strict checks gain the additive `nearest` and `days`; revision 89 gives a bounded Max reward its R, in T8P.7 and T8P.15; revision 90 adds T8P.28 to T8P.30, "no Marks yet" stated by Trade Views and read by three components, and absence checks that prove absence.) Editing the Progress section alone is not a revision.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r92, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27; revision 86 tightened its test pairing; revision 87 re-anchored two `ui-alignment` checks to the cockpit layout; revision 88 lets strict checks gain the additive `nearest` and `days`; revision 89 gives a bounded Max reward its R, in T8P.7 and T8P.15; revision 90 adds T8P.28 to T8P.30, "no Marks yet" stated by Trade Views and read by three components, and absence checks that prove absence; revision 91 makes the before-Marks words in W3, W7 and W8 name dates.) Editing the Progress section alone is not a revision.
 
 ## 3. D08P specifics
 
@@ -310,7 +310,7 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - **For T8P.22:** the `d7s/plan` and `d7s/entry-beyond-stop` reads go through `summaryValue` (`rail-a.ts`) and must move with the Summary card. Retire the three legacy blocks and their CSS (`.summary-card`, `.summary-text`), and move any expectation still reading them.
 - **For T8P.28 to T8P.30 (revision 90):**
   - T8P.28 is BV's next task after T8P.9 merges, and a fresh agent. It must merge before T8P.10 starts, since both touch `src/coordinators/trade-views/`.
-  - T8P.29 also owns T8P.16-B2's wording fix, once the user has chosen the words: Today's "opened today" and the P&L card's "once today's session ends" are false for a Trade entered after an earlier session's close.
+  - T8P.29 also carries T8P.16-B2's wording fix, with the words the user chose in revision 91 (always name dates). T8P.15 reads `firstMarksDue` directly for W7, so it waits for T8P.28.
   - T8P.30's scope list comes from a grep of absence checks in Trade Detail's tests and specs, not from memory. `Cockpit.test.tsx:41-42`, `Banner.test.tsx:133` and `Result.test.tsx:51` are the known cases.
   - Every brief and bug-task message carries the absence rule from now on.
 - **For T8P.27:** T8P.5 re-exports the old `src/ui/screens/trade-detail/` sections behind the cockpit paths, and each wave-1 lane replaces what a path renders without deleting the old file. Find the orphans from `src/main.tsx`'s import graph, not by name. Some old pieces live on inside the new drawers (for example the executions disclosure and the debt forms).
