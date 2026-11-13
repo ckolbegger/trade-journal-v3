@@ -631,3 +631,33 @@ These are role queries, which skip hidden panels. Carried to the final report.
 The work is saved in the session scratchpad's `b2/`.
 
 **The user's decision (2026-11-13), "Keep the intent, re-anchor".** Plan revision 87: both checks keep their meaning and measure against their new container. B2 resumes with its layout and those two changes.
+
+### T8P.5-B2 (`6a9f29e8` after the rebase), round 2 ocr, and the merge
+
+**T8P.5-B2.** The prototype's grid is on `.trade-detail`: a `320px minmax(0,1fr)` grid with a 16 px gap, the `.integrity` banner across both columns, and one column at 860 px and below. The new spec `e2e/d2/cockpit-layout.spec.ts` went red with "rail right edge, wide", received 1214, then green.
+
+Revision 87's two re-anchored checks, each red on the old anchor and green on the new, at tolerance 1:
+- **T2.60-B4.** The icon is measured against its title row: the h1's parent, minus padding. It was off by 608 before; now 0. Other screens keep the page column.
+- **T2.64.** The Fulfillment value is compared with the visible drawer's `dd`s above it, with a non-empty guard: 1123 against 1123, where before it was 1123 against 585. The Journal's `dl.answers` prose is excluded, since it isn't a value column, as the old Summary-only anchor implied.
+
+Runs (`833ad19a`):
+- after `build:releases`, the lane tier: 1540 unit, 218 integration, 14 of 14 checks;
+- browser-1 128 passed, browser-2 74 passed;
+- `run-complete.sh`: run complete.
+
+**Round 2 ocr on `9ac7cb06..7e93c1f6`.**
+- In place: session `c99f8b58-f309-4892-8ca0-3a6153df5423`, 3 files reviewed, 4 excluded (tests and specs), 0 comments.
+- Relocated (the three test files under `src/itg/d08p/`, scratch commits `93a6f0e4` and `1fa703cd`): session `7134266b-546d-4295-add9-35fee7b9960c`, 6 files reviewed, 0 comments.
+- Model gpt-6.1-sol. **No findings.** Raw output: [ocr/T8P.5-B-9ac7cb06..7e93c1f6.json](ocr/T8P.5-B-9ac7cb06..7e93c1f6.json) and [-relocated](ocr/T8P.5-B-9ac7cb06..7e93c1f6-relocated.json).
+
+The reviewer's notes (not findings, carried to the final report):
+- `Cockpit.test.tsx`:~38's comment "Only the selected drawer is mounted" is stale. Its `queryByRole … toBeNull` checks now test that a hidden drawer isn't visible, which is still valid.
+- No sticky rail, unlike the prototype's `.c-rail`.
+- Between about 960 and 1100 px, the app's sidebar, the rail and the drawers share the width.
+
+**Merge.** `d08p/t8p5` was rebased onto `claude-opus-5.5` (`b6fa7932`) with no conflict. The rebase brought in only plan and evidence commits, so the lane tier wasn't rerun. `claude-opus-5.5` was fast-forwarded to `833ad19a`, and the lane worktree and branch were removed.
+
+Rebased hashes:
+- `f0c51e60` (shell), `0577e92d` (e2e Valuation reads), `aa2c1b96` (runs);
+- B1 `74ef50ce` and `002a78e9`; B3 `e45e6363`; runs `2e61898b`;
+- B2 `6a9f29e8`; runs `833ad19a`.

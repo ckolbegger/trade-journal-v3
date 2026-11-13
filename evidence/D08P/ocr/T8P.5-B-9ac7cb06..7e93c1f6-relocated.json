@@ -1,0 +1,209 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 108296,
+    "input_tokens": 106587,
+    "output_tokens": 1709,
+    "cache_read_tokens": 8320,
+    "elapsed": "1m1s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 16
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Cockpit layout, shell styling, and trade-detail integration",
+      "files": [
+        "e2e/support/detail/index.ts",
+        "src/itg/d08p/cockpit-layout.ts",
+        "src/itg/d08p/cockpit-shell.tsx",
+        "src/itg/d08p/ui-alignment.ts",
+        "src/ui/cockpit/styles/shell.css",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "7134266b-546d-4295-add9-35fee7b9960c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7134266b-546d-4295-add9-35fee7b9960c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "93a6f0e484ac7b7503310989e924cbbaaf8f27f3",
+      "requested_head": "HEAD",
+      "resolved_base": "93a6f0e484ac7b7503310989e924cbbaaf8f27f3",
+      "resolved_head": "1fa703cdb350bb30a41cb697c3023dd11d85328d",
+      "exact_range": "93a6f0e484ac7b7503310989e924cbbaaf8f27f3..1fa703cdb350bb30a41cb697c3023dd11d85328d",
+      "source_artifact_sha256": "d18d007a2789a4457bdb024cd933462d65bc30b769682db1f7ca586421fa2eb4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ec37c87f895748c94ac00e2012ca70b1715cb5d38562ddc60224b5f11400646",
+          "path": "src/ui/cockpit/styles/shell.css",
+          "fingerprint": "5453f4d5b46ac5bc69a864931112121faa18a0925ffd063282ca639c8de228f8"
+        },
+        {
+          "item_id": "181e52a2df3ba4b1368e9d37b1773dea7a1873e77633b898a3903c3f6f17b58f",
+          "path": "src/itg/d08p/cockpit-shell.tsx",
+          "fingerprint": "ef1526500790459d79d9e234fecaa772907cdbec7a45e098ae608a66189447ed"
+        },
+        {
+          "item_id": "2e90b578cadaa241857bf12d217fcd05aabb3172fa7f52b66345c73d08dbf2b4",
+          "path": "src/itg/d08p/ui-alignment.ts",
+          "fingerprint": "9b15e64c4cdf8e034e787844577e01bc26b4a151284162e529018e1a79d6db27"
+        },
+        {
+          "item_id": "52fc9e0f740af4668e49bfd2e1199ec69a0393f16df133159ee993f5599d280c",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "319e829b35a934da7c5444ce41ff565394fb1decbeb4b5ddb6fc5f9cbe744e9a"
+        },
+        {
+          "item_id": "a4d27b504f360c08b3b13fc3f247db71f044ec9af655592c8a97deaba288a0e1",
+          "path": "src/itg/d08p/cockpit-layout.ts",
+          "fingerprint": "43a1d2b8356fd19e30cc7259d88a3d2a4768931dadf9bf90ebc29c7554c9c6dd"
+        },
+        {
+          "item_id": "c667516d71dca0be18adf51e8841f44d73de03061d92ffd75265d8939e1e34f3",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "c360467ef1a1f78481deb4980962bfff46ec363b1e0d218ccf9c6566ccba6792"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ec37c87f895748c94ac00e2012ca70b1715cb5d38562ddc60224b5f11400646",
+          "path": "src/ui/cockpit/styles/shell.css",
+          "fingerprint": "5453f4d5b46ac5bc69a864931112121faa18a0925ffd063282ca639c8de228f8"
+        },
+        {
+          "item_id": "181e52a2df3ba4b1368e9d37b1773dea7a1873e77633b898a3903c3f6f17b58f",
+          "path": "src/itg/d08p/cockpit-shell.tsx",
+          "fingerprint": "ef1526500790459d79d9e234fecaa772907cdbec7a45e098ae608a66189447ed"
+        },
+        {
+          "item_id": "2e90b578cadaa241857bf12d217fcd05aabb3172fa7f52b66345c73d08dbf2b4",
+          "path": "src/itg/d08p/ui-alignment.ts",
+          "fingerprint": "9b15e64c4cdf8e034e787844577e01bc26b4a151284162e529018e1a79d6db27"
+        },
+        {
+          "item_id": "52fc9e0f740af4668e49bfd2e1199ec69a0393f16df133159ee993f5599d280c",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "319e829b35a934da7c5444ce41ff565394fb1decbeb4b5ddb6fc5f9cbe744e9a"
+        },
+        {
+          "item_id": "a4d27b504f360c08b3b13fc3f247db71f044ec9af655592c8a97deaba288a0e1",
+          "path": "src/itg/d08p/cockpit-layout.ts",
+          "fingerprint": "43a1d2b8356fd19e30cc7259d88a3d2a4768931dadf9bf90ebc29c7554c9c6dd"
+        },
+        {
+          "item_id": "c667516d71dca0be18adf51e8841f44d73de03061d92ffd75265d8939e1e34f3",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "c360467ef1a1f78481deb4980962bfff46ec363b1e0d218ccf9c6566ccba6792"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "04ca9b57b64d5af92e4124c690f45c3ba419740511993d07b45ef3967f78c03d",
+          "path": "evidence/D08P/suite-runs/T8P.5-B2-browser-1.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "1611c1423e3f3e141ee6f7871458d39b52bb7ddf8272e1b4c291a9e0a1d76330",
+          "path": "evidence/D08P/suite-runs/T8P.5-B-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "1d279cb2cf20c9a857801c2bc011454848af89c2708708871eb923891e2d5d34",
+          "path": "evidence/D08P/suite-runs/T8P.5-B2-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "3111d2b0e632cb3a4dde53891a2f41d35f4242ce6e28eb9d1751949cee335acf",
+          "path": "evidence/D08P/suite-runs/T8P.5-B2-unit.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "37ee81c5c04b625f33cd279a053206149cf916d5d43aa8a74f50d962b37a47a5",
+          "path": "evidence/D08P/suite-runs/T8P.5-B-browser-2.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "3c8f7422cd785f17dc0f49db9f916ba0e81a608715e5a1aad51f06122c45e1b1",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3cd3336c1fc5ce3dc519fbfa72e68d8309cc60a67a6a21ad0b35d3cc1deaaca5",
+          "path": "evidence/D08P/suite-runs/T8P.5-B2-browser-2.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "4ac5821fb94aa8770f13159143027de3617102551efc035562f3c0e65e3a6863",
+          "path": "e2e/d2/cockpit-layout.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "560d3f561b5e89ace111d797a76c452683acada891280637faa9eca3fbf85160",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "8d059d09f56178d3219583b2aec746d38d4e13931afdb27c1899f9928c81bf3c",
+          "path": "evidence/D08P/suite-runs/T8P.5-B-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "a252773f0d6929c0fd7e9f48b7175d082a7d512bf72295a9c2dd69f260949974",
+          "path": "evidence/D08P/suite-runs/T8P.5-B2-integration.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "ad21d36e30372b5771bf8a939572dda8d94c387cd3a27438fe9addf956276c83",
+          "path": "evidence/D08P/suite-runs/T8P.5-B-checks.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "b85500a63ca14901fe449643165d309a637b971028552781226e8255b72294c7",
+          "path": "evidence/D08P/suite-runs/T8P.5-B-browser-1.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "d29e07869807830f0ebcb8c70efc1ecbf836de3279981487dac83de215e5d47b",
+          "path": "evidence/D08P/tdd-log/T8P.5-B.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 61051
+  }
+}
