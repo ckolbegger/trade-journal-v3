@@ -18,6 +18,7 @@ async function deferredThenMondayReview(profile: Parameters<typeof launchAt>[0])
   await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
   await expect(page.getByText('Reflection owed')).toBeVisible();
   await backToTrade(page);
+  await openDrawer(page, 'Journal');
   await expect(detail.reflectionOwed(page)).toBeVisible();
 
   // Monday's Review shows the reflection in XYZ's card as due in the next Review and reads Complete without it.

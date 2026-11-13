@@ -1,17 +1,19 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../../tests/support/facade-double.ts';
 import { execution, openDetailOf, PC1, PC2, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionPlannedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { THURSDAY, renderDetail, renderView, termValue, useFixedClock } from './test-support.ts';
+import { THURSDAY, openDrawer, renderDetail, renderView, termValue, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
 describe('Trade Detail', () => {
   it('should show the Plan, Planned Leg, Stop, Target, Plan Baseline, 1R, the "Planned" lifecycle as text (not only colour), and the Plan Reflection with its snapshot prompt labels', async () => {
+    const user = userEvent.setup();
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
     renderDetail(facade);
@@ -30,6 +32,7 @@ describe('Trade Detail', () => {
     expect(figure('1R (original risk)')).toBe('$250.00');
     expect(figure('Original reward')).toBe('$600.00');
     expect(figure('Reward : risk')).toBe('2.4');
+    await openDrawer(user, 'Journal');
     const reflection = screen.getByRole('region', { name: 'Plan Reflection' });
     expect(within(reflection).getByText('Why this trade, why now?')).toBeTruthy();
     expect(within(reflection).getByText('Breakout above the 50-day.')).toBeTruthy();
@@ -39,7 +42,9 @@ describe('Trade Detail', () => {
 
 describe('Open Trade Detail', () => {
   it('should show Entry Quality figures with units once resolved, and Entry not yet resolved: 60 of 100 entered before', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1]));
+    await openDrawer(user, 'Plan and Risk');
     const pending = await screen.findByRole('region', {
       name: 'Entry Quality',
     });
@@ -48,6 +53,7 @@ describe('Open Trade Detail', () => {
     cleanup();
 
     renderView(openDetailOf([PC1, PC2]));
+    await openDrawer(user, 'Plan and Risk');
     const quality = await screen.findByRole('region', {
       name: 'Entry Quality',
     });
@@ -64,6 +70,7 @@ describe('Open Trade Detail', () => {
     // An entry at or below the Stop: the actual ratio is Not applicable, never a number.
     const belowStop = positionChange('pc-9', 1, [execution('ex-9', '2026-10-12T14:00:00Z', 2, '100', '47.00', '1.00')]);
     renderView(openDetailOf([belowStop]));
+    await openDrawer(user, 'Plan and Risk');
     const flagged = await screen.findByRole('region', {
       name: 'Entry Quality',
     });
@@ -73,7 +80,9 @@ describe('Open Trade Detail', () => {
 
 describe('R lines', () => {
   async function detailEntryQuality() {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
+    await openDrawer(user, 'Plan and Risk');
     return screen.findByRole('region', { name: 'Entry Quality' });
   }
   const valueOf = (region: HTMLElement, term: string) => within(region).getByText(term, { selector: 'dt' }).nextElementSibling as HTMLElement;
@@ -106,7 +115,9 @@ describe('R lines', () => {
 describe('option Trade Detail triggers (convention C3)', () => {
   useFixedClock();
   it('should show an option Plans Stop and Target as Underlying prices without a dollar sign in the Plan and Summary cards', async () => {
+    const user = userEvent.setup();
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    await openDrawer(user, 'Plan and Risk');
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
     for (const card of ['Plan', 'Summary']) {
       const region = screen.getByRole('region', { name: card });

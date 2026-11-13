@@ -11,6 +11,7 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
 
     await setClock(context, page, TUESDAY_1230);
     await openTradeFromOpenList(page);
+    await openDrawer(page, 'Journal');
     await expect(detail.reflectionOwed(page)).toBeVisible();
     await expect(detail.dueNote(page, 'Due in the Review after next', true)).toBeVisible();
     await detail.reflectNowButton(page).click();

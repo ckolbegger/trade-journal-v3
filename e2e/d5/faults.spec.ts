@@ -1,6 +1,6 @@
 import {
   actionFormOf, AT_10, completion, confirmReference, debtFormOf, debtsOf, deferEntry, detail, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
-  openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
+  openDrawer, openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -43,6 +43,7 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     // Detail shows the Debt as owed, with no Reflect now or Decline.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await openTradeFromOpenList(page);
+    await openDrawer(page, 'Journal');
     await expect(detail.reflectionOwed(page)).toBeVisible();
     await expect(detail.reflectNowButton(page)).toHaveCount(0);
     await expect(detail.declineButton(page)).toHaveCount(0);

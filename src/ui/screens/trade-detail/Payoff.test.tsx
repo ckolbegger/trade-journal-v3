@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, NavigationType, Route, Router, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../../tests/support/facade-double.ts';
@@ -9,12 +10,13 @@ import { OC_PC1, OC_PC2, OC_X1, OS_S1 } from '../../../../tests/support/option-t
 import { RuntimeContext } from '../../runtime.tsx';
 import { TradeDetail } from '../TradeDetail.tsx';
 import { handOffConfirmed } from '../confirmed-handoff.ts';
-import { THURSDAY, renderView, useFixedClock } from './test-support.ts';
+import { THURSDAY, openDrawer, renderView, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
 describe('Trade Detail of a just-confirmed Plan after a reload', () => {
   it('should render the confirmed Plan Detail after a reload or back navigation without throwing, with its Planned payoff', async () => {
+    const user = userEvent.setup();
     const facade = facadeDouble();
     // The confirmed option Plan; the read after the reload carries its Planned payoff.
     const confirmed = optionPlannedDetail('O-C');
@@ -34,6 +36,7 @@ describe('Trade Detail of a just-confirmed Plan after a reload', () => {
     const baseline = screen.getByRole('region', { name: 'Plan Baseline' });
     expect(within(baseline).getByText('1R (original risk)', { selector: 'dt' }).nextElementSibling?.textContent).toBe('$400.00');
     // The Planned payoff comes from the read, since the cloned state is not used (T7.23).
+    await openDrawer(user, 'Payoff');
     const payoff = screen.getByRole('region', { name: 'Planned Expiration Payoff' });
     expect(within(payoff).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
   });
@@ -41,6 +44,7 @@ describe('Trade Detail of a just-confirmed Plan after a reload', () => {
 
 describe('Trade Detail of a Plan just confirmed in this session', () => {
   it('should render the handed-over confirmed Plan Detail without a read, once, with its Planned payoff', async () => {
+    const user = userEvent.setup();
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: optionPlannedDetail('O-C'), binding: {} } as never);
     handOffConfirmed(optionPlannedDetail('O-C'));
@@ -57,6 +61,7 @@ describe('Trade Detail of a Plan just confirmed in this session', () => {
     mount();
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
+    await openDrawer(user, 'Payoff');
     expect(within(screen.getByRole('region', { name: 'Planned Expiration Payoff' })).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
     // Used once: a later visit to the same Trade takes the normal read.
     cleanup();
@@ -69,7 +74,9 @@ describe('Trade Detail of a Plan just confirmed in this session', () => {
 describe('option Trade Detail payoff sections (A119, A122)', () => {
   useFixedClock();
   it('should show the Planned and Current payoff sections apart from the Valuation, with the value at expiration at the latest close beside the Current chart', async () => {
+    const user = userEvent.setup();
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    await openDrawer(user, 'Payoff');
     const planned = await screen.findByRole('region', { name: 'Planned Expiration Payoff' });
     expect(within(planned).getByRole('img', { name: 'Planned payoff at expiration by XYZ price' })).toBeTruthy();
 
@@ -79,6 +86,7 @@ describe('option Trade Detail payoff sections (A119, A122)', () => {
     expect(within(current).getByText('If XYZ is at 52.00 at expiration: −$101.95')).toBeTruthy();
 
     // The expiration views are their own sections: no Mark-to-Market figure repeats them.
+    await openDrawer(user, 'Today');
     expect(within(screen.getByRole('region', { name: 'Valuation' })).queryByText(/at expiration/)).toBeNull();
   });
 });
@@ -88,13 +96,16 @@ describe('option Trade Detail value at expiration without a number (row 23.11)',
   const termIn = (term: string) => screen.getByText(term, { selector: 'dt' }).nextElementSibling?.textContent;
 
   it('should word the value at expiration at the latest close by the module when the Underlying Mark is missing or the contract is past its settlement', async () => {
+    const user = userEvent.setup();
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { ...THURSDAY, underlyingMark: undefined }));
+    await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
     expect(termIn("Value at expiration at XYZ's latest close")).toBe('Mark missing: XYZ, Thu Nov 19');
     cleanup();
 
     // The Monday after expiration, with no Mark for the expired contract.
     renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', underlyingMark: '46.00' }));
+    await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'MNO', level: 1 });
     expect(termIn("Value at expiration at MNO's latest close")).toBe('Settlement Due: MNO 20 Nov 2026 45 Put');
   });
@@ -103,7 +114,9 @@ describe('option Trade Detail value at expiration without a number (row 23.11)',
 describe('Long Stock Trade Detail payoff sections (K1)', () => {
   useFixedClock();
   it('should show both payoff sections of a Long Stock Detail as Not applicable no option expiration', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
+    await openDrawer(user, 'Payoff');
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
     for (const heading of ['Planned Expiration Payoff', 'Current Expiration Payoff']) {
       const section = screen.getByRole('region', { name: heading });

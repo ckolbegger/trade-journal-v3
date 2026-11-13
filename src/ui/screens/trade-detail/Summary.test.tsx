@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../../tests/support/facade-double.ts';
 import { incoherentDetailOf, openDetailOf, PC1, PC2, PC3, pc3Excess } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_ES, OS_S1, osChange } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { THURSDAY, renderDetail, renderView, termValue, useFixedClock } from './test-support.ts';
+import { THURSDAY, openDrawer, renderDetail, renderView, termValue, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
@@ -109,17 +110,20 @@ describe('deviations', () => {
 describe('option Trade Detail (A119)', () => {
   useFixedClock();
   it('should show the contract label, Exercise Intent and the Trade Summary on an open option Trade, with its contracts in the Position and the expiration line', async () => {
+    const user = userEvent.setup();
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
     const summary = screen.getByRole('region', { name: 'Summary' });
     expect(summary.querySelector('.summary-text')?.textContent).toBe('Long 1 Nov 20 $55 Call');
     expect(termValue(summary, 'Quantity')).toBe('1 of 2 contracts');
 
+    await openDrawer(user, 'Plan and Risk');
     const plan = screen.getByRole('region', { name: 'Plan' });
     expect(termValue(plan, 'Contract')).toBe('XYZ 20 Nov 2026 55 Call');
     expect(termValue(plan, 'Leg')).toBe('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
     expect(termValue(plan, 'Exercise Intent')).toBe('Not authorized in advance');
 
+    await openDrawer(user, 'Position');
     const position = screen.getByRole('region', { name: 'Position' });
     expect(termValue(position, 'Position')).toBe('Long 1 contract of XYZ 20 Nov 2026 55 Call');
     expect(screen.getByText('Expires Fri 20 Nov 2026')).toBeTruthy();

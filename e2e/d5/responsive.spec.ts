@@ -66,6 +66,7 @@ test.describe('B5.12 Responsive and accessible', () => {
     await openTradeFromOpenList(page);
     await deferEntry(page, [at('2026-10-13T10:00')]);
     await backToTrade(page);
+    await openDrawer(page, 'Journal');
     await expect(detail.owedItem(page, '2026-10-13 10:00')).toContainText('Due in the Review after next');
 
     // Keyboard only: reflect on the 10:30 Position Change, answer it, and press Answer.

@@ -47,6 +47,7 @@ test.describe('B6.9 Recovery Only (faults build)', () => {
     await expect(detail.resultValue(page, 'Close Reason')).toHaveText('Target Reached');
     await openDrawer(page, 'Position');
     await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(2);
+    await openDrawer(page, 'Journal');
     await expect(detail.closeReviewOwedHeading(page)).toBeVisible();
     await expect(detail.reflectionOwedExact(page)).toBeVisible();
     await expect(detail.reflectNowButton(page)).toHaveCount(0);

@@ -1,0 +1,4 @@
+/* The cockpit shell's own rules (T8P.5), owned by no wave-1 lane: the drawer tab list wraps, so six tabs never widen a narrow page. */
+.cockpit-drawers .tabs {
+  flex-wrap: wrap;
+}

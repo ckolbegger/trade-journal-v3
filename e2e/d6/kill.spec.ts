@@ -45,6 +45,7 @@ test.describe('B6.7 Kill after commit', () => {
       await openDrawer(page, 'Position');
       expect(await detail.lotMatches(page).locator('tbody').innerText()).toBe(lotMatchesBefore);
       // Both reflections are answered: nothing is owed.
+      await openDrawer(page, 'Journal');
       await expect(detail.reflectionOwed(page)).toHaveCount(0);
       await expect(detail.closeReviewOwed(page)).toHaveCount(0);
 

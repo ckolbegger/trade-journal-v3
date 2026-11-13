@@ -11,13 +11,15 @@ import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { DueClassification, NarrativeItem, TradeDetailDebt } from '../../../app/types.ts';
 import { RuntimeContext } from '../../runtime.tsx';
 import { TradeDetail } from '../TradeDetail.tsx';
-import { renderView, termValue } from './test-support.ts';
+import { openDrawer, renderView, termValue } from './test-support.ts';
 
 afterEach(cleanup);
 
 describe('badge meanings', () => {
   it('should give Reflection declined the warning tone', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC3], { journal: [pc2Decline] }));
+    await openDrawer(user, 'Journal');
     expect(
       (await within(await screen.findByRole('region', { name: /^Journal/ })).findByText('Reflection declined')).getAttribute('data-tone'),
     ).toBe('warning');
@@ -28,7 +30,9 @@ describe('Journal entries', () => {
   const planEntry: NarrativeItem = { kind: 'Entry', ...plannedDetail.journal[0] };
 
   async function journalItems(journal: NarrativeItem[]) {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal }));
+    await openDrawer(user, 'Journal');
     const region = await screen.findByRole('region', { name: /^Journal/ });
     return { region, items: within(region).getAllByRole('listitem') };
   }
@@ -73,14 +77,18 @@ describe('Journal entries', () => {
   });
 
   it('should label the region with the number of items', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal: [planEntry, pc1Reflection, pc2Decline] }));
+    await openDrawer(user, 'Journal');
     expect(await screen.findByRole('region', { name: 'Journal (3)' })).toBeTruthy();
   });
 });
 
 describe('journal prose', () => {
   async function journalItem() {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal: [pc1Reflection] }));
+    await openDrawer(user, 'Journal');
     const region = await screen.findByRole('region', { name: /^Journal/ });
     return within(region).getAllByRole('listitem')[0]!;
   }
@@ -122,7 +130,9 @@ describe('Actions', () => {
   });
 
   it('should list Daily Trade Review Actions in the narrative with Review Date, Action, Intent, and an Edited indicator', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal: [action('a-1', '2026-10-12', 'Hold', undefined), action('a-2', '2026-10-13', 'Exit', 'Take the gain.', true)] }));
+    await openDrawer(user, 'Journal');
     const journal = await screen.findByRole('region', { name: 'Journal (2)' });
     const [hold, exit] = within(journal).getAllByRole('listitem');
     expect(termValue(hold!, 'Review Date')).toBe('Mon Oct 12');
@@ -158,7 +168,9 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       owedDebt('debt-2', 'pc-2', '2026-10-12T15:00:00Z', 'DueInNextReview'),
       owedDebt('debt-3', 'pc-3', '2026-10-12T16:00:00Z', 'DueInReviewAfterNext'),
     ];
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal }));
+    await openDrawer(user, 'Journal');
     const region = await screen.findByRole('region', { name: 'Journal (3)' });
     const items = within(region).getAllByRole('listitem');
     expect(items.map((item) => within(item).getByText('Reflection owed').tagName)).toEqual(['SPAN', 'SPAN', 'SPAN']);
@@ -177,6 +189,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     cleanup();
 
     renderView(openDetailOf([PC1, PC2], { journal }), false);
+    await openDrawer(user, 'Journal');
     const readOnly = await screen.findByRole('region', { name: 'Journal (3)' });
     expect(within(readOnly).getAllByText('Reflection owed')).toHaveLength(3);
     expect(within(readOnly).queryByRole('button')).toBeNull();
@@ -191,7 +204,9 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       authoredTime: '2026-10-12T17:15:00Z',
       declinedLater: { debtId: 'debt-2', ...settled },
     } as NarrativeItem;
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2], { journal: [answered, declined] }));
+    await openDrawer(user, 'Journal');
     const region = await screen.findByRole('region', { name: 'Journal (2)' });
     const [first, second] = within(region).getAllByRole('listitem') as [HTMLElement, HTMLElement];
     expect(within(first).getByText('Deferred, answered', { selector: '.badge' })).toBeTruthy();
@@ -247,6 +262,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
     await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
 
     const form = await screen.findByRole('form', { name: 'Reflection' });
@@ -298,6 +314,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
         </RuntimeContext.Provider>,
       );
       const user = userEvent.setup();
+      await openDrawer(user, 'Journal');
       await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
       const form = await screen.findByRole('form', { name: 'Reflection' });
       if (button === 'Answer') {
@@ -318,7 +335,9 @@ describe('Debt on Trade Detail (A69, P17)', () => {
 
   it('should show an unclassified Outstanding Debt as "Reflection owed" with no due text, with Reflect now and Decline still offered while Writable', async () => {
     const journal = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z')];
+    const user = userEvent.setup();
     renderView(openDetailUncovered([PC1, PC2], '2026-10-12', { journal }));
+    await openDrawer(user, 'Journal');
     const region = await screen.findByRole('region', { name: 'Journal (1)' });
     const item = within(region).getByRole('listitem');
     expect(within(item).getByText('Reflection owed')).toBeTruthy();
@@ -330,6 +349,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     cleanup();
 
     renderView(openDetailUncovered([PC1, PC2], '2026-10-12', { journal }), false);
+    await openDrawer(user, 'Journal');
     const readOnly = await screen.findByRole('region', { name: 'Journal (1)' });
     expect(within(readOnly).getByText('Reflection owed')).toBeTruthy();
     expect(within(readOnly).queryByRole('button')).toBeNull();
@@ -351,6 +371,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
     const [first, second] = within(await screen.findByRole('region', { name: 'Journal (2)' })).getAllByRole('listitem') as [HTMLElement, HTMLElement];
     await user.click(within(first).getByRole('button', { name: 'Reflect now' }));
     await within(first).findByRole('form', { name: 'Reflection' });
@@ -382,6 +403,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
     const [first, second] = within(await screen.findByRole('region', { name: 'Journal (2)' })).getAllByRole('listitem') as [HTMLElement, HTMLElement];
     for (const failure of [() => Promise.reject(new Error('storage')), () => Promise.resolve({ kind: 'NotFound' })]) {
       vi.mocked(facade.Journal.getDefinitions).mockImplementation(failure as never);
@@ -410,6 +432,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
     const answerMode = async () => {
       const form = await screen.findByRole('form', { name: 'Reflection' });
       await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText('Reactive'));
@@ -450,6 +473,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
     await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
     await user.click(await screen.findByRole('button', { name: 'Decline' }));
 
@@ -478,6 +502,7 @@ describe('Debt on Trade Detail (A69, P17)', () => {
       </RuntimeContext.Provider>,
     );
     const user = userEvent.setup();
+    await openDrawer(user, 'Journal');
     await user.click(await screen.findByRole('button', { name: 'Decline' }));
     const form = await screen.findByRole('form', { name: 'Reflection' });
     await user.type(within(form).getByLabelText('Reason for declining (optional)'), 'No time.');
@@ -515,7 +540,9 @@ describe('Closed Trade Detail owed Debts (T6.19-B1)', () => {
       owed('debt-pcr', 'Position Change Reflection', 'entry-type.position-change-reflection', 'Position Change', '2026-10-13T18:00:00Z', 'pc-x2'),
       owed('debt-close', 'Close Review', 'entry-type.close-review', 'Trade close', '2026-10-13T18:00:00Z', 'pc-x2'),
     ];
+    const user = userEvent.setup();
     renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: { id: 'cr-1', label: 'Target reached' }, journal }), true);
+    await openDrawer(user, 'Journal');
     const region = await screen.findByRole('region', { name: 'Journal (2)' });
     const [reflection, closeReview] = within(region).getAllByRole('listitem') as [HTMLElement, HTMLElement];
     expect(within(reflection).getByText('Position Change Reflection', { selector: '.badge' })).toBeTruthy();

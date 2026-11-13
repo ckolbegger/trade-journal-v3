@@ -21,6 +21,7 @@ import { createReleaseUpdateController } from './ui/update/controller.ts';
 import { UpdateNotice } from './ui/update/UpdateNotice.tsx';
 import './ui/app.css';
 import './ui/cockpit/styles/legacy-detail.css';
+import './ui/cockpit/index.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');

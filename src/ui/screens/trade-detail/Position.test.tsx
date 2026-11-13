@@ -6,7 +6,7 @@ import { execution, incoherentDetailOf, openDetailOf, PC1, PC2, pc1Reflection, p
 import { optionClosedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { expiredOptionTrade, OC_CONTRACT, OC_E1, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { THURSDAY, renderView, rowsOf, termValue, useFixedClock } from './test-support.ts';
+import { THURSDAY, openDrawer, renderView, rowsOf, termValue, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
@@ -18,15 +18,19 @@ const PC4 = positionChange('pc-4', 7, [
 
 describe('Open Trade Detail', () => {
   it('should show Last activity in the Position card as a labelled local time', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
+    await openDrawer(user, 'Position');
     const position = await screen.findByRole('region', { name: 'Position' });
     expect(termValue(position, 'Last activity')).toBe('2026-10-12 11:00');
   });
 
   it('should show lifecycle Open as text, Position, an Open Lots table, and Executions as rows in Fact Order', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
+    await openDrawer(user, 'Position');
 
     const position = screen.getByRole('region', { name: 'Position' });
     expect(termValue(position, 'Position')).toBe('100 shares of XYZ');
@@ -49,6 +53,7 @@ describe('Open Trade Detail', () => {
   });
 
   it('should show Position Change Reflections with snapshot labels and declines as Reflection declined with the reason', async () => {
+    const user = userEvent.setup();
     const planReflection = {
       kind: 'Entry' as const,
       ...plannedDetail.journal[0],
@@ -58,6 +63,7 @@ describe('Open Trade Detail', () => {
         journal: [planReflection, pc1Reflection, pc2Decline],
       }),
     );
+    await openDrawer(user, 'Journal');
     const journal = await screen.findByRole('region', { name: 'Journal (3)' });
     const items = within(journal).getAllByRole('listitem');
     expect(items.map((item) => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual([
@@ -83,21 +89,27 @@ describe('Open Trade Detail', () => {
 
 describe('Executions', () => {
   it('should label the region Executions with its count of Executions and list them in Fact Order', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
+    await openDrawer(user, 'Position');
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     const rows = within(section).getAllByRole('listitem');
     expect(rows.map((row) => /Buy (\d+)/.exec(row.textContent ?? '')?.[1])).toEqual(['60', '40', '10', '5']);
   });
 
   it('should name each Execution row button exactly as its visible text followed by details', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
+    await openDrawer(user, 'Position');
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     expect(within(section).getByRole('button', { name: 'Buy 60 XYZ @ $50.10 2026-10-12 10:00 details' })).toBeTruthy();
     expect(within(section).getByRole('button', { name: 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details' })).toBeTruthy();
   });
 
   it('should show each Execution collapsed as one row with action, quantity, symbol, price, and Economic Time with no fee, with no Executions table and no Position Change headings', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
+    await openDrawer(user, 'Position');
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     const rows = within(section).getAllByRole('listitem');
     expect(rows.map((row) => row.querySelector('.execution-summary')?.textContent)).toEqual([
@@ -114,7 +126,9 @@ describe('Executions', () => {
   });
 
   it('should give each row a disclosure button named for its Execution, collapsed by default with aria-expanded false', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
+    await openDrawer(user, 'Position');
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     const buttons = within(section).getAllByRole('button');
     // Label in Name: the accessible name begins with the row's visible text.
@@ -131,7 +145,9 @@ describe('Executions', () => {
   });
 
   it('should show the Instrument, Economic Time, fee, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Executions (4)' });
     const toggle = screen.getByRole('button', { name: /^Buy 10 XYZ @ .* 15:00 details$/ });
     expect(screen.queryByText('Instrument', { selector: 'dt' })).toBeNull();
@@ -151,7 +167,9 @@ describe('Executions', () => {
   });
 
   it("should show the Position Change Reflection's answers in the expanded row of an Execution whose Position Change has one", async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection] }));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Executions (4)' });
     const toggle = screen.getByRole('button', { name: /^Buy 60 XYZ @ .* 10:00 details$/ });
     fireEvent.click(toggle);
@@ -164,7 +182,9 @@ describe('Executions', () => {
   });
 
   it('should show Reflection declined with the reason, or No reflection, when the Position Change has a decline or no reflection', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection, pc2Decline] }));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Executions (4)' });
     const open = (name: RegExp) => {
       const toggle = screen.getByRole('button', { name });
@@ -182,7 +202,9 @@ describe('Executions', () => {
 
   it('should mark the Executions of a Position Change with several Executions as one group and show the shared reflection in each ones expanded row', async () => {
     const pc4Reflection = { ...pc1Reflection, id: 'e-4', positionChangeId: 'pc-4', momentTime: '2026-10-12T19:00:00Z' };
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection, pc4Reflection] }));
+    await openDrawer(user, 'Position');
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     const rows = within(section).getAllByRole('listitem');
     expect(rows.map((row) => within(row).queryByText(/^Same Position Change/)?.textContent ?? null)).toEqual([
@@ -202,6 +224,7 @@ describe('Executions', () => {
   it('should toggle with Enter and Space and keep focus on the button', async () => {
     const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Executions (4)' });
     const toggle = screen.getByRole('button', { name: /^Buy 60 XYZ @ .* 10:00 details$/ });
     toggle.focus();
@@ -228,16 +251,20 @@ describe('Closed option Trade Detail (T7.21-B2)', () => {
 
 describe('Open Trade Detail after a partial exit', () => {
   it('should describe the Lot Matches table by the note that amounts are rounded for display', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, X1]), true);
+    await openDrawer(user, 'Position');
     const section = await screen.findByRole('region', { name: 'Lot Matches' });
     expect(within(section).getByRole('table', { name: 'Lot Matches', description: 'Each match’s amount is rounded to the cent for display.' })).toBeTruthy();
   });
 
   it('should show realized to date, the Lot Matches table with a note that per-match amounts are rounded for display, and Record exit beside Record entry only while Writable', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, X1]), true);
     const valuation = await screen.findByRole('region', { name: 'Valuation' });
     expect(termValue(valuation, 'Realized to date')).toBe('+$55.90');
 
+    await openDrawer(user, 'Position');
     const section = screen.getByRole('region', { name: 'Lot Matches' });
     expect(rowsOf(within(section).getByRole('table', { name: 'Lot Matches' }))).toEqual([['$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
     expect(within(section).getByText('Each match’s amount is rounded to the cent for display.')).toBeTruthy();
@@ -294,6 +321,7 @@ describe('option Trade Detail on an incoherent Detail (ocr comment 1)', () => {
 describe('option Trade Detail Lot Matches (row 20.13)', () => {
   useFixedClock();
   it('should head an option Trades Lot Matches Opened and Closed on Trade Detail, open or closed, and a stock Trades Bought and Sold', async () => {
+    const user = userEvent.setup();
     const headers = () => within(screen.getByRole('region', { name: 'Lot Matches' })).getAllByRole('columnheader').map((h) => h.textContent);
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
     await screen.findByRole('region', { name: 'Lot Matches' });
@@ -301,11 +329,13 @@ describe('option Trade Detail Lot Matches (row 20.13)', () => {
     cleanup();
 
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Lot Matches' });
     expect(headers()).toEqual(['Opened', 'Closed', 'Quantity', 'Realized']);
     cleanup();
 
     renderView(openDetailOf([PC1, PC2, X1]));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Lot Matches' });
     expect(headers()).toEqual(['Bought', 'Sold', 'Quantity', 'Realized']);
   });

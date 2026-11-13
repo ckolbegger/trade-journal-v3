@@ -1,0 +1,11 @@
+/* The cockpit's styles, in a fixed order (D08P plan section 4.2). Imported once, after legacy-detail.css, so a lane adds rules to its own file
+   and this one never changes. shell.css is the shell's, and comes first. */
+@import './styles/shell.css';
+@import './styles/rail-a.css';
+@import './styles/rail-b.css';
+@import './styles/today.css';
+@import './styles/position.css';
+@import './styles/plan.css';
+@import './styles/payoff.css';
+@import './styles/history.css';
+@import './styles/journal.css';

@@ -1,4 +1,5 @@
-import { cleanup, render, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
+import type { UserEvent } from '@testing-library/user-event';
 import { createElement } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, vi } from 'vitest';
@@ -35,6 +36,14 @@ export function renderView(view: TradeDetailView, writable = true) {
       ),
     ),
   );
+}
+
+// Selects a drawer by its W1 tab name and waits for its panel (D08P, A217). It first waits for the Detail's tab list, so a case calls it right
+// after rendering.
+export async function openDrawer(user: UserEvent, name: string) {
+  const tab = await screen.findByRole('tab', { name });
+  if (tab.getAttribute('aria-selected') !== 'true') await user.click(tab);
+  await screen.findByRole('tabpanel', { name });
 }
 
 // The option Trade cases read the current year from the clock, so they fix it: expirations in 2026 are this year's.

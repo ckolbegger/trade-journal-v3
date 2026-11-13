@@ -65,6 +65,7 @@ test.describe('B5.8 Offline cold restart (AC-DEL-001)', () => {
     await expect(first.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await deferEntry(first, [AT_10]);
     await backToTrade(first);
+    await openDrawer(first, 'Journal');
     await expect(detail.reflectionOwed(first)).toBeVisible();
     await detail.reflectNowButton(first).click();
     await fillDebtAnswers(first);

@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { closedDetailOf, closeReviewEntry } from '../../../../tests/support/closed-detail-fixtures.ts';
 import { PC1, PC2, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
-import { renderView, rowsOf, termValue, useFixedClock } from './test-support.ts';
+import { openDrawer, renderView, rowsOf, termValue, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
@@ -13,6 +14,7 @@ describe('Closed Trade Detail', () => {
   const CLOSE_REASON = { id: 'cr-1', label: 'Target reached' };
 
   it('should show lifecycle Closed as text, Closed via sale of 100 shares and the Close Reason as separately labelled fields, realized P&L and Realized R, the fee reconciliation, a Lot Matches table, and the Close Review in the narrative, with no Record entry or Record exit', async () => {
+    const user = userEvent.setup();
     renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: CLOSE_REASON, journal: [closeReviewEntry] }), true);
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(screen.getByText('Closed', { selector: '.badge' })).toBeTruthy();
@@ -40,6 +42,7 @@ describe('Closed Trade Detail', () => {
       ['$50.30 on 2026-10-12 11:00', '$53.00 on 2026-10-13 14:00', '20', '+$53.10'],
     ]);
 
+    await openDrawer(user, 'Journal');
     const journal = screen.getByRole('region', { name: 'Journal (1)' });
     expect(within(journal).getByText('Close Review', { selector: '.badge' })).toBeTruthy();
     expect(within(journal).getByText('Holding to the target paid.')).toBeTruthy();
@@ -55,12 +58,14 @@ describe('Closed Trade Detail', () => {
 describe('closed option Trade Detail (A119)', () => {
   useFixedClock();
   it('should show a Closed option Trade Closed via sale of 1 contract and expiration of 1 contract, Option Disposition Timing Mixed with both quantities, and no Close Reason field', async () => {
+    const user = userEvent.setup();
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
     const result = await screen.findByRole('region', { name: 'Result' });
     expect(termValue(result, 'Terminal Disposition')).toBe('Closed via sale of 1 contract and expiration of 1 contract');
     expect(termValue(result, 'Option Disposition Timing')).toBe('Mixed: 1 before expiration, 1 at expiration');
     expect(within(result).queryByText('Close Reason', { selector: 'dt' })).toBeNull();
     // A Closed Trade's Current payoff has nothing left to show.
+    await openDrawer(user, 'Payoff');
     expect(within(screen.getByRole('region', { name: 'Current Expiration Payoff' })).getByText('Not applicable: no open position')).toBeTruthy();
   });
 });

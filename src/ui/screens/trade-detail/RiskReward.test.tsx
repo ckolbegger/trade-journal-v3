@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../../app/types.ts';
-import { THURSDAY, available, renderView, rowsOf, termValue, tuesday, useFixedClock } from './test-support.ts';
+import { THURSDAY, available, openDrawer, renderView, rowsOf, termValue, tuesday, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
@@ -53,6 +54,7 @@ describe('risk and reward', () => {
 
 describe('missing or later evidence (P12, P13)', () => {
   it('should show each NotApplicable figure on Detail as Not applicable followed by its words, never a raw code', async () => {
+    const user = userEvent.setup();
     const base = openDetailUncovered([PC1, PC2], '2031-01-02');
     const notApplicable = (reason: string) => ({ kind: 'NotApplicable', reason });
     const quality = base.entryQuality.kind === 'Value' ? base.entryQuality.value : undefined;
@@ -74,6 +76,7 @@ describe('missing or later evidence (P12, P13)', () => {
     const risk = await screen.findByRole('region', { name: 'Risk and reward' });
     expect(termValue(risk, 'Risk to stop')).toBe('Not applicable: no risk to the Stop');
     expect(termValue(risk, 'Reward to target')).toBe('Not applicable: no open position');
+    await openDrawer(user, 'Plan and Risk');
     expect(termValue(screen.getByRole('region', { name: 'Entry Quality' }), 'Slippage')).toBe('Not applicable: entry not resolved yet');
   });
 });

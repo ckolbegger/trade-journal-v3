@@ -1,18 +1,21 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { incoherentDetailOf, openDetailOf, PC1, PC2, pc1Reflection, pc2Decline, PC3, pc3Excess } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { IntegrityFinding, RecordedDeviation, RecordedDeviationVersion } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { OC_PC3, THURSDAY, renderView, rowsOf, useFixedClock } from './test-support.ts';
+import { OC_PC3, THURSDAY, openDrawer, renderView, rowsOf, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
 describe('Open Trade Detail', () => {
   it('should show an integrity panel listing stored versus expected values when agreement fails', async () => {
+    const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2]));
+    await openDrawer(user, 'Position');
     await screen.findByRole('region', { name: 'Position' });
     expect(screen.queryByRole('region', { name: 'Records disagree' })).toBeNull();
     cleanup();
@@ -104,6 +107,7 @@ describe('Open Trade Detail', () => {
         [pc1Reflection, pc2Decline],
       ),
     );
+    const user = userEvent.setup();
     const panel = await screen.findByRole('region', { name: "Facts can't be replayed" });
     expect(rowsOf(within(panel).getByRole('table', { name: 'Facts that cannot be replayed' }))).toEqual([
       ["Buy of 40 XYZ on Mon Oct 12, 11:00 names a Planned Leg that isn't in the Plan"],
@@ -112,13 +116,16 @@ describe('Open Trade Detail', () => {
     expect(within(panel).getByText('Viewing this Trade does not change its records.')).toBeTruthy();
     expect(within(panel).getByText(/position, entry, and fulfillment figures are unavailable/i)).toBeTruthy();
     expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
+    await openDrawer(user, 'Plan and Risk');
     expect(screen.getByRole('region', { name: 'Plan' })).toBeTruthy();
+    await openDrawer(user, 'Position');
     const executions = screen.getByRole('region', { name: 'Executions (2)' });
     expect(
       within(executions)
         .getAllByRole('button')
         .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
     ).toEqual(['Buy 60 XYZ @ $50.10 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details']);
+    await openDrawer(user, 'Journal');
     expect(within(screen.getByRole('region', { name: /^Journal/ })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
     expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
