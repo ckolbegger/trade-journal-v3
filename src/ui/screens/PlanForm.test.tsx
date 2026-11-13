@@ -4,9 +4,9 @@ import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-route
 import userEvent from '@testing-library/user-event';
 import { useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { payoffFixtures } from '../../../tests/support/payoff-fixtures.ts';
 import { planFormFacade } from '../../../tests/support/plan-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
+import { expirationPayoff } from '../../domain/trade-analysis/index.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { money } from '../format.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -1031,7 +1031,8 @@ describe('option Plan receipt (A116)', () => {
           definitionId: 'def-1',
           responses: [],
         },
-        payoff: payoffFixtures.ocPayoffs(),
+        // A Planned Detail holds no Lots: its Planned view is a Value and its Current view is Not applicable.
+        payoff: expirationPayoff({ plan: trade.plan as never }),
       },
       affected: [],
     } as never);
