@@ -5,7 +5,7 @@
 Written 2026-11-12, after plan revision 84. [D08P-handoff.md](D08P-handoff.md) is the record of the planning session that drafted the breakdown.
 
 This session **implements D08P, "The Trade Detail cockpit"**, under the frozen plan at revision 84. D08P is the D8 prefactor: Trade Detail is rebuilt as the "C. Cockpit" tab of `prototypes/trade-detail/index.html`. The breakdown is [D08P-trade-detail-cockpit.md](D08P-trade-detail-cockpit.md):
-- 26 tasks (T8P.1 to T8P.26) in three waves with lanes;
+- 26 tasks (T8P.1 to T8P.26) in three waves with lanes, plus T8P.27 (revision 85, after T8P.22);
 - agreed by the user on 2026-11-12 as **decision 110**, with P94–P102 as recommended and the words W1–W20 approved (W1's third tab is **"Plan and Risk"**, in the user's words);
 - run as a **swarm** under **decision 111**.
 
@@ -36,7 +36,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` (the deliverable branch every lane merges into) |
 | Dev server port | `5175`, from the gitignored `.env.local`; the benchmark uses `4175` (D08P runs no benchmark) |
-| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111) |
+| Frozen plan | tag `claude-opus-5.5-plan-r84` (revision 84, decisions 110 and 111); since 2026-11-13, `claude-opus-5.5-plan-r85` (revision 85 adds T8P.27) |
 | Code D08P builds on | tag `claude-opus-5.5-d7s` (`2240fe1c`) |
 | D08P starting point | tag `claude-opus-5.5-pre-d08p`: the same commit as `plan-r84`, at the user's direction. `claude-opus-5.5-pre-d8p` (`5ae23f94`) marks where the planning session started. |
 
@@ -108,7 +108,7 @@ Search `plan/spec-map.md` (don't read it in full) when the work touches another 
 2. Name the affected passages, scenarios and durable compatibility.
 3. Ask for approval.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r85, and the next decision is 112. Editing the Progress section alone is not a revision.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r86, and the next decision is 112. (Revision 85, 2026-11-13, added T8P.27.) Editing the Progress section alone is not a revision.
 
 ## 3. D08P specifics
 
@@ -165,10 +165,11 @@ Lanes keep working during merge runs.
 ### Wave 2
 
 1. **T8P.22**, after every wave-1 task has merged. It also retires the three legacy blocks.
-2. A full-tier run.
-3. **The checkpoint critic, T8P.23**, on flows C8P.1–C8P.4. Its defects become bug tasks, fixed before the tail.
-4. **T8P.24 ∥ T8P.25.** The Node suite may start as soon as T8P.11 merges, but it is recorded in wave 2's order.
-5. **The gate, T8P.26.**
+2. **T8P.27** (revision 85): remove the old Detail sections, tests and styles the cockpit no longer renders.
+3. A full-tier run.
+4. **The checkpoint critic, T8P.23**, on flows C8P.1–C8P.4. Its defects become bug tasks, fixed before the tail.
+5. **T8P.24 ∥ T8P.25.** The Node suite may start as soon as T8P.11 merges, but it is recorded in wave 2's order.
+6. **The gate, T8P.26.**
 
 ### Other rules
 
@@ -301,6 +302,7 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - **For T8P.14, T8P.16:** the per-condition value at expiration and distance on the Underlying move to the Today drawer (A223). Until T8P.22, the legacy Risk and reward block still shows them.
 - **For T8P.19:** `PayoffView` stays as the Plan receipt uses it. The drawer's one chart may be a new component, but its sentence must come from `valueAtCloseText` (tech debt item 21). W18 also changes `CardFigures.tsx:94` and `CardFigures.test.tsx:96`, `:100`, `:106`.
 - **For T8P.22:** retire the three legacy blocks and their CSS (`.summary-card`, `.summary-text`), and move any expectation still reading them.
+- **For T8P.27:** T8P.5 re-exports the old `src/ui/screens/trade-detail/` sections behind the cockpit paths, and each wave-1 lane replaces what a path renders without deleting the old file. Find the orphans from `src/main.tsx`'s import graph, not by name. Some old pieces live on inside the new drawers (for example the executions disclosure and the debt forms).
 
 ### Open questions
 
