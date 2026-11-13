@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 32683,
+    "input_tokens": 32372,
+    "output_tokens": 311,
+    "cache_read_tokens": 4992,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/today.props.ts",
+        "src/ui/cockpit/rail/conditions.props.ts",
+        "src/ui/cockpit/rail/pnl.props.ts"
+      ]
+    }
+  ],
+  "session_id": "1d89ed47-d12d-4c8a-8dcb-622807de2f07",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1d89ed47-d12d-4c8a-8dcb-622807de2f07",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "5341fb77",
+      "resolved_base": "2f740d1751ccc4257e192aed1ae37d304ec3e6dd",
+      "resolved_head": "5341fb774e82b6a6d445994405112292e8634fe8",
+      "exact_range": "2f740d1751ccc4257e192aed1ae37d304ec3e6dd..5341fb774e82b6a6d445994405112292e8634fe8",
+      "source_artifact_sha256": "41578df991aa58dbe693e10ffe2c24ec47e7cd8348af83497e8d5ae0d77da44d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ff0e4978907606ef2648845885ae2f4599422a8bb84c86a48cccb0b7dfb26c0",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "f3d138bf110f6159f4d35315ce3707c13bde882253c07987732fc1544f45bc29"
+        },
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "4b03fb0815ac86c7813d1fc6a3b2808fe5cee3fbe7a136cb9b94aa8b0438b7cb"
+        },
+        {
+          "item_id": "a9d12a11a90ec12b54f02f8a6075bf7cfde76fe13e49482e476e0b8ebb9329f0",
+          "path": "src/ui/cockpit/rail/pnl.props.ts",
+          "fingerprint": "fc852a583635c5beb460b5c61c0c1989785815ce49f8883b3cc2fe87fbe8a599"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ff0e4978907606ef2648845885ae2f4599422a8bb84c86a48cccb0b7dfb26c0",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "f3d138bf110f6159f4d35315ce3707c13bde882253c07987732fc1544f45bc29"
+        },
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "4b03fb0815ac86c7813d1fc6a3b2808fe5cee3fbe7a136cb9b94aa8b0438b7cb"
+        },
+        {
+          "item_id": "a9d12a11a90ec12b54f02f8a6075bf7cfde76fe13e49482e476e0b8ebb9329f0",
+          "path": "src/ui/cockpit/rail/pnl.props.ts",
+          "fingerprint": "fc852a583635c5beb460b5c61c0c1989785815ce49f8883b3cc2fe87fbe8a599"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1b2ea52d82c680e947cfe9c209497c48df4909d3b5abef4a1f9cb91bf41196a1",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "cab41fdc9b392f6d8d8055299a0d4d44904ca45a34fbab2832eb7e58eebdbbea",
+          "path": "evidence/D08P/tdd-log/T8P.29.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "e0f92c04a14e3fa2fbeac53f784875c9f2e0e24f657520a9963d8539c115898c",
+          "path": "src/ui/cockpit/rail/pnl.props.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 14322
+  }
+}

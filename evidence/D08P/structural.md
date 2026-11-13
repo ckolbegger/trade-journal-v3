@@ -1127,3 +1127,14 @@ Commits `5341fb77` (task), `681e8788` (lane tier: 1635 unit, 222 integration, 14
   - `today.props.test.ts`'s "No Marks yet." text (W8). Its double is now an opening at Fri Oct 9 20:30Z with `firstMarksDue` `2026-10-12`.
   - Two Conditions doubles gained `firstMarksDue`, with no expectation changed. No spec held the old words.
 - **Inferences removed:** `hasNoMarksYet` (`pnl.props.ts`), the `waiting` inference (`conditions.props.ts`), `noMarksTextOf` (`today.props.ts`), and three unused `isMarkLacking` imports. Each double without the field now asserts the before-Marks words are absent.
+- **ocr** (`5341fb77`): session `1d89ed47-d12d-4c8a-8dcb-622807de2f07`, 3 files, 0 comments; relocated `93e636c8-7ca7-4ee5-9afd-8706ba433e29`, 3 files, 0 comments. Raw output: [ocr/T8P.29-5341fb77.json](ocr/T8P.29-5341fb77.json), [ocr/T8P.29-5341fb77-relocated.json](ocr/T8P.29-5341fb77-relocated.json). Clean.
+
+**Stray commits on `claude-opus-5.5` (a reviewer's slip, kept at the user's choice).**
+- What happened: T8P.29's ocr reviewer had its first relocation command blocked by a guard hook. Its shell stayed in the main worktree, and its `git add -A; git commit` committed there.
+- The commits, both authored `x <x@x>`:
+  - `71c444cf` "relocated 5341fb77^": the uncommitted `structural.md` notes and the `merge-7-*.txt` outputs merge run 7 was still writing;
+  - `e363d10e` "relocated 5341fb77": one more line of `merge-7-browser-2.txt`.
+- Evidence text only, with no source file. The guard hook blocks moving HEAD, so neither the reviewer nor the main session could reset them. The user chose to let them stand ("we can let that one go"). This commit adds the rest of merge run 7's output on top.
+- Merge run 7's checks file records HEAD `e363d10e`, but the code it tested is `0529a40b`'s.
+
+**Merge run 7** at `0529a40b` (`browser-auto b5960b12`, which chose the full tier from `e2e/d5/detail-debt.spec.ts`; the merge of T8P.15): unit 1634, integration 222, checks 14 of 14, browser tier 1 128 and tier 2 75 passed, no failures; run complete. The next merge run is `browser-auto 0529a40b`.
