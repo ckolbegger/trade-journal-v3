@@ -1138,3 +1138,5 @@ Commits `5341fb77` (task), `681e8788` (lane tier: 1635 unit, 222 integration, 14
 - Merge run 7's checks file records HEAD `e363d10e`, but the code it tested is `0529a40b`'s.
 
 **Merge run 7** at `0529a40b` (`browser-auto b5960b12`, which chose the full tier from `e2e/d5/detail-debt.spec.ts`; the merge of T8P.15): unit 1634, integration 222, checks 14 of 14, browser tier 1 128 and tier 2 75 passed, no failures; run complete. The next merge run is `browser-auto 0529a40b`.
+
+**T8P.29 merge.** Only plan and evidence followed lane R2's base `2f740d17`, so its lane tier stands. Rebased onto `4432b791` and fast-forwarded: `511065e0` (task), `693eae8f`, `479923c3`. Lane R2 was removed. Lane AX was created at `479923c3` for T8P.30, which started with a fresh agent.
