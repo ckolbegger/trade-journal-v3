@@ -20,7 +20,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 check() {
   local name=$1 dir=$2 expected=$3 out code
   [[ $only == all || $only == "$name" ]] || return 0
-  echo 'export default { test: { globals: true } };' > "$dir/vitest.config.mjs"
+  echo 'export default { test: { globals: true, allowOnly: true } };' > "$dir/vitest.config.mjs"
   out=$("$script" "$dir/src" 2>&1); code=$?
   [[ $code == 0 ]] || bad "$name: exit $code: $out"
   [[ "$out" == "$expected" ]] || bad "$name: titles differ. expected:
