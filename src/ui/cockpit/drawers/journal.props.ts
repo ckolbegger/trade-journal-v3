@@ -74,20 +74,23 @@ function itemOf(item: TradeDetailNarrativeItem, symbol: string, timeZone: string
   }
   const moment = localTime(item.momentTime, timeZone);
   const authored = localTime(item.authoredTime, timeZone);
+  const settledLater = item.kind === 'Entry' ? item.answeredLater : item.declinedLater;
+  const laterTimeLabel = settledLater && (item.kind === 'Entry' ? 'Answered' : 'Declined');
   const details = [
     ...(item.kind === 'Entry' && item.reviewDate !== undefined ? [{ term: 'Review Date', value: shortDate(item.reviewDate) }] : []),
     { term: 'Anchor', value: `Trade ${symbol}` },
     { term: 'Source', value: item.source },
     { term: 'Moment', value: moment },
-    ...(authored !== moment ? [{ term: 'Authored', value: authored }] : []),
+    // A reflection resolved after it was deferred always shows when the trader resolved it.
+    ...(authored !== moment || settledLater ? [{ term: laterTimeLabel ?? 'Authored', value: authored }] : []),
   ];
   return {
     id: item.id,
     type: item.entryType,
-    badges: [],
+    badges: [...(item.kind === 'Entry' && item.edited ? ['Edited'] : []), ...(item.kind === 'Entry' && item.answeredLater ? ['Deferred, answered'] : [])],
     details,
     answers: item.kind === 'Entry' ? item.responses.map((response) => ({ prompt: response.prompt, answer: answerText(response.answer) })) : [],
-    ...(item.kind === 'Decline' && { declined: { badge: 'Reflection declined', reason: item.reason ?? 'No reason given' } }),
+    ...(item.kind === 'Decline' && { declined: { badge: item.declinedLater ? 'Declined later' : 'Reflection declined', reason: item.reason ?? 'No reason given' } }),
   };
 }
 

@@ -17,6 +17,11 @@ function Item({ item, control }: { readonly item: JournalCardItem; readonly cont
     <li>
       <h3>
         <Badge tone="neutral">{item.type}</Badge>
+        {item.badges.map((badge) => (
+          <Badge key={badge} tone="info">
+            {badge}
+          </Badge>
+        ))}
       </h3>
       <dl>
         {item.details.map(({ term, value }) => (
@@ -103,10 +108,12 @@ function Card({ card, hidden, controlOf }: { readonly card: JournalCardProps; re
 export function JournalCards(input: JournalCardsInput) {
   // At most one owed reflection's form is open at a time; a resolved one stays as it rendered.
   const [active, setActive] = useState<{ readonly itemId: string; readonly resolved: boolean }>();
-  const [page, setPage] = useState(0);
+  const [requested, setPage] = useState(0);
   const props = journalCards(input);
   if (!props) return null;
   const pages = Math.ceil(props.cards.length / PAGE_SIZE);
+  // The page follows the list: the last page that has cards, and the first for a list that does not page.
+  const page = props.heading ? Math.max(0, Math.min(requested, pages - 1)) : 0;
   const controlOf = (itemId: string): OwedControl => ({
     blocked: active !== undefined && !active.resolved && active.itemId !== itemId,
     onOpen: () => setActive({ itemId, resolved: false }),

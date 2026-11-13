@@ -214,6 +214,37 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(termValue(card, 'XYZ Mark')).toBe('$52.30');
   });
 
+  it('should keep a page of cards in view when the list shrinks or stops paging', async () => {
+    const four = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05'].map((date) => session(date, 1n, '52.30', null));
+    const input = (replay: unknown, extra: Record<string, unknown> = {}) => <JournalCards {...({ view, timeZone: ZONE, today: '2026-11-30', facade: facadeDouble(), replay, ...extra } as object)} />;
+    const { rerender } = render(input(replayOf(four)));
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Earlier sessions' }));
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    // The list shrinks to one page: the page follows it, and the cards past it stay hidden.
+    rerender(input(replayOf(four.slice(0, 3))));
+    expect(screen.getAllByRole('article')).toHaveLength(3);
+    expect(screen.getAllByRole('article', { hidden: true })).toHaveLength(3);
+    // The one list does not page: its card is in view.
+    rerender(input('Incoherent', { view: incoherentDetailOf([PC1, PC2], [], [pc1Reflection]) }));
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getAllByRole('article', { hidden: true })).toHaveLength(1);
+  });
+
+  it("should keep each entry's saved status and its Answered or Declined time on its card", () => {
+    const settled = { debtId: 'debt-1', dueAnchor: '2026-10-12T20:00:00Z' };
+    const answered = { ...pc1Reflection, id: 'e-9', edited: true, answeredLater: settled, authoredTime: '2026-10-13T14:00:00Z' };
+    const declined = { ...pc2Decline, id: 'd-9', declinedLater: settled, authoredTime: '2026-10-13T15:00:00Z' };
+    show(replayOf([session('2026-11-09', 10n, '52.30', null, [answered, declined])]));
+    const [entry, decline] = within(screen.getByRole('article')).getAllByRole('listitem') as [HTMLElement, HTMLElement];
+    expect([...entry.querySelectorAll('h3 .badge')].map((badge) => badge.textContent)).toEqual(['Position Change Reflection', 'Edited', 'Deferred, answered']);
+    expect(termValue(entry, 'Answered')).toBe('2026-10-13 10:00');
+    expect(within(entry).queryByText('Authored', { selector: 'dt' })).toBeNull();
+    expect(within(decline).getByText('Declined later', { selector: '.badge' })).toBeTruthy();
+    expect(within(decline).queryByText('Reflection declined')).toBeNull();
+    expect(termValue(decline, 'Declined')).toBe('2026-10-13 11:00');
+    expect(termValue(decline, 'Reason')).toBe('Same plan, second fill.');
+  });
+
   it('should count the reflections owed for the Journal tab, as "1 owed", and none when nothing is owed', () => {
     const owed = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z'), owedDebt('debt-2', 'pc-2', '2026-10-12T15:00:00Z')];
     expect(journalTabCount(openDetailOf([PC1, PC2], { journal: [pc1Reflection, owed[0]!] }))).toBe('1 owed');
