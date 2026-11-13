@@ -83,3 +83,17 @@ Reviewer's notes: no question was put in the brief; the worktree was unchanged a
 - **T8P.1-B2** (finding 2). Defect: a wrapper stopped by a signal releases the lock while the command's descendants still hold port 5175 or the CDP ports. Case: *it should end every descendant of the command before releasing the lock when the wrapper receives SIGTERM.*
 - **T8P.1-B3** (finding 3). Defect: a full-tier or task-tier run missing its browser file reads as a complete lane tier. Cases: *it should report run INCOMPLETE for a run with unit, integration and checks files but no browser file and no lane marker*; *it should still report run complete for a lane-tier run.*
 - **T8P.1-B4** (finding 4). Defect: a lane under a deliverable worktree that is itself inside a `.claude/worktrees/` directory would clone `node_modules`, `.env.local` and `dist-releases` from the wrong root. Case: *it should take the source root from the innermost `.claude/worktrees/` component of the lane's path.*
+
+### T8P.1-B1 (`f003e616`)
+
+Fix: a takeover guard directory (`$lock.takeover`, taken with `mkdir`); only the guard's winner rereads `$lock/pid` and removes the lock, and only if it still holds the dead PID; a guard older than 10 s is removed. New shell test `.claude/scripts/with-browser-lock.test.sh` (no earlier test covered `.claude/scripts/`), red then green, rows in [tdd-log/T8P.1-B1.md](tdd-log/T8P.1-B1.md). T8P.1's lock behaviors rerun and held. The task's own note (not an ocr finding): the no-PID crash-recovery path (the 10 s age check on the lock) still uses an unguarded `mv`.
+
+ocr: session `843585b9-8c13-46e8-9288-7f2387e5c3b1`, model gpt-6.1-sol, 2 files reviewed (0 excluded), 1 comment. Raw output: [ocr/T8P.1-B1-f003e616.json](ocr/T8P.1-B1-f003e616.json).
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| high | bug | `.claude/scripts/with-browser-lock.sh:67-68` | The age-based `rmdir` of a "stale" takeover guard can remove a live taker's replacement guard, letting a second taker in and reintroducing the double takeover. | Valid (narrow): two waiters can both see the same expired guard, and the slower one's `rmdir` can delete a guard a new taker has just made. The 10 s age doesn't prove the guard's owner is dead. |
+
+Reviewer's notes: the script uses BSD `stat -f %m` (macOS only; it predates the commit).
+
+- **T8P.1-B1-R1** (round 2). Defect: a stale takeover guard's removal can delete a live taker's guard, so two takers can each remove a lock. Case: *it should let only one of two callers that find the same expired takeover guard go on to take the lock.* **Implementation-level decision:** the age-based removals of a guard or of a PID-less lock keep producing the same race in a new place, so the fix moves the lock to a kernel lock held by the wrapper for the command's lifetime (`lockf(1)` or Perl's `flock`, whichever this macOS ships), which the kernel releases when its holder dies. That removes every takeover path, including the PID-less one the task noted, and keeps the PID file only for the waiting message.
