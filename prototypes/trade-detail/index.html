@@ -754,7 +754,7 @@ function viewC(s) {
     'Plan and entry': planEntryBody(s),
     Payoff: payoff(s),
     'Price History': marksGrid(s, excl),
-    Journal: `<div class="tl-head" style="margin-top:0"><div class="tl-nav"><button type="button" aria-label="Back to the newest session" data-scroll="start">‹</button></div><h3 class="sec-title" style="margin:0 auto 0 4px">Sessions, newest first</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
+    Journal: `<div class="tl-head" style="margin-top:0"><div class="tl-nav"><button type="button" aria-label="Newer sessions" data-scroll="back">‹</button></div><h3 class="sec-title" style="margin:0 auto 0 4px">Sessions, newest first</h3><div class="tl-nav"><button type="button" aria-label="Earlier sessions" data-scroll="1">›</button></div></div>
       <div class="rail-x" id="rail" tabindex="0" aria-label="Sessions, newest first">${dayCards(s, { inputs: false, exec: false })}</div>`,
   };
   const counts = { 'Price History': missingCount(s, excl) || '', Journal: owedCount(s) ? owedCount(s) + ' owed' : '' };
@@ -822,8 +822,7 @@ document.addEventListener('click', (e) => {
   else if (b.dataset.scroll) {
     const r = document.getElementById('rail');
     const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    if (b.dataset.scroll === 'start') r.scrollTo({ left: 0, behavior });
-    else r.scrollBy({ left: r.clientWidth * 0.9, behavior });
+    r.scrollBy({ left: r.clientWidth * 0.9 * (b.dataset.scroll === 'back' ? -1 : 1), behavior });
   }
 });
 document.getElementById('states').addEventListener('keydown', (e) => arrowMove(e, 'data-state', Object.keys(STATES), 'scenario'));
