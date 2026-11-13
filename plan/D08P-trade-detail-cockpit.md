@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D08P](implementation-plan.md#d08p--the-trade-detail-cockpit). D08P is the **D8 prefactor**: Trade Detail is rebuilt to match the "C. Cockpit" tab of `prototypes/trade-detail/index.html` before any more functionality is built. It builds on D7S's Trade Detail (T7S.9, every condition), the D7S prefactor's Mark-to-Market Valuation and read session (decisions 101, 104 to 106), D5R's precedent for a prototype-driven redesign (decision 65), and D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), conventions C1 to C8). It is drafted from `claude-opus-5.5-pre-d8p`.
 
-Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5). **Revision 88** (the same day) lets strict checks gain the additive `nearest` and `days` fields (section 1.5, "Shapes"). **Revision 89** (the same day) gives a bounded Max reward its R: T8P.7 adds it, and T8P.15 shows it (section 5).
+Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5). **Revision 88** (the same day) lets strict checks gain the additive `nearest` and `days` fields (section 1.5, "Shapes"). **Revision 89** (the same day) gives a bounded Max reward its R: T8P.7 adds it, and T8P.15 shows it (section 5). **Revision 90** (the same day, at the user's direction) adds T8P.28, where Trade Views states "no Marks yet" as `firstMarksDue`, and T8P.29, where the Today drawer, the P&L card and the Conditions card read it instead of inferring it. It also adds T8P.30, which makes every Trade Detail absence check prove absence (sections 4, 5 and 6).
 
 The prototype is a picture of the screen, not a specification. Where it differs from the specs or the plan, this breakdown says which wins (P96, section 1.6).
 
@@ -232,7 +232,7 @@ These are estimates. A behavioral task takes about 35 minutes in `tdd-task`, ocr
 | Plan | Estimate | Where the time goes |
 |---|---|---|
 | **Serial** (decision 100) | About 26 tasks × 52 minutes, plus 3 critics: **about 24 hours** | Every task waits for the one before it, and ends with its own browser run. |
-| **Swarm** (section 4.2) | **About 9 to 10.5 hours** | **Wave 0:** about 3 h; T8P.1, then T8P.2, then T8P.3 ∥ T8P.4, then T8P.5. **Wave 1:** about 3 h; 16 tasks at up to 6 at once, with the backend chain T8P.8 ∥ T8P.6 → T8P.7 → T8P.10 → T8P.11 as its longest lane. Merge runs overlap the lanes' work. **Wave 2:** about 3.5 h; the wiring, the checkpoint critic, the two suites at once, then the gate. Revision 85's T8P.27 adds about 30 minutes to wave 2. |
+| **Swarm** (section 4.2) | **About 9 to 10.5 hours** | **Wave 0:** about 3 h; T8P.1, then T8P.2, then T8P.3 ∥ T8P.4, then T8P.5. **Wave 1:** about 3 h; 16 tasks at up to 6 at once, with the backend chain T8P.8 ∥ T8P.6 → T8P.7 → T8P.10 → T8P.11 as its longest lane. Merge runs overlap the lanes' work. **Wave 2:** about 3.5 h; the wiring, the checkpoint critic, the two suites at once, then the gate. Revision 85's T8P.27 adds about 30 minutes to wave 2. Revision 90's T8P.28 fits in BV's wait for T8P.7, and T8P.29 and T8P.30 overlap the backend chain, adding about 30 minutes at most before T8P.22. |
 
 The gain, about 2.5 times, comes from two places. Wave 1's 16 tasks run in parallel. And the per-task browser run (about 8 minutes, 16 times) is replaced by one run per merge batch.
 
@@ -267,7 +267,10 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T8P.19 | Payoff drawer: one chart (tech debt item 21) | 1, D4 | B | T8P.5 | `PayoffDrawer` | none |
 | T8P.20 | Price History drawer | 1, D5 | B | T8P.5 | `PriceHistory`, `price-history.props` | none |
 | T8P.21 | Journal drawer: session cards | 1, D6 | B | T8P.5 | `JournalCards`, `journal-cards` | none |
-| T8P.22 | Trade Detail reads `replayTrade` | 2 | B | T8P.10–T8P.21 | `TradeDetail` | none (consumes T8P.10, T8P.11) |
+| T8P.28 | Trade Views: "no Marks yet" as `firstMarksDue` (revision 90) | 1, BV | B | T8P.9 (lane order; before T8P.10) | `getTradeDetail` | **Trade Views** field (additive) |
+| T8P.29 | The Today drawer, P&L card and Conditions card read `firstMarksDue` (revision 90) | 1, R2 | B | T8P.15 (lane order), T8P.13, T8P.16, T8P.28 | `TodayDrawer`, `PnlCard`, `ConditionsCard` | none |
+| T8P.30 | Absence checks prove absence (revision 90) | 1, AX | S | T8P.12–T8P.21, T8P.29 | unchanged titles; each changed check's mutation | none (tests only) |
+| T8P.22 | Trade Detail reads `replayTrade` | 2 | B | T8P.10–T8P.21, T8P.29, T8P.30 | `TradeDetail` | none (consumes T8P.10, T8P.11) |
 | T8P.27 | Remove the old Detail sections the cockpit no longer renders, with their tests and styles (revision 85) | 2 | S | T8P.22 | `typecheck`, `lint`, an unreachable-module check, `it-titles.sh` | none |
 | T8P.23 | Checkpoint browser critic (P101) | 2 | S | T8P.27 | fresh critic report | none |
 | T8P.24 | Node mock-free integration suite | 2 | S | T8P.6–T8P.11 | `test:integration` | none (tests only) |
@@ -279,6 +282,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 - **Wave 1:** every lane at once, up to 6 agents, each lane in its listed order.
   - Backend lanes start first, since they are the longest: BV starts T8P.9 at once and T8P.10 when T8P.7 and T8P.8 are merged.
   - The UI lanes fill the remaining slots in this order: R2, R1, D2, D1, D4, D3, D5, D6.
+  - Revision 90: BV runs T8P.28 between T8P.9 and T8P.10; R2 runs T8P.29 after T8P.15; lane AX runs T8P.30 last, once every UI task of wave 1 has merged.
 - **Wave 2:** T8P.22, then T8P.27 (revision 85), the checkpoint critic T8P.23, then T8P.24 ∥ T8P.25, then T8P.26.
 
 T8P.24 is a Node suite and may start as soon as T8P.11 merges. Every UI task takes its words from section 1.6.
@@ -291,15 +295,16 @@ A lane is one git worktree (`.claude/worktrees/d08p-<lane>`) on one branch (`d08
 |---|---|---|
 | BA | T8P.6, T8P.7 | `src/domain/trade-analysis/` |
 | BM | T8P.8 | `src/modules/market-data/` |
-| BV | T8P.9, T8P.10, T8P.11 | `package.json`'s `test:e2e:2` (T8P.9); `e2e/d8p/planned.spec.ts`; `src/domain/instrument/`; `src/coordinators/trade-views/`, `trade-workflows/`, `workspace/`; `src/app/`; `src/ui/screens/confirmed-detail.ts`; `tests/integration/` support files it extends |
+| BV | T8P.9, T8P.28, T8P.10, T8P.11 | `package.json`'s `test:e2e:2` (T8P.9); `e2e/d8p/planned.spec.ts`; `src/domain/instrument/`; `src/coordinators/trade-views/`, `trade-workflows/`, `workspace/`; `src/app/`; `src/ui/screens/confirmed-detail.ts`; `tests/integration/` support files it extends |
 | R1 | T8P.12, T8P.13 | `src/ui/cockpit/rail/identity*`, `rail/pnl*`, `styles/rail-a.css`; `e2e/support/detail/rail-a.ts` |
-| R2 | T8P.14, T8P.15 | `src/ui/cockpit/rail/conditions*`, `rail/needs-you*`, `styles/rail-b.css`; `e2e/support/detail/rail-b.ts` |
+| R2 | T8P.14, T8P.15, T8P.29 | `src/ui/cockpit/rail/conditions*`, `rail/needs-you*`, `styles/rail-b.css`; `e2e/support/detail/rail-b.ts`; for T8P.29 only, once T8P.13 and T8P.16 have merged, `rail/pnl.props.ts` and `drawers/today.props.ts` with their tests |
 | D1 | T8P.16 | `src/ui/cockpit/drawers/today*`, `track*`, `styles/today.css`; `e2e/support/detail/today.ts` |
 | D2 | T8P.17 | `drawers/position*`, `styles/position.css`; `e2e/support/detail/position.ts` |
 | D3 | T8P.18 | `drawers/plan-risk*`, `footer*`, `styles/plan.css`; `e2e/support/detail/plan.ts` |
 | D4 | T8P.19 | `drawers/payoff*`, `styles/payoff.css`; `src/ui/screens/payoff-text.ts`, `CardFigures.tsx:94` (W18); `e2e/support/detail/payoff.ts`, `e2e/d7/support.ts` payoff helpers |
 | D5 | T8P.20 | `drawers/price-history*`, `styles/history.css` |
 | D6 | T8P.21 | `drawers/journal*`, `journal-cards.ts`, `styles/journal.css`; `e2e/support/detail/journal.ts` |
+| AX | T8P.30 | Trade Detail's test files and specs (every other UI lane has merged by then): only their absence and hidden checks |
 
 T8P.5 creates every path above as the current section re-exported behind its future name, with its own test file and empty stylesheet. So a lane replaces the content behind a path, and never edits the shell, `src/ui/cockpit/index.css` or a shared helper index.
 
@@ -562,6 +567,26 @@ describe("Journal session cards (W10–W13, A214)")
   it should show one list of every entry on an incoherent Detail
 ```
 
+### T8P.28 Trade Views: "no Marks yet" as `firstMarksDue` (revision 90)
+
+Seam: `getTradeDetail`. Trade Views adds `firstMarksDue?: string` to `OpenCurrentEvaluation`. It holds the trading date whose close brings the Trade's first Marks, and is present only while no session's Marks have yet valued the Trade. That means no dated line, every Lot at entry, an Expected Mark Date, nothing settling, and a current Trade P&L awaiting the close. It is decided where those facts are computed, so no screen infers it. The field is additive under revision 88's rule. No new words.
+
+```text
+describe("Trade Detail: first Marks pending (revision 90)")
+  it should say the first Marks are pending for a Trade opened after the latest close, with the session whose close brings them
+  it should not say so once shares are added after an earlier Mark
+  it should not say so when a Mark is missing, outside session-policy coverage, or once the contract expired
+```
+
+### T8P.29 The readers of "no Marks yet" (revision 90)
+
+Seams: `TodayDrawer`, `PnlCard` and `ConditionsCard`. Each reads `firstMarksDue` and drops its own inference. Today's "No Marks yet." and the P&L card's "Trade P&L once today's session ends" keep their cases and words, now driven by the field: a mutation that removes it from the double must fail them. The Conditions card shows W6's first-Marks note only when the field is present. Otherwise an awaiting condition shows its reason at the `label` length on row 1 (W5), with Worst case and Max reward beneath. The case below was T8P.14-B1.
+
+```text
+describe("Conditions card: first Marks pending (revision 90)")
+  it should show the reason on row 1, not the first-Marks note, when shares were added after an earlier Mark
+```
+
 ### T8P.22 Trade Detail reads `replayTrade`
 
 Seam: `TradeDetail` against the facade double. P95, W20.
@@ -590,6 +615,7 @@ The last case retires the three legacy blocks (section 4.2).
 | T8P.4 Drawer reach | Full browser tier; `rg -c "openDrawer\|detail\." e2e` | Every case passes before the shell exists (`openDrawer` returns at once when there is no tab list), and every Detail read in section 1.5's reach table goes through `e2e/support/detail/*.ts`. | D5R's decision 65 rule: mechanical only, no expectation changes. |
 | T8P.11 Manifest | `npm run verify:capabilities` | The manifest lists `replayTrade` and equals the reachable operations. | |
 | T8P.27 Old sections removed (revision 85) | `.claude/scripts/it-titles.sh` before and after; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`; `npx vitest run src`; a dependency-cruiser check of the modules unreachable from `src/main.tsx`; a grep of each remaining `legacy-detail.css` selector's class in `src/`; full browser tier | No non-test file under `src/ui/screens/trade-detail/` or `src/ui/cockpit/` is unreachable from `src/main.tsx`, and no test file tests only a removed component or helper. Every remaining `legacy-detail.css` selector names a class the app still renders; an emptied file goes with its import. The `it-titles.sh` diff only removes titles, apart from cases added under the moved-assertion rule. `evidence/D08P/structural.md` pairs each removed title with the cockpit case that now covers its behavior, or with the approved word or A-row that retired it. A covering case asserts the same expected values (the same text or figure, in the same state) as the removed one. Every remaining unit and browser case passes unchanged. | At the user's direction (revisions 85 and 86). No behavior, word or expected-value change. **Pairing first (revision 86):** the table is written and committed before any test is deleted, so the deletion commit only carries out a table already on record. Each row names both cases and the expected values each asserts. **Moved assertions:** where no cockpit case asserts a removed case's expected value, that assertion moves into the cockpit component's test file, as a case or an added `expect`, red then green against the cockpit (a first-run pass takes the mutation check). **Main-session check:** before merging, the main session checks the table row by row against both cases, and records the result. A removed title with neither a covering case nor a retiring row is a stop: a test gap for the user. Anything another screen imports stays, such as `PayoffView` for the Plan receipt. |
+| T8P.30 Absence checks prove absence (revision 90) | `.claude/scripts/it-titles.sh` before and after; a list in `evidence/D08P/structural.md` of every changed check (file and line, "gone" or "hidden", and its mutation's failure); `npx vitest run src`; `npm run test:integration`; the changed specs under `with-browser-lock.sh` after `build:faults` and `build:releases` | Every Trade Detail check that something is not shown says which it means. A **gone** check proves the thing is absent from the DOM, hidden drawer panels included (`{ hidden: true }` on Testing Library role queries, `includeHidden: true` or a CSS locator with `toHaveCount(0)` in Playwright). A **hidden** check proves it is present and hidden. No titles change, and every case passes. | At the user's direction (revision 90). Scope: the unit tests under `src/ui/screens/trade-detail/` and `src/ui/cockpit/`, `TradeDetail.test.tsx`, and every spec that reads Trade Detail. **Mutations:** a gone check must fail when the thing is rendered inside a hidden panel; a hidden check must fail when `hidden` is removed. Each must fail with an assertion. **Stop:** a gone check that fails once it looks inside hidden panels is a real defect, reported to the user, not reworded into a hidden check. `Cockpit.test.tsx`'s comment "Only the selected drawer is mounted" is corrected: unselected drawers are mounted and hidden (T8P.5-B1). |
 | T8P.23 Checkpoint critic | Fresh critic per section 8, flows C8P.1 to C8P.4 | A structured report. Defects become bug tasks before the tail. | P101. |
 | T8P.24 Node integration suite | `npm run test:integration`, then `.claude/scripts/acceptance-commands.sh plan/D08P-trade-detail-cockpit.md` | Every section 6.1 case of D1 to D08P passes; the script exits 0 for the Node rows. | |
 | T8P.25 Browser integration suite | `npm run test:e2e`; the acceptance script | Every section 6.2 case of D1 to D08P passes; the script exits 0 for every row. | No existing filter matches `e2e/d8p`. T8P.9 adds it to `test:e2e:2` with the first D08P spec (B8P.3), so every merge run after T8P.9 includes D08P's specs. |
@@ -812,6 +838,9 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.18 | 1 | D3 | In progress from `f0c9948d` | |
 | T8P.20 | 1 | D5 | In progress from `3b6a0e76` | |
 | T8P.21 | 1 | D6 | In progress from `7a253b4f` | |
+| T8P.28 | 1 | BV | Not started | |
+| T8P.29 | 1 | R2 | Not started | |
+| T8P.30 | 1 | AX | Not started | |
 | T8P.22 | 2 | — | Not started | |
 | T8P.27 | 2 | — | Not started | |
 | T8P.23 | 2 | — | Not started | |
