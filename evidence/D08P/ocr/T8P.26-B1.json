@@ -1,0 +1,98 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 16520,
+    "input_tokens": 16315,
+    "output_tokens": 205,
+    "cache_read_tokens": 8576,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/styles/payoff.css",
+      "files": [
+        "src/ui/cockpit/styles/payoff.css"
+      ]
+    }
+  ],
+  "session_id": "0701c989-0f79-4e85-b5be-d706772085de",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0701c989-0f79-4e85-b5be-d706772085de",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "c9948a31",
+      "resolved_base": "ec4c45010123c12015f401ac1e44a109ad715144",
+      "resolved_head": "c9948a311eed49d89bfb448b52dabbf5565accd0",
+      "exact_range": "ec4c45010123c12015f401ac1e44a109ad715144..c9948a311eed49d89bfb448b52dabbf5565accd0",
+      "source_artifact_sha256": "cc52ff6d558224bf07eab7fe3155592ea01c23bfc472165342a61dc615d832b8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2f8556d147ccf92cb169acb27ea6cc491774486c36924a397db3a1ca1f386694",
+          "path": "src/ui/cockpit/styles/payoff.css",
+          "fingerprint": "57c801bc27c907989f6a5c8e9a4a339679553223aaacc032c97629be10cd3fe7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2f8556d147ccf92cb169acb27ea6cc491774486c36924a397db3a1ca1f386694",
+          "path": "src/ui/cockpit/styles/payoff.css",
+          "fingerprint": "57c801bc27c907989f6a5c8e9a4a339679553223aaacc032c97629be10cd3fe7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "19b632b7f3bb4dcad34589561417a66aa51731597155778bf57edaa4cfe0fe67",
+          "path": "evidence/D08P/tdd-log/T8P.26-B1.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "240f5b09c44b6a9d9c0fb6891df36e5d98157e83b5e5c30a864f95380a2328f2",
+          "path": "evidence/D08P/browser/T8P.26-B1-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "d4d512e82838459be6e9c06c2713ff4e273127d5e7e4c84d5817c9b51f000312",
+          "path": "e2e/d8p/payoff-fit.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 13274
+  }
+}
