@@ -456,6 +456,8 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 ## Merge runs
 
+- **merge-8** (T8.10 merged; at `d9792d0a`): unit 173 / 1810, integration 106 / 229, browser task tier (no changed path since `cd0eef57` is on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-8-*.txt`.
+
 - **T8.10 merged** 2026-11-14: lane WB rebased onto `8963f210`; git dropped the already-merged commits, and T8.10 was fast-forwarded as `88640137`. Lane WB removed; it is recreated only if Q4 is answered (a) and T8.4-F1 is added.
 
 - **merge-7** (T8.5 merged; at `cd0eef57`): unit 173 / 1809, integration 106 / 229, browser task tier (no changed path since `fe8b0e1a` is on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-7-*.txt`.
