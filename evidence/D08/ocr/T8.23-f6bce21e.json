@@ -1,0 +1,253 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 1,
+    "total_tokens": 117492,
+    "input_tokens": 115380,
+    "output_tokens": 2112,
+    "cache_read_tokens": 19968,
+    "elapsed": "47s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 13,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/test-support.ts",
+      "content": "A configured responder that throws is evaluated before `Promise.resolve`, so the facade call throws synchronously instead of returning a rejected promise. Consequently, failure-path tests using `facade.exportBackup(request).catch(...)` (or rejection assertions) will bypass their promise error handling. Make the returned operation `async`, or catch responder exceptions and return `Promise.reject(error)`, so configured failures consistently use the promise-returning API.",
+      "existing_code": "      return Promise.resolve(typeof responder === 'function' ? responder(request) : responder);",
+      "start_line": 29,
+      "end_line": 29,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Workspace backup and restore coordination",
+      "files": [
+        "src/coordinators/workspace/backup-types.ts",
+        "src/coordinators/workspace/backup.ts",
+        "src/coordinators/workspace/index.ts",
+        "src/coordinators/workspace/restore.ts",
+        "src/coordinators/workspace/workspace.ts"
+      ]
+    },
+    {
+      "label": "Backup and restore UI and test support",
+      "files": [
+        "src/ui/backup/BackupView.tsx",
+        "src/ui/backup/RestoreFlow.tsx",
+        "src/ui/backup/facade.ts",
+        "src/ui/backup/test-support.ts"
+      ]
+    },
+    {
+      "label": "Application and host contracts for backup and restore",
+      "files": [
+        "src/app/types.ts",
+        "src/delivery/host.ts",
+        "tests/support/node-test-host.ts"
+      ]
+    }
+  ],
+  "session_id": "8d6da0c5-7fa6-42cd-8c51-2e0ac2e51776",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8d6da0c5-7fa6-42cd-8c51-2e0ac2e51776",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f6bce21e",
+      "resolved_base": "a6c88cddb60e6dae4d5382cfc5e34b6d8b6c457d",
+      "resolved_head": "f6bce21eff4311bfe112183d8cea20cc4cd40818",
+      "exact_range": "a6c88cddb60e6dae4d5382cfc5e34b6d8b6c457d..f6bce21eff4311bfe112183d8cea20cc4cd40818",
+      "source_artifact_sha256": "f0843616e6936abde96728818c8cfdbdb9403ec688fc61cc434f39f5ba02fe23"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "ec6de4b1d09c5583e1554f3a62b5111ee2f27b4c878ad5191187d68becca5d9c"
+        },
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "19225d62de306a7594c55279a38e3fc8024341e37c6947897b626dc353608680"
+        },
+        {
+          "item_id": "10dbe7e6edc8f076ddf56ac50a057bd4f30b24653c64527b84bd60b583945429",
+          "path": "src/delivery/host.ts",
+          "fingerprint": "3416e5afe32cb9225f94e5ee73a02c31305c8e6df3c01e2950095fd676025e02"
+        },
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "76453c389ff85f1a6b6686b0dc5ccb0d9acdf31f1cdf4670931321abb98dfb7c"
+        },
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "bc4c4a2e09016d95ac64f54cb2f8f61ce889209ee8aedcc9bee53aabe510d2da"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "867c44c142ae6c6b203e0e5c92304732344403183b024ba74c5426dc7d3edd49"
+        },
+        {
+          "item_id": "547db81e9791a43e377c1827bda084fbea41623c171b22f29e7e0ef52c1e77a2",
+          "path": "src/ui/backup/facade.ts",
+          "fingerprint": "0d0711dc799c639e6ae85da1e09634448ea8d5df6af3cf459bdc4663663f61ad"
+        },
+        {
+          "item_id": "6ec55e19b382f1e43856d0ab6fc5b462ca4ccf627ae31ca4e977f032058e4c13",
+          "path": "src/coordinators/workspace/index.ts",
+          "fingerprint": "7d8aa3158d6b7b17d54e253e7386966374bee1054cd8aea81c70296c77f4a725"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "bb6c297754a073ad79f53b79f3b0ee0de261fcea5962fa84917dbd6b76a53d0f"
+        },
+        {
+          "item_id": "e80e2a19fde5424983e2ffe2a13aeface5b85f3fc39adf304c622ce2eed7edbb",
+          "path": "tests/support/node-test-host.ts",
+          "fingerprint": "7dddacfa8e3bcebef12a96472bd18ae014ac239892a33fbeaf26231bc95b6086"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "a5fe5ed9e1d0b8e3dc03fece71a3fa3ad4149766d00058e47ad6fc844818348a"
+        },
+        {
+          "item_id": "fd0c3c20e8f5103f4b75eeca7ec59a50bf7b3708f7602c37f5e6ab85b58a051f",
+          "path": "src/ui/backup/test-support.ts",
+          "fingerprint": "59af31618fffa1d9632785ad4c330966df5e852887db47c1d6f92efcd9108900"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "ec6de4b1d09c5583e1554f3a62b5111ee2f27b4c878ad5191187d68becca5d9c"
+        },
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "19225d62de306a7594c55279a38e3fc8024341e37c6947897b626dc353608680"
+        },
+        {
+          "item_id": "10dbe7e6edc8f076ddf56ac50a057bd4f30b24653c64527b84bd60b583945429",
+          "path": "src/delivery/host.ts",
+          "fingerprint": "3416e5afe32cb9225f94e5ee73a02c31305c8e6df3c01e2950095fd676025e02"
+        },
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "76453c389ff85f1a6b6686b0dc5ccb0d9acdf31f1cdf4670931321abb98dfb7c"
+        },
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "bc4c4a2e09016d95ac64f54cb2f8f61ce889209ee8aedcc9bee53aabe510d2da"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "867c44c142ae6c6b203e0e5c92304732344403183b024ba74c5426dc7d3edd49"
+        },
+        {
+          "item_id": "547db81e9791a43e377c1827bda084fbea41623c171b22f29e7e0ef52c1e77a2",
+          "path": "src/ui/backup/facade.ts",
+          "fingerprint": "0d0711dc799c639e6ae85da1e09634448ea8d5df6af3cf459bdc4663663f61ad"
+        },
+        {
+          "item_id": "6ec55e19b382f1e43856d0ab6fc5b462ca4ccf627ae31ca4e977f032058e4c13",
+          "path": "src/coordinators/workspace/index.ts",
+          "fingerprint": "7d8aa3158d6b7b17d54e253e7386966374bee1054cd8aea81c70296c77f4a725"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "bb6c297754a073ad79f53b79f3b0ee0de261fcea5962fa84917dbd6b76a53d0f"
+        },
+        {
+          "item_id": "e80e2a19fde5424983e2ffe2a13aeface5b85f3fc39adf304c622ce2eed7edbb",
+          "path": "tests/support/node-test-host.ts",
+          "fingerprint": "7dddacfa8e3bcebef12a96472bd18ae014ac239892a33fbeaf26231bc95b6086"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "a5fe5ed9e1d0b8e3dc03fece71a3fa3ad4149766d00058e47ad6fc844818348a"
+        },
+        {
+          "item_id": "fd0c3c20e8f5103f4b75eeca7ec59a50bf7b3708f7602c37f5e6ab85b58a051f",
+          "path": "src/ui/backup/test-support.ts",
+          "fingerprint": "59af31618fffa1d9632785ad4c330966df5e852887db47c1d6f92efcd9108900"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "46a993aad5d33da6ab771cf8bdb8076943fdfeacbfa53fb7c7a31bf6f81f4305",
+          "path": "evidence/D08/suite-runs/T8.23-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "514af90e5cca2b54ac4c98e3d12b995bc3bb1a6b1bc48bf320a46bda51794c10",
+          "path": "evidence/D08/suite-runs/T8.23-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5af37de09cf63787e59cb60bfed9587e843ec227442ac0ff9f27ab04cdbe8790",
+          "path": "evidence/D08/suite-runs/T8.23-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d9ea95337f47f3efb7b5f8518cdc76937ea0647ed63639b1baa42bf0758ae860",
+          "path": "evidence/D08/suite-runs/T8.23-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fe53861948f73309a6641403ad0825d53d54e5323d482b037378c91c7c2d60a6",
+          "path": "evidence/D08/T8.23-verification.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 47148
+  }
+}

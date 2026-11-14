@@ -1,0 +1,251 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 7 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 7,
+    "total_tokens": 103927,
+    "input_tokens": 100907,
+    "output_tokens": 3020,
+    "cache_read_tokens": 8320,
+    "elapsed": "1m45s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/backup/format/canonical-json.ts",
+      "content": "`map` skips sparse-array holes, so `canonicalJson([, 1])` returns `[,1]` (invalid JSON), while `canonicalJson(new Array(1))` silently returns `[]`. Iterate every index and reject missing elements with `CanonicalJsonUnsupported` at the corresponding index path, just as for explicit `undefined`. Add sparse-array regression cases.",
+      "existing_code": "  return `[${items.map((item, i) =\u003e write(item, `${path}[${i}]`)).join(',')}]`;",
+      "start_line": 38,
+      "end_line": 38,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/backup/format/writer.ts",
+      "content": "Closing a different section silently discards the currently open hash. For example, writing a record for `a` and then calling `writeSectionEnd('b', {})` writes an empty digest for `b`, but the reader computes `b`'s digest over that record. Reject a mismatched section name before modifying hash state; preserve the empty-section case only when no section is open. Add a mismatched-close test.",
+      "existing_code": "    const hash = this.openSection?.name === section ? this.openSection.hash : sha256.create();\n    const digest = bytesToHex(hash.digest());\n    this.openSection = undefined;",
+      "start_line": 43,
+      "end_line": 45,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/backup/format/reader.ts",
+      "content": "Returning at the manifest skips the remaining compressed input and therefore can skip gzip trailer validation. If the manifest is delivered before a later chunk containing a damaged or missing trailer, iteration succeeds instead of reporting `Corrupt`. Drain the decompression stream through EOF before completing successfully, and test a chunked gzip input whose trailer is corrupt or truncated after a complete manifest.",
+      "existing_code": "      if (line.kind === 'manifest') return;",
+      "start_line": 88,
+      "end_line": 88,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/backup/format/reader.ts",
+      "content": "The acquired reader is never canceled or released. Normal completion at the manifest, parsing errors, and consumers breaking out of iteration can all leave the upstream stream active and locked. Wrap iteration in `try/finally`, cancel unfinished reads and release the reader lock; ensure the replay stream also releases its underlying reader. Test cleanup with a custom stream's `cancel` callback.",
+      "existing_code": "  const reader = (compressed ? stream.pipeThrough(gunzip) : stream).getReader();",
+      "start_line": 19,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/backup/format/reader.ts",
+      "content": "The sniff loop counts bytes across arbitrary chunks, but these expressions assume the magic bytes are in the first two chunks. A valid stream emitting an empty chunk followed by gzip data (or `[0x1f]`, an empty chunk, then `[0x8b, ...]`) is misclassified as plain text and rejected. Obtain the first two bytes across nonempty chunks and add stream-input tests with empty chunks and split magic bytes.",
+      "existing_code": "  const first = head[0] ?? new Uint8Array();\n  const second = first.length \u003e 1 ? first[1] : head[1]?.[0];",
+      "start_line": 110,
+      "end_line": 111,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/backup/format/writer.ts",
+      "content": "Section names are unrestricted strings, but assigning `sectionDigests['__proto__']` on an ordinary object invokes the inherited setter rather than storing a digest. That section is silently absent from the manifest and returned digest map. Use a null-prototype dictionary here and in the reader's `sectionDigests`, or explicitly reject unsupported names. Add a round-trip test for `__proto__`.",
+      "existing_code": "  private readonly sectionDigests: Record\u003cstring, string\u003e = {};",
+      "start_line": 21,
+      "end_line": 21,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/backup/format/writer.ts",
+      "content": "`finish()` succeeds even when a section still has records awaiting `writeSectionEnd()`. For example, `writeHeader({}); writeRecord('a', 'x', {}); finish({})` produces a finalized artifact whose manifest omits section `a` and whose records have no section-end digest. Reject finishing while `openSection` is set (before closing the gzip), so an accidentally omitted section-end call cannot silently produce an incomplete artifact. Add a test for this sequence.",
+      "existing_code": "  finish(manifestFields: Record\u003cstring, unknown\u003e): ArtifactOutput {\n    const fullDigest = bytesToHex(this.full.clone().digest());",
+      "start_line": 52,
+      "end_line": 53,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Backup format implementation, types, and tests",
+      "files": [
+        "src/backup/format/canonical-json.test.ts",
+        "src/backup/format/canonical-json.ts",
+        "src/backup/format/index.ts",
+        "src/backup/format/reader.test.ts",
+        "src/backup/format/reader.ts",
+        "src/backup/format/types.ts",
+        "src/backup/format/writer.test.ts",
+        "src/backup/format/writer.ts"
+      ]
+    }
+  ],
+  "session_id": "a59b69e2-a670-42ad-8601-ce119ce9875d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a59b69e2-a670-42ad-8601-ce119ce9875d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fdd92d08",
+      "resolved_base": "a6c88cddb60e6dae4d5382cfc5e34b6d8b6c457d",
+      "resolved_head": "fdd92d086fbe358b00736a598d14fc5e4f9359fe",
+      "exact_range": "a6c88cddb60e6dae4d5382cfc5e34b6d8b6c457d..fdd92d086fbe358b00736a598d14fc5e4f9359fe",
+      "source_artifact_sha256": "bd539e789a095451a0059968ae55a6a74c339deb864a34fb4471c0c7619bf559"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "01c94d4ef6b210a19922e41a868c4bc602a45178e883236120eba91a2faa85d9",
+          "path": "src/backup/format/writer.ts",
+          "fingerprint": "d1558b8e0a9814e27aa40fc4a7099094febf2ec0af5ede762e35a87411feb2a1"
+        },
+        {
+          "item_id": "233b26b30f71e85ccaff4da41b938336ffae86bdcc95e8b782f5874524ee7d8e",
+          "path": "src/backup/format/reader.ts",
+          "fingerprint": "43bb09e3c7a60b8e3437af1b7d77ed512b11613cf2d2042766121555fd05dbb6"
+        },
+        {
+          "item_id": "540fb40c41d03afc2bacd2492368fd88fdfa50391184e138907d14e2eaad700c",
+          "path": "src/backup/format/writer.test.ts",
+          "fingerprint": "c0a21887f5a9550e983aed6db08d2fd3011ffd67a096393017b4c0a1da3edeab"
+        },
+        {
+          "item_id": "9662b221b40055bf350f9a34035dd2154c29173953dad3f07346dc47a488e250",
+          "path": "src/backup/format/canonical-json.test.ts",
+          "fingerprint": "b58af0198067a10e943531245f95f6ae9159b905c84180b40eec0a705f0b82ae"
+        },
+        {
+          "item_id": "e0d26fc145f7c83c0c9cb05b329767c047054c0c60e0d5c8d6a208e328e10177",
+          "path": "src/backup/format/canonical-json.ts",
+          "fingerprint": "97c4aabefb56e2b72a667c335abe68f9c29cafd334b51893c7d2ccead726d608"
+        },
+        {
+          "item_id": "e7684b82570d854821cebeb43a06610115d7e24097fe1f6c34011b2bf2507e1c",
+          "path": "src/backup/format/index.ts",
+          "fingerprint": "9810f3327791433e7a44f2271369c7fc06f853151c9d2f8a6214c757aac50459"
+        },
+        {
+          "item_id": "f4794da52aeb51eeef1a8671adf5f761e9d80c5b9815bfd3737a4f68cc59bc10",
+          "path": "src/backup/format/types.ts",
+          "fingerprint": "2c2e545efcfbec7e83dbb28a45797e191e13df7560dee0cd24f5f23ec4196130"
+        },
+        {
+          "item_id": "f9db2ad0f4201b8bc7fd58510ab4f5d1fe89aafe6097ff9ec686947365174f3f",
+          "path": "src/backup/format/reader.test.ts",
+          "fingerprint": "36407b281bd6e7949eaaf2bcf091dcbf96e82d28952eabd113d06979ba525e1a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "01c94d4ef6b210a19922e41a868c4bc602a45178e883236120eba91a2faa85d9",
+          "path": "src/backup/format/writer.ts",
+          "fingerprint": "d1558b8e0a9814e27aa40fc4a7099094febf2ec0af5ede762e35a87411feb2a1"
+        },
+        {
+          "item_id": "233b26b30f71e85ccaff4da41b938336ffae86bdcc95e8b782f5874524ee7d8e",
+          "path": "src/backup/format/reader.ts",
+          "fingerprint": "43bb09e3c7a60b8e3437af1b7d77ed512b11613cf2d2042766121555fd05dbb6"
+        },
+        {
+          "item_id": "540fb40c41d03afc2bacd2492368fd88fdfa50391184e138907d14e2eaad700c",
+          "path": "src/backup/format/writer.test.ts",
+          "fingerprint": "c0a21887f5a9550e983aed6db08d2fd3011ffd67a096393017b4c0a1da3edeab"
+        },
+        {
+          "item_id": "9662b221b40055bf350f9a34035dd2154c29173953dad3f07346dc47a488e250",
+          "path": "src/backup/format/canonical-json.test.ts",
+          "fingerprint": "b58af0198067a10e943531245f95f6ae9159b905c84180b40eec0a705f0b82ae"
+        },
+        {
+          "item_id": "e0d26fc145f7c83c0c9cb05b329767c047054c0c60e0d5c8d6a208e328e10177",
+          "path": "src/backup/format/canonical-json.ts",
+          "fingerprint": "97c4aabefb56e2b72a667c335abe68f9c29cafd334b51893c7d2ccead726d608"
+        },
+        {
+          "item_id": "e7684b82570d854821cebeb43a06610115d7e24097fe1f6c34011b2bf2507e1c",
+          "path": "src/backup/format/index.ts",
+          "fingerprint": "9810f3327791433e7a44f2271369c7fc06f853151c9d2f8a6214c757aac50459"
+        },
+        {
+          "item_id": "f4794da52aeb51eeef1a8671adf5f761e9d80c5b9815bfd3737a4f68cc59bc10",
+          "path": "src/backup/format/types.ts",
+          "fingerprint": "2c2e545efcfbec7e83dbb28a45797e191e13df7560dee0cd24f5f23ec4196130"
+        },
+        {
+          "item_id": "f9db2ad0f4201b8bc7fd58510ab4f5d1fe89aafe6097ff9ec686947365174f3f",
+          "path": "src/backup/format/reader.test.ts",
+          "fingerprint": "36407b281bd6e7949eaaf2bcf091dcbf96e82d28952eabd113d06979ba525e1a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2646dce8ec337d5cb137299e8c6a8bece129b4587f0a777a6f4aa37fc802dbd4",
+          "path": "evidence/D08/suite-runs/T8.1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6641d1fe6faa7891f618ade0a96a71680a41420629051dc1d101d18eba797286",
+          "path": "evidence/D08/suite-runs/T8.1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6a24b59d1f94c0ca82a20661bf7851f68b874d5252bb043e2da89a2a633c53fd",
+          "path": "evidence/D08/suite-runs/T8.1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "88965cb2a7aa2eb9beeb9af3c7022dc2f50a9309ec47c28ff84884e0a628fefa",
+          "path": "evidence/D08/tdd-log/T8.1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dd815a8f5d2d00ed0b53e14b7167085022319827ea46de16254e089053f7d67d",
+          "path": "evidence/D08/suite-runs/T8.1-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 105271
+  }
+}

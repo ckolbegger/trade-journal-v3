@@ -21,6 +21,34 @@ Session lock `.claude/session.lock` taken (none existed). Location checks (D8 ha
 
 **Lane creation.** Lanes are created by the main session with `git worktree add .claude/worktrees/d08-<lane> -b d08/<lane> <head>` inside this worktree, and each `tdd-task` is dispatched without the isolation flag, told to work only in that lane's absolute path. This follows the user's decision of 2026-11-13 in D08P (`evidence/D08P/structural.md`, "Lane creation"): the Agent tool's `isolation: "worktree"` creates its worktrees under the main checkout from a commit without `plan/` or `.claude/scripts/`. The path and branch are section 3.2's.
 
+## T8.1 Artifact format
+
+Lane F, commit `fdd92d08` (6 cases red then green; one first-run pass flagged: "should accept records pushed one at a time", mutation-checked, see `tdd-log/T8.1.md`). Lane tier `T8.1`: unit 165 files / 1754 tests, integration 106 / 229, checks pass. `@noble/hashes` 2.4.0 and `fflate` 0.8.3 were already exact pins in `package.json` and `package-lock.json` at the base commit, so T8.1 changed neither (A226's `npm install` is expected to change nothing).
+
+**ocr review of `fdd92d08`** (session `a59b69e2-a670-42ad-8601-ce119ce9875d`, gpt-6.1-sol, 8 files, 7 findings; raw: `ocr/T8.1-fdd92d08.json`). All 7 judged Valid, so each becomes a bug task, run one at a time in lane F:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.1-B1 | `reader.ts:88` returns at the manifest line without reading the rest of the stream | a damaged gzip trailer, or content after the manifest, goes undetected | it should report Corrupt when the gzip trailer is damaged or content follows the manifest line |
+| T8.1-B2 | `reader.ts:19` never cancels or releases the source on early return, error or an abandoned iteration | the source stream stays locked and its cancel never runs | it should cancel the source stream when the consumer stops early or the read fails |
+| T8.1-B3 | `reader.ts:110` sniffs the gzip magic only in the first two chunks | an empty leading or middle chunk makes valid gzip read as plain text | it should detect gzip when the magic bytes arrive after or across empty chunks |
+| T8.1-B4 | `writer.ts:43` `writeSectionEnd` for a section other than the open one writes an empty digest | a caller slip yields an artifact that fails verification | it should throw when writeSectionEnd names a section other than the open one |
+| T8.1-B5 | `writer.ts:52` `finish()` accepts an open section | a forgotten section end yields a quietly incomplete artifact | it should throw when finish is called while a section is open |
+| T8.1-B6 | `canonical-json.ts:38` sparse-array holes become empty text | invalid JSON or a silently dropped element | it should reject a sparse array hole with CanonicalJsonUnsupported naming its path |
+| T8.1-B7 | `writer.ts:21` a section named `__proto__` is lost from the plain-object digest map | the section is missing from the manifest and returned digests | it should record a section named __proto__ in the manifest and returned digests |
+
+## T8.23 Types, skeletons and ports
+
+Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verification.md`, copied here at merge: typecheck, `tsc6 --noEmit`, lint, lint:deps exit 0; `npx vitest run --project unit` 162 files / 1748 tests (unchanged). Lane tier `T8.23`: unit 162 / 1748, integration 106 / 229, checks 14 of 14.
+
+**Implementation-level choices (recorded, not stops).** (1) NodeTestHost lives in `tests/support/node-test-host.ts`; section 3.2's "`tests/integration/d1/support.ts`'s NodeTestHost" names the wrong file, so the task edited the real one, which no other lane owns. (2) A new `src/coordinators/workspace/backup-types.ts` holds the shared shapes, because coordinators can't import `src/app`; `src/app/types.ts` re-exports them. (3) `backup.ts` and `restore.ts` take their own deps interfaces that `WorkspaceDeps` satisfies structurally, to avoid import cycles. A WB or WR task that needs a dependency `WorkspaceDeps` lacks would edit `workspace.ts`, which is a pending decision (section 3.2). (4) A127: `WorkspaceSnapshotBinding` already holds `databaseName` and `contentRevision`; unchanged. (5) `StatusBase.backupActions?` is optional and unset until T8.10.
+
+**ocr review of `f6bce21e`** (session `8d6da0c5-7fa6-42cd-8c51-2e0ac2e51776`, gpt-6.1-sol, 12 files, 1 finding; raw: `ocr/T8.23-f6bce21e.json`):
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.23-B1 | `src/ui/backup/test-support.ts:29` a throwing responder escapes synchronously | a UI test asserting a rejected operation sees a synchronous throw instead | it should return a rejected promise when a configured responder throws |
+
 ## Critic cost
 
 | Critic | Report | Flows | Result | Tokens | Tool calls | Duration | Brief |
