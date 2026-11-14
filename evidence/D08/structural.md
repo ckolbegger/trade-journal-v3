@@ -42,7 +42,8 @@ Lane F, commit `fdd92d08` (6 cases red then green; one first-run pass flagged: "
 - **T8.1-B3** `9e731c68`: red (gzip read as plain text: "not valid for encoding utf-8") then green; the sniff skips empty chunks. Lane tier: unit 1757, integration 229, checks 14 of 14. ocr (session `e5093f15-9809-497f-b71a-5c95ff35c8d6`, 2 files): **No findings.** Raw: `ocr/T8.1-B3-9e731c68.json`.
 - **T8.1-B4** `b137b550`: red ("expected [Function] to throw") then green; `writeSectionEnd` throws "Section trades is still open; cannot end section journal". Implementation-level choice accepted: ending a section with nothing open stays legal (an empty section, digest = SHA-256 of nothing), since an empty store must export; the brief's extra "no section open" throw was the main session's addition, not ocr's finding. Lane tier: unit 1758, integration 229, checks 14 of 14. ocr (session `fdfe7bee-5793-4eb5-bd9f-e90524ef6657`, 2 files): **No findings.** Raw: `ocr/T8.1-B4-b137b550.json`.
 - **T8.1-B5** `1c12878c`: red ("expected [Function] to throw an error") then green; `finish()` throws naming the open section. Lane tier: unit 165 / 1759, integration 106 / 229. ocr (session `ebb2a4cc-8750-4956-8b9c-1c2bd3ea1663`, 2 files): **No findings.** Raw: `ocr/T8.1-B5-1c12878c.json`.
-- **T8.1-B6** `7eac25c3`: red ("expected undefined to be an instance of CanonicalJsonUnsupported": holes skipped) then green; `writeArray` is an index loop that throws on a hole, naming its path. The test builds holes with `new Array(n)`, because lint forbids sparse literals. Lane tier: unit 1760, integration 229, checks 14 of 14.
+- **T8.1-B6** `7eac25c3`: red ("expected undefined to be an instance of CanonicalJsonUnsupported": holes skipped) then green; `writeArray` is an index loop that throws on a hole, naming its path. The test builds holes with `new Array(n)`, because lint forbids sparse literals. Lane tier: unit 1760, integration 229, checks 14 of 14. ocr (session `869e3332-9cf1-46ba-b23b-3e7d71846a7a`, 2 files): **No findings.** Raw: `ocr/T8.1-B6-7eac25c3.json`.
+- **T8.1-B7** `73e937fb`: red ("expected [] to deeply equal [ '__proto__' ]") then green; `sectionDigests` is `Object.create(null)`, and the test asserts the exact manifest line. Lane tier: unit 165 / 1761, integration 106 / 229, checks 14 of 14. ocr (session `0e4a6132-cf7d-4469-a480-45c481330283`, 2 files): **No findings.** Raw: `ocr/T8.1-B7-73e937fb.json`.
 
 ## T8.3 Export snapshot read and layouts
 
@@ -68,6 +69,7 @@ Lane PS, commit `596b02bb` (4 cases). Lane tier `T8.3`: unit 164 / 1754, integra
 | T8.3-B4 (Doubtful) | `export-snapshot.ts:114` the next-page key is read after `onBatch` | a callback that changes a record's key breaks paging | it should page by the key read before onBatch sees the batch |
 
 - **T8.3-B1** `8ac2ff6a`: red ("expected [ Error: late failure ] to deeply equal []": an unhandled rejection) then green. The guard attaches a no-op rejection handler before returning `EarlyAutoCommitGuard`. Lane tier: unit 164 / 1755, integration 106 / 229, checks 14 of 14. ocr (session `24039bc2-5d37-4d63-84be-224f2bebcc7d`, 2 files): **No findings.** Raw: `ocr/T8.3-B1-8ac2ff6a.json`.
+- **T8.3-B2** `ea739d7a`: red ("expected [ 'no-such-workspace' ] to not include 'no-such-workspace'") then green. `onupgradeneeded` aborts the open, so the read returns `ReadFailed('meta')` and no database is created. Lane tier: unit 1755 of 1756 (`TradeList.test.tsx` "should render distinct Loading, Ready, Empty…" failed under load and passed alone, see Flakes), integration 229, checks 14 of 14. ocr (session `94883f97-9c0c-4f1e-ad5c-04719bb1df6b`, 2 files): **No findings.** Raw: `ocr/T8.3-B2-ea739d7a.json`.
 
 ## T8.12 Backup page
 
@@ -81,7 +83,8 @@ Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks
 | T8.12-B2 | `BackupView.tsx:55` only the stage is kept | IntegrityBlocked, ReadFailed and Conflict all read "couldn't be read" | it should show each Not Completed reason in its own words (paused: Q2, part B4) |
 | T8.12-B3 | `BackupView.tsx:88` the Downloaded line stays after Completed | "Downloaded, not verified yet" shows next to "Backup complete" | it should replace the Downloaded line with Backup complete once verification completes |
 
-- **T8.12-B3** `74c85b3e` (run before B2, which waits on Q2): red ("expected <p></p> to be null") then green; the Downloaded line shows only while the outcome isn't Completed. Lane tier: unit 164 / 1758, integration 106 / 229, checks 14 of 14.
+- **T8.12-B3** `74c85b3e` (run before B2, which waits on Q2): red ("expected <p></p> to be null") then green; the Downloaded line shows only while the outcome isn't Completed. Lane tier: unit 164 / 1758, integration 106 / 229, checks 14 of 14. ocr (session `36b59840-87e6-4071-b82e-58696e752996`, 2 files): **No findings.** Raw: `ocr/T8.12-B3-74c85b3e.json`.
+- **T8.12-B4** `eb7ddd3e`: red ("expected <p role="status"></p> to be null": the old check's progress re-set `checking`) then green; `onProgress` applies only while the download count is unchanged. Lane tier: unit 164 / 1759, integration 106 / 229, checks 14 of 14.
 - **T8.12-B1** `5e11ab01`: red ("expected <p role="status"></p> to be null": A's Backup complete still shown under B) then green. A new download clears the outcome, and a download counter drops a verification that finishes after a newer download. Lane tier: unit 164 / 1757, integration 106 / 229, checks 14 of 14. ocr (session `39b4cf87-84e0-4763-957e-ff71b37f37f1`, 2 files, 2 findings, both Valid; raw: `ocr/T8.12-B1-5e11ab01.json`):
 
 | Bug task | Finding | Defect | `it should` case |
@@ -116,6 +119,8 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 | T8.14-B5 (Doubtful) | `AppShell.tsx:76` A143's Recovery Only copy names Backup even when it isn't installed | the copy points at a page that doesn't exist | it should keep the earlier Recovery Only copy when Backup isn't installed |
 
 - **T8.14-B1** `8e71f075`: red ("Unable to find a label with the text of: Quantity": the form was swapped for Record Entry Unavailable) then green. The `WorkspaceReplaced` handler records the open path in `refusedAt`, as `report` does. Lane tier: unit 163 / 1756, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known until T8.11). ocr (session `2ac57042-65c3-4da9-ae24-7b9d81c9a027`, 2 files): **No findings.** Raw: `ocr/T8.14-B1-8e71f075.json`.
+- **T8.14-B2** `cd96d625`: red ("expected <p role="status"><span></span></p> to be null") then green; the blocked view's Downloaded line hides once the message is Backup complete. Lane tier: unit 163 / 1757, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known). ocr (session `e7ebf14d-9003-4c10-8ff5-9e089b71fa65`, 2 files): **No findings.** Raw: `ocr/T8.14-B2-cd96d625.json`.
+  - Reviewer's note, not an ocr finding: the condition compares against the literal text "Backup complete". T8.14-B3 reworks these texts after Q2, so its brief will have it keep the Completed state, not the text.
 
 ## Merge runs
 
@@ -154,3 +159,4 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 |---|---|---|
 | T8.12 lane tier | `tools/wording-rules.test.ts` "reports navigator.userAgent…" (5 s timeout under load) | passed alone |
 | T8.14 lane tier | `src/ui/screens/PositionChangeForm.test.tsx` "focus after navigation" | passed twice alone |
+| T8.3-B2 lane tier | `src/ui/screens/TradeList.test.tsx` "Open list › should render distinct Loading, Ready, Empty…" | file passed alone (35 of 35) |
