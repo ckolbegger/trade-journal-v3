@@ -70,6 +70,11 @@ Lane PS, commit `596b02bb` (4 cases). Lane tier `T8.3`: unit 164 / 1754, integra
 
 - **T8.3-B1** `8ac2ff6a`: red ("expected [ Error: late failure ] to deeply equal []": an unhandled rejection) then green. The guard attaches a no-op rejection handler before returning `EarlyAutoCommitGuard`. Lane tier: unit 164 / 1755, integration 106 / 229, checks 14 of 14. ocr (session `24039bc2-5d37-4d63-84be-224f2bebcc7d`, 2 files): **No findings.** Raw: `ocr/T8.3-B1-8ac2ff6a.json`.
 - **T8.3-B2** `ea739d7a`: red ("expected [ 'no-such-workspace' ] to not include 'no-such-workspace'") then green. `onupgradeneeded` aborts the open, so the read returns `ReadFailed('meta')` and no database is created. Lane tier: unit 1755 of 1756 (`TradeList.test.tsx` "should render distinct Loading, Ready, Empty…" failed under load and passed alone, see Flakes), integration 229, checks 14 of 14. ocr (session `94883f97-9c0c-4f1e-ad5c-04719bb1df6b`, 2 files): **No findings.** Raw: `ocr/T8.3-B2-ea739d7a.json`.
+- **T8.3-B3** `78b3c622`: red ("expected { kind, store } to deeply equal { kind: 'UnknownLayout', … }") then green. When a layout store is missing, the stored schema version is read from `meta` first; a different version returns `UnknownLayout`. Lane tier: unit 164 / 1757, integration 106 / 229, checks 14 of 14. ocr (session `41e277dc-3d41-4928-83d2-91bb938a23fa`, 2 files, 1 finding, Valid; raw: `ocr/T8.3-B3-78b3c622.json`):
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.3-B5 | `export-snapshot.ts:70` the schema probe's `onerror` falls back to the layout's version | a failed `meta` probe reports ReadFailed naming the missing layout store, not `meta` | it should report ReadFailed naming meta when the schema probe fails |
 
 ## T8.12 Backup page
 
@@ -84,7 +89,8 @@ Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks
 | T8.12-B3 | `BackupView.tsx:88` the Downloaded line stays after Completed | "Downloaded, not verified yet" shows next to "Backup complete" | it should replace the Downloaded line with Backup complete once verification completes |
 
 - **T8.12-B3** `74c85b3e` (run before B2, which waits on Q2): red ("expected <p></p> to be null") then green; the Downloaded line shows only while the outcome isn't Completed. Lane tier: unit 164 / 1758, integration 106 / 229, checks 14 of 14. ocr (session `36b59840-87e6-4071-b82e-58696e752996`, 2 files): **No findings.** Raw: `ocr/T8.12-B3-74c85b3e.json`.
-- **T8.12-B4** `eb7ddd3e`: red ("expected <p role="status"></p> to be null": the old check's progress re-set `checking`) then green; `onProgress` applies only while the download count is unchanged. Lane tier: unit 164 / 1759, integration 106 / 229, checks 14 of 14.
+- **T8.12-B5** `5a4b631a`: red ("expected [ { file: File{}, … } ] to have a length of +0 but got 1": confirmBackup called for the stale file) then green; the count is read before the picker opens. Lane tier: unit 164 / 1760, integration 106 / 229, checks 14 of 14.
+- **T8.12-B4** `eb7ddd3e`: red ("expected <p role="status"></p> to be null": the old check's progress re-set `checking`) then green; `onProgress` applies only while the download count is unchanged. Lane tier: unit 164 / 1759, integration 106 / 229, checks 14 of 14. ocr (session `bb870ce6-19ca-4367-802e-cd2de64a708f`, 2 files): **No findings.** Raw: `ocr/T8.12-B4-eb7ddd3e.json`.
 - **T8.12-B1** `5e11ab01`: red ("expected <p role="status"></p> to be null": A's Backup complete still shown under B) then green. A new download clears the outcome, and a download counter drops a verification that finishes after a newer download. Lane tier: unit 164 / 1757, integration 106 / 229, checks 14 of 14. ocr (session `39b4cf87-84e0-4763-957e-ff71b37f37f1`, 2 files, 2 findings, both Valid; raw: `ocr/T8.12-B1-5e11ab01.json`):
 
 | Bug task | Finding | Defect | `it should` case |
@@ -124,6 +130,7 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 ## Merge runs
 
+- **merge-2** (T8.1 merged; at `683f10b2`): unit 166 / 1763, integration 106 / 229, browser task tier (no changed path since `fdc5e858` is on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-2-*.txt`.
 - **T8.1 merged** 2026-11-14: lane F rebased onto `f087f274` and fast-forwarded (`b96da61c` … `daa1b0d4`). Lane removed. `npm install` in the main worktree (A226) changed neither `package.json` nor `package-lock.json`.
 - **merge-1** (T8.23 merged; started at `fdc5e858`; plan-only commits landed during the run): unit 163 / 1750, integration 106 / 229, browser full tier (first matching path since `a6c88cdd`: `src/app/types.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-1-*.txt`.
 
