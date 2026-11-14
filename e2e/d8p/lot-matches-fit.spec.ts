@@ -20,6 +20,20 @@ const geometry = (box: Locator) =>
     };
   });
 
+// At narrow widths the box is a horizontal scroll container (auto or scroll) and, scrolled to its end, holds every Realized cell in its rect.
+const reachableByScrolling = (box: Locator) =>
+  box.evaluate((el) => {
+    const overflowX = getComputedStyle(el).overflowX;
+    const scrolls = overflowX === 'auto' || overflowX === 'scroll';
+    if (scrolls) el.scrollLeft = el.scrollWidth;
+    const frame = el.getBoundingClientRect();
+    const outside = [...el.querySelectorAll('tr')].filter((row) => {
+      const r = row.lastElementChild!.getBoundingClientRect();
+      return r.right > frame.right + 0.5 || r.left < frame.left - 0.5;
+    }).length;
+    return { scrolls, outside };
+  });
+
 async function expectFitsAt1280(page: Page, realized: string): Promise<void> {
   await openDrawer(page, 'Position');
   const box = lotMatchesBox(page);
@@ -33,6 +47,7 @@ async function expectFitsAt1280(page: Page, realized: string): Promise<void> {
     await setWidth(page, width);
     await expectNoSidewaysScroll(page, `Position at ${width} px`);
     await expect(box.getByRole('cell', { name: realized })).toHaveCount(1);
+    await expect.poll(() => reachableByScrolling(box), { message: `Realized cells unreachable at ${width} px` }).toEqual({ scrolls: true, outside: 0 });
   }
 }
 
