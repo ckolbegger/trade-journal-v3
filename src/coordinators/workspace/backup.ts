@@ -56,7 +56,8 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
   const exporter = deps.backup?.export ?? createInProcessExportPort(deps.persistence);
   return {
     async exportBackup(request) {
-      const inspection = await deps.persistence.lookupRoot();
+      const inspection = await deps.persistence.lookupRoot().catch(() => undefined);
+      if (!inspection) return notCompleted('ReadFailed');
       // Export never passes the write gate, so it serves a Writable, a blocked, and a Recovery Only root alike.
       if (inspection.kind === 'NoWorkspace') return notCompleted('ReadFailed');
       if (inspection.kind === 'Unreadable' || inspection.kind === 'Invalid') return notCompleted('IntegrityBlocked');
@@ -72,7 +73,7 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
         seedManifestVersions: seeds,
         expectedBinding: request.expectedBinding,
         onProgress: request.onProgress,
-      });
+      }).catch((): { readonly kind: 'Failed' } => ({ kind: 'Failed' }));
       if (run.kind === 'Conflict') return run;
       if (run.kind === 'Failed') {
         // The read changed nothing; describe the database to show the Workspace unchanged.
@@ -82,7 +83,7 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
       }
       const stamp = toWorkspaceLocal(deps.clock.now(), run.timeZone).replace('T', '-').replace(':', '');
       const fileName = `trade-journal-${stamp}-${run.fullDigest.slice(0, 8)}.tjbackup`;
-      const offered = await deps.backup?.download?.offer({ blob: run.blob, fileName, type: 'application/octet-stream' });
+      const offered = await deps.backup?.download?.offer({ blob: run.blob, fileName, type: 'application/octet-stream' }).catch(() => undefined);
       if (offered?.kind !== 'Offered') return { kind: 'NotCompleted', stage: 'Offer', reason: 'OfferFailed', workspaceBinding: run.sourceBinding };
       return {
         kind: 'Downloaded',

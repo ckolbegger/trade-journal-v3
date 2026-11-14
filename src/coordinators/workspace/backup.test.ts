@@ -173,6 +173,44 @@ describe('failures', () => {
       return result.kind === 'Read' ? { ...result, meta: result.meta.filter((record) => record['key'] !== 'settings') } : result;
     });
   });
+
+  it('should report NotCompleted when the download offer rejects', async () => {
+    const stack = await w7Stack();
+    const before = await dumpAll(stack.factory);
+    const download = { offer: () => Promise.reject(new Error('offer blew up')) };
+    const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download } });
+    const contentRevision = (before[W7_DATABASE]!['meta'] as Record<string, unknown>[]).find((record) => record['key'] === 'content')!['contentRevision'];
+    expect(await workspace.exportBackup({})).toEqual({
+      kind: 'NotCompleted',
+      stage: 'Offer',
+      reason: 'OfferFailed',
+      workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+    });
+    expect(await dumpAll(stack.factory)).toEqual(before);
+  });
+
+  it('should report ReadFailed when the export run rejects', async () => {
+    const stack = await w7Stack();
+    const before = await dumpAll(stack.factory);
+    const exporter = { run: () => Promise.reject(new Error('run blew up')) };
+    const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port, export: exporter } });
+    const contentRevision = (before[W7_DATABASE]!['meta'] as Record<string, unknown>[]).find((record) => record['key'] === 'content')!['contentRevision'];
+    expect(await workspace.exportBackup({})).toEqual({
+      kind: 'NotCompleted',
+      stage: 'Read',
+      reason: 'ReadFailed',
+      workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+    });
+    expect(stack.testHost.downloads.offered).toEqual([]);
+  });
+
+  it('should report ReadFailed when the journal storage lookup rejects', async () => {
+    const stack = await w7Stack();
+    const failing = { ...stack.persistence, lookupRoot: () => Promise.reject(new Error('lookup blew up')) };
+    const workspace = createWorkspace({ ...stack, persistence: failing, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
+    expect(await workspace.exportBackup({})).toEqual({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null });
+    expect(stack.testHost.downloads.offered).toEqual([]);
+  });
 });
 
 describe('export touches neither the root nor any store (A128, A129)', () => {
