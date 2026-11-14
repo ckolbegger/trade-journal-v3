@@ -2,7 +2,7 @@
 
 Source: the user's retrospective of the Trade Detail refactor (D08P), 2026-11-14. It reviewed the implementation session `080f089b-4413-4842-ac2b-aec7f7178d04` (2026-11-12 23:44 to 2026-11-14 11:05), [structural.md](structural.md), [final-report.md](final-report.md), the critic reports, and the agent environment: `.claude/agents/`, `.claude/docs/`, `.claude/settings.json` and ocr's file selection.
 
-D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5 and 8 are fixed; finding 6 is partly resolved; the rest are open.
+D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5, 8 and 10 are fixed; finding 6 is partly resolved; the rest are open.
 
 ## 1. **FIXED** ~~`build:releases` was blocked for agents, though it is on the allow list (permissions)~~
 
@@ -98,3 +98,11 @@ The rule is mechanical, so it belongs in a test, not a coding standard. A `tdd-t
 **What happened.** T8P.25's brief pointed to `plan/spec-reading/D08P.md`, which was never written. D08P's reading list is `plan/spec-reading/D07.md` plus D9's entries (A218). The agent noticed and read the plan sections directly.
 
 **Proposed fix.** `implementing.md` says to use the breakdown's own spec-reading row when no `Dnn.md` exists, or each breakdown names its list.
+
+## 10. **FIXED** ~~The cumulative run skipped the tool tests (automated checks)~~
+
+~~**What happened.** Found during BUG-4.2, after the retrospective. The unit stage in `.claude/scripts/full-suite.sh` ran `npx vitest run src`, so it skipped the `unit` project's `tools/**/*.test.ts` files (`vite.config.ts`): six files and 86 tests, BUG-4.2's included. They passed only when someone ran them by hand.~~
+
+~~**Applied** (`fb294146`, at the user's direction). The unit stage runs `npx vitest run --project unit`, which takes the project's whole include. `suite-runner.md`'s report template names the same command.~~
+
+~~**Verified.** The unit stage ran 162 files, 1748 passed: the earlier 1662 plus the 86 tool tests (`structural.md`, "Unit stage includes the tool tests"). Later runs report 1748 where earlier ones reported 1662.~~
