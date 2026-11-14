@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import type { ClosedTradeDetail, OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { calculation, closedViaSale, FACTS_INCOHERENT_FIGURE, signed } from '../../figures.ts';
+import { calculation, closedViaSale, FACTS_INCOHERENT_FIGURE, settlementDueFigure, signed } from '../../figures.ts';
 import { money, quantity, rMultiple, shortDate } from '../../format.ts';
 import { closedViaOption, timingWords } from '../../screens/option-disposition.ts';
 import { contractCount } from '../../screens/option-words.ts';
@@ -41,7 +41,8 @@ function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined): Omit<P
   const { firstMarksDue } = view.current;
   if (firstMarksDue !== undefined) return { figure: NO_FIGURE, line: `Trade P&L once the ${shortDate(firstMarksDue)} session ends`, openLine: openLineOf(view) };
   // A contract due for settlement has no figure: its reason names the contract, and the line says what the figure waits for.
-  if (view.settlement.length > 0 && pnl.kind === 'Unavailable') return { figure: calculation(pnl, money), line: 'Trade P&L once the expiration is recorded' };
+  const due = view.settlement[0];
+  if (due && pnl.kind === 'Unavailable') return { figure: settlementDueFigure(due), line: 'Trade P&L once the expiration is recorded' };
   return {
     figure: calculation(pnl, money),
     ...(pnl.kind === 'Value' && toneProps('tone', pnl.value)),

@@ -2,7 +2,7 @@
 // reads `app/types`. The words are the moved sections' own (P96).
 import type { TradeDetailView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { calculation } from '../../figures.ts';
+import { calculation, settlementDueFigure } from '../../figures.ts';
 import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, quantity, ratio, rMultiple, tradeSummary } from '../../format.ts';
 import { instrumentLabel } from '../../calculation-words.ts';
 import { conditionDirection, exerciseIntentText } from '../../screens/option-words.ts';
@@ -51,7 +51,11 @@ function conditionFiguresGroup(view: TradeDetailView): PlanRiskGroup | undefined
   if (!('current' in view) || 'terminalDisposition' in view) return undefined;
   const { conditions } = view.current.evaluation;
   // A figure with no reading says why at the figure length, where it lives (A222).
-  const linesOf = (role: 'Stop' | 'Target') => conditions.filter((c) => c.role === role).map((c) => calculation(c.result, (reading) => measureText(reading.distance)));
+  // A contract due for settlement is not measured (W6), whichever reason its result carries on the expiration day.
+  const due = 'settlement' in view ? view.settlement[0] : undefined;
+  const lineOf = (c: (typeof conditions)[number]) =>
+    due && c.result.kind === 'Unavailable' ? settlementDueFigure(due) : calculation(c.result, (reading) => measureText(reading.distance));
+  const linesOf = (role: 'Stop' | 'Target') => conditions.filter((c) => c.role === role).map(lineOf);
   const rows = [
     { label: 'Risk to stop', value: linesOf('Stop') },
     { label: 'Reward to target', value: linesOf('Target') },

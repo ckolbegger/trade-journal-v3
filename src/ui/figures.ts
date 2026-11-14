@@ -1,4 +1,5 @@
 import type { CalculationResult } from '../app/types.ts';
+import type { OptionInstrument } from '../domain/instrument/index.ts';
 import { Rational } from '../domain/values/index.ts';
 import type { UnavailableReason } from '../domain/calculation-result/index.ts';
 import { notApplicableWords, text, unavailableWords, unboundedWords } from './calculation-words.ts';
@@ -17,6 +18,11 @@ const NO_ZONE = 'UTC';
 
 // The badge words for a reason without a number: the calculation-words module owns every text (P71).
 export const unavailableLabel = (reason: UnavailableReason): string => text(unavailableWords(reason, 'label', NO_ZONE));
+
+// The figure of a contract due for settlement at the figure length. A Detail's settlement items decide it, not the result's own reason: on the
+// expiration day itself the replay's newest session lacks the contract's Mark, so the result says MarkMissing.
+export const settlementDueFigure = (due: { readonly instrument: OptionInstrument; readonly expiration: string }): string =>
+  text(unavailableWords({ reason: 'SettlementDue', instrument: due.instrument, expiration: due.expiration }, 'figure', NO_ZONE));
 
 // A list has no result for a Trade whose facts cannot be replayed; it words FactsIncoherent, whose badge and figure these are.
 const FACTS_INCOHERENT = { reason: 'FactsIncoherent', findings: [] } as const satisfies UnavailableReason;

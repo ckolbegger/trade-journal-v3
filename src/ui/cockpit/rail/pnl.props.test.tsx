@@ -127,6 +127,17 @@ describe('P&L card (W3, W4)', () => {
     expect(option.querySelector('.pnl-open')).toBeNull();
   });
 
+  it('should name the contract on the expiration day itself, with no Mark missing text on the card', () => {
+    // On 20 Nov the replay's newest session has no Mark for the contract, yet the contract is due for settlement (W4, A224).
+    const friday = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', underlyingMark: '52.00' };
+    const view = optionOpenDetail('O-C', [OC_PC1, OC_PC2], friday);
+    expect(view.settlement.length).toBeGreaterThan(0);
+    const due = show(view, sinceMonday);
+    expect(due.querySelector('.pnl-figure')?.textContent).toBe('Settlement Due: XYZ 20 Nov 2026 55 Call');
+    expect(due.querySelector('.pnl-line')?.textContent).toBe('Trade P&L once the expiration is recorded');
+    expect(due.textContent).not.toContain('Mark missing');
+  });
+
   it('should name the contract on a Settlement Due Detail, and show "Not available" on an incoherent one', () => {
     // The contract expired on 20 Nov and is still held on the Monday after: the Trade P&L waits for the expiration to be recorded.
     const monday = { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };

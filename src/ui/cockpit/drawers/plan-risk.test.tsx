@@ -98,4 +98,17 @@ describe('Plan and Risk drawer: unavailable condition figures (A222, T8P.23-B8)'
     expect(figures).toEqual(['Mark missing: XYZ, Tue Oct 13', 'Mark missing: XYZ, Tue Oct 13']);
     expect(figures.some((figure) => figure?.includes('—'))).toBe(false);
   });
+
+  it('should word Risk to stop and Reward to target as Settlement Due on the expiration day, with no Mark missing text', () => {
+    // On 20 Nov the contract has no Mark yet is due for settlement: its conditions are not measured, as on the Monday after (W6).
+    const friday = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', underlyingMark: '52.00' };
+    const view = optionOpenDetail('O-C', [OC_PC1, OC_PC2], friday);
+    expect(view.settlement.length).toBeGreaterThan(0);
+    const { container } = render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const figures = Array.from(container.querySelectorAll('dt'))
+      .filter((term) => ['Risk to stop', 'Reward to target'].includes(term.textContent ?? ''))
+      .map((term) => term.nextElementSibling?.textContent);
+    expect(figures).toEqual(['Settlement Due: XYZ 20 Nov 2026 55 Call', 'Settlement Due: XYZ 20 Nov 2026 55 Call']);
+    expect(container.textContent).not.toContain('Mark missing');
+  });
 });
