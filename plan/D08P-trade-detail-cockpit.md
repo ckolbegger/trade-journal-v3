@@ -865,7 +865,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.22 | 2 | wire | In progress from `395f7ec5` (lane wire) | |
 | T8P.27 | 2 | — | Not started | |
 | T8P.23 | 2 | — | Not started | |
-| T8P.24 | 2 | — | In progress from `46bb44f3` (lane NI) | |
+| T8P.24 | 2 | NI | Done | `3037a7c3`; lane tiers `fe51f5a2`, `95a1c855` (after the rebase); acceptance browser rows wait for T8P.25 |
 | T8P.25 | 2 | — | Not started | |
 | T8P.26 | 2 | — | Not started | |
 
