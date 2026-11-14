@@ -1,104 +1,11 @@
 import { useState } from 'react';
-import type { ClosedTradeDetail, ExecutionFact, ExpirationFact, NarrativeItem, OpenTradeDetail, PositionChangeFact, TradeDetailNarrativeItem } from '../../../app/types.ts';
+import type { ExecutionFact, ExpirationFact, NarrativeItem, PositionChangeFact, TradeDetailNarrativeItem } from '../../../app/types.ts';
 import { Badge } from '../../Badge.tsx';
 import { instrumentLabel } from '../../calculation-words.ts';
-import { decimalMoney as price, localTime, money, quantity } from '../../format.ts';
+import { decimalMoney as price, localTime } from '../../format.ts';
 import { ChevronIcon } from '../../icons.tsx';
 import { executionWhat } from '../execution-line.ts';
-import { LotMatchesTable } from '../LotMatchesTable.tsx';
-import { Figure } from './figure.tsx';
-import { answerText, positionText, type PlannedLeg } from './words.ts';
-
-// The Open form's Position: what is held, its opening fees, and its Open Lots.
-export function PositionSection({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
-  const executions = view.positionChanges.flatMap((change) => change.executions);
-  const openedAt = (executionId: string) => localTime(executions.find((e) => e.factId === executionId)?.economicTime ?? '', timeZone);
-  return (
-    <section className="card" aria-labelledby="position-heading">
-      <h2 id="position-heading">Position</h2>
-      <dl className="figure-grid">
-        <Figure term="Position">{view.positions.map(positionText).join(', ')}</Figure>
-        <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
-        <Figure term="Last activity" plain>{localTime(view.lastActivity, timeZone)}</Figure>
-      </dl>
-      {/* Tables scroll inside their own focusable region on a narrow screen, never the page. */}
-      <div className="table-scroll lots-scroll" role="region" aria-label="Open Lots" tabIndex={0}>
-        <table className="trades lots">
-          <caption>Open Lots</caption>
-          <thead>
-            <tr>
-              <th scope="col">Opened</th>
-              <th scope="col" className="number">
-                Quantity
-              </th>
-              <th scope="col" className="number">
-                Price
-              </th>
-              <th scope="col" className="number">
-                Unconsumed opening fee
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {view.positions.flatMap((p) =>
-              p.openLots.map((lot) => (
-                <tr key={lot.openingExecutionId}>
-                  <td>{openedAt(lot.openingExecutionId)}</td>
-                  <td className="number">{quantity(lot.quantity)}</td>
-                  <td className="number">{money(lot.price)}</td>
-                  <td className="number">{money(lot.unconsumedOpeningFee)}</td>
-                </tr>
-              )),
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-// The derived Lot Matches, once any sale has been recorded. Amounts are the exact rationals the read
-// model carries, rounded to cents only here, for display (A80).
-export function LotMatchesSection({ view, timeZone }: { readonly view: OpenTradeDetail | ClosedTradeDetail; readonly timeZone: string }) {
-  if (view.lotMatches.length === 0) return null;
-  return (
-    <section className="card" aria-labelledby="lot-matches-heading">
-      <h2 id="lot-matches-heading">Lot Matches</h2>
-      <p id="lot-matches-note">Each match’s amount is rounded to the cent for display.</p>
-      <div className="table-scroll" role="region" aria-label="Matched lots" tabIndex={0}>
-        <LotMatchesTable
-          caption="Lot Matches"
-          describedBy="lot-matches-note"
-          rows={view.lotMatches}
-          executions={view.positionChanges.flatMap((change) => change.executions)}
-          settlements={view.positionChanges.flatMap((change) => change.settlements ?? [])}
-          option={view.plan.legs[0]?.instrument.kind === 'Option'}
-          timeZone={timeZone}
-        />
-      </div>
-    </section>
-  );
-}
-
-// How the Trade's fees reconcile, as the read model states them (A80): the plain sum incurred, and where
-// each opening and disposal fee went. Shown once a sale has been matched.
-export function FeeReconciliationSection({ view }: { readonly view: OpenTradeDetail | ClosedTradeDetail }) {
-  if (view.lotMatches.length === 0) return null;
-  const { feeReconciliation: fees } = view;
-  return (
-    <section className="card" aria-labelledby="fee-reconciliation-heading">
-      <h2 id="fee-reconciliation-heading">Fee reconciliation</h2>
-      <dl className="figure-grid">
-        <Figure term="Incurred fees">{money(fees.incurred)}</Figure>
-        <Figure term="Opening fees incurred">{money(fees.incurredOpening)}</Figure>
-        <Figure term="Opening fees allocated to Lot Matches">{money(fees.allocatedOpening)}</Figure>
-        <Figure term="Opening fees unconsumed">{money(fees.unconsumedOpening)}</Figure>
-        <Figure term="Disposal fees incurred">{money(fees.incurredDisposal)}</Figure>
-        <Figure term="Disposal fees allocated to Lot Matches">{money(fees.allocatedDisposal)}</Figure>
-      </dl>
-    </section>
-  );
-}
+import { answerText, type PlannedLeg } from './words.ts';
 
 // The Executions list shows each Position Change's recorded outcome; an owed Debt is shown in the Journal.
 export const outcomesOnly = (journal: readonly TradeDetailNarrativeItem[]): NarrativeItem[] =>

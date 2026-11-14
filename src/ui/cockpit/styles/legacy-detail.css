@@ -1,5 +1,7 @@
-/* The Trade Detail screen's own styles, moved unchanged out of app.css (D08P T8P.2). The cockpit replaces them
-   section by section; T8P.22 deletes what is left. Loaded after app.css, so the cascade order is as it was. */
+/* The Trade Detail screen's own styles, moved unchanged out of app.css (D08P T8P.2). T8P.22 and T8P.27 removed the rules of every section the
+   cockpit no longer renders; what is left styles the old pieces that live on inside the cockpit's drawers and rail: the executions list, the
+   Journal narrative and answers, Open Lots, the figure grid, the integrity panel and the back link. Loaded after app.css, so the cascade order
+   is as it was. */
 
 /* Trade Detail: a records disagreement is set apart; its heading and text carry the meaning. */
 .card.integrity {
