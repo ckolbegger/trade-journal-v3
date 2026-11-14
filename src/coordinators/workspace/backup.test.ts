@@ -1,6 +1,6 @@
 // Workspace.exportBackup (D8 T8.4), on W7 and its schema-5 sibling, through the in-process export port.
 import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'fflate';
+import { gunzipSync, gzipSync } from 'fflate';
 import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
@@ -366,6 +366,17 @@ describe('Not Verified', () => {
         },
       });
     expect(await confirm(unreadable)).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+  });
+});
+
+describe('Not Verified, not UTF-8 (A130)', () => {
+  it('should return Unreadable for a file whose text is not UTF-8, with no receipt', async () => {
+    const { workspace } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const text = new Uint8Array([0x7b, 0x22, 0x6b, 0xff, 0xfe, 0x22, 0x7d, 0x0a]);
+    const file = new File([gzipSync(text)], 'not-utf8.tjbackup');
+    expect(await workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
   });
 });
 

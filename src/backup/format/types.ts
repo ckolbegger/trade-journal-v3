@@ -78,9 +78,12 @@ export type ArtifactReadErrorCode = 'Truncated' | 'Corrupt';
 
 export class ArtifactReadError extends Error {
   readonly code: ArtifactReadErrorCode;
-  constructor(code: ArtifactReadErrorCode, detail: string) {
+  /** `NotUtf8` when the text failed the fatal UTF-8 decode (A130 calls that Unreadable, not corrupt). */
+  readonly reason: 'NotUtf8' | undefined;
+  constructor(code: ArtifactReadErrorCode, detail: string, reason?: 'NotUtf8') {
     super(`Artifact ${code}: ${detail}`);
     this.name = 'ArtifactReadError';
     this.code = code;
+    this.reason = reason;
   }
 }

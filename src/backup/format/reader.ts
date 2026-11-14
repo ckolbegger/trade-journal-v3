@@ -84,8 +84,13 @@ export async function* readArtifact(source: Blob | ReadableStream<Uint8Array>): 
   try {
     for (;;) {
       let chunk: Uint8Array | undefined;
+      let r: ReadableStreamReadResult<Uint8Array>;
       try {
-        const r = await reader.read();
+        r = await reader.read();
+      } catch (e) {
+        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e));
+      }
+      try {
         if (!r.done) {
           chunk = r.value;
           pending += decoder.decode(chunk, { stream: true });
@@ -93,7 +98,7 @@ export async function* readArtifact(source: Blob | ReadableStream<Uint8Array>): 
           decoder.decode();
         }
       } catch (e) {
-        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e));
+        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e), 'NotUtf8');
       }
       if (chunk === undefined) {
         throw new ArtifactReadError('Truncated', `the stream ended after line ${lineNumber}, before the manifest line`);

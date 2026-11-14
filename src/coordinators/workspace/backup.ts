@@ -133,6 +133,7 @@ async function verifyArtifact(file: File): Promise<Verified | { readonly kind: '
     }
   } catch (e) {
     if (sourceFailed) return { kind: 'Unreadable' };
+    if (e instanceof ArtifactReadError && e.reason === 'NotUtf8') return { kind: 'Unreadable' };
     if (e instanceof ArtifactReadError) return { kind: 'IncompleteOrCorrupt' };
     throw e;
   }
