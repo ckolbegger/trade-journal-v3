@@ -13,7 +13,7 @@ import { PlanRiskDrawer } from '../../cockpit/drawers/plan-risk.tsx';
 import { PositionDrawer } from '../../cockpit/drawers/position.tsx';
 import { priceHistoryTabCount } from '../../cockpit/drawers/price-history.props.ts';
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
-import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
+import { CurrentMarksOnly, TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 
@@ -98,10 +98,10 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
       case 'Today':
         return <TodayDrawer {...replayed} />;
       case 'Position':
-        // A state with no Today tab shows Today's content in its default drawer, so no figure disappears with it.
+        // A state with no Today tab shows Valuation's content, the current Marks card, in its default drawer (revision 96).
         return (
           <>
-            {!hasToday && open && <TodayDrawer {...replayed} />}
+            {!hasToday && open && <CurrentMarksOnly {...replayed} />}
             <PositionDrawer {...shell} />
           </>
         );

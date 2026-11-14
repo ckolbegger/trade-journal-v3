@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { Badge } from '../../Badge.tsx';
 import { Figure } from '../../screens/trade-detail/figure.tsx';
 import { PriceTrack } from '../track.tsx';
-import type { MarkCell, TodayDrawerProps } from './today.types.ts';
+import type { CurrentMarks, MarkCell, TodayDrawerProps } from './today.types.ts';
 import { todayProps, type TodayInput } from './today.props.ts';
 
 const MarkValue = ({ cell }: { readonly cell: MarkCell }) => (
@@ -32,34 +32,43 @@ const FigureCard = ({ id, heading, rows }: { readonly id: string; readonly headi
   </section>
 );
 
+// The current Marks card (revision 96).
+const CurrentMarksCard = ({ currentMarks }: { readonly currentMarks: CurrentMarks }) => (
+  <section className="card current-marks">
+    {currentMarks.missing && (
+      <p>
+        <Link to={currentMarks.missing.to}>{currentMarks.missing.text}</Link>
+      </p>
+    )}
+    {currentMarks.acknowledged && <p>{currentMarks.acknowledged}</p>}
+    {currentMarks.stale && <p>{currentMarks.stale}</p>}
+    <dl className="figure-grid">
+      {currentMarks.rows.map(({ label, value, plain }) => (
+        <Figure key={label} term={label} {...(plain && { plain })}>
+          {value}
+        </Figure>
+      ))}
+    </dl>
+    {currentMarks.correction !== undefined && (
+      <p>
+        <Badge tone="info">Corrected</Badge> {currentMarks.correction}
+      </p>
+    )}
+  </section>
+);
+
+// What a state without a Today drawer shows in its Position drawer: the current Marks card and nothing else of Today's (revision 96, T8P.31).
+export function CurrentMarksOnly(input: TodayInput) {
+  const { currentMarks } = todayProps(input);
+  return currentMarks ? <CurrentMarksCard currentMarks={currentMarks} /> : null;
+}
+
 // The Today drawer's content from finished props (A216).
 export function TodayDrawerView({ marks, currentMarks, noMarksText, tracksHeading, tracks, valuedAt, atEntry }: TodayDrawerProps) {
   return (
     <>
       {noMarksText && <p className="waiting">{noMarksText}</p>}
-      {currentMarks && (
-        <section className="card current-marks">
-          {currentMarks.missing && (
-            <p>
-              <Link to={currentMarks.missing.to}>{currentMarks.missing.text}</Link>
-            </p>
-          )}
-          {currentMarks.acknowledged && <p>{currentMarks.acknowledged}</p>}
-          {currentMarks.stale && <p>{currentMarks.stale}</p>}
-          <dl className="figure-grid">
-            {currentMarks.rows.map(({ label, value, plain }) => (
-              <Figure key={label} term={label} {...(plain && { plain })}>
-                {value}
-              </Figure>
-            ))}
-          </dl>
-          {currentMarks.correction !== undefined && (
-            <p>
-              <Badge tone="info">Corrected</Badge> {currentMarks.correction}
-            </p>
-          )}
-        </section>
-      )}
+      {currentMarks && <CurrentMarksCard currentMarks={currentMarks} />}
       {marks && (
         <section className="card" aria-labelledby="today-marks-heading">
           <h2 id="today-marks-heading">{marks.heading}</h2>

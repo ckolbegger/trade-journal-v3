@@ -229,4 +229,20 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(position?.hidden).toBe(true);
     expect(position?.querySelector('.current-marks')).toBeNull();
   });
+
+  it('should show only the current Marks card of the Today drawer in the Position drawer on a Settlement Due Detail', async () => {
+    const user = userEvent.setup();
+    renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' }));
+    await openDrawer(user, 'Position');
+    const panel = document.getElementById('drawer-panel-position')!;
+    expect(panel.querySelector('section.current-marks')).not.toBeNull();
+    // The tracks, condition lines and At entry are the Today drawer's own, so they are gone, hidden panels included.
+    expect(panel.querySelector('.tracks, .price-track')).toBeNull();
+    expect(within(panel).queryByText(/Where the prices? sits?/, { selector: 'h2' })).toBeNull();
+    expect(within(panel).queryByText(/Distance on /, { ignore: 'none' })).toBeNull();
+    expect(within(panel).queryByText(/Value at expiration/, { selector: 'dt, dd, span, small, p, li, div' })).toBeNull();
+    expect(within(panel).queryByRole('region', { name: /At entry/, hidden: true })).toBeNull();
+    expect(within(panel).queryByRole('heading', { name: /At entry/, hidden: true })).toBeNull();
+    expect(panel.querySelector('#today-at-entry-heading, #today-tracks-heading')).toBeNull();
+  });
 });
