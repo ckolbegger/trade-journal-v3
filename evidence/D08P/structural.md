@@ -1387,3 +1387,5 @@ The reviewer reported the lane modified and main clean; the reverse was true (ma
 **Re-review:** ocr ran on `cb27d447`. The in-place pass reviewed 2 files and the relocated pass 3, with 0 comments (`ocr/T8P.22-B.json`, `ocr/T8P.22-B-reloc.json`).
 
 **T8P.22 merge.** Only plan and evidence followed lane wire's base `0e9ac4c2`, so its tiers stand. Rebased onto `af5442ce` and fast-forwarded: `0c78979f` (task), `7090ad0b`, `8771f053` (B1, B2), `7effc464`. Lane wire was removed. Merge run 9 (`browser-auto 395f7ec5`) covers T8P.24, T8P.31 and T8P.22.
+
+**Merge run 9** at `c670929c` (`browser-auto 395f7ec5`, which chose the full tier from `e2e/d2/ui-alignment.spec.ts`; the merges of T8P.24, T8P.31 and T8P.22): unit 1651 (159 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 75 passed, no failures; run complete. The scripts saw the main session's uncommitted T8P.27 start record, and HEAD moved to `4b0bae31` (that record) before the browser stages. Both touch only plan and evidence, so the code tested is `c670929c`'s. The next merge run is `browser-auto c670929c`.
