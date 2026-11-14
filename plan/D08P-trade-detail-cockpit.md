@@ -839,12 +839,12 @@ Status values: `planned`, `covered`, `intentionally not advertised`.
 
 | Scenario | Deliverable | Tasks | Integration / browser | Critic | Command or procedure | Expected | Status |
 |---|---|---|---|---|---|---|---|
-| AC-MARK-004 (partial: series and replay keep explicit gaps; the grid shows them) | D08P | T8P.7, T8P.8, T8P.10, T8P.20 | I8P.1; B8P.2 | C8P.3 | `npm run test:integration -- d8p/replay` | Gaps explicit, no interpolation or carry-forward | planned (the chart in D9, candles in D11) |
-| AC-RESP-001 (re-proven: a just-confirmed option Plan's expiration line) | D08P | T8P.9 | I8P.6; B8P.3 | C8P.4 | `npm run test:integration -- d8p/detail` | The result equals the later read | planned |
-| AC-PERF-001 (cumulative: no replay on the ordinary path; one series read per Instrument) | D08P | T8P.10 | I8P.4 | — | `npm run test:integration -- d8p/replay-query-count` | Detail requests unchanged; one read per Instrument | planned |
-| AC-CAP-001 (cumulative) | D08P | T8P.11 | — | C8P.6 | `npm run verify:capabilities` | The manifest equals the reachable operations | planned |
-| AC-UI-001, AC-UI-002 (cumulative) | D08P | T8P.5, T8P.12–T8P.22 | B8P.5 | C8P.5 | `npx playwright test e2e/d8p/responsive-a11y.spec.ts` | No sideways scroll; axe clean | planned |
-| AC-CALC-003 (glossary: every condition remains visible; re-proven on the cockpit) | D08P | T8P.14 | B8P.1 | C8P.1 | `npx playwright test e2e/d8p/cockpit.spec.ts` | Every condition listed with its status | planned |
+| AC-MARK-004 (partial: series and replay keep explicit gaps; the grid shows them) | D08P | T8P.7, T8P.8, T8P.10, T8P.20 | I8P.1; B8P.2 | C8P.3 | `npm run test:integration -- d8p/replay` | Gaps explicit, no interpolation or carry-forward | covered (D08P, 2026-11-14; the chart in D9, candles in D11) |
+| AC-RESP-001 (re-proven: a just-confirmed option Plan's expiration line) | D08P | T8P.9 | I8P.6; B8P.3 | C8P.4 | `npm run test:integration -- d8p/detail` | The result equals the later read | covered (D08P, 2026-11-14) |
+| AC-PERF-001 (cumulative: no replay on the ordinary path; one series read per Instrument) | D08P | T8P.10 | I8P.4 | — | `npm run test:integration -- d8p/replay-query-count` | Detail requests unchanged; one read per Instrument | covered (D08P, 2026-11-14) |
+| AC-CAP-001 (cumulative) | D08P | T8P.11 | — | C8P.6 | `npm run verify:capabilities` | The manifest equals the reachable operations | covered (D08P, 2026-11-14) |
+| AC-UI-001, AC-UI-002 (cumulative) | D08P | T8P.5, T8P.12–T8P.22 | B8P.5 | C8P.5 | `npx playwright test e2e/d8p/responsive-a11y.spec.ts` | No sideways scroll; axe clean | covered (D08P, 2026-11-14; Journal paging focus is tech debt item 24, revision 100) |
+| AC-CALC-003 (glossary: every condition remains visible; re-proven on the cockpit) | D08P | T8P.14 | B8P.1 | C8P.1 | `npx playwright test e2e/d8p/cockpit.spec.ts` | Every condition listed with its status | covered (D08P, 2026-11-14) |
 
 ---
 
@@ -897,7 +897,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.23 | 2 | — | In progress: critic-1 at `05ca870f` (FAIL, B1–B8 done, `d15649d1` to `dc4aff42`); merge run 11; critic-2 at `b11aa7ab` (FAIL, revisions 97 and 98, B9–B13 and B13-B1 done, `61a27c87` to `0a146e03`); merge run 12; critic-3 at `0d251d22` (FAIL, revision 99); B14 `49cb92bf`, B14-B1 `c48ec4e3`. **Done**: the checkpoint closes under revision 99 | evidence through the B14-B1 quick run |
 | T8P.24 | 2 | NI | Done | `3037a7c3`; lane tiers `fe51f5a2`, `95a1c855` (after the rebase); acceptance browser rows wait for T8P.25 |
 | T8P.25 | 2 | — | Done | `a3b684c5`; full tier and acceptance exit 0 at it |
-| T8P.26 | 2 | — | In progress | |
+| T8P.26 | 2 | — | Done | critics 4 to 6 (PASS); B1 `c9948a31`, B2 `9153fc28`, B2-B1 `c4319845`, B3 `57fb1940`, `f2323324`, B4 `6b2eedd0`, B5 `4905cfa8`; closed on critic-6 under revision 100 |
 
 ---
 
