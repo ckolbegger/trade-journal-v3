@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 11146,
+    "input_tokens": 11056,
+    "output_tokens": 90,
+    "cache_read_tokens": 3328,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d8p/first-marks-pending.ts",
+      "files": [
+        "src/itg/relocated/d8p/first-marks-pending.ts"
+      ]
+    }
+  ],
+  "session_id": "796dd908-bb27-43e8-bf5b-dc957e2396c1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "796dd908-bb27-43e8-bf5b-dc957e2396c1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ac8e059affb4f9a963838d959ce6f13648ae287b",
+      "resolved_head": "365184eced312521fa2c462bcee31811d7feff8b",
+      "exact_range": "ac8e059affb4f9a963838d959ce6f13648ae287b..365184eced312521fa2c462bcee31811d7feff8b",
+      "source_artifact_sha256": "3e45f87f85b86b271d0638c7822233134f19203577c405515d4d64d3cd86dcbb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "97bb34b78b7a00a2b1a6b5f1bfe392e96c59d46460087726d6900ee29a47d26d",
+          "path": "src/itg/relocated/d8p/first-marks-pending.ts",
+          "fingerprint": "11a4a6ac9ef4f6e9365826c1cea591694d2ca16bfe42111c1b24f0bd2d379992"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "97bb34b78b7a00a2b1a6b5f1bfe392e96c59d46460087726d6900ee29a47d26d",
+          "path": "src/itg/relocated/d8p/first-marks-pending.ts",
+          "fingerprint": "11a4a6ac9ef4f6e9365826c1cea591694d2ca16bfe42111c1b24f0bd2d379992"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 6389
+  }
+}

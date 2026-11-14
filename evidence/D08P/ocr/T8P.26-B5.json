@@ -1,0 +1,119 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 32440,
+    "input_tokens": 32186,
+    "output_tokens": 254,
+    "cache_read_tokens": 4992,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/payoff.props.ts",
+        "src/ui/cockpit/rail/needs-you.props.ts"
+      ]
+    }
+  ],
+  "session_id": "e3d4be83-f6d3-47ba-8235-933bfae4c64d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e3d4be83-f6d3-47ba-8235-933bfae4c64d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "4905cfa8",
+      "resolved_base": "582602ce157a99145f0cbfbeed781ef1bce08da3",
+      "resolved_head": "4905cfa8ed18b971690124b303a9e54e3d8d9ebc",
+      "exact_range": "582602ce157a99145f0cbfbeed781ef1bce08da3..4905cfa8ed18b971690124b303a9e54e3d8d9ebc",
+      "source_artifact_sha256": "2685e66664e57b6ce47241114cf977dce490ffb59a68080caf7080586496b7f9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "99a5dcfc3fa6accda036957803f199282ebd53d3e96cc3cb09b6201be2281cee",
+          "path": "src/ui/cockpit/rail/needs-you.props.ts",
+          "fingerprint": "7fa7d7ed143e3b576f5c9f93f4b39324bb0afdf47bf2fef1302ddf72eb3b2766"
+        },
+        {
+          "item_id": "fc62c7d1696931b510d12cdf61179ae54f561d600d2f41580283205de2615dbf",
+          "path": "src/ui/cockpit/drawers/payoff.props.ts",
+          "fingerprint": "ab77defaaeac9edad370dd4cf3f5582b859581407fbad1a17343152e38c8b333"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "99a5dcfc3fa6accda036957803f199282ebd53d3e96cc3cb09b6201be2281cee",
+          "path": "src/ui/cockpit/rail/needs-you.props.ts",
+          "fingerprint": "7fa7d7ed143e3b576f5c9f93f4b39324bb0afdf47bf2fef1302ddf72eb3b2766"
+        },
+        {
+          "item_id": "fc62c7d1696931b510d12cdf61179ae54f561d600d2f41580283205de2615dbf",
+          "path": "src/ui/cockpit/drawers/payoff.props.ts",
+          "fingerprint": "ab77defaaeac9edad370dd4cf3f5582b859581407fbad1a17343152e38c8b333"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3bf5cc07412de666946e6ff0c99e1dd3ad9f9512e250588d302344352b95cf60",
+          "path": "src/ui/cockpit/drawers/payoff.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6ad0f248385489c7b1b5bacbce212b5c4c918fb2b1d7125207aaa863f57da558",
+          "path": "evidence/D08P/tdd-log/T8P.26-B5.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "7b7b43bd5aace0812a09a79f8e75a4a90b528793f840469a3f893fe9d5819452",
+          "path": "src/ui/cockpit/rail/needs-you.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "aa6c3be7c1ac3270194d886f7ba33dc3ca232862a6700109968da6519b80417e",
+          "path": "evidence/D08P/browser/T8P.26-B5-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "dd7e5fe7be3449a879b8f75eabdb655b321fb87bdbe7731432d8e461c778415e",
+          "path": "e2e/d8p/first-marks-pending.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 14063
+  }
+}
