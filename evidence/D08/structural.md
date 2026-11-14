@@ -127,6 +127,7 @@ T8.8 discards a rejected candidate with the existing `discardCandidate`.
 
 - **T8.7-B1** `0d7fd672`: red ("expected { kind: 'AlreadyInitialized', … } to deeply equal { kind: 'Activated' }") then green. A repeat activation of the candidate the pointer already names returns `Activated` (idempotent; A135's AlreadyInitialized is for a pointer naming another database). Lane tier: unit 168 / 1776, integration 106 / 229, checks 14 of 14. ocr (session `1033f50b-d368-438d-9854-99310e50c11e`, 2 files): **No findings.** Raw: `ocr/T8.7-B1-0d7fd672.json`.
 - **T8.7-B2** `0d31af59` (a test gap): a first-run pass, flagged. The behavior was built in T8.7. Mutation: removed the earlier database's deletion in `createRestoreCandidate`. Failure: "expected [ 'tj-root', 'tj-ws-r-0001', … ] to deeply equal [ 'tj-root', 'tj-ws-r-0002' ]". The code was restored, and its diff was empty. Lane tier: unit 168 / 1777, integration 106 / 229, checks 14 of 14. ocr (session `c85ea3eb-df51-4090-99de-f3290265b481`, 1 file): **No findings.** Raw: `ocr/T8.7-B2-0d31af59.json`.
+- **T8.7-B3** `4d62a6c0`: red ("expected [] to deeply equal [ 'tj-ws-r-0001' ]") then green; `createCandidate` writes through `putNames`. Lane tier: unit 168 / 1778, integration 106 / 229, checks 14 of 14. ocr (session `4e6e7f4c-e9a4-448a-9965-ee910487e7b9`, 2 files): **No findings.** Raw: `ocr/T8.7-B3-4d62a6c0.json`.
 
 ## T8.12 Backup page
 
@@ -152,6 +153,55 @@ Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks
 |---|---|---|---|
 | T8.12-B4 | `BackupView.tsx:74` a stale check's `onProgress` still sets `checking` | after a newer download the old check's progress shows and Verify stays disabled | it should ignore progress from a verification started before a newer download |
 | T8.12-B5 | `BackupView.tsx:67` the download count is read after the file picker resolves | a download made while the picker is open gets the old backup's Backup complete | it should drop a verification whose file was chosen for an earlier download |
+
+## T8.13 Restore flow
+
+Lane UB, commit `61fb47bb` (7 planned cases and one extra). New `RestorePreview.tsx`, `RestoreConfirm.tsx` and `backup-text.ts`; `BackupView.tsx` now imports its texts from `backup-text.ts`. Lane tier `T8.13`: unit 165 / 1769, integration 106 / 229, checks 14 of 14.
+
+**First-run passes, flagged and mutation-checked (`tdd-log/T8.13.md`):**
+- "should require the separate warning acknowledgment for Replace without a backup…": the mutation (Replace no longer waits for the acknowledgment) failed with "expected false to be true".
+- "should show a rejected or conflicting apply…": the mutation (the Conflict sentence mapped to undefined) failed with "Unable to find … Your journal changed after the backup was checked."
+- The extra inline-backup Conflict case: same mutation pattern, same failure.
+
+**Raised as Q5:** the acknowledgment label, repair lines, validator-code fallback, a failed prepare, and the "Marks acknowledged unavailable" label's `join`.
+
+**For T8.11:**
+- `RestoreFlow` renders router `Link`s (`/`, `/accounts`) in the Restore complete result.
+- The shell refreshes status and discards pre-Restore views after a Restore.
+- The facade passes `expectedBinding` through `exportBackup` and honors `signal` in `prepareRestore`.
+- First run reuses `RestoreFlow` with target `NoWorkspace`.
+
+**For T8.8:** `RestoreCounts.versions` keys are `trades`, `entries`, `debts`.
+
+## T8.4 Workspace exportBackup
+
+Lane WB, commit `321f4e62` (5 cases, red then green; no first-run passes; two invalid red rows, where the `-t` filter matched nothing, are noted). Lane tier `T8.4`: unit 172 / 1783, integration 106 / 229, checks 14 of 14.
+
+**New file `backup-export.ts`:**
+- `ExportJob`: plain data, so a worker can receive it.
+- `ExportRun`: `Built`, `Conflict` or `Failed`.
+- `ExportPort.run`.
+- `runExport(read, job)`.
+- `createInProcessExportPort(persistence)`.
+
+`BackupPorts.export?` defaults to the in-process port. `BackupDeps` and `workspace.ts` are unchanged.
+
+**Root outcomes:**
+
+| Root | Result |
+|---|---|
+| NoWorkspace | `NotCompleted(Read, ReadFailed)` |
+| Unreadable, Invalid, or an unknown layout | `NotCompleted(Read, IntegrityBlocked)` |
+| OlderSchema | export kind `BlockedDatabase` |
+| KnownWorkspace | export kind `Normal` |
+
+**Other details:**
+- The manifest `exclusions` list has 16 identifiers, including `record.revision` (Q3).
+- A schema-to-seed-manifest table lives in `backup.ts`. Rows for schemas 1–4 are inferred from the manifest files; only schema 5 is tested.
+
+**Raised as Q4:** the pipeline holds every projected batch until the read ends, because `readExportSnapshot` reports counts only after the last batch (A128 orders them first).
+
+**Untested branches:** `OfferFailed` and progress.
 
 ## T8.14 Shell, warnings, first run
 

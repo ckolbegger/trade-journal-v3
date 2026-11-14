@@ -90,3 +90,42 @@ This file lists every question asked of the user during D8, open and answered (d
 **Not a question:** journal entries' and declines' top-level `anchorTradeId` is stored data and A125 doesn't exclude it, so it is exported as stored.
 
 **Answer (2026-11-14):** (a), leave the stamps out ("Q3 a"). The export projection removes `revision` from every record, the manifest's `exclusions` names it, and Restore stamps records at the new database's revision 1. T8.2 starts. This refines A125 and is carried into r103.
+
+## Q4. Stream the export instead of holding it in memory (T8.4 report) — open, asked 2026-11-14
+
+**Task:** T8.4 (lane WB, committed `321f4e62`), and through it T8.11's worker and T8.19's benchmark. Nothing is paused: T8.4 is correct as built, and its review continues.
+
+**Question.** A128 says the export reads `meta` and every store's `count()` first, then streams batches through projection, hashing and gzip. T8.3's `readExportSnapshot` returns the binding, `meta` and counts only after the last batch. The artifact header needs the counts first. So T8.4 holds every projected batch in memory until the read ends, then writes the file. That's correct, but at the mature size (about 400 MB) it keeps the whole journal in memory, which P29 and A128 were written to avoid. Neither T8.3's nor T8.4's planned cases test this, and ocr didn't raise it, so it isn't a bug task under the review rule.
+
+**Options.**
+- (a) Add a follow-up task, T8.3-F1: `readExportSnapshot` calls an `onStart({ binding, meta, counts })` callback before the first batch, as A128 orders. Then T8.4-F1 has `runExport` write the header at start and stream each batch straight into the artifact writer. Both are small and run in lanes PS and WB before T8.11. Recorded as deviations from the frozen task list, with red/green cases ("it should report the binding, meta and counts before the first batch"; "it should write each batch into the artifact before the next is read").
+- (b) Keep the buffering, and let T8.19's benchmark show whether memory is a real problem at the mature size.
+
+**Recommendation:** (a). It's what A128 already specifies. It's cheap now and expensive after T8.11 builds the worker around it.
+
+**Also recorded, not questions (T8.4's implementation-level choices):**
+- An unknown layout returns `NotCompleted(Read, IntegrityBlocked)`, because the frozen reason type has no `UnknownLayout`.
+- The seed-manifest versions for schemas 1–4, used only by a blocked export of an old database, are inferred from the manifest files. Only schema 5 is tested.
+
+**Answer:** pending.
+
+## Q5. Restore flow gaps found while building T8.13 — open, asked 2026-11-14
+
+**Task:** T8.13 (lane UB, committed `61fb47bb`, under review). Nothing else is paused; T8.12 and T8.13 merge together once this is settled and the review is clean.
+
+| # | Gap | As built | Proposed |
+|---|---|---|---|
+| 1 | Label for the "Replace without a backup" acknowledgment checkbox (no approved row) | labelled by A142's warning sentence itself | keep: the checkbox reads "If this backup is wrong or incomplete, your current journal cannot be recovered." |
+| 2 | Repair lines (Q2 A7 approved "<Trade summary>: …") | the preview type `RestoreRepair { tradeId, kind, stored, expected }` carries no summary, so lines show the Trade id; the Entry Size line can't be told apart | T8.8 (which builds the preview) adds `tradeSummary` to `RestoreRepair` (a change to T8.23's frozen type) and uses `kind` values `Lifecycle` and `EntrySizeDeviation`; T8.13 then renders A7's two sentences exactly |
+| 3 | Module validator codes with no existing sentence (for example `PriceNegative`) | the bare code | one fallback sentence: "A record in the {section} section didn't pass a check ({code})." |
+| 4 | `prepareRestore` itself fails unexpectedly | stays on "Checking…" | "The backup couldn't be checked. Your current journal is unchanged." with **Choose backup file** |
+| 5 | Apply returns `ConfirmationRequired` or `SafetyBackupRequired` (the screen prevents both) | "Your current journal is unchanged." alone, with Check the backup again | keep |
+| 6 | Counts row "Marks acknowledged unavailable" (approved in Q2 A5) uses a phrase the wording check reserves for `calculation-words.ts` | assembled with `join(' ')` to pass the check, which defeats the check's purpose | export the label from `calculation-words.ts`, where the rule wants it, and import it |
+
+**Options.** (a) Approve the proposals as written; I add one follow-up task in lane UB for items 3, 4 and 6 (and 2's rendering once T8.8 supplies the fields), and note item 2 for T8.8. (b) Edit any row.
+
+**Recommendation:** (a).
+
+**Recorded, not questions:** the preview's source time uses the backup's time zone, since `RestoreFlow`'s frozen props carry no Workspace zone (the restored journal uses that zone; A8's warning says so). `RestoreCounts.versions` is keyed `trades`, `entries`, `debts`; T8.8 uses those keys. The Restore complete links go to `/` and `/accounts`, so `RestoreFlow` sits inside the router (T8.11).
+
+**Answer:** pending.
