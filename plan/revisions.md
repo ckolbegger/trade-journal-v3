@@ -2,6 +2,17 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 101: the commit tagged `claude-opus-5.5-plan-r101` (revision 100 plus decision 112). The D08P retrospective (finding 8) found B6.6 always failing. `dist-releases/d6` is the checked-out code labelled "d6", not D6.
+  - **B6.6 is deleted.** It tested an upgrade between two schemas no release for real use will have. Each schema step is covered by its fixture's integration migration tests and `verify:fixtures`, and in Chromium by B2.4 and B2.6.
+  - **The checked-out build is renamed** from `dist-releases/d6` to `dist-releases/current`.
+  - **`verify:fixtures` requires a fixture for every schema** from 1 to `SCHEMA_VERSION`.
+  - **Work:** bug tasks BUG-4.1 and BUG-4.2 in `plan/bug-tasks.md`, before D8, with no browser critic.
+  - **Rejected:**
+    - start builds for D6 and D7 with browser upgrades to the checked-out code (the main session's first draft);
+    - keeping B6.6, pointed at the checked-out code;
+    - marking B6.6 `test.fixme`.
+
+  Decision 76 stands, and tech debt item 10 stays open. AC-DEL-003's D6 row keeps `covered` from B6.6's pass at the D6 gate. No other acceptance scenario changes status, no durable compatibility changes, and `specs/` is unchanged. The next decision is 113. Decided by the user on 2026-11-14 ("Delete B6.6 and redraft r101 that way").
 - Revision 100: the commit tagged `claude-opus-5.5-plan-r100` (revision 99, no decision). D08P's third gate critic (T8P.26, critic-6) passed all six flows but left one moderate defect. That is the handoff's stop at three critics.
   - **The defect is accepted, not fixed (the user's choice, 2026-11-14).** In the Journal drawer, pressing › to the last page or ‹ to the first disables the pressed button, and keyboard focus falls to the page body. It becomes tech debt item 24 in `implementation-plan.md`, with where to look, the fix and its trigger.
   - **The gate closes on critic-6.** Its full tier (`T8P.26-B5`) and the acceptance script stand; the gate's bug tasks were T8P.26-B1 to B5 and B2-B1.

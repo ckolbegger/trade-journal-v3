@@ -7,6 +7,7 @@ This file holds bugs the user finds by hand between deliverables. Each one is wr
 | BUG-1 | The exercise checkbox is drawn as a full-width text box | 2026-11-12, user, after the D7S tag | Low (cosmetic) | Done 2026-11-12: `c906920b`; run `bug-1-2` passed (`evidence/D07S/structural.md`) |
 | BUG-2 | The option Plan's Expiration date is a plain text box: no date picker, US dates rejected, and a corrected date still shows the error | 2026-11-12, user, after the D7S tag | Moderate (misleads; the trader can finish only by guessing the format) | Done 2026-11-12: `2bef1d4e`; run `bug-1-2` passed (`evidence/D07S/structural.md`) |
 | BUG-3 | Risk from entry and Actual initial risk read $0.00 when the fill is beyond the headline option-price Stop, though another Stop is still live and the whole premium is at risk | 2026-11-12, user, after the D7S tag | High (a figure is wrong) | Done 2026-11-12: decision 109 (revision 82); `2b66f603`, B1 `d85016bb`, B2 `f6b33ed4`; run `bug-3` passed (`evidence/D07S/structural.md`) |
+| BUG-4 | B6.6 always fails, and the checked-out build is misnamed `d6` | 2026-11-14, user, D08P retrospective (finding 8) | Low (tests only; no product defect) | Not started: decision 112 (revision 101) |
 
 ---
 
@@ -174,3 +175,45 @@ Then one entry: Buy to open 1 at **7.35**, fee 0. The user's actual fill isn't k
 **Out of scope, raised for the user:**
 - Recording an entry that is already beyond one of the Plan's own Stops gives no warning. A note at entry may be worth a decision.
 - With the intended entry at 15.00 and a fill at 7.35, Entry Quality reads "Slippage −$765.00", which is correct but large. If the Plan's intended entry was a typo, the trader has no way to correct it before D17 (Management Revision).
+
+---
+
+## BUG-4: B6.6 always fails, and the checked-out build is misnamed `d6`
+
+**Found:** 2026-11-14, by the user, in the D08P retrospective (`evidence/D08P/retro.md`, finding 8), after the main session's extra `npm run test:e2e:release-history` run at the D08P gate.
+
+**What happens:**
+- B6.6 (`e2e/d6/update.spec.ts`, "Update from D5R2 with data") upgrades from `dist-releases/d5r2` to `dist-releases/d6` and expects About's schema "5". It reads "7".
+- `dist-releases/d6` is not D6. `tools/build-releases.ts:94` builds the checked-out code and labels it "d6". The name was right at D6 and never moved on, because decision 76 (revision 41) withdrew D7's A120, which would have built D6 from its tag.
+- B6.6 is tagged `@release-history`, so no routine run or gate runs it (decision 76). It has failed unnoticed since D7.
+
+**Decided (decision 112, revision 101):** delete B6.6, rename the checked-out build `current`, and make `verify:fixtures` require a fixture for every schema. No browser upgrade test is added.
+- **Why no browser upgrade test.** Every schema step is covered without one. Each schema change froze a fixture written by that release's own code (`tests/fixtures/workspace-v1` to `v7`; v6 holds D7's option Trades). Its integration tests migrate every earlier fixture to the new schema and compare the views with each snapshot field by field (I7S.1 for schema 7). `verify:fixtures` does the same in every complete run. In Chromium, B2.4 and B2.6 migrate a D1 build through every step to the checked-out code in every full tier, and B1.10 to B1.13 cover the update flow. Schemas 1 to 7 will never be released for real use (decision 76), so an upgrade test between two of them guards no real path.
+- **Why the rename.** The name `d6` made the checked-out build look like D6, which is how B6.6's failure was misread. `current` names where the build comes from, so no deliverable renames it again.
+- **Why the fixture check.** `verify:fixtures` checks every fixture that exists (`tools/verify-fixtures.ts:56`), but nothing requires one per schema. A schema change that skipped freezing its fixture would leave the integration coverage incomplete, and nothing would fail.
+
+**Tasks, in order.** Each is a fresh `tdd-task`, then `ocr-review` on its commit, then a quick `suite-runner` run (`browser-task`), as for any bug task.
+
+1. **BUG-4.1, structural: delete B6.6 and rename the checked-out build.**
+   - Delete `e2e/d6/update.spec.ts`, which holds only B6.6.
+   - `tools/build-releases.ts`: `buildLabelled('d6')` becomes `buildLabelled('current')`, in `RELEASES` and the label type too, and its header comment says the checked-out code is built as `current`.
+   - `tools/verify-releases.ts`: `d6` becomes `current` in `verified` and the schema check, which still expects `SCHEMA_VERSION`.
+   - `e2e/d4/support.ts`: the `d4Release` fixture serves `dist-releases/current`; its comments say "the checked-out code".
+   - Comments that call the served build the d6 release: `e2e/d4/support.ts:2`, `e2e/d5/support.ts:2`, `e2e/d6/support.ts:1`, `e2e/d7/support.ts:9`, `e2e/d7/confirm-option-plan.spec.ts:7`.
+   - **Verification:**
+     - `npm run build:releases` and `npm run verify:releases` exit 0, naming `current` at schema 7 and no `d6`.
+     - `grep -rnE "dist-releases/d6|'d6'" e2e tools src` prints nothing.
+     - `npm run test:e2e:release-history` passes B2.3, B2.5, B4.7 and B5.6.
+     - A full tier (`browser-full`) passes with the same counts as `t8p-26-b5`, since B6.6 was never in it.
+2. **BUG-4.2, behavioral (unit): a fixture for every schema.**
+   - A pure helper beside `tools/verify-fixtures.ts`, `missingFixtureSchemas(names, schemaVersion)`, returns each schema from 1 to `schemaVersion` with no `workspace-v<n>` folder among `names`. `verify:fixtures` adds a problem for each, naming the schema and `npm run fixtures:freeze -- --schema <n>`.
+   - Cases, in `tools/verify-fixtures.test.ts`:
+     - it should return nothing when a fixture exists for every schema from 1 to the current one;
+     - it should name a missing middle schema;
+     - it should name the current schema when its fixture is missing;
+     - it should ignore names that aren't Workspace fixtures.
+   - **Verification:** `npm run verify:fixtures` exits 0 on the tree, listing `workspace-v1` to `v7`.
+
+**After BUG-4.2:** one full tier (`browser-full`), recorded in `evidence/D08P/structural.md` under "BUG-4". No browser critic: no product code, screen or word changes.
+
+**Acceptance:** AC-DEL-003's D6 row keeps `covered`. Its evidence is B6.6's pass at the D6 gate (`evidence/D06/`); the test itself is gone.
