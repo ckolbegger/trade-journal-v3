@@ -1784,3 +1784,4 @@ Deleted `e2e/d6/update.spec.ts` (B6.6) with `git rm`; the checked-out build is n
 4. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
 - **Commit:** `ad6d0189`. The agent also reworded `e2e/d7/support.ts` line 5 ("whose automatic fixture serves current"), which names the served build.
 - **Review:** ocr in place, 7 files (the deleted spec excluded), 0 comments, "No findings." (`ocr/T8P.BUG-4.1-ad6d0189.json`). Reviewer's note, not a task: no `dist-releases/d6` left in `tools`, `e2e`, `package.json`, `playwright.config.ts` or `.gitignore`.
+- **Cumulative run (`T8P.BUG-4.1`, at `a84f28fc`):** `browser-auto 3570684b` chose the full tier (first matching path: `e2e/d4/support.ts`). Unit 1662 (156 files), integration 229 (106 files), checks 14 of 14, browser-1 126 (5.1 min), browser-2 98 (6.3 min), no failures; run complete. The counts equal `T8P.26-B5`'s, since B6.6 was never in the full tier.
