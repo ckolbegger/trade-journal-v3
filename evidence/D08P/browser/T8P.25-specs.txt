@@ -1,0 +1,13 @@
+
+Running 8 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d8p/cockpit.spec.ts:37:3 › B8P.1 The cockpit › should show the rail with W2, W3, W5 and W7, the tabs in W1 order moved by the arrow keys, each drawer holding its content once, and every condition with its status (7.8s)
+  ✓  2 [chromium] › e2e/d8p/history.spec.ts:17:3 › B8P.2 Price History and Journal › should show sessions newest left with Tuesday as a gap and the Review link, the cards newest first and paged with the arrows, Wednesday owed reflection answered on its card, and the answer still shown after a reload (7.9s)
+  ✓  3 [chromium] › e2e/d8p/history.spec.ts:126:3 › B8P.2 Price History and Journal › should select the Journal drawer from Reflect now in Needs you and open the form on Wednesday card, from any page of cards (7.6s)
+  ✓  4 [chromium] › e2e/d8p/responsive-a11y.spec.ts:62:3 › B8P.5 Responsive and accessible › should fit every drawer at 1280, 375 and 320 px with no sideways scroll, no wrapped condition row, no WCAG 2.1 AA violations, and the replacements for the retired Summary-card checks (15.4s)
+  ✓  5 [chromium] › e2e/d8p/responsive-a11y.spec.ts:124:3 › B8P.5 Responsive and accessible › should work by keyboard alone: Tab through the rail with a visible focus ring, the tabs by the arrow keys, the drawer panel, and Reflect now opening the Journal form (8.2s)
+  ✓  6 [chromium] › e2e/d8p/states.spec.ts:28:3 › B8P.4 States › should show a Settlement Due Detail with Position selected and Settlement Due in the P&L card, then the expired put Closed via expiration with its Result rows (2.8s)
+  ✓  7 [chromium] › e2e/d8p/states.spec.ts:79:3 › B8P.4 States › should show a Trade Closed by sale, a stock Trade and a Trade with two open lots each with its drawers and P&L card (4.6s)
+  ✓  8 [chromium] › e2e/d8p/states.spec.ts:153:3 › B8P.4 States › should show an incoherent Detail with the Facts cannot be replayed region, only Position, Plan and Risk and Journal, and Not available in the P&L card (2.4s)
+
+  8 passed (57.1s)
