@@ -56,7 +56,7 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
   const exporter = deps.backup?.export ?? createInProcessExportPort(deps.persistence);
   return {
     async exportBackup(request) {
-      const inspection = await deps.persistence.inspectRoot();
+      const inspection = await deps.persistence.lookupRoot();
       // Export never passes the write gate, so it serves a Writable, a blocked, and a Recovery Only root alike.
       if (inspection.kind === 'NoWorkspace') return notCompleted('ReadFailed');
       if (inspection.kind === 'Unreadable' || inspection.kind === 'Invalid') return notCompleted('IntegrityBlocked');

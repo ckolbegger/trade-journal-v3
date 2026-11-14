@@ -144,6 +144,35 @@ describe('failures', () => {
   });
 });
 
+describe('export touches neither the root nor any store (A128, A129)', () => {
+  it('should leave a listed Restore candidate in place when a backup is made', async () => {
+    const { workspace, factory, persistence } = await w7Stack();
+    const { databaseName: candidate } = await persistence.createCandidate();
+    const before = await dumpAll(factory);
+    expect(JSON.stringify(Object.values(before['tj-root'] ?? {}))).toContain(candidate);
+    expect((await workspace.exportBackup({})).kind).toBe('Downloaded');
+    const after = await dumpAll(factory);
+    expect(Object.keys(after)).toContain(candidate);
+    expect(after).toEqual(before);
+  });
+
+  it('should leave an unlisted Workspace database in place when a backup is made', async () => {
+    const { workspace, factory } = await w7Stack();
+    await new Promise<void>((resolve, reject) => {
+      const open = factory.open('tj-ws-stray', 1);
+      open.onsuccess = () => {
+        open.result.close();
+        resolve();
+      };
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+    const before = await dumpAll(factory);
+    expect((await workspace.exportBackup({})).kind).toBe('Downloaded');
+    expect(await dumpAll(factory)).toEqual(before);
+    expect(Object.keys(await dumpAll(factory))).toContain('tj-ws-stray');
+  });
+});
+
 describe('blocked databases (P32)', () => {
   it('should export a Migration Blocked schema-5 database as export kind BlockedDatabase with schemaVersion 5 and the schema-5 layout, and return NotCompleted IntegrityBlocked for an unreadable root without opening it', async () => {
     const V5 = JSON.parse(readFileSync('tests/fixtures/workspace-v5/dump.json', 'utf8')) as WorkspaceDump;

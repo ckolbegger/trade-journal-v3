@@ -158,6 +158,9 @@ export interface Snapshot<T> {
 
 export interface Persistence {
   inspectRoot(): Promise<RootInspection>;
+  // inspectRoot's classification without its startup cleanup: deletes nothing, writes nothing, and
+  // leaves the current database unset. A KnownWorkspace carries no deletedOrphans (D8 A128, A129).
+  lookupRoot(): Promise<RootInspection>;
   // Creates a Workspace holding the initial records, then makes it visible with one pointer write.
   createWorkspace(initialRecords: readonly StoreRecord[]): Promise<CreateWorkspaceResult>;
   // Names a new candidate Workspace database in the root, then creates it empty at the current
@@ -399,7 +402,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     }
   }
 
-  return {
+  const persistence: Persistence = {
     isSuperseded: () => superseded,
 
     close() {
@@ -675,6 +678,23 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async inspectRoot() {
+      const found = await persistence.lookupRoot();
+      if (found.kind !== 'KnownWorkspace') return found;
+      // Only once the pointer names a valid Workspace is any other Workspace-prefixed database
+      // known to be an orphan: a leftover candidate, or a concurrent first run that lost.
+      const deletedOrphans = await deleteListed(found.databaseName);
+      for (const { name } of await deps.indexedDB.databases()) {
+        if (name?.startsWith(WORKSPACE_PREFIX) && name !== found.databaseName) {
+          await deleteDatabase(deps.indexedDB, name);
+          deletedOrphans.push(name);
+        }
+      }
+      current = found.databaseName;
+      return { ...found, deletedOrphans };
+    },
+
+    // The classification half of inspectRoot: reads the root and the pointed-to database, changes nothing.
+    async lookupRoot() {
       let root;
       try {
         root = await openDatabase(deps.indexedDB, ROOT_DATABASE, ROOT_VERSION, upgradeRoot);
@@ -720,22 +740,13 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       } finally {
         workspace.close();
       }
-      // Only once the pointer names a valid Workspace is any other Workspace-prefixed database
-      // known to be an orphan: a leftover candidate, or a concurrent first run that lost.
-      const deletedOrphans = await deleteListed(pointer.databaseName);
-      for (const { name } of await deps.indexedDB.databases()) {
-        if (name?.startsWith(WORKSPACE_PREFIX) && name !== pointer.databaseName) {
-          await deleteDatabase(deps.indexedDB, name);
-          deletedOrphans.push(name);
-        }
-      }
-      current = pointer.databaseName;
       return {
         kind: 'KnownWorkspace',
         databaseName: pointer.databaseName,
         schemaVersion: SCHEMA_VERSION,
-        deletedOrphans,
+        deletedOrphans: [],
       };
     },
   };
+  return persistence;
 }
