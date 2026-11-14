@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 136444,
+    "input_tokens": 135079,
+    "output_tokens": 1365,
+    "cache_read_tokens": 16640,
+    "elapsed": "54s"
+  },
+  "tool_calls": {
+    "total": 24,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 11,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 9,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/trade-views/replay-trade.ts,src/coordinators/trade-views/trade-views.ts",
+        "arguments": "{\"file_path\": \"src/domain/trade-analysis/replay.ts\", \"start_line\": 1, \"end_line\": 230}",
+        "error": "file \"src/domain/trade-analysis/replay.ts\" not found: git show c2565ce15b45e8939ca24adedb30ffe462d0b328:src/domain/trade-analysis/replay.ts: exit status 128: fatal: path 'src/domain/trade-analysis/replay.ts' does not exist in 'c2565ce15b45e8939ca24adedb30ffe462d0b328'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/replay-trade.ts",
+      "content": "This returns an end date as soon as any held option is due, even if the Trade still holds a later-expiring option or stock. For example, a calendar spread holding November and December contracts read after the November expiration gets truncated to November, and `ended` also removes its pending session, although the December position still requires Marks. Only end the whole replay when no remaining exposure requires later sessions; add a mixed-expiration (and mixed stock/option) regression case.",
+      "existing_code": "  const due = positions.flatMap(({ instrument, openLots }) =\u003e (instrument.kind === 'Option' \u0026\u0026 openLots.length \u003e 0 \u0026\u0026 settlementDueOn(instrument, date) ? [instrument.expiration] : []));\n  return due.length === 0 ? null : due.reduce((latest, expiration) =\u003e (expiration \u003e latest ? expiration : latest));",
+      "start_line": 46,
+      "end_line": 47,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/replay-trade.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "c32c038a-08d0-473a-9ea6-7452bd87398e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c32c038a-08d0-473a-9ea6-7452bd87398e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "c2565ce1",
+      "resolved_base": "fb30b6785bd55957d5b0cc4725b1145201e2e275",
+      "resolved_head": "c2565ce15b45e8939ca24adedb30ffe462d0b328",
+      "exact_range": "fb30b6785bd55957d5b0cc4725b1145201e2e275..c2565ce15b45e8939ca24adedb30ffe462d0b328",
+      "source_artifact_sha256": "f97403a7c59b976b1bad9052f3966092c5b90e4d97efc8a3d94c7ec3939dbc01"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2b259b4938e8fec39f8709a160ab9888e3a31d8e4564150ad927aef60d294e4e",
+          "path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "b00105f3fe50cefa77822aca5698af813eaf05bdf50780c21d1643b35f62b086"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "9281e81e60dd89e70239f7fb605913c02f841a0c1590275568e6a4ecb3abf72d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2b259b4938e8fec39f8709a160ab9888e3a31d8e4564150ad927aef60d294e4e",
+          "path": "src/coordinators/trade-views/replay-trade.ts",
+          "fingerprint": "b00105f3fe50cefa77822aca5698af813eaf05bdf50780c21d1643b35f62b086"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "9281e81e60dd89e70239f7fb605913c02f841a0c1590275568e6a4ecb3abf72d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "99e714c30a31f1e96bd9c79c1351e4962c8179ff76323f63aae76bd21c81eee2",
+          "path": "e2e/d8p/settlement-due-replay.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "add44a741debdcbc3045a7516b61bd1f47a8c4fef992b99f2225bd03157b756b",
+          "path": "evidence/D08P/browser/T8P.23-B13-d7s-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "bcf49ea06a9812838b8ae188a08a17ea76121ba171d5a16bb4f087f6285ce9a1",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "cbcf2610765b541627695a971277f88cd7be3b8d335a0f0d16fa9d4befdd9360",
+          "path": "evidence/D08P/browser/T8P.23-B13-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "fab5ab7dcdf65267b3464f12e7b4a61b46a234ccf1d65a7cb0978eb8f4b471a8",
+          "path": "evidence/D08P/tdd-log/T8P.23-B13.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 54103
+  }
+}

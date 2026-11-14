@@ -1602,3 +1602,18 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
   - Cash-Secured Put;
   - after exercise or assignment, holding stock.
 - **Quick run (`T8P.23-B12`):** unit 1654, integration 229, checks 14 of 14, browser-task 7; run complete. The runner ran the checks stage, which builds, alongside the browser stage. Both passed.
+
+**T8P.23-B13** (`c2565ce1`, revision 98). `replayTrade` now cuts a Settlement Due Trade's sessions at its contract's expiration.
+- **How:** `settlementExpirationOf` finds an option with open lots that is at or past its expiration on the read session's trading date, and `replaySessions` keeps `tradingDate <= expiration`.
+- **Effect:** `ended` makes later items go to the final session and leaves no pending session. No UI change was needed.
+- **Tests (`option-views.test.ts`):**
+  - "should end the sessions with the expiration session and list no later session and none not yet ended, read on Monday Nov 23". Red: `expected '2026-11-23' to be '2026-11-20'`.
+  - "should show no session not yet ended when read on the expiration day itself, Friday Nov 20". Red: `expected { date: '2026-11-23', journal: [] } to be null`.
+  - "should keep the newest session and the session not yet ended for an Open Trade whose contract has not expired, read on Thursday Nov 19". A flagged first-run pass; the mutation that counts every held contract as due fails it.
+- **Browser case:** `e2e/d8p/settlement-due-replay.spec.ts`, at Fri Nov 20 and Mon Nov 23. Red, with the fix taken out: `getByText('Session not ended yet') toHaveCount(0): Expected 0, Received 1`, on the Friday read.
+- **Expected values:** none changed.
+- **Browser specs run:** 53 + 8 passed.
+- **User decision (2026-11-14), "Keep final session":** the last card now reads "Fri Nov 20, final session". These are W10's words, and the last session the contract traded is the final one.
+- **Review:** ocr in place, 2 files, 1 comment (`ocr/T8P.23-B13.json`). It is **Valid**: `settlementExpirationOf` cuts the whole Trade as soon as any held option is due. A Trade that also holds stock or a later contract would lose that leg's later sessions and its pending session. A212 and revision 98 name one contract, and the Covered Call is in the reference catalog. This became bug task **T8P.23-B13-B1**.
+  - The reviewer also noted, not as an ocr finding, that an expiration with no completed session in the lifetime would drop later items: they go to `pending`, which `ended` nulls.
+- **Quick run (`T8P.23-B13`):** unit 1657, integration 229, checks 14 of 14, browser-task passed (d8p 8); run complete. The runner reran `browser-task` alone after it had overlapped the checks stage once.
