@@ -890,7 +890,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.28 | 1 | BV | Done | `e163c073`; lane tiers `ed2568fd`, `aa8bfddd` (after the rebase) |
 | T8P.29 | 1 | R2 | Done | `511065e0`; lane tier `693eae8f`; mutations `479923c3` |
 | T8P.30 | 1 | AX | Done | `97cde911`; lane tier `1f3292c0` |
-| T8P.31 | 2 | PL | Not started | |
+| T8P.31 | 2 | PL | In progress from `bbdc61a2` (lane PL) | |
 | T8P.22 | 2 | wire | In progress from `395f7ec5` (lane wire); stopped before case 6, work in progress `bec0bf84` (revision 96) | |
 | T8P.27 | 2 | — | Not started | |
 | T8P.23 | 2 | — | Not started | |
