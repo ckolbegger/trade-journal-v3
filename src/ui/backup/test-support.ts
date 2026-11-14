@@ -22,11 +22,12 @@ export function createBackupFacadeDouble(): BackupFacadeDouble {
   const calls: { [K in Operation]: Request<K>[] } = { exportBackup: [], confirmBackup: [], prepareRestore: [], applyPreparedRestore: [] };
   const operation =
     <K extends Operation>(name: K) =>
-    (request: Request<K>): Promise<Result<K>> => {
+    // async, so a responder that throws becomes a rejected promise rather than a synchronous throw.
+    async (request: Request<K>): Promise<Result<K>> => {
       calls[name].push(request);
       const responder = responders[name] as Responder<K> | undefined;
-      if (responder === undefined) return Promise.reject(new Error(`No result configured for ${name}`));
-      return Promise.resolve(typeof responder === 'function' ? responder(request) : responder);
+      if (responder === undefined) throw new Error(`No result configured for ${name}`);
+      return typeof responder === 'function' ? responder(request) : responder;
     };
   const facade: BackupFacade = {
     exportBackup: operation('exportBackup'),
