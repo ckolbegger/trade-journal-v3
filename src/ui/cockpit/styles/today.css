@@ -20,7 +20,8 @@
 @media (max-width: 959.98px) {
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] th,
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td {
-    padding: 0.5rem 0.15rem;
+    /* B4: 0.08rem a side makes the table fit the 320 px box (it was 5 px wide at 0.15rem), so nothing scrolls and no label is cut. */
+    padding: 0.5rem 0.08rem;
     min-width: 0;
     white-space: normal;
     overflow-wrap: normal;

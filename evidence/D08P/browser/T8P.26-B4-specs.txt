@@ -1,0 +1,23 @@
+
+Running 18 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d8p/cockpit.spec.ts:37:3 › B8P.1 The cockpit › should show the rail with W2, W3, W5 and W7, the tabs in W1 order moved by the arrow keys, each drawer holding its content once, and every condition with its status (7.1s)
+  ✓   2 [chromium] › e2e/d8p/history.spec.ts:17:3 › B8P.2 Price History and Journal › should show sessions newest left with Tuesday as a gap and the Review link, the cards newest first and paged with the arrows, Wednesday owed reflection answered on its card, and the answer still shown after a reload (7.4s)
+  ✓   3 [chromium] › e2e/d8p/history.spec.ts:126:3 › B8P.2 Price History and Journal › should select the Journal drawer from Reflect now in Needs you and open the form on Wednesday card, from any page of cards (7.0s)
+  ✓   4 [chromium] › e2e/d8p/journal-final-session.spec.ts:14:3 › T8P.26-B3 a Journal card whose session has no Mark has no change line › should show DEF Closed by sale with its Trade P&L and no change line, while XYZ keeps First Mark on its marked session (4.0s)
+  ✓   5 [chromium] › e2e/d8p/journal-final-session.spec.ts:46:3 › T8P.26-B3 a Journal card whose session has no Mark has no change line › should show the expired MNO put final session with its Trade P&L and no change line (2.4s)
+  ✓   6 [chromium] › e2e/d8p/lot-matches-fit.spec.ts:55:3 › T8P.26-B2 the Lot Matches fit in the Position drawer › should show every Lot Matches column in view at 1280 px on DEF Closed by sale, with the table scrolling inside its box at 375 and 320 px (3.7s)
+  ✓   7 [chromium] › e2e/d8p/lot-matches-fit.spec.ts:75:3 › T8P.26-B2 the Lot Matches fit in the Position drawer › should show every Lot Matches column in view at 1280 px on O-C3, with the table scrolling inside its box at 375 and 320 px (6.1s)
+  ✓   8 [chromium] › e2e/d8p/payoff-fit.spec.ts:23:3 › T8P.26-B1 the Payoff chart fits its box › should show the whole Payoff chart, the Now legend and both lines, inside its box at 1280 px, and keep scrolling inside the box at 375 and 320 px (6.3s)
+  ✓   9 [chromium] › e2e/d8p/planned.spec.ts:9:3 › B8P.3 Expires right after confirm (tech debt item 23) › should show the Expires line on a just-confirmed option Plan, and again after a reload (1.4s)
+  ✓  10 [chromium] › e2e/d8p/planned.spec.ts:28:3 › B7 the Planned Journal is the Plan card (W11, T8P.22 revision 96) › should show the Plan card, "Planned Mon Oct 12, 9:00 am", and no old Plan Reflection region or Journal heading (1.0s)
+  ✓  11 [chromium] › e2e/d8p/responsive-a11y.spec.ts:62:3 › B8P.5 Responsive and accessible › should fit every drawer at 1280, 375 and 320 px with no sideways scroll, no wrapped condition row, no WCAG 2.1 AA violations, and the replacements for the retired Summary-card checks (14.5s)
+  ✓  12 [chromium] › e2e/d8p/responsive-a11y.spec.ts:124:3 › B8P.5 Responsive and accessible › should work by keyboard alone: Tab through the rail with a visible focus ring, the tabs by the arrow keys, the drawer panel, and Reflect now opening the Journal form (7.5s)
+  ✓  13 [chromium] › e2e/d8p/settlement-due-replay.spec.ts:22:3 › T8P.23-B13 a Settlement Due Trade ends its history with the expiration session › should show no later Price History column and no Session not ended yet card on Friday Nov 20 and on Monday Nov 23 (2.6s)
+  ✓  14 [chromium] › e2e/d8p/states.spec.ts:28:3 › B8P.4 States › should show a Settlement Due Detail with Position selected and Settlement Due in the P&L card, then the expired put Closed via expiration with its Result rows (2.5s)
+  ✓  15 [chromium] › e2e/d8p/states.spec.ts:79:3 › B8P.4 States › should show a Trade Closed by sale, a stock Trade and a Trade with two open lots each with its drawers and P&L card (4.2s)
+  ✓  16 [chromium] › e2e/d8p/states.spec.ts:153:3 › B8P.4 States › should show an incoherent Detail with the Facts cannot be replayed region, only Position, Plan and Risk and Journal, and Not available in the P&L card (2.2s)
+  ✓  17 [chromium] › e2e/d8p/today-narrow.spec.ts:77:3 › T8P.23-B14 the Today comparison at narrow widths › should show the current date column and the Change column inside the comparison scroll box at 375 and 320 px, with no sideways page scroll (2.7s)
+  ✓  18 [chromium] › e2e/d8p/today-narrow.spec.ts:103:3 › T8P.23-B14 the Today comparison at narrow widths › should keep a three-digit stock Mark, a negative change and the provenance date and time whole at 375 and 320 px (2.3s)
+
+  18 passed (1.4m)

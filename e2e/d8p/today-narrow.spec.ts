@@ -33,6 +33,15 @@ const cellsOutside = (region: Locator) =>
       .map((cell) => `${cell.textContent} ${Math.round(cell.getBoundingClientRect().right)} > ${Math.round(frame.right)}`);
   });
 
+// T8P.26-B4: the row labels whose left edge lies left of the scroll box's visible left edge (their first glyph is cut).
+const labelsClipped = (region: Locator) =>
+  region.evaluate((box) => {
+    const frame = box.getBoundingClientRect();
+    return [...box.querySelectorAll('tbody th')]
+      .filter((th) => th.getBoundingClientRect().left < frame.left - 0.5)
+      .map((th) => `${th.textContent} ${Math.round(th.getBoundingClientRect().left)} < ${Math.round(frame.left)}`);
+  });
+
 // Every space-separated token of every cell, header and body, that sits on more than one line.
 const brokenTokens = (region: Locator) =>
   region.evaluate((box) => {
@@ -58,6 +67,7 @@ async function expectFitsWhole(page: Page, region: Locator): Promise<void> {
     await setWidth(page, width);
     // Polled: a real overflow or split stays, a reflow still under way does not.
     await expect.poll(() => cellsOutside(region), { message: `cells outside the scroll box at ${width} px` }).toEqual([]);
+    await expect.poll(() => labelsClipped(region), { message: `row labels cut at the scroll box's left edge at ${width} px` }).toEqual([]);
     await expect.poll(() => brokenTokens(region), { message: `tokens broken across lines at ${width} px` }).toEqual([]);
     await expectNoSidewaysScroll(page, `Today at ${width} px`);
   }
