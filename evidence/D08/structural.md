@@ -128,7 +128,7 @@ T8.8 discards a rejected candidate with the existing `discardCandidate`.
 - **T8.7-B1** `0d7fd672`: red ("expected { kind: 'AlreadyInitialized', … } to deeply equal { kind: 'Activated' }") then green. A repeat activation of the candidate the pointer already names returns `Activated` (idempotent; A135's AlreadyInitialized is for a pointer naming another database). Lane tier: unit 168 / 1776, integration 106 / 229, checks 14 of 14. ocr (session `1033f50b-d368-438d-9854-99310e50c11e`, 2 files): **No findings.** Raw: `ocr/T8.7-B1-0d7fd672.json`.
 - **T8.7-B2** `0d31af59` (a test gap): a first-run pass, flagged. The behavior was built in T8.7. Mutation: removed the earlier database's deletion in `createRestoreCandidate`. Failure: "expected [ 'tj-root', 'tj-ws-r-0001', … ] to deeply equal [ 'tj-root', 'tj-ws-r-0002' ]". The code was restored, and its diff was empty. Lane tier: unit 168 / 1777, integration 106 / 229, checks 14 of 14. ocr (session `c85ea3eb-df51-4090-99de-f3290265b481`, 1 file): **No findings.** Raw: `ocr/T8.7-B2-0d31af59.json`.
 - **T8.7-B3** `4d62a6c0`: red ("expected [] to deeply equal [ 'tj-ws-r-0001' ]") then green; `createCandidate` writes through `putNames`. Lane tier: unit 168 / 1778, integration 106 / 229, checks 14 of 14. ocr (session `4e6e7f4c-e9a4-448a-9965-ee910487e7b9`, 2 files): **No findings.** Raw: `ocr/T8.7-B3-4d62a6c0.json`.
-- **T8.7-B4** `c40cd9d7`: red ("expected [ { …(3) }, { …(3) } ] to have a length of 1 but got 2") then green. The public `createRestoreCandidate()` chains its body on a per-instance promise, so overlapping calls run in turn, and a failed creation doesn't block the next one. Lane tier: unit 168 / 1779, integration 106 / 229, checks 14 of 14. ocr pending.
+- **T8.7-B4** `c40cd9d7`: red ("expected [ { …(3) }, { …(3) } ] to have a length of 1 but got 2") then green. The public `createRestoreCandidate()` chains its body on a per-instance promise, so overlapping calls run in turn, and a failed creation doesn't block the next one. Lane tier: unit 168 / 1779, integration 106 / 229, checks 14 of 14. ocr (session `68de6d2e-ebe0-4fd1-8f7e-729fe1b0ba0e`, 2 files): **No findings.** Raw: `ocr/T8.7-B4-c40cd9d7.json`.
 
 ## T8.12 Backup page
 
@@ -169,6 +169,25 @@ Lane FM, commit `fa01ba22`: the 3 planned cases in each of the four modules, eac
 
 **Omitted from the first brief (main session's error):** D2 follow-up F12, which the breakdown's status paragraph assigns to T8.6's validation cases. It covers three validator gaps and B2.12's new trigger. T8.6 continues in lane FM to add them before it counts as done.
 
+**ocr review of `fa01ba22`** (session `262064c8-68d1-4722-a437-561aac662060`, gpt-6.1-sol, 12 files, 10 findings; raw: `ocr/T8.6-fa01ba22.json`). Seven were judged Valid and three Doubtful.
+- Two findings fall inside F12, so the F12 continuation covers them:
+  - Trade Record `restore.ts:49`: `versions: []` makes `analysisInputOf` throw. It was added to F12 as the case "should report a Trade whose version history is empty".
+  - Trade Record `restore.ts:189`: a Position Change names a missing member. This is F12's first gap.
+
+  If the F12 commit doesn't close either one, that finding becomes a bug task.
+- The other eight become bug tasks, run one at a time in lane FM after F12:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.6-B1 | trade-record `restore.ts:29` instants and decimals are plain strings | `derive()` throws on a bad price or time instead of returning an issue | it should report a malformed record for a Trade fact with an unreadable price or time |
+| T8.6-B2 | journal `restore.ts:92` Entry and Debt `versions: []` parse | the debt projection and index rebuild crash | it should report an Entry or Debt whose version history is empty |
+| T8.6-B3 | market-data `restore.ts:38` instants are plain strings | `Temporal.Instant.compare` throws in section validation | it should report a malformed record for a Mark or acknowledgment with an unreadable time |
+| T8.6-B4 | trade-record `restore.ts:99` a Superseded Deviation's quantities aren't tied to its form | a Superseded version with no quantity is accepted | it should reject a Deviation version whose quantity doesn't match its form |
+| T8.6-B5 | journal `restore.ts:46` `obligationKey` accepts any string list | a malformed key is restored but can't be found | it should reject an obligation key that isn't a Daily Trade Review key |
+| T8.6-B6 (Doubtful) | journal `restore.ts:143` a union field's MalformedRecord path names only `origin` | a coarse path | it should name the nested field in a malformed record's path |
+| T8.6-B7 (Doubtful) | market-data `restore.ts:129` the recheck doesn't compare the section digest | an inconsistent recorded meta passes | it should report CandidateChanged when the recorded section digest differs |
+| T8.6-B8 (Doubtful) | reference-catalog `restore.ts:138` the same for the Catalog | the same | it should report CandidateChanged when the recorded section digest differs |
+
 ## T8.13 Restore flow
 
 Lane UB, commit `61fb47bb` (7 planned cases and one extra). New `RestorePreview.tsx`, `RestoreConfirm.tsx` and `backup-text.ts`; `BackupView.tsx` now imports its texts from `backup-text.ts`. Lane tier `T8.13`: unit 165 / 1769, integration 106 / 229, checks 14 of 14.
@@ -187,6 +206,19 @@ Lane UB, commit `61fb47bb` (7 planned cases and one extra). New `RestorePreview.
 - First run reuses `RestoreFlow` with target `NoWorkspace`.
 
 **For T8.8:** `RestoreCounts.versions` keys are `trades`, `entries`, `debts`.
+
+**ocr review of `61fb47bb`** (session `883d0a2b-31d1-40e9-ae76-c7bfb94662de`, gpt-6.1-sol, 7 files, 6 findings; raw: `ocr/T8.13-61fb47bb.json`). Five were judged Valid and one Doubtful. Each becomes a bug task, run one at a time in lane UB. B2 and B3 wait for Q5 items 8 and 7, which hold their on-screen text.
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.13-B1 | `RestoreFlow.tsx:93` a completed Restore clears only RestoreFlow's own state | BackupView keeps its old download, "Backup complete" and pending verification (A142 discards every pre-Restore view) | it should discard the Backup page's download and verification when a Restore completes |
+| T8.13-B2 | `RestoreFlow.tsx:90` a rejected `applyPreparedRestore` leaves Replace disabled and the rejection unhandled | a stuck screen | it should show the unfinished-Restore message when the Restore fails unexpectedly |
+| T8.13-B3 | `RestoreFlow.tsx:85` `prepareRestore` returning `RuntimeNotWritable` silently returns to Choose | no reason shown | it should show the readiness sentence when the backup can't be checked because the journal isn't writable |
+| T8.13-B4 | `RestoreFlow.tsx:79` preparation isn't aborted when RestoreFlow unmounts | a preparation keeps running after the page is left | it should cancel the preparation when the Restore flow is left |
+| T8.13-B5 | `RestoreConfirm.tsx:69` an unmounted SafetyBackup's pending verification can still set the parent's receipt | a stale receipt after switching choices | it should ignore a safety backup's verification that finishes after the choice was changed |
+| T8.13-B6 (Doubtful) | `RestoreConfirm.tsx:132` nested ternary computing `safety` | hard to audit | a refactor under the existing cases (no new behavior) |
+
+Reviewer notes, not ocr findings, so they are put to the user as Q5 items 9 and 10: "an ${kind}" reads "an Trade", and "(N versions)" repeats a kind's total on each row.
 
 ## T8.4 Workspace exportBackup
 

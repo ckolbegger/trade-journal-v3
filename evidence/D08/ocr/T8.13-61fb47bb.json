@@ -1,0 +1,233 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 6,
+    "total_tokens": 459957,
+    "input_tokens": 455967,
+    "output_tokens": 3990,
+    "cache_read_tokens": 67712,
+    "elapsed": "2m37s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_find": 3,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/RestoreFlow.tsx",
+      "content": "Successful replacement only clears RestoreFlow's state. When mounted in BackupView, the sibling download/verification section remains mounted with its pre-restore downloaded artifact, completion message, and pending verification callbacks. This does not satisfy the requirement to discard every pre-restore view and form. Propagate successful restoration to the owning view so it can clear/invalidate the old backup state and pending work, while retaining the result-only completion summary.",
+      "existing_code": "    setPhase(result.kind === 'Restored' ? { kind: 'Restored', counts: result.receipt.counts, next: result.landing.next } : { kind: 'NotReplaced', reason: explainNotReplaced(result) });",
+      "start_line": 93,
+      "end_line": 93,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/backup/RestoreFlow.tsx",
+      "content": "A rejected promise (or synchronous facade exception) skips setApplying(false), leaving Replace permanently disabled and producing an unhandled rejection. check() similarly remains in Checking if prepareRestore rejects, and file-picker failures are uncaught. Add try/catch/finally with a recoverable user-facing error and guaranteed busy/controller cleanup; test rejected operations as well as typed failure results. Do not claim the journal is unchanged on an unexpected apply exception unless that is guaranteed.",
+      "existing_code": "    const result = await facade.applyPreparedRestore({ token, confirmation: { kind: 'ReplaceEntireWorkspace' }, ...(safety \u0026\u0026 { safety }) });\n    setApplying(false);",
+      "start_line": 90,
+      "end_line": 91,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/backup/RestoreFlow.tsx",
+      "content": "PrepareRestoreResult also includes RuntimeNotWritable. This branch silently treats that failure as cancellation and returns to file selection, hiding the failed readiness checks and inviting repeated attempts that cannot succeed. Handle RuntimeNotWritable explicitly and display its failedChecks using explainFailure, as the apply path already does.",
+      "existing_code": "    else setPhase({ kind: 'Choose' });",
+      "start_line": 85,
+      "end_line": 85,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/backup/RestoreConfirm.tsx",
+      "content": "downloadCount only protects operations within one SafetyBackup instance. Switching to 'Replace without a backup' unmounts this instance, but a pending verification can still call the parent's onReceipt. If the user switches back and starts a new download, the old instance can repopulate the receipt after the new download cleared it, enabling Replace while the new backup is still unverified. Invalidate pending callbacks on unmount (or maintain an attempt ID in RestoreConfirm) and keep receipt/download state consistent across choice changes. Add a deferred-verification test covering this sequence.",
+      "existing_code": "    if (result.kind === 'Completed') onReceipt(result.receipt);",
+      "start_line": 69,
+      "end_line": 69,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/backup/RestoreFlow.tsx",
+      "content": "The preparation controller is only aborted by the Cancel button, not when RestoreFlow unmounts. Leaving the page while checking therefore continues preparation and can leave an unused candidate behind; the request contract explicitly makes abort responsible for deleting that candidate. Add unmount cleanup that aborts the active preparation and prevents late callbacks from updating an abandoned flow.",
+      "existing_code": "    abort.current = controller;\n    setPhase({ kind: 'Checking', progress: undefined });",
+      "start_line": 79,
+      "end_line": 80,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/backup/RestoreConfirm.tsx",
+      "content": "This nested ternary violates the explicit review rule and compresses destructive-action eligibility into a difficult-to-audit expression. Use a helper with explicit branches for the verified-receipt, acknowledged-decline, and incomplete-choice cases.",
+      "existing_code": "    choice === 'BackUpFirst' \u0026\u0026 receipt ? { kind: 'Receipt', receipt } : choice === 'WithoutBackup' \u0026\u0026 declineAcknowledged ? { kind: 'DeclinedAfterWarning' } : undefined;",
+      "start_line": 132,
+      "end_line": 132,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Backup restore flow with preview, confirmation, shared text, styling, and tests",
+      "files": [
+        "src/ui/backup/BackupView.tsx",
+        "src/ui/backup/RestoreConfirm.tsx",
+        "src/ui/backup/RestoreFlow.test.tsx",
+        "src/ui/backup/RestoreFlow.tsx",
+        "src/ui/backup/RestorePreview.tsx",
+        "src/ui/backup/backup-text.ts",
+        "src/ui/backup/backup.css"
+      ]
+    }
+  ],
+  "session_id": "883d0a2b-31d1-40e9-ae76-c7bfb94662de",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "883d0a2b-31d1-40e9-ae76-c7bfb94662de",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "61fb47bb",
+      "resolved_base": "9f17252a44c91208f35f5ae63fc8425e44df4d79",
+      "resolved_head": "61fb47bba4e8a34b868aa149b660249d7d226672",
+      "exact_range": "9f17252a44c91208f35f5ae63fc8425e44df4d79..61fb47bba4e8a34b868aa149b660249d7d226672",
+      "source_artifact_sha256": "399c826990ff7b9b9362548217227bb8e7b460c81b58ecf9a2f5261ac25193a8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1ac9103e63d500ddacab592df04d9b040bb2772ac72c5d2ecf2ac7ddd59c3b70",
+          "path": "src/ui/backup/backup.css",
+          "fingerprint": "c17a8b39d3776080992052011111e6541cd11eeb6cdda040ef73bf1f8c0f0ae9"
+        },
+        {
+          "item_id": "1d64174096a79650d32a4c4523c1c143fc569fe716dc147a4bac1903036868de",
+          "path": "src/ui/backup/RestoreConfirm.tsx",
+          "fingerprint": "9513c04ee74d953ba332a6e24aca47256af2b8a4d5649fb3bf35a074839aa6e3"
+        },
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "90b8433292d63330a43d52f58a020de25c072b3ebc90a1e906650dfce9ba524c"
+        },
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "4e7e9ca05a5a809a9c638f17b7e1c4a2d0217c0a631c903f9c5fc30883482133"
+        },
+        {
+          "item_id": "b5ecb191531a5a7c95b3c0292aa942253ed369091ec208eaa7987a6ced2688e9",
+          "path": "src/ui/backup/backup-text.ts",
+          "fingerprint": "26689fea242f521d148fc59a31209603d9439969e4634e4636d55bfbc9526f9d"
+        },
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "588f96b634102ac88dcab706930f672546d00b764f7357dc1dcc5d63a2cf8930"
+        },
+        {
+          "item_id": "ed5324a53b04693fb6f3383883d129fe3af2140861dde54edb9bc34bb88eaa72",
+          "path": "src/ui/backup/RestorePreview.tsx",
+          "fingerprint": "62e5a1663c2d35232df2187901530979b6b1cab934cee423d51754d114d1931a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1ac9103e63d500ddacab592df04d9b040bb2772ac72c5d2ecf2ac7ddd59c3b70",
+          "path": "src/ui/backup/backup.css",
+          "fingerprint": "c17a8b39d3776080992052011111e6541cd11eeb6cdda040ef73bf1f8c0f0ae9"
+        },
+        {
+          "item_id": "1d64174096a79650d32a4c4523c1c143fc569fe716dc147a4bac1903036868de",
+          "path": "src/ui/backup/RestoreConfirm.tsx",
+          "fingerprint": "9513c04ee74d953ba332a6e24aca47256af2b8a4d5649fb3bf35a074839aa6e3"
+        },
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "90b8433292d63330a43d52f58a020de25c072b3ebc90a1e906650dfce9ba524c"
+        },
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "4e7e9ca05a5a809a9c638f17b7e1c4a2d0217c0a631c903f9c5fc30883482133"
+        },
+        {
+          "item_id": "b5ecb191531a5a7c95b3c0292aa942253ed369091ec208eaa7987a6ced2688e9",
+          "path": "src/ui/backup/backup-text.ts",
+          "fingerprint": "26689fea242f521d148fc59a31209603d9439969e4634e4636d55bfbc9526f9d"
+        },
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "588f96b634102ac88dcab706930f672546d00b764f7357dc1dcc5d63a2cf8930"
+        },
+        {
+          "item_id": "ed5324a53b04693fb6f3383883d129fe3af2140861dde54edb9bc34bb88eaa72",
+          "path": "src/ui/backup/RestorePreview.tsx",
+          "fingerprint": "62e5a1663c2d35232df2187901530979b6b1cab934cee423d51754d114d1931a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0458bb8ba4bf202d5cf30256da079f7a011c65c72ec36b9957d6935041957260",
+          "path": "evidence/D08/suite-runs/T8.13-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "27c4d64a2ad3d1696bada81d5475fbbab901a493e60cf4459fc54d5518461128",
+          "path": "evidence/D08/suite-runs/T8.13-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7f8243c71590234bd38357d2101e14ba57d63c2bc5a00f1603baa83af85b1bdc",
+          "path": "evidence/D08/suite-runs/T8.13-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c11296e0cc94b6edab37187bf35a08dd9a13a8daaa4b6be08359a27cb1584648",
+          "path": "evidence/D08/tdd-log/T8.13.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ffe5132a1d4afaf8f1179c1868413be3919a9a176ac2678680a98669a4a4f1ad",
+          "path": "evidence/D08/suite-runs/T8.13-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 157450
+  }
+}

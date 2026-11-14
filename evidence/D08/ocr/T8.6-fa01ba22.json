@@ -1,0 +1,340 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 10 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 10,
+    "total_tokens": 584661,
+    "input_tokens": 576865,
+    "output_tokens": 7796,
+    "cache_read_tokens": 58240,
+    "elapsed": "1m36s"
+  },
+  "tool_calls": {
+    "total": 72,
+    "by_tool": {
+      "code_comment": 6,
+      "code_search": 17,
+      "file_read": 47,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/restore.ts",
+      "content": "An arbitrary string such as `\"not-an-instant\"` passes parsing for `marks[].savedAt` and `acknowledgments[].savedAt`. For an observation containing both chains, validateSection then calls Temporal.Instant.compare on these values without catching errors, so preparation throws instead of returning a typed restore issue. Validate instant strings here (with a non-throwing refinement) and add a malformed-timestamp test so invalid artifact values return MalformedRecord with their line and path.",
+      "existing_code": "const instant = z.string();",
+      "start_line": 38,
+      "end_line": 38,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/restore.ts",
+      "content": "The supplied section digest is never checked. Passing `{ ...recorded, digest: 'corrupted' }` still returns Accepted, even though A135 requires the candidate section's counts and digest to match its metadata. Comparing store digests only establishes the derived section digest when the recorded metadata is internally consistent. Also compare `now.digest` with `recorded.digest`, and test a changed section digest with unchanged counts/storeDigests.",
+      "suggestion_code": "  const same = now.counts[STORE] === recorded.counts[STORE] \u0026\u0026 now.storeDigests[STORE] === recorded.storeDigests[STORE] \u0026\u0026 now.digest === recorded.digest;",
+      "existing_code": "  const same = now.counts[STORE] === recorded.counts[STORE] \u0026\u0026 now.storeDigests[STORE] === recorded.storeDigests[STORE];",
+      "start_line": 129,
+      "end_line": 129,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/restore.ts",
+      "content": "Union validation errors lose the offending field path here. For example, an Entry with `origin: { kind: 'Plan', factId: 123 }` produces an `invalid_union` issue at `origin`, whose nested errors contain `factId`; this converter reports only `origin`. This fails the required field-level MalformedRecord diagnostics for malformed fields inside unions. Inspect nested union errors (or discriminate `origin` by `kind`) and add a nested-union regression test.",
+      "existing_code": "    return keys.map((key) =\u003e ({ code: 'MalformedRecord' as const, line, store, path: [...issue.path, ...(key === undefined ? [] : [key])].join('.') }));",
+      "start_line": 143,
+      "end_line": 143,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/restore.ts",
+      "content": "The compound obligation key accepts arbitrary string arrays, including `[]` and `['DailyTradeReview']`, although the stored Daily Trade Review key must be `['DailyTradeReview', reviewDate, tradeId]`. `validateSection` only joins these arrays and never checks their shape, so a malformed key can pass the complete restore validation and leave the restored outcome unreachable by the normal three-component obligation lookup. Use a fixed tuple with a literal first element for the array branch, and test truncated and incorrectly tagged keys.",
+      "existing_code": "const obligationKey = z.union([z.string(), z.array(z.string())]);",
+      "start_line": 46,
+      "end_line": 46,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/reference-catalog/restore.ts",
+      "content": "The recheck never compares `recorded.digest` with the recomputed section digest. For example, passing `{ ...recorded, digest: 'corrupted' }` still returns `Accepted` even though the candidate metadata no longer matches the measured section. Comparing the store digests only implies section-digest equality when the recorded metadata is internally consistent, which is not checked here. Include `now.digest === recorded.digest` in the acceptance condition and add a test that changes only the recorded section digest.",
+      "existing_code": "  const same = now.counts[STORE] === recorded.counts[STORE] \u0026\u0026 now.storeDigests[STORE] === recorded.storeDigests[STORE];",
+      "start_line": 138,
+      "end_line": 138,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/trade-record/restore.ts",
+      "content": "These schemas accept invalid values such as price: 'not-a-number' and economicTime: 'not-a-time'. Section validation does not safely reject these: derive() throws from decimal() for an invalid execution price and from Temporal.Instant.from() for an invalid option execution time. Consequently a malformed backup passes parsing and aborts preparation instead of producing a typed restore issue. Validate decimal and instant syntax here (and option expiration dates), and add parse/validate regression tests for invalid strings.",
+      "existing_code": "const instant = z.string();\nconst decimal = z.string();",
+      "start_line": 29,
+      "end_line": 30,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/modules/trade-record/restore.ts",
+      "content": "An empty versions array passes parsing, but validateSection calls analysisInputOf(), whose effective() immediately dereferences the last version's value. Setting any existing fact's versions to [] therefore causes preparation to throw rather than returning MalformedRecord. Require at least one version here and in deviation histories (which likewise dereference their latest version), and cover empty histories in the restore tests.",
+      "existing_code": "    versions: z.array(z.strictObject({ versionNumber: z.number().int(), value })),",
+      "start_line": 49,
+      "end_line": 49,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/modules/journal/restore.ts",
+      "content": "Require at least one version for both Entries and Debts. Currently `versions: []` passes parsing, and `validateSection` also accepts it (an Entry even skips all definition checks). Such a candidate can be accepted for restore but crashes consumers that read the current version, such as `debtProjection` and the debt index rebuild (`versions.at(-1)!.status`). Add `.min(1)` to both version arrays and regression tests for empty histories.",
+      "existing_code": "    versions: z.array(z.strictObject({ versionNumber: z.number().int(), definitionId: z.string(), responses: z.array(response), savedAt: instant })),",
+      "start_line": 92,
+      "end_line": 92,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/modules/trade-record/restore.ts",
+      "content": "A schema-valid PositionChange can name a nonexistent memberId. Parsing accepts it, but validateSection calls analysisInputOf(), which throws when that member is absent, so Restore aborts instead of returning a typed IncoherentFacts issue. Handle this reference failure in the Restore validation path and add a test with an unknown PositionChange member (the existing unknown plannedLegId test does not exercise this case).",
+      "existing_code": "    validate: (source) =\u003e validateSection(source, context.references),",
+      "start_line": 189,
+      "end_line": 189,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/modules/trade-record/restore.ts",
+      "content": "The Superseded branch loses the form-specific requirements enforced for Active versions: it accepts an Excess with no quantityAbovePlan, a Shortfall with no quantityBelowPlan, or either form with the other form's fingerprint/quantity. RecordedDeviationVersion requires the corresponding quantity and fingerprint regardless of status. Model Superseded as the same two form-specific shapes plus status/reason so malformed historical versions are rejected with MalformedRecord rather than restored as valid data.",
+      "existing_code": "    form: z.enum(['Excess', 'Shortfall']),\n    quantityAbovePlan: decimal.optional(),\n    quantityBelowPlan: decimal.optional(),",
+      "start_line": 99,
+      "end_line": 101,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal restore implementation, exports, and tests",
+      "files": [
+        "src/modules/journal/index.ts",
+        "src/modules/journal/restore.test.ts",
+        "src/modules/journal/restore.ts"
+      ]
+    },
+    {
+      "label": "Market data restore implementation, exports, and tests",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/restore.test.ts",
+        "src/modules/market-data/restore.ts"
+      ]
+    },
+    {
+      "label": "Reference catalog restore implementation, exports, and tests",
+      "files": [
+        "src/modules/reference-catalog/index.ts",
+        "src/modules/reference-catalog/restore.test.ts",
+        "src/modules/reference-catalog/restore.ts"
+      ]
+    },
+    {
+      "label": "Trade record restore implementation, exports, and tests",
+      "files": [
+        "src/modules/trade-record/index.ts",
+        "src/modules/trade-record/restore.test.ts",
+        "src/modules/trade-record/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "262064c8-68d1-4722-a437-561aac662060",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "262064c8-68d1-4722-a437-561aac662060",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fa01ba22",
+      "resolved_base": "1b12c29874f0ad8b31b3ba1066d9a68aa52f2137",
+      "resolved_head": "fa01ba2206b1f41e70c0567571c95588026a87f5",
+      "exact_range": "1b12c29874f0ad8b31b3ba1066d9a68aa52f2137..fa01ba2206b1f41e70c0567571c95588026a87f5",
+      "source_artifact_sha256": "b75ace15ffe65bda015a85a36f415af08d29d7ab460afce6a33670bf029e5813"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "726a7b4410096171508dd6cae46e13799eb07273d2aa1f0aac70f656c9b5ce08"
+        },
+        {
+          "item_id": "33ac3d81cbc891ebb9dabbc93cef39770a692104e3973f3b049dd4454e22d709",
+          "path": "src/modules/journal/restore.ts",
+          "fingerprint": "5f4fcaf263f07887eea986ac02b07290255c201842779d898bcb06861e2abca4"
+        },
+        {
+          "item_id": "36c771469adc9e917be50b783a0ac8c73722190b724080d21d11fa32d14efdcc",
+          "path": "src/modules/trade-record/restore.ts",
+          "fingerprint": "25448b19c48f66c4016ed50ff752d7b08d8f023e6f2aa196c38f7bade7efa478"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "54d5f8a66d9a0b5dc9ac5da77d8a7b871eb360a8017b6791adfb1d63dd57f1f0"
+        },
+        {
+          "item_id": "6dd2f0eed8e1f11e0e83cb2c228cf82803ede86e721440a70c77d861018ffd30",
+          "path": "src/modules/journal/restore.test.ts",
+          "fingerprint": "27d0161abc81f91060498a0cab719091c2e43b30cb41406a29dfe05a4dcda38d"
+        },
+        {
+          "item_id": "71461bd5176ff3bb3ba0e07eed4e3b2e8ea3772f8701d3d17fb862e1a4e08e6d",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "fe94509f1bbfa1514fc96c94ce0750b11de3fed4f02fa6b16677236b8862f793"
+        },
+        {
+          "item_id": "9b7dcb2cd7cde31751d4c9cfb65f3a5f3e8d428ba57fd816f21a3508437ddb8b",
+          "path": "src/modules/reference-catalog/restore.ts",
+          "fingerprint": "d0024c5b6ed18117b75fd277d2a089bfac2ad301e47a3b1d70ae76880775418b"
+        },
+        {
+          "item_id": "b1a8751fc27da6e821054da0b9e3c484a8605198e151fb96f9beb89953657a19",
+          "path": "src/modules/trade-record/restore.test.ts",
+          "fingerprint": "c5c33a1269f2b46face875523b76dbedc578fea761a95a84484a6ebeb7acc75c"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "9b3e8b74859330c1f21cf91c94e9711ba4305779aae3308820d870be79dece96"
+        },
+        {
+          "item_id": "dbe9011ce1bde4a01e4922b6e5e280540e8e660e1a5f6975458b809ef74f01b8",
+          "path": "src/modules/market-data/restore.test.ts",
+          "fingerprint": "3869b704edaaef8ee09996d1c580baaff8b35e842386f0797115dc768b2422f7"
+        },
+        {
+          "item_id": "e1c9a37100c1381345c337d2106d5f420faa020ae787710e1db9f232e4a04dc4",
+          "path": "src/modules/reference-catalog/restore.test.ts",
+          "fingerprint": "34c378222b1e9684ab79ccdc844b12b97ca72a28a52caa713652fad81019d5c9"
+        },
+        {
+          "item_id": "fd415eb875e492d0ce4ab0de93e558328dca12aab0b3a3c90275617ede4a3233",
+          "path": "src/modules/market-data/restore.ts",
+          "fingerprint": "3c12cb16d31a7f54d23da404bd4788d7e2fc96604b2a7d743a33d89a7df9906d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "726a7b4410096171508dd6cae46e13799eb07273d2aa1f0aac70f656c9b5ce08"
+        },
+        {
+          "item_id": "33ac3d81cbc891ebb9dabbc93cef39770a692104e3973f3b049dd4454e22d709",
+          "path": "src/modules/journal/restore.ts",
+          "fingerprint": "5f4fcaf263f07887eea986ac02b07290255c201842779d898bcb06861e2abca4"
+        },
+        {
+          "item_id": "36c771469adc9e917be50b783a0ac8c73722190b724080d21d11fa32d14efdcc",
+          "path": "src/modules/trade-record/restore.ts",
+          "fingerprint": "25448b19c48f66c4016ed50ff752d7b08d8f023e6f2aa196c38f7bade7efa478"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "54d5f8a66d9a0b5dc9ac5da77d8a7b871eb360a8017b6791adfb1d63dd57f1f0"
+        },
+        {
+          "item_id": "6dd2f0eed8e1f11e0e83cb2c228cf82803ede86e721440a70c77d861018ffd30",
+          "path": "src/modules/journal/restore.test.ts",
+          "fingerprint": "27d0161abc81f91060498a0cab719091c2e43b30cb41406a29dfe05a4dcda38d"
+        },
+        {
+          "item_id": "71461bd5176ff3bb3ba0e07eed4e3b2e8ea3772f8701d3d17fb862e1a4e08e6d",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "fe94509f1bbfa1514fc96c94ce0750b11de3fed4f02fa6b16677236b8862f793"
+        },
+        {
+          "item_id": "9b7dcb2cd7cde31751d4c9cfb65f3a5f3e8d428ba57fd816f21a3508437ddb8b",
+          "path": "src/modules/reference-catalog/restore.ts",
+          "fingerprint": "d0024c5b6ed18117b75fd277d2a089bfac2ad301e47a3b1d70ae76880775418b"
+        },
+        {
+          "item_id": "b1a8751fc27da6e821054da0b9e3c484a8605198e151fb96f9beb89953657a19",
+          "path": "src/modules/trade-record/restore.test.ts",
+          "fingerprint": "c5c33a1269f2b46face875523b76dbedc578fea761a95a84484a6ebeb7acc75c"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "9b3e8b74859330c1f21cf91c94e9711ba4305779aae3308820d870be79dece96"
+        },
+        {
+          "item_id": "dbe9011ce1bde4a01e4922b6e5e280540e8e660e1a5f6975458b809ef74f01b8",
+          "path": "src/modules/market-data/restore.test.ts",
+          "fingerprint": "3869b704edaaef8ee09996d1c580baaff8b35e842386f0797115dc768b2422f7"
+        },
+        {
+          "item_id": "e1c9a37100c1381345c337d2106d5f420faa020ae787710e1db9f232e4a04dc4",
+          "path": "src/modules/reference-catalog/restore.test.ts",
+          "fingerprint": "34c378222b1e9684ab79ccdc844b12b97ca72a28a52caa713652fad81019d5c9"
+        },
+        {
+          "item_id": "fd415eb875e492d0ce4ab0de93e558328dca12aab0b3a3c90275617ede4a3233",
+          "path": "src/modules/market-data/restore.ts",
+          "fingerprint": "3c12cb16d31a7f54d23da404bd4788d7e2fc96604b2a7d743a33d89a7df9906d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "04f8dbb7fccdded64ce5741d29ef7cf1a0eb5f7c8c85a7f199b5e3fc37bd749e",
+          "path": "evidence/D08/suite-runs/T8.6-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "318812355833d20cdf8fc50b371cc0cd053edb7dbe9c78c73487384bdba5bc4a",
+          "path": "evidence/D08/suite-runs/T8.6-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "72f1158a56b122b22b06c3382c15f0feab8bbd99574f5e79f327d2d7336d51f7",
+          "path": "evidence/D08/tdd-log/T8.6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "863f5509cf26cd119cbc8179272bc53e6f84fc86a69056657496e03a832b2723",
+          "path": "evidence/D08/suite-runs/T8.6-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f659d3a91faf14dbc1b21a36651b8f161f66be14e38b14a10fa30fec0cf3485f",
+          "path": "evidence/D08/suite-runs/T8.6-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 95939
+  }
+}

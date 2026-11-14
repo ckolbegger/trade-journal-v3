@@ -122,7 +122,21 @@ This file lists every question asked of the user during D8, open and answered (d
 | 5 | Apply returns `ConfirmationRequired` or `SafetyBackupRequired` (the screen prevents both) | "Your current journal is unchanged." alone, with Check the backup again | keep |
 | 6 | Counts row "Marks acknowledged unavailable" (approved in Q2 A5) uses a phrase the wording check reserves for `calculation-words.ts` | assembled with `join(' ')` to pass the check, which defeats the check's purpose | export the label from `calculation-words.ts`, where the rule wants it, and import it |
 
-**Options.** (a) Approve the proposals as written; I add one follow-up task in lane UB for items 3, 4 and 6 (and 2's rendering once T8.8 supplies the fields), and note item 2 for T8.8. (b) Edit any row.
+**Added after T8.13's ocr review (2026-11-14).** Two of its Valid findings, T8.13-B2 and T8.13-B3, need on-screen text that no approved row covers:
+
+| # | Gap | As built | Proposed |
+|---|---|---|---|
+| 7 | `prepareRestore` returns `RuntimeNotWritable` (T8.13-B3) | silently goes back to the file chooser | the shell's existing readiness sentence, as A11 uses on the apply side, with **Choose backup file** |
+| 8 | `applyPreparedRestore` fails unexpectedly (T8.13-B2) | Replace stays disabled, with no message | "The Restore didn't finish. Reload the app to see which journal is in use." with **Reload**. It doesn't say "unchanged", because activation is one pointer write and the screen can't tell which side of it the failure fell on |
+
+The reviewer also noted two defects that ocr didn't raise. Reviewer notes don't become bug tasks on their own, so they are listed here for your call:
+
+| # | Gap | As built | Proposed |
+|---|---|---|---|
+| 9 | CrossSectionReference sentence | "an ${kind}" reads "an Trade" or "an Journal entry" | choose "a" or "an" from the kind |
+| 10 | "(N versions)" in the counts | each row shows its whole kind's total, so the Planned, Open and Closed rows all repeat the Trades total | show the version count once per kind: on a Trades total line and on the Journal entries row |
+
+**Options.** (a) Approve the proposals as written. I add one follow-up task in lane UB for items 3, 4, 6, 9 and 10 (and 2's rendering once T8.8 supplies the fields), note item 2 for T8.8, and use items 7 and 8's texts in bug tasks T8.13-B3 and T8.13-B2. (b) Edit any row.
 
 **Recommendation:** (a).
 
