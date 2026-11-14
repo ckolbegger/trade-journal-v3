@@ -26,7 +26,11 @@ Before implementing:
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## 3. Surgical Changes
+## 3. Explanations
+
+Use plain language first, then the technical detail. Avoid internal jargon (deliverable folder, guard findings, revision numbers, T-A/T-F options) unless it is defined in one sentence. Use the app's own domain terms. For example, say 'Marks', not 'closes'.
+
+## 4. Surgical Changes
 
 **Touch only what you must. Clean up only your own mess.**
 
@@ -42,7 +46,7 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+## 5. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 
@@ -51,15 +55,12 @@ Transform tasks into verifiable goals:
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Surface Better Alternatives
+## 6. Surface Better Alternatives
 
 I'm always open to ideas on better ways to do things. Please don't hesitate to suggest a better way, or one that has long lasting impact over a tactical change.
+
+## 7. Questions vs. actions
+
+If the user asks a question, answer it and stop. Do not start implementing until the user explicitly asks for changes. When an instruction says 'approve' or 'triage', confirm what it means before creating bug tasks or starting work.

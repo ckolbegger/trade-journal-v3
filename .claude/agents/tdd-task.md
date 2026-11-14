@@ -62,10 +62,10 @@ Take the cases in the breakdown's order. For each:
    3. Run the one case on its own: `npx vitest run <test file> -t "<test name>"`. It must fail with an assertion failure or a runtime exception tied to that behavior. A type-check or compile error does not count, since the test never ran against the mutated code; choose another mutation.
    4. Restore the code exactly, and confirm with `git diff -- src` that it equals its pre-mutation state.
    5. Run `tdd.sh green …` for the case.
-   6. Append a `note` row to `tdd-log.md`: "First-run pass, flagged for the user"; which earlier case or task built the behavior; the mutation in one sentence; its command; and the first line of its failure.
+   6. Append a `note` row to the task's file in `tdd-log/`: "First-run pass, flagged for the user"; which earlier case or task built the behavior; the mutation in one sentence; its command; and the first line of its failure.
 3. When the mutated case still passes, the test checks the wrong thing: fix the test (not the production code) and treat its next run as a new first run.
 
-Done when every case in the task has a red and green row, or a flagged first-run note with its mutation, in `tdd-log.md`.
+Done when every case in the task has a red and green row, or a flagged first-run note with its mutation, in the task's file in `tdd-log/`.
 
 ### 2 (alternative). Structural task: its exact verification
 
@@ -73,7 +73,7 @@ Build what the breakdown's structural-task row describes, then run its verificat
 
 ### 3. Refactor (behavioral tasks)
 
-With every case green, review the task's code as a separate step and refactor where it earns it. Rerun the task's tests and those of the module's earlier tasks, then append a `refactor` row to `tdd-log.md` naming the changes, any test-name rephrasing, and any assertion added beyond the planned wording. A refactor that changes nothing still gets its row.
+With every case green, review the task's code as a separate step and refactor where it earns it. Rerun the task's tests and those of the module's earlier tasks, then append a `refactor` row to the task's file in `tdd-log/` naming the changes, any test-name rephrasing, and any assertion added beyond the planned wording. A refactor that changes nothing still gets its row.
 
 ### 4. Checks
 
@@ -81,7 +81,7 @@ Run `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, and `npm run lint:
 
 ### 5. Commit
 
-Stage the task's code, tests, and evidence rows by name, and commit them as one commit with a conventional message naming the task (for example `feat(analysis): T2.2 entry window, …`), ending with the line `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. The handoff and the cumulative-run sections of `structural.md` belong to the main session. Pushing belongs to the user.
+Stage the task's code, tests, and evidence rows by name, and commit them as one commit with a conventional message naming the task (for example `feat(analysis): T2.2 entry window, …`), ending with a `Co-Authored-By:` line naming the model you run on (for example `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`). The handoff and the cumulative-run sections of `structural.md` belong to the main session. Pushing belongs to the user.
 
 Then confirm the worktree is clean: `git branch --show-current` names the branch you started on, and `git status --short` lists only files the brief says the main session or another agent owns. Remove any stray file your commands created (a red run can create one through a script), and report each one. Stop after this task.
 

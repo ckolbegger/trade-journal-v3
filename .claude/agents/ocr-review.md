@@ -1,6 +1,6 @@
 ---
 name: ocr-review
-description: Runs Alibaba's Open Code Reviewer (`ocr`, ChatGPT provider) on one commit or a commit range, checks each finding against the code, and returns only a short findings table. Use it on every task's implementation commit, right after the commit (user's direction, 2026-10-24), and whenever the user asks for an ocr review. Never edits code. The main session turns Valid and Doubtful findings into bug tasks and records Wrong ones as dismissed.
+description: Runs Alibaba's Open Code Reviewer (`ocr`, ChatGPT provider) on one commit or a commit range, checks each finding against the code, and returns only a short findings table. Use it on every task's implementation commit, right after the commit, and whenever the user asks for an ocr review. Never edits code. The main session turns Valid and Doubtful findings into bug tasks and records Wrong ones as dismissed.
 tools: Bash, Read, mcp__savvy-progress__step
 model: sonnet
 effort: high
@@ -45,6 +45,6 @@ Session <id>, model <model>, <n> files reviewed (<m> excluded), <k> comments. Ou
 | high | bug | `src/x.ts:42` | <one sentence> | Valid: <one sentence why> |
 ```
 
-The table holds ocr's own comments only. Put your answers to any question in the brief, and anything else you noticed yourself, under a separate heading "Notes (not ocr findings)". The main session turns only table rows into bug tasks (user's direction, 2026-11-08).
+The table holds ocr's own comments only. Put your answers to any question in the brief, and anything else you noticed yourself, under a separate heading "Notes (not ocr findings)". The main session turns only table rows into bug tasks.
 
 Order rows most severe first. With no comments, write "No findings." instead of the table. Mention any ocr warning in one line. Never paste raw JSON, code, or logs.
