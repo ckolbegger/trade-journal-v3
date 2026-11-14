@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 38467,
+    "input_tokens": 38134,
+    "output_tokens": 333,
+    "cache_read_tokens": 6656,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Cockpit drawer positioning and related end-to-end support",
+      "files": [
+        "e2e/support/detail/rail-a.ts",
+        "src/ui/cockpit/drawers/position.props.ts",
+        "src/ui/cockpit/drawers/position.tsx",
+        "src/ui/cockpit/drawers/position.types.ts"
+      ]
+    }
+  ],
+  "session_id": "351ae0dc-8bde-45c9-9f0c-1ffc3338c806",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "351ae0dc-8bde-45c9-9f0c-1ffc3338c806",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "d15649d1",
+      "resolved_base": "c471b4a5e67c1ca0d124f74a99840caa8eb1a0c9",
+      "resolved_head": "d15649d18300e282969b0333ab19a2619df8132c",
+      "exact_range": "c471b4a5e67c1ca0d124f74a99840caa8eb1a0c9..d15649d18300e282969b0333ab19a2619df8132c",
+      "source_artifact_sha256": "06b0773b948a08732f511db1c74aebde2fcc02ce7a2ca0354eed4d8e0e514781"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "206f12b349580a7ca7bfe204fd47734ca6be44fdfe081b024605d59503f19841",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "5adffc3b09aeec5ecdce4ea31c557254a17aaf057a8fc9e2d236311b1f57fb42"
+        },
+        {
+          "item_id": "866fc0f941509ba61e5176c20efa2818ca3e9ecb514da636a50cfbaccda7ac32",
+          "path": "src/ui/cockpit/drawers/position.types.ts",
+          "fingerprint": "9117d802240dd9d738ae696d34731570979d2b6cec8d1c88ede9291c5c622024"
+        },
+        {
+          "item_id": "c90f11a8b2d1d91f7bf1e0a2bd2a7f3a710b9872a7776c5d7f211309e04a67bc",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "f3af154e20185bd4bec6ea040265dea11de17ac9b85590614096ba60a36860a1"
+        },
+        {
+          "item_id": "e8d79a0b3e66588e2d75a5ee1ad34b9a2844f9087652b6e174433ee583d059de",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "c4660e8b5c296b2e6b1bc33e22eef564851e4b78024056c7d5ee95f17323f0e1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "206f12b349580a7ca7bfe204fd47734ca6be44fdfe081b024605d59503f19841",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "5adffc3b09aeec5ecdce4ea31c557254a17aaf057a8fc9e2d236311b1f57fb42"
+        },
+        {
+          "item_id": "866fc0f941509ba61e5176c20efa2818ca3e9ecb514da636a50cfbaccda7ac32",
+          "path": "src/ui/cockpit/drawers/position.types.ts",
+          "fingerprint": "9117d802240dd9d738ae696d34731570979d2b6cec8d1c88ede9291c5c622024"
+        },
+        {
+          "item_id": "c90f11a8b2d1d91f7bf1e0a2bd2a7f3a710b9872a7776c5d7f211309e04a67bc",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "f3af154e20185bd4bec6ea040265dea11de17ac9b85590614096ba60a36860a1"
+        },
+        {
+          "item_id": "e8d79a0b3e66588e2d75a5ee1ad34b9a2844f9087652b6e174433ee583d059de",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "c4660e8b5c296b2e6b1bc33e22eef564851e4b78024056c7d5ee95f17323f0e1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "10246a02771eb0435c4b7b7a54737ec0300a89cb6a3c21ba349b83288897192f",
+          "path": "evidence/D08P/browser/T8P.23-B1-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "5741d099fd100e5ab815c4a6e43a6de21e01863bd59c2f8e819374fcc75f2078",
+          "path": "evidence/D08P/tdd-log/T8P.23-B1.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "589a3a6915dcd616f6179d47f5dc687236f2a38d2801078264b1a50f585149ff",
+          "path": "src/ui/screens/trade-detail/Result.tsx",
+          "exclude_reason": "deleted"
+        },
+        {
+          "item_id": "c2fd486111638d00f0d387a09d3b1d932d274fd2e5443262caf354d5c4d2756f",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ea0588e106f411a3d18b01faf53a3647c9ed28d8e647873431f4ed45b37bd92e",
+          "path": "src/ui/screens/trade-detail/Result.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 20001
+  }
+}

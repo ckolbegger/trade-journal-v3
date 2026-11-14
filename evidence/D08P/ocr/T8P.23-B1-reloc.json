@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 113521,
+    "input_tokens": 112832,
+    "output_tokens": 689,
+    "cache_read_tokens": 13312,
+    "elapsed": "39s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/trade-detail/Result.ts",
+      "content": "These new absence assertions fail against the implementation included in this update: `position.props.ts` still supplies `result: createElement(ClosedResultSection, { view })` for closed trades, and `PositionPanel` still renders `{result}`. Consequently the Result region remains mounted and the disposition rows are still duplicated. Include the removal of that component and the drawer's `result` prop with this change so the regression test passes and T8P.23-B1 is actually resolved.",
+      "existing_code": "    expect(screen.queryByRole('region', { name: 'Result', hidden: true })).toBeNull();",
+      "start_line": 67,
+      "end_line": 67,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/trade-detail/Cockpit.tsx",
+        "src/itg/relocated/trade-detail/Result.ts"
+      ]
+    }
+  ],
+  "session_id": "39bf673b-ddb2-43dc-944e-9b815e933ec8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "39bf673b-ddb2-43dc-944e-9b815e933ec8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "117e88c12b0a88bb1cfa7030c5875497def614f6",
+      "resolved_head": "45f88075a3d77ac0d5e2c1a28fb6f4a30597f240",
+      "exact_range": "117e88c12b0a88bb1cfa7030c5875497def614f6..45f88075a3d77ac0d5e2c1a28fb6f4a30597f240",
+      "source_artifact_sha256": "8b62beba71a148a708695299e877115c2d88881693a389f88eb02288fe79158f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "a6bcf4ccdb0f27010bdab5ee357d5ee0598bb609771c3bf9b918dd98003ca15e",
+          "path": "src/itg/relocated/trade-detail/Cockpit.tsx",
+          "fingerprint": "22444cfac69112f0044e18e10f729723a3161cfc9f13775081b5e187e9b60de8"
+        },
+        {
+          "item_id": "b303310ac51fd0addc33af6f5361f7043e1ecc50a5c9d31d533e130343746b35",
+          "path": "src/itg/relocated/trade-detail/Result.ts",
+          "fingerprint": "4a2c2f283350bda1cc4c09be2bd74a70c218486612cd2914f7ca3281055bb30e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "a6bcf4ccdb0f27010bdab5ee357d5ee0598bb609771c3bf9b918dd98003ca15e",
+          "path": "src/itg/relocated/trade-detail/Cockpit.tsx",
+          "fingerprint": "22444cfac69112f0044e18e10f729723a3161cfc9f13775081b5e187e9b60de8"
+        },
+        {
+          "item_id": "b303310ac51fd0addc33af6f5361f7043e1ecc50a5c9d31d533e130343746b35",
+          "path": "src/itg/relocated/trade-detail/Result.ts",
+          "fingerprint": "4a2c2f283350bda1cc4c09be2bd74a70c218486612cd2914f7ca3281055bb30e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 38896
+  }
+}

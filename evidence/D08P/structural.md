@@ -1438,3 +1438,10 @@ Every defect becomes a bug task, run one at a time in the main worktree (`critic
 - **T8P.23-B8 (low).** An unavailable per-condition figure shows a bare "—" (Plan and Risk's lines, and A223's distance lines). A222 says it shows its reason at the `label` length.
 
 The minor observations are recorded, not tasks. Observation 1, the Journal card repeating the rail's Trade P&L, is W10's required content.
+
+**T8P.23-B1** (`d15649d1`). The Position drawer no longer renders a Closed Trade's Result: the rail's P&L card is the one place (W4, the Reach table). `Result.tsx` had no non-test importer left and is deleted. Each moved read keeps its value and is also asserted on the rail (`pnl.props.test.tsx`).
+- **Test:** "should show the Result rows and the realized figure once on the rail, with no Result region in the Position drawer, on a Closed by sale and a Closed by expiration Detail". Red: `expected <section class="card" …> to be null`.
+- **Expected value moved:** the drawer-only "+$248.00" read now reads the rail's "$248.00" (W4).
+- **Browser specs run:** 11 specs, 15 tests passed.
+- **Review:** ocr in place, 4 files, 0 comments (`ocr/T8P.23-B1.json`). Relocated, 1 comment (`ocr/T8P.23-B1-reloc.json`). That comment is Wrong, a relocation artifact: `ClosedResultSection` no longer exists anywhere.
+- **Quick run (`T8P.23-B1`):** unit 1641, integration 229, checks 14 of 14, browser-task 6 passed; run complete.
