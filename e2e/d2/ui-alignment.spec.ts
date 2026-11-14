@@ -1138,7 +1138,8 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
-      const rows = await section.locator('dl > div').evaluateAll((els) =>
+      // The answers are the card's `dl.answers`; its item's own details (Anchor, Source, Moment) are a list of their own.
+      const rows = await section.locator('dl.answers > div').evaluateAll((els) =>
         els.map((el) => {
           const dt = el.querySelector('dt')!.getBoundingClientRect();
           const dd = el.querySelector('dd')!.getBoundingClientRect();

@@ -32,5 +32,5 @@ export const valueIn = (scope: Locator, term: string): Locator => scope.locator(
 export const figureIn = (scope: Locator, term: string): Locator =>
   scope.locator('div', { has: scope.page().locator('dt', { hasText: new RegExp(`^${term}$`) }) }).locator('dd');
 
-// The Journal drawer's panel: the session cards (W10 to W13), or the Planned Detail's Plan Reflection. A role query inside it sees only what shows.
+// The Journal drawer's panel: the session cards (W10 to W13), or the Planned Detail's Plan card. A role query inside it sees only what shows.
 export const journalRegion = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-journal');

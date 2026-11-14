@@ -33,7 +33,8 @@ describe('Trade Detail', () => {
     expect(figure('Original reward')).toBe('$600.00');
     expect(figure('Reward : risk')).toBe('2.4');
     await openDrawer(user, 'Journal');
-    const reflection = screen.getByRole('region', { name: 'Plan Reflection' });
+    // Revision 96: the Plan Reflection is on the Plan card of the Journal drawer.
+    const reflection = screen.getByRole('article', { name: 'Plan' });
     expect(within(reflection).getByText('Why this trade, why now?')).toBeTruthy();
     expect(within(reflection).getByText('Breakout above the 50-day.')).toBeTruthy();
     expect(within(reflection).getByText('Calm')).toBeTruthy();

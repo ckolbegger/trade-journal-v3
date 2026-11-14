@@ -36,8 +36,9 @@ export interface JournalReplay {
 // `today` is the Workspace-local date ("2026-11-12"); the clock's, when absent.
 export type JournalCardsInput = { readonly view?: unknown; readonly timeZone?: string; readonly today?: string } & (
   | { readonly replay?: undefined }
-  // 'Incoherent': the facts cannot be replayed, so the Detail's entries are one list (W13).
-  | { readonly replay: JournalReplay | 'Incoherent'; readonly view: TradeDetailView; readonly facade: UiFacade; readonly onDirtyChange?: (dirty: boolean) => void }
+  // 'Incoherent': the facts cannot be replayed, so the Detail's entries are one list (W13). 'Planned': there is nothing to replay, so the
+  // Detail's own entries are the Plan card alone (W11).
+  | { readonly replay: JournalReplay | 'Incoherent' | 'Planned'; readonly view: TradeDetailView; readonly facade: UiFacade; readonly onDirtyChange?: (dirty: boolean) => void }
 );
 
 const ZERO = Rational.of(0n);
@@ -104,8 +105,12 @@ export function journalTabCount(view: unknown): string | undefined {
 export function journalCards(input: JournalCardsInput): JournalDrawerProps | undefined {
   const { timeZone = 'UTC' } = input;
   if (!input.replay) return undefined;
-  const { replay } = input;
   const { view } = input;
+  // A Planned Detail's entries carry no kind; they are the Plan Reflection saved with the Plan, so they are the Plan card's items.
+  const replay =
+    input.replay === 'Planned'
+      ? { sessions: [], plan: view.journal.map((entry) => ({ kind: 'Entry' as const, ...entry })), pending: null }
+      : input.replay;
   const { plan } = view;
   const symbol = plan.underlying;
   // A replayed Debt carries no due status, so an owed reflection takes it from the Detail's own Debt of the same id.

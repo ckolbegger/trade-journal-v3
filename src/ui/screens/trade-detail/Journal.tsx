@@ -1,27 +1,10 @@
 import { useState } from 'react';
 import type { UiFacade } from '../../../app/compose.ts';
-import type { NarrativeEntry, TradeDetailNarrativeItem } from '../../../app/types.ts';
+import type { TradeDetailNarrativeItem } from '../../../app/types.ts';
 import { Badge } from '../../Badge.tsx';
 import { localTime, shortDate } from '../../format.ts';
 import { OwedDebtItem } from '../OwedDebtItem.tsx';
 import { answerText } from './words.ts';
-
-// The Plan Reflection a Planned Trade carries: the answers saved with the Plan, under their snapshot prompts.
-export function PlanReflectionSection({ entry }: { readonly entry: NarrativeEntry }) {
-  return (
-    <section className="card" aria-labelledby="reflection-heading">
-      <h2 id="reflection-heading">{entry.entryType}</h2>
-      <dl className="answers">
-        {entry.responses.map((response) => (
-          <div key={response.prompt}>
-            <dt>{response.prompt}</dt>
-            <dd>{answerText(response.answer)}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
 
 // The Trade's narrative: each saved Entry with the Prompt and option labels saved with it, and each
 // decline with its reason, at its moment time.

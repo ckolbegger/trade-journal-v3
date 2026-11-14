@@ -58,6 +58,25 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     expect(within(screen.getByRole('tabpanel', { name: 'Plan and Risk' })).getByRole('region', { name: 'Plan' })).toBeTruthy();
   });
 
+  it("should show a Planned Detail's Journal as the Plan card with the Plan Reflection's answers, and no old Plan Reflection region or Journal heading", async () => {
+    const user = userEvent.setup();
+    renderView(plannedDetail);
+    await openDrawer(user, 'Journal');
+    const panel = screen.getByRole('tabpanel', { name: 'Journal' });
+    // W11: the Plan card, "Planned Thu Oct 12, 9:30 am", headed "Plan", with the answers in their existing words.
+    const plan = within(panel).getByRole('article', { name: 'Plan' });
+    expect(plan.querySelector('.journal-card-when')?.textContent).toMatch(/^Planned \w{3} Oct 12, /);
+    expect(within(plan).getByText('Why this trade, why now?')).toBeTruthy();
+    expect(within(plan).getByText('Breakout above the 50-day.')).toBeTruthy();
+    expect(within(plan).getByText('Calm')).toBeTruthy();
+    // The prototype's Planned state heads the card with W10's words.
+    expect(within(panel).getByRole('heading', { name: 'Sessions, newest first' })).toBeTruthy();
+    // Revision 96: the old list's region and heading are gone from the DOM, hidden panels included.
+    expect(screen.queryAllByRole('region', { name: 'Plan Reflection', hidden: true })).toEqual([]);
+    expect(document.querySelector('#reflection-heading')).toBeNull();
+    expect(screen.queryAllByRole('heading', { name: /^Journal \(/, hidden: true })).toEqual([]);
+  });
+
   describe('Closed and Settlement Due', () => {
     useFixedClock();
     it('should leave out Today on a Closed or Settlement Due Detail, and select Position', async () => {

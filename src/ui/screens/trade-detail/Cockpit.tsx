@@ -48,8 +48,9 @@ const Loading = () => <p role="status">Loading the Trade…</p>;
 export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }: CockpitProps) {
   const replay = read.kind === 'Ready' ? read.replay : undefined;
   const pending = read.kind === 'Pending';
-  // What the Journal's session cards take as their replay: the replay itself, or 'Incoherent' for a Detail whose facts cannot be replayed.
-  const cardsReplay = replay ?? ('recordedPositionChanges' in view ? ('Incoherent' as const) : undefined);
+  // What the Journal's session cards take as their replay: the replay itself, 'Incoherent' for a Detail whose facts cannot be replayed, or
+  // 'Planned' for a Detail that has no Position to replay.
+  const cardsReplay = replay ?? cardsReplayOf(view);
   const { shown, initial } = drawersOf(view);
   const [selected, setSelected] = useState<Drawer | undefined>(undefined);
   const current = selected && shown.includes(selected) ? selected : initial;
@@ -112,7 +113,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
       case 'Journal':
         if (pending) return <Loading />;
         // Once a replay is passed the session cards stand in for the old Journal list. An incoherent Detail has no replay to pass, so its
-        // entries are one card (W13).
+        // entries are one card (W13), and a Planned one's are the Plan card (W11).
         if (cardsReplay) return <JournalCards {...shell} replay={cardsReplay} facade={facade} {...(onDirtyChange && { onDirtyChange })} />;
         return <JournalDrawer facade={facade} {...shell} {...(onDirtyChange && { onDirtyChange })} />;
       case 'Payoff':
@@ -168,6 +169,12 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
       </div>
     </ReflectRequestContext.Provider>
   );
+}
+
+// The replay a Detail stands in for when it has none to read.
+function cardsReplayOf(view: TradeDetailView): 'Incoherent' | 'Planned' | undefined {
+  if ('recordedPositionChanges' in view) return 'Incoherent';
+  return 'positionChanges' in view ? undefined : 'Planned';
 }
 
 // The Detail without the Debts already answered or declined on their cards.
