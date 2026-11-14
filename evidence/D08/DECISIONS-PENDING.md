@@ -73,7 +73,7 @@ This file lists every question asked of the user during D8, open and answered (d
 
 **Recommendation:** (a).
 
-**Answer:** pending.
+**Answer (2026-11-14):** (a), parts A, B and C approved as written ("Q2 a"). T8.13, T8.12-B2 and T8.14-B3 resume. The approved words are carried into r103 with Q1's.
 
 ## Q3. Do backups carry each record's internal write stamp? (T8.3 report) — open, asked 2026-11-14
 
@@ -89,4 +89,4 @@ This file lists every question asked of the user during D8, open and answered (d
 
 **Not a question:** journal entries' and declines' top-level `anchorTradeId` is stored data and A125 doesn't exclude it, so it is exported as stored.
 
-**Answer:** pending.
+**Answer (2026-11-14):** (a), leave the stamps out ("Q3 a"). The export projection removes `revision` from every record, the manifest's `exclusions` names it, and Restore stamps records at the new database's revision 1. T8.2 starts. This refines A125 and is carried into r103.
