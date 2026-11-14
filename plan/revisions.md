@@ -2,6 +2,15 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 98: the commit tagged `claude-opus-5.5-plan-r98` (revision 97, no decision). Two user choices on D08P critic-2's defects.
+  - **A Settlement Due Trade's history ends at expiration (defect 3).**
+    - A212 ran an Open Trade's replay lifetime to the Expected Mark Date. So once a contract expired unrecorded, Price History and the Journal kept adding sessions after expiration. Each was counted "without Marks", and the Journal showed "Session not ended yet. Its Marks are due …", though no Mark is due for an expired contract and the Review asks for none.
+    - A212 now ends a Settlement Due Trade's lifetime with its contract's expiration session, as the prototype's Settlement Due state does. No later session and no session-not-ended card follow it.
+    - Bug task T8P.23-B13 makes it in `replayTrade` (`src/coordinators/trade-views/`), with its tests, red then green. It may also touch Trade Analysis's `replay` where the lifetime is cut.
+    - Rejected: keeping the later sessions without counting them (that needs new words), and accepting A212 as written.
+  - **"Close" stays in Stale context (defect 7).** The Today drawer's "Stale context: $51.50 from Tue Oct 13 close (stale, not used in any current figure)" keeps its words. P102 changed only the two texts it named. Rejected: "from the Tue Oct 13 Mark", and "from Tue Oct 13's Mark".
+
+  No acceptance scenario changes status, no stored data or durable compatibility changes, no words change, and `specs/` is unchanged: `ReadSeries` and `replayTrade` set no end for an expired contract. The next decision is still 112. Decided by the user on 2026-11-14 ("End at expiration", "Leave it as is").
 - Revision 97: the commit tagged `claude-opus-5.5-plan-r97` (revision 96, no decision). D08P's second checkpoint critic (T8P.23, critic-2) failed C8P.2, "Each figure appears once, apart from the two accepted exceptions", on five repeats. Each repeat is existing wording that the specs or the approved words keep. For example, W8 says "The Valuation's Mark provenance, the dated line and At entry keep their words", and T8P.31 placed Stale context as the UI contract requires. At the user's choice, C8P.2's pass condition now names every accepted exception:
   - the Journal cards' Marks;
   - Price History's latest session (P99);
