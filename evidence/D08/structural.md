@@ -389,6 +389,26 @@ Lane WB, commit `80999756`: the 3 planned cases, each red (`Error: not built`, t
   - ocr (session `b5db4865-eeda-4510-a783-b5cf2d12abbc`, 2 files): **No findings.** Raw: `ocr/T8.5-B6-49a835a7.json`.
 
 **T8.5 is complete in lane WB** (F1 and B1–B6 done, every ocr clean).
+
+## T8.10 Backup safe actions in status
+
+Lane WB, commit `dd04561b`: the planned case, red ("expected { …(8) } to deeply equal ObjectContaining{…}", with no `backupActions`) then green. There were no first-run passes. Lane tier `T8.10`: unit 172 / 1802, integration 106 / 229, checks 14 of 14.
+
+**Implementation-level choices.**
+- No type changes. `getStatus` sets the frozen optional `backupActions`:
+
+  | Status | `backupActions` |
+  |---|---|
+  | Recovery Only | `DownloadBackup`, `VerifyBackup` |
+  | Migration Blocked | `DownloadCopy`, `VerifyBackup` |
+  | IntegrityBlocked(AwaitingMigration) | `DownloadCopy` |
+  | InitializationRequired | `RestoreFromBackup` |
+
+- Every other status is untouched, including an unreadable root and Ready.
+- `initialize` is unchanged: its results carry no status field, and the test reads the actions through `getStatus`.
+- The states are built from the schema-5 fixture. Migration Blocked uses an unknown account, AwaitingMigration a failed `inventory` check, and the unreadable root a `tj-root` at version 99.
+
+ocr (session `56a80a25-10d7-43e3-8868-39d5822315d7`, 2 files): **No findings.** Raw: `ocr/T8.10-dd04561b.json`.
   - **For T8.8:** `prepareRestore`'s reader path maps `reason === 'NotUtf8'` to its own unreadable outcome.
 
 **T8.4 is complete in lane WB** (B1–B4 done, every ocr clean). It merges after merge-5 finishes. T8.5 started in lane WB from `87f92560` meanwhile; it is merged with T8.4 only if it's done by then, and otherwise T8.4 merges by fast-forward to `87f92560`.
