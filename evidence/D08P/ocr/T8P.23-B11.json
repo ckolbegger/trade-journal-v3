@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 41485,
+    "input_tokens": 41181,
+    "output_tokens": 304,
+    "cache_read_tokens": 6656,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/cockpit/drawers/price-history.props.ts"
+      ]
+    }
+  ],
+  "session_id": "17f55815-5e8e-416d-bd2b-89d8e0f80241",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "17f55815-5e8e-416d-bd2b-89d8e0f80241",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "21a54f12",
+      "resolved_base": "92faeb925150fcb272443944f7ffc83d7925e8e3",
+      "resolved_head": "21a54f12d8b174ed3dac5b5244e88ecf9f92f6ea",
+      "exact_range": "92faeb925150fcb272443944f7ffc83d7925e8e3..21a54f12d8b174ed3dac5b5244e88ecf9f92f6ea",
+      "source_artifact_sha256": "b2e8dc39ec19400e7335540b4bcc3dc42c7acf6a1322ffaeb2c495ace4a3c0e2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "9bada601f5edcc5426e5e8348ca4d7d85ea7d5ced70da835115efec2ba0dc441"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "3b1774f87e0ea8e4045cde37e463bd3788200b7f44ec284dcae8c7bdeafe8e1a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "9bada601f5edcc5426e5e8348ca4d7d85ea7d5ced70da835115efec2ba0dc441"
+        },
+        {
+          "item_id": "ef97ec8adcb3f7b11445abde758d6f413b0e72418b1d1e70110aaeb9d0da2558",
+          "path": "src/ui/cockpit/drawers/price-history.props.ts",
+          "fingerprint": "3b1774f87e0ea8e4045cde37e463bd3788200b7f44ec284dcae8c7bdeafe8e1a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1dc18f003e74eb83072928bc9264026066fa6de757834fea465e0a10ab39e477",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "7c3e73dc83afc48c0aa80c0fb701693a6fabbb96f2d78a8bb76c57f69c83536c",
+          "path": "evidence/D08P/browser/T8P.23-B11-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "9978d9c913e656020bf2c18572e1beeca6640fd1a4bcbaa7b9458207219cacc5",
+          "path": "evidence/D08P/tdd-log/T8P.23-B11.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 15727
+  }
+}

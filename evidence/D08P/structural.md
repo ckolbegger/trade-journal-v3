@@ -1577,3 +1577,15 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
   - the reviewer found no stale closure and no double focus, and every reset path covered;
   - the unit case's `Element.prototype.scrollIntoView` stub isn't restored. It leaks only within that test file, and production calls it with `?.`.
 - **Quick run (`T8P.23-B10`):** unit 1651, integration 229, checks 14 of 14, browser-task 7; run complete.
+
+**T8P.23-B11** (`21a54f12`). A session whose replayed Position is flat at its close (A211's `positions`, every quantity zero) has no Mark due.
+- **Price History:** the session no longer counts as a gap on the tab or in the count line. Its cells read a plain "—" with no "No Mark" name, because W9's "No Mark" names a gap.
+- **Journal:** it is not merged "without Marks" (A214), so a Closed Trade's final session keeps W10's "<date>, final session" card with its Trade P&L.
+- **Scope:** the fix is in `src/ui` only.
+- **Tests:**
+  - "should not count the final session of a Closed Trade, flat at its close, as a session without Marks". Red: `expected 1 to be +0`. The count line and link are asserted absent from the DOM, and a real earlier gap still counts.
+  - "should head a Closed Trade final session flat at its close as the final session with its Trade P&L, not as without Marks". Red: `expected [ 'Tue Oct 13 without Marks', …] to deeply equal [ 'Tue Oct 13, final session', …]`.
+- **Expected values:** none changed. Test doubles gained `positions`. The `TradeDetail.test.tsx` replay double had `positions: []`, which now reads as flat, so it holds 100 shares per session, as the real view does.
+- **Browser specs run:** 55 passed (`browser/T8P.23-B11-specs.txt`). No browser case reproduces the Closed-by-sale state; the props tests cover it.
+- **Review:** ocr in place, 2 files, 0 comments (`ocr/T8P.23-B11.json`). The reviewer found no session that is flat at its close yet owed a Mark, and no Open Trade whose real gap would be hidden. The flat test is per session, not per Instrument, as before.
+- **Quick run (`T8P.23-B11`):** unit 1653, integration 229, checks 14 of 14, browser-task 7; run complete.
