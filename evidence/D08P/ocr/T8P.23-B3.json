@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 80263,
+    "input_tokens": 79195,
+    "output_tokens": 1068,
+    "cache_read_tokens": 9984,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/today.tsx",
+      "content": "`todayProps` builds this card assuming the comparison table will also be rendered: `currentMarksOf` suppresses the instrument Mark and Underlying Mark whenever the replay comparison contains available marks. On a Settlement Due state with such a replay, Position now renders only this card, so the prices, source/saved provenance and correction disappear along with the discarded comparison (and can disappear when the replay finishes loading). Build the standalone card with comparison deduplication disabled, while retaining deduplication for the full Today drawer, and cover a no-Today state with multiple replay sessions.",
+      "existing_code": "  const { currentMarks } = todayProps(input);",
+      "start_line": 62,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/today.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "72406995-96b2-4166-a81c-c90166dffc6a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "72406995-96b2-4166-a81c-c90166dffc6a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "f3c853ba",
+      "resolved_base": "0cbbbdb2c304e741d3ed7de26d7b1cc432748f7c",
+      "resolved_head": "f3c853ba813065ea94b5f1b0acb7a0670ab2b0af",
+      "exact_range": "0cbbbdb2c304e741d3ed7de26d7b1cc432748f7c..f3c853ba813065ea94b5f1b0acb7a0670ab2b0af",
+      "source_artifact_sha256": "8b83bd8782032d8f129f8b18b3d1bb925b576b62ca75c59d7227dec67d38ca1d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "a7f12ef7ae6f4caf823dc7a96b5f3f4ebe6dcfb3d90852b423d050bccec16289"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "19d0b2af27082b21860a72ed159034d90046fdefbe62963c50edd46bd0ce28f9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "a7f12ef7ae6f4caf823dc7a96b5f3f4ebe6dcfb3d90852b423d050bccec16289"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "19d0b2af27082b21860a72ed159034d90046fdefbe62963c50edd46bd0ce28f9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2f29483a20cf819d78adcf87bd86cc0db609dcc672d82b2d33e0f0aaf00d5137",
+          "path": "src/ui/screens/trade-detail/Placed.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "616013112f52ff25fa191a1b867f6d8ea65f8eae563ef8bbe2eb53816d8b9899",
+          "path": "evidence/D08P/browser/T8P.23-B3-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "bd9ae167870e7cc47db264d86614999761df20efeaedc19c480810387f3f7d7c",
+          "path": "evidence/D08P/tdd-log/T8P.23-B3.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 42619
+  }
+}

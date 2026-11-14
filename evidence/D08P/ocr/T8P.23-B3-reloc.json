@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 141121,
+    "input_tokens": 139881,
+    "output_tokens": 1240,
+    "cache_read_tokens": 13312,
+    "elapsed": "52s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/today.tsx",
+      "content": "Disable comparison deduplication when rendering Marks alone. `currentMarksOf` suppresses the current Mark and Underlying Mark whenever `comparisonOf(replay)` contains available marks for them (today.props.ts:237–240). With a ready replay containing two marked sessions on a Settlement Due detail, this component therefore drops the prices, source, saved time and correction, while also omitting the comparison that previously displayed them. Build the standalone card without comparison deduplication (for example, omit replay when deriving these props), and cover a no-Today state with a populated replay in the integration test.",
+      "existing_code": "  const { currentMarks } = todayProps(input);\n  return currentMarks ? \u003cCurrentMarksCard currentMarks={currentMarks} /\u003e : null;",
+      "start_line": 62,
+      "end_line": 63,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/trade-detail/Placed.ts",
+        "src/ui/cockpit/drawers/today.tsx",
+        "src/ui/screens/trade-detail/Cockpit.tsx"
+      ]
+    }
+  ],
+  "session_id": "1c034357-08b4-40f3-b668-5ce76e26cdc0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1c034357-08b4-40f3-b668-5ce76e26cdc0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ec93064c5cf5fca40bbcdb8cdd791f6f7829af0d",
+      "resolved_head": "b8a9b95b1d0fc63c1459d309fa7a5cd87a1e8f8c",
+      "exact_range": "ec93064c5cf5fca40bbcdb8cdd791f6f7829af0d..b8a9b95b1d0fc63c1459d309fa7a5cd87a1e8f8c",
+      "source_artifact_sha256": "5e3e0d626f8fff243fbf8f13a79e7414fa95a0507e776dddf84641966183918c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "a7f12ef7ae6f4caf823dc7a96b5f3f4ebe6dcfb3d90852b423d050bccec16289"
+        },
+        {
+          "item_id": "b37663fab0d16b31fc36cde06a6bdc0aad521c537df893769d5a102cfa39753c",
+          "path": "src/itg/relocated/trade-detail/Placed.ts",
+          "fingerprint": "96bded2315a30cb7bd7c833b3076dbdb1b9f1b5d703804c3499297c2ebedc5c2"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "19d0b2af27082b21860a72ed159034d90046fdefbe62963c50edd46bd0ce28f9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "a7f12ef7ae6f4caf823dc7a96b5f3f4ebe6dcfb3d90852b423d050bccec16289"
+        },
+        {
+          "item_id": "b37663fab0d16b31fc36cde06a6bdc0aad521c537df893769d5a102cfa39753c",
+          "path": "src/itg/relocated/trade-detail/Placed.ts",
+          "fingerprint": "96bded2315a30cb7bd7c833b3076dbdb1b9f1b5d703804c3499297c2ebedc5c2"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "19d0b2af27082b21860a72ed159034d90046fdefbe62963c50edd46bd0ce28f9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2f29483a20cf819d78adcf87bd86cc0db609dcc672d82b2d33e0f0aaf00d5137",
+          "path": "src/ui/screens/trade-detail/Placed.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 52470
+  }
+}

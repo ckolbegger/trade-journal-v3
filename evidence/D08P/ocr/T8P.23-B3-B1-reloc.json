@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 75695,
+    "input_tokens": 75070,
+    "output_tokens": 625,
+    "cache_read_tokens": 13312,
+    "elapsed": "39s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/trade-detail/Placed.tsx",
+      "content": "This regression test is added without the corresponding implementation fix, so it fails with the current code. `CurrentMarksOnly` still calls `todayProps(input)` with the replay, and `currentMarksOf` suppresses both the contract and underlying rows when their replay marks are Available. Consequently all four asserted rows are absent. Include the fix to build CurrentMarksOnly's props from just `view` and `timeZone` (excluding replay), while retaining this test.",
+      "existing_code": "        \u003cCurrentMarksOnly view={view} timeZone=\"America/New_York\" replay={replay} /\u003e",
+      "start_line": 267,
+      "end_line": 267,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/trade-detail/Placed.tsx",
+      "files": [
+        "src/itg/relocated/trade-detail/Placed.tsx"
+      ]
+    }
+  ],
+  "session_id": "42709d55-7c94-481a-8b81-d07d463db2e4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "42709d55-7c94-481a-8b81-d07d463db2e4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "f8b24f33",
+      "resolved_base": "05f67cfa12f4053dfec99312f47fdf049cce7ba5",
+      "resolved_head": "f8b24f3361def6a202b631bf58576b9b829668da",
+      "exact_range": "05f67cfa12f4053dfec99312f47fdf049cce7ba5..f8b24f3361def6a202b631bf58576b9b829668da",
+      "source_artifact_sha256": "919fa3d4372830d9e20619f0d0c9a5d46fb42fe50b36ce24ff80f402b85cd903"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "67976e73910d750057e21db35e2716df1a630957ba7915b49526c8ebbd0ffea7",
+          "path": "src/itg/relocated/trade-detail/Placed.tsx",
+          "fingerprint": "49694f7e6a2224a97ca9be4dd6d85f6540c8f69e27864f0257eccc16787b6c30"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "67976e73910d750057e21db35e2716df1a630957ba7915b49526c8ebbd0ffea7",
+          "path": "src/itg/relocated/trade-detail/Placed.tsx",
+          "fingerprint": "49694f7e6a2224a97ca9be4dd6d85f6540c8f69e27864f0257eccc16787b6c30"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 39457
+  }
+}

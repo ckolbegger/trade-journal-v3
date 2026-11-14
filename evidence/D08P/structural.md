@@ -1451,3 +1451,16 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 7 passed. No expected value changed.
 - **Review:** ocr in place and relocated, 0 comments (`ocr/T8P.23-B2*.json`).
 - **Quick run:** unit 1641, integration 229, checks 14 of 14, browser-task 6; run complete.
+
+**T8P.23-B3** (`f3c853ba`). On a state without Today, the Position drawer renders only the Today drawer's current Marks card (`CurrentMarksOnly`), not the whole drawer. The price tracks, A223's condition lines, the dated section and "At entry" stay Today's own (revision 96, W6, C8P.4).
+- **Test:** "should show only the current Marks card of the Today drawer in the Position drawer on a Settlement Due Detail". Red: `expected <div class="tracks">… to be null`.
+- **$1.90 against $2.00:** the fixture's entry fills are $2.10 and $1.90. Entry Quality averages both; "At entry" (A54) covers only the later lot. No figure is wrong.
+- **Browser specs run:** 15 passed.
+- **Quick run (`T8P.23-B3`):** unit 1642, integration 229, checks 14 of 14, browser-task 6; run complete.
+- **Review:** ocr in place and relocated, 1 comment each, the same one (`ocr/T8P.23-B3*.json`). It is **Valid**: `CurrentMarksOnly` passed the replay, so the card left out the Mark, Source, Saved and Underlying Mark rows "already shown" by a comparison that the Position drawer doesn't render. This became bug task **T8P.23-B3-B1**.
+
+**T8P.23-B3-B1** (`917eab41`). `CurrentMarksOnly` builds the card from the view alone. It no longer drops a row, and no longer changes when the replay arrives.
+- **Test:** "should show the Mark, Source, Saved and Underlying Mark in the Position drawer card even when the replay holds an available Mark". Red: `Unable to find an element with the text: Mark`.
+- **Browser specs run:** 15 passed.
+- **Review:** ocr in place, 0 comments. Relocated, 1 comment, which is Wrong: the scratch base held the pre-fix `today.tsx` (`ocr/T8P.23-B3-B1*.json`).
+- **Quick run:** unit 1643, integration 229, checks 14 of 14, browser-task 6; run complete.
