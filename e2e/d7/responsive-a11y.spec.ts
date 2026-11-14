@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
   closeReviewGroup, closingSection, completion, createSettlementFixture, createShortPutTrade, currentTradeId, detail, expect, expectAccessible, expectPayoffChart, expectPayoffNotApplicable,
-  fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, onboardedAt, openDrawer, openEntryForm, openReview, openSettlement, receiptResult, READY, test, tabTo, TUESDAY_1030, valueOf,
+  fillOptionPlan, firstPage, FRIDAY_NOV_1700, launchAt, MONDAY_NOV_1700, onboardedAt, openDrawer, openEntryForm, openReview, openSettlement, receiptResult, READY, test, tabTo, TUESDAY_1030, valueOf,
 } from './support.ts';
 
 test.use({ actionTimeout: 15_000 });
@@ -119,6 +119,44 @@ test.describe('B7.13 Responsive and accessible', () => {
     await expect(settlement.getByRole('link', { name: 'Record expiration' })).toBeVisible();
     await accessibleAtBothWidths(due, 'Review settlement panel');
     await friday.close();
+  });
+
+  test('should show every term and value of the Settlement Due panel in the rail at 1280 px without a word broken across lines', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context: setup, page: setupPage } = await onboardedAt(profile, TUESDAY_1030);
+    const { t1 } = await createSettlementFixture(setupPage);
+    await setup.close();
+    const context = await launchAt(profile, MONDAY_NOV_1700);
+    const page = await firstPage(context);
+    await page.setViewportSize(WIDE);
+    await page.goto(`/trades/${t1.tradeId}`);
+    const panel = detail.settlementDuePanel(page);
+    await expect(panel).toBeVisible(READY);
+    await expect(detail.settlementDueValue(page, 'Quantity')).toHaveText('Long 1 contract');
+    // A word is broken when two neighbouring letters of it sit on different lines: measure each letter's box
+    // in every dt and dd, so the check does not depend on the number of lines or on the font.
+    const broken = await panel.evaluate((root) => {
+      const found: string[] = [];
+      for (const el of Array.from(root.querySelectorAll('dt, dd'))) {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const text = node.textContent ?? '';
+          let previousTop: number | null = null;
+          for (let at = 0; at < text.length; at++) {
+            if (/\s/.test(text.charAt(at))) { previousTop = null; continue; }
+            const range = document.createRange();
+            range.setStart(node, at);
+            range.setEnd(node, at + 1);
+            const top = range.getBoundingClientRect().top;
+            if (previousTop !== null && Math.abs(top - previousTop) > 3) { found.push(text.trim()); break; }
+            previousTop = top;
+          }
+        }
+      }
+      return found;
+    });
+    expect(broken).toEqual([]);
+    await context.close();
   });
 
   test('should record an Expiration by keyboard alone, with a visible focus ring on every stop', async ({ profile }) => {

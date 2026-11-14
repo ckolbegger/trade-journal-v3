@@ -1,0 +1,30 @@
+
+  ✘  1 [chromium] › e2e/d7/responsive-a11y.spec.ts:124:3 › B7.13 Responsive and accessible › should show every term and value of the Settlement Due panel in the rail at 1280 px without a word broken across lines (3.2s)
+
+
+  1) [chromium] › e2e/d7/responsive-a11y.spec.ts:124:3 › B7.13 Responsive and accessible › should show every term and value of the Settlement Due panel in the rail at 1280 px without a word broken across lines 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Long 1 contract",
+    +   "Fri Nov 20, 16:00",
+    + ]
+
+      156 |       return found;
+      157 |     });
+    > 158 |     expect(broken).toEqual([]);
+          |                    ^
+      159 |     await context.close();
+      160 |   });
+      161 |
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d7/responsive-a11y.spec.ts:158:20
+
+    Error Context: test-results/d7-responsive-a11y-B7-13-R-ca537--a-word-broken-across-lines-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/d7/responsive-a11y.spec.ts:124:3 › B7.13 Responsive and accessible › should show every term and value of the Settlement Due panel in the rail at 1280 px without a word broken across lines 

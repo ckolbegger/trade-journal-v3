@@ -1,0 +1,12 @@
+
+Running 7 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d5/detail-debt.spec.ts:7:3 › B5.3 Reflect on Trade Detail › should show Due in the Review after next before, Deferred, answered with Tuesday 12:30 after, and list no reflection for it in Wednesday’s Review (2.2s)
+  ✓  2 [chromium] › e2e/d5/responsive.spec.ts:11:3 › B5.12 Responsive and accessible › should keep a half-filled Debt answer through 390 px and back, switching layout at 960 px (1.9s)
+  ✓  3 [chromium] › e2e/d5/responsive.spec.ts:38:3 › B5.12 Responsive and accessible › should report no WCAG 2.1 AA violations on the entry form in each disposition, the Review card, the Debt form, and Detail, name each reflection state in text, and resolve a reflection by keyboard alone (8.2s)
+  ✓  4 [chromium] › e2e/d7/responsive-a11y.spec.ts:29:3 › B7.13 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the option Plan, Execution and expiration forms, both payoff views in every state, option Detail with and without Settlement Due, and the Review settlement panel, and show Settlement Due and Not applicable as text with a table beside every chart (15.0s)
+  ✓  5 [chromium] › e2e/d7/responsive-a11y.spec.ts:124:3 › B7.13 Responsive and accessible › should show every term and value of the Settlement Due panel in the rail at 1280 px without a word broken across lines (3.1s)
+  ✓  6 [chromium] › e2e/d7/responsive-a11y.spec.ts:162:3 › B7.13 Responsive and accessible › should record an Expiration by keyboard alone, with a visible focus ring on every stop (3.1s)
+  ✓  7 [chromium] › e2e/d7/settlement-due.spec.ts:11:3 › B7.4 Settlement Due on Detail › should show the Settlement Due panel on Friday and on Monday with the Trade Open and no current dollar figures on Monday, then record the expiration to Closed via expiration of 2 contracts, Fully held to expiration (3.7s)
+
+  7 passed (37.6s)

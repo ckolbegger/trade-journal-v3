@@ -89,6 +89,23 @@
   font-size: 1em;
 }
 
+/* The Settlement Due panel's figures stack a term above its value in the narrow rail, as they do at 320 px,
+   so no word or figure breaks inside a word. */
+.settlement-due dl.figure-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.settlement-due dl.figure-grid > div {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+}
+
+.settlement-due dl.figure-grid dd {
+  text-align: left;
+  overflow-wrap: normal;
+}
+
 .needs-you-list p {
   margin: 2px 0 0;
 }
