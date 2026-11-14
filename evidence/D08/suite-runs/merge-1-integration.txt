@@ -242,3 +242,15 @@ stdout | tests/integration/d2/query-count.test.ts > T2.21 query count: the Open 
 query-count: Open page requests [{"on":"store","store":"meta","method":"get"},{"on":"index","store":"trades","index":"byLifecycleActivity","method":"getAll","count":201},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"catalog","method":"getAll"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"observations","method":"getAll"},{"on":"index","store":"observations","index":"byInstrumentDate","method":"openCursor"},{"on":"index","store":"observations","index":"byInstrumentDate","method":"openCursor"},{"on":"index","store":"observations","index":"byInstrumentDate","method":"openCursor"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"}]
 
  ✓ |integration| tests/integration/d2/query-count.test.ts > T2.21 query count: the Open list > reads one page with one getAll on trades of count 201, and the same requests with 1,000 or 2,000 Planned Trades 5744ms
+stdout | tests/integration/d5/query-count.test.ts > T5.22 query count: the Review open and Trade Detail read Debt > should issue the same Debt requests whether history holds 10 or 2,000 settled Debts
+query-count: Review open Debt reads [{"on":"index","store":"journalDebts","index":"byOutstandingDue","method":"getAll"}]
+query-count: Trade Detail Debt reads [{"on":"index","store":"journalDebts","index":"byAnchorTrade","method":"getAll"}]
+
+ ✓ |integration| tests/integration/d5/query-count.test.ts > T5.22 query count: the Review open and Trade Detail read Debt > should issue the same Debt requests whether history holds 10 or 2,000 settled Debts 60216ms
+
+ Test Files  106 passed (106)
+      Tests  229 passed (229)
+   Start at  15:52:30
+   Duration  61.11s (transform 3.14s, setup 1.30s, import 10.61s, tests 94.83s, environment 5ms)
+
+EXIT 0

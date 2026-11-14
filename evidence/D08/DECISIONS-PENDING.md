@@ -26,4 +26,67 @@ This file lists every question asked of the user during D8, open and answered (d
 
 **Recommendation:** (a); the texts follow A141's tone and the existing readiness copy.
 
-**Answer (2026-11-14):** (a), the table approved as written ("a, approve the table as written"). T8.12 and T8.13 resumed. The approved words are to be carried into the plan's next revision (r103) with any later word approvals.
+**Answer (2026-11-14):** (a), the table approved as written ("a, approve the table as written"). T8.12 and T8.13 resumed. The approved words are to be carried into the plan's next revision (r103) with any later word approvals. T8.12 then showed three states the table doesn't word; they are put to the user in Q2, part B.
+
+## Q2. The Restore flow's words (T8.13), and three Backup-page states (T8.12) — open, asked 2026-11-14
+
+**Task:** T8.13 (lane UB), not started until answered; T8.12's three mapped states (part B) stay as built until answered.
+
+**Already approved (A142, kept as written):** "Choose backup file"; "Checking the backup. Your current journal is not changed."; Cancel; "Restoring replaces your entire current journal"; "I understand this replaces my entire current journal"; "Back up this journal first (recommended)"; "Replace without a backup"; "If this backup is wrong or incomplete, your current journal cannot be recovered."; "Replace entire journal"; "Your current journal is unchanged"; "Check the backup again"; "Restore complete". The inline safety backup reuses Q1's texts.
+
+**Part A, proposed for T8.13:**
+
+| # | Where | Proposed text |
+|---|---|---|
+| A1 | Progress while checking | "Checking the backup: 1,200 of 5,000 records" |
+| A2 | Rejected: heading, then the issue list | "This backup can't be restored." then "Your current journal is unchanged." Over 200 issues: "Showing the first 200 of 1,234 problems." |
+| A3 | Issue sentences (A134) | UnsupportedFormat "This file uses a backup format this app doesn't read."; UnsupportedNewerSchema "This backup was made by a newer version of the app."; InsufficientCapacity "There isn't enough storage space: 120 MB needed, 80 MB available."; MalformedRecord "Line 1,042 isn't a valid record (r.facts[2].price)."; DigestMismatch "The trades section doesn't match its checksum, so the file was changed or damaged."; IncompleteArtifact "The file is incomplete."; ManifestMismatch "The backup's summary doesn't match its contents."; UnsupportedDataCapability "The backup holds data this version can't restore: instrument.structure."; CrossSectionReference "A record refers to an Account that isn't in the backup (fx-0016)." The module validators' codes reuse their existing startup-check sentences (`readiness-copy.ts`). |
+| A4 | Preview: source | "From a backup made Fri Nov 20, 18:00 (release 2026.11.14, schema 7)"; for a blocked-database copy add "a copy of a journal that couldn't be updated" |
+| A5 | Preview: counts table | columns "In the backup" and "In your current journal"; rows "Planned Trades", "Open Trades", "Closed Trades", "Position Changes", "Executions", "Expirations", "Deviations", "Journal entries: <Entry Type>", "Declined reflections", "Reflections owed: <status>", "Marks", "Marks acknowledged unavailable", "Institutions", "Accounts", "Strategies", "Close Reasons", "Journal question revisions"; a kind with history adds "(N versions)" |
+| A6 | Preview: migrations | "Updated from schema 5 to 6", "Added default: Long Call"; none: "No updates needed." |
+| A7 | Preview: repairs | "<Trade summary>: lifecycle recorded Open, facts say Closed. It will be corrected." and "<Trade summary>: Entry Size deviation missing. It will be added."; none: "No repairs needed." |
+| A8 | Warnings | TimeZoneDiffers "The backup's time zone (America/New_York) differs from this journal's (America/Chicago). The restored journal uses the backup's."; OlderSchema "This backup was made by an earlier version and will be updated as it's restored."; AnotherTabHasUnsavedWork "Another tab has unsaved changes. They will be lost when the journal is replaced." |
+| A9 | Safety choice radio group's label | "Safety backup" |
+| A10 | Inline backup Conflict (A142) | "Your journal changed after the backup was checked." with "Check the backup again" |
+| A11 | Apply rejected, before "Your current journal is unchanged." | SafetyBackupStale "Your safety backup is out of date: the journal changed after it was made."; SafetyBackupNotRecognized "That safety backup wasn't made in this session. Back up again."; Conflict "Your journal changed after the backup was checked."; CandidateChanged or PreparationNotFound "The checked backup is no longer available."; AlreadyInitialized "A journal was started in another tab meanwhile."; RuntimeNotWritable: the shell's existing readiness sentence |
+| A12 | Restore complete summary | "Your journal now holds the restored backup." with its counts, and a button "Go to Trades" or "Add an institution and account" (the landing's next destination) |
+
+**Part B, T8.12's states with no approved row (built as described, pending ratification):**
+
+| # | State | As built |
+|---|---|---|
+| B1 | Before the first progress report arrives | "Making the backup" / "Checking the file" (row 2 and 6 without the count) |
+| B2 | `exportBackup` rejects unexpectedly, or returns Conflict (the page passes no expected binding, so Conflict shouldn't occur) | Q1 row 4 (the Read failure) with Retry |
+| B3 | `confirmBackup` rejects unexpectedly | Q1 row 8 (Unreadable) |
+| B4 | Not Completed by reason (ocr finding T8.12-B2: the page shows the stage only) | ReadFailed: Q1 row 4; OfferFailed: Q1 row 5; IntegrityBlocked: "The backup could not be made. Your journal has a problem that blocks a normal backup. Nothing was changed."; Conflict: "The backup could not be made. Your journal changed while the backup was being made. Nothing was changed." Each with Retry. B4 replaces B2's Conflict mapping. |
+
+**Part C, T8.14's blocked views and shell (built with placeholder text where noted):**
+
+| # | State | Proposed |
+|---|---|---|
+| C1 | Blocked view, after Download a copy / Verify | The Backup page's texts: A141's Downloaded line with the file name, "Backup complete", Q1 rows 8–10 and part B4. Replaces the placeholder raw codes ("Not completed: Read, ReadFailed"). |
+| C2 | AwaitingMigration explanation | P32's sentence with a closing period added |
+| C3 | Another tab's Restore | A136's sentence and a "Reload" button, no heading |
+| C4 | Links | About's narrow link "Backup"; in A143's not-protected sentence, the link text "Download a backup" |
+
+**Options.** (a) Approve parts A, B and C as written. (b) Edit any rows.
+
+**Recommendation:** (a).
+
+**Answer:** pending.
+
+## Q3. Do backups carry each record's internal write stamp? (T8.3 report) — open, asked 2026-11-14
+
+**Task:** T8.2 and T8.4 (their briefs), and Restore's T8.6–T8.9. Nothing is paused yet: T8.2 starts only after T8.1 merges.
+
+**Question.** Every stored record carries `revision`, the Workspace content revision at which it was last written. It is storage bookkeeping, not journal content. A125 excludes "the Workspace content revision" but doesn't say whether these per-record stamps count. The migration copy (`copySnapshot`) deletes them, and a new database stamps its records `revision: 1`.
+
+**Options.**
+- (a) Leave them out. The export projection removes `revision` from every record, the manifest's `exclusions` names it, and Restore stamps records at the new database's revision 1, as the migration copy does. This keeps the file the same when nothing in the journal changed. It also avoids restored records carrying stamps from another database.
+- (b) Export as stored. Restore would then have to overwrite or ignore the stamps.
+
+**Recommendation:** (a).
+
+**Not a question:** journal entries' and declines' top-level `anchorTradeId` is stored data and A125 doesn't exclude it, so it is exported as stored.
+
+**Answer:** pending.

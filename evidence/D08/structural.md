@@ -41,6 +41,53 @@ Lane F, commit `fdd92d08` (6 cases red then green; one first-run pass flagged: "
 - **T8.1-B2** `3a48d696`: red ("expected +0 to be 1": no cancel after `break`) then green; `try/finally` cancels the source reader. Lane tier: unit 1756, integration 229, checks 14 of 14. ocr (session `00b8f02e-3356-4259-8c9d-8420f1c8b628`, 2 files): **No findings.** Raw: `ocr/T8.1-B2-3a48d696.json`.
 - **T8.1-B3** `9e731c68`: red (gzip read as plain text: "not valid for encoding utf-8") then green; the sniff skips empty chunks. Lane tier: unit 1757, integration 229, checks 14 of 14. ocr (session `e5093f15-9809-497f-b71a-5c95ff35c8d6`, 2 files): **No findings.** Raw: `ocr/T8.1-B3-9e731c68.json`.
 - **T8.1-B4** `b137b550`: red ("expected [Function] to throw") then green; `writeSectionEnd` throws "Section trades is still open; cannot end section journal". Implementation-level choice accepted: ending a section with nothing open stays legal (an empty section, digest = SHA-256 of nothing), since an empty store must export; the brief's extra "no section open" throw was the main session's addition, not ocr's finding. Lane tier: unit 1758, integration 229, checks 14 of 14. ocr (session `fdfe7bee-5793-4eb5-bd9f-e90524ef6657`, 2 files): **No findings.** Raw: `ocr/T8.1-B4-b137b550.json`.
+- **T8.1-B5** `1c12878c`: red ("expected [Function] to throw an error") then green; `finish()` throws naming the open section. Lane tier: unit 165 / 1759, integration 106 / 229. ocr (session `ebb2a4cc-8750-4956-8b9c-1c2bd3ea1663`, 2 files): **No findings.** Raw: `ocr/T8.1-B5-1c12878c.json`.
+
+## T8.3 Export snapshot read and layouts
+
+Lane PS, commit `596b02bb` (4 cases). Lane tier `T8.3`: unit 164 / 1754, integration 106 / 229, checks 14 of 14. First-run pass flagged: "a concurrent readwrite commit waits for the read" (the single readonly transaction from case 1 already gave it). Mutation: each batch read through its own transaction; first failure "expected [] to have a length of 1200 but got +0". Code written ahead of red for cases 3 and 4 was reverted, and each case was then shown red on its own (tdd-log note rows).
+
+**Implementation-level choices (recorded, not stops).**
+1. `readExportSnapshot(database, layout, onBatch)` returns `UnknownLayout` when the stored schema version isn't the layout's. The coordinator (T8.4) looks the layout up with `exportLayoutFor(storedVersion)` and reports `UnknownLayout` itself when that returns nothing.
+2. The read opens its own connection by database name, so the session is never marked superseded.
+3. All `meta` records are returned; T8.2 and T8.4 pick the Workspace-section fields.
+4. A missing store or a failed open returns `ReadFailed`.
+5. The layout drops A125's four private Trade fields for every version.
+6. Journal entries' and declines' `anchorTradeId` is exported as stored, since A125 doesn't exclude it.
+
+**Raised as Q3:** whether the per-record `revision` write stamp is exported.
+
+## T8.12 Backup page
+
+Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks 14 of 14. Unit had 1 failure: `tools/wording-rules.test.ts` hit its 5 s timeout under load and passed when rerun alone (see Flakes). First-run pass flagged: "should forget the Downloaded result when the page is left". Mutation: the result held in a module-level variable that new page instances start from; see `tdd-log/T8.12.md`. Props: `BackupViewProps { facade; selectFile; readiness; timeZone }`. The three states Q1 didn't word are put to the user in Q2, part B.
+
+**ocr review of `54c7bd84`** (session `e80e5fc8-8e7b-4577-80e7-cad6a3f5ac71`, gpt-6.1-sol, 3 files, 3 findings; raw: `ocr/T8.12-54c7bd84.json`). All 3 judged Valid:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.12-B1 | `BackupView.tsx:50` a new download clears `downloaded` but not `outcome` | backup B shows backup A's "Backup complete"; a late verification of A writes B's status | it should not carry an earlier verification result over to a new download, nor apply a verification that finishes after a new download |
+| T8.12-B2 | `BackupView.tsx:55` only the stage is kept | IntegrityBlocked, ReadFailed and Conflict all read "couldn't be read" | it should show each Not Completed reason in its own words (paused: Q2, part B4) |
+| T8.12-B3 | `BackupView.tsx:88` the Downloaded line stays after Completed | "Downloaded, not verified yet" shows next to "Backup complete" | it should replace the Downloaded line with Backup complete once verification completes |
+
+## T8.14 Shell, warnings, first run
+
+Lane US, commit `9cf16630` (5 cases, each red then green; no first-run passes). Lane tier `T8.14`: integration 229. Unit had 1 failure: `PositionChangeForm.test.tsx` "focus after navigation" failed under load and passed twice when rerun alone (see Flakes). Checks: 13 of 14; `verify:capabilities` fails: "route backup requires absent capability Workspace.exportBackup", and the same for the other three operations.
+
+**Merge held until T8.11 (main session's choice).** The Backup route (P105, P106) needs the four operations that only T8.11's manifest installs. Merging T8.14 alone would turn every merge run red until then. T8.11 depends on T8.14 anyway (P105), so its lane will be created from `d08/us` rebased onto the main branch, and both merge in one batch. T8.14 stays in its lane meanwhile, and nothing in wave 1 needs it.
+
+**Recorded for T8.11:**
+- the route `{ id: 'backup', path: '/backup', wideNavigationOnly: true }`;
+- `Screens.backup?`;
+- new `AppShellProps`: `backup?`, `selectFile?`, and `onWorkspaceReplaced?` (a subscribe function that T8.11 implements over the BroadcastChannel);
+- `FirstRun`'s `restore?` prop;
+- `StorageProtectionCard`'s `backupTo?`;
+- `useWide` is now exported from `AppShell.tsx`.
+
+The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside the lane. After a first-run Restore, `RestoreFlow` has no completion callback, so T8.11 or T8.13 refreshes the shell. A tab still on first run gets no notice when another tab restores. The blocked views' result texts are placeholders until Q2, part C.
+
+## Merge runs
+
+- **merge-1** (T8.23 merged; started at `fdc5e858`; plan-only commits landed during the run): unit 163 / 1750, integration 106 / 229, browser full tier (first matching path since `a6c88cdd`: `src/app/types.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-1-*.txt`.
 
 ## T8.23 Types, skeletons and ports
 
@@ -73,3 +120,5 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 
 | Run | Test | Targeted rerun |
 |---|---|---|
+| T8.12 lane tier | `tools/wording-rules.test.ts` "reports navigator.userAgent…" (5 s timeout under load) | passed alone |
+| T8.14 lane tier | `src/ui/screens/PositionChangeForm.test.tsx` "focus after navigation" | passed twice alone |
