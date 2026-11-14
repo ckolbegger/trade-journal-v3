@@ -2,6 +2,22 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 97: the commit tagged `claude-opus-5.5-plan-r97` (revision 96, no decision). D08P's second checkpoint critic (T8P.23, critic-2) failed C8P.2, "Each figure appears once, apart from the two accepted exceptions", on five repeats. Each repeat is existing wording that the specs or the approved words keep. For example, W8 says "The Valuation's Mark provenance, the dated line and At entry keep their words", and T8P.31 placed Stale context as the UI contract requires. At the user's choice, C8P.2's pass condition now names every accepted exception:
+  - the Journal cards' Marks;
+  - Price History's latest session (P99);
+  - each condition's distance, on the rail and as Plan and Risk's Risk to stop or Reward to target (T8P.31's case 7, kept by the user under revision 96);
+  - each Journal card's Trade P&L and change (W10);
+  - and the five that critic-2 found:
+    1. the Position drawer's Opening fees beside the Fee reconciliation's opening fees;
+    2. the Position drawer's Incurred fees beside the Fee reconciliation's;
+    3. Entry Quality's reward : risk with "planned", beside the Plan Baseline's Reward : risk;
+    4. Today's At entry block before Marks, beside Entry Quality's Average entry and Position's quantity;
+    5. a Mark repeated by Today's Stale context line, comparison and dated block, and the dated block's fees and realized figure beside Position's.
+
+  Any other figure shown twice still fails C8P.2.
+  - **Rejected:** removing the same-drawer repeats, and removing all five. Either would change wording that the specs or approved words require, along with older deliverables' tests.
+
+  No acceptance scenario changes status, no stored data or durable compatibility changes, no words change, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-14 ("Accept all five").
 - Revision 96: the commit tagged `claude-opus-5.5-plan-r96` (revision 95, no decision). T8P.22 stopped on its brief's stop rule. Retiring the Summary card, Valuation, and Risk and reward (its case 6) would drop figures no task had placed. Section 1.5 says the Summary card dissolves "one figure in one place" and that Valuation's Mark and provenance go to Today, yet nothing placed these. The UI contract (`specs/design/ui-contract.md`) requires some of them on Trade Detail: exact observation dates and source, Stale context, correction indicators, and an acknowledged Unavailable that reads visibly as a trader acknowledgment, not a price. At the user's choice, every one gets a place in its existing words:
   - **New task T8P.31** (wave 2, lane PL, seven cases, section 5) places:
     - Valuation's current Marks (exact date, source, saved time, correction), missing Marks with any older Stale context, acknowledged ones, the Underlying Mark and the Expected Mark Date: in Today, or in Position on a state without Today, never twice beside Today's comparison;
