@@ -667,8 +667,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
-| T8.1 | 0 | F | Not started | |
-| T8.23 | 0 | T | Not started | |
+| T8.1 | 0 | F | In progress from `a6c88cdd` | |
+| T8.23 | 0 | T | In progress from `a6c88cdd` | |
 | T8.2 | 1 | FM | Not started | |
 | T8.6 | 1 | FM | Not started | |
 | T8.3 | 1 | PS | Not started | |

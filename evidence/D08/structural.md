@@ -30,6 +30,8 @@ Session lock `.claude/session.lock` taken (none existed). Location checks (D8 ha
 
 | Task | Lane | Worktree | Branch | Base |
 |---|---|---|---|---|
+| T8.1 | F (wave 0) | `.claude/worktrees/d08-f` | `d08/f` | `a6c88cdd` |
+| T8.23 | T (wave 0) | `.claude/worktrees/d08-t` | `d08/t` | `a6c88cdd` |
 
 ## Flakes
 
