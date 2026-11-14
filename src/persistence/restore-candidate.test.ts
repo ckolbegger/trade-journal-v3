@@ -107,6 +107,17 @@ describe('Restore candidates (A138)', () => {
     expect(await databaseNames()).toEqual(['tj-root', later.databaseName]);
   });
 
+  it('should leave one Restore candidate per session when two creations overlap', async () => {
+    const p = persistence('r');
+
+    const results = await Promise.all([p.createRestoreCandidate(), p.createRestoreCandidate()]);
+
+    expect(results.every((r) => r.kind === 'Created')).toBe(true);
+    const entries = await restoreEntries();
+    expect(entries).toHaveLength(1);
+    expect(await databaseNames()).toEqual(['tj-root', entries[0]?.databaseName].sort());
+  });
+
   it('should keep the Restore entries when a migration candidate is created', async () => {
     const p = persistence('r');
     const restore = await p.createRestoreCandidate();

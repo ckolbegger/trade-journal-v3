@@ -274,6 +274,37 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
   let superseded = false;
   // This instance's identity in the root's Restore candidate entries, made on first use (D8 A138).
   let session: string | undefined;
+  // Restore candidate creations on this instance run one after another, so each sees the previous one's entry.
+  let restoreCreations: Promise<unknown> = Promise.resolve();
+
+  async function createRestoreCandidateNow(): Promise<RuntimeNotWritable | { readonly kind: 'Created'; readonly databaseName: string }> {
+    const refusal = deps.writeGate.current();
+    if (refusal) return refusal;
+    session ??= globalThis.crypto.randomUUID();
+    const mine = session;
+    const earlier = await inRoot(async (store) =>
+      (((await store.get(CANDIDATES_KEY)) as NameListRecord | undefined)?.restoreCandidates ?? [])
+        .filter((e) => e.session === mine)
+        .map((e) => e.databaseName),
+    );
+    for (const name of earlier) await deleteDatabase(deps.indexedDB, name);
+    const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
+    // Listed first, so a candidate interrupted at any later point is known and cleaned up.
+    await inRoot(async (store) => {
+      const record = (await store.get(CANDIDATES_KEY)) as NameListRecord | undefined;
+      await store.put({
+        key: CANDIDATES_KEY,
+        databaseNames: [...(record?.databaseNames ?? []).filter((n) => !earlier.includes(n)), databaseName],
+        restoreCandidates: [
+          ...(record?.restoreCandidates ?? []).filter((e) => !earlier.includes(e.databaseName)),
+          { databaseName, purpose: 'Restore', session: mine },
+        ],
+      });
+    });
+    const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace(deps.sessionPolicy));
+    candidate.close();
+    return { kind: 'Created', databaseName };
+  }
 
   function workspace(): Promise<IDBPDatabase> {
     if (!current) throw new Error('No Workspace is open');
@@ -482,33 +513,10 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       return { databaseName };
     },
 
-    async createRestoreCandidate() {
-      const refusal = deps.writeGate.current();
-      if (refusal) return refusal;
-      session ??= globalThis.crypto.randomUUID();
-      const mine = session;
-      const earlier = await inRoot(async (store) =>
-        (((await store.get(CANDIDATES_KEY)) as NameListRecord | undefined)?.restoreCandidates ?? [])
-          .filter((e) => e.session === mine)
-          .map((e) => e.databaseName),
-      );
-      for (const name of earlier) await deleteDatabase(deps.indexedDB, name);
-      const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
-      // Listed first, so a candidate interrupted at any later point is known and cleaned up.
-      await inRoot(async (store) => {
-        const record = (await store.get(CANDIDATES_KEY)) as NameListRecord | undefined;
-        await store.put({
-          key: CANDIDATES_KEY,
-          databaseNames: [...(record?.databaseNames ?? []).filter((n) => !earlier.includes(n)), databaseName],
-          restoreCandidates: [
-            ...(record?.restoreCandidates ?? []).filter((e) => !earlier.includes(e.databaseName)),
-            { databaseName, purpose: 'Restore', session: mine },
-          ],
-        });
-      });
-      const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace(deps.sessionPolicy));
-      candidate.close();
-      return { kind: 'Created', databaseName };
+    createRestoreCandidate() {
+      const run = restoreCreations.then(() => createRestoreCandidateNow());
+      restoreCreations = run.catch(() => undefined);
+      return run;
     },
 
     async activateFirstCandidate(candidate) {
