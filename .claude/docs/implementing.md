@@ -33,7 +33,7 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
   - any `specs/` ranges it needs;
   - its scope limits: what later tasks own, and any temporary rule the task may need until then;
   - every bullet in the handoff's "Notes for later tasks" list that names this task, copied in word for word (D7 retro, finding 2). In the handoff update after the task, delete each bullet once every task it names has had it, so the list holds only notes still owed.
-- The agent definition holds the TDD procedure, the first-run mutation check, the working rules (Edit tool only, scratch directories, exit codes, browser runs and ports, rebuilding after a mutation, staging), committing, the clean-tree check, and the return format, so the brief doesn't repeat them. Likewise, `suite-runner.md` holds its port checks and how it waits for a backgrounded stage, and `ocr-review.md` holds the review rule that brings test files in.
+- The agent definition holds the TDD procedure, the first-run mutation check, the working rules (Edit tool only, scratch directories, exit codes, browser runs and ports, rebuilding after a mutation, staging), committing, the clean-tree check, and the return format, so the brief doesn't repeat them. Likewise, `suite-runner.md` holds its port checks, the one-stage-per-call order, the browser lock and how it waits for a backgrounded stage, so a suite-runner brief gives only the evidence folder, the run label and the browser stage; and `ocr-review.md` holds the review rule that brings test files in.
 
 ## After each task
 
