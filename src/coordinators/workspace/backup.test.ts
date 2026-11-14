@@ -477,6 +477,111 @@ describe('Not Verified, manifest fields (A123, A130)', () => {
   });
 });
 
+describe('Not Verified, counts and digests of a well-compressed file (A123, A130)', () => {
+  it('should return IncompleteOrCorrupt for a well-compressed file whose section digest, counts or manifest digest do not match', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const a7 = testHost.downloads.offered[0]!.bytes;
+    const bad = { kind: 'NotVerified', reason: 'IncompleteOrCorrupt' };
+    const isEnd = (l: string) => l.includes('"kind":"sectionEnd"');
+    const tailOf = (l: string) => /,"s":"([^"]*)","t":"([^"]*)"\}$/.exec(l);
+    const recordIndex = (lines: string[]) => lines.findIndex((l, i) => i > 0 && !isEnd(l) && tailOf(l) !== null && tailOf(l)![1] !== 'workspace');
+    const endIndexOf = (lines: string[], section: string) => lines.findIndex((l) => isEnd(l) && (JSON.parse(l) as { section: string }).section === section);
+
+    // The digests the reader computes for an edited file, so a case can make every other digest agree with its edit.
+    const computedDigests = async (bytes: Uint8Array) => {
+      const manifest = (await linesOf(bytes)).at(-1);
+      if (manifest?.kind !== 'manifest') throw new Error('last line is not the manifest');
+      return manifest.computedSectionDigests;
+    };
+    // fixEnds false leaves each section end's stored digest as the edit left it.
+    const sealed = async (edit: (artifact: EditableArtifact) => void, fixEnds: boolean) => {
+      const digests = await computedDigests(editedArtifact(a7, edit).bytes);
+      return editedArtifact(a7, (artifact) => {
+        edit(artifact);
+        Object.assign(artifact.manifest.sectionDigests, digests);
+        if (!fixEnds) return;
+        for (const [section, digest] of Object.entries(digests)) {
+          const i = endIndexOf(artifact.lines, section);
+          artifact.lines[i] = canonical({ ...(JSON.parse(artifact.lines[i]!) as object), digest });
+        }
+      });
+    };
+    const confirm = (edited: { readonly bytes: Uint8Array; readonly fullDigest: string }) => {
+      // Well-compressed: the file decompresses, so the verdict comes from the count and digest checks.
+      expect(gunzipSync(edited.bytes).length).toBeGreaterThan(0);
+      return workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
+    };
+    const changeRecord = ({ lines }: EditableArtifact) => {
+      const i = recordIndex(lines);
+      // A space after the prefix changes the line's bytes, and so its section digest, while it stays a record line.
+      lines[i] = '{"r": ' + lines[i]!.slice('{"r":'.length);
+    };
+
+    // Control: a resealed unedited file is Completed, so each case below fails for its own edit.
+    expect((await confirm(await sealed(() => undefined, true))).kind).toBe('Completed');
+
+    // A record line changed: the section digest no longer matches the section end (the manifest digest is made to agree).
+    expect(await confirm(await sealed(changeRecord, false)), 'record line changed').toEqual(bad);
+
+    // A section end's per-store count changed.
+    expect(
+      await confirm(
+        editedArtifact(a7, ({ lines }) => {
+          const section = tailOf(lines[recordIndex(lines)]!)![1]!;
+          const i = endIndexOf(lines, section);
+          const end = JSON.parse(lines[i]!) as { counts: Record<string, number> };
+          const store = Object.keys(end.counts)[0]!;
+          lines[i] = canonical({ ...end, counts: { ...end.counts, [store]: end.counts[store]! + 1 } });
+        }),
+      ),
+      'section end count changed',
+    ).toEqual(bad);
+
+    // A manifest section digest changed.
+    expect(
+      await confirm(
+        editedArtifact(a7, ({ manifest }) => {
+          const section = Object.keys(manifest.sectionDigests)[0]!;
+          manifest.sectionDigests[section] = '0'.repeat(64);
+        }),
+      ),
+      'manifest section digest changed',
+    ).toEqual(bad);
+
+    // The manifest names a section digest for a section the file does not have.
+    expect(await confirm(editedArtifact(a7, ({ manifest }) => void (manifest.sectionDigests['extra'] = '0'.repeat(64)))), 'manifest extra section digest').toEqual(bad);
+
+    // The manifest counts differ from the header counts.
+    expect(
+      await confirm(
+        editedArtifact(a7, ({ manifest }) => {
+          const counts = manifest['counts'] as Record<string, number>;
+          const store = Object.keys(counts)[0]!;
+          counts[store] = counts[store]! + 1;
+        }),
+      ),
+      'manifest counts differ from header counts',
+    ).toEqual(bad);
+
+    // A record line removed (its section end and digests made to agree): the per-store line count differs from the header.
+    expect(
+      await confirm(
+        await sealed(({ lines }) => {
+          const i = recordIndex(lines);
+          const [, section, store] = tailOf(lines[i]!)!;
+          lines.splice(i, 1);
+          const e = endIndexOf(lines, section!);
+          const end = JSON.parse(lines[e]!) as { counts: Record<string, number> };
+          lines[e] = canonical({ ...end, counts: { ...end.counts, [store!]: end.counts[store!]! - 1 } });
+        }, true),
+      ),
+      'record line removed',
+    ).toEqual(bad);
+  });
+});
+
 describe('Not Verified, not UTF-8 (A130)', () => {
   it('should return Unreadable for a file whose text is not UTF-8, with no receipt', async () => {
     const { workspace } = await w7Stack();
