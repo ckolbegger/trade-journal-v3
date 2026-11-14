@@ -678,7 +678,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async inspectRoot() {
-      const found = await persistence.lookupRoot();
+      const found = await classifyRoot(true);
       if (found.kind !== 'KnownWorkspace') return found;
       // Only once the pointer names a valid Workspace is any other Workspace-prefixed database
       // known to be an orphan: a leftover candidate, or a concurrent first run that lost.
@@ -694,13 +694,23 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     // The classification half of inspectRoot: reads the root and the pointed-to database, changes nothing.
-    async lookupRoot() {
+    lookupRoot: () => classifyRoot(false),
+  };
+  return persistence;
+
+  // Reads the root and the pointed-to database. Startup creates a missing root; a lookup leaves it missing.
+  async function classifyRoot(createRoot: boolean): Promise<RootInspection> {
       let root;
       try {
-        root = await openDatabase(deps.indexedDB, ROOT_DATABASE, ROOT_VERSION, upgradeRoot);
+        root = await openDatabase(deps.indexedDB, ROOT_DATABASE, ROOT_VERSION, (db, oldVersion, tx) => {
+          // A lookup aborts the upgrade that would create a missing root.
+          if (oldVersion === 0 && !createRoot) tx.abort();
+          else upgradeRoot(db, oldVersion);
+        });
       } catch (error) {
         // A root at a newer version may hold a Workspace this release cannot read; never touch it.
         if (error instanceof Error && error.name === 'VersionError') return { kind: 'Unreadable', root: 'PossibleRoot' };
+        if (!createRoot && error instanceof Error && error.name === 'AbortError') return { kind: 'NoWorkspace', deletedOrphans: [] };
         throw error;
       }
       let pointer: PointerRecord | undefined;
@@ -746,7 +756,5 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         schemaVersion: SCHEMA_VERSION,
         deletedOrphans: [],
       };
-    },
-  };
-  return persistence;
+  }
 }

@@ -242,6 +242,23 @@ describe('export touches neither the root nor any store (A128, A129)', () => {
   });
 });
 
+describe('export before any journal exists (A129)', () => {
+  it('should create no database when a backup is attempted before any journal exists', async () => {
+    const stack = await testStack(new IDBFactory(), EXPORT_AT);
+    const { factory } = stack;
+    // The stack's startup inspection created the root; remove it so the factory is empty again.
+    await new Promise<void>((resolve, reject) => {
+      const request = factory.deleteDatabase('tj-root');
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error ?? new Error('delete failed'));
+    });
+    expect(await factory.databases()).toEqual([]);
+    const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
+    expect(await workspace.exportBackup({})).toEqual({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null });
+    expect(await factory.databases()).toEqual([]);
+  });
+});
+
 describe('blocked databases (P32)', () => {
   it('should export a Migration Blocked schema-5 database as export kind BlockedDatabase with schemaVersion 5 and the schema-5 layout, and return NotCompleted IntegrityBlocked for an unreadable root without opening it', async () => {
     const V5 = JSON.parse(readFileSync('tests/fixtures/workspace-v5/dump.json', 'utf8')) as WorkspaceDump;
