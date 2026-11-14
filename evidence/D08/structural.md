@@ -176,6 +176,18 @@ Lane FM, commit `fa01ba22`: the 3 planned cases in each of the four modules, eac
   - Trade Record `restore.ts:189`: a Position Change names a missing member. This is F12's first gap.
 
   If the F12 commit doesn't close either one, that finding becomes a bug task.
+- **F12 continuation** `3a2b6b4e`, committed after Q6 (a).
+  - Cases, each red then green:
+    - a missing Position Change member: "Error: Position Change fx-0123 names missing member no-such-execution", now reported and not derived;
+    - a duplicate tradeId: "expected [] to deeply equal [ { code: 'DuplicateTradeId', …(1) } ]";
+    - a duplicate Entry id: the same, with `DuplicateEntryId`;
+    - a continuity break: "TypeError: Cannot read properties of undefined (reading 'value')".
+  - **First-run pass, flagged:** "should report a Trade whose version history is empty". Mutation: dropping `versions.length === 0 ||` from `versionChainIssuesOf` gave "TypeError: Cannot read properties of undefined (reading 'value')".
+  - New codes `DuplicateTradeId`, `DuplicateEntryId`, `MissingPositionChangeMember` and `VersionChainBroken`, with Q6's sentences in `readiness-copy.ts`. That is lane US's file this wave: only the four entries were added, and they are reconciled at the FM/US merges.
+  - B2.12 needed no new trigger.
+  - `verify:wording` and `verify:fixtures` pass.
+  - Lane tier: unit 175 / 1793, integration 106 / 229, checks 14 of 14.
+  - ocr (session `c833bf72-155e-4522-894c-3aceee65857a`, 5 files): **No findings.** Raw: `ocr/T8.6-F12-3a2b6b4e.json`. The two ocr findings from `fa01ba22` that F12 covers are closed. T8.6-B1 has started.
 - The other eight become bug tasks, run one at a time in lane FM after F12:
 
 | Bug task | Finding | Defect | `it should` case |

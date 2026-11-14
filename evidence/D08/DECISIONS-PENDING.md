@@ -107,7 +107,10 @@ This file lists every question asked of the user during D8, open and answered (d
 - An unknown layout returns `NotCompleted(Read, IntegrityBlocked)`, because the frozen reason type has no `UnknownLayout`.
 - The seed-manifest versions for schemas 1–4, used only by a blocked export of an old database, are inferred from the manifest files. Only schema 5 is tested.
 
-**Answer:** pending.
+**Answer (2026-11-14):** (a), stream it now.
+- T8.3-F1 (lane PS, recreated) adds the `onStart({ binding, meta, counts })` callback before the first batch.
+- After it merges, T8.4-F1 (lane WB, recreated) writes the header at start and streams each batch into the artifact writer.
+- Both come before T8.11, and both are recorded as deviations from the frozen task list, carried into r103.
 
 ## Q5. Restore flow gaps found while building T8.13 — open, asked 2026-11-14
 
@@ -142,9 +145,26 @@ The reviewer also noted two defects that ocr didn't raise. Reviewer notes don't 
 
 **Recorded, not questions:** the preview's source time uses the backup's time zone, since `RestoreFlow`'s frozen props carry no Workspace zone (the restored journal uses that zone; A8's warning says so). `RestoreCounts.versions` is keyed `trades`, `entries`, `debts`; T8.8 uses those keys. The Restore complete links go to `/` and `/accounts`, so `RestoreFlow` sits inside the router (T8.11).
 
-**Answer:** pending.
+**Answer (2026-11-14), asked in three parts:**
+- **Items 3, 4, 7 and 8:** the texts are approved as written. The user added: "Can you write something to the console log that could be captured and forwarded to the dev team to help them understand what the problem was?"
+  - Asked how wide the logging should go, the user chose **all backup and Restore failures**.
+  - Every backup and Restore failure writes one `console.error` starting with `[Trade Journal]`. It is followed by an object holding:
+    - the stage;
+    - the result kind or error name;
+    - the message;
+    - the stack, when an error was thrown;
+    - record ids, section names, line numbers and check codes, but never journal contents.
+  - The coordinators' failure results carry that detail, through an optional `detail` field added to the frozen result types for this purpose. The UI logs it.
+- **Item 2:** the type change is approved. T8.8 adds `tradeSummary` and the kinds `Lifecycle` and `EntrySizeDeviation` to `RestoreRepair`.
+- **Items 1, 5, 6, 9 and 10:** approved as written.
 
-## Q6. Sentences for four new journal-check problems (T8.6, D2 follow-up F12) — open, asked 2026-11-14
+New work (recorded as deviations from the frozen task list, carried into r103):
+- T8.13-B2 and B3 use the texts of items 8 and 7, plus the log line.
+- T8.13-F1 (lane UB) covers items 3, 4, 6, 9 and 10, the shared log helper, and the Backup page's logging.
+- T8.4-F2 and T8.5-F2 carry the failure detail out of export and verification.
+- T8.8 and T8.9 carry it from preparation and apply, and render item 2's sentences.
+
+## Q6. Sentences for four new journal-check problems (T8.6, D2 follow-up F12) — answered (a), 2026-11-14
 
 **Task:** T8.6's F12 continuation (lane FM). The work is done and staged but not committed. The type check requires every check code to have a sentence in the startup table (`src/ui/readiness-copy.ts`, `MIGRATION_ISSUES`), and the Restore screen reuses those sentences (Q2 A3). Nothing else is paused; T8.6's ocr bug tasks wait behind this in lane FM.
 
@@ -163,4 +183,4 @@ The sentences follow the table's existing style (for example, "A Trade records t
 
 **Recorded, not questions:** D2's B2.12 Open-list Error state still has a working trigger. The app's read path still throws on a missing member, and the fault fixtures bypass the Restore validator, so the test passes unchanged ("the Open list in every state", `e2e/d2/responsive-a11y.spec.ts`). The continuity rule comes from the Trade Record design's "version continuity". Every fact in `facts` and `closeReasonFacts` has at least one version, numbered 1, 2, 3 … in array order. A broken Trade is reported and not derived.
 
-**Answer:** pending.
+**Answer (2026-11-14):** (a), the four sentences approved as written. T8.6's F12 continuation adds them to `MIGRATION_ISSUES` and commits. `readiness-copy.ts` is lane US's file in this wave, so the four new entries are reconciled when lanes FM and US merge.

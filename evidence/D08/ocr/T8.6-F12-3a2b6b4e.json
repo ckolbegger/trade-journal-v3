@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 100692,
+    "input_tokens": 99286,
+    "output_tokens": 1406,
+    "cache_read_tokens": 16640,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 9,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Journal section restoration and tests",
+      "files": [
+        "src/modules/journal/restore.test.ts",
+        "src/modules/journal/section.ts"
+      ]
+    },
+    {
+      "label": "Trade record section restoration and tests",
+      "files": [
+        "src/modules/trade-record/restore.test.ts",
+        "src/modules/trade-record/section.ts"
+      ]
+    },
+    {
+      "label": "UI readiness copy",
+      "files": [
+        "src/ui/readiness-copy.ts"
+      ]
+    }
+  ],
+  "session_id": "c833bf72-155e-4522-894c-3aceee65857a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c833bf72-155e-4522-894c-3aceee65857a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3a2b6b4e",
+      "resolved_base": "fa01ba2206b1f41e70c0567571c95588026a87f5",
+      "resolved_head": "3a2b6b4ec6450cd6bdad00d8ba3b001df4ca4e13",
+      "exact_range": "fa01ba2206b1f41e70c0567571c95588026a87f5..3a2b6b4ec6450cd6bdad00d8ba3b001df4ca4e13",
+      "source_artifact_sha256": "4007073e67e2a75af8327eab41e39fb811d55508f8d0b9c6b94ad9eb477a24a4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "6c8354e9457f417d930a17aa65ced6733e81435ed1a34b40d5eaa8fe9eacd3a0"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "b09150dd8cf2d957e611167df2b2b166a12c8781c5912ec38e8ce35c37c6dd2f"
+        },
+        {
+          "item_id": "6dd2f0eed8e1f11e0e83cb2c228cf82803ede86e721440a70c77d861018ffd30",
+          "path": "src/modules/journal/restore.test.ts",
+          "fingerprint": "33ba706ec70e56e53459015b77c0f11d2be8c35e27c6464ac2ee790970ade01c"
+        },
+        {
+          "item_id": "6edd97af97a6a2d4cdf5833905151124e060ab02c7e100649eec85bb77f4d3a3",
+          "path": "src/modules/trade-record/section.ts",
+          "fingerprint": "bc425d9810f57af8b89d2da543217cafb24f8725dce0d1243b1b75d58171939a"
+        },
+        {
+          "item_id": "b1a8751fc27da6e821054da0b9e3c484a8605198e151fb96f9beb89953657a19",
+          "path": "src/modules/trade-record/restore.test.ts",
+          "fingerprint": "61d60f82e80b47dd7aa33a0a54bba95179b8c00fd46f6ddd2c9533e765a6ae22"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "6c8354e9457f417d930a17aa65ced6733e81435ed1a34b40d5eaa8fe9eacd3a0"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "b09150dd8cf2d957e611167df2b2b166a12c8781c5912ec38e8ce35c37c6dd2f"
+        },
+        {
+          "item_id": "6dd2f0eed8e1f11e0e83cb2c228cf82803ede86e721440a70c77d861018ffd30",
+          "path": "src/modules/journal/restore.test.ts",
+          "fingerprint": "33ba706ec70e56e53459015b77c0f11d2be8c35e27c6464ac2ee790970ade01c"
+        },
+        {
+          "item_id": "6edd97af97a6a2d4cdf5833905151124e060ab02c7e100649eec85bb77f4d3a3",
+          "path": "src/modules/trade-record/section.ts",
+          "fingerprint": "bc425d9810f57af8b89d2da543217cafb24f8725dce0d1243b1b75d58171939a"
+        },
+        {
+          "item_id": "b1a8751fc27da6e821054da0b9e3c484a8605198e151fb96f9beb89953657a19",
+          "path": "src/modules/trade-record/restore.test.ts",
+          "fingerprint": "61d60f82e80b47dd7aa33a0a54bba95179b8c00fd46f6ddd2c9533e765a6ae22"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "26211d3bfc716c8815b5f4957bcf1e01262a51b73ad7fc0b62f24c99a38fc880",
+          "path": "evidence/D08/suite-runs/T8.6-F12-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3cf583a62bc16ef41a5a24f83429d163ba95a6eda660c7371c724ba4dbcf5dec",
+          "path": "evidence/D08/suite-runs/T8.6-F12-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "72f1158a56b122b22b06c3382c15f0feab8bbd99574f5e79f327d2d7336d51f7",
+          "path": "evidence/D08/tdd-log/T8.6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9bcb6587423971d9a04c347615dafbea509e465ae3eb7da1a2e26b379b81e3b7",
+          "path": "evidence/D08/suite-runs/T8.6-F12-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "de4f6fe2bf79759e6c5ad4855db37371e5157b2b2479076cad2138543f6ff186",
+          "path": "evidence/D08/suite-runs/T8.6-F12-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41272
+  }
+}
