@@ -1617,3 +1617,11 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
 - **Review:** ocr in place, 2 files, 1 comment (`ocr/T8P.23-B13.json`). It is **Valid**: `settlementExpirationOf` cuts the whole Trade as soon as any held option is due. A Trade that also holds stock or a later contract would lose that leg's later sessions and its pending session. A212 and revision 98 name one contract, and the Covered Call is in the reference catalog. This became bug task **T8P.23-B13-B1**.
   - The reviewer also noted, not as an ocr finding, that an expiration with no completed session in the lifetime would drop later items: they go to `pending`, which `ended` nulls.
 - **Quick run (`T8P.23-B13`):** unit 1657, integration 229, checks 14 of 14, browser-task passed (d8p 8); run complete. The runner reran `browser-task` alone after it had overlapped the checks stage once.
+
+**T8P.23-B13-B1** (`0a146e03`). `settlementExpirationOf` now returns the latest expiration only when every Position still held is an option at or past its expiration. Held stock or a live contract means no cut, so the leg keeps its sessions and its pending session. Holding nothing also means no cut; a Closed Trade ends through `terminalTime`.
+- **Test:** "should give no expiration while the Trade also holds stock or a live contract, and the latest expiration when every held leg is a due contract" (`replay-trade.test.ts`), a direct test of the helper. Red: `expected '2026-11-20' to be null`.
+- **Expected values:** none changed.
+- **Browser specs run:** 61 passed (`browser/T8P.23-B13-B1-specs.txt`).
+- **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B13-B1.json`). The reviewer found that the earlier finding no longer holds for a Covered Call, a calendar or diagonal with a live leg, or a live leg beside a due one.
+- **Known edge case, recorded, not fixed:** the empty-session edge from B13's review. An expiration with no completed session in the lifetime leaves later Journal items off the drawer, though they stay stored. It needs a first fill after the expiration session's close. The user decided on 2026-11-14: "Leave the edge case recorded, no fix needed".
+- **Quick run (`T8P.23-B13-B1`):** unit 1658, integration 229, checks 14 of 14, browser-task 8; run complete.
