@@ -45,6 +45,23 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
     else setNotMade(result.kind === 'NotCompleted' ? result.reason : 'Conflict');
   };
 
+  // A completed Restore replaces the Workspace, so a download or check of the old one is discarded (A142).
+  // Bumping the count also drops a check still in flight.
+  const restoreFacade: BackupFacade = {
+    ...facade,
+    applyPreparedRestore: async (request) => {
+      const result = await facade.applyPreparedRestore(request);
+      if (result.kind === 'Restored') {
+        downloadCount.current += 1;
+        setDownloaded(undefined);
+        setOutcome(undefined);
+        setChecking(undefined);
+        setNotMade(undefined);
+      }
+      return result;
+    },
+  };
+
   const verify = async (expected: Downloaded) => {
     const forDownload = downloadCount.current;
     const chosen = await selectFile.choose();
@@ -94,7 +111,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
       {readiness.kind === 'Writable' ? (
         <section className="card" aria-labelledby="backup-restore-heading">
           <h2 id="backup-restore-heading">Restore from a backup</h2>
-          <RestoreFlow facade={facade} selectFile={selectFile} />
+          <RestoreFlow facade={restoreFacade}selectFile={selectFile} />
         </section>
       ) : (
         <section className="card" aria-labelledby="backup-restore-heading">

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ExportBackupResult } from '../../app/types.ts';
 import { BackupView, type BackupViewProps } from './BackupView.tsx';
@@ -273,5 +274,66 @@ describe('Recovery Only (A144)', () => {
     expect(screen.getByText('There is not enough storage space available in this browser for your journal and its safety margin.')).toBeTruthy();
     expect(screen.getByText("The app's offline component is not in control of this page yet.")).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Restore from a backup' })).toBeNull();
+  });
+});
+
+describe('Restore completion (A142)', () => {
+  it('should discard the Backup page download and verification when a Restore completes', async () => {
+    const facade = createBackupFacadeDouble();
+    const files = createFileSelectionDouble();
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <BackupView facade={facade.facade} selectFile={files.port} readiness={{ kind: 'Writable' }} timeZone="America/New_York" />
+      </MemoryRouter>,
+    );
+    facade.respond('exportBackup', DOWNLOADED);
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByRole('button', { name: 'Verify backup' });
+    files.choose(new File(['x'], 'chosen.gz'));
+    facade.respond('confirmBackup', { kind: 'Completed', receipt: RECEIPT });
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    expect(await screen.findByText('Backup complete. Checked Sat Nov 14, 16:05.')).toBeTruthy();
+
+    const token = { candidateId: 'cand-1', fullDigest: 'digest-1', targetBinding: BINDING, releaseId: '2026.11.14' };
+    const counts = {
+      tradesByLifecycle: { Planned: 1, Open: 2, Closed: 3 },
+      positionChanges: 7,
+      executions: 8,
+      expirations: 1,
+      deviationOccurrences: 2,
+      entriesByType: { Plan: 4 },
+      declines: 1,
+      debtsByStatus: { Open: 2 },
+      marks: 10,
+      acknowledgments: 3,
+      institutions: 1,
+      accounts: 2,
+      strategies: 5,
+      closeReasons: 6,
+      entryDefinitionRevisions: 9,
+      versions: {},
+    };
+    const target = { hasUserData: true, counts, currentTimeZone: 'America/New_York', restoredTimeZone: 'America/New_York' };
+    const source = { createdAt: '2026-11-20T23:00:00Z', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' };
+    const preview = { source, counts, migrations: { steps: [], seedAdditions: [] }, repairs: [], providerNeedsSetup: [], target, warnings: [], safetyChoiceRequired: false };
+    files.choose(new File(['x'], 'restore.gz'));
+    facade.respond('prepareRestore', { kind: 'Prepared', token, preview } as never);
+    await user.click(screen.getByRole('button', { name: 'Choose backup file' }));
+    await user.click(await screen.findByRole('checkbox', { name: 'I understand this replaces my entire current journal' }));
+    facade.respond('applyPreparedRestore', {
+      kind: 'Restored',
+      receipt: { artifactDigest: 'digest-1', replacedBinding: BINDING, newBinding: BINDING, counts, migrations: { steps: [], seedAdditions: [] }, repairs: [], readiness: {} },
+      status: { kind: 'Ready' },
+      landing: { kind: 'RestoreComplete', next: 'Trades' },
+    } as never);
+    await user.click(screen.getByRole('button', { name: 'Replace entire journal' }));
+    expect(await screen.findByRole('heading', { name: 'Restore complete' })).toBeTruthy();
+
+    expect(screen.queryByText(DOWNLOADED.fileName)).toBeNull();
+    expect(screen.queryByText(/Backup complete/)).toBeNull();
+    expect(screen.queryByText(/Downloaded, not verified/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Verify backup' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Download backup' })).toBeTruthy();
   });
 });
