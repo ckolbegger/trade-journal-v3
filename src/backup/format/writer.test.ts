@@ -76,6 +76,20 @@ describe('ArtifactWriter', () => {
     expect(() => w.writeRecord('s', 't', {})).toThrow();
   });
 
+  it('should record a section named __proto__ in the manifest and returned digests', () => {
+    const w = new ArtifactWriter();
+    w.writeRecord('__proto__', 'entries', { id: 'E1' });
+    const digest = w.writeSectionEnd('__proto__', { entries: 1 });
+    const out = w.finish({});
+
+    expect(Object.keys(out.sectionDigests)).toEqual(['__proto__']);
+    expect(Object.getOwnPropertyDescriptor(out.sectionDigests, '__proto__')?.value).toBe(digest);
+    const lines = decode(out.parts).slice(0, -1).split('\n');
+    expect(at(lines, 2)).toBe(
+      `{"fullDigest":"${out.fullDigest}","kind":"manifest","sectionDigests":{"__proto__":"${digest}"}}`,
+    );
+  });
+
   it('should throw when writeSectionEnd names a section other than the open one', () => {
     const w = new ArtifactWriter();
     w.writeRecord('trades', 't', { i: 1 });

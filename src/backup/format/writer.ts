@@ -18,7 +18,7 @@ export class ArtifactWriter {
     this.parts.push(chunk);
   });
   private readonly full = sha256.create();
-  private readonly sectionDigests: Record<string, string> = {};
+  private readonly sectionDigests: Record<string, string> = Object.create(null) as Record<string, string>; // no prototype: a section named __proto__ stays an own key
   private openSection: { name: string; hash: ReturnType<typeof sha256.create> } | undefined;
   private lineCount = 0;
 
