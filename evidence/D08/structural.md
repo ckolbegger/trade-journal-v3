@@ -302,6 +302,8 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 ## Merge runs
 
+- **T8.7 merged** 2026-11-14: lane PS rebased onto `9c569bfa` and fast-forwarded (`8f98613d` … `6bbb2ffc`). Lane removed.
+
 - **T8.3 merged** 2026-11-14: lane PS rebased onto `fb6df610` and fast-forwarded (`bd46514a` … `a379a2ca`). Lane removed; it is recreated from the new head for T8.7.
 - **merge-3** (T8.3 merged; source at `a0240277`; stage headers show later HEADs, but `git diff a0240277 4b3cad5f -- src tests e2e tools package.json` is empty, since only plan and evidence commits landed): unit 167 / 1772, integration 106 / 229, browser full tier (first matching path since `683f10b2`: `src/persistence/export-layout.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-3-*.txt`.
 - **merge-4** (T8.2 merged; at `ac58669b`): unit 171 / 1778, integration 106 / 229, browser task tier (no changed path since `a0240277` on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-4-*.txt`.
