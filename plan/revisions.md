@@ -2,6 +2,22 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 96: the commit tagged `claude-opus-5.5-plan-r96` (revision 95, no decision). T8P.22 stopped on its brief's stop rule. Retiring the Summary card, Valuation, and Risk and reward (its case 6) would drop figures no task had placed. Section 1.5 says the Summary card dissolves "one figure in one place" and that Valuation's Mark and provenance go to Today, yet nothing placed these. The UI contract (`specs/design/ui-contract.md`) requires some of them on Trade Detail: exact observation dates and source, Stale context, correction indicators, and an acknowledged Unavailable that reads visibly as a trader acknowledgment, not a price. At the user's choice, every one gets a place in its existing words:
+  - **New task T8P.31** (wave 2, lane PL, seven cases, section 5) places:
+    - Valuation's current Marks (exact date, source, saved time, correction), missing Marks with any older Stale context, acknowledged ones, the Underlying Mark and the Expected Mark Date: in Today, or in Position on a state without Today, never twice beside Today's comparison;
+    - the Trade Summary line: in Position on a Closed Detail, and in Plan and Risk on a Planned one;
+    - Net cost: in Position;
+    - the Entry status: in Entry Quality;
+    - "Deviation active": beside the lifecycle badge;
+    - every condition's Risk to stop or Reward to target: in Plan and Risk.
+  - **T8P.22 waits** before its case 6, its work held at `bec0bf84` on `d08p/wire`. Then it rebases onto T8P.31 and finishes:
+    - the `d2/ui-alignment` checks that measure the Summary card itself retire with it, and T8P.25's layout cases name the Summary-card check each one replaces;
+    - the old `Journal (N)` heading and Plan Reflection region go with the old list, and reads through them move to W13's cards with the same count;
+    - `PlanForm.test.tsx`'s bare `1R` read moves to `1R (original risk)`;
+    - the legacy Summary, Valuation and RiskReward tests render their components directly until T8P.27.
+  - **Rejected:** placing only the figures the spec requires, and keeping the three blocks until after D08P.
+
+  No acceptance scenario changes status, no stored data or durable compatibility changes, no words change, and `specs/` is unchanged. The next decision is still 112. Decided by the user on 2026-11-13 ("Place them all").
 - Revision 95: the commit tagged `claude-opus-5.5-plan-r95` (revision 94, no decision). T8P.15's agent noted, though ocr did not, that a Debt answered or declined on its Journal card stays in the rail's Needs you list as owed until the next read: the card relabels from the save result, and the rail does not. At the user's direction, T8P.22 gains one case, under `describe("Trade Detail: Needs you follows the Journal (revision 95)")`: `it should take a Debt off Needs you as soon as it is answered or declined on its card, without reading again`. T8P.22 already owns the shell and wires the Journal cards. No acceptance scenario changes status, no stored data or durable compatibility changes, no words change, and `specs/` is unchanged. The next decision is still 112. Directed by the user on 2026-11-13 ("Include the stale Needs you fix").
 - Revision 94: the commit tagged `claude-opus-5.5-plan-r94` (revision 93, no decision). ocr found that T8P.15-B1's Reflect now finds the Debt's card on the page by its heading text and a minute-precision time, so two Debts of one type in the same minute open the wrong form. This became bug task T8P.15-B2.
   - The fix passes the Debt's id down. The shell holds the requested Debt id, the legacy Journal section and the Journal cards pass it to `OwedDebtItem`, and that item opens its own form under the one-form rule. The page lookup goes.

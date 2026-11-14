@@ -1305,3 +1305,13 @@ I8P.3 first failed for a fixture reason (the Review's save result kind is `Marks
 **T8P.24 review.** ocr, relocated (test-only commit), reviewed the 4 test files and made 2 comments (`ocr/T8P.24.json`). Both are Wrong, relocation artifacts: "the suites are not registered" (the real files match `tests/integration/**/*.test.ts`, and the lane's run counts 2 more files and 7 more tests) and "the `d1` and `d6` support imports are missing" (only `d7` and `d7s` support were copied). No bug tasks.
 
 **T8P.24 merge.** Lane NI's base `46bb44f3` was behind T8P.30's test code (`97cde911`), so after rebasing onto `5fd1bfb4` the main session reran the lane tier: unit 1635, integration 229 (106 files), checks 14 of 14; run complete (`95a1c855`). Only evidence followed, so it was rebased onto `0a40eacd` and fast-forwarded: `3037a7c3` (task), `fe51f5a2`, `95a1c855`. Lane NI was removed. The next merge run (`browser-auto 395f7ec5`) covers T8P.24 with T8P.22.
+
+**T8P.22 stop (lane wire).** Cases 1 to 5 and 7 are built, each red then green except case 5. Case 5, the saved reflection, passed on its first run, which is flagged; its mutation was `OwedDebtItem.resolved` no longer calling `setSettled`, and it failed with `expected <span class="badge" …> to be null`. The work in progress is held, unmerged, at `bec0bf84` on `d08p/wire`. It holds:
+- the replay read, with up to 3 reads on `ChangedDuringAssembly`, then the Error state with Retry;
+- a Settlement Due Detail reads the replay like Open;
+- a failed or NotApplicable replay leaves the Detail-only cockpit;
+- while the replay is pending, Price History and Journal show "Loading the Trade…";
+- the tab counts as `.tab-count` spans described by `aria-describedby`, with each tab's name kept through `aria-label`;
+- `ReflectRequest.settled(debtId)`, so Needs you follows the Journal without a read (revision 95).
+
+It stopped on its brief's stop rule: retiring the three legacy blocks (case 6) drops figures no task had placed. The main session checked that against the plan and the specs. Section 1.5 dissolves the Summary card "one figure in one place", but places none of them. The UI contract requires the Valuation items (exact dates and source, Stale context, correction indicators, the acknowledgment wording). The user chose to place them all: revision 96 adds T8P.31 (lane PL). T8P.22 rebases onto it and then finishes case 6, the browser reach moves and the CSS. Unit at the stop: 24 failures, all legacy-block reads (Summary 10, Valuation 8, RiskReward 5, `Result.test.tsx` 1), which revision 96 settles.

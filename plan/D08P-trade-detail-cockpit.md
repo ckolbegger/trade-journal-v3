@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D08P](implementation-plan.md#d08p--the-trade-detail-cockpit). D08P is the **D8 prefactor**: Trade Detail is rebuilt to match the "C. Cockpit" tab of `prototypes/trade-detail/index.html` before any more functionality is built. It builds on D7S's Trade Detail (T7S.9, every condition), the D7S prefactor's Mark-to-Market Valuation and read session (decisions 101, 104 to 106), D5R's precedent for a prototype-driven redesign (decision 65), and D7's approved words ([`D07-approved-words.md`](D07-approved-words.md), conventions C1 to C8). It is drafted from `claude-opus-5.5-pre-d8p`.
 
-Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5). **Revision 88** (the same day) lets strict checks gain the additive `nearest` and `days` fields (section 1.5, "Shapes"). **Revision 89** (the same day) gives a bounded Max reward its R: T8P.7 adds it, and T8P.15 shows it (section 5). **Revision 90** (the same day, at the user's direction) adds T8P.28, where Trade Views states "no Marks yet" as `firstMarksDue`, and T8P.29, where the Today drawer, the P&L card and the Conditions card read it instead of inferring it. It also adds T8P.30, which makes every Trade Detail absence check prove absence (sections 4, 5 and 6). **Revision 91** (the same day, the user's choice) makes the before-Marks words in W3, W7 and W8 always name dates instead of "today". **Revision 92** (the same day, the user's choice) gives Market Data's read session `nextSessionDate`, the calendar's session after its trading date, which T8P.28 adds and reads (sections 4 and 5). **Revision 93** (the same day, the user's choices) gives series points the Mark's provenance, which T8P.10 adds and carries into the replay (A210, section 5), and lets lane R2 edit the shell and the Journal cards to wire Reflect now, bug task T8P.15-B1 (section 4.2). **Revision 94** (the same day, the user's choice) lets lane R2 also edit `OwedDebtItem.tsx` and the legacy `Journal.tsx`, so bug task T8P.15-B2 opens a Debt's form by its id instead of finding it on the page (section 4.2). **Revision 95** (the same day, at the user's direction) gives T8P.22 a case: a Debt answered or declined on its card leaves Needs you at once, without a read (section 5).
+Status: **breakdown agreed by the user on 2026-11-12** (plan revision 84, decisions 110 and 111). P94 to P102 were agreed as recommended: one breakdown with a checkpoint critic (P101), one port behind a lock (P98), and the answers in section 12. A206 to A224 stand. The words in section 1.6 are approved, with W1's third tab renamed "Plan and Risk" in the user's words. The process amendments in section 9 are decision 111. Drafted from `plan/D08P-handoff.md`; numbering continues from D7S (P90 to P93, A195 to A205). The next plan decision is 112. **Revision 85** (2026-11-13, at the user's direction) adds T8P.27, which removes the old Detail sections, tests and styles the cockpit no longer renders, after T8P.22. **Revision 86** (the same day) tightens its test pairing: the table comes first, a covering case asserts the same expected values, and the main session checks each row. **Revision 87** (the same day) re-anchors two `ui-alignment` geometry checks to the cockpit's rail-beside-drawers layout (section 5, T8P.5). **Revision 88** (the same day) lets strict checks gain the additive `nearest` and `days` fields (section 1.5, "Shapes"). **Revision 89** (the same day) gives a bounded Max reward its R: T8P.7 adds it, and T8P.15 shows it (section 5). **Revision 90** (the same day, at the user's direction) adds T8P.28, where Trade Views states "no Marks yet" as `firstMarksDue`, and T8P.29, where the Today drawer, the P&L card and the Conditions card read it instead of inferring it. It also adds T8P.30, which makes every Trade Detail absence check prove absence (sections 4, 5 and 6). **Revision 91** (the same day, the user's choice) makes the before-Marks words in W3, W7 and W8 always name dates instead of "today". **Revision 92** (the same day, the user's choice) gives Market Data's read session `nextSessionDate`, the calendar's session after its trading date, which T8P.28 adds and reads (sections 4 and 5). **Revision 93** (the same day, the user's choices) gives series points the Mark's provenance, which T8P.10 adds and carries into the replay (A210, section 5), and lets lane R2 edit the shell and the Journal cards to wire Reflect now, bug task T8P.15-B1 (section 4.2). **Revision 94** (the same day, the user's choice) lets lane R2 also edit `OwedDebtItem.tsx` and the legacy `Journal.tsx`, so bug task T8P.15-B2 opens a Debt's form by its id instead of finding it on the page (section 4.2). **Revision 95** (the same day, at the user's direction) gives T8P.22 a case: a Debt answered or declined on its card leaves Needs you at once, without a read (section 5). **Revision 96** (the same day, the user's choice) adds T8P.31, which gives every figure of the three legacy blocks that no task had placed its one place in the cockpit, in its existing words, before T8P.22 retires the blocks (section 5).
 
 The prototype is a picture of the screen, not a specification. Where it differs from the specs or the plan, this breakdown says which wins (P96, section 1.6).
 
@@ -270,7 +270,8 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T8P.28 | Trade Views: "no Marks yet" as `firstMarksDue` (revision 90) | 1, BV | B | T8P.9 (lane order; before T8P.10) | `getTradeDetail`; `openReadSession` (revision 92) | **Trade Views** field (additive); **Market Data** read session `nextSessionDate` (additive, revision 92) |
 | T8P.29 | The Today drawer, P&L card and Conditions card read `firstMarksDue` (revision 90) | 1, R2 | B | T8P.15 (lane order), T8P.13, T8P.16, T8P.28 | `TodayDrawer`, `PnlCard`, `ConditionsCard` | none |
 | T8P.30 | Absence checks prove absence (revision 90) | 1, AX | S | T8P.12–T8P.21, T8P.29 | unchanged titles; each changed check's mutation | none (tests only) |
-| T8P.22 | Trade Detail reads `replayTrade` | 2 | B | T8P.10–T8P.21, T8P.29, T8P.30 | `TradeDetail` | none (consumes T8P.10, T8P.11) |
+| T8P.31 | The legacy blocks' figures in one place (revision 96) | 2, PL | B | T8P.30 | `TodayDrawer`, `PositionDrawer`, `PlanRiskDrawer`, the identity card | none |
+| T8P.22 | Trade Detail reads `replayTrade` | 2 | B | T8P.10–T8P.21, T8P.29, T8P.30; T8P.31 for case 6 (revision 96) | `TradeDetail` | none (consumes T8P.10, T8P.11) |
 | T8P.27 | Remove the old Detail sections the cockpit no longer renders, with their tests and styles (revision 85) | 2 | S | T8P.22 | `typecheck`, `lint`, an unreachable-module check, `it-titles.sh` | none |
 | T8P.23 | Checkpoint browser critic (P101) | 2 | S | T8P.27 | fresh critic report | none |
 | T8P.24 | Node mock-free integration suite | 2 | S | T8P.6–T8P.11 | `test:integration` | none (tests only) |
@@ -283,7 +284,7 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
   - Backend lanes start first, since they are the longest: BV starts T8P.9 at once and T8P.10 when T8P.7 and T8P.8 are merged.
   - The UI lanes fill the remaining slots in this order: R2, R1, D2, D1, D4, D3, D5, D6.
   - Revision 90: BV runs T8P.28 between T8P.9 and T8P.10; R2 runs T8P.29 after T8P.15; lane AX runs T8P.30 last, once every UI task of wave 1 has merged.
-- **Wave 2:** T8P.22, then T8P.27 (revision 85), the checkpoint critic T8P.23, then T8P.24 ∥ T8P.25, then T8P.26.
+- **Wave 2:** T8P.22, then T8P.27 (revision 85), the checkpoint critic T8P.23, then T8P.24 ∥ T8P.25, then T8P.26. Revision 96: T8P.31 runs in lane PL while T8P.22 waits before its case 6. T8P.22 then rebases onto it and finishes.
 
 T8P.24 is a Node suite and may start as soon as T8P.11 merges. Every UI task takes its words from section 1.6.
 
@@ -305,6 +306,7 @@ A lane is one git worktree (`.claude/worktrees/d08p-<lane>`) on one branch (`d08
 | D5 | T8P.20 | `drawers/price-history*`, `styles/history.css` |
 | D6 | T8P.21 | `drawers/journal*`, `journal-cards.ts`, `styles/journal.css`; `e2e/support/detail/journal.ts` |
 | AX | T8P.30 | Trade Detail's test files and specs (every other UI lane has merged by then): only their absence and hidden checks |
+| PL | T8P.31 (revision 96, wave 2) | `src/ui/cockpit/drawers/today*`, `drawers/position*`, `drawers/plan-risk*`, `rail/identity*`, with their tests and `styles/*.css`; the new `src/ui/screens/trade-detail/Placed.test.tsx`; `e2e/support/detail/*.ts` and spec lines only where a page-wide read becomes ambiguous while a figure shows twice (reach only). Not `Cockpit.tsx` or `TradeDetail.tsx`, which T8P.22 holds |
 
 T8P.5 creates every path above as the current section re-exported behind its future name, with its own test file and empty stylesheet. So a lane replaces the content behind a path, and never edits the shell, `src/ui/cockpit/index.css` or a shared helper index.
 
@@ -601,6 +603,26 @@ describe("Conditions card: first Marks pending (revision 90)")
   it should show the reason on row 1, not the first-Marks note, when shares were added after an earlier Mark
 ```
 
+### T8P.31 The legacy blocks' figures in one place (revision 96)
+
+Seams: `TodayDrawer`, `PositionDrawer`, `PlanRiskDrawer` and the identity card, rendered through the Detail's test support. Section 1.5 dissolves the Summary card "one figure in one place" and sends Valuation's Mark and provenance to Today, but no task placed the figures below. The UI contract requires some of them on Trade Detail (exact observation dates and source, Stale context, correction indicators, an acknowledged Unavailable visibly a trader acknowledgment, not a price). Each figure takes its existing words; no word is new.
+- **Valuation:** each Instrument's current Mark with its exact date, source, saved time and any correction; a missing Mark's Instrument and date with any older Stale context; an acknowledged one with ": your acknowledgment, not a price"; the Underlying Mark; and the Expected Mark Date. They go to the Today drawer, or to the Position drawer on a state without Today. Where Today's comparison already shows a Mark with its provenance, it is not shown twice.
+- **Summary card:** the Trade Summary line goes to the Position drawer on a Closed Detail and to the Plan and Risk drawer on a Planned one (Open already has it in Position). Net cost goes to the Position drawer, the Entry status (and "Entry not yet resolved") to Entry Quality, and the "Deviation active" badge beside the identity card's lifecycle badge.
+- **Risk and reward:** every condition's Risk to stop or Reward to target goes to the Plan and Risk drawer. The rail keeps only the nearest (A207).
+
+Each case asserts the same expected values (the same text or figure, in the same state) as the legacy Summary, Valuation or RiskReward case that read the figure, so T8P.27 can pair them. Until T8P.22 retires the blocks, each figure shows twice; a page-wide read that becomes ambiguous is scoped (reach only).
+
+```text
+describe("Trade Detail: the legacy blocks' figures in one place (revision 96)")
+  it should show each Instrument's current Mark with its date, source and saved time, and any correction, in the Today drawer
+  it should show the current Marks in the Position drawer on a state without a Today drawer
+  it should show a missing Mark's Instrument and date with any older Stale context, and an acknowledged one as the trader's acknowledgment, not a price
+  it should show the Underlying Mark and the Expected Mark Date with the current Marks
+  it should show the Trade Summary in the Position drawer on a Closed Detail and in the Plan and Risk drawer on a Planned one
+  it should show Net cost in the Position drawer, the Entry status in Entry Quality, and Deviation active beside the lifecycle badge
+  it should show every condition's Risk to stop or Reward to target in the Plan and Risk drawer
+```
+
 ### T8P.22 Trade Detail reads `replayTrade`
 
 Seam: `TradeDetail` against the facade double. P95, W20.
@@ -616,6 +638,12 @@ describe("Trade Detail: the replay read (P95)")
 ```
 
 The last case retires the three legacy blocks (section 4.2).
+
+**Revision 96 (the user's choice of 2026-11-13).** Case 6 runs once T8P.31 has merged, and its "one place" checks cover T8P.31's figures too. With the blocks:
+- The `d2/ui-alignment` checks that measure the Summary card itself (18 px figures, Stop and Target colours, one right edge, and the Planned `.summary-text` widths) retire with it. Each is listed in `evidence/D08P/structural.md`, and T8P.25's layout cases name the Summary-card check each one replaces.
+- The old `Journal (N)` heading and Plan Reflection region go with the old list, since W13's cards replace them. Reads through them move to the cards, and a count read becomes the count of the cards' entries, with the same number.
+- `PlanForm.test.tsx`'s bare `1R` read moves to Plan Baseline's `1R (original risk)` (T8P.18's words), with the same figure.
+- The legacy `Summary`, `Valuation` and `RiskReward` tests render their components directly until T8P.27 pairs and removes them, so their titles stay.
 
 **Revision 95 (the user's direction of 2026-11-13).** Since T8P.15 the Needs you card lists Debts in the rail, but a Debt answered or declined on its Journal card stays listed there as owed until the next read: the card relabels from the save result, and the rail does not. Both must follow the same save result, without a read.
 
@@ -862,7 +890,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.28 | 1 | BV | Done | `e163c073`; lane tiers `ed2568fd`, `aa8bfddd` (after the rebase) |
 | T8P.29 | 1 | R2 | Done | `511065e0`; lane tier `693eae8f`; mutations `479923c3` |
 | T8P.30 | 1 | AX | Done | `97cde911`; lane tier `1f3292c0` |
-| T8P.22 | 2 | wire | In progress from `395f7ec5` (lane wire) | |
+| T8P.31 | 2 | PL | Not started | |
+| T8P.22 | 2 | wire | In progress from `395f7ec5` (lane wire); stopped before case 6, work in progress `bec0bf84` (revision 96) | |
 | T8P.27 | 2 | — | Not started | |
 | T8P.23 | 2 | — | Not started | |
 | T8P.24 | 2 | NI | Done | `3037a7c3`; lane tiers `fe51f5a2`, `95a1c855` (after the rebase); acceptance browser rows wait for T8P.25 |
