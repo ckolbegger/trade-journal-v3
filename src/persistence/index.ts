@@ -28,5 +28,7 @@ export {
 export { rebuildPrivateState } from './rebuild.ts';
 export type { RecordSource, SectionRecord } from './record-source.ts';
 export { createInProcessLifecycleLock, createWebLocksLifecycleLock, type LifecycleLock } from './lifecycle-lock.ts';
+export { exportLayoutFor, type ExportLayout } from './export-layout.ts';
+export type { ExportBatch, ExportReadResult } from './export-snapshot.ts';
 export { migrationChain } from './migrations/index.ts';
 export { SCHEMA_VERSION, type SessionPolicyIdentity } from './schema.ts';

@@ -1,0 +1,146 @@
+import type { ExportLayout } from './export-layout.ts';
+import { keyOf, type WorkspaceStore } from './schema.ts';
+
+// Records per batch (D8 A128).
+const EXPORT_BATCH_SIZE = 500;
+
+export interface ExportBatch {
+  readonly store: WorkspaceStore;
+  // One store's records, in primary-key order, with the layout's private fields omitted.
+  readonly records: readonly Record<string, unknown>[];
+}
+
+export type ExportReadResult =
+  | {
+      readonly kind: 'Read';
+      readonly binding: { readonly databaseName: string; readonly contentRevision: number };
+      // The schema version the database's own `meta` names, which is the layout's.
+      readonly schemaVersion: number;
+      // Every `meta` record: the Workspace section, plus the schema and content records.
+      readonly meta: readonly Record<string, unknown>[];
+      // Per layout store, counted at the start of the same transaction.
+      readonly counts: Readonly<Record<string, number>>;
+    }
+  // The database's stored schema version is not the layout's (or `meta` names none).
+  | { readonly kind: 'UnknownLayout'; readonly schemaVersion: number | undefined }
+  // `onBatch` returned a promise, which would let IndexedDB auto-commit the transaction early.
+  | { readonly kind: 'EarlyAutoCommitGuard' }
+  | { readonly kind: 'ReadFailed'; readonly store: WorkspaceStore };
+
+type Failure = Exclude<ExportReadResult, { kind: 'Read' }>;
+
+function withoutPrivateFields(record: Record<string, unknown>, fields: readonly string[] | undefined): Record<string, unknown> {
+  if (!fields) return record;
+  const copy = { ...record };
+  for (const field of fields) delete copy[field];
+  return copy;
+}
+
+// Reads a Workspace database's authoritative records in one readonly transaction (D8 A128): the
+// `meta` records and every store's count first, then each store in key order through chained
+// `getAll` requests in their success callbacks. Everything is synchronous, so the transaction never
+// auto-commits early, and IndexedDB queues any overlapping write until it finishes.
+export async function readExportSnapshot(
+  indexedDB: IDBFactory,
+  databaseName: string,
+  layout: ExportLayout,
+  onBatch: (batch: ExportBatch) => void,
+): Promise<ExportReadResult> {
+  let db: IDBDatabase;
+  try {
+    db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const open = indexedDB.open(databaseName);
+      open.onsuccess = () => resolve(open.result);
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+  } catch {
+    return { kind: 'ReadFailed', store: 'meta' };
+  }
+  db.onversionchange = () => db.close();
+  try {
+    const missing = ['meta', ...layout.stores].find((store) => !db.objectStoreNames.contains(store));
+    if (missing) return { kind: 'ReadFailed', store: missing as WorkspaceStore };
+    return await new Promise<ExportReadResult>((resolve, reject) => {
+      const tx = db.transaction(['meta', ...layout.stores], 'readonly');
+      let failure: Failure | undefined;
+      let thrown: Error | undefined;
+      let result: ExportReadResult | undefined;
+      const stop = () => {
+        try {
+          tx.abort();
+        } catch {
+          // Already finished or aborted.
+        }
+      };
+      tx.oncomplete = () => resolve(result!);
+      tx.onabort = () => {
+        if (thrown) reject(thrown);
+        else if (failure) resolve(failure);
+        else reject(tx.error ?? new Error('export snapshot aborted'));
+      };
+      const fail = (reason: Failure) => {
+        failure ??= reason;
+        stop();
+      };
+      // Runs `onDone` with the request's result; a request error or a throw ends the snapshot.
+      const watch = <T>(store: WorkspaceStore, request: IDBRequest<T>, onDone: (value: T) => void) => {
+        request.onerror = (event) => {
+          event.preventDefault();
+          fail({ kind: 'ReadFailed', store });
+        };
+        request.onsuccess = () => {
+          try {
+            onDone(request.result);
+          } catch (error) {
+            thrown ??= error instanceof Error ? error : new Error(String(error));
+            stop();
+          }
+        };
+      };
+
+      const readFrom = (index: number, after: IDBValidKey | undefined) => {
+        const store = layout.stores[index];
+        if (store === undefined) return;
+        const range = after === undefined ? undefined : IDBKeyRange.lowerBound(after, true);
+        watch(store, tx.objectStore(store).getAll(range, EXPORT_BATCH_SIZE) as IDBRequest<Record<string, unknown>[]>, (rows) => {
+          if (rows.length > 0) {
+            const returned: unknown = onBatch({ store, records: rows.map((row) => withoutPrivateFields(row, layout.privateFields[store])) });
+            if (typeof (returned as { then?: unknown } | undefined)?.then === 'function') {
+              fail({ kind: 'EarlyAutoCommitGuard' });
+              return;
+            }
+          }
+          if (rows.length < EXPORT_BATCH_SIZE) readFrom(index + 1, undefined);
+          else readFrom(index, keyOf(store, rows[rows.length - 1]!));
+        });
+      };
+
+      let meta: Record<string, unknown>[] = [];
+      const counts: Record<string, number> = {};
+      let pending = 1 + layout.stores.length;
+      const started = () => {
+        if (--pending > 0) return;
+        const schema = meta.find((record) => record['key'] === 'schema')?.['schemaVersion'];
+        if (schema !== layout.schemaVersion) {
+          fail({ kind: 'UnknownLayout', schemaVersion: typeof schema === 'number' ? schema : undefined });
+          return;
+        }
+        const content = meta.find((record) => record['key'] === 'content')?.['contentRevision'] as number;
+        result = { kind: 'Read', binding: { databaseName, contentRevision: content }, schemaVersion: schema, meta, counts };
+        readFrom(0, undefined);
+      };
+      watch('meta', tx.objectStore('meta').getAll() as IDBRequest<Record<string, unknown>[]>, (records) => {
+        meta = records;
+        started();
+      });
+      for (const store of layout.stores) {
+        watch(store, tx.objectStore(store).count(), (count) => {
+          counts[store] = count;
+          started();
+        });
+      }
+    });
+  } finally {
+    db.close();
+  }
+}
