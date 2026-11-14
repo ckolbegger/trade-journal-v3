@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
+import type { FileSelectionPort } from '../../app/types.ts';
+import type { BackupFacade } from '../backup/facade.ts';
+import { RestoreFlow } from '../backup/RestoreFlow.tsx';
 
 type Opened = Extract<Awaited<ReturnType<UiFacade['Workspace']['initialize']>>, { kind: 'Opened' }>['status'];
 
@@ -9,6 +12,9 @@ export interface FirstRunProps {
   // The browser-resolved zone and the supported zones (D1 A8), injectable for tests.
   readonly proposedZone?: string;
   readonly zones?: readonly string[];
+  // Present only while this browser can save safely and the release serves Restore (D8 A143): offers
+  // Restore from a backup beside Start my journal, for a browser with no Workspace (P33).
+  readonly restore?: { readonly facade: BackupFacade; readonly selectFile: FileSelectionPort };
 }
 
 export function FirstRun({
@@ -16,9 +22,11 @@ export function FirstRun({
   onOpened,
   proposedZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
   zones = Intl.supportedValuesOf('timeZone'),
+  restore,
 }: FirstRunProps) {
   const [zone, setZone] = useState(proposedZone);
   const [invalid, setInvalid] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -55,7 +63,13 @@ export function FirstRun({
         <button type="submit" className="pill primary">
           Start my journal
         </button>
+        {restore && (
+          <button type="button" className="pill secondary" onClick={() => setRestoring(true)}>
+            Restore from a backup
+          </button>
+        )}
       </form>
+      {restore && restoring && <RestoreFlow facade={restore.facade} selectFile={restore.selectFile} />}
     </main>
   );
 }

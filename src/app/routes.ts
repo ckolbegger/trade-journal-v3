@@ -10,6 +10,8 @@ export interface RouteDefinition {
   readonly variants?: Readonly<Record<string, readonly string[]>>;
   // Shown in primary navigation (as opposed to reached from another screen).
   readonly navigation: boolean;
+  // Listed in the wide sidebar only: the narrow bottom bar keeps its five links (D8 P106).
+  readonly wideNavigationOnly?: boolean;
   // Offered while Recovery Only (reads only).
   readonly readOnly: boolean;
 }
@@ -137,6 +139,17 @@ export const ROUTES = [
     label: 'Accounts',
     requires: ['ReferenceCatalog.query', 'ReferenceCatalog.save'],
     navigation: true,
+    readOnly: true,
+  },
+  {
+    // The Backup page: download and verify a backup, and Restore (D8 A141, A142). On narrow screens
+    // About links to it (P106). Offered while Recovery Only, which can still back up (A144).
+    id: 'backup',
+    path: '/backup',
+    label: 'Backup',
+    requires: ['Workspace.exportBackup', 'Workspace.confirmBackup', 'Workspace.prepareRestore', 'Workspace.applyPreparedRestore'],
+    navigation: true,
+    wideNavigationOnly: true,
     readOnly: true,
   },
   {

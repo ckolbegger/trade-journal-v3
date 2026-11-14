@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { APP_NAME, MANIFEST_ID } from '../../app/identity.ts';
+import { isRouteInstalled, ROUTES } from '../../app/routes.ts';
+import { useWide } from '../AppShell.tsx';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { StorageProtectionCard } from '../StorageProtectionCard.tsx';
@@ -29,6 +32,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
   const [status, setStatus] = useState<Status | undefined>();
   const { durability, requestDurability, requestingDurability, durabilityRequestFailed } = useRuntime();
   const [checked, setChecked] = useState<'NoUpdate' | 'UpdateWaiting' | undefined>();
+  const wide = useWide();
   useEffect(() => {
     void facade.Workspace.getStatus().then(setStatus);
   }, [facade]);
@@ -48,11 +52,19 @@ export function AboutView({ facade, updates }: AboutViewProps) {
     return `${CHECK_LABELS[name]}: ${check.passed ? 'passed' : `failed (${check.reason})`}${detail}`;
   };
   const capabilities = status.installedCapabilities;
+  // The wide sidebar lists Backup; on narrow screens the bottom bar has no room, so About links to it (P106).
+  const backupRoute = ROUTES.find((route) => route.id === 'backup')!;
+  const backupInstalled = isRouteInstalled(backupRoute, facade.capabilities.operations);
 
   return (
     <article className="about">
       <PageTitle>About</PageTitle>
-      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} requesting={requestingDurability} failed={durabilityRequestFailed} />
+      {!wide && backupInstalled && (
+        <p>
+          <Link to={backupRoute.path}>Backup</Link>
+        </p>
+      )}
+      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} requesting={requestingDurability} failed={durabilityRequestFailed} backupTo={backupInstalled ? backupRoute.path : undefined} />
       <section className="card" aria-labelledby="release-heading">
         <h2 id="release-heading">This release</h2>
         <dl>

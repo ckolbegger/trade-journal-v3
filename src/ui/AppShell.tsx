@@ -15,12 +15,19 @@ import {
   useParams,
 } from "react-router";
 import type { UiFacade } from "../app/compose.ts";
-import type { MigrationBlocked } from "../app/types.ts";
+import type {
+  BackupSafeAction,
+  ExportBackupResult,
+  FileSelectionPort,
+  MigrationBlocked,
+  WorkspaceReplaced,
+} from "../app/types.ts";
+import type { BackupFacade } from "./backup/facade.ts";
 import type {
   ReadinessFailure,
   RuntimeNotWritable,
 } from "../delivery/runtime-not-writable.ts";
-import { isRouteInstalled, ROUTES } from "../app/routes.ts";
+import { isRouteInstalled, ROUTES, type RouteDefinition } from "../app/routes.ts";
 import { toWorkspaceLocal } from "../domain/time/index.ts";
 import { explainFailure, explainMigrationIssue } from "./readiness-copy.ts";
 import {
@@ -39,7 +46,11 @@ import { OnboardingAccount } from "./screens/OnboardingAccount.tsx";
 type Status = Awaited<ReturnType<UiFacade["Workspace"]["getStatus"]>>;
 
 export type RouteId = (typeof ROUTES)[number]["id"];
-export type Screens = Readonly<Record<RouteId, ComponentType>>;
+// The Backup page is optional until the release that serves backup is composed (D8 T8.11): without
+// its screen the shell offers no Backup destination.
+export type Screens = Readonly<Record<Exclude<RouteId, "backup">, ComponentType>> & {
+  readonly backup?: ComponentType;
+};
 
 export interface AppShellProps {
   readonly facade: UiFacade;
@@ -48,18 +59,108 @@ export interface AppShellProps {
   readonly notices?: ReactNode;
   // Retrying re-launches the app, which re-establishes Runtime Readiness.
   readonly onRetry?: () => void;
+  // The backup operations and file selection (D8): Download a copy and Verify on the blocked views.
+  // Absent until the release that serves backup is composed (T8.11).
+  readonly backup?: BackupFacade;
+  readonly selectFile?: FileSelectionPort;
+  // Subscribes to the notice another tab broadcasts after a Restore activates (D8 A136, over the
+  // channel D1 A5 uses); returns the unsubscribe. T8.11 wires the BroadcastChannel to it.
+  readonly onWorkspaceReplaced?: (listener: (message: WorkspaceReplaced) => void) => () => void;
 }
 
 // Wide layout from this viewport width (D1 A7).
 export const WIDE_LAYOUT_MIN_WIDTH = 960;
 
-// A13: until backup exists (D8), Recovery Only explains why another browser is no way out.
+// A143 (replacing D1 A13): Recovery Only explains why another browser is no way out, and what is.
 const SEPARATE_STORAGE =
-  "Another browser has its own separate storage and would start an empty journal. Moving a journal between browsers needs a verified backup and Restore, which this release does not offer yet.";
+  "Another browser has its own separate storage and would start an empty journal. To move this journal, download a backup here and verify it, then restore it in a browser that can save safely.";
+
+// P32: a copy made while this release can't confirm it never claims a backup.
+const UNCONFIRMED_COPY = "This release can't confirm the copy until your journal has been updated.";
+
+type DownloadedBackup = Extract<ExportBackupResult, { kind: "Downloaded" }>;
+
+// Download a copy and Verify on a blocked view (D8 P32). The Downloaded result lives only in this
+// view's state and is what Verify checks the saved file against (A141).
+function BlockedBackupActions({
+  backup,
+  selectFile,
+  actions,
+}: {
+  readonly backup: BackupFacade;
+  readonly selectFile: FileSelectionPort;
+  readonly actions: readonly BackupSafeAction[];
+}) {
+  const [downloaded, setDownloaded] = useState<DownloadedBackup | undefined>();
+  const [message, setMessage] = useState<string | undefined>();
+  const [busy, setBusy] = useState(false);
+  const canDownload = actions.includes("DownloadCopy");
+  const canVerify = actions.includes("VerifyBackup");
+  if (!canDownload && !canVerify) return null;
+
+  const download = () => {
+    setBusy(true);
+    setMessage(undefined);
+    void backup
+      .exportBackup({})
+      .then((result) => {
+        if (result.kind === "Downloaded") setDownloaded(result);
+        else
+          setMessage(
+            result.kind === "NotCompleted"
+              ? `Not completed: ${result.stage}, ${result.reason}`
+              : result.kind,
+          );
+      })
+      .finally(() => setBusy(false));
+  };
+  const verify = () => {
+    if (!downloaded) return;
+    setBusy(true);
+    void selectFile
+      .choose()
+      .then(async (chosen) => {
+        if (chosen.kind !== "Chosen") return;
+        const result = await backup.confirmBackup({
+          file: chosen.file,
+          expectedBinding: downloaded.sourceBinding,
+          expectedFullDigest: downloaded.fullDigest,
+        });
+        setMessage(
+          result.kind === "Completed"
+            ? "Backup complete"
+            : `Not verified: ${result.reason}`,
+        );
+      })
+      .finally(() => setBusy(false));
+  };
+
+  return (
+    <section aria-label="Backup">
+      {downloaded && (
+        <p role="status">
+          Downloaded, not verified yet. This app can't see where your browser saved the file.{" "}
+          <span>{downloaded.fileName}</span>
+        </p>
+      )}
+      {message && <p role="status">{message}</p>}
+      {canDownload && (
+        <button type="button" className="pill secondary" disabled={busy} onClick={download}>
+          Download a copy
+        </button>
+      )}
+      {canVerify && (
+        <button type="button" className="pill secondary" disabled={busy || !downloaded} onClick={verify}>
+          Verify
+        </button>
+      )}
+    </section>
+  );
+}
 
 // Follows the live viewport width; only the navigation's placement changes, never the tree
 // that holds the routed screen, so a resize keeps every entered value.
-function useWide(): boolean {
+export function useWide(): boolean {
   const [wide, setWide] = useState(
     () => window.innerWidth >= WIDE_LAYOUT_MIN_WIDTH,
   );
@@ -71,11 +172,20 @@ function useWide(): boolean {
   return wide;
 }
 
+// The Backup icon follows icons.tsx's conventions (one 24px grid, decorative, stroke follows the text).
+const BackupIcon = () => (
+  <svg className="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <path d="M12 4v11M8 11l4 4 4-4" />
+    <path d="M4 19h16" />
+  </svg>
+);
+
 const NAV_ICONS: Partial<Record<RouteId, ComponentType>> = {
   trades: TradesIcon,
   review: ReviewIcon,
   "new-plan": NewPlanIcon,
   accounts: AccountsIcon,
+  backup: BackupIcon,
   about: AboutIcon,
 };
 
@@ -113,8 +223,17 @@ export function AppShell({
   screens,
   notices,
   onRetry = () => window.location.reload(),
+  backup,
+  selectFile,
+  onWorkspaceReplaced,
 }: AppShellProps) {
   const [status, setStatus] = useState<Status | undefined>();
+  // Another tab restored a backup over this journal: this tab can't save any more (A136).
+  const [replaced, setReplaced] = useState(false);
+  useEffect(
+    () => onWorkspaceReplaced?.(() => setReplaced(true)),
+    [onWorkspaceReplaced],
+  );
   const wide = useWide();
   // A refusal from a mutation during the session, which overrides the launch status.
   const [refusal, setRefusal] = useState<RuntimeNotWritable | undefined>();
@@ -157,8 +276,8 @@ export function AppShell({
         setBlocked(result.kind === "MigrationBlocked" ? result : undefined);
         if (result.kind === "Opened") setStatus(result.status);
         // Any other outcome (readiness changed meanwhile): show what the Workspace now reports.
-        else if (result.kind !== "MigrationBlocked")
-          void facade.Workspace.getStatus().then(setStatus);
+        // A failed conversion too, since the status now names the backup actions it offers (P32).
+        else void facade.Workspace.getStatus().then(setStatus);
       },
       // An unexpected failure: show what the Workspace now reports, never the updating message.
       () => {
@@ -209,6 +328,9 @@ export function AppShell({
   }
   const failedMigration =
     blocked ?? (status.kind === "MigrationBlocked" ? status : undefined);
+  // Only the blocked and failed statuses offer backup actions; a Ready status has none (T8.10).
+  const backupActions: readonly BackupSafeAction[] =
+    ("backupActions" in status ? status.backupActions : undefined) ?? [];
   if (failedMigration) {
     return (
       <main className="gate">
@@ -227,6 +349,9 @@ export function AppShell({
         <button type="button" className="pill primary" onClick={migrate}>
           Retry
         </button>
+        {backup && selectFile && (
+          <BlockedBackupActions backup={backup} selectFile={selectFile} actions={backupActions} />
+        )}
       </main>
     );
   }
@@ -270,6 +395,12 @@ export function AppShell({
         <button type="button" className="pill primary" onClick={onRetry}>
           Retry
         </button>
+        {backup && selectFile && (
+          <>
+            {backupActions.includes("DownloadCopy") && <p>{UNCONFIRMED_COPY}</p>}
+            <BlockedBackupActions backup={backup} selectFile={selectFile} actions={backupActions} />
+          </>
+        )}
       </main>
     );
   }
@@ -300,7 +431,15 @@ export function AppShell({
           requesting={requesting}
           failed={requestFailed}
         />
-        <FirstRun facade={facade} onOpened={setStatus} />
+        <FirstRun
+          facade={facade}
+          onOpened={setStatus}
+          restore={
+            backup && selectFile && status.readiness.outcome === "Writable"
+              ? { facade: backup, selectFile }
+              : undefined
+          }
+        />
       </>
     );
   }
@@ -330,7 +469,7 @@ export function AppShell({
   }
 
   const launchedWritable = status.kind === "Ready";
-  const writable = launchedWritable && !refusal;
+  const writable = launchedWritable && !refusal && !replaced;
   const failedChecks: readonly ReadinessFailure[] =
     refusal?.failedChecks ??
     (status.kind === "RecoveryOnly" ? status.failedChecks : []);
@@ -339,10 +478,14 @@ export function AppShell({
   const routes = ROUTES.filter(
     (route) =>
       isRouteInstalled(route, facade.capabilities.operations) &&
+      (route.id !== "backup" || screens.backup !== undefined) &&
       (launchedWritable || route.readOnly),
   );
   const navigation = routes.filter(
-    (route) => route.navigation && (writable || route.readOnly),
+    (route) =>
+      route.navigation &&
+      (writable || route.readOnly) &&
+      (wide || (route as RouteDefinition).wideNavigationOnly !== true),
   );
   const superseded = failedChecks.some(
     (failure) => failure.reason === "SessionSuperseded",
@@ -401,7 +544,18 @@ export function AppShell({
             </button>
           </section>
         )}
-        {!writable && !superseded && (
+        {replaced && (
+          <section className="banner warning" role="status">
+            <p>
+              This journal was replaced by a Restore in another tab. Reload to
+              continue.
+            </p>
+            <button type="button" className="pill primary" onClick={onRetry}>
+              Reload
+            </button>
+          </section>
+        )}
+        {!writable && !superseded && !replaced && (
           <section
             className="banner warning"
             aria-labelledby="recovery-heading"
@@ -424,7 +578,7 @@ export function AppShell({
         <main className="content">
           <Routes>
             {routes.map((route) => {
-              const Screen = screens[route.id];
+              const Screen = screens[route.id]!;
               // The entry form stays only where it was open when writing stopped; reaching it afterwards,
               // or by a direct link while not Writable, shows why it is unavailable.
               const element =

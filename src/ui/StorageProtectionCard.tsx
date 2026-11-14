@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router';
 import type { Durability } from './runtime.tsx';
 
 export interface StorageProtectionCardProps {
@@ -10,12 +11,14 @@ export interface StorageProtectionCardProps {
   readonly requesting?: boolean;
   // The last request was rejected: say so; the button works again.
   readonly failed?: boolean;
+  // Where the Backup page is, when this release serves it and the screen can link there (D8 A143).
+  readonly backupTo?: string;
 }
 
 // The advisory storage warning (ADR 0009): the explanation, the one explicit request, and its honest
 // result. It never disables a control. About shows it; first run and onboarding, which have no About
 // to link to, show it themselves.
-export function StorageProtectionCard({ protection, durability, onRequest, requesting, failed }: StorageProtectionCardProps) {
+export function StorageProtectionCard({ protection, durability, onRequest, requesting, failed, backupTo }: StorageProtectionCardProps) {
   // When the result arrives, focus moves to its status so the keyboard user is not left on the body.
   const result = useRef<HTMLParagraphElement>(null);
   const seen = useRef(durability);
@@ -37,6 +40,11 @@ export function StorageProtectionCard({ protection, durability, onRequest, reque
               This browser may clear your journal data, for example when the device is low on space. It has not promised
               to keep it.
             </p>
+            {backupTo && (
+              <p>
+                <Link to={backupTo}>Download a backup</Link> and verify it to keep a safe copy.
+              </p>
+            )}
             {durability?.kind === 'NotImproved' && (
               <p role="status" tabIndex={-1} ref={result}>
                 {durability.currentProtection.kind === 'BestEffort'

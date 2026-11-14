@@ -6,7 +6,9 @@ import { Link, MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble, readyStatus, writableReadiness } from '../../tests/support/facade-double.ts';
 import type { UiFacade } from '../app/compose.ts';
+import type { WorkspaceReplaced } from '../app/types.ts';
 import { AppShell, type Screens } from './AppShell.tsx';
+import { createBackupFacadeDouble, createFileSelectionDouble } from './backup/test-support.ts';
 import { PageTitle } from './PageTitle.tsx';
 import { AboutView } from './screens/AboutView.tsx';
 import { createReleaseUpdateController } from './update/controller.ts';
@@ -29,9 +31,26 @@ const screens: Screens = {
   accounts: AccountsStub,
   about: () => <p>About screen</p>,
   start: () => <p>Get started</p>,
+  backup: () => <p>Backup screen</p>,
 };
 
+// The release that serves backup and Restore (D8 T8.11 installs these; the real manifest does not yet).
+const BACKUP_OPERATIONS = ['Workspace.exportBackup', 'Workspace.confirmBackup', 'Workspace.prepareRestore', 'Workspace.applyPreparedRestore'];
+function withBackup(facade: UiFacade): UiFacade {
+  const operations = { ...facade.capabilities.operations, ...Object.fromEntries(BACKUP_OPERATIONS.map((op) => [op, []])) };
+  return { ...facade, capabilities: { ...facade.capabilities, operations } };
+}
+
 afterEach(cleanup);
+
+// The Restore flow is built by another task; here it only records that the first-run screen opened it.
+const restoreFlowProps = vi.hoisted((): { latest: unknown } => ({ latest: undefined }));
+vi.mock('./backup/RestoreFlow.tsx', () => ({
+  RestoreFlow: (props: unknown) => {
+    restoreFlowProps.latest = props;
+    return <section aria-label="Restore flow" />;
+  },
+}));
 
 // A form that submits through the facade and reports the result to the shell.
 function formScreen(facade: UiFacade) {
@@ -105,8 +124,8 @@ describe('readiness gate presentation', () => {
     expect(screen.queryByRole('navigation')).toBeNull();
   });
 
-  it('should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Review, Accounts, About), no New Plan or Add Account control, and the separate-storage explanation (A13)', async () => {
-    const facade = facadeDouble({
+  it('should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Review, Accounts, Backup, About), no New Plan or Add Account control, and the separate-storage explanation (A143)', async () => {
+    const facade = withBackup(facadeDouble({
       status: {
         kind: 'RecoveryOnly',
         observedAt: '2026-10-12T14:05:00Z',
@@ -117,17 +136,17 @@ describe('readiness gate presentation', () => {
         binding: { databaseName: 'tj-ws-1', contentRevision: 3 },
         timeZone: 'America/New_York',
       },
-    });
+    }));
     renderShell(facade, '/accounts');
     expect(await screen.findByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeTruthy();
     expect(screen.getByText(/offline copy is missing or damaged/i)).toBeTruthy();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'About']);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'Backup', 'About']);
     expect(screen.queryByRole('button', { name: 'Add Account' })).toBeNull();
     expect(screen.getByText('Accounts (read only)')).toBeTruthy();
     expect(
       screen.getByText(
-        /another browser has its own separate storage and would start an empty journal\. moving a journal between browsers needs a verified backup and restore, which this release does not offer yet\./i,
+        /another browser has its own separate storage and would start an empty journal\. to move this journal, download a backup here and verify it, then restore it in a browser that can save safely\./i,
       ),
     ).toBeTruthy();
   });
@@ -153,7 +172,7 @@ describe('readiness gate presentation', () => {
   });
 
   it('should switch to Recovery Only when a mutation returns RuntimeNotWritable, keeping the open form\'s entered values on screen', async () => {
-    const facade = facadeDouble();
+    const facade = withBackup(facadeDouble());
     vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({
       kind: 'RuntimeNotWritable',
       runtimeReadiness: 'RecoveryOnly',
@@ -169,7 +188,7 @@ describe('readiness gate presentation', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Underlying').value).toBe('XYZ');
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Confirm Plan' }).disabled).toBe(true);
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'About']);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'Backup', 'About']);
   });
 
   it('should show "Updated in another tab: reload when ready", keeping the open form\'s entered values on screen, when the session is superseded by a version change', async () => {
@@ -479,10 +498,10 @@ describe('responsive navigation', () => {
     const withoutConfirm = Object.fromEntries(
       Object.entries(facade.capabilities.operations).filter(([op]) => op !== 'TradeWorkflows.confirmPlan'),
     );
-    const limited = { ...facade, capabilities: { ...facade.capabilities, operations: withoutConfirm } };
+    const limited = withBackup({ ...facade, capabilities: { ...facade.capabilities, operations: withoutConfirm } });
     renderShell(limited);
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'About']);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'Backup', 'About']);
   });
 });
 
@@ -774,5 +793,236 @@ describe('session-policy coverage', () => {
     renderShell(facadeDouble({ status: readyStatus({ observedAt: '2029-01-01T03:00:00Z' }) }), '/accounts', accounts);
     await screen.findByRole('button', { name: 'Add Account' });
     expect(screen.queryByRole('link', ICON)).toBeNull();
+  });
+});
+
+describe('readiness and protection (A143, A144)', () => {
+  const recoveryOnly = () =>
+    withBackup(
+      facadeDouble({
+        status: {
+          kind: 'RecoveryOnly',
+          observedAt: '2026-10-12T14:05:00Z',
+          installedCapabilities: facadeDouble().capabilities,
+          readiness: writableReadiness,
+          protection: 'Protected',
+          failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+          binding: { databaseName: 'tj-ws-1', contentRevision: 3 },
+          timeZone: 'America/New_York',
+        },
+      }),
+    );
+  const aboutScreen = (facade: UiFacade): Partial<Screens> => ({
+    about: () => <AboutView facade={facade} updates={createReleaseUpdateController({ registration: new FakeRegistration(), container: new FakeContainer(), channel: new ChannelNetwork().open(), reload: () => undefined })} />,
+  });
+  const navLinks = () => Array.from(screen.getByRole('navigation', { name: 'Primary' }).querySelectorAll('a')).map((a) => a.textContent);
+
+  it('should show Backup in the wide sidebar, and a Backup link on About in the narrow layout, both while Writable and in Recovery Only with the new separate-storage explanation (P106)', async () => {
+    const cases = [
+      { make: () => withBackup(facadeDouble()), recovery: false },
+      { make: recoveryOnly, recovery: true },
+    ];
+    for (const { make, recovery } of cases) {
+      // Wide: Backup is a sidebar destination, and About carries no extra link.
+      window.innerWidth = 1280;
+      let facade = make();
+      renderShell(facade, '/about', aboutScreen(facade));
+      await screen.findByRole('region', { name: 'This release' });
+      expect(navLinks()).toContain('Backup');
+      expect(screen.getByRole('link', { name: 'Backup' }).getAttribute('href')).toBe('/backup');
+      expect(within(screen.getByRole('article')).queryByRole('link', { name: 'Backup' })).toBeNull();
+      cleanup();
+      // Narrow: the bottom bar keeps its links, and About links to Backup.
+      window.innerWidth = 390;
+      facade = make();
+      renderShell(facade, '/about', aboutScreen(facade));
+      await screen.findByRole('region', { name: 'This release' });
+      expect(navLinks()).not.toContain('Backup');
+      const link = within(screen.getByRole('article')).getByRole('link', { name: 'Backup' });
+      expect(link.getAttribute('href')).toBe('/backup');
+      if (recovery) {
+        expect(
+          screen.getByText(
+            'Another browser has its own separate storage and would start an empty journal. To move this journal, download a backup here and verify it, then restore it in a browser that can save safely.',
+          ),
+        ).toBeTruthy();
+      }
+      cleanup();
+    }
+    window.innerWidth = 1024;
+  });
+
+  it('should add "Download a backup and verify it to keep a safe copy" with a link to Backup to the not-protected warning', async () => {
+    window.innerWidth = 1280;
+    const facade = withBackup(facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) }));
+    renderShell(facade, '/about', aboutScreen(facade));
+    const warning = await screen.findByRole('region', { name: 'Storage protection' });
+    expect(within(warning).getByText((_, el) => el?.tagName === 'P' && el.textContent === 'Download a backup and verify it to keep a safe copy.')).toBeTruthy();
+    expect(within(warning).getByRole('link').getAttribute('href')).toBe('/backup');
+    cleanup();
+    // A release that does not serve backup has nowhere to link, so it says nothing about it.
+    const without = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    renderShell(without, '/about', aboutScreen(without));
+    const plain = await screen.findByRole('region', { name: 'Storage protection' });
+    expect(within(plain).queryByText(/keep a safe copy/i)).toBeNull();
+    window.innerWidth = 1024;
+  });
+});
+
+describe('blocked views (P32)', () => {
+  const base = { observedAt: '2026-10-12T14:05:00Z', installedCapabilities: facadeDouble().capabilities, protection: 'BestEffort' } as const;
+  const binding = { databaseName: 'tj-ws-1', contentRevision: 7 };
+  const migrationBlocked = {
+    ...base,
+    kind: 'MigrationBlocked',
+    readiness: writableReadiness,
+    stage: 'Validate',
+    issues: [{ code: 'UnknownAccount', tradeId: 'trade-1', accountId: 'account-9' }],
+    fromVersion: 1,
+    toVersion: 2,
+    unchangedData: { databaseName: 'tj-ws-1', contentRevision: 7, counts: { trades: 2 } },
+    backupActions: ['DownloadCopy', 'VerifyBackup'],
+  };
+  const failedReadiness = { ...writableReadiness, outcome: 'RecoveryOnly', failures: [{ check: 'inventory', reason: 'InventoryMissing' }] };
+  const awaitingMigration = {
+    ...base,
+    kind: 'IntegrityBlocked',
+    readiness: failedReadiness,
+    failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+    reason: 'AwaitingMigration',
+    backupActions: ['DownloadCopy'],
+  };
+  const unreadable = {
+    ...base,
+    kind: 'IntegrityBlocked',
+    readiness: failedReadiness,
+    failedChecks: [{ check: 'diagnostic', reason: 'ExistingRootUnreadable' }],
+    root: 'PossibleRoot',
+    backupActions: [],
+  };
+  const downloaded = {
+    kind: 'Downloaded',
+    sourceBinding: binding,
+    fullDigest: 'digest-1',
+    manifestDigest: 'manifest-1',
+    fileName: 'journal-backup.jsonl',
+    counts: { trades: 2 },
+    byteSize: 100,
+  } as const;
+  const renderBlocked = (status: unknown) => {
+    const backup = createBackupFacadeDouble();
+    const files = createFileSelectionDouble();
+    const facade = facadeDouble({ status });
+    render(
+      <MemoryRouter>
+        <AppShell facade={facade} screens={screens} backup={backup.facade} selectFile={files.port} />
+      </MemoryRouter>,
+    );
+    return { backup, files };
+  };
+  const buttons = () => screen.queryAllByRole('button').map((b) => b.textContent);
+
+  it('should offer Download a copy and Verify in Migration Blocked, Download a copy with the explanation in AwaitingMigration, and neither for an unreadable root', async () => {
+    // Migration Blocked: Download a copy exports through the facade; Verify checks the saved file against that result alone.
+    const { backup, files } = renderBlocked(migrationBlocked);
+    await screen.findByRole('heading', { name: /your journal could not be converted to this release/i });
+    expect(buttons()).toEqual(['Retry', 'Download a copy', 'Verify']);
+    backup.respond('exportBackup', downloaded);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    expect(await screen.findByText('journal-backup.jsonl')).toBeTruthy();
+    expect(backup.calls.exportBackup).toHaveLength(1);
+    expect(screen.queryByText('Backup complete')).toBeNull();
+    const saved = new File(['x'], 'journal-backup.jsonl');
+    files.choose(saved);
+    backup.respond('confirmBackup', {
+      kind: 'Completed',
+      receipt: {
+        receiptId: 'r1',
+        sourceBinding: binding,
+        fullDigest: 'digest-1',
+        manifestDigest: 'manifest-1',
+        evidence: { fileName: 'journal-backup.jsonl', byteSize: 100, compressed: false, lineCount: 3 },
+        completedAt: '2026-10-12T14:06:00Z',
+      },
+    });
+    await user.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(await screen.findByText('Backup complete')).toBeTruthy();
+    expect(backup.calls.confirmBackup).toEqual([{ file: saved, expectedBinding: binding, expectedFullDigest: 'digest-1' }]);
+    cleanup();
+
+    // AwaitingMigration: a copy can be downloaded, never verified, and the page says why.
+    const awaiting = renderBlocked(awaitingMigration);
+    await screen.findByRole('heading', { name: /this release must convert your journal before you can use it/i });
+    expect(buttons()).toEqual(['Retry', 'Download a copy']);
+    expect(screen.getByText("This release can't confirm the copy until your journal has been updated.")).toBeTruthy();
+    expect(awaiting.backup.calls.exportBackup).toHaveLength(0);
+    cleanup();
+
+    // An unreadable root offers neither.
+    renderBlocked(unreadable);
+    await screen.findByRole('heading', { name: /your journal data may already exist here/i });
+    expect(buttons()).toEqual(['Retry']);
+  });
+});
+
+describe("another tab's Restore (A136)", () => {
+  it('should show This journal was replaced by a Restore in another tab on WorkspaceReplaced, keeping an open forms values on screen', async () => {
+    const facade = facadeDouble();
+    let notify: (message: WorkspaceReplaced) => void = () => undefined;
+    const onReload = vi.fn();
+    render(
+      <MemoryRouter initialEntries={['/plans/new']}>
+        <AppShell
+          facade={facade}
+          screens={{ ...screens, 'new-plan': formScreen(facade) }}
+          onRetry={onReload}
+          onWorkspaceReplaced={(listener) => {
+            notify = listener;
+            return () => undefined;
+          }}
+        />
+      </MemoryRouter>,
+    );
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText('Underlying'), 'XYZ');
+    expect(screen.queryByText(/replaced by a restore in another tab/i)).toBeNull();
+    act(() => notify({ kind: 'WorkspaceReplaced', databaseName: 'tj-ws-2' }));
+    expect(screen.getByText('This journal was replaced by a Restore in another tab. Reload to continue.')).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Underlying').value).toBe('XYZ');
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Confirm Plan' }).disabled).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(onReload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('first run (P33)', () => {
+  const firstRun = (overrides: Record<string, unknown> = {}) =>
+    readyStatus({ kind: 'InitializationRequired', protection: 'Protected', ...overrides });
+
+  it('should offer Restore from a backup beside Start my journal only while Writable, opening the Restore flow with target NoWorkspace', async () => {
+    const backup = createBackupFacadeDouble();
+    const files = createFileSelectionDouble();
+    const renderFirstRun = (status: unknown) =>
+      render(
+        <MemoryRouter>
+          <AppShell facade={facadeDouble({ status })} screens={screens} backup={backup.facade} selectFile={files.port} />
+        </MemoryRouter>,
+      );
+    renderFirstRun(firstRun());
+    const start = await screen.findByRole('button', { name: 'Start my journal' });
+    const restore = screen.getByRole('button', { name: 'Restore from a backup' });
+    expect(start.parentElement).toBe(restore.parentElement);
+    expect(screen.queryByRole('region', { name: 'Restore flow' })).toBeNull();
+    await userEvent.setup().click(restore);
+    expect(screen.getByRole('region', { name: 'Restore flow' })).toBeTruthy();
+    // Nothing is chosen for the flow: with no Workspace, its token binds the target NoWorkspace (A135).
+    expect(restoreFlowProps.latest).toEqual({ facade: backup.facade, selectFile: files.port });
+    cleanup();
+
+    // Not Writable: the journal can be started nowhere, and Restore is not offered either.
+    renderFirstRun(firstRun({ readiness: { ...writableReadiness, outcome: 'RecoveryOnly' } }));
+    await screen.findByRole('button', { name: 'Start my journal' });
+    expect(screen.queryByRole('button', { name: 'Restore from a backup' })).toBeNull();
   });
 });
