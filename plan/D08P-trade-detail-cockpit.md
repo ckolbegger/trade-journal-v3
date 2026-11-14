@@ -865,7 +865,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.22 | 2 | — | Not started | |
 | T8P.27 | 2 | — | Not started | |
 | T8P.23 | 2 | — | Not started | |
-| T8P.24 | 2 | — | Not started | |
+| T8P.24 | 2 | — | In progress from `46bb44f3` (lane NI) | |
 | T8P.25 | 2 | — | Not started | |
 | T8P.26 | 2 | — | Not started | |
 
