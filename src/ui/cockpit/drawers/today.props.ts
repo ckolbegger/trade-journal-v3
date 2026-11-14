@@ -1,5 +1,7 @@
 import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
+import type { UnavailableReason } from '../../../domain/calculation-result/index.ts';
 import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
+import { text, unavailableWords } from '../../calculation-words.ts';
 import type { Rational } from '../../../domain/values/index.ts';
 import { decimalMoney, decimalUnderlyingPrice, localTime, money, quantity, rMultiple, shortDate, underlyingPrice } from '../../format.ts';
 import { toWorkspaceLocal } from '../../../domain/time/index.ts';
@@ -227,14 +229,58 @@ function noMarksTextOf(view: OpenTradeDetail, timeZone: string): string | undefi
   return `No Marks yet. This Trade opened${when}. Its first Marks, and every figure that needs them, are due once the ${shortDate(firstMarksDue)} session ends.`;
 }
 
+// The Mark that valued the figures at the Expected Mark Date, in the words the Valuation section gave it (revision 96).
+// An Instrument whose current Mark the comparison already shows, with its provenance, is not shown again.
+function currentMarksOf({ timeZone, replay }: TodayInput, open: OpenTradeDetail): TodayDrawerProps['currentMarks'] {
+  const { markResolution, evaluation, expectedMarkDate } = open.current;
+  const { instrument } = evaluation.observation;
+  const now = comparisonOf(replay)?.now;
+  const compared = (of: Instrument) => markOf(now, of)?.resolution.kind === 'Available';
+  const mark = compared(instrument) ? undefined : open.current.mark;
+  const underlyingMark = compared({ kind: 'Stock', symbol: open.plan.underlying }) ? undefined : open.current.underlyingMark;
+  const date = evaluation.valuationDate;
+  const sentence = (reason: UnavailableReason) => text(unavailableWords(reason, 'sentence', timeZone));
+  const stale = evaluation.staleContext;
+  const rows = [
+    ...(expectedMarkDate ? [{ label: 'Expected Mark Date', value: shortDate(expectedMarkDate), plain: true }] : []),
+    ...(mark
+      ? [
+          { label: 'Mark', value: decimalMoney(mark.price) },
+          { label: 'Source', value: mark.source, plain: true },
+          { label: 'Saved', value: localTime(mark.savedAt, timeZone), plain: true },
+        ]
+      : []),
+    ...(underlyingMark ? [{ label: 'Underlying Mark', value: `${decimalMoney(underlyingMark.price)} · ${underlyingMark.source}` }] : []),
+  ];
+  // Before any Marks the "No Marks yet" line says when the first are due (revision 90), so nothing is missing yet.
+  const missing = markResolution?.kind === 'Missing' && open.current.firstMarksDue === undefined;
+  const hasLine = missing || markResolution?.kind === 'AcknowledgedUnavailable' || stale !== undefined;
+  // A card with nothing to show is not drawn.
+  if (rows.length === 0 && !hasLine) return undefined;
+  return {
+    ...(missing && {
+      missing: {
+        text: sentence({ reason: 'MarkMissing', instrument, date }),
+        to: `/review?trade=${encodeURIComponent(open.tradeId)}&instrument=${encodeURIComponent(instrument.symbol)}`,
+      },
+    }),
+    ...(markResolution?.kind === 'AcknowledgedUnavailable' && { acknowledged: `${sentence({ reason: 'AcknowledgedUnavailable', instrument, date })}: your acknowledgment, not a price` }),
+    ...(stale && { stale: `Stale context: ${decimalMoney(stale.price)} from ${shortDate(stale.tradingDate)} close (stale, not used in any current figure)` }),
+    rows,
+    ...(mark?.correctionReason !== undefined && { correction: mark.correctionReason }),
+  };
+}
+
 export function todayProps(input: TodayInput): TodayDrawerProps {
   const { view } = input;
   if (!('current' in view) || 'terminalDisposition' in view) return { tracks: [] };
   const optionTrade = view.plan.legs[0]?.instrument.kind === 'Option';
   const marks = marksOf(input, optionTrade);
   const noMarksText = noMarksTextOf(view, input.timeZone);
+  const currentMarks = currentMarksOf(input, view);
   return {
     ...(marks && { marks }),
+    ...(currentMarks && { currentMarks }),
     ...(noMarksText && { noMarksText }),
     tracksHeading: optionTrade ? 'Where the prices sit' : 'Where the price sits',
     tracks: tracksOf(input, view, optionTrade),

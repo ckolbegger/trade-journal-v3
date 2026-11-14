@@ -3,6 +3,7 @@
 // (A216: only this file and the adapter may import the view types). The replay is a double built here, since `replayTrade` arrives in T8P.22.
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { execution, openDetailAt, PC1, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
@@ -61,7 +62,9 @@ const parts = (track: HTMLElement, selector: string) => [...track.querySelectorA
 // Where a zone ends, in percent of the track: its left edge plus its width.
 const edge = (zone: HTMLElement) => Math.round(Number.parseFloat(zone.style.left) + Number.parseFloat(zone.style.width));
 
-const drawer = (view: OpenTradeDetail, replay?: TodayReplay) => render(createElement(TodayDrawer, { view, timeZone: ZONE, ...(replay && { replay }) }));
+// In a router, since a missing Mark's line links to the Review (T8P.31, revision 96).
+const drawer = (view: OpenTradeDetail, replay?: TodayReplay) =>
+  render(createElement(MemoryRouter, null, createElement(TodayDrawer, { view, timeZone: ZONE, ...(replay && { replay }) })));
 
 describe('Today drawer (W8)', () => {
   it('should show "Marks: Thu Oct 15 against Wed Oct 14" with each Mark, its change and its provenance, Corrected with its reason', () => {

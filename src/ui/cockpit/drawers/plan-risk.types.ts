@@ -14,12 +14,16 @@ export interface PlanRiskRow {
 export interface PlanRiskGroup {
   // The heading's id stem ("plan" gives `plan-heading`).
   readonly id: string;
-  readonly heading: string;
+  // Absent for the card of each condition's Risk to stop and Reward to target, which has no words of its own (revision 96).
+  readonly heading?: string;
   readonly rows: readonly PlanRiskRow[];
   // A sentence standing where the rows would be.
   readonly note?: string;
 }
 
 export interface PlanRiskDrawerProps {
+  // A Planned Detail's Trade Summary text ("Long 100 shares @ $50.00"), unlabeled as the Summary card showed it. An Open Detail has it in
+  // Position and a Closed one in Position too.
+  readonly tradeSummary?: string;
   readonly groups: readonly PlanRiskGroup[];
 }

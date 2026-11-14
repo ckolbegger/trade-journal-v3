@@ -1162,7 +1162,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
           return { text: el.textContent ?? '', left: Math.round(box.left), top: Math.round(box.top), width: box.width };
         }),
       );
-    for (const [name, count] of [['Plan Baseline', 3], ['Entry Quality', 7]] as const) {
+    for (const [name, count] of [['Plan Baseline', 3], ['Entry Quality', 8]] as const) {
       await page.setViewportSize({ width: 1280, height: 900 });
       await expectLayout(page, 1280);
       const wide = await rowsOf(name);

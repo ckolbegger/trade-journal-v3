@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { planRiskProps, type PlanRiskSource } from './plan-risk.props.ts';
 import type { PlanRiskDrawerProps, PlanRiskGroup, PlanRiskRow } from './plan-risk.types.ts';
 import { WithSecondLine } from '../../SecondLine.tsx';
+import { TradeText } from '../../TradeText.tsx';
 
 // A row's value: one line per condition, an amount with its second line, or the plain text.
 function valueContent({ value, second }: PlanRiskRow): ReactNode {
@@ -23,8 +24,8 @@ function Row({ row }: { readonly row: PlanRiskRow }) {
 
 function Group({ group }: { readonly group: PlanRiskGroup }) {
   return (
-    <section className="card" aria-labelledby={`${group.id}-heading`}>
-      <h2 id={`${group.id}-heading`}>{group.heading}</h2>
+    <section className="card" {...(group.heading !== undefined && { 'aria-labelledby': `${group.id}-heading` })}>
+      {group.heading !== undefined && <h2 id={`${group.id}-heading`}>{group.heading}</h2>}
       {group.note !== undefined && <p>{group.note}</p>}
       {group.rows.length > 0 && (
         <dl className="figure-grid">
@@ -37,8 +38,13 @@ function Group({ group }: { readonly group: PlanRiskGroup }) {
   );
 }
 
-export const PlanRiskPanel = ({ groups }: PlanRiskDrawerProps) => (
+export const PlanRiskPanel = ({ tradeSummary, groups }: PlanRiskDrawerProps) => (
   <>
+    {tradeSummary && (
+      <p className="summary-text number">
+        <TradeText text={tradeSummary} />
+      </p>
+    )}
     {groups.map((group) => (
       <Group key={group.id} group={group} />
     ))}

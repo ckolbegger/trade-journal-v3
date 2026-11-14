@@ -11,6 +11,8 @@ export interface IdentityCardProps {
   readonly symbol: string;
   // "<Strategy>, <Lifecycle>": "Long Call, Open".
   readonly badge: string;
+  // While a recorded Deviation is Active: the "Deviation active" badge beside the lifecycle badge (revision 96).
+  readonly deviationActive?: boolean;
   // In order: "Strike 150", "Expires Fri 18 Dec 2026 (36 days)" or "Expired Fri 20 Nov 2026", then the account.
   // A stock Trade has no strike or expiration line (A221).
   readonly lines: readonly string[];

@@ -2,7 +2,7 @@
 import { createElement } from 'react';
 import type { TradeDetailView } from '../../../app/types.ts';
 import { calculation, signed, unavailableLabel } from '../../figures.ts';
-import { localTime, money, quantity, tradeSummary } from '../../format.ts';
+import { localTime, money, netCost, quantity, tradeSummary } from '../../format.ts';
 import { LotMatchesTable } from '../../screens/LotMatchesTable.tsx';
 import { ExecutionsSection, outcomesOnly, SettlementSection } from '../../screens/trade-detail/Position.tsx';
 import { ClosedResultSection } from '../../screens/trade-detail/Result.tsx';
@@ -25,12 +25,13 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
   const { fees, feeReconciliation } = view;
   const due = 'settlement' in view ? view.settlement[0] : undefined;
   return {
+    ...(view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
     ...(closed
       ? { result: createElement(ClosedResultSection, { view }) }
       : {
-          ...(view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
           summary: [
             { label: 'Position', value: view.positions.map(positionText).join(', ') },
+            ...(view.netCost.kind === 'Value' ? [{ label: 'Net cost', value: netCost(view.netCost.value) }] : []),
             { label: 'Opening fees', value: money(fees.incurredOpening) },
             { label: 'Last activity', value: localTime(view.lastActivity, timeZone), plain: true },
           ],

@@ -35,6 +35,7 @@ export function identityProps(view: TradeDetailView, writable: boolean): Identit
   return {
     symbol: view.plan.underlying,
     badge: `${view.labels.strategy}, ${view.lifecycle.stored}`,
+    ...('deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && { deviationActive: true }),
     lines,
     actions: writable ? actionsOf(view) : [],
     backTo: view.lifecycle.stored === 'Planned' ? '/?lifecycle=Planned' : '/',

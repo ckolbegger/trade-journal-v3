@@ -3,10 +3,10 @@
 import type { TradeDetailView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
 import { calculation } from '../../figures.ts';
-import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, quantity, ratio, rMultiple } from '../../format.ts';
+import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, quantity, ratio, rMultiple, tradeSummary } from '../../format.ts';
 import { instrumentLabel } from '../../calculation-words.ts';
 import { conditionDirection, exerciseIntentText } from '../../screens/option-words.ts';
-import { legText } from '../../screens/trade-detail/words.ts';
+import { legText, measureText } from '../../screens/trade-detail/words.ts';
 import type { PlanRiskDrawerProps, PlanRiskGroup, PlanRiskRow } from './plan-risk.types.ts';
 
 // What the shell hands the drawer: the Detail's view and the Workspace zone.
@@ -45,6 +45,19 @@ function planGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup {
   return { id: 'plan', heading: 'Plan', rows };
 }
 
+// Each condition's Risk to stop or Reward to target, one line per condition in Plan order (the Risk and reward section's Distance column).
+// The rail's card keeps only the nearest (A207). A condition with no reading shows "—", as the table did.
+function conditionFiguresGroup(view: TradeDetailView): PlanRiskGroup | undefined {
+  if (!('current' in view) || 'terminalDisposition' in view) return undefined;
+  const { conditions } = view.current.evaluation;
+  const linesOf = (role: 'Stop' | 'Target') => conditions.filter((c) => c.role === role).map((c) => (c.result.kind === 'Value' ? measureText(c.result.value.distance) : '—'));
+  const rows = [
+    { label: 'Risk to stop', value: linesOf('Stop') },
+    { label: 'Reward to target', value: linesOf('Target') },
+  ].filter((row) => row.value.length > 0);
+  return rows.length > 0 ? { id: 'condition-figures', rows } : undefined;
+}
+
 function baselineGroup(baseline: { readonly oneR: Rational; readonly originalPlannedReward: Rational; readonly rewardRiskRatio: Rational }): PlanRiskGroup {
   return {
     id: 'baseline',
@@ -63,13 +76,16 @@ function entryQualityGroup(view: TradeDetailView, timeZone: string): PlanRiskGro
   const planned = view.plan.legs[0]?.quantity ?? '';
   if (!('positionChanges' in view)) return { ...base, rows: [], note: `Entry not yet resolved: ${quantity(Rational.of(0n))} of ${planned} entered` };
   const quality = view.entryQuality;
-  if (quality.kind !== 'Value') return { ...base, rows: [], note: `Entry not yet resolved: ${quantity(view.heldQuantity)} of ${planned} entered` };
+  // The Summary card's Entry status, "Entering" or "Resolved" (revision 96).
+  const entry: PlanRiskRow = { label: 'Entry', value: view.entryStatus, plain: true };
+  if (quality.kind !== 'Value') return { ...base, rows: [entry], note: `Entry not yet resolved: ${quantity(view.heldQuantity)} of ${planned} entered` };
   const resolution = view.entryResolution;
   const resolvedAt = resolution.kind === 'Resolved' ? view.positionChanges.find((c) => c.factId === resolution.positionChangeId) : undefined;
   const value = quality.value;
   return {
     ...base,
     rows: [
+      entry,
       { label: 'Resolved at', value: resolvedAt ? `Position Change at ${localTime(resolvedAt.economicTime, timeZone)}` : '', plain: true },
       { label: 'Average entry', value: calculation(value.averageEntry, money) },
       { label: 'Actual initial risk', value: calculation(value.actualInitialRisk, money), second: calculation(value.riskInPlanR, rMultiple) },
@@ -82,9 +98,13 @@ function entryQualityGroup(view: TradeDetailView, timeZone: string): PlanRiskGro
 }
 
 export function planRiskProps({ view, timeZone }: PlanRiskSource): PlanRiskDrawerProps {
+  const figures = conditionFiguresGroup(view);
   return {
+    // Only a Planned Detail: the others have it in Position.
+    ...(!('positionChanges' in view) && 'summary' in view && view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
     groups: [
       planGroup(view, timeZone),
+      ...(figures ? [figures] : []),
       ...('baseline' in view ? [baselineGroup(view.baseline)] : []),
       // An incoherent Detail has no derived figures, so no Entry Quality.
       ...('baseline' in view ? [entryQualityGroup(view, timeZone)] : []),

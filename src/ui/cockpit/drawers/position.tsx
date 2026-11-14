@@ -8,17 +8,21 @@ import { positionProps } from './position.props.ts';
 import type { PositionDrawerProps } from './position.types.ts';
 
 export function PositionPanel({ tradeSummary, summary, openLots, figures, result, lotMatches, feeReconciliation, executions, settlement }: PositionDrawerProps) {
+  const summaryLine = tradeSummary && (
+    <p className="summary-text number">
+      <TradeText text={tradeSummary} />
+    </p>
+  );
+  const positionCard = summary || openLots || figures;
   return (
     <>
+      {/* A Closed Detail has no Position card to lead with it. */}
+      {!positionCard && summaryLine}
       {result}
-      {(summary || openLots || figures) && (
+      {positionCard && (
         <section className="card" aria-labelledby="position-heading">
           <h2 id="position-heading">Position</h2>
-          {tradeSummary && (
-            <p className="summary-text number">
-              <TradeText text={tradeSummary} />
-            </p>
-          )}
+          {summaryLine}
           {summary && (
             <dl className="figure-grid">
               {summary.map(({ label, value, plain }) => (

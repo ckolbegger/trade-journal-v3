@@ -13,6 +13,21 @@ export interface MarkCell {
   readonly correction?: string;
 }
 
+// The Mark that valued the figures at the Expected Mark Date, in the words the Valuation section gave it (revision 96). The card has no heading.
+export interface CurrentMarks {
+  // "Mark missing for XYZ on Tue Oct 13", a link to the Review's Marks family for this Trade and Instrument.
+  readonly missing?: { readonly text: string; readonly to: string };
+  // "Mark acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price".
+  readonly acknowledged?: string;
+  // "Stale context: $51.20 from Mon Oct 12 close (stale, not used in any current figure)".
+  readonly stale?: string;
+  // "Mark", "Source", "Saved": the Mark with its provenance, left out where the comparison already shows it.
+  // `plain` is a text value; the others are figures.
+  readonly rows: readonly (Row & { readonly plain?: boolean })[];
+  // The reason when the effective revision is a Correction; the card then shows "Corrected" beside it.
+  readonly correction?: string;
+}
+
 export interface TodayDrawerProps {
   // The comparison, absent before any Marks and when there is no earlier session to compare with.
   readonly marks?: {
@@ -31,6 +46,7 @@ export interface TodayDrawerProps {
     // "Wed Oct 14 has no Marks, so Thu Oct 15 is compared with Tue Oct 13."
     readonly note?: string;
   };
+  readonly currentMarks?: CurrentMarks;
   // "No Marks yet. This Trade opened today at 10:20 am. ..."
   readonly noMarksText?: string;
   // "Where the price sits" or "Where the prices sit".

@@ -22,10 +22,11 @@ describe('Plan and Risk drawer and footer (P96)', () => {
     expect(valueOf(baseline, 'Original reward')).toBe('$600.00');
     const quality = screen.getByRole('region', { name: 'Entry Quality' });
     expect(valueOf(quality, 'Average entry')).toBe('$50.18');
-    // Each Plan figure once, and none of the Summary card's own figures (Net cost, Quantity, Entry, Opening fees, a bare 1R).
+    // Each Plan figure once, and none of the Summary card's own figures (Net cost, Quantity, Opening fees, a bare 1R). The Entry status is one
+    // now, in Entry Quality (T8P.31, revision 96).
     const terms = Array.from(container.querySelectorAll('dt')).map((term) => term.textContent);
     for (const once of ['Intended entry', 'Stop', 'Target', '1R (original risk)', 'Original reward']) expect(terms.filter((term) => term === once)).toHaveLength(1);
-    for (const summaryOnly of ['Net cost', 'Quantity', 'Entry', 'Opening fees', '1R']) expect(terms).not.toContain(summaryOnly);
+    for (const summaryOnly of ['Net cost', 'Quantity', 'Opening fees', '1R']) expect(terms).not.toContain(summaryOnly);
     expect(screen.queryByRole('region', { name: 'Summary', hidden: true })).toBeNull();
   });
 
