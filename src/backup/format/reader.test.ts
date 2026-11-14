@@ -100,4 +100,26 @@ describe('readArtifact', () => {
     const notJson = await failure(new Blob(['not json\n']));
     expect((notJson as ArtifactReadError).code).toBe('Corrupt');
   });
+
+  it('should report Corrupt when the gzip trailer is damaged or content follows the manifest line', async () => {
+    const { gz, plain } = build();
+
+    const badCrc = gz.slice();
+    badCrc[badCrc.length - 8] = ~badCrc[badCrc.length - 8]! & 0xff;
+    const crc = await failure(new Blob([badCrc]));
+    expect(crc).toBeInstanceOf(ArtifactReadError);
+    expect((crc as ArtifactReadError).code).toBe('Corrupt');
+
+    const badLength = gz.slice();
+    badLength[badLength.length - 1] = ~badLength[badLength.length - 1]! & 0xff;
+    const length = await failure(new Blob([badLength]));
+    expect((length as ArtifactReadError).code).toBe('Corrupt');
+
+    const extra = await failure(new Blob([plain, new TextEncoder().encode('{"r":{},"s":"a","t":"x"}\n')]));
+    expect(extra).toBeInstanceOf(ArtifactReadError);
+    expect((extra as ArtifactReadError).code).toBe('Corrupt');
+
+    const extraGzip = await failure(new Blob([gzipSync(new Uint8Array([...plain, ...new TextEncoder().encode('more\n')]))]));
+    expect((extraGzip as ArtifactReadError).code).toBe('Corrupt');
+  });
 });
