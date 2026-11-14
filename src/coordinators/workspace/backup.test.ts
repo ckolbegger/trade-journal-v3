@@ -394,6 +394,29 @@ describe('Not Verified', () => {
   });
 });
 
+describe('Not Verified, DifferentArtifact one comparison at a time (A130)', () => {
+  it('should return DifferentArtifact when only the full digest differs, and when only the source binding differs', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const offered = testHost.downloads.offered[0]!;
+    const file = () => new File([offered.bytes as BlobPart], offered.fileName);
+    const different = { kind: 'NotVerified', reason: 'DifferentArtifact' };
+
+    // Control: the genuine expectations are Completed.
+    expect((await workspace.confirmBackup({ file: file(), expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).kind).toBe('Completed');
+
+    // Only the expected full digest differs; the binding matches.
+    expect(await workspace.confirmBackup({ file: file(), expectedBinding: first.sourceBinding, expectedFullDigest: 'sha256:' + '0'.repeat(64) })).toEqual(different);
+
+    // Only the expected database name differs.
+    expect(await workspace.confirmBackup({ file: file(), expectedBinding: { ...first.sourceBinding, databaseName: first.sourceBinding.databaseName + '-other' }, expectedFullDigest: first.fullDigest })).toEqual(different);
+
+    // Only the expected content revision differs.
+    expect(await workspace.confirmBackup({ file: file(), expectedBinding: { ...first.sourceBinding, contentRevision: first.sourceBinding.contentRevision + 1 }, expectedFullDigest: first.fullDigest })).toEqual(different);
+  });
+});
+
 describe('Not Verified, section ends (A123, A130)', () => {
   it('should return IncompleteOrCorrupt when a section ends twice and another never ends', async () => {
     const { workspace, testHost } = await w7Stack();
