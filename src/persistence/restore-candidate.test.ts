@@ -107,6 +107,19 @@ describe('Restore candidates (A138)', () => {
     expect(await databaseNames()).toEqual(['tj-root', later.databaseName]);
   });
 
+  it('should keep the Restore entries when a migration candidate is created', async () => {
+    const p = persistence('r');
+    const restore = await p.createRestoreCandidate();
+    if (restore.kind === 'RuntimeNotWritable') throw new Error('not writable');
+
+    const migration = await p.createCandidate();
+
+    expect((await restoreEntries()).map((e) => e.databaseName)).toEqual([restore.databaseName]);
+    const later = await p.createRestoreCandidate();
+    if (later.kind === 'RuntimeNotWritable') throw new Error('not writable');
+    expect(await databaseNames()).toEqual(['tj-root', migration.databaseName, later.databaseName].sort());
+  });
+
   it('should refuse to create a candidate outside Writable with RuntimeNotWritable, creating no database', async () => {
     const refusal: RuntimeNotWritable = {
       kind: 'RuntimeNotWritable',

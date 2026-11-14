@@ -475,7 +475,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
       // Listed first, so a candidate interrupted at any later point is known and cleaned up.
       await inRoot(async (store) => {
-        await store.put({ key: CANDIDATES_KEY, databaseNames: [...(await listed(store, CANDIDATES_KEY)), databaseName] });
+        await putNames(store, CANDIDATES_KEY, [...(await listed(store, CANDIDATES_KEY)), databaseName]);
       });
       const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace(deps.sessionPolicy));
       candidate.close();
