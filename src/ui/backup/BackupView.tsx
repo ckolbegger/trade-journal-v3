@@ -62,9 +62,10 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
   };
 
   const verify = async (expected: Downloaded) => {
-    const chosen = await selectFile.choose();
-    if (chosen.kind === 'Cancelled') return;
     const forDownload = downloadCount.current;
+    const chosen = await selectFile.choose();
+    // A file chosen for an earlier download is not checked against this one.
+    if (chosen.kind === 'Cancelled' || forDownload !== downloadCount.current) return;
     setChecking('Starting');
     setOutcome(undefined);
     // A file the check could not even read is the Unreadable case.

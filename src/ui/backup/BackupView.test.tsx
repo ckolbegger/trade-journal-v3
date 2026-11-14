@@ -198,6 +198,27 @@ describe('verify', () => {
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Verify backup' }).disabled).toBe(false);
   });
 
+  it('should drop a verification whose file was chosen for an earlier download', async () => {
+    let choose: (chosen: { kind: 'Chosen'; file: File }) => void = () => undefined;
+    const open = new Promise<{ kind: 'Chosen'; file: File }>((resolve) => (choose = resolve));
+    const ctx = setup({ selectFile: { choose: () => open } });
+    const { facade, user } = ctx;
+    await downloadFirst(ctx);
+    facade.respond('confirmBackup', { kind: 'Completed', receipt: RECEIPT });
+    // The picker opens for the first download and stays open.
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    facade.respond('exportBackup', { ...DOWNLOADED, fileName: 'second.tjbackup.gz' });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    expect(await screen.findByText('second.tjbackup.gz')).toBeTruthy();
+    await act(() => {
+      choose({ kind: 'Chosen', file: new File(['x'], 'chosen.gz') });
+      return Promise.resolve();
+    });
+    expect(facade.calls.confirmBackup).toHaveLength(0);
+    expect(screen.queryByText(/Checking the file/)).toBeNull();
+    expect(screen.queryByText(/Backup complete/)).toBeNull();
+  });
+
   it('should forget the Downloaded result when the page is left, so Verify backup is offered again only after a new download', async () => {
     const ctx = setup();
     await downloadFirst(ctx);
