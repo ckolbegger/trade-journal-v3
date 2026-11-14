@@ -7,7 +7,7 @@ import { exportSnapshot as exportJournal } from '../../modules/journal/index.ts'
 import { exportSnapshot as exportMarketData } from '../../modules/market-data/index.ts';
 import { exportSnapshot as exportTrades } from '../../modules/trade-record/index.ts';
 import type { ExportBatch, ExportLayout, ExportReadResult, Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
-import type { ProgressCallback } from './backup-types.ts';
+import type { FailureDetail, ProgressCallback } from './backup-types.ts';
 
 export const BACKUP_FORMAT_VERSION = 1;
 
@@ -39,7 +39,14 @@ export type ExportRun =
     }
   | { readonly kind: 'Conflict'; readonly currentBinding: WorkspaceSnapshotBinding }
   // The snapshot could not be read, or the stored schema version is not the layout's.
-  | { readonly kind: 'Failed'; readonly reason: 'ReadFailed' };
+  // `detail` is plain data, so a worker can post it: the caught error, or the read result's failing store.
+  | { readonly kind: 'Failed'; readonly reason: 'ReadFailed'; readonly detail: FailureDetail };
+
+// The detail of a caught error: its own name, message and stack, never a record body.
+export function describeError(stage: string, error: unknown, context?: FailureDetail['context']): FailureDetail {
+  const base = error instanceof Error ? { name: error.name, message: error.message, ...(error.stack === undefined ? {} : { stack: error.stack }) } : { name: 'NonError', message: String(error) };
+  return { stage, ...base, ...(context ? { context } : {}) };
+}
 
 // The seam the coordinator runs an export through: a worker in the browser, `runExport` in Node.
 export interface ExportPort {
@@ -94,11 +101,23 @@ function project(batch: ExportBatch): SectionBatch | undefined {
 // the read ends, because the header needs counts that arrive with the first batch's transaction.
 export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<ExportRun> {
   const batches: SectionBatch[] = [];
+  let rejection: FailureDetail | undefined;
   const result = await read(job.databaseName, job.layout, (batch) => {
     const projected = project(batch);
     if (projected) batches.push(projected);
-  }).catch((): ExportReadResult => ({ kind: 'ReadFailed', store: 'meta' }));
-  if (result.kind !== 'Read') return { kind: 'Failed', reason: 'ReadFailed' };
+  }).catch((error: unknown): ExportReadResult => {
+    rejection = describeError('Read', error);
+    return { kind: 'ReadFailed', store: 'meta' };
+  });
+  if (result.kind !== 'Read') {
+    const detail = rejection ?? {
+      stage: 'Read',
+      name: result.kind,
+      message: result.kind === 'ReadFailed' ? `Reading the ${result.store} store failed` : `The snapshot could not be read (${result.kind})`,
+      ...(result.kind === 'ReadFailed' ? { context: { store: result.store } } : {}),
+    };
+    return { kind: 'Failed', reason: 'ReadFailed', detail };
+  }
   const expected = job.expectedBinding;
   if (expected && (expected.databaseName !== result.binding.databaseName || expected.contentRevision !== result.binding.contentRevision)) {
     return { kind: 'Conflict', currentBinding: result.binding };
@@ -106,8 +125,8 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
   // A snapshot that was read but cannot be written into an artifact is a failed read, not a rejection.
   try {
     return buildArtifact(result, batches, job);
-  } catch {
-    return { kind: 'Failed', reason: 'ReadFailed' };
+  } catch (error) {
+    return { kind: 'Failed', reason: 'ReadFailed', detail: describeError('Build', error) };
   }
 }
 

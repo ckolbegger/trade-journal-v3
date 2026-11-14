@@ -35,6 +35,18 @@ export interface RestoreCounts {
   readonly versions: Readonly<Record<string, number>>;
 }
 
+// The technical detail of a failure, for the developer log only (D8 Q5). Never journal contents:
+// `context` holds ids, a section, a line, a store or a code.
+export interface FailureDetail {
+  // The step that failed, for example 'Read', 'Build', 'Offer', 'Verify', 'Prepare', 'Apply'.
+  readonly stage: string;
+  // The error's name, or the result kind that signalled the failure.
+  readonly name: string;
+  readonly message: string;
+  readonly stack?: string;
+  readonly context?: Readonly<Record<string, string | number>>;
+}
+
 // ---- Export (A129) ----
 
 export interface ExportBackupRequest {
@@ -62,6 +74,7 @@ export type ExportBackupResult =
       readonly reason: 'IntegrityBlocked' | 'ReadFailed' | 'OfferFailed';
       // The binding showing the Workspace unchanged; null when no Workspace could be read.
       readonly workspaceBinding: WorkspaceSnapshotBinding | null;
+      readonly detail?: FailureDetail;
     };
 
 // ---- Verification (A130) ----

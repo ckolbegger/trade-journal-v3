@@ -141,6 +141,9 @@ describe('Downloaded (AC-BACK-001)', () => {
   });
 });
 
+// A failure detail that has at least these fields (the stack and the rest are not pinned).
+const detailLike = (fields: Record<string, unknown>): unknown => expect.objectContaining(fields);
+
 describe('failures', () => {
   it('should return Conflict with the current binding and offer no file when the expected binding differs', async () => {
     const { workspace, factory, testHost } = await w7Stack();
@@ -165,6 +168,7 @@ describe('failures', () => {
       stage: 'Read',
       reason: 'ReadFailed',
       workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+      detail: detailLike({ stage: 'Read', name: 'ReadFailed' }),
     });
     expect(stack.testHost.downloads.offered).toEqual([]);
     expect(await dumpAll(stack.factory)).toEqual(before);
@@ -182,6 +186,7 @@ describe('failures', () => {
       stage: 'Read',
       reason: 'ReadFailed',
       workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+      detail: detailLike({ stage: 'Build' }),
     });
     expect(stack.testHost.downloads.offered).toEqual([]);
     expect(await dumpAll(stack.factory)).toEqual(before);
@@ -211,6 +216,7 @@ describe('failures', () => {
       stage: 'Offer',
       reason: 'OfferFailed',
       workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+      detail: detailLike({ stage: 'Offer', message: 'offer blew up' }),
     });
     expect(await dumpAll(stack.factory)).toEqual(before);
   });
@@ -226,15 +232,60 @@ describe('failures', () => {
       stage: 'Read',
       reason: 'ReadFailed',
       workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+      detail: detailLike({ stage: 'Read', message: 'run blew up' }),
     });
     expect(stack.testHost.downloads.offered).toEqual([]);
+  });
+
+  it("should carry the caught error's name, message and stack in NotCompleted when building the backup fails", async () => {
+    const stack = await w7Stack();
+    const altered = {
+      ...stack.persistence,
+      readExportSnapshot: async (database: string, layout: Parameters<Persistence['readExportSnapshot']>[1], onBatch: Parameters<Persistence['readExportSnapshot']>[2]) => {
+        const result = await stack.persistence.readExportSnapshot(database, layout, (batch) =>
+          onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 2 ** 60 } : record)) }),
+        );
+        return result;
+      },
+    };
+    const workspace = createWorkspace({ ...stack, persistence: altered, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
+    const result = await workspace.exportBackup({});
+    expect(result.kind).toBe('NotCompleted');
+    const detail = (result as { detail?: { stage: string; name: string; message: string; stack?: string } }).detail;
+    expect(detail?.stage).toBe('Build');
+    expect(detail?.name).toBe('CanonicalJsonUnsupported');
+    expect(detail?.message.length).toBeGreaterThan(0);
+    expect(detail?.stack).toContain('CanonicalJsonUnsupported');
+  });
+
+  it('should carry the failing store in NotCompleted when the read fails', async () => {
+    const stack = await w7Stack();
+    const failing = { ...stack.persistence, readExportSnapshot: () => Promise.resolve({ kind: 'ReadFailed', store: 'trades' } as const) };
+    const workspace = createWorkspace({ ...stack, persistence: failing, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
+    const result = await workspace.exportBackup({});
+    expect(result).toMatchObject({ kind: 'NotCompleted', detail: { stage: 'Read', name: 'ReadFailed', context: { store: 'trades' } } });
+  });
+
+  it('should carry the rejection in NotCompleted when the offer rejects', async () => {
+    const stack = await w7Stack();
+    const download = { offer: () => Promise.reject(new TypeError('offer blew up')) };
+    const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download } });
+    const result = await workspace.exportBackup({});
+    expect(result).toMatchObject({ kind: 'NotCompleted', stage: 'Offer', detail: { stage: 'Offer', name: 'TypeError', message: 'offer blew up' } });
+    expect((result as { detail?: { stack?: string } }).detail?.stack).toContain('offer blew up');
   });
 
   it('should report ReadFailed when the journal storage lookup rejects', async () => {
     const stack = await w7Stack();
     const failing = { ...stack.persistence, lookupRoot: () => Promise.reject(new Error('lookup blew up')) };
     const workspace = createWorkspace({ ...stack, persistence: failing, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
-    expect(await workspace.exportBackup({})).toEqual({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null });
+    expect(await workspace.exportBackup({})).toEqual({
+      kind: 'NotCompleted',
+      stage: 'Read',
+      reason: 'ReadFailed',
+      workspaceBinding: null,
+      detail: detailLike({ stage: 'Read', message: 'lookup blew up' }),
+    });
     expect(stack.testHost.downloads.offered).toEqual([]);
   });
 });
@@ -280,7 +331,13 @@ describe('export before any journal exists (A129)', () => {
     });
     expect(await factory.databases()).toEqual([]);
     const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
-    expect(await workspace.exportBackup({})).toEqual({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null });
+    expect(await workspace.exportBackup({})).toEqual({
+      kind: 'NotCompleted',
+      stage: 'Read',
+      reason: 'ReadFailed',
+      workspaceBinding: null,
+      detail: detailLike({ stage: 'Read', name: 'NoWorkspace' }),
+    });
     expect(await factory.databases()).toEqual([]);
   });
 });
@@ -325,7 +382,13 @@ describe('blocked databases (P32)', () => {
     });
     const unreadable = await testStack(factory);
     const guarded = createWorkspace({ ...unreadable, host: unreadable.testHost.host, releaseId: unreadable.testHost.releaseId, backup: { download: unreadable.testHost.downloads.port } });
-    expect(await guarded.exportBackup({})).toEqual({ kind: 'NotCompleted', stage: 'Read', reason: 'IntegrityBlocked', workspaceBinding: null });
+    expect(await guarded.exportBackup({})).toEqual({
+      kind: 'NotCompleted',
+      stage: 'Read',
+      reason: 'IntegrityBlocked',
+      workspaceBinding: null,
+      detail: detailLike({ stage: 'Read', name: 'IntegrityBlocked', context: { rootKind: 'Unreadable' } }),
+    });
     expect(unreadable.testHost.downloads.offered).toEqual([]);
     expect((await factory.databases()).map((d) => [d.name, d.version])).toEqual([['tj-root', 99]]);
   });

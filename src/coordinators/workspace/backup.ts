@@ -9,8 +9,8 @@ import { D5_JOURNAL_MANIFEST } from '../../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { exportLayoutFor, type IdGenerator, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { ArtifactReadError, readArtifact } from '../../backup/format/index.ts';
-import { createInProcessExportPort, type ExportPort } from './backup-export.ts';
-import type { ConfirmBackupRequest, ConfirmBackupResult, ExportBackupRequest, ExportBackupResult } from './backup-types.ts';
+import { createInProcessExportPort, describeError, type ExportPort } from './backup-export.ts';
+import type { ConfirmBackupRequest, ConfirmBackupResult, ExportBackupRequest, ExportBackupResult, FailureDetail } from './backup-types.ts';
 
 // The host seams backup uses. Optional until composition supplies them (T8.11).
 export interface BackupPorts {
@@ -150,8 +150,8 @@ async function verifyArtifact(file: File): Promise<Verified | { readonly kind: '
   return { kind: 'IncompleteOrCorrupt' };
 }
 
-function notCompleted(reason: 'IntegrityBlocked' | 'ReadFailed', workspaceBinding: WorkspaceSnapshotBinding | null = null): ExportBackupResult {
-  return { kind: 'NotCompleted', stage: 'Read', reason, workspaceBinding };
+function notCompleted(reason: 'IntegrityBlocked' | 'ReadFailed', detail: FailureDetail, workspaceBinding: WorkspaceSnapshotBinding | null = null): ExportBackupResult {
+  return { kind: 'NotCompleted', stage: 'Read', reason, workspaceBinding, detail };
 }
 
 export function createBackupOperations(deps: BackupDeps): BackupOperations {
@@ -160,14 +160,27 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
   const exporter = deps.backup?.export ?? createInProcessExportPort(deps.persistence);
   return {
     async exportBackup(request) {
-      const inspection = await deps.persistence.lookupRoot().catch(() => undefined);
-      if (!inspection) return notCompleted('ReadFailed');
+      let lookupError: FailureDetail | undefined;
+      const inspection = await deps.persistence.lookupRoot().catch((error: unknown) => {
+        lookupError = describeError('Read', error);
+        return undefined;
+      });
+      if (!inspection) return notCompleted('ReadFailed', lookupError ?? { stage: 'Read', name: 'LookupFailed', message: 'The journal storage lookup returned nothing' });
       // Export never passes the write gate, so it serves a Writable, a blocked, and a Recovery Only root alike.
-      if (inspection.kind === 'NoWorkspace') return notCompleted('ReadFailed');
-      if (inspection.kind === 'Unreadable' || inspection.kind === 'Invalid') return notCompleted('IntegrityBlocked');
+      if (inspection.kind === 'NoWorkspace') return notCompleted('ReadFailed', { stage: 'Read', name: 'NoWorkspace', message: 'No journal exists to back up' });
+      if (inspection.kind === 'Unreadable' || inspection.kind === 'Invalid') {
+        return notCompleted('IntegrityBlocked', { stage: 'Read', name: 'IntegrityBlocked', message: `The journal root is ${inspection.kind}`, context: { rootKind: inspection.kind } });
+      }
       const layout = exportLayoutFor(inspection.schemaVersion);
       const seeds = SEED_MANIFEST_VERSIONS[inspection.schemaVersion];
-      if (!layout || !seeds) return notCompleted('IntegrityBlocked');
+      if (!layout || !seeds) {
+        return notCompleted('IntegrityBlocked', {
+          stage: 'Read',
+          name: 'IntegrityBlocked',
+          message: `No export layout for schema version ${inspection.schemaVersion}`,
+          context: { rootKind: inspection.kind, schemaVersion: inspection.schemaVersion },
+        });
+      }
       const run = await exporter.run({
         databaseName: inspection.databaseName,
         layout,
@@ -177,18 +190,29 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
         seedManifestVersions: seeds,
         expectedBinding: request.expectedBinding,
         onProgress: request.onProgress,
-      }).catch((): { readonly kind: 'Failed' } => ({ kind: 'Failed' }));
+      }).catch((error: unknown): { readonly kind: 'Failed'; readonly detail: FailureDetail } => ({ kind: 'Failed', detail: describeError('Read', error) }));
       if (run.kind === 'Conflict') return run;
       if (run.kind === 'Failed') {
         // The read changed nothing; describe the database to show the Workspace unchanged.
         const described = await deps.persistence.describeDatabase(inspection.databaseName).catch(() => undefined);
         const workspaceBinding = described && { databaseName: described.databaseName, contentRevision: described.contentRevision };
-        return notCompleted('ReadFailed', workspaceBinding);
+        return notCompleted('ReadFailed', run.detail, workspaceBinding);
       }
       const stamp = toWorkspaceLocal(deps.clock.now(), run.timeZone).replace('T', '-').replace(':', '');
       const fileName = `trade-journal-${stamp}-${run.fullDigest.slice(0, 8)}.tjbackup`;
-      const offered = await deps.backup?.download?.offer({ blob: run.blob, fileName, type: 'application/octet-stream' }).catch(() => undefined);
-      if (offered?.kind !== 'Offered') return { kind: 'NotCompleted', stage: 'Offer', reason: 'OfferFailed', workspaceBinding: run.sourceBinding };
+      let offerError: FailureDetail | undefined;
+      const offered = await deps.backup?.download?.offer({ blob: run.blob, fileName, type: 'application/octet-stream' }).catch((error: unknown) => {
+        offerError = describeError('Offer', error);
+        return undefined;
+      });
+      if (offered?.kind !== 'Offered') {
+        const detail: FailureDetail =
+          offerError ??
+          (offered
+            ? { stage: 'Offer', name: 'OfferFailed', message: offered.reason }
+            : { stage: 'Offer', name: 'NoDownloadPort', message: 'The host supplied no download port' });
+        return { kind: 'NotCompleted', stage: 'Offer', reason: 'OfferFailed', workspaceBinding: run.sourceBinding, detail };
+      }
       return {
         kind: 'Downloaded',
         sourceBinding: run.sourceBinding,
