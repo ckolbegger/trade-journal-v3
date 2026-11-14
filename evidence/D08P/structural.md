@@ -1647,3 +1647,25 @@ This is the third critic at this checkpoint, and it still leaves a FAIL with a h
 - **Browser specs run:** 77 passed. The auto-mode classifier refused the agent's `npm run build:releases` twice, so its d1, d2 and d4 specs ran against older release builds. The quick run rebuilds them and reruns those specs.
 - **Review:** ocr in place, 1 file, 1 comment (`ocr/T8P.23-B14.json`). It is **Valid**: `overflow-wrap: anywhere` lets a figure split mid-token. The reviewer rendered the real styles and saw, at 320 px, "$412.3" over "5"; at 375 px, "-$104.25" split; and the provenance date broken at its hyphens. The spec's small figures stay whole and the spec checks only horizontal position. This became bug task **T8P.23-B14-B1**.
 - **Quick run (`T8P.23-B14`), on fresh release builds:** unit 1658, integration 229, checks 14 of 14, browser-task 9; run complete. The rerun of the agent's specs passed 65 and failed 1: B14's own case, `cells outside the scroll box at 375 px`. That file then passed alone (`browser/T8P.23-B14-rerun-specs.txt`). The case is unstable, so its fix goes into B14-B1.
+
+**T8P.23-B14-B1** (`c48ec4e3`). Text in Today's narrow comparison now wraps only at spaces:
+- `overflow-wrap` is back to normal;
+- each provenance word renders as a nowrap `.whole` span (`Words`), with its text unchanged;
+- figures and Change cells are nowrap.
+
+At 320 px the table is still about 5 px too wide, so the new `ScrollsToEnd` opens the scroll box at its right end, and the current date and Change show first. At 375 px the table fits, and the 1280 px layout is untouched.
+- **Test:** the extended `e2e/d8p/today-narrow.spec.ts` checks the option case and a stock case ($418.60, $412.35). Red: `tokens broken across lines at 375 px`, `["Mark","Mark"]`. Green, then 3 of 3 repeats.
+- **The B14 flake:** not reproduced. The spec now waits on `document.fonts.ready` and polls the geometry.
+- **Browser specs run:** 61 passed twice, against `dist-faults`. Per the user's choice, the agent did not run `build:releases`; the quick run rebuilt `dist-releases` and reran the d4 specs.
+- **Review:** ocr in place, 2 files, 0 comments (`ocr/T8P.23-B14-B1.json`). The reviewer's notes, read from the code and unmeasured, which are not bug tasks:
+  - at 320 px, scrolled to the end by about 5 px, the label column's padding and about 2.6 px of its first glyph are clipped, and wider figures would clip more; the spec doesn't check the labels;
+  - `ScrollsToEnd`'s ResizeObserver snaps the box back to the end on a reflow while the reader has scrolled left;
+  - `ScrollsToEnd` also runs at 1280 px, where the table fits, so nothing moves.
+- **Quick run (`T8P.23-B14-B1`):** the main session's run rebuilt all three dist folders, `build:releases` included, as the user chose. Unit 1658, integration 229, checks 14 of 14, browser-task 10, run complete. The rerun of the d8p, d2, d1, d7 and d4 specs on the fresh builds passed 67 (`browser/T8P.23-B14-B1-rerun-specs.txt`).
+
+**T8P.23 done.** The checkpoint closes under revision 99 after three critics:
+- critic-1: 8 defects, all fixed;
+- critic-2: 7 defects, 4 fixed, 2 accepted and 1 accepted as a plan change;
+- critic-3: 2 defects, 1 fixed and 1 accepted.
+
+The bug tasks were B1 to B14, plus B3-B1, B13-B1 and B14-B1. T8P.26's gate critic checks C8P.1 to C8P.6 afresh.
