@@ -1,0 +1,7 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d8p/journal-final-session.spec.ts:14:3 › T8P.26-B3 a Journal card whose session has no Mark has no change line › should show DEF Closed by sale with its Trade P&L and no change line, while XYZ keeps First Mark on its marked session (4.2s)
+  ✓  2 [chromium] › e2e/d8p/journal-final-session.spec.ts:46:3 › T8P.26-B3 a Journal card whose session has no Mark has no change line › should show the expired MNO put final session with its Trade P&L and no change line (2.5s)
+
+  2 passed (7.2s)
