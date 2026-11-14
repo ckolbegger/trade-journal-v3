@@ -678,8 +678,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.10 | 1 | WB | Not started | |
 | T8.8 | 1 | WR | Not started | |
 | T8.9 | 1 | WR | Not started | |
-| T8.12 | 1 | UB | In progress from `9312835b` | |
-| T8.13 | 1 | UB | Not started (Q2 answered; follows T8.12 in lane UB) | |
+| T8.12 | 1 | UB | In progress from `9312835b`; committed in lane, ocr clean, merges with T8.13 | |
+| T8.13 | 1 | UB | In progress from `9f17252a` | |
 | T8.14 | 1 | US | In progress from `fdc5e858`; committed in lane, merges with T8.11 | |
 | T8.11 | 2 | — | Not started | |
 | T8.15 | 2 | FT | Not started | |

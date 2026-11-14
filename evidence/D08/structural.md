@@ -79,6 +79,21 @@ Lane PS, commit `596b02bb` (4 cases). Lane tier `T8.3`: unit 164 / 1754, integra
 - **T8.3-B4** `975b9525`: red (only 500 of 1200 ids delivered: the second page started after the changed key) then green; the next-page key is read before `onBatch`, and only for a full batch. Lane tier: unit 164 / 1758, integration 106 / 229, checks 14 of 14. ocr (session `01426942-6177-4544-b714-a0c6f5e62fdb`, 2 files): **No findings.** Raw: `ocr/T8.3-B4-975b9525.json`.
 - **T8.3-B5** `6ac5728c`: red ("expected { kind, store } to deeply equal { kind: 'ReadFailed', store: 'meta' }") then green; a failed schema probe returns `ReadFailed('meta')` before the version comparison. Lane tier: unit 164 / 1759, integration 106 / 229, checks 14 of 14. ocr (session `619c4063-2d49-4d44-9232-6097917550c3`, 2 files): **No findings.** Raw: `ocr/T8.3-B5-6ac5728c.json`.
 
+## T8.7 Restore candidates and activation
+
+Lane PS (recreated at `a0240277`), commit `094bb7ba` (3 cases, red then green; no first-run passes). Code written ahead of red for cases 2 and 3 (the gate and the activation body) was removed before their red runs, so each red is genuine. Lane tier `T8.7`: unit 168 / 1775, integration 106 / 229, checks 14 of 14.
+
+**Implementation-level choices (recorded, not stops).**
+1. Restore entries live in a separate optional `restoreCandidates: { databaseName, purpose: 'Restore', session }[]` beside `databaseNames` in the root `candidates` record. A138 calls this a record field. Keeping `databaseNames` unchanged leaves D2's exact assertions green.
+2. A `putNames` helper keeps the entries when `discardCandidate`, `activateCandidate` or `deleteListed` rewrite the list.
+3. The session identity is a `crypto.randomUUID()` per `createPersistence` instance.
+
+**New internal methods:**
+- `createRestoreCandidate(): Promise<RuntimeNotWritable | { kind: 'Created'; databaseName }>`. It is gated on the write gate, deletes this session's earlier Restore candidate, then lists the new one before creating it.
+- `activateFirstCandidate(candidate): Promise<{ kind: 'Activated' } | { kind: 'AlreadyInitialized'; databaseName }>`.
+
+T8.8 discards a rejected candidate with the existing `discardCandidate`.
+
 ## T8.12 Backup page
 
 Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks 14 of 14. Unit had 1 failure: `tools/wording-rules.test.ts` hit its 5 s timeout under load and passed when rerun alone (see Flakes). First-run pass flagged: "should forget the Downloaded result when the page is left". Mutation: the result held in a module-level variable that new page instances start from; see `tdd-log/T8.12.md`. Props: `BackupViewProps { facade; selectFile; readiness; timeZone }`. The three states Q1 didn't word are put to the user in Q2, part B.
@@ -92,6 +107,9 @@ Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks
 | T8.12-B3 | `BackupView.tsx:88` the Downloaded line stays after Completed | "Downloaded, not verified yet" shows next to "Backup complete" | it should replace the Downloaded line with Backup complete once verification completes |
 
 - **T8.12-B3** `74c85b3e` (run before B2, which waits on Q2): red ("expected <p></p> to be null") then green; the Downloaded line shows only while the outcome isn't Completed. Lane tier: unit 164 / 1758, integration 106 / 229, checks 14 of 14. ocr (session `36b59840-87e6-4071-b82e-58696e752996`, 2 files): **No findings.** Raw: `ocr/T8.12-B3-74c85b3e.json`.
+- **T8.12-B2** `9f17252a` (resumed after Q2): red ("Unable to find an element with the text: The backup could not be made. Your journal has a problem that blocks a normal backup. Nothing was changed.") then green. The page keeps the reason, not the stage; a `NOT_MADE` table holds Q2 B4's four sentences, each with Retry. Lane tier: unit 164 / 1761, integration 106 / 229, checks 14 of 14. ocr (session `2e340a36-28c7-48b8-ab04-f0a05671172c`, 2 files): **No findings**; the reviewer checked every text against Q1 and Q2 character for character. Raw: `ocr/T8.12-B2-9f17252a.json`.
+
+**T8.12 merges with T8.13 (main session's choice).** All of T8.12's bug tasks are clean. T8.13 is the next task in lane UB and starts on top of it at once. Merging T8.12 alone would mean rebasing the lane under a running task, so the two merge as one batch when T8.13 is clean. Nothing else waits on T8.12's merge.
 - **T8.12-B5** `5a4b631a`: red ("expected [ { file: File{}, … } ] to have a length of +0 but got 1": confirmBackup called for the stale file) then green; the count is read before the picker opens. Lane tier: unit 164 / 1760, integration 106 / 229, checks 14 of 14. ocr (session `2c2a806a-211c-4dbf-9bc5-6134d26d25e7`, 2 files): **No findings.** Raw: `ocr/T8.12-B5-5a4b631a.json`.
 - **T8.12-B4** `eb7ddd3e`: red ("expected <p role="status"></p> to be null": the old check's progress re-set `checking`) then green; `onProgress` applies only while the download count is unchanged. Lane tier: unit 164 / 1759, integration 106 / 229, checks 14 of 14. ocr (session `bb870ce6-19ca-4367-802e-cd2de64a708f`, 2 files): **No findings.** Raw: `ocr/T8.12-B4-eb7ddd3e.json`.
 - **T8.12-B1** `5e11ab01`: red ("expected <p role="status"></p> to be null": A's Backup complete still shown under B) then green. A new download clears the outcome, and a download counter drops a verification that finishes after a newer download. Lane tier: unit 164 / 1757, integration 106 / 229, checks 14 of 14. ocr (session `39b4cf87-84e0-4763-957e-ff71b37f37f1`, 2 files, 2 findings, both Valid; raw: `ocr/T8.12-B1-5e11ab01.json`):
@@ -130,6 +148,12 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 - **T8.14-B1** `8e71f075`: red ("Unable to find a label with the text of: Quantity": the form was swapped for Record Entry Unavailable) then green. The `WorkspaceReplaced` handler records the open path in `refusedAt`, as `report` does. Lane tier: unit 163 / 1756, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known until T8.11). ocr (session `2ac57042-65c3-4da9-ae24-7b9d81c9a027`, 2 files): **No findings.** Raw: `ocr/T8.14-B1-8e71f075.json`.
 - **T8.14-B2** `cd96d625`: red ("expected <p role="status"><span></span></p> to be null") then green; the blocked view's Downloaded line hides once the message is Backup complete. Lane tier: unit 163 / 1757, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known). ocr (session `e7ebf14d-9003-4c10-8ff5-9e089b71fa65`, 2 files): **No findings.** Raw: `ocr/T8.14-B2-cd96d625.json`.
 - **T8.14-B4** `6e3bd46e`: red ("expected <a href="/backup" …></a> to be null") then green. The shell publishes `backupTo` in the runtime context only when the Backup route is offered, and About reads it for both links. Prop change: `RuntimeState.backupTo?` (`src/ui/runtime.tsx`). Lane tier: unit 163 / 1758, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known). ocr (session `b632632f-cd63-4879-8792-c7116d9d05a4`, 4 files): **No findings.** Raw: `ocr/T8.14-B4-6e3bd46e.json`.
+- **T8.14-B3** `5f2e853f` (resumed after Q2): two cases, each red on the missing ReadFailed text, then green.
+  - The handlers catch rejections: a rejected download shows ReadFailed; a rejected file selection or verification shows Unreadable.
+  - The raw codes are replaced by the `NOT_COMPLETED` and `NOT_VERIFIED` tables of Q1 and Q2 texts.
+  - The Downloaded line depends on a `verified` state, not on the text.
+  - Lane tier: unit 163 / 1761, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known).
+  - For T8.11: the strings are duplicated in `AppShell.tsx`, since lane US lacks T8.12's code. Unify them with the Backup page's after both merge.
 - **T8.14-B5** `ea096718`: red ("Unable to find an element with the text: Another browser has its own separate storage…": the pre-T8.14 copy, from `fdc5e858`) then green; A143's copy shows only when the Backup route is offered (the rule that sets `backupTo`), otherwise the earlier copy. Lane tier: unit 163 / 1759, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known). ocr (session `d96d5e7e-a3c8-46ed-8585-c16ea2a7cab7`, 2 files): **No findings.** Raw: `ocr/T8.14-B5-ea096718.json`.
   - Reviewer's note, not an ocr finding: the condition compares against the literal text "Backup complete". T8.14-B3 reworks these texts after Q2, so its brief will have it keep the Completed state, not the text.
 
