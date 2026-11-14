@@ -135,6 +135,7 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 ## Merge runs
 
+- **T8.3 merged** 2026-11-14: lane PS rebased onto `fb6df610` and fast-forwarded (`bd46514a` … `a379a2ca`). Lane removed; it is recreated from the new head for T8.7.
 - **merge-2** (T8.1 merged; at `683f10b2`): unit 166 / 1763, integration 106 / 229, browser task tier (no changed path since `fdc5e858` is on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-2-*.txt`.
 - **T8.1 merged** 2026-11-14: lane F rebased onto `f087f274` and fast-forwarded (`b96da61c` … `daa1b0d4`). Lane removed. `npm install` in the main worktree (A226) changed neither `package.json` nor `package-lock.json`.
 - **merge-1** (T8.23 merged; started at `fdc5e858`; plan-only commits landed during the run): unit 163 / 1750, integration 106 / 229, browser full tier (first matching path since `a6c88cdd`: `src/app/types.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-1-*.txt`.
