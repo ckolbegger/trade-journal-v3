@@ -3,12 +3,18 @@
 import type { DownloadPort, HostPort } from '../../delivery/host.ts';
 import type { ReadinessSession } from '../../delivery/readiness.ts';
 import type { Clock } from '../../domain/time/index.ts';
-import type { IdGenerator, Persistence } from '../../persistence/index.ts';
+import { toWorkspaceLocal } from '../../domain/time/index.ts';
+import { D5_JOURNAL_MANIFEST } from '../../modules/journal/index.ts';
+import { D7_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
+import { exportLayoutFor, type IdGenerator, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import { createInProcessExportPort, type ExportPort } from './backup-export.ts';
 import type { ConfirmBackupRequest, ConfirmBackupResult, ExportBackupRequest, ExportBackupResult } from './backup-types.ts';
 
-// The host seams backup uses. Optional until composition supplies them (T8.11); T8.4 may add the export port.
+// The host seams backup uses. Optional until composition supplies them (T8.11).
 export interface BackupPorts {
   readonly download?: DownloadPort;
+  // Runs the export pipeline: the module worker in the browser (T8.11). Absent: the in-process port.
+  readonly export?: ExportPort;
 }
 
 // What backup needs from the Workspace's dependencies. WorkspaceDeps satisfies it structurally, and
@@ -30,11 +36,63 @@ export interface BackupOperations {
   recognizesReceipt(receiptId: string): boolean;
 }
 
+// The seed manifests each schema version was seeded with (D8 P32): what a Workspace section records
+// for a database the release has not migrated. Schema 7 changed no seed (D7S A199).
+const SEED_MANIFEST_VERSIONS: Readonly<Record<number, { readonly catalog: number; readonly journal: number }>> = {
+  1: { catalog: 1, journal: 1 },
+  2: { catalog: 1, journal: 2 },
+  3: { catalog: 1, journal: 3 },
+  4: { catalog: 1, journal: 4 },
+  5: { catalog: 2, journal: 5 },
+  6: { catalog: D7_CATALOG_MANIFEST.version, journal: D5_JOURNAL_MANIFEST.version },
+  7: { catalog: D7_CATALOG_MANIFEST.version, journal: D5_JOURNAL_MANIFEST.version },
+};
+
+function notCompleted(reason: 'IntegrityBlocked' | 'ReadFailed', workspaceBinding: WorkspaceSnapshotBinding | null = null): ExportBackupResult {
+  return { kind: 'NotCompleted', stage: 'Read', reason, workspaceBinding };
+}
+
 export function createBackupOperations(deps: BackupDeps): BackupOperations {
-  void deps;
+  const exporter = deps.backup?.export ?? createInProcessExportPort(deps.persistence);
   return {
-    exportBackup() {
-      throw new Error('not built');
+    async exportBackup(request) {
+      const inspection = await deps.persistence.inspectRoot();
+      // Export never passes the write gate, so it serves a Writable, a blocked, and a Recovery Only root alike.
+      if (inspection.kind === 'NoWorkspace') return notCompleted('ReadFailed');
+      if (inspection.kind === 'Unreadable' || inspection.kind === 'Invalid') return notCompleted('IntegrityBlocked');
+      const layout = exportLayoutFor(inspection.schemaVersion);
+      const seeds = SEED_MANIFEST_VERSIONS[inspection.schemaVersion];
+      if (!layout || !seeds) return notCompleted('IntegrityBlocked');
+      const run = await exporter.run({
+        databaseName: inspection.databaseName,
+        layout,
+        exportKind: inspection.kind === 'OlderSchema' ? 'BlockedDatabase' : 'Normal',
+        createdAt: deps.clock.now(),
+        releaseId: deps.releaseId,
+        seedManifestVersions: seeds,
+        expectedBinding: request.expectedBinding,
+        onProgress: request.onProgress,
+      });
+      if (run.kind === 'Conflict') return run;
+      if (run.kind === 'Failed') {
+        // The read changed nothing; describe the database to show the Workspace unchanged.
+        const described = await deps.persistence.describeDatabase(inspection.databaseName).catch(() => undefined);
+        const workspaceBinding = described && { databaseName: described.databaseName, contentRevision: described.contentRevision };
+        return notCompleted('ReadFailed', workspaceBinding);
+      }
+      const stamp = toWorkspaceLocal(deps.clock.now(), run.timeZone).replace('T', '-').replace(':', '');
+      const fileName = `trade-journal-${stamp}-${run.fullDigest.slice(0, 8)}.tjbackup`;
+      const offered = await deps.backup?.download?.offer({ blob: run.blob, fileName, type: 'application/octet-stream' });
+      if (offered?.kind !== 'Offered') return { kind: 'NotCompleted', stage: 'Offer', reason: 'OfferFailed', workspaceBinding: run.sourceBinding };
+      return {
+        kind: 'Downloaded',
+        sourceBinding: run.sourceBinding,
+        fullDigest: run.fullDigest,
+        manifestDigest: run.manifestDigest,
+        fileName,
+        counts: run.counts,
+        byteSize: run.blob.size,
+      };
     },
     confirmBackup() {
       throw new Error('not built');
