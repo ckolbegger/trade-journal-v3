@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 19221,
+    "input_tokens": 19005,
+    "output_tokens": 216,
+    "cache_read_tokens": 4992,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_find": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/fixture-schemas.ts",
+        "tools/verify-fixtures.test.ts",
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "5db37b3d-cf19-4bf7-b283-2cfbe5153bad",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5db37b3d-cf19-4bf7-b283-2cfbe5153bad",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2a95b28b",
+      "resolved_base": "25500035f1b093511fd42768c260038149419d8d",
+      "resolved_head": "2a95b28b7dbde80490c852745cab3b5b6a6ee787",
+      "exact_range": "25500035f1b093511fd42768c260038149419d8d..2a95b28b7dbde80490c852745cab3b5b6a6ee787",
+      "source_artifact_sha256": "8ec9d2585673301d73e7711fbfd49be56831275a9d087eb660c8641a67ee885e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3af4d018e5d547fee434f2a29ef8609fb7516d2c6933db694543bde72e498558",
+          "path": "tools/verify-fixtures.test.ts",
+          "fingerprint": "31dff98efc587b8c7daf9212a3f5d94f61b58b112f416f634a15d6bf1a2693a7"
+        },
+        {
+          "item_id": "48741bc7bf5691e1181bb0baed846fead94d878548a1d33191a3814c27f6102b",
+          "path": "tools/fixture-schemas.ts",
+          "fingerprint": "a7fe2699128507dd5b0695722a62e68fcd4e67424b253b44adcffededf64b84f"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "43c3944b0d48363a24ea307c7db33464f6ef8039d633df27bcd2141530ea20ee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3af4d018e5d547fee434f2a29ef8609fb7516d2c6933db694543bde72e498558",
+          "path": "tools/verify-fixtures.test.ts",
+          "fingerprint": "31dff98efc587b8c7daf9212a3f5d94f61b58b112f416f634a15d6bf1a2693a7"
+        },
+        {
+          "item_id": "48741bc7bf5691e1181bb0baed846fead94d878548a1d33191a3814c27f6102b",
+          "path": "tools/fixture-schemas.ts",
+          "fingerprint": "a7fe2699128507dd5b0695722a62e68fcd4e67424b253b44adcffededf64b84f"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "43c3944b0d48363a24ea307c7db33464f6ef8039d633df27bcd2141530ea20ee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4f41514d7399d76141db9b089497b84b7d6cfcc93e509ef3d6b337cc3842f83d",
+          "path": "evidence/D08P/tdd-log/T8P.BUG-4.2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5599cd3ffbc927f308721c201f52b26f4689f15cdb554a7603248a16a7c85c02",
+          "path": "evidence/D08P/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 13234
+  }
+}
