@@ -106,6 +106,8 @@ export async function readExportSnapshot(
           if (rows.length > 0) {
             const returned: unknown = onBatch({ store, records: rows.map((row) => withoutPrivateFields(row, layout.privateFields[store])) });
             if (typeof (returned as { then?: unknown } | undefined)?.then === 'function') {
+              // The snapshot ends here, so nothing waits on this promise: absorb a later rejection.
+              (returned as Promise<unknown>).then(undefined, () => undefined);
               fail({ kind: 'EarlyAutoCommitGuard' });
               return;
             }
