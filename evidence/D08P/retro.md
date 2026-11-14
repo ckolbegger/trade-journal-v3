@@ -89,6 +89,8 @@ The rule is mechanical, so it belongs in a test, not a coding standard. A `tdd-t
 
 **Proposed fix.** Mark it `test.fixme` with the reason (decision 76, tech debt item 10), so the reason sits next to the test.
 
+**Decided instead** (decision 112, revision 101). `dist-releases/d6` was never D6: it is the checked-out code labelled "d6". Every schema step is covered by its fixture's integration migration tests and `verify:fixtures`, so B6.6 is deleted, the build is renamed `current`, and `verify:fixtures` requires a fixture for every schema. The work is bug tasks BUG-4.1 and BUG-4.2 in `plan/bug-tasks.md`.
+
 ## 9. A pointer to a spec-reading list that doesn't exist (navigation)
 
 **What happened.** T8P.25's brief pointed to `plan/spec-reading/D08P.md`, which was never written. D08P's reading list is `plan/spec-reading/D07.md` plus D9's entries (A218). The agent noticed and read the plan sections directly.
