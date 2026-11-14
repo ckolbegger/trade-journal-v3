@@ -140,4 +140,18 @@ describe('activation without a Workspace (A135)', () => {
     expect(await restoreEntries()).toEqual([]);
     expect(await rawGet('tj-root', 'pointer', 'candidates')).toEqual(expect.objectContaining({ databaseNames: [] }));
   });
+
+  it('should not delete the candidate when the pointer already names it', async () => {
+    const restoring = persistence('r');
+    const candidate = await restoring.createRestoreCandidate();
+    if (candidate.kind === 'RuntimeNotWritable') throw new Error('not writable');
+    expect(await restoring.activateFirstCandidate(candidate.databaseName)).toEqual({ kind: 'Activated' });
+
+    const repeated = await restoring.activateFirstCandidate(candidate.databaseName);
+
+    expect(repeated).toEqual({ kind: 'Activated' });
+    expect(await rawGet('tj-root', 'pointer', 'current')).toEqual({ key: 'current', databaseName: candidate.databaseName });
+    expect(await databaseNames()).toEqual(['tj-root', candidate.databaseName]);
+    expect((await restoring.readSnapshot([], () => Promise.resolve(null))).binding.databaseName).toBe(candidate.databaseName);
+  });
 });

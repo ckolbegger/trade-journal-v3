@@ -519,6 +519,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         await putNames(store, CANDIDATES_KEY, (await listed(store, CANDIDATES_KEY)).filter((n) => n !== candidate));
         return undefined;
       });
+      if (existing === candidate) return { kind: 'Activated' };
       if (existing !== undefined) {
         await deleteDatabase(deps.indexedDB, candidate);
         await inRoot((store) => listed(store, CANDIDATES_KEY).then((names) => putNames(store, CANDIDATES_KEY, names.filter((n) => n !== candidate))));
