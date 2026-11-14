@@ -1,0 +1,109 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 58043,
+    "input_tokens": 57136,
+    "output_tokens": 907,
+    "cache_read_tokens": 16640,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/styles/today.css",
+      "content": "Applying `overflow-wrap: anywhere` to every data cell also allows breaks inside monetary figures and provenance dates/times. `MarkValue` renders its price in an unprotected `\u003cspan\u003e`, and Change is bare text, so sufficiently long values can be split mid-number when the table is compressed at 320 px. This violates the requirement to preserve figures/dates. Scope arbitrary wrapping to labels and prose, and protect numeric tokens (including Change) with scoped nonbreaking styles while retaining wrapping between provenance components.",
+      "existing_code": "    white-space: normal;\n    overflow-wrap: anywhere;",
+      "start_line": 25,
+      "end_line": 26,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/styles/today.css",
+      "files": [
+        "src/ui/cockpit/styles/today.css"
+      ]
+    }
+  ],
+  "session_id": "ef16b97a-9b4d-43c0-985d-0ce26d42ada5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ef16b97a-9b4d-43c0-985d-0ce26d42ada5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "49cb92bf",
+      "resolved_base": "9399d711ac2e866946620597d067170bbc7ae5a5",
+      "resolved_head": "49cb92bf94e9739968a516506c6ff5503053c26f",
+      "exact_range": "9399d711ac2e866946620597d067170bbc7ae5a5..49cb92bf94e9739968a516506c6ff5503053c26f",
+      "source_artifact_sha256": "8fa4c814c221feedb2ad76231f170eb3df042677401e2a2839a9f3c3875a90e4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "7fdb4e384862235d4a83d48feefbc3d5ad7ef4da133c538cefe9b0b2b1589e5d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7d813f293c3c9e34e82918dc916b7817657ad87c55a573f0c6c536858d6d366f",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "7fdb4e384862235d4a83d48feefbc3d5ad7ef4da133c538cefe9b0b2b1589e5d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4fe1ba6234d36002d1528ae8613b9b598420191d031669d7a5392aea1c802dca",
+          "path": "evidence/D08P/browser/T8P.23-B14-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "cb951f0e781341c345e2e5c6025d5492613286e042e1584ec29ab9e51a98c9b7",
+          "path": "e2e/d8p/today-narrow.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d297defd711adf7253a0fc61ddb8e0c3c68eb592775bc98530f7a88cb4aad680",
+          "path": "evidence/D08P/tdd-log/T8P.23-B14.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 46078
+  }
+}

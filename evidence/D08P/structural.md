@@ -1638,3 +1638,12 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
 - **Defect 2 (moderate):** at 375 and 320 px, Today's comparison table (550 px wide) opens on its labels and the earlier column. The current Marks and their changes sit past the scroll box's edge.
 
 This is the third critic at this checkpoint, and it still leaves a FAIL with a high and a moderate defect. That is a stop in the handoff, so the user decides.
+
+**User decision on critic-3 (2026-11-14), "Accept 1, fix 2, no 4th critic":** revision 99. Defect 1 joins C8P.2's exceptions. Defect 2 is bug task **B14**. The checkpoint closes after B14, and T8P.26's gate critic checks C8P.1 to C8P.6 afresh.
+
+**T8P.23-B14** (`49cb92bf`). CSS only, in `today.css`, below 960 px and scoped to Today's comparison table. The label column is unpinned, the padding is tighter, and cells take `min-width: 0` and wrap with `overflow-wrap: anywhere`, so the table fits its box at 375 and 320 px.
+- **Test:** "should show the current date column and the Change column inside the comparison scroll box at 375 and 320 px, with no sideways page scroll" (`e2e/d8p/today-narrow.spec.ts`). Red: `cells outside the scroll box at 375 px`, `"Tue Oct 13 510 > 338"`, `"Change 587 > 338"`.
+- **Expected values:** none changed.
+- **Browser specs run:** 77 passed. The auto-mode classifier refused the agent's `npm run build:releases` twice, so its d1, d2 and d4 specs ran against older release builds. The quick run rebuilds them and reruns those specs.
+- **Review:** ocr in place, 1 file, 1 comment (`ocr/T8P.23-B14.json`). It is **Valid**: `overflow-wrap: anywhere` lets a figure split mid-token. The reviewer rendered the real styles and saw, at 320 px, "$412.3" over "5"; at 375 px, "-$104.25" split; and the provenance date broken at its hyphens. The spec's small figures stay whole and the spec checks only horizontal position. This became bug task **T8P.23-B14-B1**.
+- **Quick run (`T8P.23-B14`), on fresh release builds:** unit 1658, integration 229, checks 14 of 14, browser-task 9; run complete. The rerun of the agent's specs passed 65 and failed 1: B14's own case, `cells outside the scroll box at 375 px`. That file then passed alone (`browser/T8P.23-B14-rerun-specs.txt`). The case is unstable, so its fix goes into B14-B1.
