@@ -1511,3 +1511,20 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
   - The comment says the Planned mapping puts every Entry in `view.journal` on the Plan card, unfiltered. The reviewer called it Doubtful, as a latent fragility it could not reach.
   - The main session reassessed it as **Wrong**, because A213 says "An item before the first exposure goes in a 'Plan' list". A Planned Trade has no exposure, so every one of its items is the Plan's, which is what the replay's `placeJournal` does. Filtering to the Plan Reflection would contradict A213. Dismissed, so no bug task.
 - **Quick run (`T8P.23-B7`):** unit 1646, integration 229, checks 14 of 14, browser-task 7; run complete.
+
+**T8P.23-B8** (`dc4aff42`). An Unavailable or Not Applicable condition result shows its reason at the `figure` length (A222) where the figure lives. A222 and W5 settle the lengths: the rail is where the cockpit refers to the figure again, at the `label` length.
+- **Where the reason now shows:**
+  - Plan and Risk's "Risk to stop" and "Reward to target" (`conditionFiguresGroup`);
+  - Today's A223 "Distance on <Underlying>" line (`conditionLineOf`).
+- **Source of the words:** `calculation(...)` from `figures.ts` produces them from `calculation-words.ts`. No new words.
+- **Tests:**
+  - "should word a missing Mark in Risk to stop and Reward to target at the figure length, with no bare dash left" (`plan-risk.test.tsx`). Red: `expected [ '—', '—' ] to deeply equal [ …(2) ]`.
+  - "should word an unavailable condition result in the distance on the Underlying line at the figure length, with no bare dash" (`today.props.test.ts`). Red: `expected '—' to be 'Mark missing: XYZ, Thu Nov 19'`.
+  - No fixture yields a Not Applicable result, so that path shares the helper but has no case.
+- **Expected value changed (A222):** `Placed.test.tsx` lines 201 and 202, from `['—']` to `['Mark missing: XYZ, Tue Oct 13']`.
+- **Dashes left in Today, by design.** Neither stands for an unavailable result:
+  - "Value at expiration" without a baseline value;
+  - a Value reading with no Underlying distance.
+- **Browser specs run:** 59 passed (`browser/T8P.23-B8-specs.txt`).
+- **Review:** ocr in place, 2 files, 0 comments (`ocr/T8P.23-B8.json`).
+- **Quick run (`T8P.23-B8`):** unit 1648, integration 229, checks 14 of 14, browser-task 7; run complete.
