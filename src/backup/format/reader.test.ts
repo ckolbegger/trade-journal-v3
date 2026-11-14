@@ -122,4 +122,34 @@ describe('readArtifact', () => {
     const extraGzip = await failure(new Blob([gzipSync(new Uint8Array([...plain, ...new TextEncoder().encode('more\n')]))]));
     expect((extraGzip as ArtifactReadError).code).toBe('Corrupt');
   });
+
+  it('should cancel the source stream when the consumer stops early or the read fails', async () => {
+    const { plain } = build();
+    const observed = (bytes: Uint8Array, size: number) => {
+      const state = { cancelled: 0, at: 0 };
+      const stream = new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (state.at >= bytes.length) return controller.close();
+          controller.enqueue(bytes.slice(state.at, state.at + size));
+          state.at += size;
+        },
+        cancel() {
+          state.cancelled += 1;
+        },
+      });
+      return { state, stream };
+    };
+
+    const early = observed(plain, 64);
+    for await (const line of readArtifact(early.stream)) {
+      expect(line.kind).toBe('header');
+      break;
+    }
+    expect(early.state.cancelled).toBe(1);
+
+    const garbage = new TextEncoder().encode('not json\n' + 'x'.repeat(4096));
+    const corrupt = observed(garbage, 16);
+    await expect(collect(corrupt.stream)).rejects.toMatchObject({ code: 'Corrupt' });
+    expect(corrupt.state.cancelled).toBe(1);
+  });
 });

@@ -81,38 +81,43 @@ export async function* readArtifact(source: Blob | ReadableStream<Uint8Array>): 
     }
   };
 
-  for (;;) {
-    let chunk: Uint8Array | undefined;
-    try {
-      const r = await reader.read();
-      if (!r.done) {
-        chunk = r.value;
-        pending += decoder.decode(chunk, { stream: true });
-      } else {
-        decoder.decode();
+  try {
+    for (;;) {
+      let chunk: Uint8Array | undefined;
+      try {
+        const r = await reader.read();
+        if (!r.done) {
+          chunk = r.value;
+          pending += decoder.decode(chunk, { stream: true });
+        } else {
+          decoder.decode();
+        }
+      } catch (e) {
+        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e));
       }
-    } catch (e) {
-      throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e));
-    }
-    if (chunk === undefined) {
-      throw new ArtifactReadError('Truncated', `the stream ended after line ${lineNumber}, before the manifest line`);
-    }
-    let at = pending.indexOf('\n');
-    let from = 0;
-    while (at >= 0) {
-      const line = handle(pending.slice(from, at));
-      if (line.kind === 'manifest') {
-        // Yield the manifest only once the rest of the stream (including the gzip trailer) has proved clean.
-        if (pending.length > at + 1) throw new ArtifactReadError('Corrupt', 'content follows the manifest line');
-        await drain();
+      if (chunk === undefined) {
+        throw new ArtifactReadError('Truncated', `the stream ended after line ${lineNumber}, before the manifest line`);
+      }
+      let at = pending.indexOf('\n');
+      let from = 0;
+      while (at >= 0) {
+        const line = handle(pending.slice(from, at));
+        if (line.kind === 'manifest') {
+          // Yield the manifest only once the rest of the stream (including the gzip trailer) has proved clean.
+          if (pending.length > at + 1) throw new ArtifactReadError('Corrupt', 'content follows the manifest line');
+          await drain();
+          yield line;
+          return;
+        }
         yield line;
-        return;
+        from = at + 1;
+        at = pending.indexOf('\n', from);
       }
-      yield line;
-      from = at + 1;
-      at = pending.indexOf('\n', from);
+      pending = pending.slice(from);
     }
-    pending = pending.slice(from);
+  } finally {
+    // Release the source on every exit: early stop, Truncated, Corrupt. A no-op once the stream has ended.
+    await reader.cancel().catch(() => undefined);
   }
 }
 
