@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 15068,
+    "input_tokens": 14971,
+    "output_tokens": 97,
+    "cache_read_tokens": 1664,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/journal/debt-section.test.ts",
+        "src/modules/journal/section.ts"
+      ]
+    }
+  ],
+  "session_id": "e642d7c8-d4c1-4f5c-9dad-6fe785b01462",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e642d7c8-d4c1-4f5c-9dad-6fe785b01462",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1e664274",
+      "resolved_base": "9d6d78b49e577cf8ec4095ac63936d70219a14e3",
+      "resolved_head": "1e6642749669017460aff63600f5eedde0a7c07b",
+      "exact_range": "9d6d78b49e577cf8ec4095ac63936d70219a14e3..1e6642749669017460aff63600f5eedde0a7c07b",
+      "source_artifact_sha256": "90e17297c984ea02ac152193e4e4c37dcd72c4a476ca1b36e790c6400869d47a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "ded6fa5b869ee4e9b5c29f477a832768ea4e7ac8952d1b20c3a8cc4a29f60b0d"
+        },
+        {
+          "item_id": "ed26dcfb761795844bfbe70c8364497ebb522175130b5c995650b37c5de6e90a",
+          "path": "src/modules/journal/debt-section.test.ts",
+          "fingerprint": "f69e3e081e518e192100ea97ae93f057fd27b3c4bfa231c8fe2c736678294355"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "ded6fa5b869ee4e9b5c29f477a832768ea4e7ac8952d1b20c3a8cc4a29f60b0d"
+        },
+        {
+          "item_id": "ed26dcfb761795844bfbe70c8364497ebb522175130b5c995650b37c5de6e90a",
+          "path": "src/modules/journal/debt-section.test.ts",
+          "fingerprint": "f69e3e081e518e192100ea97ae93f057fd27b3c4bfa231c8fe2c736678294355"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "009b70f1659604bbcf617fb0942985f27cc76c6d8797fd26d15b3dc94681bc3d",
+          "path": "evidence/D08/tdd-log/T8.6-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "150770e5ff67c0678d4d7288dff82dfc89ead608adea87b304ba2f47b5907411",
+          "path": "evidence/D08/suite-runs/T8.6-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a7e5fa9f6751ecaf07106238b0ff845d9b2c86ecc501be7e034343d1266ef729",
+          "path": "evidence/D08/suite-runs/T8.6-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d5ec6075aa48e1fba235438d2133eecbd1358c6291182dcdab0d0ca96a3d24ea",
+          "path": "evidence/D08/suite-runs/T8.6-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f185110dddf0c2857d8938f95a554a36901b416fd3d7e0a03f492f907cc05337",
+          "path": "evidence/D08/suite-runs/T8.6-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 6589
+  }
+}

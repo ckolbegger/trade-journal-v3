@@ -534,3 +534,66 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 | T8.12 lane tier | `tools/wording-rules.test.ts` "reports navigator.userAgent…" (5 s timeout under load) | passed alone |
 | T8.14 lane tier | `src/ui/screens/PositionChangeForm.test.tsx` "focus after navigation" | passed twice alone |
 | T8.3-B2 lane tier | `src/ui/screens/TradeList.test.tsx` "Open list › should render distinct Loading, Ready, Empty…" | file passed alone (35 of 35) |
+
+## Results after the user's answers to Q4–Q7 (2026-11-14)
+
+- **T8.6-B1** `9d6d78b4`: red ("expected { kind: 'Parsed', … } to deeply equal { kind: 'Rejected', … }") then green.
+  - Fix: Trade Record's `decimal` and `instant` schema constants are refined with the domain's `parseDecimal` and `Temporal.Instant.from` (try/catch). The Option `expiration`, a date, stays a string.
+  - Lane tier: unit 175 / 1794, integration 106 / 229, checks 14 of 14.
+  - ocr (session `810f728d-4cdf-4c61-99fe-f84b2f3b6d31`): **No findings.** Raw: `ocr/T8.6-B1-9d6d78b4.json`.
+- **T8.6-B2** `1e664274`: red ("expected [] to deeply equal [ { …(2) }, { …(2) } ]") then green.
+  - Fix: the Journal section validator reports an Entry or Debt with empty `versions` (declines too, through the same loop). The Journal design states no numbering rule, so only the empty case is covered.
+  - It reused `VersionChainBroken`, whose sentence names a Trade fact. That was put to the user as Q7, answered (a): T8.6-F2 adds a Journal-only code.
+  - Lane tier: unit 175 / 1795, integration 106 / 229, checks 14 of 14.
+  - ocr (session `e642d7c8-d4c1-4f5c-9dad-6fe785b01462`): **No findings.** Raw: `ocr/T8.6-B2-1e664274.json`.
+- **T8.6-B3** `f4669531`: red ("expected 'Parsed' to be 'Rejected'") then green.
+  - Fix: Market Data's `instant` constant is refined, covering four time fields.
+  - Mark `price` stays a string (choice): section validation already reports `InvalidPrice` and `PriceNegative` without throwing (A37).
+  - Agent note, not a bug task under the review rule: `journal/restore.ts`'s `instant` is still a plain string.
+  - Lane tier: unit 175 / 1796, integration 106 / 229, checks 14 of 14.
+  - ocr (session `3d16b0ee-3395-4a19-9631-1f181b762f56`): **No findings.** Raw: `ocr/T8.6-B3-f4669531.json`.
+- **T8.3-F1** `c780cffb` (lane PS, recreated at `2139a827`; Q4 (a)): red ("expected [ 'batch:catalog', …(1) ] to deeply equal [ 'start', 'batch:catalog', …(1) ]") then green.
+  - `readExportSnapshot(..., onBatch, onStart?)` calls `onStart({ binding, meta, counts })` synchronously, once, inside the snapshot, before the first batch. `ExportStart` is exported, and the final result is unchanged.
+  - Lane tier: unit 173 / 1811, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.4-F2** `c4ca7f23` (lane WB, recreated at `2139a827`; Q5 logging): three cases, each red then green.
+  - New `FailureDetail { stage, name, message, stack?, context? }` in `backup-types.ts`, and an optional `detail` on the export's `NotCompleted`. `describeError(stage, error, context?)` lives in `backup-export.ts`, and `runExport`'s `Failed` carries `detail`.
+  - Eight existing NotCompleted assertions gained a `detail` expectation, with no behavior change.
+  - Lane tier: unit 173 / 1813, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.13-B2** `51a27154`: two cases, each red then green.
+  - Red 1: the unfinished-Restore sentence wasn't found.
+  - Red 2: "expected "error" to be called 1 times, but got 0 times".
+  - The apply rejection is caught, `applying` is reset, and the approved sentence shows with Reload (`window.location.reload()`, since there's no prop to reach the shell's helper).
+  - `dev-log.ts` `logFailure(detail)` writes `console.error('[Trade Journal]', detail)`. Its local `FailureDetail` is swapped for the shared one at merge.
+  - Lane tier: unit 165 / 1776, integration 106 / 229, checks 14 of 14.
+  - ocr (session `7bef964e-1aa4-4350-b1d6-d3643d1763a1`): **No findings.** Raw: `ocr/T8.13-B2-51a27154.json`.
+- **T8.3-F1 ocr** (session `e0f64d40-eb2f-4297-be33-9bc59fcd548e`, 4 files, 1 finding, Valid; raw: `ocr/T8.3-F1-c780cffb.json`). It becomes bug task **T8.3-B6** in lane PS:
+  - Finding: `export-snapshot.ts:164` `onStart` has no thenable guard like `onBatch`'s.
+  - Defect: an async `onStart` is accepted, so batches run before its work finishes and a rejection goes unhandled.
+  - Case: "it should end the snapshot with EarlyAutoCommitGuard when onStart returns a promise".
+- **T8.4-F2 ocr** (session `2a04ad6c-189a-4fee-af02-2b71657e605f`, 4 files, 2 findings, both Valid; raw: `ocr/T8.4-F2-c4ca7f23.json`). They become bug tasks in lane WB, after T8.5-F2:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.4-B5 | `backup-export.ts:47` `describeError` copies the raw message and stack, and `CanonicalJsonUnsupported` embeds the rejected value | a stored value, such as a price, reaches the developer log, against Q5's "no journal contents" | it should leave record values out of the failure detail when a record can't be written |
+| T8.4-B6 | `backup-export.ts:47` `String(x)` in `describeError` can throw for a non-Error rejection | `exportBackup` rejects instead of returning NotCompleted | it should return NotCompleted when the rejection value can't be converted to text |
+- **T8.6-F2** `98bc98ac` (Q7 (a)): red (the case still got `VersionChainBroken`) then green.
+  - The Journal issue is now `JournalVersionsMissing { code, id }`, with Q7's sentence in `readiness-copy.ts`. `VersionChainBroken` is Trade Record's only.
+  - Declines are stored without `versions`, so they aren't reported in normal use.
+  - Lane tier: unit 175 / 1796, integration 106 / 229, checks 14 of 14.
+  - ocr pending. T8.6-B4 has started.
+- **T8.13-B3** `f8852957`: two cases, each red then green.
+  - Red 1: the readiness sentence wasn't found.
+  - Red 2: "expected "error" to be called 1 times, but got 0 times".
+  - `RuntimeNotWritable` from `prepareRestore` gets its own `CannotCheck` phase: the failed checks' readiness sentences (`explainFailure`, as on the apply side) and Choose backup file. It logs stage `'Prepare'`, with the failed checks as one `check:reason` string in `context`. Only `Cancelled` returns to Choose.
+  - Lane tier: unit 165 / 1778, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **Split of the UI logging:** T8.13-F1 (started) covers Q5 items 3, 4, 6, 9 and 10, plus logging for Restore prepare failures, with the local `FailureDetail`. The Backup page's logging (T8.12-F1) waits for lane WB's merge of the shared `FailureDetail` and the `detail` fields.
+- **ocr of T8.6-F2** `98bc98ac`: no findings (3 files reviewed). Raw: `ocr/T8.6-F2-98bc98ac.json`.
+- **ocr of T8.13-B3** `f8852957`: no findings (2 files reviewed). Raw: `ocr/T8.13-B3-f8852957.json`.
+- **T8.3-B6** `2a41fdab` (lane PS): one case, red then green.
+  - Red: "expected { kind: 'Read', …(4) } to deeply equal { kind: 'EarlyAutoCommitGuard' }".
+  - A shared `guardAsync` helper now covers both `onBatch` and `onStart`. It does the thenable check, absorbs a later rejection, and fails with `EarlyAutoCommitGuard`. A tripped `onStart` returns before the first read.
+  - Lane tier: unit 173 / 1812, integration 106 / 229, checks 14 of 14.
+  - ocr pending.

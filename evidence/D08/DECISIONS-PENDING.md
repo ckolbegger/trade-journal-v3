@@ -184,3 +184,11 @@ The sentences follow the table's existing style (for example, "A Trade records t
 **Recorded, not questions:** D2's B2.12 Open-list Error state still has a working trigger. The app's read path still throws on a missing member, and the fault fixtures bypass the Restore validator, so the test passes unchanged ("the Open list in every state", `e2e/d2/responsive-a11y.spec.ts`). The continuity rule comes from the Trade Record design's "version continuity". Every fact in `facts` and `closeReasonFacts` has at least one version, numbered 1, 2, 3 … in array order. A broken Trade is reported and not derived.
 
 **Answer (2026-11-14):** (a), the four sentences approved as written. T8.6's F12 continuation adds them to `MIGRATION_ISSUES` and commits. `readiness-copy.ts` is lane US's file in this wave, so the four new entries are reconciled when lanes FM and US merge.
+
+## Q7. Sentence for an empty Journal Entry or debt history (T8.6-B2) — answered (a), 2026-11-14
+
+T8.6-B2 reported an empty Journal Entry or Debt history with Trade Record's `VersionChainBroken`. That code's approved sentence names a Trade fact, and the startup screen picks its sentence by code alone. The options were:
+- (a) a separate Journal code with "A Journal Entry or reflection debt has no versions.";
+- (b) one code with a broader sentence.
+
+**Answer:** (a), as recommended. T8.6-F2 (lane FM) adds the Journal-only code and its sentence to `MIGRATION_ISSUES`.

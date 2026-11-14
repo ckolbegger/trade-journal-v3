@@ -1,0 +1,163 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 118001,
+    "input_tokens": 116335,
+    "output_tokens": 1666,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m2s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/backup-export.ts",
+      "content": "Copying arbitrary error text does not satisfy the requirement that diagnostics contain no journal contents. There is already a concrete leak in the build path: canonical-json.ts embeds the rejected numeric value and object-key path in CanonicalJsonUnsupported.message, and the stack repeats that message. This exposes stored record values when export fails (including the unsafe-number scenario added in the tests). Use privacy-safe, allowlisted diagnostic messages/context and sanitize or omit the message portion of stacks; add a regression test asserting that sensitive record values never appear in the returned detail.",
+      "existing_code": "  const base = error instanceof Error ? { name: error.name, message: error.message, ...(error.stack === undefined ? {} : { stack: error.stack }) } : { name: 'NonError', message: String(error) };",
+      "start_line": 47,
+      "end_line": 47,
+      "category": "security",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/backup-export.ts",
+      "content": "Diagnostic construction can itself throw: String(Object.create(null)) raises TypeError, as can a rejection object's custom toString. For example, if lookupRoot or download.offer rejects with that value, its new catch handler throws and exportBackup rejects instead of returning NotCompleted, whereas the previous handler handled any rejection. Make describeError non-throwing with a fixed fallback for unconvertible values (also guard error-property access), and test a non-Error rejection without a usable primitive conversion.",
+      "existing_code": "  const base = error instanceof Error ? { name: error.name, message: error.message, ...(error.stack === undefined ? {} : { stack: error.stack }) } : { name: 'NonError', message: String(error) };",
+      "start_line": 47,
+      "end_line": 47,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Workspace backup implementation, export, types, and tests",
+      "files": [
+        "src/coordinators/workspace/backup-export.ts",
+        "src/coordinators/workspace/backup-types.ts",
+        "src/coordinators/workspace/backup.test.ts",
+        "src/coordinators/workspace/backup.ts"
+      ]
+    }
+  ],
+  "session_id": "2a04ad6c-189a-4fee-af02-2b71657e605f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2a04ad6c-189a-4fee-af02-2b71657e605f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c4ca7f23",
+      "resolved_base": "2139a8278545ef97c2340167b5ac70a463ea9a29",
+      "resolved_head": "c4ca7f2320ef95d06424bf96fe3faabaa23a3a04",
+      "exact_range": "2139a8278545ef97c2340167b5ac70a463ea9a29..c4ca7f2320ef95d06424bf96fe3faabaa23a3a04",
+      "source_artifact_sha256": "b0ede113be68e9815fb921cb6a667f429b081d95dd4271c93d27b8a36629ef06"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "aa7c387377f5dffa5f36b3d9ba422e5faec88658f007b6f64ad01bcca5bafb8c"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "281c8ec44ab900cda4753aa0c7374e440d782dc9ba0f7ac13c9ffd2fcaa1218e"
+        },
+        {
+          "item_id": "c09b5145b2ce61e62cca92dfd9a40892774f28096c5eae876ac7e1c55f01bf92",
+          "path": "src/coordinators/workspace/backup-export.ts",
+          "fingerprint": "808aa3e988dc7c94279ba74a62d66f56740cedb0e3c1e5813250d14f98674ba5"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "14ec9d44d57a6e2d6f75db74765c0b6cdf6d67e6c916b8a9b21dc2f2cd77f6bd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "aa7c387377f5dffa5f36b3d9ba422e5faec88658f007b6f64ad01bcca5bafb8c"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "281c8ec44ab900cda4753aa0c7374e440d782dc9ba0f7ac13c9ffd2fcaa1218e"
+        },
+        {
+          "item_id": "c09b5145b2ce61e62cca92dfd9a40892774f28096c5eae876ac7e1c55f01bf92",
+          "path": "src/coordinators/workspace/backup-export.ts",
+          "fingerprint": "808aa3e988dc7c94279ba74a62d66f56740cedb0e3c1e5813250d14f98674ba5"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "14ec9d44d57a6e2d6f75db74765c0b6cdf6d67e6c916b8a9b21dc2f2cd77f6bd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1abeeb81298b7af1e70598851b4d6570757df7c908d30d056d7bdabaaded76af",
+          "path": "evidence/D08/suite-runs/T8.4-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "29cb94c32e4849a0d9830f6552c85d4428ae7ba92ed274fabea9ade32cc1f866",
+          "path": "evidence/D08/suite-runs/T8.4-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d9f527a80c1be11d87fa97d1470dddc40dc8c903f43d6e9a4b3e8d9b1063eb94",
+          "path": "evidence/D08/suite-runs/T8.4-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dc5d8dbd2ed570af526013447c5b21170e4fd26e047045f166c148cac2870535",
+          "path": "evidence/D08/suite-runs/T8.4-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e8df1fd537e53c0372b3e761f96082fc5e4acd718b19483b93aec3babe6c97b0",
+          "path": "evidence/D08/tdd-log/T8.4-F2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 62294
+  }
+}

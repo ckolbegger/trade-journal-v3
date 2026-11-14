@@ -1,0 +1,153 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 51329,
+    "input_tokens": 50906,
+    "output_tokens": 423,
+    "cache_read_tokens": 8320,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/export-snapshot.ts",
+      "content": "The new callback bypasses the synchronous-callback guard used for `onBatch`. TypeScript permits an async function where a void-returning callback is expected, so an async `onStart` is accepted here: batches proceed before its asynchronous work finishes, and a rejected promise becomes an unhandled rejection while the snapshot can still report `Read`. Inspect its return value for a thenable, absorb any rejection, and abort with `EarlyAutoCommitGuard` before `readFrom`, as for `onBatch`. Add coverage for both resolving and rejecting async `onStart` callbacks.",
+      "existing_code": "        onStart?.({ binding, meta, counts });",
+      "start_line": 164,
+      "end_line": 164,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Snapshot export and persistence integration",
+      "files": [
+        "src/persistence/export-snapshot.test.ts",
+        "src/persistence/export-snapshot.ts",
+        "src/persistence/index.ts",
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "e0f64d40-eb2f-4297-be33-9bc59fcd548e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e0f64d40-eb2f-4297-be33-9bc59fcd548e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c780cffb",
+      "resolved_base": "2139a8278545ef97c2340167b5ac70a463ea9a29",
+      "resolved_head": "c780cffb59bf87a374e62213b5dae4ae1ec90bb8",
+      "exact_range": "2139a8278545ef97c2340167b5ac70a463ea9a29..c780cffb59bf87a374e62213b5dae4ae1ec90bb8",
+      "source_artifact_sha256": "eb93b7e9c3523ea8c987aca84b89f833abd9fd13c68255c470ba2f64370b2987"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "639f58c70777de33260b12f6e971fa4e0b52ad4404067d0035fa89e6a92aae4c",
+          "path": "src/persistence/export-snapshot.test.ts",
+          "fingerprint": "4ae701f350f6a06bbd22716962f4637cf8e54609dfee83e79a5170b4a1080c62"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "f714b6d69d615e3e674da94ac2af5038d84129f5b4171d6e70b16e6362fc72fd"
+        },
+        {
+          "item_id": "a65024342daa75efc3e48143f68f45450b5a2404fb4851167f3dde5d12c465b3",
+          "path": "src/persistence/export-snapshot.ts",
+          "fingerprint": "80c0cf9ac5f129ba1f193016b020aedbe0b680cafba9a2109f8d6c6528c2ae92"
+        },
+        {
+          "item_id": "ccc90ce69829b440ce6cd6762a5bc403b9ed2dcfc00f7d0daf697deadd67d65d",
+          "path": "src/persistence/index.ts",
+          "fingerprint": "5532c603f00d19b451b791813b58e0d317de214a3e9ad2327ed4f4814dfe7400"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "639f58c70777de33260b12f6e971fa4e0b52ad4404067d0035fa89e6a92aae4c",
+          "path": "src/persistence/export-snapshot.test.ts",
+          "fingerprint": "4ae701f350f6a06bbd22716962f4637cf8e54609dfee83e79a5170b4a1080c62"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "f714b6d69d615e3e674da94ac2af5038d84129f5b4171d6e70b16e6362fc72fd"
+        },
+        {
+          "item_id": "a65024342daa75efc3e48143f68f45450b5a2404fb4851167f3dde5d12c465b3",
+          "path": "src/persistence/export-snapshot.ts",
+          "fingerprint": "80c0cf9ac5f129ba1f193016b020aedbe0b680cafba9a2109f8d6c6528c2ae92"
+        },
+        {
+          "item_id": "ccc90ce69829b440ce6cd6762a5bc403b9ed2dcfc00f7d0daf697deadd67d65d",
+          "path": "src/persistence/index.ts",
+          "fingerprint": "5532c603f00d19b451b791813b58e0d317de214a3e9ad2327ed4f4814dfe7400"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "28a836837b180d76dd2ef184706f4558793d7dd60ec3866e626c0683952ef8f5",
+          "path": "evidence/D08/suite-runs/T8.3-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "54ad82a0e8bbf44485d11400fff8ff3effcdcf7abe91af2d007ee23e3376effc",
+          "path": "evidence/D08/suite-runs/T8.3-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9e93b7746d53db49c778fce71d0ac6cf7e88d55bda33905ff0dcc52132c5a786",
+          "path": "evidence/D08/suite-runs/T8.3-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a353117db0e0786a450e05fa99a1efa2f6ee920b46076ce9137b8b09462903b4",
+          "path": "evidence/D08/suite-runs/T8.3-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ac64f3b5d46c702aa83b153ccea64b1a87780159b5094aca0fd65c9c52ee1353",
+          "path": "evidence/D08/tdd-log/T8.3-F1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 29551
+  }
+}
