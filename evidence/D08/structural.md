@@ -436,6 +436,8 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 ## Merge runs
 
+- **T8.5 merged** 2026-11-14: its eight commits (through `49a835a7`) were rebased in a temporary worktree onto `c849176e` and fast-forwarded (`663faaaa` … `07089243`). Git skipped T8.4's already-applied commits. The temporary worktree was removed. Lane WB continues with T8.10.
+
 - **merge-6** (T8.4 merged; at `fe8b0e1a`): unit 173 / 1799, integration 106 / 229, browser full tier (first matching path since `16e72bf5`: `src/persistence/persistence.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-6-*.txt`.
 
 - **T8.4 merged** 2026-11-14, after merge-5. Lane WB stays busy with T8.5, so T8.4's five commits (through `87f92560`) were rebased in a temporary worktree onto `80adffb4` and fast-forwarded (`92301ec3` … `0fa1b021`). The temporary worktree and branch were removed. Lane WB rebases later, and git drops the already-applied commits.
