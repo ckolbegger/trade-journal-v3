@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import { z } from 'zod';
 import { canonicalJson } from '../../backup/format/canonical-json.ts';
 import { sha256Hex } from '../../delivery/inventory.ts';
@@ -35,7 +36,17 @@ export type ApplyPreparedRestoreResult = { readonly kind: 'Accepted' } | { reado
 // The strict schema-7 observation record (P31): an extra or missing field, or a number where a
 // decimal string belongs, fails. The per-record `revision` write stamp is not part of the artifact
 // (Q3), so it is an extra field.
-const instant = z.string();
+// Instants are checked with the grammar section validation reads them with (`Temporal.Instant.from`),
+// so validation never meets a stored time it cannot read. A price stays a plain string: the section
+// validator reports a bad one as InvalidPrice or PriceNegative (A37).
+const instant = z.string().refine((text) => {
+  try {
+    Temporal.Instant.from(text);
+    return true;
+  } catch {
+    return false;
+  }
+});
 const mark = z.strictObject({
   revisionId: z.string(),
   revisionNumber: z.number().int(),

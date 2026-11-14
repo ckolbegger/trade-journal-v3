@@ -42,6 +42,39 @@ describe('record parsing at schema 7 (P31)', () => {
   });
 });
 
+describe('record parsing of instant formats (T8.6-B3)', () => {
+  it('should report a malformed record for a Mark or acknowledgment with an unreadable time', () => {
+    const records = exported();
+    const markAt = records.findIndex((r) => (r['marks'] as unknown[]).length > 0);
+    const mark = (records[markAt]!['marks'] as Record<string, unknown>[])[0]!;
+    mark['savedAt'] = 'not-a-time';
+    mark['observedAt'] = '2026-13-45';
+    mark['correctionFootprint'] = {
+      key: { instrumentKey: 'ABC', tradingDate: '2026-01-02' },
+      effectDate: '2026-01-02',
+      savedAt: 'later',
+      domains: ['Valuation'],
+      replayInterval: { from: '2026-01-02', to: '2026-01-03' },
+    };
+    const ackAt = markAt === 0 ? 1 : 0;
+    records[ackAt]!['acknowledgments'] = [{ versionId: 'ack-1', kind: 'Asserted', savedAt: 'yesterday' }];
+    records[ackAt]!['effectiveAcknowledgmentId'] = 'ack-1';
+    const issue = (line: number, path: string) => ({ code: 'MalformedRecord', line, store: 'observations', path });
+    const result = preparation.parse('observations', linesOf(records));
+    expect(result.kind).toBe('Rejected');
+    const issues = result.kind === 'Rejected' ? result.issues : [];
+    expect(issues).toHaveLength(4);
+    expect(issues).toEqual(
+      expect.arrayContaining([
+        issue(markAt + 3, 'marks.0.savedAt'),
+        issue(markAt + 3, 'marks.0.observedAt'),
+        issue(markAt + 3, 'marks.0.correctionFootprint.savedAt'),
+        issue(ackAt + 3, 'acknowledgments.0.savedAt'),
+      ]),
+    );
+  });
+});
+
 describe('applyPreparedRestore recheck (A135)', () => {
   it('should accept a candidate section whose counts and digest equal those recorded in the candidate meta, and return CandidateChanged naming observations when one observation was removed from the candidate after preparation', async () => {
     const candidate = () => ({ observations: exported() });
