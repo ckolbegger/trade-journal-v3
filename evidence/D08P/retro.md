@@ -2,9 +2,9 @@
 
 Source: the user's retrospective of the Trade Detail refactor (D08P), 2026-11-14. It reviewed the implementation session `080f089b-4413-4842-ac2b-aec7f7178d04` (2026-11-12 23:44 to 2026-11-14 11:05), [structural.md](structural.md), [final-report.md](final-report.md), the critic reports, and the agent environment: `.claude/agents/`, `.claude/docs/`, `.claude/settings.json` and ocr's file selection.
 
-D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 5 and 6 are applied; the rest are open.
+D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5 and 6 are applied; the rest are open.
 
-## 1. `build:releases` was blocked for agents, though it is on the allow list (permissions)
+## 1. `build:releases` was blocked for agents, though it is on the allow list (permissions). Applied.
 
 **What happened.** The auto-mode classifier refused `npm run build:releases` to T8P.23-B14's agent twice. The user had to decide ("Main session builds for it"), and from then on every brief and bug-task message carried a workaround, with the suite runner doing the release build. Earlier, a stale `dist-releases` made T8P.23-B4's agent report it "can't make red", which cost a round. A gate bug-task agent also hit B6.6 against stale release builds.
 
@@ -14,7 +14,15 @@ D08P passed its gate after about 25 hours of working time, against a swarm estim
 
 **Proposed fix.** Add a `build:all` script and allow `Bash(npm run build:all)`, or allow `Bash(npm run build)` beside the other two. Then remove the workaround from the bug-task rules and `tdd-task.md`'s rebuild line. Verify with one agent run before relying on it.
 
-## 2. The critic-report step in `critic-brief.md` never works (stale guidance)
+**Applied.**
+- `package.json` gains `build:all` (`npm run build && npm run build:faults && npm run build:releases`).
+- `.claude/settings.json` allows `Bash(npm run build:all)` and `Bash(npm run build)`, so the chained form is allowed in every part too.
+- `tdd-task.md`'s rebuild line names `build:releases` and `build:all`.
+- The bug-task rules lived only in the session's scratchpad; future briefs drop the workaround.
+
+**Verified.** A fresh `general-purpose` subagent ran `npm run build:all` and the chained form. Both ran without a refusal and exited 0. One run is not proof against a classifier that refused only some of the time before: if a refusal comes back, report it to the user rather than working around it.
+
+## 2. The critic-report step in `critic-brief.md` never works (stale guidance). Applied.
 
 **What happened.** The brief tells the critic to write `test-results/critic-d<nn>-<n>/report.md`, and "After each critic" says to `cp` it, or SendMessage the critic if it is missing. The harness refuses report files from subagents, so the write failed for all 6 D08P critics and all 3 in D7S. Each time, the main session extracted the report from the session transcript with a script written to the scratchpad, which disappears with the session.
 
@@ -24,6 +32,13 @@ D08P passed its gate after about 25 hours of working time, against a swarm estim
 - Commit the extractor as `.claude/scripts/agent-report.mjs <transcript> <heading>`. It scans the transcript's JSON lines for the agent message containing the heading and prints the report, unindented.
 - In the brief, the critic sends its report only as its final message, under a fixed heading such as `# D<nn> critic-<n> report`.
 - "After each critic" runs the script, in place of the `cp`-or-SendMessage line.
+
+**Applied.**
+- The extractor is `tools/agent-report.ts`, not `.claude/scripts/`, because the pre-commit lint covers every file and the TypeScript project includes `tools/` but not `.claude/scripts/`.
+- Its transcript argument is optional. Without it, it reads the newest `.jsonl` in this project's `~/.claude/projects/` folder, which is the current session.
+- `critic-brief.md`: the critic sends its report only as its final message, starting with `# D<nn> critic-<n> report`. "After each critic" saves it with `node tools/agent-report.ts "# D<nn> critic-<n> report" > evidence/D<nn>/critic-<n>.md`.
+
+**Verified.** Run on this session's transcript, it reproduced `critic-5.md` and `critic-6.md` byte for byte. It exits 1 for a heading no agent message holds, and it passes lint and typecheck.
 
 ## 3. No automated check for content hidden inside a scroll box (automated checks)
 
