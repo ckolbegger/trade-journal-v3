@@ -40,7 +40,11 @@ export class ArtifactWriter {
 
   /** Closes the section and returns its digest (hex SHA-256 over its record lines). */
   writeSectionEnd(section: string, counts: Record<string, number>): string {
-    const hash = this.openSection?.name === section ? this.openSection.hash : sha256.create();
+    if (this.openSection !== undefined && this.openSection.name !== section) {
+      throw new Error(`Section ${this.openSection.name} is still open; cannot end section ${section}`);
+    }
+    // No open section means the section had no records: its digest is SHA-256 of nothing.
+    const hash = this.openSection?.hash ?? sha256.create();
     const digest = bytesToHex(hash.digest());
     this.openSection = undefined;
     this.sectionDigests[section] = digest;

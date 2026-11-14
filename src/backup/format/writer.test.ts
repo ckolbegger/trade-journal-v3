@@ -75,4 +75,14 @@ describe('ArtifactWriter', () => {
     expect([out.parts[0]?.[0], out.parts[0]?.[1]]).toEqual([0x1f, 0x8b]);
     expect(() => w.writeRecord('s', 't', {})).toThrow();
   });
+
+  it('should throw when writeSectionEnd names a section other than the open one', () => {
+    const w = new ArtifactWriter();
+    w.writeRecord('trades', 't', { i: 1 });
+    expect(() => w.writeSectionEnd('journal', {})).toThrow(/trades.*journal/);
+    // the open section is untouched and still closes with its real digest
+    expect(w.writeSectionEnd('trades', { t: 1 })).toMatch(/^[0-9a-f]{64}$/);
+    // with no section open, ending a section is an empty section: SHA-256 of nothing
+    expect(w.writeSectionEnd('empty', {})).toBe(sha256(''));
+  });
 });
