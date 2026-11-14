@@ -230,16 +230,21 @@ export function AppShell({
   const [status, setStatus] = useState<Status | undefined>();
   // Another tab restored a backup over this journal: this tab can't save any more (A136).
   const [replaced, setReplaced] = useState(false);
-  useEffect(
-    () => onWorkspaceReplaced?.(() => setReplaced(true)),
-    [onWorkspaceReplaced],
-  );
   const wide = useWide();
   // A refusal from a mutation during the session, which overrides the launch status.
   const [refusal, setRefusal] = useState<RuntimeNotWritable | undefined>();
   // Where the refusal arrived, so the form open there keeps its values (see `routes` below).
   const { pathname } = useLocation();
   const [refusedAt, setRefusedAt] = useState<string | undefined>();
+  // A replaced journal keeps the open form too, like a refusal does.
+  useEffect(
+    () =>
+      onWorkspaceReplaced?.(() => {
+        setReplaced(true);
+        setRefusedAt((at) => at ?? pathname);
+      }),
+    [onWorkspaceReplaced, pathname],
+  );
   // The outcome of the trader's one durability request, shared by every screen that shows the card.
   const [durability, setDurability] = useState<Durability | undefined>();
   // At most one request at a time: the ref guards calls in the same tick, the state disables the buttons.

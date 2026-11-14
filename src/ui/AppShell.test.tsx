@@ -994,6 +994,40 @@ describe("another tab's Restore (A136)", () => {
     await user.click(screen.getByRole('button', { name: 'Reload' }));
     expect(onReload).toHaveBeenCalledTimes(1);
   });
+
+  it("should keep an open record-entry form's values when another tab's Restore replaces the journal", async () => {
+    const facade = facadeDouble();
+    let notify: (message: WorkspaceReplaced) => void = () => undefined;
+    function EntryFormStub() {
+      const [quantity, setQuantity] = useState('');
+      return (
+        <form>
+          <label>
+            Quantity
+            <input value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          </label>
+        </form>
+      );
+    }
+    render(
+      <MemoryRouter initialEntries={['/trades/trade-1/record-entry']}>
+        <AppShell
+          facade={facade}
+          screens={{ ...screens, 'record-entry': EntryFormStub }}
+          onWorkspaceReplaced={(listener) => {
+            notify = listener;
+            return () => undefined;
+          }}
+        />
+      </MemoryRouter>,
+    );
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText('Quantity'), '60');
+    act(() => notify({ kind: 'WorkspaceReplaced', databaseName: 'tj-ws-2' }));
+    expect(screen.getByText('This journal was replaced by a Restore in another tab. Reload to continue.')).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Quantity').value).toBe('60');
+    expect(screen.queryByRole('heading', { name: "Record entry isn't available" })).toBeNull();
+  });
 });
 
 describe('first run (P33)', () => {
