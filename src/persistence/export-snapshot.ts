@@ -50,6 +50,8 @@ export async function readExportSnapshot(
   try {
     db = await new Promise<IDBDatabase>((resolve, reject) => {
       const open = indexedDB.open(databaseName);
+      // An upgrade means the database did not exist; abort it so the read-only export creates nothing.
+      open.onupgradeneeded = () => open.transaction?.abort();
       open.onsuccess = () => resolve(open.result);
       open.onerror = () => reject(open.error ?? new Error('open failed'));
     });

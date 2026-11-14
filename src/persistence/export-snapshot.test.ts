@@ -219,6 +219,17 @@ async function databaseAtSchema(schemaVersion: number, records: readonly (readon
   return name;
 }
 
+describe('a missing database (T8.3-B2)', () => {
+  it('should report ReadFailed for a missing database without creating it', async () => {
+    const p = persistence();
+
+    const read = await p.readExportSnapshot('no-such-workspace', exportLayoutFor(7)!, () => {});
+
+    expect(read).toEqual({ kind: 'ReadFailed', store: 'meta' });
+    expect((await factory.databases()).map((d) => d.name)).not.toContain('no-such-workspace');
+  });
+});
+
 describe('layouts per schema (A149)', () => {
   it('should read a schema-5 database with the schema-5 layout, and return UnknownLayout for a database whose meta names schema 9', async () => {
     const v5 = await databaseAtSchema(5, [
