@@ -1,0 +1,193 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 4,
+    "total_tokens": 192182,
+    "input_tokens": 189842,
+    "output_tokens": 2340,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m34s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/export-snapshot.ts",
+      "content": "The continuation key is computed after `onBatch` runs. For stores without private fields, `withoutPrivateFields` returns the original row, and `Record\u003cstring, unknown\u003e` permits the callback to mutate it. If the callback changes the last record's primary key in a full batch (for example, normalizing a catalog ID), pagination can skip remaining records or repeatedly read the same batch. Capture the next key before invoking the callback, or isolate the delivered records from pagination state.",
+      "existing_code": "          else readFrom(index, keyOf(store, rows[rows.length - 1]!));",
+      "start_line": 114,
+      "end_line": 114,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/export-snapshot.ts",
+      "content": "Opening a nonexistent database without an upgrade handler creates and persists an empty database. Thus an export of a source that was deleted (or an incorrect name) returns `ReadFailed` but leaves a newly created database behind, despite being a readonly operation. Abort the opening transaction in `onupgradeneeded` so missing sources fail without creating persistent state.",
+      "existing_code": "      const open = indexedDB.open(databaseName);\n      open.onsuccess = () =\u003e resolve(open.result);",
+      "start_line": 52,
+      "end_line": 53,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/export-snapshot.ts",
+      "content": "This check precedes reading the stored schema, so a genuine older database with a newer supplied layout returns `ReadFailed` for an absent store rather than the documented `UnknownLayout`. For example, schema 1 with layout 7 lacks `observations`. Read `meta` and available layout stores in the same transaction, check the schema mismatch first, and only then report missing stores for an otherwise matching layout.",
+      "existing_code": "    const missing = ['meta', ...layout.stores].find((store) =\u003e !db.objectStoreNames.contains(store));\n    if (missing) return { kind: 'ReadFailed', store: missing as WorkspaceStore };",
+      "start_line": 61,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/export-snapshot.ts",
+      "content": "If an accidentally async `onBatch` throws or returns a rejected promise, this branch aborts the transaction and returns `EarlyAutoCommitGuard`, but leaves the returned promise's rejection unhandled. The caller cannot catch that rejection through `readExportSnapshot`, since this method resolves with the guard result. Consume the rejected thenable when detecting it (while still aborting immediately), and add a rejected-promise test alongside the resolved-promise case.",
+      "existing_code": "            if (typeof (returned as { then?: unknown } | undefined)?.then === 'function') {\n              fail({ kind: 'EarlyAutoCommitGuard' });",
+      "start_line": 108,
+      "end_line": 109,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Persistence layout and snapshot export implementation, tests, and integration",
+      "files": [
+        "src/persistence/export-layout.ts",
+        "src/persistence/export-snapshot.test.ts",
+        "src/persistence/export-snapshot.ts",
+        "src/persistence/index.ts",
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "ae6dedc5-ed8c-4530-a082-f92c5d2d5878",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ae6dedc5-ed8c-4530-a082-f92c5d2d5878",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "596b02bb",
+      "resolved_base": "fdc5e858594dd9c79295f55fa4e7f88d27ecbece",
+      "resolved_head": "596b02bb33d622665ea5164fc8ad06517d1a93f7",
+      "exact_range": "fdc5e858594dd9c79295f55fa4e7f88d27ecbece..596b02bb33d622665ea5164fc8ad06517d1a93f7",
+      "source_artifact_sha256": "78a763810a5443ecfb712a1ff3eb7ff7a2958edcf631afa30b53d1d61d105b57"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "639f58c70777de33260b12f6e971fa4e0b52ad4404067d0035fa89e6a92aae4c",
+          "path": "src/persistence/export-snapshot.test.ts",
+          "fingerprint": "493994d841dc241505a0266df5a7244f3d31f5302424282fd61481611f65aa02"
+        },
+        {
+          "item_id": "820f9a2d14286e103f3148baf41d104dc10d44287e1e04b8522963e490e6b9ef",
+          "path": "src/persistence/export-layout.ts",
+          "fingerprint": "5a9d215384e72b1c2f2c884dc570393294a562685c3ea774e6e1486bab68404e"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "b7a342a3ce26d1d204cd4fbc2f592124d24cca2ee372546e4f7c1e6ccbc66796"
+        },
+        {
+          "item_id": "a65024342daa75efc3e48143f68f45450b5a2404fb4851167f3dde5d12c465b3",
+          "path": "src/persistence/export-snapshot.ts",
+          "fingerprint": "0bbcab6d17500be18e7af62a98fdc31e0d8cf99702468003b2d6c6564ff76b57"
+        },
+        {
+          "item_id": "ccc90ce69829b440ce6cd6762a5bc403b9ed2dcfc00f7d0daf697deadd67d65d",
+          "path": "src/persistence/index.ts",
+          "fingerprint": "c9eb5fe59b17d40b909d9a1ae878e08eaadff049accf71f9bd3f2a531d79f46d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "639f58c70777de33260b12f6e971fa4e0b52ad4404067d0035fa89e6a92aae4c",
+          "path": "src/persistence/export-snapshot.test.ts",
+          "fingerprint": "493994d841dc241505a0266df5a7244f3d31f5302424282fd61481611f65aa02"
+        },
+        {
+          "item_id": "820f9a2d14286e103f3148baf41d104dc10d44287e1e04b8522963e490e6b9ef",
+          "path": "src/persistence/export-layout.ts",
+          "fingerprint": "5a9d215384e72b1c2f2c884dc570393294a562685c3ea774e6e1486bab68404e"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "b7a342a3ce26d1d204cd4fbc2f592124d24cca2ee372546e4f7c1e6ccbc66796"
+        },
+        {
+          "item_id": "a65024342daa75efc3e48143f68f45450b5a2404fb4851167f3dde5d12c465b3",
+          "path": "src/persistence/export-snapshot.ts",
+          "fingerprint": "0bbcab6d17500be18e7af62a98fdc31e0d8cf99702468003b2d6c6564ff76b57"
+        },
+        {
+          "item_id": "ccc90ce69829b440ce6cd6762a5bc403b9ed2dcfc00f7d0daf697deadd67d65d",
+          "path": "src/persistence/index.ts",
+          "fingerprint": "c9eb5fe59b17d40b909d9a1ae878e08eaadff049accf71f9bd3f2a531d79f46d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "08aa2cc4988f862f3fa72f95c5de9751890bc943e0fcb6d6215719f32c2dc131",
+          "path": "evidence/D08/suite-runs/T8.3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3a306e4818d6dc35c0bc0f5dbe3e605dc64690945d473f6db7c5e65a3cefee91",
+          "path": "evidence/D08/suite-runs/T8.3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4d5b89f54c5ea7804abb99da4f73c229299b850afe53f0b982d6b3ee799bfcc1",
+          "path": "evidence/D08/suite-runs/T8.3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ab07d2a7e4adb4b6ea9d602b1ec544e640cae9d275fed63635df00b81dcd50df",
+          "path": "evidence/D08/tdd-log/T8.3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f2d9543c0f62dc9f3df46ca40d65a2026df899e4c548c610080ce3a93008f749",
+          "path": "evidence/D08/suite-runs/T8.3-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 93959
+  }
+}

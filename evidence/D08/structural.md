@@ -57,6 +57,15 @@ Lane PS, commit `596b02bb` (4 cases). Lane tier `T8.3`: unit 164 / 1754, integra
 
 **Raised as Q3:** whether the per-record `revision` write stamp is exported.
 
+**ocr review of `596b02bb`** (session `ae6dedc5-ed8c-4530-a082-f92c5d2d5878`, gpt-6.1-sol, 5 files, 4 findings; raw: `ocr/T8.3-596b02bb.json`). Three judged Valid, one Doubtful, so each becomes a bug task, run one at a time in lane PS:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.3-B1 | `export-snapshot.ts:108` a promise from `onBatch` gets no handler | a later rejection of that promise is unhandled | it should not leave an unhandled rejection when onBatch returns a promise that rejects |
+| T8.3-B2 | `export-snapshot.ts:52` opening a missing database name creates an empty database | a read-only export leaves a new database behind | it should report ReadFailed for a missing database without creating it |
+| T8.3-B3 | `export-snapshot.ts:61` the missing-store check runs before the schema check | an older database read with a newer layout gives ReadFailed, not UnknownLayout | it should report UnknownLayout when a schema-1 database is read with the schema-7 layout |
+| T8.3-B4 (Doubtful) | `export-snapshot.ts:114` the next-page key is read after `onBatch` | a callback that changes a record's key breaks paging | it should page by the key read before onBatch sees the batch |
+
 ## T8.12 Backup page
 
 Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks 14 of 14. Unit had 1 failure: `tools/wording-rules.test.ts` hit its 5 s timeout under load and passed when rerun alone (see Flakes). First-run pass flagged: "should forget the Downloaded result when the page is left". Mutation: the result held in a module-level variable that new page instances start from; see `tdd-log/T8.12.md`. Props: `BackupViewProps { facade; selectFile; readiness; timeZone }`. The three states Q1 didn't word are put to the user in Q2, part B.
@@ -84,6 +93,16 @@ Lane US, commit `9cf16630` (5 cases, each red then green; no first-run passes). 
 - `useWide` is now exported from `AppShell.tsx`.
 
 The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside the lane. After a first-run Restore, `RestoreFlow` has no completion callback, so T8.11 or T8.13 refreshes the shell. A tab still on first run gets no notice when another tab restores. The blocked views' result texts are placeholders until Q2, part C.
+
+**ocr review of `9cf16630`** (session `e0d0d9fa-501e-424d-8f21-23f0782316f0`, gpt-6.1-sol, 6 files, 5 findings; raw: `ocr/T8.14-9cf16630.json`). Three judged Valid, two Doubtful. Each becomes a bug task, run one at a time in lane US. B3 runs last, since its on-screen text waits on Q2, part C.
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.14-B1 | `AppShell.tsx:234` `WorkspaceReplaced` doesn't record the open path in `refusedAt` | an open record-entry form is swapped for Record Entry Unavailable and its values are lost (A136) | it should keep an open record-entry form's values when another tab's Restore replaces the journal |
+| T8.14-B2 | `AppShell.tsx:140` `downloaded` stays set after Completed | the blocked view shows "Downloaded, not verified yet" next to "Backup complete" | it should replace the Downloaded line with Backup complete once verification completes on a blocked view |
+| T8.14-B3 | `AppShell.tsx:115` the backup handlers have no rejection handler | a rejected export, file selection or confirm is unhandled and shows nothing | it should show the failure text when a blocked view's download or verification rejects (paused: Q2, part C) |
+| T8.14-B4 (Doubtful) | `AboutView.tsx:57` About's link checks the operations but not `screens.backup` | the link could open a blank page | it should hide About's Backup link and the warning's link when no Backup screen is composed |
+| T8.14-B5 (Doubtful) | `AppShell.tsx:76` A143's Recovery Only copy names Backup even when it isn't installed | the copy points at a page that doesn't exist | it should keep the earlier Recovery Only copy when Backup isn't installed |
 
 ## Merge runs
 

@@ -1,0 +1,212 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 5,
+    "total_tokens": 193603,
+    "input_tokens": 191070,
+    "output_tokens": 2533,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m38s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "Both backup handlers use `finally` without a rejection handler. If export, file selection, or confirmation rejects, controls are re-enabled but the rejection is unhandled and no failure explanation reaches the user. Catch failures in both handlers and show an actionable error; add rejection coverage for each port.",
+      "existing_code": "      .finally(() =\u003e setBusy(false));",
+      "start_line": 115,
+      "end_line": 115,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "After `confirmBackup` returns Completed, `downloaded` remains set, so this status continues to say “not verified yet” alongside “Backup complete”. Track verification state separately and render mutually consistent statuses, resetting it when a new download begins. The successful-verification test should also assert that the unverified status disappears.",
+      "existing_code": "      {downloaded \u0026\u0026 (\n        \u003cp role=\"status\"\u003e\n          Downloaded, not verified yet. This app can't see where your browser saved the file.{\" \"}",
+      "start_line": 140,
+      "end_line": 142,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/AboutView.tsx",
+      "content": "This availability check differs from AppShell's: the shell also requires the optional `screens.backup`. With installed backup operations but no composed screen, About and the storage warning expose `/backup` links even though no route renders there, leaving the content blank. Share the shell's effective Backup availability with About and use it for both links; cover the operations-installed/screen-absent case.",
+      "existing_code": "  const backupInstalled = isRouteInstalled(backupRoute, facade.capabilities.operations);",
+      "start_line": 57,
+      "end_line": 57,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "Recovery Only displays this instruction unconditionally, but backup capabilities and the Backup screen are explicitly optional (and absent in the current composition). That configuration now tells users to download and verify a backup without providing any way to do so. Select this guidance only when Backup is actually reachable, retaining an accurate fallback for releases without it.",
+      "existing_code": "  \"Another browser has its own separate storage and would start an empty journal. To move this journal, download a backup here and verify it, then restore it in a browser that can save safely.\";",
+      "start_line": 76,
+      "end_line": 76,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "WorkspaceReplaced does not capture the current path in `refusedAt`. If the open form is `record-entry`, setting `replaced` makes `writable` false while `refusedAt` remains undefined, so the route guard below replaces the form with `RecordEntryUnavailable`, discarding its entered values. Capture the open path when this notification arrives (as the RuntimeNotWritable handler does), and add a notification test using the record-entry route rather than only new-plan.",
+      "existing_code": "    () =\u003e onWorkspaceReplaced?.(() =\u003e setReplaced(true)),",
+      "start_line": 234,
+      "end_line": 234,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Application shell routing, onboarding, and screen integration",
+      "files": [
+        "src/app/routes.ts",
+        "src/ui/AppShell.test.tsx",
+        "src/ui/AppShell.tsx",
+        "src/ui/StorageProtectionCard.tsx",
+        "src/ui/screens/AboutView.tsx",
+        "src/ui/screens/FirstRun.tsx"
+      ]
+    }
+  ],
+  "session_id": "e0d0d9fa-501e-424d-8f21-23f0782316f0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e0d0d9fa-501e-424d-8f21-23f0782316f0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9cf16630",
+      "resolved_base": "fdc5e858594dd9c79295f55fa4e7f88d27ecbece",
+      "resolved_head": "9cf166309a0592264ac278dbd562b5f5bf49917f",
+      "exact_range": "fdc5e858594dd9c79295f55fa4e7f88d27ecbece..9cf166309a0592264ac278dbd562b5f5bf49917f",
+      "source_artifact_sha256": "4a6aaf6c67fdb8ef7f4a9dabdfa335ebe0c30f83bb8235ee5d1e77a383584af8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "fbf94763c2445b16f1bd130a6e4796162514efbd1769857df0be1a685c00af87"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "c2cfb760cbf3cfdc0475a1423f5f0d2de6da344d8eafb36ba5dc5247c5d4422f"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "d9cb1c556727c474cea7ed545a5e2b95f5179cce8dd657b310c31932a4962074"
+        },
+        {
+          "item_id": "97442c58502e5e6a5a000d8e0bb57d93cb0b1110f36612725d9bd4b7f9e005ff",
+          "path": "src/ui/StorageProtectionCard.tsx",
+          "fingerprint": "0cf5ff0559e180399a7bd505f5643fd613690d551861c79bcf66618a54ea8abb"
+        },
+        {
+          "item_id": "b3f0574113714ca099f599c642187481f6e4d055d69377cee0b3f618aa157865",
+          "path": "src/ui/screens/FirstRun.tsx",
+          "fingerprint": "6e629504cb69f4805e03652d04b7fbb4a5426fd89184d21ac72ad2b92d54fdb2"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "031425aecdee0f6aeb84d0aa8f09ca596e7aa08a38f891d44b04de86054174d6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "fbf94763c2445b16f1bd130a6e4796162514efbd1769857df0be1a685c00af87"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "c2cfb760cbf3cfdc0475a1423f5f0d2de6da344d8eafb36ba5dc5247c5d4422f"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "d9cb1c556727c474cea7ed545a5e2b95f5179cce8dd657b310c31932a4962074"
+        },
+        {
+          "item_id": "97442c58502e5e6a5a000d8e0bb57d93cb0b1110f36612725d9bd4b7f9e005ff",
+          "path": "src/ui/StorageProtectionCard.tsx",
+          "fingerprint": "0cf5ff0559e180399a7bd505f5643fd613690d551861c79bcf66618a54ea8abb"
+        },
+        {
+          "item_id": "b3f0574113714ca099f599c642187481f6e4d055d69377cee0b3f618aa157865",
+          "path": "src/ui/screens/FirstRun.tsx",
+          "fingerprint": "6e629504cb69f4805e03652d04b7fbb4a5426fd89184d21ac72ad2b92d54fdb2"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "031425aecdee0f6aeb84d0aa8f09ca596e7aa08a38f891d44b04de86054174d6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4f714248c5d1fe215e3c42b051e998a13f1b429b0edb364f241b10e610c5325c",
+          "path": "evidence/D08/suite-runs/T8.14-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a2c54775fb5b757bc3a6475b3738a7034e6a1eb771badcd9234f3e060f453ada",
+          "path": "evidence/D08/tdd-log/T8.14.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b7647988ba69529cb62f0b356f8487302a8e67f4955d421b5bf2507c187abdf6",
+          "path": "evidence/D08/suite-runs/T8.14-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e56dbdfc3b39a31397dac19075806c679979b2a65947e649758c1974bf46f277",
+          "path": "evidence/D08/suite-runs/T8.14-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f786d931c8db6ecb13ae6e998a3a6e7ae5a69e3ec00a65deb0b56220242df101",
+          "path": "evidence/D08/suite-runs/T8.14-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 97762
+  }
+}
