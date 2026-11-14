@@ -1565,3 +1565,15 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
   - on the expiration day, an Underlying condition whose Underlying Mark is missing is now worded "Settlement Due", as on the rail, rather than naming the Underlying;
   - a condition with a Value on that day still shows its figure in Plan and Risk, while the rail calls it unmeasured.
 - **Quick run (`T8P.23-B9`):** unit 1650, integration 229, checks 14 of 14, browser-task 7; run complete.
+
+**T8P.23-B10** (`4487acce`). When Reflect now in Needs you opens a Debt's form, `OwedDebtItem` now focuses the form area and scrolls it into view (A217). The card's own Reflect now and Decline still don't move focus.
+- **Tests:**
+  - "should move focus into the opened form and scroll it into view when Reflect now is chosen in Needs you" (`Cockpit.test.tsx`). Red: `expected false to be true`.
+  - Two browser cases in `e2e/d5/detail-debt.spec.ts`, at 1280 and 375 px, showed red by taking the fix out: the focus check failed, and the form's `toBeInViewport` ratio was 0. Both are logged by hand.
+- **Expected values:** none changed.
+- **Lint:** a second `react-hooks/exhaustive-deps` warning, of the same kind as the item's existing request effect.
+- **Browser specs run:** 78 passed (`browser/T8P.23-B10-specs.txt`).
+- **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B10.json`). Notes, not bug tasks:
+  - the reviewer found no stale closure and no double focus, and every reset path covered;
+  - the unit case's `Element.prototype.scrollIntoView` stub isn't restored. It leaks only within that test file, and production calls it with `?.`.
+- **Quick run (`T8P.23-B10`):** unit 1651, integration 229, checks 14 of 14, browser-task 7; run complete.
