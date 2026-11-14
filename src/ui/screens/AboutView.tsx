@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { APP_NAME, MANIFEST_ID } from '../../app/identity.ts';
-import { isRouteInstalled, ROUTES } from '../../app/routes.ts';
 import { useWide } from '../AppShell.tsx';
 import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
@@ -30,7 +29,7 @@ const gb = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 // Evidence about this installed release and this browser, never a support verdict by identity.
 export function AboutView({ facade, updates }: AboutViewProps) {
   const [status, setStatus] = useState<Status | undefined>();
-  const { durability, requestDurability, requestingDurability, durabilityRequestFailed } = useRuntime();
+  const { durability, requestDurability, requestingDurability, durabilityRequestFailed, backupTo } = useRuntime();
   const [checked, setChecked] = useState<'NoUpdate' | 'UpdateWaiting' | undefined>();
   const wide = useWide();
   useEffect(() => {
@@ -53,18 +52,17 @@ export function AboutView({ facade, updates }: AboutViewProps) {
   };
   const capabilities = status.installedCapabilities;
   // The wide sidebar lists Backup; on narrow screens the bottom bar has no room, so About links to it (P106).
-  const backupRoute = ROUTES.find((route) => route.id === 'backup')!;
-  const backupInstalled = isRouteInstalled(backupRoute, facade.capabilities.operations);
+  // The shell decides whether the route is offered, so About and the warning agree with the sidebar.
 
   return (
     <article className="about">
       <PageTitle>About</PageTitle>
-      {!wide && backupInstalled && (
+      {!wide && backupTo && (
         <p>
-          <Link to={backupRoute.path}>Backup</Link>
+          <Link to={backupTo}>Backup</Link>
         </p>
       )}
-      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} requesting={requestingDurability} failed={durabilityRequestFailed} backupTo={backupInstalled ? backupRoute.path : undefined} />
+      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} requesting={requestingDurability} failed={durabilityRequestFailed} backupTo={backupTo} />
       <section className="card" aria-labelledby="release-heading">
         <h2 id="release-heading">This release</h2>
         <dl>

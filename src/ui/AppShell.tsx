@@ -527,6 +527,7 @@ export function AppShell({
         durabilityRequestFailed: requestFailed,
         storageIconTo: showStorageIcon ? ABOUT_PATH : undefined,
         calendarIconTo: showCalendarIcon ? ABOUT_PATH : undefined,
+        backupTo: routes.find((route) => route.id === "backup")?.path,
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >

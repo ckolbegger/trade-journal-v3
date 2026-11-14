@@ -23,6 +23,8 @@ export interface RuntimeState {
   readonly storageIconTo?: string;
   // Where the calendar warning icon links (About), present only while today is outside the session policy's coverage.
   readonly calendarIconTo?: string;
+  // Where the Backup page is, present only while the shell offers that route (installed operations and a composed screen).
+  readonly backupTo?: string;
 }
 
 export const RuntimeContext = createContext<RuntimeState>({ writable: false, report: () => undefined });

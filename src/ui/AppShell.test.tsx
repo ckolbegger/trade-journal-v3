@@ -852,6 +852,16 @@ describe('readiness and protection (A143, A144)', () => {
     window.innerWidth = 1024;
   });
 
+  it('should hide About\'s Backup link and the warning\'s link when no Backup screen is composed', async () => {
+    window.innerWidth = 390;
+    const facade = withBackup(facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) }));
+    renderShell(facade, '/about', { ...aboutScreen(facade), backup: undefined });
+    const warning = await screen.findByRole('region', { name: 'Storage protection' });
+    expect(within(screen.getByRole('article')).queryByRole('link', { name: 'Backup' })).toBeNull();
+    expect(within(warning).queryByRole('link')).toBeNull();
+    window.innerWidth = 1024;
+  });
+
   it('should add "Download a backup and verify it to keep a safe copy" with a link to Backup to the not-protected warning', async () => {
     window.innerWidth = 1280;
     const facade = withBackup(facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) }));
