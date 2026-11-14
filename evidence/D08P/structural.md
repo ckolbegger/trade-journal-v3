@@ -1288,3 +1288,18 @@ None found: no Playwright spec asserts a Trade Detail element is mounted and hid
 #### Totals
 
 Gone 77 changed (42 unit, 35 browser); hidden 1 (Cockpit, two queries and one `hidden` assertion); already proving: the listed lines above. No stop: every gone check still passes once it looks inside hidden panels, so no thing is rendered where it should not be.
+
+**Merge run 8** at `395f7ec5` (`browser-auto 0529a40b`, which chose the full tier from `e2e/d2/after-save.spec.ts`; the merges of T8P.29 and T8P.30): unit 1635, integration 222, checks 14 of 14, browser tier 1 128 and tier 2 75 passed, no failures; run complete. HEAD moved to `5fd1bfb4` mid-run (the main session's T8P.22 start record), and the scripts saw the uncommitted T8P.24 ocr JSON. Both are plan and evidence only, so the code tested is `395f7ec5`'s. The next merge run is `browser-auto 395f7ec5`.
+
+**T8P.24 (lane NI), the Node suite.** Task `b3ec18e4`, lane tier `a8266e5e`. New: `tests/integration/d8p/support.ts` (the O-C3 builder `oc3({ thursdayHold? })`), `replay.test.ts` (I8P.1, I8P.2, I8P.3, I8P.7) and `replay-query-count.test.ts` (I8P.4); `detail.test.ts` gains I8P.5 and I8P.6, with section 6.1's titles word for word, beside T8P.9's "should …" cases. **Every case passed on its first run** (the behaviour exists already), and each is flagged. Each took a mutation of one expected value, which failed with an assertion and was reverted:
+- I8P.1: the Wednesday call Mark 57.5 to 57.4;
+- I8P.2: Wednesday's owed `Debt:` item to `Entry:`;
+- I8P.3: the newest Trade P&L, `expected '4461/20' to be '11153/50'`;
+- I8P.4: replay `meta.get` 9 to 8;
+- I8P.5: nearest `['stop-2']` against `['stop-2', 'target-1']`;
+- I8P.6: days 68 to 67;
+- I8P.7: `FactsIncoherent` to `NeverExposed`.
+
+I8P.3 first failed for a fixture reason (the Review's save result kind is `MarksSaved`, not `Saved`), not red evidence. **I8P.4:** a Detail read makes 20 requests (`meta.get` 11, `trades.get` 2, `catalog.getAll` 1, `observations.getAll` 1, one `getAll` each of the five Journal stores), equal to D7's `PINNED` and to D7S's end commit `795159cd` (measured in a throwaway worktree of this branch, since removed), and unchanged after a replay. The replay makes 17 (`meta.get` 8, `trades.get` 1, the five Journal stores, 3 `observations`: one date-wide read and one per Instrument, none per session). `npm run test:integration`: 106 files, 229 tests. `acceptance-commands.sh` exits 1 only on the two browser rows whose specs T8P.25 writes (`e2e/d8p/responsive-a11y.spec.ts`, `e2e/d8p/cockpit.spec.ts`); every Node row passes (AC-MARK-004, AC-RESP-001, AC-PERF-001, AC-CAP-001). Not a stop: those rows are due at the gate.
+
+**T8P.24 review.** ocr, relocated (test-only commit), reviewed the 4 test files and made 2 comments (`ocr/T8P.24.json`). Both are Wrong, relocation artifacts: "the suites are not registered" (the real files match `tests/integration/**/*.test.ts`, and the lane's run counts 2 more files and 7 more tests) and "the `d1` and `d6` support imports are missing" (only `d7` and `d7s` support were copied). No bug tasks.
