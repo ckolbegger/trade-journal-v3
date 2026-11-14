@@ -39,6 +39,8 @@ Lane F, commit `fdd92d08` (6 cases red then green; one first-run pass flagged: "
 
 - **T8.1-B1** `cf7c5795`: red (assertion: no `ArtifactReadError`) then green; the manifest line is yielded only after the stream drains clean. Lane tier: unit 1755, integration 229, checks 14 of 14. ocr (session `e924278e-371e-4427-b9d8-ee7b463a13a5`, 2 files): **No findings.** Raw: `ocr/T8.1-B1-cf7c5795.json`.
 - **T8.1-B2** `3a48d696`: red ("expected +0 to be 1": no cancel after `break`) then green; `try/finally` cancels the source reader. Lane tier: unit 1756, integration 229, checks 14 of 14. ocr (session `00b8f02e-3356-4259-8c9d-8420f1c8b628`, 2 files): **No findings.** Raw: `ocr/T8.1-B2-3a48d696.json`.
+- **T8.1-B3** `9e731c68`: red (gzip read as plain text: "not valid for encoding utf-8") then green; the sniff skips empty chunks. Lane tier: unit 1757, integration 229, checks 14 of 14. ocr (session `e5093f15-9809-497f-b71a-5c95ff35c8d6`, 2 files): **No findings.** Raw: `ocr/T8.1-B3-9e731c68.json`.
+- **T8.1-B4** `b137b550`: red ("expected [Function] to throw") then green; `writeSectionEnd` throws "Section trades is still open; cannot end section journal". Implementation-level choice accepted: ending a section with nothing open stays legal (an empty section, digest = SHA-256 of nothing), since an empty store must export; the brief's extra "no section open" throw was the main session's addition, not ocr's finding. Lane tier: unit 1758, integration 229, checks 14 of 14. ocr (session `fdfe7bee-5793-4eb5-bd9f-e90524ef6657`, 2 files): **No findings.** Raw: `ocr/T8.1-B4-b137b550.json`.
 
 ## T8.23 Types, skeletons and ports
 
