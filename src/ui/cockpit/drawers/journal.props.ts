@@ -52,8 +52,10 @@ function toneProp<K extends 'titleTone' | 'changeTone'>(key: K, value: Rational)
   return { [key]: sign > 0 ? 'gain' : 'loss' } as { readonly [P in K]?: 'gain' | 'loss' };
 }
 
-// The change line: since the previous session with a figure, "First Mark" for the first figure, and none while the Trade P&L is unavailable.
-function changeOf(tradePnl: CalculationResult<Rational>, change: JournalReplaySession['change']): Pick<JournalCardProps, 'change' | 'changeTone'> {
+// The change line: since the previous session with a figure, "First Mark" for the first figure, and none while the Trade P&L is unavailable or
+// when the session has no Mark (nothing held at its close): "First Mark" names only a session that brought a Mark.
+function changeOf(tradePnl: CalculationResult<Rational>, change: JournalReplaySession['change'], hasMark: boolean): Pick<JournalCardProps, 'change' | 'changeTone'> {
+  if (!hasMark) return {};
   if (change) return { change: `${signed(money)(change.dollars)} since ${shortDate(change.since)}`, ...toneProp('changeTone', change.dollars) };
   return tradePnl.kind === 'Value' ? { change: 'First Mark' } : {};
 }
@@ -174,7 +176,7 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
       when: `${dayOf(session.date)}${at === last && replay.pending === null ? ', final session' : ''}`,
       title: calculation(tradePnl, money),
       ...(tradePnl.kind === 'Value' && toneProp('titleTone', tradePnl.value)),
-      ...changeOf(tradePnl, change),
+      ...changeOf(tradePnl, change, !heldNothing(session)),
       marks: session.marks.map(({ instrument, resolution }) => ({
         label: instrument.kind === 'Option' ? `${instrument.right} Mark` : `${instrument.symbol} Mark`,
         value: resolution.kind === 'Available' ? priceOf(instrument, resolution.mark.price) : '—',

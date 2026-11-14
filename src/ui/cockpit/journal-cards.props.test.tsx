@@ -131,7 +131,8 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(cards.map(headingOf)).toEqual(['Tue Oct 13, final session', 'Mon Oct 12']);
     const [final] = cards as [HTMLElement];
     expect(final.querySelector('.journal-card-title')?.textContent).toBe('$198.00');
-    expect(final.querySelector('.journal-card-change')?.textContent).toBe('+$98.00 since Mon Oct 12');
+    // No Mark, so no change line (T8P.26-B3).
+    expect(final.querySelector('.journal-card-change')).toBeNull();
     expect(screen.queryByText(/without Marks/, { selector: 'h3' })).toBeNull();
     expect(final.textContent).not.toContain('without Marks');
     // Nothing was due, so the Mark row is no gap.
@@ -140,6 +141,24 @@ describe('Journal session cards (W10–W13, A214)', () => {
     cleanup();
     show(replayOf([session('2026-10-12', 100n, '51.00', null), withoutMarks('2026-10-13'), flatFinal('2026-10-14', 198n, null)]));
     expect(screen.getAllByRole('article', { hidden: true }).map(headingOf)).toEqual(['Wed Oct 14, final session', 'Tue Oct 13 without Marks', 'Mon Oct 12']);
+  });
+
+  // T8P.26-B3 (critic-4 defect 3, W10, A211, A212; the user's reading of W10, 2026-11-14): "First Mark" names only a session that brought a Mark.
+  it('should show a final session with no Mark and no earlier Mark with its Trade P&L and no change line', () => {
+    show(replayOf([flatFinal('2026-10-12', 398n, null)]));
+    const [final] = screen.getAllByRole('article', { hidden: true }) as [HTMLElement];
+    expect(final.querySelector('.journal-card-title')?.textContent).toBe('$398.00');
+    expect(final.querySelector('.journal-card-change')).toBeNull();
+    expect(final.textContent).not.toContain('First Mark');
+  });
+
+  it('should show a final session with no Mark after an earlier marked session with no change line', () => {
+    show(replayOf([session('2026-10-12', 100n, '51.00', null), flatFinal('2026-10-13', 198n, { since: '2026-10-12', dollars: 98n })]));
+    const [final, earlier] = screen.getAllByRole('article', { hidden: true }) as [HTMLElement, HTMLElement];
+    expect(final.querySelector('.journal-card-change')).toBeNull();
+    expect(final.textContent).not.toMatch(/since|First Mark/);
+    // The marked session keeps its words.
+    expect(earlier.querySelector('.journal-card-change')?.textContent).toBe('First Mark');
   });
 
   it('should page by about one screen with ‹ and ›, and disable each at its end', async () => {
