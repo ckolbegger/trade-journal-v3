@@ -4,6 +4,8 @@
 import { cleanup, render, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { available, tuesday } from '../../screens/trade-detail/test-support.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
@@ -178,6 +180,22 @@ describe('Conditions card (W5, W6)', () => {
     const planned = blocks(renderCard(optionPlannedDetail('O-S2')));
     expect(planned.map((item) => item.querySelector('.condition-text')?.textContent)).toEqual(['MNO at or below 41.00', 'Option at or above $3.60', 'MNO at or above 44.50', 'Option at or below $0.30']);
     expect(planned.every((item) => item.querySelector('.condition-figure') === null && item.querySelector('.condition-why') === null)).toBe(true);
+  });
+});
+
+// Figures the retired Risk and reward section gave, moved here with their expected values (T8P.27, revision 86).
+describe('Conditions card: figures moved from the retired Risk and reward section (T8P.27)', () => {
+  const beneath = (view: TradeDetailView) => {
+    const lines = within(within(renderCard(view)).getByRole('list', { name: 'Worst case and Max reward' })).getAllByRole('listitem').map((item) => item.textContent);
+    cleanup();
+    return lines;
+  };
+
+  it('should show a stock Trade Worst case in dollars and R and Max reward as Unbounded above, and Worst case as its reason when the Mark is missing', () => {
+    expect(beneath(openDetailAt([PC1, PC2], tuesday(available('52.00'))))).toEqual(['Worst case: $5,200.00 · 20.80R if XYZ goes to zero', 'Max reward: Unbounded above']);
+    expect(beneath(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })))).toEqual(['Worst case: Mark missing: XYZ, Tue Oct 13', 'Max reward: Unbounded above']);
+    // Outside the market calendar the Max reward is still unbounded.
+    expect(beneath(openDetailUncovered([PC1, PC2], '2031-01-02')).at(-1)).toBe('Max reward: Unbounded above');
   });
 });
 

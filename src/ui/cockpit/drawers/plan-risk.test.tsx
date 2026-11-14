@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { openDetailOf, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
+import { OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
+import { THURSDAY, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import { PlanRiskDrawer } from './plan-risk.tsx';
 
 afterEach(cleanup);
@@ -37,5 +41,45 @@ describe('Plan and Risk drawer and footer (P96)', () => {
     expect(within(quality).getByText('Entry not yet resolved: 0 of 100 entered')).toBeTruthy();
     expect(termsIn(quality)).toEqual([]);
     expect(valueOf(screen.getByRole('region', { name: 'Plan Baseline' }), '1R (original risk)')).toBe('$250.00');
+  });
+});
+
+// Figures the retired Summary card and Risk and reward section gave, moved here with their expected values (T8P.27, revision 86).
+describe('Plan and Risk drawer: figures moved from the retired Summary card and Risk and reward section (T8P.27)', () => {
+  useFixedClock();
+
+  it('should show the Stop and Target of an Open Detail, the Intended entry as a number on a Planned one, and no Actual initial risk or Average entry while the entry is pending', () => {
+    render(<PlanRiskDrawer view={openDetailOf([PC1, PC2, PC3])} timeZone="America/New_York" />);
+    const plan = screen.getByRole('region', { name: 'Plan' });
+    expect(valueOf(plan, 'Stop')).toBe('$47.50');
+    expect(valueOf(plan, 'Target')).toBe('$56.00');
+    cleanup();
+
+    render(<PlanRiskDrawer view={plannedDetail} timeZone="America/New_York" />);
+    expect(within(screen.getByRole('region', { name: 'Plan' })).getByText('$50.00', { selector: 'dd' }).className).toContain('number');
+    cleanup();
+
+    const { container } = render(<PlanRiskDrawer view={openDetailOf([PC1])} timeZone="America/New_York" />);
+    const quality = screen.getByRole('region', { name: 'Entry Quality' });
+    expect(within(quality).getByText('Entry not yet resolved: 60 of 100 entered')).toBeTruthy();
+    const terms = Array.from(container.querySelectorAll('dt')).map((term) => term.textContent);
+    expect(terms).not.toContain('Average entry');
+    expect(terms).not.toContain('Actual initial risk');
+  });
+
+  it('should show the contract, the Leg and the Exercise Intent of an option Trade Plan', () => {
+    render(<PlanRiskDrawer view={optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY)} timeZone="America/New_York" />);
+    const plan = screen.getByRole('region', { name: 'Plan' });
+    expect(valueOf(plan, 'Contract')).toBe('XYZ 20 Nov 2026 55 Call');
+    expect(valueOf(plan, 'Leg')).toBe('Long 2 contracts of XYZ 20 Nov 2026 55 Call');
+    expect(valueOf(plan, 'Exercise Intent')).toBe('Not authorized in advance');
+  });
+
+  it('should show a NotApplicable Slippage as Not applicable followed by its words, never a raw code', () => {
+    const base = openDetailUncovered([PC1, PC2], '2031-01-02');
+    const quality = base.entryQuality.kind === 'Value' ? base.entryQuality.value : undefined;
+    const view = { ...base, entryQuality: { kind: 'Value', value: { ...quality, slippage: { kind: 'NotApplicable', reason: 'EntryNotResolved' } } } } as unknown as ComponentProps<typeof PlanRiskDrawer>['view'];
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    expect(valueOf(screen.getByRole('region', { name: 'Entry Quality' }), 'Slippage')).toBe('Not applicable: entry not resolved yet');
   });
 });

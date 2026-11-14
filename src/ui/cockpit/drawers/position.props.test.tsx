@@ -3,11 +3,12 @@
 // Only an adapter or its test may import a view's types, so every view is built here.
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { openDetailOf, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../../app/types.ts';
-import { rowsOf, termValue } from '../../screens/trade-detail/test-support.ts';
+import { Rational } from '../../../domain/values/index.ts';
+import { available, MON_CLOSE, rowsOf, termValue, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import { PositionDrawer } from './position.tsx';
 
 afterEach(cleanup);
@@ -62,5 +63,66 @@ describe('Position drawer (P96)', () => {
     expect(within(executions).getAllByRole('button')).toHaveLength(3);
     const settlement = screen.getByRole('region', { name: 'Settlement (1)' });
     expect(within(settlement).getAllByRole('button')).toHaveLength(1);
+  });
+});
+
+// Figures the retired Summary card and Valuation section gave, moved here with their expected values (T8P.27, revision 86).
+describe('Position drawer: figures moved from the retired Summary card and Valuation section (T8P.27)', () => {
+  useFixedClock();
+
+  it('should show the option Trade Summary text, the held contracts, and the Opening fees of three Position Changes', () => {
+    show(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    expect(screen.getByRole('region', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Long 1 Nov 20 $55 Call');
+    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Position')).toBe('Long 1 contract of XYZ 20 Nov 2026 55 Call');
+    cleanup();
+
+    show(optionOpenDetail('O-S', [OS_S1], THURSDAY));
+    expect(screen.getByRole('region', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Short 2 Nov 20 $45 Put');
+    cleanup();
+
+    show(openDetailOf([PC1, PC2, PC3]));
+    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Opening fees')).toBe('$3.00');
+  });
+
+  it('should show realized to date, Open P&L and Incurred fees for a stock Trade at a Tuesday Mark, a loss with its minus, and each in words without a Mark', () => {
+    show(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
+    const gain = screen.getByRole('region', { name: 'Position' });
+    expect(termValue(gain, 'Realized to date')).toBe('$0.00');
+    expect(termValue(gain, 'Open P&L')).toBe('+$180.00');
+    expect(termValue(gain, 'Incurred fees')).toBe('$2.00');
+    cleanup();
+
+    show(openDetailAt([PC1, PC2], tuesday(available('48.00'))));
+    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Open P&L')).toBe('−$220.00');
+    cleanup();
+
+    // Realized and fees keep their values when the Mark is missing; the Open P&L says why.
+    show(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })));
+    const missing = screen.getByRole('region', { name: 'Position' });
+    expect(termValue(missing, 'Realized to date')).toBe('$0.00');
+    expect(termValue(missing, 'Incurred fees')).toBe('$2.00');
+    expect(termValue(missing, 'Open P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
+    cleanup();
+
+    // Outside the market calendar the Mark-dependent figures are in words, while realized and fees keep their values.
+    show(openDetailUncovered([PC1, PC2], '2031-01-02'));
+    const outside = screen.getByRole('region', { name: 'Position' });
+    expect(termValue(outside, 'Realized to date')).toBe('$0.00');
+    expect(termValue(outside, 'Incurred fees')).toBe('$2.00');
+    expect(termValue(outside, 'Open P&L')).toBe('Outside the market calendar: Thu Jan 2');
+  });
+
+  it('should show realized to date with a plus sign for a gain and a minus sign for a loss', () => {
+    const monContext = { tradingDate: '2026-10-12', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: MON_CLOSE };
+    const withRealized = (value: bigint) => {
+      const detail = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext }));
+      return { ...detail, current: { ...detail.current, evaluation: { ...detail.current.evaluation, realizedToDate: { kind: 'Value' as const, value: Rational.of(value) } } } };
+    };
+    show(withRealized(120n));
+    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Realized to date')).toBe('+$120.00');
+    cleanup();
+
+    show(withRealized(-75n));
+    expect(termValue(screen.getByRole('region', { name: 'Position' }), 'Realized to date')).toBe('−$75.00');
   });
 });

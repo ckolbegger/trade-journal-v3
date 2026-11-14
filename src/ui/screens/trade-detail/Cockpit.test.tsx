@@ -234,3 +234,25 @@ describe('Trade Detail cockpit (W1, A217)', () => {
     });
   });
 });
+
+// The retired Summary card, Valuation and Risk and reward sections are gone from every state, hidden drawer panels included (T8P.27, revision 86;
+// moved from the legacy Summary tests' absence checks).
+describe('Trade Detail cockpit: no retired block on any state (T8P.27)', () => {
+  useFixedClock();
+  const retired = () => ['Summary', 'Valuation', 'Risk and reward'].flatMap((name) => screen.queryAllByRole('region', { name, hidden: true }));
+  const retiredByDom = () => document.querySelectorAll('[aria-label="Summary"], [aria-label="Valuation"], [aria-label="Risk and reward"], .summary-card');
+
+  it('should render no Summary, Valuation or Risk and reward region on a Planned, Open, Closed, incoherent or option Detail, and no Net cost on a Planned one', async () => {
+    const findings = [{ factId: 'pc-9', kind: 'PositionChange', economicTime: '2026-10-14T14:30:00Z', reason: 'DuplicateFactId' }] as const;
+    for (const view of [plannedDetail, openDetailOf([PC1, PC2]), closedDetailOf([PC1, PC2, X1, X2]), incoherentDetailOf([PC1, PC2], findings), optionOpenDetail('O-S', [OS_S1], FRIDAY)]) {
+      renderView(view);
+      await screen.findByRole('region', { name: 'State of play' });
+      expect(retired()).toEqual([]);
+      expect(retiredByDom()).toHaveLength(0);
+      cleanup();
+    }
+    renderView(plannedDetail);
+    await screen.findByRole('region', { name: 'State of play' });
+    expect(Array.from(document.querySelectorAll('dt')).filter((term) => term.textContent === 'Net cost')).toEqual([]);
+  });
+});

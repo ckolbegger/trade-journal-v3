@@ -3,13 +3,13 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { closedDetailOf } from '../../../../tests/support/closed-detail-fixtures.ts';
-import { execution, incoherentDetailOf, openDetailAt, openDetailOf, PC1, PC2, positionChange, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { execution, incoherentDetailOf, openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3, positionChange, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { available, MON_CLOSE, useFixedClock } from '../../screens/trade-detail/test-support.ts';
+import { available, MON_CLOSE, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import type { PnlReplay } from './pnl.props.ts';
 import { PnlCard } from './pnl.tsx';
 
@@ -141,5 +141,28 @@ describe('P&L card (W3, W4)', () => {
     expect(incoherent.querySelector('.pnl-figure')?.textContent).toBe('Not available');
     expect(incoherent.querySelector('.pnl-line')?.textContent).toBe('Trade P&L');
     expect(incoherent.querySelector('.pnl-open')).toBeNull();
+  });
+});
+
+// Figures the retired Summary card and Valuation section gave, moved here (T8P.27, revision 86). The card's figure is the Current Marked Trade P&L
+// in the card's own words (W3): the amount without the Valuation's plus sign and R, the reason at the figure length where there is no amount.
+describe('P&L card: figures moved from the retired Summary card and Valuation section (T8P.27)', () => {
+  it('should show 120 of 100 shares open when shares were bought above the plan', () => {
+    expect(within(show(openDetailOf([PC1, PC2, PC3]))).getByText('120 of 100 shares open')).toBeTruthy();
+  });
+
+  it('should show a stock Trade at a Tuesday Mark as its amount, a loss with its minus, and a figure that is not there as its reason', () => {
+    const figure = (view: TradeDetailView) => {
+      const card = show(view);
+      const text = card.querySelector('.pnl-figure')?.textContent;
+      cleanup();
+      return text;
+    };
+    expect(figure(openDetailAt([PC1, PC2], tuesday(available('52.00'))))).toBe('$180.00');
+    expect(figure(openDetailAt([PC1, PC2], tuesday(available('48.00'))))).toBe('−$220.00');
+    expect(figure(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })))).toBe('Mark missing: XYZ, Tue Oct 13');
+    const acknowledgment = { versionId: 'ack-1', kind: 'Asserted', observedAt: '2026-10-13T21:00:00Z', savedAt: '2026-10-13T21:30:00Z' };
+    expect(figure(openDetailAt([PC1, PC2], tuesday({ kind: 'AcknowledgedUnavailable', acknowledgment } as never)))).toBe('Acknowledged unavailable: XYZ, Tue Oct 13');
+    expect(figure(openDetailUncovered([PC1, PC2], '2031-01-02'))).toBe('Outside the market calendar: Thu Jan 2');
   });
 });

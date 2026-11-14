@@ -5,12 +5,13 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
-import { execution, openDetailAt, PC1, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
+import { execution, openDetailAt, PC1, PC2, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
-import { OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
+import { OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { OpenTradeDetail } from '../../../app/types.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../../domain/values/index.ts';
+import { MON_CLOSE, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import type { TodayReplay } from './today.props.ts';
 import { TodayDrawer } from './today.tsx';
 
@@ -239,5 +240,55 @@ describe('Today drawer (W8): gaps and crowding (T8P.16-B)', () => {
     expect(lane('entry')).toBeTruthy();
     expect(lane('now')).toBeTruthy();
     expect(lane('entry')).not.toBe(lane('now'));
+  });
+});
+
+// Figures the retired Valuation section and conditions table gave, moved here with their expected values (T8P.27, revision 86).
+describe('Today drawer: figures moved from the retired Valuation section and conditions table (T8P.27)', () => {
+  useFixedClock();
+  const monContext = { tradingDate: '2026-10-12', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: MON_CLOSE };
+
+  it('should show the At the Mon Oct 12 Marks section with its own figures beside a missing Mark and its stale context, and realized to date signed', () => {
+    drawer(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext })));
+    const dated = screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' });
+    expect(termValue(dated, 'Mark')).toBe('$51.20');
+    expect(termValue(dated, 'Open P&L')).toBe('+$100.00');
+    expect(termValue(dated, 'Current Marked Trade P&L')).toBe('+$100.00 · +0.40R');
+    expect(termValue(dated, 'Risk to stop')).toBe('$370.00 · 1.48R');
+    expect(termValue(dated, 'Reward to target')).toBe('$480.00 · 1.92R');
+    cleanup();
+
+    // Realized to date carries a plus sign for a gain and a minus sign for a loss in the dated figures.
+    const withRealized = (value: bigint) => {
+      const detail = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext }));
+      const realizedToDate = { kind: 'Value' as const, value: Rational.of(value) };
+      const { datedLine } = detail.current;
+      if (!datedLine) throw new Error('fixture needs a dated line');
+      return { ...detail, current: { ...detail.current, evaluation: { ...detail.current.evaluation, realizedToDate }, datedLine: { ...datedLine, evaluation: { ...datedLine.evaluation, realizedToDate } } } };
+    };
+    drawer(withRealized(120n));
+    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Realized to date')).toBe('+$120.00');
+    cleanup();
+
+    drawer(withRealized(-75n));
+    expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Realized to date')).toBe('−$75.00');
+  });
+
+  it('should list a Long Call Stop and Target with their value at expiration and distance on the Underlying, and the O-S2 Wednesday Stop on MNO', () => {
+    const conditionOf = (role: string) => within(screen.getByRole('list', { name: 'Conditions' })).getAllByRole('listitem').find((item) => within(item).queryByText(role));
+    drawer(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    const stop = conditionOf('Stop on XYZ')!;
+    expect(termValue(stop, 'Value at expiration')).toBe('$0.00');
+    expect(termValue(stop, 'Distance on XYZ')).toBe('4.00');
+    const target = conditionOf('Target on XYZ')!;
+    expect(termValue(target, 'Value at expiration')).toBe('$5.00');
+    expect(termValue(target, 'Distance on XYZ')).toBe('8.00');
+    cleanup();
+
+    // Wednesday 10-14: MNO 43.20, the put 3.70.
+    drawer(optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-14', closeInstant: '2026-10-14T20:00:00Z', contractMark: '3.70', underlyingMark: '43.20' }));
+    const mno = conditionOf('Stop on MNO')!;
+    expect(termValue(mno, 'Value at expiration')).toBe('$4.00');
+    expect(termValue(mno, 'Distance on MNO')).toBe('2.20');
   });
 });

@@ -5,10 +5,11 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { incoherentDetailOf, openDetailOf, PC1 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail } from '../../../../tests/support/option-detail-fixtures.ts';
-import { OC_E1, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
+import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_ES, OS_S1, osChange } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { TradeDetailView } from '../../../app/types.ts';
 import { RuntimeContext } from '../../runtime.tsx';
+import { THURSDAY } from '../../screens/trade-detail/test-support.ts';
 import { IdentityCard } from './identity.tsx';
 
 afterEach(cleanup);
@@ -101,5 +102,30 @@ describe('identity card (W2)', () => {
 
     show(incoherent);
     expect(links()).toEqual([]);
+  });
+});
+
+describe('identity card expiration line from the Detail (decision 94, row 23.19; moved from the retired Summary card, T8P.27)', () => {
+  const expirationLines = () => screen.queryAllByText(/^Expire[sd] [A-Z][a-z]{2} \d/).map((line) => line.textContent);
+
+  it('should show Expires Fri 20 Nov 2026 on an Open option Trade, Expired Fri 20 Nov 2026 on a Closed one whose Terminal Disposition includes an expiration, and no expiration line on one only the trader Executions disposed of', () => {
+    show(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
+    expect(expirationLines()).toEqual(['Expires Fri 20 Nov 2026']);
+    cleanup();
+
+    // The mixed Trade (a sale plus an expiration) and the wholly expired one: part of the position expired.
+    for (const view of [optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]), optionClosedDetail('O-S', [OS_S1, OS_ES])]) {
+      show(view);
+      expect(expirationLines()).toEqual(['Expired Fri 20 Nov 2026']);
+      cleanup();
+    }
+    for (const view of [
+      optionClosedDetail('O-C', [OC_PC1, OC_PC2, ocChange('pc-x2', '2026-10-13T14:00:00Z', 5, 'Sell', '2', '3.00', '0.65')]),
+      optionClosedDetail('O-S', [OS_S1, osChange('pc-b2', '2026-10-13T14:00:00Z', 3, 'Buy', '2', '0.60', '1.30')]),
+    ]) {
+      show(view);
+      expect(expirationLines()).toEqual([]);
+      cleanup();
+    }
   });
 });
