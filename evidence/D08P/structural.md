@@ -1798,3 +1798,10 @@ Added `missingFixtureSchemas(names, schemaVersion)` in `tools/fixture-schemas.ts
 - **Full tier closing BUG-4 (`T8P.BUG-4.2`, at `6c9cb6c7`):** unit 1662 (156 files), integration 229 (106 files), checks 14 of 14 (`verify:fixtures` with the new check included), browser-1 126 (4.8 min), browser-2 98 (6.1 min), no failures; run complete.
 - **Tool tests** (not in the run's unit stage, see the note above), run once by the main session: `npx vitest run --project unit tools`, 6 files, 86 passed, exit 0 (`suite-runs/T8P.BUG-4.2-tools-unit.txt`).
 - **BUG-4 is done.** No browser critic (decision 112): no product code, screen or word changed.
+
+### Unit stage includes the tool tests (user's direction, 2026-11-14)
+
+The user asked for the one-line fix to the note under T8P.BUG-4.2. `.claude/scripts/full-suite.sh`'s unit stage is now `npx vitest run --project unit --reporter=verbose` (was `npx vitest run src`), so it runs the `unit` project's whole include, `src/**/*.test.{ts,tsx}` and `tools/**/*.test.ts`. `suite-runner.md`'s report template names the same command.
+
+- **Verified:** `full-suite.sh evidence/D08P suite-unit-project unit`: 162 files, 1748 passed (the earlier 1662 plus the 86 tool tests), exit 0 (`suite-runs/suite-unit-project-unit.txt`).
+- Unit counts in earlier runs (1662) are from the old command; later runs report the larger count.

@@ -154,7 +154,7 @@ case "$stage" in
     ;;
 esac
 
-suite unit 'npx vitest run src --reporter=verbose'
+suite unit 'npx vitest run --project unit --reporter=verbose'
 suite integration 'npx vitest run tests/integration --reporter=verbose'
 suite browser-1 'npm run test:e2e:1'
 suite browser-2 'npm run test:e2e:2'

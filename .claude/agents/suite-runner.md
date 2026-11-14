@@ -50,7 +50,7 @@ Date: <from the script>. Commit: <from the script>.
 
 | Suite | Command | Result | Output |
 |---|---|---|---|
-| Unit | `npx vitest run src --reporter=verbose` | `Test Files N passed (N)`, `Tests N passed (N)`, exit 0 | `<path>` |
+| Unit | `npx vitest run --project unit --reporter=verbose` | `Test Files N passed (N)`, `Tests N passed (N)`, exit 0 | `<path>` |
 | Node integration | `npx vitest run tests/integration --reporter=verbose` | ... | `<path>` |
 | Browser (Chromium), <tier> tier | `<browser stage>` (full tier: one row per stage, `browser-1` and `browser-2`) | `N passed (Ns)`, exit 0 | `<path>` |
 | Static and verification checks (N commands) | <list the commands> | N of N exit 0 | `<path>` |
