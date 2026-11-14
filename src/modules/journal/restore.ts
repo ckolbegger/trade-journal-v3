@@ -43,7 +43,8 @@ const origin = z.union([
   z.strictObject({ kind: z.literal('DailyReview'), factId: z.string(), reviewDate: z.string() }),
 ]);
 // A Daily Trade Review's key is the array ['DailyTradeReview', reviewDate, tradeId] (D4 A38).
-const obligationKey = z.union([z.string(), z.array(z.string())]);
+// Every other obligation's key is a string (`PlanReflection:<tradeId>`, ...).
+const obligationKey = z.union([z.string(), z.tuple([z.literal('DailyTradeReview'), z.string(), z.string()])]);
 const role = z.enum(['Thesis', 'Invalidation', 'Action', 'Intent']);
 
 const prompt = z.discriminatedUnion('kind', [

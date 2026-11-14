@@ -44,6 +44,19 @@ describe('record parsing at schema 7 (P31)', () => {
   });
 });
 
+describe('obligation key shape (D8 A134)', () => {
+  it('should reject an obligation key that is not a Daily Trade Review key', () => {
+    for (const store of ['journalEntries', 'journalDeclines'] as const) {
+      const records = exported(store);
+      for (const bad of [['DailyTradeReview', '2026-01-02'], ['Other', '2026-01-02', 't1'], ['a', 'b', 'c', 'd'], []]) {
+        const malformed = structuredClone(records);
+        malformed[0]!['obligationKey'] = bad;
+        expect(preparation.parse(store, linesOf(malformed))).toEqual({ kind: 'Rejected', issues: [{ code: 'MalformedRecord', line: 3, store, path: 'obligationKey' }] });
+      }
+    }
+  });
+});
+
 describe('section validator gaps (D2 follow-up F12)', () => {
   it('should report a duplicate Entry id', async () => {
     const candidate = () => Object.fromEntries(STORES.map((store) => [store, exported(store)]));
