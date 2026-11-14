@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import type {
   ApplyPreparedRestoreResult,
+  ConfirmBackupResult,
   ExportBackupResult,
   PrepareRestoreResult,
   RestoreCounts,
@@ -238,6 +239,33 @@ describe('inline safety backup', () => {
     facade.respond('applyPreparedRestore', { kind: 'PreparationNotFound', liveBinding: BINDING });
     await user.click(REPLACE());
     expect(facade.calls.applyPreparedRestore).toEqual([{ token: TOKEN, confirmation: { kind: 'ReplaceEntireWorkspace' }, safety: { kind: 'Receipt', receipt: RECEIPT } }]);
+  });
+
+  it('should ignore a safety backup verification that finishes after the choice was changed', async () => {
+    const ctx = setup();
+    const { facade, user } = ctx;
+    await toPreview(ctx);
+    await user.click(UNDERSTAND());
+    await user.click(screen.getByRole('radio', { name: 'Back up this journal first (recommended)' }));
+    facade.respond('exportBackup', DOWNLOADED);
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByText(DOWNLOADED.fileName);
+    let finish: (result: ConfirmBackupResult) => void = () => undefined;
+    facade.respond('confirmBackup', () => new Promise((resolve) => {
+      finish = resolve;
+    }));
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText('Checking the file');
+
+    // Switch the choice away and back, which remounts the safety backup.
+    await user.click(screen.getByRole('radio', { name: 'Replace without a backup' }));
+    await user.click(screen.getByRole('radio', { name: 'Back up this journal first (recommended)' }));
+    await act(() => {
+      finish({ kind: 'Completed', receipt: RECEIPT });
+      return Promise.resolve();
+    });
+    expect(screen.queryByText(/Backup complete/)).toBeNull();
+    expect(REPLACE().disabled).toBe(true);
   });
 
   it('should say the journal changed and offer Check the backup again when the inline backup conflicts', async () => {

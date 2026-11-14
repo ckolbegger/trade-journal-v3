@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type {
   BackupProgress,
   CompletedBackupReceipt,
@@ -34,6 +34,13 @@ function SafetyBackup({ facade, selectFile, token, timeZone, receipt, onReceipt,
   const [notVerified, setNotVerified] = useState<NotVerifiedReason | undefined>();
   // Counts downloads, so a check that finishes after a newer download is dropped.
   const downloadCount = useRef(0);
+  // Leaving the choice unmounts this component; a check still pending then counts as superseded.
+  useEffect(() => {
+    const count = downloadCount;
+    return () => {
+      count.current += 1;
+    };
+  }, []);
 
   const download = async () => {
     // A target with no Workspace has no user data, so no safety choice reaches this point.
