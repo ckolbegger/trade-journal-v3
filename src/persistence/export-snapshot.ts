@@ -61,7 +61,18 @@ export async function readExportSnapshot(
   db.onversionchange = () => db.close();
   try {
     const missing = ['meta', ...layout.stores].find((store) => !db.objectStoreNames.contains(store));
-    if (missing) return { kind: 'ReadFailed', store: missing as WorkspaceStore };
+    if (missing) {
+      // An older schema lacks stores the layout names: that is UnknownLayout, not a failed read.
+      if (missing !== 'meta') {
+        const stored = await new Promise<unknown>((resolve) => {
+          const request = db.transaction('meta', 'readonly').objectStore('meta').get('schema');
+          request.onsuccess = () => resolve((request.result as Record<string, unknown> | undefined)?.['schemaVersion']);
+          request.onerror = () => resolve(layout.schemaVersion);
+        });
+        if (stored !== layout.schemaVersion) return { kind: 'UnknownLayout', schemaVersion: typeof stored === 'number' ? stored : undefined };
+      }
+      return { kind: 'ReadFailed', store: missing as WorkspaceStore };
+    }
     return await new Promise<ExportReadResult>((resolve, reject) => {
       const tx = db.transaction(['meta', ...layout.stores], 'readonly');
       let failure: Failure | undefined;

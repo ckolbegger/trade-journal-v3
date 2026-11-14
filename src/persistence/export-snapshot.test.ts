@@ -230,6 +230,32 @@ describe('a missing database (T8.3-B2)', () => {
   });
 });
 
+describe('an older schema (T8.3-B3)', () => {
+  it('should report UnknownLayout when a schema-1 database is read with the schema-7 layout', async () => {
+    // A schema-1 database holds only `meta`, so every store the schema-7 layout names is missing.
+    const name = 'tj-ws-schema-1';
+    await new Promise<void>((resolve, reject) => {
+      const open = factory.open(name);
+      open.onupgradeneeded = () => {
+        open.result.createObjectStore('meta', { keyPath: 'key' }).put({ key: 'schema', schemaVersion: 1 });
+      };
+      open.onsuccess = () => {
+        open.result.close();
+        resolve();
+      };
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+    const batches: ExportBatch[] = [];
+
+    const read = await persistence().readExportSnapshot(name, exportLayoutFor(7)!, (batch) => {
+      batches.push(batch);
+    });
+
+    expect(read).toEqual({ kind: 'UnknownLayout', schemaVersion: 1 });
+    expect(batches).toEqual([]);
+  });
+});
+
 describe('layouts per schema (A149)', () => {
   it('should read a schema-5 database with the schema-5 layout, and return UnknownLayout for a database whose meta names schema 9', async () => {
     const v5 = await databaseAtSchema(5, [
