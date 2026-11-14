@@ -41,6 +41,9 @@ const t = (value: string): Part => ({ kind: 'text', text: value });
 const instrumentPart = (instrument: Instrument): Part => ({ kind: 'instrument', instrument });
 const datePart = (date: string): Part => ({ kind: 'date', date });
 
+// The Restore counts row for acknowledged-unavailable Marks (D8 Q2 A5); the wording check reserves the phrase for this file.
+export const ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL = 'Marks acknowledged unavailable';
+
 export const unavailableWords = (reason: UnavailableReason, length: WordLength, timeZone: string): Parts => {
   switch (reason.reason) {
     case 'MarkMissing':

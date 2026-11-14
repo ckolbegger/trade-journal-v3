@@ -62,9 +62,10 @@ function explainIssue(issue: RestoreIssue): string {
     case 'UnsupportedDataCapability':
       return `The backup holds data this version can't restore: ${issue.path ?? ''}.`;
     case 'CrossSectionReference':
-      return `A record refers to an ${issue.kind ?? ''} that isn't in the backup (${issue.identity ?? ''}).`;
+      return `A record refers to ${/^[AEIOU]/i.test(issue.kind ?? '') ? 'an' : 'a'} ${issue.kind ?? ''} that isn't in the backup (${issue.identity ?? ''}).`;
     default:
-      return explainMigrationIssue({ code: issue.code } as MigrationIssue) ?? issue.code;
+      // A validator code with no sentence of its own (Q5 item 3).
+      return explainMigrationIssue({ code: issue.code } as MigrationIssue) ?? `A record in the ${issue.section ?? ''} section didn't pass a check (${issue.code}).`;
   }
 }
 
@@ -82,9 +83,28 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
     const controller = new AbortController();
     abort.current = controller;
     setPhase({ kind: 'Checking', progress: undefined });
-    const result = await facade.prepareRestore({ file: chosen.file, signal: controller.signal, onProgress: (progress) => setPhase({ kind: 'Checking', progress }) });
+    let result: PrepareRestoreResult;
+    try {
+      result = await facade.prepareRestore({ file: chosen.file, signal: controller.signal, onProgress: (progress) => setPhase({ kind: 'Checking', progress }) });
+    } catch (error) {
+      abort.current = undefined;
+      const thrown = error instanceof Error ? error : new Error(String(error));
+      logFailure({ stage: 'Prepare', name: thrown.name, message: thrown.message, ...(thrown.stack !== undefined && { stack: thrown.stack }) });
+      setPhase({ kind: 'CannotCheck', reason: "The backup couldn't be checked. Your current journal is unchanged." });
+      return;
+    }
     abort.current = undefined;
-    if (result.kind === 'Rejected') setPhase({ kind: 'Rejected', result });
+    if (result.kind === 'Rejected') {
+      // Never the values: only the count and the first issue's code and location.
+      const first = result.issues[0];
+      logFailure({
+        stage: 'Prepare',
+        name: 'Rejected',
+        message: 'The backup was rejected.',
+        context: { issueCount: result.totalIssues, ...(first && { code: first.code }), ...(first?.section !== undefined && { section: first.section }), ...(first?.line !== undefined && { line: first.line }), ...(first?.path !== undefined && { path: first.path }) },
+      });
+      setPhase({ kind: 'Rejected', result });
+    }
     else if (result.kind === 'Prepared') setPhase({ kind: 'Preview', token: result.token, preview: result.preview });
     else if (result.kind === 'RuntimeNotWritable') {
       logFailure({ stage: 'Prepare', name: 'RuntimeNotWritable', message: 'The journal is not writable.', context: { failedChecks: result.failedChecks.map((failure) => `${failure.check}:${failure.reason}`).join(',') } });

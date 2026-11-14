@@ -504,3 +504,76 @@ describe('backup that cannot be checked because the journal is not writable (T8.
     expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Prepare', name: 'RuntimeNotWritable', message: 'The journal is not writable.', context: { failedChecks: 'capacity:InsufficientQuota' } }]);
   });
 });
+
+describe('Restore screen gaps (T8.13-F1)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const rejected = (issues: readonly object[], totalIssues = issues.length) => ({ kind: 'Rejected', totalIssues, liveBinding: BINDING, issues }) as unknown as PrepareRestoreResult;
+
+  it('should show the fallback sentence for a module validator code with no sentence of its own', async () => {
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', rejected([{ code: 'PriceNegative', section: 'trades', line: 5, path: 'r.price' }]));
+    await choose(ctx);
+    expect(await screen.findByText("A record in the trades section didn't pass a check (PriceNegative).")).toBeTruthy();
+  });
+
+  it('should write one developer log line for a rejected backup with the issue count and the first issue code section line and path', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', rejected([{ code: 'PriceNegative', section: 'trades', line: 5, path: 'r.price' }, { code: 'UnsupportedFormat' }], 1234));
+    await choose(ctx);
+    await screen.findByText("This backup can't be restored.");
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Prepare', name: 'Rejected', message: 'The backup was rejected.', context: { issueCount: 1234, code: 'PriceNegative', section: 'trades', line: 5, path: 'r.price' } }]);
+  });
+
+  it('should show the could-not-be-checked message with Choose backup file when preparing the backup fails unexpectedly', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', () => Promise.reject(new Error('boom')));
+    await choose(ctx);
+    expect(await screen.findByText("The backup couldn't be checked. Your current journal is unchanged.")).toBeTruthy();
+    expect(screen.queryByText(/Checking the backup/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Choose backup file' })).toBeTruthy();
+  });
+
+  it('should write a developer log line with the error name and message and stack when preparing the backup fails unexpectedly', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = new Error('boom');
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', () => Promise.reject(error));
+    await choose(ctx);
+    await screen.findByText(/couldn't be checked/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Prepare', name: 'Error', message: 'boom', stack: error.stack }]);
+  });
+
+  it('should choose a or an from the kind word in the cross-section reference sentence', async () => {
+    const ctx = setup();
+    ctx.facade.respond(
+      'prepareRestore',
+      rejected([
+        { code: 'CrossSectionReference', kind: 'Trade', identity: 't-1' },
+        { code: 'CrossSectionReference', kind: 'Journal entry', identity: 'e-1' },
+        { code: 'CrossSectionReference', kind: 'Account', identity: 'a-1' },
+      ]),
+    );
+    await choose(ctx);
+    expect(await screen.findByText("A record refers to a Trade that isn't in the backup (t-1).")).toBeTruthy();
+    expect(screen.getByText("A record refers to a Journal entry that isn't in the backup (e-1).")).toBeTruthy();
+    expect(screen.getByText("A record refers to an Account that isn't in the backup (a-1).")).toBeTruthy();
+  });
+
+  it('should show the version count once on the Trades total line and once on the Journal entries row and not on the Planned Open and Closed rows', async () => {
+    const ctx = setup();
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ counts: counts({ versions: { trades: 5, entries: 2, debts: 1 } }) }) });
+    const table = screen.getByRole('table');
+    const row = (label: string) => within(within(table).getByRole('rowheader', { name: label }).closest('tr')!).getAllByRole('cell').map((c) => c.textContent);
+    expect(row('Trades')).toEqual(['6 (5 versions)', '6']);
+    expect(row('Journal entries')).toEqual(['4 (2 versions)', '4']);
+    for (const label of ['Planned Trades', 'Open Trades', 'Closed Trades', 'Journal entries: Plan', 'Reflections owed: Open']) expect(row(label)[0]).not.toMatch(/versions/);
+    expect(table.textContent?.match(/versions/g)).toHaveLength(2);
+  });
+});

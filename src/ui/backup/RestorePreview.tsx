@@ -1,4 +1,5 @@
 import type { RestoreCounts, RestoreMigrations, RestorePreview, RestoreRepair, RestoreWarning } from '../../app/types.ts';
+import { ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL } from '../calculation-words.ts';
 import { completionTime } from './backup-text.ts';
 
 const number = (n: number) => n.toLocaleString('en-US');
@@ -14,20 +15,21 @@ interface CountRow {
 function countRows(restored: RestoreCounts, current: RestoreCounts | null): readonly CountRow[] {
   const keys = (pick: (c: RestoreCounts) => Readonly<Record<string, number>>) => [...new Set([...Object.keys(pick(restored)), ...Object.keys(current ? pick(current) : {})])];
   return [
-    { label: 'Planned Trades', value: (c) => c.tradesByLifecycle.Planned, history: 'trades' },
-    { label: 'Open Trades', value: (c) => c.tradesByLifecycle.Open, history: 'trades' },
-    { label: 'Closed Trades', value: (c) => c.tradesByLifecycle.Closed, history: 'trades' },
+    // The version count shows once per kind: here for Trades, on the Journal entries row for entries.
+    { label: 'Trades', value: (c) => c.tradesByLifecycle.Planned + c.tradesByLifecycle.Open + c.tradesByLifecycle.Closed, history: 'trades' },
+    { label: 'Planned Trades', value: (c) => c.tradesByLifecycle.Planned },
+    { label: 'Open Trades', value: (c) => c.tradesByLifecycle.Open },
+    { label: 'Closed Trades', value: (c) => c.tradesByLifecycle.Closed },
     { label: 'Position Changes', value: (c) => c.positionChanges },
     { label: 'Executions', value: (c) => c.executions },
     { label: 'Expirations', value: (c) => c.expirations },
     { label: 'Deviations', value: (c) => c.deviationOccurrences },
-    ...keys((c) => c.entriesByType).map((type) => ({ label: `Journal entries: ${type}`, value: (c: RestoreCounts) => c.entriesByType[type] ?? 0, history: 'entries' })),
+    { label: 'Journal entries', value: (c) => Object.values(c.entriesByType).reduce((sum, n) => sum + n, 0), history: 'entries' },
+    ...keys((c) => c.entriesByType).map((type) => ({ label: `Journal entries: ${type}`, value: (c: RestoreCounts) => c.entriesByType[type] ?? 0 })),
     { label: 'Declined reflections', value: (c) => c.declines },
-    ...keys((c) => c.debtsByStatus).map((status) => ({ label: `Reflections owed: ${status}`, value: (c: RestoreCounts) => c.debtsByStatus[status] ?? 0, history: 'debts' })),
+    ...keys((c) => c.debtsByStatus).map((status) => ({ label: `Reflections owed: ${status}`, value: (c: RestoreCounts) => c.debtsByStatus[status] ?? 0 })),
     { label: 'Marks', value: (c) => c.marks },
-    // The approved count-row label (D8 Q2 A5). It is not a Calculation reason's words, so it is
-    // written in parts to stay clear of the wording check that reserves that phrase.
-    { label: ['Marks acknowledged', 'unavailable'].join(' '), value: (c) => c.acknowledgments },
+    { label: ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL, value: (c) => c.acknowledgments },
     { label: 'Institutions', value: (c) => c.institutions },
     { label: 'Accounts', value: (c) => c.accounts },
     { label: 'Strategies', value: (c) => c.strategies },
