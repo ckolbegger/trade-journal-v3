@@ -261,4 +261,4 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 - First-run pass, T8.1: "should accept records pushed one at a time" (mutation-checked).
 - First-run pass, T8.23-B1: the added guard "should reject an unconfigured operation with the operation name" (mutation-checked).
-- Q1 (T8.12's words): pending with the user (`evidence/D08/DECISIONS-PENDING.md`).
+- Q1 (T8.12's words): answered 2026-11-14, table approved as written; to be carried into revision r103 (`evidence/D08/DECISIONS-PENDING.md`).

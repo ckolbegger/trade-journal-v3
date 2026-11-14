@@ -2,7 +2,7 @@
 
 This file lists every question asked of the user during D8, open and answered (decision 113): the task, the question, the options with their tradeoffs, the recommendation, and the answer with its date.
 
-## Q1. The Backup page's words that no approved row covers (T8.12) — open, asked 2026-11-14
+## Q1. The Backup page's words that no approved row covers (T8.12) — answered 2026-11-14
 
 **Task:** T8.12 (lane UB); paused with T8.13, the later task in its lane.
 
@@ -26,4 +26,4 @@ This file lists every question asked of the user during D8, open and answered (d
 
 **Recommendation:** (a); the texts follow A141's tone and the existing readiness copy.
 
-**Answer:** pending.
+**Answer (2026-11-14):** (a), the table approved as written ("a, approve the table as written"). T8.12 and T8.13 resumed. The approved words are to be carried into the plan's next revision (r103) with any later word approvals.

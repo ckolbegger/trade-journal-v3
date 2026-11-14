@@ -678,8 +678,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.10 | 1 | WB | Not started | |
 | T8.8 | 1 | WR | Not started | |
 | T8.9 | 1 | WR | Not started | |
-| T8.12 | 1 | UB | Paused: decision pending (Q1) | |
-| T8.13 | 1 | UB | Paused: decision pending (Q1) | |
+| T8.12 | 1 | UB | In progress from `9312835b` | |
+| T8.13 | 1 | UB | Not started | |
 | T8.14 | 1 | US | In progress from `fdc5e858` | |
 | T8.11 | 2 | — | Not started | |
 | T8.15 | 2 | FT | Not started | |

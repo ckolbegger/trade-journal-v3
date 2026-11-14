@@ -38,6 +38,7 @@ Lane F, commit `fdd92d08` (6 cases red then green; one first-run pass flagged: "
 | T8.1-B7 | `writer.ts:21` a section named `__proto__` is lost from the plain-object digest map | the section is missing from the manifest and returned digests | it should record a section named __proto__ in the manifest and returned digests |
 
 - **T8.1-B1** `cf7c5795`: red (assertion: no `ArtifactReadError`) then green; the manifest line is yielded only after the stream drains clean. Lane tier: unit 1755, integration 229, checks 14 of 14. ocr (session `e924278e-371e-4427-b9d8-ee7b463a13a5`, 2 files): **No findings.** Raw: `ocr/T8.1-B1-cf7c5795.json`.
+- **T8.1-B2** `3a48d696`: red ("expected +0 to be 1": no cancel after `break`) then green; `try/finally` cancels the source reader. Lane tier: unit 1756, integration 229, checks 14 of 14. ocr (session `00b8f02e-3356-4259-8c9d-8420f1c8b628`, 2 files): **No findings.** Raw: `ocr/T8.1-B2-3a48d696.json`.
 
 ## T8.23 Types, skeletons and ports
 
@@ -64,6 +65,7 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 | T8.23 | T (wave 0) | `.claude/worktrees/d08-t` | `d08/t` | `a6c88cdd` |
 | T8.3 | PS (wave 1) | `.claude/worktrees/d08-ps` | `d08/ps` | `fdc5e858` |
 | T8.14 | US (wave 1) | `.claude/worktrees/d08-us` | `d08/us` | `fdc5e858` |
+| T8.12 | UB (wave 1) | `.claude/worktrees/d08-ub` | `d08/ub` | `9312835b` |
 
 ## Flakes
 
