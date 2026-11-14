@@ -75,6 +75,10 @@ export const WIDE_LAYOUT_MIN_WIDTH = 960;
 const SEPARATE_STORAGE =
   "Another browser has its own separate storage and would start an empty journal. To move this journal, download a backup here and verify it, then restore it in a browser that can save safely.";
 
+// The copy before backup existed (D1 A13), kept for a release that composes no Backup page.
+const SEPARATE_STORAGE_NO_BACKUP =
+  "Another browser has its own separate storage and would start an empty journal. Moving a journal between browsers needs a verified backup and Restore, which this release does not offer yet.";
+
 // P32: a copy made while this release can't confirm it never claims a backup.
 const UNCONFIRMED_COPY = "This release can't confirm the copy until your journal has been updated.";
 
@@ -578,7 +582,11 @@ export function AppShell({
                 <li key={failure.check}>{explainFailure(failure)}</li>
               ))}
             </ul>
-            <p>{SEPARATE_STORAGE}</p>
+            <p>
+              {routes.some((route) => route.id === "backup")
+                ? SEPARATE_STORAGE
+                : SEPARATE_STORAGE_NO_BACKUP}
+            </p>
           </section>
         )}
         <main className="content">

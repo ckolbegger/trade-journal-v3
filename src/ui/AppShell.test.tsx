@@ -151,6 +151,29 @@ describe('readiness gate presentation', () => {
     ).toBeTruthy();
   });
 
+  it('should keep the earlier Recovery Only copy when Backup isn\'t installed', async () => {
+    const facade = facadeDouble({
+      status: {
+        kind: 'RecoveryOnly',
+        observedAt: '2026-10-12T14:05:00Z',
+        installedCapabilities: facadeDouble().capabilities,
+        readiness: writableReadiness,
+        protection: 'BestEffort',
+        failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+        binding: { databaseName: 'tj-ws-1', contentRevision: 3 },
+        timeZone: 'America/New_York',
+      },
+    });
+    renderShell(facade, '/accounts', { backup: undefined });
+    await screen.findByRole('heading', { name: /read only: this browser can.t save right now/i });
+    expect(
+      screen.getByText(
+        'Another browser has its own separate storage and would start an empty journal. Moving a journal between browsers needs a verified backup and Restore, which this release does not offer yet.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/download a backup here/i)).toBeNull();
+  });
+
   it('should render Integrity Blocked with a warning that journal data may exist, Retry as the only action, and no initialization or data navigation', async () => {
     const facade = facadeDouble({
       status: {
