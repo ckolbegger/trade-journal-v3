@@ -7,6 +7,7 @@ import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { readArtifact, type ArtifactLine } from '../../backup/format/index.ts';
 import type { Persistence } from '../../persistence/index.ts';
+import { createBackupOperations } from './backup.ts';
 import { createWorkspace } from './index.ts';
 
 const W7 = JSON.parse(readFileSync('tests/fixtures/workspace-v7/dump.json', 'utf8')) as WorkspaceDump;
@@ -302,5 +303,85 @@ describe('blocked databases (P32)', () => {
     expect(await guarded.exportBackup({})).toEqual({ kind: 'NotCompleted', stage: 'Read', reason: 'IntegrityBlocked', workspaceBinding: null });
     expect(unreadable.testHost.downloads.offered).toEqual([]);
     expect((await factory.databases()).map((d) => [d.name, d.version])).toEqual([['tj-root', 99]]);
+  });
+});
+
+describe('Completed (A130)', () => {
+  async function downloaded() {
+    const stack = await w7Stack();
+    const result = await stack.workspace.exportBackup({});
+    if (result.kind !== 'Downloaded') throw new Error(`expected Downloaded, got ${JSON.stringify(result)}`);
+    const offered = stack.testHost.downloads.offered[0]!;
+    return { ...stack, result, bytes: offered.bytes, file: new File([offered.bytes as BlobPart], offered.fileName) };
+  }
+
+  it('should return Completed for A7 with the expected binding and digest, with a receipt holding the source binding, full and manifest digests, file name, byte size, compressed true, line count, and completion instant, writing nothing', async () => {
+    const { workspace, factory, result, bytes, file } = await downloaded();
+    const before = await dumpAll(factory);
+    const confirmed = await workspace.confirmBackup({ file, expectedBinding: result.sourceBinding, expectedFullDigest: result.fullDigest });
+    if (confirmed.kind !== 'Completed') throw new Error(`expected Completed, got ${JSON.stringify(confirmed)}`);
+    const lines = await linesOf(bytes);
+    expect(confirmed.receipt).toEqual({
+      receiptId: expect.any(String) as unknown,
+      sourceBinding: result.sourceBinding,
+      fullDigest: result.fullDigest,
+      manifestDigest: result.manifestDigest,
+      evidence: { fileName: file.name, byteSize: bytes.length, compressed: true, lineCount: lines.length },
+      completedAt: EXPORT_AT,
+    });
+    expect(confirmed.receipt.receiptId).not.toBe('');
+    expect(await dumpAll(factory)).toEqual(before);
+  });
+});
+
+describe('Not Verified', () => {
+  it('should return IncompleteOrCorrupt for R-cut and for R-flip, DifferentArtifact for a second export of W7 made after one Mark save, and Unreadable when the file read fails, each with no receipt', async () => {
+    const stack = await w7Stack();
+    const { workspace, testHost } = stack;
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const a7 = testHost.downloads.offered[0]!.bytes;
+    const confirm = (file: File) => workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest });
+
+    const cut = new File([a7.slice(0, Math.floor(a7.length / 2))], 'cut.tjbackup');
+    expect(await confirm(cut)).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+
+    const flipped = a7.slice();
+    flipped[Math.floor(flipped.length / 2)]! ^= 0xff;
+    expect(await confirm(new File([flipped as BlobPart], 'flip.tjbackup'))).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+
+    const saved = await stack.marketData.save({ intention: 'RecordInitialManualMark', instrumentKey: 'XYZ', tradingDate: '2026-11-19', price: '52', expectedResolutionRevision: 'None' });
+    expect(saved.kind).toBe('Saved');
+    const second = await workspace.exportBackup({});
+    if (second.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    expect(second.fullDigest).not.toBe(first.fullDigest);
+    const other = testHost.downloads.offered[1]!;
+    expect(await confirm(new File([other.bytes as BlobPart], other.fileName))).toEqual({ kind: 'NotVerified', reason: 'DifferentArtifact' });
+
+    const unreadable = new File([a7 as BlobPart], 'a7.tjbackup');
+    unreadable.stream = () =>
+      new ReadableStream<Uint8Array<ArrayBuffer>>({
+        pull() {
+          throw new Error('read failed');
+        },
+      });
+    expect(await confirm(unreadable)).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+  });
+});
+
+describe('receipt registry (A131)', () => {
+  it('should recognize a receipt issued by this instance, and not one issued before a restart on the same storage', async () => {
+    const stack = await w7Stack();
+    const deps = { ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } };
+    const before = createBackupOperations(deps);
+    const result = await before.exportBackup({});
+    if (result.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const offered = stack.testHost.downloads.offered[0]!;
+    const confirmed = await before.confirmBackup({ file: new File([offered.bytes as BlobPart], offered.fileName), expectedBinding: result.sourceBinding, expectedFullDigest: result.fullDigest });
+    if (confirmed.kind !== 'Completed') throw new Error('expected Completed');
+    expect(before.recognizesReceipt(confirmed.receipt.receiptId)).toBe(true);
+    expect(before.recognizesReceipt('not-issued')).toBe(false);
+    // A restart is a new application instance on the same storage.
+    expect(createBackupOperations(deps).recognizesReceipt(confirmed.receipt.receiptId)).toBe(false);
   });
 });
