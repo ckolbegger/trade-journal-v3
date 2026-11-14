@@ -26,14 +26,15 @@ type Cell = PriceHistoryProps['columns'][number]['cells'][number];
 const rowLabel = (instrument: Instrument): string => (instrument.kind === 'Stock' ? `${instrument.symbol} Mark` : `${instrument.right} Mark`);
 
 // An Instrument's Mark in a session, or null for a gap (a gap is never filled, A210).
-function markCell(session: Session, instrument: Instrument): Cell {
+function markCell(session: Session, instrument: Instrument, optionTrade: boolean): Cell {
   const mark = session.marks.find((m) => instrumentKey(m.instrument) === instrumentKey(instrument));
   if (mark?.resolution.kind !== 'Available') {
     // Nothing held at the close: no Mark was due, so the cell is not a gap (plain "—", not "No Mark").
     return heldNothing(session) ? { text: '—' } : null;
   }
   const price = mark.resolution.mark.price;
-  return { text: instrument.kind === 'Stock' ? decimalUnderlyingPrice(price) : decimalMoney(price) };
+  // An Underlying's price has no "$" on an option Trade (C3); a stock Trade's Mark is money (C1), as in Today and the Journal.
+  return { text: instrument.kind === 'Stock' && optionTrade ? decimalUnderlyingPrice(price) : decimalMoney(price) };
 }
 
 function pnlCell(session: Session): Cell {
@@ -54,11 +55,12 @@ export function priceHistoryTabCount(replay: TradeReplayView): number {
 // W9's table: newest session first, one row per Instrument's Mark, then Trade P&L.
 export function priceHistoryProps(replay: TradeReplayView, onOpenReview: () => void): PriceHistoryProps {
   const sessions = [...replay.sessions].reverse();
+  const optionTrade = replay.instruments.some((i) => i.kind === 'Option');
   return {
     rowLabels: [...replay.instruments.map(rowLabel), 'Trade P&L'],
     columns: sessions.map((session) => {
       const [weekday = '', ...date] = shortDate(session.date).split(' ');
-      return { weekday, date: date.join(' '), cells: [...replay.instruments.map((i) => markCell(session, i)), pnlCell(session)] };
+      return { weekday, date: date.join(' '), cells: [...replay.instruments.map((i) => markCell(session, i, optionTrade)), pnlCell(session)] };
     }),
     missingCount: priceHistoryTabCount(replay),
     onOpenReview,

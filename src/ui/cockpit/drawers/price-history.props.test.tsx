@@ -45,6 +45,25 @@ describe('Price History (W9, P99)', () => {
     ]);
   });
 
+  // T8P.23-B12 (critic-2 defect 6): W9, W10, C1.
+  it('should give a stock Trade\'s Mark a dollar sign and an option Trade\'s Underlying Mark none', () => {
+    const stockSession = (date: string, price: string): ReplaySession => ({
+      date,
+      tradePnl: { kind: 'Unavailable' },
+      positions: [{ quantity: Rational.of(100n) }],
+      marks: [available(STOCK, price)],
+    });
+    const stockTrade: TradeReplayView = { instruments: [STOCK], sessions: [stockSession('2026-10-14', '51.00'), stockSession('2026-10-15', '51.50')] };
+    const stockTable = render(<PriceHistoryTable {...priceHistoryProps(stockTrade, () => undefined)} />).container.querySelector('table') as HTMLElement;
+    const stockRows = within(stockTable).getAllByRole('row').map((row) => Array.from(row.children).map((c) => c.textContent));
+    expect(stockRows[1]).toEqual(['XYZ Mark', '$51.50', '$51.00']);
+
+    const optionTable = render(<PriceHistoryTable {...priceHistoryProps(replay([MON, WED]), () => undefined)} />).container.querySelector('table') as HTMLElement;
+    const optionRows = within(optionTable).getAllByRole('row').map((row) => Array.from(row.children).map((c) => c.textContent));
+    expect(optionRows[1]).toEqual(['XYZ Mark', '57.40', '56.00']);
+    expect(optionRows[2]).toEqual(['Call Mark', '$2.90', '$2.10']);
+  });
+
   // T8P.20-B1 (ocr on c0df748c).
   it('should open the Review from Enter Marks in the Review', () => {
     const Where = () => <p data-testid="where">{useLocation().pathname}</p>;
