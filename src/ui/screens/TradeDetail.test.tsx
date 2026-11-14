@@ -57,7 +57,7 @@ const replayed = (item: TradeReplayView['sessions'][number]['journal'][number]) 
 // `marked`: every session has a Mark, so the Journal has four session cards (it shows three to a page).
 const replay = (items: TradeReplayView['sessions'][number]['journal'] = [debt], marked = false): TradeReplayView => {
   const journal = items.map(replayed);
-  const empty = { positions: [], heldQuantity: Rational.of(100n), realizedPnl: Rational.of(0n), positionChangeIds: [], journal: [] };
+  const empty = { positions: [{ instrument: STOCK, quantity: Rational.of(100n) }], heldQuantity: Rational.of(100n), realizedPnl: Rational.of(0n), positionChangeIds: [], journal: [] };
   const noMarks = (date: string) =>
     marked
       ? { ...empty, date, tradePnl: { kind: 'Value' as const, value: Rational.of(100n) }, change: null, marks: [markOf('52.00')] }

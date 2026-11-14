@@ -17,6 +17,8 @@ import type { JournalCardItem, JournalCardProps, JournalDrawerProps, OwedControl
 export interface JournalReplaySession {
   readonly date: string;
   readonly tradePnl: CalculationResult<Rational>;
+  // The Position held at the session's Mark: signed quantity per Instrument. Nothing held means no Mark was due.
+  readonly positions: readonly { readonly quantity: Rational }[];
   readonly change: { readonly since: string; readonly dollars: Rational } | null;
   readonly marks: readonly {
     readonly instrument: Instrument;
@@ -65,8 +67,11 @@ function plannedAt(instant: string, timeZone: string): string {
   return `${shortDate(date)}, ${Number(hour) % 12 || 12}:${minute} ${Number(hour) < 12 ? 'am' : 'pm'}`;
 }
 
-// A session without a Mark:no Instrument has one that day.
-const withoutMarks = (session: JournalReplaySession): boolean => session.marks.every((mark) => mark.resolution.kind !== 'Available');
+// A session whose close held no Position (a Closed Trade's final session) was owed no Mark (A211's Position held).
+const heldNothing = (session: JournalReplaySession): boolean => session.positions.every((p) => p.quantity.numerator === 0n);
+
+// A session without a Mark: Marks were due, and no Instrument has one that day.
+const withoutMarks = (session: JournalReplaySession): boolean => !heldNothing(session) && session.marks.every((mark) => mark.resolution.kind !== 'Available');
 
 function itemOf(item: TradeDetailNarrativeItem, symbol: string, timeZone: string, facade: UiFacade, onDirtyChange?: (dirty: boolean) => void): JournalCardItem {
   if (item.kind === 'Debt') {
@@ -173,7 +178,7 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
       marks: session.marks.map(({ instrument, resolution }) => ({
         label: instrument.kind === 'Option' ? `${instrument.right} Mark` : `${instrument.symbol} Mark`,
         value: resolution.kind === 'Available' ? priceOf(instrument, resolution.mark.price) : '—',
-        ...(resolution.kind !== 'Available' && { gap: true as const }),
+        ...(resolution.kind !== 'Available' && !heldNothing(session) && { gap: true as const }),
       })),
       items: items(session.journal),
     };

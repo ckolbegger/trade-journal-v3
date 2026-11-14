@@ -22,6 +22,7 @@ const cents = (n: number) => Rational.of(BigInt(n), 100n);
 const session = (date: string, xyz: string | null, call: string | null, pnl: number | null): ReplaySession => ({
   date,
   tradePnl: pnl === null ? { kind: 'Unavailable' } : { kind: 'Value', value: cents(pnl) },
+  positions: [{ quantity: Rational.of(100n) }],
   marks: [xyz === null ? missing(STOCK) : available(STOCK, xyz), call === null ? missing(CALL) : available(CALL, call)],
 });
 const replay = (sessions: readonly ReplaySession[]): TradeReplayView => ({ instruments: [STOCK, CALL], sessions });
@@ -120,5 +121,23 @@ describe('Price History (W9, P99)', () => {
     expect(whole.container.textContent).not.toContain('without Marks');
     expect(within(whole.container).queryByRole('link', { hidden: true })).toBeNull();
     expect(priceHistoryTabCount(replay([MON, WED, THU]))).toBe(0);
+  });
+
+  // T8P.23-B11 (critic-2 defect 5): a session that closed flat was owed no Mark, so it is no gap.
+  it('should not count the final session of a Closed Trade, flat at its close, as a session without Marks', () => {
+    const flat: ReplaySession = { ...session('2026-10-13', null, null, 19800), positions: [{ quantity: Rational.of(0n) }] };
+    const closed = replay([session('2026-10-12', '51.00', '2.10', 100), flat]);
+    const { container } = render(<PriceHistoryTable {...priceHistoryProps(closed, () => undefined)} />);
+    expect(priceHistoryTabCount(closed)).toBe(0);
+    expect(container.querySelector('.price-history-gaps')).toBeNull();
+    expect(container.textContent).not.toContain('without Marks');
+    expect(within(container).queryByRole('link', { name: 'Enter Marks in the Review', hidden: true })).toBeNull();
+    const tuesday = within(container.querySelector('tbody') as HTMLElement).getAllByRole('row').map((row) => (row.children[1] as HTMLElement).textContent);
+    expect(tuesday).toEqual(['—', '—', '$198.00']);
+    expect(within(container).queryAllByRole('img', { name: 'No Mark', hidden: true })).toHaveLength(0);
+    // A real gap before the final session still counts, and only that one.
+    const gappy = replay([session('2026-10-12', '51.00', '2.10', 100), TUE, flat]);
+    expect(priceHistoryTabCount(gappy)).toBe(1);
+    expect(render(<PriceHistoryTable {...priceHistoryProps(gappy, () => undefined)} />).container.textContent).toContain('1 session without Marks.');
   });
 });

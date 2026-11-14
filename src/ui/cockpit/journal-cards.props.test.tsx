@@ -27,6 +27,7 @@ const session = (date: string, pnl: bigint, price: string, change: { since: stri
   date,
   tradePnl: dollars(pnl),
   change: change && { since: change.since, dollars: Rational.of(change.dollars) },
+  positions: [{ instrument: stock, quantity: Rational.of(100n) }],
   marks: [markOf(price)],
   journal,
 });
@@ -48,8 +49,15 @@ const withoutMarks =(date: string, journal: readonly unknown[] = []) => ({
   date,
   tradePnl: { kind: 'Unavailable', reason: 'MarkMissing', instrument: stock, date },
   change: null,
+  positions: [{ instrument: stock, quantity: Rational.of(100n) }],
   marks: [{ instrument: stock, resolution: { kind: 'Missing' } }],
   journal,
+});
+// A Closed Trade's final session: sold in full that day, so nothing was held at the close and no Mark was due.
+const flatFinal = (date: string, pnl: bigint, change: { since: string; dollars: bigint } | null) => ({
+  ...session(date, pnl, '0', change),
+  positions: [{ instrument: stock, quantity: Rational.of(0n) }],
+  marks: [{ instrument: stock, resolution: { kind: 'Missing' } }],
 });
 const replayOf =(sessions: readonly unknown[], extra: Record<string, unknown> = {}) => ({ sessions, plan: [], pending: null, ...extra });
 // A card is named by its heading; an item inside it has its own.
@@ -114,6 +122,24 @@ describe('Journal session cards (W10–W13, A214)', () => {
     expect(within(merged).getAllByRole('listitem')).toHaveLength(1);
     expect(within(merged).getByText('Reflection declined')).toBeTruthy();
     expect(merged.querySelector('.journal-card-title, .journal-card-change, .journal-card-marks')).toBeNull();
+  });
+
+  // T8P.23-B11 (critic-2 defect 5, W10, A214).
+  it('should head a Closed Trade final session flat at its close as the final session with its Trade P&L, not as without Marks', () => {
+    show(replayOf([session('2026-10-12', 100n, '51.00', null), flatFinal('2026-10-13', 198n, { since: '2026-10-12', dollars: 98n })]));
+    const cards = screen.getAllByRole('article', { hidden: true });
+    expect(cards.map(headingOf)).toEqual(['Tue Oct 13, final session', 'Mon Oct 12']);
+    const [final] = cards as [HTMLElement];
+    expect(final.querySelector('.journal-card-title')?.textContent).toBe('$198.00');
+    expect(final.querySelector('.journal-card-change')?.textContent).toBe('+$98.00 since Mon Oct 12');
+    expect(screen.queryByText(/without Marks/, { selector: 'h3' })).toBeNull();
+    expect(final.textContent).not.toContain('without Marks');
+    // Nothing was due, so the Mark row is no gap.
+    expect(within(final).queryByRole('img', { name: 'No Mark', hidden: true })).toBeNull();
+    // A real gap before the final session still merges on its own, and the final session stays apart from it.
+    cleanup();
+    show(replayOf([session('2026-10-12', 100n, '51.00', null), withoutMarks('2026-10-13'), flatFinal('2026-10-14', 198n, null)]));
+    expect(screen.getAllByRole('article', { hidden: true }).map(headingOf)).toEqual(['Wed Oct 14, final session', 'Tue Oct 13 without Marks', 'Mon Oct 12']);
   });
 
   it('should page by about one screen with ‹ and ›, and disable each at its end', async () => {

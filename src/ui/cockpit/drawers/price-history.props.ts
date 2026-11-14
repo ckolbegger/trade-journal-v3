@@ -10,6 +10,8 @@ export interface ReplaySource {
   readonly instruments: readonly Instrument[];
   readonly sessions: readonly {
     readonly date: string;
+    // The Position held at the session's Mark: signed quantity per Instrument. Nothing held means no Mark was due.
+    readonly positions: readonly { readonly quantity: Rational }[];
     readonly marks: readonly {
       readonly instrument: Instrument;
       readonly resolution: { readonly kind: 'Available'; readonly mark: { readonly price: string } } | { readonly kind: 'Missing' | 'AcknowledgedUnavailable' };
@@ -26,7 +28,10 @@ const rowLabel = (instrument: Instrument): string => (instrument.kind === 'Stock
 // An Instrument's Mark in a session, or null for a gap (a gap is never filled, A210).
 function markCell(session: Session, instrument: Instrument): Cell {
   const mark = session.marks.find((m) => instrumentKey(m.instrument) === instrumentKey(instrument));
-  if (mark?.resolution.kind !== 'Available') return null;
+  if (mark?.resolution.kind !== 'Available') {
+    // Nothing held at the close: no Mark was due, so the cell is not a gap (plain "—", not "No Mark").
+    return heldNothing(session) ? { text: '—' } : null;
+  }
   const price = mark.resolution.mark.price;
   return { text: instrument.kind === 'Stock' ? decimalUnderlyingPrice(price) : decimalMoney(price) };
 }
@@ -37,7 +42,9 @@ function pnlCell(session: Session): Cell {
   return { text: money(value), ...(value.numerator !== 0n && { tone: value.numerator > 0n ? ('gain' as const) : ('loss' as const) }) };
 }
 
-const lacksMarks = (session: Session): boolean => session.marks.some((m) => m.resolution.kind !== 'Available');
+// A session whose close held no Position (a Closed Trade's final session) was owed no Mark (A211's Position held).
+const heldNothing = (session: Session): boolean => session.positions.every((p) => p.quantity.numerator === 0n);
+const lacksMarks = (session: Session): boolean => !heldNothing(session) && session.marks.some((m) => m.resolution.kind !== 'Available');
 
 // W1: the Price History tab's count, the sessions without Marks (T8P.22 shows it on the tab).
 export function priceHistoryTabCount(replay: TradeReplayView): number {
