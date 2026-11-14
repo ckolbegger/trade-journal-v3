@@ -964,6 +964,30 @@ describe('blocked views (P32)', () => {
     await screen.findByRole('heading', { name: /your journal data may already exist here/i });
     expect(buttons()).toEqual(['Retry']);
   });
+
+  it('should replace the Downloaded line with Backup complete once verification completes on a blocked view', async () => {
+    const { backup, files } = renderBlocked(migrationBlocked);
+    await screen.findByRole('heading', { name: /your journal could not be converted to this release/i });
+    backup.respond('exportBackup', downloaded);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    expect(await screen.findByText(/Downloaded, not verified yet/)).toBeTruthy();
+    files.choose(new File(['x'], 'journal-backup.jsonl'));
+    backup.respond('confirmBackup', {
+      kind: 'Completed',
+      receipt: {
+        receiptId: 'r1',
+        sourceBinding: binding,
+        fullDigest: 'digest-1',
+        manifestDigest: 'manifest-1',
+        evidence: { fileName: 'journal-backup.jsonl', byteSize: 100, compressed: false, lineCount: 3 },
+        completedAt: '2026-10-12T14:06:00Z',
+      },
+    });
+    await user.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(await screen.findByText('Backup complete')).toBeTruthy();
+    expect(screen.queryByText(/Downloaded, not verified yet/)).toBeNull();
+  });
 });
 
 describe("another tab's Restore (A136)", () => {

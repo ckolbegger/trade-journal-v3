@@ -137,7 +137,7 @@ function BlockedBackupActions({
 
   return (
     <section aria-label="Backup">
-      {downloaded && (
+      {downloaded && message !== "Backup complete" && (
         <p role="status">
           Downloaded, not verified yet. This app can't see where your browser saved the file.{" "}
           <span>{downloaded.fileName}</span>
