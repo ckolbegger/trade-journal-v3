@@ -355,6 +355,40 @@ Lane WB, commit `80999756`: the 3 planned cases, each red (`Error: not built`, t
   - ocr (session `69079bb9-d4e6-4b22-88cf-fd40cf332ae0`, 2 files, 2 findings; raw: `ocr/T8.5-B1-25751806.json`).
     - **Valid:** `backup.ts:110` the header may repeat a section name, so a forged file with a repeated name and a matching extra ending still verifies. It becomes bug task **T8.5-B6**, queued after B5, with the case "it should return IncompleteOrCorrupt for a header that names a section twice".
     - **Wrong, dismissed:** `backup.test.ts:36` "nested ternary prohibited". There is no such rule in CLAUDE.md, the repo docs or the ESLint config, and D7 dismissed the same claim.
+- **T8.5-B2** `722be1a4`: red ("missing formatVersion: expected { Object (kind, receipt) } to deeply equal { kind: 'NotVerified', …(1) }") then green.
+  - The fix: `manifestShape` now requires A123's fields: `formatVersion`, `schemaVersion`, `footprint`, `counts`, `exclusions`, `sectionDigests` and `fullDigest`.
+  - T8.1 has no manifest schema, so the one in `backup.ts` was extended.
+  - Not enforced, since A123 doesn't require it: the manifest's versions equal to the header's. `exportKind` stays optional.
+  - Lane tier: unit 172 / 1797, integration 106 / 229, checks 14 of 14.
+  - ocr (session `621d185b-0919-41b8-9fa2-d0fc1f7a61aa`, 2 files): **No findings.** Raw: `ocr/T8.5-B2-722be1a4.json`.
+- **T8.5-B3** `03942ffd` (a test gap): **first-run pass, flagged**.
+  - The case confirms one file against expectations that differ in one respect each: the full digest, the `databaseName`, then the `contentRevision`. A control first confirms the genuine expectations give Completed.
+  - Mutations: removing each comparison in `confirmBackup` failed the case with "expected { Object (kind, receipt) } to deeply equal { kind: 'NotVerified', …(1) }". The `databaseName` mutation failed at `backup.test.ts:413` and the `contentRevision` one at `:416`; the digest assertion's line wasn't captured. After each restore, `git diff` on `backup.ts` was empty.
+  - Lane tier: unit 172 / 1798, integration 106 / 229, checks 14 of 14.
+  - ocr (session `716ff0b2-7cfa-445d-a556-55d90b8ebf62`, 1 file): **No findings.** Raw: `ocr/T8.5-B3-03942ffd.json`.
+- **T8.5-B4** `ef7c907a` (a test gap): **first-run pass, flagged**.
+  - The case has six re-sealed sub-files, each checked to still decompress and each isolated to one comparison, plus a control that gives Completed. The changes:
+    - a record changed;
+    - a section-end count changed;
+    - a manifest section digest changed;
+    - an extra manifest section digest;
+    - manifest counts differing from the header's;
+    - a record removed.
+  - Mutations: removing each of the six comparisons in `verifyArtifact` failed its labelled assertion ("<label>: expected { Object (kind, receipt) } to deeply equal { kind: 'NotVerified', … }"). After each restore, `git diff` on `backup.ts` was empty.
+  - One invalid red row (a fixture broke the `{"r":` prefix) is noted.
+  - Lane tier: unit 172 / 1799, integration 106 / 229, checks 14 of 14.
+  - ocr (session `38d5cc40-941c-4e48-b071-a114f06e87ed`, 1 file): **No findings.** Raw: `ocr/T8.5-B4-ef7c907a.json`.
+- **T8.5-B5** `d13f7ba3`: red (IncompleteOrCorrupt where Unreadable was expected) then green.
+  - The fix tags the end-of-stream decode in `drain()` with `NotUtf8`. T8.1's reader tests are unchanged.
+  - Lane tier: unit 172 / 1800, integration 106 / 229, checks 14 of 14.
+  - ocr (session `52a91c6e-dc8b-403a-9a45-9594b7b2d572`, 2 files): **No findings.** Raw: `ocr/T8.5-B5-d13f7ba3.json`.
+- **T8.5-B6** `49a835a7`: red (the forged file gave Completed) then green.
+  - The fix: `verifyArtifact` rejects a header whose sections repeat. A123 doesn't fix the set of section names, since it is built per schema from the export layout, so only uniqueness is enforced.
+  - One invalid red row (the first fixture was caught by another check) is noted.
+  - Lane tier: unit 172 / 1801, integration 106 / 229, checks 14 of 14.
+  - ocr (session `b5db4865-eeda-4510-a783-b5cf2d12abbc`, 2 files): **No findings.** Raw: `ocr/T8.5-B6-49a835a7.json`.
+
+**T8.5 is complete in lane WB** (F1 and B1–B6 done, every ocr clean).
   - **For T8.8:** `prepareRestore`'s reader path maps `reason === 'NotUtf8'` to its own unreadable outcome.
 
 **T8.4 is complete in lane WB** (B1–B4 done, every ocr clean). It merges after merge-5 finishes. T8.5 started in lane WB from `87f92560` meanwhile; it is merged with T8.4 only if it's done by then, and otherwise T8.4 merges by fast-forward to `87f92560`.

@@ -675,7 +675,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.7 | 1 | PS | Done | `8f98613d`; B1 `a53aea02`, B2 `8ab603b0`, B3 `cd4bff0c`, B4 `36f91e77`, B5 `6bbb2ffc` |
 | T8.4 | 1 | WB | Done | `92301ec3`; B1 `df7312cb`, B2 `ee01bdbf`, B3 `e3ab0788`, B4 `0fa1b021` |
 | T8.5 | 1 | WB | In progress from `87f92560` | |
-| T8.10 | 1 | WB | Not started | |
+| T8.10 | 1 | WB | In progress from `49a835a7` | |
 | T8.8 | 1 | WR | Not started | |
 | T8.9 | 1 | WR | Not started | |
 | T8.12 | 1 | UB | In progress from `9312835b`; committed in lane, ocr clean, merges with T8.13 | |
