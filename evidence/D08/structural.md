@@ -128,6 +128,7 @@ T8.8 discards a rejected candidate with the existing `discardCandidate`.
 - **T8.7-B1** `0d7fd672`: red ("expected { kind: 'AlreadyInitialized', … } to deeply equal { kind: 'Activated' }") then green. A repeat activation of the candidate the pointer already names returns `Activated` (idempotent; A135's AlreadyInitialized is for a pointer naming another database). Lane tier: unit 168 / 1776, integration 106 / 229, checks 14 of 14. ocr (session `1033f50b-d368-438d-9854-99310e50c11e`, 2 files): **No findings.** Raw: `ocr/T8.7-B1-0d7fd672.json`.
 - **T8.7-B2** `0d31af59` (a test gap): a first-run pass, flagged. The behavior was built in T8.7. Mutation: removed the earlier database's deletion in `createRestoreCandidate`. Failure: "expected [ 'tj-root', 'tj-ws-r-0001', … ] to deeply equal [ 'tj-root', 'tj-ws-r-0002' ]". The code was restored, and its diff was empty. Lane tier: unit 168 / 1777, integration 106 / 229, checks 14 of 14. ocr (session `c85ea3eb-df51-4090-99de-f3290265b481`, 1 file): **No findings.** Raw: `ocr/T8.7-B2-0d31af59.json`.
 - **T8.7-B3** `4d62a6c0`: red ("expected [] to deeply equal [ 'tj-ws-r-0001' ]") then green; `createCandidate` writes through `putNames`. Lane tier: unit 168 / 1778, integration 106 / 229, checks 14 of 14. ocr (session `4e6e7f4c-e9a4-448a-9965-ee910487e7b9`, 2 files): **No findings.** Raw: `ocr/T8.7-B3-4d62a6c0.json`.
+- **T8.7-B4** `c40cd9d7`: red ("expected [ { …(3) }, { …(3) } ] to have a length of 1 but got 2") then green. The public `createRestoreCandidate()` chains its body on a per-instance promise, so overlapping calls run in turn, and a failed creation doesn't block the next one. Lane tier: unit 168 / 1779, integration 106 / 229, checks 14 of 14. ocr pending.
 
 ## T8.12 Backup page
 
@@ -153,6 +154,20 @@ Lane UB, commit `54c7bd84` (6 cases). Lane tier `T8.12`: integration 229, checks
 |---|---|---|---|
 | T8.12-B4 | `BackupView.tsx:74` a stale check's `onProgress` still sets `checking` | after a newer download the old check's progress shows and Verify stays disabled | it should ignore progress from a verification started before a newer download |
 | T8.12-B5 | `BackupView.tsx:67` the download count is read after the file picker resolves | a download made while the picker is open gets the old backup's Backup complete | it should drop a verification whose file was chosen for an earlier download |
+
+## T8.6 Fact modules: prepareRestore and applyPreparedRestore
+
+Lane FM, commit `fa01ba22`: the 3 planned cases in each of the four modules, each red against a stub, then green. Lane tier `T8.6`: unit 175 / 1788, integration 106 / 229, checks 14 of 14. A7's records are built in the tests from W7 through T8.2's `exportSnapshot`; the committed A7 fixture is T8.17's.
+
+**First-run pass, flagged:** "should accept a Trade whose facts hold any number of Planned Legs, Executions and Expirations, each with its own option Instrument". It is an extra case for the multi-leg direction, an 8-leg Trade. Mutation: `facts: z.array(facts).max(6)` failed with "expected { kind: 'Rejected', … } to deeply equal { kind: 'Parsed', … }".
+
+**Implementation-level choices (recorded, not stops).**
+1. `prepareRestore(context)` returns `{ parse(store, lines), validate(source) }`, because parsing streams (A132 step 5) and validation runs after (step 8).
+2. `measureCandidateSection` records per-store digests as well as counts and the section digest, so `applyPreparedRestore` names the changed store. T8.8 records the whole result in the candidate's meta.
+3. The shared types and digest folding are duplicated per module, because modules can't import each other.
+4. Catalog's recheck covers the `catalog` store only; the `workspace` record lives in candidate `meta`.
+
+**Omitted from the first brief (main session's error):** D2 follow-up F12, which the breakdown's status paragraph assigns to T8.6's validation cases. It covers three validator gaps and B2.12's new trigger. T8.6 continues in lane FM to add them before it counts as done.
 
 ## T8.13 Restore flow
 
@@ -202,6 +217,14 @@ Lane WB, commit `321f4e62` (5 cases, red then green; no first-run passes; two in
 **Raised as Q4:** the pipeline holds every projected batch until the read ends, because `readExportSnapshot` reports counts only after the last batch (A128 orders them first).
 
 **Untested branches:** `OfferFailed` and progress.
+
+**ocr review of `321f4e62`** (session `c7a7574a-2cd8-4006-b8f0-2e340014f1ee`, gpt-6.1-sol, 3 files, 3 findings; raw: `ocr/T8.4-321f4e62.json`). Two were judged Valid and one Doubtful. Each becomes a bug task, run one at a time in lane WB:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.4-B1 | `backup.ts:59` export calls `inspectRoot`, which deletes listed candidates and other Workspace databases | an export destroys a prepared Restore candidate and writes to the root (against A128 and A129) | it should leave a listed Restore candidate in place when a backup is made |
+| T8.4-B2 | `backup-export.ts:129` artifact building (projection, `writeRecord`, `finish`) is outside the error boundary | an unserializable record or a missing `settings` record rejects instead of returning `NotCompleted(Read, ReadFailed)` | it should report ReadFailed when a record can't be written into the backup |
+| T8.4-B3 (Doubtful) | `backup.ts:85` a rejected offer, inspection or run escapes | a thrown error instead of a structured `NotCompleted` | it should report NotCompleted when the download offer rejects |
 
 ## T8.14 Shell, warnings, first run
 

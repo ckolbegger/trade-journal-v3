@@ -1,0 +1,173 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 377265,
+    "input_tokens": 372359,
+    "output_tokens": 4906,
+    "cache_read_tokens": 43264,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 63,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 19,
+      "file_find": 4,
+      "file_read": 36,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "inspectRoot() is not a read-only inspection: for a current-schema Workspace it calls deleteListed() and deletes every other Workspace-prefixed database. Exporting can therefore delete a prepared Restore candidate (including one in another tab) and mutate the root even in Recovery Only mode. Use a non-mutating root/schema lookup for export instead of the startup inspection/cleanup operation.",
+      "existing_code": "      const inspection = await deps.persistence.inspectRoot();",
+      "start_line": 59,
+      "end_line": 59,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "A rejected download offer escapes exportBackup instead of returning NotCompleted(stage: 'Offer', reason: 'OfferFailed', workspaceBinding: run.sourceBinding). The read-side awaits also lack exception conversion: inspectRoot explicitly rethrows non-VersionError failures, and exporter.run can reject during artifact construction or progress callbacks. Handle read and offer exceptions separately so these failures preserve the structured result contract rather than rejecting the operation.",
+      "existing_code": "      const offered = await deps.backup?.download?.offer({ blob: run.blob, fileName, type: 'application/octet-stream' });",
+      "start_line": 85,
+      "end_line": 85,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/backup-export.ts",
+      "content": "Artifact construction is outside the error boundary, so a successful IndexedDB read can still make exportBackup() reject instead of returning NotCompleted(ReadFailed). For example, canonicalJson throws on an undefined field, a non-safe-integer number, or a non-plain object in a stored record; missing settings/session-policy metadata also produces undefined fields in the workspace projection. This matters particularly for recovery exports of damaged databases. The coordinator awaits exporter.run() without a catch. Contain projection/serialization/finalization failures in runExport and return the Failed result without offering a file, with a regression test for a readable but unserializable snapshot.",
+      "existing_code": "      for (const record of batch.records) writer.writeRecord(section, batch.store, record);",
+      "start_line": 129,
+      "end_line": 129,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/workspace/backup-export.ts",
+      "files": [
+        "src/coordinators/workspace/backup-export.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/workspace/backup.test.ts",
+      "files": [
+        "src/coordinators/workspace/backup.test.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/workspace/backup.ts",
+      "files": [
+        "src/coordinators/workspace/backup.ts"
+      ]
+    }
+  ],
+  "session_id": "c7a7574a-2cd8-4006-b8f0-2e340014f1ee",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c7a7574a-2cd8-4006-b8f0-2e340014f1ee",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "321f4e62",
+      "resolved_base": "1b12c29874f0ad8b31b3ba1066d9a68aa52f2137",
+      "resolved_head": "321f4e62511b0c33f029c984314f9cb281ac453d",
+      "exact_range": "1b12c29874f0ad8b31b3ba1066d9a68aa52f2137..321f4e62511b0c33f029c984314f9cb281ac453d",
+      "source_artifact_sha256": "bf1a45b009ed437476d258cd2f2920812c3c9229a39defabbdd622f61f578bc5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "146b1b9a977eafe257199a2c305f83cfd2be69da53ad1a781500ec6a14c14b08"
+        },
+        {
+          "item_id": "c09b5145b2ce61e62cca92dfd9a40892774f28096c5eae876ac7e1c55f01bf92",
+          "path": "src/coordinators/workspace/backup-export.ts",
+          "fingerprint": "5fa21e8ba10afe503f1281134bdd8a40d81173c6dea065e77cde3d0d6de7e831"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "0ccafa1a73420b281c3ef49f1702e910ba9e732574707f683ec3af31ac99c102"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "146b1b9a977eafe257199a2c305f83cfd2be69da53ad1a781500ec6a14c14b08"
+        },
+        {
+          "item_id": "c09b5145b2ce61e62cca92dfd9a40892774f28096c5eae876ac7e1c55f01bf92",
+          "path": "src/coordinators/workspace/backup-export.ts",
+          "fingerprint": "5fa21e8ba10afe503f1281134bdd8a40d81173c6dea065e77cde3d0d6de7e831"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "0ccafa1a73420b281c3ef49f1702e910ba9e732574707f683ec3af31ac99c102"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "648a205f4450757170b8697b347f19d767326024848ef3eedf90a992ea544b69",
+          "path": "evidence/D08/suite-runs/T8.4-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "92017ec36bc65294170fe02ef662a12cf3bb7cc7e9f638cace4112b55e418a7a",
+          "path": "evidence/D08/suite-runs/T8.4-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9b9a043e7233a1a4378d453468b3f88553f6a513d5c992101ccc440ed057b2c3",
+          "path": "evidence/D08/suite-runs/T8.4-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c711daf832dd7c97eab1e738145bca84d79bb9cc46c8878695da7eb4c94bf3b6",
+          "path": "evidence/D08/suite-runs/T8.4-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "eefad6b95513aa73f1088786947fb3c46120f07923e74a1c9ef1a95c3215fa01",
+          "path": "evidence/D08/tdd-log/T8.4.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 81588
+  }
+}
