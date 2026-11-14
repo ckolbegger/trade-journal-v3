@@ -1,0 +1,174 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 5,
+    "total_tokens": 154495,
+    "input_tokens": 151743,
+    "output_tokens": 2752,
+    "cache_read_tokens": 23296,
+    "elapsed": "1m19s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 4,
+      "file_read": 5,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/restore-candidate.test.ts",
+      "content": "The earlier candidate's `open` throws before its database exists, so replacing it only tests removal of a stale registry entry. The database-name assertion would still pass if same-session database deletion were removed entirely. Add a replacement of a successfully created Restore candidate from the same instance, and assert that its database and registry entry are removed while the replacement remains.",
+      "existing_code": "    const first = await p.createRestoreCandidate();\n    if (first.kind === 'RuntimeNotWritable') throw new Error('not writable');",
+      "start_line": 78,
+      "end_line": 79,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "Do not delete the candidate when `existing === candidate`. Calling activation twice (or concurrently with the same candidate) takes this branch after the first call installs the pointer, deleting the active Workspace while leaving the pointer intact. If a Workspace connection is open, deletion also triggers its versionchange handler. Guard the deletion with an identity check and add a repeated-activation test.",
+      "existing_code": "      if (existing !== undefined) {\n        await deleteDatabase(deps.indexedDB, candidate);",
+      "start_line": 522,
+      "end_line": 523,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "Same-instance preparations are not serialized across the read/delete/list/create sequence. Two concurrent `createRestoreCandidate()` calls can both read an empty earlier list, then each append and create a database, leaving two Restore candidates for the same session instead of replacing the earlier one. Serialize the complete preparation operation per instance and cover overlapping calls in a test.",
+      "existing_code": "      const earlier = await inRoot(async (store) =\u003e\n        (((await store.get(CANDIDATES_KEY)) as NameListRecord | undefined)?.restoreCandidates ?? [])\n          .filter((e) =\u003e e.session === mine)\n          .map((e) =\u003e e.databaseName),\n      );",
+      "start_line": 490,
+      "end_line": 494,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "The new Restore metadata is still erased by `createCandidate()`, which overwrites the candidates record with only `key` and `databaseNames`. For example, `createRestoreCandidate(); createCandidate(); createRestoreCandidate()` leaves the first Restore database behind because its session entry is lost. Update the migration-candidate append path to preserve `restoreCandidates` as well, and test mixed candidate creation.",
+      "existing_code": "          restoreCandidates: [\n            ...(record?.restoreCandidates ?? []).filter((e) =\u003e !earlier.includes(e.databaseName)),\n            { databaseName, purpose: 'Restore', session: mine },\n          ],",
+      "start_line": 503,
+      "end_line": 506,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "Also refuse when this persistence instance is superseded. The Workspace `versionchange` handler sets the local `superseded` flag without updating the injected write gate, so `current()` can still return null after another tab replaces the Workspace. Unlike `commit()`, this method then creates and lists a Restore database for a session that must no longer write. Apply the superseded refusal logic before any root/database operations, and cover a versionchange with an otherwise-writable gate.",
+      "existing_code": "    async createRestoreCandidate() {\n      const refusal = deps.writeGate.current();\n      if (refusal) return refusal;",
+      "start_line": 485,
+      "end_line": 487,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/persistence/persistence.ts",
+      "files": [
+        "src/persistence/persistence.ts"
+      ]
+    },
+    {
+      "label": "src/persistence/restore-candidate.test.ts",
+      "files": [
+        "src/persistence/restore-candidate.test.ts"
+      ]
+    }
+  ],
+  "session_id": "c5c7b65b-3c05-4450-af6c-309bcfb13552",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c5c7b65b-3c05-4450-af6c-309bcfb13552",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "094bb7ba",
+      "resolved_base": "a02402778e60d091314012d27cc11c7290f1ec65",
+      "resolved_head": "094bb7ba6c967a4b16a0df0e2f5f845babe73a74",
+      "exact_range": "a02402778e60d091314012d27cc11c7290f1ec65..094bb7ba6c967a4b16a0df0e2f5f845babe73a74",
+      "source_artifact_sha256": "b561da4bd016c95323d55e6193ae047a089872bb0ef994174c4e0bf32daff48a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4e7f411ed2f06fda0e79f29642eaf44bd504e54853ad0c00733f03cc560f11ba",
+          "path": "src/persistence/restore-candidate.test.ts",
+          "fingerprint": "45604a1cc9035241c0e4aef368794c6abdbde9c6f2c4e953151f06e01032483b"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "4cd3f560230d098e6521f3248528c8081892643373fc30f45485bb785c7962a1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4e7f411ed2f06fda0e79f29642eaf44bd504e54853ad0c00733f03cc560f11ba",
+          "path": "src/persistence/restore-candidate.test.ts",
+          "fingerprint": "45604a1cc9035241c0e4aef368794c6abdbde9c6f2c4e953151f06e01032483b"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "4cd3f560230d098e6521f3248528c8081892643373fc30f45485bb785c7962a1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "420f5676d1236f94d29e9ae936a54c849ca29cec9a8619dfa6953b350cfb0c38",
+          "path": "evidence/D08/suite-runs/T8.7-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b5ae1f7077490c872398a17c191596d6d081d8f07dbdc21d34d63be8fb1bdd69",
+          "path": "evidence/D08/suite-runs/T8.7-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c95cce6287fe8fbb61ae428dd54b6e0bec6aa4f7c5e03d4dcdf63e669af58142",
+          "path": "evidence/D08/suite-runs/T8.7-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e3229c833a09a6f2166ee26bb5144800e0a604ed4d93610030d7fcf4e0d15f19",
+          "path": "evidence/D08/tdd-log/T8.7.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fb3861379fa2263fde23034dc103148d84da558607ab4521b1141e4a7b66e42d",
+          "path": "evidence/D08/suite-runs/T8.7-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 79013
+  }
+}

@@ -45,6 +45,27 @@ Lane F, commit `fdd92d08` (6 cases red then green; one first-run pass flagged: "
 - **T8.1-B6** `7eac25c3`: red ("expected undefined to be an instance of CanonicalJsonUnsupported": holes skipped) then green; `writeArray` is an index loop that throws on a hole, naming its path. The test builds holes with `new Array(n)`, because lint forbids sparse literals. Lane tier: unit 1760, integration 229, checks 14 of 14. ocr (session `869e3332-9cf1-46ba-b23b-3e7d71846a7a`, 2 files): **No findings.** Raw: `ocr/T8.1-B6-7eac25c3.json`.
 - **T8.1-B7** `73e937fb`: red ("expected [] to deeply equal [ '__proto__' ]") then green; `sectionDigests` is `Object.create(null)`, and the test asserts the exact manifest line. Lane tier: unit 165 / 1761, integration 106 / 229, checks 14 of 14. ocr (session `0e4a6132-cf7d-4469-a480-45c481330283`, 2 files): **No findings.** Raw: `ocr/T8.1-B7-73e937fb.json`.
 
+## T8.2 Fact modules: exportSnapshot
+
+Lane FM, commit `cd98fc4b` (5 planned cases, each red from a stub then green). One extra case, "should find an option Instrument on any leg or fact of a Trade, not only the first" (multi-leg direction), ran only green; a note row explains it couldn't have passed before the footprint code. Lane tier `T8.2`: unit 171 / 1778, integration 106 / 229, checks 14 of 14.
+
+**Signatures.**
+- Each module (`src/modules/{trade-record,journal,market-data,reference-catalog}/export.ts`) has `exportSnapshot(batch: ExportBatch): <Section>Batch | undefined`. It is synchronous and per batch, and returns `undefined` for a store that isn't the module's.
+- The batch shape is `{ section, store, records, footprint }`, where `footprint` is the sorted A126 identifiers present.
+- Every record drops `revision` (Q3). Trade Record also drops A125's four private fields, harmlessly again.
+- The Catalog module adds `exportWorkspaceSection(meta, { catalog, journal })`, which returns one `workspace` record: time zone, settings revision, seed-manifest versions and session policy.
+
+**Implementation-level choices (recorded, not stops).**
+1. `meta` stores no seed-manifest versions, so the caller passes them in: the `D7_CATALOG_MANIFEST` and `D5_JOURNAL_MANIFEST` versions that `workspace.ts` seeds with. T8.4 must pass the versions that belong to the exported schema.
+2. "Neither content revision counter" is read as excluding every `meta` counter. `catalogRevision` and `journalRevision` are view-staleness counters, set to 1 at initialization (`workspace.ts:374`), and bindings name the database (A127), so a restored database restarting them is safe.
+3. "W7's Marks of 0" is read as W7's observation with an empty Mark chain (PFE 2026-10-16, `effectiveMarkId: null`, one acknowledgment). W7 has no Mark priced 0.
+4. A one-line field filter is duplicated in the four modules, because modules can't import each other.
+5. `ExportBatch` is imported by path, because the persistence `index.ts` doesn't export it.
+
+**ocr review of `cd98fc4b`** (session `70a01c83-8826-4add-b6a0-517a62901d6d`, 12 files): **No findings.** Raw: `ocr/T8.2-cd98fc4b.json`. The reviewer confirmed the multi-leg and Q3 directions in all four modules.
+
+**Merge timing (main session's choice).** Lane FM was rebased onto `4b3cad5f`; T8.2 is now `1b12c298`. It merges by fast-forward once merge-3 finishes, so the running suite doesn't see new source mid-run. Meanwhile T8.6 continues on lane FM, and lane WB (T8.4) starts from `1b12c298`, which holds every task T8.4 needs.
+
 ## T8.3 Export snapshot read and layouts
 
 Lane PS, commit `596b02bb` (4 cases). Lane tier `T8.3`: unit 164 / 1754, integration 106 / 229, checks 14 of 14. First-run pass flagged: "a concurrent readwrite commit waits for the read" (the single readonly transaction from case 1 already gave it). Mutation: each batch read through its own transaction; first failure "expected [] to have a length of 1200 but got +0". Code written ahead of red for cases 3 and 4 was reverted, and each case was then shown red on its own (tdd-log note rows).
@@ -93,6 +114,19 @@ Lane PS (recreated at `a0240277`), commit `094bb7ba` (3 cases, red then green; n
 - `activateFirstCandidate(candidate): Promise<{ kind: 'Activated' } | { kind: 'AlreadyInitialized'; databaseName }>`.
 
 T8.8 discards a rejected candidate with the existing `discardCandidate`.
+
+**ocr review of `094bb7ba`** (session `c5c7b65b-3c05-4450-af6c-309bcfb13552`, gpt-6.1-sol, 2 files, 5 findings; raw: `ocr/T8.7-094bb7ba.json`). Three judged Valid, two Doubtful. Each becomes a bug task, run one at a time in lane PS:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.7-B1 | `persistence.ts:522` `activateFirstCandidate` never checks whether the existing pointer names this candidate | a repeated call deletes the live database | it should not delete the candidate when the pointer already names it |
+| T8.7-B2 | `restore-candidate.test.ts:78` the replace-earlier case covers only a candidate whose database was never created | dropping the earlier database's deletion would go unnoticed | it should delete this session's earlier Restore candidate database when a new one is listed |
+| T8.7-B3 | `persistence.ts:503` `createCandidate` rewrites the record with only `databaseNames` | Restore entries are erased, and an earlier Restore database is left behind | it should keep the Restore entries when a migration candidate is created |
+| T8.7-B4 (Doubtful) | `persistence.ts:490` overlapping `createRestoreCandidate` calls aren't serialized | two Restore candidates for one session | it should leave one Restore candidate per session when two creations overlap |
+| T8.7-B5 (Doubtful) | `persistence.ts:485` `createRestoreCandidate` doesn't refuse a superseded session | a superseded tab creates a candidate | it should refuse to create a Restore candidate in a superseded session |
+
+- **T8.7-B1** `0d7fd672`: red ("expected { kind: 'AlreadyInitialized', … } to deeply equal { kind: 'Activated' }") then green. A repeat activation of the candidate the pointer already names returns `Activated` (idempotent; A135's AlreadyInitialized is for a pointer naming another database). Lane tier: unit 168 / 1776, integration 106 / 229, checks 14 of 14. ocr (session `1033f50b-d368-438d-9854-99310e50c11e`, 2 files): **No findings.** Raw: `ocr/T8.7-B1-0d7fd672.json`.
+- **T8.7-B2** `0d31af59` (a test gap): a first-run pass, flagged. The behavior was built in T8.7. Mutation: removed the earlier database's deletion in `createRestoreCandidate`. Failure: "expected [ 'tj-root', 'tj-ws-r-0001', … ] to deeply equal [ 'tj-root', 'tj-ws-r-0002' ]". The code was restored, and its diff was empty. Lane tier: unit 168 / 1777, integration 106 / 229, checks 14 of 14.
 
 ## T8.12 Backup page
 
@@ -154,12 +188,17 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
   - The Downloaded line depends on a `verified` state, not on the text.
   - Lane tier: unit 163 / 1761, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known).
   - For T8.11: the strings are duplicated in `AppShell.tsx`, since lane US lacks T8.12's code. Unify them with the Backup page's after both merge.
+  - ocr (session `05fc1f59-721b-4617-a81b-f2b875d80cd6`, 2 files, 1 finding, Valid; raw: `ocr/T8.14-B3-5f2e853f.json`). It becomes **T8.14-B6**. At `AppShell.tsx:155` the verify `.catch` doesn't reset `verified`, so after a Completed check a rejected re-verify hides the Downloaded line. Case: "it should show the Downloaded line again when a verification after Backup complete rejects".
+  - **T8.14-B6** `87ec33c6`: red ("Unable to find an element with the text: /Downloaded, not verified yet/") then green; the verify `.catch` resets `verified`. Lane tier: unit 163 / 1762, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known). ocr (session `8b16af42-5110-42a6-ad51-8ef396301093`, 2 files): **No findings.** Raw: `ocr/T8.14-B6-87ec33c6.json`. T8.14 has no open bug tasks; it waits in lane US for T8.11.
+  - Reviewer's notes, not ocr findings: the blocked views show bare "Backup complete" (no "Checked <time>") and no "Choose another file". Both are as Q2 C1 approved, so no change.
 - **T8.14-B5** `ea096718`: red ("Unable to find an element with the text: Another browser has its own separate storage…": the pre-T8.14 copy, from `fdc5e858`) then green; A143's copy shows only when the Backup route is offered (the rule that sets `backupTo`), otherwise the earlier copy. Lane tier: unit 163 / 1759, integration 106 / 229, checks 13 of 14 (`verify:capabilities`, known). ocr (session `d96d5e7e-a3c8-46ed-8585-c16ea2a7cab7`, 2 files): **No findings.** Raw: `ocr/T8.14-B5-ea096718.json`.
   - Reviewer's note, not an ocr finding: the condition compares against the literal text "Backup complete". T8.14-B3 reworks these texts after Q2, so its brief will have it keep the Completed state, not the text.
 
 ## Merge runs
 
 - **T8.3 merged** 2026-11-14: lane PS rebased onto `fb6df610` and fast-forwarded (`bd46514a` … `a379a2ca`). Lane removed; it is recreated from the new head for T8.7.
+- **merge-3** (T8.3 merged; source at `a0240277`; stage headers show later HEADs, but `git diff a0240277 4b3cad5f -- src tests e2e tools package.json` is empty, since only plan and evidence commits landed): unit 167 / 1772, integration 106 / 229, browser full tier (first matching path since `683f10b2`: `src/persistence/export-layout.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-3-*.txt`.
+- **T8.2 merged** 2026-11-14: `1b12c298` fast-forwarded onto `4b3cad5f` after merge-3. T8.6 continues on lane FM above it.
 - **merge-2** (T8.1 merged; at `683f10b2`): unit 166 / 1763, integration 106 / 229, browser task tier (no changed path since `fdc5e858` is on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-2-*.txt`.
 - **T8.1 merged** 2026-11-14: lane F rebased onto `f087f274` and fast-forwarded (`b96da61c` … `daa1b0d4`). Lane removed. `npm install` in the main worktree (A226) changed neither `package.json` nor `package-lock.json`.
 - **merge-1** (T8.23 merged; started at `fdc5e858`; plan-only commits landed during the run): unit 163 / 1750, integration 106 / 229, browser full tier (first matching path since `a6c88cdd`: `src/app/types.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-1-*.txt`.
@@ -191,7 +230,8 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 | T8.14 | US (wave 1) | `.claude/worktrees/d08-us` | `d08/us` | `fdc5e858` |
 | T8.12 | UB (wave 1) | `.claude/worktrees/d08-ub` | `d08/ub` | `9312835b` |
 | T8.7 | PS (wave 1, recreated) | `.claude/worktrees/d08-ps` | `d08/ps` | `a0240277` |
-| T8.2 | FM (wave 1) | `.claude/worktrees/d08-fm` | `d08/fm` | `fbef268c` |
+| T8.2 | FM (wave 1) | `.claude/worktrees/d08-fm` | `d08/fm` | `fbef268c` (rebased to `4b3cad5f`) |
+| T8.4 | WB (wave 1) | `.claude/worktrees/d08-wb` | `d08/wb` | `1b12c298` |
 
 ## Flakes
 

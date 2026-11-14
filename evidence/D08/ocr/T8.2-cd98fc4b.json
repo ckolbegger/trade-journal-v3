@@ -1,0 +1,247 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 0,
+    "total_tokens": 172752,
+    "input_tokens": 170240,
+    "output_tokens": 2512,
+    "cache_read_tokens": 23296,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 31,
+    "by_tool": {
+      "code_search": 10,
+      "file_find": 1,
+      "file_read": 20
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Journal export implementation, tests, and module integration",
+      "files": [
+        "src/modules/journal/export.test.ts",
+        "src/modules/journal/export.ts",
+        "src/modules/journal/index.ts"
+      ]
+    },
+    {
+      "label": "Market data export implementation, tests, and module integration",
+      "files": [
+        "src/modules/market-data/export.test.ts",
+        "src/modules/market-data/export.ts",
+        "src/modules/market-data/index.ts"
+      ]
+    },
+    {
+      "label": "Reference catalog export implementation, tests, and module integration",
+      "files": [
+        "src/modules/reference-catalog/export.test.ts",
+        "src/modules/reference-catalog/export.ts",
+        "src/modules/reference-catalog/index.ts"
+      ]
+    },
+    {
+      "label": "Trade record export implementation, tests, and module integration",
+      "files": [
+        "src/modules/trade-record/export.test.ts",
+        "src/modules/trade-record/export.ts",
+        "src/modules/trade-record/index.ts"
+      ]
+    }
+  ],
+  "session_id": "70a01c83-8826-4add-b6a0-517a62901d6d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "70a01c83-8826-4add-b6a0-517a62901d6d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cd98fc4b",
+      "resolved_base": "fbef268cfc8ea8e37eb2f2d4ac6d06857f018e9c",
+      "resolved_head": "cd98fc4b23981deab600899b87064697a4a204d1",
+      "exact_range": "fbef268cfc8ea8e37eb2f2d4ac6d06857f018e9c..cd98fc4b23981deab600899b87064697a4a204d1",
+      "source_artifact_sha256": "05d6ff179e0f4782f65dc9661c2b70ae192d02509273f7c38535d4d29a677592"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "68dee9c9c8600ab1c51e839e4df8dafbee248097693a8e4c3c5edc82befa1748"
+        },
+        {
+          "item_id": "32a263e9dd0d8d8055535085fbdd6615d65ae09186f9a8721adabf9101b08f38",
+          "path": "src/modules/market-data/export.test.ts",
+          "fingerprint": "8afe0995909c26d3d63a4d279bc5908541437f40f16d1840069bf3d56b4b8044"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "0f55c59aca2aeef7cd3334bc1cfc076be6f9d85e07ac747cc0f3108972c2450c"
+        },
+        {
+          "item_id": "71461bd5176ff3bb3ba0e07eed4e3b2e8ea3772f8701d3d17fb862e1a4e08e6d",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "0edfcee9334826e0fa481c66272f4e683e6db0fbedcab3a7f2390c6396e1f028"
+        },
+        {
+          "item_id": "76917c5fa7e83fecf6059d0dce3a613ff07ddcf2f73bd76e214edb5414723db5",
+          "path": "src/modules/journal/export.ts",
+          "fingerprint": "44eb7fa05eac8c29b53bf9bd59824e08258f81108346d7641328e70265331651"
+        },
+        {
+          "item_id": "a2466c5047b37decbd9a01a8104c6c766a5f3491f9ad268b30734958f72d1776",
+          "path": "src/modules/trade-record/export.test.ts",
+          "fingerprint": "9b333aa52820f44d99787bbd4736d251e9d03ee0a8e736648ee36c1743772eba"
+        },
+        {
+          "item_id": "ae631a7f34f3b29f4423fed3875e2b6cc5164e0eaffee4d1e1f5f9a43857f041",
+          "path": "src/modules/reference-catalog/export.test.ts",
+          "fingerprint": "22ae58ab2285194aa517f447666d3848c4d37bf0b37eb02559defa46b695ddcb"
+        },
+        {
+          "item_id": "b4f676b0212805546a578b6d58f8fa436f5edc782634e2690ccecee5604ce200",
+          "path": "src/modules/journal/export.test.ts",
+          "fingerprint": "987e07dca2938b24dd44d0fb5af6f89f96bd70737a52a28fd23e815377a73f38"
+        },
+        {
+          "item_id": "ccb95c8fb0938940e542547b85e827e2edc47aad801abe11274f61ee0f52ee08",
+          "path": "src/modules/reference-catalog/export.ts",
+          "fingerprint": "dcc6ebd408882c7c60c038a8487dd2656706296a0efed59c46c346540758b5b3"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "2b0833a83c6bd870bb2c279deb48f336c4cad3709a446e9049063bc93802f95e"
+        },
+        {
+          "item_id": "e5953ec2681d62000008f2860e651b44b2f0bf0cb2943e03b2ca74b5e42e7918",
+          "path": "src/modules/trade-record/export.ts",
+          "fingerprint": "f5cd88bdef4ad69934545ab2f211061612f6d38591ba22335ba87cec3560b494"
+        },
+        {
+          "item_id": "fa658dd7cfbbe15e5f21d96b0de997d6409c7191a1524092ee0dc898be3d6d99",
+          "path": "src/modules/market-data/export.ts",
+          "fingerprint": "c15fc4314b69725fe62f33a4d6112e108c29203634c8ec36460f2ea8496b709a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "68dee9c9c8600ab1c51e839e4df8dafbee248097693a8e4c3c5edc82befa1748"
+        },
+        {
+          "item_id": "32a263e9dd0d8d8055535085fbdd6615d65ae09186f9a8721adabf9101b08f38",
+          "path": "src/modules/market-data/export.test.ts",
+          "fingerprint": "8afe0995909c26d3d63a4d279bc5908541437f40f16d1840069bf3d56b4b8044"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "0f55c59aca2aeef7cd3334bc1cfc076be6f9d85e07ac747cc0f3108972c2450c"
+        },
+        {
+          "item_id": "71461bd5176ff3bb3ba0e07eed4e3b2e8ea3772f8701d3d17fb862e1a4e08e6d",
+          "path": "src/modules/trade-record/index.ts",
+          "fingerprint": "0edfcee9334826e0fa481c66272f4e683e6db0fbedcab3a7f2390c6396e1f028"
+        },
+        {
+          "item_id": "76917c5fa7e83fecf6059d0dce3a613ff07ddcf2f73bd76e214edb5414723db5",
+          "path": "src/modules/journal/export.ts",
+          "fingerprint": "44eb7fa05eac8c29b53bf9bd59824e08258f81108346d7641328e70265331651"
+        },
+        {
+          "item_id": "a2466c5047b37decbd9a01a8104c6c766a5f3491f9ad268b30734958f72d1776",
+          "path": "src/modules/trade-record/export.test.ts",
+          "fingerprint": "9b333aa52820f44d99787bbd4736d251e9d03ee0a8e736648ee36c1743772eba"
+        },
+        {
+          "item_id": "ae631a7f34f3b29f4423fed3875e2b6cc5164e0eaffee4d1e1f5f9a43857f041",
+          "path": "src/modules/reference-catalog/export.test.ts",
+          "fingerprint": "22ae58ab2285194aa517f447666d3848c4d37bf0b37eb02559defa46b695ddcb"
+        },
+        {
+          "item_id": "b4f676b0212805546a578b6d58f8fa436f5edc782634e2690ccecee5604ce200",
+          "path": "src/modules/journal/export.test.ts",
+          "fingerprint": "987e07dca2938b24dd44d0fb5af6f89f96bd70737a52a28fd23e815377a73f38"
+        },
+        {
+          "item_id": "ccb95c8fb0938940e542547b85e827e2edc47aad801abe11274f61ee0f52ee08",
+          "path": "src/modules/reference-catalog/export.ts",
+          "fingerprint": "dcc6ebd408882c7c60c038a8487dd2656706296a0efed59c46c346540758b5b3"
+        },
+        {
+          "item_id": "d68daa43a6b4b177d88b48764a144765dbc44b6d40263c5c9e4c7a3412d22831",
+          "path": "src/modules/reference-catalog/index.ts",
+          "fingerprint": "2b0833a83c6bd870bb2c279deb48f336c4cad3709a446e9049063bc93802f95e"
+        },
+        {
+          "item_id": "e5953ec2681d62000008f2860e651b44b2f0bf0cb2943e03b2ca74b5e42e7918",
+          "path": "src/modules/trade-record/export.ts",
+          "fingerprint": "f5cd88bdef4ad69934545ab2f211061612f6d38591ba22335ba87cec3560b494"
+        },
+        {
+          "item_id": "fa658dd7cfbbe15e5f21d96b0de997d6409c7191a1524092ee0dc898be3d6d99",
+          "path": "src/modules/market-data/export.ts",
+          "fingerprint": "c15fc4314b69725fe62f33a4d6112e108c29203634c8ec36460f2ea8496b709a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "05a0b3ccee3d9b3cd85f06d52800acec3310668d73a08bb23ab179a70a1d3027",
+          "path": "evidence/D08/suite-runs/T8.2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "102fc911508c7124ef7a9765685d5de5535dbe6f948e2e39b938e9919f21b749",
+          "path": "evidence/D08/suite-runs/T8.2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "73803d084faf39064a86ebb618346ca18d4129a5f25b396d1bacabc005963c1b",
+          "path": "evidence/D08/tdd-log/T8.2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a991d1a0b0820940416b96c2f72646c88ecd9b80ef51b5be4234e3ad1f81b18d",
+          "path": "evidence/D08/suite-runs/T8.2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ba29b9e5d09889e989fe340fcc41e0365013585fb45997e4732a63c0de84ecd9",
+          "path": "evidence/D08/suite-runs/T8.2-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 43003
+  }
+}

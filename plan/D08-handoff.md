@@ -266,5 +266,6 @@ Task status and commits are in the breakdown's Progress section. This section ho
 - First-run pass, T8.1: "should accept records pushed one at a time" (mutation-checked).
 - First-run pass, T8.23-B1: the added guard "should reject an unconfigured operation with the operation name" (mutation-checked).
 - Q1 (T8.12's words): answered 2026-11-14, table approved as written; to be carried into revision r103 (`evidence/D08/DECISIONS-PENDING.md`).
+- First-run pass T8.7-B2 ("should delete this session earlier Restore candidate database when a new one is listed"): a test-gap bug task whose behavior T8.7 had built; mutation-checked (`evidence/D08/tdd-log/T8.7-B2.md`).
 - Q2 (the Restore flow's words, T8.12's and T8.14's remaining states): answered 2026-11-14, (a) approved as written; to be carried into r103.
 - Q3 (the per-record write stamp): answered 2026-11-14, (a) not exported; refines A125; to be carried into r103.
