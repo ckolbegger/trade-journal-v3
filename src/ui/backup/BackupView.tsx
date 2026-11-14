@@ -3,6 +3,7 @@ import type { BackupProgress, ConfirmBackupResult, ExportBackupResult, FileSelec
 import type { ReadinessFailure } from '../../delivery/runtime-not-writable.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { explainFailure } from '../readiness-copy.ts';
+import { completionTime, NOT_MADE, NOT_VERIFIED, records, type NotMadeReason, type NotVerifiedReason } from './backup-text.ts';
 import type { BackupFacade } from './facade.ts';
 import { RestoreFlow } from './RestoreFlow.tsx';
 import './backup.css';
@@ -17,32 +18,6 @@ export interface BackupViewProps {
 }
 
 type Downloaded = Extract<ExportBackupResult, { kind: 'Downloaded' }>;
-
-const records = (progress: BackupProgress) => `${progress.done.toLocaleString('en-US')} of ${progress.total.toLocaleString('en-US')} records`;
-
-type NotVerifiedReason = Extract<ConfirmBackupResult, { kind: 'NotVerified' }>['reason'];
-
-const NOT_VERIFIED: Record<NotVerifiedReason, string> = {
-  Unreadable: "This file couldn't be read. Choose the file you just downloaded.",
-  IncompleteOrCorrupt: "This file is incomplete or damaged, so it isn't a usable backup.",
-  DifferentArtifact: 'This is a different backup from the one you just downloaded.',
-};
-
-type NotMadeReason = 'ReadFailed' | 'OfferFailed' | 'IntegrityBlocked' | 'Conflict';
-
-const NOT_MADE: Record<NotMadeReason, string> = {
-  ReadFailed: "Your journal couldn't be read.",
-  OfferFailed: "Your browser didn't accept the download.",
-  IntegrityBlocked: 'Your journal has a problem that blocks a normal backup.',
-  Conflict: 'Your journal changed while the backup was being made.',
-};
-
-// "Sat Nov 14, 16:05" in the Workspace zone (convention C4).
-function completionTime(instant: string, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).formatToParts(new Date(instant));
-  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${part('weekday')} ${part('month')} ${part('day')}, ${part('hour')}:${part('minute')}`;
-}
 
 // The Backup page: Download backup and Verify backup (D8 A141). The Downloaded result lives only
 // in this component's state, so leaving the page forgets it (ADR 0010).
