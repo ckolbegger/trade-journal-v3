@@ -1,6 +1,6 @@
 import { Temporal } from 'temporal-polyfill';
-import { instrumentKey, type Instrument } from '../../domain/instrument/index.ts';
-import type { ObservationFrame, ReplayedSession, ReplaySessionInput, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
+import { instrumentKey, settlementDueOn, type Instrument } from '../../domain/instrument/index.ts';
+import type { InstrumentPosition, ObservationFrame,ReplayedSession, ReplaySessionInput, TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { TradeNarrativeItem } from '../../modules/journal/index.ts';
 import type { SeriesPoint } from '../../modules/market-data/index.ts';
@@ -40,6 +40,13 @@ function resolutionOf(point: SeriesPoint | undefined): ReplayMarkResolution {
   return { kind: 'Missing' };
 }
 
+// The expiration date a Settlement Due Trade's lifetime ends with: the latest among the option contracts still held at or past
+// their expiration date on `date`; null when no contract is due.
+export function settlementExpirationOf(positions: readonly InstrumentPosition[], date: string): string | null {
+  const due = positions.flatMap(({ instrument, openLots }) => (instrument.kind === 'Option' && openLots.length > 0 && settlementDueOn(instrument, date) ? [instrument.expiration] : []));
+  return due.length === 0 ? null : due.reduce((latest, expiration) => (expiration > latest ? expiration : latest));
+}
+
 export interface ReplaySessions {
   readonly inputs: readonly ReplaySessionInput[];
   // Each session's series point per Instrument, in the Instruments' order.
@@ -49,10 +56,12 @@ export interface ReplaySessions {
 // The completed sessions of the lifetime, from the first session that closes at or after the first exposure. The sessions are
 // Market Data's: the first Instrument's series names them, and every Instrument's point is read by date. A Trade closed by its
 // facts ends at the first session closing at or after its terminal Position Change.
-export function replaySessions(instruments: readonly Instrument[], series: readonly (readonly SeriesPoint[])[], firstExposure: Instant, terminalTime: Instant | null): ReplaySessions {
+export function replaySessions(instruments: readonly Instrument[], series: readonly (readonly SeriesPoint[])[], firstExposure: Instant, terminalTime: Instant | null, expiration: string | null = null): ReplaySessions {
   const lifetime = (series[0] ?? []).filter((point) => !before(point.closeInstant, firstExposure));
   const end = terminalTime === null ? -1 : lifetime.findIndex((point) => !before(point.closeInstant, terminalTime));
-  const sessions = end < 0 ? lifetime : lifetime.slice(0, end + 1);
+  const closed = end < 0 ? lifetime : lifetime.slice(0, end + 1);
+  // Revision 98 (A212): a Settlement Due Trade ends with its contract's expiration session, the last session it traded.
+  const sessions = expiration === null ? closed : closed.filter((point) => point.tradingDate <= expiration);
   const points = sessions.map((session) => series.map((own) => own.find((point) => point.tradingDate === session.tradingDate)));
   const inputs = sessions.map(({ tradingDate, closeInstant }, i) => ({
     tradingDate,

@@ -1,0 +1,13 @@
+
+Running 8 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/d7s/conditions.spec.ts:25:3 › B7S.3 Detail and list on Thursday › should show one Stop breached and one Target reached badge on the Open list row, and Detail conditions with the option-price Stop Breached and the MNO Target Reached and Risk to stop and Reward to target $0.00 (4.6s)
+  ✓  2 [chromium] › e2e/d7s/conditions.spec.ts:62:3 › B7S.4 Review card conditions › should list W8 four condition lines on O-S2 card in the Wednesday 17:00 Review with the option-price Stop Breached, $20.00 beyond, and the card in the boundary band, after a reload (3.1s)
+  ✓  3 [chromium] › e2e/d7s/entry-beyond-stop.spec.ts:13:3 › BUG-3 Entry beyond the option-price Stop › should read Risk from entry $735.00 with 0.98R on Detail and Actual initial risk $735.00 on the summary card after recording 1 at 7.35, past the 7.50 option Stop (1.3s)
+  ✓  4 [chromium] › e2e/d7s/plan.spec.ts:9:3 › B7S.1 Plan a Cash-Secured Put with both kinds › should show 1R $480.00 and Reward : risk 0.29 after confirming O-S2 with all four price fields, list the four condition lines on Detail after a relaunch, and store four conditions with their kinds and prices (1.4s)
+  ✓  5 [chromium] › e2e/d7s/plan.spec.ts:42:3 › B7S.2 Plan validation › should reject a Long Call with an option-price Stop of 2.50 and no Target with the Stop error beside the option-price Stop and the Target error beside the Underlying Target, focus on the summary, keep the values, and save nothing after a reload (1.0s)
+  ✓  6 [chromium] › e2e/d7s/responsive-a11y.spec.ts:24:3 › B7S.5 Responsive and accessible › should keep a half-filled option Plan through 390 px and back, report no WCAG 2.1 AA violations on the option Plan form, Detail conditions and Review card conditions, and show every condition status as text (5.7s)
+  ✓  7 [chromium] › e2e/d7s/responsive-a11y.spec.ts:72:3 › B7S.5 Responsive and accessible › should plan O-S2 by keyboard alone, with a visible focus ring on every stop, and show 1R $480.00 (973ms)
+  ✓  8 [chromium] › e2e/d7sp/review-dated-line.spec.ts:11:3 › B7SP.11 The option dated line in the Review › should show O-C bought Monday, in the Tuesday 17:00 Review with the calls Monday Mark only, a Mon Oct 12 close group with its figures at 320 and 1280 px and no sideways scroll (2.0s)
+
+  8 passed (21.2s)

@@ -34,7 +34,7 @@ import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts'
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { payoffOf } from '../settlement.ts';
-import { firstExposureOf, placeJournal, replayInstruments, replaySessions, replayView } from './replay-trade.ts';
+import { firstExposureOf, placeJournal, replayInstruments, replaySessions, replayView, settlementExpirationOf } from './replay-trade.ts';
 import type { ReplayNotApplicable, ReplayTradeRequest, ReplayTradeResult, TradeReplayView } from './replay-view.ts';
 import type { ReadViewResult, TradeDetailDebt, TradeDetailNarrativeItem, ViewBinding } from './view-types.ts';
 import { valueTrade, type DatedLine, type SettlementItem } from '../valuation/index.ts';
@@ -847,11 +847,12 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const instruments = replayInstruments(analysis);
         const firstExposure = firstExposureOf(analysis);
         const series = await Promise.all(instruments.map((instrument) => session.series(instrumentKey(instrument), firstExposure.slice(0, 10), session.tradingDate)));
-        const sessions = replaySessions(instruments, series, firstExposure, terminalTime);
+        const expiration = settlementExpirationOf(whole.positions, session.tradingDate);
+        const sessions = replaySessions(instruments, series, firstExposure, terminalTime, expiration);
         const replayed = replay({ record: analysis, sessions: sessions.inputs });
         if (replayed.kind === 'NotApplicable') return { binding, view: replayed };
         const { items } = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
-        const ended = terminalTime !== null;
+        const ended = terminalTime !== null || expiration !== null;
         const journal = placeJournal(items, sessions.inputs, firstExposure, ended);
         return { binding, view: replayView(analysis.tradeId, instruments, replayed.sessions, sessions, journal, session.nextSessionDate, ended) };
       });

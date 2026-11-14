@@ -531,3 +531,38 @@ describe('Trade Detail: first Marks pending (revision 90)', () => {
     expect(expired.current).not.toHaveProperty('firstMarksDue');
   }, 60_000);
 });
+
+// Revision 98 (A212): a Settlement Due Trade's replay lifetime ends with its contract's expiration session.
+describe('replayTrade: a Settlement Due Trade (A212, revision 98)', () => {
+  const replayOf = async (now: string) => {
+    const { tradeViews, openCashSecuredPut } = await optionStack(now);
+    const tradeId = await openCashSecuredPut();
+    const detail = await tradeViews.getTradeDetail({ tradeId });
+    if (detail.kind !== 'Ready') throw new Error(`expected Ready, got ${detail.kind}`);
+    const result = await tradeViews.replayTrade({ tradeId, binding: detail.binding });
+    if (result.kind !== 'Ready' || 'kind' in result.view) throw new Error(`expected a replay, got ${JSON.stringify(result)}`);
+    return result.view;
+  };
+
+  it('should end the sessions with the expiration session and list no later session and none not yet ended, read on Monday Nov 23', async () => {
+    const view = await replayOf(MONDAY_NOV_23_1700);
+
+    expect(view.sessions.at(-1)!.date).toBe('2026-11-20');
+    expect(view.sessions.map((s) => s.date)).not.toContain('2026-11-23');
+    expect(view.pending).toBeNull();
+  }, 60_000);
+
+  it('should show no session not yet ended when read on the expiration day itself, Friday Nov 20', async () => {
+    const view = await replayOf(FRIDAY_1700);
+
+    expect(view.sessions.at(-1)!.date).toBe('2026-11-20');
+    expect(view.pending).toBeNull();
+  }, 60_000);
+
+  it('should keep the newest session and the session not yet ended for an Open Trade whose contract has not expired, read on Thursday Nov 19', async () => {
+    const view = await replayOf(THURSDAY_1700);
+
+    expect(view.sessions.at(-1)!.date).toBe('2026-11-19');
+    expect(view.pending).toEqual({ date: '2026-11-20', journal: [] });
+  }, 60_000);
+});
