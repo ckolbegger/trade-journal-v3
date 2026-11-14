@@ -233,8 +233,8 @@ describe('Journal section, version history', () => {
     const result = await validateSection(source);
 
     expect(result.issues).toEqual([
-      { code: 'VersionChainBroken', id: 'e-1' },
-      { code: 'VersionChainBroken', id: 'debt-2' },
+      { code: 'JournalVersionsMissing', id: 'e-1' },
+      { code: 'JournalVersionsMissing', id: 'debt-2' },
     ]);
   });
 });

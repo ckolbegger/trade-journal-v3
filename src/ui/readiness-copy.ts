@@ -36,6 +36,7 @@ const MIGRATION_ISSUES: Record<MigrationIssue['code'], string> = {
   DuplicateEntryId: 'Two Journal Entries share one identity.',
   MissingPositionChangeMember: 'A position change names an execution or expiration that the Trade does not record.',
   VersionChainBroken: 'A Trade fact has no versions, or its versions are out of order.',
+  JournalVersionsMissing: 'A Journal Entry or reflection debt has no versions.',
   IncoherentFacts: "A Trade's recorded facts cannot be replayed.",
   CloseReasonOnNonTerminalChange: "A Trade's close reason is attached to a position change that does not end the position.",
   MultipleCloseReasons: 'A Trade records more than one close reason.',
