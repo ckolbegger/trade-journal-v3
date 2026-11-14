@@ -69,7 +69,9 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
     setOutcome(undefined);
     // A file the check could not even read is the Unreadable case.
     const result = await facade
-      .confirmBackup({ file: chosen.file, expectedBinding: expected.sourceBinding, expectedFullDigest: expected.fullDigest, onProgress: setChecking })
+      .confirmBackup({ file: chosen.file, expectedBinding: expected.sourceBinding, expectedFullDigest: expected.fullDigest, onProgress: (progress) => {
+        if (forDownload === downloadCount.current) setChecking(progress);
+      } })
       .catch((): ConfirmBackupResult => ({ kind: 'NotVerified', reason: 'Unreadable' }));
     if (forDownload !== downloadCount.current) return;
     setChecking(undefined);

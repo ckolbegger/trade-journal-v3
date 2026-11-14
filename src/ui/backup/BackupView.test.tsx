@@ -178,6 +178,26 @@ describe('verify', () => {
     expect(screen.queryByText(/Backup complete/)).toBeNull();
   });
 
+  it('should ignore progress from a verification started before a newer download', async () => {
+    const ctx = setup();
+    const { facade, files, user } = ctx;
+    await downloadFirst(ctx);
+    files.choose(new File(['x'], 'chosen.gz'));
+    facade.respond('confirmBackup', () => new Promise(() => undefined));
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText('Checking the file');
+    facade.respond('exportBackup', { ...DOWNLOADED, fileName: 'second.tjbackup.gz' });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    expect(await screen.findByText('second.tjbackup.gz')).toBeTruthy();
+    // The old check reports progress after the newer download.
+    await act(() => {
+      facade.calls.confirmBackup[0]?.onProgress?.({ done: 1, total: 2 });
+      return Promise.resolve();
+    });
+    expect(screen.queryByText(/Checking the file/)).toBeNull();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Verify backup' }).disabled).toBe(false);
+  });
+
   it('should forget the Downloaded result when the page is left, so Verify backup is offered again only after a new download', async () => {
     const ctx = setup();
     await downloadFirst(ctx);
