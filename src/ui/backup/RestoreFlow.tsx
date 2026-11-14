@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { ApplyPreparedRestoreResult, BackupProgress, FileSelectionPort, MigrationIssue, PrepareRestoreResult, RestoreCounts, RestoreIssue, RestoreLanding, RestorePreview, RestoreToken, SafetyChoice } from '../../app/types.ts';
 import { explainFailure, explainMigrationIssue } from '../readiness-copy.ts';
@@ -71,6 +71,8 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
   const [phase, setPhase] = useState<Phase>({ kind: 'Choose' });
   const [applying, setApplying] = useState(false);
   const abort = useRef<AbortController | undefined>(undefined);
+  // Leaving the page cancels a preparation still running.
+  useEffect(() => () => abort.current?.abort(), []);
 
   const check = async () => {
     const chosen = await selectFile.choose();

@@ -129,6 +129,20 @@ describe('choose and check (A142)', () => {
     expect(screen.getByText("A Trade's recorded facts cannot be replayed.")).toBeTruthy();
     expect(screen.getAllByRole('listitem')).toHaveLength(200);
   });
+
+  it('should cancel the preparation when the Restore flow is left', async () => {
+    const ctx = setup();
+    let signal: AbortSignal | undefined;
+    ctx.facade.respond('prepareRestore', (request) => {
+      signal = request.signal;
+      return new Promise(() => undefined);
+    });
+    await choose(ctx);
+    expect(await screen.findByText('Checking the backup. Your current journal is not changed.')).toBeTruthy();
+    expect(signal?.aborted).toBe(false);
+    ctx.utils.unmount();
+    expect(signal?.aborted).toBe(true);
+  });
 });
 
 async function toPreview(ctx: ReturnType<typeof setup>, result: PrepareRestoreResult = PREPARED) {
