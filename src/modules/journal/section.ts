@@ -4,6 +4,8 @@ export type JournalSectionIssue =
   | { readonly code: 'MissingDefinitionRevision'; readonly id: string; readonly definitionId: string }
   | { readonly code: 'DuplicateObligationOutcome'; readonly obligationKey: string; readonly ids: readonly [string, string] }
   | { readonly code: 'MissingAnchor'; readonly id: string }
+  // An Entry or Debt with no versions has no current state to read.
+  | { readonly code: 'VersionChainBroken'; readonly id: string }
   // Two Entry records share one id; reported at the second.
   | { readonly code: 'DuplicateEntryId'; readonly id: string }
   | { readonly code: 'EditDefinitionChanged'; readonly id: string; readonly versionNumber: number }
@@ -77,6 +79,7 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
     for await (const batch of source.batches(store)) {
       for (const outcome of batch as unknown as readonly StoredOutcome[]) {
         if (store === 'journalEntries' && links[store].has(outcome.id)) issues.push({ code: 'DuplicateEntryId', id: outcome.id });
+        if (outcome.versions?.length === 0) issues.push({ code: 'VersionChainBroken', id: outcome.id });
         const obligationKey = typeof outcome.obligationKey === 'string' ? outcome.obligationKey : outcome.obligationKey.join(':');
         links[store].set(outcome.id, { id: outcome.id, settledDebtId: outcome.settledDebtId, definitionId: outcome.versions?.[0]?.definitionId ?? outcome.definitionId ?? '', obligationKey });
         const revisions = outcome.versions?.map((v) => v.definitionId) ?? [outcome.definitionId ?? ''];
@@ -105,6 +108,7 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
       if (anchorTradeId === undefined) issues.push({ code: 'MissingAnchor', id: debt.debtId });
       else anchorTradeIds.add(anchorTradeId);
       if (!definitionIds.has(debt.definitionId)) issues.push({ code: 'MissingDefinitionRevision', id: debt.debtId, definitionId: debt.definitionId });
+      if (debt.versions.length === 0) issues.push({ code: 'VersionChainBroken', id: debt.debtId });
       let resolved = false;
       for (const version of debt.versions) {
         if (resolved) issues.push({ code: 'DebtVersionAfterResolution', debtId: debt.debtId, versionId: version.versionId });

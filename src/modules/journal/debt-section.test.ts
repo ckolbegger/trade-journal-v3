@@ -220,6 +220,25 @@ describe('Journal section, Debt reverse links', () => {
   });
 });
 
+describe('Journal section, version history', () => {
+  it('should report an Entry or Debt whose version history is empty', async () => {
+    const { types, definitions, positionChangeReflection: def } = seeded();
+    const source = recordSourceOf({
+      journalTypes: types,
+      journalDefinitions: definitions,
+      journalEntries: [{ ...entry('e-1', 'pc-1', def), versions: [] }],
+      journalDebts: [{ ...debt('debt-2', 'pc-2', def, []) }],
+    });
+
+    const result = await validateSection(source);
+
+    expect(result.issues).toEqual([
+      { code: 'VersionChainBroken', id: 'e-1' },
+      { code: 'VersionChainBroken', id: 'debt-2' },
+    ]);
+  });
+});
+
 describe('seedDefaults: manifest v4 (P17)', () => {
   it('should add the Trade Detail Source, and nothing else, to a v3-seeded Journal, and add nothing when run again', async () => {
     const { persistence } = await emptyWorkspace();
