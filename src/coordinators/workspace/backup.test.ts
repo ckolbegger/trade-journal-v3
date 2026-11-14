@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { readArtifact, type ArtifactLine } from '../../backup/format/index.ts';
+import type { Persistence } from '../../persistence/index.ts';
 import { createWorkspace } from './index.ts';
 
 const W7 = JSON.parse(readFileSync('tests/fixtures/workspace-v7/dump.json', 'utf8')) as WorkspaceDump;
@@ -141,6 +142,36 @@ describe('failures', () => {
     });
     expect(stack.testHost.downloads.offered).toEqual([]);
     expect(await dumpAll(stack.factory)).toEqual(before);
+  });
+
+  // The snapshot reads, but the artifact cannot be built from what was read.
+  async function expectReadFailedWith(alter: (read: Persistence['readExportSnapshot']) => Persistence['readExportSnapshot']) {
+    const stack = await w7Stack();
+    const before = await dumpAll(stack.factory);
+    const altered = { ...stack.persistence, readExportSnapshot: alter(stack.persistence.readExportSnapshot.bind(stack.persistence)) };
+    const workspace = createWorkspace({ ...stack, persistence: altered, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
+    const contentRevision = (before[W7_DATABASE]!['meta'] as Record<string, unknown>[]).find((record) => record['key'] === 'content')!['contentRevision'];
+    expect(await workspace.exportBackup({})).toEqual({
+      kind: 'NotCompleted',
+      stage: 'Read',
+      reason: 'ReadFailed',
+      workspaceBinding: { databaseName: W7_DATABASE, contentRevision },
+    });
+    expect(stack.testHost.downloads.offered).toEqual([]);
+    expect(await dumpAll(stack.factory)).toEqual(before);
+  }
+
+  it('should report ReadFailed when a record can not be written into the backup', async () => {
+    await expectReadFailedWith((read) => (database, layout, onBatch) =>
+      read(database, layout, (batch) => onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 2 ** 60 } : record)) })),
+    );
+  });
+
+  it('should report ReadFailed when the Workspace has no settings record', async () => {
+    await expectReadFailedWith((read) => async (database, layout, onBatch) => {
+      const result = await read(database, layout, onBatch);
+      return result.kind === 'Read' ? { ...result, meta: result.meta.filter((record) => record['key'] !== 'settings') } : result;
+    });
   });
 });
 

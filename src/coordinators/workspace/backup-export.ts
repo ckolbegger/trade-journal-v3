@@ -103,7 +103,15 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
   if (expected && (expected.databaseName !== result.binding.databaseName || expected.contentRevision !== result.binding.contentRevision)) {
     return { kind: 'Conflict', currentBinding: result.binding };
   }
+  // A snapshot that was read but cannot be written into an artifact is a failed read, not a rejection.
+  try {
+    return buildArtifact(result, batches, job);
+  } catch {
+    return { kind: 'Failed', reason: 'ReadFailed' };
+  }
+}
 
+function buildArtifact(result: Extract<ExportReadResult, { kind: 'Read' }>, batches: readonly SectionBatch[], job: ExportJob): ExportRun {
   const workspace = exportWorkspaceSection(result.meta, job.seedManifestVersions);
   const sections = ['workspace', ...new Set(job.layout.stores.map((store) => SECTION_OF_STORE[store]!))];
   const all: SectionBatch[] = [workspace, ...batches];
@@ -144,7 +152,8 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
     counts: result.counts,
     exclusions: EXCLUSIONS,
   });
-  const timeZone = result.meta.find((record) => record['key'] === 'settings')?.['timeZone'] as string;
+  const timeZone = result.meta.find((record) => record['key'] === 'settings')?.['timeZone'];
+  if (typeof timeZone !== 'string') throw new Error('The Workspace has no settings time zone');
   return {
     kind: 'Built',
     blob: new Blob(output.parts as BlobPart[], { type: 'application/octet-stream' }),
