@@ -287,20 +287,23 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       }
       if (inspection?.kind === 'OlderSchema' && blocked) {
         const { kind, stage, issues, fromVersion, toVersion, unchangedData } = blocked;
-        return { ...base, kind, stage, issues, fromVersion, toVersion, unchangedData };
+        // Migration Blocked is not Integrity Blocked, so a copy can be verified (P32).
+        return { ...base, kind, stage, issues, fromVersion, toVersion, unchangedData, backupActions: ['DownloadCopy', 'VerifyBackup'] };
       }
       if (inspection?.kind === 'OlderSchema') {
-        return { ...base, kind: 'IntegrityBlocked', failedChecks: readiness.failures, reason: 'AwaitingMigration' };
+        // This release cannot confirm the copy, so it never claims a backup (P32).
+        return { ...base, kind: 'IntegrityBlocked', failedChecks: readiness.failures, reason: 'AwaitingMigration', backupActions: ['DownloadCopy'] };
       }
       if (inspection?.kind === 'Invalid') {
         return { ...base, kind: 'IntegrityBlocked', failedChecks: readiness.failures, reason: inspection.reason };
       }
       if (readiness.outcome === 'Writable') {
-        return inspection?.kind === 'KnownWorkspace' ? readyStatus(readiness) : { ...base, kind: 'InitializationRequired' };
+        // First run may restore a backup instead of starting a journal (P33).
+        return inspection?.kind === 'KnownWorkspace' ? readyStatus(readiness) : { ...base, kind: 'InitializationRequired', backupActions: ['RestoreFromBackup'] };
       }
       if (readiness.outcome === 'RecoveryOnly') {
         const ready = await readyStatus(readiness);
-        return { ...base, kind: 'RecoveryOnly', failedChecks: readiness.failures, binding: ready.binding, timeZone: ready.timeZone };
+        return { ...base, kind: 'RecoveryOnly', failedChecks: readiness.failures, binding: ready.binding, timeZone: ready.timeZone, backupActions: ['DownloadBackup', 'VerifyBackup'] };
       }
       return { ...base, kind: 'Unsupported', failedChecks: readiness.failures };
     },

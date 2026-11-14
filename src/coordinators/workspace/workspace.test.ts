@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { nyseSessionPolicy } from '../../domain/session-policy/index.ts';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
+import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { createWorkspace, installedCapabilities } from './index.ts';
 
 async function workspaceStack(...args: Parameters<typeof testStack>) {
@@ -427,5 +429,41 @@ describe('Installed Capability Manifest', () => {
       backupSchemaRange: null,
       providerAdapters: [],
     });
+  });
+});
+
+describe('safe actions (P32, P33)', () => {
+  const V5 = JSON.parse(readFileSync('tests/fixtures/workspace-v5/dump.json', 'utf8')) as WorkspaceDump;
+
+  it('should list DownloadBackup and VerifyBackup in Recovery Only, DownloadCopy and VerifyBackup in Migration Blocked, DownloadCopy alone in IntegrityBlocked AwaitingMigration, none for an unreadable root, and RestoreFromBackup with InitializationRequired', async () => {
+    const existing = await workspaceStack();
+    await existing.workspace.initialize({ timeZone: 'America/New_York' });
+    existing.testHost.fail(['control']);
+    await existing.session.recheck();
+    expect(await existing.workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'RecoveryOnly', backupActions: ['DownloadBackup', 'VerifyBackup'] }));
+
+    const blockedDump = structuredClone(V5);
+    (blockedDump.databases['tj-ws-fx-0010']!.stores['trades']!.records[0] as Record<string, unknown>)['accountId'] = 'fx-unknown';
+    const migrationBlocked = await workspaceStack(await loadDump(blockedDump));
+    expect((await migrationBlocked.workspace.initialize({})).kind).toBe('MigrationBlocked');
+    expect(await migrationBlocked.workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'MigrationBlocked', backupActions: ['DownloadCopy', 'VerifyBackup'] }));
+
+    const awaiting = await workspaceStack(await loadDump(V5));
+    awaiting.testHost.fail(['inventory']);
+    expect((await awaiting.workspace.initialize({})).kind).toBe('RuntimeNotWritable');
+    expect(await awaiting.workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'IntegrityBlocked', reason: 'AwaitingMigration', backupActions: ['DownloadCopy'] }));
+
+    const unreadableFactory = new IDBFactory();
+    await new Promise<void>((resolve) => {
+      const open = unreadableFactory.open('tj-root', 99);
+      open.onsuccess = () => (open.result.close(), resolve());
+    });
+    const unreadable = await workspaceStack(unreadableFactory);
+    const unreadableStatus = await unreadable.workspace.getStatus();
+    expect(unreadableStatus.kind).toBe('IntegrityBlocked');
+    expect('backupActions' in unreadableStatus ? unreadableStatus.backupActions : []).toEqual([]);
+
+    const fresh = await workspaceStack();
+    expect(await fresh.workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'InitializationRequired', backupActions: ['RestoreFromBackup'] }));
   });
 });
