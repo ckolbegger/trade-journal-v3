@@ -35,7 +35,12 @@ function write(value: unknown, path: string): string {
 }
 
 function writeArray(items: readonly unknown[], path: string): string {
-  return `[${items.map((item, i) => write(item, `${path}[${i}]`)).join(',')}]`;
+  const parts: string[] = [];
+  for (let i = 0; i < items.length; i++) {
+    if (!(i in items)) throw new CanonicalJsonUnsupported(`${path}[${i}]`, 'a sparse array hole');
+    parts.push(write(items[i], `${path}[${i}]`));
+  }
+  return `[${parts.join(',')}]`;
 }
 
 function writeObject(object: object, path: string): string {

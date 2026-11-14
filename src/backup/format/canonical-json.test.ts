@@ -30,4 +30,28 @@ describe('canonical JSON (A123)', () => {
       expect((caught as CanonicalJsonUnsupported).path).toBe(path);
     }
   });
+
+  it('should reject a sparse array hole with CanonicalJsonUnsupported naming its path', () => {
+    // Holes built without sparse literals, which the linter forbids.
+    const leading = new Array<unknown>(2);
+    leading[1] = 1;
+    const nested = new Array<unknown>(3);
+    nested[0] = 1;
+    nested[2] = 2;
+    const cases: Array<[unknown, string]> = [
+      [leading, '$[0]'],
+      [new Array<unknown>(1), '$[0]'],
+      [{ a: nested }, '$.a[1]'],
+    ];
+    for (const [value, path] of cases) {
+      let caught: unknown;
+      try {
+        canonicalJson(value);
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(CanonicalJsonUnsupported);
+      expect((caught as CanonicalJsonUnsupported).path).toBe(path);
+    }
+  });
 });
