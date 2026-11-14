@@ -82,6 +82,22 @@ const SEPARATE_STORAGE_NO_BACKUP =
 // P32: a copy made while this release can't confirm it never claims a backup.
 const UNCONFIRMED_COPY = "This release can't confirm the copy until your journal has been updated.";
 
+// The Backup page's words (A141, approved 2026-11-14), defined here until T8.11 unifies them with
+// the page's own.
+const NOT_COMPLETED = {
+  ReadFailed: "The backup could not be made. Your journal couldn't be read. Nothing was changed.",
+  OfferFailed: "The backup could not be made. Your browser didn't accept the download. Nothing was changed.",
+  IntegrityBlocked:
+    "The backup could not be made. Your journal has a problem that blocks a normal backup. Nothing was changed.",
+  Conflict:
+    "The backup could not be made. Your journal changed while the backup was being made. Nothing was changed.",
+} as const;
+const NOT_VERIFIED = {
+  Unreadable: "This file couldn't be read. Choose the file you just downloaded.",
+  IncompleteOrCorrupt: "This file is incomplete or damaged, so it isn't a usable backup.",
+  DifferentArtifact: "This is a different backup from the one you just downloaded.",
+} as const;
+
 type DownloadedBackup = Extract<ExportBackupResult, { kind: "Downloaded" }>;
 
 // Download a copy and Verify on a blocked view (D8 P32). The Downloaded result lives only in this
@@ -97,6 +113,8 @@ function BlockedBackupActions({
 }) {
   const [downloaded, setDownloaded] = useState<DownloadedBackup | undefined>();
   const [message, setMessage] = useState<string | undefined>();
+  // The last verification completed: the Downloaded line gives way to "Backup complete".
+  const [verified, setVerified] = useState(false);
   const [busy, setBusy] = useState(false);
   const canDownload = actions.includes("DownloadCopy");
   const canVerify = actions.includes("VerifyBackup");
@@ -108,14 +126,15 @@ function BlockedBackupActions({
     void backup
       .exportBackup({})
       .then((result) => {
-        if (result.kind === "Downloaded") setDownloaded(result);
-        else
+        if (result.kind === "Downloaded") {
+          setDownloaded(result);
+          setVerified(false);
+        } else
           setMessage(
-            result.kind === "NotCompleted"
-              ? `Not completed: ${result.stage}, ${result.reason}`
-              : result.kind,
+            result.kind === "NotCompleted" ? NOT_COMPLETED[result.reason] : NOT_COMPLETED.Conflict,
           );
       })
+      .catch(() => setMessage(NOT_COMPLETED.ReadFailed))
       .finally(() => setBusy(false));
   };
   const verify = () => {
@@ -130,18 +149,16 @@ function BlockedBackupActions({
           expectedBinding: downloaded.sourceBinding,
           expectedFullDigest: downloaded.fullDigest,
         });
-        setMessage(
-          result.kind === "Completed"
-            ? "Backup complete"
-            : `Not verified: ${result.reason}`,
-        );
+        setVerified(result.kind === "Completed");
+        setMessage(result.kind === "Completed" ? "Backup complete" : NOT_VERIFIED[result.reason]);
       })
+      .catch(() => setMessage(NOT_VERIFIED.Unreadable))
       .finally(() => setBusy(false));
   };
 
   return (
     <section aria-label="Backup">
-      {downloaded && message !== "Backup complete" && (
+      {downloaded && !verified && (
         <p role="status">
           Downloaded, not verified yet. This app can't see where your browser saved the file.{" "}
           <span>{downloaded.fileName}</span>

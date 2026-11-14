@@ -1021,6 +1021,92 @@ describe('blocked views (P32)', () => {
     expect(await screen.findByText('Backup complete')).toBeTruthy();
     expect(screen.queryByText(/Downloaded, not verified yet/)).toBeNull();
   });
+
+  const READ_FAILED = "The backup could not be made. Your journal couldn't be read. Nothing was changed.";
+  const UNREADABLE = "This file couldn't be read. Choose the file you just downloaded.";
+
+  it("should show the failure text when a blocked view's download or verification rejects", async () => {
+    const user = userEvent.setup();
+    // A rejected export shows the ReadFailed text and the button works again.
+    const first = renderBlocked(migrationBlocked);
+    await screen.findByRole('heading', { name: /your journal could not be converted to this release/i });
+    first.backup.respond('exportBackup', () => {
+      throw new Error('export failed');
+    });
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    expect(await screen.findByText(READ_FAILED)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Download a copy' }).hasAttribute('disabled')).toBe(false);
+    first.backup.respond('exportBackup', downloaded);
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    expect(await screen.findByText('journal-backup.jsonl')).toBeTruthy();
+    expect(screen.queryByText(READ_FAILED)).toBeNull();
+
+    // A rejected verification shows the Unreadable text.
+    first.files.choose(new File(['x'], 'journal-backup.jsonl'));
+    first.backup.respond('confirmBackup', () => {
+      throw new Error('confirm failed');
+    });
+    await user.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(await screen.findByText(UNREADABLE)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Verify' }).hasAttribute('disabled')).toBe(false);
+    cleanup();
+
+    // A rejected file selection shows the Unreadable text too.
+    const backup = createBackupFacadeDouble();
+    backup.respond('exportBackup', downloaded);
+    render(
+      <MemoryRouter>
+        <AppShell
+          facade={facadeDouble({ status: migrationBlocked })}
+          screens={screens}
+          backup={backup.facade}
+          selectFile={{ choose: () => Promise.reject(new Error('picker failed')) }}
+        />
+      </MemoryRouter>,
+    );
+    await screen.findByRole('heading', { name: /your journal could not be converted to this release/i });
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    await screen.findByText('journal-backup.jsonl');
+    await user.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(await screen.findByText(UNREADABLE)).toBeTruthy();
+  });
+
+  it("should show each blocked-view result in the Backup page's words", async () => {
+    const user = userEvent.setup();
+    const { backup, files } = renderBlocked(migrationBlocked);
+    await screen.findByRole('heading', { name: /your journal could not be converted to this release/i });
+    const prefix = 'The backup could not be made. ';
+    const notCompleted = [
+      ['ReadFailed', "Your journal couldn't be read. Nothing was changed."],
+      ['OfferFailed', "Your browser didn't accept the download. Nothing was changed."],
+      ['IntegrityBlocked', 'Your journal has a problem that blocks a normal backup. Nothing was changed.'],
+    ] as const;
+    for (const [reason, words] of notCompleted) {
+      backup.respond('exportBackup', { kind: 'NotCompleted', stage: 'Read', reason, workspaceBinding: binding });
+      await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+      expect(await screen.findByText(prefix + words)).toBeTruthy();
+    }
+    backup.respond('exportBackup', { kind: 'Conflict', currentBinding: binding });
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    expect(await screen.findByText(`${prefix}Your journal changed while the backup was being made. Nothing was changed.`)).toBeTruthy();
+
+    backup.respond('exportBackup', downloaded);
+    await user.click(screen.getByRole('button', { name: 'Download a copy' }));
+    await screen.findByText(/Downloaded, not verified yet/);
+    files.choose(new File(['x'], 'journal-backup.jsonl'));
+    const notVerified = [
+      ['Unreadable', UNREADABLE],
+      ['IncompleteOrCorrupt', "This file is incomplete or damaged, so it isn't a usable backup."],
+      ['DifferentArtifact', 'This is a different backup from the one you just downloaded.'],
+    ] as const;
+    for (const [reason, words] of notVerified) {
+      backup.respond('confirmBackup', { kind: 'NotVerified', reason });
+      await user.click(screen.getByRole('button', { name: 'Verify' }));
+      expect(await screen.findByText(words)).toBeTruthy();
+      // A file that isn't verified leaves the Downloaded line in place.
+      expect(screen.getByText(/Downloaded, not verified yet/)).toBeTruthy();
+    }
+  });
 });
 
 describe("another tab's Restore (A136)", () => {
