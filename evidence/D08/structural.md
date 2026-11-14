@@ -597,3 +597,4 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - A shared `guardAsync` helper now covers both `onBatch` and `onStart`. It does the thenable check, absorbs a later rejection, and fails with `EarlyAutoCommitGuard`. A tripped `onStart` returns before the first read.
   - Lane tier: unit 173 / 1812, integration 106 / 229, checks 14 of 14.
   - ocr pending.
+- **ocr of T8.3-B6** `2a41fdab`: no findings (2 files reviewed). Raw: `ocr/T8.3-B6-2a41fdab.json`. T8.3-F1 and B6 are ready to merge.
