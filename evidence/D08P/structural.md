@@ -1669,3 +1669,29 @@ At 320 px the table is still about 5 px too wide, so the new `ScrollsToEnd` open
 - critic-3: 2 defects, 1 fixed and 1 accepted.
 
 The bug tasks were B1 to B14, plus B3-B1, B13-B1 and B14-B1. T8P.26's gate critic checks C8P.1 to C8P.6 afresh.
+
+## T8P.25 Browser integration suite
+
+**T8P.25** (`a3b684c5`). Tests only: `e2e/d8p/support.ts`, `cockpit.spec.ts` (B8P.1), `history.spec.ts` (B8P.2, two cases), `states.spec.ts` (B8P.4, three cases) and `responsive-a11y.spec.ts` (B8P.5, two cases). `src/`, `specs/` and the plan are unchanged.
+- **Fixtures:** O-C3 is built through the UI (`buildOc3`, in the order of `tests/integration/d8p/support.ts`) with section 5's Marks, clock Thu 2026-10-15 18:00 New York. B8P.4 reuses D7's Settlement Due fixture and expired put, D4's `FOUR_TRADES` (DEF sold for Closed by sale, ABC stock, XYZ two lots), and D2's `UnknownPlannedLeg` integrity fixture for the incoherent state.
+- **First-run passes, all flagged:** all 8 cases passed on their first run against the app, since the behaviour was built. Each has a mutation check in `tdd-log/T8P.25.md` (an app change, `build:faults`, the case alone, then revert):
+  - B8P.1: the "nearest" badge never rendered; `toBeVisible` failed.
+  - B8P.2 case 1: Journal `PAGE_SIZE` 3 to 4; `toHaveText` received one more.
+  - B8P.2 case 2 (Reflect now in Needs you selects Journal, A217, beyond section 7.2's list): `reflectNow` no longer selects Journal; `aria-selected` was "false".
+  - B8P.4 case 1 (Settlement Due, then the expired put Closed): default drawer "Plan and Risk"; expected "Position".
+  - B8P.4 case 2 (Closed by sale, stock, two lots): Open default "Position"; expected "Today".
+  - B8P.4 case 3 (incoherent): the drawer list gains Payoff; received one more.
+  - B8P.5 case 1 (every drawer at 1280, 375, 320 px, with axe): `.pnl-figure` at 1rem; 16 px against at least 18.
+  - B8P.5 case 2 (keyboard, ending with Reflect now opening the Journal form): every tab `tabIndex=-1`; focus stayed on BODY.
+- **The cockpit checks that replace the retired Summary-card checks** (`T8P.22-retired.md`), named in a comment in `responsive-a11y.spec.ts` and checked at 1280, 375 and 320 px; none needed a code change:
+  - figures at 18 px, bold and tabular (`d2/ui-alignment.spec.ts` :1111): the P&L card's `.pnl-figure`, 24 px, weight 700, tabular numerals;
+  - Stop and Target colours at 4.5:1 (:1135): the Conditions card's `.condition-role` and `.condition-figure` for the Stop and the Target, against the card background;
+  - one right edge of summary values (:1361): the Conditions card's figures share one right edge, and each column of the Position and Plan and Risk label/value grids shares one, with no row wider than 480 px.
+- **"Each drawer holds its content once":** on O-C3 the C8P.2 repeats reduce to "Incurred fees" and "Reward : risk"; `cockpit.spec.ts` allows exactly those and fails on any other repeated card heading or term.
+- **Agent's notes, not tasks:** `plan/spec-reading/D08P.md` does not exist, so it read the plan sections directly. The Settlement Due state's tab reads "Price History 30" (the sessions without Marks), asserted only as `/^Price History( \d+)?$/`. O-C3 figures beyond section 5's table are W5 and W6 arithmetic from section 5's Marks and the Plan's 1R of $200.00, each derived in a comment.
+- **Agent's browser runs:** by the main session's direction it never ran `build:releases` or the `test:e2e` scripts, which build releases; it ran their Playwright parts directly on `dist` and `dist-faults`: its four files 8 passed; d1, d2, d4 and support 126; d5 to d8p 92. Acceptance script exit 0, 6 commands, 0 failed.
+- **Review:** ocr relocated (`ocr/T8P.25-a3b684c5-relocated.json`), 5 files, 1 comment, **Wrong**: it said the suites aren't discovered because they are plain `.ts` files outside `e2e`. That is the relocation; the real files are `e2e/d8p/*.spec.ts`, and `test:e2e:2` runs `e2e/d8p`. No bug task.
+- **Full tier (`T8P.25`), on fresh builds including `build:releases` (the main session's, as the user chose):** unit 1658 (156 files), integration 229 (106 files), checks 14 of 14, browser-1 126 (5.1 min), browser-2 92 (5.8 min), no failures; run complete (`run-complete.sh` exit 0). Browser-2 rose from merge run 12's 82 by 10: B14's and B14-B1's two `today-narrow` cases and these 8.
+- **Acceptance:** `.claude/scripts/acceptance-commands.sh plan/D08P-trade-detail-cockpit.md` exit 0, 6 commands checked, 0 failed (`suite-runs/T8P.25-acceptance.txt`). Every section 13 row now passes, including the two browser rows T8P.24 left waiting.
+
+**T8P.25 done.** No app code changes after `a3b684c5`, so this full tier and acceptance run stand as T8P.26's full tier before its gate critic.

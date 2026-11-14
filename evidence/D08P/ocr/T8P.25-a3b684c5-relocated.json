@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 327878,
+    "input_tokens": 325457,
+    "output_tokens": 2421,
+    "cache_read_tokens": 36224,
+    "elapsed": "1m30s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d8p/cockpit.ts",
+      "content": "These four new browser suites are not discovered by the current runner. `playwright.config.ts` sets `testDir: 'e2e'` and retains the default `.spec`/`.test` filename matching, while these suites are plain `.ts` files under `src/itg/relocated/d8p`; no discovered entry point imports them. Although `test:e2e:2` includes `e2e/d8p`, that only runs the existing specs there, silently omitting this cockpit, history, states, and responsive/accessibility coverage. Move/register all four suites in the discovered tree with matching filenames (and adjust their support imports), or explicitly configure discovery and command filters for this location.",
+      "existing_code": "test.describe('B8P.1 The cockpit', () =\u003e {",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "test",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D8P integration scenarios and shared support",
+      "files": [
+        "src/itg/relocated/d8p/cockpit.ts",
+        "src/itg/relocated/d8p/history.ts",
+        "src/itg/relocated/d8p/responsive-a11y.ts",
+        "src/itg/relocated/d8p/states.ts",
+        "src/itg/relocated/d8p/support.ts"
+      ]
+    }
+  ],
+  "session_id": "d6983a07-adc1-4747-b76c-fd301ec50702",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d6983a07-adc1-4747-b76c-fd301ec50702",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "861ce5c0",
+      "resolved_base": "66e45cc369a37cd8f7e9b0c38d3170a30b99b673",
+      "resolved_head": "861ce5c00125f2d6d2236064c8afe2f33bca8c68",
+      "exact_range": "66e45cc369a37cd8f7e9b0c38d3170a30b99b673..861ce5c00125f2d6d2236064c8afe2f33bca8c68",
+      "source_artifact_sha256": "21f5e91890cc10d2c5b2bcd2517504b7d5c862bc196d4667b450e5a8d4638ff9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "308a7f45aa639863df75982844ff176e21b2fe0fe662fa5252ea549751ce4cb3",
+          "path": "src/itg/relocated/d8p/states.ts",
+          "fingerprint": "85c7ec5e6a7da5d3d258293071667621fe570d66258993bcb13a4e90bb192a57"
+        },
+        {
+          "item_id": "7f8dd59c00ddeca61cc3a48e1b15442fc1d673b7cded5a24514edf22e66a2cbf",
+          "path": "src/itg/relocated/d8p/cockpit.ts",
+          "fingerprint": "d2aaf691b91aec7d41ca97688af91f53c1c65de850ee9e8c8fd76daa4b0ef9a2"
+        },
+        {
+          "item_id": "93e39bf55cc57c27c9222e9385c2029658993dcd42e6dddeafe849837bfca2fd",
+          "path": "src/itg/relocated/d8p/support.ts",
+          "fingerprint": "f710ce4aeb9fd635b84d372fdc6a1251525faedf65562353464f28193f31d4cf"
+        },
+        {
+          "item_id": "ed713b8cdac17dcea0ab6e6261cb78e60bd92bed3a2dbd28d057a43f7e0ee1a5",
+          "path": "src/itg/relocated/d8p/history.ts",
+          "fingerprint": "5f2ad17ae259e4184db18461d2aacf2622125380ecc69dc9873a4c01231a201e"
+        },
+        {
+          "item_id": "efa7adb69722b6f192e5cb8d7c7f96eca472a9d0bfa2aaf6294e47fcd7f0340a",
+          "path": "src/itg/relocated/d8p/responsive-a11y.ts",
+          "fingerprint": "d4d0ce50143091e17438903a2a6e270efb76f02e2ff5c0f2452c999b6e9c3069"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "308a7f45aa639863df75982844ff176e21b2fe0fe662fa5252ea549751ce4cb3",
+          "path": "src/itg/relocated/d8p/states.ts",
+          "fingerprint": "85c7ec5e6a7da5d3d258293071667621fe570d66258993bcb13a4e90bb192a57"
+        },
+        {
+          "item_id": "7f8dd59c00ddeca61cc3a48e1b15442fc1d673b7cded5a24514edf22e66a2cbf",
+          "path": "src/itg/relocated/d8p/cockpit.ts",
+          "fingerprint": "d2aaf691b91aec7d41ca97688af91f53c1c65de850ee9e8c8fd76daa4b0ef9a2"
+        },
+        {
+          "item_id": "93e39bf55cc57c27c9222e9385c2029658993dcd42e6dddeafe849837bfca2fd",
+          "path": "src/itg/relocated/d8p/support.ts",
+          "fingerprint": "f710ce4aeb9fd635b84d372fdc6a1251525faedf65562353464f28193f31d4cf"
+        },
+        {
+          "item_id": "ed713b8cdac17dcea0ab6e6261cb78e60bd92bed3a2dbd28d057a43f7e0ee1a5",
+          "path": "src/itg/relocated/d8p/history.ts",
+          "fingerprint": "5f2ad17ae259e4184db18461d2aacf2622125380ecc69dc9873a4c01231a201e"
+        },
+        {
+          "item_id": "efa7adb69722b6f192e5cb8d7c7f96eca472a9d0bfa2aaf6294e47fcd7f0340a",
+          "path": "src/itg/relocated/d8p/responsive-a11y.ts",
+          "fingerprint": "d4d0ce50143091e17438903a2a6e270efb76f02e2ff5c0f2452c999b6e9c3069"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 89944
+  }
+}
