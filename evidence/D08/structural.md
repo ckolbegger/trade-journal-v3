@@ -166,6 +166,7 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 | T8.3 | PS (wave 1) | `.claude/worktrees/d08-ps` | `d08/ps` | `fdc5e858` |
 | T8.14 | US (wave 1) | `.claude/worktrees/d08-us` | `d08/us` | `fdc5e858` |
 | T8.12 | UB (wave 1) | `.claude/worktrees/d08-ub` | `d08/ub` | `9312835b` |
+| T8.7 | PS (wave 1, recreated) | `.claude/worktrees/d08-ps` | `d08/ps` | `a0240277` |
 
 ## Flakes
 
