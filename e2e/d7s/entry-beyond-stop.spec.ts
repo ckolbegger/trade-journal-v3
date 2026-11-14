@@ -19,7 +19,8 @@ test.describe('BUG-3 Entry beyond the option-price Stop', () => {
     await expect(detail.heading(page, 'NVDA')).toBeVisible(READY);
     await openDrawer(page, 'Today');
     await expect(detail.atEntryFigure(page, 'Risk from entry')).toHaveText('$735.00 · 0.98R');
-    await expect(detail.summaryValue(page, 'Actual initial risk')).toHaveText('$735.00');
+    await openDrawer(page, 'Plan and Risk');
+    await expect(detail.actualInitialRisk(page)).toContainText('$735.00');
     await context.close();
   });
 });

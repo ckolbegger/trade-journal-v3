@@ -37,12 +37,6 @@ function pnlCell(session: Session): Cell {
   return { text: money(value), ...(value.numerator !== 0n && { tone: value.numerator > 0n ? ('gain' as const) : ('loss' as const) }) };
 }
 
-// The replay a Detail view carries, once T8P.22 reads it; none before then (the drawer shows nothing).
-export function replayOf(view: unknown): TradeReplayView | undefined {
-  const replay = typeof view === 'object' && view !== null ? (view as { readonly replay?: TradeReplayView }).replay : undefined;
-  return replay;
-}
-
 const lacksMarks = (session: Session): boolean => session.marks.some((m) => m.resolution.kind !== 'Available');
 
 // W1: the Price History tab's count, the sessions without Marks (T8P.22 shows it on the tab).

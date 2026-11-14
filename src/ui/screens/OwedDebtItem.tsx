@@ -16,6 +16,8 @@ import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult 
 export interface ReflectRequest {
   readonly debtId?: string;
   readonly handled: () => void;
+  // A Debt was answered or declined on its card: the rail's Needs you follows from the same save result, without a read (revision 95).
+  readonly settled?: (debtId: string) => void;
 }
 export const ReflectRequestContext = createContext<ReflectRequest>({ handled: () => undefined });
 
@@ -81,6 +83,7 @@ export function OwedDebtItem({
       timeLabel: answered ? 'Answered' : 'Declined',
       time: (result.entry ?? result.decline)?.authoredTime,
     });
+    request.settled?.(debt.id);
     onResolved();
   };
   const close = () => {

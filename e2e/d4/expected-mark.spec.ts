@@ -30,7 +30,9 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await expect(detail.positionOpenPnlFigure(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
     await openDrawer(page, 'Today');
     await expect(detail.currentMarkedPnl(page)).toHaveText('Mark missing: XYZ, Mon Oct 12');
-    for (const term of ['Risk to stop', 'Reward to target']) await expect(detail.riskFigure(page, term)).toHaveText('Mark missing: XYZ, Mon Oct 12');
+    // Each condition's figure says why it has none, in the rail's Conditions card (Stop, then Target), as "Mark missing"; the P&L card above
+    // names the Instrument and date.
+    await expect(detail.conditionBlocks(page).locator('.condition-figure')).toHaveText(['Mark missing', 'Mark missing']);
     // The current sections hold no dollar figure from Friday's Mark: dollars appear only in the stale line and the dated section.
     await openDrawer(page, 'Today');
     await expect(detail.anywhere(() => detail.todayFigure(page, 'Mark'))).toHaveCount(0);
@@ -42,7 +44,8 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     await openXyz(page);
     await openDrawer(page, 'Today');
     await expect(detail.todayFigure(page, 'Expected Mark Date')).toHaveText('Mon Oct 12');
-    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$52.00');
+    // With Monday's and Friday's Marks, Today's comparison shows Monday's Mark with its provenance, so the current-Marks card does not repeat it.
+    await expect(detail.comparedMark(page)).toHaveText('$52.00');
     await expect(detail.currentMarkedPnl(page)).toContainText('$199.00');
     await expect(valuation).not.toContainText('Stale context');
     await expect(valuation).not.toContainText('Mark missing');
@@ -50,7 +53,7 @@ test.describe('B4.5 Expected Mark Date (AC-MARK-001)', () => {
     // Both Marks are durable observation records.
     await page.reload();
     await openDrawer(page, 'Today');
-    await expect(detail.todayFigure(page, 'Mark')).toHaveText('$52.00');
+    await expect(detail.comparedMark(page)).toHaveText('$52.00');
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-09', '51.2'], ['2026-10-12', '52']]);
     await context.close();
   });

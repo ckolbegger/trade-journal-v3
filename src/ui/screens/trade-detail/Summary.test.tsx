@@ -7,7 +7,8 @@ import { incoherentDetailOf, openDetailOf, PC1, PC2, PC3, pc3Excess } from '../.
 import { optionClosedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { ocChange, OC_E1, OC_PC1, OC_PC2, OC_X1, OS_ES, OS_S1, osChange } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { THURSDAY, openDrawer, renderDetail, renderView, termValue, useFixedClock } from './test-support.ts';
+// The Summary card is retired from the shell (T8P.22), so these cases render it directly (`renderLegacyView`) until T8P.27 removes them.
+import { THURSDAY, openDrawer, renderLegacyDetail, renderLegacyView as renderView, termValue, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
@@ -15,7 +16,7 @@ describe('Trade Detail', () => {
   it('should render the Detail summary Trade text through the shared at-price component so the at sign stays with its price', async () => {
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
-    renderDetail(facade);
+    renderLegacyDetail(facade, plannedDetail);
     const card = await screen.findByRole('region', { name: 'Summary' });
     const text = card.querySelector('.summary-text')!;
     expect(text.textContent).toBe('Long 100 shares @ $50.00');

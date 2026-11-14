@@ -91,7 +91,8 @@ describe('option Trade Detail payoff sections (A119, A122)', () => {
 
     // The expiration views are their own sections: no Mark-to-Market figure repeats them.
     await openDrawer(user, 'Today');
-    expect(within(screen.getByRole('region', { name: 'Valuation' })).queryByText(/at expiration/)).toBeNull();
+    // The Mark-to-Market figures are the rail's Trade P&L card (the Valuation section is retired).
+    expect(within(screen.getByRole('region', { name: 'Trade P&L' })).queryByText(/at expiration/)).toBeNull();
   });
 });
 

@@ -108,7 +108,13 @@ export function journalCards(input: JournalCardsInput): JournalDrawerProps | und
   const { view } = input;
   const { plan } = view;
   const symbol = plan.underlying;
-  const items = (journal: readonly TradeDetailNarrativeItem[]) => journal.map((item) => itemOf(item, symbol, timeZone, input.facade, input.onDirtyChange));
+  // A replayed Debt carries no due status, so an owed reflection takes it from the Detail's own Debt of the same id.
+  const dueOf = new Map(view.journal.flatMap((item) => ('dueStatus' in item && item.dueStatus ? [[item.id, item.dueStatus] as const] : [])));
+  const withDue = (item: TradeDetailNarrativeItem): TradeDetailNarrativeItem => {
+    const dueStatus = item.kind === 'Debt' ? dueOf.get(item.id) : undefined;
+    return item.kind === 'Debt' && dueStatus ? { ...item, dueStatus } : item;
+  };
+  const items = (journal: readonly TradeDetailNarrativeItem[]) => journal.map((item) => itemOf(withDue(item), symbol, timeZone, input.facade, input.onDirtyChange));
   if (replay === 'Incoherent') {
     // Only an incoherent Detail is listed this way, and its entries carry their kind.
     const entries = (view as Extract<TradeDetailView, { readonly recordedPositionChanges: unknown }>).journal;

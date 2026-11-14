@@ -32,5 +32,5 @@ export const valueIn = (scope: Locator, term: string): Locator => scope.locator(
 export const figureIn = (scope: Locator, term: string): Locator =>
   scope.locator('div', { has: scope.page().locator('dt', { hasText: new RegExp(`^${term}$`) }) }).locator('dd');
 
-// The Journal card, whose title carries its count.
-export const journalRegion = (page: Page): Locator => regionOf(page, /^Journal \(\d+\)$/);
+// The Journal drawer's panel: the session cards (W10 to W13), or the Planned Detail's Plan Reflection. A role query inside it sees only what shows.
+export const journalRegion = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-journal');

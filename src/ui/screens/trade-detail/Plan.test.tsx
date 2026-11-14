@@ -119,7 +119,8 @@ describe('option Trade Detail triggers (convention C3)', () => {
     renderView(optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY));
     await openDrawer(user, 'Plan and Risk');
     await screen.findByRole('heading', { name: 'XYZ', level: 1 });
-    for (const card of ['Plan', 'Summary']) {
+    // The Summary card repeated the Plan's Stop and Target; it is retired, so the Plan card holds them once.
+    for (const card of ['Plan']) {
       const region = screen.getByRole('region', { name: card });
       expect(termValue(region, 'Stop')).toBe('XYZ at or below 48.00');
       expect(termValue(region, 'Target')).toBe('XYZ at or above 60.00');
@@ -137,7 +138,8 @@ describe('Trade Detail: every condition (W6, W7)', () => {
   it('should show a Planned O-S2s Stop as MNO at or below 41.00 and Option at or above $3.60 and its Target as MNO at or above 44.50 and Option at or below $0.30', async () => {
     renderView(optionPlannedDetail('O-S2'));
     await screen.findByRole('heading', { name: 'MNO', level: 1 });
-    for (const card of ['Plan', 'Summary']) {
+    // The Summary card repeated the Plan's Stop and Target; it is retired, so the Plan card holds them once.
+    for (const card of ['Plan']) {
       const region = screen.getByRole('region', { name: card });
       expect(linesOf(region, 'Stop')).toEqual(['MNO at or below 41.00', 'Option at or above $3.60']);
       expect(linesOf(region, 'Target')).toEqual(['MNO at or above 44.50', 'Option at or below $0.30']);

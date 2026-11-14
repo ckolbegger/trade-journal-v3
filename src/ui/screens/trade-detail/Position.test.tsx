@@ -261,10 +261,9 @@ describe('Open Trade Detail after a partial exit', () => {
   it('should show realized to date, the Lot Matches table with a note that per-match amounts are rounded for display, and Record exit beside Record entry only while Writable', async () => {
     const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, X1]), true);
-    const valuation = await screen.findByRole('region', { name: 'Valuation' });
-    expect(termValue(valuation, 'Realized to date')).toBe('+$55.90');
-
     await openDrawer(user, 'Position');
+    // Realized to date is the Position drawer's own figure now (the Valuation section it was read from is retired).
+    expect(termValue(await screen.findByRole('region', { name: 'Position' }), 'Realized to date')).toBe('+$55.90');
     const section = screen.getByRole('region', { name: 'Lot Matches' });
     expect(rowsOf(within(section).getByRole('table', { name: 'Lot Matches' }))).toEqual([['$50.10 on 2026-10-12 10:00', '$52.00 on 2026-10-13 10:00', '30', '+$55.90']]);
     expect(within(section).getByText('Each match’s amount is rounded to the cent for display.')).toBeTruthy();

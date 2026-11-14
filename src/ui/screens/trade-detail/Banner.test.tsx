@@ -126,7 +126,8 @@ describe('Open Trade Detail', () => {
         .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
     ).toEqual(['Buy 60 XYZ @ $50.10 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details']);
     await openDrawer(user, 'Journal');
-    expect(within(screen.getByRole('region', { name: /^Journal/ })).getByText('Reflection declined')).toBeTruthy();
+    // An incoherent Detail lists its entries as one Journal card (W13), which replaces the Journal section.
+    expect(within(screen.getByRole('article', { name: 'Journal' })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
     expect(screen.queryByRole('region', { name: 'Position Change Reflection', hidden: true })).toBeNull();
     for (const derived of ['Plan Baseline', 'Position', 'Entry Quality', 'Planned-Leg Fulfillment', 'Deviations']) {

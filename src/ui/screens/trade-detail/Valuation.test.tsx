@@ -5,7 +5,8 @@ import { openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/s
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { MON_CLOSE, THURSDAY, available, renderView, termValue, tuesday, useFixedClock } from './test-support.ts';
+// The Valuation section is retired from the shell (T8P.22), so these cases render it directly (`renderLegacyView`) until T8P.27 removes them.
+import { MON_CLOSE, THURSDAY, available, renderLegacyView as renderView, termValue, tuesday, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 

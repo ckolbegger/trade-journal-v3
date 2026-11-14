@@ -49,7 +49,7 @@ describe('Price History (W9, P99)', () => {
     const Where = () => <p data-testid="where">{useLocation().pathname}</p>;
     const { getByTestId } = render(
       <MemoryRouter initialEntries={['/trades/t1']}>
-        <PriceHistory view={{ replay: replay([MON, TUE]) }} timeZone="America/New_York" />
+        <PriceHistory view={{}} replay={replay([MON, TUE])} timeZone="America/New_York" />
         <Where />
       </MemoryRouter>,
     );
@@ -79,7 +79,7 @@ describe('Price History (W9, P99)', () => {
 
   // Not a planned case: the shell's wiring (T8P.5's ShellProps) until T8P.22 gives the Detail its replay.
   it('should show the replay the shell passes, and nothing without one', () => {
-    const shown = render(<MemoryRouter><PriceHistory view={{ replay: replay([MON, WED]) }} timeZone="America/New_York" /></MemoryRouter>);
+    const shown = render(<MemoryRouter><PriceHistory view={{}} replay={replay([MON, WED])} timeZone="America/New_York" /></MemoryRouter>);
     expect(shown.container.querySelectorAll('thead th')).toHaveLength(3);
     const none = render(<MemoryRouter><PriceHistory view={{}} timeZone="America/New_York" /></MemoryRouter>);
     expect(none.container.innerHTML).toBe('');

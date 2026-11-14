@@ -60,10 +60,11 @@ test.describe('T8P.4-B2 the Detail tab list is not a page edge', () => {
 test.describe('T8P.4-B3 Realized to date of the Valuation card', () => {
   test('should read Realized to date from the Valuation card when a dated line is also shown', async ({ page }) => {
     await page.setContent(`<main><article class="trade-detail">
-      <section aria-label="Valuation"><dl><div><dt>Realized to date</dt><dd>$63.70</dd></div></dl></section>
+      <section aria-label="Position"><dl><div><dt>Realized to date</dt><dd>$63.70</dd></div></dl></section>
       <section aria-label="At 13 Nov close"><dl><div><dt>Realized to date</dt><dd>$10.00</dd></div></dl></section>
     </article></main>`);
-    await expect(detail.realizedToDate(page)).toHaveText('$63.70');
+    // The Valuation card is retired (T8P.22): Realized to date is the Position card's, read apart from a dated section's.
+    await expect(detail.positionRealizedToDate(page)).toHaveText('$63.70');
   });
 });
 

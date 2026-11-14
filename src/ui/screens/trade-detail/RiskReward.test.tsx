@@ -6,7 +6,8 @@ import { openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/s
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { TradeDetailView } from '../../../app/types.ts';
-import { THURSDAY, available, openDrawer, renderView, rowsOf, termValue, tuesday, useFixedClock } from './test-support.ts';
+// The Risk and reward section is retired from the shell (T8P.22), so these cases render it directly (`renderLegacyView`) until T8P.27 removes them.
+import { THURSDAY, available, openDrawer, renderLegacyView as renderView, rowsOf, termValue, tuesday, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 

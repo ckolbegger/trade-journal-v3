@@ -17,8 +17,10 @@ import { openDrawer, renderView, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
 
-const tabNames = () => within(screen.getByRole('tablist', { name: 'Detail' })).getAllByRole('tab').map((tab) => tab.textContent);
-const selectedTab = () => screen.getByRole('tab', { selected: true }).textContent;
+// A tab's name is its W1 name; a count (W1) is its description and its visible text, so the name is read from the accessible name.
+const nameOf = (tab: HTMLElement) => tab.getAttribute('aria-label');
+const tabNames = () => within(screen.getByRole('tablist', { name: 'Detail' })).getAllByRole('tab').map(nameOf);
+const selectedTab = () => nameOf(screen.getByRole('tab', { selected: true }));
 
 // Friday 2026-11-20 after the close: the expiration date, whose contracts are due for settlement.
 const FRIDAY: OptionFrames = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };
@@ -27,18 +29,19 @@ describe('Trade Detail cockpit (W1, A217)', () => {
   it("should show an Open Trade's rail with the identity, P&L, Conditions and Needs you cards beside a Detail tab list of Today, Position, Plan and Risk, Price History, Journal and Payoff in that order, with Today selected", async () => {
     renderView(openDetailOf([PC1, PC2]));
     const rail = await screen.findByRole('region', { name: 'State of play' });
-    // The identity card is the rail's first card; the Summary, Valuation and Risk and reward figures stay as legacy blocks (plan section 4.2).
+    // The identity card is the rail's first card; the Summary card is retired (T8P.22), so the Trade P&L card follows Needs you.
     expect(within(rail).getByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
-    expect(within(rail).getByRole('region', { name: 'Summary' })).toBeTruthy();
+    expect(within(rail).getByRole('region', { name: 'Trade P&L' })).toBeTruthy();
+    expect(screen.queryAllByRole('region', { name: 'Summary', hidden: true })).toEqual([]);
     // The tab list sits beside the rail, not in it.
     const tablist = screen.getByRole('tablist', { name: 'Detail' });
     expect(rail.contains(tablist)).toBe(false);
     expect(tabNames()).toEqual(['Today', 'Position', 'Plan and Risk', 'Price History', 'Journal', 'Payoff']);
     expect(selectedTab()).toBe('Today');
-    // Every shown drawer is mounted and the unselected ones are hidden (T8P.5-B1): Today holds the Valuation, and Position's content is present
-    // in its own hidden panel, where an accessible query without `hidden: true` cannot see it.
-    const panel = screen.getByRole('tabpanel', { name: 'Today' });
-    expect(within(panel).getByRole('region', { name: 'Valuation' })).toBeTruthy();
+    // Every shown drawer is mounted and the unselected ones are hidden (T8P.5-B1): Position's content is present in its own hidden panel, where
+    // an accessible query without `hidden: true` cannot see it. The Valuation section is retired (T8P.22).
+    expect(screen.getByRole('tabpanel', { name: 'Today' })).toBeTruthy();
+    expect(screen.queryAllByRole('region', { name: 'Valuation', hidden: true })).toEqual([]);
     const position = document.getElementById('drawer-panel-position')!;
     expect(position.hidden).toBe(true);
     expect(within(position).getByRole('region', { name: 'Open Lots', hidden: true })).toBeTruthy();
@@ -66,13 +69,13 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       expect(within(screen.getByRole('tabpanel', { name: 'Position' })).getByRole('region', { name: 'Result' })).toBeTruthy();
       cleanup();
 
-      // The Valuation and Risk and reward legacy blocks go to the default drawer, so no figure disappears with Today.
+      // The Valuation and Risk and reward legacy blocks are retired (T8P.22), so the default drawer holds the Position.
       renderView(optionOpenDetail('O-S', [OS_S1], FRIDAY));
       await screen.findByRole('region', { name: 'State of play' });
       expect(tabNames()).not.toContain('Today');
       expect(selectedTab()).toBe('Position');
       const panel = screen.getByRole('tabpanel', { name: 'Position' });
-      expect(within(panel).getByRole('region', { name: 'Valuation' })).toBeTruthy();
+      for (const name of ['Valuation', 'Risk and reward']) expect(screen.queryAllByRole('region', { name, hidden: true }), name).toEqual([]);
       expect(within(panel).getByRole('region', { name: 'Position' })).toBeTruthy();
       // The Settlement Due panel stands in the rail.
       expect(within(screen.getByRole('region', { name: 'State of play' })).getByRole('region', { name: 'Settlement Due' })).toBeTruthy();

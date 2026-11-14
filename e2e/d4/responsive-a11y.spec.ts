@@ -167,6 +167,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await openDrawer(page, 'Today');
     await expect(detail.todayFigure(page, 'Mark')).toHaveText('$27.50');
     await expect(detail.riskFigure(page, 'Max reward')).toHaveText('Unbounded above');
+    // (Max reward is the rail's Conditions card's, so it needs no drawer.)
     await expectAccessible(page, 'Detail Available (Stop Breached, Unbounded)');
     await openDetail(page, 'DEF');
     await openDrawer(page, 'Today');

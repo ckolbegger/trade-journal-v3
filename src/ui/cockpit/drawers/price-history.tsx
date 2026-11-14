@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router';
 import { ROUTES } from '../../../app/routes.ts';
 import { plural } from '../../format.ts';
 import type { ShellProps } from '../placeholder.ts';
-import { priceHistoryProps, replayOf } from './price-history.props.ts';
+import { priceHistoryProps, type ReplaySource } from './price-history.props.ts';
 import type { PriceHistoryProps } from './price-history.types.ts';
 
 // The Review route (`review` in src/app/routes.ts); the link's href and the navigation use it together.
@@ -61,9 +61,8 @@ export function PriceHistoryTable({ rowLabels, columns, missingCount, onOpenRevi
   );
 }
 
-// The Price History drawer. Without a replay (the Detail reads one from T8P.22) it renders nothing.
-export function PriceHistory({ view }: ShellProps) {
+// The Price History drawer. Without a replay it renders nothing.
+export function PriceHistory({ replay }: ShellProps & { readonly replay?: ReplaySource }) {
   const navigate = useNavigate();
-  const replay = replayOf(view);
-  return replay ? <PriceHistoryTable {...priceHistoryProps(replay, () => void navigate(REVIEW_PATH))} /> : null;
+  return replay ?<PriceHistoryTable {...priceHistoryProps(replay, () => void navigate(REVIEW_PATH))} /> : null;
 }

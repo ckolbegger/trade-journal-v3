@@ -95,7 +95,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await recordEntry(page, [{ quantity: '40', price: '40.30', fee: '1.00', time: '2026-10-13T10:00' }]);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
     await openDrawer(page, 'Today');
-    await expect(detail.valuation(page)).toContainText(`Awaiting the close after ${DATE}`, READY);
+    await expect(detail.currentMarkedPnl(page)).toContainText(`Awaiting the close after ${DATE}`, READY);
     await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);
@@ -105,7 +105,7 @@ test.describe('T7P.11 Layout of the worded reasons', () => {
     await page.goto('/');
     await openTradeFromOpenList(page, 'ABC');
     await openDrawer(page, 'Today');
-    await expect(detail.valuation(page)).toBeVisible(READY);
+    await expect(detail.pnlCard(page)).toBeVisible(READY);
     await openDrawer(page, 'Position');
     for (const width of WIDTHS) {
       await setWidth(page, width);

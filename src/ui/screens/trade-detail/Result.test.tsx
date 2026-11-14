@@ -18,7 +18,8 @@ describe('Closed Trade Detail', () => {
     renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: CLOSE_REASON, journal: [closeReviewEntry] }), true);
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(screen.getByText('Long Stock, Closed', { selector: '.badge' })).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Summary' }).querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.18');
+    // The Trade Summary is the Position drawer's on a Closed Detail (T8P.31); the Summary card it was read from is retired.
+    expect(screen.getByRole('tabpanel', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.18');
 
     const result = screen.getByRole('region', { name: 'Result' });
     expect(termValue(result, 'Terminal Disposition')).toBe('Closed via sale of 100 shares');

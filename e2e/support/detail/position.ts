@@ -18,7 +18,3 @@ export const positionOpenPnl = (page: Page): Locator => valueIn(position(page), 
 export const positionOpenPnlFigure = (page: Page): Locator => figureIn(position(page), 'Open P&L');
 export const positionRealizedToDate = (page: Page): Locator => valueIn(position(page), 'Realized to date');
 
-// The same figures as the legacy Valuation block shows them (Today, and atop Position on a state without Today), until T8P.22 retires it.
-export const openPnl = (page: Page): Locator => valueIn(regionOf(page, 'Valuation'), 'Open P&L');
-export const openPnlFigure = (page: Page): Locator => figureIn(regionOf(page, 'Valuation'), 'Open P&L');
-export const realizedToDate = (page: Page): Locator => valueIn(regionOf(page, 'Valuation'), 'Realized to date');

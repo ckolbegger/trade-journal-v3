@@ -11,9 +11,9 @@ export const lifecycle = (page: Page, text: string): Locator => lifecycleBadge(p
 export const recordEntryLink = (page: Page): Locator => roleOf(identityCard(page), 'link', { name: 'Record entry' });
 export const recordExitLink = (page: Page): Locator => roleOf(identityCard(page), 'link', { name: 'Record exit' });
 
-// The Summary card, until T8P.22 retires it.
-export const summary = (page: Page): Locator => regionOf(page, 'Summary');
-export const summaryValue = (page: Page, term: string): Locator => valueIn(summary(page), term);
+// The Trade Summary line ("Long 100 shares @ $50.00"): the Position drawer's on an Open or Closed Detail, and Plan and Risk's on a Planned one
+// (T8P.31). Open that drawer first.
+export const tradeSummary = (page: Page): Locator => detailRoot(page).locator('.summary-text');
 
 // The P&L card (W3, W4): its figure (an Open Trade's Trade P&L, a Closed Trade's realized P&L), the line beneath it, and the Result rows a
 // Closed Trade shows. The Position drawer's own Result section stays until T8P.17, so its heading is read apart.

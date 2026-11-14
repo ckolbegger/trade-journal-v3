@@ -75,6 +75,7 @@ export type {
   TradeDetailNarrativeItem,
   TradeDetailRequest,
   TradeDetailView,
+  TradeReplayView,
   ViewBinding,
 } from '../coordinators/trade-views/index.ts';
 // The lifecycles this release lists and details.

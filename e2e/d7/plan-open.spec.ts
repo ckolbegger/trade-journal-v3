@@ -82,7 +82,7 @@ test.describe('BUG-2 Expiration date', () => {
     await expect(detail.heading(reopened, 'XYZ')).toBeVisible();
     await recordOptionEntry(reopened, [{ quantity: '2', price: '2.00', fee: '0.65', time: '2026-10-12T10:00' }]);
     await reopened.goto(`/trades/${tradeId}`);
-    await expect(detail.summary(reopened).getByText('Expires Fri 20 Nov 2026')).toBeVisible();
+    await expect(detail.identityCard(reopened).getByText('Expires Fri 20 Nov 2026')).toBeVisible();
     await context.close();
   });
 });

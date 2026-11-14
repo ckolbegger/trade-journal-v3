@@ -11,6 +11,9 @@ import type { UiFacade } from '../../../app/compose.ts';
 import type { TradeDetailView } from '../../../app/types.ts';
 import { RuntimeContext } from '../../runtime.tsx';
 import { TradeDetail } from '../TradeDetail.tsx';
+import { RiskRewardSection } from './RiskReward.tsx';
+import { SummaryCard } from './Summary.tsx';
+import { ValuationSection } from './Valuation.tsx';
 
 export function renderDetail(facade: UiFacade, path = '/trades/trade-1') {
   render(
@@ -36,6 +39,45 @@ export function renderView(view: TradeDetailView, writable = true) {
       ),
     ),
   );
+}
+
+// The retired Summary, Valuation and Risk and reward blocks (plan section 4.2), rendered beside the cockpit for the legacy section tests until
+// T8P.27 pairs and removes them: the shell no longer renders them, so these tests read their components directly. Same view, same zone.
+function legacyBlocks(view: TradeDetailView) {
+  const open = 'positionChanges' in view && !('terminalDisposition' in view) ? view : undefined;
+  return createElement(
+    'div',
+    null,
+    !('recordedPositionChanges' in view) && createElement(SummaryCard, { view, timeZone: 'America/New_York' }),
+    open && createElement(ValuationSection, { tradeId: open.tradeId, current: open.current, timeZone: 'America/New_York' }),
+    open &&
+      createElement(RiskRewardSection, {
+        evaluation: open.current.evaluation,
+        baseline: open.baseline,
+        option: open.plan.legs[0]?.instrument.kind === 'Option',
+        symbol: open.plan.underlying,
+      }),
+  );
+}
+
+export function renderLegacyDetail(facade: UiFacade, view: TradeDetailView, writable = true) {
+  render(
+    createElement(
+      RuntimeContext.Provider,
+      { value: { writable, report: () => undefined, timeZone: 'America/New_York' } },
+      createElement(
+        MemoryRouter,
+        { initialEntries: ['/trades/trade-1'] },
+        createElement(Routes, null, createElement(Route, { path: '/trades/:tradeId', element: createElement('div', null, createElement(TradeDetail, { facade, timeZone: 'America/New_York' }), legacyBlocks(view)) })),
+      ),
+    ),
+  );
+}
+
+export function renderLegacyView(view: TradeDetailView, writable = true) {
+  const facade = facadeDouble();
+  vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view, binding: {} } as never);
+  renderLegacyDetail(facade, view, writable);
 }
 
 // Selects a drawer by its W1 tab name and waits for its panel (D08P, A217). It first waits for the Detail's tab list, so a case calls it right

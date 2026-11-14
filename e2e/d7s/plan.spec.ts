@@ -13,7 +13,7 @@ test.describe('B7S.1 Plan a Cash-Secured Put with both kinds', () => {
     const tradeId = await confirmBothKinds(page, OS2);
     await openDrawer(page, 'Plan and Risk');
     await expect(detail.oneR(page)).toHaveText('$480.00');
-    await expect(detail.summaryValue(page, 'Reward : risk')).toHaveText('0.29');
+    await expect(detail.baselineRewardRisk(page)).toHaveText('0.29');
     await first.close();
 
     // Relaunch; open Detail: W6's four lines, one per condition in Plan order.
@@ -23,8 +23,8 @@ test.describe('B7S.1 Plan a Cash-Secured Put with both kinds', () => {
     await expect(detail.heading(reopened, 'MNO')).toBeVisible();
     await openDrawer(reopened, 'Plan and Risk');
     await expect(detail.oneR(reopened)).toHaveText('$480.00');
-    // The Summary and the Plan card each show the four lines once (the cockpit shows them in one place).
-    for (const where of [detail.summaryValue, detail.planValue]) {
+    // The Plan card shows the four lines once (the Summary card that repeated them is retired).
+    for (const where of [detail.planValue]) {
       await expect(where(reopened, 'Stop').locator('div')).toHaveText(['MNO at or below 41.00', 'Option at or above $3.60']);
       await expect(where(reopened, 'Target').locator('div')).toHaveText(['MNO at or above 44.50', 'Option at or below $0.30']);
     }

@@ -21,7 +21,8 @@ describe('missing or later evidence (P12, P13)', () => {
     expect(within(entry).queryByText(/P&L/)).toBeNull();
     // The earlier close keeps its own line, and the current P&L waits for the next close.
     expect(termValue(screen.getByRole('region', { name: 'At the Mon Oct 12 Marks' }), 'Current Marked Trade P&L')).toBe('+$65.00 · +0.26R');
-    expect(termValue(screen.getByRole('region', { name: 'Valuation' }), 'Current Marked Trade P&L')).toBe('Awaiting the close after Mon Oct 12');
+    // The current figure is the rail's Trade P&L card's (the Valuation section it was read from is retired).
+    expect(screen.getByRole('region', { name: 'Trade P&L' }).querySelector('.pnl-figure')?.textContent).toBe('Awaiting the close after Mon Oct 12');
   });
 });
 

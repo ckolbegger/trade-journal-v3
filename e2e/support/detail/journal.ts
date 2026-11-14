@@ -1,11 +1,15 @@
 // Trade Detail reads of drawer lane D6 (Journal): the Plan Reflection, the Journal items and the debts on the card. Each read goes through the
-// current layout, scoped to its card. Callers open the Journal drawer first.
+// current layout, scoped to its card. Callers open the Journal drawer first. An Open or Closed Detail lists its entries on the session cards
+// (W10 to W13), a Planned one keeps its Plan Reflection card.
 import type { Locator, Page } from '@playwright/test';
-import { journalRegion, regionOf } from './scope.ts';
+import { detailRoot, journalRegion, roleOf } from './scope.ts';
 
 export const journal = (page: Page): Locator => journalRegion(page);
-export const journalOf = (page: Page, count: number): Locator => regionOf(page, `Journal (${count})`);
-export const planReflection = (page: Page): Locator => regionOf(page, 'Plan Reflection');
+// Every entry the cards list (the old Journal card's count, N, is this locator's count).
+export const journalEntries = (page: Page): Locator => journalRegion(page).locator('ul.narrative > li');
+// The Plan Reflection: its own card on a Planned Detail, and the Plan session card once the Trade has been entered.
+export const planReflection = (page: Page): Locator =>
+  roleOf(detailRoot(page), 'region', { name: 'Plan Reflection', exact: true }).or(roleOf(detailRoot(page), 'article', { name: 'Plan', exact: true }));
 // A settled item (an Entry or a decline), which shows its moment on its own line, for the Position Change at a local time.
 export const settledItem = (page: Page, when: string): Locator =>
   journalRegion(page).locator('li', { has: page.getByRole('heading', { level: 3 }), hasText: new RegExp(`Moment\\s*${when}`) }).last();

@@ -1069,18 +1069,6 @@ test.describe('T2.50 Executions as expandable rows', () => {
 
 // ---- T2.53 Detail, receipt and Accounts styling --------------------------------------------
 
-const channels = (css: string): number[] => (css.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
-const luminance = (c: number[]): number => {
-  const [r, g, b] = c.map((v) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-  }) as [number, number, number];
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-};
-const contrastOf = (a: number[], b: number[]): number => {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
-  return (hi + 0.05) / (lo + 0.05);
-};
 // A token's computed colour, read through a probe so the test never copies the hex.
 const tokenColour = (page: Page, token: string, property: 'color' | 'backgroundColor' = 'backgroundColor'): Promise<string> =>
   page.evaluate(
@@ -1108,47 +1096,8 @@ async function openTradeWithJournal(page: Page): Promise<void> {
 }
 
 test.describe('T2.53 Detail, receipt and Accounts styling', () => {
-  test('should set the summary card figures at 18 px or more, bold and tabular', async ({ server, profile }) => {
-    void server;
-    const context = await profile.launch();
-    const page = await onboardedPage(context);
-    await openTradeWithJournal(page);
-    for (const width of [390, 1280]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
-      await expectLayout(page, width);
-      const figures = await detail.summary(page).locator('dd').evaluateAll((els) =>
-        els.map((el) => {
-          const s = getComputedStyle(el);
-          return { text: el.textContent ?? '', size: parseFloat(s.fontSize), weight: Number(s.fontWeight), numeric: s.fontVariantNumeric };
-        }),
-      );
-      expect(figures.length, `summary figures at ${width}`).toBeGreaterThanOrEqual(5);
-      for (const f of figures) {
-        expect(f.size, `${f.text} font size at ${width}`).toBeGreaterThanOrEqual(18);
-        expect(f.weight, `${f.text} weight at ${width}`).toBeGreaterThanOrEqual(600);
-        expect(f.numeric, `${f.text} numerals at ${width}`).toContain('tabular-nums');
-      }
-    }
-    await context.close();
-  });
-
-  test('should show Stop and Target with their labels in colours that reach 4.5:1 on white', async ({ server, profile }) => {
-    void server;
-    const context = await profile.launch();
-    const page = await onboardedPage(context);
-    await openTradeWithJournal(page);
-    const summary = detail.summary(page);
-    const white = channels(await tokenColour(page, '--card'));
-    for (const [label, token] of [['Stop', '--stop'], ['Target', '--target']] as const) {
-      const term = summary.locator('dt', { hasText: new RegExp(`^${label}$`) });
-      await expect(term, `${label} label`).toBeVisible();
-      const value = term.locator('xpath=following-sibling::dd[1]');
-      const colour = channels(await value.evaluate((el) => getComputedStyle(el).color));
-      expect(colour, `${label} uses its token`).toEqual(channels(await tokenColour(page, token, 'color')));
-      expect(contrastOf(colour, white), `${label} contrast on white`).toBeGreaterThanOrEqual(4.5);
-    }
-    await context.close();
-  });
+  // Retired with the Summary card (T8P.22, revision 96): "should set the summary card figures at 18 px or more, bold and tabular" and "should show
+  // Stop and Target with their labels in colours that reach 4.5:1 on white". Both are listed in `evidence/D08P/T8P.22-retired.md`.
 
   test('should lay Plan Baseline and Entry Quality out as a two-column figure grid at 1280 with no row wider than 480 px', async ({ server, profile }) => {
     void server;
@@ -1314,7 +1263,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await recordEntry(page, PC2, { decline: true });
     await backToTrade(page);
     await openDrawer(page, 'Journal');
-    await expect(detail.journalOf(page, 3)).toBeVisible(READY);
+    await expect(detail.journalEntries(page)).toHaveCount(3, READY);
     await openDrawer(page, 'Position');
     await detail.executions(page, 3).getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
     await eachWidth('Detail');
@@ -1331,9 +1280,10 @@ test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     await confirmReference(page);
-    const summary = detail.summary(page);
+    // The Trade Summary leads the Plan and Risk drawer (the Summary card is retired), which a Planned Detail selects.
+    const summary = detail.tradeSummary(page);
     await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
-    expect(await summary.locator(':scope > *').first().textContent(), 'first element of the card').toBe('Long 100 shares @ $50.00');
+    expect(await detail.tradeSummary(page).locator('xpath=parent::*').locator(':scope > *').first().textContent(), 'first element of the drawer').toBe('Long 100 shares @ $50.00');
     await page.reload();
     await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
     await context.close();
@@ -1358,7 +1308,7 @@ const detailRows = async (page: Page) =>
   ).flat();
 
 test.describe('T2.55-B2 capped Detail label/value rows', () => {
-  test('should keep every label/value row on the Planned and Open Details at most 480 px wide at 1280, with the summary values on one right edge', async ({ server, profile }) => {
+  test('should keep every label/value row on the Planned and Open Details at most 480 px wide at 1280', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();
     const page = await onboardedPage(context);
@@ -1369,8 +1319,6 @@ test.describe('T2.55-B2 capped Detail label/value rows', () => {
       const rows = await detailRows(page);
       expect(rows.length, `${state} rows`).toBeGreaterThan(8);
       for (const row of rows) expect(row.width, `${state} ${row.card} / ${row.label} width`).toBeLessThanOrEqual(480.5);
-      const edges = (await detail.summary(page).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right)));
-      expect(Math.max(...edges) - Math.min(...edges), `${state} summary value right edges`).toBeLessThanOrEqual(1);
     };
     await check('Planned');
     await recordEntry(page, PC1);
@@ -1554,8 +1502,8 @@ test.describe('T2.62 line breaks', () => {
     await context.close();
   });
 
-  // T2.65-B1: the Detail summary card's Trade text breaks like the Trades cells' (prices over $1,000 are the widest).
-  test('should keep "@" with its price in the Detail summary card Trade text at 320, 340 and 390', async ({ server, profile }) => {
+  // T2.65-B1: the Detail's Trade Summary text breaks like the Trades cells' (prices over $1,000 are the widest).
+  test('should keep "@" with its price in the Detail Trade Summary text at 320, 340 and 390', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();
     const page = await onboardedPage(context);
@@ -1573,8 +1521,10 @@ test.describe('T2.62 line breaks', () => {
       ['Open', 'Long 100 shares @ $1,236.70'],
       ['Planned', 'Long 1000 shares @ $1,500.00'],
     ] as const;
-    const summary = detail.summary(page).locator('.summary-text');
+    // The Trade Summary is the Position drawer's on an Open Detail and Plan and Risk's on a Planned one (the Summary card is retired).
+    const summary = detail.tradeSummary(page);
     for (const [kind, expected] of checks) {
+      if (kind === 'Open') await openDrawer(page, 'Position');
       if (kind === 'Planned') {
         await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
         await openPlanned(page);
@@ -1805,7 +1755,7 @@ test.describe('T2.64 Detail cards', () => {
         // The values of the description lists above the Fulfillment row in the drawer column (the Summary card now sits in the rail).
         const edges = await page.evaluate((rowTop) => {
           // The Journal's prose answers (`dl.answers`) fill their own line, so they are not value columns.
-          return [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl:not(.answers) > dd')]
+          return [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl:not(.answers) dd')]
             .filter((dd) => dd.getBoundingClientRect().bottom <= rowTop)
             .map((dd) => dd.getBoundingClientRect().right);
         }, await fulfillment.locator('dt').first().evaluate((dt) => dt.parentElement!.getBoundingClientRect().top));

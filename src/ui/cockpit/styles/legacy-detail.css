@@ -26,32 +26,6 @@ ul.narrative > li + li {
   margin-block-end: 0.5rem;
 }
 
-.summary-card .summary-text {
-  margin: 0 0 0.75rem;
-  font-size: 1.15rem;
-  font-weight: 700;
-  text-align: left;
-}
-
-.summary-card .stop {
-  color: var(--stop);
-}
-
-.summary-card .target {
-  color: var(--target);
-}
-
-/* Summary figures: large, bold, tabular. */
-.summary-card dd {
-  font-size: 1.125rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.summary-card .badge {
-  margin-bottom: 0.5rem;
-}
-
 .execution-toggle {
   display: flex;
   align-items: center;
@@ -150,8 +124,7 @@ dl.figure-grid {
   max-width: 480px;
 }
 
-/* The summary card and Planned-Leg Fulfillment are one column at every width, so their values share a right edge. */
-.summary-card dl.figure-grid,
+/* Planned-Leg Fulfillment is one column at every width, so its values share a right edge. */
 dl.figure-grid.one-column {
   grid-template-columns: minmax(0, 480px);
 }

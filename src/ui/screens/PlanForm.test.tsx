@@ -1041,7 +1041,8 @@ describe('option Plan receipt (A116)', () => {
     await user.type(screen.getByLabelText('Stop (Underlying at or below)'), '48.00');
     await user.type(screen.getByLabelText('Target (Underlying at or above)'), '60.00');
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
-    expect(await screen.findByText('1R')).toBeTruthy();
+    // The 1R figure is the Plan and Risk drawer's (the Summary card it was read from is retired).
+    expect(await screen.findByText('1R (original risk)')).toBeTruthy();
     await openDrawer(user, 'Payoff');
     const chart = await screen.findByRole('img', { name: 'Planned payoff at expiration by XYZ price' });
     expect(screen.getByRole('heading', { name: 'Planned Expiration Payoff' })).toBeTruthy();

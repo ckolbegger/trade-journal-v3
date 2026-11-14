@@ -3,17 +3,15 @@
 import type { Locator, Page } from '@playwright/test';
 import { detailRoot, figureIn, journalRegion, regionOf, roleOf, valueIn } from './scope.ts';
 
-const riskReward = (page: Page): Locator => regionOf(page, 'Risk and reward');
-
-// Conditions.
-export const riskFigure = (page: Page, term: string): Locator => figureIn(riskReward(page), term);
-export const riskToStop = (page: Page): Locator => valueIn(riskReward(page), 'Risk to stop');
-export const rewardToTarget = (page: Page): Locator => valueIn(riskReward(page), 'Reward to target');
-export const conditionsTable = (page: Page): Locator => riskReward(page).getByRole('table', { name: 'Conditions' });
-export const conditionRow = (page: Page, name: string | RegExp): Locator => conditionsTable(page).getByRole('row', { name });
+// Conditions. Each condition's Risk to stop or Reward to target is a Plan and Risk card (T8P.31), one line per condition in Plan order: open that
+// drawer first. Worst case and Max reward are the rail's Conditions card's.
+const planRiskPanel = (page: Page): Locator => detailRoot(page).locator('#drawer-panel-plan-and-risk');
+export const riskToStop = (page: Page): Locator => valueIn(planRiskPanel(page), 'Risk to stop');
+export const rewardToTarget = (page: Page): Locator => valueIn(planRiskPanel(page), 'Reward to target');
+export const riskFigure = (page: Page, term: string): Locator =>
+  term === 'Worst case' || term === 'Max reward' ? conditionsSummary(page).locator('li', { hasText: `${term}:` }).locator('.number') : figureIn(planRiskPanel(page), term);
 
 // The rail's Conditions card (W5, W6): one block per condition in Plan order, then Worst case and Max reward, or the note that stands in for them.
-// The legacy Risk and reward block above still shows until T8P.22 retires it.
 export const conditionsCard = (page: Page): Locator => regionOf(page, 'Conditions');
 export const conditionBlocks = (page: Page): Locator => conditionsCard(page).getByRole('list', { name: 'Conditions', exact: true }).getByRole('listitem');
 // The block of the condition whose row 2 reads `text` ("MNO at or below 41.00").
