@@ -2,6 +2,12 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 100: the commit tagged `claude-opus-5.5-plan-r100` (revision 99, no decision). D08P's third gate critic (T8P.26, critic-6) passed all six flows but left one moderate defect. That is the handoff's stop at three critics.
+  - **The defect is accepted, not fixed (the user's choice, 2026-11-14).** In the Journal drawer, pressing › to the last page or ‹ to the first disables the pressed button, and keyboard focus falls to the page body. It becomes tech debt item 24 in `implementation-plan.md`, with where to look, the fix and its trigger.
+  - **The gate closes on critic-6.** Its full tier (`T8P.26-B5`) and the acceptance script stand; the gate's bug tasks were T8P.26-B1 to B5 and B2-B1.
+  - **Rejected:**
+    - fixing it now without a fourth critic (the main session's recommendation);
+    - fixing it and running a fourth gate critic.
 - Revision 99: the commit tagged `claude-opus-5.5-plan-r99` (revision 98, no decision). D08P's third checkpoint critic (T8P.23, critic-3) still failed, leaving a high and a moderate defect. That is the handoff's stop at three critics.
   - **Defect 1 (high, C8P.2) is accepted.** T8P.31 placed the Trade Summary line in Position in its existing words. Its quantity and average entry ("Long 100 shares @ $50.18") repeat Position's row, Entry Quality's Average entry and the rail's open count. C8P.2's exceptions now name it.
   - **Defect 2 (moderate) is fixed.** At 375 and 320 px, Today's comparison table opens with the current Marks and their change past its scroll box. Bug task T8P.23-B14 fixes this, with its test, review and quick run.
