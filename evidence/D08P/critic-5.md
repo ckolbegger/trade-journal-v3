@@ -1,0 +1,69 @@
+# D08P gate critic-5 report
+
+**Overall: PASS.** All six flows (C8P.1 to C8P.6) pass their conditions. I found one moderate defect: before the first Marks, Needs you tells the trader a Mark is missing for a session at whose close nothing was held. The tool refused to write `test-results/critic-d08p-5/report.md`, so this message is the only copy of the report.
+
+## 1. Header
+
+- **Date and time:** 2026-11-14 06:20 EST. App clocks were pinned per scenario through the suite's `launchAt`/`setClock`.
+- **Commit:** `582602ce` (582602ce157a99145f0cbfbeed781ef1bce08da3), worktree `claude-opus-5.5`.
+- **Versions:** Node v26.12.0, Playwright 1.63.0, Chromium 153.0.8010.12 (the `chromium` channel, headless, America/New_York).
+- **Servers:**
+  - I ran `npm run build`, then `vite preview` on port 5175, which comes from `.env.local` DEV_PORT=5175.
+  - I started and stopped the server around each script, and every browser run was under `.claude/scripts/with-browser-lock.sh`.
+  - For C8P.6 my script started the preview itself and killed it in the middle of the run.
+  - Ports 5175, 9341 and 9342 were free before I started and are free now. No server of mine is still running.
+- **Files:**
+  - `git status` is clean. I edited no tracked file and made no commits.
+  - My scratch scripts, text dumps (`c1.txt` to `c8.txt`), browser profiles and screenshots (`shots/`) are under `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/test-results/critic-d08p-5/`, which git ignores.
+- **Setup helpers:** I reached each starting state with the suite's helpers:
+  - `buildOc3` for O-C3 with the Thursday Hold;
+  - `createOs2Trade` with `saveSessionMarks` for O-S2;
+  - `confirmOptionPlan(OS)` with `recordOptionEntry` for Settlement Due;
+  - `recordExpiration` to close by expiration;
+  - `createTrades(FOUR_TRADES)` with a sale for the stock Trades;
+  - `writeIntegrityFixture` for the incoherent Trade.
+
+  I opened each Detail from the Trades list myself, and opened the drawers myself with the mouse and the keyboard. Every helper worked.
+
+## 2. Results
+
+| Flow | Result | Key observations |
+|---|---|---|
+| C8P.1 State of play | PASS | **O-C3 at Thu Oct 15 18:30.** The rail is the "State of play" landmark, and it answers the four questions without opening a drawer:<br>• **Identity:** "XYZ", "Long Call, Open", "Strike 55", "Expires Fri 18 Dec 2026 (64 days)", "Fidelity — Roth IRA". 64 days is correct.<br>• **P&L card:** "$218.05", "+$30.00 since Wed Oct 14", "1 of 2 contracts open".<br>• **Conditions:** Stop is nearest at "−$220.00", "Option at or below $1.00", "Change in Trade P&L from the Thu Oct 15 Marks if the option's Mark is $1.00 (−1.10R)." Target is nearest at "+$180.00", "XYZ at or above 60.00", "(+0.90R)". Beneath: "Worst case: $320.00 · 1.60R if the call expires worthless", "Max reward: Unbounded above".<br>• **Needs you:** "Position Change Reflection Reflection owed", "Due", "Reflect now".<br>I checked every figure by hand against plan section 5.<br>**O-S2:**<br>• Wednesday: "Stop breached: the option's Mark is $3.70, at or above $3.60", and the Stop reads "Breached" with "The Wed Oct 14 Mark is $20.00 (0.04R) of Trade P&L past this Stop."<br>• Thursday adds "Target reached: MNO's Mark is 44.60, at or above 44.50", with "Max reward: $730.00 · 1.52R".<br>**Reflect now** in Needs you selected "Journal 1 owed" and focused the form on Wednesday's card. Answering it changed Needs you to "Nothing needs you now." and the tab to "Journal" at once, with no read. Both held after a reload. **See defect 1** (before the first Marks). |
+| C8P.2 Drawers | PASS, with observations | **Tabs:** "Today", "Position", "Plan and Risk", "Price History 1", "Journal 1 owed", "Payoff", in W1's order, with Today selected.<br>**Mouse:** clicking each tab shows exactly one panel.<br>**Keyboard:**<br>• The arrow keys move the selection and wrap from Payoff to Today.<br>• Home and End work, and focus follows the selection.<br>• Only the selected tab has `tabindex=0`.<br>• Tab moves focus into the panel (`tabindex=0`).<br>**Accessible names:** the tracks read "Option price: Stop $1.00, now $3.20" and "XYZ: Target 60.00, now 57.90".<br>**Repeats:** every repeat I saw falls under accepted exceptions 1 to 9:<br>• the Journal cards' Marks, Trade P&L and change;<br>• the latest column of Price History;<br>• "Risk to stop $220.00 · 1.10R" and "Reward to target $180.00 · 0.90R" in Plan and Risk;<br>• Opening fees beside the Fee reconciliation;<br>• "Reward : risk 2.97 / planned 3";<br>• the Trade Summary line "Long 1 Dec 18 $55 Call".<br>The repeats outside them are listed in Minor observations 1 to 3. |
+| C8P.3 History | PASS | **Price History:**<br>• Columns run THU OCT 15, WED OCT 14, TUE OCT 13, MON OCT 12, newest on the left.<br>• The rows are XYZ Mark 57.90 / 57.40 / — / 56.00, Call Mark $3.20 / $2.90 / — / $2.10, and Trade P&L $218.05 / $188.05 / — / $18.70.<br>• Each gap is `<span role="img" aria-label="No Mark">—</span>`, and nothing is carried forward.<br>• Under the table: "1 session without Marks. Enter Marks in the Review", a link to `/review`.<br>**Journal:**<br>• "Sessions, newest first", three cards per page at 1280×900.<br>• Page 1: "Fri Oct 16" (Session not ended yet), "Today, Thu Oct 15", "Yesterday, Wed Oct 14".<br>• "Earlier sessions" goes to page 2: "Tue Oct 13 without Marks", which holds the Hold saved Wed 08:00 for Review Date Tue Oct 13; then "Mon Oct 12" ($18.70, "First Mark"); then "Plan" ("Planned Mon Oct 12, 9:00 am").<br>• ‹ is disabled on page 1 and › on page 2, and "Newer sessions" goes back.<br>**Settlement Due:** Price History has 30 gap sessions ending Fri Nov 20, and the Journal merges them as "Mon Oct 12 to Fri Nov 20 without Marks". |
+| C8P.4 States | PASS | **Planned:** "Expires Fri 18 Dec 2026 (67 days)" shows straight after Confirm Plan, with no reload, and again after a reload.<br>• Tabs: Plan and Risk, Journal, Payoff, with Plan and Risk selected.<br>• P&L card: "—", "Trade P&L once the entry is recorded and marked", "0 of 2 contracts open".<br>• Conditions: "Distances to each condition arrive with the first Marks after entry."<br>**Settlement Due (MNO):** tabs Position, Plan and Risk, Price History 30, Journal, Payoff, with Position selected.<br>• P&L card: "Settlement Due: MNO 20 Nov 2026 45 Put", "Trade P&L once the expiration is recorded".<br>• Conditions: "The contract expired, so its conditions are no longer measured."<br>• Needs you holds the Settlement Due panel with Record expiration.<br>• Position: Open P&L reads "Settlement Due", and "Expected Mark Date Mon Nov 23" is at the top.<br>**Closed by expiration:**<br>• Identity: "Cash-Secured Put, Closed", "Expired Fri 20 Nov 2026".<br>• P&L card: "$248.70", "+0.69R realized, final", Terminal Disposition "Closed via expiration of 2 contracts", and Option Disposition Timing.<br>• The Journal's last card is "Fri Nov 20, final session", with no change line.<br>• Price History shows a plain "—" for the Fri Nov 20 Marks.<br>**Closed by sale (DEF):** "$398.00", "+1.99R realized, final", "Closed via sale of 100 shares", "Close Reason Target Reached".<br>**Stock (ABC):** all six drawers, with no strike or expiration line, "$199.00", "100 of 100 shares open", "Where the price sits", and "Expiration Payoff: Not applicable: no option expiration".<br>**Two lots (XYZ):** the Open Lots table has rows of 60 at $50.10 and 40 at $50.30, with "$180.00" on the P&L card.<br>**Incoherent:** the "Facts can't be replayed" banner runs across the page above the rail. Tabs are Position, Plan and Risk and Journal. The P&L card reads "Not available" / "Trade P&L", and there is no Record entry or Record exit. The Journal is one card: "Every entry, newest first".<br>These match the prototype's states, apart from Minor observation 4. |
+| C8P.5 Narrow (375 and 320 px) | PASS | I checked every drawer of all 11 states at 375 and 320 px:<br>• the 7 C8P.4 states (Planned, Settlement Due, Closed by expiration, Closed by sale, stock, two lots, incoherent);<br>• O-C3 with Marks, O-C3 before Marks, and O-S2 on Wednesday and Thursday.<br>Results:<br>• `scrollWidth` equals `clientWidth` every time (375 or 320).<br>• No element sits outside the viewport unless it is inside a scroll container.<br>• Every condition text is one line, with `white-space: nowrap` and `scrollWidth` equal to `clientWidth` (301 px at 375, 246 px at 320).<br>• The rail comes first (railTop 16) and the tab list follows it (for example at 1065 for O-C3 at 375). On the incoherent Trade the banner comes first, then the rail. |
+| C8P.6 Offline and About | PASS | **Offline:** with the service worker in control, I loaded the O-C3 Detail online and then killed the preview; a fetch to 5175 then failed. The reload rendered the whole cockpit: the rail with "$218.05", "+$30.00 since Wed Oct 14" and the conditions, and every drawer (Today, Position, Plan and Risk, Price History, Journal, Payoff) with its content.<br>**About (offline):**<br>• Schema 7; "Offline copy complete: passed".<br>• It lists D1 to D7S's capabilities: the Workspace and Reference Catalog; the Journal's save, Debts and Close Review; confirmPlan for LongStock, LongCall, LongPut, CashSecuredPut and StructureValueCondition; recordPositionChange including Option, SellToOpen, BuyToClose and Expiration; the Marks (Correct and AssertUnavailable); DailyReview with SettlementFamily.<br>• It lists D08P's own: `TradeViewsAndReporting.replayTrade`, and `MarketData.query (… ReadSeries)`. |
+
+## 3. Overall: PASS
+
+All six flows pass their conditions. There is one moderate defect.
+
+### Defects
+
+1. **Moderate: before the first Marks, Needs you tells the trader to enter a Mark that isn't due.**
+   - **Steps:**
+     1. At Mon Oct 12 09:00, confirm O-C3's Plan.
+     2. At Mon Oct 12 11:05, record Buy 2 @ 2.00 at 10:00, fee 1.30.
+     3. Open the Detail from the Trades list.
+   - **Expected:** Needs you shows only "First Marks are due once the Mon Oct 12 session ends.", per W7 (revision 91). Nothing was held at Fri Oct 9's close, so no Mark is due for that session. The accepted choices say "A session at whose close nothing was held has no Mark due, so it isn't a gap." T8P.28 also defines `firstMarksDue` as present only while no Mark is missing ("it should not say so when a Mark is missing"), so the two items should never show together.
+   - **Actual:**
+     - **Needs you shows both items:** "First Marks are due once the Mon Oct 12 session ends." and a link "Mark missing for XYZ 18 Dec 2026 55 Call on Fri Oct 9".
+     - **The link leads nowhere useful:** it opens `/review?trade=…&instrument=XYZ`, which reads "Review Date Fri Oct 9 / No Trades were open at this session's close".
+     - **Payoff repeats the claim:** the drawer says "Value at expiration at XYZ's latest Mark / Mark missing: XYZ, Fri Oct 9", while Today says "No Marks yet. … due once the Mon Oct 12 session ends."
+     - **Likely cause:** the "Mark missing" item (`markMissingItems` in `src/ui/cockpit/rail/needs-you.props.ts`) reads `current.markResolution`, which is Missing for the Expected Mark Date. It is not checked against whether anything was held at that close.
+   - **Screenshots:** `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/test-results/critic-d08p-5/shots/Open_before_Marks-1280.png` and `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/test-results/critic-d08p-5/shots/c5-review.png`.
+
+## 4. Minor observations
+
+1. **C8P.2: a figure in the Payoff drawer repeats a Mark.** The sentence "If XYZ is at 57.90 at expiration: +$188.05" repeats XYZ's Mark 57.90, which Today's comparison also shows. It is the existing W18 sentence, and no accepted exception names it.
+2. **C8P.2: the Plan repeats the rail's conditions.** The Plan and Risk drawer's Plan shows "Stop Option at or below $1.00" and "Target XYZ at or above 60.00"; stock Trades show "Stop $38.00" and "Target $46.00". The rail's Conditions card already shows these as row 2. These are Plan definitions in their existing words, not derived figures.
+3. **C8P.2: the Plan repeats the identity card.** The Plan's "Account Fidelity — Roth IRA" and "Contract XYZ 18 Dec 2026 55 Call" repeat the identity card's account, strike and expiration.
+4. **C8P.4: the Settlement Due P&L card has no open-count line.** The prototype's Settlement state shows "1 of 2 contracts open" under the P&L card's text. The app shows none, which matches W4 (it lists only the two lines).
+5. **Settlement Due: the long reason repeats.** "Settlement Due: MNO 20 Nov 2026 45 Put" appears four times at full length: the P&L card, Risk to stop, Reward to target, and the Payoff's value at expiration. A222 suggests the `label` length ("Settlement Due") for repeats; each is arguably its own figure.
+6. **Two figures coincide.** When realized is $0.00, the Position drawer's Open P&L equals the rail's Trade P&L (O-S2 Thursday: −$481.30 in both; ABC: $199.00 in both). They are separate figures that happen to be equal; I note it only for C8P.2.
+7. **A Debt's due line reads oddly.** On a Journal card the owed Debt reads "Due / Due" (term and value both "Due"). Needs you shows just "Due". This is the existing `DUE_TEXT` wording.
+8. **A just-answered reflection changes shape on reload.** Straight after Answer, the card shows "Deferred, answered / Position Change at 2026-10-14 11:00 / Answered …". After a reload the same entry shows "Anchor / Source Trade Detail / Moment …". The content is equivalent, but the layout differs before and after the reload.
+9. **Today, 1280 px: a marker label crowds the text below it.** The XYZ track's "Wed Oct 14" label sits close above the "Target on XYZ" sub-heading. Nothing overlaps.
+10. **Screenshot artifacts only.** In full-page screenshots the left nav's background ends at the viewport height (900 px), and at narrow widths the fixed bottom nav sits over mid-page content. Neither affects the live page.
