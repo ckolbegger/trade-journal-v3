@@ -1336,3 +1336,45 @@ Accepted beyond the plan's words: the new card leaves out the "Mark missing" lin
 **T8P.31 review.** ocr ran on `4ab7ee0f` from a scratch clone. The in-place pass reviewed 11 files (5 excluded) and found nothing (`ocr/T8P.31-inplace.json`). The relocated pass reviewed the three changed test files with `test-support.ts` (14 files) and made 1 comment (`ocr/T8P.31-reloc.json`): "JSX inside a `.ts` file". It is Wrong, a relocation artifact: the real file is `Placed.test.tsx`. No bug tasks.
 
 **T8P.31 merge.** Only plan and evidence followed lane PL's base `bbdc61a2`, so its tiers stand. Rebased onto `99c6c7cc` and fast-forwarded: `b6e476ef` (task), `9d7c38b0`. Lane PL was removed. T8P.22 now rebases its work in progress onto this and finishes.
+
+**T8P.22 (lane wire), Trade Detail reads `replayTrade`.** Rebased onto `0e9ac4c2` with no conflicts. The work in progress was amended into the task commit `cc5c9f4f`, and evidence `84eaddd3`. Results: unit 1649, integration 229, checks 14 of 14, browser tier 1 126 (two retired `ui-alignment` tests fewer) and tier 2 75; run complete. `verify:capabilities` OK, with `routes.ts` unchanged. The titles diff has only additions: T8P.22's seven and T8P.31's seven.
+
+Red lines:
+1. `Unable to find an element with the text: +$200.00 since Mon Oct 12`.
+2. The same.
+3. `expected "vi.fn()" to not be called at all`.
+4. `Unable to find role="region" and name "State of play"`.
+5. A flagged first-run pass. Its mutation, `OwedDebtItem.resolved` without `setSettled`, failed with `expected <span class="badge" …> to be null`.
+6. `Summary: expected [ <section …> ] to deeply equal []`. Its additions for T8P.31's figures passed on their first run and are flagged; five mutations (the Net cost, Risk to stop, Expected Mark Date and Source labels, and the Deviation active condition) each failed with an assertion.
+7. `expected [ <h3></h3>, <h3></h3> ] to have a length of 1 but got 2`.
+
+Assertions added after a case's green ran red then green: case 3's incoherent Journal card, and case 1's "Due in the next Review".
+
+**Accepted by the main session:**
+- **The due status.** A replayed Debt carries no `dueStatus`, so `journal.props.ts` takes it from the Detail's own Debt of the same id. This restores `d5/responsive`'s "Due in the Review after next".
+- **Expected values that follow approved words.** None was listed in the brief; each follows the Conditions card or an A-row:
+  - `d4/breach-overrun`:
+    - the Stop's boundary reads row 2 in W6's words;
+    - its Overrun `$50.00 (0.20R)` reads row 3 (W5);
+    - an Active Target shows its distance, `/^\+\$/`, not "Active" (W5);
+    - awaiting conditions read "Awaiting close" at the `label` length (A222), with Worst case still "Awaiting the close after Mon Oct 12";
+    - the per-condition lines show "—", as the retired table's Distance column did.
+  - `d4/expected-mark`: the conditions read "Mark missing" at the `label` length (A222). The P&L card keeps the full sentence.
+  - `d7/settlement-due`: the Position card's Open P&L reads "Settlement Due" (A224, T8P.17).
+  - `d7s/entry-beyond-stop`: `toContainText('$735.00')`, since Entry Quality adds the R (T8P.18).
+- **Retired checks** (`evidence/D08P/T8P.22-retired.md`). T8P.25 names the cockpit check that replaces each one:
+  - two `d2/ui-alignment` tests, "should set the summary card figures at 18 px or more…" and "should show Stop and Target with their labels in colours that reach 4.5:1…", with their helpers `channels` and `contrastOf`;
+  - the "summary values on one right edge" assertion, whose test stays for its 480 px row width.
+- **CSS removed** from `legacy-detail.css`: `.summary-card .summary-text`, `.stop`, `.target`, `dd`, `.badge` and `.summary-card dl.figure-grid`. `.summary-text` stays, since both drawers use it.
+- **Behaviour** (no new words):
+  - up to 3 reads on `ChangedDuringAssembly`, then the Error state with Retry;
+  - Settlement Due reads the replay;
+  - a failed or NotApplicable replay leaves the Detail-only cockpit;
+  - the tab counts are `aria-describedby` spans with `aria-label` names.
+
+**T8P.22 review.** ocr ran on `cc5c9f4f` from a scratch clone. The in-place pass reviewed 16 files (25 test, e2e and evidence files excluded) and made 2 comments (`ocr/T8P.22.json`). The relocated pass reviewed the 23 test files and made 1 comment (`ocr/T8P.22-reloc.json`).
+- **Valid → bug task T8P.22-B1.** Reflect now from Needs you does not turn the Journal cards to the page that holds the Debt. `JournalCards` shows 3 cards a page, and hides the rest. For an older session's Debt, the form opens inside a hidden card and blocks every other form (A217: Reflect now opens that Debt's form on its card). The main session confirmed it in `journal-cards.tsx`.
+- **Doubtful → bug task T8P.22-B2.** A slow read for one Trade can settle after the route moves to another and overwrite its state: there is no stale-read guard, and the route is not keyed by `tradeId`. The gap is old, but the replay read and its retries widen it.
+- **Wrong.** "The import resolves to the test file itself" is a relocation artifact.
+
+The reviewer reported the lane modified and main clean; the reverse was true (main held the main session's uncommitted record). No action.
