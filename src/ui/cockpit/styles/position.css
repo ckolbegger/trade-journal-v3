@@ -35,6 +35,13 @@
   text-align: right;
 }
 
+/* T8P.26-B2: at the desktop width the Bought and Sold cells wrap at their spaces so the Realized column stays in view; narrower, the table scrolls in its box. */
+@media (min-width: 960px) {
+  .cockpit-drawers [aria-labelledby='lot-matches-heading'] td.nowrap:nth-child(-n + 2) {
+    white-space: normal;
+  }
+}
+
 /* A heading already names Lot Matches, so its caption is kept for the table's accessible name and not shown twice. */
 .cockpit-drawers [aria-labelledby='lot-matches-heading'] caption {
   position: absolute;
