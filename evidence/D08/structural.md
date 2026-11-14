@@ -230,6 +230,12 @@ Lane UB, commit `61fb47bb` (7 planned cases and one extra). New `RestorePreview.
     - **T8.13-B4** `4481f8c1`: red ("expected false to be true") then green; a cleanup effect aborts the preparation on unmount. Lane tier: unit 165 / 1771, integration 106 / 229, checks 14 of 14. ocr (session `241c8c10-3750-4b00-aeb7-9819cfbcd158`, 2 files): **No findings.** Raw: `ocr/T8.13-B4-4481f8c1.json`.
     - **T8.13-B5** `f80bb5e5`: red ("expected false to be true": a late receipt enabled Replace) then green. A cleanup effect in `SafetyBackup` bumps `downloadCount` on unmount, so the existing guards drop the late result. T8.13-B1's three leftover suite-run files are in this commit. The log has no refactor row; the agent's append didn't land. Lane tier: unit 165 / 1772, integration 106 / 229, checks 14 of 14. ocr (session `9cf372c0-4cd6-4979-a292-eb6a69e0c3e1`, 2 files): **No findings.** Raw: `ocr/T8.13-B5-f80bb5e5.json`.
     - **T8.13-B7** `7af2b4bb`: red ("expected <p class="backup-file-name"></p> to be null") then green. `download()` records its download number and ignores a result or progress from before a Restore. The Restored handler also clears `making`, and the line-114 space is fixed. A `completeRestore` test helper is extracted. Lane tier: unit 165 / 1773, integration 106 / 229, checks 14 of 14. ocr (session `78b74485-8787-4ea2-bc8d-34b626d4d7ba`, 2 files): **No findings.** Raw: `ocr/T8.13-B7-7af2b4bb.json`.
+    - **T8.13-B6** `cbbd20d5`: a structural refactor.
+      - The nested ternary becomes `completedSafetyChoice(choice, receipt, declineAcknowledged)`.
+      - Branch check: one gap, a receipt kept in memory while Replace without a backup is chosen. A characterization case covers it: "should not reuse a safety receipt for Replace without a backup after switching choices". It is a first-run pass, flagged. Mutation: dropping the `choice === 'BackUpFirst'` check gave "expected false to be true".
+      - `src/ui/backup` tests: 26 passed before and after.
+      - Lane tier: unit 165 / 1774, integration 106 / 229, checks 14 of 14.
+      - ocr (session `ee81076e-a451-42d6-af53-ec2080e8c9a1`, 2 files): **No findings.** Raw: `ocr/T8.13-B6-cbbd20d5.json`.
     - Reviewer note: line 114 reads `facade={restoreFacade}selectFile={selectFile}` with no space. It is formatting only, and B7 may fix it in passing.
 
 Reviewer notes, not ocr findings, so they are put to the user as Q5 items 9 and 10: "an ${kind}" reads "an Trade", and "(N versions)" repeats a kind's total on each row.
@@ -300,6 +306,57 @@ Lane WB, commit `321f4e62` (5 cases, red then green; no first-run passes; two in
   - Lane tier: unit 172 / 1791, integration 106 / 229, checks 14 of 14.
   - ocr (session `c9fd1ef0-17cc-4dde-8164-a77433c3582a`, 2 files): **No findings.** Raw: `ocr/T8.4-B4-87f92560.json`.
 
+## T8.5 confirmBackup and the receipt registry
+
+Lane WB, commit `80999756`: the 3 planned cases, each red (`Error: not built`, the T8.23 stub throwing) then green. There were no first-run passes. Lane tier `T8.5`: unit 172 / 1794, integration 106 / 229, checks 14 of 14.
+
+**Implementation-level choices (recorded, not stops).**
+1. The registry is a `Set` in the `createBackupOperations` closure, so "this instance" is that closure. Receipt ids come from `deps.ids.next()`, `completedAt` from `deps.clock.now()`, and `lineCount` is the manifest's line number.
+2. A private `verifyArtifact(file)` checks:
+   - the header is line 1;
+   - section digests and per-store counts against each section-end line;
+   - the manifest's full and section digests against the recomputed values;
+   - manifest counts against header counts;
+   - the number of section-end lines.
+
+   Record lines are counted from a regex on their trailing `,"s":…,"t":…}`, because the reader never parses them.
+3. A failed read of the file's stream is flagged and gives `Unreadable`. Every other reader error gives `IncompleteOrCorrupt`.
+4. `DifferentArtifact` means a self-consistent file whose full digest or source binding differs from the expected one.
+
+**For T8.9:** `Workspace` doesn't expose `recognizesReceipt`; the registry case calls `createBackupOperations` directly. T8.9 surfaces it.
+
+**Gap against A130, fixed by follow-up T8.5-F1 in lane WB:** a file that isn't UTF-8 comes out as `IncompleteOrCorrupt`, because T8.1's reader reports a decode failure as Corrupt. A130 says `Unreadable`. The fix brings the code to the plan, so it is not a deviation and not a question.
+
+**ocr review of `80999756`** (session `f4410d6d-eeef-4f02-96ca-f1b80cc5cbd4`, gpt-6.1-sol, 2 files, 5 findings, all Valid; raw: `ocr/T8.5-80999756.json`).
+- One finding (`backup.ts:136`, a file that isn't UTF-8) is T8.5-F1 itself.
+- The other four become bug tasks, run one at a time in lane WB after F1:
+
+| Bug task | Finding | Defect | `it should` case |
+|---|---|---|---|
+| T8.5-B1 | `backup.ts:115` only the number of section-end lines is compared with the header's sections | two endings for one section pass under a two-section header | it should return IncompleteOrCorrupt when a section ends twice and another never ends |
+| T8.5-B2 | `backup.ts:57` the manifest's `formatVersion`, `schemaVersion`, footprint and exclusions aren't checked | a malformed manifest gives Completed (A123, A130) | it should return IncompleteOrCorrupt for a manifest missing a required field |
+| T8.5-B3 | `backup.test.ts:359` the DifferentArtifact case changes the binding and the digest together | dropping either comparison stays green | it should return DifferentArtifact when only the full digest differs, and when only the source binding differs |
+| T8.5-B4 | `backup.test.ts:349` R-cut and R-flip corrupt the gzip bytes, so they may never reach the count and digest checks | the checks inside `verifyArtifact` are untested | it should return IncompleteOrCorrupt for a well-compressed file whose section digest, counts or manifest digest don't match |
+
+- **T8.5-F1** `1c0f8b40`: red ("expected { kind: 'NotVerified', …(1) } to deeply equal { kind: 'NotVerified', …(1) }", which was IncompleteOrCorrupt) then green.
+  - The fix: `ArtifactReadError` gains an optional `reason: 'NotUtf8'`. The reader tags a failed UTF-8 decode, and `verifyArtifact` maps it to `Unreadable`. T8.1's reader tests are unchanged.
+  - A non-gzip file is read as plain text (A130, "sniffing gzip"), which is unchanged.
+  - A UTF-8 failure after the manifest stays plain `Corrupt`.
+  - Lane tier: unit 172 / 1795, integration 106 / 229, checks 14 of 14.
+  - ocr (session `573c9e26-39cf-4f72-bdaf-c2d9d4e984a2`, 4 files, 1 finding, Valid; raw: `ocr/T8.5-F1-1c0f8b40.json`). It becomes bug task **T8.5-B5**, queued after B4 in lane WB:
+    - Finding: `reader.ts:101` the end-of-stream decode in `drain()` isn't tagged `NotUtf8`.
+    - Defect: a valid artifact followed by a lone `0xC2` gives IncompleteOrCorrupt, not Unreadable.
+    - Case: "it should return Unreadable when bytes after the manifest aren't UTF-8".
+- **T8.5-B1** `25751806`: red (the duplicated section ending gave Completed) then green.
+  - The fix is one check: the n-th section-end line must name `header.sections[n]`. That enforces membership, uniqueness and A123's section order, and the existing count check covers a missing ending.
+  - The test reverses the header's sections to assert order too.
+  - New test helpers: `canonical`, `EditableArtifact` and `editedArtifact(bytes, edit)`. The last one re-seals with the full digest recomputed, for B2–B5.
+  - Lane tier: unit 172 / 1796, integration 106 / 229, checks 14 of 14.
+  - ocr (session `69079bb9-d4e6-4b22-88cf-fd40cf332ae0`, 2 files, 2 findings; raw: `ocr/T8.5-B1-25751806.json`).
+    - **Valid:** `backup.ts:110` the header may repeat a section name, so a forged file with a repeated name and a matching extra ending still verifies. It becomes bug task **T8.5-B6**, queued after B5, with the case "it should return IncompleteOrCorrupt for a header that names a section twice".
+    - **Wrong, dismissed:** `backup.test.ts:36` "nested ternary prohibited". There is no such rule in CLAUDE.md, the repo docs or the ESLint config, and D7 dismissed the same claim.
+  - **For T8.8:** `prepareRestore`'s reader path maps `reason === 'NotUtf8'` to its own unreadable outcome.
+
 **T8.4 is complete in lane WB** (B1–B4 done, every ocr clean). It merges after merge-5 finishes. T8.5 started in lane WB from `87f92560` meanwhile; it is merged with T8.4 only if it's done by then, and otherwise T8.4 merges by fast-forward to `87f92560`.
 
 ## T8.14 Shell, warnings, first run
@@ -344,6 +401,8 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
   - Reviewer's note, not an ocr finding: the condition compares against the literal text "Backup complete". T8.14-B3 reworks these texts after Q2, so its brief will have it keep the Completed state, not the text.
 
 ## Merge runs
+
+- **merge-6** (T8.4 merged; at `fe8b0e1a`): unit 173 / 1799, integration 106 / 229, browser full tier (first matching path since `16e72bf5`: `src/persistence/persistence.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-6-*.txt`.
 
 - **T8.4 merged** 2026-11-14, after merge-5. Lane WB stays busy with T8.5, so T8.4's five commits (through `87f92560`) were rebased in a temporary worktree onto `80adffb4` and fast-forwarded (`92301ec3` … `0fa1b021`). The temporary worktree and branch were removed. Lane WB rebases later, and git drops the already-applied commits.
 

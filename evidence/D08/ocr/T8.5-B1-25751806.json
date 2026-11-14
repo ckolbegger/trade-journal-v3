@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 93064,
+    "input_tokens": 91726,
+    "output_tokens": 1338,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m4s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "This enforces order but not the required uniqueness: headerShape accepts duplicate section names, and readArtifact overwrites computedSectionDigests entries with the same name. An artifact can append a duplicate name to header.sections and a matching empty sectionEnd with that section's cumulative counts, then update the manifest digests, and still be verified. Reject duplicate header sections or track already-ended sections, and add a regression case where both the header and ends repeat a name.",
+      "existing_code": "        if (!parsed.success || parsed.data.section !== header.sections[sectionEnds] || parsed.data.digest !== line.computedSectionDigest || !sameCounts(parsed.data.counts, actual.get(parsed.data.section) ?? {})) {",
+      "start_line": 110,
+      "end_line": 110,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/backup.test.ts",
+      "content": "The comparator uses a nested ternary, which the supplied coding standard explicitly prohibits. Use an explicit comparator body while preserving lexicographic ordering (rather than locale-dependent ordering), since serialization affects the digests.",
+      "suggestion_code": "  const entries = Object.entries(value as Record\u003cstring, unknown\u003e).sort(([a], [b]) =\u003e {\n    if (a \u003c b) return -1;\n    if (a \u003e b) return 1;\n    return 0;\n  });",
+      "existing_code": "  const entries = Object.entries(value as Record\u003cstring, unknown\u003e).sort(([a], [b]) =\u003e (a \u003c b ? -1 : a \u003e b ? 1 : 0));",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/backup.test.ts",
+        "src/coordinators/workspace/backup.ts"
+      ]
+    }
+  ],
+  "session_id": "69079bb9-d4e6-4b22-88cf-fd40cf332ae0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "69079bb9-d4e6-4b22-88cf-fd40cf332ae0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "25751806",
+      "resolved_base": "1c0f8b40aff5e2c29ba0ad4407630cffb02a6f80",
+      "resolved_head": "25751806d524abe5f13e8a86dda6f597858c1940",
+      "exact_range": "1c0f8b40aff5e2c29ba0ad4407630cffb02a6f80..25751806d524abe5f13e8a86dda6f597858c1940",
+      "source_artifact_sha256": "92459bf2183d3a63869878629ba91bf2653b0746a5a133c3749a2a6c4503a75f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "380f25f35d5b80ca860bb4ef266c2134572128a7e52c8b8dcaa9c79852542eaa"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "bb867f5ff4cc1200e11d91aeb9f46ccde68bef8b8784a6afd55dc2e46622f9ee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "380f25f35d5b80ca860bb4ef266c2134572128a7e52c8b8dcaa9c79852542eaa"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "bb867f5ff4cc1200e11d91aeb9f46ccde68bef8b8784a6afd55dc2e46622f9ee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "224fe58a37312d74188711a3f15f40efef723561c58af1308488b3b2ea0b35a3",
+          "path": "evidence/D08/suite-runs/T8.5-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5c56e7cf961c573f020bf0aaa3a98e969cbbc9c10d61b2a994a10e6f345798a7",
+          "path": "evidence/D08/suite-runs/T8.5-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8092d90f2268450a42000bf72e41202adab435b4b71918e34dc039f4b0708374",
+          "path": "evidence/D08/suite-runs/T8.5-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9629be36490e8dfafa078b2f9a3a5f90b6217ff70834d781c07b669f3112fbe5",
+          "path": "evidence/D08/suite-runs/T8.5-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dee47815c51b24f8a098510722ce75c9df5de0c5df69e10a473a61a84af25851",
+          "path": "evidence/D08/tdd-log/T8.5-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 64462
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 66188,
+    "input_tokens": 65429,
+    "output_tokens": 759,
+    "cache_read_tokens": 9984,
+    "elapsed": "38s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/backup/format/reader.ts",
+      "content": "The UTF-8 classification is still incomplete: `drain()` also calls `decoder.decode()` at EOF, but wraps its decoding failures without `NotUtf8`. For example, a valid artifact followed by a lone `0xc2` in the same decoded chunk leaves that byte buffered in the decoder; the manifest is found, then the final flush in `drain()` throws and confirmBackup returns IncompleteOrCorrupt instead of A130's Unreadable. Apply the same separation of stream-read and decoder errors in `drain()`, and add a regression test for this final-flush path.",
+      "existing_code": "        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e), 'NotUtf8');",
+      "start_line": 101,
+      "end_line": 101,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Backup format reading and workspace backup integration",
+      "files": [
+        "src/backup/format/reader.ts",
+        "src/backup/format/types.ts",
+        "src/coordinators/workspace/backup.test.ts",
+        "src/coordinators/workspace/backup.ts"
+      ]
+    }
+  ],
+  "session_id": "573c9e26-39cf-4f72-bdaf-c2d9d4e984a2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "573c9e26-39cf-4f72-bdaf-c2d9d4e984a2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1c0f8b40",
+      "resolved_base": "809997564631266e4a882fa24fc416fb5ac0edec",
+      "resolved_head": "1c0f8b40aff5e2c29ba0ad4407630cffb02a6f80",
+      "exact_range": "809997564631266e4a882fa24fc416fb5ac0edec..1c0f8b40aff5e2c29ba0ad4407630cffb02a6f80",
+      "source_artifact_sha256": "6b5559aad9ed5472a32a354b8455f01382d9de4a400f25e53a0303543dfcd688"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "907ee24905310208e1617cb9a5e723e45c2a715971d8f1fe79276d699ca7f924"
+        },
+        {
+          "item_id": "233b26b30f71e85ccaff4da41b938336ffae86bdcc95e8b782f5874524ee7d8e",
+          "path": "src/backup/format/reader.ts",
+          "fingerprint": "9c17c4f16ef29d855d01e3897d6455d06ed867c78944644d1870739ef3de6f96"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "66f9380ab4e3e8c002538bb401a598afaf4fbd5b20637c46b143a31567d9e712"
+        },
+        {
+          "item_id": "f4794da52aeb51eeef1a8671adf5f761e9d80c5b9815bfd3737a4f68cc59bc10",
+          "path": "src/backup/format/types.ts",
+          "fingerprint": "c89159a625243df79624504657ee7743ff4e7dd2e3a1848daee319b5641b21bd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "907ee24905310208e1617cb9a5e723e45c2a715971d8f1fe79276d699ca7f924"
+        },
+        {
+          "item_id": "233b26b30f71e85ccaff4da41b938336ffae86bdcc95e8b782f5874524ee7d8e",
+          "path": "src/backup/format/reader.ts",
+          "fingerprint": "9c17c4f16ef29d855d01e3897d6455d06ed867c78944644d1870739ef3de6f96"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "66f9380ab4e3e8c002538bb401a598afaf4fbd5b20637c46b143a31567d9e712"
+        },
+        {
+          "item_id": "f4794da52aeb51eeef1a8671adf5f761e9d80c5b9815bfd3737a4f68cc59bc10",
+          "path": "src/backup/format/types.ts",
+          "fingerprint": "c89159a625243df79624504657ee7743ff4e7dd2e3a1848daee319b5641b21bd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "09e1bc6f2642cc70d935f4d6ac11fc88a978e0fba8c70c75340f47aa0fb6159a",
+          "path": "evidence/D08/suite-runs/T8.5-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3cff5017bda4c8eddf9863a8ec5666eec7ca0b0d9dd27f86f2bb41018399e779",
+          "path": "evidence/D08/tdd-log/T8.5-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b3127002fbbe3ff0414285105398823cd79705c7477b56a519098fbee5b8bdfc",
+          "path": "evidence/D08/suite-runs/T8.5-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d09c2ac6684bfb0cde9d3dbb3a5406f5cec03cad421cbaa7d51977116796f99e",
+          "path": "evidence/D08/suite-runs/T8.5-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fec26f77032ffc4e63254a6861246843eb97cec7812f1ecb068430f0e1a4297e",
+          "path": "evidence/D08/suite-runs/T8.5-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 37755
+  }
+}
