@@ -28,6 +28,7 @@ Spec reading (A218): `plan/spec-reading/D07.md`, plus D9's entries for Trade Ana
 |---|---|---|---|---|---|---|---|
 | critic-1 (T8P.23, checkpoint, at `05ca870f`) | `critic-1.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.4): 8 defects (1 high, 3 moderate, 4 low), 11 minor observations | 215,050 | 70 | 10 min 57 s | `critic-brief.md` template with D08P's section 8, the accepted exceptions (with revision 96's case 7), and `e2e/d7s/support.ts` helpers |
 | critic-2 (T8P.23, checkpoint, at `b11aa7ab`) | `critic-2.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.2): 7 defects (1 high, 4 moderate, 2 low), 8 minor observations | 222,923 | 59 | 10 min 14 s | critic-1's brief, plus a fourth accepted exception (W10's per-card Trade P&L) |
+| critic-3 (T8P.23, checkpoint, at `0d251d22`) | `critic-3.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.2): 2 defects (1 high, 1 moderate), 10 minor observations | 190,820 | 57 | 11 min 28 s | critic-2's brief, plus revision 97's exceptions 5 to 8 and revision 98's choices |
 
 ## Lane worktrees
 
@@ -1627,3 +1628,13 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
 - **Quick run (`T8P.23-B13-B1`):** unit 1658, integration 229, checks 14 of 14, browser-task 8; run complete.
 
 **Merge run 12, the full tier after critic-2's bug tasks** at `b6234b98`: unit 1658 (156 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 82 passed, no failures; run complete. The runner's report was a placeholder, so the main session read the outputs and `run-complete.sh` itself. Critic-3 starts on this commit.
+
+### Critic-3 (T8P.23) at `0d251d22`
+
+FAIL on C8P.2. The report was refused as a file write, so it was extracted from the session transcript by script and copied unchanged to `critic-3.md`. Critic-2's defects didn't recur. C8P.1, C8P.3 and C8P.4 pass, and so does the narrow layout, apart from defect 2.
+- **Defect 1 (high, C8P.2):** the Trade Summary that T8P.31 placed in Position, in its existing words, repeats two figures:
+  - the average entry ("Long 100 shares @ $50.18"), beside Entry Quality's Average entry;
+  - the held quantity, beside Position's row and the rail's "100 of 100 shares open".
+- **Defect 2 (moderate):** at 375 and 320 px, Today's comparison table (550 px wide) opens on its labels and the earlier column. The current Marks and their changes sit past the scroll box's edge.
+
+This is the third critic at this checkpoint, and it still leaves a FAIL with a high and a moderate defect. That is a stop in the handoff, so the user decides.
