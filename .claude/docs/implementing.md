@@ -75,3 +75,10 @@ Give its reading list in the form above, naming the sections to read, and name t
 Task status lives in the breakdown's Progress section (decision 100), so the handoff keeps no task list, next task or base commit. Its progress section holds two lists, one bullet per entry: "Notes for later tasks" and "Open questions" for the final report.
 
 Its location checks include `ocr llm test`, expecting `✓ Connection test successful`, and `git rev-parse --git-path hooks`, expecting `.githooks` (the pre-commit typecheck and lint hook; the setup commands are at the top of `.githooks/pre-commit`).
+
+## Plan revisions and evidence
+
+- Additions that the user makes to an in-progress revision belong in that revision. Do not open a new rN unless the user says so.
+- Every plan revision gets an entry in the plan-revision log (`plan/revisions.md`).
+- Record each ocr review result as task evidence immediately after it runs.
+- Write decisions with precise, unambiguous wording, so that subagents cannot read them as permission to change plan tests.
