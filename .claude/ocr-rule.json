@@ -1,0 +1,1 @@
+{"include":["e2e/**/*.spec.ts","**/*.test.ts","**/*.test.tsx"],"exclude":["evidence/**"]}
