@@ -1528,3 +1528,5 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 59 passed (`browser/T8P.23-B8-specs.txt`).
 - **Review:** ocr in place, 2 files, 0 comments (`ocr/T8P.23-B8.json`).
 - **Quick run (`T8P.23-B8`):** unit 1648, integration 229, checks 14 of 14, browser-task 7; run complete.
+
+**Merge run 11, the full tier after critic-1's bug tasks** at `081f3bf4`: unit 1648 (156 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 79 passed, no failures; run complete. Critic-2 starts on this commit.
