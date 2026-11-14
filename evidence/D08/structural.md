@@ -219,6 +219,19 @@ Lane UB, commit `61fb47bb` (7 planned cases and one extra). New `RestorePreview.
 | T8.13-B5 | `RestoreConfirm.tsx:69` an unmounted SafetyBackup's pending verification can still set the parent's receipt | a stale receipt after switching choices | it should ignore a safety backup's verification that finishes after the choice was changed |
 | T8.13-B6 (Doubtful) | `RestoreConfirm.tsx:132` nested ternary computing `safety` | hard to audit | a refactor under the existing cases (no new behavior) |
 
+- **T8.13-B1** `683c16c2`.
+  - Red: "expected <p class="backup-file-name"></p> to be null". Two earlier red rows came from an incomplete preview fixture and are noted in the log.
+  - Fix: BackupView hands RestoreFlow a wrapped facade whose `applyPreparedRestore` clears the page's download, outcome, checking and not-made state on `Restored`. It also bumps `downloadCount`, so an in-flight verification is dropped. Frozen props are unchanged, and no screen text was added.
+  - Lane tier: unit 165 / 1770, integration 106 / 229, checks 14 of 14.
+  - ocr (session `a5249ae2-e892-42d0-b569-2c71fed516cd`, 2 files, 1 finding, Valid; raw: `ocr/T8.13-B1-683c16c2.json`). It becomes bug task **T8.13-B7**, queued in lane UB:
+    - Finding: `BackupView.tsx:55` the Restored handler drops an in-flight verification but not an in-flight Download.
+    - Defect: an export resolving after the Restore shows the old file name, or a failure, and `making` stays set.
+    - Case: "it should discard a backup download that finishes after a Restore completes".
+    - **T8.13-B4** `4481f8c1`: red ("expected false to be true") then green; a cleanup effect aborts the preparation on unmount. Lane tier: unit 165 / 1771, integration 106 / 229, checks 14 of 14. ocr (session `241c8c10-3750-4b00-aeb7-9819cfbcd158`, 2 files): **No findings.** Raw: `ocr/T8.13-B4-4481f8c1.json`.
+    - **T8.13-B5** `f80bb5e5`: red ("expected false to be true": a late receipt enabled Replace) then green. A cleanup effect in `SafetyBackup` bumps `downloadCount` on unmount, so the existing guards drop the late result. T8.13-B1's three leftover suite-run files are in this commit. The log has no refactor row; the agent's append didn't land. Lane tier: unit 165 / 1772, integration 106 / 229, checks 14 of 14. ocr (session `9cf372c0-4cd6-4979-a292-eb6a69e0c3e1`, 2 files): **No findings.** Raw: `ocr/T8.13-B5-f80bb5e5.json`.
+    - **T8.13-B7** `7af2b4bb`: red ("expected <p class="backup-file-name"></p> to be null") then green. `download()` records its download number and ignores a result or progress from before a Restore. The Restored handler also clears `making`, and the line-114 space is fixed. A `completeRestore` test helper is extracted. Lane tier: unit 165 / 1773, integration 106 / 229, checks 14 of 14. ocr (session `78b74485-8787-4ea2-bc8d-34b626d4d7ba`, 2 files): **No findings.** Raw: `ocr/T8.13-B7-7af2b4bb.json`.
+    - Reviewer note: line 114 reads `facade={restoreFacade}selectFile={selectFile}` with no space. It is formatting only, and B7 may fix it in passing.
+
 Reviewer notes, not ocr findings, so they are put to the user as Q5 items 9 and 10: "an ${kind}" reads "an Trade", and "(N versions)" repeats a kind's total on each row.
 
 ## T8.4 Workspace exportBackup
@@ -265,7 +278,29 @@ Lane WB, commit `321f4e62` (5 cases, red then green; no first-run passes; two in
   - The fix adds `lookupRoot(): Promise<RootInspection>` to `Persistence`. It classifies the root only, with no deletions, no root writes and no `current`. `inspectRoot` becomes `lookupRoot` plus the existing cleanup, and `exportBackup` calls `lookupRoot`. D2 and D3's persistence tests are unchanged.
   - Lane tier: unit 172 / 1785, integration 106 / 229, checks 14 of 14.
   - The tdd log has two extra green rows: an accidental whole-file prettier run was reverted and the edits redone. A refactor row notes it.
-  - ocr pending.
+  - ocr (session `cc3a5917-5a67-46e4-92e6-966f06ec62e0`, 3 files, 1 finding, Valid; raw: `ocr/T8.4-B1-2c3a170a.json`). It becomes bug task **T8.4-B4**, queued after B3 in lane WB:
+    - Finding: `persistence.ts:611` `lookupRoot` opens the root with `ROOT_VERSION` and `upgradeRoot`.
+    - Defect: on a fresh browser with no `tj-root`, an export creates the root database and its stores before returning `NotCompleted`.
+    - Case: "it should create no database when a backup is attempted before any journal exists".
+- **T8.4-B2** `18b214ed`: two cases, both red then green.
+  - Red 1: `CanonicalJsonUnsupported … at $.r.unsafe`, an unsafe integer.
+  - Red 2: `CanonicalJsonUnsupported: … undefined at $.r.settingsRevision`, a missing `settings` record.
+  - Fix: `runExport` moves artifact building into `buildArtifact` inside a try/catch that returns `Failed(ReadFailed)`. The time zone cast becomes a check.
+  - A thrown `exporter.run` is left to B3.
+  - The test name says "can not", because the apostrophe breaks `-t`.
+  - Lane tier: unit 172 / 1787, integration 106 / 229, checks 14 of 14.
+  - ocr (session `4c8e3310-ecf5-44c8-9dd4-7465690aabc0`, 2 files): **No findings.** Raw: `ocr/T8.4-B2-18b214ed.json`.
+- **T8.4-B3** `068d5964`: three cases, each red then green.
+  - Reds: `Error: offer blew up`, `Error: run blew up`, `Error: lookup blew up`.
+  - Fix: a `.catch` on each port call routes it to the existing structured path. A rejected offer gives `OfferFailed` with the source binding. A rejected run gives `ReadFailed` with the described binding. A rejected lookup gives `ReadFailed` with a null binding.
+  - Lane tier: unit 172 / 1790, integration 106 / 229, checks 14 of 14.
+  - ocr (session `5290c016-0d70-48c0-9497-a1557112e6dd`, 2 files): **No findings.** Raw: `ocr/T8.4-B3-068d5964.json`.
+- **T8.4-B4** `87f92560`: red ("expected [ { name: 'tj-root', version: 1 } ] to deeply equal []") then green.
+  - Fix: `inspectRoot` and `lookupRoot` share a nested `classifyRoot(createRoot)`. A lookup aborts the root's first-creation upgrade and returns `NoWorkspace`. Startup still creates the root, and the VersionError handling is unchanged.
+  - Lane tier: unit 172 / 1791, integration 106 / 229, checks 14 of 14.
+  - ocr (session `c9fd1ef0-17cc-4dde-8164-a77433c3582a`, 2 files): **No findings.** Raw: `ocr/T8.4-B4-87f92560.json`.
+
+**T8.4 is complete in lane WB** (B1–B4 done, every ocr clean). It merges after merge-5 finishes. T8.5 started in lane WB from `87f92560` meanwhile; it is merged with T8.4 only if it's done by then, and otherwise T8.4 merges by fast-forward to `87f92560`.
 
 ## T8.14 Shell, warnings, first run
 

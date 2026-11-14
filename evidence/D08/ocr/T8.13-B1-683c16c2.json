@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 133595,
+    "input_tokens": 132353,
+    "output_tokens": 1242,
+    "cache_read_tokens": 18304,
+    "elapsed": "59s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/BackupView.tsx",
+      "content": "This invalidates verification, but not an in-flight export. Download and Restore can run concurrently because their buttons are independent. If Restore succeeds while `exportBackup` is pending, `making` remains visible (and Download stays disabled), and the export's unguarded completion can subsequently restore the old filename/Verify button or an old failure message. Capture and check the generation in the download completion and progress callbacks too, and clear `making` on successful Restore. Add a deferred-export regression test that completes the export after Restore.",
+      "existing_code": "        downloadCount.current += 1;\n        setDownloaded(undefined);\n        setOutcome(undefined);\n        setChecking(undefined);\n        setNotMade(undefined);",
+      "start_line": 55,
+      "end_line": 59,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/backup/BackupView.test.tsx",
+        "src/ui/backup/BackupView.tsx"
+      ]
+    }
+  ],
+  "session_id": "a5249ae2-e892-42d0-b569-2c71fed516cd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a5249ae2-e892-42d0-b569-2c71fed516cd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "683c16c2",
+      "resolved_base": "61fb47bba4e8a34b868aa149b660249d7d226672",
+      "resolved_head": "683c16c2420c95cbc82970b1b2035957132f1fc3",
+      "exact_range": "61fb47bba4e8a34b868aa149b660249d7d226672..683c16c2420c95cbc82970b1b2035957132f1fc3",
+      "source_artifact_sha256": "2cf513cb22944cda2487763d537cd6ffad76ddf5bc75268d256bb49afca55daa"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "dbc479372284753bdefeb4490bad550be93942835c82197149d307bdb3745bd4"
+        },
+        {
+          "item_id": "31fc3c3d8cd13f1aa217fe73c15c264e936601c51b36bcc485706dd4053ea989",
+          "path": "src/ui/backup/BackupView.test.tsx",
+          "fingerprint": "f3618ce8929a0e25cace809736128d535df3e3a2c12354bc1470a5748e7492d9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "dbc479372284753bdefeb4490bad550be93942835c82197149d307bdb3745bd4"
+        },
+        {
+          "item_id": "31fc3c3d8cd13f1aa217fe73c15c264e936601c51b36bcc485706dd4053ea989",
+          "path": "src/ui/backup/BackupView.test.tsx",
+          "fingerprint": "f3618ce8929a0e25cace809736128d535df3e3a2c12354bc1470a5748e7492d9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0051dba7c389d053615da563d6ed4b1eba58241733fd0e70a7ad45eb73c316ca",
+          "path": "evidence/D08/suite-runs/T8.13-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "1e04dae78a9f12b7b7fb5c0199154bcca52a608c799d52f4242a314f0fb09887",
+          "path": "evidence/D08/tdd-log/T8.13-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 58940
+  }
+}

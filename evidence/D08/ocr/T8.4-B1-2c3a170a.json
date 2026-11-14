@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 108609,
+    "input_tokens": 107769,
+    "output_tokens": 840,
+    "cache_read_tokens": 14976,
+    "elapsed": "47s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "`lookupRoot()` still opens the root with `ROOT_VERSION` and `upgradeRoot`. On a fresh factory with no `tj-root`, this creates the database and its stores before returning `NoWorkspace`, so `exportBackup({})` mutates persistence even though it returns `NotCompleted`. Make this lookup abort creation in `onupgradeneeded` (and classify the missing root as `NoWorkspace`), while retaining root creation where startup needs it. Add a regression test that exports against an empty factory and verifies that its database list remains empty.",
+      "existing_code": "    async lookupRoot() {",
+      "start_line": 611,
+      "end_line": 611,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/backup.test.ts",
+        "src/coordinators/workspace/backup.ts",
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "cc3a5917-5a67-46e4-92e6-966f06ec62e0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cc3a5917-5a67-46e4-92e6-966f06ec62e0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2c3a170a",
+      "resolved_base": "321f4e62511b0c33f029c984314f9cb281ac453d",
+      "resolved_head": "2c3a170a89157934f4bf1739613df006407b975b",
+      "exact_range": "321f4e62511b0c33f029c984314f9cb281ac453d..2c3a170a89157934f4bf1739613df006407b975b",
+      "source_artifact_sha256": "66cdf4b07d10ff59636be8e76b292dd23a4d3c8c655884eb07c489aa60384258"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "a6b54ced0cbaa4b381c0c67945f9b98b199ca5e8b1272c2dac1620a53f142c8f"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "8a37996145d7ec714f728b859103c1426236cc882288a136a5320883cff2c00a"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "e12bb9619e0bb6646bef89c1e18442fedc65ba0667215069d7c151e6e470e49f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "a6b54ced0cbaa4b381c0c67945f9b98b199ca5e8b1272c2dac1620a53f142c8f"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "8a37996145d7ec714f728b859103c1426236cc882288a136a5320883cff2c00a"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "e12bb9619e0bb6646bef89c1e18442fedc65ba0667215069d7c151e6e470e49f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4ce832e62a500e0d66ecff9619a69d7e7324c986f5cd066bd0cee4f18eb98926",
+          "path": "evidence/D08/suite-runs/T8.4-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "552d0499f767bd37855df2656e414a9a951be97a7326253872ba2a7d0e6a94b3",
+          "path": "evidence/D08/suite-runs/T8.4-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8758e58a4b0e074a66908e9db5fe20a41cfcc74b57425b4764cda9a140503bac",
+          "path": "evidence/D08/suite-runs/T8.4-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "95b73298f654bc6c6190f9a713ca23fb2cd291948db5539015876facda5fc062",
+          "path": "evidence/D08/suite-runs/T8.4-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9b614e9556387022763c9c883d1d5155518c00346e76e79d814f2e1517cd5353",
+          "path": "evidence/D08/tdd-log/T8.4-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 46891
+  }
+}
