@@ -1332,3 +1332,7 @@ Expectations changed by the placement (revision 96):
 Accepted beyond the plan's words: the new card leaves out the "Mark missing" link while `firstMarksDue` is set, since no Mark is due yet and "No Marks yet" names when they are (revision 90). The Overrun, Boundary and Status columns of the legacy conditions table already have their place on the Conditions card (W5: row 2 names the boundary, row 1 the status, row 3 the overrun), which the main session checked.
 
 **The user's choice on case 7.** The main session found that the Conditions card already shows every condition's distance (W5, one block per condition), so case 7 repeats it. T8P.22's agent had read the rail as nearest-only. The user chose to keep case 7 as built ("Keep case 7"), so revision 96 stands unchanged.
+
+**T8P.31 review.** ocr ran on `4ab7ee0f` from a scratch clone. The in-place pass reviewed 11 files (5 excluded) and found nothing (`ocr/T8P.31-inplace.json`). The relocated pass reviewed the three changed test files with `test-support.ts` (14 files) and made 1 comment (`ocr/T8P.31-reloc.json`): "JSX inside a `.ts` file". It is Wrong, a relocation artifact: the real file is `Placed.test.tsx`. No bug tasks.
+
+**T8P.31 merge.** Only plan and evidence followed lane PL's base `bbdc61a2`, so its tiers stand. Rebased onto `99c6c7cc` and fast-forwarded: `b6e476ef` (task), `9d7c38b0`. Lane PL was removed. T8P.22 now rebases its work in progress onto this and finishes.

@@ -1,0 +1,279 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 14 selected item(s).",
+  "summary": {
+    "files_reviewed": 14,
+    "comments": 1,
+    "total_tokens": 287643,
+    "input_tokens": 284493,
+    "output_tokens": 3150,
+    "cache_read_tokens": 38272,
+    "elapsed": "1m28s"
+  },
+  "tool_calls": {
+    "total": 53,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 15,
+      "file_find": 5,
+      "file_read": 31,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/trade-detail/Placed.ts",
+      "content": "This file contains JSX but has a `.ts` extension. `tsconfig.json` includes all of `src`, so `npm run typecheck` will parse this as ordinary TypeScript and fail on this render block; setting `jsx: \"react-jsx\"` does not enable JSX in `.ts` files. Rename it to `.tsx` or use `createElement` as the other relocated Today test does.",
+      "existing_code": "      \u003cMemoryRouter\u003e\n        \u003cTodayDrawer view={openDetailAt([PC1, PC2], tuesday(available('52.00')))} timeZone=\"America/New_York\" replay={replay} /\u003e\n      \u003c/MemoryRouter\u003e,",
+      "start_line": 63,
+      "end_line": 65,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Plan risk drawer integration, props, and rendering",
+      "files": [
+        "src/itg/relocated/drawers/plan-risk.ts",
+        "src/ui/cockpit/drawers/plan-risk.props.ts",
+        "src/ui/cockpit/drawers/plan-risk.tsx",
+        "src/ui/cockpit/drawers/plan-risk.types.ts"
+      ]
+    },
+    {
+      "label": "Today drawer and placed trade details",
+      "files": [
+        "src/itg/relocated/drawers/today.props.ts",
+        "src/itg/relocated/trade-detail/Placed.ts",
+        "src/ui/cockpit/drawers/today.props.ts",
+        "src/ui/cockpit/drawers/today.tsx",
+        "src/ui/cockpit/drawers/today.types.ts"
+      ]
+    },
+    {
+      "label": "Position drawer props and rendering",
+      "files": [
+        "src/ui/cockpit/drawers/position.props.ts",
+        "src/ui/cockpit/drawers/position.tsx"
+      ]
+    },
+    {
+      "label": "Rail identity card props and types",
+      "files": [
+        "src/ui/cockpit/rail/identity-card.tsx",
+        "src/ui/cockpit/rail/identity.props.ts",
+        "src/ui/cockpit/rail/identity.types.ts"
+      ]
+    }
+  ],
+  "session_id": "329732fc-c919-455c-825f-0ab6ddd94c8c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "329732fc-c919-455c-825f-0ab6ddd94c8c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "cb42c198e0e0bbbb81f1656da31d06da3e30c76d",
+      "resolved_head": "0ca8a4f484b14303b75c7c622209696db1dd905c",
+      "exact_range": "cb42c198e0e0bbbb81f1656da31d06da3e30c76d..0ca8a4f484b14303b75c7c622209696db1dd905c",
+      "source_artifact_sha256": "5bf44d958ab9e5b1805d32eddaf598d2ac0606415a5086268f3df57ae65da8e5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d60b4889ae8b40cf74bf36f8c2bcc7edaedb94a7a88aa4417e952f5439a6310",
+          "path": "src/ui/cockpit/drawers/plan-risk.types.ts",
+          "fingerprint": "a23adacffbcdc503cb8d19e8cc2f2a6b9544d5d4a1cb9fdaa67823e234f64d99"
+        },
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "8188863e00962af2e9136e75100b7ab0a36a3b23a906d4a20460024ed3017458"
+        },
+        {
+          "item_id": "155c2e9275573ccb2c1e92a9fcf986107ce471306b2def10d78c6d57e94afbd9",
+          "path": "src/ui/cockpit/drawers/plan-risk.tsx",
+          "fingerprint": "90bf0d551572d06d78a2bbfff82cc4ed579fad909fe35bac5dc295ec243fe7d9"
+        },
+        {
+          "item_id": "206f12b349580a7ca7bfe204fd47734ca6be44fdfe081b024605d59503f19841",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "5b59a08e543123c67af93e80d72d90d62ce300486454c64c03edfae5b3651da1"
+        },
+        {
+          "item_id": "335cbfc0a7d55cdd0f19e4d04298f5383c17f26c9cde6bf631903819690a02b5",
+          "path": "src/ui/cockpit/rail/identity.props.ts",
+          "fingerprint": "1bbb4e81e4b08d2827ab1c2ea26a9b0b377dba4d0f31f09c149ff9408106d623"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "83e6775ed994164eaa0b171ab2fa3d44bdff70aff622a7890144b0db71b40de4"
+        },
+        {
+          "item_id": "5f7ed082b18aeda4922170077fe61607fd572b6fef057a20f5e4ebe971cccdf3",
+          "path": "src/itg/relocated/drawers/today.props.ts",
+          "fingerprint": "7f871772e7dc714bf445baa60339e354d379dd2be7de466f45752248418df1e5"
+        },
+        {
+          "item_id": "76330befcd6cbd014a3d98aa5d80a2009b48f6612c82291f66c5960f115b61dd",
+          "path": "src/ui/cockpit/rail/identity-card.tsx",
+          "fingerprint": "5ba14bb24b55d747f95ddef56f3c756aa265158ac2a1e795cb37c747c7b7ea11"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "4280903035a7c8d1717666e1ddc17a3ea89c1e0b1c70bb11dbe095902508017f"
+        },
+        {
+          "item_id": "b37663fab0d16b31fc36cde06a6bdc0aad521c537df893769d5a102cfa39753c",
+          "path": "src/itg/relocated/trade-detail/Placed.ts",
+          "fingerprint": "eb3dfea3b2b670d2c19cf99f9ba4e84a458cfdb5a8e22abcda3abd340f304092"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "1fda5593d6289840da542ce4e76b685d79a8ae098fd0a5b3ea9b7ba9142deec1"
+        },
+        {
+          "item_id": "c50f5172c43cf520935c491af76f38cbb3486117239dc07596841ffa37fa5a31",
+          "path": "src/itg/relocated/drawers/plan-risk.ts",
+          "fingerprint": "7ed8c82a9d3f33b5475396111040913a0d0bcff3adc3a236bfca512f30446774"
+        },
+        {
+          "item_id": "c90f11a8b2d1d91f7bf1e0a2bd2a7f3a710b9872a7776c5d7f211309e04a67bc",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "4f2872c48608eff9130b65226fd14035f729a234ea1da52b7b010785486f021b"
+        },
+        {
+          "item_id": "eb124f3b0b7c52d4aa187202ec543b74b984f61312fd394881e743b3373e2c65",
+          "path": "src/ui/cockpit/rail/identity.types.ts",
+          "fingerprint": "1c3e9d6dbf536de53d904f03874717d8b0d34b7e0bde9f250275833f9dfec6e7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d60b4889ae8b40cf74bf36f8c2bcc7edaedb94a7a88aa4417e952f5439a6310",
+          "path": "src/ui/cockpit/drawers/plan-risk.types.ts",
+          "fingerprint": "a23adacffbcdc503cb8d19e8cc2f2a6b9544d5d4a1cb9fdaa67823e234f64d99"
+        },
+        {
+          "item_id": "13033c5d57dbb68c47de6d3b8c9b66b3f9c270f5dcac8dfc0d3abb862c44fc5d",
+          "path": "src/ui/cockpit/drawers/today.props.ts",
+          "fingerprint": "8188863e00962af2e9136e75100b7ab0a36a3b23a906d4a20460024ed3017458"
+        },
+        {
+          "item_id": "155c2e9275573ccb2c1e92a9fcf986107ce471306b2def10d78c6d57e94afbd9",
+          "path": "src/ui/cockpit/drawers/plan-risk.tsx",
+          "fingerprint": "90bf0d551572d06d78a2bbfff82cc4ed579fad909fe35bac5dc295ec243fe7d9"
+        },
+        {
+          "item_id": "206f12b349580a7ca7bfe204fd47734ca6be44fdfe081b024605d59503f19841",
+          "path": "src/ui/cockpit/drawers/position.tsx",
+          "fingerprint": "5b59a08e543123c67af93e80d72d90d62ce300486454c64c03edfae5b3651da1"
+        },
+        {
+          "item_id": "335cbfc0a7d55cdd0f19e4d04298f5383c17f26c9cde6bf631903819690a02b5",
+          "path": "src/ui/cockpit/rail/identity.props.ts",
+          "fingerprint": "1bbb4e81e4b08d2827ab1c2ea26a9b0b377dba4d0f31f09c149ff9408106d623"
+        },
+        {
+          "item_id": "4c241d6c5eecadba796905a06d23596f0f80acb086d1ef30c479e409f4d3c0bf",
+          "path": "src/ui/cockpit/drawers/today.tsx",
+          "fingerprint": "83e6775ed994164eaa0b171ab2fa3d44bdff70aff622a7890144b0db71b40de4"
+        },
+        {
+          "item_id": "5f7ed082b18aeda4922170077fe61607fd572b6fef057a20f5e4ebe971cccdf3",
+          "path": "src/itg/relocated/drawers/today.props.ts",
+          "fingerprint": "7f871772e7dc714bf445baa60339e354d379dd2be7de466f45752248418df1e5"
+        },
+        {
+          "item_id": "76330befcd6cbd014a3d98aa5d80a2009b48f6612c82291f66c5960f115b61dd",
+          "path": "src/ui/cockpit/rail/identity-card.tsx",
+          "fingerprint": "5ba14bb24b55d747f95ddef56f3c756aa265158ac2a1e795cb37c747c7b7ea11"
+        },
+        {
+          "item_id": "8847a3b11ab7dccf4aa5ec8f58a6afaa4451b338a79490598a074149e0d0b745",
+          "path": "src/ui/cockpit/drawers/today.types.ts",
+          "fingerprint": "4280903035a7c8d1717666e1ddc17a3ea89c1e0b1c70bb11dbe095902508017f"
+        },
+        {
+          "item_id": "b37663fab0d16b31fc36cde06a6bdc0aad521c537df893769d5a102cfa39753c",
+          "path": "src/itg/relocated/trade-detail/Placed.ts",
+          "fingerprint": "eb3dfea3b2b670d2c19cf99f9ba4e84a458cfdb5a8e22abcda3abd340f304092"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "1fda5593d6289840da542ce4e76b685d79a8ae098fd0a5b3ea9b7ba9142deec1"
+        },
+        {
+          "item_id": "c50f5172c43cf520935c491af76f38cbb3486117239dc07596841ffa37fa5a31",
+          "path": "src/itg/relocated/drawers/plan-risk.ts",
+          "fingerprint": "7ed8c82a9d3f33b5475396111040913a0d0bcff3adc3a236bfca512f30446774"
+        },
+        {
+          "item_id": "c90f11a8b2d1d91f7bf1e0a2bd2a7f3a710b9872a7776c5d7f211309e04a67bc",
+          "path": "src/ui/cockpit/drawers/position.props.ts",
+          "fingerprint": "4f2872c48608eff9130b65226fd14035f729a234ea1da52b7b010785486f021b"
+        },
+        {
+          "item_id": "eb124f3b0b7c52d4aa187202ec543b74b984f61312fd394881e743b3373e2c65",
+          "path": "src/ui/cockpit/rail/identity.types.ts",
+          "fingerprint": "1c3e9d6dbf536de53d904f03874717d8b0d34b7e0bde9f250275833f9dfec6e7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "2f29483a20cf819d78adcf87bd86cc0db609dcc672d82b2d33e0f0aaf00d5137",
+          "path": "src/ui/screens/trade-detail/Placed.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e630dd00330887432bb10e4974e4b1787c75858db07df4ad1ab592adab06f1eb",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f6275b03e632f48b6ffb6c2091a71bd4cdcde7bb5f725e5857f335f5e4050b0a",
+          "path": "evidence/D08P/tdd-log/T8P.31.md",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 87593
+  }
+}
