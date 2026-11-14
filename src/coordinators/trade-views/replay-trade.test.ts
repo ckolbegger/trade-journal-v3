@@ -7,7 +7,9 @@ import { D7_CATALOG_MANIFEST, type StrategyRecord } from '../../modules/referenc
 import { beginSemanticTransaction } from '../../persistence/index.ts';
 import { breakFirstExecution, reviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, PositionChangeMember } from '../trade-workflows/index.ts';
+import type { InstrumentPosition } from '../../domain/trade-analysis/index.ts';
 import { createTradeViews, type TradeReplayView } from './index.ts';
+import { settlementExpirationOf } from './replay-trade.ts';
 
 // O-C3 (D08P section 5): a Long Call on XYZ, 18 Dec 2026 55 Call. Buy 2 @ 2.00 Mon 10-12 10:00 fee 1.30, sell 1 @ 3.00
 // Wed 10-14 11:00 fee 0.65 (the exit reflection deferred). October is New York daylight time (UTC-4).
@@ -241,6 +243,21 @@ describe('replayTrade (A212, A213)', () => {
     expect(await views.replayTrade({ tradeId, binding })).toEqual({ kind: 'ChangedDuringAssembly' });
     const { binding: current } = await detail();
     expect(await views.replayTrade({ tradeId, binding: current })).toEqual(expect.objectContaining({ kind: 'Ready' }));
+  });
+});
+
+// T8P.23-B13-B1: a mixed Trade (a Covered Call) has no cut while a leg is still live. No mixed fixture is built at the coordinator
+// seam, so the helper is tested directly with mixed positions.
+describe('settlementExpirationOf (A212, revision 98)', () => {
+  const lot = [{}] as unknown as InstrumentPosition['openLots'];
+  const held = (instrument: Instrument): InstrumentPosition => ({ instrument, quantity: Rational.of(1n), openLots: lot });
+  const call = (expiration: string): Instrument => ({ ...CALL, expiration });
+
+  it('should give no expiration while the Trade also holds stock or a live contract, and the latest expiration when every held leg is a due contract', () => {
+    const date = '2026-11-23';
+    expect(settlementExpirationOf([held(call('2026-11-20')), held(XYZ)], date)).toBeNull();
+    expect(settlementExpirationOf([held(call('2026-11-20')), held(call('2026-12-18'))], date)).toBeNull();
+    expect(settlementExpirationOf([held(call('2026-11-13')), held(call('2026-11-20'))], date)).toBe('2026-11-20');
   });
 });
 

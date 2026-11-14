@@ -40,11 +40,14 @@ function resolutionOf(point: SeriesPoint | undefined): ReplayMarkResolution {
   return { kind: 'Missing' };
 }
 
-// The expiration date a Settlement Due Trade's lifetime ends with: the latest among the option contracts still held at or past
-// their expiration date on `date`; null when no contract is due.
+// The expiration date a Settlement Due Trade's lifetime ends with: the latest expiration, when every Position still held is an
+// option contract at or past its expiration date on `date`. Any stock lot or live contract means no cut; null then, and when
+// nothing is held.
 export function settlementExpirationOf(positions: readonly InstrumentPosition[], date: string): string | null {
-  const due = positions.flatMap(({ instrument, openLots }) => (instrument.kind === 'Option' && openLots.length > 0 && settlementDueOn(instrument, date) ? [instrument.expiration] : []));
-  return due.length === 0 ? null : due.reduce((latest, expiration) => (expiration > latest ? expiration : latest));
+  const held = positions.filter(({ openLots }) => openLots.length > 0);
+  const expirations = held.flatMap(({ instrument }) => (instrument.kind === 'Option' && settlementDueOn(instrument, date) ? [instrument.expiration] : []));
+  if (expirations.length === 0 || expirations.length !== held.length) return null;
+  return expirations.reduce((latest, expiration) => (expiration > latest ? expiration : latest));
 }
 
 export interface ReplaySessions {
