@@ -27,6 +27,7 @@ Spec reading (A218): `plan/spec-reading/D07.md`, plus D9's entries for Trade Ana
 | Critic | Report | Flows | Result | Tokens | Tool calls | Duration | Brief |
 |---|---|---|---|---|---|---|---|
 | critic-1 (T8P.23, checkpoint, at `05ca870f`) | `critic-1.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.4): 8 defects (1 high, 3 moderate, 4 low), 11 minor observations | 215,050 | 70 | 10 min 57 s | `critic-brief.md` template with D08P's section 8, the accepted exceptions (with revision 96's case 7), and `e2e/d7s/support.ts` helpers |
+| critic-2 (T8P.23, checkpoint, at `b11aa7ab`) | `critic-2.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.2): 7 defects (1 high, 4 moderate, 2 low), 8 minor observations | 222,923 | 59 | 10 min 14 s | critic-1's brief, plus a fourth accepted exception (W10's per-card Trade P&L) |
 
 ## Lane worktrees
 
@@ -1530,3 +1531,20 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Quick run (`T8P.23-B8`):** unit 1648, integration 229, checks 14 of 14, browser-task 7; run complete.
 
 **Merge run 11, the full tier after critic-1's bug tasks** at `081f3bf4`: unit 1648 (156 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 79 passed, no failures; run complete. Critic-2 starts on this commit.
+
+### Critic-2 (T8P.23) at `b11aa7ab`
+
+FAIL on C8P.2. The report was refused as a file write, so it was extracted from the session transcript by script and copied unchanged to `critic-2.md`. Critic-1's eight defects did not recur. The new defects, numbered as bug tasks from B9:
+- **Defect 1 (high, C8P.2):** figures shown twice beyond the accepted exceptions:
+  - (a) and (b): the Position drawer's Opening fees and Incurred fees, beside the Fee reconciliation;
+  - (c): Entry Quality's "Reward : risk 1.98 / planned 2", beside the Plan Baseline;
+  - (d): Today's At entry block, beside Entry Quality and Position;
+  - (e): Today's Stale context, comparison and dated block, which repeat a Mark, and the dated block's fees and realized figures.
+
+  All of these are existing words that the plan kept: W8 says "The Valuation's Mark provenance, the dated line and At entry keep their words". So this needs the user's decision, not a bug task.
+- **Defect 2 (moderate):** on the expiration day itself, the Settlement Due P&L card reads "Mark missing: …" instead of W4's "Settlement Due: <contract>". Bug task **B9**.
+- **Defect 3 (moderate):** Price History and Journal count the sessions after a contract's expiration as missing Marks. A212 runs an Open Trade's lifetime to the Expected Mark Date, so this needs the user's reading.
+- **Defect 4 (moderate):** Reflect now in Needs you opens the form out of view and leaves focus on the rail (A217). Bug task **B10**.
+- **Defect 5 (moderate):** a Closed Trade's final session, flat at its close, reads "without Marks" and loses W10's "final session" card. Bug task **B11**.
+- **Defect 6 (low):** a stock Mark has no "$" in Price History only. Bug task **B12**.
+- **Defect 7 (low):** "Stale context: $51.50 from Tue Oct 13 close" still says "close" (P102). Changing it is a new text, so it needs the user's approval.
