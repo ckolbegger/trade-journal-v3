@@ -1,0 +1,185 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 270900,
+    "input_tokens": 269105,
+    "output_tokens": 1795,
+    "cache_read_tokens": 33152,
+    "elapsed": "1m22s"
+  },
+  "tool_calls": {
+    "total": 35,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_find": 1,
+      "file_read": 21
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/journal.props.ts",
+      "content": "The Planned view's `journal` is not restricted to Plan Reflections: `getTradeDetail` copies every narrative item of kind `Entry` into it, only removing the kind discriminator. Mapping the entire array here therefore places any other saved entry (for example, a Daily Trade Review) under “Plan” with the Plan's timestamp. Filter by the stable Plan Reflection entry-type key before constructing `replay.plan`, and cover a Planned view containing mixed entry types.",
+      "existing_code": "      ? { sessions: [], plan: view.journal.map((entry) =\u003e ({ kind: 'Entry' as const, ...entry })), pending: null }",
+      "start_line": 112,
+      "end_line": 112,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade detail cockpit and journal integration with E2E support",
+      "files": [
+        "e2e/support/detail/journal.ts",
+        "e2e/support/detail/scope.ts",
+        "src/ui/cockpit/drawers/journal.props.ts",
+        "src/ui/screens/trade-detail/Cockpit.tsx",
+        "src/ui/screens/trade-detail/Composed.tsx",
+        "src/ui/screens/trade-detail/Journal.tsx"
+      ]
+    }
+  ],
+  "session_id": "e7669d01-fc41-4ec7-ae94-ff2f5dbfc241",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e7669d01-fc41-4ec7-ae94-ff2f5dbfc241",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "f95e571e",
+      "resolved_base": "49772638d67578b73a7d9d097f03410dd9c4e1d7",
+      "resolved_head": "f95e571eb854a14f1a7b3f9535dda826c0a9c05b",
+      "exact_range": "49772638d67578b73a7d9d097f03410dd9c4e1d7..f95e571eb854a14f1a7b3f9535dda826c0a9c05b",
+      "source_artifact_sha256": "a240fa2389272684ae9f0c45d3352feb50c9ef79153da8e95fdb7762d317649e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0721dbc380e651bb9618cc85d894c43c848bc6514df918c6f4c8c5f1d04d46df",
+          "path": "src/ui/screens/trade-detail/Composed.tsx",
+          "fingerprint": "84921c3ae09bc69520e00850b2a89d2e12d6ab11c1705787bc23a178aae9544c"
+        },
+        {
+          "item_id": "2ffdc5c06bb7d09e58d9239abb710ed8ba309b289cabcc152d41290eda313658",
+          "path": "e2e/support/detail/scope.ts",
+          "fingerprint": "951b41d8d91afa6c93e95b20bbe5eb41ea57b9643d2119e96ca6e7227c3cf57d"
+        },
+        {
+          "item_id": "5793bd481a6cca87e88c5acd6a8432475640f647deccd45c06805cb19bf29610",
+          "path": "e2e/support/detail/journal.ts",
+          "fingerprint": "0e4c8236296b9f63c61275bcb7dc9197d48bf80793ba1e0cc533e8840eb6f672"
+        },
+        {
+          "item_id": "97bfb284b327119a7bdbec16555562a26c2ec7ab8044344b7650eea994476514",
+          "path": "src/ui/screens/trade-detail/Journal.tsx",
+          "fingerprint": "47da2ef16e0498d4e9d821b88987074ff95beac5b82934cda12ad40bd8c93691"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "6b3575dff94b872fb32cc84e081b4a0f3545148fe8f7c0ad6f3bd1bfeb247c55"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "102c61ff6cb204cadcadad5ded9d98ccbc9ce479075d2c44fa1f5cc1c5f4e21b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0721dbc380e651bb9618cc85d894c43c848bc6514df918c6f4c8c5f1d04d46df",
+          "path": "src/ui/screens/trade-detail/Composed.tsx",
+          "fingerprint": "84921c3ae09bc69520e00850b2a89d2e12d6ab11c1705787bc23a178aae9544c"
+        },
+        {
+          "item_id": "2ffdc5c06bb7d09e58d9239abb710ed8ba309b289cabcc152d41290eda313658",
+          "path": "e2e/support/detail/scope.ts",
+          "fingerprint": "951b41d8d91afa6c93e95b20bbe5eb41ea57b9643d2119e96ca6e7227c3cf57d"
+        },
+        {
+          "item_id": "5793bd481a6cca87e88c5acd6a8432475640f647deccd45c06805cb19bf29610",
+          "path": "e2e/support/detail/journal.ts",
+          "fingerprint": "0e4c8236296b9f63c61275bcb7dc9197d48bf80793ba1e0cc533e8840eb6f672"
+        },
+        {
+          "item_id": "97bfb284b327119a7bdbec16555562a26c2ec7ab8044344b7650eea994476514",
+          "path": "src/ui/screens/trade-detail/Journal.tsx",
+          "fingerprint": "47da2ef16e0498d4e9d821b88987074ff95beac5b82934cda12ad40bd8c93691"
+        },
+        {
+          "item_id": "adea4cb067ea760f59c6416d1d6e39c53028b95a6e7ecbecf206c6fde24296a0",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "6b3575dff94b872fb32cc84e081b4a0f3545148fe8f7c0ad6f3bd1bfeb247c55"
+        },
+        {
+          "item_id": "bad5c69b3d1e03bf54bd2b1b2b13ff5e5a0dabd158881300fc1e86a4a591bb75",
+          "path": "src/ui/screens/trade-detail/Cockpit.tsx",
+          "fingerprint": "102c61ff6cb204cadcadad5ded9d98ccbc9ce479075d2c44fa1f5cc1c5f4e21b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0be7018c9bebf2ee9db38b8329e0605ae82ea6bb262c41699e6543ac1aea3341",
+          "path": "evidence/D08P/tdd-log/T8P.23-B7.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "23a37fb2a67be8b88fb4e43ac015ba12c3ee02c8fb7eda48555d4d7881780d66",
+          "path": "evidence/D08P/browser/T8P.23-B7-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "69445e32facf52e874852777792ea21dbbda0973a4b442cf16481cb83b5d4a29",
+          "path": "src/ui/screens/trade-detail/Plan.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "8282d921c8f867b850af30c2f15f4d2cd14a3978201bdf1f3d256824f3aadef0",
+          "path": "evidence/D08P/browser/T8P.23-B7-ui-alignment-rerun.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "b4d0438207aca18721252f2995c4e16d03c67b1a51f75f6ab28b3d59020d8dc7",
+          "path": "e2e/d8p/planned.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e630dd00330887432bb10e4974e4b1787c75858db07df4ad1ab592adab06f1eb",
+          "path": "e2e/d2/ui-alignment.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 81678
+  }
+}

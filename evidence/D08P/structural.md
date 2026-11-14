@@ -1496,3 +1496,18 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 60 passed (`browser/T8P.23-B6-specs.txt`).
 - **Review:** ocr in place, 0 comments (`ocr/T8P.23-B6.json`). The reviewer confirmed that `Cockpit.tsx` renders `ConditionsCard` for every view, and a probe in its scratch clone found the card in the rail.
 - **Quick run (`T8P.23-B6`):** unit 1645, integration 229, checks 14 of 14, browser-task 6; run complete.
+
+**T8P.23-B7** (`f95e571e`). A Planned Detail's Journal is now the cards drawer: W10's heading "Sessions, newest first" with ‹ and ›, as in the prototype's Planned state, and W11's Plan card ("Planned Mon Oct 12, 9:00 am", heading "Plan") carrying the Plan Reflection. There is no W12 card, since there is no session yet.
+- **What moved:**
+  - `Cockpit.tsx` has `cardsReplayOf`, and `journal.props.ts` takes `replay: 'Planned'`.
+  - The old Plan Reflection region (`PlanReflectionSection`) was orphaned and is removed. `JournalDrawer` stays, for an Open or Closed Detail whose replay can't be read.
+- **Test:** "should show a Planned Detail's Journal as the Plan card with the Plan Reflection's answers, and no old Plan Reflection region or Journal heading" (`Cockpit.test.tsx`). Red: `Unable to find an accessible element with the role "article" and name "Plan"`. The region, `#reflection-heading` and "Journal (N)" are asserted absent from the DOM.
+- **Reach changes:** these follow T8P.22's revision-96 note, "Reads through them move to the cards", and the text is unchanged.
+  - The Plan Reflection read in `Plan.test.tsx` moves to the Plan article.
+  - `planReflection` in `e2e/support/detail/journal.ts` now reads the Plan article alone.
+  - In `d2/ui-alignment`, the "answers as prose" row selector narrows from `dl > div` to `dl.answers > div`, because the card item adds Anchor, Source and Moment rows. Its assertions are unchanged.
+- **Browser specs run:** 55 passed and 1 failed, the `ui-alignment` case above. It passed on rerun after the selector change (`browser/T8P.23-B7-*.txt`).
+- **Review:** ocr in place, 6 files, 1 comment (`ocr/T8P.23-B7.json`).
+  - The comment says the Planned mapping puts every Entry in `view.journal` on the Plan card, unfiltered. The reviewer called it Doubtful, as a latent fragility it could not reach.
+  - The main session reassessed it as **Wrong**, because A213 says "An item before the first exposure goes in a 'Plan' list". A Planned Trade has no exposure, so every one of its items is the Plan's, which is what the replay's `placeJournal` does. Filtering to the Plan Reflection would contradict A213. Dismissed, so no bug task.
+- **Quick run (`T8P.23-B7`):** unit 1646, integration 229, checks 14 of 14, browser-task 7; run complete.
