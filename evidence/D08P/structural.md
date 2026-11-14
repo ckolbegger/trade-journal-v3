@@ -1625,3 +1625,5 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
 - **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B13-B1.json`). The reviewer found that the earlier finding no longer holds for a Covered Call, a calendar or diagonal with a live leg, or a live leg beside a due one.
 - **Known edge case, recorded, not fixed:** the empty-session edge from B13's review. An expiration with no completed session in the lifetime leaves later Journal items off the drawer, though they stay stored. It needs a first fill after the expiration session's close. The user decided on 2026-11-14: "Leave the edge case recorded, no fix needed".
 - **Quick run (`T8P.23-B13-B1`):** unit 1658, integration 229, checks 14 of 14, browser-task 8; run complete.
+
+**Merge run 12, the full tier after critic-2's bug tasks** at `b6234b98`: unit 1658 (156 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 82 passed, no failures; run complete. The runner's report was a placeholder, so the main session read the outputs and `run-complete.sh` itself. Critic-3 starts on this commit.
