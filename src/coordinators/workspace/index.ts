@@ -1,5 +1,6 @@
 export {
   createWorkspace,
+  type ApplyPreparedRestoreResult,
   type InitializationReceipt,
   type InitializeWorkspace,
   type Onboarding,
@@ -11,5 +12,35 @@ export {
   type WorkspaceInitializationResult,
   type WorkspaceStatus,
 } from './workspace.ts';
+export type { BackupDeps, BackupOperations, BackupPorts } from './backup.ts';
+export type { RestoreDeps, RestoreOperations } from './restore.ts';
+export type {
+  ApplyPreparedRestoreRequest,
+  ApplyRestoreOutcome,
+  BackupProgress,
+  BackupSafeAction,
+  CompletedBackupReceipt,
+  ConfirmBackupRequest,
+  ConfirmBackupResult,
+  ExportBackupRequest,
+  ExportBackupResult,
+  PrepareRestoreRequest,
+  PrepareRestoreResult,
+  ProgressCallback,
+  ReplaceEntireWorkspace,
+  RestoreCounts,
+  RestoreIssue,
+  RestoreIssueCode,
+  RestoreLanding,
+  RestoreMigrations,
+  RestorePreview,
+  RestoreReceipt,
+  RestoreRepair,
+  RestoreToken,
+  RestoreWarning,
+  SafetyChoice,
+  TargetBinding,
+  WorkspaceReplaced,
+} from './backup-types.ts';
 export { installedCapabilities, type InstalledCapabilityManifest } from './capabilities.ts';
 export type { MigrationBlocked, MigrationIssue, MigrationReceipt, MigrationRepair, MigrationStage, MigrationStageHooks } from './migration.ts';

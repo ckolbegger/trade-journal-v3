@@ -13,3 +13,21 @@ export interface HostPort {
   // first claim; null when the page has no controller.
   readonly controllerRelease: () => Promise<string | null>;
 }
+
+// The file a backup export offers the trader as an ordinary download (D8 A128).
+export interface OfferedFile {
+  readonly blob: Blob;
+  readonly fileName: string;
+  readonly type: string;
+}
+
+// The download port: hands one file to the host as an ordinary download. The host cannot say
+// whether or where the trader saved it, so Offered is not a completed backup (D8 A141).
+export interface DownloadPort {
+  offer(file: OfferedFile): Promise<{ readonly kind: 'Offered' } | { readonly kind: 'Failed'; readonly reason: string }>;
+}
+
+// The file-selection port: asks the trader to choose one file, through the host's ordinary file selection.
+export interface FileSelectionPort {
+  choose(): Promise<{ readonly kind: 'Chosen'; readonly file: File } | { readonly kind: 'Cancelled' }>;
+}

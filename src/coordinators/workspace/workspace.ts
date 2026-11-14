@@ -8,6 +8,19 @@ import { validateSection as validateMarketData, type MarketDataDeps } from '../.
 import { D7_CATALOG_MANIFEST, prepareSeed, type ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import { SCHEMA_VERSION } from '../../persistence/schema.ts';
 import type { IdGenerator, LifecycleLock, Persistence, RecordSource, SectionRecord, SessionPolicyIdentity, StoreRecord, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import { createBackupOperations, type BackupPorts } from './backup.ts';
+import type {
+  ApplyPreparedRestoreRequest,
+  ApplyRestoreOutcome,
+  BackupSafeAction,
+  ConfirmBackupRequest,
+  ConfirmBackupResult,
+  ExportBackupRequest,
+  ExportBackupResult,
+  PrepareRestoreRequest,
+  PrepareRestoreResult,
+} from './backup-types.ts';
+import { createRestoreOperations } from './restore.ts';
 import { installedCapabilities, type InstalledCapabilityManifest } from './capabilities.ts';
 import { migrate, type MigrationBlocked, type MigrationReceipt, type MigrationStageHooks } from './migration.ts';
 
@@ -26,6 +39,8 @@ export interface WorkspaceDeps {
   readonly locks: LifecycleLock;
   // Stage-boundary hooks for the faults build (T2.16); production passes none.
   readonly migrationHooks?: MigrationStageHooks;
+  // The host seams backup uses (D8 T8.23); composition supplies them in T8.11.
+  readonly backup?: BackupPorts;
 }
 
 export interface InitializeWorkspace {
@@ -41,6 +56,8 @@ interface StatusBase {
   // Current Runtime Readiness with its per-check evidence.
   readonly readiness: ReadinessEvaluation;
   readonly protection: StorageProtection;
+  // The backup actions this status offers (D8 P32, P33); T8.10 fills it.
+  readonly backupActions?: readonly BackupSafeAction[];
 }
 
 export type WorkspaceStatus =
@@ -129,6 +146,9 @@ export type WorkspaceInitializationResult =
   | { readonly kind: 'Opened'; readonly status: ReadyStatus; readonly receipt: InitializationReceipt }
   | MigrationBlocked;
 
+// applyPreparedRestore's result with the fresh WorkspaceStatus a Restored result carries (A136).
+export type ApplyPreparedRestoreResult = ApplyRestoreOutcome<WorkspaceStatus>;
+
 export interface Workspace {
   initialize(request: InitializeWorkspace): Promise<WorkspaceInitializationResult>;
   // Reads status under the current session's readiness; it never mutates or repairs.
@@ -136,6 +156,11 @@ export interface Workspace {
   // One explicit trader gesture asking the host for stronger local persistence. Advisory: it
   // never changes Runtime Readiness and never replaces backup.
   requestDurability(): Promise<WorkspaceDurabilityResult>;
+  // Backup and Restore (D8): each delegates to backup.ts or restore.ts.
+  exportBackup(request: ExportBackupRequest): Promise<ExportBackupResult>;
+  confirmBackup(request: ConfirmBackupRequest): Promise<ConfirmBackupResult>;
+  prepareRestore(request: PrepareRestoreRequest): Promise<PrepareRestoreResult>;
+  applyPreparedRestore(request: ApplyPreparedRestoreRequest): Promise<ApplyPreparedRestoreResult>;
 }
 
 export type WorkspaceDurabilityResult =
@@ -221,7 +246,15 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
     return undefined;
   }
 
+  const backup = createBackupOperations(deps);
+  const restore = createRestoreOperations<WorkspaceStatus>({ ...deps, status: () => workspace.getStatus() }, backup);
+
   const workspace: Workspace = {
+    exportBackup: (request) => backup.exportBackup(request),
+    confirmBackup: (request) => backup.confirmBackup(request),
+    prepareRestore: (request) => restore.prepareRestore(request),
+    applyPreparedRestore: (request) => restore.applyPreparedRestore(request),
+
     async requestDurability() {
       if (!deps.host.persisted || !deps.host.persist) {
         requestedProtection = 'Unavailable';

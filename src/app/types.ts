@@ -23,6 +23,38 @@ export type {
   WorkspaceInitializationResult,
   WorkspaceStatus,
 } from '../coordinators/workspace/index.ts';
+// Backup and Restore (D8 T8.23): the four operations' requests and results, the preview, token, issues,
+// receipts, safety choice, progress and cancel signal, and the notice another tab hears (A129-A138, A148).
+export type {
+  ApplyPreparedRestoreRequest,
+  ApplyPreparedRestoreResult,
+  BackupProgress,
+  BackupSafeAction,
+  CompletedBackupReceipt,
+  ConfirmBackupRequest,
+  ConfirmBackupResult,
+  ExportBackupRequest,
+  ExportBackupResult,
+  PrepareRestoreRequest,
+  PrepareRestoreResult,
+  ProgressCallback,
+  ReplaceEntireWorkspace,
+  RestoreCounts,
+  RestoreIssue,
+  RestoreIssueCode,
+  RestoreLanding,
+  RestoreMigrations,
+  RestorePreview,
+  RestoreReceipt,
+  RestoreRepair,
+  RestoreToken,
+  RestoreWarning,
+  SafetyChoice,
+  TargetBinding,
+  WorkspaceReplaced,
+} from '../coordinators/workspace/index.ts';
+// The host seams the Backup page and Restore flow use: the file selection port (D8 T8.23).
+export type { DownloadPort, FileSelectionPort, OfferedFile } from '../delivery/host.ts';
 // The status a failed migration leaves: the old database unchanged and nothing Ready (D2 P6).
 export type MigrationBlockedStatus = Extract<WorkspaceStatus, { readonly kind: 'MigrationBlocked' }>;
 // An existing root this release cannot open now, including AwaitingMigration (readiness must be
