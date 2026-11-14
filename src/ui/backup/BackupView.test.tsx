@@ -86,6 +86,24 @@ describe('download (A141)', () => {
     expect(await screen.findByText(DOWNLOADED.fileName)).toBeTruthy();
     expect(screen.queryByText(/The backup could not be made/)).toBeNull();
   });
+
+  it('should show each Not Completed reason in its own words', async () => {
+    const { facade, user } = setup();
+    const cases: [ExportBackupResult, string][] = [
+      [{ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: BINDING }, "The backup could not be made. Your journal couldn't be read. Nothing was changed."],
+      [{ kind: 'NotCompleted', stage: 'Offer', reason: 'OfferFailed', workspaceBinding: BINDING }, "The backup could not be made. Your browser didn't accept the download. Nothing was changed."],
+      [{ kind: 'NotCompleted', stage: 'Read', reason: 'IntegrityBlocked', workspaceBinding: null }, 'The backup could not be made. Your journal has a problem that blocks a normal backup. Nothing was changed.'],
+      [{ kind: 'Conflict', currentBinding: BINDING }, 'The backup could not be made. Your journal changed while the backup was being made. Nothing was changed.'],
+    ];
+    let button = 'Download backup';
+    for (const [result, words] of cases) {
+      facade.respond('exportBackup', result);
+      await user.click(screen.getByRole('button', { name: button }));
+      expect(await screen.findByText(words)).toBeTruthy();
+      expect(screen.getAllByText(/The backup could not be made/)).toHaveLength(1);
+      button = 'Retry';
+    }
+  });
 });
 
 describe('verify', () => {

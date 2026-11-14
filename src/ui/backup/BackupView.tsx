@@ -28,6 +28,15 @@ const NOT_VERIFIED: Record<NotVerifiedReason, string> = {
   DifferentArtifact: 'This is a different backup from the one you just downloaded.',
 };
 
+type NotMadeReason = 'ReadFailed' | 'OfferFailed' | 'IntegrityBlocked' | 'Conflict';
+
+const NOT_MADE: Record<NotMadeReason, string> = {
+  ReadFailed: "Your journal couldn't be read.",
+  OfferFailed: "Your browser didn't accept the download.",
+  IntegrityBlocked: 'Your journal has a problem that blocks a normal backup.',
+  Conflict: 'Your journal changed while the backup was being made.',
+};
+
 // "Sat Nov 14, 16:05" in the Workspace zone (convention C4).
 function completionTime(instant: string, timeZone: string): string {
   const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).formatToParts(new Date(instant));
@@ -42,7 +51,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
   const [checking, setChecking] = useState<BackupProgress | 'Starting' | undefined>();
   const [outcome, setOutcome] = useState<{ readonly kind: 'Completed'; readonly at: string } | { readonly kind: 'NotVerified'; readonly reason: NotVerifiedReason } | undefined>();
   const [making, setMaking] = useState<BackupProgress | 'Starting' | undefined>();
-  const [failedStage, setFailedStage] = useState<'Read' | 'Offer' | undefined>();
+  const [notMade, setNotMade] = useState<NotMadeReason | undefined>();
 
   // Counts downloads, so a check that finishes after a newer download can be told apart and dropped.
   const downloadCount = useRef(0);
@@ -50,7 +59,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
   const download = async () => {
     downloadCount.current += 1;
     setMaking('Starting');
-    setFailedStage(undefined);
+    setNotMade(undefined);
     setDownloaded(undefined);
     setOutcome(undefined);
     setChecking(undefined);
@@ -58,7 +67,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
     const result = await facade.exportBackup({ onProgress: setMaking }).catch((): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null }));
     setMaking(undefined);
     if (result.kind === 'Downloaded') setDownloaded(result);
-    else setFailedStage(result.kind === 'NotCompleted' ? result.stage : 'Read');
+    else setNotMade(result.kind === 'NotCompleted' ? result.reason : 'Conflict');
   };
 
   const verify = async (expected: Downloaded) => {
@@ -86,13 +95,13 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
         <h2 id="backup-download-heading">Download a backup</h2>
         <p>While a backup is being made, saving waits until it finishes.</p>
         {making !== undefined && <p role="status">{making === 'Starting' ? 'Making the backup' : `Making the backup: ${records(making)}`}</p>}
-        {failedStage && (
+        {notMade && (
           <p role="alert">
-            The backup could not be made. {failedStage === 'Read' ? "Your journal couldn't be read." : "Your browser didn't accept the download."} Nothing was changed.
+            The backup could not be made. {NOT_MADE[notMade]} Nothing was changed.
           </p>
         )}
         <button type="button" className="pill primary" disabled={making !== undefined} onClick={() => void download()}>
-          {failedStage ? 'Retry' : 'Download backup'}
+          {notMade ? 'Retry' : 'Download backup'}
         </button>
         {downloaded && (
           <div className="backup-result">
