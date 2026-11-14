@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { TradeDetailView, ViewBinding } from '../../app/types.ts';
@@ -51,31 +51,38 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
 
   // The Detail shows as soon as it is read; the replay is read with its binding and fills in when it arrives (P95, W20). Retry resets to
   // Loading itself.
+  // Only the newest request's answers are applied: a slow read of another Trade, or one a Retry replaced, settles into nothing.
+  const latest = useRef(0);
   const request = useCallback(() => {
+    latest.current += 1;
+    const ticket = latest.current;
+    const show = (next: DetailState) => {
+      if (latest.current === ticket) setState(next);
+    };
     const read = async (): Promise<void> => {
       for (let attempt = 0; attempt < READS; attempt += 1) {
         const result = await facade.TradeViewsAndReporting.getTradeDetail({ tradeId });
         if (result.kind !== 'Ready') {
-          setState({ kind: result.kind === 'NotFound' ? 'NotFound' : 'Error' });
+          show({ kind: result.kind === 'NotFound' ? 'NotFound' : 'Error' });
           return;
         }
         const { view, binding } = result;
         if (!replayable(view)) {
-          setState({ kind: 'Ready', view, replay: { kind: 'None' } });
+          show({ kind: 'Ready', view, replay: { kind: 'None' } });
           return;
         }
-        setState({ kind: 'Ready', view, replay: { kind: 'Pending' } });
+        show({ kind: 'Ready', view, replay: { kind: 'Pending' } });
         const replay = await readReplay(facade, tradeId, binding);
         // The Workspace moved since the Detail's binding: both are read again, so the screen shows one snapshot.
         if (replay !== 'Moved') {
-          setState({ kind: 'Ready', view, replay });
+          show({ kind: 'Ready', view, replay });
           return;
         }
       }
       // A Workspace that keeps moving ends as the read error, with Retry.
-      setState({ kind: 'Error' });
+      show({ kind: 'Error' });
     };
-    read().catch(() => setState({ kind: 'Error' }));
+    read().catch(() => show({ kind: 'Error' }));
   }, [facade, tradeId]);
 
   const retry = () => {
@@ -86,6 +93,10 @@ export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProp
   const alreadyShown = confirmed?.tradeId === tradeId;
   useEffect(() => {
     if (!alreadyShown) request();
+    // Leaving the Trade (or the screen) drops any read still pending for it.
+    return () => {
+      latest.current += 1;
+    };
   }, [alreadyShown, request]);
 
   if (state.kind === 'Loading') {

@@ -2,7 +2,7 @@
 // Trade Detail's replay read (P95, W20) and the rail following the Journal (revision 95), through `TradeDetail` against the facade double.
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UiFacade } from '../../app/compose.ts';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -54,10 +54,14 @@ const replayed = (item: TradeReplayView['sessions'][number]['journal'][number]) 
   return bare;
 };
 
-const replay = (items: TradeReplayView['sessions'][number]['journal'] = [debt]): TradeReplayView => {
+// `marked`: every session has a Mark, so the Journal has four session cards (it shows three to a page).
+const replay = (items: TradeReplayView['sessions'][number]['journal'] = [debt], marked = false): TradeReplayView => {
   const journal = items.map(replayed);
   const empty = { positions: [], heldQuantity: Rational.of(100n), realizedPnl: Rational.of(0n), positionChangeIds: [], journal: [] };
-  const noMarks = (date: string) => ({ ...empty, date, tradePnl: { kind: 'Unavailable' as const, reason: 'MarkMissing' as const, instrument: STOCK, date }, change: null, marks: [markOf(undefined)] });
+  const noMarks = (date: string) =>
+    marked
+      ? { ...empty, date, tradePnl: { kind: 'Value' as const, value: Rational.of(100n) }, change: null, marks: [markOf('52.00')] }
+      : { ...empty, date, tradePnl: { kind: 'Unavailable' as const, reason: 'MarkMissing' as const, instrument: STOCK, date }, change: null, marks: [markOf(undefined)] };
   return {
     tradeId: 'trade-1',
     instruments: [STOCK],
@@ -259,6 +263,59 @@ describe('Trade Detail: the replay read (P95)', () => {
     const journal = document.getElementById('drawer-panel-journal')!;
     expect(within(journal).getByText('Every entry, newest first')).toBeTruthy();
     expect(screen.queryAllByRole('heading', { name: /^Journal \(/, hidden: true })).toEqual([]);
+  });
+});
+
+describe('Trade Detail: a stale read (T8P.22-B2)', () => {
+  it('should keep the Detail of the Trade the route is on when an earlier Trade\'s read settles after the route moved', async () => {
+    const user = userEvent.setup();
+    const facade = facadeDouble();
+    const trade = (symbol: string) => {
+      const view = thursday();
+      return { ...view, plan: { ...view.plan, underlying: symbol } };
+    };
+    let settleA: (result: unknown) => void = () => undefined;
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockImplementation((({ tradeId }: { tradeId: string }) =>
+      tradeId === 'trade-a' ? new Promise((resolve) => (settleA = resolve)) : Promise.resolve({ kind: 'Ready', view: trade('BBB'), binding: BINDING })) as never);
+    vi.mocked(facade.TradeViewsAndReporting.replayTrade).mockResolvedValue({ kind: 'Ready', view: replay([]), binding: BINDING } as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined, timeZone: 'America/New_York' }}>
+        <MemoryRouter initialEntries={['/trades/trade-a']}>
+          <Link to="/trades/trade-b">Other</Link>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    // Trade A's read is pending; the route moves to Trade B, which reads at once.
+    await user.click(screen.getByRole('link', { name: 'Other' }));
+    expect(await screen.findByRole('heading', { name: 'BBB', level: 1 })).toBeTruthy();
+    // A's read settles last: its Detail is not shown, and B's stays.
+    settleA({ kind: 'Ready', view: trade('AAA'), binding: BINDING });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.queryAllByRole('heading', { name: 'AAA', level: 1, hidden: true })).toEqual([]);
+    expect(screen.getByRole('heading', { name: 'BBB', level: 1 })).toBeTruthy();
+  });
+});
+
+describe('Trade Detail: Reflect now finds the Debt (T8P.22-B1)', () => {
+  it('should turn the Journal cards to the page holding the Debt when Reflect now is chosen for a Debt on an older session', async () => {
+    const user = userEvent.setup();
+    const facade = facadeOf({ replayResult: { kind: 'Ready', view: replay([debt], true), binding: BINDING } });
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    renderWith(facade);
+    const needsYou = await screen.findByRole('region', { name: 'Needs you' });
+    // Four session cards, three to a page: the Monday card with the Debt is on the second page, hidden (present, not gone).
+    const cardOf = () => document.querySelector('#drawer-panel-journal .journal-cards ol > li:last-child') as HTMLElement;
+    expect(cardOf().hidden).toBe(true);
+    expect(cardOf().textContent).toContain('Reflection owed');
+
+    await user.click(within(needsYou).getByRole('button', { name: 'Reflect now' }));
+    const form = await within(screen.getByRole('tabpanel', { name: 'Journal' })).findByRole('form', { name: 'Reflection' });
+    // The form is open on the Debt's card, and that card is on the page that shows.
+    expect(cardOf().hidden).toBe(false);
+    expect(cardOf().contains(form)).toBe(true);
   });
 });
 

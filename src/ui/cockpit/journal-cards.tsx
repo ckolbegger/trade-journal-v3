@@ -1,7 +1,8 @@
 // The Journal drawer's session cards (W10 to W13, A214): one card per session, newest first. The adapter (`drawers/journal.props`) turns the
 // replay and the Detail's view into display values; without a replay this renders nothing, and the Journal section keeps the drawer.
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Badge } from '../Badge.tsx';
+import { ReflectRequestContext } from '../screens/OwedDebtItem.tsx';
 import { journalCards, type JournalCardsInput } from './drawers/journal.props.ts';
 import type { JournalCardItem, JournalCardProps, OwedControl } from './drawers/journal.types.ts';
 
@@ -110,6 +111,15 @@ export function JournalCards(input: JournalCardsInput) {
   const [active, setActive] = useState<{ readonly itemId: string; readonly resolved: boolean }>();
   const [requested, setPage] = useState(0);
   const props = journalCards(input);
+  // "Reflect now" for a Debt (A217): the cards turn to the page holding that Debt's card, whose item opens its own form from the same request.
+  // The page is set while rendering, once per new request (state adjusted from a changed input, not in an effect).
+  const request = useContext(ReflectRequestContext);
+  const [seen, setSeen] = useState<string>();
+  if (request.debtId !== seen) {
+    setSeen(request.debtId);
+    const at = props?.cards.findIndex((card) => card.items.some((item) => item.id === request.debtId)) ?? -1;
+    if (request.debtId !== undefined && at >= 0) setPage(Math.floor(at / PAGE_SIZE));
+  }
   if (!props) return null;
   const pages = Math.ceil(props.cards.length / PAGE_SIZE);
   // The page follows the list: the last page that has cards, and the first for a list that does not page.
