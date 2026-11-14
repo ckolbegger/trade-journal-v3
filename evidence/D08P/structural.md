@@ -1316,3 +1316,19 @@ I8P.3 first failed for a fixture reason (the Review's save result kind is `Marks
 - `ReflectRequest.settled(debtId)`, so Needs you follows the Journal without a read (revision 95).
 
 It stopped on its brief's stop rule: retiring the three legacy blocks (case 6) drops figures no task had placed. The main session checked that against the plan and the specs. Section 1.5 dissolves the Summary card "one figure in one place", but places none of them. The UI contract requires the Valuation items (exact dates and source, Stale context, correction indicators, the acknowledgment wording). The user chose to place them all: revision 96 adds T8P.31 (lane PL). T8P.22 rebases onto it and then finishes case 6, the browser reach moves and the CSS. Unit at the stop: 24 failures, all legacy-block reads (Summary 10, Valuation 8, RiskReward 5, `Result.test.tsx` 1), which revision 96 settles.
+
+**T8P.31 (lane PL), the legacy blocks' figures in one place.** Task `4ab7ee0f`, evidence `ca28d3d9`: unit 1642, integration 229, checks exit 0, browser tier 1 128 and tier 2 75 passed; run complete. The titles diff is exactly the seven new titles. Case 2 (the current Marks in Position on a state without Today) passed on its first run, because `Cockpit.tsx` already renders `TodayDrawer` in the Position panel there. It is flagged; its mutation (`todayProps` leaves out `currentMarks` when a settlement is due) failed with `expected null not to be null`. Places:
+- the current Marks card (`.current-marks`, no heading, since no existing word fits without clashing with a legacy region): Today, or Position on Settlement Due; Mark, Source, Saved and correction rows left out where Today's comparison shows them;
+- the Trade Summary: Position on Closed, Plan and Risk on Planned;
+- Net cost: the Position card, Open only;
+- the Entry status: Entry Quality's first row;
+- Deviation active: in the lifecycle badge's line;
+- each condition's figures: a Plan and Risk card in Plan order.
+
+Expectations changed by the placement (revision 96):
+- `plan-risk.test.tsx` no longer lists `Entry` as a Summary-only term;
+- `e2e/d2/ui-alignment.spec.ts:1163`: the Entry Quality row count goes from 7 to 8, the new Entry row. The main session accepted this as the direct consequence of revision 96's Entry placement; the figure itself is unchanged.
+
+Accepted beyond the plan's words: the new card leaves out the "Mark missing" link while `firstMarksDue` is set, since no Mark is due yet and "No Marks yet" names when they are (revision 90). The Overrun, Boundary and Status columns of the legacy conditions table already have their place on the Conditions card (W5: row 2 names the boundary, row 1 the status, row 3 the overrun), which the main session checked.
+
+**The user's choice on case 7.** The main session found that the Conditions card already shows every condition's distance (W5, one block per condition), so case 7 repeats it. T8P.22's agent had read the rail as nearest-only. The user chose to keep case 7 as built ("Keep case 7"), so revision 96 stands unchanged.
