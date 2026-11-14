@@ -147,6 +147,30 @@ describe('Restore candidates (A138)', () => {
   });
 });
 
+describe('supersession (T8.7-B5)', () => {
+  it('should refuse to create a Restore candidate in a superseded session', async () => {
+    const p = persistence('s');
+    const created = await p.createWorkspace([]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    await p.commit({ checks: [], writes: [] });
+    await new Promise<void>((resolve, reject) => {
+      const request = factory.open(created.databaseName, 2);
+      request.onsuccess = () => {
+        request.result.close();
+        resolve();
+      };
+      request.onerror = () => reject(request.error ?? new Error('open failed'));
+    });
+    expect(p.isSuperseded()).toBe(true);
+    const before = await databaseNames();
+
+    const result = await p.createRestoreCandidate();
+
+    expect(result).toMatchObject({ kind: 'RuntimeNotWritable', failedChecks: [{ check: 'control', reason: 'SessionSuperseded' }] });
+    expect(await databaseNames()).toEqual(before);
+  });
+});
+
 describe('activation without a Workspace (A135)', () => {
   it('should activate a candidate by adding the pointer when none exists, and fail with AlreadyInitialized, deleting the candidate, when a pointer was added meanwhile', async () => {
     const restoring = persistence('r');

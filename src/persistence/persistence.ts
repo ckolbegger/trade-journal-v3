@@ -277,7 +277,14 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
   // Restore candidate creations on this instance run one after another, so each sees the previous one's entry.
   let restoreCreations: Promise<unknown> = Promise.resolve();
 
+  // A superseded session never writes, and its refusal always says why.
+  async function supersededRefusal(): Promise<RuntimeNotWritable> {
+    const refusal = (await deps.writeGate.recheck()) ?? SUPERSEDED;
+    return refusal === SUPERSEDED ? refusal : { ...refusal, failedChecks: [...refusal.failedChecks, ...SUPERSEDED.failedChecks] };
+  }
+
   async function createRestoreCandidateNow(): Promise<RuntimeNotWritable | { readonly kind: 'Created'; readonly databaseName: string }> {
+    if (superseded) return supersededRefusal();
     const refusal = deps.writeGate.current();
     if (refusal) return refusal;
     session ??= globalThis.crypto.randomUUID();
@@ -426,11 +433,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async commit(writeSet) {
-      if (superseded) {
-        // A superseded session never writes, and its refusal always says why.
-        const refusal = (await deps.writeGate.recheck()) ?? SUPERSEDED;
-        return refusal === SUPERSEDED ? refusal : { ...refusal, failedChecks: [...refusal.failedChecks, ...SUPERSEDED.failedChecks] };
-      }
+      if (superseded) return supersededRefusal();
       // Outside Writable, refuse before any write transaction is opened.
       const refusal = deps.writeGate.current();
       if (refusal) return refusal;
