@@ -1,5 +1,7 @@
 // Workspace.exportBackup (D8 T8.4), on W7 and its schema-5 sibling, through the in-process export port.
 import { readFileSync } from 'node:fs';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import { gunzipSync, gzipSync } from 'fflate';
 import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
@@ -26,6 +28,29 @@ async function linesOf(bytes: Uint8Array): Promise<ArtifactLine[]> {
   const lines: ArtifactLine[] = [];
   for await (const line of readArtifact(new Blob([bytes as BlobPart]))) lines.push(line);
   return lines;
+}
+
+function canonical(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(',')}}`;
+}
+
+type EditableArtifact = { readonly lines: string[]; readonly manifest: { sectionDigests: Record<string, string>; fullDigest: string } & Record<string, unknown> };
+
+// Rebuilds a well-compressed artifact from a real export: the edit changes the lines before the manifest or the manifest fields, then the full digest and gzip are recomputed.
+// Section digests, counts, and the header stay the edit's responsibility, so a case reaches the check it targets rather than failing at decompression or on the full digest.
+function editedArtifact(bytes: Uint8Array, edit: (artifact: EditableArtifact) => void): { readonly bytes: Uint8Array; readonly fullDigest: string } {
+  const all = new TextDecoder().decode(gunzipSync(bytes)).split('\n');
+  all.pop();
+  const manifest = JSON.parse(all.pop()!) as EditableArtifact['manifest'];
+  const artifact: EditableArtifact = { lines: all, manifest };
+  edit(artifact);
+  const fullDigest = bytesToHex(sha256(new TextEncoder().encode(artifact.lines.map((l) => `${l}\n`).join(''))));
+  manifest.fullDigest = fullDigest;
+  const text = [...artifact.lines, canonical(manifest)].map((l) => `${l}\n`).join('');
+  return { bytes: gzipSync(new TextEncoder().encode(text)), fullDigest };
 }
 
 describe('Downloaded (AC-BACK-001)', () => {
@@ -366,6 +391,44 @@ describe('Not Verified', () => {
         },
       });
     expect(await confirm(unreadable)).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+  });
+});
+
+describe('Not Verified, section ends (A123, A130)', () => {
+  it('should return IncompleteOrCorrupt when a section ends twice and another never ends', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const a7 = testHost.downloads.offered[0]!.bytes;
+    const confirmEdited = (edit: (artifact: EditableArtifact) => void) => {
+      const edited = editedArtifact(a7, edit);
+      return workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
+    };
+    const endIndexes = (lines: string[]) => lines.flatMap((l, i) => (l.includes('"kind":"sectionEnd"') ? [i] : []));
+
+    // Control: re-sealing an unedited artifact is Completed, so the rebuild itself is sound.
+    expect((await confirmEdited(() => undefined)).kind).toBe('Completed');
+
+    // The last section's ending names the first section instead: A ends twice, B never ends. Counts and digests are made self-consistent.
+    expect(
+      await confirmEdited(({ lines, manifest }) => {
+        const ends = endIndexes(lines);
+        const firstEnd = JSON.parse(lines[ends[0]!]!) as { section: string; counts: unknown };
+        const lastIndex = ends[ends.length - 1]!;
+        const lastEnd = JSON.parse(lines[lastIndex]!) as { section: string; counts: unknown; digest: string };
+        lines[lastIndex] = canonical({ ...lastEnd, section: firstEnd.section, counts: firstEnd.counts });
+        delete manifest.sectionDigests[lastEnd.section];
+        manifest.sectionDigests[firstEnd.section] = lastEnd.digest;
+      }),
+    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+
+    // The header lists the sections in another order than the file ends them.
+    expect(
+      await confirmEdited(({ lines }) => {
+        const header = JSON.parse(lines[0]!) as { sections: string[] };
+        lines[0] = canonical({ ...header, sections: [...header.sections].reverse() });
+      }),
+    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
   });
 });
 

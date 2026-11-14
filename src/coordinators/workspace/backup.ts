@@ -106,7 +106,8 @@ async function verifyArtifact(file: File): Promise<Verified | { readonly kind: '
         actual.set(tail[1]!, stores);
       } else if (line.kind === 'sectionEnd') {
         const parsed = sectionEndShape.safeParse(line.value);
-        if (!parsed.success || parsed.data.digest !== line.computedSectionDigest || !sameCounts(parsed.data.counts, actual.get(parsed.data.section) ?? {})) {
+        // The ends must name the header's sections, each once, in the header's order (A123).
+        if (!parsed.success || parsed.data.section !== header.sections[sectionEnds] || parsed.data.digest !== line.computedSectionDigest || !sameCounts(parsed.data.counts, actual.get(parsed.data.section) ?? {})) {
           return { kind: 'IncompleteOrCorrupt' };
         }
         sectionEnds += 1;
