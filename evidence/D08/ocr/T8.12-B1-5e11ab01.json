@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 71540,
+    "input_tokens": 70811,
+    "output_tokens": 729,
+    "cache_read_tokens": 15872,
+    "elapsed": "44s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/BackupView.tsx",
+      "content": "The generation check drops only the final result; the old verification's `onProgress` still calls `setChecking` directly. If it emits progress after the next download clears `checking`, the new backup shows the old check's progress and its Verify button becomes disabled. When the old check finishes, this early return leaves that stale checking state in place indefinitely. Guard the progress callback with the same generation comparison, and extend the regression test to emit progress after the replacement download.",
+      "existing_code": "    if (forDownload !== downloadCount.current) return;",
+      "start_line": 74,
+      "end_line": 74,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/backup/BackupView.tsx",
+      "content": "Capture the download generation before awaiting `selectFile.choose()`, and check it again when selection resolves. Currently, if another download starts while selection is pending, this captures the new generation even though `expected` still belongs to the old download. That verification can consequently publish `Backup complete` for the old artifact under the new backup. A deferred file-selection test would cover this race.",
+      "existing_code": "    const forDownload = downloadCount.current;",
+      "start_line": 67,
+      "end_line": 67,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/backup/BackupView.test.tsx",
+        "src/ui/backup/BackupView.tsx"
+      ]
+    }
+  ],
+  "session_id": "39b4cf87-84e0-4763-957e-ff71b37f37f1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "39b4cf87-84e0-4763-957e-ff71b37f37f1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5e11ab01",
+      "resolved_base": "54c7bd84ffad0bce12ddd498eecadfa1402782d7",
+      "resolved_head": "5e11ab01800ea5b51db07945bbdcf2c8b6638f47",
+      "exact_range": "54c7bd84ffad0bce12ddd498eecadfa1402782d7..5e11ab01800ea5b51db07945bbdcf2c8b6638f47",
+      "source_artifact_sha256": "92e356c4dbdd389e18630ef044a99d5fc3a3ce9acc7977e9188b416e3176d036"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "6d3deb9614c5a62299a0b93072e691f0506c25edeedb89347b05239dfa5df702"
+        },
+        {
+          "item_id": "31fc3c3d8cd13f1aa217fe73c15c264e936601c51b36bcc485706dd4053ea989",
+          "path": "src/ui/backup/BackupView.test.tsx",
+          "fingerprint": "da3508bea0ef06c433472d0803c688f05f249e176525e8ed018edec65d46cf5b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "6d3deb9614c5a62299a0b93072e691f0506c25edeedb89347b05239dfa5df702"
+        },
+        {
+          "item_id": "31fc3c3d8cd13f1aa217fe73c15c264e936601c51b36bcc485706dd4053ea989",
+          "path": "src/ui/backup/BackupView.test.tsx",
+          "fingerprint": "da3508bea0ef06c433472d0803c688f05f249e176525e8ed018edec65d46cf5b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "33beb946178f13edf12db9a28a244b605f5531b1d25ce20e7df835cf6ea9baca",
+          "path": "evidence/D08/suite-runs/T8.12-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "559504161588689da34c32656318999ebadd2a73e6858634e3b4f560e408aab2",
+          "path": "evidence/D08/suite-runs/T8.12-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a3abf9a1e98a34e6c5b69e6611ed9a4f64bd5cf708b6ad145e76338486ee459a",
+          "path": "evidence/D08/suite-runs/T8.12-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1863f0de2f9a12db2de8818a0f9565ba676441b53a855f0f8ea6df88e019d81",
+          "path": "evidence/D08/suite-runs/T8.12-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ec9028ccca761703f3b1f2c0d3fe7f911f2bb395510777fffa93b45b0660ef3c",
+          "path": "evidence/D08/tdd-log/T8.12-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 43731
+  }
+}
