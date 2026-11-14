@@ -19,6 +19,7 @@
     "lint:deps": "node tools/lint-deps.ts",
     "verify:capabilities": "node tools/verify-capabilities.ts",
     "build:releases": "node tools/build-releases.ts",
+    "build:all": "npm run build && npm run build:faults && npm run build:releases",
     "verify:releases": "node tools/verify-releases.ts",
     "serve:releases": "node tools/release-server.ts",
     "build:faults": "vite build --mode faults --outDir dist-faults",
