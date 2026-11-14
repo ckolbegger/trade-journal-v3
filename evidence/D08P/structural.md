@@ -1389,3 +1389,31 @@ The reviewer reported the lane modified and main clean; the reverse was true (ma
 **T8P.22 merge.** Only plan and evidence followed lane wire's base `0e9ac4c2`, so its tiers stand. Rebased onto `af5442ce` and fast-forwarded: `0c78979f` (task), `7090ad0b`, `8771f053` (B1, B2), `7effc464`. Lane wire was removed. Merge run 9 (`browser-auto 395f7ec5`) covers T8P.24, T8P.31 and T8P.22.
 
 **Merge run 9** at `c670929c` (`browser-auto 395f7ec5`, which chose the full tier from `e2e/d2/ui-alignment.spec.ts`; the merges of T8P.24, T8P.31 and T8P.22): unit 1651 (159 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 75 passed, no failures; run complete. The scripts saw the main session's uncommitted T8P.27 start record, and HEAD moved to `4b0bae31` (that record) before the browser stages. Both touch only plan and evidence, so the code tested is `c670929c`'s. The next merge run is `browser-auto c670929c`.
+
+**T8P.27 (lane rm), the old Detail sections removed.** Commits:
+- the pairing table `2415fc21`, committed alone before any deletion;
+- the moved assertions `5821d382`, 13 cases, committed before the deletion so coverage never lapses;
+- the deletion `2a70088c`;
+- evidence `d4ee5023`.
+
+Results: unit 1640, integration 229, checks 14 of 14, browser tier 1 126 and tier 2 75; run complete. The lane marker went when the full browser tier ran.
+
+**The unreachable check.** The dependency-cruiser module check from `src/main.tsx` was too coarse, since a file stays reachable through one live export, so an export-level script (no non-test importer) was added. Before: module level `Summary.tsx`, `test-support.ts`; export level the unused `Composed.tsx` blocks, `IdentityHeader`, `PositionSection`, `LotMatchesSection`, `FeeReconciliationSection`, `ConditionLines`, and every export of Today, Plan, Footer, Payoff, SettlementDue, Valuation, RiskReward and Summary. After: `test-support.ts` only, the shared test helper 16 test files use.
+
+**Removed:**
+- the files `Summary.tsx`, `Valuation.tsx`, `RiskReward.tsx`, `Today.tsx`, `Plan.tsx`, `Footer.tsx`, `Payoff.tsx`, `SettlementDue.tsx`, and the tests `Summary.test.tsx`, `Valuation.test.tsx`, `RiskReward.test.tsx`;
+- trimmed: `Composed.tsx` to `JournalBlock` (the orphan `NeedsYouBlock` goes), `Identity.tsx` to `BackToTrades`, `Position.tsx` (three sections), `figure.tsx` (`ConditionLines`, the `tone` prop), and `test-support.ts` (`renderLegacyView`, `renderLegacyDetail`, `legacyBlocks`);
+- **no CSS selector removed**: every remaining `legacy-detail.css` class is still rendered by a piece living on in the drawers and rail.
+
+**Titles:** 24 removed, all in the table, and 13 added, the moved assertions M1 to M13. **All 13 passed on their first run** (the cockpit already rendered each value), and each is flagged with its mutation's assertion failure in `tdd-log/T8P.27.md`. M13's absence check uses both a `hidden: true` role query and a DOM query, because the role query missed a planted hidden region with an `aria-label`.
+
+**Main-session check of the pairing table (revision 86), row by row.** All 24 rows hold.
+- **Covering cases:** spot-checked against their files: row 3 in `Plan.test.tsx` (Intended entry "$50.00", Target "$56.00", Reward : risk "2.4"), row 5 (`$270.00`), row 9 (`pnl.props.test.tsx` "1 of 2 contracts open"), rows 10 and 9 (`identity.props.test.tsx`), row 11 (Placed "$248.70 credit", "$190.65"), row 17 (`conditions.props.test.ts` "Outside calendar"), rows 21 and 24 ("… past this Stop."), row 20 (Placed "$450.00 · 1.80R", "$400.00 · 1.60R"), row 23 (`Plan.test.tsx` "XYZ at or below 48.00", "XYZ at or above 60.00"), and row 24's order (`conditions.props.test.ts:181`).
+- **Retirements:**
+  - Rows 13, 16 and 18 retire the Valuation's "+$180.00 · +0.72R" form by W3, whose figure is "$188.05", with no sign and no R.
+  - Rows 17 and 20 retire the aggregate Risk to stop and Reward to target words by A207 and A222: the reason sits at the `figure` length on the P&L card, and at the `label` length on the Conditions card.
+  - Row 20's "1.00R" and "2.40R" companions are the Plan Baseline's 1R and its Reward : risk "2.4".
+  - Row 22's NotApplicable aggregate: W5 is the stronger citation, since a Closed condition shows rows 1 and 2 only.
+  - Row 23 retires by A223.
+
+No row lacks a covering case, a retiring row or a moved case, so there is no gap.

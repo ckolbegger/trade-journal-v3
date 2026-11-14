@@ -1,0 +1,250 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 1,
+    "total_tokens": 279475,
+    "input_tokens": 277045,
+    "output_tokens": 2430,
+    "cache_read_tokens": 29952,
+    "elapsed": "1m12s"
+  },
+  "tool_calls": {
+    "total": 41,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 8,
+      "file_read": 30
+    },
+    "failure": 11,
+    "failure_by_tool": {
+      "file_read": 11
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 5,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/trade-detail/Cockpit.ts",
+        "arguments": "{\"file_path\":\"src/itg/relocated/trade-detail/test-support.ts\",\"start_line\":1,\"end_line\":150}",
+        "error": "file \"src/itg/relocated/trade-detail/test-support.ts\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/trade-detail/test-support.ts: exit status 128: fatal: path 'src/itg/relocated/trade-detail/test-support.ts' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 7,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/rail/conditions.props.ts,src/itg/relocated/rail/identity.props.ts,src/itg/relocated/rail/pnl.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/screens/trade-detail/test-support.ts\"}",
+        "error": "file \"src/itg/screens/trade-detail/test-support.ts\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/screens/trade-detail/test-support.ts: exit status 128: fatal: path 'src/itg/screens/trade-detail/test-support.ts' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 8,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/rail/conditions.props.ts,src/itg/relocated/rail/identity.props.ts,src/itg/relocated/rail/pnl.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/rail/identity.tsx\"}",
+        "error": "file \"src/itg/relocated/rail/identity.tsx\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/rail/identity.tsx: exit status 128: fatal: path 'src/itg/relocated/rail/identity.tsx' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 10,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/rail/conditions.props.ts,src/itg/relocated/rail/identity.props.ts,src/itg/relocated/rail/pnl.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/rail/pnl.tsx\", \"start_line\": 1, \"end_line\": 160}",
+        "error": "file \"src/itg/relocated/rail/pnl.tsx\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/rail/pnl.tsx: exit status 128: fatal: path 'src/itg/relocated/rail/pnl.tsx' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 18,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/drawers/today.tsx\"}",
+        "error": "file \"src/itg/relocated/drawers/today.tsx\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/drawers/today.tsx: exit status 128: fatal: path 'src/itg/relocated/drawers/today.tsx' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 19,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/drawers/plan-risk.tsx\"}",
+        "error": "file \"src/itg/relocated/drawers/plan-risk.tsx\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/drawers/plan-risk.tsx: exit status 128: fatal: path 'src/itg/relocated/drawers/plan-risk.tsx' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 22,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/screens/trade-detail/test-support.ts\"}",
+        "error": "file \"src/itg/screens/trade-detail/test-support.ts\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/screens/trade-detail/test-support.ts: exit status 128: fatal: path 'src/itg/screens/trade-detail/test-support.ts' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 36,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"tsconfig.app.json\"}",
+        "error": "file \"tsconfig.app.json\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:tsconfig.app.json: exit status 128: fatal: path 'tsconfig.app.json' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 38,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/drawers/plan-risk.tsx\"}",
+        "error": "file \"src/itg/relocated/drawers/plan-risk.tsx\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/drawers/plan-risk.tsx: exit status 128: fatal: path 'src/itg/relocated/drawers/plan-risk.tsx' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 39,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/relocated/drawers/position.tsx\"}",
+        "error": "file \"src/itg/relocated/drawers/position.tsx\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/relocated/drawers/position.tsx: exit status 128: fatal: path 'src/itg/relocated/drawers/position.tsx' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      },
+      {
+        "tool_call_number": 41,
+        "tool_name": "file_read",
+        "file_path": "src/itg/relocated/drawers/plan-risk.ts,src/itg/relocated/drawers/position.props.ts,src/itg/relocated/drawers/today.props.ts",
+        "arguments": "{\"file_path\": \"src/itg/screens/trade-detail/test-support.ts\", \"start_line\": 1, \"end_line\": 160}",
+        "error": "file \"src/itg/screens/trade-detail/test-support.ts\" not found: git show 7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276:src/itg/screens/trade-detail/test-support.ts: exit status 128: fatal: path 'src/itg/screens/trade-detail/test-support.ts' does not exist in '7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/drawers/plan-risk.ts",
+      "content": "These migrated assertions are not executed by the configured test projects. `vite.config.ts` discovers only `src/**/*.test.{ts,tsx}` (and integration tests under `tests/integration`), so this file and the changed `position.props.ts` and `today.props.ts` are excluded. The actual cockpit test files under `src/ui/cockpit/drawers/` still lack these additions. Move the assertions into those discoverable suites, rather than leaving them under `src/itg/relocated`, so retiring the old section tests does not silently lose their regression coverage. Moving them also makes the new `../../screens/trade-detail/test-support.ts` imports resolve to the existing UI helper.",
+      "existing_code": "describe('Plan and Risk drawer: figures moved from the retired Summary card and Risk and reward section (T8P.27)', () =\u003e {",
+      "start_line": 48,
+      "end_line": 48,
+      "category": "test",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Drawer risk, position, and daily properties",
+      "files": [
+        "src/itg/relocated/drawers/plan-risk.ts",
+        "src/itg/relocated/drawers/position.props.ts",
+        "src/itg/relocated/drawers/today.props.ts"
+      ]
+    },
+    {
+      "label": "Rail conditions, identity, and P\u0026L properties",
+      "files": [
+        "src/itg/relocated/rail/conditions.props.ts",
+        "src/itg/relocated/rail/identity.props.ts",
+        "src/itg/relocated/rail/pnl.props.ts"
+      ]
+    },
+    {
+      "label": "Trade-detail cockpit",
+      "files": [
+        "src/itg/relocated/trade-detail/Cockpit.ts"
+      ]
+    }
+  ],
+  "session_id": "eee98cbc-bb3a-4903-be84-21b7ef3e3447",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "eee98cbc-bb3a-4903-be84-21b7ef3e3447",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "c2a00183feeb1293b040db58be9d292116964b46",
+      "resolved_head": "7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276",
+      "exact_range": "c2a00183feeb1293b040db58be9d292116964b46..7716edb5245fa6b52a4c0c3fbb4870c5a1ef5276",
+      "source_artifact_sha256": "8b83223b75c774a4b4a8736610dc87c69ab268d48ae0b11ff7b47848b3fa27ee"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "313f6aab0fb6249e83166df1b3dd015aabc8970ee5c35b437af8ab42e58b8a24",
+          "path": "src/itg/relocated/trade-detail/Cockpit.ts",
+          "fingerprint": "be23528d68824ba67a9843d56c75d94521d975e0d1a976b6b8daf84a342e0df9"
+        },
+        {
+          "item_id": "31b4c75090a67f655ff8cc336be65823d769372f9dd474b6cc062822daad52c7",
+          "path": "src/itg/relocated/drawers/position.props.ts",
+          "fingerprint": "18e236dcaf545c7a3b077eecb758fd4bbfe199b42d366b64a8d4ba0f798d3952"
+        },
+        {
+          "item_id": "53d777f6d7970b7aeb0c34f8b1d4a64ef1ff8e6f88ba466b48c5d40572856e9c",
+          "path": "src/itg/relocated/rail/conditions.props.ts",
+          "fingerprint": "44bffb126edb782809d445cd5562a5ea51447146913cb3a9604955a5a03049f3"
+        },
+        {
+          "item_id": "5f7ed082b18aeda4922170077fe61607fd572b6fef057a20f5e4ebe971cccdf3",
+          "path": "src/itg/relocated/drawers/today.props.ts",
+          "fingerprint": "f58575d28cccc91003885c104d4af2c45bbbd79a43376dce2a16dd807553aaae"
+        },
+        {
+          "item_id": "c50f5172c43cf520935c491af76f38cbb3486117239dc07596841ffa37fa5a31",
+          "path": "src/itg/relocated/drawers/plan-risk.ts",
+          "fingerprint": "33992ff6e5ec83061234916e2d1fe7c60d54b5f89d60e9f0dda6df34e3d7beb8"
+        },
+        {
+          "item_id": "dde1b5fb43fa7673bdc1e46777f1fc4b1afa4f20aa45f2a4c9c3141766d95ed7",
+          "path": "src/itg/relocated/rail/identity.props.ts",
+          "fingerprint": "783fbcbcacbe6a6fa5be9286e2b6d0d99f7ea4b58dc3b05d49d83b7b9c36c677"
+        },
+        {
+          "item_id": "e3fdc3fa1b40e61c4eae7677ebcb880e3eb0b1ecbdfaba4700546eecca8ae148",
+          "path": "src/itg/relocated/rail/pnl.props.ts",
+          "fingerprint": "d81705472daeca96fa24e38842ce771f06b13849c0bdf7f05fa9fc75c7dc47a9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "313f6aab0fb6249e83166df1b3dd015aabc8970ee5c35b437af8ab42e58b8a24",
+          "path": "src/itg/relocated/trade-detail/Cockpit.ts",
+          "fingerprint": "be23528d68824ba67a9843d56c75d94521d975e0d1a976b6b8daf84a342e0df9"
+        },
+        {
+          "item_id": "31b4c75090a67f655ff8cc336be65823d769372f9dd474b6cc062822daad52c7",
+          "path": "src/itg/relocated/drawers/position.props.ts",
+          "fingerprint": "18e236dcaf545c7a3b077eecb758fd4bbfe199b42d366b64a8d4ba0f798d3952"
+        },
+        {
+          "item_id": "53d777f6d7970b7aeb0c34f8b1d4a64ef1ff8e6f88ba466b48c5d40572856e9c",
+          "path": "src/itg/relocated/rail/conditions.props.ts",
+          "fingerprint": "44bffb126edb782809d445cd5562a5ea51447146913cb3a9604955a5a03049f3"
+        },
+        {
+          "item_id": "5f7ed082b18aeda4922170077fe61607fd572b6fef057a20f5e4ebe971cccdf3",
+          "path": "src/itg/relocated/drawers/today.props.ts",
+          "fingerprint": "f58575d28cccc91003885c104d4af2c45bbbd79a43376dce2a16dd807553aaae"
+        },
+        {
+          "item_id": "c50f5172c43cf520935c491af76f38cbb3486117239dc07596841ffa37fa5a31",
+          "path": "src/itg/relocated/drawers/plan-risk.ts",
+          "fingerprint": "33992ff6e5ec83061234916e2d1fe7c60d54b5f89d60e9f0dda6df34e3d7beb8"
+        },
+        {
+          "item_id": "dde1b5fb43fa7673bdc1e46777f1fc4b1afa4f20aa45f2a4c9c3141766d95ed7",
+          "path": "src/itg/relocated/rail/identity.props.ts",
+          "fingerprint": "783fbcbcacbe6a6fa5be9286e2b6d0d99f7ea4b58dc3b05d49d83b7b9c36c677"
+        },
+        {
+          "item_id": "e3fdc3fa1b40e61c4eae7677ebcb880e3eb0b1ecbdfaba4700546eecca8ae148",
+          "path": "src/itg/relocated/rail/pnl.props.ts",
+          "fingerprint": "d81705472daeca96fa24e38842ce771f06b13849c0bdf7f05fa9fc75c7dc47a9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 71604
+  }
+}
