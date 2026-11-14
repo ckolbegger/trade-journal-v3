@@ -152,7 +152,10 @@ function BlockedBackupActions({
         setVerified(result.kind === "Completed");
         setMessage(result.kind === "Completed" ? "Backup complete" : NOT_VERIFIED[result.reason]);
       })
-      .catch(() => setMessage(NOT_VERIFIED.Unreadable))
+      .catch(() => {
+        setVerified(false);
+        setMessage(NOT_VERIFIED.Unreadable);
+      })
       .finally(() => setBusy(false));
   };
 
