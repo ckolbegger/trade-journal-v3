@@ -29,6 +29,7 @@ Spec reading (A218): `plan/spec-reading/D07.md`, plus D9's entries for Trade Ana
 | critic-1 (T8P.23, checkpoint, at `05ca870f`) | `critic-1.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.4): 8 defects (1 high, 3 moderate, 4 low), 11 minor observations | 215,050 | 70 | 10 min 57 s | `critic-brief.md` template with D08P's section 8, the accepted exceptions (with revision 96's case 7), and `e2e/d7s/support.ts` helpers |
 | critic-2 (T8P.23, checkpoint, at `b11aa7ab`) | `critic-2.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.2): 7 defects (1 high, 4 moderate, 2 low), 8 minor observations | 222,923 | 59 | 10 min 14 s | critic-1's brief, plus a fourth accepted exception (W10's per-card Trade P&L) |
 | critic-3 (T8P.23, checkpoint, at `0d251d22`) | `critic-3.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.2): 2 defects (1 high, 1 moderate), 10 minor observations | 190,820 | 57 | 11 min 28 s | critic-2's brief, plus revision 97's exceptions 5 to 8 and revision 98's choices |
+| critic-4 (T8P.26, gate, at `d76e506b`) | `critic-4.md` | C8P.1–C8P.6 | PASS, with 4 defects (3 moderate, 1 low), 10 minor observations | 220,136 | 73 | 9 min 55 s | critic-3's brief for all six flows, plus revision 99's exception 9 |
 
 ## Lane worktrees
 
@@ -1695,3 +1696,16 @@ The bug tasks were B1 to B14, plus B3-B1, B13-B1 and B14-B1. T8P.26's gate criti
 - **Acceptance:** `.claude/scripts/acceptance-commands.sh plan/D08P-trade-detail-cockpit.md` exit 0, 6 commands checked, 0 failed (`suite-runs/T8P.25-acceptance.txt`). Every section 13 row now passes, including the two browser rows T8P.24 left waiting.
 
 **T8P.25 done.** No app code changes after `a3b684c5`, so this full tier and acceptance run stand as T8P.26's full tier before its gate critic.
+
+## T8P.26 The gate
+
+**Full tier and acceptance:** T8P.25's full tier at `a3b684c5` (unit 1658, integration 229, checks 14 of 14, browser-1 126, browser-2 92; run complete) and its acceptance run (exit 0, 6 commands) stand as the gate's steps 1 and 2: only evidence and Progress text changed after it.
+
+**Critic-4, the gate critic** (fresh `general-purpose`, effort medium, at `d76e506b`; `critic-4.md`). Brief: critic-3's, adapted to the gate's six flows, with revision 99's ninth exception. Its file write was refused, so the report was taken from its final message.
+- **Result: PASS.** All six flows meet their pass conditions: C8P.1, C8P.3 and C8P.6 clean; C8P.2, C8P.4 and C8P.5 pass with defects. Offline reload and About (D1 to D08P capabilities) pass.
+- **Defects** (each becomes a bug task under the critic rule):
+  1. Moderate: at 1280 px the Payoff chart (640 px in a 592 px scroll box) hides W14's "Now" legend and the lines' right end. **T8P.26-B1.**
+  2. Moderate: at 1280 px the Lot Matches table (622 to 651 px in a 550 px scroll box) hides its Realized column. **T8P.26-B2.**
+  3. Moderate: a final-session Journal card with no Mark (a Trade closed by sale on its first session; an expired contract's final session) reads "First Mark" beside "DEF Mark —". **T8P.26-B3**, waiting on the user's reading of W10.
+  4. Low: at 320 px, Today's comparison opened at its right end clips about 5 px of the row labels (B14-B1's reviewer note, now observed). **T8P.26-B4.**
+- **Minor observations** (not tasks): Journal pages run 1.6 to 2 screens; "Due Due" on the owed card; tabs wrap to two rows at 1280; provenance wraps in the earlier comparison column; the account on the identity and Plan cards; a one-match Lot Matches Realized equal to the rail's realized P&L; Settlement Due's words in four places (A222); Record entry and Record exit on a Settlement Due Trade (unchanged from before D08P); lowercase headings in innerText (CSS); the sidebar background in full-page screenshots.
