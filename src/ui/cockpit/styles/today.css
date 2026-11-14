@@ -15,6 +15,33 @@
   color: var(--muted);
 }
 
+/* T8P.23-B14: the comparison fits its box on a phone, so the current Marks and their change show without a sideways scroll. The label
+   column is not pinned and wraps, the cells are tight, and a provenance wraps below its figure. */
+@media (max-width: 959.98px) {
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] th,
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td {
+    padding: 0.5rem 0.3rem;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] th:first-child,
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td:first-child {
+    position: static;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    overflow-wrap: anywhere;
+    border-right: 0;
+  }
+
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] thead th {
+    letter-spacing: 0;
+    overflow-wrap: normal;
+  }
+}
+
 .cockpit-drawers .grid-note {
   margin: 0.5rem 0 0;
   font-size: 0.9rem;
