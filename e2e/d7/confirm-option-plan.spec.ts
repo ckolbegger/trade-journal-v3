@@ -4,7 +4,7 @@ test.use({ actionTimeout: 15_000 });
 
 test.describe('T7.31-F1 confirming an option Plan', () => {
   test('should render the confirmed option Plan Detail with its Planned payoff and 1R straight after Confirm Plan, with no page error', async ({ server, profile }) => {
-    // The suite's default is the d6 release; this case measures the current source.
+    // The suite's default is the checked-out build (dist-releases/current); this case measures the current source.
     server.use('dist-faults');
     const { context, page } = await onboardedAt(profile, MONDAY_0900);
     const errors: string[] = [];

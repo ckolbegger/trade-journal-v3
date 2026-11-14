@@ -1,4 +1,4 @@
-// Shared support for the D6 browser suite (plan section 6.2): D5R's helpers (the Playwright clock, the production d6 release as
+// Shared support for the D6 browser suite (plan section 6.2): D5R's helpers (the Playwright clock, the production build of the checked-out code as
 // the default served build, the card helpers) plus the exit form's steps, the Closed tab, and the stored records an exit leaves.
 import type { Locator, Page } from '@playwright/test';
 import { detail, executionRow, expect, FOUR_TRADES, createTrades, READY, type ProbedDatabase, type Row } from '../d5r/support.ts';

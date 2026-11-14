@@ -1,5 +1,5 @@
 // Shared support for the D5 browser suite (plan section 6.2): D4's helpers (the Playwright clock that
-// also patches Temporal, the production d6 release as the default served build, the Review steps), plus
+// also patches Temporal, the production build of the checked-out code as the default served build, the Review steps), plus
 // the deferred entry, the Debt form, the Review card's reflections, and the Debt records read through the probe.
 import type { Locator, Page } from '@playwright/test';
 import { debtFormOf, detail, expect, fillRows, openEntryForm, reachPanel, READY, reflectionSection, type CardRef, type ProbedDatabase, type Row } from '../d4/support.ts';

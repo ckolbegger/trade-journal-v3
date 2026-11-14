@@ -1771,3 +1771,14 @@ The bug tasks were B1 to B14, plus B3-B1, B13-B1 and B14-B1. T8P.26's gate criti
 - **Minor observations** (not tasks): Payoff's W18 sentence repeats the latest Mark, and its Current caption repeats Realized to date (existing D7 words); with a Mark missing, the dated block's Trade P&L appears in Today, Price History and the Journal card, and the Mark missing notice in Needs you and Today; the Settlement Due P&L card has no open-count line (W4 doesn't need one); Settlement Due's reason in four places (A222); Position shows "Expected Mark Date: Mon Nov 23" for an expired contract (A212); before the first Marks, "Awaiting the close after Fri Oct 9" (P102) beside "once the Mon Oct 12 session ends"; narrow Open Lots and Payoff scroll in their boxes (B1, B2 allow it); the Price History table has no accessible name of its own; Journal page 1 is about 1.5 screens.
 
 **User decision on critic-6 (2026-11-14), "Accept it and add it to tech debt":** revision 100. The focus defect is accepted, unfixed, as tech debt item 24 (`plan/implementation-plan.md`), and the gate closes on critic-6. Recommended and rejected: fixing it without a fourth critic; fixing it with a fourth critic.
+
+## BUG-4 (decision 112, revision 101)
+
+### T8P.BUG-4.1
+
+Deleted `e2e/d6/update.spec.ts` (B6.6) with `git rm`; the checked-out build is now `current` in `tools/build-releases.ts`, `tools/verify-releases.ts` and `e2e/d4/support.ts`; comments reworded in `e2e/d5/support.ts`, `e2e/d6/support.ts`, `e2e/d7/support.ts`, `e2e/d7/confirm-option-plan.spec.ts`.
+
+1. `npm run build:releases`: exit 0 ("OK: v1, v2, v2-corrupt, d1, d2, d4, d5r2, current"); `dist-releases` holds `current`, no `d6`. `npm run verify:releases`: exit 0; OK line ends "current 124c7f43d7807b4c2af00aa6469c436a8a4bf1dfd70600b54c525233359f2d8d schema 7"; no `d6` in it.
+2. `grep -rnE "dist-releases/d6|'d6'" e2e tools src`: prints nothing (grep exit 1).
+3. `.claude/scripts/with-browser-lock.sh npm run test:e2e:release-history`: exit 0, 4 passed (B2.3, B2.5, B4.7, B5.6); no B6.6.
+4. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.

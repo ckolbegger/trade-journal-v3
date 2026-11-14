@@ -5,7 +5,7 @@
 // the tag claude-opus-5.5-d2 (A50). D5 T5.18: d4 is built from the tag claude-opus-5.5-d4 (A72) and
 // the current source is built as a labelled release like v1. D6 T6.21 (A97, decision 70): d5r2 is
 // built from the tag claude-opus-5.5-d5r2, the last release before D6, and the current source moves
-// from d5 to d6; no d5 folder remains.
+// from d5 to d6. Decision 112: the checked-out code is built as `current`; no d5 or d6 folder remains.
 import { execFileSync } from 'node:child_process';
 import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -15,7 +15,7 @@ import type { OfflineReleaseInventory } from '../src/delivery/inventory.ts';
 import { INVENTORY_FILE } from './release.ts';
 
 export const RELEASES_DIR = path.resolve('dist-releases');
-export const RELEASES = ['v1', 'v2', 'v2-corrupt', 'd1', 'd2', 'd4', 'd5r2', 'd6'] as const;
+export const RELEASES = ['v1', 'v2', 'v2-corrupt', 'd1', 'd2', 'd4', 'd5r2', 'current'] as const;
 export type ReleaseName = (typeof RELEASES)[number];
 
 // A34, A50: the tags the previous releases are built from. Git tags are shared by every worktree,
@@ -35,7 +35,7 @@ export async function corruptedAsset(dir: string): Promise<string> {
   return asset.path;
 }
 
-async function buildLabelled(label: 'v1' | 'v2' | 'd6') {
+async function buildLabelled(label: 'v1' | 'v2' | 'current') {
   process.env.TJ_BUILD_LABEL = label;
   await build({ logLevel: 'warn', build: { outDir: path.join(RELEASES_DIR, label), emptyOutDir: true } });
 }
@@ -91,6 +91,6 @@ if (import.meta.main) {
   await cp(await buildTaggedRelease('d2'), path.join(RELEASES_DIR, 'd2'), { recursive: true });
   await cp(await buildTaggedRelease('d4'), path.join(RELEASES_DIR, 'd4'), { recursive: true });
   await cp(await buildTaggedRelease('d5r2'), path.join(RELEASES_DIR, 'd5r2'), { recursive: true });
-  await buildLabelled('d6');
+  await buildLabelled('current');
   console.log(`build:releases OK: ${RELEASES.join(', ')} in ${RELEASES_DIR}; v2-corrupt alters ${altered}`);
 }

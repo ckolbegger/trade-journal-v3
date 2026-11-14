@@ -2,11 +2,11 @@
 // build as the served build (the default for every case), and the option steps: the option Plan form and the option exit. Dates follow the breakdown's fixtures:
 // every contract expires Friday 2026-11-20 (EST, UTC-5).
 import type { Locator, Page } from '@playwright/test';
-import { answerCloseReviewIn, answerIn, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves d6
+import { answerCloseReviewIn, answerIn, closeReasonGroup, closingSection, closeReviewGroup, completeReflection, createTradeAt, currentTradeId, detail, executionRow, expect, openDrawer, openEntryForm, PLAN, reachCard, reachPanel, READY, tradeCard, type CardRef, type ProbedDatabase, type TradeRef, test as d1Test, type Row } from '../d6/support.ts'; // d6's test, whose automatic fixture serves current
 
 export * from '../d6/support.ts';
 
-// D4's test serves dist-releases/d6 through an automatic fixture; D7 cases measure the current source, so this one depends on it
+// D4's test serves dist-releases/current through an automatic fixture; D7 cases measure the current source, so this one depends on it
 // and switches the served build back to dist-faults before the case launches anything.
 export const test = d1Test.extend<{ d7Faults: void }>({
   d7Faults: [
