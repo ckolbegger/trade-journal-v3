@@ -163,6 +163,10 @@ export interface Persistence {
   // Names a new candidate Workspace database in the root, then creates it empty at the current
   // schema version. Nothing reads it until activation (D2 A30).
   createCandidate(): Promise<{ readonly databaseName: string }>;
+  // As `createCandidate`, for a Restore (D8 A138): refused outside Writable, listed with purpose
+  // Restore and this instance's session identity, after deleting this session's earlier Restore
+  // candidate.
+  createRestoreCandidate(): Promise<RuntimeNotWritable | { readonly kind: 'Created'; readonly databaseName: string }>;
   // Bumps the source database's IndexedDB version, closing every other connection to it, then
   // copies its authoritative stores in one readonly snapshot through `transform` into the
   // candidate. Private stores are never copied: the private rebuild produces them (D2 A30, A139).
@@ -178,6 +182,10 @@ export interface Persistence {
   // lists the database it replaces as retired (D2 A30). `inFlip` runs inside that transaction
   // after its writes; a throw aborts it. Aborted: the pointer still names `retired`.
   activateCandidate(candidate: string, retired: string, inFlip?: () => void): Promise<{ readonly kind: 'Activated' | 'Aborted' }>;
+  // Activation when no Workspace exists: adds the pointer and removes the candidate entry in one
+  // root transaction. When a pointer was added meanwhile, deletes the candidate instead and reports
+  // the existing database (D8 A135, D1 A12).
+  activateFirstCandidate(candidate: string): Promise<{ readonly kind: 'Activated' } | { readonly kind: 'AlreadyInitialized'; readonly databaseName: string }>;
   // Reads a Workspace database's authoritative records for a backup in one readonly snapshot,
   // calling `onBatch` synchronously per batch of at most 500 records (D8 P29, A128). The database
   // is named, not the current Workspace, so a blocked older database reads with its own layout
@@ -216,6 +224,15 @@ const RETIRED_KEY = 'retired';
 interface NameListRecord {
   readonly key: typeof CANDIDATES_KEY | typeof RETIRED_KEY;
   readonly databaseNames: readonly string[];
+  // Candidates made for a Restore, with the session that listed each (D8 A138). Migration
+  // candidates have no entry here, and the field is absent when none is listed.
+  readonly restoreCandidates?: readonly RestoreCandidateEntry[];
+}
+
+interface RestoreCandidateEntry {
+  readonly databaseName: string;
+  readonly purpose: 'Restore';
+  readonly session: string;
 }
 
 // Records per batch when a validator reads a candidate (D8 A140).
@@ -255,6 +272,8 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
   let current: string | undefined;
   let connection: Promise<IDBPDatabase> | undefined;
   let superseded = false;
+  // This instance's identity in the root's Restore candidate entries, made on first use (D8 A138).
+  let session: string | undefined;
 
   function workspace(): Promise<IDBPDatabase> {
     if (!current) throw new Error('No Workspace is open');
@@ -304,6 +323,15 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     return ((await store.get(key)) as NameListRecord | undefined)?.databaseNames ?? [];
   }
 
+  // Writes a name list, keeping the Restore entries of the candidates that remain listed.
+  async function putNames(store: IDBPObjectStore<unknown, ['pointer'], 'pointer', 'readwrite'>, key: NameListRecord['key'], names: readonly string[]) {
+    const restore =
+      key === CANDIDATES_KEY
+        ? (((await store.get(key)) as NameListRecord | undefined)?.restoreCandidates ?? []).filter((e) => names.includes(e.databaseName))
+        : [];
+    await store.put(restore.length > 0 ? { key, databaseNames: names, restoreCandidates: restore } : { key, databaseNames: names });
+  }
+
   // Deletes every retired database and every listed candidate the pointer does not name, then
   // removes each from its list, so an interrupted deletion is retried by the next call.
   async function deleteListed(pointer: string): Promise<string[]> {
@@ -313,7 +341,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       if (names.length === 0) continue;
       for (const name of names) await deleteDatabase(deps.indexedDB, name);
       await inRoot(async (store) => {
-        await store.put({ key, databaseNames: (await listed(store, key)).filter((n) => !names.includes(n)) });
+        await putNames(store, key, (await listed(store, key)).filter((n) => !names.includes(n)));
       });
       deleted.push(...names);
     }
@@ -454,13 +482,59 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       return { databaseName };
     },
 
+    async createRestoreCandidate() {
+      const refusal = deps.writeGate.current();
+      if (refusal) return refusal;
+      session ??= globalThis.crypto.randomUUID();
+      const mine = session;
+      const earlier = await inRoot(async (store) =>
+        (((await store.get(CANDIDATES_KEY)) as NameListRecord | undefined)?.restoreCandidates ?? [])
+          .filter((e) => e.session === mine)
+          .map((e) => e.databaseName),
+      );
+      for (const name of earlier) await deleteDatabase(deps.indexedDB, name);
+      const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
+      // Listed first, so a candidate interrupted at any later point is known and cleaned up.
+      await inRoot(async (store) => {
+        const record = (await store.get(CANDIDATES_KEY)) as NameListRecord | undefined;
+        await store.put({
+          key: CANDIDATES_KEY,
+          databaseNames: [...(record?.databaseNames ?? []).filter((n) => !earlier.includes(n)), databaseName],
+          restoreCandidates: [
+            ...(record?.restoreCandidates ?? []).filter((e) => !earlier.includes(e.databaseName)),
+            { databaseName, purpose: 'Restore', session: mine },
+          ],
+        });
+      });
+      const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace(deps.sessionPolicy));
+      candidate.close();
+      return { kind: 'Created', databaseName };
+    },
+
+    async activateFirstCandidate(candidate) {
+      const existing = await inRoot(async (store) => {
+        const pointer = (await store.get(POINTER_KEY)) as PointerRecord | undefined;
+        if (pointer) return pointer.databaseName;
+        await store.add({ key: POINTER_KEY, databaseName: candidate });
+        await putNames(store, CANDIDATES_KEY, (await listed(store, CANDIDATES_KEY)).filter((n) => n !== candidate));
+        return undefined;
+      });
+      if (existing !== undefined) {
+        await deleteDatabase(deps.indexedDB, candidate);
+        await inRoot((store) => listed(store, CANDIDATES_KEY).then((names) => putNames(store, CANDIDATES_KEY, names.filter((n) => n !== candidate))));
+        return { kind: 'AlreadyInitialized', databaseName: existing };
+      }
+      current = candidate;
+      return { kind: 'Activated' };
+    },
+
     async activateCandidate(candidate, retired, inFlip) {
       try {
         await inRoot(async (store) => {
           const [candidates, retiredNames] = await Promise.all([listed(store, CANDIDATES_KEY), listed(store, RETIRED_KEY)]);
           await Promise.all([
             store.put({ key: POINTER_KEY, databaseName: candidate }),
-            store.put({ key: CANDIDATES_KEY, databaseNames: candidates.filter((n) => n !== candidate) }),
+            putNames(store, CANDIDATES_KEY, candidates.filter((n) => n !== candidate)),
             store.put({ key: RETIRED_KEY, databaseNames: [...retiredNames, retired] }),
           ]);
           inFlip?.();
@@ -477,7 +551,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     async discardCandidate(candidate) {
       await deleteDatabase(deps.indexedDB, candidate);
       await inRoot(async (store) => {
-        await store.put({ key: CANDIDATES_KEY, databaseNames: (await listed(store, CANDIDATES_KEY)).filter((n) => n !== candidate) });
+        await putNames(store, CANDIDATES_KEY, (await listed(store, CANDIDATES_KEY)).filter((n) => n !== candidate));
       });
     },
 
