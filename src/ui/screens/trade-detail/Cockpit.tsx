@@ -126,9 +126,9 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange }:
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="cockpit-rail" aria-label="State of play">
         <IdentityCard {...shell} />
-        <NeedsYou view={owedView} timeZone={timeZone} onReflectNow={reflectNow} />
         <PnlCard {...replayed} />
         <ConditionsCard {...shell} />
+        <NeedsYou view={owedView} timeZone={timeZone} onReflectNow={reflectNow} />
       </section>
       <div className="cockpit-drawers">
         <div role="tablist" aria-label="Detail" className="tabs" onKeyDown={move}>

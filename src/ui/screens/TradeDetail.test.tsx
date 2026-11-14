@@ -115,6 +115,20 @@ function show(setup: Setup = {}) {
   return facade;
 }
 
+describe('Trade Detail: the rail card order (T8P.23-B5)', () => {
+  it('should show the rail cards in the order identity, P&L, Conditions and Needs you', async () => {
+    show();
+    const rail = await screen.findByRole('region', { name: 'State of play' });
+    const needsYou = within(rail).getByRole('region', { name: 'Needs you' });
+    const conditions = within(rail).getByRole('region', { name: 'Conditions' });
+    const pnl = rail.querySelector('.pnl-card');
+    const identity = rail.querySelector('.identity-card');
+    // The owed Debt is in Needs you, and the four cards are the rail's only children, in the prototype's order.
+    expect(within(needsYou).getByRole('button', { name: 'Reflect now' })).toBeTruthy();
+    expect([...rail.children]).toEqual([identity, pnl, conditions, needsYou]);
+  });
+});
+
 describe('Trade Detail: the replay read (P95)', () => {
   it('should read replayTrade with the Detail\'s binding and fill the change line, the Today comparison, Price History and the Journal cards from it', async () => {
     const user = userEvent.setup();
