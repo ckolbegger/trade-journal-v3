@@ -1417,3 +1417,7 @@ Results: unit 1640, integration 229, checks 14 of 14, browser tier 1 126 and tie
   - Row 23 retires by A223.
 
 No row lacks a covering case, a retiring row or a moved case, so there is no gap.
+
+**T8P.27 review.** ocr ran on `2415fc21..2a70088c` from a scratch clone. The in-place pass reviewed 6 files and found nothing (`ocr/T8P.27.json`). The relocated pass reviewed the 7 test files of `5821d382` and made 1 comment (`ocr/T8P.27-reloc.json`): "the moved assertions are not discovered". It is Wrong, a relocation artifact: the real files are `*.test.tsx` and `*.test.ts`, which vitest discovers. The reviewer also checked that nothing a non-test file imports was removed: `tsc`, eslint and `lint-deps` were clean at `2a70088c`, and a grep found no import of the 8 removed sections or the removed helpers. No bug tasks.
+
+**T8P.27 merge.** Only plan and evidence followed lane rm's base `c670929c`, so its tiers stand. Rebased onto `f06828c4` and fast-forwarded: `f9ee10a2` (pairing table), `4a610613` (moved assertions), `9557c405` (removal), `e0cceac6`. Lane rm was removed. No lane remains. Next is wave 2's full-tier run, then the checkpoint critic, T8P.23.
