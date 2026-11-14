@@ -289,6 +289,74 @@ test.describe('B6.12 Responsive and accessible', () => {
     await context.close();
   });
 
+  // T8P.23-B4: the Position drawer's tables are spaced and readable at 1280 px.
+  test('should space the Position drawer tables, name Lot Matches once in visible text, and show every Open Lots column whole at 1280 px', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const { context: setup, page: setupPage } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(setupPage, FOUR_TRADES.slice(0, 1));
+    await setup.close();
+    const context = await launchAt(profile, TUESDAY_1405);
+    const page = await firstPage(context);
+    await page.setViewportSize(WIDE);
+    await page.goto('/');
+    await openTradeFromOpenList(page, 'XYZ');
+    await openExitForm(page);
+    await fillRows(page, [sell('30', '53.00', '0.50', TUESDAY_1000_LOCAL)]);
+    await answerIn(exitReflection(page));
+    await page.getByRole('button', { name: 'Save exit' }).click();
+    await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+
+    // Adjacent cells keep a gap between their text boxes, in every table of the drawer.
+    const touching = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const table of document.querySelectorAll('.cockpit-drawers table')) {
+        if (table.getClientRects().length === 0) continue;
+        for (const row of table.querySelectorAll('tr')) {
+          const boxes = [...row.children].map((cell) => {
+            const range = document.createRange();
+            range.selectNodeContents(cell);
+            return range.getBoundingClientRect();
+          });
+          for (let at = 1; at < boxes.length; at++) {
+            if (boxes[at - 1]!.width > 0 && boxes[at]!.width > 0 && boxes[at]!.left - boxes[at - 1]!.right < 8) {
+              found.push(`${row.textContent} (cells ${at} and ${at + 1})`);
+            }
+          }
+        }
+      }
+      return found;
+    });
+    expect(touching, 'Position drawer cells that touch').toEqual([]);
+
+    // The name Lot Matches is visible text once: the heading. The caption stays in the tree for the table's name.
+    const visibleNames = await page.evaluate(() => {
+      const shown = (el: Element): boolean => {
+        const box = el.getBoundingClientRect();
+        return box.width > 2 && box.height > 2 && getComputedStyle(el).visibility !== 'hidden';
+      };
+      return [...document.querySelectorAll('.cockpit-drawers h2, .cockpit-drawers caption')].filter((el) => el.textContent?.trim() === 'Lot Matches' && shown(el)).length;
+    });
+    expect(visibleNames).toBe(1);
+    await expect(detail.lotMatches(page)).toBeVisible();
+    await expect(page.locator('.cockpit-drawers caption', { hasText: 'Lot Matches' })).toHaveCount(1);
+
+    // Open Lots: no sideways scroll, and the last header and its figure sit inside the drawer.
+    const region = page.getByRole('region', { name: 'Open Lots' });
+    const fit = await region.evaluate((el) => {
+      const bounds = el.getBoundingClientRect();
+      const last = [...el.querySelectorAll('thead th:last-child, tbody td:last-child')];
+      return {
+        scrolls: el.scrollWidth > el.clientWidth,        cut: last.filter((cell) => cell.getBoundingClientRect().right > bounds.right + 0.5).map((cell) => cell.textContent),
+        headerTruncated: [...el.querySelectorAll('th')].filter((th) => th.scrollWidth > th.clientWidth).map((th) => th.textContent),
+      };
+    });
+    expect(fit).toEqual({ scrolls: false, cut: [], headerTruncated: [] });
+    await context.close();
+  });
+
   // T6.28-B5: the receipt's Lot Matches tables keep their nowrap cells (B4) inside focusable scroll regions, as Trade Detail does.
   test('should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px', async ({ profile }) => {
     test.setTimeout(240_000);
