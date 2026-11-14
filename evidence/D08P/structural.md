@@ -1481,3 +1481,10 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 60 passed (`browser/T8P.23-B4-r2-specs.txt`). No expected value changed.
 - **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B4.json`). The range changes `src`, so no relocated run.
 - **Quick run (`T8P.23-B4`):** unit 1643, integration 229, checks 14 of 14, browser-task 6; run complete.
+
+**T8P.23-B5** (`9215dbee`). The rail's cards now read identity, P&L, Conditions, Needs you, as in T8P.5's case and the prototype, which builds one rail for every state.
+- **Test:** "should show the rail cards in the order identity, P&L, Conditions and Needs you" (`TradeDetail.test.tsx`), on an Open Trade with an owed Debt. Red: a deep-equal failure with Needs you second.
+- **Expected values:** none changed. No existing case read the old order. `rail-b.ts`'s `needsYouCard` finds the card by its region name.
+- **Browser specs run:** 51 passed (`browser/T8P.23-B5-specs.txt`).
+- **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B5.json`).
+- **Quick run (`T8P.23-B5`):** unit 1644, integration 229, checks 14 of 14, browser-task 6; run complete. The task agent saw one unit failure on its first run, which it did not name and which did not come back on its rerun. This run had none.
