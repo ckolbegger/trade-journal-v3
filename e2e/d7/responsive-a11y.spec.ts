@@ -159,7 +159,47 @@ test.describe('B7.13 Responsive and accessible', () => {
     await context.close();
   });
 
-  test('should record an Expiration by keyboard alone, with a visible focus ring on every stop', async ({ profile }) => {
+  // T8P.23-B4: on O-C3's Settlement Due Detail the Position drawer's tables are spaced and whole at 1280 px (critic defect 4).
+  test('should show the Position drawer tables of a Settlement Due option Trade spaced, with Lot Matches named once and every Open Lots column and figure inside its region at 1280 px', async ({ profile }) => {
+    test.setTimeout(300_000);
+    const { context: setup, page: setupPage } = await onboardedAt(profile, TUESDAY_1030);
+    const { t1 } = await createSettlementFixture(setupPage);
+    await setup.close();
+    const context = await launchAt(profile, MONDAY_NOV_1700);
+    const page = await firstPage(context);
+    await page.setViewportSize(WIDE);
+    await page.goto(`/trades/${t1.tradeId}`);
+    await expect(detail.settlementDuePanel(page)).toBeVisible(READY);
+    await openDrawer(page, 'Position');
+    await expect(detail.lotMatches(page).locator('tbody tr')).toHaveCount(1);
+
+    // Open Lots: no sideways scroll, and every header and figure lies inside the region's box.
+    const region = page.getByRole('region', { name: 'Open Lots' });
+    const fit = await region.evaluate((el) => {
+      const bounds = el.getBoundingClientRect();
+      return {
+        scrolls: el.scrollWidth > el.clientWidth,
+        cut: [...el.querySelectorAll('th, td')].filter((cell) => cell.getBoundingClientRect().right > bounds.right + 0.5).map((cell) => cell.textContent),
+        columns: el.querySelectorAll('thead th').length,
+      };
+    });
+    expect(fit).toEqual({ scrolls: false, cut: [], columns: 4 });
+    await expect(region.getByText('$0.65')).toBeInViewport({ ratio: 1 });
+
+    // The name Lot Matches is visible text once (the heading); the caption stays in the tree, hidden from the eye.
+    const visibleNames = await page.evaluate(() => {
+      const shown = (el: Element): boolean => {
+        const box = el.getBoundingClientRect();
+        return box.width > 2 && box.height > 2 && getComputedStyle(el).visibility !== 'hidden';
+      };
+      return [...document.querySelectorAll('.cockpit-drawers h2, .cockpit-drawers caption')].filter((el) => el.textContent?.trim() === 'Lot Matches' && shown(el)).length;
+    });
+    expect(visibleNames).toBe(1);
+    await expect(page.locator('.cockpit-drawers caption', { hasText: 'Lot Matches' })).toHaveCount(1);
+    await context.close();
+  });
+
+  test('should record an Expiration by keyboard alone, with a visible focus ring on every stop',async ({ profile }) => {
     test.setTimeout(300_000);
     const { context: setup, page: setupPage } = await onboardedAt(profile, FRIDAY_NOV_1700);
     const tradeId = await createShortPutTrade(setupPage);
