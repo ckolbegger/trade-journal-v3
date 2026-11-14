@@ -12,7 +12,7 @@ import { OC_PC1, OC_PC2, OC_X1, OS_S1, OS2_S1 } from '../../../../tests/support/
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import type { TodayReplay } from '../../cockpit/drawers/today.props.ts';
-import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
+import { CurrentMarksOnly, TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { available, MON_CLOSE, openDrawer, renderView, termValue, THURSDAY, tuesday, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
@@ -244,5 +244,34 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(within(panel).queryByRole('region', { name: /At entry/, hidden: true })).toBeNull();
     expect(within(panel).queryByRole('heading', { name: /At entry/, hidden: true })).toBeNull();
     expect(panel.querySelector('#today-at-entry-heading, #today-tracks-heading')).toBeNull();
+  });
+
+  it('should show the Mark, Source, Saved and Underlying Mark in the Position drawer card even when the replay holds an available Mark', () => {
+    const view = optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' });
+    const contract = (view as { current: { evaluation: { observation: { instrument: Instrument } } } }).current.evaluation.observation.instrument;
+    const underlying: Instrument = { kind: 'Stock', symbol: (view as { plan: { underlying: string } }).plan.underlying };
+    const marked = (instrument: Instrument, price: string): TodayReplay['sessions'][number]['marks'][number] => ({
+      instrument,
+      resolution: { kind: 'Available', mark: { price, source: 'Manual', savedAt: '2026-11-20T21:00:00Z' } },
+      change: null,
+    });
+    const replay: TodayReplay = {
+      instruments: [contract, underlying],
+      sessions: [
+        { date: '2026-11-19', marks: [marked(contract, '0.70'), marked(underlying, '51.00')] },
+        { date: '2026-11-20', marks: [marked(contract, '0.80'), marked(underlying, '52.00')] },
+      ],
+    };
+    const { container } = render(
+      <MemoryRouter>
+        <CurrentMarksOnly view={view} timeZone="America/New_York" replay={replay} />
+      </MemoryRouter>,
+    );
+    const card = currentMarks(container);
+    expect(termValue(card, 'Mark')).toBe('$0.80');
+    expect(termValue(card, 'Source')).toBe('Manual');
+    expect(termValue(card, 'Saved')).toBe('2026-11-20 16:00');
+    expect(termValue(card, 'Underlying Mark')).toBe('$52.00 · Manual');
+    expect(container.querySelector('table')).toBeNull();
   });
 });

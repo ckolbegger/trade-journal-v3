@@ -58,8 +58,9 @@ const CurrentMarksCard = ({ currentMarks }: { readonly currentMarks: CurrentMark
 );
 
 // What a state without a Today drawer shows in its Position drawer: the current Marks card and nothing else of Today's (revision 96, T8P.31).
-export function CurrentMarksOnly(input: TodayInput) {
-  const { currentMarks } = todayProps(input);
+// No comparison is drawn there, so the card is built without the replay and leaves no Mark out as "already shown".
+export function CurrentMarksOnly({ view, timeZone }: TodayInput) {
+  const { currentMarks } = todayProps({ view, timeZone });
   return currentMarks ? <CurrentMarksCard currentMarks={currentMarks} /> : null;
 }
 
