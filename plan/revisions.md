@@ -2,6 +2,17 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 102: the commit tagged `claude-opus-5.5-plan-r102` (revision 101 plus decision 113). Before D8 starts, at the user's decision to run D8 as a swarm.
+  - **Decision 113**, for every deliverable from D8:
+    - a session lock, `.claude/session.lock`: if one exists at the start, stop and ask;
+    - the run order (waves, lanes, blocking tasks) printed before the first task;
+    - pending decisions: stop and ask stays in force, but the session asks at once in an ordinary message, records the question in `evidence/D<nn>/DECISIONS-PENDING.md`, pauses only the tasks that depend on it, and keeps working on the rest;
+    - the final report adds fix rounds per task, flakes and pending decisions.
+  - **The D8 breakdown runs as a swarm** (decision 111): P103 to P105 and A225 to A228 in a new section 1.5, with the lookups and the size check. The user answered its two questions: P106, Backup only in the wide sidebar, reached from About on narrow screens (amending A144; the bottom bar keeps five links); P107, the first-run button stays "Start my journal" (amending A143). Section 3 gains waves, lanes and file ownership. New wave-0 task T8.23 freezes the types and skeletons so the UI lanes start at once. T8.11 moves after the UI tasks. New section 11 is the Progress table.
+  - **The D8 breakdown follows schema 7** (decision 107): export at schema 7, Restore from schemas 1 through 7, the `workspace-v7/` fixture W7 and its artifact A7 in place of W6 and A6, `condition.structureValue` in the footprint, and R-new at schema 8.
+  - **Suite and critic scope:** T8.20 and T8.21 run the acceptance script and cover every breakdown through D8, D08P included; T8.21 adds `e2e/d8/` to `test:e2e:2`.
+  - **Affected:** `plan/implementation-plan.md` (decision 113, decision 107's note, the freeze record), `.claude/docs/implementing.md`, `.gitignore`.
+  - **Rejected:** a serial D8 (about 19 hours against about 10); one lane per fact module; a `SessionStart` hook for the lock; the session deciding plan questions itself.
 - Revision 101: the commit tagged `claude-opus-5.5-plan-r101` (revision 100 plus decision 112). The D08P retrospective (finding 8) found B6.6 always failing. `dist-releases/d6` is the checked-out code labelled "d6", not D6.
   - **B6.6 is deleted.** It tested an upgrade between two schemas no release for real use will have. Each schema step is covered by its fixture's integration migration tests and `verify:fixtures`, and in Chromium by B2.4 and B2.6.
   - **The checked-out build is renamed** from `dist-releases/d6` to `dist-releases/current`.

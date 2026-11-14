@@ -4,6 +4,8 @@ The main session orchestrates: it reads, writes briefs, dispatches subagents, an
 
 ## Start-of-deliverable reading
 
+**Session lock (decision 113).** Before the reading, check for `.claude/session.lock`. If it exists, another session may be working in this worktree: stop, show the user its contents, and start nothing until they answer. Otherwise write it with the start time and the deliverable. Remove it when the session ends, after the final report or a full stop.
+
 The reading is scoped, to keep the context small (plan decision 45).
 
 - For `specs/`, read the ranges listed in `plan/spec-reading/D<nn>.md`. Don't read the whole `plan/spec-map.md`: search it for any other section the work touches, and read that section before building on it.
@@ -17,6 +19,8 @@ From the rest of the frozen plan, read only what the deliverable uses:
 Do this reading once per session: at the start of the deliverable, or when a new session picks it up. Before each brief, check whether that reading is already in context, and if so write the brief from it without re-reading. After a context compaction, reread only the ranges the next brief needs, not the whole list.
 
 Before the deliverable's first task, create `evidence/D<nn>/tdd-log.md` with a note that its rows are single-case runs; `tdd.sh` refuses to run without it.
+
+**Run order (decision 113).** Before the first task, print the Progress table's tasks with their wave, lane and blocking tasks, from the breakdown's task graph.
 
 Also before the first task, run `ocr llm test`. It must print `✓ Connection test successful`. If it fails, stop and ask the user to run `ocr auth login`. `ocr auth status` is no substitute: it shows a past expiry even when the sign-in still refreshes.
 
@@ -43,7 +47,7 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
    - Each **Valid** or **Doubtful** ocr finding becomes a bug task, `<task>-B<n>` (numbering continues across the task's rounds). Write it in `structural.md` under the task's heading: the finding, the defect it causes, and its `it should` cases. Delegate each bug task to its own fresh `tdd-task` subagent, failing test first, one at a time. Each bug-fix commit gets its own `ocr-review` run, handled the same way.
    - A **Wrong** finding is recorded as dismissed, with the reason, and listed in the handoff's open questions for the final report. Confirm the reason against the cited lines before dismissing.
    - A defect that a subagent reports on its own, in a task summary or a review note, is a note too. It goes in `structural.md` and the final report, never into a bug task. It becomes one only when ocr itself raises it.
-   - Stop and ask only if a fix needs a spec or plan deviation, or if a third round of bug tasks on the same task still leaves findings.
+   - Stop and ask only if a fix needs a spec or plan deviation, or if a third round of bug tasks on the same task still leaves findings. Ask as "Pending decisions" below says.
 3. Once the task and all its bug tasks have ocr reviews with "No findings." (or only dismissed findings), send the complete cumulative run to the `suite-runner` subagent (`.claude/agents/suite-runner.md`), passing `evidence/D<nn>`, a run label, and the browser stage. Never run the full suite in the main session, and don't rerun it to check the runner's work. A failing run comes back as named failures; reproduce each with a single targeted run in the main session, then delegate its fix to a fresh subagent.
    - **Completeness check.** Before recording any run, run `.claude/scripts/run-complete.sh evidence/D<nn> <label>` (read-only; it checks that every stage file for the run's tier exists, five for the full tier and four for the task tier, and that every command in them has finished). If it prints "run INCOMPLETE", the runner reported early: SendMessage it to wait for its completion notice and report again, and don't record the run until the check prints "run complete".
    - **Browser tier (decision 71, P55).** After a task, the browser stage is `browser-auto <base>`, where `<base>` is the commit the task started from, recorded in the task's Progress row before its brief (A180, amended by decision 100). It runs the full tier when the task's commits touch P55's paths (UI, app shell, service worker, delivery, persistence, styles, `index.html`, `e2e/`, the Playwright or Vite config, the package files or the release tools), and the task tier (`@every-task` plus the current deliverable's `e2e/` folder) otherwise. Record the tier it chose and its printed reason in `structural.md`. When it picks the full tier it runs nothing itself; the runner then makes two foreground calls, `browser-1` (`e2e/d1`, `d2`, `d4`) and `browser-2` (`e2e/d5` onward), each with the 600000 ms limit (decision 98, revision 65). New deliverables' folders join `browser-2` (the `test:e2e:2` script). If a runner reports either stage above 8 minutes, add a `browser-3` stage for the newest folders.
@@ -57,7 +61,7 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
 Applies only to a deliverable whose breakdown has a lane column (decision 111).
 
 - Dispatch each lane task to a fresh `tdd-task` with `isolation: "worktree"`, on a lane worktree `.claude/worktrees/<dnn>-<lane>` and branch `<dnn>/<lane>`, set up by `.claude/scripts/lane-setup.sh`. These worktrees belong to this implementation. Never open any other worktree.
-- The brief adds the lane, its owned files (the breakdown's section 4.2), and the lane's base commit.
+- The brief adds the lane, its owned files (the breakdown's lanes and file-ownership table), and the lane's base commit.
 - Review each lane commit with `ocr-review` as today. ocr bug tasks run in the same lane.
 - A lane task is mergeable when its ocr is clean and its lane tier (unit, integration and checks, run in the lane worktree) passed. Rebase the lane branch onto the deliverable branch and fast-forward it there. If the rebase changed any file the task didn't own, rerun the lane tier first.
 - **Merge runs:** when no merge is pending and at least one task has merged since the last run, send the complete cumulative run to `suite-runner` on the deliverable branch with `browser-auto <last run's commit>`. A failure is pinned to a merged task by a targeted run, and fixed in that task's lane.
@@ -65,6 +69,20 @@ Applies only to a deliverable whose breakdown has a lane column (decision 111).
 - Merges, merge runs and critics are serial on the main session. Lanes keep working meanwhile.
 
 The tools: `.claude/scripts/lane-setup.sh` (run first inside the lane worktree: clones `node_modules`, installs the hooks, copies `.env.local`), `.claude/scripts/full-suite.sh <evidence-dir> <label> lane` (the lane tier), and `.claude/scripts/with-browser-lock.sh <command…>` (serializes every user of port 5175; `full-suite.sh` already wraps its browser stages in it). `tdd.sh` writes `evidence/<Dnn>/tdd-log/<task>.md`, one file per task.
+
+## Pending decisions (decision 113)
+
+Stop and ask stays in force: never decide a question the specs or the plan leave to the user, and never change a plan test to get past one. When one arises, from a subagent's report, an ocr fix, or your own reading:
+
+1. Ask the user at once in an ordinary message, not a question dialog, since a dialog blocks the session.
+2. Record it in `evidence/D<nn>/DECISIONS-PENDING.md`: the task, the question, the options with their tradeoffs, and your recommendation.
+3. Pause that task, every task blocked by it, and the later tasks in its lane. Mark them "Paused: decision pending" in Progress.
+4. Keep working on every other unblocked task. When nothing unblocked remains, stop and wait.
+5. On the user's answer, record the decision (with a plan revision when the plan changes), mark the entry answered with the date, and resume the paused tasks.
+
+## Final report
+
+At the gate, or at a full stop, report: the deliverable's result; each task's fix rounds (ocr bug-task rounds and suite-failure fixes); every flaky test seen, with the run it flaked in; every decision still pending; and the handoff's open questions. Then remove `.claude/session.lock`.
 
 ## Writing the next deliverable's handoff
 

@@ -45,6 +45,9 @@ coverage/
 # Worktrees (each is its own checkout; not nested-tracked)
 worktrees/
 
+# A deliverable session's lock (decision 113)
+.claude/session.lock
+
 # Playwright
 test-results/
 playwright-report/
