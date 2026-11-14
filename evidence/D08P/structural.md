@@ -1795,3 +1795,6 @@ Added `missingFixtureSchemas(names, schemaVersion)` in `tools/fixture-schemas.ts
 - **First-run pass, flagged for the user:** case 1 passed against the placeholder helper returning an empty list. Mutation: inverting the presence check failed it with `AssertionError: expected [ 1, 2, 3 ] to deeply equal []`; restored, then green (`tdd-log/T8P.BUG-4.2.md`).
 - **Review:** ocr in place, 3 files, 0 comments, "No findings." (`ocr/T8P.BUG-4.2-2a95b28b.json`).
 - **Main-session note, not a task:** the cumulative run's unit stage is `npx vitest run src` (`.claude/scripts/full-suite.sh:157`), which skips the `unit` project's `tools/**/*.test.ts` files, now six of them, this task's included. The `verify:fixtures` check itself runs in the checks stage. Raised with the user.
+- **Full tier closing BUG-4 (`T8P.BUG-4.2`, at `6c9cb6c7`):** unit 1662 (156 files), integration 229 (106 files), checks 14 of 14 (`verify:fixtures` with the new check included), browser-1 126 (4.8 min), browser-2 98 (6.1 min), no failures; run complete.
+- **Tool tests** (not in the run's unit stage, see the note above), run once by the main session: `npx vitest run --project unit tools`, 6 files, 86 passed, exit 0 (`suite-runs/T8P.BUG-4.2-tools-unit.txt`).
+- **BUG-4 is done.** No browser critic (decision 112): no product code, screen or word changed.

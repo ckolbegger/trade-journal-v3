@@ -1,0 +1,9 @@
+
+ RUN  v4.1.12 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+
+ Test Files  6 passed (6)
+      Tests  86 passed (86)
+   Start at  13:01:36
+   Duration  1.91s (transform 186ms, setup 105ms, import 1.07s, tests 1.66s, environment 0ms)
+

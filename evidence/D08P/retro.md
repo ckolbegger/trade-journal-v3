@@ -2,7 +2,7 @@
 
 Source: the user's retrospective of the Trade Detail refactor (D08P), 2026-11-14. It reviewed the implementation session `080f089b-4413-4842-ac2b-aec7f7178d04` (2026-11-12 23:44 to 2026-11-14 11:05), [structural.md](structural.md), [final-report.md](final-report.md), the critic reports, and the agent environment: `.claude/agents/`, `.claude/docs/`, `.claude/settings.json` and ocr's file selection.
 
-D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2 and 5 are fixed; finding 6 is partly resolved; the rest are open.
+D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5 and 8 are fixed; finding 6 is partly resolved; the rest are open.
 
 ## 1. **FIXED** ~~`build:releases` was blocked for agents, though it is on the allow list (permissions)~~
 
@@ -83,13 +83,15 @@ The rule is mechanical, so it belongs in a test, not a coding standard. A `tdd-t
 
 **Proposed fix.** If batching is the norm, write it into "After each critic". Otherwise the doc stands.
 
-## 8. A test that always fails sits in the suite (automated checks)
+## 8. **FIXED** ~~A test that always fails sits in the suite (automated checks)~~
 
-**What happened.** B6.6 (`e2e/d6/update.spec.ts:9`) expects About's schema "5" and reads "7". It can't pass without a `d6` release build, which decision 76 rules out. It is excluded from the normal runs by its `@release-history` tag, but a bug-task agent and the main session's extra run each spent a cycle on it.
+~~**What happened.** B6.6 (`e2e/d6/update.spec.ts:9`) expects About's schema "5" and reads "7". It can't pass without a `d6` release build, which decision 76 rules out. It is excluded from the normal runs by its `@release-history` tag, but a bug-task agent and the main session's extra run each spent a cycle on it.~~
 
-**Proposed fix.** Mark it `test.fixme` with the reason (decision 76, tech debt item 10), so the reason sits next to the test.
+~~**Proposed fix.** Mark it `test.fixme` with the reason (decision 76, tech debt item 10), so the reason sits next to the test.~~
 
-**Decided instead** (decision 112, revision 101). `dist-releases/d6` was never D6: it is the checked-out code labelled "d6". Every schema step is covered by its fixture's integration migration tests and `verify:fixtures`, so B6.6 is deleted, the build is renamed `current`, and `verify:fixtures` requires a fixture for every schema. The work is bug tasks BUG-4.1 and BUG-4.2 in `plan/bug-tasks.md`.
+~~**Decided instead** (decision 112, revision 101). `dist-releases/d6` was never D6: it is the checked-out code labelled "d6". Every schema step is covered by its fixture's integration migration tests and `verify:fixtures`, so B6.6 is deleted, the build is renamed `current`, and `verify:fixtures` requires a fixture for every schema. The work is bug tasks BUG-4.1 and BUG-4.2 in `plan/bug-tasks.md`.~~
+
+~~**Applied** (BUG-4.1 `ad6d0189`, BUG-4.2 `2a95b28b`). The full tier `T8P.BUG-4.2` passed (`structural.md`, "BUG-4").~~
 
 ## 9. A pointer to a spec-reading list that doesn't exist (navigation)
 
