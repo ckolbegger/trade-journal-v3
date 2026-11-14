@@ -44,9 +44,12 @@ export function OwedDebtItem({
   const { writable, report } = useRuntime();
   const [definition, setDefinition] = useState<EntryDefinitionRecord>();
   const [openFailed, setOpenFailed] = useState(false);
+  // The form was opened by a request from outside, so it takes focus when it appears.
+  const [focusOnOpen, setFocusOnOpen] = useState(false);
 
-  const open = async () => {
+  const open = async (fromRequest = false) => {
     setOpenFailed(false);
+    setFocusOnOpen(fromRequest);
     onOpen();
     try {
       const found = await facade.Journal.getDefinitions({ revision: debt.definitionId });
@@ -58,6 +61,7 @@ export function OwedDebtItem({
       // Treated like a missing definition: shown below, and the item is released.
     }
     setOpenFailed(true);
+    setFocusOnOpen(false);
     onClose();
   };
   // A request for this Debt opens its form, unless another form is open or the Runtime is read only; either way the request is handled.
@@ -66,11 +70,19 @@ export function OwedDebtItem({
   useEffect(() => {
     if (!requested) return;
     request.handled();
-    if (writable && !blocked && !definition) queueMicrotask(() => void open());
+    if (writable && !blocked && !definition) {
+      queueMicrotask(() => void open(true));
+    }
     // Only a new request matters, not the item's own changes.
   }, [requested]);
   // The form that took focus is replaced by the saved reflection, so focus moves to it.
   const formArea = useRef<HTMLDivElement>(null);
+  // A form opened from outside (the rail's button) is out of view and the pressed button is elsewhere, so the form takes focus and scrolls into view.
+  useEffect(() => {
+    if (!definition || !focusOnOpen) return;
+    formArea.current?.focus();
+    formArea.current?.scrollIntoView?.({ block: 'start' });
+  }, [definition]);
   // What the save returned: the item is relabelled from it, without reading the Trade again.
   const [settled, setSettled] = useState<{ readonly label: string; readonly timeLabel: string; readonly time?: string }>();
   useEffect(() => {
@@ -88,6 +100,7 @@ export function OwedDebtItem({
   };
   const close = () => {
     setDefinition(undefined);
+    setFocusOnOpen(false);
     onClose();
   };
 

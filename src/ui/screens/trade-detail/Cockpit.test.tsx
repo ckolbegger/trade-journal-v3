@@ -200,6 +200,22 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       expect([...document.querySelectorAll('button')].filter((button) => button.textContent === 'Reflect now')).toEqual([]);
     });
 
+    it('should move focus into the opened form and scroll it into view when Reflect now is chosen in Needs you', async () => {
+      const user = userEvent.setup();
+      // jsdom measures nothing and has no scrollIntoView, so the call is recorded on the element it is made for.
+      const scrolled: Element[] = [];
+      Element.prototype.scrollIntoView = function (this: Element) {
+        scrolled.push(this);
+      };
+      renderOwed();
+      const needsYou = await screen.findByRole('region', { name: 'Needs you' });
+      await user.click(within(needsYou).getByRole('button', { name: 'Reflect now' }));
+      const form = await within(screen.getByRole('tabpanel', { name: 'Journal' })).findByRole('form', { name: 'Reflection' });
+      await waitFor(() => expect(form.parentElement!.contains(document.activeElement)).toBe(true));
+      expect(needsYou.contains(document.activeElement)).toBe(false);
+      expect(scrolled.some((element) => element.contains(form))).toBe(true);
+    });
+
     it("should open the chosen Debt's form when two Debts of one Entry Type fall in the same minute", async () => {
       const user = userEvent.setup();
       // Two Position Change Reflections 30 seconds apart, so the same minute on the clock.

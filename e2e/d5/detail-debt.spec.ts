@@ -45,4 +45,22 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     await expect(page.getByRole('region', { name: 'Review status' })).not.toContainText('eflection');
     await context.close();
   });
+
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 375, height: 800 }]) {
+    test(`should show the opened form in view with focus inside it after Reflect now in Needs you at ${viewport.width} px (T8P.23-B10)`, async ({ profile }) => {
+      const { context, page } = await onboardedAt(profile, TUESDAY_1005);
+      await page.setViewportSize(viewport);
+      await confirmReference(page);
+      await deferEntry(page, [{ quantity: '100', price: '50.00', fee: '1.00', time: '2026-10-13T10:00' }]);
+      await setClock(context, page, TUESDAY_1230);
+      await openTradeFromOpenList(page);
+      await detail.reflectNowButton(page).click();
+      const form = detail.debtForm(page);
+      await expect(form).toBeVisible();
+      await expect(form).toBeInViewport();
+      // Focus is inside the form's area, not left on the rail's button.
+      await expect.poll(() => page.evaluate(() => document.getElementById('drawer-panel-journal')?.querySelector('form')?.parentElement?.contains(document.activeElement) ?? false)).toBe(true);
+      await context.close();
+    });
+  }
 });
