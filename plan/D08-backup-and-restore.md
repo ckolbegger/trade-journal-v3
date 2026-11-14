@@ -667,7 +667,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
-| T8.1 | 0 | F | In progress from `a6c88cdd` | |
+| T8.1 | 0 | F | Done | `b96da61c`; B1 `ce73ade7`, B2 `7cd1bee0`, B3 `4493d876`, B4 `727671a2`, B5 `2a01fe69`, B6 `1b850dbc`, B7 `daa1b0d4` |
 | T8.23 | 0 | T | Done | `220d4b0f`; B1 `fdc5e858` |
 | T8.2 | 1 | FM | Not started | |
 | T8.6 | 1 | FM | Not started | |
