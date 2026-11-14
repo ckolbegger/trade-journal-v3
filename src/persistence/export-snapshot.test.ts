@@ -219,6 +219,33 @@ describe('one read snapshot (P29, A128)', () => {
       process.off('unhandledRejection', record);
     }
   });
+
+  it('should end the snapshot with EarlyAutoCommitGuard when onStart returns a promise', async () => {
+    const { p, database } = await workspaceWith([['catalog', { id: 'c-1' }]]);
+    const unhandled: unknown[] = [];
+    const record = (reason: unknown) => {
+      unhandled.push(reason);
+    };
+    process.on('unhandledRejection', record);
+    try {
+      const batches: ExportBatch[] = [];
+      const result = await p.readExportSnapshot(
+        database,
+        exportLayoutFor(7)!,
+        (batch) => {
+          batches.push(batch);
+        },
+        () => Promise.reject(new Error('late start failure')) as unknown as void,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(result).toEqual({ kind: 'EarlyAutoCommitGuard' });
+      expect(batches).toEqual([]);
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off('unhandledRejection', record);
+    }
+  });
 });
 
 // A Workspace database as an older or newer release left it: the stores of the current schema, the

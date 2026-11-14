@@ -126,6 +126,15 @@ export async function readExportSnapshot(
         };
       };
 
+      // A callback that returns a promise is not synchronous (A128): end the snapshot with the guard.
+      const guardAsync = (returned: unknown): boolean => {
+        if (typeof (returned as { then?: unknown } | undefined)?.then !== 'function') return false;
+        // The snapshot ends here, so nothing waits on this promise: absorb a later rejection.
+        (returned as Promise<unknown>).then(undefined, () => undefined);
+        fail({ kind: 'EarlyAutoCommitGuard' });
+        return true;
+      };
+
       const readFrom = (index: number, after: IDBValidKey | undefined) => {
         const store = layout.stores[index];
         if (store === undefined) return;
@@ -135,12 +144,7 @@ export async function readExportSnapshot(
           const lastKey = rows.length === EXPORT_BATCH_SIZE ? keyOf(store, rows[rows.length - 1]!) : undefined;
           if (rows.length > 0) {
             const returned: unknown = onBatch({ store, records: rows.map((row) => withoutPrivateFields(row, layout.privateFields[store])) });
-            if (typeof (returned as { then?: unknown } | undefined)?.then === 'function') {
-              // The snapshot ends here, so nothing waits on this promise: absorb a later rejection.
-              (returned as Promise<unknown>).then(undefined, () => undefined);
-              fail({ kind: 'EarlyAutoCommitGuard' });
-              return;
-            }
+            if (guardAsync(returned)) return;
           }
           if (lastKey === undefined) readFrom(index + 1, undefined);
           else readFrom(index, lastKey);
@@ -161,7 +165,7 @@ export async function readExportSnapshot(
         const binding = { databaseName, contentRevision: content };
         result = { kind: 'Read', binding, schemaVersion: schema, meta, counts };
         // A throw here ends the snapshot like one from onBatch.
-        onStart?.({ binding, meta, counts });
+        if (guardAsync(onStart?.({ binding, meta, counts }))) return;
         readFrom(0, undefined);
       };
       watch('meta', tx.objectStore('meta').getAll() as IDBRequest<Record<string, unknown>[]>, (records) => {
