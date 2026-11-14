@@ -21,11 +21,12 @@ describe('Closed Trade Detail', () => {
     // The Trade Summary is the Position drawer's on a Closed Detail (T8P.31); the Summary card it was read from is retired.
     expect(screen.getByRole('tabpanel', { name: 'Position' }).querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.18');
 
-    const result = screen.getByRole('region', { name: 'Result' });
+    // The Result is the rail's P&L card (W4).
+    const result = screen.getByRole('region', { name: 'Trade P&L' });
     expect(termValue(result, 'Terminal Disposition')).toBe('Closed via sale of 100 shares');
     expect(termValue(result, 'Close Reason')).toBe('Target reached');
-    expect(termValue(result, 'Realized P&L')).toBe('+$248.00');
-    expect(termValue(result, 'Realized R')).toBe('+0.99R');
+    expect(result.querySelector('.pnl-figure')?.textContent).toBe('$248.00');
+    expect(result.querySelector('.pnl-line')?.textContent).toBe('+0.99R realized, final');
 
     const fees = screen.getByRole('region', { name: 'Fee reconciliation' });
     expect(termValue(fees, 'Incurred fees')).toBe('$4.00');
@@ -56,12 +57,38 @@ describe('Closed Trade Detail', () => {
   });
 });
 
+describe('Closed Detail Result figures appear once, on the rail (T8P.23-B1)', () => {
+  useFixedClock();
+  const dtTexts = () => [...document.querySelectorAll('dt')].map((dt) => dt.textContent);
+
+  it('should show the Result rows and the realized figure once on the rail, with no Result region in the Position drawer, on a Closed by sale and a Closed by expiration Detail', async () => {
+    renderView(closedDetailOf([PC1, PC2, X1, X2], { closeReason: { id: 'cr-1', label: 'Target reached' } }));
+    await screen.findByRole('heading', { name: 'XYZ', level: 1 });
+    expect(screen.queryByRole('region', { name: 'Result', hidden: true })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Result', hidden: true })).toBeNull();
+    expect(dtTexts().filter((text) => text === 'Terminal Disposition')).toHaveLength(1);
+    expect(dtTexts().filter((text) => text === 'Close Reason')).toHaveLength(1);
+    expect(dtTexts()).not.toContain('Realized P&L');
+    expect(dtTexts()).not.toContain('Realized R');
+    expect(screen.getAllByText('+0.99R realized, final', { exact: false })).toHaveLength(1);
+    cleanup();
+
+    renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByRole('region', { name: 'Result', hidden: true })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Result', hidden: true })).toBeNull();
+    expect(dtTexts().filter((text) => text === 'Terminal Disposition')).toHaveLength(1);
+    expect(dtTexts().filter((text) => text === 'Option Disposition Timing')).toHaveLength(1);
+    expect(dtTexts()).not.toContain('Realized P&L');
+  });
+});
+
 describe('closed option Trade Detail (A119)', () => {
   useFixedClock();
   it('should show a Closed option Trade Closed via sale of 1 contract and expiration of 1 contract, Option Disposition Timing Mixed with both quantities, and no Close Reason field', async () => {
     const user = userEvent.setup();
     renderView(optionClosedDetail('O-C', [OC_PC1, OC_PC2, OC_X1, OC_E1]));
-    const result = await screen.findByRole('region', { name: 'Result' });
+    const result = await screen.findByRole('region', { name: 'Trade P&L' });
     expect(termValue(result, 'Terminal Disposition')).toBe('Closed via sale of 1 contract and expiration of 1 contract');
     expect(termValue(result, 'Option Disposition Timing')).toBe('Mixed: 1 before expiration, 1 at expiration');
     expect(within(result).queryByText('Close Reason', { selector: 'dt' })).toBeNull();

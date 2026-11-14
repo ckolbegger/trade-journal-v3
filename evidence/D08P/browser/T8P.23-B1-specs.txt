@@ -1,0 +1,20 @@
+
+Running 15 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d6/exit-requirements.spec.ts:9:3 › B6.3 Close requirements › should show Choose a Close Reason beside the group with focus on the issues and the values kept, then save once a reason is chosen (2.6s)
+  ✓   2 [chromium] › e2e/d6/exit-requirements.spec.ts:62:3 › B6.4 Oversell › should refuse an exit of 101 shares on a 100-share Position with The position has only 100 shares beside the row and save nothing (2.9s)
+  ✓   3 [chromium] › e2e/d6/exit.spec.ts:10:3 › B6.1 Partial then final exit › should keep T-A Open at 70 shares with one Lot Match and $55.90 realized after the first exit, close it at $248.00 and 0.99R after the second, and store the Sell Executions and the Close Reason fact with no Lot-Match record (3.6s)
+  ✓   4 [chromium] › e2e/d6/kill.spec.ts:9:3 › B6.7 Kill after commit › should keep the Closed lifecycle, the Sell Executions, the Close Reason, and both reflection outcomes after the browser is killed once a terminal exit’s result renders, and derive the same Lot Matches (2.5s)
+  ✓   5 [chromium] › e2e/d6/no-save.spec.ts:48:3 › B6.11 Nothing saved without Save (AC-JOUR-001) › should store no Position Change, Close Reason, Entry, decline, Debt, or Web Storage value after typing a full exit with a Close Reason and both reflections, resizing, leaving, and restarting (3.0s)
+  ✓   6 [chromium] › e2e/d6/offline.spec.ts:11:3 › B6.8 Offline cold restart (AC-DEL-001) › should record a partial and then a full exit offline after a full stop, and keep both across another offline restart (3.3s)
+  ✓   7 [chromium] › e2e/d6/responsive-a11y.spec.ts:28:3 › B6.12 Responsive and accessible › should keep a half-filled full exit through 390 px and back, switching layout at 960 px, report no WCAG 2.1 AA violations on the exit form, the Closed list in each state, Closed Detail, Open Detail with Lot Matches and the owed-reflection cards, say signed P&L and Closed via in text, and record a full exit by keyboard alone (16.4s)
+  ✓   8 [chromium] › e2e/d6/responsive-a11y.spec.ts:196:3 › B6.12 Responsive and accessible › should keep every money amount in the figure grids on one line at 375 px and 320 px, on Open Detail with Lot Matches and on Closed Detail (2.8s)
+  ✓   9 [chromium] › e2e/d6/responsive-a11y.spec.ts:248:3 › B6.12 Responsive and accessible › should keep each price with its date and time, and each money amount, whole on one line in the Lot Matches table at 375 px and 320 px (2.4s)
+  ✓  10 [chromium] › e2e/d6/responsive-a11y.spec.ts:293:3 › B6.12 Responsive and accessible › should reflow the exit receipt, with its Lot Matches and Changed Lot Matches tables reachable by name, at 375 px and 320 px (2.9s)
+  ✓  11 [chromium] › e2e/d6/runtime-failure.spec.ts:11:3 › B6.9 Recovery Only (faults build) › should keep the Closed list, Closed Detail, and Open Detail with Lot Matches readable with no Record exit, Reflect now, or Decline, and leave the probe unchanged (3.7s)
+  ✓  12 [chromium] › e2e/d6/runtime-failure.spec.ts:77:3 › B6.10 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the typed exit and its answers, and record no Position Change (2.4s)
+  ✓  13 [chromium] › e2e/d7/kill.spec.ts:8:3 › B7.8 Kill after commit › should keep the Closed lifecycle, the Expiration, and both reflection outcomes after the browser is killed once an Expiration result renders (2.1s)
+  ✓  14 [chromium] › e2e/d7/offline.spec.ts:10:3 › B7.9 Offline cold restart (AC-DEL-001) › should confirm an option Plan, record an entry, and record an Expiration offline after a full stop, and keep all three across another offline restart (2.6s)
+  ✓  15 [chromium] › e2e/d7/settlement-due.spec.ts:11:3 › B7.4 Settlement Due on Detail › should show the Settlement Due panel on Friday and on Monday with the Trade Open and no current dollar figures on Monday, then record the expiration to Closed via expiration of 2 contracts, Fully held to expiration (3.7s)
+
+  15 passed (58.2s)

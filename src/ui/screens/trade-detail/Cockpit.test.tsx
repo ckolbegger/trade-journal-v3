@@ -66,7 +66,9 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       expect(tabNames()).not.toContain('Today');
       expect(tabNames()[0]).toBe('Position');
       expect(selectedTab()).toBe('Position');
-      expect(within(screen.getByRole('tabpanel', { name: 'Position' })).getByRole('region', { name: 'Result' })).toBeTruthy();
+      // The Result is the rail's P&L card, not a Position drawer region (W4); the drawer opens on its Lot Matches.
+      expect(within(screen.getByRole('region', { name: 'Trade P&L' })).getByText('Terminal Disposition', { selector: 'dt' })).toBeTruthy();
+      expect(within(screen.getByRole('tabpanel', { name: 'Position' })).getByRole('region', { name: 'Lot Matches' })).toBeTruthy();
       cleanup();
 
       // The Valuation and Risk and reward legacy blocks are retired (T8P.22), so the default drawer holds the Position.

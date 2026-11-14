@@ -236,7 +236,8 @@ test.describe('B6.12 Responsive and accessible', () => {
     await page.getByRole('button', { name: 'Save exit' }).click();
     await expect(page.getByRole('heading', { name: 'Exit recorded', level: 1 })).toBeVisible(READY);
     await page.getByRole('link', { name: 'Back to the Trade' }).click();
-    await expect(detail.resultHeading(page)).toBeVisible(READY);
+    await expect(detail.result(page)).toBeVisible(READY);
+    await expect(detail.anywhere(() => detail.resultHeading(page))).toHaveCount(0);
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 844 });
       await expectAmountsOnOneLine(`Closed Detail at ${width} px`);

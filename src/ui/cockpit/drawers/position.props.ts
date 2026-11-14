@@ -5,7 +5,6 @@ import { calculation, signed, unavailableLabel } from '../../figures.ts';
 import { localTime, money, netCost, quantity, tradeSummary } from '../../format.ts';
 import { LotMatchesTable } from '../../screens/LotMatchesTable.tsx';
 import { ExecutionsSection, outcomesOnly, SettlementSection } from '../../screens/trade-detail/Position.tsx';
-import { ClosedResultSection } from '../../screens/trade-detail/Result.tsx';
 import { positionText } from '../../screens/trade-detail/words.ts';
 import type { PositionDrawerProps } from './position.types.ts';
 
@@ -27,7 +26,7 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
   return {
     ...(view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),
     ...(closed
-      ? { result: createElement(ClosedResultSection, { view }) }
+      ? {}
       : {
           summary: [
             { label: 'Position', value: view.positions.map(positionText).join(', ') },

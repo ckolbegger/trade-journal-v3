@@ -1,4 +1,4 @@
-// The Position drawer (W15, W17, P96): the Position card with its open lots and figures, the Result of a Closed Trade, the Lot Matches, the
+// The Position drawer (W15, W17, P96): the Position card with its open lots and figures, the Lot Matches, the
 // fee reconciliation, the Executions and the Settlement. The shell passes the view and the zone; `position.props` turns them into display values.
 import type { ShellProps } from '../placeholder.ts';
 import { TradeText } from '../../TradeText.tsx';
@@ -7,7 +7,7 @@ import { Figure } from '../../screens/trade-detail/figure.tsx';
 import { positionProps } from './position.props.ts';
 import type { PositionDrawerProps } from './position.types.ts';
 
-export function PositionPanel({ tradeSummary, summary, openLots, figures, result, lotMatches, feeReconciliation, executions, settlement }: PositionDrawerProps) {
+export function PositionPanel({ tradeSummary, summary, openLots, figures, lotMatches, feeReconciliation, executions, settlement }: PositionDrawerProps) {
   const summaryLine = tradeSummary && (
     <p className="summary-text number">
       <TradeText text={tradeSummary} />
@@ -18,7 +18,6 @@ export function PositionPanel({ tradeSummary, summary, openLots, figures, result
     <>
       {/* A Closed Detail has no Position card to lead with it. */}
       {!positionCard && summaryLine}
-      {result}
       {positionCard && (
         <section className="card" aria-labelledby="position-heading">
           <h2 id="position-heading">Position</h2>

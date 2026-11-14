@@ -16,7 +16,7 @@ export const recordExitLink = (page: Page): Locator => roleOf(identityCard(page)
 export const tradeSummary = (page: Page): Locator => detailRoot(page).locator('.summary-text');
 
 // The P&L card (W3, W4): its figure (an Open Trade's Trade P&L, a Closed Trade's realized P&L), the line beneath it, and the Result rows a
-// Closed Trade shows. The Position drawer's own Result section stays until T8P.17, so its heading is read apart.
+// Closed Trade shows. The Position drawer has no Result region (T8P.23-B1), so `resultHeading` is read only to assert it absent.
 export const pnlCard = (page: Page): Locator => regionOf(page, 'Trade P&L');
 export const pnlFigure = (page: Page): Locator => pnlCard(page).locator('.pnl-figure');
 export const pnlLine = (page: Page): Locator => pnlCard(page).locator('.pnl-line');
