@@ -295,7 +295,19 @@ describe('Restore completion (A142)', () => {
     await user.click(screen.getByRole('button', { name: 'Verify backup' }));
     expect(await screen.findByText('Backup complete. Checked Sat Nov 14, 16:05.')).toBeTruthy();
 
-    const token = { candidateId: 'cand-1', fullDigest: 'digest-1', targetBinding: BINDING, releaseId: '2026.11.14' };
+    await completeRestore(facade, files, user);
+
+    expect(screen.queryByText(DOWNLOADED.fileName)).toBeNull();
+    expect(screen.queryByText(/Backup complete/)).toBeNull();
+    expect(screen.queryByText(/Downloaded, not verified/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Verify backup' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Download backup' })).toBeTruthy();
+  });
+});
+
+async function completeRestore(facade: ReturnType<typeof createBackupFacadeDouble>, files: ReturnType<typeof createFileSelectionDouble>, user: ReturnType<typeof userEvent.setup>) {
+  {
+    const token ={ candidateId: 'cand-1', fullDigest: 'digest-1', targetBinding: BINDING, releaseId: '2026.11.14' };
     const counts = {
       tradesByLifecycle: { Planned: 1, Open: 2, Closed: 3 },
       positionChanges: 7,
@@ -329,11 +341,30 @@ describe('Restore completion (A142)', () => {
     } as never);
     await user.click(screen.getByRole('button', { name: 'Replace entire journal' }));
     expect(await screen.findByRole('heading', { name: 'Restore complete' })).toBeTruthy();
+  }
+}
 
+describe('Restore completion with a download in flight (A142)', () => {
+  it('should discard a backup download that finishes after a Restore completes', async () => {
+    const facade = createBackupFacadeDouble();
+    const files = createFileSelectionDouble();
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <BackupView facade={facade.facade} selectFile={files.port} readiness={{ kind: 'Writable' }} timeZone="America/New_York" />
+      </MemoryRouter>,
+    );
+    let finish: (result: Downloaded) => void = () => undefined;
+    facade.respond('exportBackup', () => new Promise<Downloaded>((resolve) => (finish = resolve)));
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await completeRestore(facade, files, user);
+    await act(() => {
+      finish(DOWNLOADED);
+      return Promise.resolve();
+    });
     expect(screen.queryByText(DOWNLOADED.fileName)).toBeNull();
-    expect(screen.queryByText(/Backup complete/)).toBeNull();
-    expect(screen.queryByText(/Downloaded, not verified/)).toBeNull();
     expect(screen.queryByRole('button', { name: 'Verify backup' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Download backup' })).toBeTruthy();
+    expect(screen.queryByText(/Making the backup/)).toBeNull();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Download backup' }).disabled).toBe(false);
   });
 });

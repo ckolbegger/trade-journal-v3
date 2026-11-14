@@ -33,13 +33,20 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
 
   const download = async () => {
     downloadCount.current += 1;
+    const thisDownload = downloadCount.current;
     setMaking('Starting');
     setNotMade(undefined);
     setDownloaded(undefined);
     setOutcome(undefined);
     setChecking(undefined);
     // A refused, conflicting or throwing export left the Workspace as it was: say it was not made.
-    const result = await facade.exportBackup({ onProgress: setMaking }).catch((): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null }));
+    const result = await facade
+      .exportBackup({ onProgress: (progress) => {
+        if (thisDownload === downloadCount.current) setMaking(progress);
+      } })
+      .catch((): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null }));
+    // A Restore completed meanwhile: this export was of the replaced Workspace, so drop it.
+    if (thisDownload !== downloadCount.current) return;
     setMaking(undefined);
     if (result.kind === 'Downloaded') setDownloaded(result);
     else setNotMade(result.kind === 'NotCompleted' ? result.reason : 'Conflict');
@@ -56,6 +63,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
         setDownloaded(undefined);
         setOutcome(undefined);
         setChecking(undefined);
+        setMaking(undefined);
         setNotMade(undefined);
       }
       return result;
@@ -111,7 +119,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
       {readiness.kind === 'Writable' ? (
         <section className="card" aria-labelledby="backup-restore-heading">
           <h2 id="backup-restore-heading">Restore from a backup</h2>
-          <RestoreFlow facade={restoreFacade}selectFile={selectFile} />
+          <RestoreFlow facade={restoreFacade} selectFile={selectFile} />
         </section>
       ) : (
         <section className="card" aria-labelledby="backup-restore-heading">
