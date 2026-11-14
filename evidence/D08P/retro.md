@@ -2,43 +2,43 @@
 
 Source: the user's retrospective of the Trade Detail refactor (D08P), 2026-11-14. It reviewed the implementation session `080f089b-4413-4842-ac2b-aec7f7178d04` (2026-11-12 23:44 to 2026-11-14 11:05), [structural.md](structural.md), [final-report.md](final-report.md), the critic reports, and the agent environment: `.claude/agents/`, `.claude/docs/`, `.claude/settings.json` and ocr's file selection.
 
-D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5 and 6 are applied; the rest are open.
+D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2 and 5 are fixed; finding 6 is partly resolved; the rest are open.
 
-## 1. `build:releases` was blocked for agents, though it is on the allow list (permissions). Applied.
+## 1. **FIXED** ~~`build:releases` was blocked for agents, though it is on the allow list (permissions)~~
 
-**What happened.** The auto-mode classifier refused `npm run build:releases` to T8P.23-B14's agent twice. The user had to decide ("Main session builds for it"), and from then on every brief and bug-task message carried a workaround, with the suite runner doing the release build. Earlier, a stale `dist-releases` made T8P.23-B4's agent report it "can't make red", which cost a round. A gate bug-task agent also hit B6.6 against stale release builds.
+~~**What happened.** The auto-mode classifier refused `npm run build:releases` to T8P.23-B14's agent twice. The user had to decide ("Main session builds for it"), and from then on every brief and bug-task message carried a workaround, with the suite runner doing the release build. Earlier, a stale `dist-releases` made T8P.23-B4's agent report it "can't make red", which cost a round. A gate bug-task agent also hit B6.6 against stale release builds.~~
 
-**Sources:** structural.md, "T8P.23-B14", "T8P.23-B4" and "T8P.26-B2".
+~~**Sources:** structural.md, "T8P.23-B14", "T8P.23-B4" and "T8P.26-B2".~~
 
-**Likely cause.** `.claude/settings.json` allows exactly `Bash(npm run build:releases)`. Agents run it chained as `npm run build && npm run build:faults && npm run build:releases`, and plain `npm run build` is not on the list, so the whole command falls to the classifier.
+~~**Likely cause.** `.claude/settings.json` allows exactly `Bash(npm run build:releases)`. Agents run it chained as `npm run build && npm run build:faults && npm run build:releases`, and plain `npm run build` is not on the list, so the whole command falls to the classifier.~~
 
-**Proposed fix.** Add a `build:all` script and allow `Bash(npm run build:all)`, or allow `Bash(npm run build)` beside the other two. Then remove the workaround from the bug-task rules and `tdd-task.md`'s rebuild line. Verify with one agent run before relying on it.
+~~**Proposed fix.** Add a `build:all` script and allow `Bash(npm run build:all)`, or allow `Bash(npm run build)` beside the other two. Then remove the workaround from the bug-task rules and `tdd-task.md`'s rebuild line. Verify with one agent run before relying on it.~~
 
-**Applied.**
-- `package.json` gains `build:all` (`npm run build && npm run build:faults && npm run build:releases`).
-- `.claude/settings.json` allows `Bash(npm run build:all)` and `Bash(npm run build)`, so the chained form is allowed in every part too.
-- `tdd-task.md`'s rebuild line names `build:releases` and `build:all`.
-- The bug-task rules lived only in the session's scratchpad; future briefs drop the workaround.
+~~**Applied** (`7d7d8f32`).~~
+- ~~`package.json` gains `build:all` (`npm run build && npm run build:faults && npm run build:releases`).~~
+- ~~`.claude/settings.json` allows `Bash(npm run build:all)` and `Bash(npm run build)`, so the chained form is allowed in every part too.~~
+- ~~`tdd-task.md`'s rebuild line names `build:releases` and `build:all`.~~
+- ~~The bug-task rules lived only in the session's scratchpad; future briefs drop the workaround.~~
 
-**Verified.** A fresh `general-purpose` subagent ran `npm run build:all` and the chained form. Both ran without a refusal and exited 0. One run is not proof against a classifier that refused only some of the time before: if a refusal comes back, report it to the user rather than working around it.
+~~**Verified.** A fresh `general-purpose` subagent ran `npm run build:all` and the chained form. Both ran without a refusal and exited 0. One run is not proof against a classifier that refused only some of the time before: if a refusal comes back, report it to the user rather than working around it.~~
 
-## 2. The critic-report step in `critic-brief.md` never works (stale guidance). Applied.
+## 2. **FIXED** ~~The critic-report step in `critic-brief.md` never works (stale guidance)~~
 
-**What happened.** The brief tells the critic to write `test-results/critic-d<nn>-<n>/report.md`, and "After each critic" says to `cp` it, or SendMessage the critic if it is missing. The harness refuses report files from subagents, so the write failed for all 6 D08P critics and all 3 in D7S. Each time, the main session extracted the report from the session transcript with a script written to the scratchpad, which disappears with the session.
+~~**What happened.** The brief tells the critic to write `test-results/critic-d<nn>-<n>/report.md`, and "After each critic" says to `cp` it, or SendMessage the critic if it is missing. The harness refuses report files from subagents, so the write failed for all 6 D08P critics and all 3 in D7S. Each time, the main session extracted the report from the session transcript with a script written to the scratchpad, which disappears with the session.~~
 
-**Sources:** critic-1.md to critic-6.md (each opens with the refusal); D7S final report, "Critics".
+~~**Sources:** critic-1.md to critic-6.md (each opens with the refusal); D7S final report, "Critics".~~
 
-**Proposed fix.**
-- Commit the extractor as `.claude/scripts/agent-report.mjs <transcript> <heading>`. It scans the transcript's JSON lines for the agent message containing the heading and prints the report, unindented.
-- In the brief, the critic sends its report only as its final message, under a fixed heading such as `# D<nn> critic-<n> report`.
-- "After each critic" runs the script, in place of the `cp`-or-SendMessage line.
+~~**Proposed fix.**~~
+- ~~Commit the extractor as `.claude/scripts/agent-report.mjs <transcript> <heading>`. It scans the transcript's JSON lines for the agent message containing the heading and prints the report, unindented.~~
+- ~~In the brief, the critic sends its report only as its final message, under a fixed heading such as `# D<nn> critic-<n> report`.~~
+- ~~"After each critic" runs the script, in place of the `cp`-or-SendMessage line.~~
 
-**Applied.**
-- The extractor is `tools/agent-report.ts`, not `.claude/scripts/`, because the pre-commit lint covers every file and the TypeScript project includes `tools/` but not `.claude/scripts/`.
-- Its transcript argument is optional. Without it, it reads the newest `.jsonl` in this project's `~/.claude/projects/` folder, which is the current session.
-- `critic-brief.md`: the critic sends its report only as its final message, starting with `# D<nn> critic-<n> report`. "After each critic" saves it with `node tools/agent-report.ts "# D<nn> critic-<n> report" > evidence/D<nn>/critic-<n>.md`.
+~~**Applied** (`8cb6a970`).~~
+- ~~The extractor is `tools/agent-report.ts`, not `.claude/scripts/`, because the pre-commit lint covers every file and the TypeScript project includes `tools/` but not `.claude/scripts/`.~~
+- ~~Its transcript argument is optional. Without it, it reads the newest `.jsonl` in this project's `~/.claude/projects/` folder, which is the current session.~~
+- ~~`critic-brief.md`: the critic sends its report only as its final message, starting with `# D<nn> critic-<n> report`. "After each critic" saves it with `node tools/agent-report.ts "# D<nn> critic-<n> report" > evidence/D<nn>/critic-<n>.md`.~~
 
-**Verified.** Run on this session's transcript, it reproduced `critic-5.md` and `critic-6.md` byte for byte. It exits 1 for a heading no agent message holds, and it passes lint and typecheck.
+~~**Verified.** Run on this session's transcript, it reproduced `critic-5.md` and `critic-6.md` byte for byte. It exits 1 for a heading no agent message holds, and it passes lint and typecheck.~~
 
 ## 3. No automated check for content hidden inside a scroll box (automated checks)
 
@@ -58,16 +58,16 @@ The rule is mechanical, so it belongs in a test, not a coding standard. A `tdd-t
 
 **Proposed fix.** In B8P.5's keyboard case, press every enabled button in each drawer by keyboard and assert focus never lands on `BODY`. This also guards item 24's fix when it comes.
 
-## 5. ocr skipped `*.spec.ts`, so every test review needed a relocated copy (tool economy). Applied.
+## 5. **FIXED** ~~ocr skipped `*.spec.ts`, so every test review needed a relocated copy (tool economy)~~
 
-**What happened.** ocr's default rule excludes test paths (`default_path`). Every test-bearing commit (T8P.25, T8P.26-B1, B2, B2-B1, B3, B4 and B5) needed the clone-and-relocate procedure in `ocr-review.md`, 10 to 17 tool calls each. Most returned the same dismissed "not discovered by Playwright" row.
+~~**What happened.** ocr's default rule excludes test paths (`default_path`). Every test-bearing commit (T8P.25, T8P.26-B1, B2, B2-B1, B3, B4 and B5) needed the clone-and-relocate procedure in `ocr-review.md`, 10 to 17 tool calls each. Most returned the same dismissed "not discovered by Playwright" row.~~
 
-**Applied in `1b876348`.** `.claude/ocr-rule.json` includes `e2e/**/*.spec.ts`, `**/*.test.ts` and `**/*.test.tsx` and excludes `evidence/**`, and `ocr-review.md` passes it on every review, in place. The relocation procedure is gone.
+~~**Applied in `1b876348`.** `.claude/ocr-rule.json` includes `e2e/**/*.spec.ts`, `**/*.test.ts` and `**/*.test.tsx` and excludes `evidence/**`, and `ocr-review.md` passes it on every review, in place. The relocation procedure is gone.~~
 
-**Verified.**
-- A preview of T8P.25's commit selects all four specs and `support.ts` (before: only `support.ts`).
-- A preview of B3's range reviews the source, unit test and spec, with evidence files marked `user_exclude`.
-- A real in-place review of `c4319845` reviewed `lot-matches-fit.spec.ts` in 13 s with 0 findings, the same as its relocated review. `git status` was unchanged.
+~~**Verified.**~~
+- ~~A preview of T8P.25's commit selects all four specs and `support.ts` (before: only `support.ts`).~~
+- ~~A preview of B3's range reviews the source, unit test and spec, with evidence files marked `user_exclude`.~~
+- ~~A real in-place review of `c4319845` reviewed `lot-matches-fit.spec.ts` in 13 s with 0 findings, the same as its relocated review. `git status` was unchanged.~~
 
 ## 6. Briefs repeated what the agent definitions say (duplication). Partly resolved by 5.
 
