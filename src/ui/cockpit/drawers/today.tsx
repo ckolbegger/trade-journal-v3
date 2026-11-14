@@ -1,3 +1,4 @@
+import { Fragment, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Badge } from '../../Badge.tsx';
 import { Figure } from '../../screens/trade-detail/figure.tsx';
@@ -5,10 +6,47 @@ import { PriceTrack } from '../track.tsx';
 import type { CurrentMarks, MarkCell, TodayDrawerProps } from './today.types.ts';
 import { todayProps, type TodayInput } from './today.props.ts';
 
+// A line that may wrap only at its spaces: each word is held whole, so a date breaks neither at its hyphens nor a time at its colon.
+const Words = ({ text }: { readonly text: string }) =>
+  text.split(' ').map((word, index) => (
+    <Fragment key={index}>
+      {index > 0 && ' '}
+      <span className="whole">{word}</span>
+    </Fragment>
+  ));
+
+// The comparison's scroll box, kept at its right end: where the table is wider than a phone, the current date and Change show first and the
+// earlier date is the one reached by scrolling back. It follows a change of size (a turned phone); a reader's own scroll stays.
+function ScrollsToEnd({ label, children }: { readonly label: string; readonly children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (!element) return;
+    const toEnd = () => {
+      element.scrollLeft = element.scrollWidth;
+    };
+    toEnd();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(toEnd);
+    observer.observe(element);
+    if (element.firstElementChild) observer.observe(element.firstElementChild);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={box} className="table-scroll" role="region" aria-label={label} tabIndex={0}>
+      {children}
+    </div>
+  );
+}
+
 const MarkValue = ({ cell }: { readonly cell: MarkCell }) => (
   <>
     <span>{cell.price}</span>
-    {cell.provenance && <small className="provenance">{cell.provenance}</small>}
+    {cell.provenance && (
+      <small className="provenance">
+        <Words text={cell.provenance} />
+      </small>
+    )}
     {cell.correction !== undefined && (
       <small className="provenance">
         <Badge tone="info">Corrected</Badge> {cell.correction}
@@ -73,7 +111,7 @@ export function TodayDrawerView({ marks, currentMarks, noMarksText, tracksHeadin
       {marks && (
         <section className="card" aria-labelledby="today-marks-heading">
           <h2 id="today-marks-heading">{marks.heading}</h2>
-          <div className="table-scroll" role="region" aria-label={marks.heading} tabIndex={0}>
+          <ScrollsToEnd label={marks.heading}>
             <table className="trades" aria-labelledby="today-marks-heading">
               <thead>
                 <tr>
@@ -100,7 +138,7 @@ export function TodayDrawerView({ marks, currentMarks, noMarksText, tracksHeadin
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollsToEnd>
           {marks.note && <p className="grid-note">{marks.note}</p>}
         </section>
       )}

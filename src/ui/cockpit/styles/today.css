@@ -20,10 +20,17 @@
 @media (max-width: 959.98px) {
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] th,
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td {
-    padding: 0.5rem 0.3rem;
+    padding: 0.5rem 0.15rem;
     min-width: 0;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+  }
+
+  /* B14-B1: no figure, sign, date or time splits inside itself; the text wraps only at its spaces. */
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] .whole,
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td.number > span,
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] td:last-child {
+    white-space: nowrap;
   }
 
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] th:first-child,
@@ -32,11 +39,15 @@
     width: auto;
     min-width: 0;
     max-width: none;
-    overflow-wrap: anywhere;
     border-right: 0;
   }
 
+  .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] .provenance {
+    font-size: 0.72rem;
+  }
+
   .cockpit-drawers table.trades[aria-labelledby='today-marks-heading'] thead th {
+    font-size: 0.72rem;
     letter-spacing: 0;
     overflow-wrap: normal;
   }
