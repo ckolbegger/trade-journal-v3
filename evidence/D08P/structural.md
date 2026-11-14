@@ -1464,3 +1464,20 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 15 passed.
 - **Review:** ocr in place, 0 comments. Relocated, 1 comment, which is Wrong: the scratch base held the pre-fix `today.tsx` (`ocr/T8P.23-B3-B1*.json`).
 - **Quick run:** unit 1643, integration 229, checks 14 of 14, browser-task 6; run complete.
+
+**T8P.23-B4** (`7dccdff5`, `1e84b7b5`). CSS only, in `position.css`, every rule under `.cockpit-drawers`, so the exit and expiration receipts that share `LotMatchesTable` keep their look.
+- **What changed:**
+  - The Position drawer's tables take `table.trades`' cell padding and header style.
+  - The Lot Matches caption stays as the table's accessible name, visually hidden, because the heading already names the section.
+  - Open Lots' headers wrap.
+- **Tests:**
+  - "should space the Position drawer tables, name Lot Matches once in visible text, and show every Open Lots column whole at 1280 px" (`e2e/d6/responsive-a11y.spec.ts`). Red: `Position drawer cells that touch` ("BoughtSoldQuantityRealized").
+  - "should show the Position drawer tables of a Settlement Due option Trade spaced, with Lot Matches named once and every Open Lots column and figure inside its region at 1280 px" (`e2e/d7/responsive-a11y.spec.ts`), on the critic's fixture with the $0.65 unconsumed opening fee.
+    - It is a flagged first-run pass on `7dccdff5`.
+    - Mutations:
+      - header `nowrap` gives `cut: ["Unconsumed opening fee", "$0.65"]`, `scrolls: true`;
+      - the caption shown gives `Expected: 1 Received: 2`.
+    - Round 1 said the Open Lots clause couldn't be made red. That came from a stale `dist-releases`, and round 2 corrected it.
+- **Browser specs run:** 60 passed (`browser/T8P.23-B4-r2-specs.txt`). No expected value changed.
+- **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B4.json`). The range changes `src`, so no relocated run.
+- **Quick run (`T8P.23-B4`):** unit 1643, integration 229, checks 14 of 14, browser-task 6; run complete.

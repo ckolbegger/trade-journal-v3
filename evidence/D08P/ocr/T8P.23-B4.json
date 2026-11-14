@@ -1,0 +1,109 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 14428,
+    "input_tokens": 14152,
+    "output_tokens": 276,
+    "cache_read_tokens": 4992,
+    "elapsed": "14s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/cockpit/styles/position.css",
+      "files": [
+        "src/ui/cockpit/styles/position.css"
+      ]
+    }
+  ],
+  "session_id": "726d8725-5c08-4cf9-b920-1e577181ef58",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "726d8725-5c08-4cf9-b920-1e577181ef58",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "8809432a",
+      "requested_head": "1e84b7b5",
+      "resolved_base": "8809432ac607dbfa1da692b379bfd99a89740a67",
+      "resolved_head": "1e84b7b5f4bc1b15333ecf4fd87c16a7a93a0140",
+      "exact_range": "8809432ac607dbfa1da692b379bfd99a89740a67..1e84b7b5f4bc1b15333ecf4fd87c16a7a93a0140",
+      "source_artifact_sha256": "581dae437fbd0feaeb07049aa86bdf6f2feec07190b893bc646fbf55cfe298d6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "561deb9d8ecb7ad2933c33220cbefadd0098dc96d5641d2649a7b0fb8f1e06ef",
+          "path": "src/ui/cockpit/styles/position.css",
+          "fingerprint": "8afd29c552cd7418e81153775dc9c30004028b51602c86a51aedd432338aaa13"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "561deb9d8ecb7ad2933c33220cbefadd0098dc96d5641d2649a7b0fb8f1e06ef",
+          "path": "src/ui/cockpit/styles/position.css",
+          "fingerprint": "8afd29c552cd7418e81153775dc9c30004028b51602c86a51aedd432338aaa13"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "246d10d966cd986a86afdfb6fed7d468728b4ae4b73166111a0ff2dd37d1f1b3",
+          "path": "evidence/D08P/browser/T8P.23-B4-r2-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "304deeea7c2dd006983b425bc3c52d7a6dfc2b2ce2538a4fb7e2ecaff8ef8e18",
+          "path": "evidence/D08P/tdd-log/T8P.23-B4.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "3f607099f9eebe794d4a28a5c707a3d839cb8d6e490a9f9663feab7e7820ce3e",
+          "path": "evidence/D08P/browser/T8P.23-B4-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "77a5df1e84ff66fd1a05f20c5670983d8a037f8f05d3a8ec06ca15ca4ec1a2ee",
+          "path": "e2e/d6/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "abf3346aeda27dc54ee0f202ae55c9aebd2c507d61ba2cd0c0875a4a37edbab2",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 14298
+  }
+}
