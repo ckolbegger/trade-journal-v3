@@ -259,6 +259,14 @@ Lane WB, commit `321f4e62` (5 cases, red then green; no first-run passes; two in
 | T8.4-B2 | `backup-export.ts:129` artifact building (projection, `writeRecord`, `finish`) is outside the error boundary | an unserializable record or a missing `settings` record rejects instead of returning `NotCompleted(Read, ReadFailed)` | it should report ReadFailed when a record can't be written into the backup |
 | T8.4-B3 (Doubtful) | `backup.ts:85` a rejected offer, inspection or run escapes | a thrown error instead of a structured `NotCompleted` | it should report NotCompleted when the download offer rejects |
 
+- **T8.4-B1** `2c3a170a`: two cases, both red then green.
+  - Red 1: "expected [ 'tj-root', 'tj-ws-fx-0013' ] to include 'tj-ws-id-0001'", a listed candidate.
+  - Red 2: a stray unlisted `tj-ws-stray` database was deleted.
+  - The fix adds `lookupRoot(): Promise<RootInspection>` to `Persistence`. It classifies the root only, with no deletions, no root writes and no `current`. `inspectRoot` becomes `lookupRoot` plus the existing cleanup, and `exportBackup` calls `lookupRoot`. D2 and D3's persistence tests are unchanged.
+  - Lane tier: unit 172 / 1785, integration 106 / 229, checks 14 of 14.
+  - The tdd log has two extra green rows: an accidental whole-file prettier run was reverted and the edits redone. A refactor row notes it.
+  - ocr pending.
+
 ## T8.14 Shell, warnings, first run
 
 Lane US, commit `9cf16630` (5 cases, each red then green; no first-run passes). Lane tier `T8.14`: integration 229. Unit had 1 failure: `PositionChangeForm.test.tsx` "focus after navigation" failed under load and passed twice when rerun alone (see Flakes). Checks: 13 of 14; `verify:capabilities` fails: "route backup requires absent capability Workspace.exportBackup", and the same for the other three operations.

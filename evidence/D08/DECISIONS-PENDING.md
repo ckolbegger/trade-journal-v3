@@ -143,3 +143,24 @@ The reviewer also noted two defects that ocr didn't raise. Reviewer notes don't 
 **Recorded, not questions:** the preview's source time uses the backup's time zone, since `RestoreFlow`'s frozen props carry no Workspace zone (the restored journal uses that zone; A8's warning says so). `RestoreCounts.versions` is keyed `trades`, `entries`, `debts`; T8.8 uses those keys. The Restore complete links go to `/` and `/accounts`, so `RestoreFlow` sits inside the router (T8.11).
 
 **Answer:** pending.
+
+## Q6. Sentences for four new journal-check problems (T8.6, D2 follow-up F12) — open, asked 2026-11-14
+
+**Task:** T8.6's F12 continuation (lane FM). The work is done and staged but not committed. The type check requires every check code to have a sentence in the startup table (`src/ui/readiness-copy.ts`, `MIGRATION_ISSUES`), and the Restore screen reuses those sentences (Q2 A3). Nothing else is paused; T8.6's ocr bug tasks wait behind this in lane FM.
+
+| Code | When it's reported | Proposed sentence |
+|---|---|---|
+| `DuplicateTradeId` | two Trades share one id | "Two Trades share one identity." |
+| `DuplicateEntryId` | two Journal Entries share one id | "Two Journal Entries share one identity." |
+| `MissingPositionChangeMember` | a position change names an execution or expiration the Trade doesn't hold | "A position change names an execution or expiration that the Trade does not record." |
+| `VersionChainBroken` | a Trade fact has no versions, or its version numbers aren't 1, 2, 3 … in order | "A Trade fact has no versions, or its versions are out of order." |
+
+The sentences follow the table's existing style (for example, "A Trade records the same fact identity twice.").
+
+**Options.** (a) Approve as written; F12 adds them and commits. (b) Edit any sentence.
+
+**Recommendation:** (a).
+
+**Recorded, not questions:** D2's B2.12 Open-list Error state still has a working trigger. The app's read path still throws on a missing member, and the fault fixtures bypass the Restore validator, so the test passes unchanged ("the Open list in every state", `e2e/d2/responsive-a11y.spec.ts`). The continuity rule comes from the Trade Record design's "version continuity". Every fact in `facts` and `closeReasonFacts` has at least one version, numbered 1, 2, 3 … in array order. A broken Trade is reported and not derived.
+
+**Answer:** pending.
