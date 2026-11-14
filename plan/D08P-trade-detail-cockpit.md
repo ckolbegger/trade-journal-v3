@@ -892,7 +892,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8P.30 | 1 | AX | Done | `97cde911`; lane tier `1f3292c0` |
 | T8P.31 | 2 | PL | Done | `b6e476ef`; lane tier and full browser tier `9d7c38b0` |
 | T8P.22 | 2 | wire | Done | `0c78979f` (stopped before case 6 for revision 96, resumed after T8P.31); B1, B2 `8771f053`; lane tiers `7090ad0b` (with the full browser tier), `7effc464` |
-| T8P.27 | 2 | — | Not started | |
+| T8P.27 | 2 | rm | In progress from `c670929c` (lane rm) | |
 | T8P.23 | 2 | — | Not started | |
 | T8P.24 | 2 | NI | Done | `3037a7c3`; lane tiers `fe51f5a2`, `95a1c855` (after the rebase); acceptance browser rows wait for T8P.25 |
 | T8P.25 | 2 | — | Not started | |

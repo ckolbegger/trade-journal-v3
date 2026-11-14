@@ -53,6 +53,7 @@ Worktree and branch names the Agent tool gives each lane task (handoff, section 
 | T8P.30 | AX (wave 1, last) | `.claude/worktrees/d08p-ax` | `d08p/ax` | `479923c3` |
 | T8P.24 | NI (wave 2, beside the serial tasks) | `.claude/worktrees/d08p-ni` | `d08p/ni` | `46bb44f3` |
 | T8P.31 | PL (wave 2, revision 96) | `.claude/worktrees/d08p-pl` | `d08p/pl` | `bbdc61a2` |
+| T8P.27 | rm (wave 2; a lane, beside merge run 9; it ends with the full browser tier) | `.claude/worktrees/d08p-rm` | `d08p/rm` | `c670929c` |
 | T8P.22 | wire (wave 2; a lane, as T8P.5 was, so it need not wait for merge run 8 in the main worktree; it ends with the full browser tier) | `.claude/worktrees/d08p-wire` | `d08p/wire` | `395f7ec5` |
 
 ## T8P.1 Swarm tooling
