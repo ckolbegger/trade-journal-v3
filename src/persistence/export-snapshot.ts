@@ -27,7 +27,9 @@ export type ExportReadResult =
   | { readonly kind: 'EarlyAutoCommitGuard' }
   | { readonly kind: 'ReadFailed'; readonly store: WorkspaceStore };
 
-type Failure = Exclude<ExportReadResult, { kind: 'Read' }>;
+const probeFailed = Symbol('schema probe failed');
+
+type Failure =Exclude<ExportReadResult, { kind: 'Read' }>;
 
 function withoutPrivateFields(record: Record<string, unknown>, fields: readonly string[] | undefined): Record<string, unknown> {
   if (!fields) return record;
@@ -67,8 +69,12 @@ export async function readExportSnapshot(
         const stored = await new Promise<unknown>((resolve) => {
           const request = db.transaction('meta', 'readonly').objectStore('meta').get('schema');
           request.onsuccess = () => resolve((request.result as Record<string, unknown> | undefined)?.['schemaVersion']);
-          request.onerror = () => resolve(layout.schemaVersion);
+          request.onerror = (event) => {
+            event.preventDefault();
+            resolve(probeFailed);
+          };
         });
+        if (stored === probeFailed) return { kind: 'ReadFailed', store: 'meta' };
         if (stored !== layout.schemaVersion) return { kind: 'UnknownLayout', schemaVersion: typeof stored === 'number' ? stored : undefined };
       }
       return { kind: 'ReadFailed', store: missing as WorkspaceStore };

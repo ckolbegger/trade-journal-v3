@@ -254,6 +254,34 @@ describe('an older schema (T8.3-B3)', () => {
     expect(read).toEqual({ kind: 'UnknownLayout', schemaVersion: 1 });
     expect(batches).toEqual([]);
   });
+
+  it('should report ReadFailed naming meta when the schema probe fails', async () => {
+    const name = 'tj-ws-schema-1-probe';
+    await new Promise<void>((resolve, reject) => {
+      const open = factory.open(name);
+      open.onupgradeneeded = () => {
+        open.result.createObjectStore('meta', { keyPath: 'key' }).put({ key: 'schema', schemaVersion: 1 });
+      };
+      open.onsuccess = () => {
+        open.result.close();
+        resolve();
+      };
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+    const get: (this: IDBObjectStore, ...args: Parameters<IDBObjectStore['get']>) => IDBRequest<unknown> = Reflect.get(FakeIDBObjectStore.prototype, 'get');
+    vi.spyOn(FakeIDBObjectStore.prototype, 'get').mockImplementation(function (this: IDBObjectStore, ...args: Parameters<IDBObjectStore['get']>) {
+      const request: IDBRequest<unknown> = get.apply(this, args);
+      // Fails the pending probe before its result arrives.
+      queueMicrotask(() => {
+        request.onerror?.(new Event('error', { cancelable: true }));
+      });
+      return request as never;
+    });
+
+    const read = await persistence().readExportSnapshot(name, exportLayoutFor(7)!, () => {});
+
+    expect(read).toEqual({ kind: 'ReadFailed', store: 'meta' });
+  });
 });
 
 describe('paging key (T8.3-B4)', () => {
