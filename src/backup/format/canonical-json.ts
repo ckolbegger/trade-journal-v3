@@ -24,7 +24,7 @@ function write(value: unknown, path: string): string {
       return value ? 'true' : 'false';
     case 'number':
       if (!Number.isSafeInteger(value)) {
-        throw new CanonicalJsonUnsupported(path, `the number ${String(value)} (only safe integers)`);
+        throw new CanonicalJsonUnsupported(path, 'a number that is not a safe integer');
       }
       return String(value);
     case 'object':

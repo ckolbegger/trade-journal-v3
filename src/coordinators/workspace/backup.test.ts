@@ -258,6 +258,23 @@ describe('failures', () => {
     expect(detail?.stack).toContain('CanonicalJsonUnsupported');
   });
 
+  it("should leave record values out of the failure detail when a record can't be written", async () => {
+    const stack = await w7Stack();
+    const altered = {
+      ...stack.persistence,
+      readExportSnapshot: async (database: string, layout: Parameters<Persistence['readExportSnapshot']>[1], onBatch: Parameters<Persistence['readExportSnapshot']>[2]) =>
+        stack.persistence.readExportSnapshot(database, layout, (batch) =>
+          onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 7654321.123456 } : record)) }),
+        ),
+    };
+    const workspace = createWorkspace({ ...stack, persistence: altered, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
+    const result = await workspace.exportBackup({});
+    expect(result.kind).toBe('NotCompleted');
+    const detail = (result as { detail?: unknown }).detail;
+    expect(JSON.stringify(detail)).toContain('CanonicalJsonUnsupported');
+    expect(JSON.stringify(detail)).not.toContain('7654321');
+  });
+
   it('should carry the failing store in NotCompleted when the read fails', async () => {
     const stack = await w7Stack();
     const failing = { ...stack.persistence, readExportSnapshot: () => Promise.resolve({ kind: 'ReadFailed', store: 'trades' } as const) };
