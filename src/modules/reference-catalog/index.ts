@@ -1,4 +1,5 @@
 export { createReferenceCatalog, prepareSeed, type ReferenceCatalog, type CatalogIssue, type CatalogRequirement, type CatalogResolution, type ResolvedReference, type CatalogQuery, type CatalogQueryResult, type CatalogSaveCommand, type CatalogSaveResult, type PreparedSeed, type ReferenceCatalogDeps, type SeedCatalogResult } from './catalog.ts';
-export { validateSection, type CatalogSectionIssue, type CatalogSectionValidation } from './section.ts';
+export { exportSnapshot, exportWorkspaceSection, type CatalogSectionBatch, type WorkspaceSectionBatch } from './export.ts';
+export { validateSection,type CatalogSectionIssue, type CatalogSectionValidation } from './section.ts';
 export { D1_CATALOG_MANIFEST, D6_CATALOG_MANIFEST, D7_CATALOG_MANIFEST, type CatalogSeedManifest } from './manifest.ts';
 export type { AccountRecord, CatalogKind, CatalogRecord, CatalogSnapshot, CloseReasonRecord, InstitutionRecord, StrategyRecord } from './records.ts';

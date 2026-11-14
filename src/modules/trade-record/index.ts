@@ -1,3 +1,4 @@
 export { analysisInputOf, applyDeviationActions, createTradeRecord, repairedDocument, summaryOf, type BrowseRecord, type GetTradeRecordRequest, type GetTradeRecordResult, type TradeSummary, type TradeRecordPage, type TradeRecordQuery, type DerivedTradeReconciliation, type PrepareTradeChangeResult, type TradeRecordApplyResult, type TradeRecord, type TradeRecordDeps } from './trade-record.ts';
-export { validateSection, type TradeSectionIssue, type TradeSectionReferences, type TradeSectionRepair, type TradeSectionValidation } from './section.ts';
+export { exportSnapshot, type TradeSectionBatch } from './export.ts';
+export { validateSection,type TradeSectionIssue, type TradeSectionReferences, type TradeSectionRepair, type TradeSectionValidation } from './section.ts';
 export type { CloseReasonFact, CloseReasonFactValue, ConfirmPlanChange, ExecutionFactValue, ExpirationFactValue, FactValue, PlanFactValue, PositionChangeChange, PositionChangeFactValue, TradeDocument, TradeFact } from './records.ts';
