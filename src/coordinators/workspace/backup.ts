@@ -103,7 +103,7 @@ async function verifyArtifact(file: File): Promise<Verified | { readonly kind: '
     for await (const line of readArtifact(source)) {
       if (line.kind === 'header') {
         const parsed = headerShape.safeParse(line.value);
-        if (line.lineNumber !== 1 || !parsed.success) return { kind: 'IncompleteOrCorrupt' };
+        if (line.lineNumber !== 1 || !parsed.success || new Set(parsed.data.sections).size !== parsed.data.sections.length) return { kind: 'IncompleteOrCorrupt' };
         header = parsed.data;
       } else if (!header) {
         return { kind: 'IncompleteOrCorrupt' };

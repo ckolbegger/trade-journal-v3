@@ -455,6 +455,35 @@ describe('Not Verified, section ends (A123, A130)', () => {
   });
 });
 
+describe('Not Verified, header sections (A123, A130)', () => {
+  it('should return IncompleteOrCorrupt for a header that names a section twice', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const a7 = testHost.downloads.offered[0]!.bytes;
+    const confirmEdited = (edit: (artifact: EditableArtifact) => void) => {
+      const edited = editedArtifact(a7, edit);
+      return workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
+    };
+    // Control: re-sealing an unedited artifact is Completed.
+    expect((await confirmEdited(() => undefined)).kind).toBe('Completed');
+
+    // The header repeats its last section and the file ends it a second time. The second ending covers no record lines, so its
+    // digest is that of empty input; the manifest is re-sealed over it. Only the repeated name is wrong.
+    expect(
+      await confirmEdited(({ lines, manifest }) => {
+        const header = JSON.parse(lines[0]!) as { sections: string[] };
+        const last = header.sections[header.sections.length - 1]!;
+        lines[0] = canonical({ ...header, sections: [...header.sections, last] });
+        const endIndex = lines.findLastIndex((l) => l.includes('"kind":"sectionEnd"'));
+        const emptyDigest = bytesToHex(sha256(new Uint8Array()));
+        lines.push(canonical({ ...(JSON.parse(lines[endIndex]!) as object), digest: emptyDigest }));
+        manifest.sectionDigests[last] = emptyDigest;
+      }),
+    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+  });
+});
+
 describe('Not Verified, manifest fields (A123, A130)', () => {
   it('should return IncompleteOrCorrupt for a manifest missing a required field', async () => {
     const { workspace, testHost } = await w7Stack();
