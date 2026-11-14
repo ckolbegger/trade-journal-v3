@@ -118,6 +118,59 @@ describe('section validation in a Restore candidate', () => {
   });
 });
 
+describe('section validator gaps (D2 follow-up F12)', () => {
+  it('should report an issue, not throw, when a Position Change names a missing Execution', async () => {
+    const records = exported();
+    const change = factsOf(tradeOf(records, 'fx-0117')).find((f) => f.kind === 'PositionChange')!;
+    (change.versions[0]!.value['memberIds'] as string[]).push('no-such-execution');
+    const result = await preparation.validate(recordSourceOf({ trades: records }));
+    expect(result.issues).toEqual([expect.objectContaining({ code: 'MissingPositionChangeMember', tradeId: 'fx-0117', memberId: 'no-such-execution' })]);
+  });
+
+  it('should report a fact-version continuity break', async () => {
+    const records = exported();
+    expect((await preparation.validate(recordSourceOf({ trades: records }))).issues).toEqual([]);
+    // A version list that skips a number, one that starts after 1, and one that is empty.
+    const skipped = factsOf(tradeOf(records, 'fx-0117')).find((f) => f.kind === 'Execution')!;
+    (skipped.versions as unknown[]).push({ versionNumber: 3, value: structuredClone(skipped.versions[0]!.value) });
+    const late = factsOf(tradeOf(records, 'fx-0092')).find((f) => f.kind === 'Plan')!;
+    (late.versions[0] as unknown as { versionNumber: number }).versionNumber = 2;
+    const empty = factsOf(tradeOf(records, 'fx-0075')).find((f) => f.kind === 'Stop')!;
+    empty.versions = [];
+    const result = await preparation.validate(recordSourceOf({ trades: records }));
+    const idOf = (fact: unknown) => (fact as { factId: string }).factId;
+    expect(result.issues).toEqual([
+      { code: 'VersionChainBroken', tradeId: 'fx-0075', factId: idOf(empty) },
+      { code: 'VersionChainBroken', tradeId: 'fx-0092', factId: idOf(late) },
+      { code: 'VersionChainBroken', tradeId: 'fx-0117', factId: idOf(skipped) },
+    ]);
+  });
+
+  it('should report a Trade whose version history is empty', async () => {
+    const records = exported();
+    const plan = factsOf(tradeOf(records, 'fx-0092')).find((f) => f.kind === 'Plan')!;
+    plan.versions = [];
+    const result = await preparation.validate(recordSourceOf({ trades: records }));
+    expect(result.issues).toEqual([{ code: 'VersionChainBroken', tradeId: 'fx-0092', factId: (plan as unknown as { factId: string }).factId }]);
+  });
+
+  it('should report a duplicate tradeId', async () => {
+    const records = exported();
+    const copy = structuredClone(tradeOf(records, 'fx-0117'));
+    // The second copy keeps its tradeId but has fresh fact identities, so only the tradeId repeats.
+    for (const fact of copy['facts'] as { factId: string }[]) fact.factId = `copy-${fact.factId}`;
+    for (const fact of factsOf(copy).filter((f) => f.kind === 'PositionChange')) {
+      fact.versions[0]!.value['memberIds'] = (fact.versions[0]!.value['memberIds'] as string[]).map((id) => `copy-${id}`);
+    }
+    for (const fact of factsOf(copy).filter((f) => f.kind === 'Execution')) {
+      fact.versions[0]!.value['intent'] = { kind: 'ServesPlannedLeg', plannedLegId: `copy-${(fact.versions[0]!.value['intent'] as { plannedLegId: string }).plannedLegId}` };
+    }
+    records.push(copy);
+    const result = await preparation.validate(recordSourceOf({ trades: records }));
+    expect(result.issues).toEqual([{ code: 'DuplicateTradeId', tradeId: 'fx-0117' }]);
+  });
+});
+
 describe('applyPreparedRestore recheck (A135)', () => {
   it('should accept a candidate section whose counts and digest equal those recorded in the candidate meta, and return CandidateChanged naming trades when one Trade was removed from the candidate after preparation', async () => {
     const candidate = exported();

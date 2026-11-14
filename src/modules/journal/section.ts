@@ -4,6 +4,8 @@ export type JournalSectionIssue =
   | { readonly code: 'MissingDefinitionRevision'; readonly id: string; readonly definitionId: string }
   | { readonly code: 'DuplicateObligationOutcome'; readonly obligationKey: string; readonly ids: readonly [string, string] }
   | { readonly code: 'MissingAnchor'; readonly id: string }
+  // Two Entry records share one id; reported at the second.
+  | { readonly code: 'DuplicateEntryId'; readonly id: string }
   | { readonly code: 'EditDefinitionChanged'; readonly id: string; readonly versionNumber: number }
   // A Settled or Declined version that names no Entry or decline, or one that is absent.
   | { readonly code: 'DebtResolutionMissing'; readonly debtId: string; readonly versionId: string; readonly status: 'Settled' | 'Declined' }
@@ -74,6 +76,7 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
   for (const store of ['journalEntries', 'journalDeclines'] as const) {
     for await (const batch of source.batches(store)) {
       for (const outcome of batch as unknown as readonly StoredOutcome[]) {
+        if (store === 'journalEntries' && links[store].has(outcome.id)) issues.push({ code: 'DuplicateEntryId', id: outcome.id });
         const obligationKey = typeof outcome.obligationKey === 'string' ? outcome.obligationKey : outcome.obligationKey.join(':');
         links[store].set(outcome.id, { id: outcome.id, settledDebtId: outcome.settledDebtId, definitionId: outcome.versions?.[0]?.definitionId ?? outcome.definitionId ?? '', obligationKey });
         const revisions = outcome.versions?.map((v) => v.definitionId) ?? [outcome.definitionId ?? ''];

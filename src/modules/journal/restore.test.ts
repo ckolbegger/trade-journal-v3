@@ -44,6 +44,21 @@ describe('record parsing at schema 7 (P31)', () => {
   });
 });
 
+describe('section validator gaps (D2 follow-up F12)', () => {
+  it('should report a duplicate Entry id', async () => {
+    const candidate = () => Object.fromEntries(STORES.map((store) => [store, exported(store)]));
+    expect((await preparation.validate(recordSourceOf(candidate()))).issues).toEqual([]);
+
+    const duplicated = candidate();
+    const entries = duplicated['journalEntries']!;
+    const original = entries.find((e) => e['settledDebtId'] === undefined)!;
+    // The copy keeps the id but answers another obligation, so only the identity repeats.
+    entries.push({ ...structuredClone(original), obligationKey: 'another-obligation' });
+    const result = await preparation.validate(recordSourceOf(duplicated));
+    expect(result.issues).toEqual([{ code: 'DuplicateEntryId', id: original['id'] }]);
+  });
+});
+
 describe('applyPreparedRestore recheck (A135)', () => {
   it('should accept a candidate section whose counts and digest equal those recorded in the candidate meta, and return CandidateChanged naming journalEntries when one Entry was removed from the candidate after preparation', async () => {
     const candidate = () => Object.fromEntries(STORES.map((store) => [store, exported(store)]));

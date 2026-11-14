@@ -20,6 +20,12 @@ export type TradeSectionIssue =
   | { readonly code: 'UnknownAccount'; readonly tradeId: string; readonly accountId: string }
   | { readonly code: 'DuplicateFactIdentity'; readonly tradeId: string; readonly factId: string }
   | { readonly code: 'UnknownAnchorTrade'; readonly tradeId: string }
+  // Two Trade records share one tradeId; reported at the second.
+  | { readonly code: 'DuplicateTradeId'; readonly tradeId: string }
+  // A fact's version list is empty or not numbered 1, 2, 3, … in order.
+  | { readonly code: 'VersionChainBroken'; readonly tradeId: string; readonly factId: string }
+  // A Position Change (`factId`) names a member that is no Execution or Expiration of its Trade.
+  | { readonly code: 'MissingPositionChangeMember'; readonly tradeId: string; readonly factId: string; readonly memberId: string }
   // A Close Reason fact names a Position Change that is not the Closed Trade's terminal one (D6 A85).
   | { readonly code: 'CloseReasonOnNonTerminalChange'; readonly tradeId: string; readonly factId: string; readonly positionChangeId: string }
   | { readonly code: 'MultipleCloseReasons'; readonly tradeId: string; readonly factIds: readonly string[] }
@@ -61,12 +67,25 @@ export async function validateSection(source: RecordSource, references: TradeSec
   for await (const batch of source.batches('trades')) {
     for (const document of batch as unknown as readonly TradeDocument[]) {
       const { tradeId } = document;
+      if (tradeIds.has(tradeId)) issues.push({ code: 'DuplicateTradeId', tradeId });
       tradeIds.add(tradeId);
       if (!references.accountIds.has(document.accountId)) issues.push({ code: 'UnknownAccount', tradeId, accountId: document.accountId });
       // A Close Reason is a Trade fact identity too (D6 A85).
       for (const { factId } of [...document.facts, ...(document.closeReasonFacts ?? [])]) {
         if (factIds.has(factId)) issues.push({ code: 'DuplicateFactIdentity', tradeId, factId });
         factIds.add(factId);
+      }
+      // A fact with no usable version has no effective value to derive from, so the Trade is reported for that alone.
+      const brokenChains = versionChainIssuesOf(document);
+      if (brokenChains.length > 0) {
+        issues.push(...brokenChains);
+        continue;
+      }
+      // Facts naming a member that is not there cannot be assembled for Trade Analysis, so the Trade is reported for that alone.
+      const missingMembers = missingMemberIssuesOf(document);
+      if (missingMembers.length > 0) {
+        issues.push(...missingMembers);
+        continue;
       }
       const record = analysisInputOf(document);
       const derived = derive({ record, candidate: { digest: await sha256Hex(canonicalJson(document)), before: record } });
@@ -82,6 +101,24 @@ export async function validateSection(source: RecordSource, references: TradeSec
     if (!tradeIds.has(tradeId)) issues.push({ code: 'UnknownAnchorTrade', tradeId });
   }
   return { issues, repairs };
+}
+
+// Version continuity (Trade Record design, prepareRestore): a fact's versions are at least one and
+// numbered 1, 2, 3, … in order, with no gap, repeat or late start.
+function versionChainIssuesOf(document: TradeDocument): TradeSectionIssue[] {
+  return [...document.facts, ...(document.closeReasonFacts ?? [])]
+    .filter(({ versions }) => versions.length === 0 || versions.some((v, i) => v.versionNumber !== i + 1))
+    .map(({ factId }) => ({ code: 'VersionChainBroken' as const, tradeId: document.tradeId, factId }));
+}
+
+// A Position Change's member is an Execution or an Expiration of the same Trade; `analysisInputOf`
+// throws on one that is neither, so the validator checks first.
+function missingMemberIssuesOf(document: TradeDocument): TradeSectionIssue[] {
+  const members = new Set(document.facts.filter((f) => f.kind === 'Execution' || f.kind === 'Expiration').map((f) => f.factId));
+  return document.facts.flatMap((fact) => {
+    if (fact.kind !== 'PositionChange') return [];
+    return fact.versions.at(-1)!.value.memberIds.filter((id) => !members.has(id)).map((memberId) => ({ code: 'MissingPositionChangeMember' as const, tradeId: document.tradeId, factId: fact.factId, memberId }));
+  });
 }
 
 // An Expiration records no price and no fee (A106); a stored one that does is hand-edited.
