@@ -1,0 +1,7 @@
+AC-MARK-004 (partial: series and replay keep explicit gaps; the grid shows them) | npm run test:integration -- d8p/replay | 5 tests
+AC-RESP-001 (re-proven: a just-confirmed option Plan's expiration line) | npm run test:integration -- d8p/detail | 6 tests
+AC-PERF-001 (cumulative: no replay on the ordinary path; one series read per Instrument) | npm run test:integration -- d8p/replay-query-count | 1 tests
+AC-CAP-001 (cumulative) | npm run verify:capabilities | script present
+AC-UI-001, AC-UI-002 (cumulative) | npx playwright test e2e/d8p/responsive-a11y.spec.ts | FAIL: playwright --list exited 1, no tests
+AC-CALC-003 (glossary: every condition remains visible; re-proven on the cockpit) | npx playwright test e2e/d8p/cockpit.spec.ts | FAIL: playwright --list exited 1, no tests
+summary: 6 commands checked, 2 failed, 0 rows are procedures, not checked
