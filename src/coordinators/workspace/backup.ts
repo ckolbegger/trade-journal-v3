@@ -54,7 +54,16 @@ const bindingShape = z.object({ databaseName: z.string(), contentRevision: z.num
 const countsShape = z.record(z.string(), z.number());
 const headerShape = z.object({ sourceBinding: bindingShape, sections: z.array(z.string()), counts: countsShape });
 const sectionEndShape = z.object({ section: z.string(), counts: countsShape, digest: z.string() });
-const manifestShape = z.object({ counts: countsShape, sectionDigests: z.record(z.string(), z.string()), fullDigest: z.string() });
+// The Workspace Backup Manifest's fields (A123): versions, capability footprint, counts, exclusions, section digests, full digest.
+const manifestShape = z.object({
+  formatVersion: z.number(),
+  schemaVersion: z.number(),
+  footprint: z.array(z.string()),
+  counts: countsShape,
+  exclusions: z.array(z.string()),
+  sectionDigests: z.record(z.string(), z.string()),
+  fullDigest: z.string(),
+});
 // Record lines are never parsed (T8.1): their section and store are the last two keys of the canonical line.
 const RECORD_TAIL = /,"s":"([^"]*)","t":"([^"]*)"\}$/;
 

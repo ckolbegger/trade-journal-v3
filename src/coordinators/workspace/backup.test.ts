@@ -432,6 +432,28 @@ describe('Not Verified, section ends (A123, A130)', () => {
   });
 });
 
+describe('Not Verified, manifest fields (A123, A130)', () => {
+  it('should return IncompleteOrCorrupt for a manifest missing a required field', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const a7 = testHost.downloads.offered[0]!.bytes;
+    const confirmEdited = (edit: (artifact: EditableArtifact) => void) => {
+      const edited = editedArtifact(a7, edit);
+      return workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
+    };
+    const bad = { kind: 'NotVerified', reason: 'IncompleteOrCorrupt' };
+
+    for (const field of ['formatVersion', 'schemaVersion', 'footprint', 'exclusions']) {
+      expect(await confirmEdited(({ manifest }) => void delete manifest[field]), `missing ${field}`).toEqual(bad);
+    }
+    // A field of the wrong type is as malformed as a missing one.
+    expect(await confirmEdited(({ manifest }) => void (manifest['formatVersion'] = '1')), 'formatVersion as text').toEqual(bad);
+    expect(await confirmEdited(({ manifest }) => void (manifest['footprint'] = 'catalog')), 'footprint as text').toEqual(bad);
+    expect(await confirmEdited(({ manifest }) => void (manifest['exclusions'] = [1])), 'exclusions as numbers').toEqual(bad);
+  });
+});
+
 describe('Not Verified, not UTF-8 (A130)', () => {
   it('should return Unreadable for a file whose text is not UTF-8, with no receipt', async () => {
     const { workspace } = await w7Stack();
