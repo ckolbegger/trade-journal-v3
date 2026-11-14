@@ -15,6 +15,13 @@
   height: auto;
 }
 
+/* At desktop width the drawer is narrower than 640px (592px at 1280), so the chart fills it whole, legend and line ends in view; narrower pages scroll it as above. */
+@media (min-width: 1200px) {
+  .payoff-drawer .payoff-chart {
+    min-width: 0;
+  }
+}
+
 .payoff-drawer .payoff-chart text {
   font-size: 13px;
   fill: currentColor;
