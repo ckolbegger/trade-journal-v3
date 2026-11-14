@@ -70,7 +70,11 @@ export async function* readArtifact(source: Blob | ReadableStream<Uint8Array>): 
       for (;;) {
         const r = await reader.read();
         if (r.done) {
-          decoder.decode();
+          try {
+            decoder.decode();
+          } catch (e) {
+            throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e), 'NotUtf8');
+          }
           return;
         }
         if (r.value.length > 0) throw new ArtifactReadError('Corrupt', 'content follows the manifest line');

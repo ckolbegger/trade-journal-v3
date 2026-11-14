@@ -591,6 +591,19 @@ describe('Not Verified, not UTF-8 (A130)', () => {
     const file = new File([gzipSync(text)], 'not-utf8.tjbackup');
     expect(await workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
   });
+
+  it('should return Unreadable when bytes after the manifest are not UTF-8', async () => {
+    const stack = await w7Stack();
+    const first = await stack.workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const offered = stack.testHost.downloads.offered[0]!;
+    const plain = gunzipSync(offered.bytes);
+    const bytes = new Uint8Array(plain.length + 1);
+    bytes.set(plain);
+    bytes[plain.length] = 0xc2;
+    const file = new File([gzipSync(bytes)], 'trailing-byte.tjbackup');
+    expect(await stack.workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+  });
 });
 
 describe('receipt registry (A131)', () => {
