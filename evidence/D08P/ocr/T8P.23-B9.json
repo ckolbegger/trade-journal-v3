@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 24437,
+    "input_tokens": 24191,
+    "output_tokens": 246,
+    "cache_read_tokens": 4992,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/cockpit/drawers/plan-risk.props.ts",
+        "src/ui/cockpit/rail/pnl.props.ts",
+        "src/ui/figures.ts"
+      ]
+    }
+  ],
+  "session_id": "c5238c40-db16-4ef5-8ed5-d4eb2e83276a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c5238c40-db16-4ef5-8ed5-d4eb2e83276a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "61a27c87",
+      "resolved_base": "de150077fc24c53093912bbe054a181ea40cfc7e",
+      "resolved_head": "61a27c87793ea2fdad35cc17dc53416172645e05",
+      "exact_range": "de150077fc24c53093912bbe054a181ea40cfc7e..61a27c87793ea2fdad35cc17dc53416172645e05",
+      "source_artifact_sha256": "7a2617394de17b8019720518ad50b2997d5ee1b8525194a615bee2e3688d00de"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "23994676014286b3f32a5f5d67d91e2f3206119a1829cb7cf064b3ab4f36991e"
+        },
+        {
+          "item_id": "a9d12a11a90ec12b54f02f8a6075bf7cfde76fe13e49482e476e0b8ebb9329f0",
+          "path": "src/ui/cockpit/rail/pnl.props.ts",
+          "fingerprint": "c31067da7ae4511dd68bb5d0656cdbc79b3094c72f14f20451787a5fbf5d659f"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "7eb48402cea4fe5d940918938aeb99b7dc3046c65af0d23cdce51eedbe473c00"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "23994676014286b3f32a5f5d67d91e2f3206119a1829cb7cf064b3ab4f36991e"
+        },
+        {
+          "item_id": "a9d12a11a90ec12b54f02f8a6075bf7cfde76fe13e49482e476e0b8ebb9329f0",
+          "path": "src/ui/cockpit/rail/pnl.props.ts",
+          "fingerprint": "c31067da7ae4511dd68bb5d0656cdbc79b3094c72f14f20451787a5fbf5d659f"
+        },
+        {
+          "item_id": "bc0243c3f6d1e7459e2f145a2f56c7b96f61591d0ab01ce04fe2d9d0e13cfeeb",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "7eb48402cea4fe5d940918938aeb99b7dc3046c65af0d23cdce51eedbe473c00"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "15866ae67ff8e612c7eaf2f794e036646f11cd63a6120131f5be94b507d9fe48",
+          "path": "evidence/D08P/browser/T8P.23-B9-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "8980d0224c14ba4fdd4d7e1d61e6656cdad2282149fd46d280dab7ff7ecb7845",
+          "path": "evidence/D08P/tdd-log/T8P.23-B9.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "e0f92c04a14e3fa2fbeac53f784875c9f2e0e24f657520a9963d8539c115898c",
+          "path": "src/ui/cockpit/rail/pnl.props.test.tsx",
+          "exclude_reason": "default_path"
+        }
+      ]
+    },
+    "elapsed_ms": 11745
+  }
+}

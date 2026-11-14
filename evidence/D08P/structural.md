@@ -1548,3 +1548,20 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
 - **Defect 5 (moderate):** a Closed Trade's final session, flat at its close, reads "without Marks" and loses W10's "final session" card. Bug task **B11**.
 - **Defect 6 (low):** a stock Mark has no "$" in Price History only. Bug task **B12**.
 - **Defect 7 (low):** "Stale context: $51.50 from Tue Oct 13 close" still says "close" (P102). Changing it is a new text, so it needs the user's approval.
+
+**User decisions on critic-2 (2026-11-14):**
+- Defect 1: "Accept all five". Revision 97 names every accepted exception in C8P.2. Not a bug task.
+- Defect 3: "End at expiration". Revision 98 ends a Settlement Due Trade's history with its contract's expiration session. Bug task **B13**.
+- Defect 7: "Leave it as is". The Stale context line keeps "close". It is recorded in revision 98 and is not a bug task.
+
+**T8P.23-B9** (`61a27c87`). On the expiration day, `view.settlement` is already non-empty, but the evaluation's reason is still `MarkMissing`. It becomes `SettlementDue` the next session.
+- **The fix:** the P&L card now names the contract from `view.settlement[0]` whenever its Trade P&L is Unavailable (W4, A224). Plan and Risk's per-condition lines do the same for an Unavailable result (W6). The new `settlementDueFigure` in `figures.ts` uses existing words.
+- **Tests:**
+  - "should name the contract on the expiration day itself, with no Mark missing text on the card" (`pnl.props.test.tsx`). Red: `expected 'Mark missing: XYZ 20 Nov 2026 55 Call…' to be 'Settlement Due: …'`.
+  - "should word Risk to stop and Reward to target as Settlement Due on the expiration day, with no Mark missing text" (`plan-risk.test.tsx`).
+- **Expected values:** none changed.
+- **Browser specs run:** 52 passed (`browser/T8P.23-B9-specs.txt`). No browser case sits at the Nov 20 clock; the props tests cover it.
+- **Review:** ocr in place, 3 files, 0 comments (`ocr/T8P.23-B9.json`). The reviewer's notes are recorded and are not bug tasks:
+  - on the expiration day, an Underlying condition whose Underlying Mark is missing is now worded "Settlement Due", as on the rail, rather than naming the Underlying;
+  - a condition with a Value on that day still shows its figure in Plan and Risk, while the rail calls it unmeasured.
+- **Quick run (`T8P.23-B9`):** unit 1650, integration 229, checks 14 of 14, browser-task 7; run complete.
