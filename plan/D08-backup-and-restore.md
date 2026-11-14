@@ -669,7 +669,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 |---|---|---|---|---|
 | T8.1 | 0 | F | Done | `b96da61c`; B1 `ce73ade7`, B2 `7cd1bee0`, B3 `4493d876`, B4 `727671a2`, B5 `2a01fe69`, B6 `1b850dbc`, B7 `daa1b0d4` |
 | T8.23 | 0 | T | Done | `220d4b0f`; B1 `fdc5e858` |
-| T8.2 | 1 | FM | Not started | |
+| T8.2 | 1 | FM | In progress from `fbef268c` | |
 | T8.6 | 1 | FM | Not started | |
 | T8.3 | 1 | PS | Done | `bd46514a`; B1 `8be42212`, B2 `865f02b3`, B3 `2f1b3ffd`, B4 `3be7d96b`, B5 `a379a2ca` |
 | T8.7 | 1 | PS | In progress from `a0240277` | |
