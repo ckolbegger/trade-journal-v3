@@ -112,6 +112,29 @@ describe('one read snapshot (P29, A128)', () => {
     expect(batches.find((b) => b.store === 'trades')!.records[0]).toEqual({ tradeId: 't-1', lifecycle: 'Closed', revision: 4 });
   });
 
+  it('should report the binding, meta and counts before the first batch', async () => {
+    const { p, database } = await workspaceWith([journalType(1), journalType(2), ['catalog', { id: 'c-1' }]]);
+    const calls: string[] = [];
+    let started: Parameters<NonNullable<Parameters<Persistence['readExportSnapshot']>[3]>>[0] | undefined;
+
+    const result = await p.readExportSnapshot(
+      database,
+      exportLayoutFor(7)!,
+      (batch) => {
+        calls.push(`batch:${batch.store}`);
+      },
+      (start) => {
+        calls.push('start');
+        started = start;
+      },
+    );
+
+    if (result.kind !== 'Read') throw new Error(`not read: ${JSON.stringify(result)}`);
+    expect(calls).toEqual(['start', 'batch:catalog', 'batch:journalTypes']);
+    expect(started).toEqual({ binding: result.binding, meta: result.meta, counts: result.counts });
+    expect(started?.counts['journalTypes']).toBe(2);
+  });
+
   it('should leave a readwrite commit started after the snapshot began waiting until the read finishes, so no batch contains its record and the commit then succeeds with a later content revision', async () => {
     const { p, database } = await workspaceWith(Array.from({ length: 1200 }, (_, i) => journalType(i + 1)));
     const batches: ExportBatch[] = [];

@@ -1,7 +1,7 @@
 import type { IDBPDatabase, IDBPObjectStore } from 'idb';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import type { ExportLayout } from './export-layout.ts';
-import { readExportSnapshot, type ExportBatch, type ExportReadResult } from './export-snapshot.ts';
+import { readExportSnapshot, type ExportBatch, type ExportReadResult, type ExportStart } from './export-snapshot.ts';
 import { deleteDatabase, openDatabase } from './idb.ts';
 import { rebuildPrivateState } from './rebuild.ts';
 import type { RecordSource } from './record-source.ts';
@@ -193,7 +193,12 @@ export interface Persistence {
   // calling `onBatch` synchronously per batch of at most 500 records (D8 P29, A128). The database
   // is named, not the current Workspace, so a blocked older database reads with its own layout
   // (P32). Fails with UnknownLayout when the stored schema version is not the layout's.
-  readExportSnapshot(database: string, layout: ExportLayout, onBatch: (batch: ExportBatch) => void): Promise<ExportReadResult>;
+  readExportSnapshot(
+    database: string,
+    layout: ExportLayout,
+    onBatch: (batch: ExportBatch) => void,
+    onStart?: (start: ExportStart) => void,
+  ): Promise<ExportReadResult>;
   // A database's content revision and record count per store, read without changing it.
   describeDatabase(databaseName: string): Promise<DatabaseDescription>;
   // Deletes every listed candidate and retired database the pointer does not name. Only a holder
@@ -627,7 +632,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
 
     putCandidateRecords: (candidate, records) => putRecords(candidate, records),
 
-    readExportSnapshot: (database, layout, onBatch) => readExportSnapshot(deps.indexedDB, database, layout, onBatch),
+    readExportSnapshot: (database, layout, onBatch, onStart) => readExportSnapshot(deps.indexedDB, database, layout, onBatch, onStart),
 
     async describeDatabase(databaseName) {
       const db = await openDatabase(deps.indexedDB, databaseName, undefined);

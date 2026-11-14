@@ -10,6 +10,13 @@ export interface ExportBatch {
   readonly records: readonly Record<string, unknown>[];
 }
 
+// What the snapshot has read before any batch: the same values the final `Read` result reports.
+export interface ExportStart {
+  readonly binding: { readonly databaseName: string; readonly contentRevision: number };
+  readonly meta: readonly Record<string, unknown>[];
+  readonly counts: Readonly<Record<string, number>>;
+}
+
 export type ExportReadResult =
   | {
       readonly kind: 'Read';
@@ -47,6 +54,8 @@ export async function readExportSnapshot(
   databaseName: string,
   layout: ExportLayout,
   onBatch: (batch: ExportBatch) => void,
+  // Called once, synchronously inside the transaction, before the first `onBatch`.
+  onStart?: (start: ExportStart) => void,
 ): Promise<ExportReadResult> {
   let db: IDBDatabase;
   try {
@@ -149,7 +158,10 @@ export async function readExportSnapshot(
           return;
         }
         const content = meta.find((record) => record['key'] === 'content')?.['contentRevision'] as number;
-        result = { kind: 'Read', binding: { databaseName, contentRevision: content }, schemaVersion: schema, meta, counts };
+        const binding = { databaseName, contentRevision: content };
+        result = { kind: 'Read', binding, schemaVersion: schema, meta, counts };
+        // A throw here ends the snapshot like one from onBatch.
+        onStart?.({ binding, meta, counts });
         readFrom(0, undefined);
       };
       watch('meta', tx.objectStore('meta').getAll() as IDBRequest<Record<string, unknown>[]>, (records) => {
