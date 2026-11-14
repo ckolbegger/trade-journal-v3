@@ -62,6 +62,8 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 |---|---|---|---|---|
 | T8.1 | F (wave 0) | `.claude/worktrees/d08-f` | `d08/f` | `a6c88cdd` |
 | T8.23 | T (wave 0) | `.claude/worktrees/d08-t` | `d08/t` | `a6c88cdd` |
+| T8.3 | PS (wave 1) | `.claude/worktrees/d08-ps` | `d08/ps` | `fdc5e858` |
+| T8.14 | US (wave 1) | `.claude/worktrees/d08-us` | `d08/us` | `fdc5e858` |
 
 ## Flakes
 

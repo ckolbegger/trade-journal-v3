@@ -668,19 +668,19 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | Task | Wave | Lane | Status | Commits |
 |---|---|---|---|---|
 | T8.1 | 0 | F | In progress from `a6c88cdd` | |
-| T8.23 | 0 | T | In progress from `a6c88cdd` | |
+| T8.23 | 0 | T | Done | `220d4b0f`; B1 `fdc5e858` |
 | T8.2 | 1 | FM | Not started | |
 | T8.6 | 1 | FM | Not started | |
-| T8.3 | 1 | PS | Not started | |
+| T8.3 | 1 | PS | In progress from `fdc5e858` | |
 | T8.7 | 1 | PS | Not started | |
 | T8.4 | 1 | WB | Not started | |
 | T8.5 | 1 | WB | Not started | |
 | T8.10 | 1 | WB | Not started | |
 | T8.8 | 1 | WR | Not started | |
 | T8.9 | 1 | WR | Not started | |
-| T8.12 | 1 | UB | Not started | |
-| T8.13 | 1 | UB | Not started | |
-| T8.14 | 1 | US | Not started | |
+| T8.12 | 1 | UB | Paused: decision pending (Q1) | |
+| T8.13 | 1 | UB | Paused: decision pending (Q1) | |
+| T8.14 | 1 | US | In progress from `fdc5e858` | |
 | T8.11 | 2 | — | Not started | |
 | T8.15 | 2 | FT | Not started | |
 | T8.17 | 2 | FX | Not started | |

@@ -251,11 +251,14 @@ Task status and commits are in the breakdown's Progress section. This section ho
 
 ### Notes for later tasks
 
-- **For T8.14:** the navigation lists at `src/ui/AppShell.test.tsx:125`, `:172`, `:485`, `:539` and `:771` gain Backup in the wide layout only (P106). The expectation at `AppShell.test.tsx:130` reads A13's copy, which A143 replaces. The first-run tests (`e2e/d1/readiness.spec.ts:16`, `e2e/d1/support.ts:130`, `e2e/d1/responsive-a11y.spec.ts:141`, `FirstRun.test.tsx:25`) stay unchanged. There are no `MigrationBlockedView` or `IntegrityBlockedView` components: `AppShell` renders both.
+- **For T8.4, T8.5, T8.8, T8.9:** `backup.ts` and `restore.ts` take their own deps interfaces (`BackupDeps`, `RestoreDeps`), which `WorkspaceDeps` satisfies structurally (T8.23). A dependency `WorkspaceDeps` lacks would mean editing `workspace.ts`, outside lanes WB and WR: a pending decision. The migration code calls the fact modules' section functions directly, which these lanes can do too.
+- **For T8.4, T8.5, T8.8:** T8.1's reader yields the manifest line only after the rest of the stream has drained clean (T8.1-B1), and record lines are never parsed by the reader (`{"r":` prefix).
 - **For T8.11:** `src/workers/` doesn't exist yet. The worker chunks must appear in the Offline Release Inventory (`verify:release`). The bottom bar keeps five links.
 - **For T8.17, T8.19:** `fixtures:freeze-backup` and `bench:setup` don't exist yet; each task adds its script to `package.json`. Three wave-2 lanes add one script line each, which git merges.
 - **For T8.21:** no existing Playwright filter matches `e2e/d8/` (`e2e/d8p` doesn't), so add `e2e/d8` to `test:e2e:2` with the first spec.
 
 ### Open questions
 
-- None yet.
+- First-run pass, T8.1: "should accept records pushed one at a time" (mutation-checked).
+- First-run pass, T8.23-B1: the added guard "should reject an unconfigured operation with the operation name" (mutation-checked).
+- Q1 (T8.12's words): pending with the user (`evidence/D08/DECISIONS-PENDING.md`).
