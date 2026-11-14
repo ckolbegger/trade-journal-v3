@@ -80,6 +80,44 @@ describe('record parsing of decimal and instant formats (T8.6-B1)', () => {
   });
 });
 
+describe('record parsing of Deviation versions (T8.6-B4)', () => {
+  const superseded = (form: 'Excess' | 'Shortfall', quantity: Record<string, string>) => ({
+    fingerprint:
+      form === 'Excess'
+        ? { tradeId: 'fx-0049', plannedLegId: 'leg-1', positionChangeId: 'pc-1' }
+        : { tradeId: 'fx-0049', plannedLegId: 'leg-1', form: 'Shortfall' },
+    type: 'EntrySize',
+    form,
+    ...quantity,
+    causingPositionChangeId: 'pc-1',
+    economicTime: '2026-10-12T14:00:00Z',
+    status: 'Superseded',
+    reason: 'NoLongerExpected',
+  });
+  const withVersion = (version: Record<string, unknown>) => {
+    const records = exported();
+    tradeOf(records, 'fx-0049')['deviations'] = [{ occurrenceId: 'dev-1', versions: [version] }];
+    return { records, line: records.findIndex((r) => r['tradeId'] === 'fx-0049') + 3 };
+  };
+
+  it('should reject a Deviation version whose quantity doesn\'t match its form', () => {
+    const ok = withVersion(superseded('Shortfall', { quantityBelowPlan: '2' }));
+    expect(preparation.parse('trades', linesOf(ok.records)).kind).toBe('Parsed');
+
+    const missing = withVersion(superseded('Excess', {}));
+    expect(preparation.parse('trades', linesOf(missing.records))).toEqual({
+      kind: 'Rejected',
+      issues: [{ code: 'MalformedRecord', line: missing.line, store: 'trades', path: 'deviations.0.versions.0' }],
+    });
+
+    const wrong = withVersion(superseded('Shortfall', { quantityAbovePlan: '2' }));
+    expect(preparation.parse('trades', linesOf(wrong.records))).toEqual({
+      kind: 'Rejected',
+      issues: [{ code: 'MalformedRecord', line: wrong.line, store: 'trades', path: 'deviations.0.versions.0' }],
+    });
+  });
+});
+
 describe('record parsing is leg-generic', () => {
   it('should accept a Trade whose facts hold any number of Planned Legs, Executions and Expirations, each with its own option Instrument', () => {
     const option = (strike: string) => ({ kind: 'Option', symbol: 'ABC', root: 'ABC', expiration: '2026-12-18', strike, right: 'Call', multiplier: 100 });
