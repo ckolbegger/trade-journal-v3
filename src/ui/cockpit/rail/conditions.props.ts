@@ -111,8 +111,8 @@ function openProps(view: OpenTradeDetail): ConditionsCardProps {
 
 export function conditionsProps(view: TradeDetailView): ConditionsCardProps | undefined {
   if ('current' in view) return openProps(view);
-  // An incoherent Detail has no replay to measure against, so it has no card.
-  if ('recordedPositionChanges' in view) return undefined;
+  // An incoherent Detail has no replay to measure against, so its card lists the Plan's conditions, rows 1 and 2 only, and says nothing beneath (W5).
+  if ('recordedPositionChanges' in view) return { conditions: unmeasured(view.plan), summary: [] };
   return { conditions: unmeasured(view.plan), summary: [{ text: PLANNED }] };
 }
 

@@ -4,7 +4,7 @@
 import { cleanup, render, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { incoherentDetailOf, openDetailAt, openDetailUncovered, PC1, PC2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { available, tuesday } from '../../screens/trade-detail/test-support.ts';
 import { optionClosedDetail, optionOpenDetail, optionPlannedDetail, type OptionFrames } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_E1, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
@@ -180,6 +180,18 @@ describe('Conditions card (W5, W6)', () => {
     const planned = blocks(renderCard(optionPlannedDetail('O-S2')));
     expect(planned.map((item) => item.querySelector('.condition-text')?.textContent)).toEqual(['MNO at or below 41.00', 'Option at or above $3.60', 'MNO at or above 44.50', 'Option at or below $0.30']);
     expect(planned.every((item) => item.querySelector('.condition-figure') === null && item.querySelector('.condition-why') === null)).toBe(true);
+  });
+
+  it('should list the Plan conditions on an incoherent Detail, rows 1 and 2 only, with no figure, no row 3 and no summary', () => {
+    const finding = { factId: 'ex-1', kind: 'Execution' as const, instrument: { kind: 'Stock' as const, symbol: 'XYZ' }, economicTime: '2026-10-12T14:00:00Z', side: 'Buy' as const, quantity: '60', reason: 'UnknownPlannedLeg' as const };
+    const view = incoherentDetailOf([PC1], [finding]);
+    const container = renderCard(view);
+    const items = blocks(container);
+    expect(items.map((item) => [item.querySelector('.condition-role')?.textContent, item.querySelector('.condition-text')?.textContent])).toEqual([
+      ['Stop', 'XYZ at or below $47.50'],
+      ['Target', 'XYZ at or above $56.00'],
+    ]);
+    expect(container.querySelector('.condition-figure, .condition-why, .conditions-summary, .condition-nearest')).toBeNull();
   });
 });
 
