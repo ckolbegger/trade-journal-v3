@@ -1,0 +1,14 @@
+/* The Backup page (D8 T8.12): the Download section's result and the failed-check list. */
+.backup-result {
+  margin-top: 0.75rem;
+}
+
+.backup-result .backup-file-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.backup-checks {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
