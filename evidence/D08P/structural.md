@@ -1378,3 +1378,11 @@ Assertions added after a case's green ran red then green: case 3's incoherent Jo
 - **Wrong.** "The import resolves to the test file itself" is a relocation artifact.
 
 The reviewer reported the lane modified and main clean; the reverse was true (main held the main session's uncommitted record). No action.
+
+**T8P.22-B1 and B2** (`cb27d447`, evidence `c31b0399`): unit 1651, lane tier and run complete. Each case ran red then green, with no first-run pass (`tdd-log/T8P.22-B1.md`, `T8P.22-B2.md`).
+- **B1:** "should turn the Journal cards to the page holding the Debt when Reflect now is chosen for a Debt on an older session". Red: `Unable to find role="form" and name "Reflection"`. `JournalCards` reads the existing `ReflectRequestContext` and turns to the page holding the Debt's card.
+- **B2:** "should keep the Detail of the Trade the route is on when an earlier Trade's read settles after the route moved". Red: `expected [ <h1></h1> ] to deeply equal []`. `TradeDetail.tsx` applies only the newest request's answer through a ticket, and the effect cleanup voids a pending read.
+
+**Re-review:** ocr ran on `cb27d447`. The in-place pass reviewed 2 files and the relocated pass 3, with 0 comments (`ocr/T8P.22-B.json`, `ocr/T8P.22-B-reloc.json`).
+
+**T8P.22 merge.** Only plan and evidence followed lane wire's base `0e9ac4c2`, so its tiers stand. Rebased onto `af5442ce` and fast-forwarded: `0c78979f` (task), `7090ad0b`, `8771f053` (B1, B2), `7effc464`. Lane wire was removed. Merge run 9 (`browser-auto 395f7ec5`) covers T8P.24, T8P.31 and T8P.22.
