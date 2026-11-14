@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 44022,
+    "input_tokens": 43667,
+    "output_tokens": 355,
+    "cache_read_tokens": 9984,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "evidence/D08P/ocr/T8P.26-B1-relocated.json",
+      "files": [
+        "evidence/D08P/ocr/T8P.26-B1-relocated.json"
+      ]
+    },
+    {
+      "label": "evidence/D08P/ocr/T8P.26-B1.json",
+      "files": [
+        "evidence/D08P/ocr/T8P.26-B1.json"
+      ]
+    },
+    {
+      "label": "src/ui/cockpit/drawers/journal.props.ts",
+      "files": [
+        "src/ui/cockpit/drawers/journal.props.ts"
+      ]
+    }
+  ],
+  "session_id": "11cacd9c-73c8-47b7-bfb3-66e897f84bae",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "11cacd9c-73c8-47b7-bfb3-66e897f84bae",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "9153fc28",
+      "requested_head": "f2323324",
+      "resolved_base": "9153fc28088ba677435b6360da886ba7010e8af2",
+      "resolved_head": "f2323324cf35c65afdfdb48ed5dcf7c03b2dc738",
+      "exact_range": "9153fc28088ba677435b6360da886ba7010e8af2..f2323324cf35c65afdfdb48ed5dcf7c03b2dc738",
+      "source_artifact_sha256": "0e314ac9b1418ed6c8ca27426560bd1d995db2425e1cf7288aa446f61f25d65d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "68550cdcb15ce7b796c4600369a86935d873cddbfeb80de1cee50007a3960dff",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "f98f35339f7ed302844e8ebd68d3e2bffb4780bf2abe60ec779fcd3b7dd8bf34"
+        },
+        {
+          "item_id": "6a184517b53b1e2b36f930ad00723fe54438535539d0696f8ba3bf2967f7b37f",
+          "path": "evidence/D08P/ocr/T8P.26-B1.json",
+          "fingerprint": "c886270bf1d19d8dce0079aa720e94c9892cd869e9ab6443bd87e590feab4b39"
+        },
+        {
+          "item_id": "c91b2ca66ac67a114c3522440afb1abbc44efeeb950a0a656011dc45e9bb7d46",
+          "path": "evidence/D08P/ocr/T8P.26-B1-relocated.json",
+          "fingerprint": "00d3e41ad6c89272caa8d8bd52adf24f9851f4ee0e0c23405fa2e74e7c841c83"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "68550cdcb15ce7b796c4600369a86935d873cddbfeb80de1cee50007a3960dff",
+          "path": "src/ui/cockpit/drawers/journal.props.ts",
+          "fingerprint": "f98f35339f7ed302844e8ebd68d3e2bffb4780bf2abe60ec779fcd3b7dd8bf34"
+        },
+        {
+          "item_id": "6a184517b53b1e2b36f930ad00723fe54438535539d0696f8ba3bf2967f7b37f",
+          "path": "evidence/D08P/ocr/T8P.26-B1.json",
+          "fingerprint": "c886270bf1d19d8dce0079aa720e94c9892cd869e9ab6443bd87e590feab4b39"
+        },
+        {
+          "item_id": "c91b2ca66ac67a114c3522440afb1abbc44efeeb950a0a656011dc45e9bb7d46",
+          "path": "evidence/D08P/ocr/T8P.26-B1-relocated.json",
+          "fingerprint": "00d3e41ad6c89272caa8d8bd52adf24f9851f4ee0e0c23405fa2e74e7c841c83"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "06c60dca693fdde2aa03fa498071591a5085e1af7c00ef9e019e3fecd77cf57c",
+          "path": "e2e/d8p/journal-final-session.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "08ed23d0e4f626746829675f0a99e3cb967fd9a3a699b61e385aa8417fe9fa22",
+          "path": "evidence/D08P/structural.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "609afc4dbb01973dbbe2203627601c24a16e9137b2295c61cb538b3a4b2b911a",
+          "path": "evidence/D08P/browser/T8P.26-B3-final-session.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "6e2765a5cc2d340f3674c4e751e6e12528da50effb4c503e19b61802e230e2f5",
+          "path": "evidence/D08P/tdd-log/T8P.26-B3.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "9c2e8559c9cca8f35209d72eb76e5a5ce156379f35bb1cb53a4bf884066f2321",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d18653b516c87e41fff006df565ed7cdc188685009cb822b52ad912b803f1c5f",
+          "path": "evidence/D08P/browser/T8P.26-B3-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 12494
+  }
+}

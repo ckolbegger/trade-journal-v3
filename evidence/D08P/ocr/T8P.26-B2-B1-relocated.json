@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 20811,
+    "input_tokens": 20657,
+    "output_tokens": 154,
+    "cache_read_tokens": 6656,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d8p/lot-matches-fit.ts",
+      "files": [
+        "src/itg/relocated/d8p/lot-matches-fit.ts"
+      ]
+    }
+  ],
+  "session_id": "c06a8f23-a151-4261-a603-1cca191610eb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c06a8f23-a151-4261-a603-1cca191610eb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "352e23548ff75c616027e26e1cc3db0306980818",
+      "resolved_head": "4590648a0e79764cf00e55fe2cf097d9a47a816d",
+      "exact_range": "352e23548ff75c616027e26e1cc3db0306980818..4590648a0e79764cf00e55fe2cf097d9a47a816d",
+      "source_artifact_sha256": "1b90efcba1156a7a9705e760a1ad71c87b3c03bcf39c14ffafed87c46aa54bb1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "90855f6c3e8988892795212b5b961c373d63a1d942684b519571d094a62caf99",
+          "path": "src/itg/relocated/d8p/lot-matches-fit.ts",
+          "fingerprint": "b0a67df25ba3958bac1c5df054c2caadad8287fe105d99ecb06cb18f2a133110"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "90855f6c3e8988892795212b5b961c373d63a1d942684b519571d094a62caf99",
+          "path": "src/itg/relocated/d8p/lot-matches-fit.ts",
+          "fingerprint": "b0a67df25ba3958bac1c5df054c2caadad8287fe105d99ecb06cb18f2a133110"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 11176
+  }
+}

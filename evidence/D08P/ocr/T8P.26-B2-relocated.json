@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 98111,
+    "input_tokens": 96433,
+    "output_tokens": 1678,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m9s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 8,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d8p/lot-matches-fit.ts",
+      "content": "The narrow-width assertions do not establish that Realized is accessible: `toHaveCount(1)` passes even when the cell is clipped, and `expectNoSidewaysScroll` only measures document overflow. An `overflow-x: hidden` regression on the table wrapper would therefore pass both checks. At 375 and 320 px, verify that the wrapper allows horizontal scrolling and scroll it to the end, then assert that the Realized cell lies within its visible bounds.",
+      "existing_code": "    await expect(box.getByRole('cell', { name: realized })).toHaveCount(1);",
+      "start_line": 35,
+      "end_line": 35,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/relocated/d8p/lot-matches-fit.ts",
+        "src/ui/cockpit/styles/position.css"
+      ]
+    }
+  ],
+  "session_id": "cdc42970-9fc3-46a2-a4e8-c79005802a04",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cdc42970-9fc3-46a2-a4e8-c79005802a04",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "51740784f09246fe3c3320a84f7635d4bb013397",
+      "resolved_head": "20132cf7fded293c21cf8407814a58e24b0522ed",
+      "exact_range": "51740784f09246fe3c3320a84f7635d4bb013397..20132cf7fded293c21cf8407814a58e24b0522ed",
+      "source_artifact_sha256": "b164b0d3d223f963b6708a34edec7cbd9312fbd8ee29f99d5b91af5a0b7e14d9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "7cd1acac38f847b486c190e9a7f76a0aee2f0f290ac5624c318509d62af9d244",
+          "path": "src/ui/cockpit/styles/position.css",
+          "fingerprint": "3764b3815a758ea0d2db6d1ac89fe9470d6d8d6e9784dd14f35d2a0908ecebc5"
+        },
+        {
+          "item_id": "90855f6c3e8988892795212b5b961c373d63a1d942684b519571d094a62caf99",
+          "path": "src/itg/relocated/d8p/lot-matches-fit.ts",
+          "fingerprint": "7cd3ff5158f0d993bfd57004e5a9f747d76aebcbebd60fc484c93de2eb929ace"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "7cd1acac38f847b486c190e9a7f76a0aee2f0f290ac5624c318509d62af9d244",
+          "path": "src/ui/cockpit/styles/position.css",
+          "fingerprint": "3764b3815a758ea0d2db6d1ac89fe9470d6d8d6e9784dd14f35d2a0908ecebc5"
+        },
+        {
+          "item_id": "90855f6c3e8988892795212b5b961c373d63a1d942684b519571d094a62caf99",
+          "path": "src/itg/relocated/d8p/lot-matches-fit.ts",
+          "fingerprint": "7cd3ff5158f0d993bfd57004e5a9f747d76aebcbebd60fc484c93de2eb929ace"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 69227
+  }
+}

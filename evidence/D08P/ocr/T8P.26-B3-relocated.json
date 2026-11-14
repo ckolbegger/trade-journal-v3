@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 242646,
+    "input_tokens": 240952,
+    "output_tokens": 1694,
+    "cache_read_tokens": 33792,
+    "elapsed": "1m24s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_find": 3,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/d8p/journal-final-session.ts",
+      "content": "Both fixtures reach the final session without recording an earlier Mark on the closing trade (the XYZ Mark belongs to a different trade). They therefore only exercise the `First Mark` case, not suppression of a populated `since [date]` change. This matters because the existing Closed-trade test in `journal-cards.props.test.tsx` still explicitly expects `+$98.00 since Mon Oct 12` on a flat final session. Add a case that records a Mark on the same trade in an earlier session, closes it in a later session, and asserts that the final card has P\u0026L but no change line.",
+      "existing_code": "    await expect(final.locator('.journal-card-change')).toHaveCount(0);",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/relocated/d8p/journal-final-session.ts",
+      "content": "These regression tests are not discovered by any configured test suite: Playwright uses `testDir: 'e2e'` and its default `.spec`/`.test` filename matching, while Vitest's integration project only includes `tests/integration/**/*.test.ts`. This file is outside both roots and has neither suffix, so normal test commands never execute these assertions. Move it into `e2e/d8p` with a `.spec.ts` suffix (and adjust the support import), or explicitly configure a runner to discover it.",
+      "existing_code": "test.describe('T8P.26-B3 a Journal card whose session has no Mark has no change line', () =\u003e {",
+      "start_line": 13,
+      "end_line": 13,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/relocated/d8p/journal-final-session.ts",
+      "files": [
+        "src/itg/relocated/d8p/journal-final-session.ts"
+      ]
+    }
+  ],
+  "session_id": "b561a5da-6122-42b6-a286-c07b9156644e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b561a5da-6122-42b6-a286-c07b9156644e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "b265e453b9f8a23816cbd5b6302264392e2c5434",
+      "resolved_head": "eb4c85995e372b6e3e5ff569d4650ed80f51e07b",
+      "exact_range": "b265e453b9f8a23816cbd5b6302264392e2c5434..eb4c85995e372b6e3e5ff569d4650ed80f51e07b",
+      "source_artifact_sha256": "7534748138e45a00844f7ed80a14977cd89bbbe028d6b1607f2c7a38e3166398"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "575a7bab92e281514611a23ac07cf7e4f484c4a8c87c946d9910b24262c176f6",
+          "path": "src/itg/relocated/d8p/journal-final-session.ts",
+          "fingerprint": "c01f577515e49dd5e9dd37d0c3098e997469f61ba4ef358567aba4a910bea86f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "575a7bab92e281514611a23ac07cf7e4f484c4a8c87c946d9910b24262c176f6",
+          "path": "src/itg/relocated/d8p/journal-final-session.ts",
+          "fingerprint": "c01f577515e49dd5e9dd37d0c3098e997469f61ba4ef358567aba4a910bea86f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 83890
+  }
+}
