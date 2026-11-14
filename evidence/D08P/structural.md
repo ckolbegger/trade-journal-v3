@@ -1785,3 +1785,9 @@ Deleted `e2e/d6/update.spec.ts` (B6.6) with `git rm`; the checked-out build is n
 - **Commit:** `ad6d0189`. The agent also reworded `e2e/d7/support.ts` line 5 ("whose automatic fixture serves current"), which names the served build.
 - **Review:** ocr in place, 7 files (the deleted spec excluded), 0 comments, "No findings." (`ocr/T8P.BUG-4.1-ad6d0189.json`). Reviewer's note, not a task: no `dist-releases/d6` left in `tools`, `e2e`, `package.json`, `playwright.config.ts` or `.gitignore`.
 - **Cumulative run (`T8P.BUG-4.1`, at `a84f28fc`):** `browser-auto 3570684b` chose the full tier (first matching path: `e2e/d4/support.ts`). Unit 1662 (156 files), integration 229 (106 files), checks 14 of 14, browser-1 126 (5.1 min), browser-2 98 (6.3 min), no failures; run complete. The counts equal `T8P.26-B5`'s, since B6.6 was never in the full tier.
+
+### T8P.BUG-4.2
+
+Added `missingFixtureSchemas(names, schemaVersion)` in `tools/fixture-schemas.ts` (pure, so the unit test imports it without running the verify script) and `tools/verify-fixtures.ts` adds one problem per missing schema, naming it and `npm run fixtures:freeze -- --schema <n>`. Cases in `tools/verify-fixtures.test.ts` (picked up by the `unit` project's `tools/**/*.test.ts` include).
+
+1. `npm run verify:fixtures`: exit 0; "verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4, workspace-v5, workspace-v6, workspace-v7 open Ready at schema 7 with views equal to their snapshots".

@@ -10,6 +10,7 @@ import path from 'node:path';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
 import { closeViolations, debtViolations, openStructureValueCount, optionViolations, withWalkedReflections } from './fixture-views.ts';
+import { missingFixtureSchemas } from './fixture-schemas.ts';
 import { compareSnapshot } from './fixtures/snapshot-compare.ts';
 import { closedViewsOf, debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
@@ -55,6 +56,10 @@ const problems: string[] = [];
 const verified: string[] = [];
 const fixtures = (await readdir(FIXTURES_DIR)).filter((name) => name.startsWith('workspace-v')).sort();
 if (fixtures.length === 0) problems.push(`no Workspace fixtures in ${FIXTURES_DIR}`);
+// Every schema from 1 to the current one has a fixture (decision 112).
+for (const schema of missingFixtureSchemas(fixtures, SCHEMA_VERSION)) {
+  problems.push(`workspace-v${schema}: no fixture for schema ${schema}; run npm run fixtures:freeze -- --schema ${schema}`);
+}
 for (const name of fixtures) {
   const dir = path.join(FIXTURES_DIR, name);
   const dump = JSON.parse(await readFile(path.join(dir, 'dump.json'), 'utf8')) as WorkspaceDump;
