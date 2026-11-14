@@ -24,8 +24,9 @@ Spec reading (A218): `plan/spec-reading/D07.md`, plus D9's entries for Trade Ana
 
 ## Critic cost
 
-| Critic | Report | Flows | Result |
-|---|---|---|---|
+| Critic | Report | Flows | Result | Tokens | Tool calls | Duration | Brief |
+|---|---|---|---|---|---|---|---|
+| critic-1 (T8P.23, checkpoint, at `05ca870f`) | `critic-1.md` | C8P.1–C8P.4, plus 375 and 320 px | FAIL (C8P.4): 8 defects (1 high, 3 moderate, 4 low), 11 minor observations | 215,050 | 70 | 10 min 57 s | `critic-brief.md` template with D08P's section 8, the accepted exceptions (with revision 96's case 7), and `e2e/d7s/support.ts` helpers |
 
 ## Lane worktrees
 
@@ -1423,3 +1424,17 @@ No row lacks a covering case, a retiring row or a moved case, so there is no gap
 **T8P.27 merge.** Only plan and evidence followed lane rm's base `c670929c`, so its tiers stand. Rebased onto `f06828c4` and fast-forwarded: `f9ee10a2` (pairing table), `4a610613` (moved assertions), `9557c405` (removal), `e0cceac6`. Lane rm was removed. No lane remains. Next is wave 2's full-tier run, then the checkpoint critic, T8P.23.
 
 **Merge run 10, the full tier before the checkpoint critic** at `117ba8d5` (the merge of T8P.27): unit 1640 (156 files), integration 229, checks 14 of 14, browser tier 1 126 and tier 2 75 passed, no failures; run complete. The "uncommitted changes" in the headers were the run's own new evidence files. The next merge run is `browser-auto 117ba8d5`. T8P.23, the checkpoint critic, starts on this commit.
+
+**T8P.23, critic-1** (`critic-1.md`) at `05ca870f`: **FAIL** on C8P.4. C8P.1, C8P.2, C8P.3 and the narrow layout pass. The critic's tool refused to write `test-results/critic-d08p-1/report.md` ("Subagents should return findings as text"), so the main session saved its hand-back text unchanged: it took the text from the session transcript with a script, and copied it with `cp`, never retyping it.
+
+Every defect becomes a bug task, run one at a time in the main worktree (`critic-brief.md`). The main session checked each against the plan; all are fixable within it, because C8P.4's pass condition is "each matches the prototype's state":
+- **T8P.23-B1 (high).** On a Closed Detail the Result figures show twice: in the rail's P&L card (W4) and in the Position drawer's "Result" region. The Reach table's Position list holds no Result, and neither do the prototype's Closed Position drawers.
+- **T8P.23-B2 (moderate).** The Settlement Due panel in Needs you breaks words mid-word at 1280 px ("contr / act").
+- **T8P.23-B3 (moderate).** On Settlement Due, the Position drawer holds the whole Today drawer: the price tracks, the A223 condition lines and the "At entry" block. Revision 96 sends only the current Marks there. The "At entry" Average entry ($1.90) differs from Entry Quality's ($2.00) under the same label; the bug task finds why.
+- **T8P.23-B4 (moderate).** The Position drawer's tables are hard to read at 1280 px. Lot Matches cells have no spacing and a duplicate visible caption, and Open Lots' fourth column is cut off.
+- **T8P.23-B5 (low).** The rail order is identity, Needs you, P&L, Conditions. T8P.5 set it in `f0c51e60`, but T8P.5's case and the prototype give identity, P&L, Conditions, Needs you.
+- **T8P.23-B6 (low).** An incoherent Detail has no Conditions card, by T8P.14's choice. The prototype's state lists the conditions without figures, which are W5's rows 1 and 2, as on Closed.
+- **T8P.23-B7 (low).** A Planned Detail's Journal is the old list, not W11's Plan card ("Planned … ", heading "Plan").
+- **T8P.23-B8 (low).** An unavailable per-condition figure shows a bare "—" (Plan and Risk's lines, and A223's distance lines). A222 says it shows its reason at the `label` length.
+
+The minor observations are recorded, not tasks. Observation 1, the Journal card repeating the rail's Trade P&L, is W10's required content.
