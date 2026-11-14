@@ -15,7 +15,7 @@ export interface RestoreFlowProps {
 
 type Rejected = Extract<PrepareRestoreResult, { kind: 'Rejected' }>;
 
-type Phase = { readonly kind: 'Choose' } | { readonly kind: 'Checking'; readonly progress: BackupProgress | undefined } | { readonly kind: 'Rejected'; readonly result: Rejected } | { readonly kind: 'Preview'; readonly token: RestoreToken; readonly preview: RestorePreview } | { readonly kind: 'NotReplaced'; readonly reason: string | undefined } | { readonly kind: 'Unfinished' } | { readonly kind: 'Restored'; readonly counts: RestoreCounts; readonly next: RestoreLanding['next'] };
+type Phase = { readonly kind: 'Choose' } | { readonly kind: 'Checking'; readonly progress: BackupProgress | undefined } | { readonly kind: 'CannotCheck'; readonly reason: string } | { readonly kind: 'Rejected'; readonly result: Rejected } | { readonly kind: 'Preview'; readonly token: RestoreToken; readonly preview: RestorePreview } | { readonly kind: 'NotReplaced'; readonly reason: string | undefined } | { readonly kind: 'Unfinished' } | { readonly kind: 'Restored'; readonly counts: RestoreCounts; readonly next: RestoreLanding['next'] };
 
 // Why an apply left the journal as it was (Q2 A11).
 function explainNotReplaced(result: Exclude<ApplyPreparedRestoreResult, { kind: 'Restored' }>): string | undefined {
@@ -86,7 +86,10 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
     abort.current = undefined;
     if (result.kind === 'Rejected') setPhase({ kind: 'Rejected', result });
     else if (result.kind === 'Prepared') setPhase({ kind: 'Preview', token: result.token, preview: result.preview });
-    else setPhase({ kind: 'Choose' });
+    else if (result.kind === 'RuntimeNotWritable') {
+      logFailure({ stage: 'Prepare', name: 'RuntimeNotWritable', message: 'The journal is not writable.', context: { failedChecks: result.failedChecks.map((failure) => `${failure.check}:${failure.reason}`).join(',') } });
+      setPhase({ kind: 'CannotCheck', reason: result.failedChecks.map(explainFailure).join(' ') });
+    } else if (result.kind === 'Cancelled') setPhase({ kind: 'Choose' });
   };
 
   const replace = async (token: RestoreToken, safety: SafetyChoice | undefined) => {
@@ -120,6 +123,14 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
           {phase.progress && <p role="status">Checking the backup: {`${number(phase.progress.done)} of ${number(phase.progress.total)} records`}</p>}
           <button type="button" className="pill secondary" onClick={() => abort.current?.abort()}>
             Cancel
+          </button>
+        </div>
+      )}
+      {phase.kind === 'CannotCheck' && (
+        <div role="alert">
+          <p>{phase.reason}</p>
+          <button type="button" className="pill secondary" onClick={() => void check()}>
+            Choose backup file
           </button>
         </div>
       )}

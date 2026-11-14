@@ -472,3 +472,35 @@ describe('an unexpected apply failure (T8.13-B2)', () => {
     expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Apply', name: 'Error', message: 'boom', stack: error.stack }]);
   });
 });
+
+describe('backup that cannot be checked because the journal is not writable (T8.13-B3)', () => {
+  const NOT_WRITABLE = {
+    kind: 'RuntimeNotWritable',
+    runtimeReadiness: 'RecoveryOnly',
+    failedChecks: [{ check: 'capacity', reason: 'InsufficientQuota' }],
+    workspaceStatus: 'None',
+    safeActions: [],
+  } as unknown as PrepareRestoreResult;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should show the readiness sentence when the backup cannot be checked because the journal is not writable', async () => {
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', NOT_WRITABLE);
+    await choose(ctx);
+    expect(await screen.findByText('There is not enough storage space available in this browser for your journal and its safety margin.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Choose backup file' })).toBeTruthy();
+  });
+
+  it('should write a developer log line when the backup cannot be checked because the journal is not writable', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', NOT_WRITABLE);
+    await choose(ctx);
+    await screen.findByText(/not enough storage space/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Prepare', name: 'RuntimeNotWritable', message: 'The journal is not writable.', context: { failedChecks: 'capacity:InsufficientQuota' } }]);
+  });
+});
