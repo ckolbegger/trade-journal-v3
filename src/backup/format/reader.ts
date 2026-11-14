@@ -131,6 +131,7 @@ async function sniff(input: ReadableStream<Uint8Array>): Promise<{ stream: Reada
     const r = await reader.read();
     if (r.done) ended = true;
     else {
+      if (r.value.length === 0) continue; // empty chunks carry no bytes to sniff
       head.push(r.value);
       have += r.value.length;
     }

@@ -152,4 +152,23 @@ describe('readArtifact', () => {
     await expect(collect(corrupt.stream)).rejects.toMatchObject({ code: 'Corrupt' });
     expect(corrupt.state.cancelled).toBe(1);
   });
+
+  it('should detect gzip when the magic bytes arrive after or across empty chunks', async () => {
+    const { gz } = build();
+    const streamOf = (chunks: Uint8Array[]) =>
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          for (const c of chunks) controller.enqueue(c);
+          controller.close();
+        },
+      });
+    const expected = await collect(new Blob([gz]));
+    const empty = new Uint8Array();
+
+    const leadingEmpty = await collect(streamOf([empty, gz]));
+    const acrossEmpty = await collect(streamOf([gz.slice(0, 1), empty, gz.slice(1)]));
+
+    expect(leadingEmpty).toEqual(expected);
+    expect(acrossEmpty).toEqual(expected);
+  });
 });
