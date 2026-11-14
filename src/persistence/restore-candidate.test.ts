@@ -94,6 +94,19 @@ describe('Restore candidates (A138)', () => {
     expect(await databaseNames()).toEqual(['tj-root', created.databaseName, 'tj-ws-r-0003', otherCandidate.databaseName].sort());
   });
 
+  it('should delete this session earlier Restore candidate database when a new one is listed', async () => {
+    const p = persistence('r');
+    const earlier = await p.createRestoreCandidate();
+    if (earlier.kind === 'RuntimeNotWritable') throw new Error('not writable');
+    expect(await databaseNames()).toContain(earlier.databaseName);
+
+    const later = await p.createRestoreCandidate();
+    if (later.kind === 'RuntimeNotWritable') throw new Error('not writable');
+
+    expect(later.databaseName).not.toBe(earlier.databaseName);
+    expect(await databaseNames()).toEqual(['tj-root', later.databaseName]);
+  });
+
   it('should refuse to create a candidate outside Writable with RuntimeNotWritable, creating no database', async () => {
     const refusal: RuntimeNotWritable = {
       kind: 'RuntimeNotWritable',
