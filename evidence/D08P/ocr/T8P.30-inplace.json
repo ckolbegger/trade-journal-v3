@@ -1,0 +1,374 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 30065,
+    "input_tokens": 29812,
+    "output_tokens": 253,
+    "cache_read_tokens": 4992,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "E2E support utilities and detail interactions",
+      "files": [
+        "e2e/d5/support.ts",
+        "e2e/d7/support.ts",
+        "e2e/support/detail/index.ts",
+        "e2e/support/detail/position.ts",
+        "e2e/support/detail/rail-a.ts",
+        "e2e/support/detail/rail-b.ts",
+        "e2e/support/detail/scope.ts"
+      ]
+    }
+  ],
+  "session_id": "9588bd69-1f34-4d81-b670-d73ecbce9a1f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9588bd69-1f34-4d81-b670-d73ecbce9a1f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "a7f398bf",
+      "resolved_base": "479923c3b3dea2475fc86c7825c4848539ccead1",
+      "resolved_head": "a7f398bf00f37689d597e050a39b917ae6ede4ad",
+      "exact_range": "479923c3b3dea2475fc86c7825c4848539ccead1..a7f398bf00f37689d597e050a39b917ae6ede4ad",
+      "source_artifact_sha256": "4b8bda372fbfd743425fc2d666dfe7ae74e33b6a40296c850e36e8b5f57b3e8d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2ffdc5c06bb7d09e58d9239abb710ed8ba309b289cabcc152d41290eda313658",
+          "path": "e2e/support/detail/scope.ts",
+          "fingerprint": "28eb462bdc999c626ded8a137a6f0784b7c615616160737c40bf0af05f44ec1c"
+        },
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "9fcaf145b402d5a867a3a41ddfd8be4132fc531d9d98510b62685d1050b49fd6"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "05453f629a6b6c534496eedee8bb7bedf054788671a7d0bd9b3f5624733d27ec"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "6a6b068af3fab50073aa443f9cab373e7e9bf77eb9a673961038c199a58b13ad"
+        },
+        {
+          "item_id": "ba68cfce76ff97d69ceb63ada0e94d7e779dee647187269e6f0d8320ef10c909",
+          "path": "e2e/support/detail/position.ts",
+          "fingerprint": "2f0c1947f041b35eae57f745154da23221bfb599a664b1fe739937d2a5586fcb"
+        },
+        {
+          "item_id": "bf86d89a9e8ae774a65e30260f2824321612838d6476ba640ffa26ad8b501773",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "1177a50cc8478e91dba064e774d1bbf5d2dc01ab0bab687c1c026a707e9d75f5"
+        },
+        {
+          "item_id": "e8d79a0b3e66588e2d75a5ee1ad34b9a2844f9087652b6e174433ee583d059de",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "39bcc8958edb644a80df71998fd797c48a8466654bf3d098d7be29bfb499b701"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2ffdc5c06bb7d09e58d9239abb710ed8ba309b289cabcc152d41290eda313658",
+          "path": "e2e/support/detail/scope.ts",
+          "fingerprint": "28eb462bdc999c626ded8a137a6f0784b7c615616160737c40bf0af05f44ec1c"
+        },
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "9fcaf145b402d5a867a3a41ddfd8be4132fc531d9d98510b62685d1050b49fd6"
+        },
+        {
+          "item_id": "99c596ee1732c530a194c9499667a3a11331103a4114e4c1d962b6235c95f741",
+          "path": "e2e/d7/support.ts",
+          "fingerprint": "05453f629a6b6c534496eedee8bb7bedf054788671a7d0bd9b3f5624733d27ec"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "6a6b068af3fab50073aa443f9cab373e7e9bf77eb9a673961038c199a58b13ad"
+        },
+        {
+          "item_id": "ba68cfce76ff97d69ceb63ada0e94d7e779dee647187269e6f0d8320ef10c909",
+          "path": "e2e/support/detail/position.ts",
+          "fingerprint": "2f0c1947f041b35eae57f745154da23221bfb599a664b1fe739937d2a5586fcb"
+        },
+        {
+          "item_id": "bf86d89a9e8ae774a65e30260f2824321612838d6476ba640ffa26ad8b501773",
+          "path": "e2e/support/detail/index.ts",
+          "fingerprint": "1177a50cc8478e91dba064e774d1bbf5d2dc01ab0bab687c1c026a707e9d75f5"
+        },
+        {
+          "item_id": "e8d79a0b3e66588e2d75a5ee1ad34b9a2844f9087652b6e174433ee583d059de",
+          "path": "e2e/support/detail/rail-a.ts",
+          "fingerprint": "39bcc8958edb644a80df71998fd797c48a8466654bf3d098d7be29bfb499b701"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0160d24f46c444f6775d6d047f26c1eb6d45ec60ec8feb3c6adef1d9e38a1306",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "05b73dd6aac4acd05223d26c2cbd18b2e9ade2bfa5f527da31d209e6e48ff808",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r7.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "0b756cac508f3d5aac94ec957df385b33194f3440df2e51aaa989a4f01197d8e",
+          "path": "src/ui/screens/trade-detail/Valuation.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "0ea4a3587ff668aa5301743d55e0be7b43d51f212e40fa9025a85a2d1ec2749d",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r4.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "12f8d33ae57db509336618f70d5433f9e94127f7db546b8539f31cbd601f05b6",
+          "path": "src/ui/screens/trade-detail/Cockpit.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "1530edfb8025d4056f6cc1b8dceb8f8c74b68920a6b68d5ef049af9a80628a12",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r4b.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "192cfc4e82389da2039acf8aeea525422f2615a3234de7c75398a2bae4c8b72e",
+          "path": "evidence/D08P/T8P.30-checks.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "1b2ea52d82c680e947cfe9c209497c48df4909d3b5abef4a1f9cb91bf41196a1",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "1dc18f003e74eb83072928bc9264026066fa6de757834fea465e0a10ab39e477",
+          "path": "src/ui/cockpit/journal-cards.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "34a7b1e5a46223c6962d3b6c69f3581016c974a64d51cee26de9a07e0496bcaf",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r3.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "3bf5cc07412de666946e6ff0c99e1dd3ad9f9512e250588d302344352b95cf60",
+          "path": "src/ui/cockpit/drawers/payoff.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "3d0115b251110086341f7337a4cc51124dc1674e1a25fa485322476ed661a31e",
+          "path": "src/ui/cockpit/drawers/today.props.test.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4cf80cd4f93db1111cad9410f18fcd4baae047865e777e269c718c3d5a3e6005",
+          "path": "e2e/d6/runtime-failure.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4e995098d3a2739c27d7614956fdc9064c2736a0d40ad8a2991a03a83a3e6552",
+          "path": "e2e/d7/responsive-a11y.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4eb7d13073aead8500407b51367b7a90ebc5f83a39e4658414cf17c4fcfc106f",
+          "path": "src/ui/screens/trade-detail/SettlementDue.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4ee67ea1f8fdec0e12c2e8b61867c4c098e306b2babb697a90971ef01ff1491e",
+          "path": "e2e/d5/kill-offline.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "4f693be1bc970ae6852349a394257dc4c950b3128a22de62864d480f328ad844",
+          "path": "src/ui/screens/trade-detail/Summary.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "52de7e703bdc4a9d21748b63a6e68c05ce5dd1453f6b736eec14ab06b04f0be7",
+          "path": "evidence/D08P/browser/T8P.30-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "568de8ec6ac91580ff3b7766932eabc4d40b6eb6772be489396db52c78341f48",
+          "path": "e2e/d7/settlement-due.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "6ea0954282df13574616ce2cd50570ef664c3dc7eb20e5c95fc4cceb2e0425fb",
+          "path": "e2e/d4/expected-mark.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "74bad3dde087908b8761e8239c522885534533b85d55cfd13011db9c4ad95e21",
+          "path": "evidence/D08P/tdd-log/T8P.30.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "76c34d67f3ed116276490f0b5b40cf8207a6503b0ed300b65c8ba78438933203",
+          "path": "e2e/d2/runtime-failure.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "864910b6044f4c010950747b691b0043cb238ae233dc93c2a1bff473f956d5f7",
+          "path": "e2e/d6/exit-requirements.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "890841e2c16e3045bc2504d3d6fce0be8da08c4c977123935c6676007173ee08",
+          "path": "src/ui/screens/trade-detail/Payoff.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "8adc510db5d8c589002e742d0da0075c5ee50162c0cfe23822135e24c49b46ea",
+          "path": "src/ui/screens/trade-detail/Position.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "91ff58367ec3d2a15928ef8f8ebb92bd93f8907b895057902f78bfa677b32f23",
+          "path": "e2e/d6/exit.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "95a31d5c38b214d9a6768082236010958b34effd123344327c90142eafe1da19",
+          "path": "e2e/d2/after-save.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "95d3e7bbefa3c9d0a2ca0f876f359415704f60d822af3416f3b2ae623f046f4b",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r6.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "9e888db941aaa026b03ee9ea52c8deac995d9f8bc522c19b2caf8ec3de412ae5",
+          "path": "e2e/d7/runtime-failure.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "a136d29436b04a5563c39b73bbab2c9b822f8f3cbe368c5b6b2d3eb4fff79f45",
+          "path": "evidence/D08P/browser/T8P.30-mutation-specs.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "a1bf924a0ca62ecd3ac021a9b4a12c4b19ea6553a58423265f42c7bef67b813d",
+          "path": "e2e/d2/integrity.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "a9c758ad0d83645583ff43b2595399d3c2acb16551cb4c7b8f8552c16dae2d57",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r2.txt",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "c27cb6196acbd68168baf28a33a227148d60f63b90eff39d0cdf1803d6201744",
+          "path": "src/ui/screens/trade-detail/Identity.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "c73bf056e8b218ba2ae2c228ffb8b7c3e4a1c4a4f7f7d5fb6d697a86efa27675",
+          "path": "src/ui/screens/trade-detail/Banner.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ceb6a0a7475d5fae8b65f77a60dafe24c3b2295fb0053a87dc8271232d06cbe3",
+          "path": "e2e/d5/faults.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "d1b0434436125f95b927cdbf8d883e22b28d270f07bb22b34419537cdd21677a",
+          "path": "src/ui/screens/trade-detail/Journal.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "daa2d5d6a0e0c82c6c662d0f635a58f9637b4724e5f4671e36816f6404541e45",
+          "path": "e2e/d5/detail-debt.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "df3fce92186686a1989ef386c4eff0be281d90130113a1eb9e00411513583bf0",
+          "path": "e2e/d7/kill.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "e275b4032529d54bf0974fd9c38aeee8c417090558e2f317fb654e373e9a0234",
+          "path": "e2e/d5/review-debt.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ea0588e106f411a3d18b01faf53a3647c9ed28d8e647873431f4ed45b37bd92e",
+          "path": "src/ui/screens/trade-detail/Result.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "ee17d1ea42b9203150015cfbb443bba5e2c8649d46d5490186271179cd9810aa",
+          "path": "src/ui/cockpit/track.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f17148ce925f689ef36048ab528a1c1fc622264812e6a2b3ad4bf29f654514db",
+          "path": "src/ui/cockpit/drawers/price-history.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f3f80e3b9fb5595b2af8ad3037e545d6d996c9ef0c18a4cd03279f23530578b7",
+          "path": "src/ui/cockpit/rail/identity.props.test.tsx",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "f67951cf5b25d8eb0457d906fbc3279b2eda265d42aee55f5240d5152bf0a487",
+          "path": "e2e/d6/kill.spec.ts",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "fbc5a3afaa8f791abcbe22e5dbf947124cb450ea23dca8a3d5dbcfa0818620d4",
+          "path": "evidence/D08P/browser/T8P.30-mutation-r5.txt",
+          "exclude_reason": "unsupported_ext"
+        }
+      ]
+    },
+    "elapsed_ms": 16132
+  }
+}

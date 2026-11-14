@@ -1,0 +1,559 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 36 selected item(s).",
+  "summary": {
+    "files_reviewed": 36,
+    "comments": 6,
+    "total_tokens": 944080,
+    "input_tokens": 939299,
+    "output_tokens": 4781,
+    "cache_read_tokens": 141184,
+    "elapsed": "1m11s"
+  },
+  "tool_calls": {
+    "total": 79,
+    "by_tool": {
+      "code_comment": 5,
+      "code_search": 25,
+      "file_find": 1,
+      "file_read": 48
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/relocated/e2e-d4/expected-mark.ts",
+      "content": "`detail.anywhere` is not defined on the `detail` object exported by `e2e/support/detail/index.ts` (which this file imports through the support re-exports), nor by any of its spread modules. This introduces a TypeScript error and, if executed without type checking, a `TypeError` before the absence assertion runs. Add and export the intended helper before using it here.",
+      "existing_code": "    await expect(detail.anywhere(() =\u003e detail.todayFigure(page, 'Mark'))).toHaveCount(0);",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d2/integrity.ts",
+      "content": "`detail` re-exported through `e2e/d2/support.ts` has no `anywhere` member (see `e2e/support/detail/index.ts`). This causes a TypeScript error and, if executed without type checking, a `TypeError` before the assertion runs. Add the intended hidden-inclusive locator helper to the shared API before using it here.",
+      "existing_code": "    await expect(detail.anywhere(() =\u003e detail.recordEntryLink(app))).toHaveCount(0);",
+      "start_line": 114,
+      "end_line": 114,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d2/runtime-failure.ts",
+      "content": "The shared `detail` API does not define `anywhere`, so this recovery-only test now fails with `detail.anywhere is not a function` instead of checking that entry actions are absent. Implement/export the helper or use an existing hidden-inclusive locator.",
+      "existing_code": "    await expect(detail.anywhere(() =\u003e detail.recordEntryLink(page))).toHaveCount(0);",
+      "start_line": 41,
+      "end_line": 41,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d6/exit-requirements.ts",
+      "content": "`detail.anywhere` is not defined on the imported `detail` object: `e2e/d6/support.ts` ultimately re-exports `detail` from `e2e/support/detail/index.ts`, whose object and spread modules provide no `anywhere` member. This assertion therefore fails with `TypeError: detail.anywhere is not a function` (or TS2339 during typechecking), rather than checking absence. The new calls in `exit.ts`, `kill.ts`, and `runtime-failure.ts` have the same problem. Add and export the intended helper before using it in these tests.",
+      "existing_code": "    await expect(detail.anywhere(() =\u003e detail.lotMatchesHeading(again))).toHaveCount(0);",
+      "start_line": 94,
+      "end_line": 94,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d7/runtime-failure.ts",
+      "content": "`detail.anywhere` does not exist on the imported helper: `e2e/d7/support.ts` re-exports the `detail` object from `e2e/support/detail/index.ts`, which has no `anywhere` member (nor do its spread modules define one). This introduces a TypeScript error and, if executed without typechecking, a `TypeError` before the assertions run. The same issue affects the new calls in all five reviewed files. Add and export the intended synchronous locator-scope helper before migrating these callers, or use the existing supported helpers.",
+      "existing_code": "    const links = detail.anywhere(() =\u003e [detail.recordExpirationLink(page), detail.recordEntryLink(page), detail.recordExitLink(page)]);",
+      "start_line": 34,
+      "end_line": 34,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/relocated/e2e-d5/detail-debt.ts",
+      "content": "`detail.anywhere` is not defined on the imported `detail` object. The re-export chain leads to `e2e/support/detail/index.ts`, whose object and spread modules provide no `anywhere` method. These new calls therefore fail TypeScript checking and throw `TypeError: detail.anywhere is not a function` when executed, rather than checking absence. Add and export the intended helper before using it; the same issue affects the new calls in faults.ts, kill-offline.ts, review-debt.ts, and support.ts.",
+      "existing_code": "    await expect(detail.anywhere(() =\u003e detail.reflectionOwed(page))).toHaveCount(0);",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D2 end-to-end save, integrity, and runtime failure tests",
+      "files": [
+        "src/itg/relocated/e2e-d2/after-save.ts",
+        "src/itg/relocated/e2e-d2/integrity.ts",
+        "src/itg/relocated/e2e-d2/runtime-failure.ts"
+      ]
+    },
+    {
+      "label": "D4 end-to-end expected mark test",
+      "files": [
+        "src/itg/relocated/e2e-d4/expected-mark.ts"
+      ]
+    },
+    {
+      "label": "D5 end-to-end debt, fault, and offline tests",
+      "files": [
+        "src/itg/relocated/e2e-d5/detail-debt.ts",
+        "src/itg/relocated/e2e-d5/faults.ts",
+        "src/itg/relocated/e2e-d5/kill-offline.ts",
+        "src/itg/relocated/e2e-d5/review-debt.ts",
+        "src/itg/relocated/e2e-d5/support.ts"
+      ]
+    },
+    {
+      "label": "D6 end-to-end exit and failure tests",
+      "files": [
+        "src/itg/relocated/e2e-d6/exit-requirements.ts",
+        "src/itg/relocated/e2e-d6/exit.ts",
+        "src/itg/relocated/e2e-d6/kill.ts",
+        "src/itg/relocated/e2e-d6/runtime-failure.ts"
+      ]
+    },
+    {
+      "label": "D7 end-to-end settlement, accessibility, and failure tests",
+      "files": [
+        "src/itg/relocated/e2e-d7/kill.ts",
+        "src/itg/relocated/e2e-d7/responsive-a11y.ts",
+        "src/itg/relocated/e2e-d7/runtime-failure.ts",
+        "src/itg/relocated/e2e-d7/settlement-due.ts",
+        "src/itg/relocated/e2e-d7/support.ts"
+      ]
+    },
+    {
+      "label": "Cockpit drawer unit tests",
+      "files": [
+        "src/itg/relocated/unit-cockpit-drawers/payoff.tsx",
+        "src/itg/relocated/unit-cockpit-drawers/plan-risk.tsx",
+        "src/itg/relocated/unit-cockpit-drawers/price-history.props.tsx",
+        "src/itg/relocated/unit-cockpit-drawers/today.props.ts"
+      ]
+    },
+    {
+      "label": "Cockpit rail and journal unit tests",
+      "files": [
+        "src/itg/relocated/unit-cockpit-rail/conditions.props.ts",
+        "src/itg/relocated/unit-cockpit-rail/identity.props.tsx",
+        "src/itg/relocated/unit-cockpit/journal-cards.props.tsx",
+        "src/itg/relocated/unit-cockpit/track.tsx"
+      ]
+    },
+    {
+      "label": "Trade detail screen component unit tests",
+      "files": [
+        "src/itg/relocated/unit-screens-trade-detail/Banner.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Cockpit.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Identity.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Journal.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Payoff.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Position.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Result.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/SettlementDue.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Summary.tsx",
+        "src/itg/relocated/unit-screens-trade-detail/Valuation.tsx"
+      ]
+    }
+  ],
+  "session_id": "848229c8-a73b-4ebd-bbf8-3f6fde4e03e2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "848229c8-a73b-4ebd-bbf8-3f6fde4e03e2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "be027ba50490a24a669c23277bdf9d4c53bd9714",
+      "resolved_head": "222c486771e588abf03a0ce91582a3529ecff01f",
+      "exact_range": "be027ba50490a24a669c23277bdf9d4c53bd9714..222c486771e588abf03a0ce91582a3529ecff01f",
+      "source_artifact_sha256": "91ef0f67ee3707cf8fd1c18529586094eb842ed989d9c478b92aa4056b26549f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "7d579740667a61cd408a2fe6647d5c01864f7117f22bd9edf00e5511d947a5ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1a293f87b007a85485e1ee86844ad88723dc0b3b796e3b10cc2880c4b18adee5",
+          "path": "src/itg/relocated/unit-cockpit-drawers/plan-risk.tsx",
+          "fingerprint": "174ece20d655d5b3067a92d76e2471b46801041e02c8cb2b52de48325487e27c"
+        },
+        {
+          "item_id": "1ec22ff74b06b62df257ccfa525c7b68c9d03e1efeeace7e2dd3a6b49a74772c",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Identity.tsx",
+          "fingerprint": "68c5691c012e1eda9a18024acae032e47343a0fefc11d4795a1776805ab8c1bb"
+        },
+        {
+          "item_id": "259892ae785e7229cd4342fc8c6cac01414cb431fe0be6ff0deaa604c69456bc",
+          "path": "src/itg/relocated/e2e-d4/expected-mark.ts",
+          "fingerprint": "d0ea29a3eeeb37b82e07a60f0410d470e5f9a26f8756dbe1cd1382789f1d3eeb"
+        },
+        {
+          "item_id": "3376d6e68d9d4b0114102885384700e15eb413cd2d7d117ba49f374aed3dcb2c",
+          "path": "src/itg/relocated/e2e-d7/responsive-a11y.ts",
+          "fingerprint": "19958c0d3558f593dcdbd34c530780b43d601de9b9b3b837908968c727027286"
+        },
+        {
+          "item_id": "3ba5a3973c9a7b2449762ba60cad382e003734a0b6b5be3a68157a9e1b1aacdf",
+          "path": "src/itg/relocated/e2e-d5/detail-debt.ts",
+          "fingerprint": "5805bf075ccd2c83129ed35d1cac89b53348d6765995ea37f653e9ea90305daf"
+        },
+        {
+          "item_id": "5910e8cd695f2976e0aabcd69eb4475f0ff2838a93ce50d0a1fe05aebc1e1bec",
+          "path": "src/itg/relocated/e2e-d5/kill-offline.ts",
+          "fingerprint": "53eb5f95a90443cf07af4854ac66981703040b29e11d51a176366e93988e064d"
+        },
+        {
+          "item_id": "61b2db7bb0494bd3e314569eb19c94939e247b9bbdf00cf506885e7e680aaa5f",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Banner.tsx",
+          "fingerprint": "06d6af13228316beb0389557ae4d10ac8a49087cdd6e002882fdf141a8d74e4b"
+        },
+        {
+          "item_id": "6a8fad09b33deeb1027aa58528d1a595c688f9855f9cac36903080e82ae7eeb5",
+          "path": "src/itg/relocated/unit-cockpit-drawers/today.props.ts",
+          "fingerprint": "7b20e0445e7528d088a5b18bec3a3b0ccce29ffb005d3b59c6292d2436f4f1dd"
+        },
+        {
+          "item_id": "71eaebb4d53bc558a64607615514bcc07130f2d1f1c9502501e44ac385d04bd1",
+          "path": "src/itg/relocated/e2e-d2/after-save.ts",
+          "fingerprint": "7d4a27b40ecc4114a3fa5e032325a2e9f5075ba5e737440d14105a2948997b0e"
+        },
+        {
+          "item_id": "746f36e7f260ab73ab882f5d1920e6b67611bd630fec93d851bbb0c498329cd5",
+          "path": "src/itg/relocated/unit-cockpit-rail/identity.props.tsx",
+          "fingerprint": "aa616a79cd8cbffa05c6156374540eeffaa4bd6673ff8b32525f2fe80a5ee521"
+        },
+        {
+          "item_id": "752fc9a3edf78da353590068127fd00d9bb8c3d01e8a1d3279edcb4fbeb329fd",
+          "path": "src/itg/relocated/e2e-d7/settlement-due.ts",
+          "fingerprint": "bbfc944280fddc6626407c5073efe155de81e3951d6e567dcb79f49dd7891a0e"
+        },
+        {
+          "item_id": "7ac2b008c556e6a93f294634b99409719eae34b6430e9ee5190a9b9cffeb0b7e",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Result.tsx",
+          "fingerprint": "1823985c51b2070b8920e88fd68e5b25e8abf266876cd3917b4b5dc533948964"
+        },
+        {
+          "item_id": "80ad984bbbe1bf600b568cf59c7a4c1b08c62cc6202e952f8e5c3c12d17cb47a",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Cockpit.tsx",
+          "fingerprint": "8fe9e425371c4d2c31d6ea5634e3750863398a28d752696a860ab851349e6468"
+        },
+        {
+          "item_id": "81722cc4e4cfd24cdb9ba587d2183ad506e2eb79998d774a42097b537cf1214f",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Valuation.tsx",
+          "fingerprint": "f7e359de0a69a78bcd1344c5c6003f07adebfe48cd76c97a21becddf21e6d769"
+        },
+        {
+          "item_id": "885612e75bd0a018e6d1cc5636104ff43f8321be2cf00e53d52da59ef88ff79f",
+          "path": "src/itg/relocated/unit-cockpit-rail/conditions.props.ts",
+          "fingerprint": "4533c4140db5501ee27e190fbbecd37b2b96976a140cf444ae078d08ff9f8068"
+        },
+        {
+          "item_id": "8cbc2e221ee2fde9332a637fc075f27e212abaac743665aba6687f6b3dcbd8ca",
+          "path": "src/itg/relocated/e2e-d6/runtime-failure.ts",
+          "fingerprint": "b7b9fd71074ff961693d76e18597d1c90f66fd467a706718d4ef2694a54ce0e0"
+        },
+        {
+          "item_id": "8f594ca33ed1075999da88bea0b78551342947c3de90d7b9ed05b52804167848",
+          "path": "src/itg/relocated/unit-cockpit/journal-cards.props.tsx",
+          "fingerprint": "5ee50734607516d0493f08bd0ace8d0d56524f3fe99e03cf52ca91f26c1a12fe"
+        },
+        {
+          "item_id": "902fc84f62348e201548d0a8873a0aa2cacf688eec632fbcda187766dc94307a",
+          "path": "src/itg/relocated/e2e-d6/exit.ts",
+          "fingerprint": "d1a0f5fa6407935f176c5f758c078f4b338f5d5ce108c6391cac4134d7968735"
+        },
+        {
+          "item_id": "9d9673078e64f35384e5bf9f66c0294ef820038ee9427c3cdbd2446ce63828dd",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Position.tsx",
+          "fingerprint": "0245f6cc233c925f5183fab26d3e1d0edbabaf6e93da542c5238375ccb56babb"
+        },
+        {
+          "item_id": "9de46609d25c3ff0569303c7ce57943f0f2c9c506479541b8447b32a6f571623",
+          "path": "src/itg/relocated/e2e-d5/faults.ts",
+          "fingerprint": "c7c5019bfe22d7af9f574b2fbbfb9534fa6ebc61d7a722bfb3a646bec83cf220"
+        },
+        {
+          "item_id": "9f5525cc7c6ae021861026eda351091b43fd285d888fc4d3befb3d358c18a6e4",
+          "path": "src/itg/relocated/e2e-d7/support.ts",
+          "fingerprint": "df2f3d59a368bfc904e8545b6f622df6cccd71bbd7a9a75773ea674222e33dbf"
+        },
+        {
+          "item_id": "a31fa0ffe95ea1ce6f2a151b1d4d97effcf4cc3d01da838f74acc0dd611a2ed4",
+          "path": "src/itg/relocated/unit-cockpit/track.tsx",
+          "fingerprint": "a77d02ae3c732e2ca4b63c8cfc2cb1b52a118f559b3f2ef16ec12e5e419e40ce"
+        },
+        {
+          "item_id": "ac11d2f88b8ffd3f96a9722e0c5c46432f86b64ff77dae874697da65e6b44efe",
+          "path": "src/itg/relocated/e2e-d7/kill.ts",
+          "fingerprint": "727415256600681ebebca0a6d4f4822536a4834aa6dca535aa6fb173e810d047"
+        },
+        {
+          "item_id": "b963551d1356a4fe43ca3dd0e959084dff29e70f72c43db6d8ccd6532a9c9265",
+          "path": "src/itg/relocated/e2e-d6/exit-requirements.ts",
+          "fingerprint": "26cc22358927567addb6e36bfbdd9f8c68a3b3a573c488c04e63dc4f049e6c49"
+        },
+        {
+          "item_id": "bf17a605b3fbe4aad1c6ee219d2dc421af034c2a20430e648889ecd1f4402bf2",
+          "path": "src/itg/relocated/unit-cockpit-drawers/price-history.props.tsx",
+          "fingerprint": "31d959c2fe26143a93a29cf9851084a19d2243e915981188743cfb5168b89ee1"
+        },
+        {
+          "item_id": "c292deb7a3585b415ad28894c4b7aada5f20b23b466bf62b066153c2acac113b",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Summary.tsx",
+          "fingerprint": "060eed49cacebef9c3d51f8a666eb4ba967e7cc454662f25fc4a37eb5afca5ce"
+        },
+        {
+          "item_id": "c47cfd0538cdb5e32d6356a8ec3691b2934203a12ac28c45c48ea206e1aae10d",
+          "path": "src/itg/relocated/e2e-d5/support.ts",
+          "fingerprint": "7e40dfdabc7225420f1f77a1c2150c04e52fbbd3aed5eb78f943febc3d652344"
+        },
+        {
+          "item_id": "c966b10b6c6fd732b5e61a864b27a3974f8c58ff1f5e6529dc0eef59eb2b03f4",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Payoff.tsx",
+          "fingerprint": "4bfeda408ce09ba8b8ff518f1a574b874c9656ba387ebfe0094b97ab40e7327e"
+        },
+        {
+          "item_id": "cb7ed3f47874ded45f039120793c6dc0bd175f510d4c76b2e4418a92b3be2dcf",
+          "path": "src/itg/relocated/e2e-d2/integrity.ts",
+          "fingerprint": "b8190887342c5cdd8286964487f95239e1c480c02b874e69ee76fb8cbf55bd84"
+        },
+        {
+          "item_id": "cc08bde4d8c03d332fc1215f662e0204bfe9a0fc193cb9d4d38c1cb09023c336",
+          "path": "src/itg/relocated/e2e-d6/kill.ts",
+          "fingerprint": "13c4582c0c10852da9f1c9d74f436a919c81184d7c5992fd12841a56aa47b72a"
+        },
+        {
+          "item_id": "d6b6e70b441cf087cfb43ef0df7e4f8b602235d1a720a348c74b609c98b4ff7e",
+          "path": "src/itg/relocated/unit-cockpit-drawers/payoff.tsx",
+          "fingerprint": "74fe543e09adb95829c72e4121312f08ae4ed0b6494ac50f8b1f1fca6989c2a8"
+        },
+        {
+          "item_id": "d990bc5468cd4ccdc65c4d92c64482a3e0adc15d8f770b4e25def6d43e5c25e1",
+          "path": "src/itg/relocated/e2e-d2/runtime-failure.ts",
+          "fingerprint": "ef352c913479f25c679885fd65c51aa6e4263aa72ed1adc24beb32f54eb85670"
+        },
+        {
+          "item_id": "eccc34a1280572dc37f18d00e8ba61e052bccef5e74b98c2ce57ff3268c10e79",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Journal.tsx",
+          "fingerprint": "6a8520c8faa36b1893d8f0d6d75e6045cceee25688ed79a7a11660ea6acaf8be"
+        },
+        {
+          "item_id": "f5ba5cc01d18418c6cf8eb73702ba2538eeb9a8efb557fb7ef3acc0257e5f06a",
+          "path": "src/itg/relocated/e2e-d7/runtime-failure.ts",
+          "fingerprint": "08ac375676c4666fb1da23cd684791209cbda1ce9c198df92b2af92e36e68f32"
+        },
+        {
+          "item_id": "fbc1ef35d4f19a2598f8664d9718c2895dadab287a01cd880f578f5f836c3ff9",
+          "path": "src/itg/relocated/unit-screens-trade-detail/SettlementDue.tsx",
+          "fingerprint": "96b39a6a35d1cce129830a51dd59fc3bbad545328e3c17f519f93137d01bc9d7"
+        },
+        {
+          "item_id": "fe6f4c20c9bc572026f14644a4f2fa8b76371fa700f786f40f240ec337f23770",
+          "path": "src/itg/relocated/e2e-d5/review-debt.ts",
+          "fingerprint": "8dbf1a848ae8f35134a6ff42e7903bf44f17235c5dc8b6ba70e5fab2bca00d07"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1a293f87b007a85485e1ee86844ad88723dc0b3b796e3b10cc2880c4b18adee5",
+          "path": "src/itg/relocated/unit-cockpit-drawers/plan-risk.tsx",
+          "fingerprint": "174ece20d655d5b3067a92d76e2471b46801041e02c8cb2b52de48325487e27c"
+        },
+        {
+          "item_id": "1ec22ff74b06b62df257ccfa525c7b68c9d03e1efeeace7e2dd3a6b49a74772c",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Identity.tsx",
+          "fingerprint": "68c5691c012e1eda9a18024acae032e47343a0fefc11d4795a1776805ab8c1bb"
+        },
+        {
+          "item_id": "259892ae785e7229cd4342fc8c6cac01414cb431fe0be6ff0deaa604c69456bc",
+          "path": "src/itg/relocated/e2e-d4/expected-mark.ts",
+          "fingerprint": "d0ea29a3eeeb37b82e07a60f0410d470e5f9a26f8756dbe1cd1382789f1d3eeb"
+        },
+        {
+          "item_id": "3376d6e68d9d4b0114102885384700e15eb413cd2d7d117ba49f374aed3dcb2c",
+          "path": "src/itg/relocated/e2e-d7/responsive-a11y.ts",
+          "fingerprint": "19958c0d3558f593dcdbd34c530780b43d601de9b9b3b837908968c727027286"
+        },
+        {
+          "item_id": "3ba5a3973c9a7b2449762ba60cad382e003734a0b6b5be3a68157a9e1b1aacdf",
+          "path": "src/itg/relocated/e2e-d5/detail-debt.ts",
+          "fingerprint": "5805bf075ccd2c83129ed35d1cac89b53348d6765995ea37f653e9ea90305daf"
+        },
+        {
+          "item_id": "5910e8cd695f2976e0aabcd69eb4475f0ff2838a93ce50d0a1fe05aebc1e1bec",
+          "path": "src/itg/relocated/e2e-d5/kill-offline.ts",
+          "fingerprint": "53eb5f95a90443cf07af4854ac66981703040b29e11d51a176366e93988e064d"
+        },
+        {
+          "item_id": "61b2db7bb0494bd3e314569eb19c94939e247b9bbdf00cf506885e7e680aaa5f",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Banner.tsx",
+          "fingerprint": "06d6af13228316beb0389557ae4d10ac8a49087cdd6e002882fdf141a8d74e4b"
+        },
+        {
+          "item_id": "6a8fad09b33deeb1027aa58528d1a595c688f9855f9cac36903080e82ae7eeb5",
+          "path": "src/itg/relocated/unit-cockpit-drawers/today.props.ts",
+          "fingerprint": "7b20e0445e7528d088a5b18bec3a3b0ccce29ffb005d3b59c6292d2436f4f1dd"
+        },
+        {
+          "item_id": "71eaebb4d53bc558a64607615514bcc07130f2d1f1c9502501e44ac385d04bd1",
+          "path": "src/itg/relocated/e2e-d2/after-save.ts",
+          "fingerprint": "7d4a27b40ecc4114a3fa5e032325a2e9f5075ba5e737440d14105a2948997b0e"
+        },
+        {
+          "item_id": "746f36e7f260ab73ab882f5d1920e6b67611bd630fec93d851bbb0c498329cd5",
+          "path": "src/itg/relocated/unit-cockpit-rail/identity.props.tsx",
+          "fingerprint": "aa616a79cd8cbffa05c6156374540eeffaa4bd6673ff8b32525f2fe80a5ee521"
+        },
+        {
+          "item_id": "752fc9a3edf78da353590068127fd00d9bb8c3d01e8a1d3279edcb4fbeb329fd",
+          "path": "src/itg/relocated/e2e-d7/settlement-due.ts",
+          "fingerprint": "bbfc944280fddc6626407c5073efe155de81e3951d6e567dcb79f49dd7891a0e"
+        },
+        {
+          "item_id": "7ac2b008c556e6a93f294634b99409719eae34b6430e9ee5190a9b9cffeb0b7e",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Result.tsx",
+          "fingerprint": "1823985c51b2070b8920e88fd68e5b25e8abf266876cd3917b4b5dc533948964"
+        },
+        {
+          "item_id": "80ad984bbbe1bf600b568cf59c7a4c1b08c62cc6202e952f8e5c3c12d17cb47a",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Cockpit.tsx",
+          "fingerprint": "8fe9e425371c4d2c31d6ea5634e3750863398a28d752696a860ab851349e6468"
+        },
+        {
+          "item_id": "81722cc4e4cfd24cdb9ba587d2183ad506e2eb79998d774a42097b537cf1214f",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Valuation.tsx",
+          "fingerprint": "f7e359de0a69a78bcd1344c5c6003f07adebfe48cd76c97a21becddf21e6d769"
+        },
+        {
+          "item_id": "885612e75bd0a018e6d1cc5636104ff43f8321be2cf00e53d52da59ef88ff79f",
+          "path": "src/itg/relocated/unit-cockpit-rail/conditions.props.ts",
+          "fingerprint": "4533c4140db5501ee27e190fbbecd37b2b96976a140cf444ae078d08ff9f8068"
+        },
+        {
+          "item_id": "8cbc2e221ee2fde9332a637fc075f27e212abaac743665aba6687f6b3dcbd8ca",
+          "path": "src/itg/relocated/e2e-d6/runtime-failure.ts",
+          "fingerprint": "b7b9fd71074ff961693d76e18597d1c90f66fd467a706718d4ef2694a54ce0e0"
+        },
+        {
+          "item_id": "8f594ca33ed1075999da88bea0b78551342947c3de90d7b9ed05b52804167848",
+          "path": "src/itg/relocated/unit-cockpit/journal-cards.props.tsx",
+          "fingerprint": "5ee50734607516d0493f08bd0ace8d0d56524f3fe99e03cf52ca91f26c1a12fe"
+        },
+        {
+          "item_id": "902fc84f62348e201548d0a8873a0aa2cacf688eec632fbcda187766dc94307a",
+          "path": "src/itg/relocated/e2e-d6/exit.ts",
+          "fingerprint": "d1a0f5fa6407935f176c5f758c078f4b338f5d5ce108c6391cac4134d7968735"
+        },
+        {
+          "item_id": "9d9673078e64f35384e5bf9f66c0294ef820038ee9427c3cdbd2446ce63828dd",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Position.tsx",
+          "fingerprint": "0245f6cc233c925f5183fab26d3e1d0edbabaf6e93da542c5238375ccb56babb"
+        },
+        {
+          "item_id": "9de46609d25c3ff0569303c7ce57943f0f2c9c506479541b8447b32a6f571623",
+          "path": "src/itg/relocated/e2e-d5/faults.ts",
+          "fingerprint": "c7c5019bfe22d7af9f574b2fbbfb9534fa6ebc61d7a722bfb3a646bec83cf220"
+        },
+        {
+          "item_id": "9f5525cc7c6ae021861026eda351091b43fd285d888fc4d3befb3d358c18a6e4",
+          "path": "src/itg/relocated/e2e-d7/support.ts",
+          "fingerprint": "df2f3d59a368bfc904e8545b6f622df6cccd71bbd7a9a75773ea674222e33dbf"
+        },
+        {
+          "item_id": "a31fa0ffe95ea1ce6f2a151b1d4d97effcf4cc3d01da838f74acc0dd611a2ed4",
+          "path": "src/itg/relocated/unit-cockpit/track.tsx",
+          "fingerprint": "a77d02ae3c732e2ca4b63c8cfc2cb1b52a118f559b3f2ef16ec12e5e419e40ce"
+        },
+        {
+          "item_id": "ac11d2f88b8ffd3f96a9722e0c5c46432f86b64ff77dae874697da65e6b44efe",
+          "path": "src/itg/relocated/e2e-d7/kill.ts",
+          "fingerprint": "727415256600681ebebca0a6d4f4822536a4834aa6dca535aa6fb173e810d047"
+        },
+        {
+          "item_id": "b963551d1356a4fe43ca3dd0e959084dff29e70f72c43db6d8ccd6532a9c9265",
+          "path": "src/itg/relocated/e2e-d6/exit-requirements.ts",
+          "fingerprint": "26cc22358927567addb6e36bfbdd9f8c68a3b3a573c488c04e63dc4f049e6c49"
+        },
+        {
+          "item_id": "bf17a605b3fbe4aad1c6ee219d2dc421af034c2a20430e648889ecd1f4402bf2",
+          "path": "src/itg/relocated/unit-cockpit-drawers/price-history.props.tsx",
+          "fingerprint": "31d959c2fe26143a93a29cf9851084a19d2243e915981188743cfb5168b89ee1"
+        },
+        {
+          "item_id": "c292deb7a3585b415ad28894c4b7aada5f20b23b466bf62b066153c2acac113b",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Summary.tsx",
+          "fingerprint": "060eed49cacebef9c3d51f8a666eb4ba967e7cc454662f25fc4a37eb5afca5ce"
+        },
+        {
+          "item_id": "c47cfd0538cdb5e32d6356a8ec3691b2934203a12ac28c45c48ea206e1aae10d",
+          "path": "src/itg/relocated/e2e-d5/support.ts",
+          "fingerprint": "7e40dfdabc7225420f1f77a1c2150c04e52fbbd3aed5eb78f943febc3d652344"
+        },
+        {
+          "item_id": "c966b10b6c6fd732b5e61a864b27a3974f8c58ff1f5e6529dc0eef59eb2b03f4",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Payoff.tsx",
+          "fingerprint": "4bfeda408ce09ba8b8ff518f1a574b874c9656ba387ebfe0094b97ab40e7327e"
+        },
+        {
+          "item_id": "cb7ed3f47874ded45f039120793c6dc0bd175f510d4c76b2e4418a92b3be2dcf",
+          "path": "src/itg/relocated/e2e-d2/integrity.ts",
+          "fingerprint": "b8190887342c5cdd8286964487f95239e1c480c02b874e69ee76fb8cbf55bd84"
+        },
+        {
+          "item_id": "cc08bde4d8c03d332fc1215f662e0204bfe9a0fc193cb9d4d38c1cb09023c336",
+          "path": "src/itg/relocated/e2e-d6/kill.ts",
+          "fingerprint": "13c4582c0c10852da9f1c9d74f436a919c81184d7c5992fd12841a56aa47b72a"
+        },
+        {
+          "item_id": "d6b6e70b441cf087cfb43ef0df7e4f8b602235d1a720a348c74b609c98b4ff7e",
+          "path": "src/itg/relocated/unit-cockpit-drawers/payoff.tsx",
+          "fingerprint": "74fe543e09adb95829c72e4121312f08ae4ed0b6494ac50f8b1f1fca6989c2a8"
+        },
+        {
+          "item_id": "d990bc5468cd4ccdc65c4d92c64482a3e0adc15d8f770b4e25def6d43e5c25e1",
+          "path": "src/itg/relocated/e2e-d2/runtime-failure.ts",
+          "fingerprint": "ef352c913479f25c679885fd65c51aa6e4263aa72ed1adc24beb32f54eb85670"
+        },
+        {
+          "item_id": "eccc34a1280572dc37f18d00e8ba61e052bccef5e74b98c2ce57ff3268c10e79",
+          "path": "src/itg/relocated/unit-screens-trade-detail/Journal.tsx",
+          "fingerprint": "6a8520c8faa36b1893d8f0d6d75e6045cceee25688ed79a7a11660ea6acaf8be"
+        },
+        {
+          "item_id": "f5ba5cc01d18418c6cf8eb73702ba2538eeb9a8efb557fb7ef3acc0257e5f06a",
+          "path": "src/itg/relocated/e2e-d7/runtime-failure.ts",
+          "fingerprint": "08ac375676c4666fb1da23cd684791209cbda1ce9c198df92b2af92e36e68f32"
+        },
+        {
+          "item_id": "fbc1ef35d4f19a2598f8664d9718c2895dadab287a01cd880f578f5f836c3ff9",
+          "path": "src/itg/relocated/unit-screens-trade-detail/SettlementDue.tsx",
+          "fingerprint": "96b39a6a35d1cce129830a51dd59fc3bbad545328e3c17f519f93137d01bc9d7"
+        },
+        {
+          "item_id": "fe6f4c20c9bc572026f14644a4f2fa8b76371fa700f786f40f240ec337f23770",
+          "path": "src/itg/relocated/e2e-d5/review-debt.ts",
+          "fingerprint": "8dbf1a848ae8f35134a6ff42e7903bf44f17235c5dc8b6ba70e5fab2bca00d07"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": []
+    },
+    "elapsed_ms": 71428
+  }
+}
