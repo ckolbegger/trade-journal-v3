@@ -256,6 +256,23 @@ describe('an older schema (T8.3-B3)', () => {
   });
 });
 
+describe('paging key (T8.3-B4)', () => {
+  it('should page by the key read before onBatch sees the batch', async () => {
+    const { p, database } = await workspaceWith(Array.from({ length: 1200 }, (_, i) => journalType(i + 1)));
+    const delivered: unknown[] = [];
+
+    const result = await p.readExportSnapshot(database, exportLayoutFor(7)!, (batch) => {
+      if (batch.store !== 'journalTypes') return;
+      delivered.push(...batch.records.map((r) => r['id']));
+      // A callback that rewrites the last record's key field must not move the next page.
+      (batch.records[batch.records.length - 1] as Record<string, unknown>)['id'] = 'zzz';
+    });
+
+    expect(result.kind).toBe('Read');
+    expect(delivered).toEqual(Array.from({ length: 1200 }, (_, i) => journalType(i + 1)[1]['id']));
+  });
+});
+
 describe('layouts per schema (A149)', () => {
   it('should read a schema-5 database with the schema-5 layout, and return UnknownLayout for a database whose meta names schema 9', async () => {
     const v5 = await databaseAtSchema(5, [

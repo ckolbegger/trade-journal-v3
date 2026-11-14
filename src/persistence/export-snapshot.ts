@@ -116,6 +116,8 @@ export async function readExportSnapshot(
         if (store === undefined) return;
         const range = after === undefined ? undefined : IDBKeyRange.lowerBound(after, true);
         watch(store, tx.objectStore(store).getAll(range, EXPORT_BATCH_SIZE) as IDBRequest<Record<string, unknown>[]>, (rows) => {
+          // Read before onBatch: it may be handed the original records and change their key fields.
+          const lastKey = rows.length === EXPORT_BATCH_SIZE ? keyOf(store, rows[rows.length - 1]!) : undefined;
           if (rows.length > 0) {
             const returned: unknown = onBatch({ store, records: rows.map((row) => withoutPrivateFields(row, layout.privateFields[store])) });
             if (typeof (returned as { then?: unknown } | undefined)?.then === 'function') {
@@ -125,8 +127,8 @@ export async function readExportSnapshot(
               return;
             }
           }
-          if (rows.length < EXPORT_BATCH_SIZE) readFrom(index + 1, undefined);
-          else readFrom(index, keyOf(store, rows[rows.length - 1]!));
+          if (lastKey === undefined) readFrom(index + 1, undefined);
+          else readFrom(index, lastKey);
         });
       };
 
