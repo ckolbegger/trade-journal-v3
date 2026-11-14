@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { BackupProgress, ConfirmBackupResult, ExportBackupResult, FileSelectionPort } from '../../app/types.ts';
 import type { ReadinessFailure } from '../../delivery/runtime-not-writable.ts';
 import { PageTitle } from '../PageTitle.tsx';
@@ -44,10 +44,16 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
   const [making, setMaking] = useState<BackupProgress | 'Starting' | undefined>();
   const [failedStage, setFailedStage] = useState<'Read' | 'Offer' | undefined>();
 
+  // Counts downloads, so a check that finishes after a newer download can be told apart and dropped.
+  const downloadCount = useRef(0);
+
   const download = async () => {
+    downloadCount.current += 1;
     setMaking('Starting');
     setFailedStage(undefined);
     setDownloaded(undefined);
+    setOutcome(undefined);
+    setChecking(undefined);
     // A refused, conflicting or throwing export left the Workspace as it was: say it was not made.
     const result = await facade.exportBackup({ onProgress: setMaking }).catch((): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null }));
     setMaking(undefined);
@@ -58,12 +64,14 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
   const verify = async (expected: Downloaded) => {
     const chosen = await selectFile.choose();
     if (chosen.kind === 'Cancelled') return;
+    const forDownload = downloadCount.current;
     setChecking('Starting');
     setOutcome(undefined);
     // A file the check could not even read is the Unreadable case.
     const result = await facade
       .confirmBackup({ file: chosen.file, expectedBinding: expected.sourceBinding, expectedFullDigest: expected.fullDigest, onProgress: setChecking })
       .catch((): ConfirmBackupResult => ({ kind: 'NotVerified', reason: 'Unreadable' }));
+    if (forDownload !== downloadCount.current) return;
     setChecking(undefined);
     setOutcome(result.kind === 'Completed' ? { kind: 'Completed', at: result.receipt.completedAt } : result);
   };

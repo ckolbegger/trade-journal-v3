@@ -138,6 +138,34 @@ describe('verify', () => {
     expect(files.requests()).toBe(3);
   });
 
+  it('should not carry an earlier verification result over to a new download, nor apply a verification that finishes after a new download', async () => {
+    const ctx = setup();
+    const { facade, files, user } = ctx;
+    await downloadFirst(ctx);
+    files.choose(new File(['x'], 'chosen.gz'));
+    facade.respond('confirmBackup', { kind: 'Completed', receipt: RECEIPT });
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    expect(await screen.findByText(/Backup complete/)).toBeTruthy();
+    // Backup B replaces backup A: A's result must not show under B.
+    facade.respond('exportBackup', { ...DOWNLOADED, fileName: 'second.tjbackup.gz' });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    expect(await screen.findByText('second.tjbackup.gz')).toBeTruthy();
+    expect(screen.queryByText(/Backup complete/)).toBeNull();
+    // A check still running when B is downloaded must not write its result under B.
+    let finish: (result: unknown) => void = () => undefined;
+    facade.respond('confirmBackup', () => new Promise((resolve) => (finish = resolve as never)));
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText('Checking the file');
+    facade.respond('exportBackup', { ...DOWNLOADED, fileName: 'third.tjbackup.gz' });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    expect(await screen.findByText('third.tjbackup.gz')).toBeTruthy();
+    await act(() => {
+      finish({ kind: 'Completed', receipt: RECEIPT });
+      return Promise.resolve();
+    });
+    expect(screen.queryByText(/Backup complete/)).toBeNull();
+  });
+
   it('should forget the Downloaded result when the page is left, so Verify backup is offered again only after a new download', async () => {
     const ctx = setup();
     await downloadFirst(ctx);
