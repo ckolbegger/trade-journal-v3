@@ -1,4 +1,6 @@
+import { Temporal } from 'temporal-polyfill';
 import { z } from 'zod';
+import { parseDecimal } from '../../domain/values/decimal.ts';
 import { canonicalJson } from '../../backup/format/canonical-json.ts';
 import { sha256Hex } from '../../delivery/inventory.ts';
 import type { RecordSource, SectionRecord } from '../../persistence/index.ts';
@@ -26,8 +28,17 @@ export type ParsedRestoreBatch = { readonly kind: 'Parsed'; readonly records: re
 // of the artifact, so they are extras. A Trade's `facts` is a list of fact kinds of any length and
 // each fact carries its own Instrument: how many legs a Strategy has is the section validator's rule
 // and `assessPlan`'s, never this schema's.
-const instant = z.string();
-const decimal = z.string();
+// Instants and decimals are checked with the grammar the domain reads them with (`parseDecimal`,
+// `Temporal.Instant.from`), so derivation never meets a stored value it cannot read.
+const instant = z.string().refine((text) => {
+  try {
+    Temporal.Instant.from(text);
+    return true;
+  } catch {
+    return false;
+  }
+});
+const decimal = z.string().refine((text) => parseDecimal(text).ok);
 const stock = z.strictObject({ kind: z.literal('Stock'), symbol: z.string() });
 const option = z.strictObject({
   kind: z.literal('Option'),

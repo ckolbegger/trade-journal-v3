@@ -57,6 +57,29 @@ describe('record parsing at schema 7 (P31)', () => {
   });
 });
 
+describe('record parsing of decimal and instant formats (T8.6-B1)', () => {
+  it('should report a malformed record for a Trade fact with an unreadable price or time', () => {
+    const bad = exported();
+    const facts = factsOf(tradeOf(bad, 'fx-0049'));
+    const at = facts.findIndex((f) => f.kind === 'Execution');
+    facts[at]!.versions[0]!.value['price'] = 'not-a-number';
+    facts[at]!.versions[0]!.value['economicTime'] = 'not-a-time';
+    const line = bad.findIndex((r) => r['tradeId'] === 'fx-0049') + 3;
+    const base = `facts.${at}.versions.0.value`;
+    expect(preparation.parse('trades', linesOf(bad))).toEqual({
+      kind: 'Rejected',
+      issues: [
+        { code: 'MalformedRecord', line, store: 'trades', path: `${base}.economicTime` },
+        { code: 'MalformedRecord', line, store: 'trades', path: `${base}.price` },
+      ],
+    });
+
+    const topLevel = exported();
+    topLevel[1]!['planTime'] = '2026-13-45';
+    expect(preparation.parse('trades', linesOf(topLevel))).toEqual({ kind: 'Rejected', issues: [{ code: 'MalformedRecord', line: 4, store: 'trades', path: 'planTime' }] });
+  });
+});
+
 describe('record parsing is leg-generic', () => {
   it('should accept a Trade whose facts hold any number of Planned Legs, Executions and Expirations, each with its own option Instrument', () => {
     const option = (strike: string) => ({ kind: 'Option', symbol: 'ABC', root: 'ABC', expiration: '2026-12-18', strike, right: 'Call', multiplier: 100 });
