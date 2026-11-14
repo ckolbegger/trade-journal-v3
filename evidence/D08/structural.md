@@ -126,7 +126,7 @@ T8.8 discards a rejected candidate with the existing `discardCandidate`.
 | T8.7-B5 (Doubtful) | `persistence.ts:485` `createRestoreCandidate` doesn't refuse a superseded session | a superseded tab creates a candidate | it should refuse to create a Restore candidate in a superseded session |
 
 - **T8.7-B1** `0d7fd672`: red ("expected { kind: 'AlreadyInitialized', … } to deeply equal { kind: 'Activated' }") then green. A repeat activation of the candidate the pointer already names returns `Activated` (idempotent; A135's AlreadyInitialized is for a pointer naming another database). Lane tier: unit 168 / 1776, integration 106 / 229, checks 14 of 14. ocr (session `1033f50b-d368-438d-9854-99310e50c11e`, 2 files): **No findings.** Raw: `ocr/T8.7-B1-0d7fd672.json`.
-- **T8.7-B2** `0d31af59` (a test gap): a first-run pass, flagged. The behavior was built in T8.7. Mutation: removed the earlier database's deletion in `createRestoreCandidate`. Failure: "expected [ 'tj-root', 'tj-ws-r-0001', … ] to deeply equal [ 'tj-root', 'tj-ws-r-0002' ]". The code was restored, and its diff was empty. Lane tier: unit 168 / 1777, integration 106 / 229, checks 14 of 14.
+- **T8.7-B2** `0d31af59` (a test gap): a first-run pass, flagged. The behavior was built in T8.7. Mutation: removed the earlier database's deletion in `createRestoreCandidate`. Failure: "expected [ 'tj-root', 'tj-ws-r-0001', … ] to deeply equal [ 'tj-root', 'tj-ws-r-0002' ]". The code was restored, and its diff was empty. Lane tier: unit 168 / 1777, integration 106 / 229, checks 14 of 14. ocr (session `c85ea3eb-df51-4090-99de-f3290265b481`, 1 file): **No findings.** Raw: `ocr/T8.7-B2-0d31af59.json`.
 
 ## T8.12 Backup page
 
@@ -198,6 +198,7 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 - **T8.3 merged** 2026-11-14: lane PS rebased onto `fb6df610` and fast-forwarded (`bd46514a` … `a379a2ca`). Lane removed; it is recreated from the new head for T8.7.
 - **merge-3** (T8.3 merged; source at `a0240277`; stage headers show later HEADs, but `git diff a0240277 4b3cad5f -- src tests e2e tools package.json` is empty, since only plan and evidence commits landed): unit 167 / 1772, integration 106 / 229, browser full tier (first matching path since `683f10b2`: `src/persistence/export-layout.ts`) browser-1 126 passed, browser-2 98 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-3-*.txt`.
+- **merge-4** (T8.2 merged; at `ac58669b`): unit 171 / 1778, integration 106 / 229, browser task tier (no changed path since `a0240277` on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-4-*.txt`.
 - **T8.2 merged** 2026-11-14: `1b12c298` fast-forwarded onto `4b3cad5f` after merge-3. T8.6 continues on lane FM above it.
 - **merge-2** (T8.1 merged; at `683f10b2`): unit 166 / 1763, integration 106 / 229, browser task tier (no changed path since `fdc5e858` is on the full-tier list) 5 passed, checks 14 of 14. Complete. Outputs `suite-runs/merge-2-*.txt`.
 - **T8.1 merged** 2026-11-14: lane F rebased onto `f087f274` and fast-forwarded (`b96da61c` … `daa1b0d4`). Lane removed. `npm install` in the main worktree (A226) changed neither `package.json` nor `package-lock.json`.
