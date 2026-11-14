@@ -68,4 +68,13 @@ describe('Payoff drawer (W14)', () => {
     render(<PayoffDrawer view={optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-23', closeInstant: '2026-11-23T21:00:00Z', underlyingMark: '46.00' })} />);
     expect(termIn("Value at expiration at MNO's latest Mark")).toBe('Settlement Due: MNO 20 Nov 2026 45 Put');
   });
+
+  it('should not say a Mark is missing for the value at expiration before the first Marks, and say when they are due', () => {
+    const base = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], { ...THURSDAY, underlyingMark: undefined });
+    const view = { ...base, current: { ...base.current, firstMarksDue: '2026-11-23' } };
+    render(<PayoffDrawer view={view} />);
+    const term = screen.getByText("Value at expiration at XYZ's latest Mark", { selector: 'dt' });
+    expect(term.nextElementSibling?.textContent).toBe('First Marks are due once the Mon Nov 23 session ends.');
+    expect(document.body.textContent).not.toContain('Mark missing');
+  });
 });

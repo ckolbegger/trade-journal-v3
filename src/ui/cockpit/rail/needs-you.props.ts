@@ -48,10 +48,11 @@ function alertItems(view: OpenTradeDetail): NeedsYouItem[] {
   });
 }
 
-// The existing "Mark missing" link to the Review, for a Mark still missing at the Expected Mark Date.
+// The existing "Mark missing" link to the Review, for a Mark still missing at the Expected Mark Date. Before the first Marks nothing was held at
+// that close, so no Mark is due for it: the note stands alone (T8P.28's field, as the Today drawer reads it).
 function markMissingItems(view: OpenTradeDetail, timeZone: string): NeedsYouItem[] {
-  const { evaluation, markResolution } = view.current;
-  if (markResolution?.kind !== 'Missing') return [];
+  const { evaluation, markResolution, firstMarksDue } = view.current;
+  if (markResolution?.kind !== 'Missing' || firstMarksDue !== undefined) return [];
   const { instrument } = evaluation.observation;
   const sentence = text(unavailableWords({ reason: 'MarkMissing', instrument, date: evaluation.valuationDate }, 'sentence', timeZone));
   return [{ kind: 'MarkMissing', id: 'mark-missing', text: sentence, reviewTo: `/review?trade=${encodeURIComponent(view.tradeId)}&instrument=${encodeURIComponent(instrument.symbol)}` }];

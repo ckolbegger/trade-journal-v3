@@ -103,6 +103,16 @@ describe('Needs you (W7)', () => {
     expect(within(marked).queryByRole('link', { hidden: true })).toBeNull();
   });
 
+  it('should show only the first-Marks note, with no Mark missing link, for a Mark missing at a close where nothing was held', () => {
+    // Opened after the last close: the Expected Mark Date's Mark is missing, but nothing was held then, and Trade Views states the first Marks date.
+    const view = os2({ ...TUESDAY, contractMark: undefined });
+    const beforeMarks: OpenTradeDetail = { ...view, current: { ...view.current, firstMarksDue: '2026-10-14' } };
+    const card = renderCard(beforeMarks)!;
+    expect(within(card).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['First Marks are due once the Wed Oct 14 session ends.']);
+    expect(card.querySelector('a')).toBeNull();
+    expect(within(card).queryByText(/Mark missing/)).toBeNull();
+  });
+
   it('should hold the Settlement Due panel, with Record expiration only while Writable', () => {
     // Friday 2026-11-20 after the close: the expiration date, whose contracts are due for settlement.
     const friday: OptionFrames = { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' };

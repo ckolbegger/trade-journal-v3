@@ -4,6 +4,7 @@ import type { ExpirationPayoffView, TradeDetailView } from '../../../app/types.t
 import type { Rational } from '../../../domain/values/index.ts';
 import { notApplicableWords, text } from '../../calculation-words.ts';
 import { calculation } from '../../figures.ts';
+import { shortDate } from '../../format.ts';
 import { extremumText, rangeText, signedMoney, valueAtCloseTerm, valueAtCloseText, zeroText } from '../../screens/payoff-text.ts';
 import type { PayoffDrawerProps, PayoffLineProps } from './payoff.types.ts';
 
@@ -37,6 +38,12 @@ function lineOf(kind: 'Planned' | 'Current', symbol: string, view: ExpirationPay
   };
 }
 
+// Why there is no value at the latest Mark: before the first Marks nothing was held at the Expected Mark Date's close, so no Mark is missing and the
+// words are W7's, naming the date Trade Views states (`firstMarksDue`); otherwise the module's words.
+function unavailableValue(firstMarksDue: string | undefined, moduleWords: string): string {
+  return firstMarksDue === undefined ? moduleWords : `First Marks are due once the ${shortDate(firstMarksDue)} session ends.`;
+}
+
 // What the shell hands the drawer is a Trade Detail view (the placeholder type leaves it unknown), and an incoherent Detail has no payoff.
 export function payoffDrawerProps(shellView: unknown): PayoffDrawerProps | undefined {
   const view = shellView as TradeDetailView;
@@ -53,7 +60,7 @@ export function payoffDrawerProps(shellView: unknown): PayoffDrawerProps | undef
     symbol,
     ...(marker && { marker }),
     ...(atMark?.kind === 'Value' && { valueAtExpiration: { kind: 'Sentence' as const, text: valueAtCloseText(symbol, atMark.value) } }),
-    ...(atMark?.kind === 'Unavailable' && { valueAtExpiration: { kind: 'Unavailable' as const, term: valueAtCloseTerm(symbol), value: calculation(atMark, () => '') } }),
+    ...(atMark?.kind === 'Unavailable' && { valueAtExpiration: { kind: 'Unavailable' as const, term: valueAtCloseTerm(symbol), value: unavailableValue('current' in view && 'firstMarksDue' in view.current ? view.current.firstMarksDue : undefined,calculation(atMark, () => '')) } }),
     planned: lineOf('Planned', symbol, planned.value, xMax),
     ...(current.kind === 'Value' && { current: { kind: 'Line' as const, line: lineOf('Current', symbol, current.value, xMax) } }),
     ...(current.kind === 'NotApplicable' && { current: { kind: 'NotApplicable' as const, text: text(notApplicableWords(current, 'figure')) } }),
