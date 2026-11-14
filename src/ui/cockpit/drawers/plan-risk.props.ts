@@ -46,11 +46,12 @@ function planGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup {
 }
 
 // Each condition's Risk to stop or Reward to target, one line per condition in Plan order (the Risk and reward section's Distance column).
-// The rail's card keeps only the nearest (A207). A condition with no reading shows "—", as the table did.
+// The rail's card keeps only the nearest (A207).
 function conditionFiguresGroup(view: TradeDetailView): PlanRiskGroup | undefined {
   if (!('current' in view) || 'terminalDisposition' in view) return undefined;
   const { conditions } = view.current.evaluation;
-  const linesOf = (role: 'Stop' | 'Target') => conditions.filter((c) => c.role === role).map((c) => (c.result.kind === 'Value' ? measureText(c.result.value.distance) : '—'));
+  // A figure with no reading says why at the figure length, where it lives (A222).
+  const linesOf = (role: 'Stop' | 'Target') => conditions.filter((c) => c.role === role).map((c) => calculation(c.result, (reading) => measureText(reading.distance)));
   const rows = [
     { label: 'Risk to stop', value: linesOf('Stop') },
     { label: 'Reward to target', value: linesOf('Target') },

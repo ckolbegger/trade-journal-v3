@@ -196,10 +196,10 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(linesOf('Risk to stop')).toEqual(['$0.00 · 0.00R']);
     cleanup();
 
-    // Without a Mark no distance is invented.
+    // Without a Mark no distance is invented: the reason shows at the figure length (A222, T8P.23-B8).
     await planAt(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })));
-    expect(linesOf('Risk to stop')).toEqual(['—']);
-    expect(linesOf('Reward to target')).toEqual(['—']);
+    expect(linesOf('Risk to stop')).toEqual(['Mark missing: XYZ, Tue Oct 13']);
+    expect(linesOf('Reward to target')).toEqual(['Mark missing: XYZ, Tue Oct 13']);
     cleanup();
 
     // Wednesday 10-14, O-S2: MNO 43.20 and the put 3.70, four conditions, two to each role.

@@ -291,4 +291,18 @@ describe('Today drawer: figures moved from the retired Valuation section and con
     expect(termValue(mno, 'Value at expiration')).toBe('$4.00');
     expect(termValue(mno, 'Distance on MNO')).toBe('2.20');
   });
+
+  // A222 (T8P.23-B8): an Underlying condition with no reading says why at the figure length, never a bare "—".
+  it('should word an unavailable condition result in the distance on the Underlying line at the figure length, with no bare dash', () => {
+    const open = optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY);
+    const reason = { reason: 'MarkMissing', instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-11-19' } as const;
+    const conditions = open.current.evaluation.conditions.map((c) => ({ ...c, result: { kind: 'Unavailable', ...reason } as const }));
+    drawer({ ...open, current: { ...open.current, evaluation: { ...open.current.evaluation, conditions } } });
+    const lines = within(screen.getByRole('list', { name: 'Conditions' })).getAllByRole('listitem');
+    expect(lines).toHaveLength(2);
+    for (const line of lines) {
+      expect(termValue(line, 'Distance on XYZ')).toBe('Mark missing: XYZ, Thu Nov 19');
+      expect(line.textContent).not.toContain('—');
+    }
+  });
 });

@@ -132,12 +132,13 @@ function trackOf(
 function conditionLineOf(view: OpenTradeDetail, condition: OpenTradeDetail['current']['evaluation']['conditions'][number]): PriceTrackProps['conditionLines'][number] {
   const symbol = view.plan.underlying;
   const basis = (condition.role === 'Stop' ? view.baseline.stopBasis : view.baseline.targetBasis)[Number(condition.id.split('-')[1]) - 1];
-  const reading = condition.result.kind === 'Value' ? condition.result.value : undefined;
+  // A result with no reading says why at the figure length (A222); only a reading without an Underlying distance keeps the dash.
+  const distance = calculation(condition.result, (reading) => (reading.underlying ? underlyingPrice(reading.underlying.distance) : '—'));
   return {
     label: `${condition.role} on ${symbol}`,
     figures: [
       { term: 'Value at expiration', value: basis?.valueAtExpiration ? money(basis.valueAtExpiration) : '—' },
-      { term: `Distance on ${symbol}`, value: reading?.underlying ? underlyingPrice(reading.underlying.distance) : '—' },
+      { term: `Distance on ${symbol}`, value: distance },
     ],
   };
 }

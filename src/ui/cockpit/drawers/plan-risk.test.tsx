@@ -2,11 +2,11 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
+import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import { THURSDAY, useFixedClock } from '../../screens/trade-detail/test-support.ts';
+import { THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import { PlanRiskDrawer } from './plan-risk.tsx';
 
 afterEach(cleanup);
@@ -81,5 +81,21 @@ describe('Plan and Risk drawer: figures moved from the retired Summary card and 
     const view = { ...base, entryQuality: { kind: 'Value', value: { ...quality, slippage: { kind: 'NotApplicable', reason: 'EntryNotResolved' } } } } as unknown as ComponentProps<typeof PlanRiskDrawer>['view'];
     render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
     expect(valueOf(screen.getByRole('region', { name: 'Entry Quality' }), 'Slippage')).toBe('Not applicable: entry not resolved yet');
+  });
+});
+
+// A222: an Unavailable per-condition figure says why at the figure length, where the figure lives, never a bare "—" (T8P.23-B8).
+describe('Plan and Risk drawer: unavailable condition figures (A222, T8P.23-B8)', () => {
+  useFixedClock();
+
+  it('should word a missing Mark in Risk to stop and Reward to target at the figure length, with no bare dash left', () => {
+    const view = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' }));
+    expect(view.current.evaluation.conditions.every((c) => c.result.kind === 'Unavailable')).toBe(true);
+    const { container } = render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    const figures = Array.from(container.querySelectorAll('dt'))
+      .filter((term) => ['Risk to stop', 'Reward to target'].includes(term.textContent ?? ''))
+      .map((term) => term.nextElementSibling?.textContent);
+    expect(figures).toEqual(['Mark missing: XYZ, Tue Oct 13', 'Mark missing: XYZ, Tue Oct 13']);
+    expect(figures.some((figure) => figure?.includes('—'))).toBe(false);
   });
 });
