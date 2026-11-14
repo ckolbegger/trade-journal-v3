@@ -1782,3 +1782,5 @@ Deleted `e2e/d6/update.spec.ts` (B6.6) with `git rm`; the checked-out build is n
 2. `grep -rnE "dist-releases/d6|'d6'" e2e tools src`: prints nothing (grep exit 1).
 3. `.claude/scripts/with-browser-lock.sh npm run test:e2e:release-history`: exit 0, 4 passed (B2.3, B2.5, B4.7, B5.6); no B6.6.
 4. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: all exit 0.
+- **Commit:** `ad6d0189`. The agent also reworded `e2e/d7/support.ts` line 5 ("whose automatic fixture serves current"), which names the served build.
+- **Review:** ocr in place, 7 files (the deleted spec excluded), 0 comments, "No findings." (`ocr/T8P.BUG-4.1-ad6d0189.json`). Reviewer's note, not a task: no `dist-releases/d6` left in `tools`, `e2e`, `package.json`, `playwright.config.ts` or `.gitignore`.
