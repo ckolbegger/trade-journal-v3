@@ -1589,3 +1589,16 @@ FAIL on C8P.2. The report was refused as a file write, so it was extracted from 
 - **Browser specs run:** 55 passed (`browser/T8P.23-B11-specs.txt`). No browser case reproduces the Closed-by-sale state; the props tests cover it.
 - **Review:** ocr in place, 2 files, 0 comments (`ocr/T8P.23-B11.json`). The reviewer found no session that is flat at its close yet owed a Mark, and no Open Trade whose real gap would be hidden. The flat test is per session, not per Instrument, as before.
 - **Quick run (`T8P.23-B11`):** unit 1653, integration 229, checks 14 of 14, browser-task 7; run complete.
+
+**T8P.23-B12** (`9aab5e57`). Price History now decides "option Trade" the way the Journal does: any Option among the replay's instruments.
+- **Effect:** a stock Trade's Mark keeps its "$" ("$51.50"), as in Today and the Journal (W9, W10, C1). An option Trade's Underlying Mark has none, and every option Mark keeps its "$".
+- **Test:** "should give a stock Trade's Mark a dollar sign and an option Trade's Underlying Mark none". Red: `expected [ 'XYZ Mark', '51.50', '51.00' ] to deeply equal [ 'XYZ Mark', '$51.50', '$51.00' ]`.
+- **Expected values:** none changed.
+- **Browser specs run:** 49 passed (`browser/T8P.23-B12-specs.txt`).
+- **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B12.json`). The reviewer checked five Trade shapes against Price History, the Journal and Today, and the three agree on all of them:
+  - stock;
+  - long option;
+  - short option;
+  - Cash-Secured Put;
+  - after exercise or assignment, holding stock.
+- **Quick run (`T8P.23-B12`):** unit 1654, integration 229, checks 14 of 14, browser-task 7; run complete. The runner ran the checks stage, which builds, alongside the browser stage. Both passed.
