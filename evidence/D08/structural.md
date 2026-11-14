@@ -345,6 +345,8 @@ The download icon is drawn inside `AppShell.tsx`, because `icons.tsx` is outside
 
 ## Merge runs
 
+- **T8.4 merged** 2026-11-14, after merge-5. Lane WB stays busy with T8.5, so T8.4's five commits (through `87f92560`) were rebased in a temporary worktree onto `80adffb4` and fast-forwarded (`92301ec3` … `0fa1b021`). The temporary worktree and branch were removed. Lane WB rebases later, and git drops the already-applied commits.
+
 - **merge-5** (T8.7 merged; source at `16e72bf5`): the stage headers show later HEADs, but `git diff 16e72bf5 8773b371 -- src tests e2e tools package.json` is empty, since only plan and evidence commits landed.
   - unit 172 / 1786;
   - integration 106 / 229;
