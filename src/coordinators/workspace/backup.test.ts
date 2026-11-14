@@ -432,11 +432,11 @@ describe('Not Verified', () => {
     const confirm = (file: File) => workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest });
 
     const cut = new File([a7.slice(0, Math.floor(a7.length / 2))], 'cut.tjbackup');
-    expect(await confirm(cut)).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+    expect(await confirm(cut)).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) });
 
     const flipped = a7.slice();
     flipped[Math.floor(flipped.length / 2)]! ^= 0xff;
-    expect(await confirm(new File([flipped as BlobPart], 'flip.tjbackup'))).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+    expect(await confirm(new File([flipped as BlobPart], 'flip.tjbackup'))).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) });
 
     const saved = await stack.marketData.save({ intention: 'RecordInitialManualMark', instrumentKey: 'XYZ', tradingDate: '2026-11-19', price: '52', expectedResolutionRevision: 'None' });
     expect(saved.kind).toBe('Saved');
@@ -444,7 +444,7 @@ describe('Not Verified', () => {
     if (second.kind !== 'Downloaded') throw new Error('expected Downloaded');
     expect(second.fullDigest).not.toBe(first.fullDigest);
     const other = testHost.downloads.offered[1]!;
-    expect(await confirm(new File([other.bytes as BlobPart], other.fileName))).toEqual({ kind: 'NotVerified', reason: 'DifferentArtifact' });
+    expect(await confirm(new File([other.bytes as BlobPart], other.fileName))).toEqual({ kind: 'NotVerified', reason: 'DifferentArtifact', detail: detailLike({ stage: 'Verify' }) });
 
     const unreadable = new File([a7 as BlobPart], 'a7.tjbackup');
     unreadable.stream = () =>
@@ -453,7 +453,91 @@ describe('Not Verified', () => {
           throw new Error('read failed');
         },
       });
-    expect(await confirm(unreadable)).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+    expect(await confirm(unreadable)).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify' }) });
+  });
+});
+
+describe('Not Verified detail (D8 Q5)', () => {
+  it('should name the failing check in the NotVerified detail when the file is incomplete or corrupt', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const a7 = testHost.downloads.offered[0]!.bytes;
+    const confirmEdited = (edit: (artifact: EditableArtifact) => void) => {
+      const edited = editedArtifact(a7, edit);
+      return workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
+    };
+
+    // The header lists the sections in another order than the file ends them.
+    let someRecord = '';
+    const reordered = await confirmEdited(({ lines }) => {
+      const header = JSON.parse(lines[0]!) as { sections: string[] };
+      lines[0] = canonical({ ...header, sections: [...header.sections].reverse() });
+      someRecord = lines[1]!;
+    });
+    // No record content in the detail.
+    expect(someRecord).not.toBe('');
+    expect(JSON.stringify((reordered as { detail: unknown }).detail)).not.toContain(someRecord.slice(0, 40));
+    expect(reordered).toEqual({
+      kind: 'NotVerified',
+      reason: 'IncompleteOrCorrupt',
+      detail: detailLike({ stage: 'Verify', context: expect.objectContaining({ check: 'SectionEndMismatch', line: expect.any(Number) as number }) }),
+    });
+
+    // The manifest's counts no longer match the header's.
+    const counts = await confirmEdited(({ manifest }) => {
+      const stored = manifest['counts'] as Record<string, number>;
+      const store = Object.keys(stored)[0]!;
+      stored[store] = stored[store]! + 1;
+    });
+    expect(counts).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify', context: expect.objectContaining({ check: 'CountsMismatch' }) }) });
+
+    // A manifest that is not a manifest.
+    const shape = await confirmEdited(({ manifest }) => void delete manifest['footprint']);
+    expect(shape).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify', context: expect.objectContaining({ check: 'ManifestShape' }) }) });
+
+    // A reader error (the file is cut): the reader's code is named, never the content.
+    const cut = new File([a7.slice(0, Math.floor(a7.length / 2))], 'cut.tjbackup');
+    const reader = await workspace.confirmBackup({ file: cut, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest });
+    expect(reader).toEqual({
+      kind: 'NotVerified',
+      reason: 'IncompleteOrCorrupt',
+      detail: detailLike({ stage: 'Verify', name: 'ArtifactReadError', context: expect.objectContaining({ check: 'ReaderError', code: expect.stringMatching(/^(Truncated|Corrupt)$/) as string }) }),
+    });
+  });
+
+  it('should carry the read error in the NotVerified detail when the file cannot be read', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const unreadable = new File([testHost.downloads.offered[0]!.bytes as BlobPart], 'a7.tjbackup');
+    unreadable.stream = () =>
+      new ReadableStream<Uint8Array<ArrayBuffer>>({
+        pull() {
+          throw new Error('read failed');
+        },
+      });
+    const result = await workspace.confirmBackup({ file: unreadable, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest });
+    expect(result).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify', name: 'Error', context: { check: 'StreamRead' } }) });
+    // The host's error message is not copied: it could quote content.
+    expect(JSON.stringify((result as { detail: unknown }).detail)).not.toContain('read failed');
+
+    const notUtf8 = new File([gzipSync(new Uint8Array([0x7b, 0x22, 0x6b, 0xff, 0xfe, 0x22, 0x7d, 0x0a]))], 'not-utf8.tjbackup');
+    const decoded = await workspace.confirmBackup({ file: notUtf8, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest });
+    expect(decoded).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify', name: 'ArtifactReadError', context: expect.objectContaining({ check: 'NotUtf8' }) }) });
+  });
+
+  it('should name the differing comparison in the NotVerified detail for a different backup', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const offered = testHost.downloads.offered[0]!;
+    const file = () => new File([offered.bytes as BlobPart], offered.fileName);
+    const differs = (check: string) => ({ kind: 'NotVerified', reason: 'DifferentArtifact', detail: detailLike({ stage: 'Verify', context: { check } }) });
+
+    expect(await workspace.confirmBackup({ file: file(), expectedBinding: first.sourceBinding, expectedFullDigest: 'sha256:' + '0'.repeat(64) })).toEqual(differs('fullDigest'));
+    expect(await workspace.confirmBackup({ file: file(), expectedBinding: { ...first.sourceBinding, databaseName: first.sourceBinding.databaseName + '-other' }, expectedFullDigest: first.fullDigest })).toEqual(differs('databaseName'));
+    expect(await workspace.confirmBackup({ file: file(), expectedBinding: { ...first.sourceBinding, contentRevision: first.sourceBinding.contentRevision + 1 }, expectedFullDigest: first.fullDigest })).toEqual(differs('contentRevision'));
   });
 });
 
@@ -464,7 +548,7 @@ describe('Not Verified, DifferentArtifact one comparison at a time (A130)', () =
     if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
     const offered = testHost.downloads.offered[0]!;
     const file = () => new File([offered.bytes as BlobPart], offered.fileName);
-    const different = { kind: 'NotVerified', reason: 'DifferentArtifact' };
+    const different = { kind: 'NotVerified', reason: 'DifferentArtifact', detail: detailLike({ stage: 'Verify' }) };
 
     // Control: the genuine expectations are Completed.
     expect((await workspace.confirmBackup({ file: file(), expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).kind).toBe('Completed');
@@ -506,7 +590,7 @@ describe('Not Verified, section ends (A123, A130)', () => {
         delete manifest.sectionDigests[lastEnd.section];
         manifest.sectionDigests[firstEnd.section] = lastEnd.digest;
       }),
-    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) });
 
     // The header lists the sections in another order than the file ends them.
     expect(
@@ -514,7 +598,7 @@ describe('Not Verified, section ends (A123, A130)', () => {
         const header = JSON.parse(lines[0]!) as { sections: string[] };
         lines[0] = canonical({ ...header, sections: [...header.sections].reverse() });
       }),
-    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) });
   });
 });
 
@@ -543,7 +627,7 @@ describe('Not Verified, header sections (A123, A130)', () => {
         lines.push(canonical({ ...(JSON.parse(lines[endIndex]!) as object), digest: emptyDigest }));
         manifest.sectionDigests[last] = emptyDigest;
       }),
-    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt' });
+    ).toEqual({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) });
   });
 });
 
@@ -557,7 +641,7 @@ describe('Not Verified, manifest fields (A123, A130)', () => {
       const edited = editedArtifact(a7, edit);
       return workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
     };
-    const bad = { kind: 'NotVerified', reason: 'IncompleteOrCorrupt' };
+    const bad = { kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) };
 
     for (const field of ['formatVersion', 'schemaVersion', 'footprint', 'exclusions']) {
       expect(await confirmEdited(({ manifest }) => void delete manifest[field]), `missing ${field}`).toEqual(bad);
@@ -575,7 +659,7 @@ describe('Not Verified, counts and digests of a well-compressed file (A123, A130
     const first = await workspace.exportBackup({});
     if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
     const a7 = testHost.downloads.offered[0]!.bytes;
-    const bad = { kind: 'NotVerified', reason: 'IncompleteOrCorrupt' };
+    const bad = { kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail: detailLike({ stage: 'Verify' }) };
     const isEnd = (l: string) => l.includes('"kind":"sectionEnd"');
     const tailOf = (l: string) => /,"s":"([^"]*)","t":"([^"]*)"\}$/.exec(l);
     const recordIndex = (lines: string[]) => lines.findIndex((l, i) => i > 0 && !isEnd(l) && tailOf(l) !== null && tailOf(l)![1] !== 'workspace');
@@ -681,7 +765,7 @@ describe('Not Verified, not UTF-8 (A130)', () => {
     if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
     const text = new Uint8Array([0x7b, 0x22, 0x6b, 0xff, 0xfe, 0x22, 0x7d, 0x0a]);
     const file = new File([gzipSync(text)], 'not-utf8.tjbackup');
-    expect(await workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+    expect(await workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify' }) });
   });
 
   it('should return Unreadable when bytes after the manifest are not UTF-8', async () => {
@@ -694,7 +778,7 @@ describe('Not Verified, not UTF-8 (A130)', () => {
     bytes.set(plain);
     bytes[plain.length] = 0xc2;
     const file = new File([gzipSync(bytes)], 'trailing-byte.tjbackup');
-    expect(await stack.workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable' });
+    expect(await stack.workspace.confirmBackup({ file, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest })).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify' }) });
   });
 });
 

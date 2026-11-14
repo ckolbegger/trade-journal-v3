@@ -104,7 +104,7 @@ export interface CompletedBackupReceipt {
 
 export type ConfirmBackupResult =
   | { readonly kind: 'Completed'; readonly receipt: CompletedBackupReceipt }
-  | { readonly kind: 'NotVerified'; readonly reason: 'Unreadable' | 'IncompleteOrCorrupt' | 'DifferentArtifact' };
+  | { readonly kind: 'NotVerified'; readonly reason: 'Unreadable' | 'IncompleteOrCorrupt' | 'DifferentArtifact'; readonly detail?: FailureDetail };
 
 // ---- Restore preparation (A132-A134, A138) ----
 

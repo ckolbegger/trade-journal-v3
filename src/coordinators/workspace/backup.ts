@@ -74,8 +74,21 @@ function sameCounts(a: Record<string, number>, b: Record<string, number>): boole
   return [...keys].every((key) => (a[key] ?? 0) === (b[key] ?? 0));
 }
 
+type Unverified = { readonly kind: 'Unreadable' | 'IncompleteOrCorrupt'; readonly detail: FailureDetail };
+
+// A failed check, for the developer log: the check's name and where it failed, never record contents.
+function failedCheck(kind: Unverified['kind'], check: string, context: Record<string, string | number> = {}): Unverified {
+  return { kind, detail: { stage: 'Verify', name: check, message: `The ${check} check failed`, context: { check, ...context } } };
+}
+
+// A thrown error, described without its message or stack: reader and stream messages can quote file content.
+function thrownCheck(kind: Unverified['kind'], check: string, error: unknown, context: Record<string, string | number> = {}): Unverified {
+  const failed = failedCheck(kind, check, context);
+  return { kind, detail: { ...failed.detail, name: error instanceof Error ? error.name : 'NonError' } };
+}
+
 // Streams the file and recomputes every digest and count against the artifact's own header and manifest (A130).
-async function verifyArtifact(file: File): Promise<Verified | { readonly kind: 'Unreadable' | 'IncompleteOrCorrupt' }> {
+async function verifyArtifact(file: File): Promise<Verified | Unverified> {
   let sourceFailed = false;
   let source: ReadableStream<Uint8Array>;
   try {
@@ -93,8 +106,8 @@ async function verifyArtifact(file: File): Promise<Verified | { readonly kind: '
       },
       cancel: (reason) => reader.cancel(reason),
     });
-  } catch {
-    return { kind: 'Unreadable' };
+  } catch (e) {
+    return thrownCheck('Unreadable', 'StreamRead', e);
   }
   let header: z.infer<typeof headerShape> | undefined;
   let sectionEnds = 0;
@@ -103,51 +116,50 @@ async function verifyArtifact(file: File): Promise<Verified | { readonly kind: '
     for await (const line of readArtifact(source)) {
       if (line.kind === 'header') {
         const parsed = headerShape.safeParse(line.value);
-        if (line.lineNumber !== 1 || !parsed.success || new Set(parsed.data.sections).size !== parsed.data.sections.length) return { kind: 'IncompleteOrCorrupt' };
+        if (line.lineNumber !== 1 || !parsed.success || new Set(parsed.data.sections).size !== parsed.data.sections.length) return failedCheck('IncompleteOrCorrupt', 'HeaderShape', { line: line.lineNumber });
         header = parsed.data;
       } else if (!header) {
-        return { kind: 'IncompleteOrCorrupt' };
+        return failedCheck('IncompleteOrCorrupt', 'MissingHeader', { line: line.lineNumber });
       } else if (line.kind === 'record') {
         const tail = RECORD_TAIL.exec(line.text);
-        if (!tail) return { kind: 'IncompleteOrCorrupt' };
+        if (!tail) return failedCheck('IncompleteOrCorrupt', 'RecordShape', { line: line.lineNumber });
         const stores = actual.get(tail[1]!) ?? {};
         stores[tail[2]!] = (stores[tail[2]!] ?? 0) + 1;
         actual.set(tail[1]!, stores);
       } else if (line.kind === 'sectionEnd') {
         const parsed = sectionEndShape.safeParse(line.value);
         // The ends must name the header's sections, each once, in the header's order (A123).
-        if (!parsed.success || parsed.data.section !== header.sections[sectionEnds] || parsed.data.digest !== line.computedSectionDigest || !sameCounts(parsed.data.counts, actual.get(parsed.data.section) ?? {})) {
-          return { kind: 'IncompleteOrCorrupt' };
-        }
+        const at = { section: header.sections[sectionEnds] ?? '', line: line.lineNumber };
+        if (!parsed.success || parsed.data.section !== header.sections[sectionEnds]) return failedCheck('IncompleteOrCorrupt', 'SectionEndMismatch', at);
+        if (parsed.data.digest !== line.computedSectionDigest) return failedCheck('IncompleteOrCorrupt', 'SectionDigestMismatch', at);
+        if (!sameCounts(parsed.data.counts, actual.get(parsed.data.section) ?? {})) return failedCheck('IncompleteOrCorrupt', 'CountsMismatch', at);
         sectionEnds += 1;
       } else {
         const parsed = manifestShape.safeParse(line.value);
-        if (!parsed.success || sectionEnds !== header.sections.length) return { kind: 'IncompleteOrCorrupt' };
+        if (!parsed.success) return failedCheck('IncompleteOrCorrupt', 'ManifestShape', { line: line.lineNumber });
+        if (sectionEnds !== header.sections.length) return failedCheck('IncompleteOrCorrupt', 'SectionEndMismatch', { line: line.lineNumber });
         const stored = parsed.data;
         const bySection = Object.keys(line.computedSectionDigests);
         const authoritative: Record<string, number> = {};
         for (const [section, stores] of actual) {
           if (section !== 'workspace') for (const [store, n] of Object.entries(stores)) authoritative[store] = (authoritative[store] ?? 0) + n;
         }
-        if (
-          stored.fullDigest !== line.computedFullDigest ||
-          bySection.length !== Object.keys(stored.sectionDigests).length ||
-          bySection.some((section) => stored.sectionDigests[section] !== line.computedSectionDigests[section]) ||
-          !sameCounts(stored.counts, header.counts) ||
-          !sameCounts(header.counts, authoritative)
-        ) {
-          return { kind: 'IncompleteOrCorrupt' };
+        const at = { line: line.lineNumber };
+        if (stored.fullDigest !== line.computedFullDigest) return failedCheck('IncompleteOrCorrupt', 'FullDigestMismatch', at);
+        if (bySection.length !== Object.keys(stored.sectionDigests).length || bySection.some((section) => stored.sectionDigests[section] !== line.computedSectionDigests[section])) {
+          return failedCheck('IncompleteOrCorrupt', 'SectionDigestMismatch', at);
         }
+        if (!sameCounts(stored.counts, header.counts) || !sameCounts(header.counts, authoritative)) return failedCheck('IncompleteOrCorrupt', 'CountsMismatch', at);
         return { kind: 'Verified', binding: header.sourceBinding, fullDigest: line.computedFullDigest, manifestDigest: line.computedManifestDigest, compressed: line.compressed, lineCount: line.lineNumber };
       }
     }
   } catch (e) {
-    if (sourceFailed) return { kind: 'Unreadable' };
-    if (e instanceof ArtifactReadError && e.reason === 'NotUtf8') return { kind: 'Unreadable' };
-    if (e instanceof ArtifactReadError) return { kind: 'IncompleteOrCorrupt' };
+    if (sourceFailed) return thrownCheck('Unreadable', 'StreamRead', e);
+    if (e instanceof ArtifactReadError && e.reason === 'NotUtf8') return thrownCheck('Unreadable', 'NotUtf8', e, { code: e.code });
+    if (e instanceof ArtifactReadError) return thrownCheck('IncompleteOrCorrupt', 'ReaderError', e, { code: e.code });
     throw e;
   }
-  return { kind: 'IncompleteOrCorrupt' };
+  return failedCheck('IncompleteOrCorrupt', 'MissingManifest');
 }
 
 function notCompleted(reason: 'IntegrityBlocked' | 'ReadFailed', detail: FailureDetail, workspaceBinding: WorkspaceSnapshotBinding | null = null): ExportBackupResult {
@@ -225,14 +237,11 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
     },
     async confirmBackup(request) {
       const verified = await verifyArtifact(request.file);
-      if (verified.kind !== 'Verified') return { kind: 'NotVerified', reason: verified.kind };
+      if (verified.kind !== 'Verified') return { kind: 'NotVerified', reason: verified.kind, detail: verified.detail };
       const expected = request.expectedBinding;
-      if (
-        verified.fullDigest !== request.expectedFullDigest ||
-        verified.binding.databaseName !== expected.databaseName ||
-        verified.binding.contentRevision !== expected.contentRevision
-      ) {
-        return { kind: 'NotVerified', reason: 'DifferentArtifact' };
+      const differing = verified.fullDigest !== request.expectedFullDigest ? 'fullDigest' : verified.binding.databaseName !== expected.databaseName ? 'databaseName' : verified.binding.contentRevision !== expected.contentRevision ? 'contentRevision' : undefined;
+      if (differing) {
+        return { kind: 'NotVerified', reason: 'DifferentArtifact', detail: { stage: 'Verify', name: 'DifferentArtifact', message: `The backup differs from the expected one in its ${differing}`, context: { check: differing } } };
       }
       const receiptId = deps.ids.next();
       issued.add(receiptId);
