@@ -1445,3 +1445,9 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 11 specs, 15 tests passed.
 - **Review:** ocr in place, 4 files, 0 comments (`ocr/T8P.23-B1.json`). Relocated, 1 comment (`ocr/T8P.23-B1-reloc.json`). That comment is Wrong, a relocation artifact: `ClosedResultSection` no longer exists anywhere.
 - **Quick run (`T8P.23-B1`):** unit 1641, integration 229, checks 14 of 14, browser-task 6 passed; run complete.
+
+**T8P.23-B2** (`081024fe`). CSS only: `.settlement-due dl.figure-grid` in `rail-b.css` stacks each term above its value in the rail, and breaks only at spaces (A224, W7).
+- **Test:** "should show every term and value of the Settlement Due panel in the rail at 1280 px without a word broken across lines" (`e2e/d7/responsive-a11y.spec.ts`). It measures each letter's line top. Red: `["Long 1 contract", "Fri Nov 20, 16:00"]`.
+- **Browser specs run:** 7 passed. No expected value changed.
+- **Review:** ocr in place and relocated, 0 comments (`ocr/T8P.23-B2*.json`).
+- **Quick run:** unit 1641, integration 229, checks 14 of 14, browser-task 6; run complete.
