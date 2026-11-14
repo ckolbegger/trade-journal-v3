@@ -115,6 +115,18 @@ describe('verify', () => {
     expect(await screen.findByText('Backup complete. Checked Sat Nov 14, 16:05.')).toBeTruthy();
   });
 
+  it('should replace the Downloaded line with Backup complete once verification completes', async () => {
+    const ctx = setup();
+    const { facade, files, user } = ctx;
+    await downloadFirst(ctx);
+    files.choose(new File(['x'], 'chosen.gz'));
+    facade.respond('confirmBackup', () => Promise.resolve({ kind: 'Completed', receipt: RECEIPT }) as never);
+    expect(screen.queryByText(/Downloaded, not verified yet/)).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    expect(await screen.findByText('Backup complete. Checked Sat Nov 14, 16:05.')).toBeTruthy();
+    expect(screen.queryByText(/Downloaded, not verified yet/)).toBeNull();
+  });
+
   it('should show each Not Verified reason in plain language with Choose another file and no completed state', async () => {
     const ctx = setup();
     const { facade, files, user } = ctx;

@@ -93,7 +93,7 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
         </button>
         {downloaded && (
           <div className="backup-result">
-            <p>Downloaded, not verified yet. This app can't see where your browser saved the file.</p>
+            {outcome?.kind !== 'Completed' && <p>Downloaded, not verified yet. This app can't see where your browser saved the file.</p>}
             <p className="backup-file-name">{downloaded.fileName}</p>
             {checking !== undefined && <p role="status">{checking === 'Starting' ? 'Checking the file' : `Checking the file: ${records(checking)}`}</p>}
             {outcome?.kind === 'Completed' && <p role="status">Backup complete. Checked {completionTime(outcome.at, timeZone)}.</p>}
