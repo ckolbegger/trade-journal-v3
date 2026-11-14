@@ -1488,3 +1488,11 @@ The minor observations are recorded, not tasks. Observation 1, the Journal card 
 - **Browser specs run:** 51 passed (`browser/T8P.23-B5-specs.txt`).
 - **Review:** ocr in place, 1 file, 0 comments (`ocr/T8P.23-B5.json`).
 - **Quick run (`T8P.23-B5`):** unit 1644, integration 229, checks 14 of 14, browser-task 6; run complete. The task agent saw one unit failure on its first run, which it did not name and which did not come back on its rerun. This run had none.
+
+**T8P.23-B6** (`78773d22`). An incoherent Detail's rail now carries the Conditions card. It lists each Plan condition as rows 1 and 2 only, with no figure and no summary (`conditionsProps`, `unmeasured(view.plan)`).
+- **Why this layout:** W5 names only "No Marks yet, or Closed" for rows 1 and 2. The prototype's "Facts can't be replayed" state lists the conditions that way, and the breakdown says nothing else for this state, so the prototype decides (P96). No new words.
+- **Test:** "should list the Plan conditions on an incoherent Detail, rows 1 and 2 only, with no figure, no row 3 and no summary" (`conditions.props.test.ts`). Red: `Unable to find an accessible element with the role "list" and name "Conditions"`.
+- **Expected values:** none changed.
+- **Browser specs run:** 60 passed (`browser/T8P.23-B6-specs.txt`).
+- **Review:** ocr in place, 0 comments (`ocr/T8P.23-B6.json`). The reviewer confirmed that `Cockpit.tsx` renders `ConditionsCard` for every view, and a probe in its scratch clone found the card in the rail.
+- **Quick run (`T8P.23-B6`):** unit 1645, integration 229, checks 14 of 14, browser-task 6; run complete.
