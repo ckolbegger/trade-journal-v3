@@ -85,4 +85,13 @@ describe('ArtifactWriter', () => {
     // with no section open, ending a section is an empty section: SHA-256 of nothing
     expect(w.writeSectionEnd('empty', {})).toBe(sha256(''));
   });
+
+  it('should throw when finish is called while a section is open', () => {
+    const w = new ArtifactWriter();
+    w.writeRecord('trades', 't', { i: 1 });
+    expect(() => w.finish({})).toThrow(/trades/);
+    // closing the section lets finish succeed
+    w.writeSectionEnd('trades', { t: 1 });
+    expect(w.finish({}).sectionDigests).toHaveProperty('trades');
+  });
 });

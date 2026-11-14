@@ -54,6 +54,9 @@ export class ArtifactWriter {
 
   /** Writes the manifest line (the caller's fields plus the section digests and full digest) and closes the gzip. */
   finish(manifestFields: Record<string, unknown>): ArtifactOutput {
+    if (this.openSection !== undefined) {
+      throw new Error(`Section ${this.openSection.name} is still open; cannot finish the artifact`);
+    }
     const fullDigest = bytesToHex(this.full.clone().digest());
     const manifest = encoder.encode(
       canonicalJson({ ...manifestFields, fullDigest, kind: 'manifest', sectionDigests: this.sectionDigests }),
