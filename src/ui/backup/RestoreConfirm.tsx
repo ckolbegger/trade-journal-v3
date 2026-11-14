@@ -127,6 +127,14 @@ export interface RestoreConfirmProps {
 
 type Choice = 'BackUpFirst' | 'WithoutBackup';
 
+// The safety choice once it is complete, else undefined. Only the chosen option's own proof counts: a receipt kept from
+// Back up first is ignored under Replace without a backup, and an acknowledgment is ignored under Back up first.
+function completedSafetyChoice(choice: Choice | undefined, receipt: CompletedBackupReceipt | undefined, declineAcknowledged: boolean): SafetyChoice | undefined {
+  if (choice === 'BackUpFirst' && receipt) return { kind: 'Receipt', receipt };
+  if (choice === 'WithoutBackup' && declineAcknowledged) return { kind: 'DeclinedAfterWarning' };
+  return undefined;
+}
+
 // The confirmation step: the replacement checkbox, the safety choice when user data exists (P33), and Replace (A142).
 export function RestoreConfirm({ facade, selectFile, token, safetyChoiceRequired, timeZone, busy, onReplace, onRecheck }: RestoreConfirmProps) {
   const [understood, setUnderstood] = useState(false);
@@ -135,8 +143,7 @@ export function RestoreConfirm({ facade, selectFile, token, safetyChoiceRequired
   const [declineAcknowledged, setDeclineAcknowledged] = useState(false);
   const warningId = useId();
 
-  const safety: SafetyChoice | undefined =
-    choice === 'BackUpFirst' && receipt ? { kind: 'Receipt', receipt } : choice === 'WithoutBackup' && declineAcknowledged ? { kind: 'DeclinedAfterWarning' } : undefined;
+  const safety = completedSafetyChoice(choice, receipt, declineAcknowledged);
   const ready = understood && !busy && (!safetyChoiceRequired || safety !== undefined);
 
   return (

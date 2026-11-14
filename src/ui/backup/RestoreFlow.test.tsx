@@ -268,6 +268,30 @@ describe('inline safety backup', () => {
     expect(REPLACE().disabled).toBe(true);
   });
 
+  it('should not reuse a safety receipt for Replace without a backup after switching choices', async () => {
+    const ctx = setup();
+    const { facade, user } = ctx;
+    await toPreview(ctx);
+    await user.click(UNDERSTAND());
+    await user.click(screen.getByRole('radio', { name: 'Back up this journal first (recommended)' }));
+    facade.respond('exportBackup', DOWNLOADED);
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByText(DOWNLOADED.fileName);
+    facade.respond('confirmBackup', { kind: 'Completed', receipt: RECEIPT });
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText(/Backup complete/);
+    expect(REPLACE().disabled).toBe(false);
+
+    // The receipt stays in memory, but the other choice needs its own acknowledgment.
+    await user.click(screen.getByRole('radio', { name: 'Replace without a backup' }));
+    expect(REPLACE().disabled).toBe(true);
+    await user.click(screen.getByRole('checkbox', { name: /cannot be recovered/ }));
+    expect(REPLACE().disabled).toBe(false);
+    facade.respond('applyPreparedRestore', { kind: 'PreparationNotFound', liveBinding: BINDING });
+    await user.click(REPLACE());
+    expect(facade.calls.applyPreparedRestore).toEqual([{ token: TOKEN, confirmation: { kind: 'ReplaceEntireWorkspace' }, safety: { kind: 'DeclinedAfterWarning' } }]);
+  });
+
   it('should say the journal changed and offer Check the backup again when the inline backup conflicts', async () => {
     const ctx = setup();
     const { facade, user } = ctx;
