@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import type { ApplyPreparedRestoreResult, BackupProgress, FileSelectionPort, MigrationIssue, PrepareRestoreResult, RestoreCounts, RestoreIssue, RestoreLanding, RestorePreview, RestoreToken, SafetyChoice } from '../../app/types.ts';
 import { explainFailure, explainMigrationIssue } from '../readiness-copy.ts';
 import type { BackupFacade } from './facade.ts';
+import { RESTORE_UNFINISHED } from './backup-text.ts';
+import { logFailure } from './dev-log.ts';
 import { RestoreConfirm } from './RestoreConfirm.tsx';
 import { CountsTable, PreviewContents } from './RestorePreview.tsx';
 
@@ -13,7 +15,7 @@ export interface RestoreFlowProps {
 
 type Rejected = Extract<PrepareRestoreResult, { kind: 'Rejected' }>;
 
-type Phase = { readonly kind: 'Choose' } | { readonly kind: 'Checking'; readonly progress: BackupProgress | undefined } | { readonly kind: 'Rejected'; readonly result: Rejected } | { readonly kind: 'Preview'; readonly token: RestoreToken; readonly preview: RestorePreview } | { readonly kind: 'NotReplaced'; readonly reason: string | undefined } | { readonly kind: 'Restored'; readonly counts: RestoreCounts; readonly next: RestoreLanding['next'] };
+type Phase = { readonly kind: 'Choose' } | { readonly kind: 'Checking'; readonly progress: BackupProgress | undefined } | { readonly kind: 'Rejected'; readonly result: Rejected } | { readonly kind: 'Preview'; readonly token: RestoreToken; readonly preview: RestorePreview } | { readonly kind: 'NotReplaced'; readonly reason: string | undefined } | { readonly kind: 'Unfinished' } | { readonly kind: 'Restored'; readonly counts: RestoreCounts; readonly next: RestoreLanding['next'] };
 
 // Why an apply left the journal as it was (Q2 A11).
 function explainNotReplaced(result: Exclude<ApplyPreparedRestoreResult, { kind: 'Restored' }>): string | undefined {
@@ -89,7 +91,17 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
 
   const replace = async (token: RestoreToken, safety: SafetyChoice | undefined) => {
     setApplying(true);
-    const result = await facade.applyPreparedRestore({ token, confirmation: { kind: 'ReplaceEntireWorkspace' }, ...(safety && { safety }) });
+    let result: ApplyPreparedRestoreResult;
+    try {
+      result = await facade.applyPreparedRestore({ token, confirmation: { kind: 'ReplaceEntireWorkspace' }, ...(safety && { safety }) });
+    } catch (error) {
+      const thrown = error instanceof Error ? error : new Error(String(error));
+      logFailure({ stage: 'Apply', name: thrown.name, message: thrown.message, ...(thrown.stack !== undefined && { stack: thrown.stack }) });
+      // Which journal is in use is unknown until the app reloads, so no "unchanged" claim is made.
+      setApplying(false);
+      setPhase({ kind: 'Unfinished' });
+      return;
+    }
     setApplying(false);
     // The summary comes from the result alone; no read follows, and the preview and its forms are dropped.
     setPhase(result.kind === 'Restored' ? { kind: 'Restored', counts: result.receipt.counts, next: result.landing.next } : { kind: 'NotReplaced', reason: explainNotReplaced(result) });
@@ -155,6 +167,14 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
               Add an institution and account
             </Link>
           )}
+        </div>
+      )}
+      {phase.kind === 'Unfinished' && (
+        <div role="alert">
+          <p>{RESTORE_UNFINISHED}</p>
+          <button type="button" className="pill primary" onClick={() => window.location.reload()}>
+            Reload
+          </button>
         </div>
       )}
       {phase.kind === 'NotReplaced' && (

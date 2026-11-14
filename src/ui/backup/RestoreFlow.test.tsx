@@ -2,7 +2,7 @@
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   ApplyPreparedRestoreResult,
   ConfirmBackupResult,
@@ -432,5 +432,43 @@ describe('result (AC-REST-003)', () => {
       await screen.findByText('Restoring replaces your entire current journal');
     }
     expect(facade.calls.prepareRestore).toHaveLength(4);
+  });
+});
+
+describe('an unexpected apply failure (T8.13-B2)', () => {
+  async function failApply(error: Error) {
+    const ctx = setup();
+    await toPreview(ctx);
+    await ctx.user.click(UNDERSTAND());
+    await ctx.user.click(screen.getByRole('radio', { name: 'Replace without a backup' }));
+    await ctx.user.click(screen.getByRole('checkbox', { name: /cannot be recovered/ }));
+    ctx.facade.respond('applyPreparedRestore', () => Promise.reject(error));
+    await ctx.user.click(REPLACE());
+    return ctx;
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('should show the unfinished-Restore message when the Restore fails unexpectedly', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const reload = vi.fn();
+    vi.stubGlobal('location', { ...window.location, reload });
+    const { user } = await failApply(new Error('boom'));
+    expect(await screen.findByText("The Restore didn't finish. Reload the app to see which journal is in use.")).toBeTruthy();
+    expect(screen.queryByText('Your current journal is unchanged.')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('should write a developer log line when the Restore fails unexpectedly', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = new Error('boom');
+    await failApply(error);
+    await screen.findByText(/The Restore didn't finish/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Apply', name: 'Error', message: 'boom', stack: error.stack }]);
   });
 });
