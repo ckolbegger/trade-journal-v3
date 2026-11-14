@@ -43,4 +43,5 @@ export type {
   StaleMarkContext,
 } from './records.ts';
 export { exportSnapshot, type MarketDataSectionBatch } from './export.ts';
+export { applyPreparedRestore, measureCandidateSection, prepareRestore, type ApplyPreparedRestoreResult, type CandidateSectionMeta, type MalformedRecord, type MarketDataRestorePreparation, type ParsedRestoreBatch, type RestoreLine } from './restore.ts';
 export { validateSection,type MarketDataSectionIssue, type MarketDataSectionValidation } from './section.ts';
