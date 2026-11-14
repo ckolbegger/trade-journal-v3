@@ -2,7 +2,7 @@
 
 Source: the user's retrospective of the Trade Detail refactor (D08P), 2026-11-14. It reviewed the implementation session `080f089b-4413-4842-ac2b-aec7f7178d04` (2026-11-12 23:44 to 2026-11-14 11:05), [structural.md](structural.md), [final-report.md](final-report.md), the critic reports, and the agent environment: `.claude/agents/`, `.claude/docs/`, `.claude/settings.json` and ocr's file selection.
 
-D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5, 8 and 10 are fixed; finding 6 is partly resolved; the rest are open.
+D08P passed its gate after about 25 hours of working time, against a swarm estimate of 9 to 10.5. The findings below are about the environment, not the product. They are ordered by severity. Findings 1, 2, 5, 6, 8 and 10 are fixed; the rest are open.
 
 ## 1. **FIXED** ~~`build:releases` was blocked for agents, though it is on the allow list (permissions)~~
 
@@ -69,13 +69,19 @@ The rule is mechanical, so it belongs in a test, not a coding standard. A `tdd-t
 - ~~A preview of B3's range reviews the source, unit test and spec, with evidence files marked `user_exclude`.~~
 - ~~A real in-place review of `c4319845` reviewed `lot-matches-fit.spec.ts` in 13 s with 0 findings, the same as its relocated review. `git status` was unchanged.~~
 
-## 6. Briefs repeated what the agent definitions say (duplication). Partly resolved by 5.
+## 6. **FIXED** ~~Briefs repeated what the agent definitions say (duplication)~~
 
-**What happened.**
-- **ocr briefs** repeated the relocation steps and a scratch-clone rule: work only in scratch clones, give git an explicit `-C`, check status by path name. That rule came from one incident: T8P.29's reviewer had a relocation command blocked, and its `git add -A; git commit` landed in the main worktree (structural.md, "Stray commits on `claude-opus-5.5`"). An in-place review only reads, so with relocation retired the rule has no purpose and is dropped.
-- **Suite-runner briefs** repeated "one stage at a time", the port checks and the browser lock, all of which `suite-runner.md` holds.
+~~**What happened.**~~
+- ~~**ocr briefs** repeated the relocation steps and a scratch-clone rule: work only in scratch clones, give git an explicit `-C`, check status by path name. That rule came from one incident: T8P.29's reviewer had a relocation command blocked, and its `git add -A; git commit` landed in the main worktree (structural.md, "Stray commits on `claude-opus-5.5`"). An in-place review only reads, so with relocation retired the rule has no purpose and is dropped.~~
+- ~~**Suite-runner briefs** repeated "one stage at a time", the port checks and the browser lock, all of which `suite-runner.md` holds.~~
 
-**Remaining fix.** Keep briefs to the task's specifics: inputs, scope and stop rules.
+~~**Proposed fix.** Keep briefs to the task's specifics: inputs, scope and stop rules.~~
+
+~~**Applied.**~~
+- ~~**ocr briefs:** finding 5's fix (`1b876348`) retired the relocation procedure, so there is nothing left to repeat.~~
+- ~~**Suite-runner briefs** (`40e50044`): `implementing.md`'s line on what the agent definitions hold now names `suite-runner.md`'s one-stage-per-call order and browser lock beside its port checks, and says a suite-runner brief gives only the evidence folder, the run label and the browser stage.~~
+
+~~**Verified.** A doc change is proven by use: the next deliverable's suite-runner briefs should carry only those three inputs. The BUG-4 briefs in this session already did.~~
 
 ## 7. `critic-brief.md`'s bug-fix cadence differs from the gate's practice (stale guidance)
 
