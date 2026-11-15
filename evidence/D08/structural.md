@@ -1147,3 +1147,12 @@ Real timing uses `performance.now()`; the wait is capped at `REPLY_WINDOW_MS`. R
 - B2 (Doubtful): the reuse guard in `tools/bench-generate.ts` accepts any non-empty rows file, including rows written by the browser-based `bench:expected`, so it cannot tell Node-computed rows from older ones.
 - B3 (Doubtful): `tools/bench/views-port.ts` leaves the Vite server open when `ssrLoadModule` rejects.
 Raw: `ocr/T8.18-F2-9b728388.json`.
+
+## T8.18-F2-B1 to B3 done in lane BG
+
+- B1 `6e78ceb0`: `pinnedOpenRowsOf` swaps `Date` so "now" is the dataset's `asOf` during the row call (restored in `finally`); `openRowsOf` port takes `asOf`. Red: assertion (2031 vs 2026).
+- B2 `9f45ae7f`: `bench/expected-open-rows.json` carries `writer` and `artifactFileDigest`; `rowsAreFromGenerator` gates reuse; `bench:expected` writes its own writer and is refused. Fields added to the committed file by hand (rows unchanged from `9b728388`); `bench:generate` then reused the artifact (digest `6d819703...` unchanged; 200 Open rows, 200 Review entries, 99 owed Trades, 4 Settlement Due). Reds: two assertions.
+- B3 `8aa091a9`: server closed before rethrow; tested with a mocked Vite. Red: assertion.
+- First-run passes, flagged: B1 "restore the wall clock ... even when the row function throws" (mutation: no `finally`); B2 "reuse rows this generator wrote" (mutation: flipped comparison).
+- Lane tier green (`6fb40919`): unit 1991, integration 229, checks 14 of 14.
+- Note: `tools/bench/profile.ts`'s `ExpectedOpenRows` type does not name the two new fields.
