@@ -687,6 +687,6 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.20 | 2 | FX | Done | `b4f8b073`; F1 `cb578980`, F2 `caf988ef`, F1-B1 `64670df6`, F3 `1bb66597` (B1 settled by F1 to F3) |
 | T8.18 | 2 | BG | Done | `268bd353`; B2 and F1 `f9b0fa1c`; F2 `1459c017`, F2-B1 `6b5fdbaa`, F2-B2 `59f15863`, F2-B3 `a16b4650`; B1 folded into T8.19 |
 | T8.21 | 2 | BR | Done | `c7f0aee6`; B1 `632b9100`; F1 `65cbb0ed`, F2 `8162e872`, F3 `e914e669`, F3-B1 `7764c473`, F3-B1-B1 `165dd4aa` |
-| T8.19 | 2 | BN | Not started | |
+| T8.19 | 2 | BN | In progress in lane BN (runs alone, A227; includes T8.18-B1) | |
 | T8.22 | 2 | — | Not started | |
 | T8.16 | — | — | Withdrawn (decision 76) | |
