@@ -1,5 +1,6 @@
 import type { RestoreCounts, RestoreMigrations, RestorePreview, RestoreRepair, RestoreWarning } from '../../app/types.ts';
 import { ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL } from '../calculation-words.ts';
+import { tradeName } from '../format.ts';
 import { completionTime } from './backup-text.ts';
 
 const number = (n: number) => n.toLocaleString('en-US');
@@ -68,8 +69,9 @@ export function CountsTable({ restored, current }: { readonly restored: RestoreC
 }
 
 function repairSentence(repair: RestoreRepair): string {
-  if (/lifecycle/i.test(repair.kind)) return `${repair.tradeId}: lifecycle recorded ${repair.stored}, facts say ${repair.expected}. It will be corrected.`;
-  return `${repair.tradeId}: ${repair.kind} recorded ${repair.stored}, expected ${repair.expected}. It will be corrected.`;
+  const trade = tradeName(repair.tradeSummary);
+  if (repair.kind === 'EntrySizeDeviation') return `${trade}: Entry Size deviation missing. It will be added.`;
+  return `${trade}: lifecycle recorded ${repair.stored}, facts say ${repair.expected}. It will be corrected.`;
 }
 
 function migrationSentences(migrations: RestoreMigrations): readonly string[] {

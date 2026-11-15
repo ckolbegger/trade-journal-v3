@@ -23,6 +23,9 @@ export const NOT_MADE: Record<NotMadeReason, string> = {
 // Shown when an apply fails unexpectedly: the app can't tell which journal is in use until it reloads (T8.13-B2).
 export const RESTORE_UNFINISHED = "The Restore didn't finish. Reload the app to see which journal is in use.";
 
+// Shown when preparing the backup fails unexpectedly (Q5 item 4).
+export const COULD_NOT_CHECK = "The backup couldn't be checked. Your current journal is unchanged.";
+
 // "Sat Nov 14, 16:05" in the Workspace zone (convention C4).
 export function completionTime(instant: string, timeZone: string): string {
   const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).formatToParts(new Date(instant));

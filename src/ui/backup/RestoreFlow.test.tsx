@@ -12,6 +12,7 @@ import type {
   RestorePreview,
   RestoreToken,
 } from '../../app/types.ts';
+import { Rational } from '../../domain/values/index.ts';
 import { RestoreFlow } from './RestoreFlow.tsx';
 import { createBackupFacadeDouble, createFileSelectionDouble } from './test-support.ts';
 
@@ -49,7 +50,10 @@ function preview(overrides: Partial<RestorePreview> = {}): RestorePreview {
     source: { createdAt: '2026-11-20T23:00:00Z', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' },
     counts: counts(),
     migrations: { steps: [{ from: 5, to: 6 }], seedAdditions: ['Long Call'] },
-    repairs: [{ tradeId: 'trade-9', kind: 'Lifecycle', stored: 'Open', expected: 'Closed' }],
+    repairs: [
+      { tradeId: 'trade-9', tradeSummary: { underlying: 'XYZ', summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n, 1n), price: Rational.of(5018n, 100n) } }, kind: 'Lifecycle', stored: 'Open', expected: 'Closed' },
+      { tradeId: 'trade-10', tradeSummary: { underlying: 'ABC', summary: { kind: 'Option', direction: 'Short', contracts: Rational.of(2n, 1n), expiration: '2026-12-18', strike: '50', right: 'Put' } }, kind: 'EntrySizeDeviation', stored: 'None', expected: 'Present' },
+    ],
     providerNeedsSetup: [],
     target: { hasUserData: true, counts: counts({ marks: 99, accounts: 4 }), currentTimeZone: 'America/Chicago', restoredTimeZone: 'America/New_York' },
     warnings: ['TimeZoneDiffers', 'OlderSchema', 'AnotherTabHasUnsavedWork'],
@@ -352,10 +356,48 @@ describe('preview', () => {
     expect(row('Journal question revisions')[0]).toBe('9');
     expect(screen.getByText('Updated from schema 5 to 6')).toBeTruthy();
     expect(screen.getByText('Added default: Long Call')).toBeTruthy();
-    expect(screen.getByText('trade-9: lifecycle recorded Open, facts say Closed. It will be corrected.')).toBeTruthy();
     expect(screen.getByText("The backup's time zone (America/New_York) differs from this journal's (America/Chicago). The restored journal uses the backup's.")).toBeTruthy();
     expect(screen.getByText("This backup was made by an earlier version and will be updated as it's restored.")).toBeTruthy();
     expect(screen.getByText('Another tab has unsaved changes. They will be lost when the journal is replaced.')).toBeTruthy();
+  });
+});
+
+describe('preview repairs (T8.13-F3)', () => {
+  it('should word each repair with the Trade name and the approved sentence for its kind', async () => {
+    const ctx = setup();
+    await toPreview(ctx);
+    expect(screen.getByText('XYZ (Long 100 shares @ $50.18): lifecycle recorded Open, facts say Closed. It will be corrected.')).toBeTruthy();
+    expect(screen.getByText(/^ABC \(Short 2 .*\): Entry Size deviation missing\. It will be added\.$/)).toBeTruthy();
+    expect(screen.queryByText(/trade-9|trade-10/)).toBeNull();
+  });
+});
+
+describe('unexpected preparation failure reported by the coordinator (T8.13-F3)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const DETAIL = { stage: 'Prepare', name: 'Error', message: 'boom', stack: 'Error: boom\n at x' };
+  const failed = { kind: 'Rejected', totalIssues: 0, liveBinding: BINDING, issues: [], detail: DETAIL } as unknown as PrepareRestoreResult;
+
+  it('should show the could-not-be-checked sentence with Choose backup file when the rejection has no issues and a detail', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', failed);
+    await choose(ctx);
+    expect(await screen.findByText("The backup couldn't be checked. Your current journal is unchanged.")).toBeTruthy();
+    expect(screen.queryByText("This backup can't be restored.")).toBeNull();
+    expect(screen.getByRole('button', { name: 'Choose backup file' })).toBeTruthy();
+  });
+
+  it('should log the detail of a rejection that has no issues through the developer log', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    ctx.facade.respond('prepareRestore', failed);
+    await choose(ctx);
+    await screen.findByText(/couldn't be checked/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', DETAIL]);
   });
 });
 

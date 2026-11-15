@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import type { ApplyPreparedRestoreResult, BackupProgress, FileSelectionPort, MigrationIssue, PrepareRestoreResult, RestoreCounts, RestoreIssue, RestoreLanding, RestorePreview, RestoreToken, SafetyChoice } from '../../app/types.ts';
 import { explainFailure, explainMigrationIssue } from '../readiness-copy.ts';
 import type { BackupFacade } from './facade.ts';
-import { RESTORE_UNFINISHED } from './backup-text.ts';
+import { COULD_NOT_CHECK, RESTORE_UNFINISHED } from './backup-text.ts';
 import { logFailure } from './dev-log.ts';
 import { RestoreConfirm } from './RestoreConfirm.tsx';
 import { CountsTable, PreviewContents } from './RestorePreview.tsx';
@@ -90,11 +90,15 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
       abort.current = undefined;
       const thrown = error instanceof Error ? error : new Error(String(error));
       logFailure({ stage: 'Prepare', name: thrown.name, message: thrown.message, ...(thrown.stack !== undefined && { stack: thrown.stack }) });
-      setPhase({ kind: 'CannotCheck', reason: "The backup couldn't be checked. Your current journal is unchanged." });
+      setPhase({ kind: 'CannotCheck', reason: COULD_NOT_CHECK });
       return;
     }
     abort.current = undefined;
-    if (result.kind === 'Rejected') {
+    if (result.kind === 'Rejected' && result.issues.length === 0 && result.detail) {
+      // An unexpected failure inside the preparation: no issue to list (Q5 item 4).
+      logFailure(result.detail);
+      setPhase({ kind: 'CannotCheck', reason: COULD_NOT_CHECK });
+    } else if (result.kind === 'Rejected') {
       // Never the values: only the count and the first issue's code and location.
       const first = result.issues[0];
       logFailure({
