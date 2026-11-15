@@ -353,6 +353,30 @@ describe('streamed export (A128, P29)', () => {
     expect(writtenWhenDelivered.length).toBeGreaterThan(2);
     writtenWhenDelivered.slice(1).forEach((count, index) => expect(count).toBeGreaterThan(writtenWhenDelivered[index]!));
   });
+
+  it('should return Conflict before writing any record when the binding differs', async () => {
+    const stack = await w7Stack();
+    const current = (await stack.workspace.exportBackup({})) as { sourceBinding: { databaseName: string; contentRevision: number } };
+    const written = vi.spyOn(ArtifactWriter.prototype, 'writeRecord');
+    const progress = vi.fn();
+    try {
+      const run = await runExport((database, layout, onBatch, onStart) => stack.persistence.readExportSnapshot(database, layout, onBatch, onStart), {
+        databaseName: W7_DATABASE,
+        layout: exportLayoutFor(7)!,
+        exportKind: 'Normal',
+        createdAt: EXPORT_AT,
+        releaseId: 'r',
+        seedManifestVersions: { catalog: 1, journal: 1 },
+        expectedBinding: { databaseName: W7_DATABASE, contentRevision: current.sourceBinding.contentRevision - 1 },
+        onProgress: progress,
+      });
+      expect(run).toEqual({ kind: 'Conflict', currentBinding: current.sourceBinding });
+      expect(written).not.toHaveBeenCalled();
+      expect(progress).not.toHaveBeenCalled();
+    } finally {
+      written.mockRestore();
+    }
+  });
 });
 
 describe('export touches neither the root nor any store (A128, A129)', () => {

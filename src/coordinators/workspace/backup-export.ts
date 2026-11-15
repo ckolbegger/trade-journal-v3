@@ -129,6 +129,7 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
   let done = 0;
   let buildError: { readonly error: unknown } | undefined;
   let rejection: FailureDetail | undefined;
+  let conflict: WorkspaceSnapshotBinding | undefined;
 
   const closeSection = () => {
     writer.writeSectionEnd(sections[nextSection]!, written);
@@ -166,6 +167,12 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
       if (projected) write(projected);
     }),
     guarded((start: ExportStart) => {
+      // A stale binding stops the read before anything is written; the throw is remembered as the Conflict.
+      const expected = job.expectedBinding;
+      if (expected && (expected.databaseName !== start.binding.databaseName || expected.contentRevision !== start.binding.contentRevision)) {
+        conflict = start.binding;
+        throw new Error('The expected binding differs from the snapshot binding');
+      }
       total = Object.values(start.counts).reduce((sum, count) => sum + count, 0);
       writer.writeHeader({
         formatVersion: BACKUP_FORMAT_VERSION,
@@ -184,6 +191,7 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
     if (!buildError) rejection = describeError('Read', error);
     return { kind: 'ReadFailed', store: 'meta' };
   });
+  if (conflict) return { kind: 'Conflict', currentBinding: conflict };
   if (buildError) return { kind: 'Failed', reason: 'ReadFailed', detail: describeError('Build', buildError.error) };
   if (result.kind !== 'Read') {
     const detail = rejection ?? {
@@ -193,10 +201,6 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
       ...(result.kind === 'ReadFailed' ? { context: { store: result.store } } : {}),
     };
     return { kind: 'Failed', reason: 'ReadFailed', detail };
-  }
-  const expected = job.expectedBinding;
-  if (expected && (expected.databaseName !== result.binding.databaseName || expected.contentRevision !== result.binding.contentRevision)) {
-    return { kind: 'Conflict', currentBinding: result.binding };
   }
   // A snapshot that was read but cannot be written into an artifact is a failed read, not a rejection.
   try {
