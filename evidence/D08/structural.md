@@ -1164,3 +1164,7 @@ Range c0fe9928..8aa091a9, 7 files reviewed, no findings. Lane BG's tasks are all
 ## merge-22 green (lanes BG and BR)
 
 Code at `dbf75db3`. Unit 188 files / 2010 tests, integration 118 / 258, browser full tier 126 + 117, checks 14 of 14, run complete. Lanes BG and BR removed.
+
+## T8.19 blocked, then restarted
+
+The benchmark artifact `.cache/bench/benchmark.tjbackup` (git-ignored) existed only in lane BG's worktree, which the main session removed after merge-22, so lane BN had no artifact. The main session chose to regenerate it in lane BN (`build:bench && bench:generate`, about 13 minutes) and require the same digest `6d819703...` and byte size; committed `bench/` files are kept, only run metadata may differ. Tooling gap for the final report: `lane-setup.sh` does not carry `.cache/bench/`, and removing a lane worktree deletes the git-ignored artifact.
