@@ -1160,3 +1160,7 @@ Raw: `ocr/T8.18-F2-9b728388.json`.
 ## T8.18-F2-B1 to B3 ocr review (session 1c546d57)
 
 Range c0fe9928..8aa091a9, 7 files reviewed, no findings. Lane BG's tasks are all reviewed clean. Raw: `ocr/T8.18-F2-B1-B3-8aa091a9.json`.
+
+## merge-22 green (lanes BG and BR)
+
+Code at `dbf75db3`. Unit 188 files / 2010 tests, integration 118 / 258, browser full tier 126 + 117, checks 14 of 14, run complete. Lanes BG and BR removed.
