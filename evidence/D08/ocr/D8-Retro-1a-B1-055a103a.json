@@ -1,0 +1,120 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 37152,
+    "input_tokens": 36497,
+    "output_tokens": 655,
+    "cache_read_tokens": 9984,
+    "elapsed": "37s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_comment": 2,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/status.test.sh",
+      "content": "This fixture only places handoff files before the breakdown, so it still passes if the new Progress-based selection is removed and the script simply picks the first non-handoff file. Add an alphabetically earlier non-handoff file without a Progress table (for example, `D99-alpha-notes.md`) and retain the assertion that T9.7 is returned. This exercises the central requirement to select by content when multiple non-handoff plans exist.",
+      "existing_code": "  printf '# Handoff\\n' \u003e\"$t/many/plan/D99-handoff.md\"",
+      "start_line": 65,
+      "end_line": 65,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "This checks for a Progress heading, not a Progress table. If an alphabetically earlier non-handoff document contains `## Progress` followed only by prose, it is selected and the loop stops even when a later breakdown contains the actual table. The subsequent awk then reports `no Progress table` instead of displaying the breakdown. Validate that the matching section contains the expected table header before selecting it and breaking.",
+      "existing_code": "  grep -q '^## .*Progress' \"$f\" \u0026\u0026 { plan=$f; break; }",
+      "start_line": 17,
+      "end_line": 17,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/status.sh",
+        ".claude/scripts/status.test.sh"
+      ]
+    }
+  ],
+  "session_id": "1a737a92-78fb-4d6f-a7f7-9d91098e2582",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1a737a92-78fb-4d6f-a7f7-9d91098e2582",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "055a103a",
+      "resolved_base": "94c293feacda948460061c851d1df5ce2725e7e0",
+      "resolved_head": "055a103a7199d050e302398f5812688374a6fc39",
+      "exact_range": "94c293feacda948460061c851d1df5ce2725e7e0..055a103a7199d050e302398f5812688374a6fc39",
+      "source_artifact_sha256": "2de781c54ccfc8ef646f2c6417a0a2a016c0adbd3eb406ff9a3c442f3fa09d91"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "a43b9fe564beb884ace1ee7d916f760afc355c945354c4f3c3e24d213626527c"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "70693fde4be2f3ecb70d486e91575548beeb3b1f626f583b08680bf71b18893d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "a43b9fe564beb884ace1ee7d916f760afc355c945354c4f3c3e24d213626527c"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "70693fde4be2f3ecb70d486e91575548beeb3b1f626f583b08680bf71b18893d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "97da0bd53d884c260895619f059a04f1d6b8aaf04aea9341fadf9876f820f2bb",
+          "path": "evidence/D08/tdd-log/D8-Retro-1a.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 36876
+  }
+}

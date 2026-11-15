@@ -1369,3 +1369,12 @@ Open questions:
 - **D8-Retro-1a-B5** (Doubtful, `status.sh:46`): a failed read of the decisions file is ignored and prints "0 open question(s)". Case: it should exit non-zero, naming the file, when the decisions file exists but cannot be read.
 
 Notes, not bug tasks: the task wrote all five tests, ran them red against a stub, then wrote the whole script (a TDD order slip); a range written "B5 to B7" counts as two bug tasks, not three.
+
+**D8-Retro-1a-B1** (`055a103a`): the script skips every `*handoff.md` and prefers the first `plan/<Dnn>-*.md` with a Progress heading. Case 6 red then green; no first-run pass. ocr review (raw output `ocr/D8-Retro-1a-B1-055a103a.json`): 2 comments, 1 Valid, 1 Doubtful:
+
+- **D8-Retro-1a-B6** (Valid, `status.test.sh:65`): case 6 still passes with the Progress check removed, since the first-non-handoff fallback picks the breakdown anyway. Case: the fixture gains an earlier non-handoff plan file with no Progress heading, and the test must fail without the Progress check.
+- **D8-Retro-1a-B7** (Doubtful, `status.sh:17`): the choice tests for a Progress heading, not a table, so an earlier plan file with the heading and only prose would be picked and the script would exit 1. Case: it should pick the file whose Progress section holds a table.
+
+Reviewer note, not a bug task: `D07S` has two plan files with a Progress section (the option-price breakdown and its prefactor); `status.sh D07S` reports only the first.
+
+**D8-Retro-1a-B2** (`e6079cb2`): any heading after the Progress heading ends row reading. Case 7 red then green; no first-run pass. `status.sh D08P` now lists one open task, T8P.23.
