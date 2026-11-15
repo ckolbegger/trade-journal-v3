@@ -1156,3 +1156,7 @@ Raw: `ocr/T8.18-F2-9b728388.json`.
 - First-run passes, flagged: B1 "restore the wall clock ... even when the row function throws" (mutation: no `finally`); B2 "reuse rows this generator wrote" (mutation: flipped comparison).
 - Lane tier green (`6fb40919`): unit 1991, integration 229, checks 14 of 14.
 - Note: `tools/bench/profile.ts`'s `ExpectedOpenRows` type does not name the two new fields.
+
+## T8.18-F2-B1 to B3 ocr review (session 1c546d57)
+
+Range c0fe9928..8aa091a9, 7 files reviewed, no findings. Lane BG's tasks are all reviewed clean. Raw: `ocr/T8.18-F2-B1-B3-8aa091a9.json`.

@@ -1,0 +1,172 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 56503,
+    "input_tokens": 55824,
+    "output_tokens": 679,
+    "cache_read_tokens": 9984,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Benchmark generation and expected row counts",
+      "files": [
+        "bench/expected-open-rows.json",
+        "src/app/bench-generator.test.ts",
+        "src/app/bench-generator.ts",
+        "tools/bench-expected-rows.ts",
+        "tools/bench-generate.ts"
+      ]
+    },
+    {
+      "label": "Benchmark views port implementation and tests",
+      "files": [
+        "tools/bench/views-port.test.ts",
+        "tools/bench/views-port.ts"
+      ]
+    }
+  ],
+  "session_id": "1c546d57-bbb7-4beb-9abb-a28dbc1152a5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1c546d57-bbb7-4beb-9abb-a28dbc1152a5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "c0fe9928",
+      "requested_head": "8aa091a9",
+      "resolved_base": "c0fe992807cd08ce24cd51629e682dafa1ebfa4b",
+      "resolved_head": "8aa091a994dc448e6d94e3fe89bcdbc703aa4888",
+      "exact_range": "c0fe992807cd08ce24cd51629e682dafa1ebfa4b..8aa091a994dc448e6d94e3fe89bcdbc703aa4888",
+      "source_artifact_sha256": "f52eb346949d5b7d7c0219d369f6ec53bb0f86ae1943039fad3146a6170dbcd5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "19877180358b74d28d09ba32465fc3b46fa3d3ad98177f02eb71eee93cfb38dc",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "1c3f9564f047aa49d049d7ec9e6d288d8f6d0a3b77254cf8d04af6a9d2249a06"
+        },
+        {
+          "item_id": "3419f465119ff186ff0cf66b90f6456285889425d7a6a27e01b94e7edfa3d96b",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "6099039318530587034d745ba485ff5c13aa367bf9f3b8714d317f999092befc"
+        },
+        {
+          "item_id": "34d1797b5dac47e1020c8a712c16bc75bc374425c9a74e7742bb761a7f0a36f6",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "ebe204799599103f79ba49cb0c1ca62be28bbc86d83e276b2ff077575329e62f"
+        },
+        {
+          "item_id": "3c9be8c2a528a1e21f98183bae43e1dacd1ba59929bd4887ec6e15e23e028918",
+          "path": "tools/bench/views-port.ts",
+          "fingerprint": "b2561eb369ff50c6a2fbfa091b0e20504c233d9770f42cccc56b33736475e968"
+        },
+        {
+          "item_id": "685bfc6183e884618aceaa49ce16a45db9abe38d5c89d6d6247f23fa97ab8fe1",
+          "path": "tools/bench-expected-rows.ts",
+          "fingerprint": "47821e828bf1cf8062884b5a9ededcdd8ad3c90f0cd5b3b78506817ad721211f"
+        },
+        {
+          "item_id": "8655526ebecfea434bbacf0c8696c98e2200926cbd62443c115ee59c1e407abf",
+          "path": "tools/bench/views-port.test.ts",
+          "fingerprint": "2d3cb8ed6b2c260d71cb1f9e785ed8b7fb70f389ff92f10e370226204676241b"
+        },
+        {
+          "item_id": "b495081dd1fc36bea13513566fb2744d2417c848ee7d5384704aad6bf1b2a276",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "a2d1897f61247471ee837983654cd5a3f66b2a299e15855cf3175cb8eb8a879e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "19877180358b74d28d09ba32465fc3b46fa3d3ad98177f02eb71eee93cfb38dc",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "1c3f9564f047aa49d049d7ec9e6d288d8f6d0a3b77254cf8d04af6a9d2249a06"
+        },
+        {
+          "item_id": "3419f465119ff186ff0cf66b90f6456285889425d7a6a27e01b94e7edfa3d96b",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "6099039318530587034d745ba485ff5c13aa367bf9f3b8714d317f999092befc"
+        },
+        {
+          "item_id": "34d1797b5dac47e1020c8a712c16bc75bc374425c9a74e7742bb761a7f0a36f6",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "ebe204799599103f79ba49cb0c1ca62be28bbc86d83e276b2ff077575329e62f"
+        },
+        {
+          "item_id": "3c9be8c2a528a1e21f98183bae43e1dacd1ba59929bd4887ec6e15e23e028918",
+          "path": "tools/bench/views-port.ts",
+          "fingerprint": "b2561eb369ff50c6a2fbfa091b0e20504c233d9770f42cccc56b33736475e968"
+        },
+        {
+          "item_id": "685bfc6183e884618aceaa49ce16a45db9abe38d5c89d6d6247f23fa97ab8fe1",
+          "path": "tools/bench-expected-rows.ts",
+          "fingerprint": "47821e828bf1cf8062884b5a9ededcdd8ad3c90f0cd5b3b78506817ad721211f"
+        },
+        {
+          "item_id": "8655526ebecfea434bbacf0c8696c98e2200926cbd62443c115ee59c1e407abf",
+          "path": "tools/bench/views-port.test.ts",
+          "fingerprint": "2d3cb8ed6b2c260d71cb1f9e785ed8b7fb70f389ff92f10e370226204676241b"
+        },
+        {
+          "item_id": "b495081dd1fc36bea13513566fb2744d2417c848ee7d5384704aad6bf1b2a276",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "a2d1897f61247471ee837983654cd5a3f66b2a299e15855cf3175cb8eb8a879e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0639aad1864d15e6da9652a9c78523a9de1dd4385a881fc867cf91f63de47989",
+          "path": "evidence/D08/tdd-log/T8.18-F2-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "75e9ae09c9b7487169d7dff4cd8ccf9aedb0b82efe6c766dd267cc8e1bc2ed78",
+          "path": "evidence/D08/tdd-log/T8.18-F2-B3.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9e4e01ded2ee0b0c0b282aa72a4a08a8beac5e9af5c659b480dc0ab2469d5e26",
+          "path": "evidence/D08/tdd-log/T8.18-F2-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 21897
+  }
+}
