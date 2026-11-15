@@ -54,12 +54,13 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
         if (thisDownload === downloadCount.current) setMaking(progress);
       } })
       .catch((error: unknown): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null, detail: thrownDetail('Build', error) }));
+    // Every failure is logged, even one that arrives too late to show.
+    if (result.kind === 'NotCompleted') logFailure(result.detail ?? { stage: result.stage, name: result.reason, message: NO_DETAIL });
     // A Restore completed meanwhile: this export was of the replaced Workspace, so drop it.
     if (thisDownload !== downloadCount.current) return;
     setMaking(undefined);
     if (result.kind === 'Downloaded') setDownloaded(result);
     else {
-      if (result.kind === 'NotCompleted') logFailure(result.detail ?? { stage: result.stage, name: result.reason, message: NO_DETAIL });
       setNotMade(result.kind === 'NotCompleted' ? result.reason : 'Conflict');
     }
   };
@@ -95,9 +96,9 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
         if (forDownload === downloadCount.current) setChecking(progress);
       } })
       .catch((error: unknown): ConfirmBackupResult => ({ kind: 'NotVerified', reason: 'Unreadable', detail: thrownDetail('Verify', error) }));
+    if (result.kind === 'NotVerified') logFailure(result.detail ?? { stage: 'Verify', name: result.reason, message: NO_DETAIL });
     if (forDownload !== downloadCount.current) return;
     setChecking(undefined);
-    if (result.kind === 'NotVerified') logFailure(result.detail ?? { stage: 'Verify', name: result.reason, message: NO_DETAIL });
     setOutcome(result.kind === 'Completed' ? { kind: 'Completed', at: result.receipt.completedAt } : result);
   };
 

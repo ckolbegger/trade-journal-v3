@@ -418,6 +418,71 @@ describe('developer log (Q5)', () => {
     expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Verify', name: 'TypeError', message: 'verify boom', stack: verifyError.stack }]);
   });
 
+  it('should log a download failure that arrives after a Restore completes', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const facade = createBackupFacadeDouble();
+    const files = createFileSelectionDouble();
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <BackupView facade={facade.facade} selectFile={files.port} readiness={{ kind: 'Writable' }} timeZone="America/New_York" />
+      </MemoryRouter>,
+    );
+    let fail: (error: unknown) => void = () => undefined;
+    facade.respond('exportBackup', () => new Promise((_resolve, reject) => (fail = reject)));
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await completeRestore(facade, files, user);
+    const buildError = new Error('late build boom');
+    await act(() => {
+      fail(buildError);
+      return Promise.resolve();
+    });
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Build', name: 'Error', message: 'late build boom', stack: buildError.stack }]);
+    expect(screen.queryByText(/The backup could not be made/)).toBeNull();
+  });
+
+  it('should log a failure that arrives after a newer download has started', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    const { facade, files, user } = ctx;
+    await downloadFirst(ctx);
+    // A check still running when a newer download starts reports Not Verified afterwards.
+    files.choose(new File(['x'], 'chosen.gz'));
+    let finish: (result: unknown) => void = () => undefined;
+    facade.respond('confirmBackup', () => new Promise((resolve) => (finish = resolve as never)));
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText('Checking the file');
+    facade.respond('exportBackup', { ...DOWNLOADED, fileName: 'second.tjbackup.gz' });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    expect(await screen.findByText('second.tjbackup.gz')).toBeTruthy();
+    const detail = { stage: 'Verify', name: 'SyntaxError', message: 'late bad line' };
+    await act(() => {
+      finish({ kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail });
+      return Promise.resolve();
+    });
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', detail]);
+    expect(screen.queryByText(/incomplete or damaged/)).toBeNull();
+    // A check that rejects after a newer download is logged too.
+    log.mockClear();
+    files.choose(new File(['x'], 'chosen.gz'));
+    let reject: (error: unknown) => void = () => undefined;
+    facade.respond('confirmBackup', () => new Promise((_resolve, rej) => (reject = rej)));
+    await user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText('Checking the file');
+    facade.respond('exportBackup', { ...DOWNLOADED, fileName: 'third.tjbackup.gz' });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    expect(await screen.findByText('third.tjbackup.gz')).toBeTruthy();
+    const verifyError = new TypeError('late verify boom');
+    await act(() => {
+      reject(verifyError);
+      return Promise.resolve();
+    });
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Verify', name: 'TypeError', message: 'late verify boom', stack: verifyError.stack }]);
+  });
+
   it('should log the stage and reason when a failed result carries no detail', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const ctx = setup();
