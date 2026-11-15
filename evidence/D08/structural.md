@@ -535,6 +535,7 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 | T8.12 lane tier | `tools/wording-rules.test.ts` "reports navigator.userAgent…" (5 s timeout under load) | passed alone |
 | T8.14 lane tier | `src/ui/screens/PositionChangeForm.test.tsx` "focus after navigation" | passed twice alone |
 | T8.3-B2 lane tier | `src/ui/screens/TradeList.test.tsx` "Open list › should render distinct Loading, Ready, Empty…" | file passed alone (35 of 35) |
+| T8.22-B1 browser specs | `e2e/d8/after-restore.spec.ts:19` "B8.10 Readiness after Restore" (30 s timeout) | passed alone (2.7 s) |
 
 ## Results after the user's answers to Q4–Q7 (2026-11-14)
 
@@ -1216,3 +1217,7 @@ Report: `critic-1.md`. Each defect becomes a bug task, run one at a time (tdd-ta
 - T8.22-B5 (moderate): the preview and summary show Entry Type keys such as `entry-type.plan-reflection` (ui-contract line 41).
 - T8.22-B6 (moderate): on the confirm step, checkboxes and radio circles are laid out apart from their labels.
 Minor observations are not defects and are carried to the final report.
+
+## T8.22-B1 done (`9db776ea`)
+
+Root cause: the coordinator already returns the backup's created time as a zoneless local string in the backup's zone (`restore.ts:663`); the preview read it as browser-local and converted again. Fix: format the digits as given. Red: assertion (Tokyo restored zone, EST process). No first-run passes. All `src/ui/backup` tests pass under TZ=Asia/Tokyo and TZ=UTC. Browser specs restore, after-restore, backup: 10 passed, 1 flaky timeout (B8.10, passed alone). Zone shown: the backup's (the restored journal's), on first run and over an existing journal; showing the current journal's zone when they differ would need the coordinator to carry the instant (reviewer note for the final report; A133 does not say which Workspace).
