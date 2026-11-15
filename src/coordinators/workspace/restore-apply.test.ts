@@ -236,6 +236,20 @@ describe('replacement (AC-REST-003)', () => {
     await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({ ...record, migrations: {} }));
   });
 
+  it('should return CandidateChanged and delete the candidate when a repair holds an empty Trade summary', async () => {
+    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({
+      ...record,
+      repairs: [{ tradeId: 'trade-1', kind: 'Lifecycle', stored: 'Open', expected: 'Closed', tradeSummary: { underlying: 'AAPL', summary: {} } }],
+    }));
+  });
+
+  it('should return CandidateChanged and delete the candidate when a migration step names a version that is not a whole number', async () => {
+    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({
+      ...record,
+      migrations: { steps: [{ from: 1.5, to: 2 }], seedAdditions: [] },
+    }));
+  });
+
   it('should return CandidateChanged and delete the candidate when a Workspace settings record in the candidate holds a value that cannot be digested', async () => {
     await expectCandidateChangedAfterMetaRewrite('settings', (record) => ({ ...record, timeZone: undefined }));
   });

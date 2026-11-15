@@ -262,7 +262,14 @@ function isRestoreMigrations(value: unknown): boolean {
   const { steps, seedAdditions } = value;
   return (
     Array.isArray(steps) &&
-    steps.every((step) => isObject(step) && typeof step['from'] === 'number' && typeof step['to'] === 'number') &&
+    steps.every(
+      (step) =>
+        isObject(step) &&
+        Number.isInteger(step['from']) &&
+        Number.isInteger(step['to']) &&
+        (step['from'] as number) >= 1 &&
+        (step['to'] as number) > (step['from'] as number),
+    ) &&
     Array.isArray(seedAdditions) &&
     seedAdditions.every((addition) => typeof addition === 'string')
   );
@@ -278,7 +285,17 @@ function isRestoreRepair(value: unknown): boolean {
     typeof value['expected'] === 'string' &&
     isObject(summary) &&
     typeof summary['underlying'] === 'string' &&
-    isObject(summary['summary'])
+    isTradeSummary(summary['summary'])
+  );
+}
+
+// Whether a value holds every field a Trade summary requires, with its type.
+function isTradeSummary(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  return (
+    ['tradeId', 'accountId', 'strategyId', 'underlying', 'planTime'].every((key) => typeof value[key] === 'string') &&
+    (value['lifecycle'] === 'Planned' || value['lifecycle'] === 'Open' || value['lifecycle'] === 'Closed') &&
+    (value['lastActivity'] === undefined || typeof value['lastActivity'] === 'string')
   );
 }
 
