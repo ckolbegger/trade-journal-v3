@@ -279,3 +279,15 @@ Recommended: (a+).
 **Q11 answer (2026-11-14): (a).** Stale and NotRecognized keep the candidate. T8.9-B4 and B5 close with no change; revision 103 amends A135 to list these two with the missing-choice cases.
 
 **Q10 answer (2026-11-14): (a).** Only launch runs `inspectRoot()` with its cleanup; rechecks after launch use `lookupRoot()`. T8.11 makes the change in `compose.ts` and `tests/support/stack.ts`, with a case proving a prepared candidate survives a recheck (closes T8.9-B1). T8.9-B2 then removes the `lookupSession` workaround. A handoff note for T8.11 carries this.
+
+## Q12. A throw after the switch in the last three steps of apply (T8.9-B3) — open, asked 2026-11-14
+
+T8.9-B3 guarded two of the steps after the journal switch (removing the preparation record, the broadcast). A throw in the other three (the readiness rerun, reading the new database's description, building the status) still rejects the call after the switch. Guarding them needs `workspace.ts` to pass in a status builder, outside lane WR.
+
+**Options:**
+- (a) Leave it. These three report failures as results rather than throwing in every known path, and if one throws, the Restore screen already says "The Restore didn't finish. Reload the app to see which journal is in use." (Q5 item 8), which is right for this case. Record it as known in the final report.
+- (b) Add a small follow-up after T8.11 (which edits the wiring) that passes a status-from-failure builder through `RestoreDeps`, and guard all three.
+
+**Recommended: (a).**
+
+**Q12 answer (2026-11-14): (a).** Leave the readiness rerun, `describeDatabase` and `deps.status()` unguarded after activation; the Restore screen's Q5 item 8 message covers a throw there. T8.9-B3 is complete as committed; the final report lists this as a known limit.

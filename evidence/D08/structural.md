@@ -903,3 +903,12 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - B3, B6, B7 and B8 run now, one at a time.
 - **T8.9-B4 and B5:** closed with no change by Q11 (a).
 - **Q10 answered (a):** T8.9-B1 moves to T8.11 (it owns `compose.ts`); T8.9-B2 runs in lane WR after T8.11 merges. Handoff note added for both.
+- **T8.9-B3** `81d028b1` (lane WR), partial: after activation, a failed `restorePrepared` delete (`.catch`) and a failed broadcast (try/catch) no longer stop the Restored result. Genuine red (runtime exception "the preparation record could not be removed"); lane tier green (unit 1921, integration 229, checks 14 of 14).
+  - **Deviation, for the user (Q12):** a throw in the readiness rerun, `describeDatabase` or `deps.status()` is still unguarded, since `restore.ts` cannot build a Recovery Only status from its generic `S` or a new binding without a content revision; a fallback needs a status-from-failure builder from `workspace.ts`, outside lane WR. A rerun that reports failure (rather than throwing) already gives Recovery Only, and the Restore screen shows Q5 item 8's "The Restore didn't finish. Reload the app to see which journal is in use." for any thrown apply failure.
+- **ocr T8.9-B3 `81d028b1`:** 0 findings. Raw: `ocr/T8.9-B3-81d028b1.json`.
+- **Q12 answered (a):** T8.9-B3 stands as committed; the unguarded post-activation throw goes in the final report's known limits.
+- **merge-15** (lane UB merged T8.13-F3; source `ca839e70`): all green, run complete. Fixes merge-14.
+  - Unit 180 / 1913, integration 106 / 229, checks 14 of 14 (typecheck and tsc6 pass again).
+  - Browser: full tier (first matching path since `5fad9859`: `src/ui/backup/RestoreFlow.tsx`); browser-1 126 passed (5.3m), browser-2 98 passed (6.6m).
+  - Docs-only commits landed on the branch during the run (`b36a5e9e`, `4649543c`, `878b496d`), so the later stages printed newer HEADs; no code changed between them.
+  - Lane UB's worktree and branch are removed.
