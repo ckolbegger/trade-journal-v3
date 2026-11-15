@@ -312,6 +312,37 @@ describe('safety choices and first run (AC-REST-002, P33)', () => {
   });
 });
 
+describe('first run activation outcomes (T8.9-F1-B1, T8.15-B1)', () => {
+  // A first run whose persistence answers the activation as given, the candidate otherwise prepared as usual.
+  async function firstRunWith(activate: () => Promise<{ kind: 'AlreadyInitialized'; databaseName: string }>) {
+    const empty = await testStack(new IDBFactory());
+    const persistence = { ...empty.persistence, activateFirstCandidate: activate } as typeof empty.persistence;
+    const workspace = workspaceOf(empty, { persistence });
+    const { token } = await preparedWithPreview({ workspace });
+    return { empty, workspace, token };
+  }
+
+  it('should drop the held preparation when the first run finds the journal already initialized', async () => {
+    const { workspace, token } = await firstRunWith(() => Promise.resolve({ kind: 'AlreadyInitialized', databaseName: 'other-tab' }));
+
+    const first = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM });
+    const again = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM });
+
+    expect(first).toMatchObject({ kind: 'AlreadyInitialized', databaseName: 'other-tab' });
+    expect(again).toMatchObject({ kind: 'PreparationNotFound' });
+  });
+
+  it('should discard the candidate when the first run activation throws', async () => {
+    const { empty, workspace, token } = await firstRunWith(() => Promise.reject(new Error('activation failed')));
+
+    await expect(workspace.applyPreparedRestore({ token, confirmation: CONFIRM })).rejects.toThrow('activation failed');
+    const again = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM });
+
+    expect(databaseNames(await dumpAll(empty.factory))).toEqual([]);
+    expect(again).toMatchObject({ kind: 'PreparationNotFound' });
+  });
+});
+
 describe('replacement through the real readiness session (T8.9-B2)', () => {
   it('should return Restored when a prepared Restore is applied through the stack readiness session, whose rechecks keep the candidate', async () => {
     const target = await targetWorkspace();

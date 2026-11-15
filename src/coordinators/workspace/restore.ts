@@ -734,8 +734,19 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
 
         // One root transaction switches the pointer (A135 step 5); with no Workspace it adds the pointer instead.
         if (live === 'NoWorkspace') {
-          const activation = await persistence.activateFirstCandidate(token.candidateId);
-          if (activation.kind === 'AlreadyInitialized') return { kind: 'AlreadyInitialized', databaseName: activation.databaseName, liveBinding: await liveBinding() };
+          let activation: Awaited<ReturnType<typeof persistence.activateFirstCandidate>>;
+          try {
+            activation = await persistence.activateFirstCandidate(token.candidateId);
+          } catch (error) {
+            // Nothing was activated, so the candidate and its preparation go; the failure itself still reaches the caller.
+            await dropCandidate(token.candidateId).catch(() => undefined);
+            throw error;
+          }
+          if (activation.kind === 'AlreadyInitialized') {
+            // Persistence deleted the losing candidate, so only the held preparation is left to drop.
+            held.delete(token.candidateId);
+            return { kind: 'AlreadyInitialized', databaseName: activation.databaseName, liveBinding: await liveBinding() };
+          }
         } else if ((await persistence.activateCandidate(token.candidateId, live.databaseName)).kind === 'Aborted') {
           await dropCandidate(token.candidateId);
           throw new Error('The root transaction that switches the Workspace was aborted');

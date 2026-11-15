@@ -572,8 +572,9 @@ describe('repairs (AC-LIFE-003, decision 23, D6 review-queue item 2)', () => {
     // The private state is rebuilt from the repaired records, and what apply rechecks was measured after the repair.
     expect(trades.every((trade) => typeof trade['activityDesc'] === 'string' && typeof trade['exposureStart'] === 'string' || trade['lifecycle'] === 'Planned')).toBe(true);
     expect(candidate['journalObligations']).toHaveLength(50);
-    const source = target.persistence.candidateSource(result.token.candidateId);
-    expect(await applyTrades(source, await measureTrades(source))).toEqual({ kind: 'Accepted' });
+    // Apply rechecks the candidate against what preparation held: it only passes when that was measured after the repairs.
+    const applied = await target.workspace.applyPreparedRestore({ token: result.token, confirmation: { kind: 'ReplaceEntireWorkspace' }, safety: { kind: 'DeclinedAfterWarning' } });
+    expect(applied.kind).toBe('Restored');
   });
 });
 
