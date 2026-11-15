@@ -780,3 +780,48 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 - **ocr of T8.4-B7** `1cf3e645`: no findings (2 files reviewed). Raw: `ocr/T8.4-B7-1cf3e645.json`.
 - **ocr of T8.12-B6** `d71709b7`: no findings (2 files reviewed). Raw: `ocr/T8.12-B6-d71709b7.json`. The reviewer confirmed the amended commit holds only the B6 evidence; the B1 files equal `64091bbc`.
 - **Lane UB ready to merge:** T8.12 and T8.13, with all their follow-ups and bug tasks, have clean reviews. They merge now, because the plan lets a UI lane merge before the backend. Item 2's repair sentences wait for T8.8's `tradeSummary`, as follow-up T8.13-F3 in lane UB.
+- **T8.4-B8** `94e4132b` (lane WB): a test-only refactor. The streaming test's wrapper now returns `onBatch(batch)`; the other wrappers already did. `backup.test.ts` passed 35 of 35 before and after.
+  - Lane tier: unit 177 / 1845, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.4-B8** `94e4132b`: no findings (1 file reviewed). Raw: `ocr/T8.4-B8-94e4132b.json`.
+- **T8.4-B9** `1337ecfd` (lane WB): a test-only change, flagged as a first-run pass with a mutation check.
+  - The streaming test now records the cumulative write count when each batch arrives and right after it is handled. The count at batch N+1's arrival must equal the count after batch N, and the final count must equal the count after the last batch.
+  - The mutation wrote only the first record of each batch and buffered the rest until the section closed. It failed with "expected 103 to be 43", while the old assertion still passed under it. The mutation was reverted.
+  - Lane tier: unit 177 / 1845, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.8** `e0d1b5ea` (lane WR): ten cases, eight planned and two added (NotUtf8, failure detail), each red then green with no first-run passes. The tdd log has each red line.
+  - The InsufficientCapacity case's first green failed because the test left too much free space. The test was fixed with no production change.
+  - Choices made:
+    - `RestoreRepair.tradeSummary` is `{ underlying, summary: TradeSummary }`, from the domain's `plannedTradeSummary`. T8.13-F3 renders it with the UI's `tradeName`, because coordinators may not import UI.
+    - Repair kinds are `Lifecycle` and `EntrySizeDeviation`. A missing Entry Size deviation has stored `None`.
+    - NotUtf8 maps to `UnsupportedFormat`. Other reader errors (Truncated, Corrupt) map to `IncompleteArtifact`.
+    - `Rejected` and `Cancelled` gain `detail?` (stage Prepare). A Rejected detail carries the first issue's code, section, line and path, plus the total.
+    - An unexpected failure becomes `Rejected` with no issues and a `detail` from `describeError`, and its candidate is deleted. The frozen union has no other failure kind. T8.13-F3 must show Q5 item 4's sentence for "no issues and a detail".
+    - The candidate meta holds `restorePrepared` with each section's whole `measureCandidateSection` result.
+    - `RestoreDeps` gained `sessionPolicy`, which `WorkspaceDeps` already has; `workspace.ts` is unchanged.
+  - Deviation: the type additions went into `src/coordinators/workspace/backup-types.ts`, where the frozen types live, not into `src/app/types.ts`, which only re-exports them.
+  - Lane tier: unit 178 / 1853, integration 106 / 229, checks 14 of 14.
+  - Agent notes, not bug tasks. Each goes to the user after T8.8's ocr unless ocr raises it:
+    1. `prepareJournalSeed` compares prompts with `JSON.stringify`, which depends on key order. A7 was reported as a seed conflict, and `restore.ts` works around it. The same mismatch probably hits `journal.seedDefaults` at the next `initialize` of a restored Workspace. The root fix is in `journal.ts`.
+    2. `Cancelled` and the abort signal are not built; the plan has no case.
+    3. `UnsupportedDataCapability` (A3's sentence) is never produced; the footprint check reports `ManifestMismatch`.
+    4. Artifacts of schemas 1 and 2 would be rejected, because T8.6's strict parser requires `workspace.sessionPolicy`.
+    5. A Trade naming an unknown Strategy is not reported.
+    6. The `restorePrepared` meta record survives into the live database after activation. T8.9 may delete it.
+  - ocr pending.
+- **ocr of T8.4-B9** `1337ecfd`: one finding, assessed Valid. Raw: `ocr/T8.4-B9-1337ecfd.json`.
+
+| Task | Location | Defect | Case |
+|---|---|---|---|
+| T8.4-B10 | `backup.test.ts:360-361` | the new equalities only show that nothing is written outside the delivery callbacks. Writing nothing at all, or buffering every batch until the last callback, still passes, because B9 dropped the strict-increase check | test-only change: each `onBatch` raises the write count by exactly that batch's record count |
+- **ocr of T8.8** `e0d1b5ea`: **did not run**. The ChatGPT provider rejected all 4 file reviews with `subscription_sharing_usage_limit_exceeded`. Raw: `ocr/T8.8-e0d1b5ea-failed.json`. T8.8's merge waits for a review once the limit resets, or for an API key; this is with the user.
+- **T8.4-B10** `1b7f2800` (lane WB): a test-only change, flagged as a first-run pass with a mutation check.
+  - The streaming test now asserts that each `onBatch` raises the write count by exactly `batch.records.length`; B9's two equalities stay.
+  - The mutation buffered every batch until the last store's batch. It failed with "expected +0 to be 13" at line 363, eight times, while B9's lines still passed. The mutation was reverted.
+  - Lane tier: unit 177 / 1845, integration 106 / 229, checks 14 of 14.
+  - ocr not run: it waits for the user's choice about the ocr usage limit.
+- **ocr usage limit:** the user chose to wait (2026-11-14, 19:47) for 1 hour 55 minutes, until the limit resets, then retry. The reviews to retry are T8.8 `e0d1b5ea` and T8.4-B10 `1b7f2800`.
+- **merge-12** (lane UB merged T8.12 and T8.13; source `ade94fde`): all green, run complete.
+  - Unit 179 / 1884, integration 106 / 229, checks 14 of 14.
+  - Browser: the full tier ran, because `src/app/types.ts` changed since `a2ccf117`. 126 + 98 passed.
+  - Outputs: `suite-runs/merge-12-*.txt`.
