@@ -2,6 +2,7 @@
 // operations behind them are filled in by the backup and Restore tasks (backup.ts, restore.ts).
 import type { ReadinessEvaluation } from '../../delivery/readiness.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
+import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 
 // A Workspace binding, or the absence of any Workspace (a Restore into an empty browser).
@@ -127,6 +128,10 @@ export type RestoreWarning = 'TimeZoneDiffers' | 'OlderSchema' | 'AnotherTabHasU
 
 export interface RestoreRepair {
   readonly tradeId: string;
+  // The Trade as the app names one in a sentence (the UI's tradeName): its Underlying and the
+  // Summary of what its Plan holds. Never the Trade identity alone (D8 Q5 item 2).
+  readonly tradeSummary: { readonly underlying: string; readonly summary: TradeSummary };
+  // `Lifecycle` or `EntrySizeDeviation`.
   readonly kind: string;
   readonly stored: string;
   readonly expected: string;
@@ -199,8 +204,10 @@ export type PrepareRestoreResult =
       readonly issues: readonly RestoreIssue[];
       readonly totalIssues: number;
       readonly liveBinding: TargetBinding;
+      // For the developer log only (Q5): stage `Prepare`. An unexpected failure is a rejection with no issues.
+      readonly detail?: FailureDetail;
     }
-  | { readonly kind: 'Cancelled'; readonly liveBinding: TargetBinding };
+  | { readonly kind: 'Cancelled'; readonly liveBinding: TargetBinding; readonly detail?: FailureDetail };
 
 // ---- Restore apply (A135, A136) ----
 
