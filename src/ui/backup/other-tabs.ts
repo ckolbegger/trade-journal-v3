@@ -14,7 +14,8 @@ export interface Timing {
   delay(ms: number): Promise<void>;
 }
 
-const realTiming: Timing = { now: () => Date.now(), delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)) };
+// Real timing reads a monotonic clock, so wall-clock changes do not move it.
+const realTiming: Timing = { now: () => performance.now(), delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)) };
 
 // The Restore preview warns when another tab has unsaved work (D8 A133). The tabs are asked when
 // preparation starts, and the answer is read when it finishes, so replies that arrive while the
@@ -29,7 +30,8 @@ export function withOtherTabsWarning(facade: BackupFacade, tabs: OtherTabs, timi
       const result = await facade.prepareRestore(request);
       if (result.kind !== 'Prepared') return result;
       if (!tabs.unsavedElsewhere()) {
-        const remaining = REPLY_WINDOW_MS - (timing.now() - askedAt);
+        // Clamped, so a clock that moved backwards never stretches the wait beyond the window.
+        const remaining = Math.min(REPLY_WINDOW_MS, REPLY_WINDOW_MS - (timing.now() - askedAt));
         if (remaining > 0) await timing.delay(remaining);
       }
       if (!tabs.unsavedElsewhere() || result.preview.warnings.includes('AnotherTabHasUnsavedWork')) return result;

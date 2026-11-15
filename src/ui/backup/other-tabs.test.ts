@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PrepareRestoreResult, RestorePreview } from '../../app/types.ts';
-import { withOtherTabsWarning } from './other-tabs.ts';
+import { REPLY_WINDOW_MS, withOtherTabsWarning } from './other-tabs.ts';
 import { createBackupFacadeDouble } from './test-support.ts';
 
 const FILE = new File(['x'], 'journal.tjbackup.gz');
@@ -96,5 +96,18 @@ describe('the Restore preview and other tabs', () => {
     });
     await withOtherTabsWarning(double.facade, { askOthers: () => undefined, unsavedElsewhere: () => false }, slow.timing).prepareRestore({ file: FILE });
     expect(slow.waits).toEqual([]);
+  });
+
+  it('should never wait longer than the reply window when the clock reads earlier after preparation', async () => {
+    const double = createBackupFacadeDouble();
+    let t = 3_600_000;
+    const waits: number[] = [];
+    double.respond('prepareRestore', () => {
+      t = 0; // the clock jumped back an hour while the file was read
+      return prepared([]);
+    });
+    const timing = { now: () => t, delay: (ms: number) => (waits.push(ms), Promise.resolve()) };
+    await withOtherTabsWarning(double.facade, { askOthers: () => undefined, unsavedElsewhere: () => false }, timing).prepareRestore({ file: FILE });
+    expect(waits).toEqual([REPLY_WINDOW_MS]);
   });
 });
