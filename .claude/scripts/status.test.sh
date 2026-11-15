@@ -58,5 +58,14 @@ if want 5; then
   [[ $code != 0 && "$out" == *"D99"* ]] || bad "missing breakdown not reported: $code $out"
 fi
 
+if want 6; then
+  mkfix many '| T9.7 | 2 | A | Paused | `x` |'
+  mv "$t/many/plan/D99-fixture.md" "$t/many/plan/D99-zeta-breakdown.md"
+  printf '# Handoff\n\nNotes without a table.\n' >"$t/many/plan/D99-implementing-handoff.md"
+  printf '# Handoff\n' >"$t/many/plan/D99-handoff.md"
+  out=$(STATUS_ROOT="$t/many" "$st" D99 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"T9.7"* ]] || bad "breakdown holding the Progress table not picked among handoff files (exit $code): $out"
+fi
+
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"
 exit $fail

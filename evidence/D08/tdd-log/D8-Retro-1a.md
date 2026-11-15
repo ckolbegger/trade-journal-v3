@@ -11,3 +11,13 @@ Rows are hand-written (tdd.sh runs vitest only). Command: `.claude/scripts/statu
 | 5 (extra) | a missing breakdown is named and exits non-zero | FAIL: missing breakdown not reported: 0 | passed |
 
 refactor: none needed; the script is one awk pass per table and per decisions file.
+
+## B1
+
+Command: `.claude/scripts/status.test.sh 6`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 6 | it should pick the file that holds the Progress table, skipping every handoff file, when several plan files exist | FAIL: breakdown holding the Progress table not picked among handoff files (exit 1): status.sh: no Progress table in .../plan/D99-implementing-handoff.md | status.test.sh: all requested cases passed (cases 1 to 6) |
+
+refactor: none needed; the fix is two lines in the plan-file loop.

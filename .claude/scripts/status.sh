@@ -12,8 +12,9 @@ root=${STATUS_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}
 shopt -s nullglob
 plan=
 for f in "$root"/plan/"$d"-*.md; do
-  [[ $f == */"$d"-handoff.md ]] && continue
-  plan=$f; break
+  [[ $f == *handoff.md ]] && continue
+  [[ -z $plan ]] && plan=$f
+  grep -q '^## .*Progress' "$f" && { plan=$f; break; }
 done
 if [[ -z $plan ]]; then echo "status.sh: no breakdown plan/$d-*.md in $root" >&2; exit 1; fi
 
