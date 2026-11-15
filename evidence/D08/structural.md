@@ -514,6 +514,7 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 | Critic | Report | Flows | Result | Tokens | Tool calls | Duration | Brief |
 |---|---|---|---|---|---|---|---|
 | critic-1 | `critic-1.md` | C8.1 to C8.10 (C8.9 withdrawn) | FAIL: 6 defects (2 high, 4 moderate) | 183,880 | 95 | 12 m 28 s | critic-brief.md template, setup helpers from `e2e/d8/support.ts`; commit `4ed74668` |
+| critic-2 | `critic-2.md` | C8.1 to C8.10 (C8.9 withdrawn) | PASS: 2 low defects | 140,826 | 63 | 8 m 22 s | same as critic-1, plus a pointer to DECISIONS-PENDING.md and a browser fallback note; commit `b38f1fe4` (code `8190768c`) |
 
 ## Lane worktrees
 
@@ -1266,3 +1267,10 @@ Cause: the global `input, select, textarea { display:block; width:100% }` rule i
 ## Full tier before critic-2 green
 
 Code at `6fddd9f4` (HEAD `c15790d4`). Unit 189 files / 2024 tests, integration 118 / 258, browser-1 126 passed (5.3 m), browser-2 119 passed (7.9 m), checks 14 of 14, run complete.
+
+## T8.22 critic-2: PASS, two low defects
+
+Report: `critic-2.md`. All critic-1 defects confirmed fixed. PASS with only low defects: each becomes a bug task, then one full run closes the gate (no new critic).
+- T8.22-B7 (low): the counts table breaks words and numbers mid-word at 375 and 320 px ("backu / p", "versi / ons"). Likely from B4's `overflow-wrap: anywhere` on the whole `.restore-preview`.
+- T8.22-B8 (low): "1 (1 versions)": the version count is not singular for one.
+Minor observations (carried to the final report): focus drops to `<body>` after Restore; no Back or Cancel from the preview; the decline acknowledgment stays ticked after switching away and back; empty `candidates` record in the root; About's Entry Types line shows internal keys.
