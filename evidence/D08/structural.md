@@ -1227,3 +1227,4 @@ Root cause: the coordinator already returns the backup's created time as a zonel
 ## T8.22-B2 done (`e971f296`)
 
 The manifest already carried the ranges (`backupSchemaRange`, checked by `verify:capabilities`); About never rendered them. About now shows "Backups: exports schema 7 (format 1); restores schemas 3 to 7 (format 1)", built from the manifest. 3 to 7 is Q14's answer (A145 amended in r103), not a deviation. Red: assertion. No first-run passes. `verify:capabilities` OK (24 operations); browser specs shell, backup, responsive-a11y: 9 passed.
+- T8.22-B2 ocr review (session 11aff839): 2 files, no findings. Raw: `ocr/T8.22-B2-e971f296.json`. The plan's A145 text still reads "1 through 7" until r103 applies Q14.
