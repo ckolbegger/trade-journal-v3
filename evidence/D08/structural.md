@@ -1388,3 +1388,5 @@ Reviewer note, not a bug task: `D07S` has two plan files with a Progress section
 **D8-Retro-1a-B3 ocr review** (`ca48bc14`, `ocr/D8-Retro-1a-B3-ca48bc14.json`): 1 comment, Valid:
 
 - **D8-Retro-1a-B8** (Valid, `status.sh:34`): the prefix matches only `T<digits>(.<digits>)*-`, so `T8P.23-B1`, `T7S.4-F1` and `D7-Retro-F3` count as zero (no current Progress table holds such IDs). Case: it should count F and B tasks after any task-ID prefix the repo uses (`T8P.23-`, `T7S.4-`, `D7-Retro-`), each distinct ID once.
+
+**D8-Retro-1a-B5** (`8ac0f183`): a failed read of the decisions file prints `status.sh: cannot read <file>` and exits 1; a missing file still prints "no decisions file" and exits 0. Case 10 red then green (skips with a printed reason when run as root). ocr review (`ocr/D8-Retro-1a-B5-8ac0f183.json`): 0 comments, no findings.
