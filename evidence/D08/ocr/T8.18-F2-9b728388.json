@@ -1,0 +1,227 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 3,
+    "total_tokens": 319822,
+    "input_tokens": 316705,
+    "output_tokens": 3117,
+    "cache_read_tokens": 18304,
+    "elapsed": "1m18s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_read": 21,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/bench-generate.ts",
+      "content": "Non-empty rows do not distinguish this generation path from the previous browser-populated expectations: `bench:expected` already wrote non-empty rows, and the generator version remains 8. An existing version-8 dataset with those rows can therefore be reused without computing application-ordered Review expectations. Record and check an expectation-generation version/provenance marker (or bump the generator version) rather than using row count as the migration guard.",
+      "existing_code": "if (smokeSessions === undefined \u0026\u0026 onDisk \u0026\u0026 (recordedRows?.rows?.length ?? 0) \u003e 0 \u0026\u0026 recorded?.generatorVersion === BENCH_GENERATOR_VERSION \u0026\u0026 recorded.schemaVersion === SCHEMA_VERSION \u0026\u0026 recorded.artifact?.fileDigest === sha256(onDisk)) {",
+      "start_line": 46,
+      "end_line": 46,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/bench/views-port.ts",
+      "content": "If module loading rejects (for example, because a screen dependency cannot be resolved), the created Vite server is never closed. The caller's cleanup only runs after this factory returns, so its watchers/resources can remain active and keep the failed CLI invocation alive. Catch loading failures here, await `server.close()`, and rethrow.",
+      "existing_code": "  const screen = (await server.ssrLoadModule('/src/ui/screens/TradeList.tsx')) as { openRowsOf: BenchViewsPort['openRowsOf'] };",
+      "start_line": 9,
+      "end_line": 9,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "The expected rows still depend on the generator machine's current year: `tradeSummary` calls `summaryExpiration`, whose `currentYear` reads `new Date()`. The Node generator does not pin Date, whereas the browser benchmark pins it to the dataset's `asOf`. Consequently, generating the same version in a different year changes option summary cells (adding/removing the expiration year suffix) and can disagree with the benchmark UI. Supply a fixed reference instant/year for this formatting path, or pin the Node formatting clock to `asOf`; add an option-row test with wall-clock and dataset years differing.",
+      "existing_code": "      (derived?.summary ? tradeSummary(derived.summary, timeZone) : NOT_AVAILABLE) +",
+      "start_line": 157,
+      "end_line": 157,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Benchmark generation, tooling, and dataset",
+      "files": [
+        "bench/dataset.json",
+        "src/app/bench-generator.test.ts",
+        "src/app/bench-generator.ts",
+        "tools/bench-generate.ts",
+        "tools/bench/node-restore.ts",
+        "tools/bench/views-port.ts"
+      ]
+    },
+    {
+      "label": "Trade list screen and tests",
+      "files": [
+        "src/ui/screens/TradeList.test.tsx",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "613454fe-b56c-41a4-9420-9c24911c2b70",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "613454fe-b56c-41a4-9420-9c24911c2b70",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9b728388",
+      "resolved_base": "d308e6b3f8add8b3d41cc527285e7ba07ecb0da0",
+      "resolved_head": "9b72838806b9fb416fd2ddbf7bf2073deda6df36",
+      "exact_range": "d308e6b3f8add8b3d41cc527285e7ba07ecb0da0..9b72838806b9fb416fd2ddbf7bf2073deda6df36",
+      "source_artifact_sha256": "a34cf3e37b775c16521da556296557993fa3210f36716712d20781bcc19616b6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "193fd6ed0ced4bf27c854f39d0d94ce7f46a200bd6f38b0f2eb8a6e2e63a8106",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "0c08cc30d0a666c2685981ab240aa94e7ecce75e568d5404bdd564dd8720e117"
+        },
+        {
+          "item_id": "21528fdea1f786ee58019fc622e43786a82d341175e8a059f5ae72ed67e96e01",
+          "path": "src/ui/screens/TradeList.test.tsx",
+          "fingerprint": "1cb39164a6acbd0ea49faaa03fc6eefbbf0ec79ba7b730776607b8b6acc2abba"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "4c23cfda584242e4ede20862d8f664b4d67c370b27c89850e4b05ed2ecfae779"
+        },
+        {
+          "item_id": "5fd9ac03154d4f7a7e6429adf19901548a9fff3ae40636d189471278df33eb99",
+          "path": "tools/bench/node-restore.ts",
+          "fingerprint": "f4a2feecc3f100b97b3190d58d69126c5c212de1fb9f7be695c31f9e0f0a0a77"
+        },
+        {
+          "item_id": "9980669e31f2f1e26a9b34c981437e9951400ea11c9b0d4471f339212d17376a",
+          "path": "tools/bench/views-port.ts",
+          "fingerprint": "401b3ef0256c589e0ca908d7c99b06787b03500c2b64079914b9b643ba13ca0c"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "8b56a8410e3bc90b0ef05c9f1a1d0dbc5a69cb4efb3911aa8cf230ea5861e3ef"
+        },
+        {
+          "item_id": "b2e01b44de49a8302e41e58add1effedad95d33abbed5e645daac4136f879af9",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "10c8b6ec816cca7a06354be6faa92b144a4b819cbcaee34f7501b3586e80e774"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "8eca32ee385d61cd1422d0e3d90180e19d4108793959d11fda054add59902380"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "193fd6ed0ced4bf27c854f39d0d94ce7f46a200bd6f38b0f2eb8a6e2e63a8106",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "0c08cc30d0a666c2685981ab240aa94e7ecce75e568d5404bdd564dd8720e117"
+        },
+        {
+          "item_id": "21528fdea1f786ee58019fc622e43786a82d341175e8a059f5ae72ed67e96e01",
+          "path": "src/ui/screens/TradeList.test.tsx",
+          "fingerprint": "1cb39164a6acbd0ea49faaa03fc6eefbbf0ec79ba7b730776607b8b6acc2abba"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "4c23cfda584242e4ede20862d8f664b4d67c370b27c89850e4b05ed2ecfae779"
+        },
+        {
+          "item_id": "5fd9ac03154d4f7a7e6429adf19901548a9fff3ae40636d189471278df33eb99",
+          "path": "tools/bench/node-restore.ts",
+          "fingerprint": "f4a2feecc3f100b97b3190d58d69126c5c212de1fb9f7be695c31f9e0f0a0a77"
+        },
+        {
+          "item_id": "9980669e31f2f1e26a9b34c981437e9951400ea11c9b0d4471f339212d17376a",
+          "path": "tools/bench/views-port.ts",
+          "fingerprint": "401b3ef0256c589e0ca908d7c99b06787b03500c2b64079914b9b643ba13ca0c"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "8b56a8410e3bc90b0ef05c9f1a1d0dbc5a69cb4efb3911aa8cf230ea5861e3ef"
+        },
+        {
+          "item_id": "b2e01b44de49a8302e41e58add1effedad95d33abbed5e645daac4136f879af9",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "10c8b6ec816cca7a06354be6faa92b144a4b819cbcaee34f7501b3586e80e774"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "8eca32ee385d61cd1422d0e3d90180e19d4108793959d11fda054add59902380"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "2603ca14b07a8fe3be654ecc0c13d64f6c740809972da8c0d12a19bfdf4ec88c",
+          "path": "evidence/D08/suite-runs/T8.18-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "exclude_reason": "too_large"
+        },
+        {
+          "item_id": "682a7a868f40b5cbb80b3fb6ea84dd0f99477ff400a376848119b46e2f06df4c",
+          "path": "evidence/D08/suite-runs/T8.18-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "68ca58514bd440585ef4f8c4d62a54d3ff79eef6952872aa5aa03e0efb93cdd1",
+          "path": "evidence/D08/suite-runs/T8.18-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c2892fddb10bc6c485ace08a16b479d2e378d7f12c87ae9cdb70faa46cf59c08",
+          "path": "evidence/D08/tdd-log/T8.18-F2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ec997db459fc9999c6ac6df177312d817d91fb7df8e9f7cf97927f49e7f2baa0",
+          "path": "evidence/D08/suite-runs/T8.18-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 77601
+  }
+}

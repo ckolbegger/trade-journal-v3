@@ -1139,3 +1139,11 @@ Real timing uses `performance.now()`; the wait is capped at `REPLY_WINDOW_MS`. R
 ## T8.21-F3-B1-B1 ocr review (session 81c66e35)
 
 2 files reviewed, no findings. Lane BR's tasks are all reviewed clean. Raw: `ocr/T8.21-F3-B1-B1-ca1cca05.json`.
+
+## T8.18-F2 ocr review (session 613454fe)
+
+8 files reviewed, none failed. Three findings, all become bug tasks in lane BG:
+- B1 (Valid): the Node generator's expected Open rows depend on the machine's current year (`format.ts` `currentYear()` reads `new Date()`), where the browser path pins the date to the dataset's `asOf`.
+- B2 (Doubtful): the reuse guard in `tools/bench-generate.ts` accepts any non-empty rows file, including rows written by the browser-based `bench:expected`, so it cannot tell Node-computed rows from older ones.
+- B3 (Doubtful): `tools/bench/views-port.ts` leaves the Vite server open when `ssrLoadModule` rejects.
+Raw: `ocr/T8.18-F2-9b728388.json`.
