@@ -226,3 +226,21 @@ The options are:
 Recommended: (b). The stack's file and line locations are what developers need to find a bug, and dropping the message closes the leak for good. T8.13-B8 waits for the answer.
 
 Added from the T8.4-B5 review, as a reviewer note: an export error's message ends with the record path, such as `at $.someKey`, built from object keys. A record keyed by user-entered text would leak it through the message. Under (b) the message is not logged, which closes this too.
+
+**Q8 revised (2026-11-14), after the user asked for more detail:**
+- Option (b) is withdrawn. A count on the Planned row would still read as that row's own version count, which was the original confusion.
+- A gap the first wording missed: as built, reflection-debt versions show nowhere. Before T8.13-F1 they repeated on each "Reflections owed: <status>" row.
+
+The options are now:
+- (a) as built;
+- (a+) as built, plus a "Reflections owed" total row with "(N versions)", so all three kinds with history show their count once, as A5 says;
+- (c) no version counts in the table.
+
+Recommended: (a+).
+
+**Q8 answer (2026-11-14): (a+), as recommended.** Keep the Trades and Journal entries total rows, and add a "Reflections owed" total row with "(N versions)" above the status rows. T8.13-F2 (lane UB) adds it. The Restore complete summary shares the table.
+
+**Q9 answer (2026-11-14): (a).** Keep the message and stack for unexpected errors, as approved in Q5. The user: "I am not particularly worried about anything being exposed in the logs."
+- T8.13-B8 is closed with no change, because the user's decision makes the flagged behavior intended.
+- The fixes already made stay: T8.4-B5 (no value in the unsafe-number message), T8.5-B7 (only known section names) and T8.5-B8 (only the cause's name).
+- Expected failures keep their fixed wording and codes.

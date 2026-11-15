@@ -679,3 +679,45 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Browser: the full tier ran, because `src/persistence/export-snapshot.ts` changed since `d9792d0a`. 126 + 98 passed.
   - HEAD moved to `3192f6c8`, an evidence-only commit, before the checks stage.
   - Outputs: `suite-runs/merge-9-*.txt`.
+- **T8.4-B6** `b69261ad` (lane WB): one case, red then green.
+  - Red: "TypeError: Cannot convert object to primitive value". `exportBackup` itself rejected.
+  - The fix is a private `textOf` that guards `String(value)`, falling back to the fixed message "The failure value could not be shown". The test also asserts that a throwing `toString`'s text never appears.
+  - Deviation: lint forbids `Promise.reject(nonError)`. The test casts with `as Error` and explains the cast in a comment, recorded as a refactor-row note.
+  - Lane tier: unit 173 / 1818, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.4-B6** `b69261ad`: no findings (2 files reviewed). Raw: `ocr/T8.4-B6-b69261ad.json`.
+  - Brief error: the main session's briefs for T8.4-B5 and B6 cited "A121" for `exportBackup`. The D8 plan has no such anchor; A121 is D7's. The right anchors are A129, A145 and A147. Neither review depended on the anchor.
+- **Early merge of lane WB planned:** T8.4-F2, T8.5-F2, T8.4-B5 and T8.4-B6 bring the shared `FailureDetail` that T8.8 needs. The merge waits for merge-10 to finish and uses a temporary rebase worktree while T8.5-B7 runs in the lane.
+- **T8.5-B7** `c12ec3ab` (lane WB): one case, red then green.
+  - Red: "expected '{"stage":"Verify","name":"SectionEndM…' not to contain 'DISTINCTIVE'".
+  - `backup-export.ts` exports `KNOWN_SECTIONS`, built from `'workspace'` plus `SECTION_OF_STORE`'s values. `context.section` is the header's name only when it is a known section; otherwise it is the word `'unknown'`. This covers SectionEndMismatch, SectionDigestMismatch and CountsMismatch.
+  - Lane tier: unit 173 / 1819, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.5-B7** `c12ec3ab`: no findings (3 files reviewed). Raw: `ocr/T8.5-B7-c12ec3ab.json`. The early WB merge now includes T8.5-B7 as well.
+- **T8.5-B8** `e9300795` (lane WB): one case, red then green.
+  - Red: "expected { kind: 'NotVerified', …(2) } to deeply equal { kind: 'NotVerified', …(2) }". The name was `ArtifactReadError` instead of `NotReadableError`.
+  - `ArtifactReadError` now takes an optional `{ cause }`. The reader's two read-failure wraps pass it, and `verifyArtifact` gives the cause to `thrownCheck`. The original name lands in `detail.name`. The message is never recorded, and the test asserts that.
+  - Lane tier: unit 173 / 1820, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **Q8 answered (a+).** T8.13-F2 (lane UB, started) adds the "Reflections owed" total row with "(N versions)".
+- **Q9 answered (a).** T8.13-B8 is closed with no change: the message and stack are kept as the user decided. The Apply-log reviewer note and the export path-key note are covered by the same answer.
+- **ocr of T8.5-B8** `e9300795`: no findings (4 files reviewed). Raw: `ocr/T8.5-B8-e9300795.json`.
+  - Reviewer note: the `ArtifactReadError` message still embeds the original message. Q9's answer (a) covers it.
+- **T8.13-F2** `5801662e` (lane UB), carrying out Q8 (a+): one case, red then green.
+  - Red: "Unable to find an accessible element with the role "rowheader" and name "Reflections owed"".
+  - The first green run failed on the test's own expectation for the current column. The expectation was fixed with no code change, and the next green passed.
+  - A "Reflections owed" total row now sits above the status rows, with "(N versions)" from `versions.debts`. The Restore complete summary shows it too.
+  - T8.13-F1's item 10 case now counts 3 "versions" mentions.
+  - Lane tier: unit 165 / 1785, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.13-F2** `5801662e`: no findings (2 files reviewed). Raw: `ocr/T8.13-F2-5801662e.json`. Lane UB's next task is T8.12-F1, the Backup page's logging, once lane WB merges.
+- **T8.5-B9** `bb0c65d9` (lane WB): a refactor with no red case.
+  - `differing` is now chosen with `find` over an ordered `comparisons` list. The DifferentArtifact cases ran with `-t`: 2 passed before and 2 passed after, and they cover all three comparisons.
+  - Lane tier: unit 173 / 1820, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+  - T8.4-F1 needs T8.3-F1's `onStart`, which is on main but not in lane WB (recreated at `2139a827`). So T8.4-F1 starts after the WB merge rebases the lane onto main.
+- **ocr of T8.5-B9** `bb0c65d9`: no findings (1 file reviewed). Raw: `ocr/T8.5-B9-bb0c65d9.json`. Lane WB is now idle and ready to merge: T8.4-F2, B5 and B6, plus T8.5-F2 and B7 to B9. The merge waits for merge-10.
+- **merge-10** (T8.6 merged; source `f087b459`): all green, run complete.
+  - Unit 177 / 1833, integration 106 / 229, checks 14 of 14.
+  - Browser: the full tier ran, because `src/ui/readiness-copy.ts` changed since `53f7ed98`. 126 + 98 passed.
+  - Outputs: `suite-runs/merge-10-*.txt`.
