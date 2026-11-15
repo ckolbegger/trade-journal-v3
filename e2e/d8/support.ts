@@ -159,7 +159,8 @@ export function watchOutgoing(context: BrowserContext): { leaving(): string[] } 
   const urls: string[] = [];
   context.on('request', (request) => {
     const url = request.url();
-    if (/^https?:/.test(url) && !url.startsWith(BASE_URL)) urls.push(url);
+    // Origins are compared whole, so another port on the same host (http://localhost:51750) counts as leaving.
+    if (/^https?:/.test(url) && new URL(url).origin !== new URL(BASE_URL).origin) urls.push(url);
   });
   return { leaving: () => urls };
 }
