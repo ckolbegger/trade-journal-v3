@@ -7,6 +7,7 @@
   - **Texts:** for every text the deliverable changes, grep `e2e/`, `tests/` and `src/**/*.test.*` for the old string. The list of changing expectations is that grep's output.
   - **Shapes:** for every derived shape that changes, grep `tests/fixtures/` and the `verify:*` tools for its fields.
   - **Checks:** for every new check, run a throwaway version on the current tree, and list each hit with what happens to it.
+  - **Names** (D8 retro, finding 5): for every command, script or exported name a task renames or repurposes, `grep -rn '<old name>'` over `tools`, `src`, `e2e`, `tests` and `.claude`. The task's file list holds every hit, or says why the hit stays.
 - A planned check on source code is a `no-restricted-syntax` rule in an ESLint config, as `eslint.deps.config.js` and `eslint.wording.config.js` do, never a new scanner under `tools/` (D7 prefactor retro, finding 1).
 - **Acceptance commands** (D7 retro, finding 3): each acceptance row's command names a test file that the breakdown's integration or browser section plans to create, by the name that section gives it. The structural rows of the integration-suite and browser-suite tasks include `.claude/scripts/acceptance-commands.sh <breakdown>` in their verification. It must exit 0 for the rows those tasks cover, since that's when the files get their names.
 - End the breakdown with a "Progress" section (decision 100), as in the D7 breakdown's section 11. It has one row per task in run order, each marked "Not started", with an empty Commits column.
