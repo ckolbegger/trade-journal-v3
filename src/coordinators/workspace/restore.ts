@@ -342,10 +342,6 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         else for (const issue of parsed.issues) unreadable(issue.line, issue.path);
         return;
       }
-      const raw = batch.map(({ record }) => record as Record<string, unknown>);
-      for (const project of [exportCatalog, exportMarketData, exportTrades, exportJournal]) {
-        for (const identifier of project({ store: store as WorkspaceStore, records: raw })?.footprint ?? []) footprint.add(identifier);
-      }
       const moved: { line: number; record: unknown }[] = [];
       for (const { line, record } of batch) {
         try {
@@ -365,6 +361,10 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       if (parsed.kind === 'Rejected') {
         for (const issue of parsed.issues) unreadable(issue.line, issue.path);
         return;
+      }
+      // Only records that parsed reach a footprint projector, which trusts their shape.
+      for (const project of [exportCatalog, exportMarketData, exportTrades, exportJournal]) {
+        for (const identifier of project({ store: store as WorkspaceStore, records: parsed.records })?.footprint ?? []) footprint.add(identifier);
       }
       const keys = keysSeen.get(store) ?? new Set<string>();
       keysSeen.set(store, keys);

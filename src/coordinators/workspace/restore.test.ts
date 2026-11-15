@@ -228,6 +228,39 @@ describe('rejections after staging (A134)', () => {
     expect(await prepare(footprint)).toMatchObject({ kind: 'Rejected', issues: [{ code: 'ManifestMismatch' }], totalIssues: 1, liveBinding });
   });
 
+  it('should reject Trade records whose facts are an empty object or hold null with two MalformedRecord issues naming their lines, and delete the candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    let emptyLine = 0;
+    let nullLine = 0;
+    const bad = editedArtifact(a7.bytes, (artifact) => {
+      const trades = artifact.lines.flatMap((line, at) => (line.startsWith('{"r":') && line.endsWith(',"t":"trades"}') ? [at] : []));
+      expect(trades.length).toBeGreaterThanOrEqual(2);
+      const [first, second] = trades as [number, number];
+      const withFacts = (at: number, facts: unknown) => {
+        const record = JSON.parse(artifact.lines[at]!) as { r: Record<string, unknown> };
+        record.r['facts'] = facts;
+        artifact.lines[at] = JSON.stringify(record);
+      };
+      withFacts(first, {});
+      withFacts(second, [null]);
+      // Artifact lines are numbered from 1.
+      emptyLine = first + 1;
+      nullLine = second + 1;
+    });
+    const result = await target.workspace.prepareRestore({ file: backupFile(bad) });
+    expect(result).toMatchObject({
+      kind: 'Rejected',
+      issues: [
+        { code: 'MalformedRecord', line: emptyLine },
+        { code: 'MalformedRecord', line: nullLine },
+      ],
+      totalIssues: 2,
+    });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+
   it('should reject one artifact holding R-ref, R-anchor, R-dup, and R-inc with all four issues, cross-section ones as CrossSectionReference, and delete the candidate', async () => {
     const a7 = await exportedArtifact(await loadDump(W7));
     const target = await targetWorkspace();
