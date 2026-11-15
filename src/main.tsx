@@ -1,7 +1,8 @@
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router';
+import { BrowserRouter, useLocation } from 'react-router';
 import { createApplication } from './app/compose.ts';
+import { createPostRestore } from './app/post-restore.ts';
 import { createWebLocksLifecycleLock } from './persistence/index.ts';
 import { randomIds, systemClock } from './app/system.ts';
 import { browserDownload, browserExportPort, browserFileSelection, browserHost } from './delivery/browser-host.ts';
@@ -78,34 +79,21 @@ async function start(container: HTMLElement) {
   const selectFile = browserFileSelection();
   // A Restore this tab applies broadcasts WorkspaceReplaced to every channel of that name, this tab's own
   // included, and this tab already shows its own Restore complete: it must not report itself replaced.
-  let applyingHere = false;
   // After a Restore the shell's launch status is out of date (first run most of all, since RestoreFlow has
-  // no completion callback), so the shell is rebuilt at the trader's next click, leaving the Restore
-  // summary on screen until then.
-  let rebuildShell: () => void = () => undefined;
+  // no completion callback), so the shell is rebuilt when the trader leaves the Restore complete summary.
+  const postRestore = createPostRestore();
   const backup: BackupFacade = {
     exportBackup: (request) => app.Workspace.exportBackup(request),
     confirmBackup: (request) => app.Workspace.confirmBackup(request),
     prepareRestore: (request) => app.Workspace.prepareRestore(request),
-    applyPreparedRestore: async (request) => {
-      applyingHere = true;
-      try {
-        const result = await app.Workspace.applyPreparedRestore(request);
-        if (result.kind === 'Restored') document.addEventListener('click', () => rebuildShell(), { once: true, capture: true });
-        else applyingHere = false;
-        return result;
-      } catch (error) {
-        applyingHere = false;
-        throw error;
-      }
-    },
+    applyPreparedRestore: (request) => postRestore.apply(() => app.Workspace.applyPreparedRestore(request)),
   };
   // Another tab's Restore (D8 A136): the channel also carries the update notice's messages, which have no `kind`.
   const replacedChannel = new BroadcastChannel('tj-updates');
   const onWorkspaceReplaced = (listener: (message: WorkspaceReplaced) => void) => {
     const hear = (event: MessageEvent<unknown>) => {
       const message = event.data as Partial<WorkspaceReplaced> | null;
-      if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string' || applyingHere) return;
+      if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string' || !postRestore.hearsReplacement(message.databaseName)) return;
       listener({ kind: 'WorkspaceReplaced', databaseName: message.databaseName });
     };
     replacedChannel.addEventListener('message', hear);
@@ -145,9 +133,8 @@ async function start(container: HTMLElement) {
   };
   function Shell() {
     const [generation, setGeneration] = useState(0);
-    useEffect(() => {
-      rebuildShell = () => setGeneration((n) => n + 1);
-    }, []);
+    const { pathname } = useLocation();
+    useEffect(() => postRestore.observePath(pathname, () => setGeneration((n) => n + 1)), [pathname]);
     return (
       <AppShell
         key={generation}
