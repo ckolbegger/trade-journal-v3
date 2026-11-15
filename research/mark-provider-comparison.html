@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mark Provider Comparison</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e2dd;
+    --accent: #2f6fdb; --mock: #f3f1ec;
+    --yes: #1e7a3c; --yes-bg: #e6f4ea; --part: #8a6200; --part-bg: #fff4d6; --no: #b3261e; --no-bg: #fdecea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161615; --card: #20201e; --text: #ececea; --muted: #a0a09a; --line: #34342f;
+      --accent: #7aa7f5; --mock: #1b1b19;
+      --yes: #81c995; --yes-bg: #17301f; --part: #e6c35c; --part-bg: #3a3214; --no: #f28b82; --no-bg: #3b1d1b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161615; --card: #20201e; --text: #ececea; --muted: #a0a09a; --line: #34342f;
+    --accent: #7aa7f5; --mock: #1b1b19;
+    --yes: #81c995; --yes-bg: #17301f; --part: #e6c35c; --part-bg: #3a3214; --no: #f28b82; --no-bg: #3b1d1b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 16px 96px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  h2 { font-size: 20px; margin: 40px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  p, li { max-width: 72ch; }
+  .lede { color: var(--muted); margin: 0 0 18px; font-size: 16px; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--mock); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+  a { color: var(--accent); }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 12px 0; }
+  .box.key { border-left: 4px solid var(--accent); }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+  .cards .box { margin: 0; }
+  .cards h3 { margin-top: 0; }
+  .verdict { display: inline-block; font-weight: 600; font-size: 13px; padding: 2px 8px; border-radius: 999px; margin-bottom: 6px; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0; }
+  table.t { border-collapse: collapse; width: 100%; font-size: 13.5px; background: var(--card); }
+  table.t th, table.t td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  table.t thead th { background: var(--mock); font-weight: 600; }
+  table.t tbody th { font-weight: 600; min-width: 170px; }
+  .y { background: var(--yes-bg); color: var(--yes); }
+  .p { background: var(--part-bg); color: var(--part); }
+  .n { background: var(--no-bg); color: var(--no); }
+  td.y, td.p, td.n { font-weight: 500; }
+  td small { display: block; font-weight: 400; color: var(--text); opacity: .85; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Automatic Mark providers compared</h1>
+<p class="lede">Research for D11 (automatic closing prices), written 2026-11-15. Three providers judged against the requirements drawn from D9, D10 and D11. Option Marks use the closing bid/ask midpoint (your answer to the requirements' open question Q1).</p>
+
+<div class="box key">
+<p><b>Recommendation: Marketdata.app</b>, on a paid plan (Starter or higher). It is the only one of the three the app can call straight from the browser with no server, and the only one with past end-of-day bid and ask for option contracts, including expired ones. It meets all three of decision 15's conditions, tested live with your key.</p>
+<p>Interactive Brokers and Schwab both need software or a server between the app and the provider. Both lack history for expired options, and both rewrite stock history after splits.</p>
+</div>
+
+<div class="cards">
+  <div class="box">
+    <h3>Marketdata.app</h3>
+    <span class="verdict y">Use it, with conditions</span>
+    <p>Works from the browser (tested live). Gives a midpoint for every past session, including expired contracts. Needs a paid plan, and its terms on deleting data need your judgement.</p>
+  </div>
+  <div class="box">
+    <h3>Interactive Brokers</h3>
+    <span class="verdict n">Not suitable</span>
+    <p>No browser access for individual accounts. Expired options are never available, and the only credential is your full brokerage login. If you still wanted it, run TWS or IB Gateway on your Mac with a small local bridge.</p>
+  </div>
+  <div class="box">
+    <h3>Schwab / thinkorswim</h3>
+    <span class="verdict n">Not suitable</span>
+    <p>No historical bid and ask for options, and no data for expired contracts. Signing in needs a server and a manual login every 7 days. thinkorswim on a Mac can't act as a local server.</p>
+  </div>
+</div>
+
+<h2>Side by side</h2>
+<p class="muted">Green: meets the need. Amber: partly, or with conditions. Red: does not. "Tested" means checked with real requests; everything else comes from documentation or community sources, as each report labels it.</p>
+<div class="scroll">
+<table class="t">
+<thead><tr><th>Need</th><th>Marketdata.app</th><th>Interactive Brokers</th><th>Schwab / thinkorswim</th></tr></thead>
+<tbody>
+<tr><th>Called directly from the browser, no server (decision 15)</th>
+  <td class="y">Yes<small>Tested in a real headless browser from <code>pages.dev</code> and <code>localhost:5175</code> origins; CORS on every response.</small></td>
+  <td class="n">No<small>Individual accounts need the Client Portal Gateway, TWS or IB Gateway running and logged in.</small></td>
+  <td class="n">No<small>Sign-in needs the app secret (a server); no CORS documented.</small></td></tr>
+<tr><th>Option Mark: past closing bid/ask midpoint</th>
+  <td class="y">Yes<small>End-of-day bid and ask at 16:00 (13:00 on early closes) for every session, even with no trade. Compute the midpoint in the app.</small></td>
+  <td class="p">Live contracts only<small>A daily MIDPOINT bar's closing value. One doc line lists end-of-day option data as unavailable; needs a live test.</small></td>
+  <td class="n">Today only<small>Live quotes carry bid, ask and a "mark"; no endpoint returns past sessions.</small></td></tr>
+<tr><th>Expired option contracts</th>
+  <td class="y">Yes<small>Through the expiration day.</small></td>
+  <td class="n">Never<small>Error 166, "HMDS Expired Contract Violation".</small></td>
+  <td class="n">No</td></tr>
+<tr><th>Stock daily bars (open, high, low, closing price)</th>
+  <td class="y">Yes</td>
+  <td class="y">Yes</td>
+  <td class="y">Yes<small>Going back decades.</small></td></tr>
+<tr><th>Prices as traded (not split-adjusted)</th>
+  <td class="y">Yes, when asked<small>The app must send <code>adjustsplits=false</code> and <code>adjustdividends=false</code>.</small></td>
+  <td class="n">No<small>Trade data is split-adjusted, with no unadjusted choice.</small></td>
+  <td class="n">No (reportedly)<small>Community sources: always adjusted.</small></td></tr>
+<tr><th>Option daily bars</th>
+  <td class="n">No<small>D12's option-price Stops fall back to the Mark.</small></td>
+  <td class="p">Yes, live contracts</td>
+  <td class="n">No</td></tr>
+<tr><th>Exchange calendar (holidays, early closes)</th>
+  <td class="y">Yes<small>Tested: no value on 2024-07-04 or 2025-01-09; early-close days present.</small></td>
+  <td class="y">Yes<small>Daily bars dated by exchange date.</small></td>
+  <td class="p">Unknown</td></tr>
+<tr><th>History back to 2024-01-01</th>
+  <td class="p">Paid plans only<small>Free reaches back one year; Starter gives 5 years.</small></td>
+  <td class="p">Stocks and live options</td>
+  <td class="p">Stocks only</td></tr>
+<tr><th>Read-only, data-only credential</th>
+  <td class="y">Yes<small>An API token.</small></td>
+  <td class="n">No<small>Full brokerage login; one session per username can log you out of TWS or mobile.</small></td>
+  <td class="n">No<small>No data-only key documented.</small></td></tr>
+<tr><th>Daily friction</th>
+  <td class="y">None</td>
+  <td class="p">Weekly 2FA<small>TWS or IB Gateway: one approval a week, nightly restarts. Client Portal Gateway: a 2FA login every day.</small></td>
+  <td class="n">Login every 7 days<small>The refresh token expires and can't be extended.</small></td></tr>
+<tr><th>Request limits</th>
+  <td class="p">Credits per day<small>Starter: 10,000 a day; about 1 per Instrument per Review. Remaining-credit headers can't be read from the browser.</small></td>
+  <td class="y">No daily quota<small>Pacing rules apply.</small></td>
+  <td class="p">Rate limited</td></tr>
+<tr><th>Cost</th>
+  <td class="p">$30/month, or $12/month billed yearly (Starter)</td>
+  <td class="p">Funded IBKR Pro account (USD 500), about $1.50–14.50/month data fees</td>
+  <td class="y">Free with a Schwab account<small>Developer registration and a few days' approval.</small></td></tr>
+<tr><th>Terms on keeping the data</th>
+  <td class="n">Conflict<small>When a paid plan ends, data from it must be deleted "including backups". One IP at a time.</small></td>
+  <td class="p">Market Data API Acknowledgement required</td>
+  <td class="p">Unknown<small>The API terms sit behind the developer login.</small></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Running something locally or on a server</h2>
+<p>You asked for these options to be assessed for the two brokers. Both work technically but fall outside the spec's no-server design, so decision 15 says to stop and discuss before choosing either.</p>
+<div class="scroll">
+<table class="t">
+<thead><tr><th></th><th>Small proxy or server</th><th>Software on your Mac</th></tr></thead>
+<tbody>
+<tr><th>Interactive Brokers</th>
+  <td>Needs an always-on server (about $5–20/month); a Cloudflare Worker can't run IBKR's Java gateway. Your brokerage password would live on that server, and automating its login relies on tools IBKR doesn't support.</td>
+  <td><b>The better of the two.</b> TWS or IB Gateway plus a tiny local bridge. Chrome asks once before a <code>pages.dev</code> page may reach localhost; the gateway uses a self-signed certificate; port 5000 is often taken on macOS.</td></tr>
+<tr><th>Schwab / thinkorswim</th>
+  <td>A Cloudflare Worker could hold the app secret and refresh token, but that puts a brokerage token in the cloud, and you'd still log in every 7 days.</td>
+  <td>Not possible with thinkorswim. Its Excel data link (RTD) isn't supported on macOS, DDE is Windows-only, there's no local API, and thinkScript can't write files. Only a manual "Export to file…" of the Position Statement exists.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Still to settle before D11's breakdown</h2>
+<ul>
+  <li><b>Marketdata.app's data-deletion term.</b> If a paid plan ends, the terms ask for downloaded data to be deleted, including backups. That conflicts with keeping Marks permanently. Your call.</li>
+  <li><b>Same-evening option prices on a paid plan.</b> On the Free plan, option prices appear only after 09:30 the next day. Test on a weekday evening during a paid trial.</li>
+  <li><b>Options that trade until 16:15</b> (for example SPY, QQQ, IWM): which time the Mark represents.</li>
+  <li><b>Option and underlying Marks may not be from the same instant.</b> A SPY same-day-expiry chain on 2026-11-13 priced below what the underlying's closing price implied.</li>
+  <li><b>Not yet tested on Marketdata.app:</b> a rate-limit (429) response body, the 2024 NVDA split (blocked on Free), delisted stocks, and a weekly contract.</li>
+  <li><b>The requirements' other open questions</b> (splits, whether recovery fetches Bars for days that already have a Mark, credential protection): see the requirements report.</li>
+</ul>
+
+<h2>Reports</h2>
+<ul>
+  <li><a href="mark-provider-requirements.md">mark-provider-requirements.md</a>: 41 requirements from D9, D10 and D11, open questions, and the checklist.</li>
+  <li><a href="marketdata-app-evaluation.md">marketdata-app-evaluation.md</a>: endpoints, the live test log (39 requests, no token in any output), and the requirement-by-requirement table.</li>
+  <li><a href="interactive-brokers-evaluation.md">interactive-brokers-evaluation.md</a>: API surfaces, both architecture options, subscriptions and costs (documentation only).</li>
+  <li><a href="thinkorswim-schwab-evaluation.md">thinkorswim-schwab-evaluation.md</a>: Schwab Trader and Market Data APIs, the thinkorswim-on-a-Mac investigation, and the server option (documentation only).</li>
+</ul>
+</main>
+</body>
+</html>
