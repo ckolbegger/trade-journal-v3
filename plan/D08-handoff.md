@@ -68,8 +68,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
   - `tools/measure-capacity.ts` and `tools/verify-capacity.ts`;
   - `tools/capacity/profile.ts`;
   - `tools/bench/restore-checks.ts` and its test, `restored-capacity.ts` and `profile.ts`;
-  - `tools/bench-run.ts`;
-  - `.claude/scripts/full-suite.sh`'s checks stage (around line 164).
+  - `tools/bench-run.ts`.
 
 `specs/` and the frozen plan are read-only. A deviation is a pending decision (decision 113): ask at once in an ordinary message, record it in `evidence/D08/DECISIONS-PENDING.md` as Q30, and wait, since nothing else is unblocked. The next revision is r104, the next decision 115, and the breakdown's numbering continues at P108 and A230.
 
@@ -87,7 +86,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
    - **Evidence:** the TDD log goes in `evidence/D08/tdd-log/T8.19-F1.md`, and the verification outputs in `evidence/D08/structural.md` under "T8.19-F1".
    - **Commit:** commit locally, ending with the trailer the agent's instructions specify. Never push.
 3. **`ocr-review`** on the task's commit, with the plan section `plan/D08-backup-and-restore.md`, "T8.19-F1". Copy its output to `evidence/D08/ocr/T8.19-F1-<sha>.json`. Each Valid or Doubtful finding becomes a bug task, T8.19-F1-B1 and so on: a fresh `tdd-task` in the main worktree, then its own `ocr-review`. A third round that still has findings is a pending decision.
-4. **`suite-runner`** with `evidence/D08`, the label `T8.19-F1` (or that of the last bug task) and the browser stage `browser-auto <base>`, where `<base>` is the commit from step 1. It will pick the full tier, because `package.json` changes. Give it the usual brief lines: exactly one report, sent only when complete, and each stage in its own foreground call. Its checks stage must list 14 checks, with no `verify:capacity:restored`.
+4. **`suite-runner`** with `evidence/D08`, the label `T8.19-F1` (or that of the last bug task) and the browser stage `browser-auto <base>`, where `<base>` is the commit from step 1. It will pick the full tier, because `package.json` changes. Give it the usual brief lines: exactly one report, sent only when complete, and each stage in its own foreground call. Its checks stage must still list 14 checks.
 5. **No browser critic** (decision 114: no screen or word changes).
 
 ## 4. When it's done
@@ -97,7 +96,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
 - Commit the evidence.
 - Remove `.claude/session.lock`.
 - Report to the user:
-  - the three ratios from `verify:capacity:restored`;
+  - the three ratios from `bench:verify-capacity`;
   - the run result;
   - any first-run passes or flakes.
 

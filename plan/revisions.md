@@ -9,8 +9,8 @@ Every revision of the frozen plan, newest first, one entry each. Each revision i
   - **Decision 114:**
     - Restore reads schemas 3 through 7 (Q14, amending decision 35).
     - T8.19's projection formula is kept, and a growth baseline of 206,540,122 bytes is committed, with a 50% limit (Q29).
-    - The command names decide what is written (amending decision 39): `measure:capacity` writes no stored figure, `measure:capacity:reset-baseline` alone rewrites them, `verify:capacity` checks D7's figures only, and `verify:capacity:restored` checks the three restored limits. The `--restored` option goes.
-    - The complete run's checks stage leaves out `verify:capacity:restored`.
+    - The command names decide what is written (amending decision 39): `measure:capacity` writes no stored figure, `measure:capacity:reset-baseline` alone rewrites them, `verify:capacity` checks D7's figures only, and `bench:verify-capacity` checks the three restored limits. The `--restored` option goes.
+    - The restored check is named `bench:verify-capacity`, not `verify:...`, so the complete run's checks stage, which runs every `verify:` script, leaves it out. It needs the git-ignored benchmark files.
   - **Work:** T8.19-F1, after D8's gate. It runs alone in the main worktree, with no browser critic. The `claude-opus-5.5-d8` tag stays.
   - **Not included:** the trade-detail audit's findings (`research/trade-detail-audit.html`). The user will handle them in a separate refactor plan.
   - **Affected:**
