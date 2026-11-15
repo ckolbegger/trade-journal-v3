@@ -379,3 +379,9 @@ For comparison, the old generator also took its expected rows from the app's own
 
 - (a) Do it in full: export a pure `openRowsOf(items, timeZone)` from `TradeList.tsx` (the screen then calls it), and load the generated records in Node through the candidate API to call `browseTrades` and the Daily Review. Generation grows from about 20 s to roughly 15 minutes or more.
 - (b) Recommended: the generator keeps computing what it can independently (counts, which Trades are Open, the Review's membership, Settlement Due items, the owed group), and T8.19 takes the row text and the Review's order from the first render after `bench:setup`, then checks that render against the generator's membership and counts, and every later render against the first. No new code outside the benchmark files, and no slower generation.
+
+## Q26. Preparation progress leaves out the Workspace section's lines (T8.8-F4, raised 2026-11-15, not blocking)
+
+Q19 (a) asked for every record line to count toward `done`, including the Workspace section, with progress ending at the header total. Both can't hold: the header's counts cover only the stores that Restore rebuilds, and the Workspace section (the Meta store) isn't among them, so counting its line pushes progress past 100% (103 of 102 in the W7 fixture). T8.8-F4 (`81790855`, lane WR) counts every other record line, rejected and unparsable ones included, and leaves the Workspace lines out, so progress ends exactly at the header total. A comment in `restore.ts` says why.
+- (a) Recommended: keep T8.8-F4 as built. Progress ends at the header total; the Workspace section is one or two lines, so leaving it out changes nothing the trader can see.
+- (b) Count the Workspace lines too, and grow `total` by that many when they're read. Progress would reach 100% of a total that changes mid-run, since the header is written before those lines.
