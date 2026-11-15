@@ -9,7 +9,7 @@ import { D5_JOURNAL_MANIFEST } from '../../modules/journal/index.ts';
 import { D7_CATALOG_MANIFEST } from '../../modules/reference-catalog/index.ts';
 import { exportLayoutFor, type IdGenerator, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { ArtifactReadError, readArtifact } from '../../backup/format/index.ts';
-import { createInProcessExportPort, describeError, type ExportPort } from './backup-export.ts';
+import { createInProcessExportPort, describeError, KNOWN_SECTIONS, type ExportPort } from './backup-export.ts';
 import type { ConfirmBackupRequest, ConfirmBackupResult, ExportBackupRequest, ExportBackupResult, FailureDetail } from './backup-types.ts';
 
 // The host seams backup uses. Optional until composition supplies them (T8.11).
@@ -129,7 +129,9 @@ async function verifyArtifact(file: File): Promise<Verified | Unverified> {
       } else if (line.kind === 'sectionEnd') {
         const parsed = sectionEndShape.safeParse(line.value);
         // The ends must name the header's sections, each once, in the header's order (A123).
-        const at = { section: header.sections[sectionEnds] ?? '', line: line.lineNumber };
+        // The header is untrusted: only a section name the format knows reaches the developer log.
+        const headerSection = header.sections[sectionEnds] ?? '';
+        const at = { section: KNOWN_SECTIONS.has(headerSection) ? headerSection : 'unknown', line: line.lineNumber };
         if (!parsed.success || parsed.data.section !== header.sections[sectionEnds]) return failedCheck('IncompleteOrCorrupt', 'SectionEndMismatch', at);
         if (parsed.data.digest !== line.computedSectionDigest) return failedCheck('IncompleteOrCorrupt', 'SectionDigestMismatch', at);
         if (!sameCounts(parsed.data.counts, actual.get(parsed.data.section) ?? {})) return failedCheck('IncompleteOrCorrupt', 'CountsMismatch', at);

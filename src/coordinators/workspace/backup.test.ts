@@ -556,6 +556,19 @@ describe('Not Verified detail (D8 Q5)', () => {
     expect(decoded).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify', name: 'ArtifactReadError', context: expect.objectContaining({ check: 'NotUtf8' }) }) });
   });
 
+  it('should name only a known section in the failure detail', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const edited = editedArtifact(testHost.downloads.offered[0]!.bytes, ({ lines }) => {
+      const header = JSON.parse(lines[0]!) as { sections: string[] };
+      lines[0] = canonical({ ...header, sections: ['journal-DISTINCTIVE-tampered', ...header.sections.slice(1)] });
+    });
+    const result = await workspace.confirmBackup({ file: new File([edited.bytes as BlobPart], 'edited.tjbackup'), expectedBinding: first.sourceBinding, expectedFullDigest: edited.fullDigest });
+    expect(result).toMatchObject({ kind: 'NotVerified', detail: { context: { check: 'SectionEndMismatch' } } });
+    expect(JSON.stringify((result as { detail: unknown }).detail)).not.toContain('DISTINCTIVE');
+  });
+
   it('should name the differing comparison in the NotVerified detail for a different backup', async () => {
     const { workspace, testHost } = await w7Stack();
     const first = await workspace.exportBackup({});

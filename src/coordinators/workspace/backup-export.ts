@@ -102,6 +102,9 @@ const SECTION_OF_STORE: Readonly<Record<string, string>> = {
   journalDebts: 'journal',
 };
 
+// Every section name the format writes: the Workspace section and the sections its stores map to.
+export const KNOWN_SECTIONS: ReadonlySet<string> = new Set(['workspace', ...Object.values(SECTION_OF_STORE)]);
+
 function project(batch: ExportBatch): SectionBatch | undefined {
   return exportCatalog(batch) ?? exportMarketData(batch) ?? exportTrades(batch) ?? exportJournal(batch);
 }
