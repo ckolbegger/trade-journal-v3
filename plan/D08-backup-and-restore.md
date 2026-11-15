@@ -673,10 +673,10 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.6 | 1 | FM | Done | `a7a54d36`; F12 `849cd2d1`, B1 `ee816484`, B2 `5b144bfe`, B3 `709f187b`, F2 `7f9f0503`, B4 `3be69a93`, B5 `7e585659`, B6 `891b1f3c` (B7, B8 dismissed) |
 | T8.3 | 1 | PS | Done | `bd46514a`; B1 `8be42212`, B2 `865f02b3`, B3 `2f1b3ffd`, B4 `3be7d96b`, B5 `a379a2ca`; F1 `7db3d8c2`, B6 `c9e553bb` |
 | T8.7 | 1 | PS | Done | `8f98613d`; B1 `a53aea02`, B2 `8ab603b0`, B3 `cd4bff0c`, B4 `36f91e77`, B5 `6bbb2ffc` |
-| T8.4 | 1 | WB | Done | `92301ec3`; B1 `df7312cb`, B2 `ee01bdbf`, B3 `e3ab0788`, B4 `0fa1b021`; F2 `07aec112`, B5 `74b4787f`, B6 `a596b38a`; F1 pending |
+| T8.4 | 1 | WB | Done | `92301ec3`; B1 `df7312cb`, B2 `ee01bdbf`, B3 `e3ab0788`, B4 `0fa1b021`; F2 `07aec112`, B5 `74b4787f`, B6 `a596b38a`; F1 `7ceed2f9`, B7 `0c0bccf0`, B8 `29d6f32c`, B9 `e9ae74e8`, B10 `ac9dee98` |
 | T8.5 | 1 | WB | Done | `663faaaa`; F1 `829114ee`, B1 `3d2f6776`, B2 `5bffa45a`, B3 `70521b83`, B4 `b7b228cc`, B5 `ddc352af`, B6 `07089243`; F2 `9021f4b2`, B7 `e719dea7`, B8 `c1ff6657`, B9 `a15cb91c` |
 | T8.10 | 1 | WB | Done | `88640137` |
-| T8.8 | 1 | WR | In progress from `89b64a80` | |
+| T8.8 | 1 | WR | In progress from `89b64a80` | `e0d1b5ea` (unmerged); B1 to B8 open |
 | T8.9 | 1 | WR | Not started | |
 | T8.12 | 1 | UB | Done | `16fe13ea`; B1 `aea45bd9`, B2 `ac155052`, B3 `d88fb631`, B4 `c5032ea1`, B5 `5239e6dd`; F1 `b3b580dc`, B6 `1023393d` |
 | T8.13 | 1 | UB | Done; F3 (repair sentences) waits on T8.8 | `0e2fd248`; B1 `138cd610`, B2 `04aa6a96`, B3 `6c543d03`, B4 `ce05c249`, B5 `23cb6a20`, B6 `30d591a5`, B7 `8b8bf7c0`; F1 `cf271534`, F2 `0e5ab292` (B8 closed by Q9) |
