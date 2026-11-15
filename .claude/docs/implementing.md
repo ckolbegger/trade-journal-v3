@@ -76,11 +76,11 @@ The tools: `.claude/scripts/lane-setup.sh` (run first inside the lane worktree: 
 
 Stop and ask stays in force: never decide a question the specs or the plan leave to the user, and never change a plan test to get past one. When one arises, from a subagent's report, an ocr fix, or your own reading:
 
-1. Ask the user at once in an ordinary message, not a question dialog, since a dialog blocks the session.
-2. Record it in `evidence/D<nn>/DECISIONS-PENDING.md`: the task, the question, the options with their tradeoffs, and your recommendation.
+1. Ask the user in an ordinary message, not a question dialog, since a dialog blocks the session. **One question at a time:** ask only when no earlier question is waiting for its answer. Otherwise the new question is queued: record it (step 2) and leave it out of progress updates. When the user answers, ask the next queued question in its own message. A question's message holds that question alone: plain words first, the context needed to decide without opening a file, the options with their tradeoffs, and your recommendation. When the user asks what you are waiting for, name the question being asked and how many are queued.
+2. Record it in `evidence/D<nn>/DECISIONS-PENDING.md`: the task, the question, the options with their tradeoffs, your recommendation, and whether it is asked or queued.
 3. Pause that task, every task blocked by it, and the later tasks in its lane. Mark them "Paused: decision pending" in Progress.
 4. Keep working on every other unblocked task. When nothing unblocked remains, stop and wait.
-5. On the user's answer, record the decision (with a plan revision when the plan changes), mark the entry answered with the date, and resume the paused tasks.
+5. On the user's answer, record it under that question's own heading, record the decision (with a plan revision when the plan changes), mark the entry answered with the date, and resume the paused tasks. Then ask the next queued question.
 
 ## Benchmark (decision 114, from D9)
 
