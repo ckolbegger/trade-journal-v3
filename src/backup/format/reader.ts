@@ -81,7 +81,7 @@ export async function* readArtifact(source: Blob | ReadableStream<Uint8Array>): 
       }
     } catch (e) {
       if (e instanceof ArtifactReadError) throw e;
-      throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e));
+      throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e), undefined, { cause: e });
     }
   };
 
@@ -92,7 +92,7 @@ export async function* readArtifact(source: Blob | ReadableStream<Uint8Array>): 
       try {
         r = await reader.read();
       } catch (e) {
-        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e));
+        throw new ArtifactReadError('Corrupt', e instanceof Error ? e.message : String(e), undefined, { cause: e });
       }
       try {
         if (!r.done) {

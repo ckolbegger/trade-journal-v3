@@ -156,7 +156,8 @@ async function verifyArtifact(file: File): Promise<Verified | Unverified> {
       }
     }
   } catch (e) {
-    if (sourceFailed) return thrownCheck('Unreadable', 'StreamRead', e);
+    // The reader wraps a stream failure after the first chunk; the host's own error is its cause.
+    if (sourceFailed) return thrownCheck('Unreadable', 'StreamRead', e instanceof ArtifactReadError && e.cause !== undefined ? e.cause : e);
     if (e instanceof ArtifactReadError && e.reason === 'NotUtf8') return thrownCheck('Unreadable', 'NotUtf8', e, { code: e.code });
     if (e instanceof ArtifactReadError) return thrownCheck('IncompleteOrCorrupt', 'ReaderError', e, { code: e.code });
     throw e;

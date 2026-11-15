@@ -556,6 +556,27 @@ describe('Not Verified detail (D8 Q5)', () => {
     expect(decoded).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify', name: 'ArtifactReadError', context: expect.objectContaining({ check: 'NotUtf8' }) }) });
   });
 
+  it('should keep the original read error name in the failure detail', async () => {
+    const { workspace, testHost } = await w7Stack();
+    const first = await workspace.exportBackup({});
+    if (first.kind !== 'Downloaded') throw new Error('expected Downloaded');
+    const bytes = testHost.downloads.offered[0]!.bytes as Uint8Array<ArrayBuffer>;
+    const failing = new File([bytes], 'a7.tjbackup');
+    failing.stream = () => {
+      let pulls = 0;
+      return new ReadableStream<Uint8Array<ArrayBuffer>>({
+        pull(controller) {
+          pulls += 1;
+          if (pulls === 1) controller.enqueue(bytes.slice(0, 8));
+          else throw new DOMException('disk went away: DISTINCTIVE', 'NotReadableError');
+        },
+      });
+    };
+    const result = await workspace.confirmBackup({ file: failing, expectedBinding: first.sourceBinding, expectedFullDigest: first.fullDigest });
+    expect(result).toEqual({ kind: 'NotVerified', reason: 'Unreadable', detail: detailLike({ stage: 'Verify', name: 'NotReadableError', context: { check: 'StreamRead' } }) });
+    expect(JSON.stringify((result as { detail: unknown }).detail)).not.toContain('DISTINCTIVE');
+  });
+
   it('should name only a known section in the failure detail', async () => {
     const { workspace, testHost } = await w7Stack();
     const first = await workspace.exportBackup({});
