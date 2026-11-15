@@ -1,0 +1,260 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 2,
+    "total_tokens": 606419,
+    "input_tokens": 602907,
+    "output_tokens": 3512,
+    "cache_read_tokens": 94208,
+    "elapsed": "2m34s"
+  },
+  "tool_calls": {
+    "total": 38,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 15,
+      "file_find": 2,
+      "file_read": 19
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 32,
+        "tool_name": "file_read",
+        "file_path": "e2e/d8/after-restore.spec.ts,e2e/d8/backup.spec.ts,e2e/d8/offline.spec.ts,e2e/d8/recovery-only.spec.ts,e2e/d8/responsive-a11y.spec.ts,e2e/d8/restore.spec.ts,e2e/d8/shell.spec.ts,e2e/d8/support.ts,package.json",
+        "arguments": "{\"file_path\": \"src/ui/screens/Trades.tsx\", \"start_line\": 1, \"end_line\": 100}",
+        "error": "file \"src/ui/screens/Trades.tsx\" not found: git show 2ebe87a6999399ca3ec5781f1010b878416fe788:src/ui/screens/Trades.tsx: exit status 128: fatal: path 'src/ui/screens/Trades.tsx' does not exist in '2ebe87a6999399ca3ec5781f1010b878416fe788'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "e2e/d8/support.ts",
+      "content": "Compare parsed URL origins rather than string prefixes. With BASE_URL set to `http://localhost:5175`, a request to `http://localhost:51750/...` passes this prefix check even though it leaves the app's origin. Consequently B8.6's no-outbound-request assertion can pass despite an external request. Use `new URL(url).origin !== new URL(BASE_URL).origin` for HTTP(S) requests.",
+      "suggestion_code": "    if (/^https?:/.test(url) \u0026\u0026 new URL(url).origin !== new URL(BASE_URL).origin) urls.push(url);",
+      "existing_code": "    if (/^https?:/.test(url) \u0026\u0026 !url.startsWith(BASE_URL)) urls.push(url);",
+      "start_line": 162,
+      "end_line": 162,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d8/after-restore.spec.ts",
+      "content": "These assertions run on the Trades list, which does not render Record entry/exit/expiration controls even when the runtime is writable. Consequently they cannot detect a regression where those controls remain available after Restore enters Recovery Only. Open a restored, coherent Trade's Detail (and its relevant Position/expiration section), wait for it to load, and assert the Record controls are absent there.",
+      "existing_code": "    await expect(page.getByRole('link', { name: /Record (entry|exit|expiration)/ })).toHaveCount(0);\n    await expect(page.getByRole('button', { name: /Record (entry|exit|expiration)|Confirm Plan/ })).toHaveCount(0);",
+      "start_line": 36,
+      "end_line": 37,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D8 end-to-end test suite, shared support, and test command configuration",
+      "files": [
+        "e2e/d8/after-restore.spec.ts",
+        "e2e/d8/backup.spec.ts",
+        "e2e/d8/offline.spec.ts",
+        "e2e/d8/recovery-only.spec.ts",
+        "e2e/d8/responsive-a11y.spec.ts",
+        "e2e/d8/restore.spec.ts",
+        "e2e/d8/shell.spec.ts",
+        "e2e/d8/support.ts",
+        "package.json"
+      ]
+    }
+  ],
+  "session_id": "3ff38387-968a-4977-9b84-2ccfcb1e47ac",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3ff38387-968a-4977-9b84-2ccfcb1e47ac",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2ebe87a6",
+      "resolved_base": "a922332e4a5d2ff532890315d7732d099d4c573d",
+      "resolved_head": "2ebe87a6999399ca3ec5781f1010b878416fe788",
+      "exact_range": "a922332e4a5d2ff532890315d7732d099d4c573d..2ebe87a6999399ca3ec5781f1010b878416fe788",
+      "source_artifact_sha256": "c1025b5ddf1fc9438540f25e64541441e83a43a64ea3d61c6b49df2812980bbe"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12bcbda6c6541668cfc0ce11d0f3859f3f1fe4edcc1f35ca8c0f0eec4542281e",
+          "path": "e2e/d8/recovery-only.spec.ts",
+          "fingerprint": "5097c89780be8cb2e0b1d24db2052f0450216095a1455a874b1ad4d0e210a5bb"
+        },
+        {
+          "item_id": "4488926fcb35a097b0cfd1244ead419750c5db705f05986ef2142be7cff83cc2",
+          "path": "e2e/d8/support.ts",
+          "fingerprint": "e0fbb2b8ecb83c07aa852a784ea5679e26b8954386a7f6b17c2ce0e8b15cb3a6"
+        },
+        {
+          "item_id": "531fac20f57110b8eb97760ac5b65e45fd295847ee0311e652b1709ffcf71625",
+          "path": "e2e/d8/offline.spec.ts",
+          "fingerprint": "3e8d1a502f91ff04c4aad66476b4ffae2994c1d9da406d0ba19304d2a94e250a"
+        },
+        {
+          "item_id": "5f209135c8e20762ca05f3afecf629ca879d158200b573a4ca90f62414adc521",
+          "path": "e2e/d8/shell.spec.ts",
+          "fingerprint": "e3369f12cf0677b2a77c1c8d02ad7d02e8f3b6d457d6465ba5a3b7c311f2f851"
+        },
+        {
+          "item_id": "999cbcdc259d3b0d415d98465318db429172f22b929bc0f50abd1a6bc1868d4a",
+          "path": "e2e/d8/responsive-a11y.spec.ts",
+          "fingerprint": "e573035dce736b87daf2b0279e079f5fb024c25662360a76f66a1ee3dbdaf246"
+        },
+        {
+          "item_id": "c8a977827112ca535ecd13efd853bf945a7bc2bbe2d551b4120f8b35e136cd96",
+          "path": "e2e/d8/after-restore.spec.ts",
+          "fingerprint": "8cff9222c3bed48b211af64563f7271363abedf298a8d7cecf675bc7675badbe"
+        },
+        {
+          "item_id": "cfb5607e5664c176cf826e45eb9599e5f0b01795cc8ee6340fbbb4484a1fe5b7",
+          "path": "e2e/d8/restore.spec.ts",
+          "fingerprint": "9b496ed02ffe38b08df2515034326b4976f8ea9bdb3f683746d5f270157f7388"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "faf191d53c4c32453066684aa90ed3a458c94123e2807a310f05b59e5f9bd447"
+        },
+        {
+          "item_id": "e4c49e0ed402290ed042b475b5dd4de4bac2ab7a55132a63d4678f4c5b9cb1a7",
+          "path": "e2e/d8/backup.spec.ts",
+          "fingerprint": "8f09939e93aecb6d0acba59699e3d39d57e5e0f1f0cfbb6fb9a66cba765a9daa"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12bcbda6c6541668cfc0ce11d0f3859f3f1fe4edcc1f35ca8c0f0eec4542281e",
+          "path": "e2e/d8/recovery-only.spec.ts",
+          "fingerprint": "5097c89780be8cb2e0b1d24db2052f0450216095a1455a874b1ad4d0e210a5bb"
+        },
+        {
+          "item_id": "4488926fcb35a097b0cfd1244ead419750c5db705f05986ef2142be7cff83cc2",
+          "path": "e2e/d8/support.ts",
+          "fingerprint": "e0fbb2b8ecb83c07aa852a784ea5679e26b8954386a7f6b17c2ce0e8b15cb3a6"
+        },
+        {
+          "item_id": "531fac20f57110b8eb97760ac5b65e45fd295847ee0311e652b1709ffcf71625",
+          "path": "e2e/d8/offline.spec.ts",
+          "fingerprint": "3e8d1a502f91ff04c4aad66476b4ffae2994c1d9da406d0ba19304d2a94e250a"
+        },
+        {
+          "item_id": "5f209135c8e20762ca05f3afecf629ca879d158200b573a4ca90f62414adc521",
+          "path": "e2e/d8/shell.spec.ts",
+          "fingerprint": "e3369f12cf0677b2a77c1c8d02ad7d02e8f3b6d457d6465ba5a3b7c311f2f851"
+        },
+        {
+          "item_id": "999cbcdc259d3b0d415d98465318db429172f22b929bc0f50abd1a6bc1868d4a",
+          "path": "e2e/d8/responsive-a11y.spec.ts",
+          "fingerprint": "e573035dce736b87daf2b0279e079f5fb024c25662360a76f66a1ee3dbdaf246"
+        },
+        {
+          "item_id": "c8a977827112ca535ecd13efd853bf945a7bc2bbe2d551b4120f8b35e136cd96",
+          "path": "e2e/d8/after-restore.spec.ts",
+          "fingerprint": "8cff9222c3bed48b211af64563f7271363abedf298a8d7cecf675bc7675badbe"
+        },
+        {
+          "item_id": "cfb5607e5664c176cf826e45eb9599e5f0b01795cc8ee6340fbbb4484a1fe5b7",
+          "path": "e2e/d8/restore.spec.ts",
+          "fingerprint": "9b496ed02ffe38b08df2515034326b4976f8ea9bdb3f683746d5f270157f7388"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "faf191d53c4c32453066684aa90ed3a458c94123e2807a310f05b59e5f9bd447"
+        },
+        {
+          "item_id": "e4c49e0ed402290ed042b475b5dd4de4bac2ab7a55132a63d4678f4c5b9cb1a7",
+          "path": "e2e/d8/backup.spec.ts",
+          "fingerprint": "8f09939e93aecb6d0acba59699e3d39d57e5e0f1f0cfbb6fb9a66cba765a9daa"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0ec964b8ebed17dda54f9a354d41ba4a7c3f5fc5fb7bf59382eb533b484558f3",
+          "path": "evidence/D08/suite-runs/T8.21-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "1071e8232c01e71eb56755beb9c283520e0e60d966f06337b02e6792c6de7099",
+          "path": "evidence/D08/T8.21-B8.10-summary-without-recovery-only.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "27eaf365a961f2c418f72bc4f435b7e2c4725339e74c99f4424b1af81b03064f",
+          "path": "evidence/D08/T8.21-B8.4-after-go-to-trades.png",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "3efc5faa88fd9749e480676beebddcd736b6a911aeb30aeea547942cee76fa28",
+          "path": "evidence/D08/suite-runs/T8.21-browser-1.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4fa917171ee286cb52ac84c7fcce7d0a28644fcb230ace606f62c8d4c11f3be7",
+          "path": "evidence/D08/suite-runs/T8.21-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9054fe10d7c9e779543293d34db69a7e5c99eeeb48168304e77876ef668ce9c2",
+          "path": "evidence/D08/suite-runs/T8.21-browser-2.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9600c782c726e95cf02afbfb05ff156344ad01783d4c025880c1fe2b07b72818",
+          "path": "evidence/D08/suite-runs/T8.21-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9d1cd27afe700f9d9836130541c331cc83abea55b00097b97046a0460724841e",
+          "path": "evidence/D08/suite-runs/T8.21-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b2741414642347f5bdcee74d31349a3b6a29310aa84dd771bf234bca33d6824e",
+          "path": "evidence/D08/tdd-log/T8.21.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e908b1823ac19b61ac09fc4859f45b3a9df80d8de5cf5b3750ed05a8ea895a2a",
+          "path": "evidence/D08/suite-runs/T8.21-acceptance.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fa7fa2d5601d2b617e962f501511afe40e110a3c546a2c21b2695e147878ab00",
+          "path": "evidence/D08/T8.21-B8.11-preview-without-warning.png",
+          "exclude_reason": "binary"
+        }
+      ]
+    },
+    "elapsed_ms": 153513
+  }
+}
