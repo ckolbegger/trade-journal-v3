@@ -34,7 +34,7 @@ TDD order slips (code before a valid red; the red was then taken by removing the
 
 ## Decisions
 
-All 28 earlier questions are answered. Open: **Q29** (T8.19's capacity projection formula and `--restored` flag; recommended: accept as built and record in r103). Not blocking.
+All 29 questions are answered. **Q29** (answered after the tag): keep T8.19's projection formula, add a growth guard (restored usage within 50% of today's 206.5 MB baseline), and replace the `--restored` option with command names (`measure:capacity` safe, `measure:capacity:reset-baseline` the only command that rewrites stored figures, `verify:capacity:restored`). The code change, T8.19-F1, is not in the `claude-opus-5.5-d8` tag: at the user's choice it is the first item for plan revision 103.
 
 Known limits by decision: Q12 (a throw after the switch in apply's last three steps is unguarded; the Restore screen's message covers it); Q16 (`UnsupportedDataCapability` is never produced; revisit before D10).
 

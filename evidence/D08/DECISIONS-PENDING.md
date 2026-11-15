@@ -430,3 +430,4 @@ T8.19 (`c1e00ded`, lane BN) passes every check, but two choices go beyond the pl
    - `verify:capacity:restored` requires the restored figures and checks all three limits: within 10% of the projection, second-Restore peak below 3 × M, and within 50% of the baseline.
    - The `--restored` option goes away.
 This needs a follow-up task, T8.19-F1 (lane BN's files plus `package.json` scripts and the baseline file); r103 records the formula, the baseline and the command names in the T8.19 row.
+**Scheduling (2026-11-15, the user):** T8.19-F1 is not run in D8; the `claude-opus-5.5-d8` tag stays where it is, and T8.19-F1 is the first item for plan revision 103.
