@@ -55,6 +55,7 @@ If any check fails, stop and ask the user.
 
 Don't ask these again.
 
+- **D8R is a swarm** (decision 111, as D08P and D8 ran): several agents at once, for the shortest wall-clock time. The heart of the proposal is the plan for maximum parallelism: waves, lanes with file ownership drawn so lanes don't collide, and the blocking between tasks. Give the Progress table Wave and Lane columns, and propose an agent cap (D08P's was six). Where a shared file (for example `Cockpit.tsx` or the contract-name function's callers) would serialize the lanes, say so, and propose how to split or sequence it.
 - **The whole audit is in scope:** the 14 items of section 18, in its order unless the task graph needs another, under one deliverable named D8R.
 - **Words:** everything under "Approved during this audit" in section 15, and all five items under "Still needing approval", which section 19 approves as written.
 - **A Closed Trade sold before expiration:** the Underlying's row shows its Mark on the session of the final sale (section 19).
@@ -67,12 +68,12 @@ Don't ask these again.
 1. Draft the breakdown in D08P's shape, scaled down: decisions and clarifications, amendments to other plan sections, working assumptions, the size check, lookups (the drafting guide's Texts, Shapes, Checks and Names), approved words, the task graph with its blocking, behavioral and structural tasks with their `it should` cases, integration and browser tests, browser-critic flows, tech debt triggers, open questions, the acceptance matrix rows, evidence recording, and Progress.
 2. **For each task, say whether it changes anything outside `src/ui/`** (domain, coordinators, persistence, facade), and what.
 3. **The contract-name task is wide** (the audit counts 47 test and e2e files with long-form dates). Build its file list with the drafting guide's "Names" lookup, and separate the contract names from the "Expires" lines.
-4. **Questions for the user**, for example swarm or serial, the gate's shape, or a split from the size check: ask them **one at a time**, each with plain words first, the context, the options with their tradeoffs and a recommendation. Queue the others, and ask the next only after the answer. Record each one and its answer in the breakdown's open-questions section.
+4. **Questions for the user**, for example the gate's shape or a split from the size check: ask them **one at a time**, each with plain words first, the context, the options with their tradeoffs and a recommendation. Queue the others, and ask the next only after the answer. Record each one and its answer in the breakdown's open-questions section.
 
 ## 6. Your report
 
 Lead with what D8R does, in the trader's words. Then give:
-- the number of tasks and waves;
+- the number of tasks, waves and lanes, and the estimated wall-clock time against running them one at a time;
 - which tasks change code outside `src/ui/`;
 - what D8R reverses in D08P;
 - the questions still open, if any;
