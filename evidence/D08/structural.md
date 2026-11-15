@@ -1285,3 +1285,7 @@ Minor observations (carried to the final report): focus drops to `<body>` after 
 
 `cell` in `RestorePreview.tsx` says "(1 version)" for one, "(N versions)" otherwise (shared by the preview and the summary). Red: assertion (`'6 (1 versions)'`). No first-run passes. One existing test's regex widened to `/versions?\)/g` (its Reflections owed row now reads "(1 version)"). `src/ui/backup` 58 passed; browser specs restore, after-restore: 7 passed; `verify:wording` OK.
 - T8.22-B8 ocr review (session 84f0884e): 2 files, 1 finding, Valid (style, low): `RestorePreview.tsx:45` nests the singular/plural ternary inside another ternary's template. Becomes T8.22-B8-B1 (structural: behavior unchanged, existing tests are the check). Raw: `ocr/T8.22-B8-520e1245.json`.
+
+## T8.22-B8-B1 done (`d1ce099f`, structural)
+
+`cell` uses an early return and a `label` variable instead of nested ternaries. `src/ui/backup` 58 passed before and after; typecheck, tsc6, lint, lint:deps exit 0.
