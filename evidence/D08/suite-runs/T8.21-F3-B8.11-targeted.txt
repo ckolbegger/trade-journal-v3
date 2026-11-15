@@ -1,0 +1,5 @@
+
+Running 1 test using 1 worker
+
+[1/1] [chromium] › e2e/d8/restore.spec.ts:210:3 › B8.11 Other tab › should warn in tab 1 about unsaved work in another tab, show Replaced by a Restore in another tab in tab 2 with its values on screen, and refuse Confirm there
+  1 passed (3.9s)
