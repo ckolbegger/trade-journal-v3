@@ -7,7 +7,7 @@ import { openItem, plannedItem } from '../../../tests/support/views-fixtures.ts'
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
-import { TradeList } from './TradeList.tsx';
+import { openRowsOf, TradeList } from './TradeList.tsx';
 
 afterEach(cleanup);
 
@@ -781,5 +781,38 @@ describe('lists, Detail and receipt words (P72)', () => {
     expect(brokenCell.textContent).toBe("Not available Facts can't be replayed Net cost Not available");
     expect(within(brokenCell).getByText("Facts can't be replayed").getAttribute('data-tone')).toBe('warning');
     expect(within(brokenCell).queryByText('Records disagree')).toBeNull();
+  });
+});
+
+describe('Open rows as text', () => {
+  it('should return from openRowsOf the headers and rows the Open list renders', async () => {
+    const { strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
+    const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
+    const disagreeing = { ...openItem, tradeId: 'trade-3', underlying: 'DEF', integrity: 'Disagrees' };
+    const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
+    const missing = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark, datedLine: dated }), tradeId: 'trade-5', underlying: 'JKL' };
+    const stopped = {
+      ...valued({ conditions: [condition('Stop', 'Breached'), condition('Target', 'Reached')] }),
+      tradeId: 'trade-6',
+      underlying: 'MNO',
+      settlement: [{ instrument: { kind: 'Stock', symbol: 'MNO' }, expiration: '2026-10-09' }],
+    };
+    const items = [openItem, disagreeing, incoherent, missing, stopped];
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage(items));
+    renderOpen(facade);
+    const table = await screen.findByRole('table', { name: 'Open Trades' });
+    const rendered = {
+      headers: within(table)
+        .getAllByRole('columnheader')
+        .map((h) => h.textContent.trim()),
+      rows: within(table)
+        .getAllByRole('row')
+        .slice(1)
+        .map((r) => within(r).getAllByRole('cell').map((c) => c.textContent.trim())),
+    };
+    const { headers, rows } = openRowsOf(items as never, undefined);
+    expect({ headers, rows }).toEqual(rendered);
+    expect(rows).toHaveLength(5);
   });
 });

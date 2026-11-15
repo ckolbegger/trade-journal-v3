@@ -2,8 +2,10 @@ import { gunzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { backupFile, targetWorkspace } from '../coordinators/workspace/restore-test-support.ts';
 import { nyseSessionPolicy } from '../domain/session-policy/index.ts';
-import { BENCH_AS_OF_DATE, BENCH_SEED, benchScale } from './bench.ts';
-import { assertFullProfile, countHeld, dispositionsFor, generateBenchArtifact, schedule, type BenchCalendar, type GeneratedBench } from './bench-generator.ts';
+import { restoreInNode } from '../../tools/bench/node-restore.ts';
+import { openRowsOf } from '../ui/screens/TradeList.tsx';
+import { BENCH_AS_OF_DATE, BENCH_SEED, BENCH_TIME_ZONE, benchScale } from './bench.ts';
+import { assertFullProfile, countHeld, dispositionsFor, generateBenchArtifact, schedule, viewsOfRestored, type BenchCalendar, type GeneratedBench } from './bench-generator.ts';
 import { BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION } from './bench.ts';
 import type { Instrument } from '../domain/instrument/index.ts';
 
@@ -461,6 +463,52 @@ describe('bench generator determinism', () => {
     expect([...first.artifact.parts[0]!.slice(4, 8)]).toEqual([0, 0, 0, 0]);
     expect(Buffer.compare(Buffer.from(second.artifact.parts[0]!), Buffer.from(first.artifact.parts[0]!))).toBe(0);
   }, 120_000);
+});
+
+// The smoke run again, with the expected Open rows and Review order taken from the application after a Node Restore (T8.18-F2).
+const benchViewsPort = { restore: restoreInNode, openRowsOf };
+let smokeViewsPromise: Promise<GeneratedBench> | undefined;
+const smokeWithViews = () => (smokeViewsPromise ??= generateBenchArtifact({ calendar: realCalendar(), sessions: SMOKE_SESSIONS, views: benchViewsPort }));
+
+describe('bench generator expected Open rows and Review order (D8 T8.18-F2)', () => {
+  it('should write non-empty expected Open rows equal to the application browseTrades and row function after a Node Restore', async () => {
+    const { artifact, expected } = await smokeWithViews();
+    const app = await restoreInNode(artifact.parts[0]!, expected.asOf);
+    const browsed = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });
+    if (browsed.kind !== 'Ready') throw new Error(`browseTrades: ${browsed.kind}`);
+    const { headers, rows } = openRowsOf(browsed.view.items, BENCH_TIME_ZONE);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(expected.openRows).toEqual({ headers, rows, items: browsed.view.items });
+    expect(expected.openRows!.headers).toEqual(['Underlying', 'Trade', 'Net cost', 'P&L', 'Entry', 'Account']);
+    expect(expected.openRows!.rows).toHaveLength(expected.counts.openTrades);
+  }, 300_000);
+
+  it('should write the Daily Review walk in the application attention order, not in Trade identity order', async () => {
+    const { artifact, expected } = await smokeWithViews();
+    const app = await restoreInNode(artifact.parts[0]!, expected.asOf);
+    const review = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: expected.asOf });
+    if (review.kind !== 'Ready') throw new Error(`DailyReview.open: ${review.kind}`);
+    const order = review.families.flatMap((family) => (family.family === 'Trades' ? family.trades.map((trade) => trade.tradeId) : []));
+    expect(expected.asOfReview.walk).toEqual(order);
+    expect(expected.asOfReview.owedGroup.map((group) => group.tradeId)).toEqual(review.owed.map((group) => group.tradeId));
+    // The order is the application's: the same Trades as the identity-sorted walk, but not in that order.
+    expect(expected.asOfReview.walk).not.toEqual([...order].sort());
+    expect(new Set(expected.asOfReview.walk)).toEqual(new Set(order));
+  }, 300_000);
+
+  it('should fail generation when the application membership differs from the membership the generator counted', async () => {
+    const { artifact, expected } = await smokeWithViews();
+    // The generator's own count lists the walk and the owed group by Trade identity.
+    const independent = {
+      asOf: expected.asOf,
+      counts: expected.counts,
+      asOfReview: { ...expected.asOfReview, walk: [...expected.asOfReview.walk].sort(), owedGroup: [...expected.asOfReview.owedGroup].sort((a, b) => (a.tradeId < b.tradeId ? -1 : 1)) },
+    };
+    const bytes = artifact.parts[0]!;
+    await expect(viewsOfRestored(benchViewsPort, bytes, { ...independent, asOfReview: { ...independent.asOfReview, walk: independent.asOfReview.walk.slice(1) } })).rejects.toThrow(/Open list membership/);
+    await expect(viewsOfRestored(benchViewsPort, bytes, { ...independent, asOfReview: { ...independent.asOfReview, owedGroup: independent.asOfReview.owedGroup.slice(1) } })).rejects.toThrow(/owed group membership/);
+    await expect(viewsOfRestored(benchViewsPort, bytes, { ...independent, asOfReview: { ...independent.asOfReview, settlement: independent.asOfReview.settlement.slice(1) } })).rejects.toThrow(/Settlement Due items/);
+  }, 300_000);
 });
 
 describe('bench generator marker', () => {

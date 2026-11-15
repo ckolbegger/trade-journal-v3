@@ -91,237 +91,207 @@
     "outstanding": 99
   },
   "asOfReview": {
-    "settlement": [
-      {
-        "tradeId": "tr-24700",
-        "underlying": "AAPL",
-        "contract": "AAPL261120C00105000",
-        "expiration": "2026-11-20",
-        "quantity": "20"
-      },
-      {
-        "tradeId": "tr-24701",
-        "underlying": "MSFT",
-        "contract": "MSFT261120C00106000",
-        "expiration": "2026-11-20",
-        "quantity": "24"
-      },
-      {
-        "tradeId": "tr-24702",
-        "underlying": "NVDA",
-        "contract": "NVDA261120C00107000",
-        "expiration": "2026-11-20",
-        "quantity": "20"
-      },
-      {
-        "tradeId": "tr-24710",
-        "underlying": "AMZN",
-        "contract": "AMZN261120C00115000",
-        "expiration": "2026-11-20",
-        "quantity": "20"
-      }
-    ],
     "walk": [
-      "tr-24700",
-      "tr-24701",
-      "tr-24702",
-      "tr-24703",
-      "tr-24704",
-      "tr-24705",
-      "tr-24706",
-      "tr-24707",
-      "tr-24708",
-      "tr-24709",
       "tr-24710",
-      "tr-24711",
-      "tr-24712",
-      "tr-24713",
-      "tr-24714",
-      "tr-24715",
-      "tr-24716",
-      "tr-24717",
-      "tr-24718",
-      "tr-24719",
-      "tr-24720",
-      "tr-24721",
-      "tr-24722",
-      "tr-24723",
-      "tr-24724",
-      "tr-24725",
-      "tr-24726",
-      "tr-24727",
-      "tr-24728",
-      "tr-24729",
-      "tr-24730",
-      "tr-24731",
-      "tr-24732",
-      "tr-24733",
-      "tr-24734",
-      "tr-24735",
-      "tr-24736",
-      "tr-24737",
-      "tr-24738",
-      "tr-24739",
-      "tr-24740",
-      "tr-24741",
-      "tr-24742",
-      "tr-24743",
-      "tr-24744",
-      "tr-24745",
-      "tr-24746",
-      "tr-24747",
-      "tr-24748",
-      "tr-24749",
-      "tr-24750",
-      "tr-24751",
-      "tr-24752",
-      "tr-24753",
-      "tr-24754",
-      "tr-24755",
-      "tr-24756",
-      "tr-24757",
-      "tr-24758",
-      "tr-24759",
-      "tr-24760",
-      "tr-24761",
-      "tr-24762",
-      "tr-24763",
-      "tr-24764",
-      "tr-24765",
-      "tr-24766",
-      "tr-24767",
-      "tr-24768",
-      "tr-24769",
-      "tr-24770",
-      "tr-24771",
-      "tr-24772",
-      "tr-24773",
-      "tr-24774",
-      "tr-24775",
-      "tr-24776",
-      "tr-24777",
-      "tr-24778",
-      "tr-24779",
-      "tr-24780",
-      "tr-24781",
-      "tr-24782",
-      "tr-24783",
-      "tr-24784",
-      "tr-24785",
-      "tr-24786",
-      "tr-24787",
-      "tr-24788",
-      "tr-24789",
-      "tr-24790",
-      "tr-24791",
-      "tr-24792",
-      "tr-24793",
-      "tr-24794",
-      "tr-24795",
-      "tr-24796",
-      "tr-24797",
-      "tr-24798",
-      "tr-24799",
-      "tr-24800",
-      "tr-24801",
-      "tr-24802",
-      "tr-24803",
-      "tr-24804",
-      "tr-24805",
-      "tr-24806",
-      "tr-24807",
-      "tr-24808",
-      "tr-24809",
-      "tr-24810",
-      "tr-24811",
-      "tr-24812",
-      "tr-24813",
-      "tr-24814",
-      "tr-24815",
-      "tr-24816",
-      "tr-24817",
-      "tr-24818",
-      "tr-24819",
-      "tr-24820",
-      "tr-24821",
-      "tr-24822",
-      "tr-24823",
-      "tr-24824",
-      "tr-24825",
-      "tr-24826",
-      "tr-24827",
-      "tr-24828",
-      "tr-24829",
-      "tr-24830",
-      "tr-24831",
-      "tr-24832",
-      "tr-24833",
-      "tr-24834",
-      "tr-24835",
-      "tr-24836",
-      "tr-24837",
-      "tr-24838",
-      "tr-24839",
-      "tr-24840",
-      "tr-24841",
-      "tr-24842",
-      "tr-24843",
-      "tr-24844",
-      "tr-24845",
-      "tr-24846",
-      "tr-24847",
-      "tr-24848",
-      "tr-24849",
-      "tr-24850",
-      "tr-24851",
-      "tr-24852",
-      "tr-24853",
-      "tr-24854",
-      "tr-24855",
-      "tr-24856",
-      "tr-24857",
-      "tr-24858",
-      "tr-24859",
-      "tr-24860",
-      "tr-24861",
-      "tr-24862",
-      "tr-24863",
-      "tr-24864",
-      "tr-24865",
-      "tr-24866",
-      "tr-24867",
-      "tr-24868",
-      "tr-24869",
-      "tr-24870",
-      "tr-24871",
-      "tr-24872",
-      "tr-24873",
-      "tr-24874",
-      "tr-24875",
-      "tr-24876",
-      "tr-24877",
-      "tr-24878",
-      "tr-24879",
-      "tr-24880",
-      "tr-24881",
-      "tr-24882",
-      "tr-24883",
-      "tr-24884",
-      "tr-24885",
-      "tr-24886",
-      "tr-24887",
-      "tr-24888",
-      "tr-24889",
-      "tr-24890",
-      "tr-24891",
-      "tr-24892",
-      "tr-24893",
-      "tr-24894",
-      "tr-24895",
-      "tr-24896",
-      "tr-24897",
+      "tr-24702",
+      "tr-24701",
+      "tr-24700",
       "tr-24898",
-      "tr-24899"
+      "tr-24899",
+      "tr-24897",
+      "tr-24894",
+      "tr-24890",
+      "tr-24886",
+      "tr-24882",
+      "tr-24874",
+      "tr-24870",
+      "tr-24862",
+      "tr-24895",
+      "tr-24891",
+      "tr-24889",
+      "tr-24887",
+      "tr-24885",
+      "tr-24883",
+      "tr-24879",
+      "tr-24875",
+      "tr-24873",
+      "tr-24869",
+      "tr-24865",
+      "tr-24863",
+      "tr-24861",
+      "tr-24858",
+      "tr-24850",
+      "tr-24846",
+      "tr-24842",
+      "tr-24834",
+      "tr-24830",
+      "tr-24826",
+      "tr-24892",
+      "tr-24888",
+      "tr-24884",
+      "tr-24872",
+      "tr-24868",
+      "tr-24864",
+      "tr-24859",
+      "tr-24857",
+      "tr-24855",
+      "tr-24851",
+      "tr-24849",
+      "tr-24847",
+      "tr-24845",
+      "tr-24837",
+      "tr-24835",
+      "tr-24833",
+      "tr-24829",
+      "tr-24822",
+      "tr-24818",
+      "tr-24798",
+      "tr-24794",
+      "tr-24860",
+      "tr-24856",
+      "tr-24852",
+      "tr-24844",
+      "tr-24836",
+      "tr-24832",
+      "tr-24825",
+      "tr-24823",
+      "tr-24821",
+      "tr-24817",
+      "tr-24813",
+      "tr-24807",
+      "tr-24799",
+      "tr-24797",
+      "tr-24793",
+      "tr-24791",
+      "tr-24790",
+      "tr-24786",
+      "tr-24782",
+      "tr-24778",
+      "tr-24774",
+      "tr-24770",
+      "tr-24758",
+      "tr-24816",
+      "tr-24808",
+      "tr-24796",
+      "tr-24792",
+      "tr-24789",
+      "tr-24787",
+      "tr-24783",
+      "tr-24779",
+      "tr-24775",
+      "tr-24773",
+      "tr-24771",
+      "tr-24769",
+      "tr-24767",
+      "tr-24765",
+      "tr-24763",
+      "tr-24759",
+      "tr-24757",
+      "tr-24754",
+      "tr-24750",
+      "tr-24746",
+      "tr-24742",
+      "tr-24738",
+      "tr-24734",
+      "tr-24730",
+      "tr-24726",
+      "tr-24722",
+      "tr-24784",
+      "tr-24780",
+      "tr-24772",
+      "tr-24768",
+      "tr-24760",
+      "tr-24755",
+      "tr-24745",
+      "tr-24743",
+      "tr-24741",
+      "tr-24739",
+      "tr-24735",
+      "tr-24733",
+      "tr-24729",
+      "tr-24727",
+      "tr-24714",
+      "tr-24706",
+      "tr-24752",
+      "tr-24744",
+      "tr-24736",
+      "tr-24732",
+      "tr-24728",
+      "tr-24717",
+      "tr-24715",
+      "tr-24711",
+      "tr-24709",
+      "tr-24707",
+      "tr-24705",
+      "tr-24703",
+      "tr-24720",
+      "tr-24716",
+      "tr-24712",
+      "tr-24704",
+      "tr-24896",
+      "tr-24881",
+      "tr-24877",
+      "tr-24867",
+      "tr-24838",
+      "tr-24880",
+      "tr-24876",
+      "tr-24853",
+      "tr-24843",
+      "tr-24831",
+      "tr-24810",
+      "tr-24802",
+      "tr-24848",
+      "tr-24828",
+      "tr-24819",
+      "tr-24805",
+      "tr-24801",
+      "tr-24795",
+      "tr-24766",
+      "tr-24824",
+      "tr-24820",
+      "tr-24812",
+      "tr-24804",
+      "tr-24761",
+      "tr-24756",
+      "tr-24747",
+      "tr-24723",
+      "tr-24718",
+      "tr-24708",
+      "tr-24871",
+      "tr-24878",
+      "tr-24866",
+      "tr-24893",
+      "tr-24854",
+      "tr-24841",
+      "tr-24839",
+      "tr-24827",
+      "tr-24815",
+      "tr-24811",
+      "tr-24803",
+      "tr-24781",
+      "tr-24788",
+      "tr-24776",
+      "tr-24764",
+      "tr-24751",
+      "tr-24749",
+      "tr-24737",
+      "tr-24725",
+      "tr-24721",
+      "tr-24713",
+      "tr-24840",
+      "tr-24724",
+      "tr-24785",
+      "tr-24753",
+      "tr-24719",
+      "tr-24809",
+      "tr-24748",
+      "tr-24800",
+      "tr-24762",
+      "tr-24814",
+      "tr-24731",
+      "tr-24777",
+      "tr-24806",
+      "tr-24740"
     ],
     "owedGroup": [
       {
@@ -381,22 +351,6 @@
         ]
       },
       {
-        "tradeId": "tr-24554",
-        "underlying": "NKE",
-        "debtIds": [
-          "jd-b-0096848",
-          "jd-c-0024641"
-        ]
-      },
-      {
-        "tradeId": "tr-24557",
-        "underlying": "CAT",
-        "debtIds": [
-          "jd-b-0096849",
-          "jd-c-0024642"
-        ]
-      },
-      {
         "tradeId": "tr-24562",
         "underlying": "NVDA",
         "debtIds": [
@@ -404,34 +358,10 @@
         ]
       },
       {
-        "tradeId": "tr-24566",
-        "underlying": "TSLA",
-        "debtIds": [
-          "jd-b-0096850",
-          "jd-c-0024643"
-        ]
-      },
-      {
-        "tradeId": "tr-24569",
-        "underlying": "NFLX",
-        "debtIds": [
-          "jd-b-0096851",
-          "jd-c-0024644"
-        ]
-      },
-      {
         "tradeId": "tr-24570",
         "underlying": "CSCO",
         "debtIds": [
           "jd-c-0024610"
-        ]
-      },
-      {
-        "tradeId": "tr-24578",
-        "underlying": "PG",
-        "debtIds": [
-          "jd-b-0096852",
-          "jd-c-0024645"
         ]
       },
       {
@@ -449,48 +379,6 @@
         ]
       },
       {
-        "tradeId": "tr-24586",
-        "underlying": "CRM",
-        "debtIds": [
-          "jd-b-0096853",
-          "jd-c-0024646"
-        ]
-      },
-      {
-        "tradeId": "tr-24589",
-        "underlying": "INTC",
-        "debtIds": [
-          "jd-b-0096854",
-          "jd-c-0024647"
-        ]
-      },
-      {
-        "tradeId": "tr-24590",
-        "underlying": "QCOM",
-        "debtIds": [
-          "jd-b-0096855",
-          "jd-b-0096966",
-          "jd-c-0024671"
-        ]
-      },
-      {
-        "tradeId": "tr-24593",
-        "underlying": "DIS",
-        "debtIds": [
-          "jd-b-0096856",
-          "jd-b-0096967",
-          "jd-c-0024672"
-        ]
-      },
-      {
-        "tradeId": "tr-24598",
-        "underlying": "DE",
-        "debtIds": [
-          "jd-b-0096857",
-          "jd-c-0024648"
-        ]
-      },
-      {
         "tradeId": "tr-24600",
         "underlying": "AAPL",
         "debtIds": [
@@ -505,19 +393,38 @@
         ]
       },
       {
-        "tradeId": "tr-24602",
-        "underlying": "NVDA",
+        "tradeId": "tr-24612",
+        "underlying": "PFE",
         "debtIds": [
-          "jd-b-0096858",
-          "jd-c-0024649"
+          "jd-c-0024615"
         ]
       },
       {
-        "tradeId": "tr-24605",
-        "underlying": "META",
+        "tradeId": "tr-24620",
+        "underlying": "CVX",
         "debtIds": [
-          "jd-b-0096859",
-          "jd-c-0024650"
+          "jd-c-0024616"
+        ]
+      },
+      {
+        "tradeId": "tr-24631",
+        "underlying": "TXN",
+        "debtIds": [
+          "jd-c-0024617"
+        ]
+      },
+      {
+        "tradeId": "tr-24632",
+        "underlying": "WMT",
+        "debtIds": [
+          "jd-c-0024618"
+        ]
+      },
+      {
+        "tradeId": "tr-24651",
+        "underlying": "KO",
+        "debtIds": [
+          "jd-c-0024619"
         ]
       },
       {
@@ -528,13 +435,6 @@
         ]
       },
       {
-        "tradeId": "tr-24612",
-        "underlying": "PFE",
-        "debtIds": [
-          "jd-c-0024615"
-        ]
-      },
-      {
         "tradeId": "tr-24613",
         "underlying": "JPM",
         "debtIds": [
@@ -542,34 +442,10 @@
         ]
       },
       {
-        "tradeId": "tr-24614",
-        "underlying": "V",
-        "debtIds": [
-          "jd-b-0096860",
-          "jd-c-0024651"
-        ]
-      },
-      {
-        "tradeId": "tr-24617",
-        "underlying": "HD",
-        "debtIds": [
-          "jd-b-0096861",
-          "jd-b-0096968",
-          "jd-c-0024673"
-        ]
-      },
-      {
         "tradeId": "tr-24618",
         "underlying": "PG",
         "debtIds": [
           "jd-c-0024622"
-        ]
-      },
-      {
-        "tradeId": "tr-24620",
-        "underlying": "CVX",
-        "debtIds": [
-          "jd-c-0024616"
         ]
       },
       {
@@ -607,15 +483,6 @@
         ]
       },
       {
-        "tradeId": "tr-24626",
-        "underlying": "CRM",
-        "debtIds": [
-          "jd-b-0096864",
-          "jd-b-0096969",
-          "jd-c-0024674"
-        ]
-      },
-      {
         "tradeId": "tr-24629",
         "underlying": "INTC",
         "debtIds": [
@@ -631,20 +498,6 @@
         "debtIds": [
           "jd-b-0096744",
           "jd-c-0024625"
-        ]
-      },
-      {
-        "tradeId": "tr-24631",
-        "underlying": "TXN",
-        "debtIds": [
-          "jd-c-0024617"
-        ]
-      },
-      {
-        "tradeId": "tr-24632",
-        "underlying": "WMT",
-        "debtIds": [
-          "jd-c-0024618"
         ]
       },
       {
@@ -679,15 +532,6 @@
           "jd-b-0096748",
           "jd-b-0096867",
           "jd-c-0024655"
-        ]
-      },
-      {
-        "tradeId": "tr-24638",
-        "underlying": "DE",
-        "debtIds": [
-          "jd-b-0096868",
-          "jd-b-0096971",
-          "jd-c-0024676"
         ]
       },
       {
@@ -751,36 +595,11 @@
         ]
       },
       {
-        "tradeId": "tr-24650",
-        "underlying": "CSCO",
-        "debtIds": [
-          "jd-b-0097121",
-          "jd-c-0024695"
-        ]
-      },
-      {
-        "tradeId": "tr-24651",
-        "underlying": "KO",
-        "debtIds": [
-          "jd-c-0024619"
-        ]
-      },
-      {
         "tradeId": "tr-24652",
         "underlying": "PFE",
         "debtIds": [
           "jd-b-0096756",
           "jd-c-0024632"
-        ]
-      },
-      {
-        "tradeId": "tr-24653",
-        "underlying": "JPM",
-        "debtIds": [
-          "jd-b-0096872",
-          "jd-b-0096973",
-          "jd-b-0097057",
-          "jd-c-0024686"
         ]
       },
       {
@@ -819,23 +638,6 @@
         ]
       },
       {
-        "tradeId": "tr-24658",
-        "underlying": "PG",
-        "debtIds": [
-          "jd-b-0096876",
-          "jd-b-0096974",
-          "jd-c-0024678"
-        ]
-      },
-      {
-        "tradeId": "tr-24659",
-        "underlying": "XOM",
-        "debtIds": [
-          "jd-b-0096877",
-          "jd-c-0024661"
-        ]
-      },
-      {
         "tradeId": "tr-24661",
         "underlying": "LLY",
         "debtIds": [
@@ -846,29 +648,11 @@
         ]
       },
       {
-        "tradeId": "tr-24662",
-        "underlying": "ABBV",
-        "debtIds": [
-          "jd-b-0097122",
-          "jd-c-0024696"
-        ]
-      },
-      {
         "tradeId": "tr-24664",
         "underlying": "PEP",
         "debtIds": [
           "jd-b-0096762",
           "jd-c-0024634"
-        ]
-      },
-      {
-        "tradeId": "tr-24665",
-        "underlying": "ADBE",
-        "debtIds": [
-          "jd-b-0096879",
-          "jd-b-0096976",
-          "jd-b-0097058",
-          "jd-c-0024687"
         ]
       },
       {
@@ -907,22 +691,6 @@
         ]
       },
       {
-        "tradeId": "tr-24670",
-        "underlying": "QCOM",
-        "debtIds": [
-          "jd-b-0097123",
-          "jd-c-0024697"
-        ]
-      },
-      {
-        "tradeId": "tr-24671",
-        "underlying": "TXN",
-        "debtIds": [
-          "jd-b-0096883",
-          "jd-c-0024665"
-        ]
-      },
-      {
         "tradeId": "tr-24673",
         "underlying": "DIS",
         "debtIds": [
@@ -933,30 +701,11 @@
         ]
       },
       {
-        "tradeId": "tr-24674",
-        "underlying": "NKE",
-        "debtIds": [
-          "jd-b-0096978",
-          "jd-b-0097059",
-          "jd-c-0024688"
-        ]
-      },
-      {
         "tradeId": "tr-24676",
         "underlying": "BA",
         "debtIds": [
           "jd-b-0096768",
           "jd-c-0024636"
-        ]
-      },
-      {
-        "tradeId": "tr-24677",
-        "underlying": "CAT",
-        "debtIds": [
-          "jd-b-0096885",
-          "jd-b-0096979",
-          "jd-b-0097060",
-          "jd-c-0024689"
         ]
       },
       {
@@ -986,30 +735,6 @@
         ]
       },
       {
-        "tradeId": "tr-24681",
-        "underlying": "MSFT",
-        "debtIds": [
-          "jd-b-0097124",
-          "jd-c-0024698"
-        ]
-      },
-      {
-        "tradeId": "tr-24682",
-        "underlying": "NVDA",
-        "debtIds": [
-          "jd-b-0097125",
-          "jd-c-0024699"
-        ]
-      },
-      {
-        "tradeId": "tr-24683",
-        "underlying": "AMZN",
-        "debtIds": [
-          "jd-b-0096888",
-          "jd-c-0024668"
-        ]
-      },
-      {
         "tradeId": "tr-24685",
         "underlying": "META",
         "debtIds": [
@@ -1017,15 +742,6 @@
           "jd-b-0096889",
           "jd-b-0096980",
           "jd-c-0024681"
-        ]
-      },
-      {
-        "tradeId": "tr-24686",
-        "underlying": "TSLA",
-        "debtIds": [
-          "jd-b-0097061",
-          "jd-b-0097106",
-          "jd-c-0024692"
         ]
       },
       {
@@ -1046,13 +762,225 @@
         ]
       },
       {
-        "tradeId": "tr-24689",
+        "tradeId": "tr-24693",
+        "underlying": "JPM",
+        "debtIds": [
+          "jd-b-0096775",
+          "jd-b-0096894",
+          "jd-b-0096984",
+          "jd-c-0024684"
+        ]
+      },
+      {
+        "tradeId": "tr-24696",
+        "underlying": "UNH",
+        "debtIds": [
+          "jd-b-0096776",
+          "jd-c-0024639"
+        ]
+      },
+      {
+        "tradeId": "tr-24699",
+        "underlying": "XOM",
+        "debtIds": [
+          "jd-b-0096777",
+          "jd-c-0024640"
+        ]
+      },
+      {
+        "tradeId": "tr-24554",
+        "underlying": "NKE",
+        "debtIds": [
+          "jd-b-0096848",
+          "jd-c-0024641"
+        ]
+      },
+      {
+        "tradeId": "tr-24557",
+        "underlying": "CAT",
+        "debtIds": [
+          "jd-b-0096849",
+          "jd-c-0024642"
+        ]
+      },
+      {
+        "tradeId": "tr-24566",
+        "underlying": "TSLA",
+        "debtIds": [
+          "jd-b-0096850",
+          "jd-c-0024643"
+        ]
+      },
+      {
+        "tradeId": "tr-24569",
         "underlying": "NFLX",
         "debtIds": [
-          "jd-b-0096981",
-          "jd-b-0097062",
-          "jd-b-0097107",
-          "jd-c-0024693"
+          "jd-b-0096851",
+          "jd-c-0024644"
+        ]
+      },
+      {
+        "tradeId": "tr-24578",
+        "underlying": "PG",
+        "debtIds": [
+          "jd-b-0096852",
+          "jd-c-0024645"
+        ]
+      },
+      {
+        "tradeId": "tr-24586",
+        "underlying": "CRM",
+        "debtIds": [
+          "jd-b-0096853",
+          "jd-c-0024646"
+        ]
+      },
+      {
+        "tradeId": "tr-24589",
+        "underlying": "INTC",
+        "debtIds": [
+          "jd-b-0096854",
+          "jd-c-0024647"
+        ]
+      },
+      {
+        "tradeId": "tr-24590",
+        "underlying": "QCOM",
+        "debtIds": [
+          "jd-b-0096855",
+          "jd-b-0096966",
+          "jd-c-0024671"
+        ]
+      },
+      {
+        "tradeId": "tr-24593",
+        "underlying": "DIS",
+        "debtIds": [
+          "jd-b-0096856",
+          "jd-b-0096967",
+          "jd-c-0024672"
+        ]
+      },
+      {
+        "tradeId": "tr-24598",
+        "underlying": "DE",
+        "debtIds": [
+          "jd-b-0096857",
+          "jd-c-0024648"
+        ]
+      },
+      {
+        "tradeId": "tr-24602",
+        "underlying": "NVDA",
+        "debtIds": [
+          "jd-b-0096858",
+          "jd-c-0024649"
+        ]
+      },
+      {
+        "tradeId": "tr-24605",
+        "underlying": "META",
+        "debtIds": [
+          "jd-b-0096859",
+          "jd-c-0024650"
+        ]
+      },
+      {
+        "tradeId": "tr-24614",
+        "underlying": "V",
+        "debtIds": [
+          "jd-b-0096860",
+          "jd-c-0024651"
+        ]
+      },
+      {
+        "tradeId": "tr-24617",
+        "underlying": "HD",
+        "debtIds": [
+          "jd-b-0096861",
+          "jd-b-0096968",
+          "jd-c-0024673"
+        ]
+      },
+      {
+        "tradeId": "tr-24626",
+        "underlying": "CRM",
+        "debtIds": [
+          "jd-b-0096864",
+          "jd-b-0096969",
+          "jd-c-0024674"
+        ]
+      },
+      {
+        "tradeId": "tr-24638",
+        "underlying": "DE",
+        "debtIds": [
+          "jd-b-0096868",
+          "jd-b-0096971",
+          "jd-c-0024676"
+        ]
+      },
+      {
+        "tradeId": "tr-24653",
+        "underlying": "JPM",
+        "debtIds": [
+          "jd-b-0096872",
+          "jd-b-0096973",
+          "jd-b-0097057",
+          "jd-c-0024686"
+        ]
+      },
+      {
+        "tradeId": "tr-24658",
+        "underlying": "PG",
+        "debtIds": [
+          "jd-b-0096876",
+          "jd-b-0096974",
+          "jd-c-0024678"
+        ]
+      },
+      {
+        "tradeId": "tr-24659",
+        "underlying": "XOM",
+        "debtIds": [
+          "jd-b-0096877",
+          "jd-c-0024661"
+        ]
+      },
+      {
+        "tradeId": "tr-24665",
+        "underlying": "ADBE",
+        "debtIds": [
+          "jd-b-0096879",
+          "jd-b-0096976",
+          "jd-b-0097058",
+          "jd-c-0024687"
+        ]
+      },
+      {
+        "tradeId": "tr-24671",
+        "underlying": "TXN",
+        "debtIds": [
+          "jd-b-0096883",
+          "jd-c-0024665"
+        ]
+      },
+      {
+        "tradeId": "tr-24677",
+        "underlying": "CAT",
+        "debtIds": [
+          "jd-b-0096885",
+          "jd-b-0096979",
+          "jd-b-0097060",
+          "jd-c-0024689"
+        ]
+      },
+      {
+        "tradeId": "tr-24683",
+        "underlying": "AMZN",
+        "debtIds": [
+          "jd-b-0096888",
+          "jd-c-0024668"
         ]
       },
       {
@@ -1082,13 +1010,32 @@
         ]
       },
       {
-        "tradeId": "tr-24693",
-        "underlying": "JPM",
+        "tradeId": "tr-24697",
+        "underlying": "HD",
         "debtIds": [
-          "jd-b-0096775",
-          "jd-b-0096894",
-          "jd-b-0096984",
-          "jd-c-0024684"
+          "jd-b-0096895",
+          "jd-b-0096987",
+          "jd-b-0097064",
+          "jd-c-0024691"
+        ]
+      },
+      {
+        "tradeId": "tr-24674",
+        "underlying": "NKE",
+        "debtIds": [
+          "jd-b-0096978",
+          "jd-b-0097059",
+          "jd-c-0024688"
+        ]
+      },
+      {
+        "tradeId": "tr-24689",
+        "underlying": "NFLX",
+        "debtIds": [
+          "jd-b-0096981",
+          "jd-b-0097062",
+          "jd-b-0097107",
+          "jd-c-0024693"
         ]
       },
       {
@@ -1109,21 +1056,12 @@
         ]
       },
       {
-        "tradeId": "tr-24696",
-        "underlying": "UNH",
+        "tradeId": "tr-24686",
+        "underlying": "TSLA",
         "debtIds": [
-          "jd-b-0096776",
-          "jd-c-0024639"
-        ]
-      },
-      {
-        "tradeId": "tr-24697",
-        "underlying": "HD",
-        "debtIds": [
-          "jd-b-0096895",
-          "jd-b-0096987",
-          "jd-b-0097064",
-          "jd-c-0024691"
+          "jd-b-0097061",
+          "jd-b-0097106",
+          "jd-c-0024692"
         ]
       },
       {
@@ -1136,12 +1074,74 @@
         ]
       },
       {
-        "tradeId": "tr-24699",
-        "underlying": "XOM",
+        "tradeId": "tr-24650",
+        "underlying": "CSCO",
         "debtIds": [
-          "jd-b-0096777",
-          "jd-c-0024640"
+          "jd-b-0097121",
+          "jd-c-0024695"
         ]
+      },
+      {
+        "tradeId": "tr-24662",
+        "underlying": "ABBV",
+        "debtIds": [
+          "jd-b-0097122",
+          "jd-c-0024696"
+        ]
+      },
+      {
+        "tradeId": "tr-24670",
+        "underlying": "QCOM",
+        "debtIds": [
+          "jd-b-0097123",
+          "jd-c-0024697"
+        ]
+      },
+      {
+        "tradeId": "tr-24681",
+        "underlying": "MSFT",
+        "debtIds": [
+          "jd-b-0097124",
+          "jd-c-0024698"
+        ]
+      },
+      {
+        "tradeId": "tr-24682",
+        "underlying": "NVDA",
+        "debtIds": [
+          "jd-b-0097125",
+          "jd-c-0024699"
+        ]
+      }
+    ],
+    "settlement": [
+      {
+        "tradeId": "tr-24700",
+        "underlying": "AAPL",
+        "contract": "AAPL261120C00105000",
+        "expiration": "2026-11-20",
+        "quantity": "20"
+      },
+      {
+        "tradeId": "tr-24701",
+        "underlying": "MSFT",
+        "contract": "MSFT261120C00106000",
+        "expiration": "2026-11-20",
+        "quantity": "24"
+      },
+      {
+        "tradeId": "tr-24702",
+        "underlying": "NVDA",
+        "contract": "NVDA261120C00107000",
+        "expiration": "2026-11-20",
+        "quantity": "20"
+      },
+      {
+        "tradeId": "tr-24710",
+        "underlying": "AMZN",
+        "contract": "AMZN261120C00115000",
+        "expiration": "2026-11-20",
+        "quantity": "20"
       }
     ]
   },
@@ -5070,7 +5070,7 @@
       "journalDebts": 24365
     }
   },
-  "generationMs": 27077,
+  "generationMs": 1029736,
   "engine": "node v26.12.0",
   "host": {
     "platform": "darwin",

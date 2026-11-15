@@ -33,6 +33,8 @@ import {
   type BenchDisposition,
 } from './bench.ts';
 import type { AnswerInput } from '../modules/journal/index.ts';
+import type { Application } from './compose.ts';
+import type { IncoherentOpenTradeItem, OpenTradeItem } from './types.ts';
 
 // mulberry32: a small seeded generator.
 function seededRandom(seed: number): () => number {
@@ -959,6 +961,59 @@ function journalOf(args: {
   };
 }
 
+// What the application itself shows of the restored dataset (D8 T8.18-F2, Q24 and Q25): the Open list's rows and the
+// Daily Review's order. The generator cannot render the screen in Node, so the caller supplies the two seams: a Restore
+// of the artifact into a Node Workspace (the production Restore on fake-indexeddb), and the screen's pure row function.
+export interface BenchViewsPort {
+  readonly restore: (bytes: Uint8Array, asOf: string) => Promise<Pick<Application, 'TradeViewsAndReporting' | 'DailyReview'>>;
+  readonly openRowsOf: (items: readonly (OpenTradeItem | IncoherentOpenTradeItem)[], timeZone: string) => { readonly headers: readonly string[]; readonly rows: readonly (readonly string[])[] };
+}
+
+export interface BenchOpenRows {
+  readonly headers: readonly string[];
+  readonly rows: readonly (readonly string[])[];
+  // `browseTrades({ lifecycle: 'Open' })` items, in order.
+  readonly items: readonly unknown[];
+}
+
+const sameList = (what: string, got: readonly string[], want: readonly string[]) => {
+  if (got.length !== want.length || got.some((id, n) => id !== want[n])) {
+    throw new Error(`${what}: the application gives ${got.length} (${got.slice(0, 5).join(', ')}...) but the generator expects ${want.length} (${want.slice(0, 5).join(', ')}...)`);
+  }
+};
+
+// Restores the artifact in Node, reads the Open list and the as-of Review through the application, and checks them
+// against the membership the generator computed from the records it wrote. Throws on any disagreement. The Review's
+// walk, owed group and settlement family come back in the application's own order.
+export async function viewsOfRestored(port: BenchViewsPort, bytes: Uint8Array, expected: Pick<GeneratedBench['expected'], 'asOf' | 'counts' | 'asOfReview'>): Promise<{ readonly openRows: BenchOpenRows; readonly asOfReview: BenchAsOfReview }> {
+  const app = await port.restore(bytes, expected.asOf);
+  const browsed = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });
+  if (browsed.kind !== 'Ready') throw new Error(`browseTrades Open: ${browsed.kind}`);
+  const items = browsed.view.items;
+  sameList('Open list membership', items.map((item) => item.tradeId).sort(), expected.asOfReview.walk);
+  if (items.length !== expected.counts.openTrades) throw new Error(`Open list: ${items.length} rows but ${expected.counts.openTrades} Open Trades counted`);
+  const { headers, rows } = port.openRowsOf(items, BENCH_TIME_ZONE);
+  if (rows.length !== items.length) throw new Error(`the row function gives ${rows.length} rows for ${items.length} items`);
+
+  const review = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: expected.asOf });
+  if (review.kind !== 'Ready') throw new Error(`DailyReview.open at the as-of instant: ${review.kind}`);
+  const walk = review.families.flatMap((family) => (family.family === 'Trades' ? family.trades.map((trade) => trade.tradeId) : []));
+  sameList('Review walk membership', [...walk].sort(), expected.asOfReview.walk);
+  const owed = review.owed.map((group) => ({ tradeId: group.tradeId, debtIds: group.owed.map((debt) => debt.debtId) }));
+  sameList('Review owed group membership', owed.map((group) => group.tradeId).sort(), expected.asOfReview.owedGroup.map((group) => group.tradeId));
+  const owedGroup = owed.map((group) => {
+    const independent = expected.asOfReview.owedGroup.find((candidate) => candidate.tradeId === group.tradeId)!;
+    sameList(`Review owed debts of ${group.tradeId}`, [...group.debtIds].sort(), [...independent.debtIds].sort());
+    return { ...independent, debtIds: group.debtIds };
+  });
+  const due = review.families.flatMap((family) => (family.family === 'Settlement' ? family.items : []));
+  const settlementKey = (item: { tradeId: string; contract: string; expiration: string }) => `${item.tradeId} ${item.contract} ${item.expiration}`;
+  const appDue = due.map((item) => ({ tradeId: item.tradeId, contract: instrumentKey(item.instrument), expiration: item.expiration }));
+  sameList('Settlement Due items', appDue.map(settlementKey).sort(), expected.asOfReview.settlement.map(settlementKey).sort());
+  const settlement = appDue.map((item) => expected.asOfReview.settlement.find((candidate) => settlementKey(candidate) === settlementKey(item))!);
+  return { openRows: { headers, rows, items }, asOfReview: { walk, owedGroup, settlement } };
+}
+
 export interface GeneratedBench {
   readonly artifact: ArtifactDigests & { readonly parts: readonly Uint8Array[]; readonly lineCount: number };
   // The values the benchmark expects of the restored Workspace.
@@ -974,9 +1029,11 @@ export interface GeneratedBench {
     readonly closeReviewDispositions: Readonly<Record<BenchDisposition, number>>;
     readonly asOfDueReflections: number;
     readonly outstandingDebts: readonly BenchOutstandingDebt[];
-    // Membership of the as-of Review's walk and owed group, and its settlement family. Their order in the Review is the
-    // application's (attention-ranked), so the benchmark takes it from the first render.
+    // The as-of Review's walk, owed group and settlement family. With `views`, their order is the application's
+    // (attention-ranked), taken from a Node Restore; without, the walk and owed group are sorted by Trade identity.
     readonly asOfReview: BenchAsOfReview;
+    // The Open list's rows as the application gives them; present only with `views`.
+    readonly openRows?: BenchOpenRows;
   };
   // Compressed size of the artifact file.
   readonly bytes: number;
@@ -1136,7 +1193,7 @@ export function assertFullProfile(counts: BenchCounts): void {
 // Writes the dataset as a schema-7 backup artifact through the production export pipeline and its artifact writer,
 // feeding it the records a snapshot read would give. `sessions` limits the run to the first N real sessions and scales
 // every count (a smoke run); omitted, it is the full profile of plan section 1.4.
-export async function generateBenchArtifact(options: { readonly calendar: BenchCalendar; readonly sessions?: number }): Promise<GeneratedBench> {
+export async function generateBenchArtifact(options: { readonly calendar: BenchCalendar; readonly sessions?: number; readonly views?: BenchViewsPort }): Promise<GeneratedBench> {
   const seed = seedOf();
   const { run: sessions, profile } = sessionsOf(options.calendar, options.sessions);
   const { events } = schedule(sessions.map((session) => Date.parse(session.date)), profile, sessions.map((session) => Date.parse(session.close)));
@@ -1214,33 +1271,39 @@ export async function generateBenchArtifact(options: { readonly calendar: BenchC
     if (line.computedFullDigest !== run.fullDigest) throw new Error('the artifact reads back with another full digest');
     sectionDigests = line.computedSectionDigests;
   }
+  const counted = tally.result(observations.perSession);
+  const independentReview: BenchAsOfReview = {
+    settlement: [...tally.settlement].sort(bySettlementOrder),
+    walk: [...tally.walk].sort(),
+    owedGroup: [...new Set(journal.outstandingDebts.map((debt) => debt.tradeId))]
+      .filter((tradeId) => !tally.openTradeIds.has(tradeId))
+      .sort()
+      .map((tradeId) => {
+        const owed = journal.outstandingDebts.filter((debt) => debt.tradeId === tradeId);
+        return { tradeId, underlying: owed[0]!.underlying, debtIds: owed.map((debt) => debt.debtId) };
+      }),
+  };
+  const asOf = savedAtOf(sessions.at(-1)!.completion, true, profile.full);
+  // The application's own Open rows and Review order, checked against the membership counted above.
+  const views = options.views ? await viewsOfRestored(options.views, parts, { asOf, counts: counted, asOfReview: independentReview }) : undefined;
   return {
     artifact: { parts: [parts], lineCount, sectionDigests, fullDigest: run.fullDigest, manifestDigest: run.manifestDigest },
     bytes: parts.length,
     uncompressedBytes,
     storeCounts: run.counts,
     expected: {
-      asOf: savedAtOf(sessions.at(-1)!.completion, true, profile.full),
+      asOf,
       reviewDate,
       missingInstruments: [...observations.missing].sort(),
-      counts: tally.result(observations.perSession),
+      counts: counted,
       actionsByChoice: journal.actions.byChoice,
       dispositions: reflectionPlan.counts,
       closeReviewDispositions: closePlan.counts,
       // The Outstanding Debts are due at the as-of Review: nothing is recorded in its session, and a Debt is due one session after its Position Change.
       asOfDueReflections: journal.outstandingDebts.length,
       outstandingDebts: journal.outstandingDebts,
-      asOfReview: {
-        settlement: [...tally.settlement].sort(bySettlementOrder),
-        walk: [...tally.walk].sort(),
-        owedGroup: [...new Set(journal.outstandingDebts.map((debt) => debt.tradeId))]
-          .filter((tradeId) => !tally.openTradeIds.has(tradeId))
-          .sort()
-          .map((tradeId) => {
-            const owed = journal.outstandingDebts.filter((debt) => debt.tradeId === tradeId);
-            return { tradeId, underlying: owed[0]!.underlying, debtIds: owed.map((debt) => debt.debtId) };
-          }),
-      },
+      asOfReview: views?.asOfReview ?? independentReview,
+      ...(views && { openRows: views.openRows }),
     },
   };
 }

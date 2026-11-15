@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ClosedTradeItem, IncoherentClosedTradeItem, IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
-import { Badge } from '../Badge.tsx';
+import { Badge, type BadgeTone } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
 import { isMarkLacking, isMarkMissing } from '../calculation-words.ts';
 import { calculation, FACTS_INCOHERENT_FIGURE, FACTS_INCOHERENT_LABEL, pnlText, signed, unavailableLabel } from '../figures.ts';
@@ -139,6 +139,37 @@ function markOpenListReady(writable: boolean) {
   if (writable && performance.getEntriesByName('tj:interactive', 'mark').length === 0) performance.mark('tj:interactive');
 }
 
+// The Open list's table as text: the column headers, then each row's cells as the table shows them (a cell's text with its
+// badges, in reading order). The benchmark generator calls this for its expected rows (D8 T8.18-F2), and a test holds the
+// rendered table equal to it.
+export const OPEN_HEADERS = ['Underlying', 'Trade', 'Net cost', 'P&L', 'Entry', 'Account'] as const;
+
+export function openRowsOf(
+  items: readonly (OpenTradeItem | IncoherentOpenTradeItem)[],
+  timeZone: string | undefined,
+): { readonly headers: readonly string[]; readonly rows: readonly (readonly string[])[] } {
+  const rows = items.map((item) => {
+    const derived = 'openQuantity' in item ? item : undefined;
+    const cost = derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE;
+    const disagreement = disagreementBadge(item.integrity, derived);
+    const pnl = derived ? `${pnlText(derived.current.currentMarkedPnl, derived.current.currentMarkedPnlInPlanR)}${derived.current.datedLine ? datedLineText(derived.current.datedLine) : ''}` : undefined;
+    const tradeCell =
+      (derived?.summary ? tradeSummary(derived.summary, timeZone) : NOT_AVAILABLE) +
+      (disagreement ? ` ${disagreement}` : '') +
+      ` Net cost ${cost}${pnl === undefined ? '' : ` · P&L ${pnl}`}` +
+      (derived ? statusBadgesOf(derived.current, derived.settlement).map((b) => ` ${b.text}`).join('') : '');
+    return [
+      item.underlying,
+      tradeCell.trim(),
+      cost,
+      pnl ?? NOT_AVAILABLE,
+      derived ? `${derived.entryStatus} · ${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : NOT_AVAILABLE,
+      `${item.institution} — ${item.account}`,
+    ];
+  });
+  return { headers: OPEN_HEADERS, rows };
+}
+
 function OpenList({
   state,
   retry,
@@ -247,6 +278,10 @@ function missingMark(current: Current) {
   return pnl.kind === 'Unavailable' && isMarkLacking(pnl) ? { instrument: pnl.instrument } : undefined;
 }
 
+// The dated line that follows the P&L: " Tue Oct 13 close +$12.00".
+const datedLineText = (datedLine: NonNullable<Current['datedLine']>) =>
+  ` ${shortDate(datedLine.tradingDate)} close ${pnlText(datedLine.evaluation.currentMarkedPnl, datedLine.evaluation.currentMarkedPnlInPlanR)}`;
+
 // Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
 // words link to this Trade's own card in the Review (A161). The dated line's P&L follows, labelled with its date.
 function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId: string }) {
@@ -256,41 +291,33 @@ function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId
   return (
     <>
       {missing ? <Link to={`/review?trade=${encodeURIComponent(tradeId)}&instrument=${encodeURIComponent(missing.instrument.symbol)}`}>{text}</Link> : text}
-      {datedLine && ` ${shortDate(datedLine.tradingDate)} close ${pnlText(datedLine.evaluation.currentMarkedPnl, datedLine.evaluation.currentMarkedPnlInPlanR)}`}
+      {datedLine && datedLineText(datedLine)}
     </>
   );
 }
 
 // The Mark status and a crossed Stop or reached Target are said in text, at every width; an active condition says nothing.
+// The badges are listed once, for the screen and for the Open rows' text (openRowsOf). A contract is due whenever Detail's
+// panel says so, from the expiration date after the settlement time (K4, A113); one badge per role, however many of its
+// conditions are crossed (A201).
+function statusBadgesOf(current: Current, settlement: OpenTradeItem['settlement']): readonly { readonly tone: BadgeTone; readonly text: string }[] {
+  const badges: { tone: BadgeTone; text: string }[] = [];
+  if (current.currentMarkedPnl.kind === 'Unavailable' && isMarkMissing(current.currentMarkedPnl)) badges.push({ tone: 'warning', text: unavailableLabel(current.currentMarkedPnl) });
+  if (settlement[0]) badges.push({ tone: 'warning', text: unavailableLabel({ reason: 'SettlementDue', instrument: settlement[0].instrument, expiration: settlement[0].expiration }) });
+  if (current.conditions.some((c) => c.role === 'Stop' && c.result.kind === 'Value' && c.result.value.status === 'Breached')) badges.push({ tone: 'warning', text: 'Stop breached' });
+  if (current.conditions.some((c) => c.role === 'Target' && c.result.kind === 'Value' && c.result.value.status === 'Reached')) badges.push({ tone: 'info', text: 'Target reached' });
+  return badges;
+}
+
 function StatusBadges({ current, settlement }: { readonly current: Current; readonly settlement: OpenTradeItem['settlement'] }) {
   return (
     <>
-      {current.currentMarkedPnl.kind === 'Unavailable' && isMarkMissing(current.currentMarkedPnl) && (
-        <>
+      {statusBadgesOf(current, settlement).map((badge) => (
+        <Fragment key={badge.text}>
           {' '}
-          <Badge tone="warning">{unavailableLabel(current.currentMarkedPnl)}</Badge>
-        </>
-      )}
-      {/* Whenever a contract is due, as Detail's panel says, from the expiration date after the settlement time (K4, A113). */}
-      {settlement[0] && (
-        <>
-          {' '}
-          <Badge tone="warning">{unavailableLabel({ reason: 'SettlementDue', instrument: settlement[0].instrument, expiration: settlement[0].expiration })}</Badge>
-        </>
-      )}
-      {/* One badge per role, however many of its conditions are crossed (A201). */}
-      {current.conditions.some((c) => c.role === 'Stop' && c.result.kind === 'Value' && c.result.value.status === 'Breached') && (
-        <>
-          {' '}
-          <Badge tone="warning">Stop breached</Badge>
-        </>
-      )}
-      {current.conditions.some((c) => c.role === 'Target' && c.result.kind === 'Value' && c.result.value.status === 'Reached') && (
-        <>
-          {' '}
-          <Badge tone="info">Target reached</Badge>
-        </>
-      )}
+          <Badge tone={badge.tone}>{badge.text}</Badge>
+        </Fragment>
+      ))}
     </>
   );
 }
