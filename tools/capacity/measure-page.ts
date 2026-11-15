@@ -1,4 +1,4 @@
-// Runs in the browser under `measure:capacity`: confirms deterministic Plans, then opens some of
+// Runs in the browser under `measure:capacity:reset-basis`: confirms deterministic Plans, then opens some of
 // them with Position Changes (D2 plan, section 1.3), then adds Marks, acknowledgments and Daily
 // Trade Review Actions (D4 T4.28), then deferred Position Change Reflections resolved in Reviews
 // (D5 T5.19), then Trades closed with a Close Reason and a Close Review (D6 T6.22), through the
