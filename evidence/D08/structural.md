@@ -1274,3 +1274,7 @@ Report: `critic-2.md`. All critic-1 defects confirmed fixed. PASS with only low 
 - T8.22-B7 (low): the counts table breaks words and numbers mid-word at 375 and 320 px ("backu / p", "versi / ons"). Likely from B4's `overflow-wrap: anywhere` on the whole `.restore-preview`.
 - T8.22-B8 (low): "1 (1 versions)": the version count is not singular for one.
 Minor observations (carried to the final report): focus drops to `<body>` after Restore; no Back or Cancel from the preview; the decline acknowledgment stays ticked after switching away and back; empty `candidates` record in the root; About's Entry Types line shows internal keys.
+
+## T8.22-B7 done (`0d592896`)
+
+`.restore-counts { overflow-wrap: normal; }`; `.restore-preview` keeps `anywhere` for the release id. Red: browser assertion (words split at 375 px: "versions)" × 3). No first-run passes. Browser specs responsive-a11y, restore: 13 passed, including B4's no-sideways-scroll case.
