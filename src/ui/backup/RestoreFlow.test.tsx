@@ -334,6 +334,18 @@ describe('inline safety backup', () => {
     await empty.user.click(REPLACE());
     expect(empty.facade.calls.applyPreparedRestore).toEqual([{ token: noData, confirmation: { kind: 'ReplaceEntireWorkspace' } }]);
   });
+
+  it('should toggle the warning acknowledgment checkbox when its warning text is clicked', async () => {
+    const ctx = setup();
+    const { user } = ctx;
+    await toPreview(ctx);
+    await user.click(UNDERSTAND());
+    await user.click(screen.getByRole('radio', { name: 'Replace without a backup' }));
+    const box = screen.getByRole<HTMLInputElement>('checkbox', { name: 'If this backup is wrong or incomplete, your current journal cannot be recovered.' });
+    expect(box.checked).toBe(false);
+    await user.click(screen.getByText('If this backup is wrong or incomplete, your current journal cannot be recovered.'));
+    expect(box.checked).toBe(true);
+  });
 });
 
 describe('preview', () => {

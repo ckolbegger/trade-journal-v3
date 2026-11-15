@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type {
   BackupProgress,
   CompletedBackupReceipt,
@@ -141,7 +141,6 @@ export function RestoreConfirm({ facade, selectFile, token, safetyChoiceRequired
   const [choice, setChoice] = useState<Choice | undefined>();
   const [receipt, setReceipt] = useState<CompletedBackupReceipt | undefined>();
   const [declineAcknowledged, setDeclineAcknowledged] = useState(false);
-  const warningId = useId();
 
   const safety = completedSafetyChoice(choice, receipt, declineAcknowledged);
   const ready = understood && !busy && (!safetyChoiceRequired || safety !== undefined);
@@ -161,10 +160,10 @@ export function RestoreConfirm({ facade, selectFile, token, safetyChoiceRequired
             <input type="radio" name="safety" checked={choice === 'WithoutBackup'} onChange={() => setChoice('WithoutBackup')} /> Replace without a backup
           </label>
           {choice === 'WithoutBackup' && (
-            <div className="restore-decline">
-              <input type="checkbox" aria-labelledby={warningId} checked={declineAcknowledged} onChange={(event) => setDeclineAcknowledged(event.target.checked)} />
-              <p id={warningId}>If this backup is wrong or incomplete, your current journal cannot be recovered.</p>
-            </div>
+            <label className="restore-decline">
+              <input type="checkbox" checked={declineAcknowledged} onChange={(event) => setDeclineAcknowledged(event.target.checked)} />
+              <span>If this backup is wrong or incomplete, your current journal cannot be recovered.</span>
+            </label>
           )}
         </div>
       )}
