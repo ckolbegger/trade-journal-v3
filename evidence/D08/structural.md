@@ -674,3 +674,8 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Workspace records the meta straight from `measureCandidateSection`. A134 and A135 step 4 ask only for a counts-and-digest recheck, and the store digests cover that.
   - Lane FM has no tasks left after B6's ocr, so T8.6 is ready to merge once that review is clean.
 - **ocr of T8.6-B6** `12818ce4`: no findings (2 files reviewed). Raw: `ocr/T8.6-B6-12818ce4.json`. T8.6, with F12, F2 and B1–B6, is ready to merge. The merge waits for merge-9 to finish, so the running suite's tree stays fixed.
+- **merge-9** (T8.3-F1 and B6 merged; source `53f7ed98`): all green, run complete.
+  - Unit 173 / 1812, integration 106 / 229, checks 14 of 14.
+  - Browser: the full tier ran, because `src/persistence/export-snapshot.ts` changed since `d9792d0a`. 126 + 98 passed.
+  - HEAD moved to `3192f6c8`, an evidence-only commit, before the checks stage.
+  - Outputs: `suite-runs/merge-9-*.txt`.
