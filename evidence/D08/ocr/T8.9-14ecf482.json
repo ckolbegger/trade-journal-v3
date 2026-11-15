@@ -1,0 +1,218 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 8 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 8,
+    "total_tokens": 455961,
+    "input_tokens": 449898,
+    "output_tokens": 6063,
+    "cache_read_tokens": 46592,
+    "elapsed": "2m19s"
+  },
+  "tool_calls": {
+    "total": 51,
+    "by_tool": {
+      "code_comment": 4,
+      "code_search": 13,
+      "file_find": 1,
+      "file_read": 31,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore-test-support.ts",
+      "content": "Replacing the real readiness session here hides a production restore failure: the composition root still rechecks via `inspectRoot()`, which deletes the prepared candidate before apply can use it. Consequently these tests can pass while the same restore fails in the application. Keep the restore tests wired to the production session and resolve the startup-cleanup versus mutation-recheck distinction in the actual wiring, rather than only bypassing cleanup in this helper.",
+      "existing_code": "  return createWorkspace({ ...stack, session: lookupSession(stack), host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port }, ...overrides });",
+      "start_line": 37,
+      "end_line": 37,
+      "category": "test",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/restore-test-support.ts",
+      "content": "This delegates failure reporting to a different session, but `current()` returns the wrapper's private `state`. After `reportStorageFailure({ workspaceReadable: true })`, the wrapped session can therefore still report Writable instead of immediately downgrading to RecoveryOnly. Use `createReadinessSession` with the lookup-based evaluator (or update the same local state on failure) so this helper preserves the ReadinessSession contract.",
+      "existing_code": "    reportStorageFailure: (context) =\u003e stack.session.reportStorageFailure(context),",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore-apply.test.ts",
+      "content": "A135 requires candidate deletion on safety failures other than a missing safety choice. This test instead requires both SafetyBackupStale and SafetyBackupNotRecognized to leave the candidate intact, and reuses the same token for both attempts. It therefore enforces the implementation's incorrect retention behavior; a compliant implementation would return PreparationNotFound on the second attempt. Test each rejection with a separate preparation and assert that the candidate and its bookkeeping are removed while the live workspace and current pointer remain unchanged.",
+      "existing_code": "    expect(stale).toEqual({ kind: 'SafetyBackupStale', liveBinding: token.targetBinding });\n    expect(foreign).toEqual({ kind: 'SafetyBackupNotRecognized', liveBinding: token.targetBinding });\n    expect(await dumpAll(target.factory)).toEqual(before);",
+      "start_line": 68,
+      "end_line": 70,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "The production session in src/app/compose.ts rechecks using persistence.inspectRoot(), which deletes every non-current workspace database, including this prepared candidate. Consequently, applying a restore over an existing workspace deletes its preparation before the existence check and returns PreparationNotFound (even missing-confirmation requests destroy the candidate). The new tests avoid this by substituting lookupSession, so they do not exercise the production wiring. Make runtime readiness rechecks use non-destructive root inspection, reserving orphan cleanup for startup, and cover apply with the actual composition.",
+      "existing_code": "      const refusal = toRuntimeNotWritable(await deps.session.recheck());",
+      "start_line": 660,
+      "end_line": 660,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Both invalid-receipt outcomes retain the candidate. A135 requires failures during steps 2–5 to delete it, with exceptions only for missing confirmation or a missing safety choice. Discard the candidate before returning SafetyBackupNotRecognized or SafetyBackupStale; update the tests that currently expect these failures to write nothing.",
+      "existing_code": "            if (!backup.recognizesReceipt(safety.receipt.receiptId)) return { kind: 'SafetyBackupNotRecognized', liveBinding: live };\n            if (!sameBinding(safety.receipt.sourceBinding, live)) return { kind: 'SafetyBackupStale', liveBinding: live };",
+      "start_line": 679,
+      "end_line": 680,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Database existence does not guarantee that restorePrepared exists or has this shape. If the preparation metadata is deleted or damaged after preview, the cast still succeeds at compile time and prepared.sections throws during the first recheck, leaving the candidate behind rather than returning a controlled CandidateChanged outcome. Validate this record and its section metadata at runtime, and discard an invalid candidate before returning CandidateChanged for meta.",
+      "existing_code": "        const prepared = (await collect(candidateSource, 'meta')).find((record) =\u003e record['key'] === 'restorePrepared') as unknown as PreparedRecord;",
+      "start_line": 686,
+      "end_line": 686,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "These operations run after activation has irreversibly replaced the workspace and deleted the old database, but none has an error boundary. A failed metadata transaction, BroadcastChannel construction/post, or thrown readiness evaluation therefore rejects the call after a successful destructive restore; the caller receives neither Restored nor the required recovery status. Treat post-activation cleanup/notification as best-effort and convert readiness/storage failures into RecoveryOnly while still returning the restore receipt. Add a test that throws after activation, rather than only returning a failed capacity check.",
+      "existing_code": "        await persistence.commit({ checks: [], writes: [{ op: 'delete', store: 'meta', key: 'restorePrepared' }] });\n        announceReplaced(token.candidateId);\n        const readiness = await deps.session.recheck();",
+      "start_line": 710,
+      "end_line": 712,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "The rechecks omit the workspace section. Preparation writes the restored time zone and session policy into `meta`, but all four module measurements cover only their own non-meta stores. Editing or deleting `meta.settings` or `meta.sessionPolicy` after preview therefore passes every recheck and activates a candidate different from the one validated and previewed (potentially making the restored workspace unreadable). Record and recheck the authoritative workspace metadata as well, excluding persistence counters and `restorePrepared`, and discard the candidate on mismatch before switching the pointer.",
+      "existing_code": "        const rechecks = [\n          () =\u003e applyCatalog(candidateSource, prepared.sections.catalog),\n          () =\u003e applyMarketData(candidateSource, prepared.sections.marketData),\n          () =\u003e applyTrades(candidateSource, prepared.sections.trades),\n          () =\u003e applyJournal(candidateSource, prepared.sections.journal),\n        ];",
+      "start_line": 687,
+      "end_line": 692,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/workspace/restore-apply.test.ts",
+      "files": [
+        "src/coordinators/workspace/restore-apply.test.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/workspace/restore-test-support.ts",
+      "files": [
+        "src/coordinators/workspace/restore-test-support.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/workspace/restore.ts",
+      "files": [
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "de3c0b18-b21e-424b-a772-0399b5e03134",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "de3c0b18-b21e-424b-a772-0399b5e03134",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "14ecf482",
+      "resolved_base": "ca839e70099244a5e70f395a5d78a2cc088e5522",
+      "resolved_head": "14ecf4824052505e1667e71a6d6a8430f44ddee4",
+      "exact_range": "ca839e70099244a5e70f395a5d78a2cc088e5522..14ecf4824052505e1667e71a6d6a8430f44ddee4",
+      "source_artifact_sha256": "6cbd69d6c278e37d6c247f64770450f81cc17e90d1c9f6a0534d668379b9930c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "d284f760dbed5d81eea3f2be465105548575f8ab6f95910ce137bd040265ca71"
+        },
+        {
+          "item_id": "ada63c91534dfe92c279e2f6f7e4fe2f73e47e22172ffe4b28c85042bdecb657",
+          "path": "src/coordinators/workspace/restore-test-support.ts",
+          "fingerprint": "52d3b2a4b48fe5fcc827100e43b0ce65200d30373721b5c5cb0a14ab6dc907c0"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "83c6ca5d9bdf7bbc6b0db32d2d463324e04580bdd33e390408d8a526d24c1d4b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "d284f760dbed5d81eea3f2be465105548575f8ab6f95910ce137bd040265ca71"
+        },
+        {
+          "item_id": "ada63c91534dfe92c279e2f6f7e4fe2f73e47e22172ffe4b28c85042bdecb657",
+          "path": "src/coordinators/workspace/restore-test-support.ts",
+          "fingerprint": "52d3b2a4b48fe5fcc827100e43b0ce65200d30373721b5c5cb0a14ab6dc907c0"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "83c6ca5d9bdf7bbc6b0db32d2d463324e04580bdd33e390408d8a526d24c1d4b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "18bee283f204a94acfd79689a1ad491e52d8751758f00759ed9c12d4b464e868",
+          "path": "evidence/D08/suite-runs/T8.9-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "338c6842879a77aeb851e6329cf1cb860ad15d58c88f2aa94e9dc6e702527815",
+          "path": "evidence/D08/suite-runs/T8.9-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3c7a1fd6b93bfe90118f53abd37264e00e80b10a6478336dfaabceef352de7b7",
+          "path": "evidence/D08/tdd-log/T8.9.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4660fd953f027ac5ff44a9bd097a54c82f09cc38d215b3b98653305912560675",
+          "path": "evidence/D08/suite-runs/T8.9-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "93a1814d06860bd09271b4a5070d3bbf6931b618a888e2ae5666d26dad12c441",
+          "path": "evidence/D08/suite-runs/T8.9-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 138769
+  }
+}

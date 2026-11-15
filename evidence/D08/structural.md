@@ -885,3 +885,19 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Fixes merge-14's TS2741: the `RestoreFlow.test.tsx` preview fixture now carries `tradeSummary`, one Lifecycle and one EntrySizeDeviation repair; the older trade-9 assertion is removed (the new case covers it).
   - Refactor: the could-not-be-checked sentence is `COULD_NOT_CHECK` in `backup-text.ts`, shared by the thrown and reported failure paths.
 - **ocr T8.13-F3 `67dbda6c`:** 0 findings. Raw: `ocr/T8.13-F3-67dbda6c.json`. Lane UB merges; T8.13 is complete.
+- **T8.9** `14ecf482` (lane WR): `applyPreparedRestore`, 7 cases in `restore-apply.test.ts`. Lane tier rerun after fast-forwarding the lane to `ca839e70` (the first commit attempt was refused by the pre-commit typecheck on merge-14's fixture error): unit 181 / 1920, integration 106 / 229, checks 14 of 14.
+  - Reds: five `Error: not built`, one assertion (CandidateChanged).
+  - **Flagged:** case 6's recheck loop was written ahead with case 4; it was reverted for a genuine assertion red, then restored.
+  - **First-run passes, each with a mutation check:** case 5's decline half (mutation: treat `DeclinedAfterWarning` as missing; failed `expected SafetyBackupRequired to match Restored`) and case 7 (mutation: report `session.current()` instead of the rerun; failed `expected Writable to match RecoveryOnly`). Both mutations reverted.
+  - Pending decision Q10: the session's recheck runs `inspectRoot()`, whose cleanup deletes the prepared candidate. Lane workaround: `lookupSession` in `restore-test-support.ts`.
+  - Deviations and notes: no `detail` on apply failures (the frozen union has none); an aborted root transaction throws; `AlreadyInitialized` mapping built but untested; `restorePrepared` also holds counts, migrations and repairs, and is deleted by a normal commit after activation; PreparationNotFound checks that the candidate database exists and is not live; `recognizesReceipt` reached through the backup operations with no `workspace.ts` edit; the `WorkspaceReplaced` broadcast uses `kind`, so T8.14's listener must filter on it.
+- **ocr T8.9 `14ecf482`:** 8 findings (3 Valid, 5 Doubtful). Raw: `ocr/T8.9-14ecf482.json`. Each becomes a bug task on lane WR:
+  - **T8.9-B1** (Valid): the composition root's recheck runs `inspectRoot()`, deleting the prepared candidate, so apply returns PreparationNotFound. Waits on Q10 (the fix is in `compose.ts`, outside lane WR).
+  - **T8.9-B2** (Valid): `lookupSession` in the tests hides B1; no test applies through the real composition. Waits on Q10 with B1.
+  - **T8.9-B3** (Doubtful): nothing guards the steps after activation (meta delete, broadcast, readiness rerun, `describeDatabase`, status); a throw there loses the Restored result after the Workspace was replaced.
+  - **T8.9-B4** (Doubtful): SafetyBackupNotRecognized and SafetyBackupStale keep the candidate, while A135 says failures in steps 2 to 5 delete it unless only the confirmation or safety choice is missing; the T8.9 case says "writing nothing". Waits on Q11.
+  - **T8.9-B5** (Doubtful): the Stale and NotRecognized test locks in that retention. Waits on Q11 with B4.
+  - **T8.9-B6** (Doubtful): the `restorePrepared` meta is cast without a check; a missing or damaged record throws and leaves the candidate.
+  - **T8.9-B7** (Doubtful): the rechecks cover only the four fact sections; `meta.settings` and `meta.sessionPolicy` edited in the candidate after the preview pass.
+  - **T8.9-B8** (Valid): the test wrapper session's `reportStorageFailure` does not change its own `current()` state.
+  - B3, B6, B7 and B8 run now, one at a time.

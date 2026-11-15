@@ -244,3 +244,34 @@ Recommended: (a+).
 - T8.13-B8 is closed with no change, because the user's decision makes the flagged behavior intended.
 - The fixes already made stay: T8.4-B5 (no value in the unsafe-number message), T8.5-B7 (only known section names) and T8.5-B8 (only the cause's name).
 - Expected failures keep their fixed wording and codes.
+
+## Q10. Applying a Restore deletes its own prepared copy (T8.9) — open, asked 2026-11-14
+
+**Task:** T8.9 (lane WR), built and passing in its lane; committing now. Nothing is paused yet, but the real app's Restore cannot succeed until this is settled.
+
+**The problem.** A135 step 1 says apply's mutation guard first reruns the readiness checks. In the composition root (`src/app/compose.ts`) and the test stack (`tests/support/stack.ts`), the session's recheck is built from `inspectRoot()`. That is the launch-time root inspection, which also deletes every listed candidate the pointer does not name (D2 T2.8, kept by A138). So the guard's own recheck deletes the prepared Restore candidate, and apply always returns PreparationNotFound. Any other save made between preparing and applying would do the same.
+
+**As built in lane WR:** the unit tests pass a session whose recheck uses `lookupRoot()` (reads the root without cleanup), through `lookupSession` in `restore-test-support.ts`. The real wiring is unchanged, so the integration cases I8.8, I8.9 and I8.14 and the real flow would hit the problem.
+
+**Options:**
+- (a) Rechecks after launch use `lookupRoot()`; only launch keeps `inspectRoot()` with its cleanup. T8.11, which owns `compose.ts`, makes the change, plus the same change in `tests/support/stack.ts`, with a case proving a prepared candidate survives a recheck. Candidates left by a closed tab are still cleaned at the next launch.
+- (b) Keep `inspectRoot()` everywhere, but make its cleanup skip a Restore candidate listed by this instance's session (A138 already records the session identity). This changes D2's persistence code and its cases.
+- (c) something else.
+
+**Recommended: (a).** Cleanup belongs to launch; a recheck only needs to read. It is the smallest change, in a file T8.11 already owns.
+
+**Recorded, not questions (T8.9's other notes):**
+- The frozen `ApplyRestoreOutcome` union has no `detail` on any failure, so apply failures carry none. An aborted root transaction throws, since the union has no variant for it; the Restore screen already shows "The Restore didn't finish. Reload the app to see which journal is in use." for an unexpected apply failure (Q5 item 8).
+- `recognizesReceipt` needed no `workspace.ts` edit.
+- The `restorePrepared` meta now also holds counts, migrations and repairs for the receipt, and apply deletes it after activation.
+- Apply broadcasts `{ kind: 'WorkspaceReplaced', databaseName }` on the `tj-updates` channel; the update-notice listener treats a message without `type` as `unsaved`, so T8.14 must filter on `kind`.
+
+## Q11. Does a stale or unrecognized safety backup throw away the prepared Restore? (T8.9-B4, B5) — open, asked 2026-11-14
+
+**The conflict.** A135 says any failure in apply's steps 2 to 5 deletes the candidate, unless only the confirmation or the safety choice is missing. The T8.9 plan case says SafetyBackupStale and SafetyBackupNotRecognized "write nothing", while its Conflict case says "deleting the candidate". As built, Stale and NotRecognized keep the candidate. ocr flagged this as Doubtful.
+
+**Options:**
+- (a) Keep the candidate on Stale and NotRecognized (as built). The trader takes a fresh backup and applies again, with no second check of the backup file. Amend A135's wording in revision 103 to list these two with the missing-choice cases. B4 and B5 close with no change.
+- (b) Delete the candidate, following A135. The trader must choose the backup file and wait for the check again after taking a fresh backup.
+
+**Recommended: (a).** A stale or unrecognized receipt is about the safety backup, not the file being restored, so the prepared copy is still valid. It matches the plan case's wording and saves a repeat check.
