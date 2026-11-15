@@ -228,6 +228,21 @@ describe('rejections after staging (A134)', () => {
     expect(await prepare(footprint)).toMatchObject({ kind: 'Rejected', issues: [{ code: 'ManifestMismatch' }], totalIssues: 1, liveBinding });
   });
 
+  it('should reject an artifact whose last section lost its end line, with the manifest counts and full digest rewritten to agree, as DigestMismatch for that section, and delete the candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    const cut = editedArtifact(a7.bytes, (artifact) => {
+      const ends = artifact.lines.flatMap((line, at) => (line.startsWith('{"r":') ? [] : [at]));
+      const last = ends[ends.length - 1]!;
+      expect(JSON.parse(artifact.lines[last]!)).toMatchObject({ kind: 'sectionEnd', section: 'journal' });
+      artifact.lines.splice(last, 1);
+    });
+    const result = await target.workspace.prepareRestore({ file: backupFile(cut) });
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ code: 'DigestMismatch', section: 'journal' }], totalIssues: 1 });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+
   it('should reject Trade records whose facts are an empty object or hold null with two MalformedRecord issues naming their lines, and delete the candidate', async () => {
     const a7 = await exportedArtifact(await loadDump(W7));
     const target = await targetWorkspace();

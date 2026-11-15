@@ -445,8 +445,10 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
             continue;
           }
           const stored = manifest.data;
-          const changed = Object.entries(line.computedSectionDigests).filter(([name, digest]) => stored.sectionDigests[name] !== digest);
-          for (const [name] of changed) note({ code: 'DigestMismatch', ...(KNOWN_SECTIONS.has(name) ? { section: name } : {}) });
+          // Both directions: a section with no end line has no computed digest, and one the manifest omits has no stored one.
+          const names = new Set([...Object.keys(line.computedSectionDigests), ...Object.keys(stored.sectionDigests)]);
+          const changed = [...names].filter((name) => stored.sectionDigests[name] !== line.computedSectionDigests[name]);
+          for (const name of changed) note({ code: 'DigestMismatch', ...(KNOWN_SECTIONS.has(name) ? { section: name } : {}) });
           if (changed.length === 0 && stored.fullDigest !== line.computedFullDigest) note({ code: 'DigestMismatch' });
           // The counts of the authoritative stores, and the capability footprint, as the records carry them.
           const authoritative: Record<string, number> = {};
