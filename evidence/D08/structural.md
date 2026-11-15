@@ -1135,3 +1135,7 @@ All 5 code files reviewed, none failed; supersedes the 05:42 partial run. One fi
 ## T8.21-F3-B1-B1 done in lane BR (`ca1cca05`)
 
 Real timing uses `performance.now()`; the wait is capped at `REPLY_WINDOW_MS`. Red: assertion (waited 3600250 ms instead of 250). The `performance.now()` default is checked by grep, not a test (needs real timers). No first-run passes. Lane tier green: unit 1992, integration 229, checks 14 of 14.
+
+## T8.21-F3-B1-B1 ocr review (session 81c66e35)
+
+2 files reviewed, no findings. Lane BR's tasks are all reviewed clean. Raw: `ocr/T8.21-F3-B1-B1-ca1cca05.json`.
