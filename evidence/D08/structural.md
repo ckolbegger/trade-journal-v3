@@ -1278,3 +1278,4 @@ Minor observations (carried to the final report): focus drops to `<body>` after 
 ## T8.22-B7 done (`0d592896`)
 
 `.restore-counts { overflow-wrap: normal; }`; `.restore-preview` keeps `anywhere` for the release id. Red: browser assertion (words split at 375 px: "versions)" × 3). No first-run passes. Browser specs responsive-a11y, restore: 13 passed, including B4's no-sideways-scroll case.
+- T8.22-B7 ocr review (session 55f6003a): 2 files, no findings. Raw: `ocr/T8.22-B7-0d592896.json`.
