@@ -93,8 +93,9 @@ async function start(container: HTMLElement) {
   const onWorkspaceReplaced = (listener: (message: WorkspaceReplaced) => void) => {
     const hear = (event: MessageEvent<unknown>) => {
       const message = event.data as Partial<WorkspaceReplaced> | null;
-      if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string' || !postRestore.hearsReplacement(message.databaseName)) return;
-      listener({ kind: 'WorkspaceReplaced', databaseName: message.databaseName });
+      if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string') return;
+      const replaced: WorkspaceReplaced = { kind: 'WorkspaceReplaced', databaseName: message.databaseName };
+      if (postRestore.hearsReplacement(replaced.databaseName, () => listener(replaced))) listener(replaced);
     };
     replacedChannel.addEventListener('message', hear);
     return () => replacedChannel.removeEventListener('message', hear);
