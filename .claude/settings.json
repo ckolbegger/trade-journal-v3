@@ -26,6 +26,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/side-project-check.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
