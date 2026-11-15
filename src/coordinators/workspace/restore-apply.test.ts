@@ -221,6 +221,21 @@ describe('replacement (AC-REST-003)', () => {
     });
   });
 
+  it('should return CandidateChanged and delete the candidate when the preparation record holds empty counts or a malformed repair', async () => {
+    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({ ...record, counts: {} }));
+  });
+
+  it('should return CandidateChanged and delete the candidate when the preparation record holds a repair without its kind', async () => {
+    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({
+      ...record,
+      repairs: [{ tradeId: 'trade-1', stored: 'Open', expected: 'Closed', tradeSummary: { underlying: 'AAPL', summary: {} } }],
+    }));
+  });
+
+  it('should return CandidateChanged and delete the candidate when the preparation record holds migrations without their steps', async () => {
+    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({ ...record, migrations: {} }));
+  });
+
   it('should return CandidateChanged and delete the candidate when a Workspace settings record in the candidate holds a value that cannot be digested', async () => {
     await expectCandidateChangedAfterMetaRewrite('settings', (record) => ({ ...record, timeZone: undefined }));
   });

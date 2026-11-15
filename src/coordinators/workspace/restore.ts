@@ -227,6 +227,61 @@ const isSectionMeta = (value: unknown): boolean => {
   );
 };
 
+const isCount = (value: unknown): boolean => typeof value === 'number' && Number.isInteger(value) && value >= 0;
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+const isCountMap = (value: unknown, keys?: readonly string[]): boolean =>
+  isObject(value) && (keys ?? Object.keys(value)).every((key) => isCount(value[key]));
+
+// Whether the record's counts hold every count the receipt and the landing read.
+function isRestoreCounts(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  return (
+    isCountMap(value['tradesByLifecycle'], ['Planned', 'Open', 'Closed']) &&
+    isCountMap(value['entriesByType']) &&
+    isCountMap(value['debtsByStatus']) &&
+    isCountMap(value['versions']) &&
+    [
+      'positionChanges',
+      'executions',
+      'expirations',
+      'deviationOccurrences',
+      'declines',
+      'marks',
+      'acknowledgments',
+      'institutions',
+      'accounts',
+      'strategies',
+      'closeReasons',
+      'entryDefinitionRevisions',
+    ].every((key) => isCount(value[key]))
+  );
+}
+
+function isRestoreMigrations(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  const { steps, seedAdditions } = value;
+  return (
+    Array.isArray(steps) &&
+    steps.every((step) => isObject(step) && typeof step['from'] === 'number' && typeof step['to'] === 'number') &&
+    Array.isArray(seedAdditions) &&
+    seedAdditions.every((addition) => typeof addition === 'string')
+  );
+}
+
+function isRestoreRepair(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  const summary = value['tradeSummary'];
+  return (
+    typeof value['tradeId'] === 'string' &&
+    (value['kind'] === 'Lifecycle' || value['kind'] === 'EntrySizeDeviation') &&
+    typeof value['stored'] === 'string' &&
+    typeof value['expected'] === 'string' &&
+    isObject(summary) &&
+    typeof summary['underlying'] === 'string' &&
+    isObject(summary['summary'])
+  );
+}
+
 // Whether a `meta` record has the shape preparation wrote: a measured section for each fact module, and the receipt's parts.
 function isPreparedRecord(record: unknown): record is PreparedRecord {
   const value = record as Partial<Record<keyof PreparedRecord, unknown>> | undefined;
@@ -236,11 +291,10 @@ function isPreparedRecord(record: unknown): record is PreparedRecord {
     typeof sections === 'object' &&
     sections !== null &&
     (['catalog', 'marketData', 'trades', 'journal'] as const).every((name) => isSectionMeta(sections[name])) &&
-    typeof value.counts === 'object' &&
-    value.counts !== null &&
-    typeof value.migrations === 'object' &&
-    value.migrations !== null &&
+    isRestoreCounts(value.counts) &&
+    isRestoreMigrations(value.migrations) &&
     Array.isArray(value.repairs) &&
+    value.repairs.every(isRestoreRepair) &&
     typeof value.workspaceDigest === 'string'
   );
 }
