@@ -1,54 +1,34 @@
-// npm run bench:generate: creates the D2 benchmark dataset (plan section 1.3) in a cached Chromium
-// profile, once per generator version and schema version (D2 T2.20). It serves the bench build
-// (`npm run build:bench`, dist-bench/) on the bench origin, lets its service worker take control
-// so readiness is Writable, and runs the build's generator through the production facade. It then
-// records the expected Open list and the dataset's provenance, removes the service-worker
-// registration and Cache Storage from the profile, and stamps the profile with its versions.
-// A profile whose stamp matches is reused; any other is deleted and regenerated.
-import { readFile, rm, writeFile } from 'node:fs/promises';
+// npm run bench:generate: creates the benchmark dataset (D7 plan section 1.4) as a schema-7 backup artifact (D8 T8.18, P35),
+// once per generator version and schema version. The generator (src/app/bench-generator.ts) writes the artifact in this
+// process with the production artifact writer: no browser is driven and no domain command is run. This tool writes the file
+// under .cache/bench/ (git-ignored), records the artifact's digests and sizes, the dataset's counts and its expected values
+// in bench/dataset.json, and resets bench/expected-open-rows.json, whose rendered rows `bench:setup` and `bench:run` take
+// from the restored profile's first render (the application, not the generator, formats and orders them).
+// A dataset whose recorded generator version, schema version and file digest match the file on disk is reused.
+// The bench build (`npm run build:bench`, dist-bench/) must carry this generator version's marker, so a stale one is caught.
+import { createHash } from 'node:crypto';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
-import { chromium, type BrowserContext, type Page } from '@playwright/test';
-import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE, type BenchAsOf, type BenchCounts } from '../src/app/bench.ts';
-import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import path from 'node:path';
-import {
-  BENCH_BUILD_DIR,
-  BENCH_DATASET_FILE as FULL_DATASET_FILE,
-  BENCH_EXPECTED_ROWS_FILE as FULL_EXPECTED_ROWS_FILE,
-  BENCH_PORT,
-  BENCH_PROFILE_DIR as FULL_PROFILE_DIR,
-  type BenchStamp,
-  type ExpectedOpenRows,
-} from './bench/profile.ts';
+import { BENCH_AS_OF_DATE, BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE } from '../src/app/bench.ts';
+import { generateBenchArtifact } from '../src/app/bench-generator.ts';
+import { nyseSessionPolicy } from '../src/domain/session-policy/index.ts';
+import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
+import { BENCH_BUILD_DIR, BENCH_DATASET_FILE as FULL_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE as FULL_EXPECTED_ROWS_FILE, type ExpectedOpenRows } from './bench/profile.ts';
+import { listFiles } from './release.ts';
 
 // BENCH_SESSIONS=<n> runs a short smoke generation over the first n sessions (D6 T6.24), scaling every count.
-// It writes only under .cache/bench/smoke-<n>/ (never bench/dataset.json, the cached profile or its stamp)
-// and always regenerates.
+// It writes only under .cache/bench/smoke-<n>/ (never bench/dataset.json) and always regenerates.
 const smokeSessions = process.env['BENCH_SESSIONS'] ? Number(process.env['BENCH_SESSIONS']) : undefined;
 if (smokeSessions !== undefined && !(Number.isInteger(smokeSessions) && smokeSessions > 0)) throw new Error(`BENCH_SESSIONS=${process.env['BENCH_SESSIONS']} is not a positive integer`);
 const smokeDir = smokeSessions === undefined ? undefined : path.resolve(`.cache/bench/smoke-${smokeSessions}`);
-const BENCH_PROFILE_DIR = smokeDir ? path.join(smokeDir, 'profile') : FULL_PROFILE_DIR;
-const BENCH_STAMP_FILE = path.join(BENCH_PROFILE_DIR, 'tj-bench.json');
+const ARTIFACT_FILE = path.join(smokeDir ?? path.resolve('.cache/bench'), 'benchmark.tjbackup');
 const BENCH_DATASET_FILE = smokeDir ? path.join(smokeDir, 'dataset.json') : FULL_DATASET_FILE;
 const BENCH_EXPECTED_ROWS_FILE = smokeDir ? path.join(smokeDir, 'expected-open-rows.json') : FULL_EXPECTED_ROWS_FILE;
-import { pinAsOf } from './bench/pin.ts';
-import { listFiles } from './release.ts';
-import { startReleaseServer } from './release-server.ts';
 
-const wanted: BenchStamp = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION };
-// Generation takes on the order of an hour (D4 T4.30); `bench:` progress lines are echoed below.
-const stamp = (await readFile(BENCH_STAMP_FILE, 'utf8').then(JSON.parse, () => undefined)) as BenchStamp | undefined;
-if (smokeSessions === undefined && stamp?.generatorVersion === wanted.generatorVersion && stamp.schemaVersion === wanted.schemaVersion) {
-  console.log(`bench:generate OK: reusing the cached profile ${BENCH_PROFILE_DIR} (generator ${stamp.generatorVersion}, schema ${stamp.schemaVersion})`);
-  process.exit(0);
-}
-console.log(
-  stamp
-    ? `bench:generate: cached profile is generator ${stamp.generatorVersion}, schema ${stamp.schemaVersion}; regenerating for generator ${wanted.generatorVersion}, schema ${wanted.schemaVersion}`
-    : `bench:generate: no cached profile; generating for generator ${wanted.generatorVersion}, schema ${wanted.schemaVersion}`,
-);
+const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 
-// The generator exists only in the bench build.
+// The bench build exists only to carry the marker of the generator version that made the dataset.
 const bundled = await Promise.all(
   (await listFiles(BENCH_BUILD_DIR)).filter((f) => f.endsWith('.js')).map((f) => readFile(`${BENCH_BUILD_DIR}/${f}`, 'utf8')),
 ).catch(() => []);
@@ -57,74 +37,26 @@ if (!bundled.some((text) => text.includes(BENCH_GENERATOR_MARKER))) {
   process.exit(1);
 }
 
-await rm(BENCH_PROFILE_DIR, { recursive: true, force: true });
-const server = await startReleaseServer({ root: process.cwd(), release: BENCH_BUILD_DIR, port: BENCH_PORT });
-const origin = server.url;
-
-// The release's service worker installs, verifies its inventory and claims the page.
-async function controlled(page: Page) {
-  await page.goto(origin);
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
-  await page.waitForLoadState('load');
+const recorded = (await readFile(BENCH_DATASET_FILE, 'utf8').then(JSON.parse, () => undefined)) as { generatorVersion?: number; schemaVersion?: number; artifact?: { fileDigest?: string } } | undefined;
+const onDisk = await readFile(ARTIFACT_FILE).catch(() => undefined);
+if (smokeSessions === undefined && onDisk && recorded?.generatorVersion === BENCH_GENERATOR_VERSION && recorded.schemaVersion === SCHEMA_VERSION && recorded.artifact?.fileDigest === sha256(onDisk)) {
+  console.log(`bench:generate OK: reusing ${path.relative(process.cwd(), ARTIFACT_FILE)} (generator ${BENCH_GENERATOR_VERSION}, schema ${SCHEMA_VERSION}, ${onDisk.length} bytes)`);
+  process.exit(0);
 }
+console.log(`bench:generate: generating for generator ${BENCH_GENERATOR_VERSION}, schema ${SCHEMA_VERSION}${smokeSessions === undefined ? '' : ` (smoke, ${smokeSessions} sessions)`}`);
 
-let result: { counts: BenchCounts; openItems: readonly unknown[] } & BenchAsOf;
-let expected: Pick<ExpectedOpenRows, 'headers' | 'rows'>;
-let release: string;
-let generationMs: number;
-let engine: string;
-const launched: BrowserContext[] = [];
-try {
-  const context = await chromium.launchPersistentContext(BENCH_PROFILE_DIR, { headless: true });
-  launched.push(context);
-  engine = `chromium ${context.browser()?.version() ?? ''}`.trim();
-  const page = context.pages()[0] ?? (await context.newPage());
-  page.on('console', (message) => {
-    if (message.text().startsWith('bench:')) console.log(message.text());
-  });
-  await controlled(page);
-  release = await page.evaluate(() => document.getElementById('root')?.dataset.release ?? '');
-  const started = performance.now();
-  result = await page.evaluate((sessions) => window.__tjBench!.generate(sessions === undefined ? {} : { sessions }), smokeSessions);
-  generationMs = Math.round(performance.now() - started);
-
-  // The Open list as the trader sees it at the as-of instant, for T2.21's before-and-after comparison.
-  await pinAsOf(context, new Date(result.asOf));
-  await page.goto(origin);
-  const table = page.getByRole('table', { name: 'Open Trades' });
-  await table.locator('tbody tr').nth(result.counts.openTrades - 1).waitFor({ timeout: 60_000 });
-  expected = await table.evaluate((t: HTMLTableElement) => ({
-    headers: [...t.tHead!.rows[0]!.cells].map((c) => c.textContent.trim()),
-    rows: [...t.tBodies[0]!.rows].map((r) => [...r.cells].map((c) => c.textContent.trim())),
-  }));
-
-  // Leave only data in the profile: no service-worker registration, no Cache Storage.
-  await page.evaluate(async () => {
-    for (const registration of await navigator.serviceWorker.getRegistrations()) await registration.unregister();
-    for (const key of await caches.keys()) await caches.delete(key);
-  });
-  await context.close();
-
-  // Reopen the profile on a blank page of the same origin (nothing served) and confirm.
-  const check = await chromium.launchPersistentContext(BENCH_PROFILE_DIR, { headless: true });
-  launched.push(check);
-  await check.route(`${origin}/**`, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>check</title>' }));
-  await server.close();
-  const checkPage = check.pages()[0] ?? (await check.newPage());
-  await checkPage.goto(`${origin}/bench-profile-check`);
-  const left = await checkPage.evaluate(async () => ({
-    registrations: (await navigator.serviceWorker.getRegistrations()).length,
-    caches: (await caches.keys()).length,
-    databases: (await indexedDB.databases()).map((d) => d.name ?? ''),
-  }));
-  await check.close();
-  if (left.registrations !== 0 || left.caches !== 0) throw new Error(`profile still holds ${left.registrations} registrations and ${left.caches} caches`);
-  console.log(`bench:generate: profile has 0 service-worker registrations, 0 caches, databases ${left.databases.sort().join(', ')}`);
-} finally {
-  // Closing an already closed context is a no-op; a failure must not leave Chromium running.
-  for (const context of launched) await context.close();
-  await server.close();
-}
+const started = performance.now();
+// The session policy is handed in: only Market Data and the composition root import it (D4 A39).
+const covered = nyseSessionPolicy.sessionsBetween(BENCH_CLOCK_START.slice(0, 10), BENCH_AS_OF_DATE);
+if (!covered.ok) throw new Error('the session policy does not cover the benchmark run');
+const calendar = { identity: nyseSessionPolicy.identity, sessions: covered.value };
+const { artifact, bytes, uncompressedBytes, storeCounts, expected } = await generateBenchArtifact({ calendar, ...(smokeSessions !== undefined && { sessions: smokeSessions }) });
+const generationMs = Math.round(performance.now() - started);
+const file = Buffer.concat(artifact.parts);
+await mkdir(path.dirname(ARTIFACT_FILE), { recursive: true });
+// An interrupted write never leaves a file whose digest the dataset records.
+await rm(BENCH_DATASET_FILE, { force: true });
+await writeFile(ARTIFACT_FILE, file);
 
 const provenance = {
   generatorVersion: BENCH_GENERATOR_VERSION,
@@ -132,31 +64,39 @@ const provenance = {
   seed: BENCH_SEED,
   clockStart: BENCH_CLOCK_START,
   timeZone: BENCH_TIME_ZONE,
-  origin,
-  buildDir: BENCH_BUILD_DIR,
-  benchRelease: release,
-  asOf: result.asOf,
-  reviewDate: result.reviewDate,
-  missingInstruments: result.missingInstruments,
-  counts: result.counts,
-  actionsByChoice: result.actionsByChoice,
-  dispositions: result.dispositions,
-  closeReviewDispositions: result.closeReviewDispositions,
-  asOfReview: result.asOfReview,
-  asOfDueReflections: result.asOfDueReflections,
-  outstandingDebts: result.outstandingDebts,
+  asOf: expected.asOf,
+  reviewDate: expected.reviewDate,
+  missingInstruments: expected.missingInstruments,
+  counts: expected.counts,
+  actionsByChoice: expected.actionsByChoice,
+  dispositions: expected.dispositions,
+  closeReviewDispositions: expected.closeReviewDispositions,
+  asOfReview: expected.asOfReview,
+  asOfDueReflections: expected.asOfDueReflections,
+  outstandingDebts: expected.outstandingDebts,
+  // The artifact: where it is, and what it is. `bench:setup` restores it and adds the Restore timings.
+  artifact: {
+    path: path.relative(process.cwd(), ARTIFACT_FILE),
+    fileDigest: sha256(file),
+    fullDigest: artifact.fullDigest,
+    manifestDigest: artifact.manifestDigest,
+    sectionDigests: artifact.sectionDigests,
+    bytes,
+    uncompressedBytes,
+    lines: artifact.lineCount,
+    storeCounts,
+  },
   generationMs,
-  generatedAt: new Date().toISOString(),
-  engine,
+  engine: `node ${process.version}`,
   host: { platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model ?? 'unknown', cores: os.cpus().length },
-  profileDir: path.relative(process.cwd(), BENCH_PROFILE_DIR),
   expectedOpenRows: path.relative(process.cwd(), BENCH_EXPECTED_ROWS_FILE),
   ...(smokeSessions !== undefined && { smokeSessions }),
 };
-const rows: ExpectedOpenRows = { ...wanted, ...expected, items: result.openItems };
+// The Open list as the trader sees it is the application's rendering of the restored Workspace, so the rows are taken from
+// the first render after `bench:setup` (`bench:expected`); until then there are none.
+const rows: ExpectedOpenRows = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION, headers: [], rows: [], items: [] };
+await writeFile(BENCH_EXPECTED_ROWS_FILE, `${JSON.stringify(rows, null, 2)}\n`);
+// Written last: a dataset without this file is regenerated.
 await writeFile(BENCH_DATASET_FILE, `${JSON.stringify(provenance, null, 2)}\n`);
-// Exact values (Rational parts) are bigints; they are written as decimal strings.
-await writeFile(BENCH_EXPECTED_ROWS_FILE, `${JSON.stringify(rows, (_, v: unknown) => (typeof v === 'bigint' ? v.toString() : v), 2)}\n`);
-// Written last: a profile without this stamp is never reused.
-await writeFile(BENCH_STAMP_FILE, `${JSON.stringify(wanted)}\n`);
-console.log(`bench:generate OK: ${JSON.stringify(result.counts)} in ${generationMs} ms; profile ${BENCH_PROFILE_DIR}`);
+console.log(`bench:generate OK: ${JSON.stringify(expected.counts)}`);
+console.log(`bench:generate: ${path.relative(process.cwd(), ARTIFACT_FILE)} ${bytes} bytes (${uncompressedBytes} uncompressed, ${artifact.lineCount} lines), full digest ${artifact.fullDigest}, in ${generationMs} ms`);

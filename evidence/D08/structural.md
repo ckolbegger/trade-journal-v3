@@ -1051,3 +1051,12 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 `81790855` on d08/wr. Every record line read counts toward `done`, including rejected and unparsable ones; Workspace-section lines are left out (they aren't in the header total). Case 1 first-run pass (T8.8-B8 already built it), flagged, mutation check failed with `{ done: 103, total: 102 }`; case 2 red `{ done: 84, total: 102 }` then green. Lane tier: unit 1958 passed with 1 failure (the known flaky `TradeList.test.tsx` Open list states case, `expected 2 to be 3`; 35 of 35 on two reruns), integration 229, checks 14 of 14. Deviation from Q19 recorded as Q26 (not blocking). ocr running.
 
 ocr T8.8-F4 `81790855`: no findings.
+
+## T8.18 Benchmark generator writes the artifact
+
+Verification (the row): `npm run build:bench && npm run bench:generate`. Run in lane BG on 2026-11-15.
+- `npm run build:bench`: exit 0. `npm run bench:generate`: exit 0. The generator ran in Node (no browser) and wrote `.cache/bench/benchmark.tjbackup` (git-ignored) and `bench/dataset.json`.
+- Counts: 25,000 Trades (200 Open, 100 Planned, 24,700 Closed), 97,127 Position Changes, 187,435 Executions, 7,500 option Trades (3,000 Long Call, 2,000 Long Put, 2,500 Cash-Secured Put), 2,964 Expirations, 106,985 Marks (1,069 corrected), 130,234 Actions, 24,365 Debts (487 Outstanding). These equal the generator-7 browser dataset's counts.
+- Artifact: 20,869,681 bytes compressed, 453,413,121 uncompressed, 432,962 lines; full digest `14fadb92184fe981f9e4e29701af5dd0fc22dfd6e11e35be70c8a60692f0d846`; file SHA-256 `48b58c6eb41a0cd03ed7a8ea1af98b38110ba9c7e99bf177f05f096ab6f78af1`. Generation 19 to 21 s.
+- Determinism: the artifact file was deleted and regenerated twice; identical file SHA-256 and `bench/dataset.json` identical apart from `generationMs` and `host`.
+- Restore in Node: the whole artifact prepared through `Workspace.prepareRestore` (Prepared, not Rejected) on fake-indexeddb in 772 s (throwaway test, not committed). The unit case asserts zero issues and zero repairs on the 40-session artifact.
