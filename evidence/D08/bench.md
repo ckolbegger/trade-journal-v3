@@ -71,13 +71,13 @@ The benchmark artifact (digest `6d819703928c5aa37ec3e9181b4ba164b325846296cf015f
 | Restored Workspace `estimate().usage` | 206,540,122 bytes (197.0 MiB) |
 | Projection for the same counts | 781,961,664 bytes (745.7 MiB) |
 | Usage over projection (limit 1.10) | 0.264: pass |
-| Peak usage during a second Restore over the restored Workspace | 446,308,881 bytes (425.6 MiB) |
+| Peak usage during a second Restore over the restored Workspace | 439,119,065 bytes (418.8 MiB) |
 | M, the mature projection | 912,516,132 bytes (870.2 MiB) |
-| Peak over M (limit below 3) | 0.489: pass |
+| Peak over M (limit below 3) | 0.481: pass |
 | One export of the mature dataset (Download backup) | 21.9 s, 20,871,394 bytes (19.9 MiB) |
 | One verification of that export (Verify backup) | 12.2 s |
 
-The usage samples are taken every 250 ms (404 samples during the second Restore); the peak is the largest sample. The projection for the same counts prices the dataset's counts with the chromium measurement's bytes per record (tools/bench/restore-checks.ts `projectForDataset`); it leaves out the Allowances, which the dataset does not hold. M is the mature projection embedded in the release. The export and verification timings are disclosed, not gated.
+The usage samples are taken every 250 ms (402 samples during the second Restore); the peak is the largest sample. The projection for the same counts prices the dataset's counts with the chromium measurement's bytes per record (tools/bench/restore-checks.ts `projectForDataset`); it leaves out the Allowances, which the dataset does not hold. M is the mature projection embedded in the release. The export and verification timings are disclosed, not gated.
 
 ## Method
 

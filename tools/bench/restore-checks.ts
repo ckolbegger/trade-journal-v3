@@ -137,6 +137,21 @@ The benchmark artifact (digest \`${setup.artifactDigest}\`, ${bytes(setup.artifa
 `;
 }
 
+// The recorded projection and M must be the ones computed now (from the dataset's counts and the embedded requirement).
+export function cachedProjectionProblems(
+  cached: { readonly projectedBytes: number; readonly matureProjectedBytes: number },
+  fresh: { readonly projectedBytes: number; readonly matureProjectedBytes: number },
+): string[] {
+  const problems: string[] = [];
+  if (cached.projectedBytes !== fresh.projectedBytes) {
+    problems.push(`the cached projection for the dataset counts ${cached.projectedBytes} is not the recomputed ${fresh.projectedBytes}: rerun measure:capacity -- --restored`);
+  }
+  if (cached.matureProjectedBytes !== fresh.matureProjectedBytes) {
+    problems.push(`the cached M ${cached.matureProjectedBytes} is not the embedded ${fresh.matureProjectedBytes}: rerun measure:capacity -- --restored`);
+  }
+  return problems;
+}
+
 // What stops a measurement of the cached profile: it must have been restored from the artifact the dataset records (the
 // setup record's digest), not an earlier one.
 export function profileProblems(setup: { readonly artifactDigest?: string } | undefined, datasetDigest: string): string[] {

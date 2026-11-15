@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EngineMeasurement } from '../capacity/profile.ts';
-import { artifactProblems, peakVerdict, profileProblems, projectForDataset, restoreReport, usageVerdict } from './restore-checks.ts';
+import { artifactProblems, cachedProjectionProblems, peakVerdict, profileProblems, projectForDataset, restoreReport, usageVerdict } from './restore-checks.ts';
 
 // Each kind's bytes are a different prime, so a swapped mapping changes the total.
 const MEASURED_BYTES = {
@@ -96,6 +96,19 @@ describe('benchmark artifact checks', () => {
       'the expected rows were written by bench:expected, not by bench:generate',
     ]);
     expect(artifactProblems(DIGEST, { artifact: { fileDigest: DIGEST } }, undefined)).toHaveLength(2);
+  });
+});
+
+describe('benchmark cached projection check', () => {
+  it('should refuse a cached projection that differs from the one computed now', () => {
+    const fresh = { projectedBytes: 1_000_000, matureProjectedBytes: 2_000_000 };
+    expect(cachedProjectionProblems({ projectedBytes: 1_000_000, matureProjectedBytes: 2_000_000 }, fresh)).toEqual([]);
+    expect(cachedProjectionProblems({ projectedBytes: 5_000_000, matureProjectedBytes: 2_000_000 }, fresh)).toEqual([
+      'the cached projection for the dataset counts 5000000 is not the recomputed 1000000: rerun measure:capacity -- --restored',
+    ]);
+    expect(cachedProjectionProblems({ projectedBytes: 1_000_000, matureProjectedBytes: 9_000_000 }, fresh)).toEqual([
+      'the cached M 9000000 is not the embedded 2000000: rerun measure:capacity -- --restored',
+    ]);
   });
 });
 
