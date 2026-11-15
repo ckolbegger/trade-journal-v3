@@ -138,8 +138,9 @@ export function migrationFaults(): MigrationStageHooks {
   };
 }
 
-// The export port, failing the snapshot read at its first batch while backup:read is active. The page
-// runs that export itself (real read, same pipeline) because the worker cannot see `?faults=`.
+// The export port, failing the snapshot read while backup:read is active: at its first batch, and at its
+// start, which the read always reaches even when every store is empty. The page runs that export itself
+// (real read, same pipeline) because the worker cannot see `?faults=`.
 export function faultyExportPort(real: ExportPort, indexedDB: IDBFactory): ExportPort {
   faults();
   return {
@@ -149,7 +150,10 @@ export function faultyExportPort(real: ExportPort, indexedDB: IDBFactory): Expor
             (database, layout, _onBatch, onStart) =>
               readExportSnapshot(indexedDB, database, layout, () => {
                 throw new Error('injected fault: backup:read');
-              }, onStart),
+              }, (start) => {
+                onStart?.(start);
+                throw new Error('injected fault: backup:read');
+              }),
             job,
           )
         : real.run(job),

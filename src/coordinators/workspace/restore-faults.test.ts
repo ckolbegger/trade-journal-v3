@@ -15,15 +15,21 @@ async function a7() {
   return exportedArtifact(await loadDump(W7));
 }
 
-// A promise that settles only when `open` is called, and a flag for whether it was reached.
+// `held` settles only when `open` is called; `entered` settles when the hook calls `enter`, so a test waits for the hook, not a timer.
 function gate() {
   let open: () => void = () => undefined;
+  let enter: () => void = () => undefined;
   const held = new Promise<void>((resolve) => (open = resolve));
-  const state = { reached: false };
-  return { held, open, state };
+  const entered = new Promise<void>((resolve) => (enter = resolve));
+  return { held, open, entered, enter };
 }
 
-const settled = () => new Promise((resolve) => setTimeout(resolve, 50));
+// Waits for the hook to be reached, then gives `pending` a short bounded chance to finish: false when it is still waiting.
+// The wait only bounds the negative check; the hook being reached is awaited by event, so a slow machine cannot fail the test.
+async function finishedAfter(entered: Promise<void>, pending: Promise<unknown>) {
+  await entered;
+  return Promise.race([pending.then(() => true), new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 500))]);
+}
 
 describe('Restore stage hooks (T8.15)', () => {
   it('should return CandidateChanged naming the store when the recheck hook names a store of the module, leaving the live database and no candidate', async () => {
@@ -79,22 +85,18 @@ describe('Restore stage hooks (T8.15)', () => {
   });
 
   it('should wait in preparation after staging the records until the staged hook resolves', async () => {
-    const { held, open, state } = gate();
+    const { held, open, entered, enter } = gate();
     const hooks: RestoreStageHooks = {
       staged: () => {
-        state.reached = true;
+        enter();
         return held;
       },
     };
     const target = await targetWorkspace();
     const workspace = workspaceOf(target, { restoreHooks: hooks });
     const pending = workspace.prepareRestore({ file: backupFile((await a7()).bytes) });
-    let done = false;
-    void pending.then(() => (done = true));
 
-    await settled();
-    expect(state.reached).toBe(true);
-    expect(done).toBe(false);
+    expect(await finishedAfter(entered, pending)).toBe(false);
     const names = (await dumpAll(target.factory));
     expect(Object.keys(names).filter((name) => name !== 'tj-root')).toHaveLength(2);
 
@@ -103,10 +105,10 @@ describe('Restore stage hooks (T8.15)', () => {
   });
 
   it('should wait in apply after the pointer switch and before the readiness rerun until the activated hook resolves', async () => {
-    const { held, open, state } = gate();
+    const { held, open, entered, enter } = gate();
     const hooks: RestoreStageHooks = {
       activated: () => {
-        state.reached = true;
+        enter();
         return held;
       },
     };
@@ -115,12 +117,8 @@ describe('Restore stage hooks (T8.15)', () => {
     const prepared = await workspace.prepareRestore({ file: backupFile((await a7()).bytes) });
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
     const pending = workspace.applyPreparedRestore({ token: prepared.token, confirmation: CONFIRM, safety: DECLINE });
-    let done = false;
-    void pending.then(() => (done = true));
 
-    await settled();
-    expect(state.reached).toBe(true);
-    expect(done).toBe(false);
+    expect(await finishedAfter(entered, pending)).toBe(false);
     expect(await target.persistence.lookupRoot()).toMatchObject({ kind: 'KnownWorkspace', databaseName: prepared.token.candidateId });
 
     open();
