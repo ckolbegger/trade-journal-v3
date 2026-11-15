@@ -380,11 +380,15 @@ For comparison, the old generator also took its expected rows from the app's own
 - (a) Do it in full: export a pure `openRowsOf(items, timeZone)` from `TradeList.tsx` (the screen then calls it), and load the generated records in Node through the candidate API to call `browseTrades` and the Daily Review. Generation grows from about 20 s to roughly 15 minutes or more.
 - (b) Recommended: the generator keeps computing what it can independently (counts, which Trades are Open, the Review's membership, Settlement Due items, the owed group), and T8.19 takes the row text and the Review's order from the first render after `bench:setup`, then checks that render against the generator's membership and counts, and every later render against the first. No new code outside the benchmark files, and no slower generation.
 
+**Answer (2026-11-15): (a), after discussion.** The 13 minutes is the fake-indexeddb load, not the row function; the browser's setup Restore pays its own load, and generation runs once per generator version, so the time matters little. Compute in Node: export a pure Open-row function from `TradeList.tsx` (the screen calls it), load the generated records through the existing Restore path, run `browseTrades` and the Daily Review, and write the expected rows and Review order. Follow-up T8.18-F2 in lane BG; r103 adds `TradeList.tsx` to lane BG for it.
+
 ## Q26. Preparation progress leaves out the Workspace section's lines (T8.8-F4, raised 2026-11-15, not blocking)
 
 Q19 (a) asked for every record line to count toward `done`, including the Workspace section, with progress ending at the header total. Both can't hold: the header's counts cover only the stores that Restore rebuilds, and the Workspace section (the Meta store) isn't among them, so counting its line pushes progress past 100% (103 of 102 in the W7 fixture). T8.8-F4 (`81790855`, lane WR) counts every other record line, rejected and unparsable ones included, and leaves the Workspace lines out, so progress ends exactly at the header total. A comment in `restore.ts` says why.
 - (a) Recommended: keep T8.8-F4 as built. Progress ends at the header total; the Workspace section is one or two lines, so leaving it out changes nothing the trader can see.
 - (b) Count the Workspace lines too, and grow `total` by that many when they're read. Progress would reach 100% of a total that changes mid-run, since the header is written before those lines.
+
+**Answer (2026-11-15): (a).** Keep T8.8-F4 as built; r103 corrects Q19's wording.
 
 ## Q27. Three planned integration steps fail against the app (T8.20, raised 2026-11-15, holds the critic gate T8.22)
 
@@ -394,6 +398,8 @@ T8.20 (`65961ad3`, lane FX) wrote the Node integration suite I8.1 to I8.15 witho
 3. **I8.15:** after A's Restore, B's `recordPositionChange` gives `StorageFailure(InvalidStateError)`, not `RuntimeNotWritable` (superseded). B reads the Trade on its closed connection before the commit's superseded check is reached. Nothing is written; a direct commit by B does return `RuntimeNotWritable` with `SessionSuperseded`.
 - (a) Recommended: fix 1 and 3 in the app as follow-ups T8.20-F1 (gate `activateCandidate` on the write gate) and T8.20-F2 (the mutation guard refuses a superseded instance before any read), each removing its `it.fails` marker. For 2, A135 wins: change the I8.8 case to expect `SafetyBackupNotRecognized` (T8.20-F3, test only) and correct the row in r103.
 - (b) Treat all three as known limits for D8: keep the `it.fails` markers, list them in the final report, and fix them in a later deliverable.
+
+**Answer (2026-11-15): (a).** T8.20-F1 gates `Persistence.activateCandidate` on the write gate; T8.20-F2 has the mutation guard refuse a superseded instance before any read; T8.20-F3 changes the I8.8 case to expect `SafetyBackupNotRecognized` (A135 governs; r103 corrects the row). Each removes its `it.fails` marker, which also settles T8.20-B1. Lane FX; r103 adds the touched app files to it.
 
 ## Q28. Three planned browser cases fail against the app (T8.21, raised 2026-11-15, holds lane BR's merge and the critic gate T8.22)
 
@@ -405,3 +411,5 @@ T8.21 (`2ebe87a6`, lane BR) wrote the browser suite B8.1 to B8.16 (B8.12 withdra
 - (b) Fix F1 and F2 now; drop the B8.11 warning from D8 (known limit, A133 and the row corrected in r103), keeping the rest of B8.11.
 
 Two smaller wording points in T8.21, recommended as accepted: in B8.11 tab 2's Confirm Plan is disabled after the replacement, so the test checks it is disabled rather than pressing it for `RuntimeNotWritable`; and B8.6 ignores the empty `candidates` record a preparation leaves in the root store (as T8.20 does). Also observed, not asserted: at 390 px the Restore preview is 633 px wide and scrolls sideways.
+
+**Answer (2026-11-15): (a), after discussion.** Fix all three in lane BR: T8.21-F1 (the shell rebuilds on Go to Trades after a first-run Restore), T8.21-F2 (the summary applies the readiness found after the Restore), T8.21-F3 (the preview warns about unsaved work in other tabs by reusing the existing `tj-updates` BroadcastChannel from D1 A5: the Restore tab sends the existing `query` when preparation starts, and the warning shows if the update controller's other-tab state says any tab holds unsaved work; no new message type or file). The two wording points are accepted.
