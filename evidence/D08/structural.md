@@ -1109,3 +1109,4 @@ Q25 (a), Q26 (a), Q27 (a), Q28 (a); details in DECISIONS-PENDING.md. Lanes BG, F
 ## Lane FX merged (T8.20 and follow-ups) — 2026-11-15
 
 Lane FX rebased onto `253e5c4e` (only evidence and plan commits since its base, no code) and fast-forwarded: T8.20 `b4f8b073`, F1 `cb578980`, F2 `caf988ef`, F1-B1 `64670df6`, F3 `1bb66597`. Lane worktree removed. merge-21 follows with `browser-auto 77e6e279` (merge-20's code).
+- **ocr T8.21-F2** `1cd070ce` (lane BR): no findings.

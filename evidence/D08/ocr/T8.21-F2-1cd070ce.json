@@ -1,0 +1,176 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 0,
+    "total_tokens": 61177,
+    "input_tokens": 60628,
+    "output_tokens": 549,
+    "cache_read_tokens": 6656,
+    "elapsed": "25s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Post-restore lifecycle handling and UI integration",
+      "files": [
+        "src/app/post-restore.test.ts",
+        "src/app/post-restore.ts",
+        "src/main.tsx",
+        "src/ui/AppShell.test.tsx",
+        "src/ui/AppShell.tsx",
+        "src/ui/backup/RestoreFlow.test.tsx",
+        "src/ui/backup/RestoreFlow.tsx"
+      ]
+    }
+  ],
+  "session_id": "1fa4326c-e602-4c9c-8b29-3e6ac212d2e7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1fa4326c-e602-4c9c-8b29-3e6ac212d2e7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1cd070ce",
+      "resolved_base": "1be6bcc0e99655b1e4f6dce424f19a24dc16f38c",
+      "resolved_head": "1cd070ce4e158f51b1b56e954a25bf39ed314f25",
+      "exact_range": "1be6bcc0e99655b1e4f6dce424f19a24dc16f38c..1cd070ce4e158f51b1b56e954a25bf39ed314f25",
+      "source_artifact_sha256": "de96219b06b571e707a0a62b77983b85cc1e2c1819c8e5023b53ecdedf69cf1e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "12b72e75bc636ebbef31a8657510ede40a89026802568aaef7dd95aa5b53a2a6"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "99a9a19d4fdaf9554cb48b7e0eb5d3863af40c762e0e369c186a13061ffcdb92"
+        },
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "e8c4fcbf9b65be07bce046147a58a6e5fd982e8f4b51a65ab61291ab16ccdd07"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "af001cb6d993fdd124929154150e9a256393db36df9fee9ca419a632cafe70df"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "8a99d4578fdcfe737bce2ba087cdee401c786473f9ec529542fa3ef6b13340e5"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "07d27fd7c82ae82d11343f587119299fc5fb095abd47544df362caca9e9b7f37"
+        },
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "757b6d40c353a1016e5b1b5b8f8ecbd58cdf473c81b9cefc1e4447db935c1431"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "12b72e75bc636ebbef31a8657510ede40a89026802568aaef7dd95aa5b53a2a6"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "99a9a19d4fdaf9554cb48b7e0eb5d3863af40c762e0e369c186a13061ffcdb92"
+        },
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "e8c4fcbf9b65be07bce046147a58a6e5fd982e8f4b51a65ab61291ab16ccdd07"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "af001cb6d993fdd124929154150e9a256393db36df9fee9ca419a632cafe70df"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "8a99d4578fdcfe737bce2ba087cdee401c786473f9ec529542fa3ef6b13340e5"
+        },
+        {
+          "item_id": "b777228b9a974c64bbabf05525468779f48aaec188283e6cc1c716511706288d",
+          "path": "src/ui/AppShell.test.tsx",
+          "fingerprint": "07d27fd7c82ae82d11343f587119299fc5fb095abd47544df362caca9e9b7f37"
+        },
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "757b6d40c353a1016e5b1b5b8f8ecbd58cdf473c81b9cefc1e4447db935c1431"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "27cb37cd788832665131530a5721bda26b03847f06ae25c0addad393b6ab0eab",
+          "path": "evidence/D08/suite-runs/T8.21-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3143d5dac0702e407762dd167cf975a1f8d389f1c8ce77050e803a7ad3b82581",
+          "path": "evidence/D08/suite-runs/T8.21-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4928491f6742dd6fc05b49cbcbfc9801d29753d78d18179d36162b4b9187eeba",
+          "path": "evidence/D08/suite-runs/T8.21-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b65f2d299cea7cee193f07e5924ddd99c950dc6eae1519048b677e65e191c9db",
+          "path": "evidence/D08/tdd-log/T8.21-F2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f19373b8e0e130cb8c7eb8acddbb0d56fa335e0c264e5ceff0068428bd8635bf",
+          "path": "evidence/D08/suite-runs/T8.21-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 25086
+  }
+}
