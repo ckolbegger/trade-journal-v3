@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 172923,
+    "input_tokens": 172098,
+    "output_tokens": 825,
+    "cache_read_tokens": 11648,
+    "elapsed": "37s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "This validates the Trade Record summary shape, not the `TradeSummary` used by `RestoreRepair`. Preparation builds this field with `plannedTradeSummary` (line 693), which returns a Stock summary (`kind`, `direction`, `quantity`, `price`) or an Option summary (`contracts`, `expiration`, `strike`, `right`); neither has these record fields. Consequently every legitimately prepared candidate with repairs is rejected as `CandidateChanged` and deleted during apply. Validate the domain summary's discriminated variants instead, and add a successful apply test with nonempty repairs (the new empty-summary rejection test does not detect this regression).",
+      "existing_code": "    ['tradeId', 'accountId', 'strategyId', 'underlying', 'planTime'].every((key) =\u003e typeof value[key] === 'string') \u0026\u0026\n    (value['lifecycle'] === 'Planned' || value['lifecycle'] === 'Open' || value['lifecycle'] === 'Closed') \u0026\u0026\n    (value['lastActivity'] === undefined || typeof value['lastActivity'] === 'string')",
+      "start_line": 296,
+      "end_line": 298,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/restore-apply.test.ts",
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "ccabb53c-ed78-475d-918c-4d4d961c83dd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ccabb53c-ed78-475d-918c-4d4d961c83dd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "060a3fb0",
+      "resolved_base": "039b3f6873e4e512d9cd67c931d833a6da36387f",
+      "resolved_head": "060a3fb05e6dd294d619fd9b6d4688eaa34d7d34",
+      "exact_range": "039b3f6873e4e512d9cd67c931d833a6da36387f..060a3fb05e6dd294d619fd9b6d4688eaa34d7d34",
+      "source_artifact_sha256": "0e817062ceed1dcf1ea03a5dfa10eed5c9db384155ebbca751e0aa43113f1090"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "d388d7e40e57b1432f36b477afacc3b366b2ade30016daa1fd5485575cfa0c60"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "cc9e8fa6cab37e7c3693d83bbbdf6834a6949af2fef0c4ce4593467bcc49679f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "d388d7e40e57b1432f36b477afacc3b366b2ade30016daa1fd5485575cfa0c60"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "cc9e8fa6cab37e7c3693d83bbbdf6834a6949af2fef0c4ce4593467bcc49679f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "00080be73056bb9baacb01a5a5bca85b425ff28e951e86c7b8b8ece509611ae6",
+          "path": "evidence/D08/suite-runs/T8.9-B12-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "76ac1cdd1d9c09f97171c86bc1e6d36856ae342c100c0722dfefdcf010079fad",
+          "path": "evidence/D08/suite-runs/T8.9-B12-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1d2dfbfea430e20238dae6812691e9d8d3d4cfb22fe14d7cdbabbdefabdd7e0",
+          "path": "evidence/D08/tdd-log/T8.9-B12.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e375c1571c5e7f058a0f5a476548dc2ac4ca04bbd4bedf143e814e66a9d2bda6",
+          "path": "evidence/D08/suite-runs/T8.9-B12-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "effbf01b68ab88e62939ff02d22987eac2265f1b2b665709e1aeab1e63c5b55e",
+          "path": "evidence/D08/suite-runs/T8.9-B12-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 37179
+  }
+}

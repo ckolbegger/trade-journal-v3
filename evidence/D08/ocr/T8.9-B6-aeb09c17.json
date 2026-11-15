@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 62205,
+    "input_tokens": 61256,
+    "output_tokens": 949,
+    "cache_read_tokens": 14208,
+    "elapsed": "42s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "This accepts a section with its `storeDigests` property missing or null. If the counts are unchanged, the module rechecks dereference `recorded.storeDigests[store]` and throw, so apply rejects and leaves the candidate behind instead of returning CandidateChanged and deleting it. Validate `storeDigests` and its required store entries before invoking the rechecks, and add a damaged-record test (the added test only deletes the whole record).",
+      "existing_code": "  return typeof section === 'object' \u0026\u0026 section !== null \u0026\u0026 typeof section.counts === 'object' \u0026\u0026 section.counts !== null \u0026\u0026 typeof section.digest === 'string';",
+      "start_line": 211,
+      "end_line": 211,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "These checks accept damaged receipt data such as `counts: {}` and `migrations: {}` (as well as malformed repair elements). With valid sections, all rechecks then pass and the candidate is activated as Restored; missing `counts.accounts` even selects the onboarding landing for a restored workspace containing accounts. Validate the required nested fields and element types so these damaged preparation records return CandidateChanged before activation.",
+      "existing_code": "    typeof value.counts === 'object' \u0026\u0026\n    value.counts !== null \u0026\u0026\n    typeof value.migrations === 'object' \u0026\u0026\n    value.migrations !== null \u0026\u0026\n    Array.isArray(value.repairs)",
+      "start_line": 223,
+      "end_line": 227,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/restore-apply.test.ts",
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "872348a5-f292-4bbe-a434-a55506f1b869",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "872348a5-f292-4bbe-a434-a55506f1b869",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "aeb09c17",
+      "resolved_base": "81d028b12f8b00464c82b84412ca5c3cdfd05281",
+      "resolved_head": "aeb09c17013cf790ba58aec47fc324d5834004eb",
+      "exact_range": "81d028b12f8b00464c82b84412ca5c3cdfd05281..aeb09c17013cf790ba58aec47fc324d5834004eb",
+      "source_artifact_sha256": "0eebb1c9a517bb96f4effefd5618b04dadf09356dc3b8c8e5a899b3e825ff858"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "9f0ea5d39a751eedb2bdfbe2103ad653377342bc39ddee6970fb05fea6d5d116"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "b7c97a07bf3ec92fcebe1d2ac5557427ecfaefdc090f6a740cff7bf230c7d48c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "9f0ea5d39a751eedb2bdfbe2103ad653377342bc39ddee6970fb05fea6d5d116"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "b7c97a07bf3ec92fcebe1d2ac5557427ecfaefdc090f6a740cff7bf230c7d48c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "700ea1d7b4c4385c89ece1eca3bb56da5697407c7805d25e98ced75af840ee0a",
+          "path": "evidence/D08/suite-runs/T8.9-B6-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7d3b207d80a57c093200258c824706d465ea58f56468a1db17a06bedc5491592",
+          "path": "evidence/D08/suite-runs/T8.9-B6-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9469561d96e7a2045606313f364e03b2b1a491e544db8dbe1d1309951f506223",
+          "path": "evidence/D08/tdd-log/T8.9-B6.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "aefa8b6142efbdfda82d8bf4ae123e986ad9be9a9e3a596cf3d35cf9ba557976",
+          "path": "evidence/D08/suite-runs/T8.9-B6-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fb82272af86d19a8c71c2afd9d89fbbea6478777ab31439736bb602aa8240d2f",
+          "path": "evidence/D08/suite-runs/T8.9-B6-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 41538
+  }
+}
