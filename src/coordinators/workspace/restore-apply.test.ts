@@ -6,7 +6,7 @@ import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import type { CompletedBackupReceipt, RestoreToken } from './backup-types.ts';
 import { createMutationGuard } from '../mutation-guard.ts';
-import { backupFile, exportedArtifact, lookupSession, targetWorkspace, workspaceOf } from './restore-test-support.ts';
+import { backupFile, editedArtifact, exportedArtifact, lookupSession, targetWorkspace, workspaceOf } from './restore-test-support.ts';
 
 const W7 = JSON.parse(readFileSync('tests/fixtures/workspace-v7/dump.json', 'utf8')) as WorkspaceDump;
 
@@ -144,6 +144,30 @@ describe('replacement (AC-REST-003)', () => {
     const again = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
     expect(again).toEqual({ kind: 'PreparationNotFound', liveBinding: result.receipt.newBinding });
     expect(await dumpAll(target.factory)).toEqual(after);
+  });
+
+  it('should replace the Workspace when the prepared candidate carries repairs', async () => {
+    const target = await targetWorkspace();
+    const a7 = await exportedArtifact(await loadDump(W7));
+    // R-lc: T-A (fx-0145, Closed) stored as Open. R-dev: Open Trade fx-0075 with its recorded Entry Size occurrence removed.
+    const repairable = editedArtifact(a7.bytes, (artifact) => {
+      artifact.lines.forEach((line, index) => {
+        if (!line.startsWith('{"r":') || !line.endsWith(',"t":"trades"}')) return;
+        const envelope = JSON.parse(line) as { r: Record<string, unknown> };
+        if (envelope.r['tradeId'] === 'fx-0145') envelope.r['lifecycle'] = 'Open';
+        else if (envelope.r['tradeId'] === 'fx-0075') delete envelope.r['deviations'];
+        else return;
+        artifact.lines[index] = JSON.stringify(envelope);
+      });
+    });
+    const preparedResult = await target.workspace.prepareRestore({ file: backupFile(repairable) });
+    if (preparedResult.kind !== 'Prepared') throw new Error(`expected Prepared, got ${JSON.stringify(preparedResult)}`);
+
+    const result = await target.workspace.applyPreparedRestore({ token: preparedResult.token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    if (result.kind !== 'Restored') throw new Error(`expected Restored, got ${JSON.stringify(result)}`);
+    expect(result.receipt.repairs).toEqual(preparedResult.preview.repairs);
+    expect(result.receipt.repairs.map((repair) => repair.kind)).toEqual(['EntrySizeDeviation', 'Lifecycle']);
   });
 
   it('should return CandidateChanged and delete the candidate when the Workspace settings in the candidate changed after preparation', async () => {

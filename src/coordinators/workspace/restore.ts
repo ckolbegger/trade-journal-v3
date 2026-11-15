@@ -289,13 +289,20 @@ function isRestoreRepair(value: unknown): boolean {
   );
 }
 
-// Whether a value holds every field a Trade summary requires, with its type.
+// Whether a value is a Rational as stored: structured clone keeps its two bigint fields and drops the class.
+const isStoredRational = (value: unknown): boolean => isObject(value) && typeof value['numerator'] === 'bigint' && typeof value['denominator'] === 'bigint';
+
+// Whether a value holds every field of a domain Trade Summary variant, with its type.
 function isTradeSummary(value: unknown): boolean {
   if (!isObject(value)) return false;
+  if (value['kind'] === 'Stock') return value['direction'] === 'Long' && isStoredRational(value['quantity']) && isStoredRational(value['price']);
   return (
-    ['tradeId', 'accountId', 'strategyId', 'underlying', 'planTime'].every((key) => typeof value[key] === 'string') &&
-    (value['lifecycle'] === 'Planned' || value['lifecycle'] === 'Open' || value['lifecycle'] === 'Closed') &&
-    (value['lastActivity'] === undefined || typeof value['lastActivity'] === 'string')
+    value['kind'] === 'Option' &&
+    (value['direction'] === 'Long' || value['direction'] === 'Short') &&
+    isStoredRational(value['contracts']) &&
+    typeof value['expiration'] === 'string' &&
+    typeof value['strike'] === 'string' &&
+    (value['right'] === 'Call' || value['right'] === 'Put')
   );
 }
 
