@@ -7,10 +7,10 @@ import { IDBFactory } from 'fake-indexeddb';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { applyPreparedRestore as applyJournal, type CandidateSectionMeta } from '../../modules/journal/index.ts';
-import { applyPreparedRestore as applyMarketData } from '../../modules/market-data/index.ts';
-import { applyPreparedRestore as applyCatalog } from '../../modules/reference-catalog/index.ts';
-import { applyPreparedRestore as applyTrades } from '../../modules/trade-record/index.ts';
+import { applyPreparedRestore as applyJournal, measureCandidateSection as measureJournal, type CandidateSectionMeta } from '../../modules/journal/index.ts';
+import { applyPreparedRestore as applyMarketData, measureCandidateSection as measureMarketData } from '../../modules/market-data/index.ts';
+import { applyPreparedRestore as applyCatalog, measureCandidateSection as measureCatalog } from '../../modules/reference-catalog/index.ts';
+import { applyPreparedRestore as applyTrades, measureCandidateSection as measureTrades } from '../../modules/trade-record/index.ts';
 import { backupFile, editedArtifact, exportedArtifact, targetWorkspace, workspaceOf } from './restore-test-support.ts';
 
 const W7 = JSON.parse(readFileSync('tests/fixtures/workspace-v7/dump.json', 'utf8')) as WorkspaceDump;
@@ -112,11 +112,16 @@ describe('valid artifact (AC-REST-001, A133)', () => {
     });
     const meta = candidate['meta'] as { key: string; [field: string]: unknown }[];
     expect(meta.find((r) => r.key === 'settings')).toMatchObject({ timeZone: 'America/New_York', settingsRevision: 1 });
-    const recorded = meta.find((r) => r.key === 'restorePrepared')!['sections'] as Record<string, CandidateSectionMeta>;
-    expect(Object.keys(recorded)).toEqual(['catalog', 'marketData', 'trades', 'journal']);
+    // What preparation measured is held in memory; the candidate's sections measure the same way.
+    const source = target.persistence.candidateSource(result.token.candidateId);
+    const recorded: Record<string, CandidateSectionMeta> = {
+      catalog: await measureCatalog(source),
+      marketData: await measureMarketData(source),
+      trades: await measureTrades(source),
+      journal: await measureJournal(source),
+    };
     expect(recorded['journal']!.counts).toEqual({ journalTypes: 9, journalDefinitions: 4, journalEntries: 32, journalDeclines: 14, journalDebts: 6 });
     expect(Object.keys(recorded['journal']!.storeDigests)).toEqual(['journalTypes', 'journalDefinitions', 'journalEntries', 'journalDeclines', 'journalDebts']);
-    const source = target.persistence.candidateSource(result.token.candidateId);
     expect(await applyCatalog(source, recorded['catalog']!)).toEqual({ kind: 'Accepted' });
     expect(await applyMarketData(source, recorded['marketData']!)).toEqual({ kind: 'Accepted' });
     expect(await applyTrades(source, recorded['trades']!)).toEqual({ kind: 'Accepted' });
@@ -567,8 +572,8 @@ describe('repairs (AC-LIFE-003, decision 23, D6 review-queue item 2)', () => {
     // The private state is rebuilt from the repaired records, and what apply rechecks was measured after the repair.
     expect(trades.every((trade) => typeof trade['activityDesc'] === 'string' && typeof trade['exposureStart'] === 'string' || trade['lifecycle'] === 'Planned')).toBe(true);
     expect(candidate['journalObligations']).toHaveLength(50);
-    const recorded = (candidate['meta'] as { key: string; sections?: Record<string, CandidateSectionMeta> }[]).find((record) => record.key === 'restorePrepared')!.sections!;
-    expect(await applyTrades(target.persistence.candidateSource(result.token.candidateId), recorded['trades']!)).toEqual({ kind: 'Accepted' });
+    const source = target.persistence.candidateSource(result.token.candidateId);
+    expect(await applyTrades(source, await measureTrades(source))).toEqual({ kind: 'Accepted' });
   });
 });
 

@@ -198,7 +198,7 @@ const bump = (counts: Record<string, number>, key: string): void => {
   counts[key] = (counts[key] ?? 0) + 1;
 };
 
-// The candidate's `meta` record of what preparation measured and reported (A132 step 11).
+// What preparation measured and reported (A132 step 11), held in memory by candidate until apply rechecks the candidate against it.
 interface PreparedRecord {
   readonly sections: Record<'catalog' | 'marketData' | 'trades' | 'journal', CandidateSectionMeta>;
   readonly counts: RestoreCounts;
@@ -210,117 +210,8 @@ interface PreparedRecord {
 
 // What the candidate's Workspace section holds now, so that apply can tell a change since preparation.
 async function workspaceDigestOf(source: RecordSource): Promise<string> {
-  const records = (await collect(source, 'meta')).filter((record) => record['key'] !== 'restorePrepared');
+  const records = await collect(source, 'meta');
   return canonicalJson(records.sort((a, b) => String(a['key']).localeCompare(String(b['key']))));
-}
-
-const isSectionMeta = (value: unknown): boolean => {
-  const section = value as { counts?: unknown; digest?: unknown; storeDigests?: unknown } | null;
-  return (
-    typeof section === 'object' &&
-    section !== null &&
-    typeof section.counts === 'object' &&
-    section.counts !== null &&
-    typeof section.digest === 'string' &&
-    typeof section.storeDigests === 'object' &&
-    section.storeDigests !== null
-  );
-};
-
-const isCount = (value: unknown): boolean => typeof value === 'number' && Number.isInteger(value) && value >= 0;
-const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
-const isCountMap = (value: unknown, keys?: readonly string[]): boolean =>
-  isObject(value) && (keys ?? Object.keys(value)).every((key) => isCount(value[key]));
-
-// Whether the record's counts hold every count the receipt and the landing read.
-function isRestoreCounts(value: unknown): boolean {
-  if (!isObject(value)) return false;
-  return (
-    isCountMap(value['tradesByLifecycle'], ['Planned', 'Open', 'Closed']) &&
-    isCountMap(value['entriesByType']) &&
-    isCountMap(value['debtsByStatus']) &&
-    isCountMap(value['versions']) &&
-    [
-      'positionChanges',
-      'executions',
-      'expirations',
-      'deviationOccurrences',
-      'declines',
-      'marks',
-      'acknowledgments',
-      'institutions',
-      'accounts',
-      'strategies',
-      'closeReasons',
-      'entryDefinitionRevisions',
-    ].every((key) => isCount(value[key]))
-  );
-}
-
-function isRestoreMigrations(value: unknown): boolean {
-  if (!isObject(value)) return false;
-  const { steps, seedAdditions } = value;
-  return (
-    Array.isArray(steps) &&
-    steps.every(
-      (step) =>
-        isObject(step) &&
-        Number.isInteger(step['from']) &&
-        Number.isInteger(step['to']) &&
-        (step['from'] as number) >= 1 &&
-        (step['to'] as number) > (step['from'] as number),
-    ) &&
-    Array.isArray(seedAdditions) &&
-    seedAdditions.every((addition) => typeof addition === 'string')
-  );
-}
-
-function isRestoreRepair(value: unknown): boolean {
-  if (!isObject(value)) return false;
-  const summary = value['tradeSummary'];
-  return (
-    typeof value['tradeId'] === 'string' &&
-    (value['kind'] === 'Lifecycle' || value['kind'] === 'EntrySizeDeviation') &&
-    typeof value['stored'] === 'string' &&
-    typeof value['expected'] === 'string' &&
-    isObject(summary) &&
-    typeof summary['underlying'] === 'string' &&
-    isTradeSummary(summary['summary'])
-  );
-}
-
-// Whether a value is a Rational as stored: structured clone keeps its two bigint fields and drops the class.
-const isStoredRational = (value: unknown): boolean => isObject(value) && typeof value['numerator'] === 'bigint' && typeof value['denominator'] === 'bigint';
-
-// Whether a value holds every field of a domain Trade Summary variant, with its type.
-function isTradeSummary(value: unknown): boolean {
-  if (!isObject(value)) return false;
-  if (value['kind'] === 'Stock') return value['direction'] === 'Long' && isStoredRational(value['quantity']) && isStoredRational(value['price']);
-  return (
-    value['kind'] === 'Option' &&
-    (value['direction'] === 'Long' || value['direction'] === 'Short') &&
-    isStoredRational(value['contracts']) &&
-    typeof value['expiration'] === 'string' &&
-    typeof value['strike'] === 'string' &&
-    (value['right'] === 'Call' || value['right'] === 'Put')
-  );
-}
-
-// Whether a `meta` record has the shape preparation wrote: a measured section for each fact module, and the receipt's parts.
-function isPreparedRecord(record: unknown): record is PreparedRecord {
-  const value = record as Partial<Record<keyof PreparedRecord, unknown>> | undefined;
-  if (typeof value !== 'object' || value === null) return false;
-  const sections = value.sections as Record<string, unknown> | null | undefined;
-  return (
-    typeof sections === 'object' &&
-    sections !== null &&
-    (['catalog', 'marketData', 'trades', 'journal'] as const).every((name) => isSectionMeta(sections[name])) &&
-    isRestoreCounts(value.counts) &&
-    isRestoreMigrations(value.migrations) &&
-    Array.isArray(value.repairs) &&
-    value.repairs.every(isRestoreRepair) &&
-    typeof value.workspaceDigest === 'string'
-  );
 }
 
 // Tells every other tab of this app that a Restore replaced the journal (A136) over the channel the update notice shares (D1 A5).
@@ -418,11 +309,18 @@ async function countsOf(source: RecordSource): Promise<{ readonly counts: Restor
 // The backup operations are passed in for their receipt registry (A131).
 export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupOperations): RestoreOperations<S> {
   const { persistence } = deps;
+  // The results of each preparation this instance made, by candidate. A candidate never survives a restart, so nothing is persisted.
+  const held = new Map<string, PreparedRecord>();
   const catalogRestore = prepareCatalogRestore({ manifest: D7_CATALOG_MANIFEST });
   const marketDataRestore = prepareMarketDataRestore({ policy: deps.sessionPolicy });
   const journalRestore = prepareJournalRestore();
   // Parsing reads no references, so the Trade preparation used for it holds none.
   const tradeRestore = prepareTradeRestore({ references: { accountIds: new Set(), anchorTradeIds: new Set(), closeReasonIds: new Set(), strategyShapes: new Map() } });
+
+  const dropCandidate = async (candidate: string): Promise<void> => {
+    held.delete(candidate);
+    await persistence.discardCandidate(candidate);
+  };
 
   // The live Workspace's binding, or NoWorkspace when none exists.
   async function liveBinding(): Promise<TargetBinding> {
@@ -728,9 +626,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const restored = await countsOf(source);
     const steps = Array.from({ length: SCHEMA_VERSION - header.schemaVersion }, (_, i) => ({ from: header.schemaVersion + i, to: header.schemaVersion + i + 1 }));
     // What apply rechecks (the sections) and what its receipt reports (counts, migrations, repairs).
-    await persistence.putCandidateRecords(candidate, [
-      { store: 'meta', value: { key: 'restorePrepared', sections, counts: restored.counts, migrations: { steps, seedAdditions }, repairs: repairLines, workspaceDigest: await workspaceDigestOf(source) } },
-    ]);
+    const prepared: PreparedRecord = { sections, counts: restored.counts, migrations: { steps, seedAdditions }, repairs: repairLines, workspaceDigest: await workspaceDigestOf(source) };
     let currentTimeZone: string | null = null;
     let target: { counts: RestoreCounts; hasUserData: boolean } | null = null;
     if (live !== 'NoWorkspace') {
@@ -743,6 +639,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     if (header.schemaVersion < SCHEMA_VERSION) warnings.push('OlderSchema');
     const cancelledAfterPreview = await cancelIfAborted();
     if (cancelledAfterPreview) return cancelledAfterPreview;
+    held.set(candidate, prepared);
     return {
       kind: 'Prepared',
       token: { candidateId: candidate, fullDigest, targetBinding: live, releaseId: deps.releaseId },
@@ -783,10 +680,12 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         // A candidate this Restore already activated is the live database, not a preparation.
         const activated = live !== 'NoWorkspace' && live.databaseName === token.candidateId;
         const listed = !activated && (await deps.host.indexedDB.databases()).some(({ name }) => name === token.candidateId);
-        if (!listed) return { kind: 'PreparationNotFound', liveBinding: live };
+        // Only the instance that prepared the candidate holds what it measured.
+        const prepared = held.get(token.candidateId);
+        if (!listed || !prepared) return { kind: 'PreparationNotFound', liveBinding: live };
         const unchanged = live === 'NoWorkspace' || token.targetBinding === 'NoWorkspace' ? live === token.targetBinding : sameBinding(live, token.targetBinding);
         if (!unchanged) {
-          await persistence.discardCandidate(token.candidateId);
+          await dropCandidate(token.candidateId);
           return { kind: 'Conflict', reason: 'TargetChanged', liveBinding: live };
         }
         if (live !== 'NoWorkspace' && (await countsOf(persistence.candidateSource(live.databaseName))).hasUserData) {
@@ -800,36 +699,36 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
 
         // Each module's recheck of its candidate section against what preparation recorded (A135 step 4).
         const candidateSource = persistence.candidateSource(token.candidateId);
-        const found = (await collect(candidateSource, 'meta')).find((record) => record['key'] === 'restorePrepared');
-        // A missing or damaged preparation record means the candidate changed after preparation.
-        if (!isPreparedRecord(found)) {
-          await persistence.discardCandidate(token.candidateId);
-          return { kind: 'CandidateChanged', store: 'meta', liveBinding: live };
-        }
-        const prepared = found;
         const rechecks = [
-          () => applyCatalog(candidateSource, prepared.sections.catalog),
-          () => applyMarketData(candidateSource, prepared.sections.marketData),
-          () => applyTrades(candidateSource, prepared.sections.trades),
-          () => applyJournal(candidateSource, prepared.sections.journal),
+          { section: 'catalog', run: () => applyCatalog(candidateSource, prepared.sections.catalog) },
+          { section: 'marketData', run: () => applyMarketData(candidateSource, prepared.sections.marketData) },
+          { section: 'trades', run: () => applyTrades(candidateSource, prepared.sections.trades) },
+          { section: 'journal', run: () => applyJournal(candidateSource, prepared.sections.journal) },
         ];
-        // A recheck that cannot read the candidate (a value it cannot digest) means the candidate changed too.
+        // A recheck that cannot read the candidate (a value it cannot digest) means the candidate changed too, in that section.
         let changedStore: string | undefined;
-        try {
-          for (const recheck of rechecks) {
-            const rechecked = await recheck();
+        for (const { section, run } of rechecks) {
+          try {
+            const rechecked = await run();
             if (rechecked.kind === 'CandidateChanged') {
               changedStore = rechecked.store;
               break;
             }
+          } catch {
+            changedStore = section;
+            break;
           }
-          // The Workspace section is not a fact module's; its records are compared with what the preview was built from.
-          if (changedStore === undefined && (await workspaceDigestOf(candidateSource)) !== prepared.workspaceDigest) changedStore = 'meta';
-        } catch {
-          changedStore = 'meta';
+        }
+        // The Workspace section is not a fact module's; its records are compared with what the preview was built from.
+        if (changedStore === undefined) {
+          try {
+            if ((await workspaceDigestOf(candidateSource)) !== prepared.workspaceDigest) changedStore = 'meta';
+          } catch {
+            changedStore = 'meta';
+          }
         }
         if (changedStore !== undefined) {
-          await persistence.discardCandidate(token.candidateId);
+          await dropCandidate(token.candidateId);
           return { kind: 'CandidateChanged', store: changedStore, liveBinding: live };
         }
 
@@ -838,12 +737,11 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
           const activation = await persistence.activateFirstCandidate(token.candidateId);
           if (activation.kind === 'AlreadyInitialized') return { kind: 'AlreadyInitialized', databaseName: activation.databaseName, liveBinding: await liveBinding() };
         } else if ((await persistence.activateCandidate(token.candidateId, live.databaseName)).kind === 'Aborted') {
-          await persistence.discardCandidate(token.candidateId);
+          await dropCandidate(token.candidateId);
           throw new Error('The root transaction that switches the Workspace was aborted');
         }
-        // The live database holds no preparation bookkeeping.
+        held.delete(token.candidateId);
         // The Workspace is already replaced, so a failure here must not hide the Restored result (A136).
-        await persistence.commit({ checks: [], writes: [{ op: 'delete', store: 'meta', key: 'restorePrepared' }] }).catch(() => undefined);
         try {
           announceReplaced(token.candidateId);
         } catch {

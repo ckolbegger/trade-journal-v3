@@ -236,46 +236,52 @@ describe('replacement (AC-REST-003)', () => {
     expect(pointerOf(after)).toEqual(pointerOf(before));
   }
 
-  it('should return CandidateChanged and delete the candidate when a section of the preparation record lacks its store digests', async () => {
-    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => {
-      const sections = record['sections'] as Record<string, Record<string, unknown>>;
-      const journal = { ...sections['journal']! };
-      delete journal['storeDigests'];
-      return { ...record, sections: { ...sections, journal } };
-    });
-  });
-
-  it('should return CandidateChanged and delete the candidate when the preparation record holds empty counts or a malformed repair', async () => {
-    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({ ...record, counts: {} }));
-  });
-
-  it('should return CandidateChanged and delete the candidate when the preparation record holds a repair without its kind', async () => {
-    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({
-      ...record,
-      repairs: [{ tradeId: 'trade-1', stored: 'Open', expected: 'Closed', tradeSummary: { underlying: 'AAPL', summary: {} } }],
-    }));
-  });
-
-  it('should return CandidateChanged and delete the candidate when the preparation record holds migrations without their steps', async () => {
-    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({ ...record, migrations: {} }));
-  });
-
-  it('should return CandidateChanged and delete the candidate when a repair holds an empty Trade summary', async () => {
-    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({
-      ...record,
-      repairs: [{ tradeId: 'trade-1', kind: 'Lifecycle', stored: 'Open', expected: 'Closed', tradeSummary: { underlying: 'AAPL', summary: {} } }],
-    }));
-  });
-
-  it('should return CandidateChanged and delete the candidate when a migration step names a version that is not a whole number', async () => {
-    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => ({
-      ...record,
-      migrations: { steps: [{ from: 1.5, to: 2 }], seedAdditions: [] },
-    }));
-  });
-
   it('should return CandidateChanged and delete the candidate when a Workspace settings record in the candidate holds a value that cannot be digested', async () => {
     await expectCandidateChangedAfterMetaRewrite('settings', (record) => ({ ...record, timeZone: undefined }));
+  });
+});
+
+describe('preparation results held in memory (T8.9-F1)', () => {
+  it('should return PreparationNotFound when this instance holds no preparation for the candidate', async () => {
+    const target = await targetWorkspace();
+    const { token } = await preparedWithPreview(target);
+    // Another Workspace instance over the same database never prepared this candidate.
+    const other = workspaceOf(target);
+
+    const result = await other.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    expect(result).toEqual({ kind: 'PreparationNotFound', liveBinding: token.targetBinding });
+  });
+
+  it('should not write a preparation record to the candidate', async () => {
+    const target = await targetWorkspace();
+    const { token } = await preparedWithPreview(target);
+
+    const dump = await dumpAll(target.factory);
+
+    expect((dump[token.candidateId]!['meta'] as { key: string }[]).map((record) => record.key)).not.toContain('restorePrepared');
+  });
+
+  it('should name the section whose recheck threw in CandidateChanged', async () => {
+    const target = await targetWorkspace();
+    const armed: { candidate?: string } = {};
+    const unreadable = { [Symbol.asyncIterator]: () => ({ next: () => Promise.reject(new Error('unreadable')) }) };
+    const workspace = workspaceOf(target, {
+      persistence: {
+        ...target.persistence,
+        candidateSource: (name) => {
+          const source = target.persistence.candidateSource(name);
+          if (name !== armed.candidate) return source;
+          return { batches: (store) => (store === 'trades' ? unreadable : source.batches(store)) };
+        },
+      },
+    });
+    const { token } = await preparedWithPreview({ workspace });
+    armed.candidate = token.candidateId;
+
+    const result = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    expect(result).toEqual({ kind: 'CandidateChanged', store: 'trades', liveBinding: token.targetBinding });
   });
 });
 
@@ -348,22 +354,21 @@ describe('readiness after Restore (AC-DEL-006)', () => {
 
   it('should still return Restored when a step after activation throws, with status RecoveryOnly', async () => {
     const target = await targetWorkspace();
-    // Just after the pointer switches, the browser stops saving safely and removing the preparation record throws.
-    const workspace = workspaceOf(target, {
-      persistence: {
-        ...target.persistence,
-        commit: async (request) => {
-          if (request.writes.some((write) => write.op === 'delete' && write.key === 'restorePrepared')) {
-            target.testHost.fail(['capacity']);
-            throw new Error('the preparation record could not be removed');
-          }
-          return target.persistence.commit(request);
-        },
-      },
-    });
-    const { token } = await preparedWithPreview({ workspace });
-
-    const result = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+    // Just after the pointer switches, the browser stops saving safely and announcing the replacement to other tabs throws.
+    class FailingChannel {
+      constructor() {
+        target.testHost.fail(['capacity']);
+        throw new Error('the replacement could not be announced');
+      }
+    }
+    const { token } = await preparedWithPreview(target);
+    vi.stubGlobal('BroadcastChannel', FailingChannel);
+    let result;
+    try {
+      result = await target.workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+    } finally {
+      vi.unstubAllGlobals();
+    }
 
     if (result.kind !== 'Restored') throw new Error(`expected Restored, got ${JSON.stringify(result)}`);
     expect(result.status).toMatchObject({ kind: 'RecoveryOnly', failedChecks: [{ check: 'capacity' }], binding: result.receipt.newBinding });
@@ -408,35 +413,6 @@ describe('a candidate changed after preparation (A135)', () => {
     expect((after['tj-root']!['pointer'] as { key: string; databaseNames?: string[] }[]).flatMap((record) => record.databaseNames ?? [])).toEqual([]);
   });
 
-  it('should return CandidateChanged and delete the candidate when the preparation record in the candidate is missing or damaged', async () => {
-    const target = await targetWorkspace();
-    const { token } = await preparedWithPreview(target);
-    const live = (token.targetBinding as { databaseName: string }).databaseName;
-    await new Promise<void>((resolve, reject) => {
-      const open = target.factory.open(token.candidateId);
-      open.onsuccess = () => {
-        const db = open.result;
-        const tx = db.transaction('meta', 'readwrite');
-        tx.objectStore('meta').delete('restorePrepared');
-        tx.oncomplete = () => {
-          db.close();
-          resolve();
-        };
-        tx.onerror = () => reject(tx.error ?? new Error('delete failed'));
-      };
-      open.onerror = () => reject(open.error ?? new Error('open failed'));
-    });
-    const before = await dumpAll(target.factory);
-
-    const result = await target.workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
-
-    expect(result).toEqual({ kind: 'CandidateChanged', store: 'meta', liveBinding: token.targetBinding });
-    const after = await dumpAll(target.factory);
-    expect(databaseNames(after)).toEqual([live]);
-    expect(after[live]).toEqual(before[live]);
-    const pointerOf = (dump: typeof after) => (dump['tj-root']!['pointer'] as { key: string }[]).find((record) => record.key === 'current');
-    expect(pointerOf(after)).toEqual(pointerOf(before));
-  });
 });
 
 // One more Account in the target, so that its content revision moves on.
