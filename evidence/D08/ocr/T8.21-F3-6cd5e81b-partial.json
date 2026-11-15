@@ -1,0 +1,196 @@
+{
+  "status": "partial",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review partially complete: 0 finding(s); 3 of 5 selected item(s) failed.",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 16054,
+    "input_tokens": 15726,
+    "output_tokens": 328,
+    "cache_read_tokens": 4992,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Backup coordination across tabs and app integration",
+      "files": [
+        "src/main.tsx",
+        "src/ui/backup/other-tabs.test.ts",
+        "src/ui/backup/other-tabs.ts"
+      ]
+    },
+    {
+      "label": "Update controller behavior and tests",
+      "files": [
+        "src/ui/update/controller.test.ts",
+        "src/ui/update/controller.ts"
+      ]
+    }
+  ],
+  "session_id": "60fb01af-58d2-43a8-bd39-4d5fa126561c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "60fb01af-58d2-43a8-bd39-4d5fa126561c",
+    "operation": "review",
+    "terminal_state": "partial",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6cd5e81b",
+      "resolved_base": "1cd070ce4e158f51b1b56e954a25bf39ed314f25",
+      "resolved_head": "6cd5e81bfc7de67db4221dfee57d667bf8db6cea",
+      "exact_range": "1cd070ce4e158f51b1b56e954a25bf39ed314f25..6cd5e81bfc7de67db4221dfee57d667bf8db6cea",
+      "source_artifact_sha256": "1ce48a6c8cdf58617b4f3ce343762555d4a02448a869ffb28301a00b700b5372"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1af51dbb31c79997fba5dfc14bfb0f9da5af94f69f7616141a6237c32362bad1",
+          "path": "src/ui/update/controller.test.ts",
+          "fingerprint": "a64d18107043a3c3aba9d395bb71be8379a5fa511858843a9fd01c2b0087b820"
+        },
+        {
+          "item_id": "21a293524506e119259fe0c64537bea125dbc0c5c4624159d4e1ac3fbf149f97",
+          "path": "src/ui/update/controller.ts",
+          "fingerprint": "864b4001b9810eef1583d3ac537b2bd831d68e7d26d1a321b603a9e18825c930"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "98239acd645c63139db88b5f4ae4f16939cb8ecf0d27b0b022103586c88f5192"
+        },
+        {
+          "item_id": "9289ffa450c44f0164b3fde57ff149826f4e8aada14d372e6d7af0aaa8a317fb",
+          "path": "src/ui/backup/other-tabs.test.ts",
+          "fingerprint": "9de905c2ee66c261dd191f336494dd4f362f2ff966c8ccca701809a2b24ca2df"
+        },
+        {
+          "item_id": "cd0c3d20f0382d90348f0db660c3f407de0127a9397fad1fe8d01236e23456a1",
+          "path": "src/ui/backup/other-tabs.ts",
+          "fingerprint": "e0042aaf228376a7aacd784e3d7dd8030a83f0fbf9a1dbf058cc07a07eba7a55"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1af51dbb31c79997fba5dfc14bfb0f9da5af94f69f7616141a6237c32362bad1",
+          "path": "src/ui/update/controller.test.ts",
+          "fingerprint": "a64d18107043a3c3aba9d395bb71be8379a5fa511858843a9fd01c2b0087b820"
+        },
+        {
+          "item_id": "21a293524506e119259fe0c64537bea125dbc0c5c4624159d4e1ac3fbf149f97",
+          "path": "src/ui/update/controller.ts",
+          "fingerprint": "864b4001b9810eef1583d3ac537b2bd831d68e7d26d1a321b603a9e18825c930"
+        }
+      ],
+      "reused": [],
+      "failed": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "98239acd645c63139db88b5f4ae4f16939cb8ecf0d27b0b022103586c88f5192",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "9289ffa450c44f0164b3fde57ff149826f4e8aada14d372e6d7af0aaa8a317fb",
+          "path": "src/ui/backup/other-tabs.test.ts",
+          "fingerprint": "9de905c2ee66c261dd191f336494dd4f362f2ff966c8ccca701809a2b24ca2df",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "cd0c3d20f0382d90348f0db660c3f407de0127a9397fad1fe8d01236e23456a1",
+          "path": "src/ui/backup/other-tabs.ts",
+          "fingerprint": "e0042aaf228376a7aacd784e3d7dd8030a83f0fbf9a1dbf058cc07a07eba7a55",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        }
+      ],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "088ab7be471050c199809b869a36716d93b2378bd77497dc9c856e7f0dcb05ee",
+          "path": "evidence/D08/suite-runs/T8.21-F3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2132bc084b440d8029abe9246540ae2e912a00bf01057b6b1bfa1b35ef70c4a2",
+          "path": "evidence/D08/suite-runs/T8.21-F3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "803bc040b4a95386a5bc6d68729d8b3d737aff2e4341160de56bc6f6c2b0521a",
+          "path": "evidence/D08/suite-runs/T8.21-F3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8a491803af9244e724a5d533768697bbe56e36178fb115e51e933bdbc609027e",
+          "path": "evidence/D08/suite-runs/T8.21-F3-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9039efbf63ac5d6ead276a8e93d2ce316701a14d1888cbc207ca99b1724b25f3",
+          "path": "evidence/D08/tdd-log/T8.21-F3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 12756
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 5,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "ea56d1f6cf0aefb80a26b8ab0e91f5388903eb9e95e5d56273b39cac5755469a",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/main.tsx,src/ui/backup/other-tabs.test.ts,src/ui/backup/other-tabs.ts",
+        "task_type": "main_task",
+        "request_no": 2,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 999
+          }
+        ]
+      }
+    ]
+  }
+}
