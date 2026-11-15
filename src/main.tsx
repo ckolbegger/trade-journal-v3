@@ -90,16 +90,15 @@ async function start(container: HTMLElement) {
   };
   // Another tab's Restore (D8 A136): the channel also carries the update notice's messages, which have no `kind`.
   const replacedChannel = new BroadcastChannel('tj-updates');
-  const onWorkspaceReplaced = (listener: (message: WorkspaceReplaced) => void) => {
-    const hear = (event: MessageEvent<unknown>) => {
-      const message = event.data as Partial<WorkspaceReplaced> | null;
-      if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string') return;
-      const replaced: WorkspaceReplaced = { kind: 'WorkspaceReplaced', databaseName: message.databaseName };
-      if (postRestore.hearsReplacement(replaced.databaseName, () => listener(replaced))) listener(replaced);
-    };
-    replacedChannel.addEventListener('message', hear);
-    return () => replacedChannel.removeEventListener('message', hear);
-  };
+  // A foreign replacement is terminal for this tab, so postRestore remembers it and tells whoever is subscribed
+  // now, or subscribes later (a shell remounted after a rebuild, or after a route change).
+  replacedChannel.addEventListener('message', (event: MessageEvent<unknown>) => {
+    const message = event.data as Partial<WorkspaceReplaced> | null;
+    if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string') return;
+    postRestore.hearReplacement(message.databaseName);
+  });
+  const onWorkspaceReplaced = (listener: (message: WorkspaceReplaced) => void) =>
+    postRestore.subscribeReplaced((databaseName) => listener({ kind: 'WorkspaceReplaced', databaseName }));
   const useZone = () => useRuntime().timeZone ?? 'UTC';
   const now = () => clock.now();
   const setUnsaved = (unsaved: boolean) => updates.setUnsaved(unsaved);

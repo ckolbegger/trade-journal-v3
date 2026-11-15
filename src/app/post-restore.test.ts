@@ -7,26 +7,33 @@ const restored = (databaseName: string) => ({ kind: 'Restored' as const, receipt
 describe('another tab restoring after this tab finished its own Restore', () => {
   it('should still show the replaced notice when another tab restores after this tab finished its own Restore', async () => {
     const postRestore = createPostRestore();
+    const listener = vi.fn();
+    postRestore.subscribeReplaced(listener);
     await postRestore.apply(() => Promise.resolve(restored('db-mine')));
-    expect(postRestore.hearsReplacement('db-mine', vi.fn())).toBe(false);
-    expect(postRestore.hearsReplacement('db-theirs', vi.fn())).toBe(true);
+    postRestore.hearReplacement('db-mine');
+    expect(listener).not.toHaveBeenCalled();
+    postRestore.hearReplacement('db-theirs');
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 
   it('should ignore this tab own broadcast while its Restore is still applying', async () => {
     const postRestore = createPostRestore();
-    let heardWhileApplying: boolean | undefined;
+    const listener = vi.fn();
+    postRestore.subscribeReplaced(listener);
     await postRestore.apply(() => {
-      heardWhileApplying = postRestore.hearsReplacement('db-mine', vi.fn());
+      postRestore.hearReplacement('db-mine');
+      expect(listener).not.toHaveBeenCalled();
       return Promise.resolve(restored('db-mine'));
     });
-    expect(heardWhileApplying).toBe(false);
+    expect(listener).not.toHaveBeenCalled();
   });
 
   it('should show the replaced notice for another tab Restore heard while this tab is still applying', async () => {
     const postRestore = createPostRestore();
     const late = vi.fn();
+    postRestore.subscribeReplaced(late);
     await postRestore.apply(() => {
-      expect(postRestore.hearsReplacement('db-theirs', late)).toBe(false);
+      postRestore.hearReplacement('db-theirs');
       expect(late).not.toHaveBeenCalled();
       return Promise.resolve(restored('db-mine'));
     });
@@ -36,8 +43,9 @@ describe('another tab restoring after this tab finished its own Restore', () => 
   it('should drop this tab own broadcast heard while applying once the result names its database', async () => {
     const postRestore = createPostRestore();
     const late = vi.fn();
+    postRestore.subscribeReplaced(late);
     await postRestore.apply(() => {
-      postRestore.hearsReplacement('db-mine', late);
+      postRestore.hearReplacement('db-mine');
       return Promise.resolve(restored('db-mine'));
     });
     expect(late).not.toHaveBeenCalled();
@@ -45,7 +53,51 @@ describe('another tab restoring after this tab finished its own Restore', () => 
 
 });
 
+describe('a notice for another tab Restore reaches the shell the trader sees (T8.11-B5, T8.11-B7)', () => {
+  it('should show the replaced notice in the rebuilt shell when another tab restored during the apply', async () => {
+    const postRestore = createPostRestore();
+    postRestore.observePath('/backup', vi.fn());
+    postRestore.subscribeReplaced(vi.fn());
+    await postRestore.apply(() => {
+      postRestore.observePath('/accounts', vi.fn());
+      postRestore.hearReplacement('db-theirs');
+      return Promise.resolve(restored('db-mine'));
+    });
+    // The shell that mounts after the rebuild subscribes late and must still be told.
+    const rebuiltShell = vi.fn();
+    postRestore.subscribeReplaced(rebuiltShell);
+    expect(rebuiltShell).toHaveBeenCalledTimes(1);
+  });
+
+  it('should deliver a held notice only to the listener subscribed when it is delivered', async () => {
+    const postRestore = createPostRestore();
+    const stale = vi.fn();
+    const current = vi.fn();
+    const unsubscribe = postRestore.subscribeReplaced(stale);
+    await postRestore.apply(() => {
+      postRestore.hearReplacement('db-theirs');
+      unsubscribe();
+      postRestore.subscribeReplaced(current);
+      return Promise.resolve(restored('db-mine'));
+    });
+    expect(stale).not.toHaveBeenCalled();
+    expect(current).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('rebuilding the shell after a Restore', () => {
+  it('should rebuild when the trader left and came back to the summary route during the apply', async () => {
+    const postRestore = createPostRestore();
+    const rebuild = vi.fn();
+    postRestore.observePath('/backup', rebuild);
+    await postRestore.apply(() => {
+      postRestore.observePath('/accounts', rebuild);
+      postRestore.observePath('/backup', rebuild);
+      return Promise.resolve(restored('db-mine'));
+    });
+    expect(rebuild).toHaveBeenCalledTimes(1);
+  });
+
   it('should keep the Backup page mounted until the trader leaves the Restore complete summary', async () => {
     const postRestore = createPostRestore();
     const rebuild = vi.fn();
