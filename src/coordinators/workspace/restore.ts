@@ -1,7 +1,7 @@
 // Workspace Restore: preparation of a candidate and its atomic apply (D8 A132-A138). T8.23
 // freezes the signatures; the Restore tasks build the bodies.
 import { z } from 'zod';
-import { ArtifactReadError, canonicalJson, readArtifact } from '../../backup/format/index.ts';
+import { ArtifactReadError, canonicalJson, readArtifact, SECTION_OF_STORE } from '../../backup/format/index.ts';
 import basis from '../../delivery/capacity-basis.json' with { type: 'json' };
 import { toRuntimeNotWritable } from '../../delivery/write-gate.ts';
 import { toWorkspaceLocal } from '../../domain/time/index.ts';
@@ -56,18 +56,6 @@ import type {
 import { keyOf } from '../../persistence/schema.ts';
 import { describeError, KNOWN_SECTIONS } from './backup-export.ts';
 
-// The section that owns each store, as the export writes them (meta is the workspace section's one store).
-const SECTION_OF_STORE: Readonly<Record<string, string>> = {
-  meta: 'workspace',
-  catalog: 'catalog',
-  observations: 'marketData',
-  trades: 'trades',
-  journalTypes: 'journal',
-  journalDefinitions: 'journal',
-  journalEntries: 'journal',
-  journalDeclines: 'journal',
-  journalDebts: 'journal',
-};
 import type { BackupDeps, BackupOperations } from './backup.ts';
 
 // What Restore needs: the backup dependencies, the lifecycle lock, the release's session policy for

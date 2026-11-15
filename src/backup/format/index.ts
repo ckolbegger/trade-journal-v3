@@ -1,4 +1,5 @@
 export { canonicalJson, CanonicalJsonUnsupported } from './canonical-json.ts';
+export { SECTION_OF_STORE } from './sections.ts';
 export { ArtifactWriter } from './writer.ts';
 export { readArtifact } from './reader.ts';
 export { ArtifactReadError } from './types.ts';

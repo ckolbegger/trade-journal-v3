@@ -75,12 +75,13 @@ describe('seedDefaults', () => {
   });
 
   it('should treat seed prompts with the same values in a different key order as equal', async () => {
-    const reversed = (value: unknown): unknown =>
-      Array.isArray(value)
-        ? value.map(reversed)
-        : value && typeof value === 'object'
-          ? Object.fromEntries(Object.entries(value).reverse().map(([k, v]) => [k, reversed(v)]))
-          : value;
+    const reversed = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(reversed);
+      if (value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).reverse().map(([k, v]) => [k, reversed(v)]));
+      }
+      return value;
+    };
     const { journal: j, persistence } = await journal();
     await j.seedDefaults(D1_JOURNAL_MANIFEST);
     const before = await stored(persistence);

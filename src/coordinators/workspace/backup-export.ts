@@ -1,7 +1,7 @@
 // The export pipeline and its in-process port (D8 A128, section 6.0). The browser worker (T8.11)
 // runs `runExport` against its own IndexedDB connection; Node runs it in process against the
 // Persistence's snapshot read. Nothing here touches the root, the write gate, or any store.
-import { ArtifactWriter } from '../../backup/format/index.ts';
+import { ArtifactWriter, SECTION_OF_STORE } from '../../backup/format/index.ts';
 import { exportSnapshot as exportCatalog, exportWorkspaceSection } from '../../modules/reference-catalog/index.ts';
 import { exportSnapshot as exportJournal } from '../../modules/journal/index.ts';
 import { exportSnapshot as exportMarketData } from '../../modules/market-data/index.ts';
@@ -95,17 +95,6 @@ const EXCLUSIONS = [
   'replayProjections',
   'cursors',
 ];
-
-const SECTION_OF_STORE: Readonly<Record<string, string>> = {
-  catalog: 'catalog',
-  observations: 'marketData',
-  trades: 'trades',
-  journalTypes: 'journal',
-  journalDefinitions: 'journal',
-  journalEntries: 'journal',
-  journalDeclines: 'journal',
-  journalDebts: 'journal',
-};
 
 // Every section name the format writes: the Workspace section and the sections its stores map to.
 export const KNOWN_SECTIONS: ReadonlySet<string> = new Set(['workspace', ...Object.values(SECTION_OF_STORE)]);
