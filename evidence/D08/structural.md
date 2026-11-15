@@ -1333,3 +1333,29 @@ Run alone in the main worktree (ports 5175, 4175, 9341, 9342 free before each me
 | Checks | 14 of 14 exit 0 |
 
 Failures: none.
+
+## D8-Retro-1a
+
+A read-only status script, `.claude/scripts/status.sh <Dnn>`, with `.claude/scripts/status.test.sh` (all five cases pass).
+
+`.claude/scripts/status.sh D08` (exit 0):
+
+```
+Open tasks (D08):
+  none
+Open questions:
+  none
+0 open task(s), 0 open question(s)
+nothing open
+```
+
+Fixture (one Done row, one open row with `B1`, `F1`, `F1-B1` in Commits; Q1 and Q3 unanswered, Q2 answered, Q4 answered by a `**Q4 answer` line under Q3):
+
+```
+Open tasks (D99):
+  T9.2 | wave 3 | lane UB | In progress from `def` | F 1, B 2
+Open questions:
+  Q1. Open one
+  Q3. Label
+1 open task(s), 2 open question(s)
+```
