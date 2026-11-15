@@ -97,6 +97,39 @@ describe('restore and backup fault stages (T8.15)', () => {
     expect(target.testHost.downloads.offered).toHaveLength(0);
   });
 
+  it('should fail the export read at its first batch under backup:read when the journal has records', async () => {
+    const { faults } = await launch('?faults=backup:read');
+    const target = await targetWorkspace();
+    const faulty = faults.faultyExportPort(createInProcessExportPort(target.persistence), target.factory);
+    const reached: string[] = [];
+    // The real start callback reads expectedBinding; reading a store's private fields means a batch is being handed over.
+    const port = {
+      run: (job: Parameters<typeof faulty.run>[0]) =>
+        faulty.run({
+          ...job,
+          get expectedBinding() {
+            reached.push('start');
+            return undefined;
+          },
+          layout: {
+            ...job.layout,
+            privateFields: new Proxy(job.layout.privateFields, {
+              get: (fields, store) => {
+                if (!reached.includes('batch')) reached.push('batch');
+                return Reflect.get(fields, store) as unknown;
+              },
+            }),
+          },
+        }),
+    };
+    const workspace = workspaceOf(target, { backup: { download: target.testHost.downloads.port, export: port } });
+
+    const result = await workspace.exportBackup({});
+
+    expect(reached).toEqual(['start', 'batch']);
+    expect(result).toMatchObject({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', detail: { message: 'injected fault: backup:read' } });
+  });
+
   it('should fail the export read when every store is empty under backup:read', async () => {
     const { faults } = await launch('?faults=backup:read');
     const empty = await testStack(new IDBFactory());
