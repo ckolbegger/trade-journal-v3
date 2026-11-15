@@ -421,10 +421,18 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const keysSeen = new Map<string, Set<string>>();
     let workspaceRecord: Record<string, unknown> | undefined;
     let pending: { readonly section: string; readonly store: string; readonly lines: { line: number; record: unknown }[] } | undefined;
-    // Records staged so far, of the header's counted total (A148).
-    let stagedCount = 0;
+    // Record lines read so far, rejected or unparsable ones included, of the header's counted total (A148, Q19).
+    // The Workspace section's records are not in the header counts, so they are not in this tally.
+    let readCount = 0;
+    let reportedCount = -1;
     const totalRecords = Object.values(header.counts).reduce((sum, count) => sum + count, 0);
     const flush = async () => {
+      await stageBatch();
+      if (readCount === reportedCount) return;
+      reportedCount = readCount;
+      request.onProgress?.({ done: readCount, total: totalRecords });
+    };
+    const stageBatch = async () => {
       if (!pending) return;
       const { section, store, lines: batch } = pending;
       pending = undefined;
@@ -472,8 +480,6 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         return false;
       });
       await persistence.putCandidateRecords(candidate, fresh.map((value): StoreRecord => ({ store: store as WorkspaceStore, value: { ...value } })));
-      stagedCount += batch.length;
-      request.onProgress?.({ done: stagedCount, total: totalRecords });
     };
     let fullDigest = '';
     try {
@@ -481,6 +487,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         // Leaving the loop closes the line reader; the candidate goes below.
         if (request.signal?.aborted) break;
         if (line.kind === 'record') {
+          readCount += 1;
           let envelope: { s: string; t: string; r: unknown };
           try {
             const shape = JSON.parse(line.text) as Record<string, unknown> | null;
@@ -499,6 +506,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
             continue;
           }
           if (pending && (pending.store !== envelope.t || pending.lines.length >= BATCH_SIZE)) await flush();
+          if (envelope.s === 'workspace') readCount -= 1;
           pending ??= { section: envelope.s, store: envelope.t, lines: [] };
           pending.lines.push({ line: line.lineNumber, record: envelope.r });
           const stores = seen.get(envelope.s) ?? {};

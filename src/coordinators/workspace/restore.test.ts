@@ -797,4 +797,39 @@ describe('progress (A148)', () => {
     expect(reports.map((report) => report.done)).toEqual([...reports.map((report) => report.done)].sort((a, b) => a - b));
     expect(reports.at(-1)!.done).toBe(total);
   });
+
+  it('should report progress that ends at the header total for a valid backup', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const header = JSON.parse(new TextDecoder().decode(gunzipSync(a7.bytes)).split('\n')[0]!) as { counts: Record<string, number> };
+    const total = Object.values(header.counts).reduce((sum, count) => sum + count, 0);
+    const target = await targetWorkspace();
+    const reports: { done: number; total: number }[] = [];
+
+    await target.workspace.prepareRestore({ file: backupFile(a7.bytes), onProgress: (progress) => reports.push({ ...progress }) });
+
+    expect(reports.at(-1)).toEqual({ done: total, total });
+    expect(Math.max(...reports.map((report) => report.done))).toBe(total);
+  });
+
+  it('should count a rejected batch toward progress', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const header = JSON.parse(new TextDecoder().decode(gunzipSync(a7.bytes)).split('\n')[0]!) as { counts: Record<string, number> };
+    const total = Object.values(header.counts).reduce((sum, count) => sum + count, 0);
+    const target = await targetWorkspace();
+    const reports: { done: number; total: number }[] = [];
+    // A record line that is not JSON, and a trades record missing its economicTime: both lines are still read.
+    const bad = editedArtifact(a7.bytes, (artifact) => {
+      artifact.lines[lineOf(artifact.lines, 'catalog')] = '{"r":this is not json';
+      const missing = lineOf(artifact.lines, 'trades');
+      const record = JSON.parse(artifact.lines[missing]!) as { r: { facts: { kind: string; versions: { value: Record<string, unknown> }[] }[] } };
+      delete record.r.facts.find((fact) => fact.kind === 'Plan')!.versions[0]!.value['economicTime'];
+      artifact.lines[missing] = JSON.stringify(record);
+    });
+
+    const result = await target.workspace.prepareRestore({ file: backupFile(bad), onProgress: (progress) => reports.push({ ...progress }) });
+
+    expect(result.kind).toBe('Rejected');
+    // The whole file is read, so every record line counts and progress still ends at the header total.
+    expect(reports.at(-1)).toEqual({ done: total, total });
+  });
 });
