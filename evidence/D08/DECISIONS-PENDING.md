@@ -275,3 +275,7 @@ Recommended: (a+).
 - (b) Delete the candidate, following A135. The trader must choose the backup file and wait for the check again after taking a fresh backup.
 
 **Recommended: (a).** A stale or unrecognized receipt is about the safety backup, not the file being restored, so the prepared copy is still valid. It matches the plan case's wording and saves a repeat check.
+
+**Q11 answer (2026-11-14): (a).** Stale and NotRecognized keep the candidate. T8.9-B4 and B5 close with no change; revision 103 amends A135 to list these two with the missing-choice cases.
+
+**Q10 answer (2026-11-14): (a).** Only launch runs `inspectRoot()` with its cleanup; rechecks after launch use `lookupRoot()`. T8.11 makes the change in `compose.ts` and `tests/support/stack.ts`, with a case proving a prepared candidate survives a recheck (closes T8.9-B1). T8.9-B2 then removes the `lookupSession` workaround. A handoff note for T8.11 carries this.

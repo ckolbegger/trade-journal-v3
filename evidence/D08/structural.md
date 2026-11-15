@@ -901,3 +901,5 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - **T8.9-B7** (Doubtful): the rechecks cover only the four fact sections; `meta.settings` and `meta.sessionPolicy` edited in the candidate after the preview pass.
   - **T8.9-B8** (Valid): the test wrapper session's `reportStorageFailure` does not change its own `current()` state.
   - B3, B6, B7 and B8 run now, one at a time.
+- **T8.9-B4 and B5:** closed with no change by Q11 (a).
+- **Q10 answered (a):** T8.9-B1 moves to T8.11 (it owns `compose.ts`); T8.9-B2 runs in lane WR after T8.11 merges. Handoff note added for both.
