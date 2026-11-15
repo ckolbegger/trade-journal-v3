@@ -217,6 +217,8 @@ export interface Persistence {
   // True once another connection asked to change the Workspace database's version, for
   // example a later release migrating it: this session may no longer write.
   isSuperseded(): boolean;
+  // The refusal a mutation meets when this session is superseded, null otherwise.
+  supersededRefusal(): Promise<RuntimeNotWritable | null>;
   // Closes the Workspace connection, as when the page goes away; a later call reopens it.
   close(): void;
 }
@@ -418,6 +420,8 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
 
   const persistence: Persistence = {
     isSuperseded: () => superseded,
+
+    supersededRefusal: async () => (superseded ? supersededRefusal() : null),
 
     close() {
       const closing = connection;

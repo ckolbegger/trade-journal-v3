@@ -63,10 +63,8 @@ describe('I8.15 Another instance is superseded', () => {
     expect(status).toMatchObject({ kind: 'Ready', binding: { databaseName: restored.receipt.newBinding.databaseName } });
   }, 120_000);
 
-  // KNOWN DEFECT (reported with T8.20): section 6.1 says B calling recordPositionChange gets RuntimeNotWritable (superseded).
-  // recordPositionChange reads the Trade before it commits, and that read throws InvalidStateError on B's closed connection,
-  // so the mutation guard answers StorageFailure. Nothing is written. `it.fails` keeps the suite green until it is settled.
-  it.fails('should return RuntimeNotWritable, superseded, from recordPositionChange of the second application, writing nothing', async () => {
+  // Section 6.1: B calling recordPositionChange gets RuntimeNotWritable (superseded) before any read of its closed connection.
+  it('should return RuntimeNotWritable, superseded, from recordPositionChange of the second application, writing nothing', async () => {
     const { d, b, command } = await supersededPair();
     const before = await dumpAll(d.factory);
 

@@ -50,6 +50,31 @@ describe('mutation-boundary recheck', () => {
     expect(session.current().outcome).toBe('Writable');
   });
 
+  describe.each(['TradeWorkflows.recordPositionChange', 'DailyReview.recordMark'])('a superseded instance, %s', (operation) => {
+    it('should return the superseded refusal without rechecking readiness or calling the mutation', async () => {
+      const { session, evaluate } = await sessionOf(writable);
+      const refusal = {
+        kind: 'RuntimeNotWritable',
+        runtimeReadiness: 'RecoveryOnly',
+        failedChecks: [{ check: 'control', reason: 'SessionSuperseded' }],
+        workspaceStatus: 'RecoveryOnly',
+        safeActions: [],
+      } as const;
+      const mutation = vi.fn(() => Promise.resolve('done'));
+      const result = await createMutationGuard(session, undefined, () => Promise.resolve(refusal)).run(operation, mutation);
+      expect(result).toEqual(refusal);
+      expect(mutation).not.toHaveBeenCalled();
+      expect(evaluate).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('should run the mutation when the instance is not superseded', async () => {
+    const { session } = await sessionOf(writable);
+    const mutation = vi.fn(() => Promise.resolve('done'));
+    const result = await createMutationGuard(session, undefined, () => Promise.resolve(null)).run('TradeWorkflows.confirmPlan', mutation);
+    expect(result).toBe('done');
+  });
+
   it('should not apply the gate to requestDurability', async () => {
     const { session, evaluate } = await sessionOf(recoveryOnly);
     const request = vi.fn(() => Promise.resolve({ kind: 'NotImproved' }));

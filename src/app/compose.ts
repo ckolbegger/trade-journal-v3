@@ -76,7 +76,7 @@ export async function createApplication(deps: ApplicationDeps) {
   });
   holder.session = session;
 
-  const guard = createMutationGuard(session, deps.skipMutationRecheck);
+  const guard = createMutationGuard(session, deps.skipMutationRecheck, () => persistence.supersededRefusal());
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });

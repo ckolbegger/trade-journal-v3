@@ -21,10 +21,18 @@ const UNGATED = new Set(['Workspace.requestDurability']);
 
 // `skipRecheck` is supplied only by the bench build's generator (D2 T2.20, section 6.0): while it
 // returns true, the session's current readiness stands in for the per-mutation recheck.
-export function createMutationGuard(session: ReadinessSession, skipRecheck?: () => boolean): MutationGuard {
+// `supersededRefusal` answers a refusal while another instance's Restore or migration has superseded this
+// one, checked before anything else so a mutation never reads on the closed connection (D8 A135, I8.15).
+export function createMutationGuard(
+  session: ReadinessSession,
+  skipRecheck?: () => boolean,
+  supersededRefusal?: () => Promise<RuntimeNotWritable | null>,
+): MutationGuard {
   return {
     async run(operation, mutation) {
       if (UNGATED.has(operation)) return mutation();
+      const superseded = await supersededRefusal?.();
+      if (superseded) return superseded;
       const refusal = toRuntimeNotWritable(skipRecheck?.() ? session.current() : await session.recheck());
       if (refusal) return refusal;
       try {
