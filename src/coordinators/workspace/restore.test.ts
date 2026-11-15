@@ -576,3 +576,39 @@ describe('availability (P30)', () => {
     expect(result.preview.safetyChoiceRequired).toBe(false);
   });
 });
+
+describe('cancellation (A138, A148)', () => {
+  it('should return Cancelled and create no candidate when the signal is already aborted before preparation starts', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    const controller = new AbortController();
+    controller.abort();
+
+    const result = await target.workspace.prepareRestore({ file: backupFile(a7.bytes), signal: controller.signal });
+
+    expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
+    expect(await dumpAll(target.factory)).toEqual(before);
+  });
+
+  it('should return Cancelled and delete the candidate when the signal aborts between batches after staging has begun', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    const controller = new AbortController();
+    // The user presses Cancel while the first batch is being written to the candidate.
+    const persistence = {
+      ...target.persistence,
+      putCandidateRecords: async (...args: Parameters<typeof target.persistence.putCandidateRecords>) => {
+        const written = await target.persistence.putCandidateRecords(...args);
+        controller.abort();
+        return written;
+      },
+    };
+
+    const result = await workspaceOf(target, { persistence }).prepareRestore({ file: backupFile(a7.bytes), signal: controller.signal });
+
+    expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+});

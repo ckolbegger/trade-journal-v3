@@ -296,6 +296,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const refusal = toRuntimeNotWritable(await deps.session.recheck());
     if (refusal) return refusal;
     const live = await liveBinding();
+    // Cancel before anything starts: nothing was created (A138).
+    if (request.signal?.aborted) return { kind: 'Cancelled', liveBinding: live };
 
     const lines = readArtifact(request.file);
     let first: Awaited<ReturnType<typeof lines.next>>;
@@ -316,6 +318,11 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       const availableBytes = (estimate.quota ?? 0) - (estimate.usage ?? 0);
       const requiredBytes = Math.ceil(Object.entries(header.counts).reduce((total, [store, count]) => total + count * (BYTES_PER_RECORD[store] ?? 0), 0));
       if (requiredBytes > availableBytes) return rejected([{ code: 'InsufficientCapacity', availableBytes, requiredBytes }], live);
+    }
+
+    if (request.signal?.aborted) {
+      await lines.return(undefined);
+      return { kind: 'Cancelled', liveBinding: live };
     }
 
     const created = await persistence.createRestoreCandidate();
@@ -397,6 +404,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     let fullDigest = '';
     try {
       for await (const line of lines) {
+        // Leaving the loop closes the line reader; the candidate goes below.
+        if (request.signal?.aborted) break;
         if (line.kind === 'record') {
           let envelope: { s: string; t: string; r: unknown };
           try {
@@ -448,6 +457,11 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       }
     } catch (error) {
       issues.push(readFailure(error));
+    }
+    // Cancel wins over whatever the lines so far said: the candidate is deleted (A138).
+    if (request.signal?.aborted) {
+      await persistence.discardCandidate(candidate);
+      return { kind: 'Cancelled', liveBinding: live };
     }
     if (issues.length > 0) {
       await persistence.discardCandidate(candidate);
