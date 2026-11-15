@@ -1,0 +1,153 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 165552,
+    "input_tokens": 164477,
+    "output_tokens": 1075,
+    "cache_read_tokens": 23936,
+    "elapsed": "58s"
+  },
+  "tool_calls": {
+    "total": 21,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 14
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "code_search": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 11,
+        "tool_name": "code_search",
+        "file_path": "src/persistence/persistence.ts,src/persistence/restore-candidate.test.ts,tests/integration/d8/write-gate.test.ts",
+        "arguments": "{\"search_text\": \"migrateWorkspace|migrate(\", \"file_patterns\": [\"src/coordinators/workspace/\"], \"use_perl_regexp\": true}",
+        "error": "git grep failed: exit status 128: fatal: -e option, 'migrateWorkspace|migrate(': missing closing parenthesis"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "Handle the new refusal result in the activation callers as part of this change. `restore.ts` only checks `Aborted` (or `AlreadyInitialized` for first activation), so if readiness fails during candidate validation and this new recheck returns `RuntimeNotWritable`, apply continues to delete the preparation, announce a replacement, and return `Restored` even though the pointer never switched. `migration.ts` similarly treats every non-`Aborted` result as `Migrated`. Propagate the refusal and perform the appropriate candidate cleanup before any success-side effects in both callers.",
+      "existing_code": "      const refusal = await activationRefusal();\n      if (refusal) return refusal;",
+      "start_line": 543,
+      "end_line": 544,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/persistence/persistence.ts",
+        "src/persistence/restore-candidate.test.ts",
+        "tests/integration/d8/write-gate.test.ts"
+      ]
+    }
+  ],
+  "session_id": "a2c18bd6-720a-4551-96f5-5451362de5b4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a2c18bd6-720a-4551-96f5-5451362de5b4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8eec96fb",
+      "resolved_base": "1f5d6ab80d2ee1901031ef575ed377401022a694",
+      "resolved_head": "8eec96fb764b5a9f41cf2197bb8f35e4bce7d66f",
+      "exact_range": "1f5d6ab80d2ee1901031ef575ed377401022a694..8eec96fb764b5a9f41cf2197bb8f35e4bce7d66f",
+      "source_artifact_sha256": "f8573d01593888ec9baa57eb66cadcae6b3f4734e5dc888ba1ed91b4348730b6"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "18898973b9473db6968597d9dd4ce6a65e70fc0791899635427b99ace0d35e6b",
+          "path": "tests/integration/d8/write-gate.test.ts",
+          "fingerprint": "9d4aed78c9417d873830187669f6d34cb89c3878f334d85f9bb3b0c16fd37fdf"
+        },
+        {
+          "item_id": "4e7f411ed2f06fda0e79f29642eaf44bd504e54853ad0c00733f03cc560f11ba",
+          "path": "src/persistence/restore-candidate.test.ts",
+          "fingerprint": "8a746a6f26c0ec4093df71d9703e8c0cc5122d729a4cb686b1f92ccb074287b6"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "6869ddf3a3bd6d792df12c3a796c7306092a28d740b6e0554b54da83d9cbaa21"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "18898973b9473db6968597d9dd4ce6a65e70fc0791899635427b99ace0d35e6b",
+          "path": "tests/integration/d8/write-gate.test.ts",
+          "fingerprint": "9d4aed78c9417d873830187669f6d34cb89c3878f334d85f9bb3b0c16fd37fdf"
+        },
+        {
+          "item_id": "4e7f411ed2f06fda0e79f29642eaf44bd504e54853ad0c00733f03cc560f11ba",
+          "path": "src/persistence/restore-candidate.test.ts",
+          "fingerprint": "8a746a6f26c0ec4093df71d9703e8c0cc5122d729a4cb686b1f92ccb074287b6"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "6869ddf3a3bd6d792df12c3a796c7306092a28d740b6e0554b54da83d9cbaa21"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "140d2587d4cacce9530d213450fe3b791bbab39deb63115f8a4083113e3e8461",
+          "path": "evidence/D08/suite-runs/T8.20-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3dbfe6d17f711b131785205960fc87682e0db4af460106f02f03e35d845a48d3",
+          "path": "evidence/D08/tdd-log/T8.20-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "623e914b79edad57818d5fab227b57f6acd507ab9902bf54af3d5d3b23a8e485",
+          "path": "evidence/D08/suite-runs/T8.20-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d14a0863314915ed3720e5f1f5dc294bb51d84f21a68bfb174b0351c27e6cd73",
+          "path": "evidence/D08/suite-runs/T8.20-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d6d791b93f22a2b189b114e611f78de0c114b4dc466f73540cc84898acb6cf35",
+          "path": "evidence/D08/suite-runs/T8.20-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 58261
+  }
+}
