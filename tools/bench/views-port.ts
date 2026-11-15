@@ -28,6 +28,13 @@ export function pinnedOpenRowsOf(openRowsOf: BenchViewsPort['openRowsOf']): Benc
 
 export async function benchViewsPortFromVite(): Promise<{ readonly port: BenchViewsPort; readonly close: () => Promise<void> }> {
   const server = await createServer({ configFile: false, appType: 'custom', server: { middlewareMode: true }, logLevel: 'error' });
-  const screen = (await server.ssrLoadModule('/src/ui/screens/TradeList.tsx')) as { openRowsOf: BenchViewsPort['openRowsOf'] };
+  let screen: { openRowsOf: BenchViewsPort['openRowsOf'] };
+  try {
+    screen = (await server.ssrLoadModule('/src/ui/screens/TradeList.tsx')) as typeof screen;
+  } catch (error) {
+    // A server left open keeps the process alive.
+    await server.close();
+    throw error;
+  }
   return { port: { restore: restoreInNode, openRowsOf: pinnedOpenRowsOf(screen.openRowsOf) }, close: () => server.close() };
 }

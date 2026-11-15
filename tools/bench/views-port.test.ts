@@ -1,5 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { pinnedOpenRowsOf } from './views-port.ts';
+import { benchViewsPortFromVite, pinnedOpenRowsOf } from './views-port.ts';
+
+const mocked = vi.hoisted(() => ({ close: vi.fn(() => Promise.resolve()) }));
+vi.mock('vite', () => ({
+  createServer: () => Promise.resolve({ ssrLoadModule: () => Promise.reject(new Error('load failed')), close: mocked.close }),
+}));
+
+describe('bench views port server', () => {
+  it('should close the Vite server before rethrowing when the screen module fails to load', async () => {
+    await expect(benchViewsPortFromVite()).rejects.toThrow('load failed');
+    expect(mocked.close).toHaveBeenCalledTimes(1);
+  });
+});
 
 // A row function that says what year the clock reads, as the app's own row function does for an option expiration.
 const yearRead = () => ({ headers: ['Year'], rows: [[String(new Date().getUTCFullYear())]] });
