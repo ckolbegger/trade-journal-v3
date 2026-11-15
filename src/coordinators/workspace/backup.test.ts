@@ -292,6 +292,18 @@ describe('failures', () => {
     expect((result as { detail?: { stack?: string } }).detail?.stack).toContain('offer blew up');
   });
 
+  it("should return NotCompleted when the rejection value can't be converted to text", async () => {
+    const throwing = { toString: () => { throw new Error('record body secret'); } };
+    for (const value of [Object.create(null), throwing]) {
+      const stack = await w7Stack();
+      const download = { offer: () => Promise.reject(value as Error) }; // typed as Error only to satisfy lint; the value is not one
+      const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download } });
+      const result = await workspace.exportBackup({});
+      expect(result).toMatchObject({ kind: 'NotCompleted', stage: 'Offer', detail: { stage: 'Offer', name: 'NonError', message: 'The failure value could not be shown' } });
+      expect(JSON.stringify(result)).not.toContain('record body secret');
+    }
+  });
+
   it('should report ReadFailed when the journal storage lookup rejects', async () => {
     const stack = await w7Stack();
     const failing = { ...stack.persistence, lookupRoot: () => Promise.reject(new Error('lookup blew up')) };

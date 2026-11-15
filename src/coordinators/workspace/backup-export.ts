@@ -42,9 +42,18 @@ export type ExportRun =
   // `detail` is plain data, so a worker can post it: the caught error, or the read result's failing store.
   | { readonly kind: 'Failed'; readonly reason: 'ReadFailed'; readonly detail: FailureDetail };
 
+// Text of a non-Error rejection value; conversion can throw (null prototype, throwing toString), so it falls back to a fixed message.
+function textOf(value: unknown): string {
+  try {
+    return String(value);
+  } catch {
+    return 'The failure value could not be shown';
+  }
+}
+
 // The detail of a caught error: its own name, message and stack, never a record body.
 export function describeError(stage: string, error: unknown, context?: FailureDetail['context']): FailureDetail {
-  const base = error instanceof Error ? { name: error.name, message: error.message, ...(error.stack === undefined ? {} : { stack: error.stack }) } : { name: 'NonError', message: String(error) };
+  const base = error instanceof Error ? { name: error.name, message: error.message, ...(error.stack === undefined ? {} : { stack: error.stack }) } : { name: 'NonError', message: textOf(error) };
   return { stage, ...base, ...(context ? { context } : {}) };
 }
 
