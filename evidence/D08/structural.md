@@ -1255,3 +1255,9 @@ Cause: the global `input, select, textarea { display:block; width:100% }` rule i
   - B6-B1 (Valid): `responsive-a11y.spec.ts:209` measures the whole `<label>`, which contains the input, so the "same line" check cannot fail for label-wrapped controls.
   - B6-B2 (Valid): `RestoreConfirm.tsx:164` the decline checkbox's warning text is not a `<label>`, so clicking it does not toggle the box; the click target is only 20 × 20 px.
   - Dismissed (Wrong): unused `page` parameter "fails lint"; eslint on the file is clean.
+
+## T8.22-B6-B1 and B6-B2 done
+
+- B6-B1 `45f0881b`: the layout check compares each control with its label's text (a Range over its text nodes). Red: with `flex-direction: column` added temporarily, "checkbox shares its label's line" failed (overlap -10); green after restoring.
+- B6-B2 `6fddd9f4`: the decline checkbox and its warning sit in one `<label>`, so clicking the text toggles it. Red: unit assertion (`expected false to be true`).
+- No first-run passes. `src/ui/backup` 57 passed; browser specs responsive-a11y, restore, backup: 16 passed.
