@@ -1,0 +1,165 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 110115,
+    "input_tokens": 108783,
+    "output_tokens": 1332,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m5s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/BackupView.tsx",
+      "content": "Failure logging is skipped when an operation becomes stale: if Restore completes while exportBackup is pending, downloadCount changes and the earlier return discards a subsequent NotCompleted result (including a converted rejection) before this log runs. The verification path has the same issue, including when a newer download supersedes a pending check. Q5 requires logging all failures even when their UI results must be ignored. Log failed results before the stale-operation guards, while keeping state updates behind those guards, and add deferred-failure tests for these cases.",
+      "existing_code": "      if (result.kind === 'NotCompleted') logFailure(result.detail ?? { stage: result.stage, name: result.reason, message: NO_DETAIL });",
+      "start_line": 62,
+      "end_line": 62,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Backup view behavior, tests, and workspace integration",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/workspace/index.ts",
+        "src/ui/backup/BackupView.test.tsx",
+        "src/ui/backup/BackupView.tsx",
+        "src/ui/backup/dev-log.ts"
+      ]
+    }
+  ],
+  "session_id": "9dd4d8ea-898f-4b47-a128-5658f144adaf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9dd4d8ea-898f-4b47-a128-5658f144adaf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "64091bbc",
+      "resolved_base": "bf0b5f737faa7420de6eea93298132aae8afa93c",
+      "resolved_head": "64091bbc9bbdee7802fc154f64272992c719e100",
+      "exact_range": "bf0b5f737faa7420de6eea93298132aae8afa93c..64091bbc9bbdee7802fc154f64272992c719e100",
+      "source_artifact_sha256": "49f6c38fad4d49fdf29a41a936710bb92fd991b890192f6165a0e6b2869f85f8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "5e510ca857d366292018772845fb17f99074625c08e41f460df9741042dc402d"
+        },
+        {
+          "item_id": "31fc3c3d8cd13f1aa217fe73c15c264e936601c51b36bcc485706dd4053ea989",
+          "path": "src/ui/backup/BackupView.test.tsx",
+          "fingerprint": "af12de945d716ca745c5d43e7c80f5545de8c20f44443f08651d99f3295c6c1a"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "92806722fe9d199d9d98a33d62a316fc6af4a4143a23534235e3aeff6f2f2941"
+        },
+        {
+          "item_id": "6ec55e19b382f1e43856d0ab6fc5b462ca4ccf627ae31ca4e977f032058e4c13",
+          "path": "src/coordinators/workspace/index.ts",
+          "fingerprint": "0fe001c3fbf5a7181d05a279fcc6a0cdf187b8f0bca25ad8b4f3a50bfb788ea3"
+        },
+        {
+          "item_id": "ab5c52dfa8a3c955dd90253f795497b9e9a49d050f763410ec70cfe108409656",
+          "path": "src/ui/backup/dev-log.ts",
+          "fingerprint": "0e6c622a36085cf7ea2f663701fc6407d8a55cf109456fab36081380b0d509dc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2dbc5b7e361c3f68fc048f79a362c4e05bc65e1e8eaab7d97d56ec4f735a0354",
+          "path": "src/ui/backup/BackupView.tsx",
+          "fingerprint": "5e510ca857d366292018772845fb17f99074625c08e41f460df9741042dc402d"
+        },
+        {
+          "item_id": "31fc3c3d8cd13f1aa217fe73c15c264e936601c51b36bcc485706dd4053ea989",
+          "path": "src/ui/backup/BackupView.test.tsx",
+          "fingerprint": "af12de945d716ca745c5d43e7c80f5545de8c20f44443f08651d99f3295c6c1a"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "92806722fe9d199d9d98a33d62a316fc6af4a4143a23534235e3aeff6f2f2941"
+        },
+        {
+          "item_id": "6ec55e19b382f1e43856d0ab6fc5b462ca4ccf627ae31ca4e977f032058e4c13",
+          "path": "src/coordinators/workspace/index.ts",
+          "fingerprint": "0fe001c3fbf5a7181d05a279fcc6a0cdf187b8f0bca25ad8b4f3a50bfb788ea3"
+        },
+        {
+          "item_id": "ab5c52dfa8a3c955dd90253f795497b9e9a49d050f763410ec70cfe108409656",
+          "path": "src/ui/backup/dev-log.ts",
+          "fingerprint": "0e6c622a36085cf7ea2f663701fc6407d8a55cf109456fab36081380b0d509dc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "01ec0bd62721a1f225227d32152c11b0aeb69cfe28a863dee9349dc1f1920b7b",
+          "path": "evidence/D08/suite-runs/T8.12-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "301842d7c1727e7f0f1e303c564ffdcb9ecfb64a9c9c76341c2d5d18039fdc50",
+          "path": "evidence/D08/suite-runs/T8.12-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4aec8b842afba03f6326d833d905296d68762c709e7cb927d379e66525337a87",
+          "path": "evidence/D08/suite-runs/T8.12-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "abc9cc6adb0d65b60449227b3ccf4ababa3d59a6ecc5ab004409d108f3df613b",
+          "path": "evidence/D08/tdd-log/T8.12-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "de8ba89b782e36ee26c94fa44c151d37ec5a41195066a0756b1b2e97a1b91a97",
+          "path": "evidence/D08/suite-runs/T8.12-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 64818
+  }
+}

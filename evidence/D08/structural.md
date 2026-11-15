@@ -728,3 +728,55 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Unit 177 / 1843, integration 106 / 229, checks 14 of 14.
   - Browser: the task tier ran, since no changed path since `f087b459` is on the full-tier list. 5 passed.
   - Outputs: `suite-runs/merge-11-*.txt`.
+- **T8.4-F1** `c15f7404` (lane WB; Q4 (a)): one case, red then green.
+  - Red: "expected 0 to be greater than 0". A `writeRecord` spy saw nothing written when the first batch arrived.
+  - `onStart` writes the header, the Workspace records and the Workspace section end. Each `onBatch` projects and writes straight into `ArtifactWriter`, which was already incremental; `src/backup/format` is untouched. Both callbacks are synchronous.
+  - A throw in a callback is remembered, stops the read, and is reported at stage Build.
+  - Memory held: the gzip output chunks, one batch at a time, plus counts, footprint ids and meta records. No projected batch is kept.
+  - Notes, not deviations:
+    - The Conflict check still runs after the whole read, so a conflicting export does the full work before it is discarded.
+    - Three test wrappers now forward `onStart`.
+  - Lane tier: unit 177 / 1844, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.12-F1** `64091bbc` (lane UB, Q5 logging): four cases, each red then green, plus one refactor row.
+  - All reds read "expected "error" to be called 1 times, but got 0 times".
+  - Refactor row: `dev-log.ts` uses the shared `FailureDetail`, imported through `src/app/types.ts`, because `lint:deps` forbids importing `backup-types.ts` directly. The four RestoreFlow log cases stayed green before and after.
+  - Cases:
+    - `NotCompleted` and `NotVerified` with a `detail` log one line.
+    - A rejecting `exportBackup` or `confirmBackup` logs stage Build or Verify, with the name, message and stack.
+    - Extra case: a failed result without a `detail` logs the stage and reason, with "The result carried no detail.". Conflict is not a failure and writes no line.
+  - Deviation: one-line type re-exports added outside `src/ui/backup/`, in `src/app/types.ts` and `src/coordinators/workspace/index.ts`. T8.8 (lane WR) also edits `src/app/types.ts`; reconcile at merge.
+  - Early green rows for cases 4 and 5 exited 1 because of the test's own bugs: the button label after a failure, and spies not restored. Production code was unchanged between those rows.
+  - Lane tier: unit 179 / 1882, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.12-F1** `64091bbc`: one finding, assessed Valid. Raw: `ocr/T8.12-F1-64091bbc.json`.
+
+| Task | Location | Defect | Case |
+|---|---|---|---|
+| T8.12-B6 (first briefed as B1 in error; that ID belongs to `5e11ab01`'s task) | `BackupView.tsx:62` | the stale-result guards in `download` and `verify` return before `logFailure`, so a failure that arrives after a Restore or a newer download is never logged | it should log a failure that arrives after a newer download has started |
+
+  - Brief error: the brief cited A140 for the Backup page; A141 is the right row.
+- **ocr of T8.4-F1** `c15f7404`: three findings: one Valid, two Doubtful. Raw: `ocr/T8.4-F1-c15f7404.json`. Bug tasks for lane WB, one at a time:
+
+| Task | Location | Defect | Case |
+|---|---|---|---|
+| T8.4-B7 | `backup-export.ts:168` | `expectedBinding` is compared only after the whole read. A stale binding still builds and compresses everything, and a build error on the way returns Failed instead of Conflict | it should return Conflict before writing any record when the binding differs |
+| T8.4-B8 (Doubtful) | `backup.test.ts:342` | the test wrapper discards `onBatch`'s return value, which would hide an async callback from `EarlyAutoCommitGuard` | test-only change: the wrapper forwards the return value |
+| T8.4-B9 (Doubtful) | `backup.test.ts:354` | the streaming assertion only checks that the write count rises between deliveries | test-only change: assert the full interleaving of reads and writes |
+
+  - Reviewer note, not a bug task: `guarded` in `runExport` discards its step's return value, so a future async step would slip past the guard. Today's steps are synchronous.
+- **T8.4-B7** `1cf3e645` (lane WB): one case, red then green.
+  - Red: "expected "writeRecord" to not be called at all, but actually been called 103 times".
+  - The binding is now compared first in the guarded `onStart`. On a mismatch it remembers the binding and throws, which stops the read before the header. `Conflict` is returned ahead of the failure checks, and the old after-read comparison is removed.
+  - Lane tier: unit 177 / 1845, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.12-B6** `d71709b7` (lane UB; amended from `e25ebf8b`, first committed as "T8.12-B1"): two cases, each red then green.
+  - Both reds read "expected "error" to be called 1 times, but got 0 times".
+  - `logFailure` now runs before the stale guards in `download` and `verify`. The state updates stay behind them.
+  - Download is disabled while a backup is being made, so a stale download comes only from a Restore. The case was therefore split into download-after-Restore and verify-after-newer-download.
+  - The amend restored `T8.12-B1`'s tdd log and suite runs to their `64091bbc` content, and moved this task's rows to `tdd-log/T8.12-B6.md`. Its suite-run files were copied from the same run, not rerun.
+  - Lane tier: unit 179 / 1884, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.4-B7** `1cf3e645`: no findings (2 files reviewed). Raw: `ocr/T8.4-B7-1cf3e645.json`.
+- **ocr of T8.12-B6** `d71709b7`: no findings (2 files reviewed). Raw: `ocr/T8.12-B6-d71709b7.json`. The reviewer confirmed the amended commit holds only the B6 evidence; the B1 files equal `64091bbc`.
+- **Lane UB ready to merge:** T8.12 and T8.13, with all their follow-ups and bug tasks, have clean reviews. They merge now, because the plan lets a UI lane merge before the backend. Item 2's repair sentences wait for T8.8's `tradeSummary`, as follow-up T8.13-F3 in lane UB.
