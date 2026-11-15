@@ -452,6 +452,25 @@ describe('result (AC-REST-003)', () => {
     expect(screen.getByRole('link', { name: 'Add an institution and account' }).getAttribute('href')).toBe('/accounts');
   });
 
+  it('should load the page afresh when Go to Trades is followed, since the summary and Trades share one path after a first-run Restore', async () => {
+    const ctx = setup();
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ safetyChoiceRequired: false }) });
+    await ctx.user.click(UNDERSTAND());
+    ctx.facade.respond('applyPreparedRestore', restored('Trades'));
+    await ctx.user.click(REPLACE());
+    const link = await screen.findByRole('link', { name: 'Go to Trades' });
+    // An in-app navigation to the same path is cancelled by the router and changes nothing on screen.
+    let defaultPrevented = true;
+    const onBubble = (event: Event) => {
+      defaultPrevented = event.defaultPrevented;
+      event.preventDefault();
+    };
+    document.addEventListener('click', onBubble);
+    await ctx.user.click(link);
+    document.removeEventListener('click', onBubble);
+    expect(defaultPrevented).toBe(false);
+  });
+
   it('should show a rejected or conflicting apply with Your current journal is unchanged and Check the backup again', async () => {
     const ctx = setup();
     const { facade, user } = ctx;

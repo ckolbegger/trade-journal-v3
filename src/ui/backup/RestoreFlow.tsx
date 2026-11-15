@@ -194,7 +194,9 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
           <p>Your journal now holds the restored backup.</p>
           <CountsTable restored={phase.counts} current={null} />
           {phase.next === 'Trades' ? (
-            <Link className="pill primary" to="/">
+            // After a first-run Restore the summary and Trades are both at "/", so an in-app link changes no route and
+            // the shell is never rebuilt on the restored journal; a fresh page load starts it on the restored data.
+            <Link className="pill primary" to="/" reloadDocument>
               Go to Trades
             </Link>
           ) : (
