@@ -77,3 +77,15 @@ Command: `.claude/scripts/status.test.sh 6`. Test fix only; no production change
 | 6 | it should pick the breakdown holding the Progress table among handoff files and an earlier non-handoff file with no Progress heading | with the Progress check in `status.sh` replaced by `false && ...`: FAIL "no Progress table in .../D99-alpha-notes.md" (exit 1) | restored: status.test.sh: all requested cases passed (cases 1 to 10) |
 
 note: the fixture gains `D99-alpha-notes.md` (no Progress heading), which sorts before the breakdown.
+
+## B7
+
+Command: `.claude/scripts/status.test.sh 11`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 11 | it should pick the file whose Progress section holds a table, not one with a Progress heading and only prose | FAIL: file with a Progress heading but no table was picked (exit 1): "no Progress table in .../D99-alpha-notes.md" | status.test.sh: all requested cases passed (cases 1 to 11) |
+
+note: one fixture per scenario (prose-only file before the breakdown; a lone prose-only file, which must still exit 1 naming it). The second passes before and after by design. The fix replaces the grep with an awk check for a `|` row under the Progress heading.
+
+refactor: none needed.

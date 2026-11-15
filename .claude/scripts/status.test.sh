@@ -8,7 +8,8 @@
 # 8 IDs written with the task prefix (T9.2-F1) count the same as bare ones; 9 a bare "**Answer" counts only
 # inside its own question's section (any other heading ends it), a "**Qn answer" still answers by label;
 # 10 a decisions file that exists but cannot be read exits non-zero naming it (skipped as root), a missing one
-# still prints "no decisions file".
+# still prints "no decisions file"; 11 the breakdown is the file whose Progress section holds a table, not
+# one with a Progress heading and only prose (and with no such file the script exits 1 naming a file).
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -115,6 +116,18 @@ if want 10; then
     out=$(STATUS_ROOT="$t/nodec" "$st" D99 2>&1); code=$?
     [[ $code == 0 && "$out" == *"no decisions file"* ]] || bad "missing decisions file changed behavior (exit $code): $out"
   fi
+fi
+
+if want 11; then
+  mkfix prose '| T9.7 | 2 | A | Paused | `x` |'
+  mv "$t/prose/plan/D99-fixture.md" "$t/prose/plan/D99-zeta-breakdown.md"
+  printf '# Notes\n\n## 4. Progress\n\nProse only, no table.\n\n## 5. Other\n' >"$t/prose/plan/D99-alpha-notes.md"
+  out=$(STATUS_ROOT="$t/prose" "$st" D99 2>&1); code=$?
+  [[ $code == 0 && "$out" == *"T9.7"* ]] || bad "file with a Progress heading but no table was picked over the one with a table (exit $code): $out"
+  mkfix only '| T9.7 | 2 | A | Paused | `x` |'
+  printf '# Notes\n\n## 4. Progress\n\nProse only.\n' >"$t/only/plan/D99-fixture.md"
+  out=$(STATUS_ROOT="$t/only" "$st" D99 2>&1); code=$?
+  [[ $code == 1 && "$out" == *"D99-fixture.md"* ]] || bad "no file with a Progress table should exit 1 naming a file (exit $code): $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"

@@ -14,7 +14,7 @@ plan=
 for f in "$root"/plan/"$d"-*.md; do
   [[ $f == *handoff.md ]] && continue
   [[ -z $plan ]] && plan=$f
-  grep -q '^## .*Progress' "$f" && { plan=$f; break; }
+  awk '/^## .*Progress/ { p = 1; next } /^#/ { p = 0 } p && /^\|/ { found = 1; exit } END { exit !found }' "$f" && { plan=$f; break; }
 done
 if [[ -z $plan ]]; then echo "status.sh: no breakdown plan/$d-*.md in $root" >&2; exit 1; fi
 
