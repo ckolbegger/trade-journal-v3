@@ -1,0 +1,155 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 160009,
+    "input_tokens": 158445,
+    "output_tokens": 1564,
+    "cache_read_tokens": 16640,
+    "elapsed": "1m8s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/RestoreFlow.tsx",
+      "content": "This forwards arbitrary rejection text to console.error without sanitization (`logFailure` writes the detail unchanged). An exception message can contain backup record values—for example, a JSON parsing SyntaxError can quote the input—and `Error.stack` normally repeats that message. Stringifying non-Error rejections can likewise expose journal contents. This violates the explicit no-journal-contents logging requirement. Log a fixed failure message and allowlisted diagnostic metadata instead of raw exception text, or use a sanitization contract that also covers stacks. Add a regression test with sensitive content in an Error and a string rejection.",
+      "existing_code": "      const thrown = error instanceof Error ? error : new Error(String(error));\n      logFailure({ stage: 'Prepare', name: thrown.name, message: thrown.message, ...(thrown.stack !== undefined \u0026\u0026 { stack: thrown.stack }) });",
+      "start_line": 91,
+      "end_line": 92,
+      "category": "security",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Backup restore flow, preview, and related calculation wording",
+      "files": [
+        "src/ui/backup/RestoreFlow.test.tsx",
+        "src/ui/backup/RestoreFlow.tsx",
+        "src/ui/backup/RestorePreview.tsx",
+        "src/ui/calculation-words.ts"
+      ]
+    }
+  ],
+  "session_id": "2656f3e4-9033-4f4d-a6f0-e94be5b27c3f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2656f3e4-9033-4f4d-a6f0-e94be5b27c3f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2af18650",
+      "resolved_base": "f8852957e7749afdc9c1a3414b7ad116b235c6f5",
+      "resolved_head": "2af186501a823f964872bc2b26b05547f542e4c0",
+      "exact_range": "f8852957e7749afdc9c1a3414b7ad116b235c6f5..2af186501a823f964872bc2b26b05547f542e4c0",
+      "source_artifact_sha256": "a34ed0229404103b014031e8bb39b99dc8fbc90332f196ac8f15db7931a22ba7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "fc51ee4d49805dadc614a30d707fe504b3797ada63679c27c9be72a2c0add44a"
+        },
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "65faeedf06b6303fa7cab4d3ac521356ac1d2f2b3ae87b372bb38b212f2b6b54"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "da903f4832d8e053ae1046de6f116f8e46b60277eed5db39f64798d55cf82ea9"
+        },
+        {
+          "item_id": "ed5324a53b04693fb6f3383883d129fe3af2140861dde54edb9bc34bb88eaa72",
+          "path": "src/ui/backup/RestorePreview.tsx",
+          "fingerprint": "f092c233f05b0a8e4addd973f87eeeeef55dfb5a94f02eb85bf54d3cbe899ae0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "30a9e5297eb67825068f239510f0fab6046ee3420b312e3c5c7114961efd1614",
+          "path": "src/ui/backup/RestoreFlow.tsx",
+          "fingerprint": "fc51ee4d49805dadc614a30d707fe504b3797ada63679c27c9be72a2c0add44a"
+        },
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "65faeedf06b6303fa7cab4d3ac521356ac1d2f2b3ae87b372bb38b212f2b6b54"
+        },
+        {
+          "item_id": "e1d2a6e20fc363ca1e18ec79af181d72fdc859550c22cf63ad51fd75c7d7b877",
+          "path": "src/ui/calculation-words.ts",
+          "fingerprint": "da903f4832d8e053ae1046de6f116f8e46b60277eed5db39f64798d55cf82ea9"
+        },
+        {
+          "item_id": "ed5324a53b04693fb6f3383883d129fe3af2140861dde54edb9bc34bb88eaa72",
+          "path": "src/ui/backup/RestorePreview.tsx",
+          "fingerprint": "f092c233f05b0a8e4addd973f87eeeeef55dfb5a94f02eb85bf54d3cbe899ae0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "29d6607a4b4ddc27797e9cc4306aef6af8a8fc3db93bbfd915913340395a0dce",
+          "path": "evidence/D08/tdd-log/T8.13-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4a4ceaa0961872d05b997ddeb9d6c6affcd17ffc70fd0658e8c59952dee744b9",
+          "path": "evidence/D08/suite-runs/T8.13-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "79f690bc1430721641b6fee18dc31a2b7136844570f8738d7b434f0ac67787e6",
+          "path": "evidence/D08/suite-runs/T8.13-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9f17fb78fcb5bdc6faa5ba15a37a26fc282beaa29d59cc230cff62a8f246e8f5",
+          "path": "evidence/D08/suite-runs/T8.13-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b41077d08b8d5a9f66b766775429497204ceda1e74f057dca265d82c9a2e532d",
+          "path": "evidence/D08/suite-runs/T8.13-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 68307
+  }
+}

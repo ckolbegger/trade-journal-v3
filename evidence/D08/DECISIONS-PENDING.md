@@ -192,3 +192,37 @@ T8.6-B2 reported an empty Journal Entry or Debt history with Trade Record's `Ver
 - (b) one code with a broader sentence.
 
 **Answer:** (a), as recommended. T8.6-F2 (lane FM) adds the Journal-only code and its sentence to `MIGRATION_ISSUES`.
+
+## Q8. Where "(N versions)" goes on the Restore counts (T8.13-F1, Q5 item 10) — open, asked 2026-11-14
+
+Q5 item 10 approved "(N versions)" once on a Trades total line and once on the Journal entries row. A5's approved counts layout has neither line. It has Planned, Open and Closed rows, one "Journal entries: <type>" row per form, and "Reflections owed".
+
+T8.13-F1 added two summing rows to the counts table:
+- "Trades", the sum of Planned, Open and Closed, with "(N versions)";
+- "Journal entries", the sum over forms, with "(N versions)".
+
+The per-form rows no longer show versions, so reflection-debt versions appear nowhere. The same table also shows on the Restore complete summary.
+
+The options are:
+- (a) keep the two summing rows as built;
+- (b) no new rows: put "(N versions)" after the existing "Planned" row and the first "Journal entries" row;
+- (c) something else.
+
+The interim choice is (a), as built, until the user answers.
+
+## Q9. Should the developer log keep an unexpected error's message? (T8.13-F1 ocr) — open, asked 2026-11-14
+
+Q5's approved log line holds the stage, the error's name, **its message**, **the stack** and safe context. The user's rule is no journal contents in the log.
+
+ocr flagged (Doubtful) that an unexpected error's message can quote whatever text caused it. If Restore's checking or applying code ever threw an error quoting backup text, that text would reach the log.
+- Today, no throw site was found that does this. T8.4-B5 already fixed the one known case on the export side, an unsafe number's value.
+- The risk is from future code or third-party errors.
+
+The options are:
+- (a) Keep the message and stack (Q5 as approved). Each known leaking source is fixed where it is found, as T8.4-B5 did.
+- (b) For unexpected errors, log the name and the stack's location lines, but not the message, and not the stack's first line, which repeats the message. Apply this to Restore's check and apply logs and to the export's `describeError`. Expected failures already log fixed messages and codes.
+- (c) something else.
+
+Recommended: (b). The stack's file and line locations are what developers need to find a bug, and dropping the message closes the leak for good. T8.13-B8 waits for the answer.
+
+Added from the T8.4-B5 review, as a reviewer note: an export error's message ends with the record path, such as `at $.someKey`, built from object keys. A record keyed by user-entered text would leak it through the message. Under (b) the message is not logged, which closes this too.

@@ -598,3 +598,79 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Lane tier: unit 173 / 1812, integration 106 / 229, checks 14 of 14.
   - ocr pending.
 - **ocr of T8.3-B6** `2a41fdab`: no findings (2 files reviewed). Raw: `ocr/T8.3-B6-2a41fdab.json`. T8.3-F1 and B6 are ready to merge.
+- **T8.5-F2** `951ef5be` (lane WB): three cases, each red then green.
+  - All three reds read "expected { kind: 'NotVerified', …(1) } to deeply equal { kind: 'NotVerified', …(2) }", because `detail` was missing.
+  - `NotVerified` now carries a `detail` with stage `'Verify'`. Its `context` names the check, section and line, never values. `DifferentArtifact` names only the comparison that differs.
+  - A new `thrownCheck` helper gives a fixed message plus the error's name. It doesn't use `describeError`, and no raw message or stack is copied.
+  - Added assertions: an edited record line and the stream error's message must not appear in the detail.
+  - Deviations:
+    - Eleven existing `NotVerified` cases now expect `detail: detailLike({ stage: 'Verify' })`.
+    - `confirmBackup`'s `NotVerified` type gained the optional `detail`.
+    - Two test names were reworded because their apostrophes broke `-t` filtering.
+  - Lane tier: unit 173 / 1816, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.6-B4** `80e0e9b8` (lane FM): one case, red then green.
+  - Red: "expected { kind: 'Parsed', …(1) } to deeply equal { kind: 'Rejected', …(1) }".
+  - The first green run failed because the test expected the quantity leaf path, while the union reports the version path `deviations.0.versions.0`. The test was corrected and the second green passed.
+  - A Superseded Deviation version is now two strict variants: Excess with `quantityAbovePlan`, and Shortfall with `quantityBelowPlan`.
+  - Lane tier: unit 1796 of 1797. The one failure is `tools/wording-rules.test.ts`, which timed out at 5s under load; it passes alone (37 of 37) and is unrelated. Integration 229 / 229, checks 14 of 14.
+  - The lane tier is not fully green. FM's next task run (T8.6-B5) has to show the unit tier green.
+  - ocr pending.
+- **ocr of T8.6-B4** `80e0e9b8`: no findings (2 files reviewed). Raw: `ocr/T8.6-B4-80e0e9b8.json`.
+- **ocr of T8.5-F2** `951ef5be`: three findings, all assessed Valid. Raw: `ocr/T8.5-F2-951ef5be.json`. The run had no background file; the reviewer read A123 and the T8.5 rows directly. Bug tasks for lane WB, queued after T8.4-B6:
+
+| Task | Location | Defect | Case |
+|---|---|---|---|
+| T8.5-B7 | `backup.ts:132` | `context.section` copies a section name from the file's own header, which is untrusted, so a tampered file can put any text in the developer log | it should name only a known section in the failure detail |
+| T8.5-B8 | `backup.ts:157` | a read failure after the first chunk arrives wrapped as `ArtifactReadError('Corrupt')`, so the original error's name is lost | it should keep the original read error's name in the failure detail |
+| T8.5-B9 | `backup.ts:242` | the nested ternary for `differing` is hard to read; a structural change with no visible effect | refactor; the DifferentArtifact cases stay green |
+
+- **T8.13-F1** `2af18650` (lane UB): six cases, each red then green, plus one refactor row for item 6.
+  - Red lines:
+    - item 3: "Unable to find an element with the text: A record in the trades section didn't pass a check (PriceNegative)."
+    - Rejected logging: "expected "error" to be called 1 times, but got 0 times"
+    - item 4 message: "Unable to find … The backup couldn't be checked. Your current journal is unchanged."
+    - item 4 log: "Unable to find … /couldn't be checked/"
+    - item 9: "Unable to find … A record refers to a Trade that isn't in the backup (t-1)."
+    - item 10: "Unable to find an accessible element with the role "rowheader" and name "Trades""
+  - Item 6 exports `ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL` from `calculation-words.ts`. `verify:wording` passes.
+  - A `Rejected` prepare result logs "The backup was rejected." Its `context` holds the issue count and the first issue's code, section, line and path. An unexpected throw logs the error's name, message and stack.
+  - Deviation, item 10: A5 has no Trades total line and no single Journal entries row. Two summing rows were added, "Trades" and "Journal entries", each carrying "(N versions)". The per-type rows no longer show versions, so `debts` versions show nowhere. This went to the user as Q8.
+  - Lane tier: unit 165 / 1784, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.4-B5** `b40875a5` (lane WB): one case, red then green, plus a refactor row.
+  - Red: "expected '{"stage":"Build","name":"CanonicalJso…' not to contain '7654321'".
+  - The fix is at the source. The unsafe-number message in `canonical-json.ts` now reads "a number that is not a safe integer", with no value. That covers the message and the stack's first line, and it matches the other `CanonicalJsonUnsupported` messages, which give only a type or path.
+  - `describeError` is unchanged, because other errors keep their message and stack. Paths can hold field names, but never values.
+  - Lane tier: unit 173 / 1817, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.6-B5** `4e6d7450` (lane FM): one case, red then green.
+  - Red: "expected { kind: 'Parsed', records: [ …(32) ] } to deeply equal { kind: 'Rejected', …(1) }".
+  - The first green run failed because the test's own fixture precondition was wrong. The precondition was removed, and the second green passed.
+  - An array `obligationKey` must be `['DailyTradeReview', reviewDate, tradeId]` (D4 A38; built by `keyOf` in `journal.ts`). String keys for the other obligation kinds are still accepted as any string.
+  - Lane tier: unit 175 / 1798, all green, so B4's wording-rules timeout did not recur. Integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **ocr of T8.13-F1** `2af18650`: one finding, assessed Doubtful. Raw: `ocr/T8.13-F1-2af18650.json`.
+
+| Task | Location | Defect | Case |
+|---|---|---|---|
+| T8.13-B8 (Doubtful) | `RestoreFlow.tsx:91-92` | the unexpected-prepare-failure log copies the raw error message and stack; a message that quotes backup text would put journal contents in the developer log | it should keep backup text out of the log when checking the backup throws |
+
+  - The reviewer found no current throw site that builds a message from record values. The finding conflicts with Q5's approved log contents, which include "the message" and "the stack". The fix therefore waits for the user (Q9).
+  - Reviewer note, not a bug task: the Apply-failure log from T8.13-B2 copies the message and stack the same way. It is included in Q9.
+- **ocr of T8.4-B5** `b40875a5`: no findings (2 files reviewed). Raw: `ocr/T8.4-B5-b40875a5.json`.
+  - Reviewer note, not a bug task: the message's `at $.<key>` path is built from object keys. Any record keyed by user-entered text would leak that text. This is added to Q9.
+- **ocr of T8.6-B5** `4e6d7450`: no findings (2 files reviewed). Raw: `ocr/T8.6-B5-4e6d7450.json`.
+- **T8.6-B6** `12818ce4` (lane FM; amended from `44f864b2` to rename the test): one case, red then green.
+  - Red: "expected { kind: 'Rejected', …(1) } to deeply equal { kind: 'Rejected', …(1) }". The path was `origin` instead of `origin.reviewDate`.
+  - The fix is `pathsOf` in journal `restore.ts`. For a union issue, when exactly one branch has the matching `kind`, the path follows into that branch. Otherwise it stays at the union field, so B5's `obligationKey` path is unchanged.
+  - Not covered: an extra key inside the matched branch is reported at `origin`.
+  - The test was renamed after green, to "should name the nested field in the path of a malformed record". The renamed case passed with `-t`. The red was not rerun.
+  - Lane tier: unit 175 / 1799, integration 106 / 229, checks 14 of 14.
+  - ocr pending.
+- **T8.6-B7 and T8.6-B8: dismissed as Wrong.** The B7 task stopped before red, with no commit and the worktree unchanged.
+  - A candidate's section `digest` is `sha256Hex(STORE + ' ' + storeDigest + '\n')` (`measureCandidateSection`), a pure function of the store digests.
+  - All four recheck steps compare counts and `storeDigests`: market-data `restore.ts:129`, trade-record `:177`, journal `:206` and reference-catalog `:138`. Journal records the reason in a comment: "The section digest is the store digests' digest, so comparing the stores covers it."
+  - Workspace records the meta straight from `measureCandidateSection`. A134 and A135 step 4 ask only for a counts-and-digest recheck, and the store digests cover that.
+  - Lane FM has no tasks left after B6's ocr, so T8.6 is ready to merge once that review is clean.
+- **ocr of T8.6-B6** `12818ce4`: no findings (2 files reviewed). Raw: `ocr/T8.6-B6-12818ce4.json`. T8.6, with F12, F2 and B1–B6, is ready to merge. The merge waits for merge-9 to finish, so the running suite's tree stays fixed.

@@ -1,0 +1,162 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 176341,
+    "input_tokens": 174668,
+    "output_tokens": 1673,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m5s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "The section name is untrusted file content: `headerShape` accepts arbitrary strings. Replacing the first header section with journal text causes the next section-end mismatch to copy that text into `detail.context.section`, violating the content-redaction guarantee. Only include section names from a trusted allowlist (otherwise omit the value or use the section index), and add a regression test with a content-bearing header section.",
+      "existing_code": "        const at = { section: header.sections[sectionEnds] ?? '', line: line.lineNumber };",
+      "start_line": 132,
+      "end_line": 132,
+      "category": "security",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "This nested ternary violates the explicit review checklist and compresses three ordered comparisons into one expression. Use an `if`/`else if` chain or a small comparison helper, preserving the current first-mismatch precedence.",
+      "existing_code": "      const differing = verified.fullDigest !== request.expectedFullDigest ? 'fullDigest' : verified.binding.databaseName !== expected.databaseName ? 'databaseName' : verified.binding.contentRevision !== expected.contentRevision ? 'contentRevision' : undefined;",
+      "start_line": 242,
+      "end_line": 242,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/coordinators/workspace/backup.ts",
+      "content": "For a stream failure after the initial gzip sniff, `readArtifact` wraps the source exception in `ArtifactReadError` (reader.ts, read/drain catches). Consequently this branch reports `name: 'ArtifactReadError'` rather than the original read error's name; only failures during sniffing retain it, which is why the new immediate-failure test passes. Capture the source exception alongside `sourceFailed` and use it here (still omitting its message/stack). Add a test that supplies an initial chunk and then rejects a subsequent read to cover this path.",
+      "existing_code": "    if (sourceFailed) return thrownCheck('Unreadable', 'StreamRead', e);",
+      "start_line": 157,
+      "end_line": 157,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/backup-types.ts",
+        "src/coordinators/workspace/backup.test.ts",
+        "src/coordinators/workspace/backup.ts"
+      ]
+    }
+  ],
+  "session_id": "3343fb02-015d-42e2-8f78-eca8190b6908",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3343fb02-015d-42e2-8f78-eca8190b6908",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "951ef5be",
+      "resolved_base": "c4ca7f2320ef95d06424bf96fe3faabaa23a3a04",
+      "resolved_head": "951ef5bedb04e888ba0f1b7e5206997c4b6132ee",
+      "exact_range": "c4ca7f2320ef95d06424bf96fe3faabaa23a3a04..951ef5bedb04e888ba0f1b7e5206997c4b6132ee",
+      "source_artifact_sha256": "3a7284f96e9bf566cc91598db87abae51d83ca9e1115d6ad7f9aac7ea53195ec"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "5c3a6aab428db7edff13657233cd0f0c0715fc4733660213f1001e8170a5458a"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "80456756041d9d8cb77b4028fa6096828ecfb7e02acd29e9f317101ae45843d7"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "e3c22b115568a28d062809f2e0b4bfb1fedb1887747e5a14aba64e682d75647f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c6dfb382f1e5dd4970da6c721a3a6031480ea4e665cf73df0bdb5120f824052",
+          "path": "src/coordinators/workspace/backup.ts",
+          "fingerprint": "5c3a6aab428db7edff13657233cd0f0c0715fc4733660213f1001e8170a5458a"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "80456756041d9d8cb77b4028fa6096828ecfb7e02acd29e9f317101ae45843d7"
+        },
+        {
+          "item_id": "c819b051f8d97f5990c1a85edd098b0f0317525448b435a1e0a318ba4f320bb8",
+          "path": "src/coordinators/workspace/backup.test.ts",
+          "fingerprint": "e3c22b115568a28d062809f2e0b4bfb1fedb1887747e5a14aba64e682d75647f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "25c65558d70696be1f6815abd0eaa3ad2723a3be041341dd7c42ed11a9987373",
+          "path": "evidence/D08/tdd-log/T8.5-F2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4768a91e9f2617baf0e70fdefaf3fe8cae6d10abb578f08bea57a296af3eb4e6",
+          "path": "evidence/D08/suite-runs/T8.5-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "512fc12b9f170fa235af23bb1cce2d106a8c9b90a900853362435b40af56c878",
+          "path": "evidence/D08/suite-runs/T8.5-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "52c95dc32eaa2801cf0288ede2f5daa01104f3cead3d8fd1ec5300d3d0908cdd",
+          "path": "evidence/D08/suite-runs/T8.5-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "69ab46d5d2c64e7c843b55997894c46a2aae2251e7d3993876b4cd8bb7153317",
+          "path": "evidence/D08/suite-runs/T8.5-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 65376
+  }
+}
