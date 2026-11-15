@@ -4,11 +4,12 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { gunzipSync, gzipSync } from 'fflate';
 import { IDBFactory } from 'fake-indexeddb';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
-import { readArtifact, type ArtifactLine } from '../../backup/format/index.ts';
-import type { Persistence } from '../../persistence/index.ts';
+import { ArtifactWriter, readArtifact, type ArtifactLine } from '../../backup/format/index.ts';
+import { exportLayoutFor, type Persistence } from '../../persistence/index.ts';
+import { runExport } from './backup-export.ts';
 import { createBackupOperations } from './backup.ts';
 import { createWorkspace } from './index.ts';
 
@@ -193,14 +194,14 @@ describe('failures', () => {
   }
 
   it('should report ReadFailed when a record can not be written into the backup', async () => {
-    await expectReadFailedWith((read) => (database, layout, onBatch) =>
-      read(database, layout, (batch) => onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 2 ** 60 } : record)) })),
+    await expectReadFailedWith((read) => (database, layout, onBatch, onStart) =>
+      read(database, layout, (batch) => onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 2 ** 60 } : record)) }), onStart),
     );
   });
 
   it('should report ReadFailed when the Workspace has no settings record', async () => {
-    await expectReadFailedWith((read) => async (database, layout, onBatch) => {
-      const result = await read(database, layout, onBatch);
+    await expectReadFailedWith((read) => async (database, layout, onBatch, onStart) => {
+      const result = await read(database, layout, onBatch, onStart);
       return result.kind === 'Read' ? { ...result, meta: result.meta.filter((record) => record['key'] !== 'settings') } : result;
     });
   });
@@ -241,9 +242,12 @@ describe('failures', () => {
     const stack = await w7Stack();
     const altered = {
       ...stack.persistence,
-      readExportSnapshot: async (database: string, layout: Parameters<Persistence['readExportSnapshot']>[1], onBatch: Parameters<Persistence['readExportSnapshot']>[2]) => {
-        const result = await stack.persistence.readExportSnapshot(database, layout, (batch) =>
-          onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 2 ** 60 } : record)) }),
+      readExportSnapshot: async (database: string, layout: Parameters<Persistence['readExportSnapshot']>[1], onBatch: Parameters<Persistence['readExportSnapshot']>[2], onStart: Parameters<Persistence['readExportSnapshot']>[3]) => {
+        const result = await stack.persistence.readExportSnapshot(
+          database,
+          layout,
+          (batch) => onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 2 ** 60 } : record)) }),
+          onStart,
         );
         return result;
       },
@@ -262,9 +266,12 @@ describe('failures', () => {
     const stack = await w7Stack();
     const altered = {
       ...stack.persistence,
-      readExportSnapshot: async (database: string, layout: Parameters<Persistence['readExportSnapshot']>[1], onBatch: Parameters<Persistence['readExportSnapshot']>[2]) =>
-        stack.persistence.readExportSnapshot(database, layout, (batch) =>
-          onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 7654321.123456 } : record)) }),
+      readExportSnapshot: async (database: string, layout: Parameters<Persistence['readExportSnapshot']>[1], onBatch: Parameters<Persistence['readExportSnapshot']>[2], onStart: Parameters<Persistence['readExportSnapshot']>[3]) =>
+        stack.persistence.readExportSnapshot(
+          database,
+          layout,
+          (batch) => onBatch({ ...batch, records: batch.records.map((record, index) => (index === 0 ? { ...record, unsafe: 7654321.123456 } : record)) }),
+          onStart,
         ),
     };
     const workspace = createWorkspace({ ...stack, persistence: altered, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port } });
@@ -316,6 +323,35 @@ describe('failures', () => {
       detail: detailLike({ stage: 'Read', message: 'lookup blew up' }),
     });
     expect(stack.testHost.downloads.offered).toEqual([]);
+  });
+});
+
+describe('streamed export (A128, P29)', () => {
+  it('should write each batch into the artifact before the next is read', async () => {
+    const stack = await w7Stack();
+    const written = vi.spyOn(ArtifactWriter.prototype, 'writeRecord');
+    const writtenWhenDelivered: number[] = [];
+    try {
+      const run = await runExport(
+        (database, layout, onBatch, onStart) =>
+          stack.persistence.readExportSnapshot(
+            database,
+            layout,
+            (batch) => {
+              writtenWhenDelivered.push(written.mock.calls.length);
+              onBatch(batch);
+            },
+            onStart,
+          ),
+        { databaseName: W7_DATABASE, layout: exportLayoutFor(7)!, exportKind: 'Normal', createdAt: EXPORT_AT, releaseId: 'r', seedManifestVersions: { catalog: 1, journal: 1 } },
+      );
+      expect(run.kind).toBe('Built');
+    } finally {
+      written.mockRestore();
+    }
+    // Every batch is delivered with all earlier batches already in the artifact.
+    expect(writtenWhenDelivered.length).toBeGreaterThan(2);
+    writtenWhenDelivered.slice(1).forEach((count, index) => expect(count).toBeGreaterThan(writtenWhenDelivered[index]!));
   });
 });
 

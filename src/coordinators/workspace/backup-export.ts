@@ -6,7 +6,7 @@ import { exportSnapshot as exportCatalog, exportWorkspaceSection } from '../../m
 import { exportSnapshot as exportJournal } from '../../modules/journal/index.ts';
 import { exportSnapshot as exportMarketData } from '../../modules/market-data/index.ts';
 import { exportSnapshot as exportTrades } from '../../modules/trade-record/index.ts';
-import type { ExportBatch, ExportLayout, ExportReadResult, Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import type { ExportBatch, ExportLayout, ExportReadResult, ExportStart, Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { FailureDetail, ProgressCallback } from './backup-types.ts';
 
 export const BACKUP_FORMAT_VERSION = 1;
@@ -62,7 +62,12 @@ export interface ExportPort {
   run(job: ExportJob): Promise<ExportRun>;
 }
 
-type ReadSnapshot = (database: string, layout: ExportLayout, onBatch: (batch: ExportBatch) => void) => Promise<ExportReadResult>;
+type ReadSnapshot = (
+  database: string,
+  layout: ExportLayout,
+  onBatch: (batch: ExportBatch) => void,
+  onStart: (start: ExportStart) => void,
+) => Promise<ExportReadResult>;
 
 interface SectionBatch {
   readonly section: string;
@@ -109,18 +114,77 @@ function project(batch: ExportBatch): SectionBatch | undefined {
   return exportCatalog(batch) ?? exportMarketData(batch) ?? exportTrades(batch) ?? exportJournal(batch);
 }
 
-// Reads one snapshot and builds the artifact from it. The records of a snapshot are held until
-// the read ends, because the header needs counts that arrive with the first batch's transaction.
+// Reads one snapshot and writes the artifact as it reads (A128, P29). The header, with the counts,
+// is written when the snapshot starts; each batch is projected, hashed and gzipped into the writer
+// as it arrives. Held across batches: the compressed chunks, the running section counts and the
+// footprint identifiers, never a batch.
 export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<ExportRun> {
-  const batches: SectionBatch[] = [];
+  const sections = ['workspace', ...new Set(job.layout.stores.map((store) => SECTION_OF_STORE[store]!))];
+  const writer = new ArtifactWriter();
+  const footprint = new Set<string>();
+  let nextSection = 0; // the section being written; earlier ones are closed
+  let written: Record<string, number> = {};
+  let started = false;
+  let total = 0;
+  let done = 0;
+  let buildError: { readonly error: unknown } | undefined;
   let rejection: FailureDetail | undefined;
-  const result = await read(job.databaseName, job.layout, (batch) => {
-    const projected = project(batch);
-    if (projected) batches.push(projected);
-  }).catch((error: unknown): ExportReadResult => {
-    rejection = describeError('Read', error);
+
+  const closeSection = () => {
+    writer.writeSectionEnd(sections[nextSection]!, written);
+    written = {};
+    nextSection += 1;
+  };
+  // Writes one projected batch into its section, closing earlier sections first (stores come in section order).
+  const write = (batch: SectionBatch) => {
+    while (sections[nextSection] !== batch.section) closeSection();
+    for (const record of batch.records) writer.writeRecord(batch.section, batch.store, record);
+    written[batch.store] = (written[batch.store] ?? 0) + batch.records.length;
+    for (const identifier of batch.footprint) footprint.add(identifier);
+    if (batch.section !== 'workspace') {
+      done += batch.records.length;
+      job.onProgress?.({ done, total });
+    }
+  };
+  // A failure while building must stop the read, so it is remembered as a Build failure and rethrown.
+  const guarded =
+    <T>(step: (value: T) => void) =>
+    (value: T) => {
+      try {
+        step(value);
+      } catch (error) {
+        buildError = { error };
+        throw error;
+      }
+    };
+
+  const result = await read(
+    job.databaseName,
+    job.layout,
+    guarded((batch: ExportBatch) => {
+      const projected = project(batch);
+      if (projected) write(projected);
+    }),
+    guarded((start: ExportStart) => {
+      total = Object.values(start.counts).reduce((sum, count) => sum + count, 0);
+      writer.writeHeader({
+        formatVersion: BACKUP_FORMAT_VERSION,
+        schemaVersion: job.layout.schemaVersion,
+        exportKind: job.exportKind,
+        createdAt: job.createdAt,
+        sourceBinding: start.binding,
+        releaseId: job.releaseId,
+        sections,
+        counts: start.counts,
+      });
+      write(exportWorkspaceSection(start.meta, job.seedManifestVersions));
+      started = true;
+    }),
+  ).catch((error: unknown): ExportReadResult => {
+    if (!buildError) rejection = describeError('Read', error);
     return { kind: 'ReadFailed', store: 'meta' };
   });
+  if (buildError) return { kind: 'Failed', reason: 'ReadFailed', detail: describeError('Build', buildError.error) };
   if (result.kind !== 'Read') {
     const detail = rejection ?? {
       stage: 'Read',
@@ -136,67 +200,33 @@ export async function runExport(read: ReadSnapshot, job: ExportJob): Promise<Exp
   }
   // A snapshot that was read but cannot be written into an artifact is a failed read, not a rejection.
   try {
-    return buildArtifact(result, batches, job);
+    if (!started) throw new Error('The snapshot was read without announcing its start');
+    while (nextSection < sections.length) closeSection();
+    const timeZone = result.meta.find((record) => record['key'] === 'settings')?.['timeZone'];
+    if (typeof timeZone !== 'string') throw new Error('The Workspace has no settings time zone');
+    const output = writer.finish({
+      formatVersion: BACKUP_FORMAT_VERSION,
+      schemaVersion: result.schemaVersion,
+      exportKind: job.exportKind,
+      footprint: [...footprint].sort(),
+      counts: result.counts,
+      exclusions: EXCLUSIONS,
+    });
+    return {
+      kind: 'Built',
+      blob: new Blob(output.parts as BlobPart[], { type: 'application/octet-stream' }),
+      sourceBinding: result.binding,
+      fullDigest: output.fullDigest,
+      manifestDigest: output.manifestDigest,
+      counts: result.counts,
+      timeZone,
+    };
   } catch (error) {
     return { kind: 'Failed', reason: 'ReadFailed', detail: describeError('Build', error) };
   }
 }
 
-function buildArtifact(result: Extract<ExportReadResult, { kind: 'Read' }>, batches: readonly SectionBatch[], job: ExportJob): ExportRun {
-  const workspace = exportWorkspaceSection(result.meta, job.seedManifestVersions);
-  const sections = ['workspace', ...new Set(job.layout.stores.map((store) => SECTION_OF_STORE[store]!))];
-  const all: SectionBatch[] = [workspace, ...batches];
-  const total = Object.values(result.counts).reduce((sum, count) => sum + count, 0);
-  let done = 0;
-
-  const writer = new ArtifactWriter();
-  writer.writeHeader({
-    formatVersion: BACKUP_FORMAT_VERSION,
-    schemaVersion: result.schemaVersion,
-    exportKind: job.exportKind,
-    createdAt: job.createdAt,
-    sourceBinding: result.binding,
-    releaseId: job.releaseId,
-    sections,
-    counts: result.counts,
-  });
-  const footprint = new Set<string>();
-  for (const section of sections) {
-    const written: Record<string, number> = {};
-    for (const batch of all) {
-      if (batch.section !== section) continue;
-      for (const record of batch.records) writer.writeRecord(section, batch.store, record);
-      written[batch.store] = (written[batch.store] ?? 0) + batch.records.length;
-      for (const identifier of batch.footprint) footprint.add(identifier);
-      if (section !== 'workspace') {
-        done += batch.records.length;
-        job.onProgress?.({ done, total });
-      }
-    }
-    writer.writeSectionEnd(section, written);
-  }
-  const output = writer.finish({
-    formatVersion: BACKUP_FORMAT_VERSION,
-    schemaVersion: result.schemaVersion,
-    exportKind: job.exportKind,
-    footprint: [...footprint].sort(),
-    counts: result.counts,
-    exclusions: EXCLUSIONS,
-  });
-  const timeZone = result.meta.find((record) => record['key'] === 'settings')?.['timeZone'];
-  if (typeof timeZone !== 'string') throw new Error('The Workspace has no settings time zone');
-  return {
-    kind: 'Built',
-    blob: new Blob(output.parts as BlobPart[], { type: 'application/octet-stream' }),
-    sourceBinding: result.binding,
-    fullDigest: output.fullDigest,
-    manifestDigest: output.manifestDigest,
-    counts: result.counts,
-    timeZone,
-  };
-}
-
 // The Node port: the same pipeline, in process, against the Persistence's own snapshot read.
 export function createInProcessExportPort(persistence: Pick<Persistence, 'readExportSnapshot'>): ExportPort {
-  return { run: (job) => runExport((database, layout, onBatch) => persistence.readExportSnapshot(database, layout, onBatch), job) };
+  return { run: (job) => runExport((database, layout, onBatch, onStart) => persistence.readExportSnapshot(database, layout, onBatch, onStart), job) };
 }
