@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 96146,
+    "input_tokens": 95242,
+    "output_tokens": 904,
+    "cache_read_tokens": 17536,
+    "elapsed": "46s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "This is the last abort check, but preparation still performs asynchronous seeding, validation, rebuilding, and preview generation afterward. If Cancel is pressed during any of those operations (for example, while `rebuildCandidate` is pending), the method returns `Prepared` and leaves the candidate instead of returning `Cancelled` and deleting it. Add cancellation checkpoints during the remaining phases and at least before returning `Prepared`, with the same candidate cleanup, and cover a late-stage abort in a regression test.",
+      "existing_code": "    if (request.signal?.aborted) {\n      await persistence.discardCandidate(candidate);\n      return { kind: 'Cancelled', liveBinding: live };\n    }",
+      "start_line": 462,
+      "end_line": 465,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Cancellation can still return `Rejected` before candidate creation. For example, if the signal aborts while `host.estimate()` is pending and the estimate reports insufficient capacity, the earlier return bypasses this abort check. Similarly, aborting during the initial header read can return a read/format rejection. Check the signal immediately after these awaited operations, before handling their rejection conditions, so cancellation consistently returns `Cancelled`; close the reader on those cancellation paths as well.",
+      "existing_code": "    if (request.signal?.aborted) {\n      await lines.return(undefined);\n      return { kind: 'Cancelled', liveBinding: live };\n    }",
+      "start_line": 323,
+      "end_line": 326,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/restore.test.ts",
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "6f528dda-ab4a-45b3-a4de-d721a23ae5f0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6f528dda-ab4a-45b3-a4de-d721a23ae5f0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0616adef",
+      "resolved_base": "03eac086e34f06b34d7f4fd5a9dd024c2d418f25",
+      "resolved_head": "0616adef5b7c8fb48f9f61a3db44d4a35d65d60a",
+      "exact_range": "03eac086e34f06b34d7f4fd5a9dd024c2d418f25..0616adef5b7c8fb48f9f61a3db44d4a35d65d60a",
+      "source_artifact_sha256": "b50d94d315827cd3a4d50e4288874e706a7884814e46e2e79526e2a894b1ebd8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "080d6f0f16cc63547b774e3265ef0f7d9ea17e2284c31825f3b058947577e4fb"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "20bf214f3fc1a04adf5e4b772b3549a7934e58ebbe7748d3e90d04f98ca3118c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "080d6f0f16cc63547b774e3265ef0f7d9ea17e2284c31825f3b058947577e4fb"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "20bf214f3fc1a04adf5e4b772b3549a7934e58ebbe7748d3e90d04f98ca3118c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "189b1e499954a26c02d26d52852551682bcc36ade3afcf9ca910809b0e44e8b5",
+          "path": "evidence/D08/suite-runs/T8.8-B5-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "767c4c4fcda66a1dc35821285a2d77cadcf3c249284929bf622be0797de4ecff",
+          "path": "evidence/D08/suite-runs/T8.8-B5-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b7e22d1e9abed3edbe677cc763e6f0c9f2fb00d809ca0a2bda165ddfc26e1293",
+          "path": "evidence/D08/tdd-log/T8.8-B5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fa5030e649397a24a11607f42e3a21204711600310a30217a42763e890147747",
+          "path": "evidence/D08/suite-runs/T8.8-B5-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fd1383f4e6dbaeb572be56702950bbefccaca6a51a1294180a4074aa07488a1f",
+          "path": "evidence/D08/suite-runs/T8.8-B5-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 45748
+  }
+}
