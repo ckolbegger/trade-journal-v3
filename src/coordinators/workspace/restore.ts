@@ -206,6 +206,28 @@ interface PreparedRecord {
   readonly repairs: readonly RestoreRepair[];
 }
 
+const isSectionMeta = (value: unknown): boolean => {
+  const section = value as { counts?: unknown; digest?: unknown } | null;
+  return typeof section === 'object' && section !== null && typeof section.counts === 'object' && section.counts !== null && typeof section.digest === 'string';
+};
+
+// Whether a `meta` record has the shape preparation wrote: a measured section for each fact module, and the receipt's parts.
+function isPreparedRecord(record: unknown): record is PreparedRecord {
+  const value = record as Partial<Record<keyof PreparedRecord, unknown>> | undefined;
+  if (typeof value !== 'object' || value === null) return false;
+  const sections = value.sections as Record<string, unknown> | null | undefined;
+  return (
+    typeof sections === 'object' &&
+    sections !== null &&
+    (['catalog', 'marketData', 'trades', 'journal'] as const).every((name) => isSectionMeta(sections[name])) &&
+    typeof value.counts === 'object' &&
+    value.counts !== null &&
+    typeof value.migrations === 'object' &&
+    value.migrations !== null &&
+    Array.isArray(value.repairs)
+  );
+}
+
 // Tells every other tab of this app that a Restore replaced the journal (A136) over the channel the update notice shares (D1 A5).
 function announceReplaced(databaseName: string): void {
   if (typeof BroadcastChannel === 'undefined') return;
@@ -683,7 +705,13 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
 
         // Each module's recheck of its candidate section against what preparation recorded (A135 step 4).
         const candidateSource = persistence.candidateSource(token.candidateId);
-        const prepared = (await collect(candidateSource, 'meta')).find((record) => record['key'] === 'restorePrepared') as unknown as PreparedRecord;
+        const found = (await collect(candidateSource, 'meta')).find((record) => record['key'] === 'restorePrepared');
+        // A missing or damaged preparation record means the candidate changed after preparation.
+        if (!isPreparedRecord(found)) {
+          await persistence.discardCandidate(token.candidateId);
+          return { kind: 'CandidateChanged', store: 'meta', liveBinding: live };
+        }
+        const prepared = found;
         const rechecks = [
           () => applyCatalog(candidateSource, prepared.sections.catalog),
           () => applyMarketData(candidateSource, prepared.sections.marketData),

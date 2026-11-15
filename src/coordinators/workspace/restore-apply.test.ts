@@ -263,6 +263,36 @@ describe('a candidate changed after preparation (A135)', () => {
     expect(pointerOf(after)).toEqual(pointerOf(before));
     expect((after['tj-root']!['pointer'] as { key: string; databaseNames?: string[] }[]).flatMap((record) => record.databaseNames ?? [])).toEqual([]);
   });
+
+  it('should return CandidateChanged and delete the candidate when the preparation record in the candidate is missing or damaged', async () => {
+    const target = await targetWorkspace();
+    const { token } = await preparedWithPreview(target);
+    const live = (token.targetBinding as { databaseName: string }).databaseName;
+    await new Promise<void>((resolve, reject) => {
+      const open = target.factory.open(token.candidateId);
+      open.onsuccess = () => {
+        const db = open.result;
+        const tx = db.transaction('meta', 'readwrite');
+        tx.objectStore('meta').delete('restorePrepared');
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('delete failed'));
+      };
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+    const before = await dumpAll(target.factory);
+
+    const result = await target.workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    expect(result).toEqual({ kind: 'CandidateChanged', store: 'meta', liveBinding: token.targetBinding });
+    const after = await dumpAll(target.factory);
+    expect(databaseNames(after)).toEqual([live]);
+    expect(after[live]).toEqual(before[live]);
+    const pointerOf = (dump: typeof after) => (dump['tj-root']!['pointer'] as { key: string }[]).find((record) => record.key === 'current');
+    expect(pointerOf(after)).toEqual(pointerOf(before));
+  });
 });
 
 // One more Account in the target, so that its content revision moves on.
