@@ -49,10 +49,9 @@ describe('I8.8 Safety choice', () => {
     await expectReplacedByA7(wt, applied);
   }, 120_000);
 
-  // KNOWN DEFECT (reported with T8.20): section 6.1 says a Downloaded result passed as if it were a receipt gives
-  // SafetyBackupRequired. Apply gives SafetyBackupNotRecognized (the result has no receipt identity), and still writes nothing.
-  // `it.fails` keeps the suite green until the plan or the behaviour is settled; then this case fails and the marker goes.
-  it.fails('should return SafetyBackupRequired, writing nothing, for a Downloaded result passed as if it were a receipt', async () => {
+  // The row's wording says SafetyBackupRequired here; A135 step 3 governs ("SafetyBackupNotRecognized for a receipt not issued
+  // by this instance"), and a Downloaded result carries no receipt identity (user decision Q27 (a); the plan row is corrected in r103).
+  it('should return SafetyBackupNotRecognized, writing nothing, for a Downloaded result passed as if it were a receipt', async () => {
     const { d, app } = await wtWithX();
     const { token } = await prepared(app, artifactOf('backup-v7'));
     const downloaded = (await exportBackup(app, d)).result as unknown as CompletedBackupReceipt;
@@ -60,7 +59,7 @@ describe('I8.8 Safety choice', () => {
 
     const unverified = await app.Workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'Receipt', receipt: downloaded } });
 
-    expect(unverified.kind).toBe('SafetyBackupRequired');
+    expect(unverified.kind).toBe('SafetyBackupNotRecognized');
     expect(await dumpAll(d.factory)).toEqual(before);
   }, 120_000);
 
