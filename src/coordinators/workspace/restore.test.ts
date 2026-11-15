@@ -284,6 +284,62 @@ describe('rejections after staging (A134)', () => {
   });
 });
 
+describe('entry origins (A134)', () => {
+  it('should reject an Entry whose origin names a fact of another Trade or a fact of a different kind than the origin declares, one CrossSectionReference each, and delete the candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+
+    type Fact = { factId: string; kind: string };
+    let otherTradeChange = '';
+    let anExecution = '';
+    const broken = editedArtifact(a7.bytes, (artifact) => {
+      const tradeLines = artifact.lines.filter((line) => line.startsWith('{"r":') && line.endsWith(',"t":"trades"}')).map((line) => (JSON.parse(line) as { r: { tradeId: string; facts: Fact[] } }).r);
+      const edit = (change: (entry: Record<string, unknown>) => boolean) => {
+        artifact.lines.forEach((line, index) => {
+          if (!line.startsWith('{"r":') || !line.endsWith(',"t":"journalEntries"}')) return;
+          const envelope = JSON.parse(line) as { r: Record<string, unknown> };
+          if (change(envelope.r)) artifact.lines[index] = JSON.stringify(envelope);
+        });
+      };
+      type Entry = { anchor: { tradeId: string }; origin: { kind: string; factId: string } };
+      let moved = false;
+      let retyped = false;
+      edit((record) => {
+        const entry = record as unknown as Entry;
+        if (!moved && entry.origin.kind === 'PositionChange') {
+          // A Position Change of some other Trade than the Entry's anchor.
+          const other = tradeLines.find((trade) => trade.tradeId !== entry.anchor.tradeId && trade.facts.some((fact) => fact.kind === 'PositionChange'))!;
+          otherTradeChange = other.facts.find((fact) => fact.kind === 'PositionChange')!.factId;
+          entry.origin.factId = otherTradeChange;
+          moved = true;
+          return true;
+        }
+        if (!retyped && entry.origin.kind === 'Plan') {
+          // An Execution of the Entry's own Trade, named by a Plan origin.
+          const own = tradeLines.find((trade) => trade.tradeId === entry.anchor.tradeId && trade.facts.some((fact) => fact.kind === 'Execution'));
+          if (!own) return false;
+          anExecution = own.facts.find((fact) => fact.kind === 'Execution')!.factId;
+          entry.origin.factId = anExecution;
+          retyped = true;
+          return true;
+        }
+        return false;
+      });
+      if (!moved || !retyped) throw new Error('the fixture has no Entry to edit');
+    });
+
+    const result = await target.workspace.prepareRestore({ file: backupFile(broken) });
+
+    if (result.kind !== 'Rejected') throw new Error(`expected Rejected, got ${result.kind}`);
+    expect(result.issues).toHaveLength(2);
+    expect(result.issues).toContainEqual({ code: 'CrossSectionReference', kind: 'PositionChange', identity: otherTradeChange });
+    expect(result.issues).toContainEqual({ code: 'CrossSectionReference', kind: 'Plan', identity: anExecution });
+    expect(result.totalIssues).toBe(2);
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+});
+
 describe('duplicate primary keys (A134)', () => {
   it('should reject an artifact with consistent counts and digests but two records sharing one primary key in a store, naming the store, key and line, and delete the candidate', async () => {
     const a7 = await exportedArtifact(await loadDump(W7));

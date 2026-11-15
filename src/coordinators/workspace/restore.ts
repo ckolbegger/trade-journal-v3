@@ -150,19 +150,21 @@ function repairText(finding: IntegrityFinding): Pick<RestoreRepair, 'kind' | 'st
 
 // Journal Entries, declines and Debts originate in a fact of a Trade (a Plan or a Position Change; a Daily
 // Review's origin is the Trade itself, closed by its Anchor); one whose fact is in no Trade is a
-// reference the Trade section does not close.
+// reference the Trade section does not close. The fact must be one of the record's own anchor Trade and
+// of the kind the origin declares.
 async function danglingOrigins(source: RecordSource): Promise<RestoreIssue[]> {
-  const factIds = new Set<string>();
+  // Each Trade's fact kinds by fact identity.
+  const factKinds = new Map<string, Map<string, string>>();
   for await (const batch of source.batches('trades')) {
-    for (const trade of batch as unknown as readonly { facts: { factId: string }[]; closeReasonFacts?: { factId: string }[] }[]) {
-      for (const { factId } of [...trade.facts, ...(trade.closeReasonFacts ?? [])]) factIds.add(factId);
+    for (const trade of batch as unknown as readonly { tradeId: string; facts: { factId: string; kind: string }[]; closeReasonFacts?: { factId: string; kind: string }[] }[]) {
+      factKinds.set(trade.tradeId, new Map([...trade.facts, ...(trade.closeReasonFacts ?? [])].map((fact) => [fact.factId, fact.kind])));
     }
   }
   const dangling: RestoreIssue[] = [];
   for (const store of ['journalEntries', 'journalDeclines', 'journalDebts'] as const) {
     for await (const batch of source.batches(store)) {
-      for (const record of batch as unknown as readonly { origin: { kind: string; factId: string } }[]) {
-        if (record.origin.kind !== 'DailyReview' && !factIds.has(record.origin.factId)) dangling.push({ code: 'CrossSectionReference', kind: record.origin.kind, identity: record.origin.factId });
+      for (const record of batch as unknown as readonly { anchor: { tradeId: string }; origin: { kind: string; factId: string } }[]) {
+        if (record.origin.kind !== 'DailyReview' && factKinds.get(record.anchor.tradeId)?.get(record.origin.factId) !== record.origin.kind) dangling.push({ code: 'CrossSectionReference', kind: record.origin.kind, identity: record.origin.factId });
       }
     }
   }
