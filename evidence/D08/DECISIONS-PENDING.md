@@ -421,3 +421,12 @@ T8.19 (`c1e00ded`, lane BN) passes every check, but two choices go beyond the pl
 2. **The flag.** The task could add only the `bench:setup` script to `package.json`, so `measure:capacity -- --restored` measures the restored Workspace (bare `measure:capacity` still rewrites `capacity-basis.json` as in D7). `verify:capacity` checks the restored figures whenever `.cache/bench/capacity.json` exists, and requires them with `--restored`.
 - (a) Recommended: accept as built; r103 states the projection formula and the `--restored` flag in the T8.19 row.
 - (b) Tighten the projection (for example, compare against D7's mature-profile measurement scaled to these counts) in a follow-up before the critic.
+
+**Answer (2026-11-15), after discussion, one part at a time.**
+1. **The projection:** keep T8.19's formula (record counts times D7's measured Chromium bytes per kind; it proves the projection is a safe upper bound), and also guard against growth: today's restored usage, 206,540,122 bytes, becomes a committed baseline, and a later run fails if its restored usage is more than 50% above it.
+2. **The commands:** no flag decides whether stored figures are overwritten; the command names do.
+   - `measure:capacity` becomes the safe one: it measures the restored benchmark journal and overwrites neither the app's D7 capacity figures (`src/delivery/capacity-basis.json`) nor the growth baseline.
+   - `measure:capacity:reset-baseline` is the one deliberate way to rewrite stored figures: it re-measures and rewrites the app's D7 capacity figures and records the current restored usage as the new growth baseline.
+   - `verify:capacity:restored` requires the restored figures and checks all three limits: within 10% of the projection, second-Restore peak below 3 × M, and within 50% of the baseline.
+   - The `--restored` option goes away.
+This needs a follow-up task, T8.19-F1 (lane BN's files plus `package.json` scripts and the baseline file); r103 records the formula, the baseline and the command names in the T8.19 row.
