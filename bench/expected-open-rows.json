@@ -1,6 +1,8 @@
 {
   "generatorVersion": 8,
   "schemaVersion": 7,
+  "writer": "bench:generate",
+  "artifactFileDigest": "6d819703928c5aa37ec3e9181b4ba164b325846296cf015f9412715cc894304b",
   "headers": [
     "Underlying",
     "Trade",

@@ -12,10 +12,10 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { BENCH_AS_OF_DATE, BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE } from '../src/app/bench.ts';
-import { generateBenchArtifact } from '../src/app/bench-generator.ts';
+import { BENCH_ROWS_WRITER, generateBenchArtifact, rowsAreFromGenerator } from '../src/app/bench-generator.ts';
 import { nyseSessionPolicy } from '../src/domain/session-policy/index.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
-import { BENCH_BUILD_DIR, BENCH_DATASET_FILE as FULL_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE as FULL_EXPECTED_ROWS_FILE, type ExpectedOpenRows } from './bench/profile.ts';
+import { BENCH_BUILD_DIR, BENCH_DATASET_FILE as FULL_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE as FULL_EXPECTED_ROWS_FILE } from './bench/profile.ts';
 import { benchViewsPortFromVite } from './bench/views-port.ts';
 import { listFiles } from './release.ts';
 
@@ -41,9 +41,10 @@ if (!bundled.some((text) => text.includes(BENCH_GENERATOR_MARKER))) {
 
 const recorded = (await readFile(BENCH_DATASET_FILE, 'utf8').then(JSON.parse, () => undefined)) as { generatorVersion?: number; schemaVersion?: number; artifact?: { fileDigest?: string } } | undefined;
 const onDisk = await readFile(ARTIFACT_FILE).catch(() => undefined);
-// A dataset whose expected Open rows were never recorded (an earlier generation of this version) is not reused.
-const recordedRows = (await readFile(BENCH_EXPECTED_ROWS_FILE, 'utf8').then(JSON.parse, () => undefined)) as { rows?: unknown[] } | undefined;
-if (smokeSessions === undefined && onDisk && (recordedRows?.rows?.length ?? 0) > 0 && recorded?.generatorVersion === BENCH_GENERATOR_VERSION && recorded.schemaVersion === SCHEMA_VERSION && recorded.artifact?.fileDigest === sha256(onDisk)) {
+// A dataset is reused only when its expected Open rows are the ones this generator wrote for this artifact file: rows never
+// recorded, written by an earlier generation or re-rendered in the browser (bench:expected) are not reused (T8.18-F2-B2).
+const recordedRows = (await readFile(BENCH_EXPECTED_ROWS_FILE, 'utf8').then(JSON.parse, () => undefined)) as Parameters<typeof rowsAreFromGenerator>[0];
+if (smokeSessions === undefined && onDisk && rowsAreFromGenerator(recordedRows, sha256(onDisk)) && recorded?.generatorVersion === BENCH_GENERATOR_VERSION && recorded.schemaVersion === SCHEMA_VERSION && recorded.artifact?.fileDigest === sha256(onDisk)) {
   console.log(`bench:generate OK: reusing ${path.relative(process.cwd(), ARTIFACT_FILE)} (generator ${BENCH_GENERATOR_VERSION}, schema ${SCHEMA_VERSION}, ${onDisk.length} bytes)`);
   process.exit(0);
 }
@@ -100,7 +101,8 @@ const provenance = {
   ...(smokeSessions !== undefined && { smokeSessions }),
 };
 // The Open list's rows as the application gives them after a Node Restore (items hold exact values, written as strings).
-const rows: ExpectedOpenRows = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION, ...expected.openRows! };
+// Stamped with the writer and the artifact's file digest, which the reuse check above requires (T8.18-F2-B2).
+const rows = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION, writer: BENCH_ROWS_WRITER, artifactFileDigest: sha256(file), ...expected.openRows! };
 await writeFile(BENCH_EXPECTED_ROWS_FILE, `${JSON.stringify(rows, (_, v: unknown) => (typeof v === 'bigint' ? v.toString() : v), 2)}\n`);
 // Written last: a dataset without this file is regenerated.
 await writeFile(BENCH_DATASET_FILE, `${JSON.stringify(provenance, null, 2)}\n`);

@@ -969,6 +969,15 @@ export interface BenchViewsPort {
   readonly openRowsOf: (items: readonly (OpenTradeItem | IncoherentOpenTradeItem)[], timeZone: string, asOf: string) => { readonly headers: readonly string[]; readonly rows: readonly (readonly string[])[] };
 }
 
+// Who wrote the recorded expected Open rows. `bench:generate` stamps them with this and the digest of the artifact file
+// it restored; `bench:expected` (the browser path) stamps its own writer, so its rows are never taken for the Node ones.
+export const BENCH_ROWS_WRITER = 'bench:generate';
+
+// True only when the recorded rows are the ones this Node generator wrote for the artifact with this file digest (B2).
+export function rowsAreFromGenerator(recorded: { readonly rows?: readonly unknown[]; readonly writer?: string; readonly artifactFileDigest?: string } | undefined, artifactFileDigest: string): boolean {
+  return (recorded?.rows?.length ?? 0) > 0 && recorded?.writer === BENCH_ROWS_WRITER && recorded.artifactFileDigest === artifactFileDigest;
+}
+
 export interface BenchOpenRows {
   readonly headers: readonly string[];
   readonly rows: readonly (readonly string[])[];

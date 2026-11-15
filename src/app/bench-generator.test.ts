@@ -5,7 +5,7 @@ import { nyseSessionPolicy } from '../domain/session-policy/index.ts';
 import { restoreInNode } from '../../tools/bench/node-restore.ts';
 import { openRowsOf } from '../ui/screens/TradeList.tsx';
 import { BENCH_AS_OF_DATE, BENCH_SEED, BENCH_TIME_ZONE, benchScale } from './bench.ts';
-import { assertFullProfile, countHeld, dispositionsFor, generateBenchArtifact, schedule, viewsOfRestored, type BenchCalendar, type GeneratedBench } from './bench-generator.ts';
+import { BENCH_ROWS_WRITER, assertFullProfile, countHeld, rowsAreFromGenerator, dispositionsFor, generateBenchArtifact, schedule, viewsOfRestored, type BenchCalendar, type GeneratedBench } from './bench-generator.ts';
 import { BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION } from './bench.ts';
 import type { Instrument } from '../domain/instrument/index.ts';
 
@@ -509,6 +509,21 @@ describe('bench generator expected Open rows and Review order (D8 T8.18-F2)', ()
     await expect(viewsOfRestored(benchViewsPort, bytes, { ...independent, asOfReview: { ...independent.asOfReview, owedGroup: independent.asOfReview.owedGroup.slice(1) } })).rejects.toThrow(/owed group membership/);
     await expect(viewsOfRestored(benchViewsPort, bytes, { ...independent, asOfReview: { ...independent.asOfReview, settlement: independent.asOfReview.settlement.slice(1) } })).rejects.toThrow(/Settlement Due items/);
   }, 300_000);
+});
+
+describe('bench expected rows provenance', () => {
+  const rows = [['QAI']];
+  it('should reuse rows this generator wrote for this artifact', () => {
+    expect(rowsAreFromGenerator({ rows, writer: BENCH_ROWS_WRITER, artifactFileDigest: 'abc' }, 'abc')).toBe(true);
+  });
+  it('should refuse rows the browser path wrote', () => {
+    expect(rowsAreFromGenerator({ rows, writer: 'bench:expected', artifactFileDigest: 'abc' }, 'abc')).toBe(false);
+  });
+  it('should refuse rows written for another artifact or with no provenance', () => {
+    expect(rowsAreFromGenerator({ rows, writer: BENCH_ROWS_WRITER, artifactFileDigest: 'other' }, 'abc')).toBe(false);
+    expect(rowsAreFromGenerator({ rows }, 'abc')).toBe(false);
+    expect(rowsAreFromGenerator(undefined, 'abc')).toBe(false);
+  });
 });
 
 describe('bench generator marker', () => {

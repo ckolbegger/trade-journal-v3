@@ -32,7 +32,8 @@ try {
   }));
   assertMissingRendered(rendered.rows, dataset.missingInstruments);
   await context.close();
-  const rows: ExpectedOpenRows = { ...expected, ...rendered };
+  // The rows are now the browser's: bench:generate does not reuse a dataset whose rows carry this writer (T8.18-F2-B2).
+  const rows = { ...expected, writer: 'bench:expected', ...rendered };
   await writeFile(BENCH_EXPECTED_ROWS_FILE, `${JSON.stringify(rows, (_, v: unknown) => (typeof v === 'bigint' ? v.toString() : v), 2)}\n`);
   console.log(`bench:expected OK: ${rendered.rows.length} rows rendered at ${asOf.toISOString()}`);
 } finally {
