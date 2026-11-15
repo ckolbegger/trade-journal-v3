@@ -556,15 +556,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     // Seed: genuinely missing defaults join the candidate without overwriting customization (A132 step 7).
     const staged = persistence.candidateSource(candidate);
     const catalogSeed = prepareSeed((await collect(staged, 'catalog')) as unknown as CatalogRecord[], D7_CATALOG_MANIFEST, deps.ids);
-    // The Journal's seed comparison reads a prompt list in the manifest's key order, and an artifact's
-    // records carry canonical (sorted) key order: a seeded revision that says the same is rewritten in the manifest's.
-    const seededPrompts = new Map(D5_JOURNAL_MANIFEST.entryTypes.map((type) => [type.productKey, type.prompts] as const));
-    const stored = (await collect(staged, 'journalDefinitions')) as unknown as EntryDefinitionRecord[];
-    const definitions = stored.map((definition): EntryDefinitionRecord => {
-      const seeded = definition.revisionNumber === 1 ? seededPrompts.get(definition.entryTypeKey) : undefined;
-      return seeded && canonicalJson(seeded) === canonicalJson(definition.prompts) ? { ...definition, prompts: seeded } : definition;
-    });
-    await persistence.putCandidateRecords(candidate, definitions.filter((definition, i) => definition !== stored[i]).map((value): StoreRecord => ({ store: 'journalDefinitions', value: { ...value } })));
+    const definitions = (await collect(staged, 'journalDefinitions')) as unknown as EntryDefinitionRecord[];
     const journalSeed = prepareJournalSeed((await collect(staged, 'journalTypes')) as unknown as JournalTypeRecord[], definitions, D5_JOURNAL_MANIFEST, deps.ids);
     if (catalogSeed.kind !== 'Additions' || journalSeed.kind !== 'Additions') throw new Error('Seed manifests conflict with stored defaults');
     await persistence.putCandidateRecords(candidate, [

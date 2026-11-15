@@ -355,6 +355,22 @@ describe('replacement through the real readiness session (T8.9-B2)', () => {
   });
 });
 
+describe('seed comparison after Restore (T8.8-F1)', () => {
+  it('should initialize cleanly after restoring a backup whose journal seed keys are in another order', async () => {
+    const target = await targetWorkspace();
+    const token = await prepared(target);
+    const applied = await target.workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+    if (applied.kind !== 'Restored') throw new Error(`expected Restored, got ${JSON.stringify(applied)}`);
+
+    // A restart: a new stack on the same browser storage opens the restored Workspace.
+    const restarted = workspaceOf(await testStack(target.factory, '2026-11-22T15:00:00Z'));
+    const opened = await restarted.initialize({});
+
+    if (opened.kind !== 'Opened') throw new Error(`expected Opened, got ${JSON.stringify(opened)}`);
+    expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: expect.any(Number) as unknown, additions: [] });
+  });
+});
+
 describe('readiness after Restore (AC-DEL-006)', () => {
   it('should return Restored with status RecoveryOnly when the readiness rerun after activation fails, so the next mutation returns RuntimeNotWritable', async () => {
     const target = await targetWorkspace();

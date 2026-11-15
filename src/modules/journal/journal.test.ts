@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fixedClock } from '../../domain/time/index.ts';
 import { beginSemanticTransaction, NotInSemanticTransaction, type SemanticTransaction } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
-import { createJournal, D1_JOURNAL_MANIFEST, type PlanReflectionRequest } from './index.ts';
+import { createJournal, D1_JOURNAL_MANIFEST, prepareJournalSeed, type PlanReflectionRequest } from './index.ts';
 
 const clock = fixedClock('2026-10-12T14:05:00Z');
 
@@ -71,6 +71,29 @@ describe('seedDefaults', () => {
       additions: [],
       snapshot: { journalRevision: 1 },
     });
+    expect(await stored(persistence)).toEqual(before);
+  });
+
+  it('should treat seed prompts with the same values in a different key order as equal', async () => {
+    const reversed = (value: unknown): unknown =>
+      Array.isArray(value)
+        ? value.map(reversed)
+        : value && typeof value === 'object'
+          ? Object.fromEntries(Object.entries(value).reverse().map(([k, v]) => [k, reversed(v)]))
+          : value;
+    const { journal: j, persistence } = await journal();
+    await j.seedDefaults(D1_JOURNAL_MANIFEST);
+    const before = await stored(persistence);
+    const [planReflection] = D1_JOURNAL_MANIFEST.entryTypes;
+    const reordered = {
+      ...D1_JOURNAL_MANIFEST,
+      entryTypes: [{ ...planReflection!, prompts: reversed(planReflection!.prompts) as never }],
+    };
+    const bytes = (v: unknown) => JSON.stringify(v);
+    expect(bytes(reordered.entryTypes[0]!.prompts)).not.toBe(bytes(planReflection!.prompts));
+
+    expect(prepareJournalSeed(before.types as never, before.definitions as never, reordered, sequentialIds('x'))).toMatchObject({ kind: 'Additions' });
+    expect(await j.seedDefaults(reordered)).toEqual({ kind: 'Seeded', additions: [], snapshot: { journalRevision: 1 } });
     expect(await stored(persistence)).toEqual(before);
   });
 

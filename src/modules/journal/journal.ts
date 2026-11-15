@@ -1,3 +1,4 @@
+import { canonicalJson } from '../../backup/format/canonical-json.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { DueRule } from '../../domain/journal-debt/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
@@ -229,7 +230,7 @@ export function prepareJournalSeed(
   // A known Entry Type whose seeded revision differs from the manifest is incompatible key history.
   for (const entryType of manifest.entryTypes) {
     const seeded = existingDefinitions.find((d) => d.entryTypeKey === entryType.productKey && d.revisionNumber === 1);
-    if (seeded && JSON.stringify(seeded.prompts) !== JSON.stringify(entryType.prompts)) {
+    if (seeded && canonicalJson(seeded.prompts) !== canonicalJson(entryType.prompts)) {
       return { kind: 'SeedConflict', productKey: entryType.productKey };
     }
   }
