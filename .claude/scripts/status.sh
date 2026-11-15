@@ -66,7 +66,7 @@ else
     /^\*\*Answer/ { if (cur != "") ans[cur] = 1; next }
     /^\*\*Q[0-9]+ answer/ { lab = $1; sub(/^\*\*/, "", lab); ans[lab] = 1; next }
     END { for (i = 1; i <= n; i++) if (!(order[i] in ans)) print text[order[i]] }
-  ' "$dec")
+  ' "$dec") || { echo "status.sh: cannot read $dec" >&2; exit 1; }
   if [[ -n $qs ]]; then
     nq=$(printf '%s\n' "$qs" | wc -l | tr -d ' ')
     printf '%s\n' "$qs" | sed 's/^/  /'

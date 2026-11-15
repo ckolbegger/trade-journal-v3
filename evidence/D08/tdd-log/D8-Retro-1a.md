@@ -55,3 +55,15 @@ Command: `.claude/scripts/status.test.sh 9`.
 note: one fixture per scenario (bare Answer under `## Summary`; `**Q1 answer` under `## Summary`). The second scenario passes with and without the fix by design, as a guard that the label rule is unchanged.
 
 refactor: none needed; the fix is one awk rule that clears the current question at any heading other than `## Qn.`.
+
+## B5
+
+Command: `.claude/scripts/status.test.sh 10`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 10 | it should exit non-zero, naming the file, when the decisions file exists but cannot be read | FAIL: unreadable decisions file not reported (exit 0): awk "can't open file", then "0 open question(s)" and "nothing open" | status.test.sh: all requested cases passed (cases 1 to 10) |
+
+note: the fixture is `chmod 000` in the scratch directory and restored right after the run; the case prints a SKIP line when run as root. A second fixture (no decisions file) checks "no decisions file" still exits 0.
+
+refactor: none needed; the fix checks the awk's status and exits 1 naming the file.

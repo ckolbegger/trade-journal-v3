@@ -6,7 +6,9 @@
 # even when it sits under another question's heading; 5 a missing breakdown is named and exits non-zero;
 # 6 handoff files are skipped when picking the breakdown; 7 tables under a later heading are not read;
 # 8 IDs written with the task prefix (T9.2-F1) count the same as bare ones; 9 a bare "**Answer" counts only
-# inside its own question's section (any other heading ends it), a "**Qn answer" still answers by label.
+# inside its own question's section (any other heading ends it), a "**Qn answer" still answers by label;
+# 10 a decisions file that exists but cannot be read exits non-zero naming it (skipped as root), a missing one
+# still prints "no decisions file".
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -95,6 +97,23 @@ if want 9; then
   printf '## Q1. One — open\n\nText.\n\n## Summary\n\n**Q1 answer (d): (a).**\n' >"$t/lab/evidence/D99/DECISIONS-PENDING.md"
   out=$(STATUS_ROOT="$t/lab" "$st" D99 2>&1)
   [[ "$out" != *"Q1."* ]] || bad "a Qn answer under a non-question heading did not answer Qn: $out"
+fi
+
+if want 10; then
+  if [[ $(id -u) == 0 ]]; then
+    echo "SKIP case 10: running as root, file permissions are ignored"
+  else
+    mkfix unr '| T9.6 | 1 | A | Done | `x` |'
+    printf '## Q1. One — open\n\nText.\n' >"$t/unr/evidence/D99/DECISIONS-PENDING.md"
+    chmod 000 "$t/unr/evidence/D99/DECISIONS-PENDING.md"
+    out=$(STATUS_ROOT="$t/unr" "$st" D99 2>&1); code=$?
+    chmod 644 "$t/unr/evidence/D99/DECISIONS-PENDING.md"
+    [[ $code != 0 && "$out" == *"DECISIONS-PENDING.md"* && "$out" != *"nothing open"* ]] || bad "unreadable decisions file not reported (exit $code): $out"
+    mkfix nodec '| T9.6 | 1 | A | Done | `x` |'
+    rm "$t/nodec/evidence/D99/DECISIONS-PENDING.md"
+    out=$(STATUS_ROOT="$t/nodec" "$st" D99 2>&1); code=$?
+    [[ $code == 0 && "$out" == *"no decisions file"* ]] || bad "missing decisions file changed behavior (exit $code): $out"
+  fi
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"
