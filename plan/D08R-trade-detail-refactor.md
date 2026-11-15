@@ -2,7 +2,7 @@
 
 Definition: not yet in the implementation plan. Once this breakdown is agreed, plan revision 104 adds a D8R row to the deliverable summary and a D8R definition after D8 and before D9 (section 1.2). D8R carries out the Trade Detail audit (`research/trade-detail-audit.html`, written 2026-11-14 from `ca839e70`). It removes the leftovers of the pre-cockpit page, moves misplaced parts to their views, gives every Trade with a Position a Today view, and names every contract in the broker style. It runs after D8 (`claude-opus-5.5-d8`, `be736f8b`) and before D9. It is drafted from `plan/D08R-drafting-handoff.md` on `claude-opus-5.5` at `6b11c8bc`.
 
-Status: **Draft, not agreed** (2026-11-15). The open questions are in section 12, asked one at a time. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
+Status: **Draft, not agreed** (2026-11-15). The six open questions in section 12, and question 5's follow-up, were answered the same day, one at a time; the breakdown is updated to match. It awaits the user's agreement as a whole. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
 
 **In the trader's words.** Each part of Trade Detail shows each thing once, in the place you'd look for it:
 - **Today** becomes one Marks table (Today, Yesterday, Change) on every Trade that holds or held a Position, including Settlement Due and Closed ones.
@@ -30,7 +30,7 @@ The user has already decided (handoff section 4): D8R is a swarm; the whole audi
 | P112 | **The Journal's one dated line drops the Anchor**, which the UI contract lists. (Open question 3; **answered 2026-11-15: as recommended**.) | **Amend `specs/design/ui-contract.md` line 88:** Trade Detail's Journal leaves out a Trade Anchor, since the page names the Trade. Any other Anchor still shows (Execution Anchors arrive with D13). | Keep "Trade XYZ" on each line. It meets the spec as written, but it repeats the page's subject on every entry, which the approved words drop. |
 | P113 | **The before-Marks words** (audit item 14). "Awaiting the close after Fri Oct 9" should name the session that brings the Marks. (Open question 4; **answered 2026-11-15: "Awaiting the Mon Oct 12 close"**, the user's choice over the recommendation.) | **Trade Analysis's `AwaitingClose` gains `due`, the session after `after`, passed in from the read session's `nextSessionDate` (T8R.19). The words become "Awaiting the Mon Oct 12 close" (figure and sentence). The label stays "Awaiting close"** (W34). The user's rule: "close" names the end of a market session and is correct there; a stock's or option's price is a Mark, never a close. `calculation-words.ts` is shared, so the Trades list and the Review change too, which keeps C1. | (a) "Due once the Mon Oct 12 session ends", the draft's recommendation, which wrongly treated "close" here as a price. (b) Change only Trade Detail, from `firstMarksDue`: no backend change, but it misses lots added after earlier Marks, and the list would still say "after Fri Oct 9". |
 | P114 | **The year in a contract name, on screen and for screen readers.** (Open question 5; **answered 2026-11-15, the user's rule, replacing the audit's "'27" and spoken-year words**.) | **The screen reader reads exactly what the screen shows; there is no hidden text.** A contract expiring in the current year has no year: "XYZ Dec 18 $55 Call". A contract expiring in a later year shows the full year: "XYZ Jan 15 2027 $55 Call". | The draft's options, all rejected: the year spoken only where the name stands alone; spoken everywhere through hidden text; or no year for screen readers. |
-| P115 | **Size check** (section 1.4). | **One breakdown, with a checkpoint critic (T8R.25)** after the UI tasks and before the tail. | Split at the backend seam (section 1.4). Open question 6. |
+| P115 | **Size check** (section 1.4; open question 6, **answered 2026-11-15: one breakdown**). | **One breakdown, with a checkpoint critic (T8R.25)** after the UI tasks and before the tail. | Split at the backend seam (section 1.4). Open question 6. |
 | P116 | **No figure disappears between merges.** | **A task that removes a figure is blocked by the task that gives it its new home** (section 4.1). T8R.9 removes Today's At entry, dated card and condition lines only after Plan and Risk and the rail show them. T8R.6 merges only after Price History shows the provenance it removes from Today. | Remove and add in one task: fewer edges, but one task then owns files in two lanes. |
 
 ### 1.2 Amendments to other plan sections (applied in revision 104, once agreed)
@@ -85,7 +85,7 @@ The graph has **28 tasks**, more than 25, and **six open questions** (section 12
 - **D8R-2:** the trigger distance and the conditions redesign, the Today table on every state, the column dates, the Settlement Due Marks, the track, the before-Marks words, the removal of `nearest`, and the full tail.
 - **What D8R-1 leaves unfinished:** the rail still shows dollars, Today keeps its cards, and Settlement Due and Closed Trades have no Today. Nothing is released for real use between the parts.
 
-**Recommended: keep one breakdown (P115).** The backend lanes run beside the UI lanes from wave 1, so a split would put a gate (a full run and a critic, about 1.5 hours) in the middle of the critical path. It would also rebuild the Today drawer twice. The checkpoint critic (T8R.25) gives the same early look.
+**Agreed 2026-11-15: keep one breakdown (P115).** The backend lanes run beside the UI lanes from wave 1, so a split would put a gate (a full run and a critic, about 1.5 hours) in the middle of the critical path. It would also rebuild the Today drawer twice. The checkpoint critic (T8R.25) gives the same early look.
 
 ### 1.5 Lookups (drafting guide)
 
@@ -614,7 +614,7 @@ Asked one at a time, in this order; each answer is recorded here.
 4. **The before-Marks words (P113, W34).** "Due once the Mon Oct 12 session ends", with Trade Analysis naming the session? Recommended: yes. **Answered 2026-11-15: "Awaiting the Mon Oct 12 close"** (option b), with Trade Analysis naming the session. The user's rule: "close" is correct for the end of a market session; a stock's or option's price is a Mark, never a close. The label "Awaiting close" stays.
 5. **The spoken year (P114).** Only where a contract name stands alone, or in every sentence too? Recommended: where it stands alone. **Answered 2026-11-15: neither.** The screen reader works the same as the screen: no year for a contract expiring in the current year ("XYZ Dec 18 $55 Call"), the full year for a later one ("XYZ Jan 15 2027 $55 Call"). This replaces the audit's "'27" form.
    - **Follow-up, answered 2026-11-15: yes.** The Trade Summary line takes the same rule: "Long 1 Jan 21 2028 $250 Call", not "'28".
-6. **One breakdown or a split (P115).** Recommended: one breakdown with a checkpoint critic. *Queued.*
+6. **One breakdown or a split (P115).** Recommended: one breakdown with a checkpoint critic. **Answered 2026-11-15: one breakdown, with the checkpoint critic (a).**
 
 ---
 
