@@ -145,6 +145,39 @@ describe('replacement (AC-REST-003)', () => {
     expect(again).toEqual({ kind: 'PreparationNotFound', liveBinding: result.receipt.newBinding });
     expect(await dumpAll(target.factory)).toEqual(after);
   });
+
+  it('should return CandidateChanged and delete the candidate when the Workspace settings in the candidate changed after preparation', async () => {
+    const target = await targetWorkspace();
+    const { token } = await preparedWithPreview(target);
+    const live = (token.targetBinding as { databaseName: string }).databaseName;
+    // Another writer changes the time-zone setting in the candidate, as the preview would no longer describe it.
+    await new Promise<void>((resolve, reject) => {
+      const open = target.factory.open(token.candidateId);
+      open.onsuccess = () => {
+        const db = open.result;
+        const tx = db.transaction('meta', 'readwrite');
+        const store = tx.objectStore('meta');
+        const read = store.get('settings');
+        read.onsuccess = () => store.put({ ...(read.result as object), timeZone: 'Asia/Tokyo' });
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('write failed'));
+      };
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+    const before = await dumpAll(target.factory);
+
+    const result = await target.workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    expect(result).toEqual({ kind: 'CandidateChanged', store: 'meta', liveBinding: token.targetBinding });
+    const after = await dumpAll(target.factory);
+    expect(databaseNames(after)).toEqual([live]);
+    expect(after[live]).toEqual(before[live]);
+    const pointerOf = (dump: typeof after) => (dump['tj-root']!['pointer'] as { key: string }[]).find((record) => record.key === 'current');
+    expect(pointerOf(after)).toEqual(pointerOf(before));
+  });
 });
 
 describe('safety choices and first run (AC-REST-002, P33)', () => {

@@ -204,6 +204,14 @@ interface PreparedRecord {
   readonly counts: RestoreCounts;
   readonly migrations: RestoreMigrations;
   readonly repairs: readonly RestoreRepair[];
+  // The Workspace section: every other `meta` record (time-zone settings, session policy, revisions), as canonical text.
+  readonly workspaceDigest: string;
+}
+
+// What the candidate's Workspace section holds now, so that apply can tell a change since preparation.
+async function workspaceDigestOf(source: RecordSource): Promise<string> {
+  const records = (await collect(source, 'meta')).filter((record) => record['key'] !== 'restorePrepared');
+  return canonicalJson(records.sort((a, b) => String(a['key']).localeCompare(String(b['key']))));
 }
 
 const isSectionMeta = (value: unknown): boolean => {
@@ -224,7 +232,8 @@ function isPreparedRecord(record: unknown): record is PreparedRecord {
     value.counts !== null &&
     typeof value.migrations === 'object' &&
     value.migrations !== null &&
-    Array.isArray(value.repairs)
+    Array.isArray(value.repairs) &&
+    typeof value.workspaceDigest === 'string'
   );
 }
 
@@ -634,7 +643,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const steps = Array.from({ length: SCHEMA_VERSION - header.schemaVersion }, (_, i) => ({ from: header.schemaVersion + i, to: header.schemaVersion + i + 1 }));
     // What apply rechecks (the sections) and what its receipt reports (counts, migrations, repairs).
     await persistence.putCandidateRecords(candidate, [
-      { store: 'meta', value: { key: 'restorePrepared', sections, counts: restored.counts, migrations: { steps, seedAdditions }, repairs: repairLines } },
+      { store: 'meta', value: { key: 'restorePrepared', sections, counts: restored.counts, migrations: { steps, seedAdditions }, repairs: repairLines, workspaceDigest: await workspaceDigestOf(source) } },
     ]);
     let currentTimeZone: string | null = null;
     let target: { counts: RestoreCounts; hasUserData: boolean } | null = null;
@@ -724,6 +733,11 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
             await persistence.discardCandidate(token.candidateId);
             return { kind: 'CandidateChanged', store: rechecked.store, liveBinding: live };
           }
+        }
+        // The Workspace section is not a fact module's; its records are compared with what the preview was built from.
+        if ((await workspaceDigestOf(candidateSource)) !== prepared.workspaceDigest) {
+          await persistence.discardCandidate(token.candidateId);
+          return { kind: 'CandidateChanged', store: 'meta', liveBinding: live };
         }
 
         // One root transaction switches the pointer (A135 step 5); with no Workspace it adds the pointer instead.
