@@ -101,3 +101,15 @@ Command: `.claude/scripts/status.test.sh 12`.
 note: one fixture; the repeat `T8P.23-B1` and bare `F3` (same ID as `D7-Retro-F3`) count once. The fix widens the prefix to `([A-Za-z0-9.]+-)*` and keys each ID by its trailing F/B part. Range wording ("B5 to B7") remains a known note.
 
 refactor: none needed.
+
+## B9
+
+Command: `.claude/scripts/status.test.sh 13`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 13 | it should count each ID once when text precedes a chained ID | FAIL: chained ID after text counted wrongly (want F 0, B 1): row showed "F 0, B 2" for `abc T9.2-F1-B1` | status.test.sh: all requested cases passed (cases 1 to 13) |
+
+note: fixtures: `abc T9.2-F1-B1`; a mixed cell (hash, prose, prefixed and bare IDs, a repeat); the real D08 T8.9 Commits cell (F 1, B 16). A chained ID such as F1-B1 counts as B (its last part), as in cases 3 and 8, so the brief's "F 1, B 1" for the first fixture is "F 0, B 1". The fix saves the outer match's start and length before the inner `match()` and advances the scan with them.
+
+refactor: none needed.

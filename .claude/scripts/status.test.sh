@@ -9,7 +9,8 @@
 # inside its own question's section (any other heading ends it), a "**Qn answer" still answers by label;
 # 10 a decisions file that exists but cannot be read exits non-zero naming it (skipped as root), a missing one
 # still prints "no decisions file"; 11 the breakdown is the file whose Progress section holds a table, not
-# one with a Progress heading and only prose (and with no such file the script exits 1 naming a file).
+# one with a Progress heading and only prose (and with no such file the script exits 1 naming a file);
+# 12 IDs after any task-ID prefix count; 13 each ID counts once when text precedes a chained ID.
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -134,6 +135,18 @@ if want 12; then
   mkfix pfx '| T9.8 | 1 | A | Paused | T8P.23-B1, T7S.4-F1, D7-Retro-F3, T9.2-B2, T8P.23-B1, F3 |'
   out=$(STATUS_ROOT="$t/pfx" "$st" D99 2>&1)
   [[ "$out" == *"F 2, B 2"* ]] || bad "IDs after any task-ID prefix not counted (want F 2, B 2): $out"
+fi
+
+if want 13; then
+  mkfix txt '| T9.2 | 1 | A | Paused | abc T9.2-F1-B1 |'
+  out=$(STATUS_ROOT="$t/txt" "$st" D99 2>&1)
+  [[ "$out" == *"F 0, B 1"* ]] || bad "chained ID after text counted wrongly (want F 0, B 1): $out"
+  mkfix txt2 '| T9.3 | 1 | A | Paused | `a1b2c3d` fixed in abc T9.2-F1-B1, then see D7-Retro-F3 and xy T8P.23-B1; also F2, plus B4 and zz F2-B1, T9.9-F4-B2 again T9.2-F1-B1 |'
+  out=$(STATUS_ROOT="$t/txt2" "$st" D99 2>&1)
+  [[ "$out" == *"F 2, B 5"* ]] || bad "mixed cell with text before IDs wrongly counted (want F 2, B 5): $out"
+  mkfix real '| T8.9 | 1 | WR | Paused | `c8815d65`; F1 `8de26d7d`, F1-B1 and F1-B2 `a656ccc5`; B2 `d85e5c57`, B3 `c1b3b8c7`, B6 `c2e505f5`, B7 `b1ca23af`, B8 `58f845f9`, B9 and B11 `53a54f99`, B10 `8dd43e59`, B12 and B13 `114bcda1`, B14 `4935b752` (B1 moved to T8.11; B4 and B5 closed by Q11) |'
+  out=$(STATUS_ROOT="$t/real" "$st" D99 2>&1)
+  [[ "$out" == *"F 1, B 16"* ]] || bad "real D08 T8.9 cell wrongly counted (want F 1, B 16): $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"

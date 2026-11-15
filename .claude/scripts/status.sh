@@ -32,9 +32,10 @@ rows=$(awk -F'|' '
     f = 0; b = 0; delete seen
     s = commits
     while (match(s, /(^|[^A-Za-z0-9-])([A-Za-z0-9.]+-)*[FB][0-9]+(-[FB][0-9]+)*/)) {
-      tok = substr(s, RSTART, RLENGTH); sub(/^[^A-Za-z0-9]/, "", tok)
+      pos = RSTART; len = RLENGTH
+      tok = substr(s, pos, len); sub(/^[^A-Za-z0-9]/, "", tok)
+      s = substr(s, pos + len)
       match(tok, /(^|-)[FB][0-9]+(-[FB][0-9]+)*$/); tok = substr(tok, RSTART, RLENGTH); sub(/^-/, "", tok)
-      s = substr(s, RSTART + RLENGTH)
       if (tok in seen) continue
       seen[tok] = 1
       last = tok; sub(/^.*-/, "", last)
