@@ -34,7 +34,7 @@
   a { color: var(--accent); }
   .box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 12px 0; }
   .box.key { border-left: 4px solid var(--accent); }
-  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
   .cards .box { margin: 0; }
   .cards h3 { margin-top: 0; }
@@ -55,11 +55,11 @@
 <body>
 <main>
 <h1>Automatic Mark providers compared</h1>
-<p class="lede">Research for D11 (automatic closing prices), written 2026-11-15. Three providers judged against the requirements drawn from D9, D10 and D11. Option Marks use the closing bid/ask midpoint (your answer to the requirements' open question Q1).</p>
+<p class="lede">Research for D11 (automatic closing prices), written 2026-11-15. Four providers judged against the requirements drawn from D9, D10 and D11 (E*Trade added the same day). Option Marks use the closing bid/ask midpoint (your answer to the requirements' open question Q1).</p>
 
 <div class="box key">
 <p><b>Recommendation: Marketdata.app</b>, on a paid plan (Starter or higher). It is the only one of the three the app can call straight from the browser with no server, and the only one with past end-of-day bid and ask for option contracts, including expired ones. It meets all three of decision 15's conditions, tested live with your key.</p>
-<p>Interactive Brokers and Schwab both need software or a server between the app and the provider. Both lack history for expired options, and both rewrite stock history after splits.</p>
+<p>Interactive Brokers and Schwab both need software or a server between the app and the provider. Both lack history for expired options, and both rewrite stock history after splits. E*Trade also needs a server, and gives only prices as of right now: no endpoint takes a date, so it can't fill any past session.</p>
 </div>
 
 <div class="cards">
@@ -78,72 +78,90 @@
     <span class="verdict n">Not suitable</span>
     <p>No historical bid and ask for options, and no data for expired contracts. Signing in needs a server and a manual login every 7 days. thinkorswim on a Mac can't act as a local server.</p>
   </div>
+  <div class="box">
+    <h3>E*Trade</h3>
+    <span class="verdict n">Not suitable</span>
+    <p>Current quotes only: no daily bars, no past bid and ask, nothing for expired contracts. No browser access (tested), and the login expires every midnight, so a missed evening loses option Marks for good.</p>
+  </div>
 </div>
 
 <h2>Side by side</h2>
 <p class="muted">Green: meets the need. Amber: partly, or with conditions. Red: does not. "Tested" means checked with real requests; everything else comes from documentation or community sources, as each report labels it.</p>
 <div class="scroll">
 <table class="t">
-<thead><tr><th>Need</th><th>Marketdata.app</th><th>Interactive Brokers</th><th>Schwab / thinkorswim</th></tr></thead>
+<thead><tr><th>Need</th><th>Marketdata.app</th><th>Interactive Brokers</th><th>Schwab / thinkorswim</th><th>E*Trade</th></tr></thead>
 <tbody>
 <tr><th>Called directly from the browser, no server (decision 15)</th>
   <td class="y">Yes<small>Tested in a real headless browser from <code>pages.dev</code> and <code>localhost:5175</code> origins; CORS on every response.</small></td>
   <td class="n">No<small>Individual accounts need the Client Portal Gateway, TWS or IB Gateway running and logged in.</small></td>
-  <td class="n">No<small>Sign-in needs the app secret (a server); no CORS documented.</small></td></tr>
+  <td class="n">No<small>Sign-in needs the app secret (a server); no CORS documented.</small></td>
+  <td class="n">No (tested)<small>No CORS headers on any response, errors and sign-in paths included. Every request is signed with the consumer secret.</small></td></tr>
 <tr><th>Option Mark: past closing bid/ask midpoint</th>
   <td class="y">Yes<small>End-of-day bid and ask at 16:00 (13:00 on early closes) for every session, even with no trade. Compute the midpoint in the app.</small></td>
   <td class="p">Live contracts only<small>A daily MIDPOINT bar's closing value. One doc line lists end-of-day option data as unavailable; needs a live test.</small></td>
-  <td class="n">Today only<small>Live quotes carry bid, ask and a "mark"; no endpoint returns past sessions.</small></td></tr>
+  <td class="n">Today only<small>Live quotes carry bid, ask and a "mark"; no endpoint returns past sessions.</small></td>
+  <td class="n">Tonight only<small>An evening quote gives today's bid and ask; "previous bid/ask" fields are undefined; nothing older.</small></td></tr>
 <tr><th>Expired option contracts</th>
   <td class="y">Yes<small>Through the expiration day.</small></td>
   <td class="n">Never<small>Error 166, "HMDS Expired Contract Violation".</small></td>
-  <td class="n">No</td></tr>
+  <td class="n">No</td>
+  <td class="n">No<small>Chains list only live expirations.</small></td></tr>
 <tr><th>Stock daily bars (open, high, low, closing price)</th>
   <td class="y">Yes</td>
   <td class="y">Yes</td>
-  <td class="y">Yes<small>Going back decades.</small></td></tr>
+  <td class="y">Yes<small>Going back decades.</small></td>
+  <td class="n">Today only<small>No bars call; an evening quote makes at most one bar for today.</small></td></tr>
 <tr><th>Prices as traded (not split-adjusted)</th>
   <td class="y">Yes, when asked<small>The app must send <code>adjustsplits=false</code> and <code>adjustdividends=false</code>.</small></td>
   <td class="n">No<small>Trade data is split-adjusted, with no unadjusted choice.</small></td>
-  <td class="n">No (reportedly)<small>Community sources: always adjusted.</small></td></tr>
+  <td class="n">No (reportedly)<small>Community sources: always adjusted.</small></td>
+  <td class="y">Yes, trivially<small>Live quotes only, so there is no history to adjust.</small></td></tr>
 <tr><th>Option daily bars</th>
   <td class="n">No<small>D12's option-price Stops fall back to the Mark.</small></td>
   <td class="p">Yes, live contracts</td>
-  <td class="n">No</td></tr>
+  <td class="n">No</td>
+  <td class="n">Today only</td></tr>
 <tr><th>Exchange calendar (holidays, early closes)</th>
   <td class="y">Yes<small>Tested: no value on 2024-07-04 or 2025-01-09; early-close days present.</small></td>
   <td class="y">Yes<small>Daily bars dated by exchange date.</small></td>
-  <td class="p">Unknown</td></tr>
+  <td class="p">Unknown</td>
+  <td class="n">No<small>No calendar call; the app would date values from quote times.</small></td></tr>
 <tr><th>History back to 2024-01-01</th>
   <td class="p">Paid plans only<small>Free reaches back one year; Starter gives 5 years.</small></td>
   <td class="p">Stocks and live options</td>
-  <td class="p">Stocks only</td></tr>
+  <td class="p">Stocks only</td>
+  <td class="n">None<small>No endpoint takes a date.</small></td></tr>
 <tr><th>Read-only, data-only credential</th>
   <td class="y">Yes<small>An API token.</small></td>
   <td class="n">No<small>Full brokerage login; one session per username can log you out of TWS or mobile.</small></td>
-  <td class="n">No<small>No data-only key documented.</small></td></tr>
+  <td class="n">No<small>No data-only key documented.</small></td>
+  <td class="n">No<small>The same token can read the account and place orders; no scopes.</small></td></tr>
 <tr><th>Daily friction</th>
   <td class="y">None</td>
   <td class="p">Weekly 2FA<small>TWS or IB Gateway: one approval a week, nightly restarts. Client Portal Gateway: a 2FA login every day.</small></td>
-  <td class="n">Login every 7 days<small>The refresh token expires and can't be extended.</small></td></tr>
+  <td class="n">Login every 7 days<small>The refresh token expires and can't be extended.</small></td>
+  <td class="n">Login every evening<small>The token expires at midnight Eastern (and idles out after 2 hours); a missed evening loses option Marks for good.</small></td></tr>
 <tr><th>Request limits</th>
   <td class="p">Credits per day<small>Starter: 10,000 a day; about 1 per Instrument per Review. Remaining-credit headers can't be read from the browser.</small></td>
   <td class="y">No daily quota<small>Pacing rules apply.</small></td>
-  <td class="p">Rate limited</td></tr>
+  <td class="p">Rate limited</td>
+  <td class="p">25–50 symbols per call<small>Rate limit unpublished. A 150-Instrument Review is 3–6 calls; a backfill is impossible.</small></td></tr>
 <tr><th>Cost</th>
   <td class="p">$30/month, or $12/month billed yearly (Starter)</td>
   <td class="p">Funded IBKR Pro account (USD 500), about $1.50–14.50/month data fees</td>
-  <td class="y">Free with a Schwab account<small>Developer registration and a few days' approval.</small></td></tr>
+  <td class="y">Free with a Schwab account<small>Developer registration and a few days' approval.</small></td>
+  <td class="y">Free with an E*Trade account<small>Agreements, keys in a few business days, a yearly attestation.</small></td></tr>
 <tr><th>Terms on keeping the data</th>
   <td class="n">Conflict<small>When a paid plan ends, data from it must be deleted "including backups". One IP at a time.</small></td>
   <td class="p">Market Data API Acknowledgement required</td>
-  <td class="p">Unknown<small>The API terms sit behind the developer login.</small></td></tr>
+  <td class="p">Unknown<small>The API terms sit behind the developer login.</small></td>
+  <td class="p">Probably OK (unconfirmed)<small>Personal, non-commercial licence; bans passing data on or storing it for redistribution.</small></td></tr>
 </tbody>
 </table>
 </div>
 
 <h2>Running something locally or on a server</h2>
-<p>You asked for these options to be assessed for the two brokers. Both work technically but fall outside the spec's no-server design, so decision 15 says to stop and discuss before choosing either.</p>
+<p>You asked for these options to be assessed for the three brokers. Both work technically but fall outside the spec's no-server design, so decision 15 says to stop and discuss before choosing either.</p>
 <div class="scroll">
 <table class="t">
 <thead><tr><th></th><th>Small proxy or server</th><th>Software on your Mac</th></tr></thead>
@@ -154,6 +172,9 @@
 <tr><th>Schwab / thinkorswim</th>
   <td>A Cloudflare Worker could hold the app secret and refresh token, but that puts a brokerage token in the cloud, and you'd still log in every 7 days.</td>
   <td>Not possible with thinkorswim. Its Excel data link (RTD) isn't supported on macOS, DDE is Windows-only, there's no local API, and thinkScript can't write files. Only a manual "Export to file…" of the Position Statement exists.</td></tr>
+<tr><th>E*Trade</th>
+  <td>A Cloudflare Pages Function on the app's own address could hold the consumer secret and the day's token, sign quote calls and avoid CORS, for about $0–5 a month. It leaves a token that can trade on an internet-facing server until midnight, needs its own access control, and still needs your login every evening. The data gaps stay.</td>
+  <td>A small script on your Mac (for example with pyetrade) could hold the secret, take the pasted login code each evening, and serve quotes on 127.0.0.1. Free, and the secrets stay off the browser, but it must be kept running, browsers may block or ask before a web page reaches it, and the data gaps stay.</td></tr>
 </tbody>
 </table>
 </div>
@@ -174,6 +195,7 @@
   <li><a href="marketdata-app-evaluation.md">marketdata-app-evaluation.md</a>: endpoints, the live test log (39 requests, no token in any output), and the requirement-by-requirement table.</li>
   <li><a href="interactive-brokers-evaluation.md">interactive-brokers-evaluation.md</a>: API surfaces, both architecture options, subscriptions and costs (documentation only).</li>
   <li><a href="thinkorswim-schwab-evaluation.md">thinkorswim-schwab-evaluation.md</a>: Schwab Trader and Market Data APIs, the thinkorswim-on-a-Mac investigation, and the server option (documentation only).</li>
+  <li><a href="etrade-evaluation.md">etrade-evaluation.md</a>: E*Trade's OAuth 1.0a sign-in, its quote and option-chain endpoints, nine unsigned CORS checks, and the local and proxy options (documentation otherwise).</li>
 </ul>
 </main>
 </body>
