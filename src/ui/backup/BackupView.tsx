@@ -1,12 +1,21 @@
 import { useRef, useState } from 'react';
-import type { BackupProgress, ConfirmBackupResult, ExportBackupResult, FileSelectionPort } from '../../app/types.ts';
+import type { BackupProgress, ConfirmBackupResult, ExportBackupResult, FailureDetail, FileSelectionPort } from '../../app/types.ts';
 import type { ReadinessFailure } from '../../delivery/runtime-not-writable.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { explainFailure } from '../readiness-copy.ts';
 import { completionTime, NOT_MADE, NOT_VERIFIED, records, type NotMadeReason, type NotVerifiedReason } from './backup-text.ts';
 import type { BackupFacade } from './facade.ts';
+import { logFailure } from './dev-log.ts';
 import { RestoreFlow } from './RestoreFlow.tsx';
 import './backup.css';
+
+const NO_DETAIL = 'The result carried no detail.';
+
+// An operation that rejected instead of returning a result: its name, message and stack (Q9 answer a).
+function thrownDetail(stage: string, error: unknown): FailureDetail {
+  const thrown = error instanceof Error ? error : new Error(String(error));
+  return { stage, name: thrown.name, message: thrown.message, ...(thrown.stack !== undefined && { stack: thrown.stack }) };
+}
 
 export interface BackupViewProps {
   readonly facade: BackupFacade;
@@ -44,12 +53,15 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
       .exportBackup({ onProgress: (progress) => {
         if (thisDownload === downloadCount.current) setMaking(progress);
       } })
-      .catch((): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null }));
+      .catch((error: unknown): ExportBackupResult => ({ kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: null, detail: thrownDetail('Build', error) }));
     // A Restore completed meanwhile: this export was of the replaced Workspace, so drop it.
     if (thisDownload !== downloadCount.current) return;
     setMaking(undefined);
     if (result.kind === 'Downloaded') setDownloaded(result);
-    else setNotMade(result.kind === 'NotCompleted' ? result.reason : 'Conflict');
+    else {
+      if (result.kind === 'NotCompleted') logFailure(result.detail ?? { stage: result.stage, name: result.reason, message: NO_DETAIL });
+      setNotMade(result.kind === 'NotCompleted' ? result.reason : 'Conflict');
+    }
   };
 
   // A completed Restore replaces the Workspace, so a download or check of the old one is discarded (A142).
@@ -82,9 +94,10 @@ export function BackupView({ facade, selectFile, readiness, timeZone }: BackupVi
       .confirmBackup({ file: chosen.file, expectedBinding: expected.sourceBinding, expectedFullDigest: expected.fullDigest, onProgress: (progress) => {
         if (forDownload === downloadCount.current) setChecking(progress);
       } })
-      .catch((): ConfirmBackupResult => ({ kind: 'NotVerified', reason: 'Unreadable' }));
+      .catch((error: unknown): ConfirmBackupResult => ({ kind: 'NotVerified', reason: 'Unreadable', detail: thrownDetail('Verify', error) }));
     if (forDownload !== downloadCount.current) return;
     setChecking(undefined);
+    if (result.kind === 'NotVerified') logFailure(result.detail ?? { stage: 'Verify', name: result.reason, message: NO_DETAIL });
     setOutcome(result.kind === 'Completed' ? { kind: 'Completed', at: result.receipt.completedAt } : result);
   };
 

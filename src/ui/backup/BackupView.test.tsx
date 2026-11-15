@@ -2,7 +2,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ExportBackupResult } from '../../app/types.ts';
 import { BackupView, type BackupViewProps } from './BackupView.tsx';
 import { createBackupFacadeDouble, createFileSelectionDouble } from './test-support.ts';
@@ -366,5 +366,75 @@ describe('Restore completion with a download in flight (A142)', () => {
     expect(screen.queryByRole('button', { name: 'Verify backup' })).toBeNull();
     expect(screen.queryByText(/Making the backup/)).toBeNull();
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Download backup' }).disabled).toBe(false);
+  });
+});
+
+describe('developer log (Q5)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('should log the failure detail when a backup is not completed', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { facade, user } = setup();
+    const detail = { stage: 'Read', name: 'NotFoundError', message: 'store missing', context: { store: 'trades' } };
+    facade.respond('exportBackup', { kind: 'NotCompleted', stage: 'Read', reason: 'ReadFailed', workspaceBinding: BINDING, detail });
+    await user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByText(/The backup could not be made/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', detail]);
+  });
+
+  it('should log the failure detail when a downloaded backup is not verified', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    await downloadFirst(ctx);
+    ctx.files.choose(new File(['x'], 'chosen.gz'));
+    const detail = { stage: 'Verify', name: 'SyntaxError', message: 'bad line', context: { line: 4 } };
+    ctx.facade.respond('confirmBackup', { kind: 'NotVerified', reason: 'IncompleteOrCorrupt', detail });
+    await ctx.user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText(/incomplete or damaged/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', detail]);
+  });
+
+  it('should log an unexpected failure while making or checking a backup', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    const buildError = new Error('build boom');
+    ctx.facade.respond('exportBackup', () => Promise.reject(buildError));
+    await ctx.user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByText(/The backup could not be made/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Build', name: 'Error', message: 'build boom', stack: buildError.stack }]);
+    log.mockClear();
+    ctx.facade.respond('exportBackup', DOWNLOADED);
+    await ctx.user.click(screen.getByRole('button', { name: 'Retry' }));
+    await screen.findByRole('button', { name: 'Verify backup' });
+    ctx.files.choose(new File(['x'], 'chosen.gz'));
+    const verifyError = new TypeError('verify boom');
+    ctx.facade.respond('confirmBackup', () => Promise.reject(verifyError));
+    await ctx.user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText(/couldn't be read/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Verify', name: 'TypeError', message: 'verify boom', stack: verifyError.stack }]);
+  });
+
+  it('should log the stage and reason when a failed result carries no detail', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const ctx = setup();
+    ctx.facade.respond('exportBackup', { kind: 'NotCompleted', stage: 'Offer', reason: 'OfferFailed', workspaceBinding: BINDING });
+    await ctx.user.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByText(/The backup could not be made/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Offer', name: 'OfferFailed', message: 'The result carried no detail.' }]);
+    log.mockClear();
+    ctx.facade.respond('exportBackup', DOWNLOADED);
+    await ctx.user.click(screen.getByRole('button', { name: 'Retry' }));
+    await screen.findByRole('button', { name: 'Verify backup' });
+    ctx.files.choose(new File(['x'], 'chosen.gz'));
+    ctx.facade.respond('confirmBackup', { kind: 'NotVerified', reason: 'DifferentArtifact' });
+    await ctx.user.click(screen.getByRole('button', { name: 'Verify backup' }));
+    await screen.findByText(/different backup/);
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0]).toEqual(['[Trade Journal]', { stage: 'Verify', name: 'DifferentArtifact', message: 'The result carried no detail.' }]);
   });
 });

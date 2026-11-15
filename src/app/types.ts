@@ -35,6 +35,7 @@ export type {
   ConfirmBackupResult,
   ExportBackupRequest,
   ExportBackupResult,
+  FailureDetail,
   PrepareRestoreRequest,
   PrepareRestoreResult,
   ProgressCallback,
