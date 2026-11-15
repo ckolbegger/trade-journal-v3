@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 30954,
+    "input_tokens": 30633,
+    "output_tokens": 321,
+    "cache_read_tokens": 4992,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Mutation guard integration with persistence and restore lifecycle",
+      "files": [
+        "src/app/compose.ts",
+        "src/coordinators/mutation-guard.test.ts",
+        "src/coordinators/mutation-guard.ts",
+        "src/persistence/persistence.ts",
+        "tests/integration/d8/after-restore.test.ts"
+      ]
+    }
+  ],
+  "session_id": "c99518c0-5c3b-4c79-9edb-e6416c45b2b3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c99518c0-5c3b-4c79-9edb-e6416c45b2b3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cd1cc13e",
+      "resolved_base": "8eec96fb764b5a9f41cf2197bb8f35e4bce7d66f",
+      "resolved_head": "cd1cc13e784f8a58fae7893af32776ea799d7f3f",
+      "exact_range": "8eec96fb764b5a9f41cf2197bb8f35e4bce7d66f..cd1cc13e784f8a58fae7893af32776ea799d7f3f",
+      "source_artifact_sha256": "a034f1e28a0b70f6a089efcab1057186249684dcf98e52d0eb73c2027e950c1f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1b55f368a37565f70911e6b96aaa8a5d4472d559b7a0d9bdb615a85ae924c024",
+          "path": "src/coordinators/mutation-guard.test.ts",
+          "fingerprint": "a557a7283d2ecebbdd02b281dba57887a6030f623e31498930f5a0b0033c67de"
+        },
+        {
+          "item_id": "831697f5d7130a8bc7d25a11aa240f9eac574da76c15114af50bf3c455175a1b",
+          "path": "tests/integration/d8/after-restore.test.ts",
+          "fingerprint": "40d0cdc5bd620b53e96fa053c7911ef22e621f5f107f0320eb12a2f052eec292"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "f40360498c7c049197b3f44107d21ae97a0f5254785b18be3d9abec2df609582"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "07c4b4f1200d6e198240e7c1255a0b2ebb75c14a1067f989835c5eda8d12b3d2"
+        },
+        {
+          "item_id": "aaebdace42c5cdc04a9cee8e7179e9a9cb199bf0f129e8020372b5f559644c66",
+          "path": "src/coordinators/mutation-guard.ts",
+          "fingerprint": "8d5dfd51450e9cf464c1347901f906906a62946b62cf9d238a7ce6e43ba7c216"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1b55f368a37565f70911e6b96aaa8a5d4472d559b7a0d9bdb615a85ae924c024",
+          "path": "src/coordinators/mutation-guard.test.ts",
+          "fingerprint": "a557a7283d2ecebbdd02b281dba57887a6030f623e31498930f5a0b0033c67de"
+        },
+        {
+          "item_id": "831697f5d7130a8bc7d25a11aa240f9eac574da76c15114af50bf3c455175a1b",
+          "path": "tests/integration/d8/after-restore.test.ts",
+          "fingerprint": "40d0cdc5bd620b53e96fa053c7911ef22e621f5f107f0320eb12a2f052eec292"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "f40360498c7c049197b3f44107d21ae97a0f5254785b18be3d9abec2df609582"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "07c4b4f1200d6e198240e7c1255a0b2ebb75c14a1067f989835c5eda8d12b3d2"
+        },
+        {
+          "item_id": "aaebdace42c5cdc04a9cee8e7179e9a9cb199bf0f129e8020372b5f559644c66",
+          "path": "src/coordinators/mutation-guard.ts",
+          "fingerprint": "8d5dfd51450e9cf464c1347901f906906a62946b62cf9d238a7ce6e43ba7c216"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0863cff391e9916183911e65093167b648ab176014b731e31b99e9f1683d625d",
+          "path": "evidence/D08/suite-runs/T8.20-F2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8d67e4f8b3dc767965d5105c99e30d3bd5381fe9b31a0095a715e1c7bd154002",
+          "path": "evidence/D08/suite-runs/T8.20-F2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a079050f2621de54b088aa163c849c82c16322e7a27f1a3b9e4360159be7666c",
+          "path": "evidence/D08/suite-runs/T8.20-F2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a2d736e892e16f78b364b9be5dcfde2f85dd76b0ab374befab1d18e030054be1",
+          "path": "evidence/D08/suite-runs/T8.20-F2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d1ed5c9a8b5112ae6a4e03e839e03d0b231b6a25ad8d065312de3d5d679204c1",
+          "path": "evidence/D08/tdd-log/T8.20-F2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 16803
+  }
+}
