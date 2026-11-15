@@ -3,6 +3,16 @@ import type { BackupProgress, ConfirmBackupResult } from '../../app/types.ts';
 
 export const records = (progress: BackupProgress) => `${progress.done.toLocaleString('en-US')} of ${progress.total.toLocaleString('en-US')} records`;
 
+// The Entry Types' glossary names (specs/glossary.md, the seven fixed Entry Types) for the four keys a journal holds today.
+const ENTRY_TYPE_NAMES: Readonly<Record<string, string>> = {
+  'entry-type.plan-reflection': 'Plan Reflection',
+  'entry-type.position-change-reflection': 'Position Change Reflection',
+  'entry-type.daily-trade-review': 'Daily Trade Review',
+  'entry-type.close-review': 'Close Review',
+};
+
+export const entryTypeName = (key: string) => ENTRY_TYPE_NAMES[key] ?? key;
+
 export type NotVerifiedReason = Extract<ConfirmBackupResult, { kind: 'NotVerified' }>['reason'];
 
 export const NOT_VERIFIED: Record<NotVerifiedReason, string> = {

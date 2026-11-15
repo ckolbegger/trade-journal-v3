@@ -1,7 +1,7 @@
 import type { RestoreCounts, RestoreMigrations, RestorePreview, RestoreRepair, RestoreWarning } from '../../app/types.ts';
 import { ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL } from '../calculation-words.ts';
 import { tradeName } from '../format.ts';
-import { completionTime } from './backup-text.ts';
+import { completionTime, entryTypeName } from './backup-text.ts';
 
 const number = (n: number) => n.toLocaleString('en-US');
 
@@ -26,7 +26,7 @@ function countRows(restored: RestoreCounts, current: RestoreCounts | null): read
     { label: 'Expirations', value: (c) => c.expirations },
     { label: 'Deviations', value: (c) => c.deviationOccurrences },
     { label: 'Journal entries', value: (c) => Object.values(c.entriesByType).reduce((sum, n) => sum + n, 0), history: 'entries' },
-    ...keys((c) => c.entriesByType).map((type) => ({ label: `Journal entries: ${type}`, value: (c: RestoreCounts) => c.entriesByType[type] ?? 0 })),
+    ...keys((c) => c.entriesByType).map((type) => ({ label: `Journal entries: ${entryTypeName(type)}`, value: (c: RestoreCounts) => c.entriesByType[type] ?? 0 })),
     { label: 'Declined reflections', value: (c) => c.declines },
     { label: 'Reflections owed', value: (c) => Object.values(c.debtsByStatus).reduce((sum, n) => sum + n, 0), history: 'debts' },
     ...keys((c) => c.debtsByStatus).map((status) => ({ label: `Reflections owed: ${status}`, value: (c: RestoreCounts) => c.debtsByStatus[status] ?? 0 })),

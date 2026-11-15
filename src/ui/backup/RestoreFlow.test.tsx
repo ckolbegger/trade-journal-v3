@@ -643,6 +643,22 @@ describe('Restore screen gaps (T8.13-F1)', () => {
     expect(screen.getByText("A record refers to an Account that isn't in the backup (a-1).")).toBeTruthy();
   });
 
+  it('should label each Journal entries row by its trader-facing Entry Type name in the preview and in the Restore complete summary, never by its internal key', async () => {
+    const byType = { 'entry-type.plan-reflection': 4, 'entry-type.position-change-reflection': 3, 'entry-type.daily-trade-review': 2, 'entry-type.close-review': 1 };
+    const ctx = setup();
+    const { facade, user } = ctx;
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ counts: counts({ entriesByType: byType }), target: { hasUserData: false, counts: null, currentTimeZone: null, restoredTimeZone: 'America/New_York' }, safetyChoiceRequired: false, warnings: [] }) });
+    const expected = ['Journal entries: Plan Reflection', 'Journal entries: Position Change Reflection', 'Journal entries: Daily Trade Review', 'Journal entries: Close Review'];
+    const labels = () => within(screen.getByRole('table')).getAllByRole('rowheader').map((h) => h.textContent ?? '');
+    expect(labels().filter((l) => l.startsWith('Journal entries: '))).toEqual(expected);
+    await user.click(UNDERSTAND());
+    facade.respond('applyPreparedRestore', restored('Trades', { entriesByType: byType }));
+    await user.click(REPLACE());
+    await screen.findByRole('heading', { name: 'Restore complete' });
+    expect(labels().filter((l) => l.startsWith('Journal entries: '))).toEqual(expected);
+    expect(labels().some((l) => l.includes('entry-type.'))).toBe(false);
+  });
+
   it('should show the version count once on the Trades total line and once on the Journal entries row and not on the Planned Open and Closed rows', async () => {
     const ctx = setup();
     await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ counts: counts({ versions: { trades: 5, entries: 2, debts: 1 } }) }) });
