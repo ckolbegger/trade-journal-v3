@@ -1,4 +1,4 @@
-import { setWidth } from '../d7p/support.ts';
+import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import {
   chooseFile, chooseRestoreFile, completeLine, confirmStep, declineSafetyBackup, downloadBackup, downloadSection, expect, expectAccessible, firstPage, FIXTURE_BACKUP, installDump, launchAt, MONDAY_1005, openBackup,
   primaryNav, profileAt, READY, replaceEntire, restoreComplete, restoreSection, safetyBackup, scratch, seedJournal, tabTo, test, understood, verifyWith, WARNING, writeFlipped, writeTruncated,
@@ -165,6 +165,37 @@ test.describe('B8.16 Responsive and accessible', () => {
     await expect(held.getByRole('heading', { name: 'This release must convert your journal before you can use it' })).toBeVisible(READY);
     await expectAccessible(held, 'AwaitingMigration');
     await waiting.close();
+  });
+
+  // T8.22-B4 (AC-UI-001): a backup made by this build names a 64-character release; the preview shows it in full, and the page must not scroll sideways at 375 or 320 px.
+  test('should show the Restore preview without sideways scroll at 375 and 320 px on the Backup page and on first run', async ({ profile }) => {
+    test.setTimeout(240_000);
+    await seedJournal(profile);
+    const saved = scratch('narrow.tjbackup');
+    const context = await launchAt(profile, MONDAY_1005);
+    const page = await firstPage(context);
+    await page.goto('/');
+    await openBackup(page);
+    await downloadBackup(page, saved);
+    await chooseRestoreFile(page, saved);
+    await expect(page.getByText(/\(release [0-9a-f]{64}, schema \d+\)/)).toBeVisible();
+    for (const width of [375, 320]) {
+      await setWidth(page, width);
+      await expectNoSidewaysScroll(page, `Backup page: Restore preview at ${width} px`);
+    }
+    await context.close();
+
+    const fresh = await profileAt(`${profile.dir}-first-run`).launch();
+    const first = await firstPage(fresh);
+    await first.goto('/');
+    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await first.getByRole('button', { name: 'Restore from a backup' }).click();
+    await chooseRestoreFile(first, saved);
+    for (const width of [375, 320]) {
+      await setWidth(first, width);
+      await expectNoSidewaysScroll(first, `first run: Restore preview at ${width} px`);
+    }
+    await fresh.close();
   });
 
   test('should complete a Restore with the keyboard only, every focused control showing a focus ring', async ({ profile }) => {

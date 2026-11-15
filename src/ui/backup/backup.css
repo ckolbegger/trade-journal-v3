@@ -9,6 +9,11 @@
 }
 
 /* The Restore flow (D8 T8.13): the counts table, notes and the confirmation step. */
+/* A long release id and long labels break rather than widen the page (AC-UI-001). */
+.restore-preview {
+  overflow-wrap: anywhere;
+}
+
 .restore-counts {
   border-collapse: collapse;
   margin: 0.75rem 0;
