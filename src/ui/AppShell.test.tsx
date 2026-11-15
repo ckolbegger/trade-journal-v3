@@ -41,6 +41,13 @@ function withBackup(facade: UiFacade): UiFacade {
   return { ...facade, capabilities: { ...facade.capabilities, operations } };
 }
 
+// A release before the backup operations were installed: the real manifest now installs them, so a shell
+// without Backup is made by taking them out. The backup schema range is not read by the shell.
+function withoutBackup(facade: UiFacade): UiFacade {
+  const operations = Object.fromEntries(Object.entries(facade.capabilities.operations).filter(([op]) => !BACKUP_OPERATIONS.includes(op)));
+  return { ...facade, capabilities: { ...facade.capabilities, operations } };
+}
+
 afterEach(cleanup);
 
 // The Restore flow is built by another task; here it only records that the first-run screen opened it.
@@ -532,6 +539,7 @@ describe('primary navigation', () => {
   const links = (nav: HTMLElement) => Array.from(nav.querySelectorAll('a'));
 
   it('should mark the link of the current route, and only that link, with aria-current page in both the sidebar and the bottom bar', async () => {
+    // Backup is a destination in the wide sidebar only; the bottom bar keeps five links (A144 as amended by P106).
     for (const width of [1280, 390]) {
       window.innerWidth = width;
       renderShell(facadeDouble(), '/accounts');
@@ -541,6 +549,7 @@ describe('primary navigation', () => {
         ['Review', null],
         ['New Plan', null],
         ['Accounts', 'page'],
+        ...(width === 1280 ? [['Backup', null]] : []),
         ['About', null],
       ]);
       cleanup();
@@ -894,7 +903,7 @@ describe('readiness and protection (A143, A144)', () => {
     expect(within(warning).getByRole('link').getAttribute('href')).toBe('/backup');
     cleanup();
     // A release that does not serve backup has nowhere to link, so it says nothing about it.
-    const without = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const without = withoutBackup(facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) }));
     renderShell(without, '/about', aboutScreen(without));
     const plain = await screen.findByRole('region', { name: 'Storage protection' });
     expect(within(plain).queryByText(/keep a safe copy/i)).toBeNull();
