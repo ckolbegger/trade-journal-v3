@@ -669,6 +669,26 @@ describe('cancellation (A138, A148)', () => {
     expect(await dumpAll(target.factory)).toEqual(before);
   });
 
+  it('should return Cancelled rather than a rejection when the signal aborts while the header is read or the free space is estimated', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    const controller = new AbortController();
+    // Only ten kilobytes are free, so the estimate alone would reject; the user presses Cancel while it is measured.
+    const full = {
+      ...target.testHost.host,
+      estimate: () => {
+        controller.abort();
+        return Promise.resolve({ quota: 10 * 1024 ** 3, usage: 10 * 1024 ** 3 - 10_000 });
+      },
+    };
+
+    const result = await workspaceOf(target, { host: full }).prepareRestore({ file: backupFile(a7.bytes), signal: controller.signal });
+
+    expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
+    expect(await dumpAll(target.factory)).toEqual(before);
+  });
+
   it('should return Cancelled and delete the candidate when the signal aborts between batches after staging has begun', async () => {
     const a7 = await exportedArtifact(await loadDump(W7));
     const target = await targetWorkspace();

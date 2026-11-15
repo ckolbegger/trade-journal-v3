@@ -314,24 +314,27 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     live: TargetBinding,
     lines: ReturnType<typeof readArtifact>,
   ): Promise<PrepareRestoreResult> {
+    // A Cancel that lands during the header read or the estimate wins over any rejection found there (A138).
+    const rejectUnlessCancelled = (issues: RestoreIssue[]): PrepareRestoreResult =>
+      request.signal?.aborted ? { kind: 'Cancelled', liveBinding: live } : rejected(issues, live);
     let first: Awaited<ReturnType<typeof lines.next>>;
     try {
       first = await lines.next();
     } catch (error) {
-      return rejected([readFailure(error)], live);
+      return rejectUnlessCancelled([readFailure(error)]);
     }
     if (first.done || first.value.kind !== 'header') throw new Error('The backup has no header');
     const parsedHeader = headerShape.safeParse(first.value.value);
-    if (!parsedHeader.success || parsedHeader.data.formatVersion !== FORMAT_VERSION) return rejected([{ code: 'UnsupportedFormat' }], live);
+    if (!parsedHeader.success || parsedHeader.data.formatVersion !== FORMAT_VERSION) return rejectUnlessCancelled([{ code: 'UnsupportedFormat' }]);
     const header = parsedHeader.data;
-    if (header.schemaVersion > SCHEMA_VERSION) return rejected([{ code: 'UnsupportedNewerSchema' }], live);
+    if (header.schemaVersion > SCHEMA_VERSION) return rejectUnlessCancelled([{ code: 'UnsupportedNewerSchema' }]);
 
     // The candidate's projected size against the free quota (A138).
     const estimate = await deps.host.estimate?.();
     if (estimate) {
       const availableBytes = (estimate.quota ?? 0) - (estimate.usage ?? 0);
       const requiredBytes = Math.ceil(Object.entries(header.counts).reduce((total, [store, count]) => total + count * (BYTES_PER_RECORD[store] ?? 0), 0));
-      if (requiredBytes > availableBytes) return rejected([{ code: 'InsufficientCapacity', availableBytes, requiredBytes }], live);
+      if (requiredBytes > availableBytes) return rejectUnlessCancelled([{ code: 'InsufficientCapacity', availableBytes, requiredBytes }]);
     }
 
     if (request.signal?.aborted) {
