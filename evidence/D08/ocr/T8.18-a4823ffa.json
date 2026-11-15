@@ -1,0 +1,214 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 2410041,
+    "input_tokens": 2405615,
+    "output_tokens": 4426,
+    "cache_read_tokens": 151808,
+    "elapsed": "2m25s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_find": 2,
+      "file_read": 14
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 18,
+        "tool_name": "file_read",
+        "file_path": "bench/dataset.json,src/app/bench-generator.test.ts,src/app/bench-generator.ts,tools/bench-generate.ts",
+        "arguments": "{\"file_path\": \"vitest.config.ts\"}",
+        "error": "file \"vitest.config.ts\" not found: git show a4823ffa2079ce2ff7d9539cd7795928d2329de7:vitest.config.ts: exit status 128: fatal: path 'vitest.config.ts' does not exist in 'a4823ffa2079ce2ff7d9539cd7795928d2329de7'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "tools/bench-generate.ts",
+      "content": "The new artifact output has no corresponding Restore/setup integration in this change. `tools/bench-run.ts` still calls `bench:generate` when its profile stamp is missing, then copies `BENCH_PROFILE_DIR` and compares against the expected rows. This generator no longer creates that profile or stamp, and now empties the expected rows, so a fresh benchmark run fails copying the profile (or uses stale data if a profile already exists). Add the production Restore setup and update the benchmark command sequence to restore this artifact and capture expected rows before measurements.",
+      "existing_code": "const rows: ExpectedOpenRows = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION, headers: [], rows: [], items: [] };",
+      "start_line": 97,
+      "end_line": 97,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/app/bench-generator.ts",
+      "content": "This nested ternary violates the supplied expression-style rule. Use explicit conditional branches for the resolution status; apply the same change to the newly added option-leg selection and settlement comparator nested ternaries.",
+      "existing_code": "    const resolution = disposition === 'answered' ? { status: 'Settled', entryId: idOf('je', outcome) } : disposition === 'declinedLater' ? { status: 'Declined', declineId: idOf('jx', outcome) } : undefined;",
+      "start_line": 856,
+      "end_line": 856,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Benchmark dataset generation, tooling, and tests",
+      "files": [
+        "bench/dataset.json",
+        "src/app/bench-generator.test.ts",
+        "src/app/bench-generator.ts",
+        "tools/bench-generate.ts"
+      ]
+    }
+  ],
+  "session_id": "3f7b2f14-3e49-40a0-ab21-153d16c82637",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3f7b2f14-3e49-40a0-ab21-153d16c82637",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a4823ffa",
+      "resolved_base": "de83f1399b2c68f26a5cec54d76d717a93ef2b6f",
+      "resolved_head": "a4823ffa2079ce2ff7d9539cd7795928d2329de7",
+      "exact_range": "de83f1399b2c68f26a5cec54d76d717a93ef2b6f..a4823ffa2079ce2ff7d9539cd7795928d2329de7",
+      "source_artifact_sha256": "e12bc7fe5025712a9cf1bb6c20c7fcea246ca06cfe90c94146181de9f48a3931"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "193fd6ed0ced4bf27c854f39d0d94ce7f46a200bd6f38b0f2eb8a6e2e63a8106",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "f0b468582bb2b01a3bc95df93de38219799f7d5b32019cce8bbe8b4762a867c6"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "1392f15fcea46ec1a75adb1b462d70378df11d96841345f550af34d2fe4b5d06"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "fb721b600e70e4db58d1f0ba7d997c569869ec9dcb534359836ff9d453fbe750"
+        },
+        {
+          "item_id": "b2e01b44de49a8302e41e58add1effedad95d33abbed5e645daac4136f879af9",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "fd740c861d1005085b010091c5d551359e3dd22b220f90faaf42f6cf62cf73ad"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "193fd6ed0ced4bf27c854f39d0d94ce7f46a200bd6f38b0f2eb8a6e2e63a8106",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "f0b468582bb2b01a3bc95df93de38219799f7d5b32019cce8bbe8b4762a867c6"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "1392f15fcea46ec1a75adb1b462d70378df11d96841345f550af34d2fe4b5d06"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "fb721b600e70e4db58d1f0ba7d997c569869ec9dcb534359836ff9d453fbe750"
+        },
+        {
+          "item_id": "b2e01b44de49a8302e41e58add1effedad95d33abbed5e645daac4136f879af9",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "fd740c861d1005085b010091c5d551359e3dd22b220f90faaf42f6cf62cf73ad"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "43c3addede70ec332337ec72210737d62a7e0c144957157693b466a4c9d19591",
+          "path": "evidence/D08/suite-runs/T8.18-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "exclude_reason": "too_large"
+        },
+        {
+          "item_id": "507ab7c9454dde2a73955b3732b0a2fec6899e60b9b24e8154dffc8dae790e4a",
+          "path": "evidence/D08/tdd-log/T8.18.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "54fdc810da9b7adc8e8b2f771075ccec33bbec524c2e05f26082112d1f9754c2",
+          "path": "evidence/D08/suite-runs/T8.18-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5fe0f387b71265b81b0d973dd92348e516cc7e85482b836a87a74a43d22ecd7e",
+          "path": "evidence/D08/suite-runs/T8.18-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cd3e57678ec2e6bf99259f4421d4b623a045ad1c8b68097bc1700b2db6e5b826",
+          "path": "evidence/D08/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d5f328aef1fe85cc62e2bc244c7089c26483dde99290e8413e9efdef35315717",
+          "path": "evidence/D08/suite-runs/T8.18-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 144546
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 26,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 0,
+    "cancelled_requests": 1,
+    "requests": [
+      {
+        "logical_request_id": "8dd4a997b446c4cfb0915fbfa06117ffc406764d8f850147a60e5779c593da21",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "bench/dataset.json,src/app/bench-generator.test.ts,src/app/bench-generator.ts,tools/bench-generate.ts",
+        "task_type": "memory_compression_task",
+        "request_no": 4,
+        "outcome": "cancelled",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "cancelled",
+            "failure_phase": "context",
+            "status_code": 200,
+            "duration_to_headers_ms": 1539
+          }
+        ]
+      }
+    ]
+  }
+}
