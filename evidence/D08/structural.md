@@ -1115,3 +1115,7 @@ Lane FX rebased onto `253e5c4e` (only evidence and plan commits since its base, 
 - **ocr T8.21-F3** `6cd5e81b`: **partial, not a clean review.** 2 of 5 files reviewed (the update controller and its test, no comments); `src/main.tsx`, `src/ui/backup/other-tabs.ts` and its test failed with a provider streaming error, the same failure shape as the earlier usage-limit runs (`error_class: provider`, `failure_phase: stream`). A full rerun failed on all 5, a resume failed on the same 3. Raw: `ocr/T8.21-F3-6cd5e81b-partial.json`. To be rerun; lane BR waits for it.
 - **ocr T8.18-F2** `9b728388`: not run. ocr's usage ran out (`subscription_sharing_usage_limit_exceeded`, session 16bf4f22, 0 of 8 files reviewed); the T8.21-F3 streaming failures just before were most likely the same limit. Per the user's instruction (2026-11-15), work pauses until 08:15 EST: no new tasks, reviews or merges; merge-21, already running, finishes. Resume by rerunning the T8.18-F2 and T8.21-F3 reviews.
 - **merge-21** (lane FX, code at `b05a698f`; the HEAD moved during the run only by evidence commits up to `92077de2`): green. Unit 1989, integration 258, browser-1 126 passed, browser-2 98 passed, checks 14 of 14; full tier since `77e6e279` (`src/app/compose.ts`); run complete.
+
+## Pause ended (2026-11-15 08:04 EST)
+
+`ocr llm test` was retried every 10 minutes at the user's request: still limited at 07:44 and 07:54, working at 08:04. Work resumed early; ocr reviews of T8.18-F2 `9b728388` (lane BG) and a full rerun of T8.21-F3 `6cd5e81b` (lane BR) started.
