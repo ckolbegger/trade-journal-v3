@@ -1317,3 +1317,19 @@ Run alone in the main worktree (ports 5175, 4175, 9341, 9342 free before each me
    - Restored: `git checkout -- src/delivery/capacity-basis.json`; the baseline was restored from a copy of the hand-written file, since it was not yet committed. Both hold the committed figures.
    - `npm run measure:capacity` exit 0 (`usage 0.264, peak 0.485 × M`); `npm run bench:verify-capacity` exit 0: usage 0.264 × the projection, peak 0.485 × M (442158962 over 912516132), usage 1.000 × the baseline.
 7. `grep -rn -- "--restored" tools package.json`: no output. `verify:` scripts: verify:hooks verify:release verify:capabilities verify:releases verify:no-fault-hooks verify:capacity verify:fixtures verify:session-policy verify:wording (the same nine).
+
+**T8.19-F1 ocr review** (`fa06cb28`, raw output `ocr/T8.19-F1-fa06cb28.json`): 13 files reviewed (2 excluded), 0 comments. No findings.
+
+**T8.19-F1 notes from the task's summary (not bug tasks):** two stale command names outside the task's files: `tools/capacity/profile.ts` line 190 says "run npm run measure:capacity <engine>" (now `measure:capacity:reset-basis`), and the comment at `tools/capacity/measure-page.ts` line 1 says it runs "under `measure:capacity`". ocr did not raise them. Verification steps 3 and 6 judged `git status` by the named files only, since the task's own edits were not yet committed.
+
+**T8.19-F1 complete run** (label `T8.19-F1`, `fa06cb28` plus evidence edits). Browser tier: full; `browser tier: full (first matching path since 4183364f: package.json)`. `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 189 files, 2027 passed |
+| Node integration | 118 files, 258 passed |
+| Browser-1 | 126 passed (5.4m) |
+| Browser-2 | 120 passed (7.9m) |
+| Checks | 14 of 14 exit 0 |
+
+Failures: none.

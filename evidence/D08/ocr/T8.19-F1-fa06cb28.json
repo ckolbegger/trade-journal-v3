@@ -1,0 +1,233 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 13 selected item(s).",
+  "summary": {
+    "files_reviewed": 13,
+    "comments": 0,
+    "total_tokens": 88211,
+    "input_tokens": 86802,
+    "output_tokens": 1409,
+    "cache_read_tokens": 8320,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 10,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Capacity measurement, baseline management, and verification tooling",
+      "files": [
+        "bench/capacity-baseline.json",
+        "package.json",
+        "tools/bench-verify-capacity.ts",
+        "tools/capacity/measure-basis.ts",
+        "tools/measure-capacity.ts",
+        "tools/reset-capacity-baseline.ts",
+        "tools/reset-capacity-basis.ts",
+        "tools/verify-capacity.ts"
+      ]
+    },
+    {
+      "label": "Benchmark profiling and restored-capacity checks",
+      "files": [
+        "tools/bench-run.ts",
+        "tools/bench/profile.ts",
+        "tools/bench/restore-checks.test.ts",
+        "tools/bench/restore-checks.ts",
+        "tools/bench/restored-capacity.ts"
+      ]
+    }
+  ],
+  "session_id": "e9af8ad1-7e02-4d23-89bb-7537c81a966f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e9af8ad1-7e02-4d23-89bb-7537c81a966f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fa06cb28",
+      "resolved_base": "4183364f2e2e4dcdaff05c07390ac61c777b7385",
+      "resolved_head": "fa06cb28d9db3fc748eda70eda5754cca36d8a99",
+      "exact_range": "4183364f2e2e4dcdaff05c07390ac61c777b7385..fa06cb28d9db3fc748eda70eda5754cca36d8a99",
+      "source_artifact_sha256": "499203a942b201c94f838995d3b880ff11a235af254bf4d8f197ff7ffb1abc43"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "1cf9b84be6e5e0b49e0d8372c19745bb158df1a5bb065507a7e64f53a683ba38"
+        },
+        {
+          "item_id": "1ed897d9691346942d9d4151556c31dbb6aa8e3a9be12a43e5b4de5df4e28aec",
+          "path": "tools/bench-verify-capacity.ts",
+          "fingerprint": "811c0e596635d1f4dc6790cdf50706bf7f76135abcefa099cafe79acbc355413"
+        },
+        {
+          "item_id": "2472e473dd54efa133d81559c1efe19d8698ccade0844cdbdeb29f615305d13d",
+          "path": "tools/bench/restored-capacity.ts",
+          "fingerprint": "153469f6349eca0468ee38730ec8dafa0df6b717b179c00ca05c88325bc29931"
+        },
+        {
+          "item_id": "339eb170e5d163f075658943fb39760b45a7d90a7c15cf7e77d12024c391a1a6",
+          "path": "bench/capacity-baseline.json",
+          "fingerprint": "a34eee90e02d76f8943e068eeb3f4a99c96206aa10a002e6e55cc1ed511ac59c"
+        },
+        {
+          "item_id": "3d7e78662a9f513d120e3b61e9a01964261fa0d304239575dd48dea3efd96a12",
+          "path": "tools/bench/profile.ts",
+          "fingerprint": "81cb7957a7d23ad44279266205b1b18a71d02079b65ef793f5982a1c3ba0348c"
+        },
+        {
+          "item_id": "44cbf8bb04cdf9ced5ce20301ced0f09ba947c6b17855a04ba3e625cb8310fea",
+          "path": "tools/capacity/measure-basis.ts",
+          "fingerprint": "ffb37ce4ca1b778340d5fc3c8acd02378bbd1cacb661cba350209c4fd0d5e762"
+        },
+        {
+          "item_id": "9fda670b35c2aa98de0a0872ce9642587fe4395ff947f5a7bd84b5939348af91",
+          "path": "tools/verify-capacity.ts",
+          "fingerprint": "b4f1827a330e17746801b0a9efd42ae33c723dcc22927d7fee5c356bdf230b6c"
+        },
+        {
+          "item_id": "a2c9e64b4086618459849b655bc44f519a7b294cb5157598a495b07fc3b3b832",
+          "path": "tools/reset-capacity-basis.ts",
+          "fingerprint": "f94e11c1dce3644e12a9c8c226a779d876461443400358c2957881e3f576e306"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "9403aaadf5992a480504318df2c3d37bd25ddbedc7ef82a30a58933ec003aef6"
+        },
+        {
+          "item_id": "c34f1fe891f55e3190cf29fc731dab915f73fb057f47f2be728c38e7d0bd4f4c",
+          "path": "tools/bench/restore-checks.test.ts",
+          "fingerprint": "b5b0ac1ad19e1391ce26ff0b8f634a9e2ab91de9261b318e5cc4485488277523"
+        },
+        {
+          "item_id": "c64d560e1f0a447dce40e9bff62e204cbafccee29bda467db69db7529553fc3a",
+          "path": "tools/bench/restore-checks.ts",
+          "fingerprint": "7058012761876483750673531f0a98a4737e4c2d5971e64c29dca9ded27e3700"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "a0dc0f4d4ba16af4c86597b575495ece42dbf8fb43e2ce3b3a5dcbe20f35a267"
+        },
+        {
+          "item_id": "fb1028cbc86a1074e23263be55f870f2eb81c248cf8afde61597109127038ba3",
+          "path": "tools/reset-capacity-baseline.ts",
+          "fingerprint": "da6fea499286fde8403c43464e60791d09493e8f4cf69bb8d8b9671bf1214ee7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "1cf9b84be6e5e0b49e0d8372c19745bb158df1a5bb065507a7e64f53a683ba38"
+        },
+        {
+          "item_id": "1ed897d9691346942d9d4151556c31dbb6aa8e3a9be12a43e5b4de5df4e28aec",
+          "path": "tools/bench-verify-capacity.ts",
+          "fingerprint": "811c0e596635d1f4dc6790cdf50706bf7f76135abcefa099cafe79acbc355413"
+        },
+        {
+          "item_id": "2472e473dd54efa133d81559c1efe19d8698ccade0844cdbdeb29f615305d13d",
+          "path": "tools/bench/restored-capacity.ts",
+          "fingerprint": "153469f6349eca0468ee38730ec8dafa0df6b717b179c00ca05c88325bc29931"
+        },
+        {
+          "item_id": "339eb170e5d163f075658943fb39760b45a7d90a7c15cf7e77d12024c391a1a6",
+          "path": "bench/capacity-baseline.json",
+          "fingerprint": "a34eee90e02d76f8943e068eeb3f4a99c96206aa10a002e6e55cc1ed511ac59c"
+        },
+        {
+          "item_id": "3d7e78662a9f513d120e3b61e9a01964261fa0d304239575dd48dea3efd96a12",
+          "path": "tools/bench/profile.ts",
+          "fingerprint": "81cb7957a7d23ad44279266205b1b18a71d02079b65ef793f5982a1c3ba0348c"
+        },
+        {
+          "item_id": "44cbf8bb04cdf9ced5ce20301ced0f09ba947c6b17855a04ba3e625cb8310fea",
+          "path": "tools/capacity/measure-basis.ts",
+          "fingerprint": "ffb37ce4ca1b778340d5fc3c8acd02378bbd1cacb661cba350209c4fd0d5e762"
+        },
+        {
+          "item_id": "9fda670b35c2aa98de0a0872ce9642587fe4395ff947f5a7bd84b5939348af91",
+          "path": "tools/verify-capacity.ts",
+          "fingerprint": "b4f1827a330e17746801b0a9efd42ae33c723dcc22927d7fee5c356bdf230b6c"
+        },
+        {
+          "item_id": "a2c9e64b4086618459849b655bc44f519a7b294cb5157598a495b07fc3b3b832",
+          "path": "tools/reset-capacity-basis.ts",
+          "fingerprint": "f94e11c1dce3644e12a9c8c226a779d876461443400358c2957881e3f576e306"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "9403aaadf5992a480504318df2c3d37bd25ddbedc7ef82a30a58933ec003aef6"
+        },
+        {
+          "item_id": "c34f1fe891f55e3190cf29fc731dab915f73fb057f47f2be728c38e7d0bd4f4c",
+          "path": "tools/bench/restore-checks.test.ts",
+          "fingerprint": "b5b0ac1ad19e1391ce26ff0b8f634a9e2ab91de9261b318e5cc4485488277523"
+        },
+        {
+          "item_id": "c64d560e1f0a447dce40e9bff62e204cbafccee29bda467db69db7529553fc3a",
+          "path": "tools/bench/restore-checks.ts",
+          "fingerprint": "7058012761876483750673531f0a98a4737e4c2d5971e64c29dca9ded27e3700"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "a0dc0f4d4ba16af4c86597b575495ece42dbf8fb43e2ce3b3a5dcbe20f35a267"
+        },
+        {
+          "item_id": "fb1028cbc86a1074e23263be55f870f2eb81c248cf8afde61597109127038ba3",
+          "path": "tools/reset-capacity-baseline.ts",
+          "fingerprint": "da6fea499286fde8403c43464e60791d09493e8f4cf69bb8d8b9671bf1214ee7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "b8e12db9a22d50d84281eec94b91e1fa9eb3d44d183fd4b94ff799cd50494895",
+          "path": "evidence/D08/tdd-log/T8.19-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cd3e57678ec2e6bf99259f4421d4b623a045ad1c8b68097bc1700b2db6e5b826",
+          "path": "evidence/D08/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 50599
+  }
+}

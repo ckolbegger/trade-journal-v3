@@ -826,5 +826,5 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.21 | 2 | BR | Done | `c7f0aee6`; B1 `632b9100`; F1 `65cbb0ed`, F2 `8162e872`, F3 `e914e669`, F3-B1 `7764c473`, F3-B1-B1 `165dd4aa` |
 | T8.19 | 2 | BN | Done (includes T8.18-B1; Q29 answered, follow-up T8.19-F1) | `e29bda14`; B1 `1ed5f0d1`, B2 `e04f72df` |
 | T8.22 | 2 | — | Done: critic-1 FAIL (6 defects), critic-2 PASS (2 low), all fixed; gate run green | B1 `9db776ea`, B2 `e971f296`, B3 `71c9a40a`, B4 `a70bf08b`, B5 `dd5fc138`, B6 `8f56a2cd`, B6-B1 `45f0881b`, B6-B2 `6fddd9f4`, B7 `0d592896`, B8 `520e1245`, B8-B1 `d1ce099f` |
-| T8.19-F1 | after the gate | — | Not started (revision 103, decision 114) | |
+| T8.19-F1 | after the gate | — | Done (revision 103, decision 114); ocr clean; run `T8.19-F1` passed | `fa06cb28` |
 | T8.16 | — | — | Withdrawn (decision 76) | |

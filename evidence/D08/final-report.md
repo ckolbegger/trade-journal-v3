@@ -36,6 +36,8 @@ TDD order slips (code before a valid red; the red was then taken by removing the
 
 All 29 questions are answered. **Q29** (answered after the tag): keep T8.19's projection formula, add a growth guard (restored usage within 50% of today's 206.5 MB baseline), and replace the `--restored` option with command names (`measure:capacity` safe, `measure:capacity:reset-baseline` the only command that rewrites stored figures, `verify:capacity:restored`). The code change, T8.19-F1, is not in the `claude-opus-5.5-d8` tag: at the user's choice it is the first item for plan revision 103.
 
+**T8.19-F1 is done** (`fa06cb28`, plan revision 103, decision 114, which replaced Q29's first wording with `measure:capacity:reset-basis`, `measure:capacity:reset-baseline` and `bench:verify-capacity`). ocr: no findings. Its benchmark measurement: restored usage 0.264 × the projection (limit 1.10), second-Restore peak 0.485 × M (limit below 3), restored usage 1.000 × the baseline (limit 1.50). Complete run `T8.19-F1` passed (full browser tier; unit 2027, integration 258, browser 126 + 120, checks 14 of 14). Notes, not defects: `tools/capacity/profile.ts` line 190 and the comment at the top of `tools/capacity/measure-page.ts` still name `measure:capacity` where `measure:capacity:reset-basis` is meant.
+
 Known limits by decision: Q12 (a throw after the switch in apply's last three steps is unguarded; the Restore screen's message covers it); Q16 (`UnsupportedDataCapability` is never produced; revisit before D10).
 
 ## Reviewer notes (not defects; for r103 or later work)
