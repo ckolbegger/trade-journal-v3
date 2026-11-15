@@ -1396,3 +1396,7 @@ Reviewer note, not a bug task: `D07S` has two plan files with a Progress section
 **D8-Retro-1a-B7** (`246aa2b5`): the file choice requires a `|` row under the Progress heading. Case 11 red then green (its no-table scenario passes before and after, as a guard). ocr review pending.
 
 **D8-Retro-1a-B7 ocr review** (`246aa2b5`, `ocr/D8-Retro-1a-B7-246aa2b5.json`): 0 comments, no findings.
+
+**D8-Retro-1a-B8** (`f49a830b`): the prefix widens to `([A-Za-z0-9.]+-)*`, and each ID is keyed by its trailing F/B part. Case 12 red then green. ocr review (`ocr/D8-Retro-1a-B8-f49a830b.json`): 1 comment, Valid:
+
+- **D8-Retro-1a-B9** (Valid, `status.sh:36`): the inner `match()` overwrites `RSTART`/`RLENGTH`, so the scan resumes at the wrong offset and `abc T9.2-F1-B1` counts `B1` twice. Case: it should count each ID once when text precedes a chained ID. This is the third round of bug tasks on D8-Retro-1a; findings on B9's review stop for the user.

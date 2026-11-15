@@ -1,0 +1,111 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 40880,
+    "input_tokens": 39668,
+    "output_tokens": 1212,
+    "cache_read_tokens": 9984,
+    "elapsed": "1m2s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "The inner `match()` overwrites AWK's `RSTART` and `RLENGTH`, but the next line still uses them to advance through `s`. These offsets are now relative to `tok`, not the original input. For example, a Commits cell containing `abc T9.2-F1-B1` first counts `F1-B1`, then resumes at `1-B1` and incorrectly counts a second bug ID (`B1`). Longer prose prefixes can also cause repeated rescanning. Save the outer match's end position before calling the inner `match()` (or advance `s` immediately after extracting the outer token), and add a regression case with prose before a chained ID.",
+      "existing_code": "      match(tok, /(^|-)[FB][0-9]+(-[FB][0-9]+)*$/); tok = substr(tok, RSTART, RLENGTH); sub(/^-/, \"\", tok)",
+      "start_line": 36,
+      "end_line": 36,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/status.sh",
+        ".claude/scripts/status.test.sh"
+      ]
+    }
+  ],
+  "session_id": "83b09268-dd9f-4dcd-9743-e4970373e6d0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "83b09268-dd9f-4dcd-9743-e4970373e6d0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f49a830b",
+      "resolved_base": "e0e8640063d3bd32a30e0b4cfaf872a344576dc7",
+      "resolved_head": "f49a830b0e37e91fea9796782e435fe5434b1712",
+      "exact_range": "e0e8640063d3bd32a30e0b4cfaf872a344576dc7..f49a830b0e37e91fea9796782e435fe5434b1712",
+      "source_artifact_sha256": "400dceba1b2d672adb4c7924d8a730562381e5e4839f6f9a0a946041ec24e739"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "009ee13bf039c211f1aaf5326d2e5dad07548f7a741c2a7f6b980352f3547ce4"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "2630d96818bf65ef8c70efd79cc8e0f7dc361000f58aa141af1be9abff1a57dc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "009ee13bf039c211f1aaf5326d2e5dad07548f7a741c2a7f6b980352f3547ce4"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "2630d96818bf65ef8c70efd79cc8e0f7dc361000f58aa141af1be9abff1a57dc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "97da0bd53d884c260895619f059a04f1d6b8aaf04aea9341fadf9876f820f2bb",
+          "path": "evidence/D08/tdd-log/D8-Retro-1a.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 61583
+  }
+}
