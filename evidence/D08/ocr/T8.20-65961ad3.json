@@ -1,0 +1,281 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 13 selected item(s).",
+  "summary": {
+    "files_reviewed": 13,
+    "comments": 3,
+    "total_tokens": 297000,
+    "input_tokens": 293718,
+    "output_tokens": 3282,
+    "cache_read_tokens": 24960,
+    "elapsed": "1m20s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 7,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tests/integration/d8/after-restore.test.ts",
+      "content": "The known response mismatch throws before the unchanged-store assertion executes, and `it.fails` treats any rejection (including setup failures or an unexpected write) as success. Consequently this test does not enforce the advertised no-write invariant while the defect remains. Keep setup and the no-write check in a normal passing test (temporarily accepting the documented StorageFailure response), and isolate the expected response failure in a separate test.",
+      "existing_code": "    expect(refused).toEqual(superseded);\n    expect(await dumpAll(d.factory)).toEqual(before);\n  }, 120_000);\n});",
+      "start_line": 75,
+      "end_line": 78,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/integration/d8/safety.test.ts",
+      "content": "The known response mismatch throws before the database snapshot assertion runs, so this expected-failure test never checks the independent requirement that an unverified backup cannot cause writes. It also passes if setup or apply throws for an unrelated reason. Put the no-write invariant in a normal test (accepting the currently known response if necessary), and isolate the expected response mismatch in the expected-failure case.",
+      "existing_code": "    expect(unverified.kind).toBe('SafetyBackupRequired');\n    expect(await dumpAll(d.factory)).toEqual(before);",
+      "start_line": 63,
+      "end_line": 64,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tests/integration/d8/write-gate.test.ts",
+      "content": "Because the known `Activated` response fails the first assertion, the snapshot assertion is never executed. Moreover, `it.fails` treats any setup error or different failure as success, so this case cannot distinguish the documented write-gate defect from additional regressions. Capture setup and execution in a normal test and explicitly assert the known current outcome/state, keeping any expected-failure assertion narrowly scoped to the missing gate; update those assertions when the defect is fixed.",
+      "existing_code": "    expect(direct).toEqual(notWritable);\n    expect(await dumpAll(d.factory)).toEqual(before);",
+      "start_line": 40,
+      "end_line": 41,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Backup, restore, and recovery lifecycle integration tests and shared support",
+      "files": [
+        "tests/integration/d8/after-restore.test.ts",
+        "tests/integration/d8/backup.test.ts",
+        "tests/integration/d8/first-run.test.ts",
+        "tests/integration/d8/recovery-only.test.ts",
+        "tests/integration/d8/repairs.test.ts",
+        "tests/integration/d8/round-trip.test.ts",
+        "tests/integration/d8/support.ts"
+      ]
+    },
+    {
+      "label": "Preparation, atomicity, safety, and write-gate integration tests",
+      "files": [
+        "tests/integration/d8/atomic.test.ts",
+        "tests/integration/d8/blocked.test.ts",
+        "tests/integration/d8/prepare.test.ts",
+        "tests/integration/d8/responses.test.ts",
+        "tests/integration/d8/safety.test.ts",
+        "tests/integration/d8/write-gate.test.ts"
+      ]
+    }
+  ],
+  "session_id": "66dd171e-719d-4f04-ab97-32a6a70110ce",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "66dd171e-719d-4f04-ab97-32a6a70110ce",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "65961ad3",
+      "resolved_base": "ec56950e5cc43d089b40fb88cd4f5efd6c80d778",
+      "resolved_head": "65961ad38c5181ab12a555dd09191a91ba5018d9",
+      "exact_range": "ec56950e5cc43d089b40fb88cd4f5efd6c80d778..65961ad38c5181ab12a555dd09191a91ba5018d9",
+      "source_artifact_sha256": "bfafb777496508345588f9d67df85f601582ac8bb11d01eea127b82b1a755bf7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0177c0fd0b71e02fae081a582cfb87816a0b602cd5a656d2f55b0d280028bb9e",
+          "path": "tests/integration/d8/backup.test.ts",
+          "fingerprint": "dc8bf9b1b539faefbb2fdeeb095345c3a712cfde05bd450a97c5eac1a8234221"
+        },
+        {
+          "item_id": "04c2d27c147e833f1bf50cbfd198f6a6a352da1bb91b7562e4cacf4a5e1d9aa6",
+          "path": "tests/integration/d8/first-run.test.ts",
+          "fingerprint": "18ec659d0d5d7e5662cb03e1cc391677545c7632c6f73494676cbb64cc5bb342"
+        },
+        {
+          "item_id": "0b93d8c3c6e385af7b8c0f5931ab17e8fb1805a03591bcf5a514d4671088b8e5",
+          "path": "tests/integration/d8/prepare.test.ts",
+          "fingerprint": "570e3d25e894c73feb093732867b378224295cf6f5e7ef362913ed230862fcc3"
+        },
+        {
+          "item_id": "1084d8ac89fd454da9e0373df7f2721164a123db93f8b00b0eb5f92acbdcf093",
+          "path": "tests/integration/d8/round-trip.test.ts",
+          "fingerprint": "03e6788f1dae8acec11f16627f7225fc593371e16b368f23064601f011a81732"
+        },
+        {
+          "item_id": "10a36381761b17b261c31c73a882120cc38a7488d66a34470fb0ae4e93a7e883",
+          "path": "tests/integration/d8/responses.test.ts",
+          "fingerprint": "aae04d5c9d9ca98b55d5cc0d02b8fcf70c80f6025056fd8fd3e4f6033fef49ad"
+        },
+        {
+          "item_id": "18898973b9473db6968597d9dd4ce6a65e70fc0791899635427b99ace0d35e6b",
+          "path": "tests/integration/d8/write-gate.test.ts",
+          "fingerprint": "714481ebdce25470f53cb737f5bac6e0f172d8d1daf462146febd20fdff3afa5"
+        },
+        {
+          "item_id": "55aeac2e19de7d15aae4db7c696c6918bbca310a23efdcc4e7ea64ef2d7dccb0",
+          "path": "tests/integration/d8/recovery-only.test.ts",
+          "fingerprint": "b6c3b9d4f9bcbe6c8db2ca146e4853b3c9a34d0aa8a4986d52fbd852650b3869"
+        },
+        {
+          "item_id": "831697f5d7130a8bc7d25a11aa240f9eac574da76c15114af50bf3c455175a1b",
+          "path": "tests/integration/d8/after-restore.test.ts",
+          "fingerprint": "192f444e6731eee63db6223a8b694051dca8e11b1b6fd086640e1b84125b5550"
+        },
+        {
+          "item_id": "88fa32f89f0b245e917d5f5c89e3dadf659f4c077f987073d02c9ac509c80562",
+          "path": "tests/integration/d8/safety.test.ts",
+          "fingerprint": "4161d23547b08418ba9a4abe63b35e5298a1072dfbca58a1d9e47d0796ab4362"
+        },
+        {
+          "item_id": "96e8ab5d2c7afcf762580956299c1da14493d883f3e266595880302a3ed0da56",
+          "path": "tests/integration/d8/support.ts",
+          "fingerprint": "e33655a371f20135a8407ccb93ad7154bc4b181045a477d9f83e55870ca7171c"
+        },
+        {
+          "item_id": "9883490beb9136d17c2b8c0a3d5ddac24687f62394d2b641b746a1cff539abae",
+          "path": "tests/integration/d8/atomic.test.ts",
+          "fingerprint": "a86a510f71749c39f97bc8589634cf8903705d81fcb3fe279e358eac512ffe36"
+        },
+        {
+          "item_id": "cd8d4e903defc4bbc3d903194783152db1975b2a6569855527fc2ecd7ab065a9",
+          "path": "tests/integration/d8/blocked.test.ts",
+          "fingerprint": "814fc0211a19666360be32a74d3b44abac076ed1c1f933bf285ac50aa95ef29b"
+        },
+        {
+          "item_id": "eac878315319fb344b1d45b17247dd46bae941b544b02af1e38d6a8cac0f8513",
+          "path": "tests/integration/d8/repairs.test.ts",
+          "fingerprint": "bd27f1edb31d9f2059d8c3380c8f28c16772fd93be5ae67db48777a52a6d6c18"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0177c0fd0b71e02fae081a582cfb87816a0b602cd5a656d2f55b0d280028bb9e",
+          "path": "tests/integration/d8/backup.test.ts",
+          "fingerprint": "dc8bf9b1b539faefbb2fdeeb095345c3a712cfde05bd450a97c5eac1a8234221"
+        },
+        {
+          "item_id": "04c2d27c147e833f1bf50cbfd198f6a6a352da1bb91b7562e4cacf4a5e1d9aa6",
+          "path": "tests/integration/d8/first-run.test.ts",
+          "fingerprint": "18ec659d0d5d7e5662cb03e1cc391677545c7632c6f73494676cbb64cc5bb342"
+        },
+        {
+          "item_id": "0b93d8c3c6e385af7b8c0f5931ab17e8fb1805a03591bcf5a514d4671088b8e5",
+          "path": "tests/integration/d8/prepare.test.ts",
+          "fingerprint": "570e3d25e894c73feb093732867b378224295cf6f5e7ef362913ed230862fcc3"
+        },
+        {
+          "item_id": "1084d8ac89fd454da9e0373df7f2721164a123db93f8b00b0eb5f92acbdcf093",
+          "path": "tests/integration/d8/round-trip.test.ts",
+          "fingerprint": "03e6788f1dae8acec11f16627f7225fc593371e16b368f23064601f011a81732"
+        },
+        {
+          "item_id": "10a36381761b17b261c31c73a882120cc38a7488d66a34470fb0ae4e93a7e883",
+          "path": "tests/integration/d8/responses.test.ts",
+          "fingerprint": "aae04d5c9d9ca98b55d5cc0d02b8fcf70c80f6025056fd8fd3e4f6033fef49ad"
+        },
+        {
+          "item_id": "18898973b9473db6968597d9dd4ce6a65e70fc0791899635427b99ace0d35e6b",
+          "path": "tests/integration/d8/write-gate.test.ts",
+          "fingerprint": "714481ebdce25470f53cb737f5bac6e0f172d8d1daf462146febd20fdff3afa5"
+        },
+        {
+          "item_id": "55aeac2e19de7d15aae4db7c696c6918bbca310a23efdcc4e7ea64ef2d7dccb0",
+          "path": "tests/integration/d8/recovery-only.test.ts",
+          "fingerprint": "b6c3b9d4f9bcbe6c8db2ca146e4853b3c9a34d0aa8a4986d52fbd852650b3869"
+        },
+        {
+          "item_id": "831697f5d7130a8bc7d25a11aa240f9eac574da76c15114af50bf3c455175a1b",
+          "path": "tests/integration/d8/after-restore.test.ts",
+          "fingerprint": "192f444e6731eee63db6223a8b694051dca8e11b1b6fd086640e1b84125b5550"
+        },
+        {
+          "item_id": "88fa32f89f0b245e917d5f5c89e3dadf659f4c077f987073d02c9ac509c80562",
+          "path": "tests/integration/d8/safety.test.ts",
+          "fingerprint": "4161d23547b08418ba9a4abe63b35e5298a1072dfbca58a1d9e47d0796ab4362"
+        },
+        {
+          "item_id": "96e8ab5d2c7afcf762580956299c1da14493d883f3e266595880302a3ed0da56",
+          "path": "tests/integration/d8/support.ts",
+          "fingerprint": "e33655a371f20135a8407ccb93ad7154bc4b181045a477d9f83e55870ca7171c"
+        },
+        {
+          "item_id": "9883490beb9136d17c2b8c0a3d5ddac24687f62394d2b641b746a1cff539abae",
+          "path": "tests/integration/d8/atomic.test.ts",
+          "fingerprint": "a86a510f71749c39f97bc8589634cf8903705d81fcb3fe279e358eac512ffe36"
+        },
+        {
+          "item_id": "cd8d4e903defc4bbc3d903194783152db1975b2a6569855527fc2ecd7ab065a9",
+          "path": "tests/integration/d8/blocked.test.ts",
+          "fingerprint": "814fc0211a19666360be32a74d3b44abac076ed1c1f933bf285ac50aa95ef29b"
+        },
+        {
+          "item_id": "eac878315319fb344b1d45b17247dd46bae941b544b02af1e38d6a8cac0f8513",
+          "path": "tests/integration/d8/repairs.test.ts",
+          "fingerprint": "bd27f1edb31d9f2059d8c3380c8f28c16772fd93be5ae67db48777a52a6d6c18"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0ae66a488552a623aee11b7085ca021996246719ec14944102528d1baafd9c9c",
+          "path": "evidence/D08/suite-runs/T8.20-acceptance.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "11b64c513202cfa30febbf12c7196a876155a59b020d8db97b5711a2fa8537b4",
+          "path": "evidence/D08/suite-runs/T8.20-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "198e9ed130310f19f162bcbb6063053b662382abeb305baffd13eafe10aeac86",
+          "path": "evidence/D08/tdd-log/T8.20.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "705e0a9fd84bf0fa669e51da9e302ff4ebecb69c35c40f9d645faff70bfa313f",
+          "path": "evidence/D08/suite-runs/T8.20-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bde9ac10dc85fddeb61d11a7e0314a3a9e0bf5efa501f9dd9e167329e0bd7d73",
+          "path": "evidence/D08/suite-runs/T8.20-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ef76ef17c74a98be346d7d087507a913b2812c9a5670316c86a67369036310d6",
+          "path": "evidence/D08/suite-runs/T8.20-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 79721
+  }
+}
