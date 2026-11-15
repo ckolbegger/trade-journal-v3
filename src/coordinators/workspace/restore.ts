@@ -707,8 +707,13 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
           throw new Error('The root transaction that switches the Workspace was aborted');
         }
         // The live database holds no preparation bookkeeping.
-        await persistence.commit({ checks: [], writes: [{ op: 'delete', store: 'meta', key: 'restorePrepared' }] });
-        announceReplaced(token.candidateId);
+        // The Workspace is already replaced, so a failure here must not hide the Restored result (A136).
+        await persistence.commit({ checks: [], writes: [{ op: 'delete', store: 'meta', key: 'restorePrepared' }] }).catch(() => undefined);
+        try {
+          announceReplaced(token.candidateId);
+        } catch {
+          // Other tabs also learn of the replacement through the versionchange fallback.
+        }
         const readiness = await deps.session.recheck();
         const newBinding = await persistence.describeDatabase(token.candidateId);
         return {

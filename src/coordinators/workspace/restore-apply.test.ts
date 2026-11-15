@@ -201,6 +201,31 @@ describe('readiness after Restore (AC-DEL-006)', () => {
     const refused = await createMutationGuard(session).run('Catalog.save', () => target.catalog.save({ kind: 'CreateInstitution', label: 'Schwab' }));
     expect(refused).toMatchObject({ kind: 'RuntimeNotWritable', failedChecks: [{ check: 'capacity' }] });
   });
+
+  it('should still return Restored when a step after activation throws, with status RecoveryOnly', async () => {
+    const target = await targetWorkspace();
+    // Just after the pointer switches, the browser stops saving safely and removing the preparation record throws.
+    const workspace = workspaceOf(target, {
+      persistence: {
+        ...target.persistence,
+        commit: async (request) => {
+          if (request.writes.some((write) => write.op === 'delete' && write.key === 'restorePrepared')) {
+            target.testHost.fail(['capacity']);
+            throw new Error('the preparation record could not be removed');
+          }
+          return target.persistence.commit(request);
+        },
+      },
+    });
+    const { token } = await preparedWithPreview({ workspace });
+
+    const result = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    if (result.kind !== 'Restored') throw new Error(`expected Restored, got ${JSON.stringify(result)}`);
+    expect(result.status).toMatchObject({ kind: 'RecoveryOnly', failedChecks: [{ check: 'capacity' }], binding: result.receipt.newBinding });
+    const pointer = (await dumpAll(target.factory))['tj-root']!['pointer'] as { key: string; databaseName?: string }[];
+    expect(pointer.find((record) => record.key === 'current')).toMatchObject({ databaseName: token.candidateId });
+  });
 });
 
 // Removes one record from a database with the raw API, as another writer touching the candidate would.
