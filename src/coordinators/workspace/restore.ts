@@ -10,15 +10,18 @@ import { plannedTradeSummary } from '../../domain/trade-summary.ts';
 import { formatDecimal, type Rational } from '../../domain/values/index.ts';
 import {
   D5_JOURNAL_MANIFEST,
+  applyPreparedRestore as applyJournal,
   exportSnapshot as exportJournal,
   measureCandidateSection as measureJournal,
   prepareJournalSeed,
   prepareRestore as prepareJournalRestore,
+  type CandidateSectionMeta,
   type EntryDefinitionRecord,
   type JournalTypeRecord,
 } from '../../modules/journal/index.ts';
-import { exportSnapshot as exportMarketData, measureCandidateSection as measureMarketData, prepareRestore as prepareMarketDataRestore, type MarketDataDeps } from '../../modules/market-data/index.ts';
+import { applyPreparedRestore as applyMarketData, exportSnapshot as exportMarketData, measureCandidateSection as measureMarketData, prepareRestore as prepareMarketDataRestore, type MarketDataDeps } from '../../modules/market-data/index.ts';
 import {
+  applyPreparedRestore as applyCatalog,
   D7_CATALOG_MANIFEST,
   exportSnapshot as exportCatalog,
   measureCandidateSection as measureCatalog,
@@ -28,6 +31,7 @@ import {
 } from '../../modules/reference-catalog/index.ts';
 import {
   analysisInputOf,
+  applyPreparedRestore as applyTrades,
   exportSnapshot as exportTrades,
   measureCandidateSection as measureTrades,
   prepareRestore as prepareTradeRestore,
@@ -43,9 +47,11 @@ import type {
   PrepareRestoreResult,
   RestoreCounts,
   RestoreIssue,
+  RestoreMigrations,
   RestoreRepair,
   RestoreWarning,
   TargetBinding,
+  WorkspaceReplaced,
 } from './backup-types.ts';
 import { keyOf } from '../../persistence/schema.ts';
 import { describeError, KNOWN_SECTIONS } from './backup-export.ts';
@@ -192,6 +198,25 @@ const bump = (counts: Record<string, number>, key: string): void => {
   counts[key] = (counts[key] ?? 0) + 1;
 };
 
+// The candidate's `meta` record of what preparation measured and reported (A132 step 11).
+interface PreparedRecord {
+  readonly sections: Record<'catalog' | 'marketData' | 'trades' | 'journal', CandidateSectionMeta>;
+  readonly counts: RestoreCounts;
+  readonly migrations: RestoreMigrations;
+  readonly repairs: readonly RestoreRepair[];
+}
+
+// Tells every other tab of this app that a Restore replaced the journal (A136) over the channel the update notice shares (D1 A5).
+function announceReplaced(databaseName: string): void {
+  if (typeof BroadcastChannel === 'undefined') return;
+  const channel = new BroadcastChannel('tj-updates');
+  channel.postMessage({ kind: 'WorkspaceReplaced', databaseName } satisfies WorkspaceReplaced);
+  channel.close();
+}
+
+const sameBinding =(a: { databaseName: string; contentRevision: number }, b: { databaseName: string; contentRevision: number }): boolean =>
+  a.databaseName === b.databaseName && a.contentRevision === b.contentRevision;
+
 // The preview's counts of a database's records, and whether it holds user data (A137), read store
 // by store in batches.
 async function countsOf(source: RecordSource): Promise<{ readonly counts: RestoreCounts; readonly hasUserData: boolean }> {
@@ -275,7 +300,6 @@ async function countsOf(source: RecordSource): Promise<{ readonly counts: Restor
 
 // The backup operations are passed in for their receipt registry (A131).
 export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupOperations): RestoreOperations<S> {
-  void backup;
   const { persistence } = deps;
   const catalogRestore = prepareCatalogRestore({ manifest: D7_CATALOG_MANIFEST });
   const marketDataRestore = prepareMarketDataRestore({ policy: deps.sessionPolicy });
@@ -584,9 +608,12 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       trades: await measureTrades(source),
       journal: await measureJournal(source),
     };
-    await persistence.putCandidateRecords(candidate, [{ store: 'meta', value: { key: 'restorePrepared', sections } }]);
-
     const restored = await countsOf(source);
+    const steps = Array.from({ length: SCHEMA_VERSION - header.schemaVersion }, (_, i) => ({ from: header.schemaVersion + i, to: header.schemaVersion + i + 1 }));
+    // What apply rechecks (the sections) and what its receipt reports (counts, migrations, repairs).
+    await persistence.putCandidateRecords(candidate, [
+      { store: 'meta', value: { key: 'restorePrepared', sections, counts: restored.counts, migrations: { steps, seedAdditions }, repairs: repairLines } },
+    ]);
     let currentTimeZone: string | null = null;
     let target: { counts: RestoreCounts; hasUserData: boolean } | null = null;
     if (live !== 'NoWorkspace') {
@@ -599,7 +626,6 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     if (header.schemaVersion < SCHEMA_VERSION) warnings.push('OlderSchema');
     const cancelledAfterPreview = await cancelIfAborted();
     if (cancelledAfterPreview) return cancelledAfterPreview;
-    const steps = Array.from({ length: SCHEMA_VERSION - header.schemaVersion }, (_, i) => ({ from: header.schemaVersion + i, to: header.schemaVersion + i + 1 }));
     return {
       kind: 'Prepared',
       token: { candidateId: candidate, fullDigest, targetBinding: live, releaseId: deps.releaseId },
@@ -629,8 +655,77 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
           return { kind: 'Rejected', issues: [], totalIssues: 0, liveBinding: live, detail: describeError('Prepare', error) };
         }
       }),
-    applyPreparedRestore() {
-      throw new Error('not built');
+    async applyPreparedRestore(request) {
+      // The mutation guard: outside Writable nothing is applied (A135 step 1).
+      const refusal = toRuntimeNotWritable(await deps.session.recheck());
+      if (refusal) return refusal;
+      return deps.locks.run(async (): Promise<ApplyRestoreOutcome<S>> => {
+        const live = await liveBinding();
+        const { token } = request;
+        if (request.confirmation?.kind !== 'ReplaceEntireWorkspace') return { kind: 'ConfirmationRequired', liveBinding: live };
+        // A candidate this Restore already activated is the live database, not a preparation.
+        const activated = live !== 'NoWorkspace' && live.databaseName === token.candidateId;
+        const listed = !activated && (await deps.host.indexedDB.databases()).some(({ name }) => name === token.candidateId);
+        if (!listed) return { kind: 'PreparationNotFound', liveBinding: live };
+        const unchanged = live === 'NoWorkspace' || token.targetBinding === 'NoWorkspace' ? live === token.targetBinding : sameBinding(live, token.targetBinding);
+        if (!unchanged) {
+          await persistence.discardCandidate(token.candidateId);
+          return { kind: 'Conflict', reason: 'TargetChanged', liveBinding: live };
+        }
+        if (live !== 'NoWorkspace' && (await countsOf(persistence.candidateSource(live.databaseName))).hasUserData) {
+          const safety = request.safety;
+          if (safety === undefined) return { kind: 'SafetyBackupRequired', liveBinding: live };
+          if (safety.kind === 'Receipt') {
+            if (!backup.recognizesReceipt(safety.receipt.receiptId)) return { kind: 'SafetyBackupNotRecognized', liveBinding: live };
+            if (!sameBinding(safety.receipt.sourceBinding, live)) return { kind: 'SafetyBackupStale', liveBinding: live };
+          }
+        }
+
+        // Each module's recheck of its candidate section against what preparation recorded (A135 step 4).
+        const candidateSource = persistence.candidateSource(token.candidateId);
+        const prepared = (await collect(candidateSource, 'meta')).find((record) => record['key'] === 'restorePrepared') as unknown as PreparedRecord;
+        const rechecks = [
+          () => applyCatalog(candidateSource, prepared.sections.catalog),
+          () => applyMarketData(candidateSource, prepared.sections.marketData),
+          () => applyTrades(candidateSource, prepared.sections.trades),
+          () => applyJournal(candidateSource, prepared.sections.journal),
+        ];
+        for (const recheck of rechecks) {
+          const rechecked = await recheck();
+          if (rechecked.kind === 'CandidateChanged') {
+            await persistence.discardCandidate(token.candidateId);
+            return { kind: 'CandidateChanged', store: rechecked.store, liveBinding: live };
+          }
+        }
+
+        // One root transaction switches the pointer (A135 step 5); with no Workspace it adds the pointer instead.
+        if (live === 'NoWorkspace') {
+          const activation = await persistence.activateFirstCandidate(token.candidateId);
+          if (activation.kind === 'AlreadyInitialized') return { kind: 'AlreadyInitialized', databaseName: activation.databaseName, liveBinding: await liveBinding() };
+        } else if ((await persistence.activateCandidate(token.candidateId, live.databaseName)).kind === 'Aborted') {
+          await persistence.discardCandidate(token.candidateId);
+          throw new Error('The root transaction that switches the Workspace was aborted');
+        }
+        // The live database holds no preparation bookkeeping.
+        await persistence.commit({ checks: [], writes: [{ op: 'delete', store: 'meta', key: 'restorePrepared' }] });
+        announceReplaced(token.candidateId);
+        const readiness = await deps.session.recheck();
+        const newBinding = await persistence.describeDatabase(token.candidateId);
+        return {
+          kind: 'Restored',
+          receipt: {
+            artifactDigest: token.fullDigest,
+            replacedBinding: live,
+            newBinding: { databaseName: newBinding.databaseName, contentRevision: newBinding.contentRevision },
+            counts: prepared.counts,
+            migrations: prepared.migrations,
+            repairs: prepared.repairs,
+            readiness,
+          },
+          status: await deps.status(),
+          landing: { kind: 'RestoreComplete', next: prepared.counts.accounts > 0 ? 'Trades' : 'InstitutionAndAccountOnboarding' },
+        };
+      });
     },
   };
 }

@@ -7,7 +7,8 @@ import { IDBFactory } from 'fake-indexeddb';
 import { createMutationGuard } from '../mutation-guard.ts';
 import { createTradeWorkflows } from '../trade-workflows/index.ts';
 import { longStockOf } from '../../../tests/support/long-stock.ts';
-import { testStack } from '../../../tests/support/stack.ts';
+import { TEST_CAPACITY, testStack } from '../../../tests/support/stack.ts';
+import { evaluateReadiness, type ReadinessSession } from '../../delivery/readiness.ts';
 import { createWorkspace } from './index.ts';
 
 // Friday 2026-11-20 18:00 in New York: the instant W7 is exported at.
@@ -15,9 +16,25 @@ export const EXPORT_AT = '2026-11-20T23:00:00Z';
 
 type Stack = Awaited<ReturnType<typeof testStack>>;
 
+// The stack's session, except that each recheck reads the root without startup cleanup (lookupRoot).
+// The composition root's session rechecks with inspectRoot, which deletes every listed candidate the
+// pointer does not name, so a prepared Restore candidate would not survive the guard that apply
+// reruns (a pending decision for T8.9; the stack's own session stays as it is).
+export function lookupSession(stack: Stack): ReadinessSession {
+  let state = stack.session.current();
+  return {
+    current: () => state,
+    reportStorageFailure: (context) => stack.session.reportStorageFailure(context),
+    async recheck() {
+      state = await evaluateReadiness({ host: stack.testHost.host, rootInspection: await stack.persistence.lookupRoot(), capacityRequirement: TEST_CAPACITY, pageReleaseId: stack.testHost.releaseId });
+      return state;
+    },
+  };
+}
+
 // The Workspace of a stack, wired as the composition root wires it.
 export function workspaceOf(stack: Stack, overrides: Partial<Parameters<typeof createWorkspace>[0]> = {}) {
-  return createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port }, ...overrides });
+  return createWorkspace({ ...stack, session: lookupSession(stack), host: stack.testHost.host, releaseId: stack.testHost.releaseId, backup: { download: stack.testHost.downloads.port }, ...overrides });
 }
 
 // The backup file a Workspace on `factory` exports: the artifact of that data.
