@@ -679,7 +679,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.8 | 1 | WR | Done | `7d6a7848`; B1 `467f1356`, B2 `dc6aa1b7`, B3 `059ea98d`, B4 `f569a4d1`, B5 `d2348fac`, B6 `068be1a4`, B7 `9accd4e3`, B8 `bd9b2d44`, B9 `5b9a80cd`, B10 `e35aded2` |
 | T8.9 | 1 | WR | In progress from `5fad9859` | |
 | T8.12 | 1 | UB | Done | `16fe13ea`; B1 `aea45bd9`, B2 `ac155052`, B3 `d88fb631`, B4 `c5032ea1`, B5 `5239e6dd`; F1 `b3b580dc`, B6 `1023393d` |
-| T8.13 | 1 | UB | Done; F3 (repair sentences) waits on T8.8 | `0e2fd248`; B1 `138cd610`, B2 `04aa6a96`, B3 `6c543d03`, B4 `ce05c249`, B5 `23cb6a20`, B6 `30d591a5`, B7 `8b8bf7c0`; F1 `cf271534`, F2 `0e5ab292` (B8 closed by Q9) |
+| T8.13 | 1 | UB | Done | `0e2fd248`; B1 `138cd610`, B2 `04aa6a96`, B3 `6c543d03`, B4 `ce05c249`, B5 `23cb6a20`, B6 `30d591a5`, B7 `8b8bf7c0`; F1 `cf271534`, F2 `0e5ab292`, F3 `b7d8cdd9` (B8 closed by Q9) |
 | T8.14 | 1 | US | In progress from `fdc5e858`; committed in lane, merges with T8.11 | |
 | T8.11 | 2 | — | Not started | |
 | T8.15 | 2 | FT | Not started | |
