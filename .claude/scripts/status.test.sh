@@ -4,7 +4,8 @@
 # Cases: 1 D08 on the real files reports nothing open; 2 a fixture with one open row and one unanswered
 # question prints both; 3 F and B tasks in the Commits cell are counted; 4 a "**Qn answer" line answers Qn
 # even when it sits under another question's heading; 5 a missing breakdown is named and exits non-zero;
-# 6 handoff files are skipped when picking the breakdown; 7 tables under a later heading are not read.
+# 6 handoff files are skipped when picking the breakdown; 7 tables under a later heading are not read;
+# 8 IDs written with the task prefix (T9.2-F1) count the same as bare ones.
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -73,6 +74,15 @@ if want 7; then
   printf '\n## 12. Later\n\n| Task | Wave | Lane | Status | Commits |\n|---|---|---|---|---|\n| T9.90 | 1 | B | Paused | `y` |\n\n### 12.1 Sub\n\n| Task | Wave | Lane | Status | Commits |\n|---|---|---|---|---|\n| T9.91 | 1 | B | Paused | `z` |\n' >>"$t/late/plan/D99-fixture.md"
   out=$(STATUS_ROOT="$t/late" "$st" D99 2>&1)
   [[ "$out" == *"T9.8 "* && "$out" != *"T9.90"* && "$out" != *"T9.91"* && "$out" == *"1 open task"* ]] || bad "rows under a later heading were listed as open tasks: $out"
+fi
+
+if want 8; then
+  mkfix pre '| T9.2 | 1 | A | Paused | `abc`; T9.2-F1, T9.2-B1, T9.2-F1-B1 |'
+  out=$(STATUS_ROOT="$t/pre" "$st" D99 2>&1)
+  [[ "$out" == *"F 1, B 2"* ]] || bad "task-prefixed IDs not counted (want F 1, B 2): $out"
+  mkfix mix '| T9.3 | 1 | A | Paused | T9.3-F1 `def`, F1, B1, T9.3-B1, F1-B1, T9.3-F1-B1 |'
+  out=$(STATUS_ROOT="$t/mix" "$st" D99 2>&1)
+  [[ "$out" == *"F 1, B 2"* ]] || bad "prefixed and bare IDs not merged (want F 1, B 2): $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"

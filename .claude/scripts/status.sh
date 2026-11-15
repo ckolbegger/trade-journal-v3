@@ -31,7 +31,7 @@ rows=$(awk -F'|' '
     gsub(/`[^`]*`/, " ", commits)
     f = 0; b = 0; delete seen
     s = commits
-    while (match(s, /(^|[^A-Za-z0-9-])[FB][0-9]+(-[FB][0-9]+)*/)) {
+    while (match(s, /(^|[^A-Za-z0-9-])(T[0-9]+(\.[0-9]+)*-)?[FB][0-9]+(-[FB][0-9]+)*/)) {
       tok = substr(s, RSTART, RLENGTH); sub(/^[^FB]*/, "", tok)
       s = substr(s, RSTART + RLENGTH)
       if (tok in seen) continue

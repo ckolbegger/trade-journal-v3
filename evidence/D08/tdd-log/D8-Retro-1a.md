@@ -31,3 +31,15 @@ Command: `.claude/scripts/status.test.sh 7`.
 | 7 | it should stop reading rows at the next heading after the Progress table | FAIL: rows under a later heading were listed as open tasks (T9.90 and T9.91 printed, 3 open task(s)) | status.test.sh: all requested cases passed (cases 1 to 7) |
 
 refactor: none needed; the fix is a Progress-section flag in the awk (`inprog`), cleared by any other heading.
+
+## B3
+
+Command: `.claude/scripts/status.test.sh 8`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 8 | it should count F and B tasks written with the task prefix the same as bare ones, each distinct ID once | FAIL: task-prefixed IDs not counted (want F 1, B 2): T9.2 printed "F 0, B 0" | status.test.sh: all requested cases passed (cases 1 to 8) |
+
+note: the first draft of the case passed by accident (two rows in one fixture, glob matched the second row's line); the test was split into one fixture per row before the red above.
+
+refactor: none needed; the fix is an optional `T<n>.<n>-` prefix in the ID regex (the existing prefix-stripping already drops it).
