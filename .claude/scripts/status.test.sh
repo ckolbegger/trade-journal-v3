@@ -5,7 +5,8 @@
 # question prints both; 3 F and B tasks in the Commits cell are counted; 4 a "**Qn answer" line answers Qn
 # even when it sits under another question's heading; 5 a missing breakdown is named and exits non-zero;
 # 6 handoff files are skipped when picking the breakdown; 7 tables under a later heading are not read;
-# 8 IDs written with the task prefix (T9.2-F1) count the same as bare ones.
+# 8 IDs written with the task prefix (T9.2-F1) count the same as bare ones; 9 a bare "**Answer" counts only
+# inside its own question's section (any other heading ends it), a "**Qn answer" still answers by label.
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -83,6 +84,17 @@ if want 8; then
   mkfix mix '| T9.3 | 1 | A | Paused | T9.3-F1 `def`, F1, B1, T9.3-B1, F1-B1, T9.3-F1-B1 |'
   out=$(STATUS_ROOT="$t/mix" "$st" D99 2>&1)
   [[ "$out" == *"F 1, B 2"* ]] || bad "prefixed and bare IDs not merged (want F 1, B 2): $out"
+fi
+
+if want 9; then
+  mkfix sec '| T9.6 | 1 | A | Done | `x` |'
+  printf '## Q1. One — open\n\nText.\n\n## Summary\n\n**Answer:** zzz\n' >"$t/sec/evidence/D99/DECISIONS-PENDING.md"
+  out=$(STATUS_ROOT="$t/sec" "$st" D99 2>&1)
+  [[ "$out" == *"Q1."* && "$out" == *"1 open question"* ]] || bad "a bare Answer under a non-question heading answered Q1: $out"
+  mkfix lab '| T9.6 | 1 | A | Done | `x` |'
+  printf '## Q1. One — open\n\nText.\n\n## Summary\n\n**Q1 answer (d): (a).**\n' >"$t/lab/evidence/D99/DECISIONS-PENDING.md"
+  out=$(STATUS_ROOT="$t/lab" "$st" D99 2>&1)
+  [[ "$out" != *"Q1."* ]] || bad "a Qn answer under a non-question heading did not answer Qn: $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"

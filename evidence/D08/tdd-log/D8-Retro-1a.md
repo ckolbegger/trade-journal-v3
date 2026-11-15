@@ -43,3 +43,15 @@ Command: `.claude/scripts/status.test.sh 8`.
 note: the first draft of the case passed by accident (two rows in one fixture, glob matched the second row's line); the test was split into one fixture per row before the red above.
 
 refactor: none needed; the fix is an optional `T<n>.<n>-` prefix in the ID regex (the existing prefix-stripping already drops it).
+
+## B4
+
+Command: `.claude/scripts/status.test.sh 9`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 9 | it should count a bare Answer line only inside its own question's section, while a Qn answer line still answers Qn by label | FAIL: a bare Answer under a non-question heading answered Q1 (Q1 missing, "0 open question(s)") | status.test.sh: all requested cases passed (cases 1 to 9) |
+
+note: one fixture per scenario (bare Answer under `## Summary`; `**Q1 answer` under `## Summary`). The second scenario passes with and without the fix by design, as a guard that the label rule is unchanged.
+
+refactor: none needed; the fix is one awk rule that clears the current question at any heading other than `## Qn.`.

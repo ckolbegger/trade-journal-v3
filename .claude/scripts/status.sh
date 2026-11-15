@@ -62,6 +62,7 @@ if [[ ! -f $dec ]]; then
 else
   qs=$(awk '
     /^## Q[0-9]+\./ { cur = $2; sub(/\.$/, "", cur); title = $0; sub(/^## /, "", title); order[++n] = cur; text[cur] = title; next }
+    /^#/ { cur = ""; next }
     /^\*\*Answer/ { if (cur != "") ans[cur] = 1; next }
     /^\*\*Q[0-9]+ answer/ { lab = $1; sub(/^\*\*/, "", lab); ans[lab] = 1; next }
     END { for (i = 1; i <= n; i++) if (!(order[i] in ans)) print text[order[i]] }
