@@ -161,6 +161,68 @@ describe('rejections before anything is written', () => {
   });
 });
 
+// A backup file that records whether its stream was cancelled, that is, whether the reader released it.
+function watchedFile(bytes: Uint8Array): { file: File; cancelled: () => Promise<boolean> } {
+  const file = backupFile(bytes);
+  let cancelled = false;
+  const stream = (): ReadableStream<Uint8Array> => {
+    // The stream never ends on its own, so it is still open, and can be cancelled, whenever the reader stops early.
+    let at = 0;
+    return new ReadableStream<Uint8Array>({
+      pull: (controller) => {
+        if (at < bytes.length) controller.enqueue(bytes.slice(at, (at += 256)));
+        else return new Promise<void>(() => undefined);
+      },
+      cancel: () => {
+        cancelled = true;
+      },
+    });
+  };
+  Object.defineProperty(file, 'stream', { value: stream });
+  // Cancelling the decompressed stream reaches the file through a pipe, a few turns later.
+  const settled = async (): Promise<boolean> => {
+    for (let waited = 0; !cancelled && waited < 1000; waited += 10) await new Promise((resolve) => setTimeout(resolve, 10));
+    return cancelled;
+  };
+  return { file, cancelled: settled };
+}
+
+describe('releasing the file after an early rejection', () => {
+  it('should cancel the file stream when the header names formatVersion 2', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const watched = watchedFile(withHeader(a7.bytes, { formatVersion: 2 }));
+
+    const result = await target.workspace.prepareRestore({ file: watched.file });
+
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ code: 'UnsupportedFormat' }] });
+    expect(await watched.cancelled()).toBe(true);
+  });
+
+  it('should cancel the file stream when the header names a newer schema', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const watched = watchedFile(withHeader(a7.bytes, { schemaVersion: 8 }));
+
+    const result = await target.workspace.prepareRestore({ file: watched.file });
+
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ code: 'UnsupportedNewerSchema' }] });
+    expect(await watched.cancelled()).toBe(true);
+  });
+
+  it('should cancel the file stream when the free quota is too small for the candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const full = { ...target.testHost.host, estimate: () => Promise.resolve({ quota: 10 * 1024 ** 3, usage: 10 * 1024 ** 3 - 10_000 }) };
+    const watched = watchedFile(a7.bytes);
+
+    const result = await workspaceOf(target, { host: full }).prepareRestore({ file: watched.file });
+
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ code: 'InsufficientCapacity' }] });
+    expect(await watched.cancelled()).toBe(true);
+  });
+});
+
 // The index of the first record line of one store in an artifact's lines.
 const lineOf = (lines: readonly string[], store: string): number => lines.findIndex((line) => line.startsWith('{"r":') && line.endsWith(`,"t":"${store}"}`));
 

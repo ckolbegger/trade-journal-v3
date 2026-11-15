@@ -300,6 +300,20 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     if (request.signal?.aborted) return { kind: 'Cancelled', liveBinding: live };
 
     const lines = readArtifact(request.file);
+    try {
+      return await prepareFrom(request, made, live, lines);
+    } finally {
+      // Every way out releases the file: the reader's own cleanup runs only when the generator is closed.
+      await lines.return(undefined);
+    }
+  }
+
+  async function prepareFrom(
+    request: PrepareRestoreRequest,
+    made: { candidate?: string },
+    live: TargetBinding,
+    lines: ReturnType<typeof readArtifact>,
+  ): Promise<PrepareRestoreResult> {
     let first: Awaited<ReturnType<typeof lines.next>>;
     try {
       first = await lines.next();
