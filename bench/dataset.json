@@ -1,5 +1,5 @@
 {
-  "generatorVersion": 7,
+  "generatorVersion": 8,
   "schemaVersion": 7,
   "seed": 20211011,
   "clockStart": "2024-01-02T13:00:00Z",
@@ -5046,9 +5046,9 @@
   ],
   "artifact": {
     "path": ".cache/bench/benchmark.tjbackup",
-    "fileDigest": "48b58c6eb41a0cd03ed7a8ea1af98b38110ba9c7e99bf177f05f096ab6f78af1",
-    "fullDigest": "14fadb92184fe981f9e4e29701af5dd0fc22dfd6e11e35be70c8a60692f0d846",
-    "manifestDigest": "a9189d657e5d4b67f35b3b493aa4a01fd30097e59ed1c6d56252396cebbf6fda",
+    "fileDigest": "6d819703928c5aa37ec3e9181b4ba164b325846296cf015f9412715cc894304b",
+    "fullDigest": "c78d80f93d696873153d5fe91168f80c388a2a607ab27213ca69c4758154e79f",
+    "manifestDigest": "eb7c3a179486c142cace9bd62951284823174b7c41672718eef476caf273c430",
     "sectionDigests": {
       "workspace": "4a1643aef4df59afa5e54a405b8a9e7e948398d2cfbadda03045cec97fd33867",
       "catalog": "e6f186b7efa83048292768c29bae76f1501e28cc457f5d87962ecbfd299943c3",
@@ -5056,7 +5056,7 @@
       "trades": "10e9915e2ead0a3edd84f02a8d5c48ce50140062e3c96d8771e994352ee35b79",
       "journal": "605cdc7cacdf4a332a39ee70b81884729255401565a5df7005e85c243093d457"
     },
-    "bytes": 20869681,
+    "bytes": 20869684,
     "uncompressedBytes": 453413121,
     "lines": 432962,
     "storeCounts": {
@@ -5070,7 +5070,7 @@
       "journalDebts": 24365
     }
   },
-  "generationMs": 19270,
+  "generationMs": 27077,
   "engine": "node v26.12.0",
   "host": {
     "platform": "darwin",

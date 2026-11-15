@@ -13,9 +13,10 @@
 // option Trades Settlement Due.
 // Version 7 (D7S T7S.14, A203): of the option Plans, 30% add an option-price Stop beside the Underlying Stop and 10%
 // hold only option-price conditions, keyed on the Trade's place among the option Trades.
+// Version 8 (D8 T8.18): the generator writes the schema-7 backup artifact directly (no longer a snapshot of a live database).
 // The marker is a plain string literal: `bench-generate` searches the built bundle for it, and it must change with the version.
-export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v7';
-export const BENCH_GENERATOR_VERSION = 7;
+export const BENCH_GENERATOR_MARKER = 'tj-bench-generator-v8';
+export const BENCH_GENERATOR_VERSION = 8;
 export const BENCH_SEED = 20211011;
 // The generator's clock starts here and only moves forward with the generated Economic Times.
 // Every simulated session is inside session-policy coverage (decision 51).

@@ -113,6 +113,18 @@ function contractOf(index: number, symbol: string, spec: OptionSpec): OptionInst
 // Premium per share in cents: what a long option costs (or a Cash-Secured Put credits) at the Plan's intended entry.
 const premiumOf = (index: number, kind: OptionKind) => (isLongOption(kind) ? 200 + 100 * (index % 5) : 120 + 100 * (index % 2));
 
+// The Underlying Price Stop and Target beside the Plan's entry: offsets from the Underlying by option kind.
+const underlyingStopOffset = (kind: OptionKind) => {
+  if (kind === 'LongCall') return -3;
+  if (kind === 'LongPut') return 3;
+  return -6;
+};
+const underlyingTargetOffset = (kind: OptionKind) => {
+  if (kind === 'LongCall') return 12;
+  if (kind === 'LongPut') return -12;
+  return 5;
+};
+
 interface PlanEvent {
   readonly kind: 'Plan';
   readonly time: number;
@@ -500,22 +512,23 @@ function buildTrades(events: readonly (PlanEvent | ChangeEvent)[], profile: Retu
       const optionLong = option !== undefined && isLongOption(option.kind);
       const optionStopPrice: ConditionInput = { kind: 'StructureValue', price: normalized(cents(optionLong ? premium - 100 : premium + 100)) };
       const optionTargetPrice: ConditionInput = { kind: 'StructureValue', price: normalized(cents(optionLong ? premium + 300 : premium - 50)) };
-      const leg: PlannedLegInput = option
-        ? isLongOption(option.kind)
-          ? { side: 'Long', instrument: contractOf(i, symbol, option), quantity: String(option.contracts), intendedEntry: normalized(cents(premium)) }
-          : { side: 'Short', instrument: contractOf(i, symbol, option), quantity: String(-option.contracts), intendedEntry: normalized(cents(premium)) }
-        : { side: 'Long', instrument: { kind: 'Stock', symbol }, quantity: String(plannedQuantity(i)), intendedEntry: normalized(cents(entry)) };
-      const stops: ConditionInput[] = option
-        ? [
-            ...(optionOnly ? [] : [{ kind: 'UnderlyingPrice' as const, price: `${option.kind === 'LongCall' ? u - 3 : option.kind === 'LongPut' ? u + 3 : u - 6}` }]),
-            ...(optionOnly || optionStop ? [optionStopPrice] : []),
-          ]
-        : [{ kind: 'UnderlyingPrice', price: normalized(cents(entry - Math.round(entry * 0.05))) }];
-      const targets: ConditionInput[] = option
-        ? optionOnly
-          ? [optionTargetPrice]
-          : [{ kind: 'UnderlyingPrice', price: `${option.kind === 'LongCall' ? u + 12 : option.kind === 'LongPut' ? u - 12 : u + 5}` }]
-        : [{ kind: 'UnderlyingPrice', price: normalized(cents(entry + Math.round(entry * 0.12))) }];
+      let leg: PlannedLegInput;
+      let stops: ConditionInput[];
+      let targets: ConditionInput[];
+      if (option) {
+        const intendedEntry = normalized(cents(premium));
+        leg = optionLong
+          ? { side: 'Long', instrument: contractOf(i, symbol, option), quantity: String(option.contracts), intendedEntry }
+          : { side: 'Short', instrument: contractOf(i, symbol, option), quantity: String(-option.contracts), intendedEntry };
+        stops = [];
+        if (!optionOnly) stops.push({ kind: 'UnderlyingPrice', price: `${u + underlyingStopOffset(option.kind)}` });
+        if (optionOnly || optionStop) stops.push(optionStopPrice);
+        targets = optionOnly ? [optionTargetPrice] : [{ kind: 'UnderlyingPrice', price: `${u + underlyingTargetOffset(option.kind)}` }];
+      } else {
+        leg = { side: 'Long', instrument: { kind: 'Stock', symbol }, quantity: String(plannedQuantity(i)), intendedEntry: normalized(cents(entry)) };
+        stops = [{ kind: 'UnderlyingPrice', price: normalized(cents(entry - Math.round(entry * 0.05))) }];
+        targets = [{ kind: 'UnderlyingPrice', price: normalized(cents(entry + Math.round(entry * 0.12))) }];
+      }
       let k = 0;
       const next = () => ({ factId: `${tradeId}-f${pad(++k, 3)}`, recordedSequence: k });
       const planFact = next();
@@ -616,6 +629,16 @@ const COMPLETION_NOTE = 5 * MINUTE;
 
 // The instant the work of session `n` is saved: five minutes after its completion; the full run's last session is the
 // as-of session, and its clock is the as-of instant, Friday 17:00 New York (D7 section 1.4).
+// Even Trade numbers decline; the wording differs by when the decline is recorded.
+const declineWording = (n: number, later: boolean, whenLater: string, whenNow: string) => {
+  if (n % 2 !== 0) return undefined;
+  return later ? whenLater : whenNow;
+};
+// Settlement list order: expiration, then trade.
+const bySettlementOrder = (a: { expiration: string; tradeId: string }, b: { expiration: string; tradeId: string }) => {
+  if (a.expiration !== b.expiration) return a.expiration < b.expiration ? -1 : 1;
+  return a.tradeId < b.tradeId ? -1 : 1;
+};
 const savedAtOf = (completion: string, last: boolean, full: boolean) => (last && full ? BENCH_AS_OF_INSTANT : iso(Date.parse(completion) + COMPLETION_NOTE));
 
 // The Marks of every session: each of the 90 stock Instruments, except that the as-of session leaves 10 of them Missing
@@ -799,7 +822,7 @@ function journalOf(args: {
       captureSource: 'source.position-change',
       obligationKey: (change) => `PositionChangeReflection:${change.factId}`,
       answers: (n, symbol) => reflectionAnswers(n, symbol),
-      declineReason: (n, later) => (n % 2 === 0 ? (later ? 'Could not recall the decision well enough to answer.' : 'Filled during a fast open; no time to reflect.') : undefined),
+      declineReason: (n, later) => declineWording(n, later, 'Could not recall the decision well enough to answer.', 'Filled during a fast open; no time to reflect.'),
     },
     close: {
       store: 'c',
@@ -808,7 +831,7 @@ function journalOf(args: {
       captureSource: 'source.trade-close',
       obligationKey: (change) => `CloseReview:${change.tradeId}`,
       answers: closeReviewAnswers,
-      declineReason: (n, later) => (n % 2 === 0 ? (later ? 'Cannot recall the Trade well enough to say.' : 'Nothing new to learn from this one.') : undefined),
+      declineReason: (n, later) => declineWording(n, later, 'Cannot recall the Trade well enough to say.', 'Nothing new to learn from this one.'),
     },
   };
   // Every outcome in the generated order: its kind, its number, the Position Change it follows, and its disposition.
@@ -853,7 +876,9 @@ function journalOf(args: {
     const debtId = idOf('jd', outcome);
     const { disposition } = outcome;
     const outstanding = disposition === 'outstanding';
-    const resolution = disposition === 'answered' ? { status: 'Settled', entryId: idOf('je', outcome) } : disposition === 'declinedLater' ? { status: 'Declined', declineId: idOf('jx', outcome) } : undefined;
+    let resolution: { status: string; entryId?: string; declineId?: string } | undefined;
+    if (disposition === 'answered') resolution = { status: 'Settled', entryId: idOf('je', outcome) };
+    else if (disposition === 'declinedLater') resolution = { status: 'Declined', declineId: idOf('jx', outcome) };
     return {
       debtId,
       ...basis(outcome, outcome.kind.captureSource),
@@ -1206,7 +1231,7 @@ export async function generateBenchArtifact(options: { readonly calendar: BenchC
       asOfDueReflections: journal.outstandingDebts.length,
       outstandingDebts: journal.outstandingDebts,
       asOfReview: {
-        settlement: [...tally.settlement].sort((a, b) => (a.expiration < b.expiration ? -1 : a.expiration > b.expiration ? 1 : a.tradeId < b.tradeId ? -1 : 1)),
+        settlement: [...tally.settlement].sort(bySettlementOrder),
         walk: [...tally.walk].sort(),
         owedGroup: [...new Set(journal.outstandingDebts.map((debt) => debt.tradeId))]
           .filter((tradeId) => !tally.openTradeIds.has(tradeId))

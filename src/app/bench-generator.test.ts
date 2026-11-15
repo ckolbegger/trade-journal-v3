@@ -171,6 +171,13 @@ describe('bench generator artifact (D8 P35)', () => {
     expect(manifest['counts']).toEqual(storeCounts);
     expect(lines.filter((line) => line['kind'] === 'sectionEnd').map((line) => line['section'])).toEqual(['workspace', 'catalog', 'marketData', 'trades', 'journal']);
   });
+
+  it('should stamp the artifact with generator version 8', async () => {
+    const { artifact } = await smoke();
+    const header = linesOf(artifact.parts).map((line) => JSON.parse(line) as Record<string, unknown>)[0]!;
+    expect(BENCH_GENERATOR_VERSION).toBe(8);
+    expect(header['releaseId']).toBe('tj-bench-generator-v8');
+  });
 });
 
 // A stored record, with the fields these tests read from any store (the store a record is from says which are there).
