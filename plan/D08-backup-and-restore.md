@@ -684,7 +684,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.11 | 2 | US | Done | `a7913e29`; B1 and B2 `2b28a540`, B3 and B4 `9017c07b`, B5 to B7 `4c786ff8`, B8 `6008be24` |
 | T8.15 | 2 | FT | Done | `246e7529`; B1 `a656ccc5` (lane WR), B2 and B3 `c4b73360`, B4 `284968f9` |
 | T8.17 | 2 | FX | Done | `b486bf83` |
-| T8.20 | 2 | FX | In progress: `65961ad3` in lane FX; F1 to F3 next (Q27), settling B1 | |
+| T8.20 | 2 | FX | Done | `b4f8b073`; F1 `cb578980`, F2 `caf988ef`, F1-B1 `64670df6`, F3 `1bb66597` (B1 settled by F1 to F3) |
 | T8.18 | 2 | BG | Done | `268bd353`; B2 and F1 `f9b0fa1c`; F2 next (Q25); B1 folded into T8.19 |
 | T8.21 | 2 | BR | In progress: `2ebe87a6`, B1 `d2a8c465` in lane BR; F1 to F3 next (Q28) | |
 | T8.19 | 2 | BN | Not started | |
