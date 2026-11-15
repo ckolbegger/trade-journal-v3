@@ -14,7 +14,9 @@
   overflow-wrap: anywhere;
 }
 
+/* Only the long release id may break anywhere; the table's headings and counts wrap at spaces so its columns keep a word-wide minimum. */
 .restore-counts {
+  overflow-wrap: normal;
   border-collapse: collapse;
   margin: 0.75rem 0;
   width: 100%;

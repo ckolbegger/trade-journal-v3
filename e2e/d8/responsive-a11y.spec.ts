@@ -199,6 +199,42 @@ test.describe('B8.16 Responsive and accessible', () => {
     await fresh.close();
   });
 
+  // T8.22-B7 (AC-UI-001): the counts table wraps at spaces only; no heading or count word is split across lines at 375 or 320 px.
+  test('should not split any word of the Restore counts table across lines at 375 and 320 px', async ({ profile }) => {
+    test.setTimeout(240_000);
+    await seedJournal(profile);
+    const saved = scratch('words.tjbackup');
+    const context = await launchAt(profile, MONDAY_1005);
+    const page = await firstPage(context);
+    await page.goto('/');
+    await openBackup(page);
+    await downloadBackup(page, saved);
+    await chooseRestoreFile(page, saved);
+    await expect(page.getByText(/\(release [0-9a-f]{64}, schema \d+\)/)).toBeVisible();
+    for (const width of [375, 320]) {
+      await setWidth(page, width);
+      const split = await page.evaluate(() => {
+        const found: string[] = [];
+        for (const cell of document.querySelectorAll('.restore-counts th, .restore-counts td')) {
+          const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const text = node.textContent ?? '';
+            for (const match of text.matchAll(/\S+/g)) {
+              const range = document.createRange();
+              range.setStart(node, match.index ?? 0);
+              range.setEnd(node, (match.index ?? 0) + match[0].length);
+              if (range.getClientRects().length > 1) found.push(match[0]);
+            }
+          }
+        }
+        return found;
+      });
+      expect(split, `words split across lines at ${width} px`).toEqual([]);
+      await expectNoSidewaysScroll(page, `Restore preview at ${width} px`);
+    }
+    await context.close();
+  });
+
   // T8.22-B6 (AC-UI-001): on the confirm step each checkbox and radio sits at its natural size on its label's line, not stretched across the card.
   test('should keep each confirm-step checkbox and radio small and on the same line as its label at 1280 and 320 px, on the Backup page and on first run', async ({ profile }) => {
     test.setTimeout(240_000);
