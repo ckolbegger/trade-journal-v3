@@ -1189,3 +1189,10 @@ Full report: `evidence/D08/bench.md`.
 - B2 (Valid): `tools/verify-capacity.ts:43-44` judges usage and peak against the projection and M cached in `capacity.json`, never compared with the recomputed projection or `CAPACITY_REQUIREMENT`.
 - Dismissed (Wrong): `restore-checks.test.ts:31` "DIGEST in its temporal dead zone"; the file's 7 tests run and pass.
 Raw: `ocr/T8.19-c1e00ded.json`.
+
+## T8.19-B1 and B2 done in lane BN
+
+- B1 `c3f9ebae`: `profileProblems(setup, datasetDigest)`; `measureRestored` refuses a profile restored from another artifact and records the setup record's digest. Red: assertion.
+- B2 `17d4c56b`: `cachedProjectionProblems(cached, fresh)`; `verify:capacity` recomputes the projection and takes M from `CAPACITY_REQUIREMENT`, and fails when the cached values differ. Red: assertion.
+- No first-run passes. Capacity rerun alone under the browser lock: usage 206,540,122 (0.264), second-Restore peak 439,119,065 (0.481 × M, 402 samples); `verify:capacity` with and without `--restored` exit 0. `bench:setup` and `bench:run` not rerun (not needed).
+- Lane tier green: unit 2019, integration 258, checks 14 of 14.
