@@ -47,6 +47,37 @@
   margin-top: 1rem;
 }
 
+/* Each checkbox and radio sits at its natural size before its text, as `form label.check` does; the global input rule would stretch it across the card. */
+.restore-confirm label,
+.restore-decline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+
+.restore-confirm label {
+  cursor: pointer;
+}
+
+.restore-confirm input[type='checkbox'],
+.restore-confirm input[type='radio'] {
+  display: inline-block;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  accent-color: var(--ink);
+}
+
+.restore-decline p {
+  margin: 0;
+}
+
 .backup-checks {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;

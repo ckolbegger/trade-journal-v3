@@ -1,3 +1,4 @@
+import type { Locator, Page } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import {
   chooseFile, chooseRestoreFile, completeLine, confirmStep, declineSafetyBackup, downloadBackup, downloadSection, expect, expectAccessible, firstPage, FIXTURE_BACKUP, installDump, launchAt, MONDAY_1005, openBackup,
@@ -194,6 +195,51 @@ test.describe('B8.16 Responsive and accessible', () => {
     for (const width of [375, 320]) {
       await setWidth(first, width);
       await expectNoSidewaysScroll(first, `first run: Restore preview at ${width} px`);
+    }
+    await fresh.close();
+  });
+
+  // T8.22-B6 (AC-UI-001): on the confirm step each checkbox and radio sits at its natural size on its label's line, not stretched across the card.
+  test('should keep each confirm-step checkbox and radio small and on the same line as its label at 1280 and 320 px, on the Backup page and on first run', async ({ profile }) => {
+    test.setTimeout(240_000);
+    const expectControlsBesideLabels = async (page: Page, scope: Locator, label: string): Promise<void> => {
+      const boxes = await scope.locator('input[type="checkbox"], input[type="radio"]').evaluateAll((inputs) =>
+        inputs.map((input) => {
+          const control = input.getBoundingClientRect();
+          const text = (input.closest('label') ?? document.getElementById(input.getAttribute('aria-labelledby') ?? ''))?.getBoundingClientRect();
+          return { name: (input as HTMLInputElement).type, width: control.width, top: control.top, bottom: control.bottom, textTop: text?.top ?? 0, textBottom: text?.bottom ?? 0 };
+        }),
+      );
+      expect(boxes.length, `${label}: controls found`).toBeGreaterThan(0);
+      for (const box of boxes) {
+        expect(box.width, `${label}: ${box.name} width`).toBeLessThanOrEqual(32);
+        expect(Math.min(box.bottom, box.textBottom) - Math.max(box.top, box.textTop), `${label}: ${box.name} shares its label's line`).toBeGreaterThan(0);
+      }
+    };
+    await seedJournal(profile);
+    const saved = scratch('controls.tjbackup');
+    const context = await launchAt(profile, MONDAY_1005);
+    const page = await firstPage(context);
+    await page.goto('/');
+    await openBackup(page);
+    await downloadBackup(page, saved);
+    await chooseRestoreFile(page, saved);
+    await page.getByRole('radio', { name: 'Replace without a backup' }).check();
+    for (const width of [1280, 320]) {
+      await setWidth(page, width);
+      await expectControlsBesideLabels(page, confirmStep(page), `Backup page at ${width} px`);
+    }
+    await context.close();
+
+    const fresh = await profileAt(`${profile.dir}-first-run`).launch();
+    const first = await firstPage(fresh);
+    await first.goto('/');
+    await expect(first.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await first.getByRole('button', { name: 'Restore from a backup' }).click();
+    await chooseRestoreFile(first, saved);
+    for (const width of [1280, 320]) {
+      await setWidth(first, width);
+      await expectControlsBesideLabels(first, confirmStep(first), `first run at ${width} px`);
     }
     await fresh.close();
   });

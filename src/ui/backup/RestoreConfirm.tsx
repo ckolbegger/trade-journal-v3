@@ -161,9 +161,9 @@ export function RestoreConfirm({ facade, selectFile, token, safetyChoiceRequired
             <input type="radio" name="safety" checked={choice === 'WithoutBackup'} onChange={() => setChoice('WithoutBackup')} /> Replace without a backup
           </label>
           {choice === 'WithoutBackup' && (
-            <div>
-              <p id={warningId}>If this backup is wrong or incomplete, your current journal cannot be recovered.</p>
+            <div className="restore-decline">
               <input type="checkbox" aria-labelledby={warningId} checked={declineAcknowledged} onChange={(event) => setDeclineAcknowledged(event.target.checked)} />
+              <p id={warningId}>If this backup is wrong or incomplete, your current journal cannot be recovered.</p>
             </div>
           )}
         </div>
