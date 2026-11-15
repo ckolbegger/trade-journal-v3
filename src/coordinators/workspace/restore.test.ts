@@ -374,6 +374,44 @@ describe('entry origins (A134)', () => {
 });
 
 describe('duplicate primary keys (A134)', () => {
+  it('should reject an envelope with a store that is not text, an envelope missing its store, and a record placed in a section that does not own its store, with one MalformedRecord issue per line, and delete the candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    let nullLine = 0;
+    let missingStoreLine = 0;
+    let misplacedLine = 0;
+    const bad = editedArtifact(a7.bytes, (artifact) => {
+      const nullAt = lineOf(artifact.lines, 'catalog');
+      const notText = JSON.parse(artifact.lines[nullAt]!) as Record<string, unknown>;
+      notText['t'] = null;
+      artifact.lines[nullAt] = JSON.stringify(notText);
+      const [first, second] = artifact.lines.flatMap((line, at) => (line.startsWith('{"r":') && line.endsWith(',"t":"trades"}') ? [at] : [])) as [number, number];
+      const noStore = JSON.parse(artifact.lines[first]!) as Record<string, unknown>;
+      delete noStore['t'];
+      artifact.lines[first] = JSON.stringify(noStore);
+      // A real trades record, written inside the catalog section.
+      const misplaced = JSON.parse(artifact.lines[second]!) as Record<string, unknown>;
+      misplaced['s'] = 'catalog';
+      artifact.lines[second] = JSON.stringify(misplaced);
+      // Artifact lines are numbered from 1.
+      nullLine = nullAt + 1;
+      missingStoreLine = first + 1;
+      misplacedLine = second + 1;
+    });
+    const result = await target.workspace.prepareRestore({ file: backupFile(bad) });
+    expect(result).toMatchObject({
+      kind: 'Rejected',
+      issues: [
+        { code: 'MalformedRecord', line: nullLine },
+        { code: 'MalformedRecord', line: missingStoreLine },
+        { code: 'MalformedRecord', line: misplacedLine },
+      ],
+      totalIssues: 3,
+    });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+
   it('should reject an artifact with consistent counts and digests but two records sharing one primary key in a store, naming the store, key and line, and delete the candidate', async () => {
     const a7 = await exportedArtifact(await loadDump(W7));
     const target = await targetWorkspace();

@@ -49,6 +49,19 @@ import type {
 } from './backup-types.ts';
 import { keyOf } from '../../persistence/schema.ts';
 import { describeError, KNOWN_SECTIONS } from './backup-export.ts';
+
+// The section that owns each store, as the export writes them (meta is the workspace section's one store).
+const SECTION_OF_STORE: Readonly<Record<string, string>> = {
+  meta: 'workspace',
+  catalog: 'catalog',
+  observations: 'marketData',
+  trades: 'trades',
+  journalTypes: 'journal',
+  journalDefinitions: 'journal',
+  journalEntries: 'journal',
+  journalDeclines: 'journal',
+  journalDebts: 'journal',
+};
 import type { BackupDeps, BackupOperations } from './backup.ts';
 
 // What Restore needs: the backup dependencies, the lifecycle lock, the release's session policy for
@@ -387,7 +400,17 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         if (line.kind === 'record') {
           let envelope: { s: string; t: string; r: unknown };
           try {
-            envelope = JSON.parse(line.text) as typeof envelope;
+            const shape = JSON.parse(line.text) as Record<string, unknown> | null;
+            // An object whose section owns its store; anything else is that line's own issue (A134).
+            if (typeof shape !== 'object' || shape === null || typeof shape['s'] !== 'string' || typeof shape['t'] !== 'string') {
+              unreadable(line.lineNumber, typeof shape === 'object' && shape !== null ? (typeof shape['s'] !== 'string' ? 's' : 't') : undefined);
+              continue;
+            }
+            if (SECTION_OF_STORE[shape['t']] !== shape['s']) {
+              unreadable(line.lineNumber, 't');
+              continue;
+            }
+            envelope = shape as typeof envelope;
           } catch {
             unreadable(line.lineNumber);
             continue;
