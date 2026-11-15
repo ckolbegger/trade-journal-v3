@@ -1119,3 +1119,7 @@ Lane FX rebased onto `253e5c4e` (only evidence and plan commits since its base, 
 ## Pause ended (2026-11-15 08:04 EST)
 
 `ocr llm test` was retried every 10 minutes at the user's request: still limited at 07:44 and 07:54, working at 08:04. Work resumed early; ocr reviews of T8.18-F2 `9b728388` (lane BG) and a full rerun of T8.21-F3 `6cd5e81b` (lane BR) started.
+
+## T8.21-F3 ocr review (full rerun, session 4a4f8545)
+
+All 5 code files reviewed, none failed; supersedes the 05:42 partial run. One finding, Valid: `other-tabs.ts:17` reads `unsavedElsewhere()` once when `prepareRestore` resolves, so a reply to the query that arrives later is missed and the preview leaves out `AnotherTabHasUnsavedWork`. Becomes T8.21-F3-B1 in lane BR. Raw: `ocr/T8.21-F3-6cd5e81b.json`.
