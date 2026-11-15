@@ -1064,3 +1064,7 @@ Verification (the row): `npm run build:bench && npm run bench:generate`. Run in 
 ## Lane BG merged — 2026-11-15
 
 Lane BG rebased onto `fd6c80f2` (structural.md conflict resolved by appending T8.18's section to main's file) and fast-forwarded: T8.18 `268bd353`, B2 and F1 `f9b0fa1c`, lane tier after rebase `48085f90`. Lane tier on the rebased code: unit 1975, integration 229, checks 14 of 14, all exit 0. Smoke artifact (20 sessions, generator 8, schema 7): SHA-256 `e421ba59c2f53f670124131a638ca65fecfe9f3c7cfb97a7180dd076cefc52d2`, 576517 bytes. Lane BG kept for T8.18-F2 (waits on Q25). The merge run comes with the next batch (lane WR).
+
+## Lane WR merged — 2026-11-15
+
+Lane WR (T8.8-F1 to F4) rebased from `ec56950e` onto `fd6c80f2`, which brought in T8.15's Restore fault stages, so the lane tier was rerun: unit 1972, integration 229, checks 14 of 14, all exit 0. Rebased again onto `6d5eeada` (lane BG's bench files only, no overlap) and fast-forwarded: F1 `4ef8fd97`, F2 `c21b06f8`, F3 and F1-B1 `fe81938f`, F4 `6f8aaa91`, lane tier `22d4a9f4`. Merge-20 covers lanes BG and WR.
