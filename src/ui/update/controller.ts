@@ -39,6 +39,8 @@ export interface ReleaseUpdateController {
   readonly subscribe: (listener: () => void) => () => void;
   // Forms report whether any value differs from its initial value.
   setUnsaved(unsaved: boolean): void;
+  // Asks the other tabs to repeat any unsaved work they hold; replies update `unsavedElsewhere`.
+  askOthers(): void;
   // The tab is closing: its form is abandoned, so it no longer holds the update back.
   dispose(): void;
   // The trader's explicit Reload: the waiting release takes control, then this tab reloads.
@@ -93,6 +95,9 @@ export function createReleaseUpdateController(deps: ReleaseUpdateControllerDeps)
       if (unsaved === state.unsavedHere) return;
       set({ ...state, unsavedHere: unsaved });
       deps.channel.postMessage({ type: 'unsaved', tabId, unsaved } satisfies ChannelMessage);
+    },
+    askOthers() {
+      deps.channel.postMessage({ type: 'query', tabId } satisfies ChannelMessage);
     },
     async checkForUpdates() {
       await deps.registration.update();

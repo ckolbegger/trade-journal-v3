@@ -13,6 +13,7 @@ import { useRuntime } from './ui/runtime.tsx';
 import type { WorkspaceReplaced } from './app/types.ts';
 import type { BackupFacade } from './ui/backup/facade.ts';
 import { BackupView } from './ui/backup/BackupView.tsx';
+import { withOtherTabsWarning } from './ui/backup/other-tabs.ts';
 import { AboutView } from './ui/screens/AboutView.tsx';
 import { AccountsView } from './ui/screens/AccountsView.tsx';
 import { PlanForm } from './ui/screens/PlanForm.tsx';
@@ -83,12 +84,16 @@ async function start(container: HTMLElement) {
   // After a Restore the shell's launch status is out of date (first run most of all, since RestoreFlow has
   // no completion callback), so the shell is rebuilt when the trader leaves the Restore complete summary.
   const postRestore = createPostRestore();
-  const backup: BackupFacade = {
-    exportBackup: (request) => app.Workspace.exportBackup(request),
-    confirmBackup: (request) => app.Workspace.confirmBackup(request),
-    prepareRestore: (request) => app.Workspace.prepareRestore(request),
-    applyPreparedRestore: (request) => postRestore.apply(() => app.Workspace.applyPreparedRestore(request)),
-  };
+  // The Restore preview also warns when another tab has unsaved work (A133), learned over the update channel.
+  const backup: BackupFacade = withOtherTabsWarning(
+    {
+      exportBackup: (request) => app.Workspace.exportBackup(request),
+      confirmBackup: (request) => app.Workspace.confirmBackup(request),
+      prepareRestore: (request) => app.Workspace.prepareRestore(request),
+      applyPreparedRestore: (request) => postRestore.apply(() => app.Workspace.applyPreparedRestore(request)),
+    },
+    { askOthers: () => updates.askOthers(), unsavedElsewhere: () => updates.state().unsavedElsewhere },
+  );
   // Another tab's Restore (D8 A136): the channel also carries the update notice's messages, which have no `kind`.
   const replacedChannel = new BroadcastChannel('tj-updates');
   // A foreign replacement is terminal for this tab, so postRestore remembers it and tells whoever is subscribed

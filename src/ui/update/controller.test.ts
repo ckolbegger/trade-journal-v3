@@ -42,6 +42,26 @@ describe('activation', () => {
   });
 });
 
+describe('asking the other tabs', () => {
+  it('should send a query on askOthers and learn unsaved work from the reply', () => {
+    const network = new ChannelNetwork();
+    const asker = tab(network);
+    // A stand-in for another tab that holds unsaved work and answers any query.
+    const other = network.open();
+    const queries: unknown[] = [];
+    other.addEventListener('message', (event) => {
+      const message = (event as MessageEvent<{ type: string }>).data;
+      if (message.type !== 'query') return;
+      queries.push(message);
+      other.postMessage({ type: 'unsaved', tabId: 'other', unsaved: true });
+    });
+    expect(asker.controller.state().unsavedElsewhere).toBe(false);
+    asker.controller.askOthers();
+    expect(queries).toEqual([expect.objectContaining({ type: 'query' })]);
+    expect(asker.controller.state().unsavedElsewhere).toBe(true);
+  });
+});
+
 describe('critic-1 findings (C1.8)', () => {
   it('should learn of unsaved work that another tab announced before this tab opened', () => {
     const network = new ChannelNetwork();
