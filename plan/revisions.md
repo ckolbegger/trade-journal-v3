@@ -2,6 +2,23 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 103: the commit tagged `claude-opus-5.5-plan-r103` (revision 102 plus decision 114). After the `claude-opus-5.5-d8` tag, at the user's request to carry D8's answered questions into the plan.
+  - **D8's 29 answers are recorded in the D8 breakdown.**
+    - Section 1.6 lists where each one went: the approved words, the follow-up tasks that deviated from the frozen task list, A229 (failure logging) and the known limits (Q12, Q16).
+    - Amended in place, each marked "revision 103": A125, A126, A132, A133, A135, A136, A138, A145, A147, the T8.17, T8.18 and T8.19 rows, case I8.8, and section 3.2's file ownership.
+  - **Decision 114:**
+    - Restore reads schemas 3 through 7 (Q14, amending decision 35).
+    - T8.19's projection formula is kept, and a growth baseline of 206,540,122 bytes is committed, with a 50% limit (Q29).
+    - The command names decide what is written (amending decision 39): `measure:capacity` writes no stored figure, `measure:capacity:reset-baseline` alone rewrites them, `verify:capacity` checks D7's figures only, and `verify:capacity:restored` checks the three restored limits. The `--restored` option goes.
+    - The complete run's checks stage leaves out `verify:capacity:restored`.
+  - **Work:** T8.19-F1, after D8's gate. It runs alone in the main worktree, with no browser critic. The `claude-opus-5.5-d8` tag stays.
+  - **Not included:** the trade-detail audit's findings (`research/trade-detail-audit.html`). The user will handle them in a separate refactor plan.
+  - **Affected:**
+    - `plan/D08-backup-and-restore.md`;
+    - `plan/implementation-plan.md` (decision 114, the notes on decisions 35 and 39, the freeze record);
+    - `plan/D08-handoff.md`.
+
+    `specs/` is unchanged. Decided by the user on 2026-11-14 and 2026-11-15 (`evidence/D08/DECISIONS-PENDING.md`), and drafted at their request: "Please draft up revision 103 and make everything work ready."
 - Revision 102: the commit tagged `claude-opus-5.5-plan-r102` (revision 101 plus decision 113). Before D8 starts, at the user's decision to run D8 as a swarm.
   - **Decision 113**, for every deliverable from D8:
     - a session lock, `.claude/session.lock`: if one exists at the start, stop and ask;
