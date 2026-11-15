@@ -1233,3 +1233,4 @@ The manifest already carried the ranges (`backupSchemaRange`, checked by `verify
 ## T8.22-B3 done (`71c9a40a`)
 
 On first run, choosing Restore from a backup hides the Start your journal form; only the Restore flow shows (A142). Red: assertion (heading still present). No first-run passes. Browser specs restore, after-restore, shell, offline, responsive-a11y, d1 onboarding: 14 passed. Reviewer note for the final report: there is no way back to the start form except reloading, since the preview and confirm step have no Cancel or Back (critic-1 minor observation); a Back button would need a new prop on a component T8.23 froze.
+- T8.22-B3 ocr review (session d5cc0d91): 2 files, no findings. Raw: `ocr/T8.22-B3-71c9a40a.json`.
