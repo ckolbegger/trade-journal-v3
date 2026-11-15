@@ -178,6 +178,52 @@ describe('replacement (AC-REST-003)', () => {
     const pointerOf = (dump: typeof after) => (dump['tj-root']!['pointer'] as { key: string }[]).find((record) => record.key === 'current');
     expect(pointerOf(after)).toEqual(pointerOf(before));
   });
+
+  // Rewrites one `meta` record of the candidate, then expects apply to delete the candidate and report CandidateChanged on `meta`.
+  async function expectCandidateChangedAfterMetaRewrite(key: string, rewrite: (record: Record<string, unknown>) => Record<string, unknown>): Promise<void> {
+    const target = await targetWorkspace();
+    const { token } = await preparedWithPreview(target);
+    const live = (token.targetBinding as { databaseName: string }).databaseName;
+    await new Promise<void>((resolve, reject) => {
+      const open = target.factory.open(token.candidateId);
+      open.onsuccess = () => {
+        const db = open.result;
+        const tx = db.transaction('meta', 'readwrite');
+        const store = tx.objectStore('meta');
+        const read = store.get(key);
+        read.onsuccess = () => store.put(rewrite(read.result as Record<string, unknown>));
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error ?? new Error('write failed'));
+      };
+      open.onerror = () => reject(open.error ?? new Error('open failed'));
+    });
+    const before = await dumpAll(target.factory);
+
+    const result = await target.workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    expect(result).toEqual({ kind: 'CandidateChanged', store: 'meta', liveBinding: token.targetBinding });
+    const after = await dumpAll(target.factory);
+    expect(databaseNames(after)).toEqual([live]);
+    expect(after[live]).toEqual(before[live]);
+    const pointerOf = (dump: typeof after) => (dump['tj-root']!['pointer'] as { key: string }[]).find((record) => record.key === 'current');
+    expect(pointerOf(after)).toEqual(pointerOf(before));
+  }
+
+  it('should return CandidateChanged and delete the candidate when a section of the preparation record lacks its store digests', async () => {
+    await expectCandidateChangedAfterMetaRewrite('restorePrepared', (record) => {
+      const sections = record['sections'] as Record<string, Record<string, unknown>>;
+      const journal = { ...sections['journal']! };
+      delete journal['storeDigests'];
+      return { ...record, sections: { ...sections, journal } };
+    });
+  });
+
+  it('should return CandidateChanged and delete the candidate when a Workspace settings record in the candidate holds a value that cannot be digested', async () => {
+    await expectCandidateChangedAfterMetaRewrite('settings', (record) => ({ ...record, timeZone: undefined }));
+  });
 });
 
 describe('safety choices and first run (AC-REST-002, P33)', () => {

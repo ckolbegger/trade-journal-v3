@@ -215,8 +215,16 @@ async function workspaceDigestOf(source: RecordSource): Promise<string> {
 }
 
 const isSectionMeta = (value: unknown): boolean => {
-  const section = value as { counts?: unknown; digest?: unknown } | null;
-  return typeof section === 'object' && section !== null && typeof section.counts === 'object' && section.counts !== null && typeof section.digest === 'string';
+  const section = value as { counts?: unknown; digest?: unknown; storeDigests?: unknown } | null;
+  return (
+    typeof section === 'object' &&
+    section !== null &&
+    typeof section.counts === 'object' &&
+    section.counts !== null &&
+    typeof section.digest === 'string' &&
+    typeof section.storeDigests === 'object' &&
+    section.storeDigests !== null
+  );
 };
 
 // Whether a `meta` record has the shape preparation wrote: a measured section for each fact module, and the receipt's parts.
@@ -727,17 +735,24 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
           () => applyTrades(candidateSource, prepared.sections.trades),
           () => applyJournal(candidateSource, prepared.sections.journal),
         ];
-        for (const recheck of rechecks) {
-          const rechecked = await recheck();
-          if (rechecked.kind === 'CandidateChanged') {
-            await persistence.discardCandidate(token.candidateId);
-            return { kind: 'CandidateChanged', store: rechecked.store, liveBinding: live };
+        // A recheck that cannot read the candidate (a value it cannot digest) means the candidate changed too.
+        let changedStore: string | undefined;
+        try {
+          for (const recheck of rechecks) {
+            const rechecked = await recheck();
+            if (rechecked.kind === 'CandidateChanged') {
+              changedStore = rechecked.store;
+              break;
+            }
           }
+          // The Workspace section is not a fact module's; its records are compared with what the preview was built from.
+          if (changedStore === undefined && (await workspaceDigestOf(candidateSource)) !== prepared.workspaceDigest) changedStore = 'meta';
+        } catch {
+          changedStore = 'meta';
         }
-        // The Workspace section is not a fact module's; its records are compared with what the preview was built from.
-        if ((await workspaceDigestOf(candidateSource)) !== prepared.workspaceDigest) {
+        if (changedStore !== undefined) {
           await persistence.discardCandidate(token.candidateId);
-          return { kind: 'CandidateChanged', store: 'meta', liveBinding: live };
+          return { kind: 'CandidateChanged', store: changedStore, liveBinding: live };
         }
 
         // One root transaction switches the pointer (A135 step 5); with no Workspace it adds the pointer instead.
