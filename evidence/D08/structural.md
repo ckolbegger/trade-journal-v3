@@ -721,3 +721,10 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Unit 177 / 1833, integration 106 / 229, checks 14 of 14.
   - Browser: the full tier ran, because `src/ui/readiness-copy.ts` changed since `53f7ed98`. 126 + 98 passed.
   - Outputs: `suite-runs/merge-10-*.txt`.
+- **Lane WB merged early** (fast-forward after rebase): T8.4-F2 `07aec112`, B5 `74b4787f`, B6 `a596b38a`; T8.5-F2 `9021f4b2`, B7 `e719dea7`, B8 `c1ff6657`, B9 `a15cb91c`. Progress updated (`89b64a80`). Lane UB was rebased onto main (head `bf0b5f73`) so T8.12-F1 can use the shared `FailureDetail`.
+- **T8.8 dispatched:** lane WR is the worktree `.claude/worktrees/d08-wr` on branch `d08/wr` from `89b64a80`. T8.4-F1 (lane WB) and T8.12-F1 (lane UB) dispatched as well.
+- **Lanes FM and PS removed** after their merges (worktrees and branches `d08/fm`, `d08/ps`).
+- **merge-11** (lane WB's follow-ups merged; source `a2ccf117`): all green, run complete.
+  - Unit 177 / 1843, integration 106 / 229, checks 14 of 14.
+  - Browser: the task tier ran, since no changed path since `f087b459` is on the full-tier list. 5 passed.
+  - Outputs: `suite-runs/merge-11-*.txt`.
