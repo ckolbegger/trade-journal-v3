@@ -57,6 +57,16 @@ describe('obligation key shape (D8 A134)', () => {
   });
 });
 
+describe('nested field in a union-typed field (D8 A134)', () => {
+  it('should name the nested field in the path of a malformed record', () => {
+    for (const store of ['journalEntries', 'journalDeclines'] as const) {
+      const bad = exported(store);
+      bad[0]!['origin'] = { kind: 'DailyReview', factId: 'f1', reviewDate: 20261120 };
+      expect(preparation.parse(store, linesOf(bad))).toEqual({ kind: 'Rejected', issues: [{ code: 'MalformedRecord', line: 3, store, path: 'origin.reviewDate' }] });
+    }
+  });
+});
+
 describe('section validator gaps (D2 follow-up F12)', () => {
   it('should report a duplicate Entry id', async () => {
     const candidate = () => Object.fromEntries(STORES.map((store) => [store, exported(store)]));

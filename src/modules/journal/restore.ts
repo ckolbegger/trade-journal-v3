@@ -138,11 +138,23 @@ export interface JournalRestorePreparation {
   validate(source: RecordSource): Promise<JournalSectionValidation>;
 }
 
+// The paths of the fields an issue names. A union issue is narrowed to the one branch whose `kind`
+// matched and that failed only inside it; when no single branch did (a wrong `kind`, or a union
+// without one such as the obligation key), it names the union field itself.
+function pathsOf(issue: z.core.$ZodIssue, base: readonly PropertyKey[] = []): string[] {
+  if (issue.code === 'invalid_union') {
+    const wrongKind = (branch: readonly z.core.$ZodIssue[]) => branch.some((i) => i.path.length === 1 && i.path[0] === 'kind');
+    const reached = issue.errors.filter((branch) => !wrongKind(branch));
+    if (reached.length === 1 && issue.errors.length > 1) {
+      return reached[0]!.flatMap((i) => pathsOf(i, [...base, ...issue.path]));
+    }
+  }
+  const keys = issue.code === 'unrecognized_keys' ? issue.keys : [undefined];
+  return keys.map((key) => [...base, ...issue.path, ...(key === undefined ? [] : [key])].join('.'));
+}
+
 function malformedOf(store: string, line: number, error: z.ZodError): MalformedRecord[] {
-  return error.issues.flatMap((issue) => {
-    const keys = issue.code === 'unrecognized_keys' ? issue.keys : [undefined];
-    return keys.map((key) => ({ code: 'MalformedRecord' as const, line, store, path: [...issue.path, ...(key === undefined ? [] : [key])].join('.') }));
-  });
+  return error.issues.flatMap((issue) => pathsOf(issue).map((path) => ({ code: 'MalformedRecord' as const, line, store, path })));
 }
 
 export function prepareRestore(): JournalRestorePreparation {
