@@ -1200,3 +1200,7 @@ Raw: `ocr/T8.19-c1e00ded.json`.
 ## T8.19-B1 and B2 ocr review (session 1c7b0446)
 
 Range e4896a9f..17d4c56b, 4 files reviewed, no findings. Lane BN's tasks are all reviewed clean. Raw: `ocr/T8.19-B1-B2-17d4c56b.json`.
+
+## Pre-critic full tier green
+
+Code at `80f0a468`. Unit 189 files / 2019 tests, integration 118 / 258, browser-1 126 passed (5.2 m), browser-2 117 passed (7.5 m), checks 14 of 14, run complete. The runner's first hand-back was an early "placeholder", which used up its one report; the results were read from the run's files and `run-complete.sh`.
