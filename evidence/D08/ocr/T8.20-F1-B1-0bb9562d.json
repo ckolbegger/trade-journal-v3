@@ -1,0 +1,148 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 71708,
+    "input_tokens": 71195,
+    "output_tokens": 513,
+    "cache_read_tokens": 11648,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 3,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Workspace migration behavior and tests",
+      "files": [
+        "src/coordinators/workspace/migration.test.ts",
+        "src/coordinators/workspace/migration.ts"
+      ]
+    },
+    {
+      "label": "Workspace restore fault handling and tests",
+      "files": [
+        "src/coordinators/workspace/restore-faults.test.ts",
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "0c47164c-b01c-4071-ac00-dfa9958511b0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0c47164c-b01c-4071-ac00-dfa9958511b0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0bb9562d",
+      "resolved_base": "cd1cc13e784f8a58fae7893af32776ea799d7f3f",
+      "resolved_head": "0bb9562dc0dc4cfa4ec26b8a9c10c62c15c97d0d",
+      "exact_range": "cd1cc13e784f8a58fae7893af32776ea799d7f3f..0bb9562dc0dc4cfa4ec26b8a9c10c62c15c97d0d",
+      "source_artifact_sha256": "d0f95abe84548be23f7f170e31874cac7423395be5bac7910b9b73da243d3657"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "7faedb91c58da473e8ade250ae6083915206d625eaf16d6f78c84500194caeba"
+        },
+        {
+          "item_id": "1cd4b927b8c58c8513dd4947971e640ee676f66a0693b882176cc745a5f58ab9",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "e71b535cabb9f53bc4095cdb04f633dfae5fc9970bbc02d68836328cc371fb36"
+        },
+        {
+          "item_id": "37c723850287b2b8047108a4fb9bc20675acb9c14793b2570bbd5af882c5962c",
+          "path": "src/coordinators/workspace/restore-faults.test.ts",
+          "fingerprint": "9b40180b64f5568f67c899d3b1a8cd918bc8c16e1829afddfeab79a2c67a5b93"
+        },
+        {
+          "item_id": "7133d9018503b4e4b64899b7222737cff200ce528f314911a61285d44ffdb603",
+          "path": "src/coordinators/workspace/migration.test.ts",
+          "fingerprint": "fce12a669cc845beaf7cdadbd2741aa1f1eba18acb0b1d77c9cd16d8e82d88cf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "7faedb91c58da473e8ade250ae6083915206d625eaf16d6f78c84500194caeba"
+        },
+        {
+          "item_id": "1cd4b927b8c58c8513dd4947971e640ee676f66a0693b882176cc745a5f58ab9",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "e71b535cabb9f53bc4095cdb04f633dfae5fc9970bbc02d68836328cc371fb36"
+        },
+        {
+          "item_id": "37c723850287b2b8047108a4fb9bc20675acb9c14793b2570bbd5af882c5962c",
+          "path": "src/coordinators/workspace/restore-faults.test.ts",
+          "fingerprint": "9b40180b64f5568f67c899d3b1a8cd918bc8c16e1829afddfeab79a2c67a5b93"
+        },
+        {
+          "item_id": "7133d9018503b4e4b64899b7222737cff200ce528f314911a61285d44ffdb603",
+          "path": "src/coordinators/workspace/migration.test.ts",
+          "fingerprint": "fce12a669cc845beaf7cdadbd2741aa1f1eba18acb0b1d77c9cd16d8e82d88cf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1c329d494b8b934ef76ddce5044d3d0299e9377980450413d3596fd8c52c7956",
+          "path": "evidence/D08/suite-runs/T8.20-F1-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6cd695dc283e9632ef341d7d80da241f40d02c3a4094b9bb7dab36a914a4203b",
+          "path": "evidence/D08/suite-runs/T8.20-F1-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7ec4e5fe7324a4098f2969a6674044a6a63470ec0806f8b6d7d7bba63d68626e",
+          "path": "evidence/D08/tdd-log/T8.20-F1-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "80be65170a0dbc2b7a300bd540ac23b58c535975dde83f3038c2fe3bd40c5b1c",
+          "path": "evidence/D08/suite-runs/T8.20-F1-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "87433c4559814e4b1e63ee3f9a9868a92366b25564101a51c1218145bd0dd1e4",
+          "path": "evidence/D08/suite-runs/T8.20-F1-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 19664
+  }
+}
