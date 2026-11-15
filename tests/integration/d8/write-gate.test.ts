@@ -25,10 +25,7 @@ describe('I8.14 Write gate', () => {
     expect(pointerOf(after)).toEqual(pointerOf(before));
   }, 60_000);
 
-  // KNOWN DEFECT (reported with T8.20): Persistence.activateCandidate has no write gate. Called directly while the
-  // inventory check fails, it switches the pointer and returns Activated, where I8.14 requires RuntimeNotWritable.
-  // `it.fails` keeps the suite green until the defect is fixed; then this case fails and the marker is removed.
-  it.fails('should return RuntimeNotWritable from Persistence.activateCandidate called directly, leaving the pointer and every store unchanged', async () => {
+  it('should return RuntimeNotWritable from Persistence.activateCandidate called directly, leaving the pointer and every store unchanged', async () => {
     const { d, app } = await wtDevice();
     const { token } = await prepared(app, artifactOf('backup-v7'));
     const before = await dumpAll(d.factory);
@@ -38,6 +35,8 @@ describe('I8.14 Write gate', () => {
     const direct = await app.persistence.activateCandidate(token.candidateId, live);
 
     expect(direct).toEqual(notWritable);
-    expect(await dumpAll(d.factory)).toEqual(before);
+    const after = await dumpAll(d.factory);
+    expect(after).toEqual(before);
+    expect(pointerOf(after)).toEqual(pointerOf(before));
   }, 60_000);
 });

@@ -145,6 +145,45 @@ describe('Restore candidates (A138)', () => {
 
     expect(await databaseNames()).toEqual([]);
   });
+
+  const notWritable: RuntimeNotWritable = {
+    kind: 'RuntimeNotWritable',
+    runtimeReadiness: 'RecoveryOnly',
+    failedChecks: [{ check: 'inventory', reason: 'InventoryInvalid' }],
+    workspaceStatus: 'RecoveryOnly',
+    safeActions: [{ action: 'Reload', explanation: 'Reload.' }],
+  };
+
+  it('should refuse to activate a candidate outside Writable with RuntimeNotWritable, leaving the pointer and candidate entries unchanged', async () => {
+    let refusal: RuntimeNotWritable | null = null;
+    const p = persistence('h', { current: () => refusal, recheck: () => Promise.resolve(refusal) });
+    const created = await p.createWorkspace([]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    const candidate = await p.createRestoreCandidate();
+    if (candidate.kind !== 'Created') throw new Error('candidate not created');
+    const pointerBefore = await rawGet('tj-root', 'pointer', 'current');
+    const entriesBefore = await restoreEntries();
+
+    refusal = notWritable;
+    const result = await p.activateCandidate(candidate.databaseName, created.databaseName);
+
+    expect(result).toEqual(notWritable);
+    expect(await rawGet('tj-root', 'pointer', 'current')).toEqual(pointerBefore);
+    expect(await restoreEntries()).toEqual(entriesBefore);
+  });
+
+  it('should refuse to activate a first candidate outside Writable with RuntimeNotWritable, adding no pointer', async () => {
+    let refusal: RuntimeNotWritable | null = null;
+    const p = persistence('i', { current: () => refusal, recheck: () => Promise.resolve(refusal) });
+    const candidate = await p.createRestoreCandidate();
+    if (candidate.kind !== 'Created') throw new Error('candidate not created');
+
+    refusal = notWritable;
+    const result = await p.activateFirstCandidate(candidate.databaseName);
+
+    expect(result).toEqual(notWritable);
+    expect(await rawGet('tj-root', 'pointer', 'current')).toBeUndefined();
+  });
 });
 
 describe('supersession (T8.7-B5)', () => {

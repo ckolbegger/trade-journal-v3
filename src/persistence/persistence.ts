@@ -184,11 +184,13 @@ export interface Persistence {
   // In one root transaction: points the root at the candidate, removes its candidate entry, and
   // lists the database it replaces as retired (D2 A30). `inFlip` runs inside that transaction
   // after its writes; a throw aborts it. Aborted: the pointer still names `retired`.
-  activateCandidate(candidate: string, retired: string, inFlip?: () => void): Promise<{ readonly kind: 'Activated' | 'Aborted' }>;
+  // Outside Writable it refuses with RuntimeNotWritable and switches nothing (D8 A135, AC-DEL-004).
+  activateCandidate(candidate: string, retired: string, inFlip?: () => void): Promise<RuntimeNotWritable | { readonly kind: 'Activated' | 'Aborted' }>;
   // Activation when no Workspace exists: adds the pointer and removes the candidate entry in one
   // root transaction. When a pointer was added meanwhile, deletes the candidate instead and reports
   // the existing database (D8 A135, D1 A12).
-  activateFirstCandidate(candidate: string, inFlip?: () => void): Promise<{ readonly kind: 'Activated' } | { readonly kind: 'AlreadyInitialized'; readonly databaseName: string }>;
+  // Outside Writable it refuses with RuntimeNotWritable and adds no pointer.
+  activateFirstCandidate(candidate: string, inFlip?: () => void): Promise<RuntimeNotWritable | { readonly kind: 'Activated' } | { readonly kind: 'AlreadyInitialized'; readonly databaseName: string }>;
   // Reads a Workspace database's authoritative records for a backup in one readonly snapshot,
   // calling `onBatch` synchronously per batch of at most 500 records (D8 P29, A128). The database
   // is named, not the current Workspace, so a blocked older database reads with its own layout
@@ -289,6 +291,13 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
   async function supersededRefusal(): Promise<RuntimeNotWritable> {
     const refusal = (await deps.writeGate.recheck()) ?? SUPERSEDED;
     return refusal === SUPERSEDED ? refusal : { ...refusal, failedChecks: [...refusal.failedChecks, ...SUPERSEDED.failedChecks] };
+  }
+
+  // The refusal an activation meets when this session is superseded or the runtime is not writable, checked afresh
+  // because a direct caller has not rechecked; null when it may switch the pointer.
+  async function activationRefusal(): Promise<RuntimeNotWritable | null> {
+    if (superseded) return supersededRefusal();
+    return deps.writeGate.recheck();
   }
 
   async function createRestoreCandidateNow(): Promise<RuntimeNotWritable | { readonly kind: 'Created'; readonly databaseName: string }> {
@@ -531,6 +540,8 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async activateFirstCandidate(candidate, inFlip) {
+      const refusal = await activationRefusal();
+      if (refusal) return refusal;
       const existing = await inRoot(async (store) => {
         const pointer = (await store.get(POINTER_KEY)) as PointerRecord | undefined;
         if (pointer) return pointer.databaseName;
@@ -550,6 +561,8 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async activateCandidate(candidate, retired, inFlip) {
+      const refusal = await activationRefusal();
+      if (refusal) return refusal;
       try {
         await inRoot(async (store) => {
           const [candidates, retiredNames] = await Promise.all([listed(store, CANDIDATES_KEY), listed(store, RETIRED_KEY)]);
