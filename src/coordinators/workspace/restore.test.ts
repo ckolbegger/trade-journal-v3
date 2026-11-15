@@ -2,6 +2,7 @@
 // into the R-fixtures, restored over W-t, on fake-indexeddb.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { gunzipSync } from 'fflate';
 import { IDBFactory } from 'fake-indexeddb';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
@@ -687,5 +688,23 @@ describe('cancellation (A138, A148)', () => {
 
     expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
     expectNoCandidate(await dumpAll(target.factory), before);
+  });
+});
+
+describe('progress (A148)', () => {
+  it('should report progress while staging, with done rising batch by batch to the header total', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const header = JSON.parse(new TextDecoder().decode(gunzipSync(a7.bytes)).split('\n')[0]!) as { counts: Record<string, number> };
+    const total = Object.values(header.counts).reduce((sum, count) => sum + count, 0);
+    const target = await targetWorkspace();
+    const reports: { done: number; total: number }[] = [];
+
+    const result = await target.workspace.prepareRestore({ file: backupFile(a7.bytes), onProgress: (progress) => reports.push({ ...progress }) });
+
+    expect(result.kind).toBe('Prepared');
+    expect(reports.length).toBeGreaterThanOrEqual(2);
+    expect(reports.every((report) => report.total === total)).toBe(true);
+    expect(reports.map((report) => report.done)).toEqual([...reports.map((report) => report.done)].sort((a, b) => a - b));
+    expect(reports.at(-1)!.done).toBe(total);
   });
 });

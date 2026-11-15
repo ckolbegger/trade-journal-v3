@@ -366,6 +366,9 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const keysSeen = new Map<string, Set<string>>();
     let workspaceRecord: Record<string, unknown> | undefined;
     let pending: { readonly section: string; readonly store: string; readonly lines: { line: number; record: unknown }[] } | undefined;
+    // Records staged so far, of the header's counted total (A148).
+    let stagedCount = 0;
+    const totalRecords = Object.values(header.counts).reduce((sum, count) => sum + count, 0);
     const flush = async () => {
       if (!pending) return;
       const { section, store, lines: batch } = pending;
@@ -414,6 +417,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         return false;
       });
       await persistence.putCandidateRecords(candidate, fresh.map((value): StoreRecord => ({ store: store as WorkspaceStore, value: { ...value } })));
+      stagedCount += batch.length;
+      request.onProgress?.({ done: stagedCount, total: totalRecords });
     };
     let fullDigest = '';
     try {
