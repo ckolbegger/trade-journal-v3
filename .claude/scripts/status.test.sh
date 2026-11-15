@@ -130,5 +130,11 @@ if want 11; then
   [[ $code == 1 && "$out" == *"D99-fixture.md"* ]] || bad "no file with a Progress table should exit 1 naming a file (exit $code): $out"
 fi
 
+if want 12; then
+  mkfix pfx '| T9.8 | 1 | A | Paused | T8P.23-B1, T7S.4-F1, D7-Retro-F3, T9.2-B2, T8P.23-B1, F3 |'
+  out=$(STATUS_ROOT="$t/pfx" "$st" D99 2>&1)
+  [[ "$out" == *"F 2, B 2"* ]] || bad "IDs after any task-ID prefix not counted (want F 2, B 2): $out"
+fi
+
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"
 exit $fail

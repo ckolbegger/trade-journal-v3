@@ -89,3 +89,15 @@ Command: `.claude/scripts/status.test.sh 11`.
 note: one fixture per scenario (prose-only file before the breakdown; a lone prose-only file, which must still exit 1 naming it). The second passes before and after by design. The fix replaces the grep with an awk check for a `|` row under the Progress heading.
 
 refactor: none needed.
+
+## B8
+
+Command: `.claude/scripts/status.test.sh 12`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 12 | it should count F and B tasks after any task-ID prefix (T8P.23-, T7S.4-, D7-Retro-, T9.2-), each distinct ID once | FAIL: IDs after any task-ID prefix not counted (want F 2, B 2): row showed "F 1, B 1" | status.test.sh: all requested cases passed (cases 1 to 12) |
+
+note: one fixture; the repeat `T8P.23-B1` and bare `F3` (same ID as `D7-Retro-F3`) count once. The fix widens the prefix to `([A-Za-z0-9.]+-)*` and keys each ID by its trailing F/B part. Range wording ("B5 to B7") remains a known note.
+
+refactor: none needed.
