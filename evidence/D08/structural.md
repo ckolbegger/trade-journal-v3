@@ -876,3 +876,8 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - **Flagged (TDD order):** the first fixture never aborted (it waited for a second `estimate` call that does not happen), so the first red and green rows are invalid and the fix existed before a valid red; the valid red was taken by reverting the capacity return, then the fix restored for the green. The final red was a genuine assertion failure.
   - The header-read, format and schema returns share the helper but have no case of their own.
 - **ocr T8.8-B10 `2d1b84b9`:** 0 findings. Raw: `ocr/T8.8-B10-2d1b84b9.json`. T8.8 and B1 to B10 are clean; lane WR merges.
+- **merge-14** (lane WR merged T8.8 and B1 to B10; source `5fad9859`; the browser and checks stages ran on `055d9d67`, a plan-only commit): **failed**, run complete.
+  - Unit 180 / 1910, integration 106 / 229, browser task tier 5 passed.
+  - Checks 12 of 14: `typecheck` and `tsc6` fail at `src/ui/backup/RestoreFlow.test.tsx(52,15)`, TS2741, `tradeSummary` missing from a `RestoreRepair` fixture.
+  - Cause: T8.8's `RestoreRepair` change (Q5 item 2) met lane UB's older fixture. Lane WR's last lane tier ran before its rebase onto a branch holding UB's merge, and the rebase brought in files WR doesn't own, so the lane tier should have been rerun before the merge (my process miss).
+  - Fix: added to T8.13-F3 (lane UB), which edits that test file anyway. The next merge run must show checks 14 of 14.
