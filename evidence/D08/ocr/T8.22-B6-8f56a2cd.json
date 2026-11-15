@@ -1,0 +1,142 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 146370,
+    "input_tokens": 145202,
+    "output_tokens": 1168,
+    "cache_read_tokens": 18304,
+    "elapsed": "1m8s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_find": 2,
+      "file_read": 12
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d8/responsive-a11y.spec.ts",
+      "content": "The `page` parameter is never used. The repository enables `@typescript-eslint/no-unused-vars` through `recommendedTypeChecked`, so this addition makes `npm run lint` fail. Remove the parameter and its call-site arguments (and the unused `Page` import).",
+      "existing_code": "    const expectControlsBesideLabels = async (page: Page, scope: Locator, label: string): Promise\u003cvoid\u003e =\u003e {",
+      "start_line": 205,
+      "end_line": 205,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d8/responsive-a11y.spec.ts",
+      "content": "For wrapped controls, this measures the enclosing label rather than its text. The label includes the input itself, so their vertical bounds overlap even if the text is entirely below the control. Consequently the same-line assertion cannot detect that layout regression. Measure the text separately, for example with a Range around the label's text node, and compare the control against its first line rectangle.",
+      "existing_code": "          const text = (input.closest('label') ?? document.getElementById(input.getAttribute('aria-labelledby') ?? ''))?.getBoundingClientRect();",
+      "start_line": 209,
+      "end_line": 209,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/backup/RestoreConfirm.tsx",
+      "content": "The warning acknowledgment is now only a 20×20 px clickable target: the new CSS shrinks the input, but this div and its paragraph do not toggle it (`aria-labelledby` supplies an accessible name, not click behavior). Unlike the other confirmation controls, the row's 44 px minimum height does not enlarge its hit area. Wrap the checkbox and warning text in a native label (or associate a label using `htmlFor`) so the full warning row is clickable while keeping the small visual control.",
+      "existing_code": "            \u003cdiv className=\"restore-decline\"\u003e",
+      "start_line": 164,
+      "end_line": 164,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d8/responsive-a11y.spec.ts",
+        "src/ui/backup/RestoreConfirm.tsx",
+        "src/ui/backup/backup.css"
+      ]
+    }
+  ],
+  "session_id": "176faf2b-108c-4d80-9515-0d6b01a69739",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "176faf2b-108c-4d80-9515-0d6b01a69739",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8f56a2cd",
+      "resolved_base": "187ffd5a1107a1291d7df8d45ae09380f76e614f",
+      "resolved_head": "8f56a2cdd667d50f6ca1488a8670e466d379bbee",
+      "exact_range": "187ffd5a1107a1291d7df8d45ae09380f76e614f..8f56a2cdd667d50f6ca1488a8670e466d379bbee",
+      "source_artifact_sha256": "f60da679a3063dc88375d9a3bb0e68abb0484fa9d07c97df2f21d2dfc00d0adb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1ac9103e63d500ddacab592df04d9b040bb2772ac72c5d2ecf2ac7ddd59c3b70",
+          "path": "src/ui/backup/backup.css",
+          "fingerprint": "3f58a54a7550c489a01a2d467d0a03419eef3b2a7301a8c6e068062f70806340"
+        },
+        {
+          "item_id": "1d64174096a79650d32a4c4523c1c143fc569fe716dc147a4bac1903036868de",
+          "path": "src/ui/backup/RestoreConfirm.tsx",
+          "fingerprint": "29f41d6d72f3708027673ee23cc4f52213a7ba142c16d9947b11e662bfd6677b"
+        },
+        {
+          "item_id": "999cbcdc259d3b0d415d98465318db429172f22b929bc0f50abd1a6bc1868d4a",
+          "path": "e2e/d8/responsive-a11y.spec.ts",
+          "fingerprint": "7e18c4c12da1657b3f5af98b5c939874b6a4b8337332e1325112cbf14201726c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1ac9103e63d500ddacab592df04d9b040bb2772ac72c5d2ecf2ac7ddd59c3b70",
+          "path": "src/ui/backup/backup.css",
+          "fingerprint": "3f58a54a7550c489a01a2d467d0a03419eef3b2a7301a8c6e068062f70806340"
+        },
+        {
+          "item_id": "1d64174096a79650d32a4c4523c1c143fc569fe716dc147a4bac1903036868de",
+          "path": "src/ui/backup/RestoreConfirm.tsx",
+          "fingerprint": "29f41d6d72f3708027673ee23cc4f52213a7ba142c16d9947b11e662bfd6677b"
+        },
+        {
+          "item_id": "999cbcdc259d3b0d415d98465318db429172f22b929bc0f50abd1a6bc1868d4a",
+          "path": "e2e/d8/responsive-a11y.spec.ts",
+          "fingerprint": "7e18c4c12da1657b3f5af98b5c939874b6a4b8337332e1325112cbf14201726c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "e80174f1b4491eb91142ed6be046447f5bfc65444a06b490909ea6af19a47708",
+          "path": "evidence/D08/tdd-log/T8.22-B6.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 68262
+  }
+}

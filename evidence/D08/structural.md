@@ -1251,3 +1251,7 @@ On first run, choosing Restore from a backup hides the Start your journal form; 
 ## T8.22-B6 done (`8f56a2cd`)
 
 Cause: the global `input, select, textarea { display:block; width:100% }` rule in app.css; only `form label.check` overrides it, and the confirm step is not in a form. Fix: scoped `.restore-confirm` rules (flex label rows, 1.25rem controls, focus ring on the control only); the decline checkbox now sits beside its warning (`.restore-decline`). Red: browser assertion (checkbox 886 px wide at 1280 px). No first-run passes. Browser specs responsive-a11y, restore, backup: 16 passed; `src/ui/backup` 56 passed.
+- T8.22-B6 ocr review (session 176faf2b): 3 files, 3 findings. Raw: `ocr/T8.22-B6-8f56a2cd.json`.
+  - B6-B1 (Valid): `responsive-a11y.spec.ts:209` measures the whole `<label>`, which contains the input, so the "same line" check cannot fail for label-wrapped controls.
+  - B6-B2 (Valid): `RestoreConfirm.tsx:164` the decline checkbox's warning text is not a `<label>`, so clicking it does not toggle the box; the click target is only 20 × 20 px.
+  - Dismissed (Wrong): unused `page` parameter "fails lint"; eslint on the file is clean.
