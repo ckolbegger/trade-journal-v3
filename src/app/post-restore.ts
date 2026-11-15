@@ -33,9 +33,20 @@ export function createPostRestore(): PostRestore {
   // The database another tab's Restore produced, once heard.
   let replacedBy: string | undefined;
   const listeners = new Set<(databaseName: string) => void>();
+  // Whether the shell on screen has been told. A shell that resubscribes (it does so on every route change) is not
+  // replayed the notice again; a rebuilt shell is a new shell and is told once.
+  let told = false;
+  // A rebuild was requested and the new shell has not subscribed yet, so a notice delivered now reaches a dying shell.
+  let rebuilding = false;
   const markReplaced = (databaseName: string) => {
     replacedBy = databaseName;
     for (const listener of [...listeners]) listener(databaseName);
+    if (listeners.size > 0 && !rebuilding) told = true;
+  };
+  const requestRebuild = (run: (() => void) | undefined) => {
+    told = false;
+    rebuilding = true;
+    run?.();
   };
   return {
     async apply<R extends { readonly kind: string }>(run: () => Promise<R>) {
@@ -53,7 +64,7 @@ export function createPostRestore(): PostRestore {
           // summary was unmounted, so rebuild now.
           if (leftStartPath || path !== startPath) {
             summaryShown = false;
-            rebuildShell?.();
+            requestRebuild(rebuildShell);
           }
         }
         return result;
@@ -71,7 +82,11 @@ export function createPostRestore(): PostRestore {
     },
     subscribeReplaced(listener) {
       listeners.add(listener);
-      if (replacedBy !== undefined) listener(replacedBy);
+      rebuilding = false;
+      if (replacedBy !== undefined && !told) {
+        told = true;
+        listener(replacedBy);
+      }
       return () => {
         listeners.delete(listener);
       };
@@ -82,7 +97,7 @@ export function createPostRestore(): PostRestore {
       if (applying && pathname !== startPath) leftStartPath = true;
       if (!summaryShown || pathname === summaryPath) return;
       summaryShown = false;
-      rebuild();
+      requestRebuild(rebuild);
     },
   };
 }

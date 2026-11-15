@@ -85,6 +85,21 @@ describe('a notice for another tab Restore reaches the shell the trader sees (T8
   });
 });
 
+describe('a shell that resubscribes after it was told (T8.11-B8)', () => {
+  it('should not replay a replacement to a shell that resubscribes after it was told', () => {
+    const postRestore = createPostRestore();
+    const first = vi.fn();
+    const unsubscribe = postRestore.subscribeReplaced(first);
+    postRestore.hearReplacement('db-theirs');
+    expect(first).toHaveBeenCalledTimes(1);
+    // The same shell moves to another route and subscribes again.
+    unsubscribe();
+    const again = vi.fn();
+    postRestore.subscribeReplaced(again);
+    expect(again).not.toHaveBeenCalled();
+  });
+});
+
 describe('rebuilding the shell after a Restore', () => {
   it('should rebuild when the trader left and came back to the summary route during the apply', async () => {
     const postRestore = createPostRestore();
