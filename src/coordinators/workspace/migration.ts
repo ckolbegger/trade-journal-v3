@@ -177,7 +177,7 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   await persistence.rebuildCandidate(candidate);
   await deps.migrationHooks?.beforeActivate?.();
   const activation = await persistence.activateCandidate(candidate, source, deps.migrationHooks?.activating);
-  if (activation.kind === 'Aborted') return block('Activate', [{ code: 'ActivationFailed' }]);
+  if (activation.kind !== 'Activated') return block('Activate', [{ code: 'ActivationFailed' }]);
   return {
     kind: 'Migrated',
     receipt: {

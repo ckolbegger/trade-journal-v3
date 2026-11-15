@@ -763,14 +763,27 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
             await dropCandidate(token.candidateId).catch(() => undefined);
             throw error;
           }
+          if (activation.kind === 'RuntimeNotWritable') {
+            // The pointer was not added, so the candidate goes and the refusal itself reaches the caller (A135).
+            await dropCandidate(token.candidateId);
+            return activation;
+          }
           if (activation.kind === 'AlreadyInitialized') {
             // Persistence deleted the losing candidate, so only the held preparation is left to drop.
             held.delete(token.candidateId);
             return { kind: 'AlreadyInitialized', databaseName: activation.databaseName, liveBinding: await liveBinding() };
           }
-        } else if ((await persistence.activateCandidate(token.candidateId, live.databaseName, deps.restoreHooks?.activating)).kind === 'Aborted') {
-          await dropCandidate(token.candidateId);
-          throw new Error('The root transaction that switches the Workspace was aborted');
+        } else {
+          const activation = await persistence.activateCandidate(token.candidateId, live.databaseName, deps.restoreHooks?.activating);
+          if (activation.kind === 'RuntimeNotWritable') {
+            // The pointer did not switch, so the candidate goes and the refusal itself reaches the caller (A135).
+            await dropCandidate(token.candidateId);
+            return activation;
+          }
+          if (activation.kind === 'Aborted') {
+            await dropCandidate(token.candidateId);
+            throw new Error('The root transaction that switches the Workspace was aborted');
+          }
         }
         held.delete(token.candidateId);
         // The Workspace is already replaced, so a failure here must not hide the Restored result (A136).

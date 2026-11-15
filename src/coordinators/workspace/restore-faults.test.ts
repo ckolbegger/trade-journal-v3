@@ -84,6 +84,42 @@ describe('Restore stage hooks (T8.15)', () => {
     expect((await empty.persistence.lookupRoot()).kind).not.toBe('KnownWorkspace');
   });
 
+  it('should return RuntimeNotWritable, keeping the pointer, dropping the candidate and announcing nothing, when the runtime stops being writable just before activation', async () => {
+    const target = await targetWorkspace();
+    const workspace = workspaceOf(target, { restoreHooks: { recheck: () => (target.testHost.fail(['capacity']), undefined) } });
+    const prepared = await workspace.prepareRestore({ file: backupFile((await a7()).bytes) });
+    if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
+    const live = (prepared.token.targetBinding as { databaseName: string }).databaseName;
+    const before = await dumpAll(target.factory);
+    const heard: unknown[] = [];
+    const channel = new BroadcastChannel('tj-updates');
+    channel.onmessage = (event: MessageEvent) => void heard.push(event.data);
+
+    const result = await workspace.applyPreparedRestore({ token: prepared.token, confirmation: CONFIRM, safety: DECLINE });
+
+    expect(result).toMatchObject({ kind: 'RuntimeNotWritable', failedChecks: [{ check: 'capacity' }] });
+    const after = await dumpAll(target.factory);
+    expect(Object.keys(after).filter((name) => name !== 'tj-root')).toEqual([live]);
+    expect(after[live]).toEqual(before[live]);
+    expect(await target.persistence.lookupRoot()).toMatchObject({ kind: 'KnownWorkspace', databaseName: live });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    channel.close();
+    expect(heard).toEqual([]);
+  });
+
+  it('should return RuntimeNotWritable and add no pointer when the runtime stops being writable just before the first-run activation', async () => {
+    const empty = await testStack(new IDBFactory());
+    const workspace = workspaceOf(empty, { restoreHooks: { recheck: () => (empty.testHost.fail(['capacity']), undefined) } });
+    const prepared = await workspace.prepareRestore({ file: backupFile((await a7()).bytes) });
+    if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
+
+    const result = await workspace.applyPreparedRestore({ token: prepared.token, confirmation: CONFIRM });
+
+    expect(result).toMatchObject({ kind: 'RuntimeNotWritable', failedChecks: [{ check: 'capacity' }] });
+    expect((await empty.persistence.lookupRoot()).kind).not.toBe('KnownWorkspace');
+    expect(Object.keys(await dumpAll(empty.factory)).filter((name) => name !== 'tj-root')).toEqual([]);
+  });
+
   it('should wait in preparation after staging the records until the staged hook resolves', async () => {
     const { held, open, entered, enter } = gate();
     const hooks: RestoreStageHooks = {

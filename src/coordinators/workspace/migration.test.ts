@@ -237,6 +237,24 @@ describe('activation failure', () => {
   });
 });
 
+describe('activation refusal', () => {
+  it('should return MigrationBlocked at the Activate stage, leaving the old stores equal and no candidate, when the runtime stops being writable just before activation', async () => {
+    let fail: () => void = () => undefined;
+    const { workspace, factory, testHost } = await v1Stack(undefined, {
+      beforeActivate: () => (fail(), Promise.resolve()),
+    });
+    fail = () => testHost.fail(['capacity']);
+    const before = (await dumpAll(factory))[V1_DATABASE];
+
+    const blocked = await workspace.initialize({});
+
+    expect(blocked).toMatchObject({ kind: 'MigrationBlocked', stage: 'Activate', issues: [{ code: 'ActivationFailed' }], unchangedData: { databaseName: V1_DATABASE } });
+    const after = await dumpAll(factory);
+    expect(after[V1_DATABASE]).toEqual(before);
+    expect(Object.keys(after).sort()).toEqual(['tj-root', V1_DATABASE]);
+  });
+});
+
 describe('not Writable before migration P6', () => {
   it('should return RuntimeNotWritable with Workspace status IntegrityBlocked AwaitingMigration, not migrate, and leave the old database unchanged when readiness fails and the stored schema is older', async () => {
     const { workspace, factory, testHost } = await v1Stack();
