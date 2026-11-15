@@ -1289,3 +1289,4 @@ Minor observations (carried to the final report): focus drops to `<body>` after 
 ## T8.22-B8-B1 done (`d1ce099f`, structural)
 
 `cell` uses an early return and a `label` variable instead of nested ternaries. `src/ui/backup` 58 passed before and after; typecheck, tsc6, lint, lint:deps exit 0.
+- T8.22-B8-B1 ocr review (session d8bb4579): 1 file, no findings. Raw: `ocr/T8.22-B8-B1-d1ce099f.json`. Both critic-2 defects fixed and reviewed; B8's quick run is folded into the full run that closes the gate.
