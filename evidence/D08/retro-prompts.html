@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D8 Retro Prompts</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --card: #ffffff; --ink: #1d1d1b; --muted: #6a6862;
+    --line: #dedbd2; --accent: #2f5d8a; --code-bg: #f1efe8; --ok: #2e7d4f;
+    --high: #b3412e; --mid: #b07a1c; --low: #6a6862;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161614; --card: #1f1f1c; --ink: #ecebe6; --muted: #a09e96;
+      --line: #34332e; --accent: #8db4dc; --code-bg: #272723; --ok: #6fc292;
+      --high: #e27b67; --mid: #d9a94e; --low: #a09e96;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161614; --card: #1f1f1c; --ink: #ecebe6; --muted: #a09e96;
+    --line: #34332e; --accent: #8db4dc; --code-bg: #272723; --ok: #6fc292;
+    --high: #e27b67; --mid: #d9a94e; --low: #a09e96;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; margin: 0 0 18px; }
+  h2 { font-size: 17px; margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .sev { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .sev.high { color: var(--high); } .sev.mid { color: var(--mid); } .sev.low { color: var(--low); }
+  p { margin: 6px 0; }
+  .what { color: var(--muted); }
+  .prompt { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .prompt-head { display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 10px; background: var(--code-bg); border-bottom: 1px solid var(--line);
+    font-size: 13px; color: var(--muted); gap: 8px; }
+  pre { margin: 0; padding: 12px; white-space: pre-wrap; word-wrap: break-word;
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--card); }
+  button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--accent); background: transparent; color: var(--accent); }
+  button.done { border-color: var(--ok); color: var(--ok); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+    background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>D8 retrospective: prompts</h1>
+  <p class="sub">Findings from <code>evidence/D08/retro.md</code>, most severe first. Copy a prompt into Claude Code to apply that change. Each prompt stands alone, so you can apply any subset in any order.</p>
+
+  <section>
+    <h2>1a. A status script for tasks and open questions <span class="sev high">High</span></h2>
+    <p class="what">You asked for the task table 8 times and "what are you waiting on" 4 times during D8. Each answer was rebuilt by hand.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 1, part one (evidence/D08/retro.md, finding 1).
+
+Brief a fresh tdd-task (main worktree, structural with unit cases) to add a read-only script, .claude/scripts/status.sh &lt;Dnn&gt;. It prints:
+- every row of the breakdown's Progress table that is not "Done" or "Withdrawn", with its wave, lane and status;
+- for each row, the number of follow-up (F) and bug (B) tasks in its Commits cell;
+- every question in evidence/&lt;Dnn&gt;/DECISIONS-PENDING.md that has no answer line of its own.
+Test it against D8 (expect no open rows and no open questions) and against a fixture with one open row and one unanswered question.
+
+Then add one line to .claude/docs/implementing.md: when the user asks for the task table or what the session is waiting for, run status.sh and show its output, with the full Progress table only if asked.
+
+Run ocr-review on the commit, handle findings as usual, commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>1b. Follow-up tasks get their own Progress rows <span class="sev high">High</span></h2>
+    <p class="what">Follow-ups (T8.3-F1, T8.8-F1 to F4 …) appear only inside their parent's Commits cell, so a shortened table hid them and you asked "Where are the new tasks?"</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 1, part two (evidence/D08/retro.md, finding 1).
+
+1. In .claude/docs/implementing.md ("After each task", step 5, and the Progress rules): a follow-up task (F) gets its own Progress row directly under its parent, with its own status and commits; bug tasks (B) stay in the Commits cell of the row they fix.
+2. Backfill D8's Progress table (plan/D08-backup-and-restore.md, section 11): move each F task and its own B tasks out of the parent's Commits cell into its own row under the parent. Keep every commit hash; change no status. Check with a before/after list of hashes that none was lost.
+3. When showing me the task table, never drop a column or a row without saying so.
+
+Editing the Progress section is not a plan revision. Commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>2a. A check that every question has its own answer <span class="sev mid">Medium</span></h2>
+    <p class="what">Q9's answer sits under Q8, so Q9's section still reads "until the user answers". A script counting answers would get it wrong.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 2, the check (evidence/D08/retro.md, finding 2).
+
+Brief a fresh tdd-task to add .claude/scripts/decisions-check.sh &lt;Dnn&gt;: it fails, naming the question, when a "## Qn." section of evidence/&lt;Dnn&gt;/DECISIONS-PENDING.md has neither its own "**Qn answer" line nor an explicit open marker. Unit-test it on a fixture with one answered, one open and one misplaced answer. If status.sh (finding 1a) exists, have it reuse this check.
+
+Add a line to implementing.md's "Pending decisions": run decisions-check.sh before committing a change to DECISIONS-PENDING.md.
+
+Run ocr-review on the commit, handle findings as usual, commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>2b. Keep answers current, and fix D8's stale records <span class="sev mid">Medium</span></h2>
+    <p class="what">Q29's recorded answer and the final report still describe the first wording (one reset command, <code>verify:capacity:restored</code>). Two documents name the tag's old commit, <code>3ecb7c25</code>.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 2, the rule and the fixes (evidence/D08/retro.md, finding 2).
+
+1. Add to implementing.md's "Pending decisions" step 5: when the user changes an answer later, append "**Amended (date):**" with the new answer in that question's own section, and update the final report wherever it quotes the answer.
+2. Fix D8's records:
+   - Q29 in evidence/D08/DECISIONS-PENDING.md: append an "Amended (2026-11-15)" line with the final choices (measure:capacity:reset-basis and measure:capacity:reset-baseline, one file each; bench:verify-capacity), pointing to decision 114.
+   - Q9: move its answer into Q9's own section (leave a one-line pointer under Q8 if the text there reads better that way).
+   - evidence/D08/final-report.md: correct the Q29 sentence in "Decisions", and the first line, which should say the tag is on 2bc7c795 (moved there after T8.19-F1, at the user's request).
+   - plan/D08-handoff.md: note that the tag moved from 3ecb7c25 to 2bc7c795.
+Commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>3. "One question at a time" moves into implementing.md <span class="sev mid">Medium</span></h2>
+    <p class="what">You asked for questions one at a time 6 times and for more context 5 times. The rule lives only in handoffs, so each new handoff must remember to copy it.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 3 (evidence/D08/retro.md, finding 3).
+
+In .claude/docs/implementing.md, "Pending decisions", step 1: ask one question per message. Start in plain words, then give the context needed to decide without opening a file, the options with their tradeoffs, and a recommendation. When several are pending, ask the next only after the user answers the current one.
+
+Remove the now-duplicated wording from the handoff template guidance ("Writing the next deliverable's handoff") if it is there, so the rule has one home. Commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>4. Side projects run outside the implementing session <span class="sev mid">Medium</span></h2>
+    <p class="what">The D8 session also carried the Trade Detail audit, the Mark-provider research and Q29. It ran out of context 16 times, and one of your questions was lost on the way.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 4 (evidence/D08/retro.md, finding 4).
+
+Add a short paragraph to .claude/docs/implementing.md: research or design work that is not a task of the current deliverable runs in its own session, or in a background agent whose result is a file; the implementing session only records where the result is. When such a request arrives mid-deliverable, say so in one line and offer both ways; do the work in the session only if the user still wants that.
+
+Also add: after a context compaction, check the summary for user questions not yet answered and answer them first.
+
+Commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>5. File lists for renamed commands come from a search <span class="sev low">Low</span></h2>
+    <p class="what">T8.19-F1 changed what <code>measure:capacity</code> means, and two places outside its file list still use the old meaning.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 5 (evidence/D08/retro.md, finding 5).
+
+1. In .claude/docs/drafting-breakdowns.md: a task that renames or repurposes a command, script or exported name builds its file list from grep -rn '&lt;old name&gt;' over tools, src, e2e, tests and .claude, and lists every hit or says why it stays.
+2. Brief a fresh tdd-task (structural) to fix the two stale references: the hint at tools/capacity/profile.ts line 190 and the comment at the top of tools/capacity/measure-page.ts should name npm run measure:capacity:reset-basis. Verification: npx vitest run tools, and grep shows no other stale hint. Then ocr-review, commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>6. Say how to write the session lock <span class="sev low">Low</span></h2>
+    <p class="what">Writing <code>.claude/session.lock</code> with a shell redirect is blocked by the shell-write hook; one wasted call per session.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 6 (evidence/D08/retro.md, finding 6).
+
+In .claude/docs/implementing.md, the session-lock paragraph: say "write it with the Write tool" (the shell-write hook blocks redirects into .claude/). Commit locally, don't push.</pre></div>
+  </section>
+
+  <section>
+    <h2>Apply everything</h2>
+    <p class="what">All of the above, in order.</p>
+    <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply every finding in evidence/D08/retro.md, using the prompts in evidence/D08/retro-prompts.html in their order (1a, 1b, 2a, 2b, 3, 4, 5, 6). Script and code changes go to fresh tdd-task subagents with an ocr-review each; doc and evidence edits are yours. Mark each finding "Applied (date)" in retro.md with what changed. Commit locally, don't push. Stop and ask only if a change needs a plan revision.</pre></div>
+  </section>
+</main>
+<script>
+  document.querySelectorAll('.prompt').forEach(function (box) {
+    var btn = box.querySelector('button');
+    var pre = box.querySelector('pre');
+    btn.addEventListener('click', function () {
+      var text = pre.innerText;
+      var done = function () {
+        btn.textContent = 'Copied'; btn.classList.add('done');
+        setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
+      } else { fallback(text); done(); }
+    });
+  });
+  function fallback(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+</script>
+</body>
+</html>
