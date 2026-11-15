@@ -1359,3 +1359,13 @@ Open questions:
   Q3. Label
 1 open task(s), 2 open question(s)
 ```
+
+**D8-Retro-1a ocr review** (`16d30e61`, raw output `ocr/D8-Retro-1a-16d30e61.json`): 2 files reviewed (3 excluded), 5 comments: 4 Valid, 1 Doubtful. Each becomes a bug task:
+
+- **D8-Retro-1a-B1** (Valid, `status.sh:15-16`): the first `plan/<Dnn>-*.md` match is taken as the breakdown, so `status.sh D08P` picks `D08P-implementing-handoff.md` and exits 1. Case: it should pick the file that holds the Progress table, skipping every handoff file, when several `plan/<Dnn>-*.md` files exist.
+- **D8-Retro-1a-B2** (Valid, `status.sh:23-24`): the parser never leaves the Progress section, so tables under later headings print as open tasks (D08P's section 16). Case: it should stop reading rows at the next heading after the Progress table.
+- **D8-Retro-1a-B3** (Valid, `status.sh:32`): fully qualified IDs (`T9.2-B1`, `T9.2-F1-B1`) count as zero. Case: it should count F and B tasks written with the task prefix the same as bare ones.
+- **D8-Retro-1a-B4** (Valid, `status.sh:63`): a `**Answer` line after a non-question heading marks the earlier question answered. Case: it should count a `**Answer` line only inside its own question's section.
+- **D8-Retro-1a-B5** (Doubtful, `status.sh:46`): a failed read of the decisions file is ignored and prints "0 open question(s)". Case: it should exit non-zero, naming the file, when the decisions file exists but cannot be read.
+
+Notes, not bug tasks: the task wrote all five tests, ran them red against a stub, then wrote the whole script (a TDD order slip); a range written "B5 to B7" counts as two bug tasks, not three.

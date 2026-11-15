@@ -1,0 +1,159 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 5,
+    "total_tokens": 269082,
+    "input_tokens": 266339,
+    "output_tokens": 2743,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m38s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_find": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "The parser never leaves the Progress section and accepts any subsequent table header without checking its columns. A later `## Appendix` table (or an unrelated table under a Progress heading with no task table) is therefore parsed as tasks; missing column indexes resolve to `$0`, producing bogus rows instead of the promised missing-table error. Stop at the next same-or-higher-level heading and validate Task/Wave/Lane/Status/Commits before parsing rows. Add fixtures for both cases.",
+      "existing_code": "  n \u0026\u0026 /^\\|/ {\n    if (!hdr) { for (i = 2; i \u003c NF; i++) col[trim($i)] = i; hdr = 1; next }",
+      "start_line": 23,
+      "end_line": 24,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "Only the custom awk exit code is rejected, and the decisions awk status below is not checked at all. For example, an existing but unreadable decisions file produces an awk error followed by `0 open question(s)` and potentially `nothing open`, with exit 0. Reject every nonzero parser exit status and name the affected input, rather than presenting failed reads as a successful status report.",
+      "existing_code": "if [[ $rc == 3 ]]; then echo \"status.sh: no Progress table in $plan\" \u003e\u00262; exit 1; fi",
+      "start_line": 46,
+      "end_line": 46,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "The preceding-character restriction excludes fully qualified task references: `T9.2-B1` and `T9.2-F1-B1` both count as zero because the suffix follows a hyphen. Fully qualified identifiers are used throughout the plans, so a Commits cell naming them will underreport follow-up/bug tasks. Recognize an optional parent task prefix and normalize it before deduplication; extend case 3 beyond abbreviated references.",
+      "existing_code": "    while (match(s, /(^|[^A-Za-z0-9-])[FB][0-9]+(-[FB][0-9]+)*/)) {",
+      "start_line": 32,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "`cur` is only changed by another question heading, so it remains set after a non-question section begins. For example, `## Q1. ...`, then `## Summary`, then `**Answer:** ...` incorrectly marks Q1 answered even though the answer is outside its section. Clear the current question at a same-or-higher-level non-question heading, while preserving label-based Qn answers across sections, and add a regression fixture.",
+      "existing_code": "    /^\\*\\*Answer/ { if (cur != \"\") ans[cur] = 1; next }",
+      "start_line": 63,
+      "end_line": 63,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": ".claude/scripts/status.sh",
+      "content": "The first glob match is not necessarily the deliverable's breakdown. For example, `status.sh D08P` skips `D08P-handoff.md` but then selects `D08P-implementing-handoff.md` before `D08P-trade-detail-cockpit.md`; the former has no Progress table, so the command fails despite a valid breakdown being present. Exclude all handoff variants or explicitly identify the breakdown, and add a fixture with an implementing handoff alongside the real plan.",
+      "existing_code": "  [[ $f == */\"$d\"-handoff.md ]] \u0026\u0026 continue\n  plan=$f; break",
+      "start_line": 15,
+      "end_line": 16,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".claude/scripts/status.sh",
+        ".claude/scripts/status.test.sh"
+      ]
+    }
+  ],
+  "session_id": "7f0efb45-1df6-46b4-a127-52325bd94a7f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7f0efb45-1df6-46b4-a127-52325bd94a7f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "16d30e61",
+      "resolved_base": "db58fc7a416d30e60b2ef8e9d45399759c1b55ec",
+      "resolved_head": "16d30e61b323b161f143d5383bbe6faa98fe9c37",
+      "exact_range": "db58fc7a416d30e60b2ef8e9d45399759c1b55ec..16d30e61b323b161f143d5383bbe6faa98fe9c37",
+      "source_artifact_sha256": "8f5620c62755817806917d0837c0645ad7cadfe1bceac467365d32ec3f8d86d7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "82c836184438ba51b8e5d1a6f76afe0195843dfcb3b289e31760d953752d025e"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "bb998d2feebd7fa3e27283f0ff059c23b6ff6c9203246283a98ec7dacfa936cd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "136d7b8458a5c6081764dadd17d3612ccdcf4ac0f6d91d9902c45d2bf3546e1c",
+          "path": ".claude/scripts/status.test.sh",
+          "fingerprint": "82c836184438ba51b8e5d1a6f76afe0195843dfcb3b289e31760d953752d025e"
+        },
+        {
+          "item_id": "bf1e4ebf95c5beb817e71f414e7a92fb042ab97bfc4b9859ea8039eab0404a94",
+          "path": ".claude/scripts/status.sh",
+          "fingerprint": "bb998d2feebd7fa3e27283f0ff059c23b6ff6c9203246283a98ec7dacfa936cd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "16d08eec6858f9ff60e5913069254976778491fd8d8787243f4e7dbce27bc075",
+          "path": ".claude/docs/implementing.md",
+          "exclude_reason": "unsupported_ext"
+        },
+        {
+          "item_id": "97da0bd53d884c260895619f059a04f1d6b8aaf04aea9341fadf9876f820f2bb",
+          "path": "evidence/D08/tdd-log/D8-Retro-1a.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cd3e57678ec2e6bf99259f4421d4b623a045ad1c8b68097bc1700b2db6e5b826",
+          "path": "evidence/D08/structural.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 97681
+  }
+}
