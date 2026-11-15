@@ -32,14 +32,19 @@ export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14
       recheck: async () => toRuntimeNotWritable(await holder.session!.recheck()),
     },
   });
-  const session = await createReadinessSession(async () =>
-    evaluateReadiness({
+  // As the composition root does: inspect the root (with its startup cleanup) until a Workspace is known,
+  // then only read it, so a prepared Restore candidate survives until apply (D8 Q10).
+  let known = false;
+  const session = await createReadinessSession(async () => {
+    const rootInspection = await (known ? persistence.lookupRoot() : persistence.inspectRoot());
+    if (rootInspection.kind === 'KnownWorkspace') known = true;
+    return evaluateReadiness({
       host: testHost.host,
-      rootInspection: await persistence.inspectRoot(),
+      rootInspection,
       capacityRequirement: TEST_CAPACITY,
       pageReleaseId: testHost.releaseId,
-    }),
-  );
+    });
+  });
   holder.session = session;
   return {
     factory,

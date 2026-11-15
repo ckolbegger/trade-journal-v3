@@ -1,14 +1,17 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { createApplication } from './app/compose.ts';
 import { createWebLocksLifecycleLock } from './persistence/index.ts';
 import { randomIds, systemClock } from './app/system.ts';
-import { browserHost } from './delivery/browser-host.ts';
+import { browserDownload, browserExportPort, browserFileSelection, browserHost } from './delivery/browser-host.ts';
 import { CAPACITY_REQUIREMENT } from './delivery/capacity.ts';
 import { RELEASE_ID } from './delivery/release-identity.ts';
 import { AppShell, type Screens } from './ui/AppShell.tsx';
 import { useRuntime } from './ui/runtime.tsx';
+import type { WorkspaceReplaced } from './app/types.ts';
+import type { BackupFacade } from './ui/backup/facade.ts';
+import { BackupView } from './ui/backup/BackupView.tsx';
 import { AboutView } from './ui/screens/AboutView.tsx';
 import { AccountsView } from './ui/screens/AccountsView.tsx';
 import { PlanForm } from './ui/screens/PlanForm.tsx';
@@ -58,6 +61,9 @@ async function start(container: HTMLElement) {
     capacityRequirement: CAPACITY_REQUIREMENT,
     locks: createWebLocksLifecycleLock(navigator.locks),
     migrationHooks: faults?.migrationFaults(),
+    exportPort: browserExportPort(),
+    download: browserDownload(),
+    fileSelection: browserFileSelection(),
   });
   const facade = {
     Workspace: app.Workspace,
@@ -68,6 +74,42 @@ async function start(container: HTMLElement) {
     MarketData: app.MarketData,
     DailyReview: app.DailyReview,
     capabilities: app.capabilities,
+  };
+  const selectFile = browserFileSelection();
+  // A Restore this tab applies broadcasts WorkspaceReplaced to every channel of that name, this tab's own
+  // included, and this tab already shows its own Restore complete: it must not report itself replaced.
+  let applyingHere = false;
+  // After a Restore the shell's launch status is out of date (first run most of all, since RestoreFlow has
+  // no completion callback), so the shell is rebuilt at the trader's next click, leaving the Restore
+  // summary on screen until then.
+  let rebuildShell: () => void = () => undefined;
+  const backup: BackupFacade = {
+    exportBackup: (request) => app.Workspace.exportBackup(request),
+    confirmBackup: (request) => app.Workspace.confirmBackup(request),
+    prepareRestore: (request) => app.Workspace.prepareRestore(request),
+    applyPreparedRestore: async (request) => {
+      applyingHere = true;
+      try {
+        const result = await app.Workspace.applyPreparedRestore(request);
+        if (result.kind === 'Restored') document.addEventListener('click', () => rebuildShell(), { once: true, capture: true });
+        else applyingHere = false;
+        return result;
+      } catch (error) {
+        applyingHere = false;
+        throw error;
+      }
+    },
+  };
+  // Another tab's Restore (D8 A136): the channel also carries the update notice's messages, which have no `kind`.
+  const replacedChannel = new BroadcastChannel('tj-updates');
+  const onWorkspaceReplaced = (listener: (message: WorkspaceReplaced) => void) => {
+    const hear = (event: MessageEvent<unknown>) => {
+      const message = event.data as Partial<WorkspaceReplaced> | null;
+      if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string' || applyingHere) return;
+      listener({ kind: 'WorkspaceReplaced', databaseName: message.databaseName });
+    };
+    replacedChannel.addEventListener('message', hear);
+    return () => replacedChannel.removeEventListener('message', hear);
   };
   const useZone = () => useRuntime().timeZone ?? 'UTC';
   const now = () => clock.now();
@@ -93,12 +135,35 @@ async function start(container: HTMLElement) {
     },
     accounts: () => <AccountsView facade={facade} />,
     about: () => <AboutView facade={facade} updates={updates} />,
+    backup: function BackupPage() {
+      const { writable, timeZone } = useRuntime();
+      // Recovery Only (and any other state that cannot save) replaces Restore with the failed checks (A144).
+      const readiness = writable ? ({ kind: 'Writable' } as const) : ({ kind: 'RecoveryOnly', failedChecks: app.session.current().failures } as const);
+      return <BackupView facade={backup} selectFile={selectFile} readiness={readiness} timeZone={timeZone ?? 'UTC'} />;
+    },
     start: () => null,
   };
+  function Shell() {
+    const [generation, setGeneration] = useState(0);
+    useEffect(() => {
+      rebuildShell = () => setGeneration((n) => n + 1);
+    }, []);
+    return (
+      <AppShell
+        key={generation}
+        facade={facade}
+        screens={screens}
+        notices={<UpdateNotice controller={updates} />}
+        backup={backup}
+        selectFile={selectFile}
+        onWorkspaceReplaced={onWorkspaceReplaced}
+      />
+    );
+  }
   createRoot(container).render(
     <StrictMode>
       <BrowserRouter>
-        <AppShell facade={facade} screens={screens} notices={<UpdateNotice controller={updates} />} />
+        <Shell />
       </BrowserRouter>
     </StrictMode>,
   );

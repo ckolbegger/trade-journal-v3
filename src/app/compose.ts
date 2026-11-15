@@ -3,7 +3,8 @@ import { createDailyReview } from '../coordinators/daily-review/index.ts';
 import { createTradeViews, type ReplayTradeRequest, type ReplayTradeResult, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
 import { createTradeWorkflows, type PositionChangeCommand } from '../coordinators/trade-workflows/index.ts';
 import { createWorkspace, installedCapabilities, type MigrationStageHooks } from '../coordinators/workspace/index.ts';
-import type { HostPort } from '../delivery/host.ts';
+import type { ExportPort } from '../coordinators/workspace/backup-export.ts';
+import type { DownloadPort, FileSelectionPort, HostPort } from '../delivery/host.ts';
 import { createReadinessSession, evaluateReadiness, type CapacityRequirement, type ReadinessSession } from '../delivery/readiness.ts';
 import { toRuntimeNotWritable } from '../delivery/write-gate.ts';
 import type { Clock } from '../domain/time/index.ts';
@@ -31,6 +32,12 @@ export interface ApplicationDeps {
   // Only the bench build's generator supplies this (D2 T2.20): while it returns true, mutations
   // skip the per-mutation readiness recheck (D1 A4).
   readonly skipMutationRecheck?: () => boolean;
+  // The backup host ports (D8 A128): the export pipeline (a worker in the browser; absent, it runs in
+  // process, as in Node), the download that offers the file, and the file selection the Backup page and
+  // the Restore flow use. A host that supplies no download port cannot offer a backup.
+  readonly exportPort?: ExportPort;
+  readonly download?: DownloadPort;
+  readonly fileSelection?: FileSelectionPort;
 }
 
 // The single application facade used by the UI and by the Node integration suite. It exposes
@@ -49,21 +56,29 @@ export async function createApplication(deps: ApplicationDeps) {
       recheck: async () => toRuntimeNotWritable(await holder.session!.recheck()),
     },
   });
-  const session = await createReadinessSession(async () =>
-    evaluateReadiness({
+  // Launch inspects the root with its startup cleanup (D2 T2.8), which also tells persistence which
+  // database is current. Once this instance knows a Workspace, a recheck only reads the root, so a
+  // prepared Restore candidate survives until apply (D8 A135, Q10). Until then (first run, where no
+  // pointer existed at launch) a recheck still inspects, so it picks up a Workspace another tab or
+  // this one has created since.
+  let known = false;
+  const session = await createReadinessSession(async () => {
+    const rootInspection = await (known ? persistence.lookupRoot() : persistence.inspectRoot());
+    if (rootInspection.kind === 'KnownWorkspace') known = true;
+    return evaluateReadiness({
       host: deps.host,
-      rootInspection: await persistence.inspectRoot(),
+      rootInspection,
       capacityRequirement: deps.capacityRequirement,
       pageReleaseId: deps.releaseId,
-    }),
-  );
+    });
+  });
   holder.session = session;
 
   const guard = createMutationGuard(session, deps.skipMutationRecheck);
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
-  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks });
+  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks, backup: { ...(deps.exportPort && { export: deps.exportPort }), ...(deps.download && { download: deps.download }) } });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const marketData = createMarketData({ persistence, ids: deps.ids, clock: deps.clock, sessionPolicy });
   // Daily Review shares this one Market Data (D4 A39): it never builds its own or sees the policy.
@@ -75,6 +90,11 @@ export async function createApplication(deps: ApplicationDeps) {
       initialize: (request: Parameters<typeof workspace.initialize>[0]) => workspace.initialize(request),
       getStatus: () => workspace.getStatus(),
       requestDurability: () => workspace.requestDurability(),
+      // Backup and Restore (D8 A129-A138): each runs its own readiness and binding checks.
+      exportBackup: (request: Parameters<typeof workspace.exportBackup>[0]) => workspace.exportBackup(request),
+      confirmBackup: (request: Parameters<typeof workspace.confirmBackup>[0]) => workspace.confirmBackup(request),
+      prepareRestore: (request: Parameters<typeof workspace.prepareRestore>[0]) => workspace.prepareRestore(request),
+      applyPreparedRestore: (request: Parameters<typeof workspace.applyPreparedRestore>[0]) => workspace.applyPreparedRestore(request),
     },
     ReferenceCatalog: {
       save: (command: Parameters<typeof catalog.save>[0]) => guard.run('ReferenceCatalog.save', () => catalog.save(command)),
@@ -113,6 +133,8 @@ export async function createApplication(deps: ApplicationDeps) {
     capabilities: installedCapabilities(deps.releaseId, sessionPolicy.identity),
     session,
     persistence,
+    // The host's file selection, for the screens that choose a backup file (the UI facade does not carry it).
+    fileSelection: deps.fileSelection,
   };
 }
 

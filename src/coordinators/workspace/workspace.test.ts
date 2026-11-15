@@ -365,7 +365,7 @@ describe('requestDurability', () => {
 });
 
 describe('Installed Capability Manifest', () => {
-  it('should list exactly the public operations and variants through D7, the Long Stock, Long Call, Long Put and Cash-Secured Put Strategies, the Plan Reflection, Position Change Reflection, Daily Trade Review and Close Review Entry Types, schema version 6, no backup schema range, and no provider adapters, bound to the release identity and the session-policy identity', () => {
+  it('should list exactly the public operations and variants through D8, the Long Stock, Long Call, Long Put and Cash-Secured Put Strategies, the Plan Reflection, Position Change Reflection, Daily Trade Review and Close Review Entry Types, schema version 7, the backup range of export schema 7 and Restore from schemas 3 through 7 in format 1, and no provider adapters, bound to the release identity and the session-policy identity', () => {
     expect(installedCapabilities('release-1', nyseSessionPolicy.identity)).toEqual({
       releaseId: 'release-1',
       sessionPolicy: nyseSessionPolicy.identity,
@@ -417,6 +417,10 @@ describe('Installed Capability Manifest', () => {
         'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
         'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue'],
         'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
+        'Workspace.exportBackup': ['Normal', 'BlockedDatabase'],
+        'Workspace.confirmBackup': [],
+        'Workspace.prepareRestore': [],
+        'Workspace.applyPreparedRestore': [],
       },
       strategies: ['strategy.long-stock', 'strategy.long-call', 'strategy.long-put', 'strategy.cash-secured-put'],
       entryTypes: [
@@ -426,7 +430,7 @@ describe('Installed Capability Manifest', () => {
         'entry-type.close-review',
       ],
       schemaVersion: 7,
-      backupSchemaRange: null,
+      backupSchemaRange: { formatVersion: 1, export: { from: 7, to: 7 }, restore: { from: 3, to: 7 } },
       providerAdapters: [],
     });
   });

@@ -1,9 +1,23 @@
 import { SCHEMA_VERSION } from '../../persistence/index.ts';
 import type { MarketDataDeps } from '../../modules/market-data/index.ts';
+import { BACKUP_FORMAT_VERSION } from './backup-export.ts';
 
 // The identity of the session policy this release was built with (typed from Market Data's deps,
 // so no coordinator imports the policy itself: D4 A39).
 export type SessionPolicyIdentity = MarketDataDeps['sessionPolicy']['identity'];
+
+// The Workspace schema versions an artifact of one format version may hold, inclusive.
+export interface SchemaVersionRange {
+  readonly from: number;
+  readonly to: number;
+}
+
+export interface BackupSchemaRange {
+  readonly formatVersion: number;
+  // Export writes the schema this release writes; Restore reads every schema it can migrate from.
+  readonly export: SchemaVersionRange;
+  readonly restore: SchemaVersionRange;
+}
 
 // The Installed Capability Manifest: what this release installs, bound to its release identity.
 // It describes installed code, is not trader data, cannot be toggled, and is not restored.
@@ -18,8 +32,8 @@ export interface InstalledCapabilityManifest {
   readonly entryTypes: readonly string[];
   // The Workspace schema version this release writes; older versions migrate to it.
   readonly schemaVersion: number;
-  // No backup format is installed before D8.
-  readonly backupSchemaRange: null;
+  // The backup artifact this release writes and reads (D8 A145).
+  readonly backupSchemaRange: BackupSchemaRange;
   readonly providerAdapters: readonly string[];
 }
 
@@ -89,6 +103,12 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'DailyReview.open': ['LatestCompleted', 'OwedReflections', 'RangePosition', 'GapTrades', 'OwedReflectionGroup', 'SettlementFamily'],
   'DailyReview.getTrade': ['OwedReflections', 'PlanBaseline', 'RewardRiskNow', 'ReflectionsOwed', 'ExpirationPayoff', 'SettlementDue'],
   'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt', 'SaveReviewMarks'],
+  // D8 A145: a backup of a Workspace in normal use (Normal) or of a database a blocked view offers a
+  // copy of (BlockedDatabase); its verification; and the two steps of Restore. The fact modules' Restore operations are internal.
+  'Workspace.exportBackup': ['Normal', 'BlockedDatabase'],
+  'Workspace.confirmBackup': [],
+  'Workspace.prepareRestore': [],
+  'Workspace.applyPreparedRestore': [],
 };
 
 export function installedCapabilities(releaseId: string, sessionPolicy: SessionPolicyIdentity): InstalledCapabilityManifest {
@@ -104,7 +124,9 @@ export function installedCapabilities(releaseId: string, sessionPolicy: SessionP
       'entry-type.close-review',
     ],
     schemaVersion: SCHEMA_VERSION,
-    backupSchemaRange: null,
+    // Export schema 7 in format 1; Restore from schemas 3 through 7 in format 1 (A145 as amended by Q14:
+    // schemas 1 and 2 were never used, and their artifacts lack workspace.sessionPolicy).
+    backupSchemaRange: { formatVersion: BACKUP_FORMAT_VERSION, export: { from: SCHEMA_VERSION, to: SCHEMA_VERSION }, restore: { from: 3, to: SCHEMA_VERSION } },
     providerAdapters: [],
   };
 }

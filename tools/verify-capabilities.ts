@@ -5,12 +5,14 @@
 // this release writes, and every declared Entry Type is seeded in a fresh Workspace.
 // From D4 (T4.19): the manifest names the session-policy identity the release applies.
 // From D5R (T5R.6): Market Data's prepare/apply pair is absent from the facade and the manifest.
+// From D8 (T8.11): the backup operations and ranges, and the fact modules' Restore operations stay internal.
 import { IDBFactory } from 'fake-indexeddb';
 import { createApplication, facadeOperations } from '../src/app/compose.ts';
 import { ROUTES, type RouteDefinition } from '../src/app/routes.ts';
 import { nyseSessionPolicy } from '../src/domain/session-policy/index.ts';
 import { fixedClock } from '../src/domain/time/index.ts';
-import { createInProcessLifecycleLock, SCHEMA_VERSION } from '../src/persistence/index.ts';
+import { BACKUP_FORMAT_VERSION } from '../src/coordinators/workspace/backup-export.ts';
+import { createInProcessLifecycleLock, exportLayoutFor, SCHEMA_VERSION } from '../src/persistence/index.ts';
 import { nodeTestHost } from '../tests/support/node-test-host.ts';
 import { TEST_CAPACITY } from '../tests/support/stack.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
@@ -68,6 +70,19 @@ for (const [op, variants] of presented) {
 
 if (app.capabilities.schemaVersion !== SCHEMA_VERSION) {
   problems.push(`manifest names schema version ${app.capabilities.schemaVersion}, but this release writes ${SCHEMA_VERSION}`);
+}
+// From D8 (T8.11): the backup ranges are the ones the code supports: this release exports the schema it
+// writes in the format it writes, and restores every schema it holds an export layout for, up to its own.
+const range = app.capabilities.backupSchemaRange;
+if (range.formatVersion !== BACKUP_FORMAT_VERSION) problems.push(`manifest names backup format ${range.formatVersion}, but this release writes ${BACKUP_FORMAT_VERSION}`);
+if (range.export.from !== SCHEMA_VERSION || range.export.to !== SCHEMA_VERSION) {
+  problems.push(`manifest exports schemas ${range.export.from} through ${range.export.to}, but this release writes only ${SCHEMA_VERSION}`);
+}
+if (range.restore.from !== 3 || range.restore.to !== SCHEMA_VERSION) {
+  problems.push(`manifest restores schemas ${range.restore.from} through ${range.restore.to}, not 3 through ${SCHEMA_VERSION} (Q14)`);
+}
+for (let version = range.restore.from; version <= range.restore.to; version += 1) {
+  if (!exportLayoutFor(version)) problems.push(`manifest restores schema ${version}, which has no layout`);
 }
 if (JSON.stringify(app.capabilities.sessionPolicy) !== JSON.stringify(nyseSessionPolicy.identity)) {
   problems.push('manifest session-policy identity is not the identity of the policy this release applies');
