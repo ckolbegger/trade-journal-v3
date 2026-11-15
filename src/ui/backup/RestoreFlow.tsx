@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { ApplyPreparedRestoreResult, BackupProgress, FileSelectionPort, MigrationIssue, PrepareRestoreResult, RestoreCounts, RestoreIssue, RestoreLanding, RestorePreview, RestoreToken, SafetyChoice } from '../../app/types.ts';
+import { useRuntime } from '../runtime.tsx';
 import { explainFailure, explainMigrationIssue } from '../readiness-copy.ts';
 import type { BackupFacade } from './facade.ts';
 import { COULD_NOT_CHECK, RESTORE_UNFINISHED } from './backup-text.ts';
@@ -73,6 +74,7 @@ function explainIssue(issue: RestoreIssue): string {
 export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
   const [phase, setPhase] = useState<Phase>({ kind: 'Choose' });
   const [applying, setApplying] = useState(false);
+  const { report } = useRuntime();
   const abort = useRef<AbortController | undefined>(undefined);
   // Leaving the page cancels a preparation still running.
   useEffect(() => () => abort.current?.abort(), []);
@@ -131,6 +133,8 @@ export function RestoreFlow({ facade, selectFile }: RestoreFlowProps) {
     }
     setApplying(false);
     // The summary comes from the result alone; no read follows, and the preview and its forms are dropped.
+    // The shell learns the readiness found after the Restore now, not only when the trader leaves the summary.
+    if (result.kind === 'Restored') report(result);
     setPhase(result.kind === 'Restored' ? { kind: 'Restored', counts: result.receipt.counts, next: result.landing.next } : { kind: 'NotReplaced', reason: explainNotReplaced(result) });
   };
 

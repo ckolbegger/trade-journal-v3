@@ -127,7 +127,8 @@ async function start(container: HTMLElement) {
     backup: function BackupPage() {
       const { writable, timeZone } = useRuntime();
       // Recovery Only (and any other state that cannot save) replaces Restore with the failed checks (A144).
-      const readiness = writable ? ({ kind: 'Writable' } as const) : ({ kind: 'RecoveryOnly', failedChecks: app.session.current().failures } as const);
+      // The Restore complete summary stays up, with the shell already Recovery Only, until the trader leaves it.
+      const readiness = writable || postRestore.summaryShowing() ? ({ kind: 'Writable' } as const) : ({ kind: 'RecoveryOnly', failedChecks: app.session.current().failures } as const);
       return <BackupView facade={backup} selectFile={selectFile} readiness={readiness} timeZone={timeZone ?? 'UTC'} />;
     },
     start: () => null,

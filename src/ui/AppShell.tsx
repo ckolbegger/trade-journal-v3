@@ -538,6 +538,12 @@ export function AppShell({
       setRefusal(result as RuntimeNotWritable);
       setRefusedAt((at) => at ?? pathname);
     }
+    // A Restore whose readiness rerun failed leaves the journal Recovery Only: the summary on screen says so at once.
+    const restored = result as { readonly status?: { readonly kind: string; readonly failedChecks?: readonly ReadinessFailure[] } };
+    if (result.kind === "Restored" && restored.status?.kind === "RecoveryOnly") {
+      setRefusal({ kind: "RuntimeNotWritable", runtimeReadiness: "RecoveryOnly", failedChecks: restored.status.failedChecks ?? [], workspaceStatus: "RecoveryOnly", safeActions: [] });
+      setRefusedAt((at) => at ?? pathname);
+    }
   };
 
   return (

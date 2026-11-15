@@ -4,6 +4,18 @@ import { createPostRestore } from './post-restore.ts';
 
 const restored = (databaseName: string) => ({ kind: 'Restored' as const, receipt: { newBinding: { databaseName, contentRevision: 1 } } });
 
+describe('the summary showing (T8.21-F2)', () => {
+  it('should report the Restore complete summary as showing from the Restored result until the trader leaves its route', async () => {
+    const postRestore = createPostRestore();
+    postRestore.observePath('/backup', () => undefined);
+    expect(postRestore.summaryShowing()).toBe(false);
+    await postRestore.apply(() => Promise.resolve(restored('db-mine')));
+    expect(postRestore.summaryShowing()).toBe(true);
+    postRestore.observePath('/accounts', () => undefined);
+    expect(postRestore.summaryShowing()).toBe(false);
+  });
+});
+
 describe('another tab restoring after this tab finished its own Restore', () => {
   it('should still show the replaced notice when another tab restores after this tab finished its own Restore', async () => {
     const postRestore = createPostRestore();

@@ -807,6 +807,30 @@ describe('write route while not Writable', () => {
   });
 });
 
+describe('readiness found after a Restore (T8.21-F2)', () => {
+  it('should show Recovery Only naming the failed check and drop New Plan when the Restore result reports RecoveryOnly, keeping the page on screen', async () => {
+    function SummaryStub() {
+      const runtime = useRuntime();
+      return (
+        <section>
+          <p>Restore complete</p>
+          <button type="button" onClick={() => runtime.report({ kind: 'Restored', status: { kind: 'RecoveryOnly', failedChecks: [{ check: 'inventory', reason: 'InventoryInvalid' }] } } as never)}>
+            Report
+          </button>
+        </section>
+      );
+    }
+    renderShell(facadeDouble(), '/about', { about: SummaryStub });
+    const user = userEvent.setup();
+    expect(await screen.findByRole('link', { name: 'New Plan' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Report' }));
+    await screen.findByRole('heading', { name: /read only: this browser can.t save right now/i });
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: 'New Plan' })).toBeNull();
+    expect(screen.getByText('Restore complete')).toBeTruthy();
+  });
+});
+
 describe('session-policy coverage', () => {
   const ICON = { name: 'Coming soon - update calendar' };
   const accounts: Partial<Screens> = { accounts: () => <><PageTitle>Accounts</PageTitle><AccountsStub /></> };

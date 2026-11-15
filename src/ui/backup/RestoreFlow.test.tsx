@@ -13,6 +13,7 @@ import type {
   RestoreToken,
 } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { RuntimeContext } from '../runtime.tsx';
 import { RestoreFlow } from './RestoreFlow.tsx';
 import { createBackupFacadeDouble, createFileSelectionDouble } from './test-support.ts';
 
@@ -64,15 +65,12 @@ function preview(overrides: Partial<RestorePreview> = {}): RestorePreview {
 
 const PREPARED: PrepareRestoreResult = { kind: 'Prepared', token: TOKEN, preview: preview() };
 
-function setup() {
+function setup(report?: (result: { readonly kind: string }) => void) {
   const facade = createBackupFacadeDouble();
   const files = createFileSelectionDouble();
   files.choose(FILE);
-  const utils = render(
-    <MemoryRouter>
-      <RestoreFlow facade={facade.facade} selectFile={files.port} />
-    </MemoryRouter>,
-  );
+  const flow = <RestoreFlow facade={facade.facade} selectFile={files.port} />;
+  const utils = render(<MemoryRouter>{report ? <RuntimeContext.Provider value={{ writable: true, report }}>{flow}</RuntimeContext.Provider> : flow}</MemoryRouter>);
   return { facade, files, utils, user: userEvent.setup() };
 }
 
@@ -469,6 +467,18 @@ describe('result (AC-REST-003)', () => {
     await ctx.user.click(link);
     document.removeEventListener('click', onBubble);
     expect(defaultPrevented).toBe(false);
+  });
+
+  it('should report the Restored result to the shell so a readiness found after the Restore reaches the page', async () => {
+    const report = vi.fn();
+    const ctx = setup(report);
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ safetyChoiceRequired: false }) });
+    await ctx.user.click(UNDERSTAND());
+    const result = { ...restored('Trades'), status: { kind: 'RecoveryOnly', failedChecks: [{ check: 'inventory', reason: 'InventoryInvalid' }] } } as unknown as ApplyPreparedRestoreResult;
+    ctx.facade.respond('applyPreparedRestore', result);
+    await ctx.user.click(REPLACE());
+    await screen.findByRole('heading', { name: 'Restore complete' });
+    expect(report).toHaveBeenCalledWith(result);
   });
 
   it('should show a rejected or conflicting apply with Your current journal is unchanged and Check the backup again', async () => {

@@ -11,6 +11,8 @@ export interface PostRestore {
   subscribeReplaced(listener: (databaseName: string) => void): () => void;
   // Called with every route; after a Restored result, rebuilds the shell once the route leaves the summary's.
   observePath(pathname: string, rebuild: () => void): void;
+  // Whether the Restore complete summary is on screen (from a Restored result until the trader leaves its route).
+  summaryShowing(): boolean;
 }
 
 interface RestoredResult {
@@ -91,6 +93,7 @@ export function createPostRestore(): PostRestore {
         listeners.delete(listener);
       };
     },
+    summaryShowing: () => summaryShown,
     observePath(pathname, rebuild) {
       path = pathname;
       rebuildShell = rebuild;
