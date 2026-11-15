@@ -6,7 +6,7 @@ import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import type { CompletedBackupReceipt, RestoreToken } from './backup-types.ts';
 import { createMutationGuard } from '../mutation-guard.ts';
-import { backupFile, editedArtifact, exportedArtifact, lookupSession, targetWorkspace, workspaceOf } from './restore-test-support.ts';
+import { backupFile, editedArtifact, exportedArtifact, targetWorkspace, workspaceOf } from './restore-test-support.ts';
 
 const W7 = JSON.parse(readFileSync('tests/fixtures/workspace-v7/dump.json', 'utf8')) as WorkspaceDump;
 
@@ -95,7 +95,7 @@ describe('replacement (AC-REST-003)', () => {
   it('should replace W-t with the candidate given a receipt bound to W-t live binding, returning Restored with the receipt, fresh status Ready with readiness evidence from a rerun after activation, and landing RestoreComplete with next destination Trades', async () => {
     const target = await targetWorkspace();
     const events: string[] = [];
-    const session = lookupSession(target);
+    const session = target.session;
     const workspace = workspaceOf(target, {
       session: { ...session, recheck: () => (events.push('recheck'), session.recheck()) },
       persistence: { ...target.persistence, activateCandidate: (...args) => (events.push('activate'), target.persistence.activateCandidate(...args)) },
@@ -306,10 +306,22 @@ describe('safety choices and first run (AC-REST-002, P33)', () => {
   });
 });
 
+describe('replacement through the real readiness session (T8.9-B2)', () => {
+  it('should return Restored when a prepared Restore is applied through the stack readiness session, whose rechecks keep the candidate', async () => {
+    const target = await targetWorkspace();
+    const workspace = workspaceOf(target, { session: target.session });
+    const { token } = await preparedWithPreview({ workspace });
+
+    const result = await workspace.applyPreparedRestore({ token, confirmation: CONFIRM, safety: { kind: 'DeclinedAfterWarning' } });
+
+    expect(result.kind).toBe('Restored');
+  });
+});
+
 describe('readiness after Restore (AC-DEL-006)', () => {
   it('should return Restored with status RecoveryOnly when the readiness rerun after activation fails, so the next mutation returns RuntimeNotWritable', async () => {
     const target = await targetWorkspace();
-    const session = lookupSession(target);
+    const session = target.session;
     // The browser stops saving safely just after the pointer switches.
     const workspace = workspaceOf(target, {
       session,
@@ -424,16 +436,6 @@ describe('a candidate changed after preparation (A135)', () => {
     expect(after[live]).toEqual(before[live]);
     const pointerOf = (dump: typeof after) => (dump['tj-root']!['pointer'] as { key: string }[]).find((record) => record.key === 'current');
     expect(pointerOf(after)).toEqual(pointerOf(before));
-  });
-});
-
-describe('test support lookup session', () => {
-  it('should report Recovery Only from the lookup session right after a storage failure is reported, as the real session does', async () => {
-    const stack = await testStack(new IDBFactory(), '2026-11-21T15:00:00Z');
-    const session = lookupSession(stack);
-    expect(session.current().outcome).toBe('Writable');
-    session.reportStorageFailure({ workspaceReadable: true });
-    expect(session.current().outcome).toBe('RecoveryOnly');
   });
 });
 
