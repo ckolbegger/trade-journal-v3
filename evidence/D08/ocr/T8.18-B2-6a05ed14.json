@@ -1,0 +1,151 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 13843,
+    "input_tokens": 13542,
+    "output_tokens": 301,
+    "cache_read_tokens": 1664,
+    "elapsed": "18s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Benchmark generation, execution, and expected dataset results",
+      "files": [
+        "bench/dataset.json",
+        "bench/expected-open-rows.json",
+        "src/app/bench-generator.test.ts",
+        "src/app/bench-generator.ts",
+        "src/app/bench.ts"
+      ]
+    }
+  ],
+  "session_id": "272efda0-1030-4622-8585-7b3d426abdb1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "272efda0-1030-4622-8585-7b3d426abdb1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6a05ed14",
+      "resolved_base": "a4823ffa2079ce2ff7d9539cd7795928d2329de7",
+      "resolved_head": "6a05ed145e11541d65c5048f2a4a89977de074cb",
+      "exact_range": "a4823ffa2079ce2ff7d9539cd7795928d2329de7..6a05ed145e11541d65c5048f2a4a89977de074cb",
+      "source_artifact_sha256": "00c88635b1d4cfe4b1289086d25fda8300064a4a305c4d2aaf9597ab77f09d35"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "1700d8803d8538d34cd7262200e5b228ca8668619687638d6a38a2b2bc187d57"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "8fc3f9fe890e3d0c003f19abf8a0354d0d35e175169999798c57511e4d81e961"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "f4d5d8f49b6a3c43205781306480e9f43dd3fd73bcc793706c42789250b3c647"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "0defb12425daaae14d861957b6983a415d3a55d07162e9c87d344c9123e79e5d"
+        },
+        {
+          "item_id": "b2e01b44de49a8302e41e58add1effedad95d33abbed5e645daac4136f879af9",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "d25588ff699da6ca7fcdfa026e4db0230da7bad786648377bde47759824a9dbd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "059a673738715b16654d960e9e15427df11aba2b0c8c35b3acc91fe31ad1204c",
+          "path": "src/app/bench.ts",
+          "fingerprint": "1700d8803d8538d34cd7262200e5b228ca8668619687638d6a38a2b2bc187d57"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "8fc3f9fe890e3d0c003f19abf8a0354d0d35e175169999798c57511e4d81e961"
+        },
+        {
+          "item_id": "5b7e5143dd9c19d2ee819c57853ff0170a4fbc34a14589d3fe7fff2f5c6a2e47",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "f4d5d8f49b6a3c43205781306480e9f43dd3fd73bcc793706c42789250b3c647"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "0defb12425daaae14d861957b6983a415d3a55d07162e9c87d344c9123e79e5d"
+        },
+        {
+          "item_id": "b2e01b44de49a8302e41e58add1effedad95d33abbed5e645daac4136f879af9",
+          "path": "src/app/bench-generator.test.ts",
+          "fingerprint": "d25588ff699da6ca7fcdfa026e4db0230da7bad786648377bde47759824a9dbd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "3cb376429f28fe8b3d3ad055c012df578cbf7bb07b7ba13d8c0252b2a64e549f",
+          "path": "evidence/D08/suite-runs/T8.18-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7512844419ff01e92ed06bbf9de300405c40bff05ff42d769046a64aa86316c6",
+          "path": "evidence/D08/suite-runs/T8.18-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "becffc8424321782716087eef8b556a0182d3bfa86a1ea8e602ec1c1d8fc76ec",
+          "path": "evidence/D08/suite-runs/T8.18-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d680f27d9805aa1daa1d76de000e5bb13bf1454da6e764c4516e1c5f147c8a06",
+          "path": "evidence/D08/suite-runs/T8.18-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e5afdf4d2f7de5e6a31ddc41b43198dd5833056781145b02c61fd9e3767d4bfc",
+          "path": "evidence/D08/tdd-log/T8.18-B2.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 17898
+  }
+}

@@ -368,3 +368,14 @@ The old generator drove the app in the browser, so it could record the Open list
 - (b) T8.19 takes the rows and order from the restored profile's first render, then checks every later render equals them (as `bench-run`'s partial-dataset mode already does). Simpler, but the first render is no longer checked against an independent expectation.
 
 **Answer (2026-11-15): (a).** The generator computes the expected Open list rows and the Daily Review order in Node with the app's own view functions over the generated records, and writes them to `expected-open-rows.json` and `dataset.json`. Follow-up T8.18-F2 in lane BG, with T8.18-F1.
+
+## Q25. Computing the benchmark's expected Open rows in Node costs more than Q24 assumed (T8.18-F2, raised 2026-11-15, holds T8.18-F2 and T8.19)
+
+Q24 (a) asked the generator to compute the expected Open list rows and the Daily Review order with the app's own code, in Node. T8.18-F2's agent stopped before writing code, because neither part is reachable without changes outside lane BG:
+- **The rows** are assembled inline in the Trades screen's React code (`OpenList` in `src/ui/screens/TradeList.tsx`), with no function that returns them. Using the app's own code means exporting a small pure row function from that screen, or rendering the real screen in Node with jsdom.
+- **The data** for `browseTrades` and the Daily Review comes only from a populated database. In Node that means loading the generated records through fake-indexeddb and the private rebuild, which is what Restore does. A full-size Node Restore took about 13 minutes (772 s) in T8.18's test.
+
+For comparison, the old generator also took its expected rows from the app's own rendering in the browser, so (b) below is no less independent than what D7 had.
+
+- (a) Do it in full: export a pure `openRowsOf(items, timeZone)` from `TradeList.tsx` (the screen then calls it), and load the generated records in Node through the candidate API to call `browseTrades` and the Daily Review. Generation grows from about 20 s to roughly 15 minutes or more.
+- (b) Recommended: the generator keeps computing what it can independently (counts, which Trades are Open, the Review's membership, Settlement Due items, the owed group), and T8.19 takes the row text and the Review's order from the first render after `bench:setup`, then checks that render against the generator's membership and counts, and every later render against the first. No new code outside the benchmark files, and no slower generation.
