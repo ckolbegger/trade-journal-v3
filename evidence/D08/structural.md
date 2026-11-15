@@ -1262,3 +1262,7 @@ Cause: the global `input, select, textarea { display:block; width:100% }` rule i
 - B6-B2 `6fddd9f4`: the decline checkbox and its warning sit in one `<label>`, so clicking the text toggles it. Red: unit assertion (`expected false to be true`).
 - No first-run passes. `src/ui/backup` 57 passed; browser specs responsive-a11y, restore, backup: 16 passed.
 - T8.22-B6-B1 and B6-B2 ocr review (session 57185774): range 8ddd949d..6fddd9f4, 4 files, no findings. Raw: `ocr/T8.22-B6-B1-B2-6fddd9f4.json`. All six critic-1 defects fixed and reviewed. B6's quick run is folded into the full run that follows the last fix (the full tier covers every stage of the quick run).
+
+## Full tier before critic-2 green
+
+Code at `6fddd9f4` (HEAD `c15790d4`). Unit 189 files / 2024 tests, integration 118 / 258, browser-1 126 passed (5.3 m), browser-2 119 passed (7.9 m), checks 14 of 14, run complete.
