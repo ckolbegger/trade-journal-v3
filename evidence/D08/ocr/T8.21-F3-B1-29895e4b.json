@@ -1,0 +1,133 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 61278,
+    "input_tokens": 60100,
+    "output_tokens": 1178,
+    "cache_read_tokens": 11648,
+    "elapsed": "58s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/other-tabs.ts",
+      "content": "Use a monotonic clock such as `performance.now()` for the reply-window measurement. If the system clock changes while preparation is pending, `Date.now()` can make the remaining delay exceed 250 ms (a backward adjustment) or skip the reply window entirely (a forward adjustment), causing an unnecessarily stalled preview or a missed unsaved-work warning.",
+      "suggestion_code": "const realTiming: Timing = { now: () =\u003e performance.now(), delay: (ms) =\u003e new Promise((resolve) =\u003e setTimeout(resolve, ms)) };",
+      "existing_code": "const realTiming: Timing = { now: () =\u003e Date.now(), delay: (ms) =\u003e new Promise((resolve) =\u003e setTimeout(resolve, ms)) };",
+      "start_line": 17,
+      "end_line": 17,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/backup/other-tabs.test.ts",
+        "src/ui/backup/other-tabs.ts"
+      ]
+    }
+  ],
+  "session_id": "307e7a53-4777-4ab3-b9b4-33e1e339447f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "307e7a53-4777-4ab3-b9b4-33e1e339447f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "29895e4b",
+      "resolved_base": "88da19654acceb1aa0ea4144799f9f7eabae3df8",
+      "resolved_head": "29895e4be2a827d198f0ebc4b300a083d74d03ef",
+      "exact_range": "88da19654acceb1aa0ea4144799f9f7eabae3df8..29895e4be2a827d198f0ebc4b300a083d74d03ef",
+      "source_artifact_sha256": "b0a7b2863f55dd31550122744985cfeaf9e5524b373fc0da6ebdd01735f25592"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "9289ffa450c44f0164b3fde57ff149826f4e8aada14d372e6d7af0aaa8a317fb",
+          "path": "src/ui/backup/other-tabs.test.ts",
+          "fingerprint": "8b0caa7efbbb40b2c03d3726f190e391da99d83cc745a439a49f6e47da280719"
+        },
+        {
+          "item_id": "cd0c3d20f0382d90348f0db660c3f407de0127a9397fad1fe8d01236e23456a1",
+          "path": "src/ui/backup/other-tabs.ts",
+          "fingerprint": "4a4c3b045a59faa81b9e2a1b9836b8a9a31191a33a03310d17293f48556d7320"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "9289ffa450c44f0164b3fde57ff149826f4e8aada14d372e6d7af0aaa8a317fb",
+          "path": "src/ui/backup/other-tabs.test.ts",
+          "fingerprint": "8b0caa7efbbb40b2c03d3726f190e391da99d83cc745a439a49f6e47da280719"
+        },
+        {
+          "item_id": "cd0c3d20f0382d90348f0db660c3f407de0127a9397fad1fe8d01236e23456a1",
+          "path": "src/ui/backup/other-tabs.ts",
+          "fingerprint": "4a4c3b045a59faa81b9e2a1b9836b8a9a31191a33a03310d17293f48556d7320"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "174e213437a8c1e4daa6e1b0f8d4d3894455c2b92d3e7c7e01a23005ccf27c5b",
+          "path": "evidence/D08/suite-runs/T8.21-F3-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "294e12c4f999220edc614a603c417705f459912a9e595bd3c1c040bd1e724cd9",
+          "path": "evidence/D08/suite-runs/T8.21-F3-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "50e744136a1479e424eb56bce7da47a0dd2f19b07b3bbf93705b2f8cb75dba9e",
+          "path": "evidence/D08/suite-runs/T8.21-F3-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b7ac7c79ce94028ff23a0c0861d1dd0ece379ac12fdea9c79382173c58822d4d",
+          "path": "evidence/D08/suite-runs/T8.21-F3-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ea63f1afd0540519f9799d6e4659120589c4863e2a3e0864c4ee0165b3f2a584",
+          "path": "evidence/D08/tdd-log/T8.21-F3-B1.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 58270
+  }
+}

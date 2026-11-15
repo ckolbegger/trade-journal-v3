@@ -1127,3 +1127,7 @@ All 5 code files reviewed, none failed; supersedes the 05:42 partial run. One fi
 ## T8.21-F3-B1 done in lane BR (`29895e4b`)
 
 `withOtherTabsWarning` waits what is left of a 250 ms reply window (from the query) when no other tab has reported unsaved work, then reads again; no wait when already reported or the window has passed. Optional `timing` seam defaults to real timers, so `main.tsx` is unchanged. Reds: cases 1 and 2 (assertion). First-run pass, flagged: the no-wait case (mutation `if (true)` turned it red). Lane tier green: unit 1991, integration 229, checks 14 of 14. Reviewer note: a Restore preview with no other tab open now takes up to 250 ms longer when the file is read faster than that.
+
+## T8.21-F3-B1 ocr review (session 307e7a53)
+
+2 files reviewed. One finding, Valid: the reply window uses `Date.now()` and the remaining wait is not capped, so a wall-clock change during preparation can stretch the wait (a backward jump of an hour delays the preview an hour) or skip it. Becomes T8.21-F3-B1-B1 in lane BR. Raw: `ocr/T8.21-F3-B1-29895e4b.json`.
