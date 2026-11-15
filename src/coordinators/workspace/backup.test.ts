@@ -332,6 +332,7 @@ describe('streamed export (A128, P29)', () => {
     const written = vi.spyOn(ArtifactWriter.prototype, 'writeRecord');
     const writtenWhenDelivered: number[] = [];
     const writtenAfterDelivery: number[] = [];
+    const deliveredRecords: number[] = [];
     let writtenAtEnd: number | undefined;
     try {
       const run = await runExport(
@@ -343,6 +344,7 @@ describe('streamed export (A128, P29)', () => {
               writtenWhenDelivered.push(written.mock.calls.length);
               onBatch(batch);
               writtenAfterDelivery.push(written.mock.calls.length);
+              deliveredRecords.push(batch.records.length);
             },
             onStart,
           ),
@@ -357,6 +359,8 @@ describe('streamed export (A128, P29)', () => {
     // between one delivery returning and the next arriving, or after the last, so no record is buffered.
     expect(writtenWhenDelivered.length).toBeGreaterThan(2);
     expect(writtenAfterDelivery).toHaveLength(writtenWhenDelivered.length);
+    // Each delivery writes exactly its own records (no projection drops or adds records here), so nothing is withheld for later.
+    writtenWhenDelivered.forEach((before, index) => expect(writtenAfterDelivery[index]! - before).toBe(deliveredRecords[index]));
     writtenWhenDelivered.slice(1).forEach((count, index) => expect(count).toBe(writtenAfterDelivery[index]));
     expect(writtenAtEnd).toBe(writtenAfterDelivery.at(-1));
   });
