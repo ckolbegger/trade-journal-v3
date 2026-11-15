@@ -291,3 +291,43 @@ T8.9-B3 guarded two of the steps after the journal switch (removing the preparat
 **Recommended: (a).**
 
 **Q12 answer (2026-11-14): (a).** Leave the readiness rerun, `describeDatabase` and `deps.status()` unguarded after activation; the Restore screen's Q5 item 8 message covers a throw there. T8.9-B3 is complete as committed; the final report lists this as a known limit.
+
+## Q13. Drop the persisted preparation record (T8.9 follow-up) — answered 2026-11-14
+
+Proposed by the main session (guideline 6) after six rounds of ocr bug tasks (T8.9-B6, B9 to B14) hardened the shape check of the `restorePrepared` meta record, one of which (B12) briefly rejected every real candidate with repairs.
+
+**Answer: (a).** Drop the persisted `restorePrepared` record. Preparation keeps its results (section measures, counts, migrations, repairs, the Workspace settings value) in memory, keyed by the candidate, since a candidate never survives a restart (launch cleanup). Apply reads them from memory, still rechecks the candidate against them (the four section rechecks and the settings comparison), and returns PreparationNotFound when none is held. The shape guards from B6 and B9 to B14 go. Follow-up task **T8.9-F1** in lane WR, after T8.11 merges (T8.11 runs alone, P105), beside T8.9-B2.
+
+## Q14. Restore of schema 1 and 2 backups (T8.8 note 4) — answered 2026-11-14
+
+T8.8's builder noted that artifacts of schemas 1 and 2 would be rejected, because T8.6's strict parser requires `workspace.sessionPolicy`, which those schemas lack, and the parse runs before the migration transforms. A145 promises Restore from schemas 1 through 7.
+
+**Answer: (b).** Drop Restore support for schemas 1 and 2 ("There is no one that ever used them."). Revision 103 amends A145 to "Restore from schemas 3 through 7 in format 1", and A147's fixtures to `backup-v3-blocked/` through `backup-v6-blocked/` plus `backup-v7/`. T8.11 sets the manifest's Restore range to 3 through 7 (sent to its agent while it runs). T8.17 freezes no v1 or v2 backup fixture. The blocked-database export of a schema 1 or 2 database (A149) is unchanged.
+
+## Q15. Journal seed comparison by key order (T8.8 note 1) — answered 2026-11-14
+
+`prepareJournalSeed` compares prompts with `JSON.stringify`, which depends on key order; A7 was reported as a seed conflict and `restore.ts` works around it. The same comparison probably runs in `journal.seedDefaults` at the next `initialize` of a restored Workspace (unconfirmed).
+
+**Answer: (a).** Fix it in the journal module: compare by value (canonical JSON). Follow-up **T8.8-F1**, in lane WR after T8.11 merges (no wave-2 lane owns `src/modules/journal/`), with a case that restores a backup and then initializes cleanly, and remove the `restore.ts` workaround.
+
+## Q16. UnsupportedDataCapability is never produced (T8.8 note 3) — answered 2026-11-14
+
+The footprint check reports ManifestMismatch where A3's UnsupportedDataCapability sentence was intended (a backup naming a capability this app lacks, at the same schema).
+
+**Answer: (b).** Leave it for now; it rarely arises before D10, which changes the schema. Noted for later in the final report and revision 103's review queue.
+
+## Q17. Unknown Strategy not reported (T8.8 note 5) — answered 2026-11-14
+
+**Answer: (a).** A Trade naming a Strategy the artifact's catalog lacks is reported as CrossSectionReference, like a dangling Account, before anything is replaced. Follow-up **T8.8-F2** in lane WR after T8.11 merges.
+
+## Q18. Two `SECTION_OF_STORE` tables (reviewer note on T8.8-B4) — answered 2026-11-14
+
+**Answer: (a).** One shared section-to-store table, read by both export and Restore. Follow-up **T8.8-F3** in lane WR after T8.11 merges; it also edits `backup-export.ts`, which no wave-2 lane owns except FT's fault stages in `backup.ts`.
+
+## Q19. Preparation progress stops short of the total (reviewer note on T8.8-B8) — answered 2026-11-14
+
+**Answer: (a).** Count every record line toward `done`, including the Workspace section and rejected or unparsable batches, so progress ends at the header total. Follow-up **T8.8-F4** in lane WR after T8.11 merges.
+
+## Q20. A thrown recheck is labelled `meta` (reviewer note on T8.9-B9) — answered 2026-11-14
+
+**Answer: (a).** CandidateChanged names the section whose recheck threw (`meta` only for the Workspace settings). Folded into T8.9-F1.

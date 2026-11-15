@@ -1,0 +1,230 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 9 selected item(s).",
+  "summary": {
+    "files_reviewed": 9,
+    "comments": 2,
+    "total_tokens": 433136,
+    "input_tokens": 429598,
+    "output_tokens": 3538,
+    "cache_read_tokens": 54528,
+    "elapsed": "1m43s"
+  },
+  "tool_calls": {
+    "total": 45,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 10,
+      "file_find": 3,
+      "file_read": 29,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/main.tsx",
+      "content": "After a successful Restore, `applyingHere` is never reset; remounting `AppShell` does not reset this variable because it belongs to `start()`. Consequently, every later `WorkspaceReplaced` notification from another tab is ignored for the rest of this page's lifetime. The shell then misses its replacement warning and keeps its writable UI enabled against the superseded workspace until another operation detects it. Suppress only the notification for this tab's restored database (or otherwise end suppression after that notification), so subsequent cross-tab restores are still handled.",
+      "existing_code": "if (message?.kind !== 'WorkspaceReplaced' || typeof message.databaseName !== 'string' || applyingHere) return;",
+      "start_line": 108,
+      "end_line": 108,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/main.tsx",
+      "content": "The next click is not necessarily a request to leave the Restore summary. On the Backup page, Download backup remains available after Restore; clicking it now schedules an AppShell remount while its handler starts an export. The remount discards BackupView's state, so the eventual download has no verification controls (and its progress/result updates target the unmounted view). Even clicking the summary text dismisses it. Refresh the shell on an explicit completion/navigation action rather than the next document-wide click, or update launch status without remounting the active Backup view.",
+      "existing_code": "        if (result.kind === 'Restored') document.addEventListener('click', () =\u003e rebuildShell(), { once: true, capture: true });",
+      "start_line": 94,
+      "end_line": 94,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Application composition and test stack wiring",
+      "files": [
+        "src/app/compose.test.ts",
+        "src/app/compose.ts",
+        "tests/support/stack.ts"
+      ]
+    },
+    {
+      "label": "Workspace capabilities and verification",
+      "files": [
+        "src/coordinators/workspace/capabilities.ts",
+        "src/coordinators/workspace/workspace.test.ts",
+        "tools/verify-capabilities.ts"
+      ]
+    },
+    {
+      "label": "Browser backup export and worker integration",
+      "files": [
+        "src/delivery/browser-host.ts",
+        "src/main.tsx",
+        "src/workers/backup-export.ts"
+      ]
+    }
+  ],
+  "session_id": "70d7503e-0ea7-45f0-8c10-0d8f79d23091",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "70d7503e-0ea7-45f0-8c10-0d8f79d23091",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "bb23f7bc",
+      "resolved_base": "8fea017f16ab60d839c118a9489d2216ee01a156",
+      "resolved_head": "bb23f7bcc69cfbfa884fbced1f2d9dc80e0d109a",
+      "exact_range": "8fea017f16ab60d839c118a9489d2216ee01a156..bb23f7bcc69cfbfa884fbced1f2d9dc80e0d109a",
+      "source_artifact_sha256": "e6fffdcb51ec6c2a53998617998aa84b6cb4a262ecf760d4c178d995bc7f6739"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12626ba2e4a9ed20c4d156fd8a07e4e989c5e018142ca6db77671b5647a5f123",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "a463e1916e77885e2373624e71cc879a1eceed2f50282b4efb387c3c7c1ec755"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "4c464e327cfe4a9948f9be10564e705cc60b32fef0ebcf56ee8b95845a98e5e2"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "3ea615ce1f116308a0bcb52f7e20e81ed2b12da58f5dcbbb8c960c64459eae23"
+        },
+        {
+          "item_id": "43ea8a76f75b21ccccfd507082205b12c8641368accdc6560243b1c4e2bb0242",
+          "path": "src/delivery/browser-host.ts",
+          "fingerprint": "229856c19a965e256d991d63965b5dd7c4959df7fcc1420c24de9104eeb489a3"
+        },
+        {
+          "item_id": "576163b4eb3e849937e1ce9583972349d7efcba04b6d519e527e2e2442ff10cd",
+          "path": "tools/verify-capabilities.ts",
+          "fingerprint": "ee8892b0d00274323b0d0544a85a040a63ea3393b1102026f1cdeb67df65c83d"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "5f4f38f9720b5b0d5fe97d45a8a62a27d4564b9c35b6b5a37e567eec8950483d"
+        },
+        {
+          "item_id": "8de180284226e2df648260b78f190f01604ad01216761bddd1744b00d657af3d",
+          "path": "src/workers/backup-export.ts",
+          "fingerprint": "d4350ee661df433d76a5c4fab065ea5cf7a8fc2e9424d2484cd376dcac5920e4"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "668c33e24061a14eb59f3751ef84214ef5f817fa8991b62493836a653d1980d1"
+        },
+        {
+          "item_id": "f509fb5388c5be39c79de4e98e29cdf32a4f107a2c79864e7278dc03ec6afb6b",
+          "path": "src/app/compose.test.ts",
+          "fingerprint": "653368725a8d5d83da5411c3e66048b5ed280009bb55a6967d49d7c3882d53bd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12626ba2e4a9ed20c4d156fd8a07e4e989c5e018142ca6db77671b5647a5f123",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "a463e1916e77885e2373624e71cc879a1eceed2f50282b4efb387c3c7c1ec755"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "4c464e327cfe4a9948f9be10564e705cc60b32fef0ebcf56ee8b95845a98e5e2"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "3ea615ce1f116308a0bcb52f7e20e81ed2b12da58f5dcbbb8c960c64459eae23"
+        },
+        {
+          "item_id": "43ea8a76f75b21ccccfd507082205b12c8641368accdc6560243b1c4e2bb0242",
+          "path": "src/delivery/browser-host.ts",
+          "fingerprint": "229856c19a965e256d991d63965b5dd7c4959df7fcc1420c24de9104eeb489a3"
+        },
+        {
+          "item_id": "576163b4eb3e849937e1ce9583972349d7efcba04b6d519e527e2e2442ff10cd",
+          "path": "tools/verify-capabilities.ts",
+          "fingerprint": "ee8892b0d00274323b0d0544a85a040a63ea3393b1102026f1cdeb67df65c83d"
+        },
+        {
+          "item_id": "6c0a9060a31bf3ba57c05369b276def7b239838a93c46585ef412fe0536e8181",
+          "path": "src/coordinators/workspace/workspace.test.ts",
+          "fingerprint": "5f4f38f9720b5b0d5fe97d45a8a62a27d4564b9c35b6b5a37e567eec8950483d"
+        },
+        {
+          "item_id": "8de180284226e2df648260b78f190f01604ad01216761bddd1744b00d657af3d",
+          "path": "src/workers/backup-export.ts",
+          "fingerprint": "d4350ee661df433d76a5c4fab065ea5cf7a8fc2e9424d2484cd376dcac5920e4"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "668c33e24061a14eb59f3751ef84214ef5f817fa8991b62493836a653d1980d1"
+        },
+        {
+          "item_id": "f509fb5388c5be39c79de4e98e29cdf32a4f107a2c79864e7278dc03ec6afb6b",
+          "path": "src/app/compose.test.ts",
+          "fingerprint": "653368725a8d5d83da5411c3e66048b5ed280009bb55a6967d49d7c3882d53bd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "47619d793159100356363c4a9379e663b699527ff2c15ee154f61597d8eaf8b0",
+          "path": "evidence/D08/suite-runs/T8.11-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "8dec7a8b8c30e713248d6cb3498afad892058539c326519a4fb731fdcaf5c103",
+          "path": "evidence/D08/suite-runs/T8.11-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a40eef7363b5407c13737511753b58aef85f7859e8b1d392339b904cecfa6b38",
+          "path": "evidence/D08/tdd-log/T8.11.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ae0cd73aa04b8ba98ea74b3995760840818ad82801a2e3dbad39a1f378c0ff13",
+          "path": "evidence/D08/suite-runs/T8.11-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f42b3787fa2a1d95ca4b25e5119a94df3b831e7769f5ec88a2e860760d6433bf",
+          "path": "evidence/D08/suite-runs/T8.11-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 102891
+  }
+}
