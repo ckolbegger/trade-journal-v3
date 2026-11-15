@@ -689,6 +689,47 @@ describe('cancellation (A138, A148)', () => {
     expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
     expectNoCandidate(await dumpAll(target.factory), before);
   });
+
+  it('should return Cancelled and delete the candidate when the signal aborts after staging, while the candidate is being checked and rebuilt', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    const controller = new AbortController();
+    // The user presses Cancel while the private state is being rebuilt, after every record is staged and checked.
+    const persistence = {
+      ...target.persistence,
+      rebuildCandidate: async (...args: Parameters<typeof target.persistence.rebuildCandidate>) => {
+        const rebuilt = await target.persistence.rebuildCandidate(...args);
+        controller.abort();
+        return rebuilt;
+      },
+    };
+
+    const result = await workspaceOf(target, { persistence }).prepareRestore({ file: backupFile(a7.bytes), signal: controller.signal });
+
+    expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+
+  it('should return Cancelled and delete the candidate when the signal aborts while the seed is being added to the staged candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+    const controller = new AbortController();
+    // The user presses Cancel as the seed step first reads the staged candidate.
+    const persistence = {
+      ...target.persistence,
+      candidateSource: (...args: Parameters<typeof target.persistence.candidateSource>) => {
+        controller.abort();
+        return target.persistence.candidateSource(...args);
+      },
+    };
+
+    const result = await workspaceOf(target, { persistence }).prepareRestore({ file: backupFile(a7.bytes), signal: controller.signal });
+
+    expect(result).toMatchObject({ kind: 'Cancelled', liveBinding: { databaseName: liveDatabaseOf(before) } });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
 });
 
 describe('progress (A148)', () => {

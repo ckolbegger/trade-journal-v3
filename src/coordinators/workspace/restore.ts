@@ -489,6 +489,13 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       return rejected(issues, live);
     }
 
+    // Cancel during any later phase also deletes the candidate (A138).
+    const cancelIfAborted = async (): Promise<PrepareRestoreResult | undefined> => {
+      if (!request.signal?.aborted) return undefined;
+      await persistence.discardCandidate(candidate);
+      return { kind: 'Cancelled', liveBinding: live };
+    };
+
     // Seed: genuinely missing defaults join the candidate without overwriting customization (A132 step 7).
     const staged = persistence.candidateSource(candidate);
     const catalogSeed = prepareSeed((await collect(staged, 'catalog')) as unknown as CatalogRecord[], D7_CATALOG_MANIFEST, deps.ids);
@@ -509,6 +516,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       ...journalSeed.definitions.map((d): StoreRecord => ({ store: 'journalDefinitions', value: { ...d } })),
     ]);
     const seedAdditions = [...catalogSeed.records.map((r) => r.label), ...journalSeed.types.map((t) => t.label)];
+    const cancelledAfterSeed = await cancelIfAborted();
+    if (cancelledAfterSeed) return cancelledAfterSeed;
 
     // Each module judges its own section; the Trade section is closed against the others' identities (A132 step 8).
     const catalog = await catalogRestore.validate(staged);
@@ -527,6 +536,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       ...journal.issues.map(({ code }): RestoreIssue => ({ code, section: 'journal' })),
       ...(await danglingOrigins(staged)),
     ];
+    const cancelledAfterValidation = await cancelIfAborted();
+    if (cancelledAfterValidation) return cancelledAfterValidation;
     if (found.length > 0) {
       await persistence.discardCandidate(candidate);
       return rejected(found, live);
@@ -548,8 +559,12 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       }
       await persistence.putCandidateRecords(candidate, repaired);
     }
+    const cancelledAfterRepair = await cancelIfAborted();
+    if (cancelledAfterRepair) return cancelledAfterRepair;
     // The private state follows from the finished authoritative records (A132 step 10).
     await persistence.rebuildCandidate(candidate);
+    const cancelledAfterRebuild = await cancelIfAborted();
+    if (cancelledAfterRebuild) return cancelledAfterRebuild;
 
     const zone =(workspaceRecord as { timeZone: string }).timeZone;
     await persistence.putCandidateRecords(candidate, [
@@ -579,6 +594,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
     const warnings: RestoreWarning[] = [];
     if (currentTimeZone !== null && currentTimeZone !== zone) warnings.push('TimeZoneDiffers');
     if (header.schemaVersion < SCHEMA_VERSION) warnings.push('OlderSchema');
+    const cancelledAfterPreview = await cancelIfAborted();
+    if (cancelledAfterPreview) return cancelledAfterPreview;
     const steps = Array.from({ length: SCHEMA_VERSION - header.schemaVersion }, (_, i) => ({ from: header.schemaVersion + i, to: header.schemaVersion + i + 1 }));
     return {
       kind: 'Prepared',
