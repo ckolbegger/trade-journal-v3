@@ -1290,3 +1290,7 @@ Minor observations (carried to the final report): focus drops to `<body>` after 
 
 `cell` uses an early return and a `label` variable instead of nested ternaries. `src/ui/backup` 58 passed before and after; typecheck, tsc6, lint, lint:deps exit 0.
 - T8.22-B8-B1 ocr review (session d8bb4579): 1 file, no findings. Raw: `ocr/T8.22-B8-B1-d1ce099f.json`. Both critic-2 defects fixed and reviewed; B8's quick run is folded into the full run that closes the gate.
+
+## Gate-closing full tier green; T8.22 done
+
+Code at `d1ce099f`. Unit 189 files / 2025 tests, integration 118 / 258, browser-1 126 passed (5.3 m), browser-2 120 passed (7.8 m), checks 14 of 14, run complete. The runner again sent an early "placeholder" hand-back; results were read from the run files and `run-complete.sh`. critic-2 passed with only low defects, both fixed, so this run closes the gate with no new critic. Final report: `final-report.md`.
