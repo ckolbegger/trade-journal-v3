@@ -44,6 +44,7 @@ Covers D8's implementation session `1229eba6` (2026-11-14 20:34 to 2026-11-15 18
 
 - **What happened:** `implementing.md` says "write" `.claude/session.lock`; the main session tried a shell redirect, which `guard-shell-writes.sh` blocks, then used the Write tool.
 - **Proposed change:** say "write it with the Write tool" in `implementing.md`'s session-lock paragraph. Low; one wasted call per session.
+- **Applied (2026-11-15, the user's request):** `implementing.md`'s session-lock paragraph says to write the lock with the Write tool.
 
 ## Not findings
 

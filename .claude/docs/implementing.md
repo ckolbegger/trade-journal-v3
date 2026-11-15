@@ -4,7 +4,7 @@ The main session orchestrates: it reads, writes briefs, dispatches subagents, an
 
 ## Start-of-deliverable reading
 
-**Session lock (decision 113).** Before the reading, check for `.claude/session.lock`. If it exists, another session may be working in this worktree: stop, show the user its contents, and start nothing until they answer. Otherwise write it with the start time and the deliverable. Remove it when the session ends, after the final report or a full stop.
+**Session lock (decision 113).** Before the reading, check for `.claude/session.lock`. If it exists, another session may be working in this worktree: stop, show the user its contents, and start nothing until they answer. Otherwise write it with the Write tool (the shell-write hook blocks redirects into `.claude/`), holding the start time and the deliverable. Remove it when the session ends, after the final report or a full stop.
 
 The reading is scoped, to keep the context small (plan decision 45).
 
