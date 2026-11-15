@@ -1240,3 +1240,4 @@ On first run, choosing Restore from a backup hides the Start your journal form; 
 
 `.restore-preview { overflow-wrap: anywhere; }` lets the full release id (and long labels) wrap. Red: browser assertion (page scrollWidth 612 > clientWidth 375). Green after rebuild. No first-run passes. Browser specs responsive-a11y, restore: 11 passed. The release id stays whole (existing tests assert the full text).
 - T8.22-B4 ocr review (session d9b8c750): 2 files, no findings. Raw: `ocr/T8.22-B4-a70bf08b.json`.
+- T8.22-B4 quick run green: unit 2022, integration 258, browser task tier 5 + 39, checks 14 of 14, run complete.
