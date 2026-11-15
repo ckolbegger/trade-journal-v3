@@ -1088,3 +1088,7 @@ ocr T8.21 `2ebe87a6`: 2 findings, both Valid. (1) `e2e/d8/after-restore.spec.ts:
 `d2a8c465` on d08/br, test only. B8.10's absent-control checks moved to the restored fixture's Trade Detail pages (fx-0217 Planned, fx-0049 Open) for the Record links and `/plans/new` for Confirm Plan, reached by an in-app `goInApp` helper because a reload drops the inventory fault. Mutation (writable runtime): Record links found 1 and 2, Confirm Plan found 1; with the fault set they pass. Record expiration has no expired contract at the case's clock, so it isn't mutation-proven (comment in the spec); the Record button checks were dropped, since those controls are links. `watchOutgoing` compares origins; new `watch-outgoing.spec.ts` red (`[]` vs the 51750 URL) then green. Lane tier unit 1966, integration 229, checks 14 of 14; `e2e/d8` 35 passed, 3 failed (only the Q28 cases). ocr running.
 
 ocr T8.21-B1 `d2a8c465`: no findings. Lane BR stays held for Q28.
+
+## Q25 to Q28 answered; follow-ups started — 2026-11-15
+
+Q25 (a), Q26 (a), Q27 (a), Q28 (a); details in DECISIONS-PENDING.md. Lanes BG, FX and BR rebased onto `d308e6b3` (clean; FX's T8.20 is now `1f5d6ab8`, BR's T8.21 and B1 are now on `60d5a793`). Started in parallel: T8.18-F2 (lane BG, base `d308e6b3`), T8.20-F1 (lane FX, base `1f5d6ab8`, also settles T8.20-B1's write-gate finding), T8.21-F1 (lane BR, base `60d5a793`). Lane FX then runs F2 and F3; lane BR runs F2 and F3; T8.19 follows T8.18-F2 and runs alone.
