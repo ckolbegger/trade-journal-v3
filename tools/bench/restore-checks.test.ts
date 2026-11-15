@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EngineMeasurement } from '../capacity/profile.ts';
-import { artifactProblems, peakVerdict, projectForDataset, restoreReport, usageVerdict } from './restore-checks.ts';
+import { artifactProblems, peakVerdict, profileProblems, projectForDataset, restoreReport, usageVerdict } from './restore-checks.ts';
 
 // Each kind's bytes are a different prime, so a swapped mapping changes the total.
 const MEASURED_BYTES = {
@@ -96,5 +96,13 @@ describe('benchmark artifact checks', () => {
       'the expected rows were written by bench:expected, not by bench:generate',
     ]);
     expect(artifactProblems(DIGEST, { artifact: { fileDigest: DIGEST } }, undefined)).toHaveLength(2);
+  });
+});
+
+describe('benchmark restored profile check', () => {
+  it('should refuse a profile restored from an artifact other than the dataset record', () => {
+    expect(profileProblems({ artifactDigest: OTHER }, DIGEST)).toEqual([`the cached profile was restored from artifact ${OTHER}, not ${DIGEST}: run npm run bench:setup`]);
+    expect(profileProblems(undefined, DIGEST)).toHaveLength(1);
+    expect(profileProblems({ artifactDigest: DIGEST }, DIGEST)).toEqual([]);
   });
 });

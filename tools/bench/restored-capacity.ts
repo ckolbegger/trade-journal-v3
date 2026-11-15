@@ -11,9 +11,9 @@ import { CAPACITY_REQUIREMENT } from '../../src/delivery/capacity.ts';
 import { BASIS_FILE, largestProjection, project, type EngineMeasurement } from '../capacity/profile.ts';
 import { startReleaseServer } from '../release-server.ts';
 import { pollPeakUsage, restoreThroughUi, usageNow } from './browser.ts';
-import { BENCH_CAPACITY_FILE, BENCH_DATASET_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE } from './profile.ts';
+import { BENCH_CAPACITY_FILE, BENCH_DATASET_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_SETUP_FILE, BENCH_STAMP_FILE } from './profile.ts';
 import { pinAsOf } from './pin.ts';
-import { peakVerdict, projectForDataset, usageVerdict, type PricedDataset } from './restore-checks.ts';
+import { peakVerdict, profileProblems, projectForDataset, usageVerdict, type PricedDataset, type SetupRecord } from './restore-checks.ts';
 
 export interface CapacityFile {
   readonly artifactDigest: string;
@@ -31,6 +31,10 @@ const SAMPLE_EVERY_MS = 250;
 export async function measureRestored(): Promise<void> {
   if (!(await readFile(BENCH_STAMP_FILE).catch(() => undefined))) throw new Error('no restored profile: run npm run bench:setup first');
   const dataset = JSON.parse(await readFile(BENCH_DATASET_FILE, 'utf8')) as PricedDataset & { asOf: string; artifact: { path: string; fileDigest: string } };
+  // The profile measured must be the one restored from the dataset's artifact; its digest is what the record carries.
+  const setup = (await readFile(BENCH_SETUP_FILE, 'utf8').then(JSON.parse, () => undefined)) as SetupRecord | undefined;
+  const stale = profileProblems(setup, dataset.artifact.fileDigest);
+  if (stale.length > 0) throw new Error(`measure:capacity refuses to run: ${stale.join('; ')}`);
   const basis = JSON.parse(await readFile(BASIS_FILE, 'utf8')) as { engines: EngineMeasurement[] };
   // The engine whose projection is the largest, which is the one the requirement 3 × M comes from.
   const largest = largestProjection(basis.engines);
@@ -60,7 +64,7 @@ export async function measureRestored(): Promise<void> {
     console.log(`measure:capacity: second Restore prepare ${(second.prepareMs / 1000).toFixed(1)} s, apply ${(second.applyMs / 1000).toFixed(1)} s, peak usage ${peakBytes} bytes in ${samples} samples`);
 
     const record: CapacityFile = {
-      artifactDigest: dataset.artifact.fileDigest,
+      artifactDigest: setup!.artifactDigest,
       engine: engine.engine,
       usageBytes,
       projectedBytes,

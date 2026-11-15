@@ -137,6 +137,14 @@ The benchmark artifact (digest \`${setup.artifactDigest}\`, ${bytes(setup.artifa
 `;
 }
 
+// What stops a measurement of the cached profile: it must have been restored from the artifact the dataset records (the
+// setup record's digest), not an earlier one.
+export function profileProblems(setup: { readonly artifactDigest?: string } | undefined, datasetDigest: string): string[] {
+  return setup?.artifactDigest === datasetDigest
+    ? []
+    : [`the cached profile was restored from artifact ${String(setup?.artifactDigest)}, not ${datasetDigest}: run npm run bench:setup`];
+}
+
 // What stops the benchmark before it restores: the artifact is not the one the dataset records, or the expected rows
 // were not written by the Node generator for it.
 export function artifactProblems(fileDigest: string, dataset: DatasetArtifactRef, rows: ExpectedRowsProvenance | undefined): string[] {
