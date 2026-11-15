@@ -284,6 +284,33 @@ describe('rejections after staging (A134)', () => {
   });
 });
 
+describe('duplicate primary keys (A134)', () => {
+  it('should reject an artifact with consistent counts and digests but two records sharing one primary key in a store, naming the store, key and line, and delete the candidate', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+
+    // The second Trade record takes the first one's identity: counts stay equal and the digests are recomputed.
+    let firstId = '';
+    let duplicateLine = 0;
+    const duplicated = editedArtifact(a7.bytes, (artifact) => {
+      const tradeLines = artifact.lines.map((line, index) => ({ line, index })).filter(({ line }) => line.startsWith('{"r":') && line.endsWith(',"t":"trades"}'));
+      firstId = (JSON.parse(tradeLines[0]!.line) as { r: { tradeId: string } }).r.tradeId;
+      const second = tradeLines[1]!;
+      const envelope = JSON.parse(second.line) as { r: Record<string, unknown> };
+      envelope.r['tradeId'] = firstId;
+      artifact.lines[second.index] = JSON.stringify(envelope);
+      // Artifact lines are numbered from 1.
+      duplicateLine = second.index + 1;
+    });
+
+    const result = await target.workspace.prepareRestore({ file: backupFile(duplicated) });
+
+    expect(result).toMatchObject({ kind: 'Rejected', issues: [{ code: 'DuplicateIdentity', kind: 'trades', identity: firstId, line: duplicateLine }], totalIssues: 1 });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
+});
+
 describe('repairs (AC-LIFE-003, decision 23, D6 review-queue item 2)', () => {
   it('should prepare an artifact holding R-lc and R-dev with both repairs listed with stored and expected values, and leave the candidate holding T-A as Closed and the restored occurrence', async () => {
     const a7 = await exportedArtifact(await loadDump(W7));

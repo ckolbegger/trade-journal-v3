@@ -47,6 +47,7 @@ import type {
   RestoreWarning,
   TargetBinding,
 } from './backup-types.ts';
+import { keyOf } from '../../persistence/schema.ts';
 import { describeError, KNOWN_SECTIONS } from './backup-export.ts';
 import type { BackupDeps, BackupOperations } from './backup.ts';
 
@@ -325,6 +326,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       malformed = true;
       issues.push({ code: 'MalformedRecord', line, ...(path ? { path } : {}) });
     };
+    // The primary keys staged so far per store: put would silently overwrite a repeat (A134).
+    const keysSeen = new Map<string, Set<string>>();
     let workspaceRecord: Record<string, unknown> | undefined;
     let pending: { readonly section: string; readonly store: string; readonly lines: { line: number; record: unknown }[] } | undefined;
     const flush = async () => {
@@ -361,7 +364,20 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         for (const issue of parsed.issues) unreadable(issue.line, issue.path);
         return;
       }
-      await persistence.putCandidateRecords(candidate, parsed.records.map((value): StoreRecord => ({ store: store as WorkspaceStore, value: { ...value } })));
+      const keys = keysSeen.get(store) ?? new Set<string>();
+      keysSeen.set(store, keys);
+      const fresh = parsed.records.filter((value, i) => {
+        const stored = keyOf(store as WorkspaceStore, value);
+        const key = typeof stored === 'string' ? stored : JSON.stringify(stored);
+        if (!keys.has(key)) {
+          keys.add(key);
+          return true;
+        }
+        malformed = true;
+        issues.push({ code: 'DuplicateIdentity', kind: store, identity: key, line: moved[i]!.line });
+        return false;
+      });
+      await persistence.putCandidateRecords(candidate, fresh.map((value): StoreRecord => ({ store: store as WorkspaceStore, value: { ...value } })));
     };
     let fullDigest = '';
     try {
