@@ -339,7 +339,7 @@ describe('streamed export (A128, P29)', () => {
             layout,
             (batch) => {
               writtenWhenDelivered.push(written.mock.calls.length);
-              onBatch(batch);
+              return onBatch(batch);
             },
             onStart,
           ),
