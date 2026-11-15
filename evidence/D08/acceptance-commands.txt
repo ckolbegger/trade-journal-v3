@@ -1,0 +1,18 @@
+AC-BACK-001 (cumulative per P34; partial: corrections, Voids, Bars, provider settings and credential, revised definitions and references arrive later) | npm run test:integration -- d8/backup | 3 tests
+AC-REST-001 (cumulative per P34; provider non-contact re-proven in D11) | npm run test:integration -- d8/prepare | 1 tests
+AC-REST-002 (full) | npm run test:integration -- d8/safety | 3 tests
+AC-REST-003 (full) | npm run test:integration -- d8/atomic | 1 tests
+AC-REST-004 (full) | npm run test:integration -- d8/blocked | 2 tests
+AC-DEL-005 (full) | npx playwright test e2e/d8/recovery-only.spec.ts | 1 tests
+AC-LIFE-003 (partial per P34: Restore branch for lifecycle and Entry Size; full in D12) | npm run test:integration -- d8/repairs | 1 tests
+AC-DEL-006 (cumulative: after-Restore boundary) | npx playwright test e2e/d8/after-restore.spec.ts | 1 tests
+AC-REBUILD-001 (cumulative: Restore as reconstruction) | npm run test:integration -- d8/round-trip | 6 tests
+AC-REBUILD-001 (cumulative: Restore as reconstruction) | npm run bench:setup | script present
+AC-RESP-001 (cumulative) | npm run test:integration -- d8/responses | 1 tests
+AC-CAP-001 (cumulative) | npm run verify:capabilities | script present
+AC-DEL-001 (cumulative) | npx playwright test e2e/d8/offline.spec.ts | 1 tests
+AC-DEL-004 (cumulative) | npm run test:integration -- d8/write-gate | 2 tests
+AC-DEL-003 (cumulative) | - | procedure, not checked
+AC-UI-001, AC-UI-002 (cumulative) | npx playwright test e2e/d8/responsive-a11y.spec.ts | 4 tests
+AC-PERF-001 (cumulative) | npm run bench:run | script present
+summary: 16 commands checked, 0 failed, 1 rows are procedures, not checked
