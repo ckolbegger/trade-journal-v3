@@ -9,13 +9,16 @@ Every revision of the frozen plan, newest first, one entry each. Each revision i
   - **Decision 114:**
     - Restore reads schemas 3 through 7 (Q14, amending decision 35).
     - T8.19's projection formula is kept, and a growth baseline of 206,540,122 bytes is committed, with a 50% limit (Q29).
-    - The command names decide what is written (amending decision 39): `measure:capacity` writes no stored figure, `measure:capacity:reset-baseline` alone rewrites them, `verify:capacity` checks D7's figures only, and `bench:verify-capacity` checks the three restored limits. The `--restored` option goes.
+    - The command names decide what is written (amending decision 39). `measure:capacity` writes no stored figure. `measure:capacity:reset-basis` rewrites only D7's capacity figures, for a schema change (amending decision 18). `measure:capacity:reset-baseline` rewrites only the baseline, and runs only when the user says so. `verify:capacity` checks D7's figures only, and `bench:verify-capacity` checks the three restored limits. The `--restored` option goes.
+    - From D9, the benchmark runs once per deliverable, after the gate and before the tag. It is a rule in "Rules every deliverable follows" and a new "Benchmark" section in `.claude/docs/implementing.md`, so breakdowns have no benchmark task.
+    - A failed benchmark starts no fix. The session reports it and waits for the user to choose a fix now or a tech debt item.
     - The restored check is named `bench:verify-capacity`, not `verify:...`, so the complete run's checks stage, which runs every `verify:` script, leaves it out. It needs the git-ignored benchmark files.
   - **Work:** T8.19-F1, after D8's gate. It runs alone in the main worktree, with no browser critic. The `claude-opus-5.5-d8` tag stays.
   - **Not included:** the trade-detail audit's findings (`research/trade-detail-audit.html`). The user will handle them in a separate refactor plan.
   - **Affected:**
     - `plan/D08-backup-and-restore.md`;
-    - `plan/implementation-plan.md` (decision 114, the notes on decisions 35 and 39, the freeze record);
+    - `plan/implementation-plan.md` (decision 114; the notes on decisions 18, 35 and 39; the benchmark rule; AC-PERF-001's row; the freeze record);
+    - `.claude/docs/implementing.md` ("Benchmark");
     - `plan/D08-handoff.md`.
 
     `specs/` is unchanged. Decided by the user on 2026-11-14 and 2026-11-15 (`evidence/D08/DECISIONS-PENDING.md`), and drafted at their request: "Please draft up revision 103 and make everything work ready."

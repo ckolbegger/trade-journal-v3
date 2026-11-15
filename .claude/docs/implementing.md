@@ -80,6 +80,17 @@ Stop and ask stays in force: never decide a question the specs or the plan leave
 4. Keep working on every other unblocked task. When nothing unblocked remains, stop and wait.
 5. On the user's answer, record the decision (with a plan revision when the plan changes), mark the entry answered with the date, and resume the paused tasks.
 
+## Benchmark (decision 114, from D9)
+
+Run it once per deliverable, after the gate closes and before the tag, as the plan's rule "Benchmark once, at the end" says. Run it alone: no lane, merge run, critic or other browser run at the same time. Record the results in `evidence/D<nn>/bench.md`.
+
+If any step fails or misses a budget or limit:
+- don't brief a fix, and don't rerun the benchmark;
+- tell the user the failing command, its figures and the limits, record it in `DECISIONS-PENDING.md`, and wait;
+- the user chooses a fix now (bug tasks, then one more benchmark run) or a tech debt item, and the tag waits for that choice.
+
+Never run `measure:capacity:reset-baseline` unless the user says so.
+
 ## Final report
 
 At the gate, or at a full stop, report: the deliverable's result; each task's fix rounds (ocr bug-task rounds and suite-failure fixes); every flaky test seen, with the run it flaked in; every decision still pending; and the handoff's open questions. Then remove `.claude/session.lock`.

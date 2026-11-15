@@ -174,11 +174,11 @@ D8 asked the user 29 questions while it ran (decision 113). Each one is in `evid
 
 **What changes.** The command names decide what is written; no option does.
 - **`measure:capacity`** measures the restored benchmark journal, as `measure:capacity -- --restored` does today. It writes only `.cache/bench/capacity.json`. It never writes `src/delivery/capacity-basis.json` or the baseline.
-- **`measure:capacity:reset-baseline`** is the only command that rewrites stored figures. It does three things, in order:
-  1. it re-measures D7's capacity figures, as bare `measure:capacity` does today, with the same optional engine arguments, and rewrites `capacity-basis.json`;
-  2. it measures the restored benchmark, as `measure:capacity` does;
-  3. it writes that usage to the baseline.
-  Each command has its own entry file. D7's measurement moves into a function under `tools/capacity/` that this command calls.
+- **Two commands rewrite stored figures, one file each** (the user's choice, 2026-11-15). A schema change re-measures M without moving the growth baseline:
+  - **`measure:capacity:reset-basis`** re-measures D7's capacity figures, as bare `measure:capacity` does today, with the same optional engine arguments. It rewrites `src/delivery/capacity-basis.json` and nothing else. A schema-changing deliverable runs it (decision 18), in its own task.
+  - **`measure:capacity:reset-baseline`** measures the restored benchmark, as `measure:capacity` does, and records that usage as the new baseline. It rewrites `bench/capacity-baseline.json` and nothing else stored. It runs only when the user says so, and the deliverable's evidence records the user's reason.
+
+  Each command has its own entry file. D7's measurement moves from `tools/measure-capacity.ts` into `tools/capacity/`.
 - **`verify:capacity`** checks D7's capacity figures only: the schema version, the recomputed M, and the embedded requirement. It no longer reads `.cache/bench/`, so it passes the same way in every worktree.
 - **`bench:verify-capacity`** runs every check of `verify:capacity`. It also requires `.cache/bench/capacity.json` and the baseline, both of the dataset's artifact, and fails unless all three limits hold:
   - the restored usage is at most 1.10 × the projection for the same counts (T8.19's row);
@@ -191,7 +191,7 @@ D8 asked the user 29 questions while it ran (decision 113). Each one is in `evid
 
 **Files.**
 - `package.json`'s capacity scripts;
-- `tools/measure-capacity.ts`, a new `tools/reset-capacity-baseline.ts`, and a new D7-measurement module under `tools/capacity/`;
+- `tools/measure-capacity.ts`, new `tools/reset-capacity-basis.ts` and `tools/reset-capacity-baseline.ts`, and a new D7-measurement module under `tools/capacity/`;
 - `tools/verify-capacity.ts`, and a new `tools/bench-verify-capacity.ts`;
 - `tools/bench/restore-checks.ts` and its test, `restored-capacity.ts` and `profile.ts` (the baseline path);
 - `tools/bench-run.ts`;
@@ -211,15 +211,17 @@ describe("growth baseline (decision 114)")
 3. `npm run measure:capacity` exits 0, and `git status --short src/delivery/capacity-basis.json bench/capacity-baseline.json` prints nothing afterwards.
 4. `npm run bench:verify-capacity` exits 0 and prints the three ratios. T8.19 gave about 0.264 of the projection and 0.481 × M; about 1.00 of the baseline is expected.
 5. With `.cache/bench/capacity.json` moved aside, `npm run bench:verify-capacity` fails, naming `npm run measure:capacity`. Put the file back afterwards.
-6. Check `npm run measure:capacity:reset-baseline`:
-   - It exits 0 and changes both stored files.
-   - `npm run verify:capacity` and `npm run bench:verify-capacity` then exit 0.
-   - Then `git checkout -- src/delivery/capacity-basis.json bench/capacity-baseline.json` restores the committed figures. The baseline stays T8.19's, the user's choice.
+6. Check the two reset commands, each against the committed files:
+   - `npm run measure:capacity:reset-basis` exits 0. `git status --short` then names `src/delivery/capacity-basis.json` and no other tracked file. `npm run verify:capacity` exits 0.
+   - `npm run measure:capacity:reset-baseline` exits 0. `git status --short` then also names `bench/capacity-baseline.json`, and no other tracked file.
+   - `git checkout -- src/delivery/capacity-basis.json bench/capacity-baseline.json` restores the committed figures. The baseline stays T8.19's, the user's choice.
    - Then `npm run measure:capacity` remeasures against them, and `npm run bench:verify-capacity` exits 0.
 7. `grep -rn -- "--restored" tools package.json` prints nothing. `node -p 'Object.keys(require("./package.json").scripts).filter(k => k.startsWith("verify:")).join(" ")'` lists the same nine `verify:` scripts as before the task.
 8. Record the outputs of steps 2 to 6 in `evidence/D08/structural.md` under "T8.19-F1".
 
 There is no browser critic, because no screen or word changes. The task ends as any task does: an `ocr-review` of its commit, then a complete run with `browser-auto <base>`.
+
+**From D9 on, the benchmark runs once per deliverable, at the end** (decision 114). These commands are the steps of that run (`implementation-plan.md`, "Rules every deliverable follows"). T8.19-F1's own verification is D8's last benchmark measurement.
 
 ---
 

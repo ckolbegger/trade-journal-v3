@@ -60,7 +60,7 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
   - section 3.1's T8.19 and T8.19-F1 rows;
   - section 5's T8.19 row;
   - section 11's Progress table.
-- **`plan/implementation-plan.md`:** decisions 18, 39 and 114, and the freeze record.
+- **`plan/implementation-plan.md`:** decisions 18, 39 and 114, the rule "Benchmark once, at the end", and the freeze record.
 - **`evidence/D08/DECISIONS-PENDING.md`:** Q29 only.
 - **`plan/spec-reading/D08.md`:** only the capacity ranges (decision 18). This task changes tooling, not product behaviour.
 - **The code it changes:**
@@ -88,6 +88,8 @@ Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first, all 
 3. **`ocr-review`** on the task's commit, with the plan section `plan/D08-backup-and-restore.md`, "T8.19-F1". Copy its output to `evidence/D08/ocr/T8.19-F1-<sha>.json`. Each Valid or Doubtful finding becomes a bug task, T8.19-F1-B1 and so on: a fresh `tdd-task` in the main worktree, then its own `ocr-review`. A third round that still has findings is a pending decision.
 4. **`suite-runner`** with `evidence/D08`, the label `T8.19-F1` (or that of the last bug task) and the browser stage `browser-auto <base>`, where `<base>` is the commit from step 1. It will pick the full tier, because `package.json` changes. Give it the usual brief lines: exactly one report, sent only when complete, and each stage in its own foreground call. Its checks stage must still list 14 checks.
 5. **No browser critic** (decision 114: no screen or word changes).
+
+**If a capacity limit fails.** In verification step 4 or 6, `bench:verify-capacity` may report a limit exceeded rather than a broken command. That is a benchmark failure (decision 114). Don't brief a fix, and don't reset the baseline. Stop, tell the user the three ratios and which limit failed, record it as Q30, and wait. The user chooses a fix now or a tech debt item.
 
 ## 4. When it's done
 
