@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble, readyStatus } from '../../../tests/support/facade-double.ts';
+import { createBackupFacadeDouble, createFileSelectionDouble } from '../backup/test-support.ts';
 import { FirstRun } from './FirstRun.tsx';
 
 afterEach(cleanup);
@@ -39,5 +41,23 @@ describe('first-run time zone', () => {
     expect(onOpened).not.toHaveBeenCalled();
     expect(facade.Workspace.initialize).toHaveBeenCalledTimes(1);
     expect(facade.Workspace.getStatus).not.toHaveBeenCalled();
+  });
+});
+
+describe('first-run Restore replaces the start form (D8 A142)', () => {
+  it('should remove the Start your journal form once Restore from a backup is chosen', async () => {
+    const backup = createBackupFacadeDouble();
+    const files = createFileSelectionDouble();
+    render(
+      <MemoryRouter>
+        <FirstRun facade={facadeDouble()} onOpened={vi.fn()} proposedZone="Europe/London" zones={zones} restore={{ facade: backup.facade, selectFile: files.port }} />
+      </MemoryRouter>,
+    );
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Restore from a backup' }));
+    expect(screen.getByRole('button', { name: 'Choose backup file' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Start your journal' })).toBeNull();
+    expect(screen.queryByLabelText('Time zone')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Start my journal' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restore from a backup' })).toBeNull();
   });
 });

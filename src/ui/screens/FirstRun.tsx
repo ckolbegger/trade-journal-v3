@@ -36,6 +36,15 @@ export function FirstRun({
     });
   };
 
+  // Once Restore is chosen the start form is gone, so a restored journal is never offered as one to start (D8 A142).
+  if (restore && restoring) {
+    return (
+      <main className="content first-run">
+        <RestoreFlow facade={restore.facade} selectFile={restore.selectFile} />
+      </main>
+    );
+  }
+
   return (
     <main className="content first-run">
       <h1>Start your journal</h1>
@@ -69,7 +78,6 @@ export function FirstRun({
           </button>
         )}
       </form>
-      {restore && restoring && <RestoreFlow facade={restore.facade} selectFile={restore.selectFile} />}
     </main>
   );
 }
