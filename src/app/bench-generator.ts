@@ -966,7 +966,7 @@ function journalOf(args: {
 // of the artifact into a Node Workspace (the production Restore on fake-indexeddb), and the screen's pure row function.
 export interface BenchViewsPort {
   readonly restore: (bytes: Uint8Array, asOf: string) => Promise<Pick<Application, 'TradeViewsAndReporting' | 'DailyReview'>>;
-  readonly openRowsOf: (items: readonly (OpenTradeItem | IncoherentOpenTradeItem)[], timeZone: string) => { readonly headers: readonly string[]; readonly rows: readonly (readonly string[])[] };
+  readonly openRowsOf: (items: readonly (OpenTradeItem | IncoherentOpenTradeItem)[], timeZone: string, asOf: string) => { readonly headers: readonly string[]; readonly rows: readonly (readonly string[])[] };
 }
 
 export interface BenchOpenRows {
@@ -992,7 +992,7 @@ export async function viewsOfRestored(port: BenchViewsPort, bytes: Uint8Array, e
   const items = browsed.view.items;
   sameList('Open list membership', items.map((item) => item.tradeId).sort(), expected.asOfReview.walk);
   if (items.length !== expected.counts.openTrades) throw new Error(`Open list: ${items.length} rows but ${expected.counts.openTrades} Open Trades counted`);
-  const { headers, rows } = port.openRowsOf(items, BENCH_TIME_ZONE);
+  const { headers, rows } = port.openRowsOf(items, BENCH_TIME_ZONE, expected.asOf);
   if (rows.length !== items.length) throw new Error(`the row function gives ${rows.length} rows for ${items.length} items`);
 
   const review = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: expected.asOf });
