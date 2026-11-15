@@ -937,3 +937,9 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - **T8.9-B14:** `isTradeSummary` checks the Trade Record's summary fields, but `RestoreRepair.tradeSummary.summary` is the domain `TradeSummary` from `domain/trade-summary.ts` (Stock or Option variant, filled by `plannedTradeSummary`), so every real candidate with repairs would be rejected as CandidateChanged at apply. Cause: my B12 brief pointed at the wrong `TradeSummary` (`src/modules/trade-record/trade-record.ts`). No test applied a candidate with real repairs.
 - **T8.9-B14** `3cff8b9d` (lane WR): `isTradeSummary` now checks the domain `TradeSummary` (Stock: `direction` Long, stored-Rational `quantity` and `price`; Option: `direction` Long or Short, stored-Rational `contracts`, string `expiration` and `strike`, `right` Call or Put), with a local `isStoredRational` (bigint numerator and denominator). New case applies a candidate with R-lc and R-dev repairs end to end: genuine red (`CandidateChanged` instead of Restored), then green. Lane tier green (unit 1932, integration 229, checks 14 of 14).
 - **ocr T8.9-B14 `3cff8b9d`:** 0 findings. Raw: `ocr/T8.9-B14-3cff8b9d.json`. T8.9 and its open bug tasks that can run now are clean; lane WR merges. T8.9-B1 moved to T8.11 (Q10); T8.9-B2 runs after T8.11 merges.
+- **merge-16** (lane WR merged T8.9 and its bug tasks; source `6ae0bea6`): all green, run complete.
+  - Unit 181 / 1932, integration 106 / 229, checks 14 of 14.
+  - Browser: task tier (no changed path since `ca839e70` is on the full-tier list); 5 passed.
+  - A plan-only commit (`66663cb7`) landed during the run.
+  - Lane WR stays for T8.9-B2 (after T8.11) and the proposed preparation-record cleanup, if the user approves it.
+- **Wave 2 started:** T8.11 runs in lane US on top of T8.14 (handoff note), rebased onto `66663cb7`; the rebase moved files T8.14 doesn't own, so T8.11's lane tier covers the rerun.
