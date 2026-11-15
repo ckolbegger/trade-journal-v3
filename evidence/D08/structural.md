@@ -1378,3 +1378,5 @@ Notes, not bug tasks: the task wrote all five tests, ran them red against a stub
 Reviewer note, not a bug task: `D07S` has two plan files with a Progress section (the option-price breakdown and its prefactor); `status.sh D07S` reports only the first.
 
 **D8-Retro-1a-B2** (`e6079cb2`): any heading after the Progress heading ends row reading. Case 7 red then green; no first-run pass. `status.sh D08P` now lists one open task, T8P.23.
+
+**D8-Retro-1a-B2 ocr review** (`e6079cb2`, raw output `ocr/D8-Retro-1a-B2-e6079cb2.json`): 2 files reviewed (1 excluded), 0 comments. No findings.
