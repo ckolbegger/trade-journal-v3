@@ -39,6 +39,7 @@ Covers D8's implementation session `1229eba6` (2026-11-14 20:34 to 2026-11-15 18
 
 - **What happened:** T8.19-F1 changed what `measure:capacity` means. Two places outside its file list still use the old meaning: the hint in `tools/capacity/profile.ts` line 190 and the comment at the top of `tools/capacity/measure-page.ts`. The task correctly left them, so they are notes in the final report.
 - **Proposed change:** in `drafting-breakdowns.md`, a task that renames or repurposes a command builds its file list from `grep -rn '<old name>'` over `tools`, `src`, `e2e`, `tests` and `.claude`. The two lines themselves are a one-line fix for the next task that touches `tools/capacity/`.
+- **Applied (2026-11-15, the user's request):** `drafting-breakdowns.md` gains a "Names" lookup: a renamed or repurposed command, script or exported name gets its file list from `grep -rn '<old name>'` over `tools`, `src`, `e2e`, `tests` and `.claude`, with every hit listed or kept with a reason (`6fbd661b`). D8-Retro-5 (`0ab2dca1`) points the stale hints at `measure:capacity:reset-basis`: `tools/capacity/profile.ts` lines 6 and 190, and the top comment of `tools/capacity/measure-page.ts` (the grep found line 6 as a third). Verified with `npx vitest run tools` (100 passed), the D6 capacity-profile integration test, `npm run typecheck`, and the grep. ocr review: no findings.
 
 ## 6. The session lock step meets a hook
 
