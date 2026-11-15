@@ -348,3 +348,15 @@ Section 3.2 gives lane FT `src/delivery/faults.ts`, the fault stages in `backup.
 
 - (a) Recommended: accept the four edits as part of T8.15 and record the extra files in r103's section 3.2. They are optional fields and faults-only wiring; without them the stages can't reach Restore.
 - (b) Reject them and find a way for the faults build to inject the hooks without touching these files (likely not possible without a new seam in `compose.ts`).
+
+## Q23. Bump the benchmark generator version to 8? (T8.18, raised 2026-11-15, holds T8.19 only)
+
+T8.18 replaced the command-driven generator with one that writes the backup file directly. The counts are the same as version 7's dataset, but the data is new. `BENCH_GENERATOR_VERSION` and the build marker live in `src/app/bench.ts`, which lane BG doesn't own, so they still say 7.
+- (a) Recommended: bump to 8 (version and marker) in a small follow-up, recorded as a section 3.2 addition in r103, so a cached version-7 profile is never mistaken for the new data.
+- (b) Keep 7, since the counts are unchanged.
+
+## Q24. Where do the benchmark's expected Open list rows and Review order come from? (T8.18, raised 2026-11-15, holds T8.19 only)
+
+The old generator drove the app in the browser, so it could record the Open list's rendered rows and the Daily Review's attention-ranked order as expected values. The new one runs in Node without the app's screens, so it writes `expected-open-rows.json` empty, and its Review membership is sorted by Trade id rather than the app's order. `bench-run`'s full mode waits for rows and would fail on the empty file.
+- (a) Recommended: the generator computes the expected Open rows and Review order in Node by calling the app's own view functions over the generated records (no browser, no Restore). This keeps an expected value that is independent of the restored profile. A follow-up in lane BG.
+- (b) T8.19 takes the rows and order from the restored profile's first render, then checks every later render equals them (as `bench-run`'s partial-dataset mode already does). Simpler, but the first render is no longer checked against an independent expectation.
