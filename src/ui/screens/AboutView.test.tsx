@@ -61,6 +61,12 @@ describe('About this release', () => {
     expect(within(about).getByText('Schema version', { selector: 'dt' }).nextElementSibling?.textContent).toBe('2');
   });
 
+  it('should show the backup export and Restore schema ranges with the format version from the Installed Capability Manifest', async () => {
+    render(<AboutView facade={facadeDouble({ status })} updates={controller()} />);
+    const capabilities = await screen.findByRole('region', { name: 'Installed capabilities' });
+    expect(within(capabilities).getByText('Backups: exports schema 7 (format 1); restores schemas 3 to 7 (format 1)')).toBeTruthy();
+  });
+
   it('should call registration.update when "Check for updates" is pressed and report "No update" or show the update notice', async () => {
     const quiet = new FakeRegistration();
     render(<AboutView facade={facadeDouble({ status })} updates={controller(quiet)} />);

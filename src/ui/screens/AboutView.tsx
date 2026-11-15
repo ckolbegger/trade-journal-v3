@@ -9,6 +9,7 @@ import { StorageProtectionCard } from '../StorageProtectionCard.tsx';
 import type { ReleaseUpdateController } from '../update/controller.ts';
 
 type Status = Awaited<ReturnType<UiFacade['Workspace']['getStatus']>>;
+type SchemaVersionRange = Status['installedCapabilities']['backupSchemaRange']['export'];
 
 export interface AboutViewProps {
   readonly facade: UiFacade;
@@ -51,6 +52,8 @@ export function AboutView({ facade, updates }: AboutViewProps) {
     return `${CHECK_LABELS[name]}: ${check.passed ? 'passed' : `failed (${check.reason})`}${detail}`;
   };
   const capabilities = status.installedCapabilities;
+  const backups = capabilities.backupSchemaRange;
+  const schemas = ({ from, to }: SchemaVersionRange) => (from === to ? `schema ${from}` : `schemas ${from} to ${to}`);
   // The wide sidebar lists Backup; on narrow screens the bottom bar has no room, so About links to it (P106).
   // The shell decides whether the route is offered, so About and the warning agree with the sidebar.
 
@@ -109,6 +112,9 @@ export function AboutView({ facade, updates }: AboutViewProps) {
             <li key={operation}>{variants.length > 0 ? `${operation} (${variants.join(', ')})` : operation}</li>
           ))}
         </ul>
+        <p>
+          Backups: exports {schemas(backups.export)} (format {backups.formatVersion}); restores {schemas(backups.restore)} (format {backups.formatVersion})
+        </p>
         <p>Strategies: {capabilities.strategies.join(', ')}</p>
         <p>Entry Types: {capabilities.entryTypes.join(', ')}</p>
       </section>
