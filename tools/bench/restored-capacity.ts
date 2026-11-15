@@ -1,9 +1,10 @@
-// `npm run measure:capacity -- --restored` (D8 T8.19, decision 18): on a copy of the profile bench:setup restored, records the
-// Workspace's `estimate().usage`, then restores the same artifact a second time over it, through the Backup page, and records
-// the peak usage sampled during that Restore. Writes .cache/bench/capacity.json for verify:capacity and bench:run. The cached
-// profile itself is never opened. Serves dist/ on the bench port (4175), so nothing else may run (A227).
+// The measurement behind `npm run measure:capacity` and `measure:capacity:reset-baseline` (D8 T8.19, decision 18, decision 114):
+// on a copy of the profile bench:setup restored, records the Workspace's `estimate().usage`, then restores the same artifact a
+// second time over it, through the Backup page, and records the peak usage sampled during that Restore. The callers write
+// .cache/bench/capacity.json (for bench:verify-capacity and bench:run) or the growth baseline. The cached profile itself is
+// never opened. Serves dist/ on the bench port (4175), so nothing else may run (A227).
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
@@ -11,7 +12,7 @@ import { CAPACITY_REQUIREMENT } from '../../src/delivery/capacity.ts';
 import { BASIS_FILE, largestProjection, project, type EngineMeasurement } from '../capacity/profile.ts';
 import { startReleaseServer } from '../release-server.ts';
 import { pollPeakUsage, restoreThroughUi, usageNow } from './browser.ts';
-import { BENCH_CAPACITY_FILE, BENCH_DATASET_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_SETUP_FILE, BENCH_STAMP_FILE } from './profile.ts';
+import { BENCH_DATASET_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_SETUP_FILE, BENCH_STAMP_FILE } from './profile.ts';
 import { pinAsOf } from './pin.ts';
 import { peakVerdict, profileProblems, projectForDataset, usageVerdict, type PricedDataset, type SetupRecord } from './restore-checks.ts';
 
@@ -28,7 +29,7 @@ export interface CapacityFile {
 
 const SAMPLE_EVERY_MS = 250;
 
-export async function measureRestored(): Promise<void> {
+export async function measureRestored(): Promise<CapacityFile> {
   if (!(await readFile(BENCH_STAMP_FILE).catch(() => undefined))) throw new Error('no restored profile: run npm run bench:setup first');
   const dataset = JSON.parse(await readFile(BENCH_DATASET_FILE, 'utf8')) as PricedDataset & { asOf: string; artifact: { path: string; fileDigest: string } };
   // The profile measured must be the one restored from the dataset's artifact; its digest is what the record carries.
@@ -73,13 +74,16 @@ export async function measureRestored(): Promise<void> {
       peakSamples: samples,
       sampleEveryMs: SAMPLE_EVERY_MS,
     };
-    await writeFile(BENCH_CAPACITY_FILE, `${JSON.stringify(record, null, 2)}\n`);
-    const usage = usageVerdict(usageBytes, projectedBytes);
-    const peak = peakVerdict(peakBytes, record.matureProjectedBytes);
-    console.log(`measure:capacity OK: usage ${usage.ratio.toFixed(3)} of the projection, peak ${peak.ratio.toFixed(3)} × M; run npm run verify:capacity -- --restored for the verdicts`);
+    return record;
   } finally {
     await context.close();
     await server.close();
     await rm(workDir, { recursive: true, force: true });
   }
+}
+
+export function reportRestored(command: string, record: CapacityFile): void {
+  const usage = usageVerdict(record.usageBytes, record.projectedBytes);
+  const peak = peakVerdict(record.peakBytes, record.matureProjectedBytes);
+  console.log(`${command} OK: usage ${usage.ratio.toFixed(3)} of the projection, peak ${peak.ratio.toFixed(3)} × M; run npm run bench:verify-capacity for the verdicts`);
 }

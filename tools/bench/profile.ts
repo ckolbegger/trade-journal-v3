@@ -10,10 +10,12 @@ export const BENCH_PORT = 4175;
 // so an interrupted generation never looks reusable.
 export const BENCH_PROFILE_DIR = path.resolve('.cache/bench/profile');
 export const BENCH_STAMP_FILE = path.join(BENCH_PROFILE_DIR, 'tj-bench.json');
-// What bench:setup (the Restore timings) and measure:capacity --restored (the usage and the second Restore's peak) record, beside
+// What bench:setup (the Restore timings) and measure:capacity (the usage and the second Restore's peak) record, beside
 // the profile (git-ignored); bench:run reads both for the D8 section of evidence/D08/bench.md (T8.19).
 export const BENCH_SETUP_FILE = path.resolve('.cache/bench/setup.json');
 export const BENCH_CAPACITY_FILE = path.resolve('.cache/bench/capacity.json');
+// The growth baseline (committed): the restored usage of the benchmark artifact, rewritten only by measure:capacity:reset-baseline.
+export const BENCH_BASELINE_FILE = path.resolve('bench/capacity-baseline.json');
 // Provenance (committed): counts, versions, timing, engine.
 export const BENCH_DATASET_FILE = path.resolve('bench/dataset.json');
 // The expected Open list (committed): the rendered "Open Trades" rows and the facade's items.

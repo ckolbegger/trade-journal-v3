@@ -113,7 +113,7 @@ if (!partial) {
   setupRecord = (await readFile(BENCH_SETUP_FILE, 'utf8').then(JSON.parse, () => undefined)) as SetupRecord | undefined;
   if (setupRecord?.artifactDigest !== digest) problems.push(`the cached profile was restored from artifact ${String(setupRecord?.artifactDigest)}, not ${digest}: run npm run bench:setup`);
   capacityRecord = (await readFile(BENCH_CAPACITY_FILE, 'utf8').then(JSON.parse, () => undefined)) as CapacityFile | undefined;
-  if (capacityRecord?.artifactDigest !== digest) problems.push('no capacity measurement of this artifact: run npm run measure:capacity -- --restored');
+  if (capacityRecord?.artifactDigest !== digest) problems.push('no capacity measurement of this artifact: run npm run measure:capacity');
   if (problems.length > 0) throw new Error(`bench:run refuses to run: ${problems.join('; ')}`);
 }
 const partialCounts = partial ? (dataset['counts'] as { openTrades: number }) : undefined;

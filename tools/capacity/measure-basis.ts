@@ -1,0 +1,52 @@
+// D7's capacity measurement (moved from tools/measure-capacity.ts by D8 T8.19-F1, decision 114): storage per Trade with its Plan
+// Reflection, and per Position Change, Execution, and Position Change Reflection outcome (D2 T2.18), and per Mark,
+// acknowledgment, and Daily Trade Review Action (D4 T4.28), and per deferred Position Change
+// Reflection answered, declined, or left Outstanding (D5 T5.19), and per exit and Close Review outcome
+// of a closed Trade (D6 T6.22), and per option Plan and Expiration through the facade (D7 T7.26), in each engine (default
+// chromium; RC adds firefox and webkit). Rewrites the capacity basis with the largest projection (D1 T1.19, decision 18).
+// `npm run measure:capacity:reset-basis [engine...]` is its only caller.
+import { readFile, writeFile } from 'node:fs/promises';
+import { chromium, firefox, webkit } from '@playwright/test';
+import { createServer } from 'vite';
+import { SCHEMA_VERSION } from '../../src/persistence/schema.ts';
+import { ALLOWANCES, BASIS_FILE, largestProjection, MEASURED, type EngineMeasurement } from './profile.ts';
+
+const PLANS = 500;
+const OPEN_TRADES = 200;
+const ENGINES = { chromium, firefox, webkit } as const;
+
+export async function resetCapacityBasis(args: readonly string[]): Promise<void> {
+  const requested = (args.length > 0 ? args : ['chromium']) as (keyof typeof ENGINES)[];
+  const previous = JSON.parse(await readFile(BASIS_FILE, 'utf8')) as { engines?: EngineMeasurement[] };
+  const engines = new Map((previous.engines ?? []).map((m) => [m.engine, m]));
+
+  const server = await createServer({ logLevel: 'warn', server: { port: 5175, strictPort: true } });
+  await server.listen();
+  try {
+    for (const name of requested) {
+      const browser = await ENGINES[name].launch();
+      const page = await browser.newPage();
+      await page.goto('http://localhost:5175/tools/capacity/measure.html');
+      await page.waitForFunction(() => typeof window.measureCapacity === 'function');
+      const result = await page.evaluate(([plans, open]) => window.measureCapacity!(plans, open), [PLANS, OPEN_TRADES] as const);
+      engines.set(name, { engine: name, version: browser.version(), ...result });
+      console.log(`${name} ${browser.version()}: ${JSON.stringify(result)}`);
+      await browser.close();
+    }
+  } finally {
+    await server.close();
+  }
+
+  const measurements = [...engines.values()];
+  const projection = largestProjection(measurements);
+  const basis = {
+    schemaVersion: SCHEMA_VERSION,
+    measuredAt: new Date().toISOString(),
+    formula: 'requiredQuotaBytes = 3 × projectedWorkspaceBytes (M); M = measured kinds + allowances × overheadRatio, largest engine',
+    profile: { measured: MEASURED, allowances: ALLOWANCES },
+    engines: measurements,
+    ...projection,
+  };
+  await writeFile(BASIS_FILE, `${JSON.stringify(basis, null, 2)}\n`);
+  console.log(`measure:capacity:reset-basis OK: M ${projection.projectedWorkspaceBytes} bytes, required quota ${projection.requiredQuotaBytes} bytes`);
+}

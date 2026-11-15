@@ -30,6 +30,30 @@ export function peakVerdict(peakBytes: number, projectedBytes: number): Verdict 
   return { ok: peakBytes < 3 * projectedBytes, ratio: peakBytes / projectedBytes };
 }
 
+// The restored usage may exceed the committed growth baseline (bench/capacity-baseline.json) by at most this factor (decision 114).
+export const GROWTH_LIMIT = 1.5;
+
+// usage / baseline, passing up to GROWTH_LIMIT.
+export function growthVerdict(usageBytes: number, baselineBytes: number): Verdict {
+  return { ok: usageBytes <= baselineBytes * GROWTH_LIMIT, ratio: usageBytes / baselineBytes };
+}
+
+// bench/capacity-baseline.json: the restored usage of one benchmark artifact, recorded by `npm run measure:capacity:reset-baseline`.
+export interface BaselineFile {
+  readonly artifactDigest: string;
+  readonly engine?: string;
+  readonly usageBytes: number;
+  readonly date?: string;
+}
+
+// What stops the growth check: no baseline, or one taken from another artifact than the dataset's.
+export function baselineProblems(baseline: BaselineFile | undefined, datasetDigest: string): string[] {
+  if (!baseline) return ['no growth baseline (bench/capacity-baseline.json): run npm run measure:capacity:reset-baseline'];
+  return baseline.artifactDigest === datasetDigest
+    ? []
+    : [`the growth baseline is of artifact ${String(baseline.artifactDigest)}, not ${datasetDigest}: run npm run measure:capacity:reset-baseline`];
+}
+
 interface Dispositions {
   readonly complete: number;
   readonly declined: number;
@@ -87,7 +111,7 @@ export function projectForDataset(m: EngineMeasurement, dataset: PricedDataset):
   );
 }
 
-// What `bench:setup` records (.cache/bench/setup.json), `measure:capacity --restored` adds (.cache/bench/capacity.json) and
+// What `bench:setup` records (.cache/bench/setup.json), `measure:capacity` adds (.cache/bench/capacity.json) and
 // `bench:run` adds (the export and verification timings): the facts the D8 section of bench.md reports.
 export interface SetupRecord {
   readonly artifactDigest: string;
@@ -144,10 +168,10 @@ export function cachedProjectionProblems(
 ): string[] {
   const problems: string[] = [];
   if (cached.projectedBytes !== fresh.projectedBytes) {
-    problems.push(`the cached projection for the dataset counts ${cached.projectedBytes} is not the recomputed ${fresh.projectedBytes}: rerun measure:capacity -- --restored`);
+    problems.push(`the cached projection for the dataset counts ${cached.projectedBytes} is not the recomputed ${fresh.projectedBytes}: rerun npm run measure:capacity`);
   }
   if (cached.matureProjectedBytes !== fresh.matureProjectedBytes) {
-    problems.push(`the cached M ${cached.matureProjectedBytes} is not the embedded ${fresh.matureProjectedBytes}: rerun measure:capacity -- --restored`);
+    problems.push(`the cached M ${cached.matureProjectedBytes} is not the embedded ${fresh.matureProjectedBytes}: rerun npm run measure:capacity`);
   }
   return problems;
 }

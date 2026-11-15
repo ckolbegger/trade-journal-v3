@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EngineMeasurement } from '../capacity/profile.ts';
-import { artifactProblems, cachedProjectionProblems, peakVerdict, profileProblems, projectForDataset, restoreReport, usageVerdict } from './restore-checks.ts';
+import { artifactProblems, baselineProblems, cachedProjectionProblems, growthVerdict, peakVerdict, profileProblems, projectForDataset, restoreReport, usageVerdict } from './restore-checks.ts';
 
 // Each kind's bytes are a different prime, so a swapped mapping changes the total.
 const MEASURED_BYTES = {
@@ -104,10 +104,10 @@ describe('benchmark cached projection check', () => {
     const fresh = { projectedBytes: 1_000_000, matureProjectedBytes: 2_000_000 };
     expect(cachedProjectionProblems({ projectedBytes: 1_000_000, matureProjectedBytes: 2_000_000 }, fresh)).toEqual([]);
     expect(cachedProjectionProblems({ projectedBytes: 5_000_000, matureProjectedBytes: 2_000_000 }, fresh)).toEqual([
-      'the cached projection for the dataset counts 5000000 is not the recomputed 1000000: rerun measure:capacity -- --restored',
+      'the cached projection for the dataset counts 5000000 is not the recomputed 1000000: rerun npm run measure:capacity',
     ]);
     expect(cachedProjectionProblems({ projectedBytes: 1_000_000, matureProjectedBytes: 9_000_000 }, fresh)).toEqual([
-      'the cached M 9000000 is not the embedded 2000000: rerun measure:capacity -- --restored',
+      'the cached M 9000000 is not the embedded 2000000: rerun npm run measure:capacity',
     ]);
   });
 });
@@ -117,5 +117,22 @@ describe('benchmark restored profile check', () => {
     expect(profileProblems({ artifactDigest: OTHER }, DIGEST)).toEqual([`the cached profile was restored from artifact ${OTHER}, not ${DIGEST}: run npm run bench:setup`]);
     expect(profileProblems(undefined, DIGEST)).toHaveLength(1);
     expect(profileProblems({ artifactDigest: DIGEST }, DIGEST)).toEqual([]);
+  });
+});
+
+describe('growth baseline (decision 114)', () => {
+  it('should pass a restored usage up to 1.50 times the baseline and fail above it, giving the ratio', () => {
+    expect(growthVerdict(1_500_000, 1_000_000).ok).toBe(true);
+    expect(growthVerdict(1_500_001, 1_000_000).ok).toBe(false);
+    expect(growthVerdict(1_500_001, 1_000_000).ratio).toBeCloseTo(1.500001, 6);
+    expect(growthVerdict(1_000_000, 1_000_000).ratio).toBe(1);
+  });
+
+  it('should report a baseline taken from another artifact, or no baseline, naming npm run measure:capacity:reset-baseline', () => {
+    expect(baselineProblems({ artifactDigest: DIGEST, usageBytes: 1 }, DIGEST)).toEqual([]);
+    expect(baselineProblems({ artifactDigest: OTHER, usageBytes: 1 }, DIGEST)).toEqual([
+      `the growth baseline is of artifact ${OTHER}, not ${DIGEST}: run npm run measure:capacity:reset-baseline`,
+    ]);
+    expect(baselineProblems(undefined, DIGEST)).toEqual([`no growth baseline (bench/capacity-baseline.json): run npm run measure:capacity:reset-baseline`]);
   });
 });

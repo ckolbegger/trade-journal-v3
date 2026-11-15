@@ -1294,3 +1294,26 @@ Minor observations (carried to the final report): focus drops to `<body>` after 
 ## Gate-closing full tier green; T8.22 done
 
 Code at `d1ce099f`. Unit 189 files / 2025 tests, integration 118 / 258, browser-1 126 passed (5.3 m), browser-2 120 passed (7.8 m), checks 14 of 14, run complete. The runner again sent an early "placeholder" hand-back; results were read from the run files and `run-complete.sh`. critic-2 passed with only low defects, both fixed, so this run closes the gate with no new critic. Final report: `final-report.md`.
+
+## T8.19-F1 Capacity commands and the growth baseline (decision 114)
+
+Run alone in the main worktree (ports 5175, 4175, 9341, 9342 free before each measuring step). Cases: 2 unit cases in `tools/bench/restore-checks.test.ts`, red then green in `tdd-log/T8.19-F1.md`.
+
+1. `npx vitest run tools/bench`: 3 files, 29 tests passed.
+2. `npm run verify:capacity`: exit 0, `verify:capacity OK: required quota 2737548396 = 3 × 912516132, schema 7`, no restored-usage line. With `.cache/bench/capacity.json` moved aside: exit 0, same line. File put back.
+3. `npm run measure:capacity`: exit 0 (`usage 0.264 of the projection, peak 0.489 × M`). Afterwards `git status --short src/delivery/capacity-basis.json` printed nothing; `bench/capacity-baseline.json` showed as untracked only because it was not yet committed (the file was not written by the command).
+4. `npm run bench:verify-capacity`: exit 0.
+   ```text
+   verify:capacity OK: required quota 2737548396 = 3 × 912516132, schema 7
+   bench:verify-capacity: restored usage 206540122 = 0.264 × the projection 781961664 (limit 1.10)
+   bench:verify-capacity: second Restore peak 446068493 = 0.489 × M 912516132 (limit below 3)
+   bench:verify-capacity: restored usage 206540122 = 1.000 × the baseline 206540122 (limit 1.50)
+   bench:verify-capacity OK
+   ```
+5. With `.cache/bench/capacity.json` moved aside: `npm run bench:verify-capacity` exit 1, `FAIL no restored measurement: run bench:setup, then npm run measure:capacity`. File put back.
+6. Reset commands:
+   - `npm run measure:capacity:reset-basis`: exit 0 (`M 916768660 bytes, required quota 2750305980 bytes`). `git status --short` listed `src/delivery/capacity-basis.json` as the only modified file outside the task's own uncommitted edits (the task's files were not yet committed, so the status could not be limited to one file). `npm run verify:capacity` exit 0 (`3 × 916768660`).
+   - `npm run measure:capacity:reset-baseline`: exit 0, wrote `bench/capacity-baseline.json` (usage 206540122, the same figures; the file was untracked, so it could not show as modified).
+   - Restored: `git checkout -- src/delivery/capacity-basis.json`; the baseline was restored from a copy of the hand-written file, since it was not yet committed. Both hold the committed figures.
+   - `npm run measure:capacity` exit 0 (`usage 0.264, peak 0.485 × M`); `npm run bench:verify-capacity` exit 0: usage 0.264 × the projection, peak 0.485 × M (442158962 over 912516132), usage 1.000 × the baseline.
+7. `grep -rn -- "--restored" tools package.json`: no output. `verify:` scripts: verify:hooks verify:release verify:capabilities verify:releases verify:no-fault-hooks verify:capacity verify:fixtures verify:session-policy verify:wording (the same nine).
