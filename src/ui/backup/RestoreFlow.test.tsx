@@ -48,7 +48,7 @@ const TOKEN: RestoreToken = { candidateId: 'cand-1', fullDigest: 'digest-1', tar
 
 function preview(overrides: Partial<RestorePreview> = {}): RestorePreview {
   return {
-    source: { createdAt: '2026-11-20T23:00:00Z', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' },
+    source: { createdAt: '2026-11-20T18:00', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' },
     counts: counts(),
     migrations: { steps: [{ from: 5, to: 6 }], seedAdditions: ['Long Call'] },
     repairs: [
@@ -337,6 +337,12 @@ describe('inline safety backup', () => {
 });
 
 describe('preview', () => {
+  it('should show the backup made time as the Workspace-local time the Restore returns, whatever the browser zone is', async () => {
+    const ctx = setup();
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ source: { createdAt: '2026-11-15T09:36', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' }, target: { hasUserData: false, counts: null, currentTimeZone: null, restoredTimeZone: 'Asia/Tokyo' }, safetyChoiceRequired: false, warnings: [] }) });
+    expect(screen.getByText('From a backup made Sun Nov 15, 09:36 (release 2026.11.14, schema 7)')).toBeTruthy();
+  });
+
   it('should show the replacement heading, the source, the restored counts beside the current counts, migrations, repairs with stored and expected values, and warnings, all as text', async () => {
     const ctx = setup();
     await toPreview(ctx);

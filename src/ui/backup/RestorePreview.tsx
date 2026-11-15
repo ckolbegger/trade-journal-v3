@@ -96,7 +96,8 @@ export function PreviewContents({ preview }: { readonly preview: RestorePreview 
     <div className="restore-preview">
       <h3>Restoring replaces your entire current journal</h3>
       <p>
-        From a backup made {completionTime(source.createdAt, preview.target.restoredTimeZone)} (release {source.releaseId}, schema {source.schemaVersion})
+        {/* source.createdAt is already Workspace-local (no zone), so format its digits as they are. */}
+        From a backup made {completionTime(`${source.createdAt}Z`, 'UTC')} (release {source.releaseId}, schema {source.schemaVersion})
         {source.exportKind === 'BlockedDatabase' ? ", a copy of a journal that couldn't be updated" : ''}
       </p>
       <CountsTable restored={preview.counts} current={preview.target.counts} />

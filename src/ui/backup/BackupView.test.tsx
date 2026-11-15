@@ -327,7 +327,7 @@ async function completeRestore(facade: ReturnType<typeof createBackupFacadeDoubl
       versions: {},
     };
     const target = { hasUserData: true, counts, currentTimeZone: 'America/New_York', restoredTimeZone: 'America/New_York' };
-    const source = { createdAt: '2026-11-20T23:00:00Z', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' };
+    const source = { createdAt: '2026-11-20T18:00', releaseId: '2026.11.14', schemaVersion: 7, exportKind: 'Normal' };
     const preview = { source, counts, migrations: { steps: [], seedAdditions: [] }, repairs: [], providerNeedsSetup: [], target, warnings: [], safetyChoiceRequired: false };
     files.choose(new File(['x'], 'restore.gz'));
     facade.respond('prepareRestore', { kind: 'Prepared', token, preview } as never);
