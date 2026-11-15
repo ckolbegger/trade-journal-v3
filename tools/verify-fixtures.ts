@@ -12,6 +12,7 @@ import { sequentialIds } from '../tests/support/workspace.ts';
 import { closeViolations, debtViolations, openStructureValueCount, optionViolations, withWalkedReflections } from './fixture-views.ts';
 import { missingFixtureSchemas } from './fixture-schemas.ts';
 import { compareSnapshot } from './fixtures/snapshot-compare.ts';
+import { BACKUP_SCHEMAS, backupFixtureName, restoredViews } from './fixtures-freeze-backup.ts';
 import { closedViewsOf, debtViewsOf, FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 // The D4 fields of an Open list row: the Mark's resolution and every figure and condition result.
@@ -149,6 +150,43 @@ for (const name of fixtures) {
     continue;
   }
   verified.push(`${name}: schema ${dump.schemaVersion}, ${migration ? `migrated to ${migration.toVersion} into ${migration.databaseName}` : 'opened without migration'}, views equal`);
+}
+// Every backup fixture (D8 T8.17, A147 with Q14: schemas 3 through 7) restores into an empty Workspace with
+// no repairs, and its views equal its committed expected views and what migrating the matching workspace-v<n>
+// fixture gives (A121). Only workspace-v<n> names count as Workspace fixtures above, so these folders do not
+// affect decision 112's check.
+const backupFolders = (await readdir(FIXTURES_DIR)).filter((name) => name.startsWith('backup-')).sort();
+for (const schema of BACKUP_SCHEMAS) {
+  const { name } = backupFixtureName(schema);
+  if (!backupFolders.includes(name)) {
+    problems.push(`${name}: no backup fixture for schema ${schema}; run npm run fixtures:freeze-backup`);
+    continue;
+  }
+  const dir = path.join(FIXTURES_DIR, name);
+  try {
+    const bytes = new Uint8Array(await readFile(path.join(dir, 'backup.tjbackup')));
+    const downloaded = JSON.parse(await readFile(path.join(dir, 'downloaded.json'), 'utf8')) as { asOf: string };
+    const expected: unknown = JSON.parse(await readFile(path.join(dir, 'expected-views.json'), 'utf8'));
+    const restored = await restoredViews(bytes, schema, downloaded.asOf);
+    if (restored.repairs !== 0) {
+      problems.push(`${name}: Restore made ${restored.repairs} repairs, not 0`);
+      continue;
+    }
+    const differences = compareSnapshot(restored.views, expected);
+    if (differences.length > 0) {
+      problems.push(`${name}: restored views differ from expected-views.json at ${differences.join(', ')}`);
+      continue;
+    }
+    const migrated: unknown = JSON.parse(await readFile(path.join(FIXTURES_DIR, `workspace-v${schema}`, 'expected-views.json'), 'utf8'));
+    const migratedDifferences = compareSnapshot(restored.views, migrated);
+    if (migratedDifferences.length > 0) {
+      problems.push(`${name}: restored views differ from workspace-v${schema} views at ${migratedDifferences.join(', ')}`);
+      continue;
+    }
+    verified.push(`${name}: schema ${schema}, restored with no repairs, views equal`);
+  } catch (error) {
+    problems.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 if (problems.length > 0) {
   for (const p of problems) console.error(`FAIL ${p}`);

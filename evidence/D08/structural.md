@@ -1018,3 +1018,11 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 - **Resumed at 03:00 EST.** **ocr T8.9-F1-B1** `6df2130f` (retry): no findings (`ocr/T8.9-F1-B1-6df2130f.json`). Lane WR (T8.9-F1 and its fixes) is ready to merge.
 - **T8.17 rebased** onto `769f6434` as `f8e14370`; `structural.md` conflict resolved by keeping the main branch's text and appending the lane's T8.17 section. The rebase brings in T8.9-B2's `restore-test-support.ts`, which the freeze tool imports, so the lane tier reruns before the merge.
 - **ocr T8.15-B4** `61029112`: no findings (`ocr/T8.15-B4-61029112.json`). T8.15 and its fixes are clean; Q22 accepted its four extra files, so lane FT merges.
+
+## T8.17 Backup fixtures (lane FX)
+
+- `npm run fixtures:freeze-backup`: exit 0. Froze `tests/fixtures/backup-v7/` (`exportBackup` of workspace-v7 at Friday 2026-11-20 18:00 New York) and `backup-v3-blocked/` to `backup-v6-blocked/` (blocked-database exports of workspace-v3 to workspace-v6, read as stored, no migration run). Per Q14 (A147 amended) none for v1 or v2. Each holds `backup.tjbackup`, `downloaded.json` (the Downloaded result plus file name and as-of) and `expected-views.json` (views after Restore into an empty factory and a restart). Sizes of the artifacts: v3 5603, v4 6272, v5 7881, v6 9451, v7 9538 bytes.
+- `npm run verify:fixtures`: exit 0. Each backup fixture restores into an empty factory with zero repairs; its views equal its committed expected views and the matching workspace-v<n> expected views (v3 to v6 after migration per A121). Decision 112's check still reads only `workspace-v<n>` names.
+- Mutation 1: changed `planned[0].underlying` in `backup-v6-blocked/expected-views.json` (JKL to JKX): exit 1, `FAIL backup-v6-blocked: restored views differ from expected-views.json at planned[0].underlying`. Restored byte for byte (cmp), verify exit 0.
+- Mutation 2: overwrote byte 100 of `backup-v6-blocked/backup.tjbackup` with 0: exit 1, `FAIL backup-v6-blocked: prepareRestore is {"kind":"Rejected","issues":[{"code":"IncompleteArtifact"}]...`. Restored (cmp), verify exit 0.
+- No behavior with its own unit tests was added (tool scripts only), so there are no tdd-log rows.
