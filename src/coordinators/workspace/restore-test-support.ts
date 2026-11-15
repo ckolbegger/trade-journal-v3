@@ -24,7 +24,13 @@ export function lookupSession(stack: Stack): ReadinessSession {
   let state = stack.session.current();
   return {
     current: () => state,
-    reportStorageFailure: (context) => stack.session.reportStorageFailure(context),
+    reportStorageFailure(context) {
+      stack.session.reportStorageFailure(context);
+      // As the real session does: a storage failure downgrades a Writable state at once.
+      if (state.outcome === 'Writable' && context.workspaceReadable) {
+        state = { ...state, outcome: 'RecoveryOnly', workspaceStatus: 'RecoveryOnly', failures: [{ check: 'diagnostic', reason: 'StorageFailure' }] };
+      }
+    },
     async recheck() {
       state = await evaluateReadiness({ host: stack.testHost.host, rootInspection: await stack.persistence.lookupRoot(), capacityRequirement: TEST_CAPACITY, pageReleaseId: stack.testHost.releaseId });
       return state;

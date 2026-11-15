@@ -328,6 +328,16 @@ describe('a candidate changed after preparation (A135)', () => {
   });
 });
 
+describe('test support lookup session', () => {
+  it('should report Recovery Only from the lookup session right after a storage failure is reported, as the real session does', async () => {
+    const stack = await testStack(new IDBFactory(), '2026-11-21T15:00:00Z');
+    const session = lookupSession(stack);
+    expect(session.current().outcome).toBe('Writable');
+    session.reportStorageFailure({ workspaceReadable: true });
+    expect(session.current().outcome).toBe('RecoveryOnly');
+  });
+});
+
 // One more Account in the target, so that its content revision moves on.
 async function addAccount(target: Target, label: string): Promise<void> {
   const institutions = await target.catalog.query({ family: 'Institution' });
