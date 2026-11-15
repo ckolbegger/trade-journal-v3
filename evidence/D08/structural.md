@@ -1384,3 +1384,7 @@ Reviewer note, not a bug task: `D07S` has two plan files with a Progress section
 **D8-Retro-1a-B3** (`ca48bc14`): the ID pattern accepts an optional `T<n>.<n>-` prefix. Case 8 red then green (a first draft passed at once because two rows shared a fixture; split into one fixture per row for a genuine red). ocr review pending.
 
 **D8-Retro-1a-B4** (`01e1da94`): any heading other than `## Qn.` ends the current question's section, so a bare `**Answer` counts only in its own section. Case 9 red then green. ocr review (`ocr/D8-Retro-1a-B4-01e1da94.json`): 0 comments, no findings. Note: a `###` sub-heading inside a question also ends its section (the brief's wording); no current file is affected.
+
+**D8-Retro-1a-B3 ocr review** (`ca48bc14`, `ocr/D8-Retro-1a-B3-ca48bc14.json`): 1 comment, Valid:
+
+- **D8-Retro-1a-B8** (Valid, `status.sh:34`): the prefix matches only `T<digits>(.<digits>)*-`, so `T8P.23-B1`, `T7S.4-F1` and `D7-Retro-F3` count as zero (no current Progress table holds such IDs). Case: it should count F and B tasks after any task-ID prefix the repo uses (`T8P.23-`, `T7S.4-`, `D7-Retro-`), each distinct ID once.
