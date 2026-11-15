@@ -1049,3 +1049,5 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 ## T8.8-F4 progress counts every record (lane WR) — 2026-11-15
 
 `81790855` on d08/wr. Every record line read counts toward `done`, including rejected and unparsable ones; Workspace-section lines are left out (they aren't in the header total). Case 1 first-run pass (T8.8-B8 already built it), flagged, mutation check failed with `{ done: 103, total: 102 }`; case 2 red `{ done: 84, total: 102 }` then green. Lane tier: unit 1958 passed with 1 failure (the known flaky `TradeList.test.tsx` Open list states case, `expected 2 to be 3`; 35 of 35 on two reruns), integration 229, checks 14 of 14. Deviation from Q19 recorded as Q26 (not blocking). ocr running.
+
+ocr T8.8-F4 `81790855`: no findings.
