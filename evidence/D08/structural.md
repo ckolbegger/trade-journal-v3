@@ -1181,3 +1181,11 @@ Determinism first: `npm run build:bench && npm run bench:generate` in lane BN (t
 | `npm run bench:run` | 0 | cold p95 144.8 ms (budget 2,500), warm p95 61.7 ms (budget 1,500); every Open list, Closed page, Review and Settlement comparison equal; one export 21.9 s (20,871,394 bytes), one verification 12.2 s; wrote `evidence/D08/bench.md` |
 
 Full report: `evidence/D08/bench.md`.
+
+## T8.19 ocr review (session a5bde5cb)
+
+10 files reviewed, 3 findings:
+- B1 (Valid): `tools/bench/restored-capacity.ts:32` `measureRestored` only checks the profile stamp exists (stamp holds generator and schema versions, no artifact digest), then labels the measurement with the committed dataset's digest, so a stale profile can be measured and pass `verify:capacity --restored`. (`bench:run` already rejects a stale profile through the setup record.)
+- B2 (Valid): `tools/verify-capacity.ts:43-44` judges usage and peak against the projection and M cached in `capacity.json`, never compared with the recomputed projection or `CAPACITY_REQUIREMENT`.
+- Dismissed (Wrong): `restore-checks.test.ts:31` "DIGEST in its temporal dead zone"; the file's 7 tests run and pass.
+Raw: `ocr/T8.19-c1e00ded.json`.

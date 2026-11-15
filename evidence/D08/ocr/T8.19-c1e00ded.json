@@ -1,0 +1,254 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 3,
+    "total_tokens": 453223,
+    "input_tokens": 447951,
+    "output_tokens": 5272,
+    "cache_read_tokens": 29952,
+    "elapsed": "2m13s"
+  },
+  "tool_calls": {
+    "total": 43,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_read": 27,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/bench/restore-checks.test.ts",
+      "content": "`DIGEST` is still in its temporal dead zone when this callback constructs `setup`: Vitest executes `describe` callbacks during test collection, before reaching the `const DIGEST` declaration below. This throws a ReferenceError and prevents every test in this file from running. Move the digest constants above the first `describe`.",
+      "existing_code": "  const setup = { artifactDigest: DIGEST, artifactBytes: 20_869_684, prepareMs: 12_345, applyMs: 67_890, repairs: 0, issues: 0 };",
+      "start_line": 31,
+      "end_line": 31,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/bench/restored-capacity.ts",
+      "content": "Checking only that the stamp exists does not establish that this profile contains the current artifact. The stamp records generator/schema versions, not the artifact digest, and `restoreThroughUi` does not check the supplied file's digest either. After regenerating the dataset without rerunning setup, this measures the old profile's usage and then labels the result with the new dataset's digest, which `verify:capacity` accepts. Validate the setup record's digest against the current dataset and hash the artifact before measuring or restoring it; reject a stale profile.",
+      "existing_code": "  if (!(await readFile(BENCH_STAMP_FILE).catch(() =\u003e undefined))) throw new Error('no restored profile: run npm run bench:setup first');",
+      "start_line": 32,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "tools/verify-capacity.ts",
+      "content": "Both limits come from the cached measurement rather than the current authoritative projections. If the capacity basis and embedded requirement are updated while the artifact stays unchanged, the earlier basis checks pass but this block still evaluates usage and peak against the old reference values. A lowered projection can therefore incorrectly pass verification. Recompute the same-count projection from the current dataset/basis and use the current embedded M, or reject cached measurements whose references no longer match.",
+      "existing_code": "  const usage = usageVerdict(restored.usageBytes, restored.projectedBytes);\n  const peak = peakVerdict(restored.peakBytes, restored.matureProjectedBytes);",
+      "start_line": 43,
+      "end_line": 44,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Benchmark setup, browser execution, and profiling",
+      "files": [
+        "package.json",
+        "tools/bench-run.ts",
+        "tools/bench-setup.ts",
+        "tools/bench/browser.ts",
+        "tools/bench/profile.ts"
+      ]
+    },
+    {
+      "label": "Restored-capacity validation, measurement, and tests",
+      "files": [
+        "tools/bench/restore-checks.test.ts",
+        "tools/bench/restore-checks.ts",
+        "tools/bench/restored-capacity.ts",
+        "tools/measure-capacity.ts",
+        "tools/verify-capacity.ts"
+      ]
+    }
+  ],
+  "session_id": "a5bde5cb-97ef-4142-bc81-dc0cb69edffd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a5bde5cb-97ef-4142-bc81-dc0cb69edffd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c1e00ded",
+      "resolved_base": "e339d0bf5774376091b7176aef49d388488999f1",
+      "resolved_head": "c1e00deda8a43ab36666396f338d5081d4671b3d",
+      "exact_range": "e339d0bf5774376091b7176aef49d388488999f1..c1e00deda8a43ab36666396f338d5081d4671b3d",
+      "source_artifact_sha256": "d4071cd2d9771b759b0672385f94bcd14788fa2bb14d76cc62527eab04521460"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "04383a7d7b3ce7af444eb5f4c3fad78f301d0c8ae6d9390d309e4930952281f1"
+        },
+        {
+          "item_id": "189253f8b21b420577264aabcb0a1dd083e0da4f80b99e4b8f8baff65ab03ab9",
+          "path": "tools/bench-setup.ts",
+          "fingerprint": "e4d7e5c5255fc0dade7e382eeaa07e6d771397e90d3289c437f3fcc9ac7c59f2"
+        },
+        {
+          "item_id": "2472e473dd54efa133d81559c1efe19d8698ccade0844cdbdeb29f615305d13d",
+          "path": "tools/bench/restored-capacity.ts",
+          "fingerprint": "da984a2eb1172dc4c97b143e8daacdaee4660deb7dc307c4c9ac993d6d97f946"
+        },
+        {
+          "item_id": "3d7e78662a9f513d120e3b61e9a01964261fa0d304239575dd48dea3efd96a12",
+          "path": "tools/bench/profile.ts",
+          "fingerprint": "7102ed8be540d2b57dddc579be735644ad521707c842fb488d9629959c0a7dcd"
+        },
+        {
+          "item_id": "588cb9720cab2823be515233d85c61eced17ad9cff422f32641044a026a83973",
+          "path": "tools/bench/browser.ts",
+          "fingerprint": "1642a8eef552a6767321151b7195ce9315c82462f3d77a53612ac0c351939472"
+        },
+        {
+          "item_id": "9fda670b35c2aa98de0a0872ce9642587fe4395ff947f5a7bd84b5939348af91",
+          "path": "tools/verify-capacity.ts",
+          "fingerprint": "33cb43234bc52da9b132769b2faeb785da8bb041cc0a5b3fc6ddee93cdaca37a"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "cbb61cb329aee782cddf46aaff5e24331eaf162f37fe61099404ba8478a3647f"
+        },
+        {
+          "item_id": "c34f1fe891f55e3190cf29fc731dab915f73fb057f47f2be728c38e7d0bd4f4c",
+          "path": "tools/bench/restore-checks.test.ts",
+          "fingerprint": "349c93f0ebfb2297befb6686def798041b68199e212439d9d120c7e48e437dd4"
+        },
+        {
+          "item_id": "c64d560e1f0a447dce40e9bff62e204cbafccee29bda467db69db7529553fc3a",
+          "path": "tools/bench/restore-checks.ts",
+          "fingerprint": "e72c740d27e20a943fc0cf70df46947e7cbfdcf78025f0397f8406fbe934bcda"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "5edad7d05775247cdb8cc3d0275375e61b2e22469b682add1904ebc9dc13111c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "04383a7d7b3ce7af444eb5f4c3fad78f301d0c8ae6d9390d309e4930952281f1"
+        },
+        {
+          "item_id": "189253f8b21b420577264aabcb0a1dd083e0da4f80b99e4b8f8baff65ab03ab9",
+          "path": "tools/bench-setup.ts",
+          "fingerprint": "e4d7e5c5255fc0dade7e382eeaa07e6d771397e90d3289c437f3fcc9ac7c59f2"
+        },
+        {
+          "item_id": "2472e473dd54efa133d81559c1efe19d8698ccade0844cdbdeb29f615305d13d",
+          "path": "tools/bench/restored-capacity.ts",
+          "fingerprint": "da984a2eb1172dc4c97b143e8daacdaee4660deb7dc307c4c9ac993d6d97f946"
+        },
+        {
+          "item_id": "3d7e78662a9f513d120e3b61e9a01964261fa0d304239575dd48dea3efd96a12",
+          "path": "tools/bench/profile.ts",
+          "fingerprint": "7102ed8be540d2b57dddc579be735644ad521707c842fb488d9629959c0a7dcd"
+        },
+        {
+          "item_id": "588cb9720cab2823be515233d85c61eced17ad9cff422f32641044a026a83973",
+          "path": "tools/bench/browser.ts",
+          "fingerprint": "1642a8eef552a6767321151b7195ce9315c82462f3d77a53612ac0c351939472"
+        },
+        {
+          "item_id": "9fda670b35c2aa98de0a0872ce9642587fe4395ff947f5a7bd84b5939348af91",
+          "path": "tools/verify-capacity.ts",
+          "fingerprint": "33cb43234bc52da9b132769b2faeb785da8bb041cc0a5b3fc6ddee93cdaca37a"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "cbb61cb329aee782cddf46aaff5e24331eaf162f37fe61099404ba8478a3647f"
+        },
+        {
+          "item_id": "c34f1fe891f55e3190cf29fc731dab915f73fb057f47f2be728c38e7d0bd4f4c",
+          "path": "tools/bench/restore-checks.test.ts",
+          "fingerprint": "349c93f0ebfb2297befb6686def798041b68199e212439d9d120c7e48e437dd4"
+        },
+        {
+          "item_id": "c64d560e1f0a447dce40e9bff62e204cbafccee29bda467db69db7529553fc3a",
+          "path": "tools/bench/restore-checks.ts",
+          "fingerprint": "e72c740d27e20a943fc0cf70df46947e7cbfdcf78025f0397f8406fbe934bcda"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "5edad7d05775247cdb8cc3d0275375e61b2e22469b682add1904ebc9dc13111c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "961cd0445d97fc56042e0adca97d79470ffee485712630606e911bc8f3a94274",
+          "path": "evidence/D08/suite-runs/T8.19-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "98873a43a4a8fa5d678a904c375c28b924628d5f548c6188cf6e25cfdc265111",
+          "path": "evidence/D08/tdd-log/T8.19.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9ef872b80b07705d68be488f19025dbca9ab0336d761ac74a6cdb2d10efbe208",
+          "path": "evidence/D08/bench.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bdcedbc75d06071421c86f9853c060e07b58fafaf7b2366597b291897d17ff58",
+          "path": "evidence/D08/suite-runs/T8.19-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c9e1782aa3fa2c01edf88927e31ff081a5f39498fc341ed7715ba99fbbe4e1fa",
+          "path": "evidence/D08/suite-runs/T8.19-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cd3e57678ec2e6bf99259f4421d4b623a045ad1c8b68097bc1700b2db6e5b826",
+          "path": "evidence/D08/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f48632ff5f2b070e9728abaeb0b0d0ac2809a5c5efc3adf1e1f00bd0112cfbed",
+          "path": "evidence/D08/suite-runs/T8.19-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 133061
+  }
+}
