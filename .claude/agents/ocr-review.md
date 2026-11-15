@@ -27,6 +27,11 @@ The task prompt gives you:
 
    `.claude/ocr-rule.json` brings test files (`*.spec.ts`, `*.test.ts(x)`) into the review, which ocr's default rule skips, and leaves out `evidence/`. Every commit, test-only ones included, is reviewed in place.
    If it fails on authentication, stop and report the exact error: the user re-signs in with `ocr auth login`. Never try to sign in yourself.
+
+   **Usage limit.** The ChatGPT plan's usage can run out mid-review. ocr then reports items as failed (the whole run, or only some files), with a provider or streaming error; the underlying message reads "...reached their Subscription Sharing usage limit..." (code `subscription_sharing_usage_limit_exceeded`) and names no reset time. Whenever `ocr.json` shows any failed item, run `ocr llm test` once. If it reports the usage limit:
+   - Wait for the reset: run `.claude/scripts/ocr-usage-wait.sh` with the Bash tool's `timeout` set to 600000, again and again, until it exits 0. Each call tests, waits 9.5 minutes if still limited, and tests again, so the tests run about every 10 minutes. Exit 2 means still limited: call it again. Exit 1 is some other failure: stop and report its line. Give up after 36 calls (about 6 hours) and report that usage did not come back, with the time of the last test.
+   - Then rerun the whole review from step 3 with a fresh output file (`$D/ocr2.json`, and so on), and report from the complete run only. Mention the wait in one line (when it started and when usage came back).
+   If `ocr llm test` works, the failures were not the usage limit: report them as they are.
 4. Get the session ID, model, and reviewed-file count from `ocr session list` (newest row for that range) and `ocr session show <id>`, or from `ocr.json` when the list doesn't show it.
 5. Read `$D/ocr.json`. For each finding, read the cited lines (and enough around them) to judge it: **Valid** (the defect is real), **Doubtful** (possible but not shown by the code), or **Wrong** (the code already handles it, or the claim misreads it). Ground every judgment in code you read.
 6. Confirm the worktree's branch and `git status --short` match what you noted in step 1. Report any difference.
