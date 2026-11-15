@@ -398,6 +398,29 @@ describe('rejections after staging (A134)', () => {
     expect(result.totalIssues).toBe(result.issues.length);
     expectNoCandidate(await dumpAll(target.factory), before);
   });
+
+  it('should reject a backup whose Trade names a Strategy the catalog lacks as a cross section reference', async () => {
+    const a7 = await exportedArtifact(await loadDump(W7));
+    const target = await targetWorkspace();
+    const before = await dumpAll(target.factory);
+
+    const broken = editedArtifact(a7.bytes, (artifact) => {
+      let edited = false;
+      artifact.lines.forEach((line, index) => {
+        if (edited || !line.startsWith('{"r":') || !line.endsWith(',"t":"trades"}')) return;
+        const envelope = JSON.parse(line) as { r: Record<string, unknown> };
+        envelope.r['strategyId'] = 'strategy-unknown';
+        artifact.lines[index] = JSON.stringify(envelope);
+        edited = true;
+      });
+    });
+
+    const result = await target.workspace.prepareRestore({ file: backupFile(broken) });
+
+    if (result.kind !== 'Rejected') throw new Error(`expected Rejected, got ${result.kind}`);
+    expect(result.issues).toContainEqual({ code: 'CrossSectionReference', kind: 'Strategy', identity: 'strategy-unknown' });
+    expectNoCandidate(await dumpAll(target.factory), before);
+  });
 });
 
 describe('entry origins (A134)', () => {

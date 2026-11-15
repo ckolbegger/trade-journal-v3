@@ -203,6 +203,18 @@ async function danglingOrigins(source: RecordSource): Promise<RestoreIssue[]> {
   return dangling;
 }
 
+// A Trade naming a Strategy the Catalog section lacks is a cross-section reference the Trade section does not
+// report. The Strategy is per Trade, whatever its number of legs.
+async function danglingStrategies(source: RecordSource, strategyIds: ReadonlySet<string>): Promise<RestoreIssue[]> {
+  const dangling: RestoreIssue[] = [];
+  for await (const batch of source.batches('trades')) {
+    for (const trade of batch as unknown as readonly { strategyId: string }[]) {
+      if (!strategyIds.has(trade.strategyId)) dangling.push({ code: 'CrossSectionReference', kind: 'Strategy', identity: trade.strategyId });
+    }
+  }
+  return dangling;
+}
+
 interface StoredVersions {
   readonly versions: readonly { readonly status?: string }[];
 }
@@ -584,6 +596,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       }),
       ...journal.issues.map(({ code }): RestoreIssue => ({ code, section: 'journal' })),
       ...(await danglingOrigins(staged)),
+      ...(await danglingStrategies(staged, new Set(catalog.references.strategyShapes.keys()))),
     ];
     const cancelledAfterValidation = await cancelIfAborted();
     if (cancelledAfterValidation) return cancelledAfterValidation;
