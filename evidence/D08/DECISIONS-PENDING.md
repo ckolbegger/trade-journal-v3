@@ -331,3 +331,9 @@ The footprint check reports ManifestMismatch where A3's UnsupportedDataCapabilit
 ## Q20. A thrown recheck is labelled `meta` (reviewer note on T8.9-B9) — answered 2026-11-14
 
 **Answer: (a).** CandidateChanged names the section whose recheck threw (`meta` only for the Workspace settings). Folded into T8.9-F1.
+
+## Q21. Block page changes while this tab's Restore is applying? (raised 2026-11-14, not blocking)
+
+Four review rounds on T8.11 (B1 to B8) each found a narrower timing case in the post-Restore handling (`src/app/post-restore.ts`). Most come from the trader changing page, or another tab restoring, while this tab's own Restore is still being applied. Each is fixed as found, so nothing waits on this answer.
+- (a) Recommended: keep the current fixes, no change to approved behaviour.
+- (b) Make the app refuse page changes while the apply runs (a short busy state across the whole shell), which removes the "left during the apply" cases. This changes the AppShell and A142's flow, so it needs a plan change.

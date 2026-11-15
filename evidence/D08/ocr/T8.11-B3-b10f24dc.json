@@ -1,0 +1,161 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 136323,
+    "input_tokens": 134943,
+    "output_tokens": 1380,
+    "cache_read_tokens": 23168,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 6,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/post-restore.ts",
+      "content": "When a foreign replacement is held and the user navigates away during apply, this rebuild remounts AppShell, but the finally block delivers the held notification to the old shell's listener. Its `replaced` state is discarded by the remount, so the new shell never displays the required replacement notice. Keep pending replacement state outside the remounted shell and deliver it to the new subscription (or otherwise preserve it across rebuilding). Add a regression covering a held foreign broadcast together with a route change.",
+      "existing_code": "            rebuildShell?.();",
+      "start_line": 41,
+      "end_line": 41,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/app/post-restore.ts",
+      "content": "Comparing only the final pathname misses navigation away and back while Restore is pending. For example, `/backup` → `/accounts` → `/backup` unmounts the original Restore flow, so its completion summary will not be shown, but this condition is false and the shell retains its pre-Restore launch status until another navigation. Track whether the starting route was left during apply, rather than only whether the final pathname differs, and test the round-trip case.",
+      "existing_code": "          if (path !== startPath) {",
+      "start_line": 39,
+      "end_line": 39,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/main.tsx",
+      "content": "The deferred callback retains a listener even after its subscription is removed. AppShell resubscribes on every pathname change, and its listener captures that pathname to preserve the open form. If a foreign broadcast is held on `/backup`, the user navigates to the entry form and enters values, and the pending apply then returns a conflict/rejection, this invokes the old `/backup` listener. AppShell consequently treats the current entry form as unavailable and discards its values, contrary to the replacement-notice requirement. Deliver held messages to the current subscriber (and respect unsubscribe), rather than retaining the listener from receipt time.",
+      "existing_code": "      if (postRestore.hearsReplacement(replaced.databaseName, () =\u003e listener(replaced))) listener(replaced);",
+      "start_line": 98,
+      "end_line": 98,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/post-restore.test.ts",
+        "src/app/post-restore.ts",
+        "src/main.tsx"
+      ]
+    }
+  ],
+  "session_id": "a0d1ad1a-c2c9-4efb-ba02-3d9f985fee37",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a0d1ad1a-c2c9-4efb-ba02-3d9f985fee37",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b10f24dc",
+      "resolved_base": "2a3cde9894d49608f39ae2286283fced8fc00fb5",
+      "resolved_head": "b10f24dc832223c6a421c668489ec37ece23e8c3",
+      "exact_range": "2a3cde9894d49608f39ae2286283fced8fc00fb5..b10f24dc832223c6a421c668489ec37ece23e8c3",
+      "source_artifact_sha256": "9b1cf49cfd5668d30476fd918f9afad4511e50da7511ca22651e91fef4eb1801"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "754c22a4d4e3d5ab83982e3da140f18128b87219bf7525596fc4dda9ab0d0bed"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "eaafb2966a14b1843a6f8b68404e79d633dc7312eb6cb630fef3d19d4d87c4b5"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "4b9b96b4a3c32a5615af3c0c8640614c349171a4f0f211d26684aff97dec17f5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "754c22a4d4e3d5ab83982e3da140f18128b87219bf7525596fc4dda9ab0d0bed"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "eaafb2966a14b1843a6f8b68404e79d633dc7312eb6cb630fef3d19d4d87c4b5"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "4b9b96b4a3c32a5615af3c0c8640614c349171a4f0f211d26684aff97dec17f5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1a8dd21263a7bc0a712f1240fd7c957cbf130924e0bf47e23a564dc699a51bb8",
+          "path": "evidence/D08/suite-runs/T8.11-B3-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "25a7c61303d77116bd1f95a15c390bef1b5f76d0e489b4ab47eab23e9dc1dc45",
+          "path": "evidence/D08/suite-runs/T8.11-B3-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5a4dc64c6a7692268404ff1a269fba94c832eda05f24602e63282c9557629bba",
+          "path": "evidence/D08/suite-runs/T8.11-B3-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "66619088b82a33dbdc074fb0034d17ef1452c33671cfd1514e28b6fdb49ca869",
+          "path": "evidence/D08/suite-runs/T8.11-B3-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cdfbb1aad940f6ebe4ea8eb1a75f9ea4cbc5db53354a8a2f42f0ca57343d7c38",
+          "path": "evidence/D08/tdd-log/T8.11-B3.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 72976
+  }
+}

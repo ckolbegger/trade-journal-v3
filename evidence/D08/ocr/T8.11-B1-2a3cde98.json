@@ -1,0 +1,152 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 114838,
+    "input_tokens": 113345,
+    "output_tokens": 1493,
+    "cache_read_tokens": 35200,
+    "elapsed": "1m10s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/post-restore.ts",
+      "content": "This still suppresses every replacement while the local apply is pending, rather than only this tab's database (T8.11-B1). The local operation can be waiting for the lifecycle lock while another tab restores; that tab's broadcast is discarded, and the local operation subsequently returns Conflict/RuntimeNotWritable without ever showing the replacement notice. Identify the local candidate database from the request before applying and filter by that identity, or buffer messages until the result is known. Add coverage for a different database's broadcast during a pending, unsuccessful apply.",
+      "existing_code": "    hearsReplacement: (databaseName) =\u003e !applying \u0026\u0026 databaseName !== ownDatabase,",
+      "start_line": 38,
+      "end_line": 38,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/app/post-restore.ts",
+      "content": "If the trader navigates away while apply is pending, `path` already names the destination when this resolves. AppShell's navigation remains enabled and RestoreFlow does not cancel the apply on unmount, so this records a route with no Restore summary as the summary route. No further path effect runs on completion, leaving the destination using pre-Restore launch state until another navigation. Capture the originating route before awaiting and trigger the rebuild on completion if navigation has already left it; cover this with a deferred apply test.",
+      "existing_code": "          summaryShown = true;\n          summaryPath = path;",
+      "start_line": 30,
+      "end_line": 31,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/post-restore.test.ts",
+        "src/app/post-restore.ts",
+        "src/main.tsx"
+      ]
+    }
+  ],
+  "session_id": "5b1568e6-ac40-4924-9d59-4a629652b874",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5b1568e6-ac40-4924-9d59-4a629652b874",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2a3cde98",
+      "resolved_base": "03fc7419942b586ba96b57f998715968eecfe0bb",
+      "resolved_head": "2a3cde9894d49608f39ae2286283fced8fc00fb5",
+      "exact_range": "03fc7419942b586ba96b57f998715968eecfe0bb..2a3cde9894d49608f39ae2286283fced8fc00fb5",
+      "source_artifact_sha256": "5353619ece40e110e1b0404d870ea7854c9e6b7fd414e9dd2bf0fe232ddfcd70"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "cea41d29e382312594a8a5efa75dd69f3e265cdc960e47dfc8e4653753f272c3"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "dfc3b94c47e3563adf77fba5f1c1c4bbc9b531d0f393de9fbb6160cfb9c75708"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "5f5c8040559be1bcb9253d1f06c02e670f5c3ca71fcb89c274a8a19bc14af757"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "cea41d29e382312594a8a5efa75dd69f3e265cdc960e47dfc8e4653753f272c3"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "dfc3b94c47e3563adf77fba5f1c1c4bbc9b531d0f393de9fbb6160cfb9c75708"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "5f5c8040559be1bcb9253d1f06c02e670f5c3ca71fcb89c274a8a19bc14af757"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "250a3a1f95449315e4cb3ee18c61af926d05a062b14d0a7f0e50423383010bbd",
+          "path": "evidence/D08/suite-runs/T8.11-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3500b6b395d7dd6bdf8c6cd556e6981b647b0a69e6351e13e8aecf08f6a2b7b8",
+          "path": "evidence/D08/suite-runs/T8.11-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9ce5ca2950640a1e7aeb2943a92013ddb14705b9d223640a1f3f035e595848f5",
+          "path": "evidence/D08/tdd-log/T8.11-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b56cfa734c76b6243d6f576f5e08c5342907180385c95cc7af5407a67f699932",
+          "path": "evidence/D08/suite-runs/T8.11-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e2c971407de529d195cda03ae064d06344f610ea3ce2f1643eccf477e0d7be5e",
+          "path": "evidence/D08/suite-runs/T8.11-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 69954
+  }
+}

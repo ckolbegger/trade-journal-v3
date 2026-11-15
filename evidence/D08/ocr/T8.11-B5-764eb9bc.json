@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 132361,
+    "input_tokens": 130941,
+    "output_tokens": 1420,
+    "cache_read_tokens": 14976,
+    "elapsed": "1m6s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/post-restore.ts",
+      "content": "Replaying on every subscription also replays on every route change: AppShell's subscription effect depends on `pathname`, and its callback sets `refusedAt` to the current path. After a foreign Restore, navigating to a record-entry URL therefore marks that newly visited path as the form that was open when replacement occurred, causing AppShell to render the entry form instead of `RecordEntryUnavailable`. Preserve replay for rebuilt shells, but distinguish replay from a fresh replacement (or adapt the consumer so replay cannot grant a new form-preservation exemption). Add an integration test for navigating to record entry after replacement.",
+      "existing_code": "      if (replacedBy !== undefined) listener(replacedBy);",
+      "start_line": 74,
+      "end_line": 74,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/app/post-restore.test.ts",
+        "src/app/post-restore.ts",
+        "src/main.tsx"
+      ]
+    }
+  ],
+  "session_id": "c9922995-2e68-426a-8b9f-0f87af0b3b69",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c9922995-2e68-426a-8b9f-0f87af0b3b69",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "764eb9bc",
+      "resolved_base": "b10f24dc832223c6a421c668489ec37ece23e8c3",
+      "resolved_head": "764eb9bccc382a00199664a52950ff973840f881",
+      "exact_range": "b10f24dc832223c6a421c668489ec37ece23e8c3..764eb9bccc382a00199664a52950ff973840f881",
+      "source_artifact_sha256": "506ba26bf26fd4fbcf2cba5780d3347ec5ad3580b9e990b342d07e915d8608cc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "1d89877f7465c993fce3b10711a3833601e11dff94ab2e6348528be1e52c0292"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "e78ff084508b0d69d149e581d4d5a823faa94296967ca68f2bb2a1234b893581"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "b7dbfd2425ffd10993f48cca401700186c489127ce15849e181079f7cf8959bb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "1d89877f7465c993fce3b10711a3833601e11dff94ab2e6348528be1e52c0292"
+        },
+        {
+          "item_id": "34a0a44de915f1074ac136bcacbcd356056c52277bbd9a99094e580e3c9a42d7",
+          "path": "src/app/post-restore.ts",
+          "fingerprint": "e78ff084508b0d69d149e581d4d5a823faa94296967ca68f2bb2a1234b893581"
+        },
+        {
+          "item_id": "84ebf12446c739fcf998c7454b30db53ad7a323e6bb3423c5d07b013d5bc4dd9",
+          "path": "src/app/post-restore.test.ts",
+          "fingerprint": "b7dbfd2425ffd10993f48cca401700186c489127ce15849e181079f7cf8959bb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0690f9f3b84303398aadd8201d1a598f19db41e434337253e89696e5e73fa451",
+          "path": "evidence/D08/suite-runs/T8.11-B5-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3339826b90e00e30ecdefa815bc010303f83b6af180f63d3c34af6bd8354e004",
+          "path": "evidence/D08/suite-runs/T8.11-B5-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "3cef5dcb23547f832d497748adc2695969e978b008c6a725fbe1c63c57f7f365",
+          "path": "evidence/D08/suite-runs/T8.11-B5-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "af2506b2d63aaeee5caa7a42126b58892bfcad038c5b62a81fd4a62c0e47e5ec",
+          "path": "evidence/D08/tdd-log/T8.11-B5.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e4d381edb1d3a2bca5cfb20348ef4b9d0092a0be65d45ecb6145c42f47fc70f3",
+          "path": "evidence/D08/suite-runs/T8.11-B5-integration.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 65961
+  }
+}
