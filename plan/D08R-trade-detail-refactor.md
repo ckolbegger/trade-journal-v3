@@ -66,7 +66,7 @@ These are implementation-level choices that don't reopen product semantics. They
 | A235 | **Closed.** The second column is headed "Exit Fri Nov 13" (by sale) or "Expired Fri Nov 20" (by expiration), dated by the replay's last session. By sale, the option's or stock's cell is the final exit Execution's price, and the Underlying's cell its Mark at that session (section 19). By expiration, the option's cell reads "Expired" and the Underlying's its Mark at the expiration session. The Today column is headed by `marksColumns.today`, with empty cells. Change is "—". Picking the last Execution is selection, not arithmetic. |
 | A236 | **The open lots' average** (T8R.23) is one Trade Views field, `openAverage`, on every Open Detail, stock and option alike, so the track reads one field. For a stock Trade it equals the Trade Summary's price. Settlement Due and Closed Details have no tracks and no field. |
 | A237 | **Lot ticks** are presentation (A215): one per open lot from `positions[].openLots`, at its price, with the accessible name "$2.00 · Mon Oct 12" and the same text on hover. Closed lots get none. |
-| A238 | **Contract names** (T8R.3). `instrumentLabel` returns "NVDA Dec 18 $150 Call", and "XYZ Jan 15 2027 $55 Call" for a later year (P114), reusing `summaryStrike` and the current-year rule of `summaryExpiration` (`format.ts`, the Workspace zone). Every unit test that asserts a name pins the clock, as `trade-detail/test-support.ts` does. The "Expires …" and "Expired …" lines keep the long date (W2): they name a date, not a contract. No hidden text: the accessible name is the visible name. |
+| A238 | **Contract names** (T8R.3). `instrumentLabel` returns "NVDA Dec 18 $150 Call", and "XYZ Jan 15 2027 $55 Call" for a later year (P114), reusing `summaryStrike` and the current-year rule of `summaryExpiration` (`format.ts`, the Workspace zone). Every unit test that asserts a name pins the clock, as `trade-detail/test-support.ts` does. The "Expires …" and "Expired …" lines keep the long date (W2): they name a date, not a contract. No hidden text: the accessible name is the visible name. The Trade Summary line takes the same rule ("Long 1 Jan 21 2028 $250 Call" in place of "'28"; open question 5, follow-up), through `summaryExpiration` itself. |
 | A239 | **The Journal's dated line** (T8R.15) is the Source, then the moment in the app's date-and-time format, then "· written Thu Nov 12" only when the entry was written, answered or declined on a later Workspace-zone date. The Edited and "Deferred, answered" badges, declines and their reasons, and answered prompts stay. Empty prompts leave. The old list kept as the fallback takes the same line (audit L11). |
 | A240 | **The Journal's Deviation line** counts occurrences whose current version is Active, the test `identity.props.ts:38` uses today, and moves with the badge into `journal.props.ts`. The button selects Plan and Risk and moves focus to its Deviations heading through the shell's drawer request (T8R.2), since the selected tab is not part of the address. |
 | A241 | **Price History's provenance** (T8R.4) is in each Mark cell's accessible name and its hover text: "Manual · saved 2026-10-14 17:00", then "Corrected: <reason>" on a corrected Mark, which also keeps its visible "Corrected" marker. The cells stay out of the tab order (about 1,500 on a LEAP, P99); a keyboard user reads them with the screen reader's table navigation. |
@@ -229,7 +229,7 @@ A lane is one git worktree (`.claude/worktrees/d08r-<lane>`) on one branch (`d08
 |---|---|---|
 | TY | T8R.1 | `src/domain/trade-analysis/evaluate.ts` and `calculation-result/index.ts` (types only); `src/modules/market-data/market-data.ts` (the read-session type only); `src/coordinators/trade-views/trade-views.ts` (the Detail types only); `src/app/types.ts` if it re-exports them |
 | SH | T8R.2 | `src/ui/screens/trade-detail/Cockpit.tsx`, `Cockpit.test.tsx`; `e2e/d8p/states.spec.ts` (its drawer lines); `src/ui/screens/trade-detail/test-support.ts`; `e2e/support/detail/index.ts` |
-| CN | T8R.3 | `src/ui/calculation-words.ts` and its test; `src/ui/format.ts` if a shared helper moves; the call sites of section 1.5's Names; every expectation line in the appendix (contract names only). Not `Cockpit.tsx` or `test-support.ts` (SH). In `states.spec.ts`, only line 48. |
+| CN | T8R.3 | `src/ui/calculation-words.ts` and its test; `src/ui/format.ts` and `format.test.ts` (`summaryExpiration`'s later-year form); the call sites of section 1.5's Names; every expectation line in the appendix (contract names only). Not `Cockpit.tsx` or `test-support.ts` (SH). In `states.spec.ts`, only line 48. |
 | PH | T8R.4 | `src/ui/cockpit/drawers/price-history*`, `styles/history.css`; `e2e/d8p/history.spec.ts` (its Price History lines) |
 | PO | T8R.5 | `drawers/position*`, `styles/position.css`; `src/ui/screens/LotMatchesTable.tsx`, `ExitReceipt.tsx` and `ExpirationReceipt.tsx` with their tests; `trade-detail/Position.test.tsx`, `Result.test.tsx`; `e2e/support/detail/position.ts` |
 | TD | T8R.6, T8R.7, T8R.8, T8R.9 | `drawers/today*`, `src/ui/cockpit/track*`, `styles/today.css`; `trade-detail/Today.test.tsx`, `Placed.test.tsx` (its Today lines), `SettlementDue.test.tsx`; `e2e/support/detail/today.ts`; the Today lines of `e2e/d4/expected-mark.spec.ts`, `e2e/d4/breach-overrun.spec.ts`, `e2e/d4/responsive-a11y.spec.ts`, `e2e/d7s/*.spec.ts`, `e2e/d8p/today-narrow.spec.ts`, `e2e/d8p/first-marks-pending.spec.ts`, `e2e/d8p/states.spec.ts:129` |
@@ -275,7 +275,11 @@ describe("instrumentLabel (W28)")
   it should name a contract "NVDA Dec 18 $150 Call" in the current year
   it should show the full year for a contract expiring in a later year, "XYZ Jan 15 2027 $55 Call"
   it should keep the strike's decimals as the Trade Summary does ("XYZ Dec 18 $52.50 Put")
+describe("Trade Summary line: the year rule (open question 5, follow-up)")
+  it should show the full year for a later year, "Long 1 Jan 21 2028 $250 Call"
 ```
+
+The Trade Summary case changes the one existing expectation, `src/ui/format.test.ts:51` ("Jan 21 '28"); no other test or spec asserts the "'28" form.
 
 ### T8R.4 Price History: each Mark's source, saved time and correction
 
@@ -609,6 +613,7 @@ Asked one at a time, in this order; each answer is recorded here.
 3. **The Anchor on Journal lines (P112).** Amend the UI contract so Trade Detail's Journal leaves out the Trade Anchor? Recommended: yes. **Answered 2026-11-15: yes (a).** Any other Anchor, such as an Execution's from D13, still shows.
 4. **The before-Marks words (P113, W34).** "Due once the Mon Oct 12 session ends", with Trade Analysis naming the session? Recommended: yes. **Answered 2026-11-15: "Awaiting the Mon Oct 12 close"** (option b), with Trade Analysis naming the session. The user's rule: "close" is correct for the end of a market session; a stock's or option's price is a Mark, never a close. The label "Awaiting close" stays.
 5. **The spoken year (P114).** Only where a contract name stands alone, or in every sentence too? Recommended: where it stands alone. **Answered 2026-11-15: neither.** The screen reader works the same as the screen: no year for a contract expiring in the current year ("XYZ Dec 18 $55 Call"), the full year for a later one ("XYZ Jan 15 2027 $55 Call"). This replaces the audit's "'27" form.
+   - **Follow-up, answered 2026-11-15: yes.** The Trade Summary line takes the same rule: "Long 1 Jan 21 2028 $250 Call", not "'28".
 6. **One breakdown or a split (P115).** Recommended: one breakdown with a checkpoint critic. *Queued.*
 
 ---
