@@ -1229,3 +1229,7 @@ Root cause: the coordinator already returns the backup's created time as a zonel
 The manifest already carried the ranges (`backupSchemaRange`, checked by `verify:capabilities`); About never rendered them. About now shows "Backups: exports schema 7 (format 1); restores schemas 3 to 7 (format 1)", built from the manifest. 3 to 7 is Q14's answer (A145 amended in r103), not a deviation. Red: assertion. No first-run passes. `verify:capabilities` OK (24 operations); browser specs shell, backup, responsive-a11y: 9 passed.
 - T8.22-B2 ocr review (session 11aff839): 2 files, no findings. Raw: `ocr/T8.22-B2-e971f296.json`. The plan's A145 text still reads "1 through 7" until r103 applies Q14.
 - T8.22-B2 quick run green: unit 2021, integration 258, browser task tier passed, checks 14 of 14, run complete. The runner again overlapped the browser and checks stages despite the brief; both exited 0 (tooling note for the final report).
+
+## T8.22-B3 done (`71c9a40a`)
+
+On first run, choosing Restore from a backup hides the Start your journal form; only the Restore flow shows (A142). Red: assertion (heading still present). No first-run passes. Browser specs restore, after-restore, shell, offline, responsive-a11y, d1 onboarding: 14 passed. Reviewer note for the final report: there is no way back to the start form except reloading, since the preview and confirm step have no Cancel or Back (critic-1 minor observation); a Back button would need a new prop on a component T8.23 froze.
