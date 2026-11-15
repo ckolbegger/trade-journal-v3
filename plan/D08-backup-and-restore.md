@@ -670,7 +670,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.1 | 0 | F | Done | `b96da61c`; B1 `ce73ade7`, B2 `7cd1bee0`, B3 `4493d876`, B4 `727671a2`, B5 `2a01fe69`, B6 `1b850dbc`, B7 `daa1b0d4` |
 | T8.23 | 0 | T | Done | `220d4b0f`; B1 `fdc5e858` |
 | T8.2 | 1 | FM | Done | `1b12c298` |
-| T8.6 | 1 | FM | In progress from `1b12c298` | |
+| T8.6 | 1 | FM | Done | `a7a54d36`; F12 `849cd2d1`, B1 `ee816484`, B2 `5b144bfe`, B3 `709f187b`, F2 `7f9f0503`, B4 `3be69a93`, B5 `7e585659`, B6 `891b1f3c` (B7, B8 dismissed) |
 | T8.3 | 1 | PS | Done | `bd46514a`; B1 `8be42212`, B2 `865f02b3`, B3 `2f1b3ffd`, B4 `3be7d96b`, B5 `a379a2ca`; F1 `7db3d8c2`, B6 `c9e553bb` |
 | T8.7 | 1 | PS | Done | `8f98613d`; B1 `a53aea02`, B2 `8ab603b0`, B3 `cd4bff0c`, B4 `36f91e77`, B5 `6bbb2ffc` |
 | T8.4 | 1 | WB | Done | `92301ec3`; B1 `df7312cb`, B2 `ee01bdbf`, B3 `e3ab0788`, B4 `0fa1b021` |
