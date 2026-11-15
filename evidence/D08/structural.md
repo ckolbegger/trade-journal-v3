@@ -1380,3 +1380,7 @@ Reviewer note, not a bug task: `D07S` has two plan files with a Progress section
 **D8-Retro-1a-B2** (`e6079cb2`): any heading after the Progress heading ends row reading. Case 7 red then green; no first-run pass. `status.sh D08P` now lists one open task, T8P.23.
 
 **D8-Retro-1a-B2 ocr review** (`e6079cb2`, raw output `ocr/D8-Retro-1a-B2-e6079cb2.json`): 2 files reviewed (1 excluded), 0 comments. No findings.
+
+**D8-Retro-1a-B3** (`ca48bc14`): the ID pattern accepts an optional `T<n>.<n>-` prefix. Case 8 red then green (a first draft passed at once because two rows shared a fixture; split into one fixture per row for a genuine red). ocr review pending.
+
+**D8-Retro-1a-B4** (`01e1da94`): any heading other than `## Qn.` ends the current question's section, so a bare `**Answer` counts only in its own section. Case 9 red then green. ocr review (`ocr/D8-Retro-1a-B4-01e1da94.json`): 0 comments, no findings. Note: a `###` sub-heading inside a question also ends its section (the brief's wording); no current file is affected.
