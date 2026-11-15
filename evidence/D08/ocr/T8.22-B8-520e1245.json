@@ -1,0 +1,112 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 34064,
+    "input_tokens": 33525,
+    "output_tokens": 539,
+    "cache_read_tokens": 8320,
+    "elapsed": "23s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/backup/RestorePreview.tsx",
+      "content": "The pluralization conditional is nested inside the outer ternary's template literal, contrary to the checklist's prohibition on nested ternaries. Use an early return for undefined versions, then compute the singular/plural label separately.",
+      "suggestion_code": "  if (versions === undefined) return number(row.value(counts));\n  const label = versions === 1 ? 'version' : 'versions';\n  return `${number(row.value(counts))} (${number(versions)} ${label})`;",
+      "existing_code": "  return versions === undefined ? number(row.value(counts)) : `${number(row.value(counts))} (${number(versions)} ${versions === 1 ? 'version' : 'versions'})`;",
+      "start_line": 45,
+      "end_line": 45,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/backup/RestoreFlow.test.tsx",
+        "src/ui/backup/RestorePreview.tsx"
+      ]
+    }
+  ],
+  "session_id": "84f0884e-4e69-4604-8c56-8b5db9f60c41",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "84f0884e-4e69-4604-8c56-8b5db9f60c41",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "520e1245",
+      "resolved_base": "1be8b3842f4ed7beded34556330dba01bfdbdab0",
+      "resolved_head": "520e1245635e080cca16986559c169c41a7a90b1",
+      "exact_range": "1be8b3842f4ed7beded34556330dba01bfdbdab0..520e1245635e080cca16986559c169c41a7a90b1",
+      "source_artifact_sha256": "82848ffb249a51da9827b4d21a84ec1bc7d4391764509faaa6c4e3d43bb1feca"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "a0a7c764aee761329098691d879d0348163fd1b92bf5a9cc6086adc81320ab02"
+        },
+        {
+          "item_id": "ed5324a53b04693fb6f3383883d129fe3af2140861dde54edb9bc34bb88eaa72",
+          "path": "src/ui/backup/RestorePreview.tsx",
+          "fingerprint": "73c75facef366b3a6da1c7e3ca2cce631c76398fa7b018443adb00705afef9a0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "ccbf364b614ad1774940febde45c50bebbc647487686ffed77a2725861db1c46",
+          "path": "src/ui/backup/RestoreFlow.test.tsx",
+          "fingerprint": "a0a7c764aee761329098691d879d0348163fd1b92bf5a9cc6086adc81320ab02"
+        },
+        {
+          "item_id": "ed5324a53b04693fb6f3383883d129fe3af2140861dde54edb9bc34bb88eaa72",
+          "path": "src/ui/backup/RestorePreview.tsx",
+          "fingerprint": "73c75facef366b3a6da1c7e3ca2cce631c76398fa7b018443adb00705afef9a0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4cd0c29ceda3d85160b8b354fc6e60922d8a433147c2b7269d3ee0d69760c0fc",
+          "path": "evidence/D08/tdd-log/T8.22-B8.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 22898
+  }
+}
