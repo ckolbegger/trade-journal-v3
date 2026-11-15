@@ -67,3 +67,13 @@ Command: `.claude/scripts/status.test.sh 10`.
 note: the fixture is `chmod 000` in the scratch directory and restored right after the run; the case prints a SKIP line when run as root. A second fixture (no decisions file) checks "no decisions file" still exits 0.
 
 refactor: none needed; the fix checks the awk's status and exits 1 naming the file.
+
+## B6
+
+Command: `.claude/scripts/status.test.sh 6`. Test fix only; no production change.
+
+| case | test | mutation red | green |
+|---|---|---|---|
+| 6 | it should pick the breakdown holding the Progress table among handoff files and an earlier non-handoff file with no Progress heading | with the Progress check in `status.sh` replaced by `false && ...`: FAIL "no Progress table in .../D99-alpha-notes.md" (exit 1) | restored: status.test.sh: all requested cases passed (cases 1 to 10) |
+
+note: the fixture gains `D99-alpha-notes.md` (no Progress heading), which sorts before the breakdown.

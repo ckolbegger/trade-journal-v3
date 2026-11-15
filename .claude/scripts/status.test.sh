@@ -68,6 +68,7 @@ if want 6; then
   mv "$t/many/plan/D99-fixture.md" "$t/many/plan/D99-zeta-breakdown.md"
   printf '# Handoff\n\nNotes without a table.\n' >"$t/many/plan/D99-implementing-handoff.md"
   printf '# Handoff\n' >"$t/many/plan/D99-handoff.md"
+  printf '# Notes\n\nNo Progress heading here.\n' >"$t/many/plan/D99-alpha-notes.md"
   out=$(STATUS_ROOT="$t/many" "$st" D99 2>&1); code=$?
   [[ $code == 0 && "$out" == *"T9.7"* ]] || bad "breakdown holding the Progress table not picked among handoff files (exit $code): $out"
 fi
