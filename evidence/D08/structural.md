@@ -513,6 +513,7 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
 
 | Critic | Report | Flows | Result | Tokens | Tool calls | Duration | Brief |
 |---|---|---|---|---|---|---|---|
+| critic-1 | `critic-1.md` | C8.1 to C8.10 (C8.9 withdrawn) | FAIL: 6 defects (2 high, 4 moderate) | 183,880 | 95 | 12 m 28 s | critic-brief.md template, setup helpers from `e2e/d8/support.ts`; commit `4ed74668` |
 
 ## Lane worktrees
 
@@ -1204,3 +1205,14 @@ Range e4896a9f..17d4c56b, 4 files reviewed, no findings. Lane BN's tasks are all
 ## Pre-critic full tier green
 
 Code at `80f0a468`. Unit 189 files / 2019 tests, integration 118 / 258, browser-1 126 passed (5.2 m), browser-2 117 passed (7.5 m), checks 14 of 14, run complete. The runner's first hand-back was an early "placeholder", which used up its one report; the results were read from the run's files and `run-complete.sh`.
+
+## T8.22 critic-1: FAIL, six defects
+
+Report: `critic-1.md`. Each defect becomes a bug task, run one at a time (tdd-task, ocr-review, then a `browser-task` run):
+- T8.22-B1 (high): the preview's "From a backup made" time is shown in the browser's zone, not the Workspace zone (A133).
+- T8.22-B2 (high): About shows no backup ranges for schema 7 (C8.10; A145).
+- T8.22-B3 (moderate): after a first-run Restore the "Start your journal" form stays on screen above the summary (A142).
+- T8.22-B4 (moderate): the Restore preview scrolls sideways at 375 and 320 px (the release hash does not wrap).
+- T8.22-B5 (moderate): the preview and summary show Entry Type keys such as `entry-type.plan-reflection` (ui-contract line 41).
+- T8.22-B6 (moderate): on the confirm step, checkboxes and radio circles are laid out apart from their labels.
+Minor observations are not defects and are carried to the final report.
