@@ -20,8 +20,9 @@ if [[ -z $plan ]]; then echo "status.sh: no breakdown plan/$d-*.md in $root" >&2
 
 rows=$(awk -F'|' '
   function trim(s) { gsub(/^[ \t]+|[ \t]+$/, "", s); return s }
-  /^## .*Progress/ { n++; intable = 0; hdr = 0; delete col; next }
-  n && /^\|/ {
+  /^## .*Progress/ { n++; inprog = 1; intable = 0; hdr = 0; delete col; next }
+  /^#/ { inprog = 0; next }
+  inprog && /^\|/ {
     if (!hdr) { for (i = 2; i < NF; i++) col[trim($i)] = i; hdr = 1; next }
     if ($0 ~ /^\|[ \t]*-/) next
     task = trim($(col["Task"])); wave = trim($(col["Wave"])); lane = trim($(col["Lane"]))
@@ -41,7 +42,7 @@ rows=$(awk -F'|' '
     printf "%s | wave %s | lane %s | %s | F %d, B %d\n", task, wave, lane, status, f, b
     next
   }
-  n && hdr && !/^\|/ && NF { hdr = 0 }
+  inprog && hdr && !/^\|/ && NF { hdr = 0 }
   END { if (!n || !length(col)) exit 3 }
 ' "$plan"); rc=$?
 if [[ $rc == 3 ]]; then echo "status.sh: no Progress table in $plan" >&2; exit 1; fi

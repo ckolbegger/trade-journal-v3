@@ -21,3 +21,13 @@ Command: `.claude/scripts/status.test.sh 6`.
 | 6 | it should pick the file that holds the Progress table, skipping every handoff file, when several plan files exist | FAIL: breakdown holding the Progress table not picked among handoff files (exit 1): status.sh: no Progress table in .../plan/D99-implementing-handoff.md | status.test.sh: all requested cases passed (cases 1 to 6) |
 
 refactor: none needed; the fix is two lines in the plan-file loop.
+
+## B2
+
+Command: `.claude/scripts/status.test.sh 7`.
+
+| case | test | red | green |
+|---|---|---|---|
+| 7 | it should stop reading rows at the next heading after the Progress table | FAIL: rows under a later heading were listed as open tasks (T9.90 and T9.91 printed, 3 open task(s)) | status.test.sh: all requested cases passed (cases 1 to 7) |
+
+refactor: none needed; the fix is a Progress-section flag in the awk (`inprog`), cleared by any other heading.

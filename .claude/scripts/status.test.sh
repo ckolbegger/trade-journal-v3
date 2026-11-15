@@ -3,7 +3,8 @@
 # Usage: status.test.sh [case-number]  (no argument runs every case).
 # Cases: 1 D08 on the real files reports nothing open; 2 a fixture with one open row and one unanswered
 # question prints both; 3 F and B tasks in the Commits cell are counted; 4 a "**Qn answer" line answers Qn
-# even when it sits under another question's heading; 5 a missing breakdown is named and exits non-zero.
+# even when it sits under another question's heading; 5 a missing breakdown is named and exits non-zero;
+# 6 handoff files are skipped when picking the breakdown; 7 tables under a later heading are not read.
 here=$(cd "$(dirname "$0")" && pwd)
 st="$here/status.sh"
 t=$(mktemp -d)
@@ -65,6 +66,13 @@ if want 6; then
   printf '# Handoff\n' >"$t/many/plan/D99-handoff.md"
   out=$(STATUS_ROOT="$t/many" "$st" D99 2>&1); code=$?
   [[ $code == 0 && "$out" == *"T9.7"* ]] || bad "breakdown holding the Progress table not picked among handoff files (exit $code): $out"
+fi
+
+if want 7; then
+  mkfix late '| T9.8 | 2 | A | Paused | `x` |'
+  printf '\n## 12. Later\n\n| Task | Wave | Lane | Status | Commits |\n|---|---|---|---|---|\n| T9.90 | 1 | B | Paused | `y` |\n\n### 12.1 Sub\n\n| Task | Wave | Lane | Status | Commits |\n|---|---|---|---|---|\n| T9.91 | 1 | B | Paused | `z` |\n' >>"$t/late/plan/D99-fixture.md"
+  out=$(STATUS_ROOT="$t/late" "$st" D99 2>&1)
+  [[ "$out" == *"T9.8 "* && "$out" != *"T9.90"* && "$out" != *"T9.91"* && "$out" == *"1 open task"* ]] || bad "rows under a later heading were listed as open tasks: $out"
 fi
 
 [[ $fail == 0 ]] && echo "status.test.sh: all requested cases passed"
