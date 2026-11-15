@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 62738,
+    "input_tokens": 62461,
+    "output_tokens": 277,
+    "cache_read_tokens": 8320,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Restored capacity validation and benchmark checks",
+      "files": [
+        "tools/bench/restore-checks.test.ts",
+        "tools/bench/restore-checks.ts",
+        "tools/bench/restored-capacity.ts",
+        "tools/verify-capacity.ts"
+      ]
+    }
+  ],
+  "session_id": "1c7b0446-1268-43dd-95a3-0cfb5992fa1b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1c7b0446-1268-43dd-95a3-0cfb5992fa1b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "e4896a9f",
+      "requested_head": "17d4c56b",
+      "resolved_base": "e4896a9f68fbb4e3912dc556ca0746e05ee43cd8",
+      "resolved_head": "17d4c56bf2184cbd07fc8efd2fbdd7d0f8275dd2",
+      "exact_range": "e4896a9f68fbb4e3912dc556ca0746e05ee43cd8..17d4c56bf2184cbd07fc8efd2fbdd7d0f8275dd2",
+      "source_artifact_sha256": "1453f98213d79cb33b88ad96a0da055a915a47a9fa1fdfa880b834a1288ae0f9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02ad88a38c00285a42a1c603aaa5bef9626ec1ba5560d75aed01146dcdc5554b",
+          "path": "tools/bench/restore-checks.ts",
+          "fingerprint": "acc7a6ca65b8b745835831f1789ede0cd1f7cdf75fa591a8d06cc29998640ad7"
+        },
+        {
+          "item_id": "0ee56d6bfbf035c1a500c493c54424a1bf9849e2dc6ba62618efaa6525a3a277",
+          "path": "tools/verify-capacity.ts",
+          "fingerprint": "96a3b8567614b96ae4f1ab57b59347d114438c9de7b18ec1fa10ee049c85c367"
+        },
+        {
+          "item_id": "13d401c8415bcc8f8a7fe54e3cf1e3451bc9003b75e4351fe0207d04353e8f02",
+          "path": "tools/bench/restore-checks.test.ts",
+          "fingerprint": "27fd5102da1646e819a7d13ead8d812f275f03e45fe4bd03cf3d03422c32ed3c"
+        },
+        {
+          "item_id": "7bac51a4828051c8fadd5316d85260f75292d1244dd06a280ce0ac3d320cd4c3",
+          "path": "tools/bench/restored-capacity.ts",
+          "fingerprint": "f51970e8e94921a3cd33f6ca84f847a2dddaf5e152f89c999ab621c717789d9d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02ad88a38c00285a42a1c603aaa5bef9626ec1ba5560d75aed01146dcdc5554b",
+          "path": "tools/bench/restore-checks.ts",
+          "fingerprint": "acc7a6ca65b8b745835831f1789ede0cd1f7cdf75fa591a8d06cc29998640ad7"
+        },
+        {
+          "item_id": "0ee56d6bfbf035c1a500c493c54424a1bf9849e2dc6ba62618efaa6525a3a277",
+          "path": "tools/verify-capacity.ts",
+          "fingerprint": "96a3b8567614b96ae4f1ab57b59347d114438c9de7b18ec1fa10ee049c85c367"
+        },
+        {
+          "item_id": "13d401c8415bcc8f8a7fe54e3cf1e3451bc9003b75e4351fe0207d04353e8f02",
+          "path": "tools/bench/restore-checks.test.ts",
+          "fingerprint": "27fd5102da1646e819a7d13ead8d812f275f03e45fe4bd03cf3d03422c32ed3c"
+        },
+        {
+          "item_id": "7bac51a4828051c8fadd5316d85260f75292d1244dd06a280ce0ac3d320cd4c3",
+          "path": "tools/bench/restored-capacity.ts",
+          "fingerprint": "f51970e8e94921a3cd33f6ca84f847a2dddaf5e152f89c999ab621c717789d9d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "78cbf9873d2518a5e1b2fd19641dd2d628cf725d1b6c9398341bb6e8c88257e5",
+          "path": "evidence/D08/tdd-log/T8.19-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a738450dbc0f187b1512357c0632162718d719417fc97e2e9095837559cba9be",
+          "path": "evidence/D08/suite-runs/T8.19-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a99726de6c3066e846b9b7f2695b33b07e52b54f87e8eac55544f70710a81bd7",
+          "path": "evidence/D08/bench.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b0760686bed7f42076fe0460e22a12908a52ecac86e1161360aa19e84df9c850",
+          "path": "evidence/D08/tdd-log/T8.19-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "c4c8cc91170f8188fc3c33cb704c3c456f549f12a459a14fa710aa967dc12402",
+          "path": "evidence/D08/suite-runs/T8.19-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d22c839c763fdbb483ea7c6b76223b756efb13000f6565c19ce25993508ae30a",
+          "path": "evidence/D08/suite-runs/T8.19-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dac5c2f207d46d5c10c892f434057b9be1a062ce5f167065c7b500ba27b16829",
+          "path": "evidence/D08/suite-runs/T8.19-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 22192
+  }
+}

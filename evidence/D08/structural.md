@@ -1196,3 +1196,7 @@ Raw: `ocr/T8.19-c1e00ded.json`.
 - B2 `17d4c56b`: `cachedProjectionProblems(cached, fresh)`; `verify:capacity` recomputes the projection and takes M from `CAPACITY_REQUIREMENT`, and fails when the cached values differ. Red: assertion.
 - No first-run passes. Capacity rerun alone under the browser lock: usage 206,540,122 (0.264), second-Restore peak 439,119,065 (0.481 × M, 402 samples); `verify:capacity` with and without `--restored` exit 0. `bench:setup` and `bench:run` not rerun (not needed).
 - Lane tier green: unit 2019, integration 258, checks 14 of 14.
+
+## T8.19-B1 and B2 ocr review (session 1c7b0446)
+
+Range e4896a9f..17d4c56b, 4 files reviewed, no findings. Lane BN's tasks are all reviewed clean. Raw: `ocr/T8.19-B1-B2-17d4c56b.json`.
