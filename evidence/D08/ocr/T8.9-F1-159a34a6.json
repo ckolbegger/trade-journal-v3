@@ -1,0 +1,163 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 277648,
+    "input_tokens": 274534,
+    "output_tokens": 3114,
+    "cache_read_tokens": 31616,
+    "elapsed": "1m14s"
+  },
+  "tool_calls": {
+    "total": 26,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 7,
+      "file_read": 13,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore.test.ts",
+      "content": "Remeasuring the candidate immediately before passing it to `applyTrades` no longer verifies that preparation saved its measurements *after* the repairs. If preparation accidentally holds pre-repair trade digests, this assertion still passes, but confirming this backup will return CandidateChanged. Exercise `target.workspace.applyPreparedRestore` with the prepared token and assert Restored instead, so the test checks the actual in-memory preparation baseline.",
+      "existing_code": "    expect(await applyTrades(source, await measureTrades(source))).toEqual({ kind: 'Accepted' });",
+      "start_line": 576,
+      "end_line": 576,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "The `AlreadyInitialized` return immediately above skips this cleanup, although `activateFirstCandidate` deletes the losing candidate on that outcome. Its preparation (including potentially large repair lists) therefore remains in `held` for the lifetime of the Workspace instance; retrying also returns `PreparationNotFound` without removing it. Delete the held entry on that terminal activation outcome as well, and clear stale entries when the candidate is no longer listed.",
+      "existing_code": "        held.delete(token.candidateId);",
+      "start_line": 743,
+      "end_line": 743,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/workspace/restore-apply.test.ts",
+      "files": [
+        "src/coordinators/workspace/restore-apply.test.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/workspace/restore.test.ts",
+      "files": [
+        "src/coordinators/workspace/restore.test.ts"
+      ]
+    },
+    {
+      "label": "src/coordinators/workspace/restore.ts",
+      "files": [
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "47945d8d-5921-4446-8c8f-326fc3051bb7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "47945d8d-5921-4446-8c8f-326fc3051bb7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "159a34a6",
+      "resolved_base": "d85e5c571334df8153205d82366175a0bb7f8698",
+      "resolved_head": "159a34a6471b994f234d249553d67b040dcc8362",
+      "exact_range": "d85e5c571334df8153205d82366175a0bb7f8698..159a34a6471b994f234d249553d67b040dcc8362",
+      "source_artifact_sha256": "fcd11f3e9aac7030c62d1c30cc0ec3ce6f8c0360dc71d8947127519cb4e8cd2c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "a53c4b6974418d37a9bc048c65396ca002783376bf4ead415f2a410edbeba01e"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "53f1c8c0e9272b907307cdd74845b739f67061df0cd2aa07eae33c65bc11e5f6"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "98f9039f31eefa5bac4a64e0935c15007389ceaabab547d2a44625c19a787222"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "a53c4b6974418d37a9bc048c65396ca002783376bf4ead415f2a410edbeba01e"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "53f1c8c0e9272b907307cdd74845b739f67061df0cd2aa07eae33c65bc11e5f6"
+        },
+        {
+          "item_id": "e1229547524f5870ded08e9bdf53628bf4d57196224810af8310be0310c5bbde",
+          "path": "src/coordinators/workspace/restore-apply.test.ts",
+          "fingerprint": "98f9039f31eefa5bac4a64e0935c15007389ceaabab547d2a44625c19a787222"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "1128eadeb1dd431d0d1d11709ac90bdff843120f35c9b53b0ffcb98659fcb078",
+          "path": "evidence/D08/suite-runs/T8.9-F1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "1d633917bb1e8ecf54fdfe63702285b2c72542ea402bdc443ce1c1b13d194908",
+          "path": "evidence/D08/suite-runs/T8.9-F1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "660ebeedd4bfa30ffc2f87d7bac1dda3720e899ea36b3871ce2c8820163624a6",
+          "path": "evidence/D08/suite-runs/T8.9-F1-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a5d6454047e9e953406f4624ac51cccc47fe55b149e7bb9fe1c205bf1f17b895",
+          "path": "evidence/D08/tdd-log/T8.9-F1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bc0c0593a3d28b6e327cafdca54e643014b67de7a1ebb668689d3ada91686a4c",
+          "path": "evidence/D08/suite-runs/T8.9-F1-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 74386
+  }
+}

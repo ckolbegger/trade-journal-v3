@@ -1,0 +1,143 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 67507,
+    "input_tokens": 66914,
+    "output_tokens": 593,
+    "cache_read_tokens": 11648,
+    "elapsed": "31s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/delivery/faults.ts",
+      "content": "This unconditional throw runs before `readFrom()` in `readExportSnapshot`, so even a populated workspace now fails before its first batch; the batch fault callback is never reached. This no longer exercises the first-batch failure required for `backup:read`. Restrict the start-time fault to snapshots whose store counts are all zero, and retain the batch-time fault for nonempty snapshots.",
+      "existing_code": "                onStart?.(start);\n                throw new Error('injected fault: backup:read');",
+      "start_line": 154,
+      "end_line": 155,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/restore-faults.test.ts",
+        "src/delivery/faults.ts",
+        "src/delivery/restore-faults.test.ts"
+      ]
+    }
+  ],
+  "session_id": "baac5e29-49fb-4d8d-986c-e768cc7919a4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "baac5e29-49fb-4d8d-986c-e768cc7919a4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0d548909",
+      "resolved_base": "65026afb1df563b6db7f68264d4bff4b295fa572",
+      "resolved_head": "0d5489090b68e54d3bf166f835ddce16de574b79",
+      "exact_range": "65026afb1df563b6db7f68264d4bff4b295fa572..0d5489090b68e54d3bf166f835ddce16de574b79",
+      "source_artifact_sha256": "85ade2f99e816a83b3d866ee1963c276ba1bf95049d2cb3acce9d7d911778b27"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "37c723850287b2b8047108a4fb9bc20675acb9c14793b2570bbd5af882c5962c",
+          "path": "src/coordinators/workspace/restore-faults.test.ts",
+          "fingerprint": "cbc8a1c8047b307088b64d7bae2b3a8afd979aa6cae99e17290909a928f52221"
+        },
+        {
+          "item_id": "955b0a25a840a5072c8df601153dbe08c59e5a6c317ff6b226f794b7de1330b8",
+          "path": "src/delivery/faults.ts",
+          "fingerprint": "f36dcfa2c74020197a48392779bd06c8145c2f913f3d5274f5c9d196016ab995"
+        },
+        {
+          "item_id": "dbf4cfa8ef09061aeed0f9caf4aed72317f43cb4e98c44dda5f50fca4102cc8f",
+          "path": "src/delivery/restore-faults.test.ts",
+          "fingerprint": "e59ef9f7294e040b20ae31a83bba345451218212e08196d0cdb36e74192f07ee"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "37c723850287b2b8047108a4fb9bc20675acb9c14793b2570bbd5af882c5962c",
+          "path": "src/coordinators/workspace/restore-faults.test.ts",
+          "fingerprint": "cbc8a1c8047b307088b64d7bae2b3a8afd979aa6cae99e17290909a928f52221"
+        },
+        {
+          "item_id": "955b0a25a840a5072c8df601153dbe08c59e5a6c317ff6b226f794b7de1330b8",
+          "path": "src/delivery/faults.ts",
+          "fingerprint": "f36dcfa2c74020197a48392779bd06c8145c2f913f3d5274f5c9d196016ab995"
+        },
+        {
+          "item_id": "dbf4cfa8ef09061aeed0f9caf4aed72317f43cb4e98c44dda5f50fca4102cc8f",
+          "path": "src/delivery/restore-faults.test.ts",
+          "fingerprint": "e59ef9f7294e040b20ae31a83bba345451218212e08196d0cdb36e74192f07ee"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4405d945dca994e27d4b0910f6069ad6411dddb16d8b4daf9a95c50a650571b5",
+          "path": "evidence/D08/suite-runs/T8.15-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "4bd468198249665090c8508a80200404c26a1e486afacd6ab934fcffd5e5af71",
+          "path": "evidence/D08/tdd-log/T8.15-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7009b73e979288af17e3a34dd8f00c9cb7696e231e3459b3eda5ab8c7cb0c9d6",
+          "path": "evidence/D08/suite-runs/T8.15-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "90dfc27f722b032fd92141e7844108d1e3167d690d96e15fe8b520189067b548",
+          "path": "evidence/D08/suite-runs/T8.15-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "921d03f36e6283b5e86f6e4cdf2f2d5b26f08ce4a8076e9358001bd08866c982",
+          "path": "evidence/D08/suite-runs/T8.15-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 31272
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 75612,
+    "input_tokens": 74351,
+    "output_tokens": 1261,
+    "cache_read_tokens": 6656,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 2,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "package.json",
+        "tools/fixtures-freeze-backup.ts",
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "b2b851f4-11ea-46e9-8c5f-55fa4a190b93",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b2b851f4-11ea-46e9-8c5f-55fa4a190b93",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5ecdc6b3",
+      "resolved_base": "de83f1399b2c68f26a5cec54d76d717a93ef2b6f",
+      "resolved_head": "5ecdc6b328cee8f202b08075be051c075e4d9953",
+      "exact_range": "de83f1399b2c68f26a5cec54d76d717a93ef2b6f..5ecdc6b328cee8f202b08075be051c075e4d9953",
+      "source_artifact_sha256": "618c787d511e66d4b91dffdff0a95385e033bc1259e45676bcf640a17f638472"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2fa77d6dd97b3157f4e714276b8684a668f71aa3cce39d221720eb368b284c5d",
+          "path": "tools/fixtures-freeze-backup.ts",
+          "fingerprint": "e5323526a27fca738d68652eec36d38c438fbc915f0c91e383217259ed62e76e"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "835cf750f2b8425df8d4bec8de9921ef02af2ce46c06063b5ae0c72837e6b946"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "f0497fb16d7c61ae73bc5454eab169b7f61f1440b2cd97a14d830d43a3ad965b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2fa77d6dd97b3157f4e714276b8684a668f71aa3cce39d221720eb368b284c5d",
+          "path": "tools/fixtures-freeze-backup.ts",
+          "fingerprint": "e5323526a27fca738d68652eec36d38c438fbc915f0c91e383217259ed62e76e"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "835cf750f2b8425df8d4bec8de9921ef02af2ce46c06063b5ae0c72837e6b946"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "f0497fb16d7c61ae73bc5454eab169b7f61f1440b2cd97a14d830d43a3ad965b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "075ced8951c74b37c572b59ce44735c33280079b0cfcd7b756af7bc692343e65",
+          "path": "tests/fixtures/backup-v7/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "0a6327305655a6a4cc120218f8a0f6151c1ef698e992ec930702f6dc8f0390a3",
+          "path": "tests/fixtures/backup-v5-blocked/downloaded.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "0c239f96b09faff96cfc09d6a5cb415b9de2f6b317027fe792557837b4adb754",
+          "path": "tests/fixtures/backup-v4-blocked/backup.tjbackup",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "1dfbf9f305c8aa245a884d0bf191e8264896bc195c940e62424a4be1b73e85aa",
+          "path": "tests/fixtures/backup-v6-blocked/downloaded.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "1ff0ab7d549909578528706dbdaf61c26ee11884dc1a45f087f35f521b31f46c",
+          "path": "evidence/D08/suite-runs/T8.17-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "2d680b50685bb4f7b8564114d1d2fa5711c6899fda34c764d9da4a7b74382458",
+          "path": "tests/fixtures/backup-v3-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "35607e9d73592ea6e0ee5fa88b5186ce208811f4527622f6329e7bd1c0e62368",
+          "path": "tests/fixtures/backup-v7/downloaded.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "379878426d1f370e4226d6c78a1f513036c990f1c40d51ab5c041aca125870eb",
+          "path": "tests/fixtures/backup-v3-blocked/downloaded.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "5882ab45f11060ff14e1883a7357de5632e11c3da5a331ccacdcb2ff3d36caa7",
+          "path": "tests/fixtures/backup-v5-blocked/backup.tjbackup",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "64f1af1b61046022ca9ca809b993559c375c074d26b17ccc7528ed883732d90a",
+          "path": "tests/fixtures/backup-v4-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "7cc897245692044363c123bfa3a55b31a47e1ced5a5911b3a8d92d84c920cd48",
+          "path": "tests/fixtures/backup-v3-blocked/backup.tjbackup",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "8862b0f8179c6a29f3bdf42d7bc347bf1cc78d5556ca0225e58d4c53ceb5c7dd",
+          "path": "evidence/D08/suite-runs/T8.17-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "9408aeea6b7c555459c67fca18edb1e43dbb418823e6b5e812c5aedaa22ac863",
+          "path": "tests/fixtures/backup-v6-blocked/backup.tjbackup",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "a5a34b4da63afcc0456118a1d0132bc6ef1523579aad2494f9db97e28f0e42e2",
+          "path": "tests/fixtures/backup-v5-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "a91b481216477f171c026205754c9c9112d22c37133d69de8eb3d445fff58a8e",
+          "path": "tests/fixtures/backup-v7/backup.tjbackup",
+          "exclude_reason": "binary"
+        },
+        {
+          "item_id": "bfd7bfb7c23f9db27c8d7ba6b484e7e35a3149a728c3bfe95968624829b9261b",
+          "path": "tests/fixtures/backup-v6-blocked/expected-views.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "c2eaaa4b6451f18c05955912b0685f8093eab3b5517fe7bbfab28779dbadff32",
+          "path": "tests/fixtures/backup-v4-blocked/downloaded.json",
+          "exclude_reason": "default_path"
+        },
+        {
+          "item_id": "cd3e57678ec2e6bf99259f4421d4b623a045ad1c8b68097bc1700b2db6e5b826",
+          "path": "evidence/D08/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f015fce45c9714a9ad883d898eef8dc90ca0c1475489629159047bea6b780231",
+          "path": "evidence/D08/suite-runs/T8.17-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f829af6675f5e2fafb21263ae576420084394896686bfb40573a9d62ac8e60fb",
+          "path": "evidence/D08/suite-runs/T8.17-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 42820
+  }
+}

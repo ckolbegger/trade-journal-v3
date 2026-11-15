@@ -1,0 +1,244 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 3,
+    "total_tokens": 271898,
+    "input_tokens": 268082,
+    "output_tokens": 3816,
+    "cache_read_tokens": 21632,
+    "elapsed": "1m18s"
+  },
+  "tool_calls": {
+    "total": 32,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 23,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "When the activating hook throws on a first-run restore, `inRoot` correctly aborts and rethrows, but this branch exits without discarding the prepared candidate. Unlike the existing-workspace branch below, the candidate database and its root registration remain after the failed apply. Catch activation failures here, discard the candidate, and rethrow; extend the first-run fault test to assert that no candidate remains.",
+      "existing_code": "          const activation = await persistence.activateFirstCandidate(token.candidateId, deps.restoreHooks?.activating);",
+      "start_line": 858,
+      "end_line": 858,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore-faults.test.ts",
+      "content": "Both hold tests assume the hook is reached within 50 ms, although preparation and activation perform multiple asynchronous database operations first. A slower CI runner can fail these tests despite correct behavior. Have the hook resolve a separate 'entered' promise and await that before checking the pending operation; release the gate in a finally block so failed assertions do not leave the restore held.",
+      "existing_code": "const settled = () =\u003e new Promise((resolve) =\u003e setTimeout(resolve, 50));",
+      "start_line": 26,
+      "end_line": 26,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/delivery/faults.ts",
+      "content": "`backup:read` does not fail when all exported stores are empty: `readExportSnapshot` only invokes `onBatch` for nonempty rows, so this callback is never reached and `runExport` can return `Built` and offer a download. This can occur when exporting a recovery database containing metadata but no authoritative records. Ensure the injected read failure also covers the zero-record snapshot (for example, fail from `onStart` when all counts are zero), and add a test for that case.",
+      "existing_code": "              readExportSnapshot(indexedDB, database, layout, () =\u003e {\n                throw new Error('injected fault: backup:read');\n              }, onStart),",
+      "start_line": 150,
+      "end_line": 152,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Workspace restore fault handling and persistence integration",
+      "files": [
+        "src/coordinators/workspace/index.ts",
+        "src/coordinators/workspace/restore-faults.test.ts",
+        "src/coordinators/workspace/restore.ts",
+        "src/coordinators/workspace/workspace.ts",
+        "src/persistence/persistence.ts"
+      ]
+    },
+    {
+      "label": "Fault delivery, application wiring, and fault-hook verification",
+      "files": [
+        "src/app/compose.ts",
+        "src/delivery/faults.ts",
+        "src/delivery/restore-faults.test.ts",
+        "src/main.tsx",
+        "tools/verify-no-fault-hooks.ts"
+      ]
+    }
+  ],
+  "session_id": "74b57a99-7e8e-4d4e-94b3-b73f7979f27a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "74b57a99-7e8e-4d4e-94b3-b73f7979f27a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "65026afb",
+      "resolved_base": "de83f1399b2c68f26a5cec54d76d717a93ef2b6f",
+      "resolved_head": "65026afb1df563b6db7f68264d4bff4b295fa572",
+      "exact_range": "de83f1399b2c68f26a5cec54d76d717a93ef2b6f..65026afb1df563b6db7f68264d4bff4b295fa572",
+      "source_artifact_sha256": "662a2b673802b8c0755e2691466379cc73c2ab023fa5e015a38c87e06de1d1a0"
+    },
+    "execution": {
+      "ocr_version": "v1.13.10",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "be7d6dfb2b1d6cfdf3b12c3452863239e84d80515e4226974fbc550c487ea548"
+        },
+        {
+          "item_id": "0e13bcad75d711a06abf4064e2c8a379c07c65f5f770258baacfce54e8c1c107",
+          "path": "tools/verify-no-fault-hooks.ts",
+          "fingerprint": "5dda195cd5bc5f6b216ae3e806f2fe2dbce2eebf7957772c95e752873d3780d0"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "6a425608ec70672f5573a952cc45523273c5c2a1cef0714fb14f57a35ea0ede0"
+        },
+        {
+          "item_id": "37c723850287b2b8047108a4fb9bc20675acb9c14793b2570bbd5af882c5962c",
+          "path": "src/coordinators/workspace/restore-faults.test.ts",
+          "fingerprint": "f427b0c7516d9ba4b00fca27c876d955051dec06833a6e1a868b22f57139a1aa"
+        },
+        {
+          "item_id": "6ec55e19b382f1e43856d0ab6fc5b462ca4ccf627ae31ca4e977f032058e4c13",
+          "path": "src/coordinators/workspace/index.ts",
+          "fingerprint": "5d3affe0b06063b20c7cde3d3c419925bbaafb1b83f2d0fdd7b45ed01cbccd78"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "63271e40c150308092eb3445d4a74b3554401d8c8f28195195430df6826f1e6d"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "379952e56b2f607bd20d528a61d8525876f3973dd2d1bd0fb1bad3746aacb1e5"
+        },
+        {
+          "item_id": "955b0a25a840a5072c8df601153dbe08c59e5a6c317ff6b226f794b7de1330b8",
+          "path": "src/delivery/faults.ts",
+          "fingerprint": "1190f7377331603ad39e2d88dd50a74f0cf238780dd65746bf074d382efaecb5"
+        },
+        {
+          "item_id": "dbf4cfa8ef09061aeed0f9caf4aed72317f43cb4e98c44dda5f50fca4102cc8f",
+          "path": "src/delivery/restore-faults.test.ts",
+          "fingerprint": "289bee0e2cdc36279d20f00fd1bb48afcfbae6dc55e4447d701642604bd06c82"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "efd897bbd1ff00db8fa0fa720541e21dfc95133e552633124d995dba2338a15e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "be7d6dfb2b1d6cfdf3b12c3452863239e84d80515e4226974fbc550c487ea548"
+        },
+        {
+          "item_id": "0e13bcad75d711a06abf4064e2c8a379c07c65f5f770258baacfce54e8c1c107",
+          "path": "tools/verify-no-fault-hooks.ts",
+          "fingerprint": "5dda195cd5bc5f6b216ae3e806f2fe2dbce2eebf7957772c95e752873d3780d0"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "6a425608ec70672f5573a952cc45523273c5c2a1cef0714fb14f57a35ea0ede0"
+        },
+        {
+          "item_id": "37c723850287b2b8047108a4fb9bc20675acb9c14793b2570bbd5af882c5962c",
+          "path": "src/coordinators/workspace/restore-faults.test.ts",
+          "fingerprint": "f427b0c7516d9ba4b00fca27c876d955051dec06833a6e1a868b22f57139a1aa"
+        },
+        {
+          "item_id": "6ec55e19b382f1e43856d0ab6fc5b462ca4ccf627ae31ca4e977f032058e4c13",
+          "path": "src/coordinators/workspace/index.ts",
+          "fingerprint": "5d3affe0b06063b20c7cde3d3c419925bbaafb1b83f2d0fdd7b45ed01cbccd78"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "63271e40c150308092eb3445d4a74b3554401d8c8f28195195430df6826f1e6d"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "379952e56b2f607bd20d528a61d8525876f3973dd2d1bd0fb1bad3746aacb1e5"
+        },
+        {
+          "item_id": "955b0a25a840a5072c8df601153dbe08c59e5a6c317ff6b226f794b7de1330b8",
+          "path": "src/delivery/faults.ts",
+          "fingerprint": "1190f7377331603ad39e2d88dd50a74f0cf238780dd65746bf074d382efaecb5"
+        },
+        {
+          "item_id": "dbf4cfa8ef09061aeed0f9caf4aed72317f43cb4e98c44dda5f50fca4102cc8f",
+          "path": "src/delivery/restore-faults.test.ts",
+          "fingerprint": "289bee0e2cdc36279d20f00fd1bb48afcfbae6dc55e4447d701642604bd06c82"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "efd897bbd1ff00db8fa0fa720541e21dfc95133e552633124d995dba2338a15e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "40d6cb514077dd9ea3211b3dd23155851e8dfa27128526a9088f64108c5f6ec3",
+          "path": "evidence/D08/suite-runs/T8.15-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6f9eb5cddf5db73b7685d6527cfc408f3495583bf9f3a12bcc1b9a30297f5677",
+          "path": "evidence/D08/suite-runs/T8.15-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "70c004480c7e01282f8c1ede396e602e961bf3abb03538fbdc45f4f3dd82b928",
+          "path": "evidence/D08/tdd-log/T8.15.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "dd87446c9918517390426bb2cf754ff68ddad81dcec98971cc1bd5a468f37768",
+          "path": "evidence/D08/suite-runs/T8.15-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e062c1e568bd77fa054a7124026cd0b5b379d1eafe4754d8f6e087423f49e707",
+          "path": "evidence/D08/suite-runs/T8.15-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 77833
+  }
+}

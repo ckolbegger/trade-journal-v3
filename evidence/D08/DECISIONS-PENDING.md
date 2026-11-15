@@ -337,3 +337,14 @@ The footprint check reports ManifestMismatch where A3's UnsupportedDataCapabilit
 Four review rounds on T8.11 (B1 to B8) each found a narrower timing case in the post-Restore handling (`src/app/post-restore.ts`). Most come from the trader changing page, or another tab restoring, while this tab's own Restore is still being applied. Each is fixed as found, so nothing waits on this answer.
 - (a) Recommended: keep the current fixes, no change to approved behaviour.
 - (b) Make the app refuse page changes while the apply runs (a short busy state across the whole shell), which removes the "left during the apply" cases. This changes the AppShell and A142's flow, so it needs a plan change.
+
+## Q22. T8.15 edited four files outside lane FT (raised 2026-11-15, holds only T8.15's merge and T8.21)
+
+Section 3.2 gives lane FT `src/delivery/faults.ts`, the fault stages in `backup.ts`, `restore.ts`, `src/persistence/` and `src/workers/`, and `tools/verify-no-fault-hooks.ts`. To let the faults build reach Restore, T8.15 also added optional wiring in four files no running lane edits at those lines:
+- `src/coordinators/workspace/workspace.ts`: `WorkspaceDeps.restoreHooks?` (passed to Restore);
+- `src/coordinators/workspace/index.ts`: re-exports the `RestoreStageHooks` type;
+- `src/app/compose.ts`: `ApplicationDeps.restoreHooks?`, passed to `createWorkspace`;
+- `src/main.tsx`: in the faults build only, passes `faults.restoreFaults()` and wraps the export port with `faultyExportPort`. The faults module is loaded by the existing dynamic import, so production contains none of it (`verify:no-fault-hooks` passes on `dist/`).
+
+- (a) Recommended: accept the four edits as part of T8.15 and record the extra files in r103's section 3.2. They are optional fields and faults-only wiring; without them the stages can't reach Restore.
+- (b) Reject them and find a way for the faults build to inject the hooks without touching these files (likely not possible without a new seam in `compose.ts`).
