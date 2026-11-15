@@ -28,7 +28,7 @@ The user has already decided (handoff section 4): D8R is a swarm; the whole audi
 | P110 | **Where the Today table's column dates come from.** (Open question 1; **answered 2026-11-15: as recommended**.) | **Market Data's read session names the session before its trading date, and the as-of exchange date. Trade Views gives the column dates on every Detail with a Position** (A232). This amends `specs/design/market-data.md`'s read-session paragraph, as revision 92 did for `nextSessionDate`. | The audit's suggestion, `replay.pending.date`. It is wrong once a session ends: at Thu 6:00 pm `pending` is Friday, but the column must read "Today, Thu Oct 15". The UI can't work the dates out itself (ADR 0001; only Market Data knows the calendar, decision 62). |
 | P111 | **Removing `nearest` edits frozen fixtures.** (Open question 2; **answered 2026-11-15: as recommended**.) | **Remove it, and delete exactly the `"nearest": true` lines from the five backup fixtures** that hold them. A diff check proves those 90 deletions are the only change. | Keep `nearest` in the view, unread, as a tech-debt item: no fixture changes, but the view keeps a field that nothing reads. |
 | P112 | **The Journal's one dated line drops the Anchor**, which the UI contract lists. (Open question 3; **answered 2026-11-15: as recommended**.) | **Amend `specs/design/ui-contract.md` line 88:** Trade Detail's Journal leaves out a Trade Anchor, since the page names the Trade. Any other Anchor still shows (Execution Anchors arrive with D13). | Keep "Trade XYZ" on each line. It meets the spec as written, but it repeats the page's subject on every entry, which the approved words drop. |
-| P113 | **The before-Marks words** (audit item 14). "Awaiting the close after Fri Oct 9" should name the session that brings the Marks. (Open question 4.) | **Trade Analysis's `AwaitingClose` gains `due`, the session after `after`, passed in from the read session's `nextSessionDate` (T8R.19). The words become "Due once the Mon Oct 12 session ends" (figure) and "Its Marks are due once the Mon Oct 12 session ends" (sentence). The label stays "Awaiting close"** (W34). These match W3 and W7's before-Marks words (revision 91). `calculation-words.ts` is shared, so the Trades list and the Review change too, which keeps C1. | (a) "Awaiting the Mon Oct 12 close": shorter, but it calls the Mark a close. (b) Change only Trade Detail, from `firstMarksDue`: no backend change, but it misses lots added after earlier Marks, and the list would still say "after Fri Oct 9". |
+| P113 | **The before-Marks words** (audit item 14). "Awaiting the close after Fri Oct 9" should name the session that brings the Marks. (Open question 4; **answered 2026-11-15: "Awaiting the Mon Oct 12 close"**, the user's choice over the recommendation.) | **Trade Analysis's `AwaitingClose` gains `due`, the session after `after`, passed in from the read session's `nextSessionDate` (T8R.19). The words become "Awaiting the Mon Oct 12 close" (figure and sentence). The label stays "Awaiting close"** (W34). The user's rule: "close" names the end of a market session and is correct there; a stock's or option's price is a Mark, never a close. `calculation-words.ts` is shared, so the Trades list and the Review change too, which keeps C1. | (a) "Due once the Mon Oct 12 session ends", the draft's recommendation, which wrongly treated "close" here as a price. (b) Change only Trade Detail, from `firstMarksDue`: no backend change, but it misses lots added after earlier Marks, and the list would still say "after Fri Oct 9". |
 | P114 | **The year for screen readers in a contract name** (approved: "the year spelled out for screen readers"). Most of the 20 call sites build a sentence or an attribute, not an element. (Open question 5.) | **Where the name stands alone** (a table cell, a `<dd>`, a heading, an accessible name), **the screen reader hears the full year**: an element's visible short name is `aria-hidden`, beside a visually hidden full name, and an attribute uses the full form. **Inside a sentence** ("Long 2 contracts of XYZ Dec 18 $55 Call"), it hears what is shown. | (b) Every site, sentences rebuilt as JSX: complete, but about one more task, and every text expectation on those sentences changes, since the hidden text joins the element's text. (c) No spoken year: needs the approved words changed. |
 | P115 | **Size check** (section 1.4). | **One breakdown, with a checkpoint critic (T8R.25)** after the UI tasks and before the tail. | Split at the backend seam (section 1.4). Open question 6. |
 | P116 | **No figure disappears between merges.** | **A task that removes a figure is blocked by the task that gives it its new home** (section 4.1). T8R.9 removes Today's At entry, dated card and condition lines only after Plan and Risk and the rail show them. T8R.6 merges only after Price History shows the provenance it removes from Today. | Remove and add in one task: fewer edges, but one task then owns files in two lanes. |
@@ -121,7 +121,7 @@ Run on `6b11c8bc`. Line numbers are on that commit. The full Names list is in th
 
 **Checks.**
 - **No new ESLint rule.** The cockpit import rule (A216) covers every new props file. The UI's "no arithmetic" rule stays a review point, as in D08P.
-- **`eslint.wording.config.js`:** `PHRASES` holds "Awaiting the close" and "Awaiting the next close". T8R.24 adds W34's fixed phrases to `PHRASES`, and keeps "Awaiting close" (the label). Only `calculation-words.ts` may then write them.
+- **`eslint.wording.config.js`:** `PHRASES` holds "Awaiting the close" and "Awaiting the next close". W34's figure splits its fixed words around the date ("Awaiting the … close"), so T8R.24 extends the rule to match "Awaiting the <date> close", and keeps "Awaiting close" (the label). Only `calculation-words.ts` may then write them.
 - **`verify:fixtures`** fails until T8R.20's fixture edit, which is why T8R.20 owns both.
 - **Playwright filter:** `test:e2e:2` passes `e2e/d8`, which also matches `e2e/d8r/`, so no `package.json` change is needed. `tdd.sh` maps `T8R.n` to `evidence/D08R`, and `full-suite.sh` maps `evidence/D08R` to `e2e/d8r`.
 
@@ -152,7 +152,7 @@ Approved by the user during and after the audit (sections 15 and 19). Task brief
 | W32 | Plan and Risk, a breached Stop | "Risk to stop $60.00 · 0.24R past" (and "Breached · $0.50 past" in the Distance cell). |
 | W33 | Price History, each Mark cell | "Manual · saved 2026-10-14 17:00"; on a corrected Mark, then "Corrected: <reason>". |
 | — | Kept words | Under the Today table: the Stale context line and "Mark unavailable for XYZ on Wed Oct 14: your acknowledgment, not a price", in their existing words (revision 98 kept "close" there). Deviations and Planned-Leg Fulfillment keep their words as Plan and Risk's last groups; Deviations is hidden when there are none, and superseded ones stay, struck through. |
-| **W34 (proposed, not approved)** | `AwaitingClose` (P113) | Label "Awaiting close" (unchanged). Figure "Due once the Mon Oct 12 session ends". Sentence "Its Marks are due once the Mon Oct 12 session ends". Without `due` (no calendar), the existing words. Open question 4. |
+| **W34 (approved 2026-11-15)** | `AwaitingClose` (P113) | Label "Awaiting close" (unchanged). Figure and sentence "Awaiting the Mon Oct 12 close". Without `due` (no calendar), the existing words. |
 
 ---
 
@@ -505,12 +505,11 @@ describe("getTradeDetail: open lots' average (A236)")
 
 ### T8R.24 The before-Marks words
 
-Seams: `calculation-words`, then each screen through its tests. W34 (once approved), P113. Every "Awaiting the close after" expectation in section 1.5's Texts table changes, on Trade Detail, the Trades list and the Review alike (C1).
+Seams: `calculation-words`, then each screen through its tests. W34, P113. Every "Awaiting the close after" expectation in section 1.5's Texts table changes, on Trade Detail, the Trades list and the Review alike (C1).
 
 ```text
 describe("AwaitingClose words (W34)")
-  it should word a figure "Due once the Mon Oct 12 session ends"
-  it should word a sentence "Its Marks are due once the Mon Oct 12 session ends"
+  it should word a figure and a sentence "Awaiting the Mon Oct 12 close"
   it should keep the existing words when due is absent
 ```
 
@@ -612,7 +611,7 @@ Asked one at a time, in this order; each answer is recorded here.
 1. **Today's column dates (P110).** Should Market Data's read session name the session before its date and the as-of exchange date, with a spec amendment, so Trade Views can give Today's column dates? Recommended: yes. **Answered 2026-11-15: yes (a).** The user's rule: reviewing on Thu Nov 19 after the close, Today is Thu Nov 19, not the Friday session that hasn't started; the audit's `pending.date` would give Friday.
 2. **`nearest` and the frozen fixtures (P111).** Remove the field and delete its 90 lines from five frozen backup fixtures, or keep it unread? Recommended: remove. **Answered 2026-11-15: remove (a).** Only the expected-views files change; the backup data does not.
 3. **The Anchor on Journal lines (P112).** Amend the UI contract so Trade Detail's Journal leaves out the Trade Anchor? Recommended: yes. **Answered 2026-11-15: yes (a).** Any other Anchor, such as an Execution's from D13, still shows.
-4. **The before-Marks words (P113, W34).** "Due once the Mon Oct 12 session ends", with Trade Analysis naming the session? Recommended: yes. *Queued.*
+4. **The before-Marks words (P113, W34).** "Due once the Mon Oct 12 session ends", with Trade Analysis naming the session? Recommended: yes. **Answered 2026-11-15: "Awaiting the Mon Oct 12 close"** (option b), with Trade Analysis naming the session. The user's rule: "close" is correct for the end of a market session; a stock's or option's price is a Mark, never a close. The label "Awaiting close" stays.
 5. **The spoken year (P114).** Only where a contract name stands alone, or in every sentence too? Recommended: where it stands alone. *Queued.*
 6. **One breakdown or a split (P115).** Recommended: one breakdown with a checkpoint critic. *Queued.*
 
