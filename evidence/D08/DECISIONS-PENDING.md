@@ -338,6 +338,8 @@ Four review rounds on T8.11 (B1 to B8) each found a narrower timing case in the 
 - (a) Recommended: keep the current fixes, no change to approved behaviour.
 - (b) Make the app refuse page changes while the apply runs (a short busy state across the whole shell), which removes the "left during the apply" cases. This changes the AppShell and A142's flow, so it needs a plan change.
 
+**Answer (2026-11-15): (a).** Keep the post-Restore fixes; no change to approved behaviour, no busy state across the shell.
+
 ## Q22. T8.15 edited four files outside lane FT (raised 2026-11-15, holds only T8.15's merge and T8.21)
 
 Section 3.2 gives lane FT `src/delivery/faults.ts`, the fault stages in `backup.ts`, `restore.ts`, `src/persistence/` and `src/workers/`, and `tools/verify-no-fault-hooks.ts`. To let the faults build reach Restore, T8.15 also added optional wiring in four files no running lane edits at those lines:
@@ -349,14 +351,20 @@ Section 3.2 gives lane FT `src/delivery/faults.ts`, the fault stages in `backup.
 - (a) Recommended: accept the four edits as part of T8.15 and record the extra files in r103's section 3.2. They are optional fields and faults-only wiring; without them the stages can't reach Restore.
 - (b) Reject them and find a way for the faults build to inject the hooks without touching these files (likely not possible without a new seam in `compose.ts`).
 
+**Answer (2026-11-15): (a).** Accept the four edits as part of T8.15; r103 adds `workspace.ts`, `index.ts`, `compose.ts` and `main.tsx` (faults wiring only) to lane FT in section 3.2. T8.15 merges once its follow-up reviews are clean.
+
 ## Q23. Bump the benchmark generator version to 8? (T8.18, raised 2026-11-15, holds T8.19 only)
 
 T8.18 replaced the command-driven generator with one that writes the backup file directly. The counts are the same as version 7's dataset, but the data is new. `BENCH_GENERATOR_VERSION` and the build marker live in `src/app/bench.ts`, which lane BG doesn't own, so they still say 7.
 - (a) Recommended: bump to 8 (version and marker) in a small follow-up, recorded as a section 3.2 addition in r103, so a cached version-7 profile is never mistaken for the new data.
 - (b) Keep 7, since the counts are unchanged.
 
+**Answer (2026-11-15): (a).** Bump `BENCH_GENERATOR_VERSION` and the build marker in `src/app/bench.ts` to 8 (and the artifact `releaseId`), in follow-up T8.18-F1 in lane BG; r103 adds `src/app/bench.ts` to lane BG.
+
 ## Q24. Where do the benchmark's expected Open list rows and Review order come from? (T8.18, raised 2026-11-15, holds T8.19 only)
 
 The old generator drove the app in the browser, so it could record the Open list's rendered rows and the Daily Review's attention-ranked order as expected values. The new one runs in Node without the app's screens, so it writes `expected-open-rows.json` empty, and its Review membership is sorted by Trade id rather than the app's order. `bench-run`'s full mode waits for rows and would fail on the empty file.
 - (a) Recommended: the generator computes the expected Open rows and Review order in Node by calling the app's own view functions over the generated records (no browser, no Restore). This keeps an expected value that is independent of the restored profile. A follow-up in lane BG.
 - (b) T8.19 takes the rows and order from the restored profile's first render, then checks every later render equals them (as `bench-run`'s partial-dataset mode already does). Simpler, but the first render is no longer checked against an independent expectation.
+
+**Answer (2026-11-15): (a).** The generator computes the expected Open list rows and the Daily Review order in Node with the app's own view functions over the generated records, and writes them to `expected-open-rows.json` and `dataset.json`. Follow-up T8.18-F2 in lane BG, with T8.18-F1.
