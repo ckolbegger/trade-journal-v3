@@ -1394,3 +1394,5 @@ Reviewer note, not a bug task: `D07S` has two plan files with a Progress section
 **D8-Retro-1a-B6** (`7353b7f9`, test only): case 6's fixture gains `D99-alpha-notes.md`, a non-handoff file with no Progress heading. Mutation red: with the Progress check disabled, case 6 fails ("no Progress table in …/D99-alpha-notes.md"); restored, it passes. ocr review (`ocr/D8-Retro-1a-B6-7353b7f9.json`): 0 comments, no findings.
 
 **D8-Retro-1a-B7** (`246aa2b5`): the file choice requires a `|` row under the Progress heading. Case 11 red then green (its no-table scenario passes before and after, as a guard). ocr review pending.
+
+**D8-Retro-1a-B7 ocr review** (`246aa2b5`, `ocr/D8-Retro-1a-B7-246aa2b5.json`): 0 comments, no findings.
