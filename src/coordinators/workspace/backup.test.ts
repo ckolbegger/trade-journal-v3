@@ -331,6 +331,8 @@ describe('streamed export (A128, P29)', () => {
     const stack = await w7Stack();
     const written = vi.spyOn(ArtifactWriter.prototype, 'writeRecord');
     const writtenWhenDelivered: number[] = [];
+    const writtenAfterDelivery: number[] = [];
+    let writtenAtEnd: number | undefined;
     try {
       const run = await runExport(
         (database, layout, onBatch, onStart) =>
@@ -339,19 +341,24 @@ describe('streamed export (A128, P29)', () => {
             layout,
             (batch) => {
               writtenWhenDelivered.push(written.mock.calls.length);
-              return onBatch(batch);
+              onBatch(batch);
+              writtenAfterDelivery.push(written.mock.calls.length);
             },
             onStart,
           ),
         { databaseName: W7_DATABASE, layout: exportLayoutFor(7)!, exportKind: 'Normal', createdAt: EXPORT_AT, releaseId: 'r', seedManifestVersions: { catalog: 1, journal: 1 } },
       );
+      writtenAtEnd = written.mock.calls.length;
       expect(run.kind).toBe('Built');
     } finally {
       written.mockRestore();
     }
-    // Every batch is delivered with all earlier batches already in the artifact.
+    // Every batch is delivered with all earlier batches already in the artifact: nothing is written
+    // between one delivery returning and the next arriving, or after the last, so no record is buffered.
     expect(writtenWhenDelivered.length).toBeGreaterThan(2);
-    writtenWhenDelivered.slice(1).forEach((count, index) => expect(count).toBeGreaterThan(writtenWhenDelivered[index]!));
+    expect(writtenAfterDelivery).toHaveLength(writtenWhenDelivered.length);
+    writtenWhenDelivered.slice(1).forEach((count, index) => expect(count).toBe(writtenAfterDelivery[index]));
+    expect(writtenAtEnd).toBe(writtenAfterDelivery.at(-1));
   });
 
   it('should return Conflict before writing any record when the binding differs', async () => {
