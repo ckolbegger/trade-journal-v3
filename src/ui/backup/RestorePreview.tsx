@@ -42,7 +42,7 @@ function countRows(restored: RestoreCounts, current: RestoreCounts | null): read
 
 function cell(row: CountRow, counts: RestoreCounts) {
   const versions = row.history === undefined ? undefined : counts.versions[row.history];
-  return versions === undefined ? number(row.value(counts)) : `${number(row.value(counts))} (${number(versions)} versions)`;
+  return versions === undefined ? number(row.value(counts)) : `${number(row.value(counts))} (${number(versions)} ${versions === 1 ? 'version' : 'versions'})`;
 }
 
 export function CountsTable({ restored, current }: { readonly restored: RestoreCounts; readonly current: RestoreCounts | null }) {

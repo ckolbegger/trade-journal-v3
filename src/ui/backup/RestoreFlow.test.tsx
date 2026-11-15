@@ -679,7 +679,18 @@ describe('Restore screen gaps (T8.13-F1)', () => {
     expect(row('Trades')).toEqual(['6 (5 versions)', '6']);
     expect(row('Journal entries')).toEqual(['4 (2 versions)', '4']);
     for (const label of ['Planned Trades', 'Open Trades', 'Closed Trades', 'Journal entries: Plan', 'Reflections owed: Open']) expect(row(label)[0]).not.toMatch(/versions/);
-    expect(table.textContent?.match(/versions/g)).toHaveLength(3);
+    expect(table.textContent?.match(/versions?\)/g)).toHaveLength(3);
+  });
+
+  it('should say 1 version and not 1 versions when a kind has exactly one version', async () => {
+    const ctx = setup();
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ counts: counts({ versions: { trades: 1, entries: 1, debts: 1 } }) }) });
+    const table = screen.getByRole('table');
+    const row = (label: string) => within(within(table).getByRole('rowheader', { name: label }).closest('tr')!).getAllByRole('cell').map((c) => c.textContent);
+    expect(row('Trades')[0]).toMatch(/\(1 version\)$/);
+    expect(row('Journal entries')[0]).toMatch(/\(1 version\)$/);
+    expect(row('Reflections owed')[0]).toMatch(/\(1 version\)$/);
+    expect(table.textContent).not.toContain('1 versions');
   });
 
   it('should show the reflection debt version count once on a Reflections owed total row', async () => {
