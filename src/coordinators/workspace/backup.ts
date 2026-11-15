@@ -242,7 +242,12 @@ export function createBackupOperations(deps: BackupDeps): BackupOperations {
       const verified = await verifyArtifact(request.file);
       if (verified.kind !== 'Verified') return { kind: 'NotVerified', reason: verified.kind, detail: verified.detail };
       const expected = request.expectedBinding;
-      const differing = verified.fullDigest !== request.expectedFullDigest ? 'fullDigest' : verified.binding.databaseName !== expected.databaseName ? 'databaseName' : verified.binding.contentRevision !== expected.contentRevision ? 'contentRevision' : undefined;
+      const comparisons = [
+        { check: 'fullDigest', same: verified.fullDigest === request.expectedFullDigest },
+        { check: 'databaseName', same: verified.binding.databaseName === expected.databaseName },
+        { check: 'contentRevision', same: verified.binding.contentRevision === expected.contentRevision },
+      ] as const;
+      const differing = comparisons.find((comparison) => !comparison.same)?.check;
       if (differing) {
         return { kind: 'NotVerified', reason: 'DifferentArtifact', detail: { stage: 'Verify', name: 'DifferentArtifact', message: `The backup differs from the expected one in its ${differing}`, context: { check: differing } } };
       }
