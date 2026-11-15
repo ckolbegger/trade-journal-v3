@@ -359,14 +359,14 @@ describe('preview', () => {
   });
 });
 
-function restored(next: 'Trades' | 'InstitutionAndAccountOnboarding'): ApplyPreparedRestoreResult {
+function restored(next: 'Trades' | 'InstitutionAndAccountOnboarding', overrides: Partial<RestoreCounts> = {}): ApplyPreparedRestoreResult {
   return {
     kind: 'Restored',
     receipt: {
       artifactDigest: 'digest-1',
       replacedBinding: BINDING,
       newBinding: BINDING,
-      counts: counts({ marks: 55 }),
+      counts: counts({ marks: 55, ...overrides }),
       migrations: { steps: [], seedAdditions: [] },
       repairs: [],
       readiness: {} as never,
@@ -574,6 +574,26 @@ describe('Restore screen gaps (T8.13-F1)', () => {
     expect(row('Trades')).toEqual(['6 (5 versions)', '6']);
     expect(row('Journal entries')).toEqual(['4 (2 versions)', '4']);
     for (const label of ['Planned Trades', 'Open Trades', 'Closed Trades', 'Journal entries: Plan', 'Reflections owed: Open']) expect(row(label)[0]).not.toMatch(/versions/);
-    expect(table.textContent?.match(/versions/g)).toHaveLength(2);
+    expect(table.textContent?.match(/versions/g)).toHaveLength(3);
+  });
+
+  it('should show the reflection debt version count once on a Reflections owed total row', async () => {
+    const ctx = setup();
+    await toPreview(ctx, { kind: 'Prepared', token: TOKEN, preview: preview({ counts: counts({ debtsByStatus: { Open: 2, Satisfied: 3 }, versions: { trades: 5, entries: 2, debts: 4 } }) }) });
+    const rowOf = (label: string) => within(within(screen.getByRole('table')).getByRole('rowheader', { name: label }).closest('tr')!).getAllByRole('cell').map((c) => c.textContent);
+    expect(rowOf('Reflections owed')).toEqual(['5 (4 versions)', '2']);
+    expect(rowOf('Reflections owed: Open')[0]).toBe('2');
+    expect(rowOf('Reflections owed: Satisfied')[0]).toBe('3');
+    const labels = within(screen.getByRole('table')).getAllByRole('rowheader').map((h) => h.textContent);
+    expect(labels.indexOf('Reflections owed') + 1).toBe(labels.indexOf('Reflections owed: Open'));
+    const { facade, user } = ctx;
+    await user.click(UNDERSTAND());
+    await user.click(screen.getByRole('radio', { name: 'Replace without a backup' }));
+    await user.click(screen.getByRole('checkbox', { name: /cannot be recovered/ }));
+    facade.respond('applyPreparedRestore', restored('Trades', { debtsByStatus: { Open: 2 }, versions: { debts: 4 } }));
+    await user.click(REPLACE());
+    await screen.findByRole('heading', { name: 'Restore complete' });
+    const summary = within(screen.getByRole('table').querySelector('tbody')!).getByRole('rowheader', { name: 'Reflections owed' }).closest('tr')!;
+    expect(within(summary).getByRole('cell').textContent).toBe('2 (4 versions)');
   });
 });

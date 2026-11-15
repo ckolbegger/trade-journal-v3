@@ -15,7 +15,7 @@ interface CountRow {
 function countRows(restored: RestoreCounts, current: RestoreCounts | null): readonly CountRow[] {
   const keys = (pick: (c: RestoreCounts) => Readonly<Record<string, number>>) => [...new Set([...Object.keys(pick(restored)), ...Object.keys(current ? pick(current) : {})])];
   return [
-    // The version count shows once per kind: here for Trades, on the Journal entries row for entries.
+    // The version count shows once per kind: here for Trades, on the Journal entries row for entries and on the Reflections owed row for debts.
     { label: 'Trades', value: (c) => c.tradesByLifecycle.Planned + c.tradesByLifecycle.Open + c.tradesByLifecycle.Closed, history: 'trades' },
     { label: 'Planned Trades', value: (c) => c.tradesByLifecycle.Planned },
     { label: 'Open Trades', value: (c) => c.tradesByLifecycle.Open },
@@ -27,6 +27,7 @@ function countRows(restored: RestoreCounts, current: RestoreCounts | null): read
     { label: 'Journal entries', value: (c) => Object.values(c.entriesByType).reduce((sum, n) => sum + n, 0), history: 'entries' },
     ...keys((c) => c.entriesByType).map((type) => ({ label: `Journal entries: ${type}`, value: (c: RestoreCounts) => c.entriesByType[type] ?? 0 })),
     { label: 'Declined reflections', value: (c) => c.declines },
+    { label: 'Reflections owed', value: (c) => Object.values(c.debtsByStatus).reduce((sum, n) => sum + n, 0), history: 'debts' },
     ...keys((c) => c.debtsByStatus).map((status) => ({ label: `Reflections owed: ${status}`, value: (c: RestoreCounts) => c.debtsByStatus[status] ?? 0 })),
     { label: 'Marks', value: (c) => c.marks },
     { label: ACKNOWLEDGED_UNAVAILABLE_COUNT_LABEL, value: (c) => c.acknowledgments },
