@@ -13,7 +13,7 @@ export {
   type WorkspaceStatus,
 } from './workspace.ts';
 export type { BackupDeps, BackupOperations, BackupPorts } from './backup.ts';
-export type { RestoreDeps, RestoreOperations } from './restore.ts';
+export type { RestoreDeps, RestoreOperations, RestoreStageHooks } from './restore.ts';
 export type {
   ApplyPreparedRestoreRequest,
   ApplyRestoreOutcome,

@@ -62,7 +62,8 @@ async function start(container: HTMLElement) {
     capacityRequirement: CAPACITY_REQUIREMENT,
     locks: createWebLocksLifecycleLock(navigator.locks),
     migrationHooks: faults?.migrationFaults(),
-    exportPort: browserExportPort(),
+    restoreHooks: faults?.restoreFaults(),
+    exportPort: faults ? faults.faultyExportPort(browserExportPort(), window.indexedDB) : browserExportPort(),
     download: browserDownload(),
     fileSelection: browserFileSelection(),
   });

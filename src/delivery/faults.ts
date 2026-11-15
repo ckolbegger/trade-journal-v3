@@ -5,7 +5,9 @@
 // `__tjFaults` are absent there.
 import { Temporal } from 'temporal-polyfill';
 import type { Clock } from '../domain/time/index.ts';
-import type { MigrationStageHooks } from '../coordinators/workspace/index.ts';
+import type { MigrationStageHooks, RestoreStageHooks } from '../coordinators/workspace/index.ts';
+import { runExport, type ExportPort } from '../coordinators/workspace/backup-export.ts';
+import { readExportSnapshot } from '../persistence/export-snapshot.ts';
 import type { HostPort } from './host.ts';
 import type { ReadinessCheckName } from './runtime-not-writable.ts';
 
@@ -19,8 +21,28 @@ const CHECKS: readonly ReadinessCheckName[] = ['diagnostic', 'capacity', 'contro
 export type MigrationFault = 'migration:validate' | 'migration:activate' | 'migration:hold';
 export const MIGRATION_FAULTS: readonly MigrationFault[] = ['migration:validate', 'migration:activate', 'migration:hold'];
 
-export type FaultName = ReadinessCheckName | MigrationFault;
-const FAULTS: readonly FaultName[] = [...CHECKS, ...MIGRATION_FAULTS];
+// D8 T8.15. backup:read: the export's snapshot read fails at its first batch. restore:apply:<store>:
+// the recheck of the module that holds that store returns CandidateChanged. restore:activate: the root
+// activation transaction aborts. restore:hold-prepare: preparation waits after staging the records.
+// restore:hold-activated: apply waits after the pointer switch, before the readiness rerun. Each hold
+// lasts until release().
+const RESTORE_APPLY_STORES = ['catalog', 'observations', 'trades', 'journalTypes', 'journalDefinitions', 'journalEntries', 'journalDeclines', 'journalDebts'] as const;
+export type RestoreFault =
+  | 'backup:read'
+  | `restore:apply:${(typeof RESTORE_APPLY_STORES)[number]}`
+  | 'restore:activate'
+  | 'restore:hold-prepare'
+  | 'restore:hold-activated';
+export const BACKUP_RESTORE_FAULTS: readonly RestoreFault[] = [
+  'backup:read',
+  ...RESTORE_APPLY_STORES.map((store): RestoreFault => `restore:apply:${store}`),
+  'restore:activate',
+  'restore:hold-prepare',
+  'restore:hold-activated',
+];
+
+export type FaultName = ReadinessCheckName | MigrationFault | RestoreFault;
+const FAULTS: readonly FaultName[] = [...CHECKS, ...MIGRATION_FAULTS, ...BACKUP_RESTORE_FAULTS];
 
 declare global {
   interface Window {
@@ -30,7 +52,7 @@ declare global {
       readonly marker: string;
       // Replaces the active faults.
       set(faults: readonly FaultName[]): void;
-      // Lets a migrator held by migration:hold continue to activation.
+      // Lets a migrator or Restore held by a hold fault continue.
       release(): void;
     };
   }
@@ -113,6 +135,37 @@ export function migrationFaults(): MigrationStageHooks {
     activating: () => {
       if (faults().has('migration:activate')) throw new Error('injected fault: migration:activate');
     },
+  };
+}
+
+// The export port, failing the snapshot read at its first batch while backup:read is active. The page
+// runs that export itself (real read, same pipeline) because the worker cannot see `?faults=`.
+export function faultyExportPort(real: ExportPort, indexedDB: IDBFactory): ExportPort {
+  faults();
+  return {
+    run: (job) =>
+      faults().has('backup:read')
+        ? runExport(
+            (database, layout, _onBatch, onStart) =>
+              readExportSnapshot(indexedDB, database, layout, () => {
+                throw new Error('injected fault: backup:read');
+              }, onStart),
+            job,
+          )
+        : real.run(job),
+  };
+}
+
+// The Restore stage-boundary hooks, each acting only while its fault is active.
+export function restoreFaults(): RestoreStageHooks {
+  faults();
+  return {
+    staged: () => (faults().has('restore:hold-prepare') ? held : Promise.resolve()),
+    recheck: (stores) => stores.find((store) => faults().has(`restore:apply:${store}` as RestoreFault)),
+    activating: () => {
+      if (faults().has('restore:activate')) throw new Error('injected fault: restore:activate');
+    },
+    activated: () => (faults().has('restore:hold-activated') ? held : Promise.resolve()),
   };
 }
 

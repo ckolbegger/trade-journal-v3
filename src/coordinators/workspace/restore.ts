@@ -77,6 +77,19 @@ export interface RestoreDeps<S> extends BackupDeps {
   readonly locks: LifecycleLock;
   readonly sessionPolicy: MarketDataDeps['sessionPolicy'];
   readonly status: () => Promise<S>;
+  readonly restoreHooks?: RestoreStageHooks;
+}
+
+// Called at Restore stage boundaries. Production passes none; T8.15's faults build hooks here.
+export interface RestoreStageHooks {
+  // Preparation has staged the records into the candidate; resolving lets it go on.
+  readonly staged?: () => Promise<void>;
+  // Given the stores of the module being rechecked, names one the recheck reports as changed.
+  readonly recheck?: (stores: readonly string[]) => string | undefined;
+  // Runs inside the root activation transaction after its writes; a throw aborts it.
+  readonly activating?: () => void;
+  // The pointer has switched; resolving lets apply go on to the readiness rerun.
+  readonly activated?: () => Promise<void>;
 }
 
 export interface RestoreOperations<S> {
@@ -538,6 +551,8 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
       return { kind: 'Cancelled', liveBinding: live };
     };
 
+    await deps.restoreHooks?.staged?.();
+
     // Seed: genuinely missing defaults join the candidate without overwriting customization (A132 step 7).
     const staged = persistence.candidateSource(candidate);
     const catalogSeed = prepareSeed((await collect(staged, 'catalog')) as unknown as CatalogRecord[], D7_CATALOG_MANIFEST, deps.ids);
@@ -699,11 +714,16 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
 
         // Each module's recheck of its candidate section against what preparation recorded (A135 step 4).
         const candidateSource = persistence.candidateSource(token.candidateId);
+        // The faults build's recheck hook may name one of a module's stores as changed.
+        const checked = async (stores: readonly string[], recheck: () => Promise<{ readonly kind: string; readonly store?: string }>) => {
+          const store = deps.restoreHooks?.recheck?.(stores);
+          return store === undefined ? recheck() : { kind: 'CandidateChanged', store };
+        };
         const rechecks = [
-          { section: 'catalog', run: () => applyCatalog(candidateSource, prepared.sections.catalog) },
-          { section: 'marketData', run: () => applyMarketData(candidateSource, prepared.sections.marketData) },
-          { section: 'trades', run: () => applyTrades(candidateSource, prepared.sections.trades) },
-          { section: 'journal', run: () => applyJournal(candidateSource, prepared.sections.journal) },
+          { section: 'catalog', run: () => checked(['catalog'], () => applyCatalog(candidateSource, prepared.sections.catalog)) },
+          { section: 'marketData', run: () => checked(['observations'], () => applyMarketData(candidateSource, prepared.sections.marketData)) },
+          { section: 'trades', run: () => checked(['trades'], () => applyTrades(candidateSource, prepared.sections.trades)) },
+          { section: 'journal', run: () => checked(['journalTypes', 'journalDefinitions', 'journalEntries', 'journalDeclines', 'journalDebts'], () => applyJournal(candidateSource, prepared.sections.journal)) },
         ];
         // A recheck that cannot read the candidate (a value it cannot digest) means the candidate changed too, in that section.
         let changedStore: string | undefined;
@@ -736,7 +756,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         if (live === 'NoWorkspace') {
           let activation: Awaited<ReturnType<typeof persistence.activateFirstCandidate>>;
           try {
-            activation = await persistence.activateFirstCandidate(token.candidateId);
+            activation = await persistence.activateFirstCandidate(token.candidateId, deps.restoreHooks?.activating);
           } catch (error) {
             // Nothing was activated, so the candidate and its preparation go; the failure itself still reaches the caller.
             await dropCandidate(token.candidateId).catch(() => undefined);
@@ -747,7 +767,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
             held.delete(token.candidateId);
             return { kind: 'AlreadyInitialized', databaseName: activation.databaseName, liveBinding: await liveBinding() };
           }
-        } else if ((await persistence.activateCandidate(token.candidateId, live.databaseName)).kind === 'Aborted') {
+        } else if ((await persistence.activateCandidate(token.candidateId, live.databaseName, deps.restoreHooks?.activating)).kind === 'Aborted') {
           await dropCandidate(token.candidateId);
           throw new Error('The root transaction that switches the Workspace was aborted');
         }
@@ -758,6 +778,7 @@ export function createRestoreOperations<S>(deps: RestoreDeps<S>, backup: BackupO
         } catch {
           // Other tabs also learn of the replacement through the versionchange fallback.
         }
+        await deps.restoreHooks?.activated?.();
         const readiness = await deps.session.recheck();
         const newBinding = await persistence.describeDatabase(token.candidateId);
         return {

@@ -188,7 +188,7 @@ export interface Persistence {
   // Activation when no Workspace exists: adds the pointer and removes the candidate entry in one
   // root transaction. When a pointer was added meanwhile, deletes the candidate instead and reports
   // the existing database (D8 A135, D1 A12).
-  activateFirstCandidate(candidate: string): Promise<{ readonly kind: 'Activated' } | { readonly kind: 'AlreadyInitialized'; readonly databaseName: string }>;
+  activateFirstCandidate(candidate: string, inFlip?: () => void): Promise<{ readonly kind: 'Activated' } | { readonly kind: 'AlreadyInitialized'; readonly databaseName: string }>;
   // Reads a Workspace database's authoritative records for a backup in one readonly snapshot,
   // calling `onBatch` synchronously per batch of at most 500 records (D8 P29, A128). The database
   // is named, not the current Workspace, so a blocked older database reads with its own layout
@@ -530,12 +530,13 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       return run;
     },
 
-    async activateFirstCandidate(candidate) {
+    async activateFirstCandidate(candidate, inFlip) {
       const existing = await inRoot(async (store) => {
         const pointer = (await store.get(POINTER_KEY)) as PointerRecord | undefined;
         if (pointer) return pointer.databaseName;
         await store.add({ key: POINTER_KEY, databaseName: candidate });
         await putNames(store, CANDIDATES_KEY, (await listed(store, CANDIDATES_KEY)).filter((n) => n !== candidate));
+        inFlip?.();
         return undefined;
       });
       if (existing === candidate) return { kind: 'Activated' };

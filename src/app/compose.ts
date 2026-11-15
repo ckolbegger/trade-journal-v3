@@ -2,7 +2,7 @@ import { createMutationGuard } from '../coordinators/mutation-guard.ts';
 import { createDailyReview } from '../coordinators/daily-review/index.ts';
 import { createTradeViews, type ReplayTradeRequest, type ReplayTradeResult, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
 import { createTradeWorkflows, type PositionChangeCommand } from '../coordinators/trade-workflows/index.ts';
-import { createWorkspace, installedCapabilities, type MigrationStageHooks } from '../coordinators/workspace/index.ts';
+import { createWorkspace, installedCapabilities, type MigrationStageHooks, type RestoreStageHooks } from '../coordinators/workspace/index.ts';
 import type { ExportPort } from '../coordinators/workspace/backup-export.ts';
 import type { DownloadPort, FileSelectionPort, HostPort } from '../delivery/host.ts';
 import { createReadinessSession, evaluateReadiness, type CapacityRequirement, type ReadinessSession } from '../delivery/readiness.ts';
@@ -29,6 +29,8 @@ export interface ApplicationDeps {
   readonly locks: LifecycleLock;
   // Migration stage-boundary hooks: only the faults build supplies them (D2 T2.16).
   readonly migrationHooks?: MigrationStageHooks;
+  // Restore stage-boundary hooks: only the faults build supplies them (D8 T8.15).
+  readonly restoreHooks?: RestoreStageHooks;
   // Only the bench build's generator supplies this (D2 T2.20): while it returns true, mutations
   // skip the per-mutation readiness recheck (D1 A4).
   readonly skipMutationRecheck?: () => boolean;
@@ -78,7 +80,7 @@ export async function createApplication(deps: ApplicationDeps) {
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
-  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks, backup: { ...(deps.exportPort && { export: deps.exportPort }), ...(deps.download && { download: deps.download }) } });
+  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks, restoreHooks: deps.restoreHooks, backup: { ...(deps.exportPort && { export: deps.exportPort }), ...(deps.download && { download: deps.download }) } });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const marketData = createMarketData({ persistence, ids: deps.ids, clock: deps.clock, sessionPolicy });
   // Daily Review shares this one Market Data (D4 A39): it never builds its own or sees the policy.

@@ -20,7 +20,7 @@ import type {
   PrepareRestoreRequest,
   PrepareRestoreResult,
 } from './backup-types.ts';
-import { createRestoreOperations } from './restore.ts';
+import { createRestoreOperations, type RestoreStageHooks } from './restore.ts';
 import { installedCapabilities, type InstalledCapabilityManifest } from './capabilities.ts';
 import { migrate, type MigrationBlocked, type MigrationReceipt, type MigrationStageHooks } from './migration.ts';
 
@@ -39,6 +39,8 @@ export interface WorkspaceDeps {
   readonly locks: LifecycleLock;
   // Stage-boundary hooks for the faults build (T2.16); production passes none.
   readonly migrationHooks?: MigrationStageHooks;
+  // Restore stage-boundary hooks for the faults build (T8.15); production passes none.
+  readonly restoreHooks?: RestoreStageHooks;
   // The host seams backup uses (D8 T8.23); composition supplies them in T8.11.
   readonly backup?: BackupPorts;
 }
