@@ -1060,3 +1060,7 @@ Verification (the row): `npm run build:bench && npm run bench:generate`. Run in 
 - Artifact: 20,869,681 bytes compressed, 453,413,121 uncompressed, 432,962 lines; full digest `14fadb92184fe981f9e4e29701af5dd0fc22dfd6e11e35be70c8a60692f0d846`; file SHA-256 `48b58c6eb41a0cd03ed7a8ea1af98b38110ba9c7e99bf177f05f096ab6f78af1`. Generation 19 to 21 s.
 - Determinism: the artifact file was deleted and regenerated twice; identical file SHA-256 and `bench/dataset.json` identical apart from `generationMs` and `host`.
 - Restore in Node: the whole artifact prepared through `Workspace.prepareRestore` (Prepared, not Rejected) on fake-indexeddb in 772 s (throwaway test, not committed). The unit case asserts zero issues and zero repairs on the 40-session artifact.
+
+## Lane BG merged — 2026-11-15
+
+Lane BG rebased onto `fd6c80f2` (structural.md conflict resolved by appending T8.18's section to main's file) and fast-forwarded: T8.18 `268bd353`, B2 and F1 `f9b0fa1c`, lane tier after rebase `48085f90`. Lane tier on the rebased code: unit 1975, integration 229, checks 14 of 14, all exit 0. Smoke artifact (20 sessions, generator 8, schema 7): SHA-256 `e421ba59c2f53f670124131a638ca65fecfe9f3c7cfb97a7180dd076cefc52d2`, 576517 bytes. Lane BG kept for T8.18-F2 (waits on Q25). The merge run comes with the next batch (lane WR).

@@ -685,7 +685,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.15 | 2 | FT | Done | `246e7529`; B1 `a656ccc5` (lane WR), B2 and B3 `c4b73360`, B4 `284968f9` |
 | T8.17 | 2 | FX | Done | `b486bf83` |
 | T8.20 | 2 | FX | In progress from `4390d956` | |
-| T8.18 | 2 | BG | In progress from `de83f139` | |
+| T8.18 | 2 | BG | Done | `268bd353`; B2 and F1 `f9b0fa1c`; F2 waits on Q25; B1 folded into T8.19 |
 | T8.21 | 2 | BR | In progress from `a922332e` | |
 | T8.19 | 2 | BN | Not started | |
 | T8.22 | 2 | — | Not started | |
