@@ -1241,3 +1241,7 @@ On first run, choosing Restore from a backup hides the Start your journal form; 
 `.restore-preview { overflow-wrap: anywhere; }` lets the full release id (and long labels) wrap. Red: browser assertion (page scrollWidth 612 > clientWidth 375). Green after rebuild. No first-run passes. Browser specs responsive-a11y, restore: 11 passed. The release id stays whole (existing tests assert the full text).
 - T8.22-B4 ocr review (session d9b8c750): 2 files, no findings. Raw: `ocr/T8.22-B4-a70bf08b.json`.
 - T8.22-B4 quick run green: unit 2022, integration 258, browser task tier 5 + 39, checks 14 of 14, run complete.
+
+## T8.22-B5 done (`dd5fc138`)
+
+`entryTypeName(key)` in `backup-text.ts` maps the four Entry Type keys to the glossary names (specs/glossary.md line 115): Plan Reflection, Position Change Reflection, Daily Trade Review, Close Review; an unknown key falls back to the raw key. The shared counts table covers both the preview and the summary. Red: assertion. No first-run passes. Browser specs restore, after-restore, responsive-a11y: 12 passed. Note for the final report: no shared key-to-name source exists elsewhere in the UI (screens use ad-hoc literals).
