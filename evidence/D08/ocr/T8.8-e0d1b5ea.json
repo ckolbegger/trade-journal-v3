@@ -1,0 +1,218 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 8 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 8,
+    "total_tokens": 702731,
+    "input_tokens": 698013,
+    "output_tokens": 4718,
+    "cache_read_tokens": 65280,
+    "elapsed": "3m5s"
+  },
+  "tool_calls": {
+    "total": 48,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 16,
+      "file_find": 5,
+      "file_read": 25
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Detect duplicate primary keys before staging. `putCandidateRecords` uses IndexedDB `put`, so a second artifact record with the same identity overwrites the first, including across batches. Counts here measure artifact lines, while the section validators only see the collapsed candidate and therefore cannot detect those duplicates. A self-consistent artifact can consequently return Prepared with records silently lost. Track keys per store (or use insert-only staging) and reject duplicate identities; add a duplicate top-level record test, not just duplicate facts within a Trade.",
+      "existing_code": "      await persistence.putCandidateRecords(candidate, parsed.records.map((value): StoreRecord =\u003e ({ store: store as WorkspaceStore, value: { ...value } })));",
+      "start_line": 364,
+      "end_line": 364,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Existence in a global fact set does not close a Journal origin correctly. An Entry anchored to Trade A can name a Position Change from Trade B, or a Plan origin can name an Execution, and this check accepts it. The Journal validator only checks anchor existence and does not verify these relationships. Index facts by owner and kind, then require the origin to match both its anchor Trade and declared fact kind; cover an existing-but-wrong fact in the tests.",
+      "existing_code": "        if (record.origin.kind !== 'DailyReview' \u0026\u0026 !factIds.has(record.origin.factId)) dangling.push({ code: 'CrossSectionReference', kind: record.origin.kind, identity: record.origin.factId });",
+      "start_line": 164,
+      "end_line": 164,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "These export projectors run before record validation and assume nested collections have the correct shape. For example, a Trade record with `facts: {}` or `facts: [null]` throws in the Trade footprint projector before its strict parser can report the error. `readFailure` rethrows that TypeError, so the caller receives an unexpected rejection with zero issues instead of MalformedRecord with the offending line/path. Validate the shape before projection, or make footprint extraction safe and preserve per-line malformed-record reporting.",
+      "existing_code": "      for (const project of [exportCatalog, exportMarketData, exportTrades, exportJournal]) {\n        for (const identifier of project({ store: store as WorkspaceStore, records: raw })?.footprint ?? []) footprint.add(identifier);\n      }",
+      "start_line": 341,
+      "end_line": 343,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Validate the envelope and its section/store pairing rather than asserting its type. The artifact reader only recognizes the record prefix; it does not validate `s` or `t`. A missing/unknown `t` reaches an undefined Journal schema and becomes a zero-issue unexpected failure, while a valid store assigned to an unrelated section can pass if its counts and digests agree. Enforce the format's allowed section/store mapping and report malformed envelopes with their line number before batching.",
+      "existing_code": "            envelope = JSON.parse(line.text) as typeof envelope;",
+      "start_line": 372,
+      "end_line": 372,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "The preparation never reads `request.signal`, so even an already-aborted request builds a full candidate and returns Prepared. Cancelling a large restore likewise continues parsing, writing, and rebuilding instead of returning Cancelled and deleting the candidate, contrary to PrepareRestoreRequest's contract. Check cancellation before candidate creation and between batches/phases, close the reader, and discard any created candidate on cancellation. Add tests for both pre-aborted and mid-staging requests.",
+      "existing_code": "    const lines = readArtifact(request.file);",
+      "start_line": 284,
+      "end_line": 284,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "This only checks sections for which a sectionEnd was encountered. Removing the final journal sectionEnd and updating the manifest's fullDigest leaves no computed journal digest, so its records are staged and the artifact can still return Prepared without checking that section's digest. Validate the required section sequence/completeness and compare the digest key sets in both directions before accepting the manifest.",
+      "existing_code": "          const changed = Object.entries(line.computedSectionDigests).filter(([name, digest]) =\u003e stored.sectionDigests[name] !== digest);",
+      "start_line": 398,
+      "end_line": 398,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "After lines.next() yields the header, readArtifact remains suspended with its stream reader open. The unsupported-format/schema and insufficient-capacity returns never close that generator, so its reader.cancel() finally block does not run and the selected file/decompression pipeline remains open. Wrap the generator's entire lifetime in a finally that calls lines.return(), including these early rejection paths.",
+      "existing_code": "    if (!parsedHeader.success || parsedHeader.data.formatVersion !== FORMAT_VERSION) return rejected([{ code: 'UnsupportedFormat' }], live);",
+      "start_line": 293,
+      "end_line": 293,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/workspace/restore.ts",
+      "content": "Preparation never invokes request.onProgress, although it accepts that callback and A148 requires progress reporting. On a large restore the caller receives no updates until completion. Report processed records against the header's total after batches (including completion), and add a test asserting the callback advances.",
+      "existing_code": "          pending.lines.push({ line: line.lineNumber, record: envelope.r });",
+      "start_line": 379,
+      "end_line": 379,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Workspace backup restoration implementation and tests",
+      "files": [
+        "src/coordinators/workspace/backup-types.ts",
+        "src/coordinators/workspace/restore-test-support.ts",
+        "src/coordinators/workspace/restore.test.ts",
+        "src/coordinators/workspace/restore.ts"
+      ]
+    }
+  ],
+  "session_id": "08b46a31-5626-4a7d-a3e4-b8c18bdf0dbd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "08b46a31-5626-4a7d-a3e4-b8c18bdf0dbd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e0d1b5ea",
+      "resolved_base": "89b64a80e819e034606a975d19a2a4a9d7778223",
+      "resolved_head": "e0d1b5ea5676bd738ed1505085b888a91afbe5bb",
+      "exact_range": "89b64a80e819e034606a975d19a2a4a9d7778223..e0d1b5ea5676bd738ed1505085b888a91afbe5bb",
+      "source_artifact_sha256": "40c3547530c16d3df9a52bc1bbc9601e9cf5cc23f0530cb886d0661249976b37"
+    },
+    "execution": {
+      "ocr_version": "v1.13.9",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "ac08c89a1efd2528fcbe6ecafef6297c86f0436e6fbd986e15484267b7a7d5fd",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "a43554797867ef3daeee3bd981ac42bee42d1a216cd0ad8cb19ef3976b70660d"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "e7e31668f14c8b8f89d2e7c5d7583104a9d9a54159e4a84ca685c84a0f609fe3"
+        },
+        {
+          "item_id": "ada63c91534dfe92c279e2f6f7e4fe2f73e47e22172ffe4b28c85042bdecb657",
+          "path": "src/coordinators/workspace/restore-test-support.ts",
+          "fingerprint": "0aab8fb8f60fccc7fb6484e2ed533cda91b06a4f7590e1511bd9abc25928a80d"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "7744c053c7870f373b6246912970c27ddb96f7d07cdbf573a233d2927f9bdc5f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a3a62aa304991db7d1b38da918657722368065c0e3d2aaf370fd2bc16a6ffdf",
+          "path": "src/coordinators/workspace/restore.ts",
+          "fingerprint": "a43554797867ef3daeee3bd981ac42bee42d1a216cd0ad8cb19ef3976b70660d"
+        },
+        {
+          "item_id": "87035c536ea8f194b2ddcbe3bf73d53b75088d1ba5d06528e6daea59ec4f8665",
+          "path": "src/coordinators/workspace/backup-types.ts",
+          "fingerprint": "e7e31668f14c8b8f89d2e7c5d7583104a9d9a54159e4a84ca685c84a0f609fe3"
+        },
+        {
+          "item_id": "ada63c91534dfe92c279e2f6f7e4fe2f73e47e22172ffe4b28c85042bdecb657",
+          "path": "src/coordinators/workspace/restore-test-support.ts",
+          "fingerprint": "0aab8fb8f60fccc7fb6484e2ed533cda91b06a4f7590e1511bd9abc25928a80d"
+        },
+        {
+          "item_id": "b1da146fb0362afc63198aacb4ed2bca816369ba3243f222de243f945066fb01",
+          "path": "src/coordinators/workspace/restore.test.ts",
+          "fingerprint": "7744c053c7870f373b6246912970c27ddb96f7d07cdbf573a233d2927f9bdc5f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "4092254fca507ba66ef7041c5bf86db3c2875480aca5043acc1e012017cf57b0",
+          "path": "evidence/D08/suite-runs/T8.8-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5993edcdd580297d7371eab60a607d711508f47a68dd2ab5970d7dc47bdb00f7",
+          "path": "evidence/D08/suite-runs/T8.8-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "85959a7c77d7bf2377546bdbcb8349dded384f6fb68955a1069675b1e3738a25",
+          "path": "evidence/D08/suite-runs/T8.8-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b93a9cef43fbff7de845481ff43c8c50ca05992773521533066a38a501a58e43",
+          "path": "evidence/D08/suite-runs/T8.8-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "fd24cb26f279b2ef4895633641f1158291cdd98895148735c064584087255fcc",
+          "path": "evidence/D08/tdd-log/T8.8.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 185389
+  }
+}

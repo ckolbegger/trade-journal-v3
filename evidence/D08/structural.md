@@ -825,3 +825,14 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - Unit 179 / 1884, integration 106 / 229, checks 14 of 14.
   - Browser: the full tier ran, because `src/app/types.ts` changed since `a2ccf117`. 126 + 98 passed.
   - Outputs: `suite-runs/merge-12-*.txt`.
+- **ocr T8.4-B10 `1b7f2800`** (lane WB, retried after the usage limit reset): 0 findings. Raw: `ocr/T8.4-B10-1b7f2800.json`.
+- **ocr T8.8 `e0d1b5ea`** (lane WR, retried after the usage limit reset): 8 findings, all Valid. Raw: `ocr/T8.8-e0d1b5ea.json`. They become bug tasks, one at a time on lane WR:
+  - **T8.8-B1:** staging `put` overwrites two artifact records with the same primary key; counts and digests still agree, so a self-consistent artifact prepares with records lost.
+  - **T8.8-B2:** `danglingOrigins` checks only that the origin's factId exists somewhere, not that it belongs to the anchor Trade and has the declared kind.
+  - **T8.8-B3:** the footprint projectors run on raw records before strict parsing; a malformed `facts` throws and gives Rejected with no issues instead of MalformedRecord.
+  - **T8.8-B4:** the record envelope's `s` and `t` are cast, not validated; a bad line gives an untyped Rejected, and a store in an unrelated section is not caught.
+  - **T8.8-B5:** `request.signal` is never read; an aborted preparation still returns Prepared and keeps the candidate (A138, A142, A148).
+  - **T8.8-B6:** the section digest check covers only sections with a sectionEnd line; a section missing its sectionEnd skips its digest check.
+  - **T8.8-B7:** the early returns after the header (UnsupportedFormat, UnsupportedNewerSchema, InsufficientCapacity) leave the line generator open, so the reader is never cancelled.
+  - **T8.8-B8:** `request.onProgress` is never called (A148: preparation reports progress).
+  - Findings B5 and B8 have no T8.8 plan case, but T8.8 owns `prepareRestore`, and the Restore flow task (plan line 431) needs both; so they are T8.8 bug tasks.
