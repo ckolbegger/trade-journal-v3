@@ -686,7 +686,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.17 | 2 | FX | Done | `b486bf83` |
 | T8.20 | 2 | FX | In progress from `4390d956` | |
 | T8.18 | 2 | BG | In progress from `de83f139` | |
-| T8.21 | 2 | BR | Not started | |
+| T8.21 | 2 | BR | In progress from `a922332e` | |
 | T8.19 | 2 | BN | Not started | |
 | T8.22 | 2 | — | Not started | |
 | T8.16 | — | — | Withdrawn (decision 76) | |

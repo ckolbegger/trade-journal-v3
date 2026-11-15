@@ -1033,3 +1033,4 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - **T8.18-B1** (`tools/bench-generate.ts:97`): `tools/bench-run.ts` still calls `bench:generate` and then copies `BENCH_PROFILE_DIR` and compares with the expected rows, which the new generator no longer makes. The fix is in `bench-run.ts` (lane BN), so it is folded into T8.19's brief, which reworks `bench:setup` and `bench:run` anyway.
   - **T8.18-B2** (`src/app/bench-generator.ts:856`): nested ternaries (resolution status, option-leg selection, settlement comparator). Lane BG, with T8.18-F1 (Q23: generator version 8).
 - **Lane FT tier after rebase** (`6bd65504`): unit 1966, integration 229, checks 14 of 14; `build:faults` then `verify:no-fault-hooks` exit 0. Lane FT merges.
+- **T8.21** starts in lane BR (`.claude/worktrees/d08-br` on `d08/br`) from `a922332e`, beside merge-19.
