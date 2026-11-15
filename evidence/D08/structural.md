@@ -836,3 +836,8 @@ Lane T, commit `f6bce21e`. Verification (section 5) in the lane's `T8.23-verific
   - **T8.8-B7:** the early returns after the header (UnsupportedFormat, UnsupportedNewerSchema, InsufficientCapacity) leave the line generator open, so the reader is never cancelled.
   - **T8.8-B8:** `request.onProgress` is never called (A148: preparation reports progress).
   - Findings B5 and B8 have no T8.8 plan case, but T8.8 owns `prepareRestore`, and the Restore flow task (plan line 431) needs both; so they are T8.8 bug tasks.
+- **merge-13** (lane WB merged T8.4 F1 and B7 to B10; source `3de14dcf`): all green, run complete.
+  - Unit 179 / 1886, integration 106 / 229, checks 14 of 14.
+  - Browser: task tier (no changed path since `ade94fde` is on the full-tier list); 5 passed.
+  - The runner issued the integration and browser calls in parallel, against its sequential rule; both passed with separate outputs.
+  - Lane WB's worktree and branch are removed.
