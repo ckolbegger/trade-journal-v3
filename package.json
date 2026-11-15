@@ -26,6 +26,7 @@
     "verify:no-fault-hooks": "node tools/verify-no-fault-hooks.ts",
     "build:bench": "vite build --mode bench --outDir dist-bench",
     "bench:generate": "node tools/bench-generate.ts",
+    "bench:setup": "node tools/bench-setup.ts",
     "bench:run": "node tools/bench-run.ts",
     "bench:partial": "node tools/bench-partial.ts",
     "bench:expected": "node tools/bench-expected-rows.ts",

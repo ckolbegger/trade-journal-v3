@@ -5,6 +5,9 @@ import { readFile } from 'node:fs/promises';
 import { CAPACITY_REQUIREMENT } from '../src/delivery/capacity.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { BASIS_FILE, largestProjection, type EngineMeasurement } from './capacity/profile.ts';
+import { BENCH_CAPACITY_FILE, BENCH_DATASET_FILE } from './bench/profile.ts';
+import { peakVerdict, usageVerdict } from './bench/restore-checks.ts';
+import type { CapacityFile } from './bench/restored-capacity.ts';
 
 const basis = JSON.parse(await readFile(BASIS_FILE, 'utf8')) as {
   schemaVersion: number;
@@ -29,6 +32,19 @@ if (!basis.engines || basis.engines.length === 0) {
   if (CAPACITY_REQUIREMENT.projectedWorkspaceBytes !== expected.projectedWorkspaceBytes) {
     problems.push(`embedded projectedWorkspaceBytes ${CAPACITY_REQUIREMENT.projectedWorkspaceBytes} is not ${expected.projectedWorkspaceBytes}`);
   }
+}
+// D8 T8.19: the restored Workspace's usage is within 10% of the projection for the same counts, and a second Restore's peak
+// stays below 3 × M. Checked when `measure:capacity -- --restored` has recorded them (required by `--restored`).
+const restored = (await readFile(BENCH_CAPACITY_FILE, 'utf8').then(JSON.parse, () => undefined)) as CapacityFile | undefined;
+if (process.argv.includes('--restored') && !restored) problems.push('no restored measurement: run bench:setup, then measure:capacity -- --restored');
+if (restored) {
+  const dataset = JSON.parse(await readFile(BENCH_DATASET_FILE, 'utf8')) as { artifact: { fileDigest: string } };
+  if (restored.artifactDigest !== dataset.artifact.fileDigest) problems.push(`the restored measurement is of artifact ${restored.artifactDigest}, not the dataset's ${dataset.artifact.fileDigest}: rerun bench:setup and measure:capacity -- --restored`);
+  const usage = usageVerdict(restored.usageBytes, restored.projectedBytes);
+  const peak = peakVerdict(restored.peakBytes, restored.matureProjectedBytes);
+  console.log(`verify:capacity: restored usage ${restored.usageBytes} = ${usage.ratio.toFixed(3)} × the projection ${restored.projectedBytes} (limit 1.10); second Restore peak ${restored.peakBytes} = ${peak.ratio.toFixed(3)} × M ${restored.matureProjectedBytes} (limit below 3)`);
+  if (!usage.ok) problems.push(`restored usage ${restored.usageBytes} exceeds the projection ${restored.projectedBytes} by more than 10%`);
+  if (!peak.ok) problems.push(`second Restore peak ${restored.peakBytes} is not below 3 × M (${3 * restored.matureProjectedBytes})`);
 }
 if (problems.length > 0) {
   for (const p of problems) console.error(`FAIL ${p}`);

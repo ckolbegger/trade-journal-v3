@@ -1,5 +1,6 @@
 // npm run bench:run: the AC-PERF-001 latency harness (D2 T2.21, extended by D4 T4.31). It copies the cached benchmark
-// profile (generating it first when missing or stale), serves the production build (dist/) on the
+// profile (restored by `bench:setup` from the committed artifact, which it runs when the profile is missing or stale; D8 T8.19,
+// T8.18-B1), refusing an artifact whose digest is not the dataset's, serves the production build (dist/) on the
 // bench origin, and runs one excluded warm-up launch that installs the service worker. With the
 // server stopped and the browser offline it then times 30 cold starts (browser process stopped
 // and relaunched each time) to the `tj:interactive` mark, and 30 warm Planned-to-Open tab
@@ -23,7 +24,8 @@
 // date, from its blocker and its card's Settlement panel) with `asOfReview.settlement`, on the profile with 30% option Trades. It writes
 // evidence/D07/bench.md and fails when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { cp, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -31,7 +33,9 @@ import { chromium, type BrowserContext, type Locator, type Page } from '@playwri
 import { BENCH_GENERATOR_VERSION, BENCH_TIME_ZONE, expectedSettlementDue, openOptionTradesOf, type BenchAsOfReview } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { cardIdentity, closedIdentity, expectedSettlementIdentity, firstDifference, settlementExpectations, settlementIdentity, tradeIdOfHref, walkedTradesOwingNothing, type ExpectedClosedRow } from './bench/compare.ts';
-import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
+import { BENCH_CAPACITY_FILE, BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, BENCH_SETUP_FILE, BENCH_STAMP_FILE, type BenchStamp, type ExpectedOpenRows } from './bench/profile.ts';
+import { artifactProblems, restoreReport, type BackupTimings,type ExpectedRowsProvenance, type SetupRecord } from './bench/restore-checks.ts';
+import type { CapacityFile } from './bench/restored-capacity.ts';
 import { schemaMismatch } from './bench/partial.ts';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
 import { startReleaseServer } from './release-server.ts';
@@ -40,8 +44,10 @@ const RUNS = 30;
 const COLD_BUDGET_MS = 2_500;
 const WARM_BUDGET_MS = 1_500;
 const BUILD_DIR = 'dist';
-const EVIDENCE_FILE = path.resolve('evidence/D07/bench.md');
+const EVIDENCE_FILE = path.resolve('evidence/D08/bench.md');
 const WAIT_MS = 60_000;
+// An export or verification of the full-size dataset takes longer than any render.
+const BACKUP_WAIT_MS = 30 * 60_000;
 // D5's recorded results (evidence/D05/bench.md), which the report compares with.
 const D5_COLD_P95_MS = 104.8;
 const D5_WARM_P95_MS = 43.6;
@@ -76,12 +82,12 @@ const partialDir = partialAt === -1 ? undefined : path.resolve(process.argv[part
 if (partialAt !== -1 && !process.argv[partialAt + 1]) throw new Error('--partial needs the dataset directory');
 const partial = partialDir !== undefined;
 
-// The cached profile must match this source's generator and schema versions.
+// The cached profile must match this source's generator and schema versions. It is the committed benchmark artifact restored
+// through the production first-run Restore (`bench:setup`, D8 T8.19); a missing or stale one is made again, not generated.
 const stamp = partial ? undefined : ((await readFile(BENCH_STAMP_FILE, 'utf8').then(JSON.parse, () => undefined)) as BenchStamp | undefined);
 if (!partial && (stamp?.generatorVersion !== BENCH_GENERATOR_VERSION || stamp.schemaVersion !== SCHEMA_VERSION)) {
-  console.log('bench:run: the cached profile is missing or stale; generating it');
-  npm('build:bench');
-  npm('bench:generate');
+  console.log('bench:run: the restored profile is missing or stale; running bench:setup');
+  npm('bench:setup');
 }
 // Measurement runs the production build.
 npm('build');
@@ -94,6 +100,22 @@ if (partial) {
 }
 // The Open list to compare with: the generator's, or (partial) the first render's.
 let expected: Pick<ExpectedOpenRows, 'headers' | 'rows'> | undefined = partial ? undefined : (JSON.parse(await readFile(BENCH_EXPECTED_ROWS_FILE, 'utf8')) as ExpectedOpenRows);
+// The expected rows and the Review's order are the Node generator's (`bench:generate`, D8 T8.18-F2), for the committed
+// artifact: the artifact on disk must be the one the dataset records, and the profile must have been restored from it.
+let setupRecord: SetupRecord | undefined;
+let capacityRecord: CapacityFile | undefined;
+if (!partial) {
+  const artifactPath = (dataset['artifact'] as { path: string }).path;
+  const artifact = await readFile(path.resolve(artifactPath)).catch(() => undefined);
+  if (!artifact) throw new Error(`${artifactPath} does not exist; run npm run build:bench && npm run bench:generate`);
+  const digest = createHash('sha256').update(artifact).digest('hex');
+  const problems = artifactProblems(digest, dataset,expected as unknown as ExpectedRowsProvenance);
+  setupRecord = (await readFile(BENCH_SETUP_FILE, 'utf8').then(JSON.parse, () => undefined)) as SetupRecord | undefined;
+  if (setupRecord?.artifactDigest !== digest) problems.push(`the cached profile was restored from artifact ${String(setupRecord?.artifactDigest)}, not ${digest}: run npm run bench:setup`);
+  capacityRecord = (await readFile(BENCH_CAPACITY_FILE, 'utf8').then(JSON.parse, () => undefined)) as CapacityFile | undefined;
+  if (capacityRecord?.artifactDigest !== digest) problems.push('no capacity measurement of this artifact: run npm run measure:capacity -- --restored');
+  if (problems.length > 0) throw new Error(`bench:run refuses to run: ${problems.join('; ')}`);
+}
 const partialCounts = partial ? (dataset['counts'] as { openTrades: number }) : undefined;
 const openRowCount = () => expected?.rows.length ?? partialCounts!.openTrades;
 
@@ -519,6 +541,7 @@ let before: number;
 let after: number;
 const closedRenderMs: number[] = [];
 const coldSaveAction: { symbol: string; ms: number }[] = [];
+let backupTimings: BackupTimings;
 // Goes to the Trades page (the harness may be on the Review) and its Open list, so the next press on Closed renders its page afresh.
 async function leaveClosed(page: Page) {
   await primaryLink(page, 'Trades').click();
@@ -598,6 +621,28 @@ try {
     console.log(`bench:run: cold Trade Action save ${labelOf(saveCard)} ${coldSaveAction.at(-1)!.ms.toFixed(1)} ms`);
     await coldContext.close();
   }
+  // D8 T8.19, disclosed: one export and one verification of the mature dataset (the profile's copy after the saves above, which
+  // changed a handful of records), through the Backup page, from the press on the button to the file saved and to the check's result.
+  const backupContext = await launch(true);
+  const backupPage = await pageOf(backupContext);
+  await backupPage.goto(origin);
+  await markTime(backupPage, 'tj:interactive');
+  await backupPage.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Backup' }).click();
+  await backupPage.getByRole('heading', { name: 'Backup', level: 1 }).waitFor({ timeout: WAIT_MS });
+  const downloadSection = backupPage.getByRole('region', { name: 'Download a backup' });
+  const exportFile = path.join(workDir, 'export.tjbackup');
+  const exportStarted = performance.now();
+  const [download] = await Promise.all([backupPage.waitForEvent('download', { timeout: BACKUP_WAIT_MS }), downloadSection.getByRole('button', { name: 'Download backup' }).click()]);
+  await download.saveAs(exportFile);
+  const exportMs = performance.now() - exportStarted;
+  const exportBytes = (await stat(exportFile)).size;
+  const [chooser] = await Promise.all([backupPage.waitForEvent('filechooser'), downloadSection.getByRole('button', { name: /^(Verify backup|Choose another file)$/ }).click()]);
+  const verifyStarted = performance.now();
+  await chooser.setFiles(exportFile);
+  await downloadSection.getByText(/^Backup complete\. Checked \w{3} \w{3} \d{1,2}, \d{2}:\d{2}\.$/).waitFor({ timeout: BACKUP_WAIT_MS });
+  backupTimings = { exportMs, exportBytes, verifyMs: performance.now() - verifyStarted };
+  console.log(`bench:run: one export ${(exportMs / 1000).toFixed(1)} s (${exportBytes} bytes), one verification ${(backupTimings.verifyMs / 1000).toFixed(1)} s`);
+  await backupContext.close();
 } finally {
   // Closing an already closed context is a no-op; a failure must not leave Chromium on a removed profile.
   for (const context of launched) await context.close();
@@ -657,9 +702,11 @@ How the expectations were fixed (the generator wrote none for this snapshot): th
 `;
 }
 
-const report = `# D7 benchmark run (AC-PERF-001)
+const report = `# D8 benchmark run (AC-PERF-001)
 
-Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13, T6.25 and T7.29) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
+D7's latency and correctness harness, unchanged, on the profile \`bench:setup\` restored from the benchmark artifact through the production first-run Restore (D8 T8.19).
+
+Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22, T5R.13, T6.25, T7.29 and T8.19) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
 
 ## Result
 
@@ -716,6 +763,9 @@ A single Action save on a card of the as-of Review (Change, Hold, an Intent, Sav
 
 Raw (ms): warm ${actionMs.map(ms).join(', ')}; cold ${coldSaveAction.map((s) => `${s.symbol} ${ms(s.ms)}`).join(', ')}; closed page renders ${closedRenderMs.map(ms).join(', ')}.
 
+${partial ? '' : `${restoreReport(setupRecord!, capacityRecord!, backupTimings)}
+The usage samples are taken every ${capacityRecord!.sampleEveryMs} ms (${capacityRecord!.peakSamples} samples during the second Restore); the peak is the largest sample. The projection for the same counts prices the dataset's counts with the ${capacityRecord!.engine} measurement's bytes per record (tools/bench/restore-checks.ts \`projectForDataset\`); it leaves out the Allowances, which the dataset does not hold. M is the mature projection embedded in the release. The export and verification timings are disclosed, not gated.
+`}
 ## Method
 
 - Playwright's clock also swaps \`window.performance\` for a fake that records no marks, so the harness keeps the real object before the pin and points the fake's \`mark\` at it; \`performance.now\` and timers are the real ones.

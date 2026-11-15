@@ -10,6 +10,13 @@ import { createServer } from 'vite';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { ALLOWANCES, BASIS_FILE, largestProjection, MEASURED, type EngineMeasurement } from './capacity/profile.ts';
 
+// `--restored` (D8 T8.19) measures the Workspace that bench:setup restored instead, and leaves the capacity basis alone.
+if (process.argv.includes('--restored')) {
+  const { measureRestored } = await import('./bench/restored-capacity.ts');
+  await measureRestored();
+  process.exit(0);
+}
+
 const PLANS = 500;
 const OPEN_TRADES = 200;
 const ENGINES = { chromium, firefox, webkit } as const;

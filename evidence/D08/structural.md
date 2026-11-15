@@ -1168,3 +1168,16 @@ Code at `dbf75db3`. Unit 188 files / 2010 tests, integration 118 / 258, browser 
 ## T8.19 blocked, then restarted
 
 The benchmark artifact `.cache/bench/benchmark.tjbackup` (git-ignored) existed only in lane BG's worktree, which the main session removed after merge-22, so lane BN had no artifact. The main session chose to regenerate it in lane BN (`build:bench && bench:generate`, about 13 minutes) and require the same digest `6d819703...` and byte size; committed `bench/` files are kept, only run metadata may differ. Tooling gap for the final report: `lane-setup.sh` does not carry `.cache/bench/`, and removing a lane worktree deletes the git-ignored artifact.
+
+## T8.19 Benchmark through Restore; capacity check; backup timings
+
+Determinism first: `npm run build:bench && npm run bench:generate` in lane BN (the artifact, git-ignored, was gone with lane BG's worktree) took 892,594 ms. The new `.cache/bench/benchmark.tjbackup` has digest `6d819703928c5aa37ec3e9181b4ba164b325846296cf015f9412715cc894304b` and 20,869,684 bytes, the same as `bench/dataset.json` records. The regenerated `bench/dataset.json` differed from the committed one only in `generationMs`; `bench/expected-open-rows.json` was byte-identical. `git checkout -- bench/` restored the committed dataset; a second `npm run bench:generate` then reused the artifact (exit 0).
+
+| Command (each inside `.claude/scripts/with-browser-lock.sh`, nothing else running; ports 4175, 5175, 9341 and 9342 free before) | Exit | Result |
+|---|---|---|
+| `npm run bench:setup` | 0 | prepare 90.5 s, apply 5.9 s, "No repairs needed.", "No updates needed.", Trades 25,000 and Marks 108,054 (106,985 plus 1,069 corrections) as the dataset; Open list rendered after Go to Trades |
+| `npm run measure:capacity -- --restored` | 0 | usage 206,540,122 bytes; second Restore peak 446,308,881 bytes (404 samples at 250 ms) |
+| `npm run verify:capacity -- --restored` | 0 | usage 0.264 x the projection for the same counts (781,961,664; limit 1.10); peak 0.489 x M (912,516,132; limit below 3) |
+| `npm run bench:run` | 0 | cold p95 144.8 ms (budget 2,500), warm p95 61.7 ms (budget 1,500); every Open list, Closed page, Review and Settlement comparison equal; one export 21.9 s (20,871,394 bytes), one verification 12.2 s; wrote `evidence/D08/bench.md` |
+
+Full report: `evidence/D08/bench.md`.
