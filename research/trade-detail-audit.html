@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Detail Audit</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e2dd;
+    --accent: #2f6fdb; --accent-bg: #e8f0fd;
+    --rm: #b3261e; --rm-bg: #fdecea; --mv: #2f6fdb; --mv-bg: #e8f0fd; --nw: #1e7a3c; --nw-bg: #e6f4ea; --ch: #8a6200; --ch-bg: #fff4d6;
+    --stop: #b3261e; --target: #1e7a3c; --track: #e9e6df; --stop-zone: #e5b4b0; --target-zone: #a9d3b5;
+    --mock: #f3f1ec; --grey: #8d8b85;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161615; --card: #20201e; --text: #ececea; --muted: #a0a09a; --line: #34342f;
+      --accent: #7aa7f5; --accent-bg: #1d2a40;
+      --rm: #f28b82; --rm-bg: #3b1d1b; --mv: #7aa7f5; --mv-bg: #1d2a40; --nw: #81c995; --nw-bg: #17301f; --ch: #e6c35c; --ch-bg: #3a3214;
+      --stop: #f28b82; --target: #81c995; --track: #3a3934; --stop-zone: #6e3430; --target-zone: #2f5a3b;
+      --mock: #1b1b19; --grey: #8a8984;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161615; --card: #20201e; --text: #ececea; --muted: #a0a09a; --line: #34342f;
+    --accent: #7aa7f5; --accent-bg: #1d2a40;
+    --rm: #f28b82; --rm-bg: #3b1d1b; --mv: #7aa7f5; --mv-bg: #1d2a40; --nw: #81c995; --nw-bg: #17301f; --ch: #e6c35c; --ch-bg: #3a3214;
+    --stop: #f28b82; --target: #81c995; --track: #3a3934; --stop-zone: #6e3430; --target-zone: #2f5a3b;
+    --mock: #1b1b19; --grey: #8a8984;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 16px 96px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  h2 { font-size: 20px; margin: 44px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 26px 0 8px; }
+  h4 { font-size: 14px; margin: 18px 0 6px; }
+  p, li { max-width: 72ch; }
+  .lede { color: var(--muted); margin: 0 0 18px; font-size: 16px; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--mock); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 12px 0; }
+  .box.key { border-left: 4px solid var(--accent); }
+  .tech { margin: 10px 0; }
+  .tech > summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  .tech[open] > summary { margin-bottom: 6px; }
+  .tech > div { font-size: 14px; }
+  nav.toc ol { columns: 2; column-gap: 32px; padding-left: 20px; margin: 6px 0; }
+  nav.toc li { break-inside: avoid; }
+  @media (max-width: 640px) { nav.toc ol { columns: 1; } }
+  a { color: var(--accent); }
+
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0; }
+  table.t { border-collapse: collapse; width: 100%; font-size: 13.5px; background: var(--card); }
+  table.t th, table.t td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  table.t thead th { background: var(--mock); font-weight: 600; }
+  .conf { white-space: nowrap; font-weight: 600; }
+  .hi { color: var(--nw); } .md { color: var(--ch); } .lo { color: var(--muted); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; margin: 8px 0 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+  .sw.rm { background: var(--rm-bg); border: 1.5px dashed var(--rm); }
+  .sw.mv { background: var(--mv-bg); border-left: 4px solid var(--mv); }
+  .sw.nw { background: var(--nw-bg); border-left: 4px solid var(--nw); }
+  .sw.ch { background: var(--ch-bg); border-left: 4px solid var(--ch); }
+
+  /* Mockups */
+  figure { margin: 16px 0 22px; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; max-width: 80ch; }
+  .mock { background: var(--mock); border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 13px; }
+  .cockpit { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr); gap: 12px; align-items: start; }
+  @media (max-width: 720px) { .cockpit { grid-template-columns: minmax(0, 1fr); } }
+  .rail, .drawers { display: grid; gap: 10px; min-width: 0; }
+  .mc { background: var(--card); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; min-width: 0; }
+  .mc h5 { margin: 0 0 6px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .mc .big { font-size: 22px; font-weight: 750; }
+  .mc .sub { color: var(--muted); }
+  .mc dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 4px 0 0; }
+  .mc dt { color: var(--muted); }
+  .mc dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+  .mc table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  .mc th, .mc td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  .mc th:first-child, .mc td:first-child { text-align: left; }
+  .mc thead th { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab { border: 1px solid var(--muted); border-radius: 999px; padding: 3px 10px; font-size: 12px; background: var(--card); }
+  .tab.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .tab.new { border: 2px solid var(--nw); }
+  .badge { display: inline-block; border-radius: 999px; padding: 0 7px; font-size: 11px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .role { font-weight: 650; } .role.s { color: var(--stop); } .role.t { color: var(--target); }
+  .cond { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .cond:last-child { border-bottom: 0; }
+  .cond .top { display: flex; justify-content: space-between; gap: 8px; }
+  .pill { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 12px; border: 1px solid var(--text); margin: 6px 4px 0 0; }
+  .pill.p { background: var(--text); color: var(--bg); }
+  .note { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+
+  .rm { background: var(--rm-bg); border: 1.5px dashed var(--rm) !important; position: relative; }
+  .rm > *:not(.tag) { text-decoration: line-through; text-decoration-color: var(--rm); opacity: .75; }
+  .mv { background: var(--mv-bg); box-shadow: inset 4px 0 0 var(--mv); }
+  .nw { background: var(--nw-bg); box-shadow: inset 4px 0 0 var(--nw); }
+  .ch { background: var(--ch-bg); box-shadow: inset 4px 0 0 var(--ch); }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .03em; border-radius: 4px; padding: 0 5px; margin: 0 0 4px; text-decoration: none !important; opacity: 1 !important; }
+  .tag.rm-t { color: #fff; background: var(--rm); }
+  .tag.mv-t { color: #fff; background: var(--mv); }
+  .tag.nw-t { color: #fff; background: var(--nw); }
+  .tag.ch-t { color: #1d1d1b; background: var(--ch); }
+  :root[data-theme="dark"] .tag.mv-t, :root[data-theme="dark"] .tag.nw-t, :root[data-theme="dark"] .tag.rm-t { color: #161615; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag.mv-t, :root:not([data-theme="light"]) .tag.nw-t, :root:not([data-theme="light"]) .tag.rm-t { color: #161615; } }
+  tr.rm td { text-decoration: line-through; }
+  .gone { font-size: 12px; color: var(--rm); margin: 2px 0; }
+  .gone::before { content: "Removed: "; font-weight: 700; }
+
+  .closed-wrap { position: relative; }
+  .closed-wrap .greyed { color: var(--grey); }
+  .closed-wrap .greyed td, .closed-wrap .greyed th { color: var(--grey); }
+  .stamp { position: absolute; top: 8px; right: 12px; transform: rotate(-8deg); border: 2.5px solid var(--grey); color: var(--grey); font-weight: 800; letter-spacing: .12em; padding: 2px 10px; border-radius: 6px; font-size: 15px; background: var(--card); }
+
+  .prio li { margin: 8px 0; }
+  .prio .why { color: var(--muted); font-size: 13.5px; display: block; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .svg-ink { fill: var(--text); } .svg-muted { fill: var(--muted); }
+  .svg-box { fill: var(--card); stroke: var(--line); }
+  .svg-rm { fill: var(--rm-bg); stroke: var(--rm); stroke-dasharray: 4 3; }
+  .svg-dest { fill: var(--mv-bg); stroke: var(--mv); }
+  .svg-arrow { stroke: var(--mv); fill: none; stroke-width: 1.6; }
+  .svg-x { stroke: var(--rm); fill: none; stroke-width: 1.6; stroke-dasharray: 3 3; }
+  .svg-track { fill: var(--track); } .svg-szone { fill: var(--stop-zone); } .svg-tzone { fill: var(--target-zone); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Trade Detail audit</h1>
+<p class="lede">Which parts of the Trade Detail page are left over from the original build, which are in the wrong view, and what each view should show instead. Recommendations only: nothing in the app has been changed. Written 2026-11-14, from the code at <code>ca839e70</code>.</p>
+
+<div class="box key">
+  <h3 style="margin-top:0">In short</h3>
+  <ul>
+    <li><b>You were right about the leftovers.</b> The cockpit still shows several cards from the old page: the <b>At entry</b> card, the dated <b>"At the &lt;date&gt; Marks"</b> card, an old <b>Valuation card</b> ("Expected Mark Date", Mark, Source, Saved), some <b>Summary-card rows</b>, and a long block of details on every Journal entry. They weren't missed by accident. The D08P plan kept each of them "in its existing words", so the page now shows many figures twice.</li>
+    <li><b>Deviations are on every view.</b> They sit, with Planned-Leg Fulfillment, in a footer under every drawer. The plan and the prototype both put them there. Per your answers, both move into <b>Plan and Risk</b> as its last two groups, and a short line in the Journal points to them.</li>
+    <li><b>The Position drawer doesn't say which contract each lot is.</b> The Open Lots and Lot Matches tables have no Instrument column. That matters most once a Trade has two legs. Both tables gain one, and every contract is named in the broker style, <b>"NVDA Dec 18 $150 Call"</b>, everywhere in the app.</li>
+    <li><b>Today becomes one simple Marks table:</b> Today, Yesterday and Change, one row per Instrument. Every Trade except a Planned one, or one whose records disagree, gets a Today view, including Settlement Due and Closed Trades (greyed, with a "Closed" stamp).</li>
+    <li><b>The rail's Conditions card shows distances, not dollars.</b> It shows how far each price is from its trigger ("Stop · $2.20 away"). Dollars at risk, with their R, Worst case and Max reward move to Plan and Risk, so each dollar figure has one home.</li>
+    <li><b>Three backend additions are needed</b>, all small and additive: a price distance to each trigger (Trade Analysis), the Underlying's two Marks on a Settlement Due Trade (Trade Views), and the open lots' average price for an option Trade (Trade Views). One field becomes unused and should be removed: the "nearest" flag.</li>
+  </ul>
+  <p style="margin-bottom:0">The prioritised list of changes is at the end, in <a href="#priorities">Recommended changes, in order</a>.</p>
+</div>
+
+<nav class="toc box" aria-label="Contents">
+  <b>Contents</b>
+  <ol>
+    <li><a href="#how">How this was checked</a></li>
+    <li><a href="#found">What is on the page now</a></li>
+    <li><a href="#leftovers">Leftovers from the original build</a></li>
+    <li><a href="#wrongview">Components in the wrong view</a></li>
+    <li><a href="#map">Where each piece goes</a></li>
+    <li><a href="#tabs">Which views each Trade shows</a></li>
+    <li><a href="#rail">The rail</a></li>
+    <li><a href="#today">Today</a></li>
+    <li><a href="#position">Position, and naming contracts</a></li>
+    <li><a href="#planrisk">Plan and Risk</a></li>
+    <li><a href="#history">Price History</a></li>
+    <li><a href="#journal">Journal</a></li>
+    <li><a href="#payoff">Payoff</a></li>
+    <li><a href="#backend">What the backend must add</a></li>
+    <li><a href="#words">Words to approve</a></li>
+    <li><a href="#planrev">Plan revision notes</a></li>
+    <li><a href="#open">Still open</a></li>
+    <li><a href="#priorities">Recommended changes, in order</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="how">1. How this was checked</h2>
+<p>I read the D08P plan and its two handoffs, the "C. Cockpit" tab of the prototype (all ten of its Trade states), the cockpit code, the decisions and revisions that touch Trade Detail, and the specs named in the brief. Then I seeded journals through the app's own first run, Plan form, entry and exit forms and Daily Review, and took a screenshot of every view in each of these states:</p>
+<ul>
+  <li>a Planned option Trade, both just confirmed and after a reload;</li>
+  <li>an option Trade entered before any Marks;</li>
+  <li>an option Trade held for four sessions, with a partial exit, a Reflection owed and one session without Marks;</li>
+  <li>the same Trade after one more contract was bought the next day, which also gives an Entry Size Deviation;</li>
+  <li>a stock Trade with a Deviation, first with its Mark missing, then with its Stop breached;</li>
+  <li>a plain held stock Trade, and a stock Trade Closed by sale;</li>
+  <li>a Cash-Secured Put that is Settlement Due, then Closed by expiration.</li>
+</ul>
+<p>The state where the records disagree wasn't reached, because it needs a direct database edit. It is covered from the code and the prototype only.</p>
+<details class="tech"><summary>Technical detail: how the app was served</summary><div>
+<p>The server on port 5175 is the Vite dev server. It serves no <code>/sw.js</code>, and the app won't start without its service worker, so every page there is blank. No other server was started and no other port was used. Instead, the test browser answered every request to <code>http://localhost:5175</code> from a copy of the built release on disk (<code>dist/</code>, built after the last <code>src</code> commit, on a clean tree), through Playwright's <code>context.route</code>. Data was seeded by calling the e2e support functions (<code>buildOc3</code>, <code>createTrades</code>-style steps, <code>recordOptionEntry</code>, <code>enterMark</code>, <code>recordExpiration</code>), not their fixtures.</p>
+<p>The screenshots (58) and text dumps are in the session's scratch folder, which is temporary: <code>/private/tmp/claude-501/-Users-ckolbegger-src-trade-journal-v3-worktrees-claude-opus-5-5/1229eba6-51f8-495d-97ba-7be884a19321/scratchpad/trade-detail-audit/</code>, under <code>shots/</code> and <code>dumps/</code>. Screenshot names below refer to that folder.</p>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="found">2. What is on the page now, view by view</h2>
+<p>Each row compares the built page with what the D08P plan and the prototype's "C. Cockpit" tab say. "Plan" means <code>plan/D08P-trade-detail-cockpit.md</code>.</p>
+<div class="scroll"><table class="t">
+<thead><tr><th>View</th><th>On screen now</th><th>Prototype</th><th>Plan</th></tr></thead>
+<tbody>
+<tr><td><b>Rail: identity</b></td><td>Symbol, "Long Call, Open", Strike, "Expires … (64 days)", account, Record entry and Record exit. Plus a <b>"Deviation active"</b> badge.</td><td>The same, with a "Stop breached" badge instead (prototype line 805).</td><td>W2. The badge was added by T8P.31 (plan line 610).</td></tr>
+<tr><td><b>Rail: P&amp;L</b></td><td>As W3 and W4. When lots were bought after the last Marks, it shows only "Awaiting the close after Thu Oct 15", with no figure.</td><td>Same layout.</td><td>W3, W4.</td></tr>
+<tr><td><b>Rail: Conditions</b></td><td>Each condition with a dollar figure, a "nearest" badge, a long "Change in Trade P&amp;L from…" sentence, then Worst case and Max reward.</td><td>The same.</td><td>W5, W6.</td></tr>
+<tr><td><b>Rail: Needs you</b></td><td>As W7.</td><td>The same.</td><td>W7.</td></tr>
+<tr><td><b>Today</b></td><td>The "No Marks yet" note; a <b>current-Marks card</b> (Expected Mark Date, Mark, Source, Saved, Underlying Mark, a Mark-missing link, Stale context); the Marks comparison; the price tracks with "Value at expiration" and "Distance on XYZ" lines; the <b>"At the &lt;date&gt; Marks"</b> card; the <b>At entry</b> card.</td><td>Only the comparison and the tracks, or the "No Marks yet" note and the tracks (prototype lines 801 to 803).</td><td>W8 keeps "the Valuation's Mark provenance, the dated line and At entry" (plan line 167). T8P.16 case 5 (line 516). T8P.31 (line 609).</td></tr>
+<tr><td><b>Position</b></td><td>A "Position" card: the Trade Summary line, Position, Net cost, Opening fees, Last activity, Open Lots, Open P&amp;L, Realized to date, Incurred fees. Then Lot Matches, Fee reconciliation, Executions, Settlement. On Settlement Due, also the current-Marks card.</td><td>Lots table, Open P&amp;L, Realized, Fees paid, Lot Matches, Fee reconciliation, Executions (prototype lines 532 to 541).</td><td>T8P.17 case 2 keeps "the Trade Summary and Last activity" (line 527). T8P.31 adds Net cost.</td></tr>
+<tr><td><b>Plan and Risk</b></td><td>Plan (Contract, Leg, Exercise Intent, Intended entry, Stop, Target, Plan time, Account); each condition's Risk to stop and Reward to target; Plan Baseline; Entry Quality. On a Planned Trade, the Trade Summary line above it all.</td><td>"Plan, set &lt;time&gt;" and "Entry, resolved &lt;time&gt;" only (prototype lines 543 to 558, 829 to 832).</td><td>T8P.18 (line 540); T8P.31 case 7 for the condition figures (line 611).</td></tr>
+<tr><td><b>Price History</b></td><td>As W9.</td><td>The same.</td><td>W9.</td></tr>
+<tr><td><b>Journal</b></td><td>Session cards as W10 to W13. Each entry shows the old details grid (Review Date, Anchor, Source, Moment, Authored) and a "Not answered" row for every empty prompt.</td><td>Each entry shows only its type and its text (prototype line 777).</td><td>W10 says "items in their existing words".</td></tr>
+<tr><td><b>Payoff</b></td><td>As W14.</td><td>The same.</td><td>W14.</td></tr>
+<tr><td><b>Footer, under every drawer</b></td><td>Two cards, "Planned-Leg Fulfillment" and "Deviations" ("No Deviations recorded.").</td><td>A one-line footer under the drawers (prototype lines 609 and 1040).</td><td>W16, "below the drawers" (line 175).</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="leftovers">3. Leftovers from the original build</h2>
+<p>Each of these was carried over from the pre-cockpit page. "Decision" is what you chose during this audit.</p>
+<div class="scroll"><table class="t">
+<thead><tr><th>#</th><th>Component</th><th>Where in the code</th><th>Evidence</th><th>Confidence</th><th>Decision</th></tr></thead>
+<tbody>
+<tr><td>L1</td><td><b>At entry</b> card in Today</td><td><code>src/ui/cockpit/drawers/today.props.ts:201–213, 289</code>; <code>today.tsx:156</code></td><td>Not in the prototype, whose audit table names "At entry" as a source of repeats (prototype lines 311 to 313). Screenshots <code>open-option-before-marks--today.png</code>, <code>open-option-added-after-marks--today.png</code>.</td><td class="conf hi">High</td><td>Leaves Today. Becomes the "Since the last Marks" group in Plan and Risk, shown only when lots were bought after earlier Marks.</td></tr>
+<tr><td>L2</td><td>Dated <b>"At the &lt;date&gt; Marks"</b> card</td><td><code>today.props.ts:184–199, 288</code>; <code>today.tsx:155</code></td><td>Not in the prototype. It repeats the rail and Position.</td><td class="conf hi">High</td><td>Dropped. The rail gets a dated P&amp;L line and dated distances.</td></tr>
+<tr><td>L3</td><td><b>Current-Marks card</b> (Expected Mark Date, Mark, Source, Saved, Underlying Mark)</td><td><code>today.tsx:73–103, 110</code>; <code>today.props.ts:233–273</code>; <code>src/ui/screens/trade-detail/Cockpit.tsx:101–107</code></td><td>The old Valuation section, placed by T8P.31. It shows a misleading "Expected Mark Date Fri Oct 9" on a Trade opened Mon Oct 12, and "Mon Nov 23" on an expired contract (<code>option-settlement-due--position.png</code>).</td><td class="conf hi">High</td><td>Merged into the one Today Marks table. Expected Mark Date, Source and Saved go.</td></tr>
+<tr><td>L4</td><td>Mark-missing link repeated in Today</td><td><code>today.tsx:76–80</code></td><td>Same words and link as Needs you (<code>stock-mark-missing-deviation--today.png</code>).</td><td class="conf hi">High</td><td>Removed. Needs you keeps it.</td></tr>
+<tr><td>L5</td><td>Plan's Stop, Target and Account rows</td><td><code>plan-risk.props.ts:40–43</code></td><td>Repeats the rail. Not in the prototype.</td><td class="conf md">Medium-high</td><td><b>Kept.</b> The Plan stays a complete record of what the trader wrote.</td></tr>
+<tr><td>L6</td><td>Each condition's Risk to stop and Reward to target in Plan and Risk</td><td><code>plan-risk.props.ts:48–64, 112</code></td><td>The old Risk and reward section. It repeated the rail's dollar figures.</td><td class="conf md">Medium</td><td>Becomes the one home of the dollar figures; the rail shows price distances instead.</td></tr>
+<tr><td>L7</td><td>Trade Summary line above the Plan on a Planned Trade</td><td><code>plan-risk.props.ts:108–109</code>; <code>plan-risk.tsx:43–47</code></td><td>Repeats the Leg row below it (<code>planned-option--plan-and-risk.png</code>).</td><td class="conf md">Medium</td><td>Kept, per the Trade Summary decision.</td></tr>
+<tr><td>L8</td><td>Summary-card rows in Position: Trade Summary line, Position, Net cost, Opening fees, Last activity</td><td><code>position.props.ts:27–36</code></td><td>Not in the prototype.</td><td class="conf md">Medium</td><td>Keep the Trade Summary line, Position (one row per leg), Net cost and Last activity. <b>Drop Opening fees</b>, which the Fee reconciliation already shows.</td></tr>
+<tr><td>L9</td><td>"Deviation active" badge</td><td><code>src/ui/cockpit/rail/identity.props.ts:38</code>; <code>identity-card.tsx:19</code></td><td>From the old Summary card (T8P.31).</td><td class="conf md">Medium</td><td>Dropped. A line in the Journal points to Plan and Risk instead.</td></tr>
+<tr><td>L10</td><td>Journal entry details grid and "Not answered" rows</td><td><code>src/ui/cockpit/drawers/journal.props.ts:88–93</code></td><td>The old Journal section. The prototype shows only the type and the text.</td><td class="conf md">Medium</td><td>Replaced by one short dated line. Anchor and "Not answered" go.</td></tr>
+<tr><td>L11</td><td>Old Journal list, as a fallback</td><td><code>src/ui/cockpit/drawers/journal.tsx</code>; <code>trade-detail/Composed.tsx</code>; <code>Cockpit.tsx:117–118</code></td><td>Shown only when the price history can't be read. Not seen in testing.</td><td class="conf lo">Low</td><td>Kept as the fallback, using the new short dated line.</td></tr>
+<tr><td>L12</td><td>Today's "Value at expiration" and "Distance on XYZ" lines</td><td><code>today.props.ts:130–144, 176</code></td><td>Not in the prototype's cockpit Today. Moved there by the plan's A223.</td><td class="conf md">Medium</td><td>"Distance on XYZ" becomes the rail's distance. "Value at expiration" moves to that condition's row in Plan and Risk.</td></tr>
+<tr><td>—</td><td>"At entry" on the Daily Review card</td><td><code>src/ui/screens/CardFigures.tsx:99</code></td><td>The Review card, not Trade Detail.</td><td class="conf lo">—</td><td>Left as is; look at it with the Review page work.</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="wrongview">4. Components in the wrong view</h2>
+<div class="scroll"><table class="t">
+<thead><tr><th>#</th><th>Component</th><th>Now</th><th>Should be</th><th>Evidence</th><th>Confidence</th></tr></thead>
+<tbody>
+<tr><td>W1</td><td><b>Deviations</b> and <b>Planned-Leg Fulfillment</b></td><td>A footer under every drawer (<code>Cockpit.tsx:168</code>; <code>src/ui/cockpit/footer.tsx</code>; <code>footer.props.ts:23–47</code>)</td><td>The last two groups of Plan and Risk. Deviations is hidden when there are none.</td><td>Every screenshot, for example <code>open-option-added-after-marks--today.png</code>. The plan's W16 and the prototype both put the footer under every drawer, so this is a change of design, not a missed step.</td><td class="conf hi">High</td></tr>
+<tr><td>W2</td><td>Current Marks in <b>Position</b> on a Settlement Due Trade</td><td><code>Cockpit.tsx:101–107</code> (<code>CurrentMarksOnly</code>)</td><td>Today, which every Settlement Due Trade now has.</td><td><code>option-settlement-due--position.png</code> ("Expected Mark Date Mon Nov 23" for an expired contract).</td><td class="conf hi">High</td></tr>
+<tr><td>W3</td><td>Dollars at risk and reward in the <b>rail</b></td><td><code>src/ui/cockpit/rail/conditions.props.ts</code></td><td>Plan and Risk. The rail shows price distances.</td><td>Your redesign of the conditions.</td><td class="conf hi">Decided</td></tr>
+<tr><td>W4</td><td>Worst case and Max reward in the <b>rail</b></td><td><code>conditions.props.ts:106–107</code></td><td>Plan and Risk, with the short notes ("Distances to each condition arrive with the first Marks", and so on).</td><td>Your answers.</td><td class="conf hi">Decided</td></tr>
+</tbody></table></div>
+
+<h3>Other problems found along the way</h3>
+<ul>
+  <li><b>Before the first Marks, the page contradicts itself.</b> The note says the first Marks are "due once the Mon Oct 12 session ends". But Today shows "Expected Mark Date Fri Oct 9", and Today's distance, Position's Open P&amp;L and Plan and Risk's figures all say "Awaiting the close after Fri Oct 9" (<code>open-option-before-marks--*.png</code>). The new Today table removes Expected Mark Date. The remaining "Awaiting the close after Fri Oct 9" figures should name the session that brings the first Marks, the one in the note.</li>
+  <li><b>The option track's "entry" dot ignores later lots.</b> It sits at Entry Quality's average ($2.00) even after a lot was bought at $3.30. It should use the open lots' average (see <a href="#today">Today</a>).</li>
+  <li><b>Three different averages on one stock Trade.</b> The Summary line and At entry say $50.32, and Entry Quality says $50.18. They measure different things, but they share a label. The "Since the last Marks" group's new row names ("Average price of new lots") remove the clash.</li>
+  <li><b>A breached Stop reads "$0.00 · 0.00R" in Plan and Risk</b> while the rail says "Breached". Plan and Risk should show how far past it is, "$60.00 · 0.24R past".</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="map">5. Where each piece goes</h2>
+<p>Blue arrows show where a piece moves. Red dashed boxes are removed.</p>
+<figure>
+<div class="scroll">
+<svg viewBox="0 0 900 560" width="900" role="img" aria-labelledby="map-title map-desc" style="max-width:100%;height:auto;min-width:640px">
+  <title id="map-title">Where each piece of the current page goes</title>
+  <desc id="map-desc">At entry moves to Plan and Risk as Since the last Marks. The dated card is dropped; its Trade P and L becomes a dated line in the rail, and its condition distances become dated distances in the rail. The current-Marks card merges into the Today Marks table; Expected Mark Date, Source and Saved are removed. Distance on the Underlying moves to the rail's Conditions card and Value at expiration moves to Plan and Risk. Fulfillment and Deviations move to Plan and Risk. The Deviation active badge is replaced by a Journal line. Dollars at risk, Worst case and Max reward move to Plan and Risk. The nearest badge and Opening fees are removed.</desc>
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mv)"/></marker></defs>
+  <text x="20" y="22" class="svg-muted" font-size="13" font-weight="700">ON THE PAGE NOW</text>
+  <text x="560" y="22" class="svg-muted" font-size="13" font-weight="700">WHERE IT GOES</text>
+
+  <!-- sources -->
+  <g font-size="13" class="svg-ink">
+    <rect x="20" y="36" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="58">Today: At entry card</text>
+    <rect x="20" y="80" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="102">Today: "At the &lt;date&gt; Marks" card</text>
+    <rect x="20" y="124" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="146">Today: current-Marks card</text>
+    <rect x="20" y="168" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="190">Today: Marks comparison table</text>
+    <rect x="20" y="212" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="234">Today: "Distance on XYZ" line</text>
+    <rect x="20" y="256" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="278">Today: "Value at expiration" line</text>
+    <rect x="20" y="300" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="322">Footer: Fulfillment and Deviations</text>
+    <rect x="20" y="344" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="366">Rail: "Deviation active" badge</text>
+    <rect x="20" y="388" width="330" height="34" rx="6" class="svg-box"/><text x="32" y="410">Rail: dollars, Worst case, Max reward</text>
+    <rect x="20" y="432" width="330" height="34" rx="6" class="svg-rm"/><text x="32" y="454">Rail: "nearest" badge, long sentences</text>
+    <rect x="20" y="476" width="330" height="34" rx="6" class="svg-rm"/><text x="32" y="498">Position: Opening fees row</text>
+    <rect x="20" y="520" width="330" height="34" rx="6" class="svg-rm"/><text x="32" y="542">Today: Expected Mark Date, Source, Saved</text>
+  </g>
+
+  <!-- destinations -->
+  <g font-size="13" class="svg-ink">
+    <rect x="560" y="36" width="320" height="52" rx="6" class="svg-dest"/><text x="572" y="58" font-weight="700">Plan and Risk</text><text x="572" y="78" font-size="12">"Since the last Marks" group</text>
+    <rect x="560" y="104" width="320" height="52" rx="6" class="svg-dest"/><text x="572" y="126" font-weight="700">Rail: P&amp;L and Conditions</text><text x="572" y="146" font-size="12">dated P&amp;L line, dated distances</text>
+    <rect x="560" y="172" width="320" height="52" rx="6" class="svg-dest"/><text x="572" y="194" font-weight="700">Today: one Marks table</text><text x="572" y="214" font-size="12">Today, Yesterday, Change</text>
+    <rect x="560" y="240" width="320" height="52" rx="6" class="svg-dest"/><text x="572" y="262" font-weight="700">Rail: Conditions</text><text x="572" y="282" font-size="12">distance to each trigger</text>
+    <rect x="560" y="308" width="320" height="70" rx="6" class="svg-dest"/><text x="572" y="330" font-weight="700">Plan and Risk</text><text x="572" y="350" font-size="12">conditions with dollars and R, Worst case,</text><text x="572" y="366" font-size="12">Max reward, Fulfillment, Deviations</text>
+    <rect x="560" y="394" width="320" height="52" rx="6" class="svg-dest"/><text x="572" y="416" font-weight="700">Journal</text><text x="572" y="436" font-size="12">"1 active Deviation. See Plan and Risk."</text>
+  </g>
+
+  <!-- arrows -->
+  <path d="M350,53 C450,53 460,62 556,62" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,97 C450,97 460,130 556,130" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,141 C450,141 460,190 556,190" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,185 C450,185 460,205 556,205" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,229 C450,229 460,266 556,266" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,273 C450,273 460,330 556,330" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,317 C450,317 460,350 556,350" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,361 C450,361 460,420 556,420" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,405 C450,405 460,366 556,366" class="svg-arrow" marker-end="url(#ah)"/>
+  <path d="M350,449 L420,449" class="svg-x"/><text x="428" y="453" font-size="12" style="fill:var(--rm)">removed</text>
+  <path d="M350,493 L420,493" class="svg-x"/><text x="428" y="497" font-size="12" style="fill:var(--rm)">removed (in Fee reconciliation)</text>
+  <path d="M350,537 L420,537" class="svg-x"/><text x="428" y="541" font-size="12" style="fill:var(--rm)">removed</text>
+</svg>
+</div>
+<figcaption>The dated card's other figures (Open P&amp;L, Realized to date and Incurred fees at that date) are dropped. Their current values stay in Position.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="tabs">6. Which views each Trade shows</h2>
+<p><b>The change:</b> every Trade with a Position, open or closed, now has a Today view, and Today opens first. A Planned Trade holds nothing to mark, and a Trade whose records disagree has no figures, so neither gets one.</p>
+<div class="scroll"><table class="t">
+<thead><tr><th>Trade state</th><th>Tabs, in order</th><th>Opens on</th><th>Change from now</th></tr></thead>
+<tbody>
+<tr><td>Planned</td><td>Plan and Risk, Journal, Payoff</td><td>Plan and Risk</td><td>None</td></tr>
+<tr><td>Open</td><td>Today, Position, Plan and Risk, Price History, Journal, Payoff</td><td>Today</td><td>None</td></tr>
+<tr><td>Settlement Due</td><td>Today, Position, Plan and Risk, Price History, Journal, Payoff</td><td>Today</td><td><b>Today added</b>; opened on Position before</td></tr>
+<tr><td>Closed (by sale or expiration)</td><td>Today, Position, Plan and Risk, Price History, Journal, Payoff</td><td>Today</td><td><b>Today added</b> (greyed, "Closed" stamp); opened on Position before</td></tr>
+<tr><td>Records disagree</td><td>Position, Plan and Risk, Journal</td><td>Position</td><td>None</td></tr>
+</tbody></table></div>
+<p>The tab counts stay as they are: Price History's number of sessions without Marks, and Journal's "1 owed". No tab shows a Deviation count.</p>
+<details class="tech"><summary>Technical detail</summary><div>
+<p><code>drawersOf</code> in <code>src/ui/screens/trade-detail/Cockpit.tsx:26–31</code> gives Today only to an Open Trade that isn't Settlement Due. This reverses the plan's A217 ("the default drawer is … Position on a Closed, Settlement Due or incoherent one") and the T8P.5 case at plan line 358 ("should leave out Today on a Closed or Settlement Due Detail, and select Position"). It also changes <code>e2e/d8p/states.spec.ts</code> (B8P.4), which expects "no Today" and "Position selected".</p>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="rail">7. The rail</h2>
+<p><b>What changes:</b> the identity card loses the "Deviation active" badge. When today's figure isn't available, the P&amp;L card shows the latest dated figure as its second line. The Conditions card shows how far each price is from its trigger, in that condition's own price, with short labels only. Worst case, Max reward and the short notes move to Plan and Risk.</p>
+
+<div class="legend" aria-label="Mockup legend">
+  <span><i class="sw rm"></i> Removed</span><span><i class="sw mv"></i> Moved here</span><span><i class="sw nw"></i> New</span><span><i class="sw ch"></i> Changed</span>
+</div>
+
+<figure>
+<div class="mock" role="img" aria-label="Mockup of the rail on an Open option Trade, Thu Oct 15">
+  <div class="cockpit" style="grid-template-columns:minmax(0,300px) minmax(0,1fr)">
+    <div class="rail">
+      <div class="mc">
+        <div class="sub" style="font-size:12px">← Back to Trades</div>
+        <div class="big">XYZ</div>
+        <span class="badge">Long Call, Open</span>
+        <div class="rm" style="display:inline-block;padding:0 4px;border-radius:4px;margin-left:4px"><span class="tag rm-t">Removed</span> <span>Deviation active</span></div>
+        <div>Strike 55</div><div>Expires Fri Dec 18 (64 days)</div><div>Fidelity — Roth IRA</div>
+        <span class="pill p">Record entry</span><span class="pill">Record exit</span>
+      </div>
+      <div class="mc">
+        <div class="big">$218.05</div>
+        <div style="color:var(--target)">+$30.00 since Wed Oct 14</div>
+        <div class="sub">1 of 2 contracts open</div>
+      </div>
+      <div class="mc ch">
+        <span class="tag ch-t">Changed</span>
+        <h5>Conditions</h5>
+        <div class="cond"><div class="top"><span class="role s">Stop</span><span>$2.20 away</span></div><div>Option at or below $1.00</div></div>
+        <div class="cond"><div class="top"><span class="role t">Target</span><span>2.10 away</span></div><div>XYZ at or above 60.00</div></div>
+        <div class="gone">"nearest" badges</div>
+        <div class="gone">"Change in Trade P&amp;L from the Thu Oct 15 Marks if…" sentences</div>
+        <div class="gone">Worst case and Max reward (moved to Plan and Risk)</div>
+      </div>
+      <div class="mc">
+        <h5>Needs you</h5>
+        <b>Position Change Reflection Reflection owed</b>
+        <div>Due</div>
+        <span class="pill">Reflect now</span>
+      </div>
+    </div>
+    <div class="drawers">
+      <div class="mc ch">
+        <span class="tag ch-t">When today's Mark is missing</span>
+        <h5>P&amp;L card</h5>
+        <div class="big" style="font-size:16px">Awaiting the close after Fri Oct 16</div>
+        <div class="nw" style="padding:2px 6px;border-radius:4px"><span class="tag nw-t">New</span> +$218.05 at the Thu Oct 15 Marks</div>
+        <div class="sub">2 of 2 contracts open</div>
+      </div>
+      <div class="mc ch">
+        <span class="tag ch-t">When today's Mark is missing</span>
+        <h5>Conditions</h5>
+        <div class="cond"><div class="top"><span class="role s">Stop</span><span>$2.20 away · Thu Oct 15 Marks</span></div><div>Option at or below $1.00</div></div>
+        <div class="cond"><div class="top"><span class="role t">Target</span><span>2.10 away · Thu Oct 15 Marks</span></div><div>XYZ at or above 60.00</div></div>
+      </div>
+      <div class="mc">
+        <h5>Other states of a condition row</h5>
+        <div class="cond"><div class="top"><span class="role s">Stop</span><span style="color:var(--stop)">Breached · $0.50 past</span></div><div>XYZ at or below $47.50</div></div>
+        <div class="cond"><div class="top"><span class="role t">Target</span><span>Reached · 0.50 past</span></div><div>MNO at or above 44.50</div></div>
+        <div class="cond"><div class="top"><span class="role s">Stop</span><span class="sub">Mark missing</span></div><div>XYZ at or below $47.50</div></div>
+        <div class="cond"><div class="top"><span class="role s">Stop</span><span></span></div><div>Option at or below $1.00</div><div class="note">Before the first Marks, on a Planned, Settlement Due or Closed Trade: the role and the trigger only.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<figcaption>The rail on O-C3 at Thu Oct 15, 6:00 pm (the plan's test Trade). Right column: how the P&amp;L and Conditions cards read the next day, after a lot was bought before Friday's Marks; and the other states a condition row can be in. The Stop is an option-price condition, so its distance is in dollars ($3.20 − $1.00). The Target is on XYZ's price, so its distance has no "$" (60.00 − 57.90).</figcaption>
+</figure>
+
+<details class="tech"><summary>Technical detail</summary><div>
+<ul>
+  <li><b>Distance to the trigger needs a new field.</b> Trade Analysis already gives an option condition on the Underlying's price its price distance (<code>underlying: { distance, beyond }</code>, <code>src/domain/trade-analysis/evaluate.ts:61</code>). Stock conditions and option-price conditions carry only the dollar figure (<code>conditionOf</code>, <code>evaluate.ts:340–354</code>). See <a href="#backend">What the backend must add</a>. The UI must not work the distance out itself (ADR 0001).</li>
+  <li><b>The dated figures already exist.</b> The Detail's <code>current.datedLine</code> (<code>src/coordinators/valuation/dated-line.ts:16–19</code>) holds a full evaluation at the earlier session's Marks, including <code>conditions</code> and <code>currentMarkedPnl</code>, with its <code>tradingDate</code>. The dated line is in dollars only, with no R.</li>
+  <li><b>When there is no earlier Mark at all</b> (the Trade's first session has no Mark), there is no dated line. The rail then shows the reason, "Mark missing".</li>
+  <li><b>On an option Trade with one Mark in and one missing,</b> each condition row carries its own date. An Underlying condition stays unavailable when the Underlying has no Mark at the dated session either (A110).</li>
+  <li><b>A stock Trade says "Mark"</b> ("· Tue Nov 10 Mark"), as W5 already does; an option Trade says "Marks".</li>
+  <li>The "nearest" badge is dropped, so A207's <code>nearest</code> field is read by nothing (see <a href="#backend">What the backend must add</a>).</li>
+</ul>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="today">8. Today</h2>
+<p><b>What changes:</b> Today becomes one Marks table, with three columns, Today, Yesterday and Change, and one row per Instrument. Each column is headed with its date. When a Mark hasn't been entered yet, its cell shows a dash, so a glance tells you what is still missing. The current-Marks card, the dated card, the At entry card, the per-condition lines and the extra Mark-missing link all leave. Notes about a stale Mark or an acknowledged missing Mark appear under the table, only when they apply. Open Trades keep the price tracks; Settlement Due and Closed Trades don't.</p>
+
+<h3>Which days the columns show</h3>
+<ul>
+  <li><b>Today:</b> the current trading day, with dashes until its Marks are entered after the session ends. On a weekend or holiday, it is the next trading session's date.</li>
+  <li><b>Yesterday:</b> always the session just before the Today column, with dashes if that session has no Marks. It never skips back to an earlier session that has Marks.</li>
+  <li><b>Change:</b> Today's Mark less Yesterday's, or a dash when either is missing.</li>
+  <li><b>Before the first Marks:</b> both columns show dashes, beside the "No Marks yet" note.</li>
+</ul>
+
+<figure>
+<div class="mock" role="img" aria-label="Mockup of the Today view on an Open option Trade">
+  <div class="drawers">
+    <div class="tabs"><span class="tab on">Today</span><span class="tab">Position</span><span class="tab">Plan and Risk</span><span class="tab">Price History 1</span><span class="tab">Journal 1 owed</span><span class="tab">Payoff</span></div>
+    <div class="mc ch">
+      <span class="tag ch-t">One table replaces the comparison and the current-Marks card</span>
+      <h5>Marks</h5>
+      <table>
+        <thead><tr><th></th><th>Today, Thu Oct 15</th><th>Yesterday, Wed Oct 14</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>XYZ Mark</td><td>57.90</td><td>57.40</td><td>+0.50</td></tr>
+          <tr><td>Call Mark</td><td>$3.20</td><td>$2.90</td><td>+$0.30</td></tr>
+        </tbody>
+      </table>
+      <div class="gone">source and saved time under each Mark (now in Price History)</div>
+    </div>
+    <div class="mc">
+      <span class="tag ch-t" style="margin-bottom:6px">Entry dot changed, lot ticks added</span>
+      <h5>Where the prices sit</h5>
+      <svg viewBox="0 0 520 112" role="img" aria-labelledby="trk-t" style="width:100%;height:auto">
+        <title id="trk-t">Option price track. Stop $1.00. Now $3.20. Entry, the open lots' average, $2.65. Open lots bought at $2.00 on Mon Oct 12 and $3.30 on Fri Oct 16.</title>
+        <text x="0" y="14" font-size="13" font-weight="700" class="svg-ink">Option price</text>
+        <rect x="10" y="60" width="500" height="8" rx="4" class="svg-track"/>
+        <rect x="10" y="60" width="118" height="8" rx="4" class="svg-szone"/>
+        <!-- lot ticks: $2.00 and $3.30 on a 0 to 4.20 scale, 500px wide from x=10 -->
+        <path d="M248,48 v-12" stroke="var(--text)" stroke-width="1.5" fill="none"/>
+        <circle cx="248" cy="52" r="3.5" fill="var(--card)" stroke="var(--text)" stroke-width="1.5"/>
+        <path d="M403,48 v-12" stroke="var(--text)" stroke-width="1.5" fill="none" opacity="0"/>
+        <circle cx="403" cy="52" r="3.5" fill="var(--card)" stroke="var(--text)" stroke-width="1.5"/>
+        <!-- entry average 2.65 -->
+        <circle cx="325" cy="64" r="6.5" fill="var(--card)" stroke="var(--text)" stroke-width="2"/>
+        <text x="325" y="90" font-size="12" text-anchor="middle" class="svg-ink">entry</text>
+        <!-- yesterday 2.90 -->
+        <circle cx="355" cy="64" r="3" class="svg-ink"/>
+        <text x="352" y="106" font-size="11" text-anchor="middle" class="svg-muted">Wed Oct 14</text>
+        <!-- now 3.20 -->
+        <circle cx="391" cy="64" r="7" fill="var(--card)" stroke="var(--text)" stroke-width="2"/><circle cx="391" cy="64" r="3.5" class="svg-ink"/>
+        <text x="391" y="42" font-size="12" text-anchor="middle" font-weight="700" class="svg-ink">now</text>
+        <!-- hover callout for one tick -->
+        <rect x="160" y="18" width="150" height="20" rx="4" fill="var(--card)" stroke="var(--line)"/>
+        <text x="235" y="32" font-size="11" text-anchor="middle" class="svg-muted">hover: $2.00 · Mon Oct 12</text>
+      </svg>
+      <p class="note">Big hollow dot: "entry", now the <b>open lots' average</b> ($2.65), not the first entry's ($2.00). Small hollow ticks above the track: one per lot still held, at its purchase price, with no visible label. Hovering shows its price and date, which are also in its accessible name. Closed lots aren't shown. The second track (XYZ) is unchanged and is left out of this mockup.</p>
+    </div>
+    <div class="mc rm"><span class="tag rm-t">Removed</span><div>Expected Mark Date · Mark · Source · Saved</div></div>
+    <div class="mc rm"><span class="tag rm-t">Removed</span><div>Target on XYZ: Value at expiration $5.00 · Distance on XYZ 2.10</div></div>
+    <div class="mc rm"><span class="tag rm-t">Removed</span><div>At the Thu Oct 15 Marks: Mark, Realized to date, Open P&amp;L, Current Marked Trade P&amp;L, Incurred fees, Risk to stop, Worst case, Reward to target</div></div>
+    <div class="mc rm"><span class="tag rm-t">Moved to Plan and Risk</span><div>At entry: Quantity, Average entry, Risk from entry, Reward from entry</div></div>
+    <div class="mc rm"><span class="tag rm-t">Moved to Plan and Risk</span><div>Planned-Leg Fulfillment · Deviations (footer)</div></div>
+  </div>
+</div>
+<figcaption>Today on O-C3 at Thu Oct 15, 6:00 pm. The track mockup also shows the lot ticks after one more contract is bought on Fri Oct 16 at $3.30 (track ends from $0.00 to $4.20). The price tracks stay on Open Trades.</figcaption>
+</figure>
+
+<h3>Mid-session, before the first Marks, and notes</h3>
+<figure>
+<div class="mock" role="img" aria-label="Three small variants of the Today Marks table">
+  <div class="drawers">
+    <div class="mc">
+      <h5>Fri Oct 16, 12:00 pm (Friday's Marks not due yet)</h5>
+      <table><thead><tr><th></th><th>Today, Fri Oct 16</th><th>Yesterday, Thu Oct 15</th><th>Change</th></tr></thead>
+      <tbody><tr><td>XYZ Mark</td><td>—</td><td>57.90</td><td>—</td></tr><tr><td>Call Mark</td><td>—</td><td>$3.20</td><td>—</td></tr></tbody></table>
+    </div>
+    <div class="mc">
+      <h5>Before the first Marks (Mon Oct 12, 12:00 pm)</h5>
+      <p class="note" style="margin:0 0 6px;color:var(--text)">No Marks yet. This Trade opened Mon Oct 12 at 10:00 am. Its first Marks, and every figure that needs them, are due once the Mon Oct 12 session ends.</p>
+      <table><thead><tr><th></th><th>Today, Mon Oct 12</th><th>Yesterday, Fri Oct 9</th><th>Change</th></tr></thead>
+      <tbody><tr><td>XYZ Mark</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Call Mark</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>
+    </div>
+    <div class="mc">
+      <h5>A Saturday</h5>
+      <table><thead><tr><th></th><th>Next session, Mon Oct 19</th><th>Yesterday, Fri Oct 16</th><th>Change</th></tr></thead>
+      <tbody><tr><td>XYZ Mark</td><td>—</td><td>58.10</td><td>—</td></tr></tbody></table>
+      <p class="note">Example figure. On a weekend or holiday the first column is the next trading session; "Yesterday" is the session before it.</p>
+    </div>
+    <div class="mc nw">
+      <span class="tag nw-t">Notes under the table, only when they apply</span>
+      <p class="note" style="color:var(--text);margin:0">Stale context: $51.50 from Tue Oct 13 close (stale, not used in any current figure)</p>
+      <p class="note" style="color:var(--text)">Mark unavailable for XYZ on Wed Oct 14: your acknowledgment, not a price</p>
+    </div>
+  </div>
+</div>
+<figcaption>The Stale-context and acknowledgment notes keep their existing words. Revision 98 kept "close" in the Stale context line; that is unchanged here. The first column's heading wording (for example "Today, Thu Oct 15" and "Next session, Mon Oct 19") needs approval; see <a href="#words">Words to approve</a>.</figcaption>
+</figure>
+
+<h3>Settlement Due</h3>
+<p>The Underlying keeps trading after expiration, and its Mark tells the trader whether the option finished in or out of the money. So Today shows the Underlying's Marks for today and yesterday, where entered. The option has no Marks after its expiration session, so its cells read <b>"Expired"</b> rather than a dash, which would look like a missing Mark.</p>
+<figure>
+<div class="mock" role="img" aria-label="Mockup of Today on a Settlement Due Cash-Secured Put">
+  <div class="mc nw">
+    <span class="tag nw-t">New view for this state</span>
+    <h5>Marks</h5>
+    <table><thead><tr><th></th><th>Today, Mon Nov 23</th><th>Yesterday, Fri Nov 20</th><th>Change</th></tr></thead>
+    <tbody><tr><td>MNO Mark</td><td>—</td><td>46.20</td><td>—</td></tr><tr><td>Put Mark</td><td>Expired</td><td>$0.05</td><td>—</td></tr></tbody></table>
+    <p class="note">No price tracks on a Settlement Due Trade. Example figures.</p>
+  </div>
+</div>
+<figcaption>The MNO 20 Nov 2026 45 Put, viewed on Mon Nov 23. "Expired" has the screen-reader name "Expired Fri Nov 20". Friday is the expiration session, so its Put Mark was still due.</figcaption>
+</figure>
+<div class="box"><b>One consequence of revision 98.</b> Revision 98 ended a Settlement Due Trade's history at its expiration session, and the Daily Review no longer asks for any Marks once the contract has expired, including the Underlying's. So the Today column will usually stay a dash on a Settlement Due Trade, unless the trader enters the Underlying's Mark some other way. You chose to keep the columns literal; the dated headings make the dashes self-explaining. If the trader should see the Underlying's latest price there, the Review would need to keep asking for the Underlying's Mark until the expiration is recorded. That would reverse part of revision 98, so it isn't recommended here, only noted.</div>
+
+<h3>Closed</h3>
+<p>The whole Today view is greyed, with a "Closed" stamp across it. The Today column is blank, because today's Marks no longer matter. The second column shows the price the position closed at, from the final exit, or "Expired" for an expiration, headed with that date. It never calls a Mark a "close". Change shows dashes, since nothing is measured. No price tracks.</p>
+<figure>
+<div class="mock" role="img" aria-label="Mockups of Today on a Trade Closed by sale and one Closed by expiration">
+  <div class="drawers">
+    <div class="mc closed-wrap">
+      <span class="stamp" aria-label="Closed">CLOSED</span>
+      <h5>Marks</h5>
+      <table class="greyed"><thead><tr><th></th><th>Today, Mon Nov 16</th><th>Exit Fri Nov 13</th><th>Change</th></tr></thead>
+      <tbody><tr><td>NVDA Mark</td><td></td><td>—</td><td>—</td></tr><tr><td>Call Mark</td><td></td><td>$12.40</td><td>—</td></tr></tbody></table>
+      <p class="note">Closed by sale, the final exit at $12.40. With several exits, the column shows the final one. Lot Matches lists each exit's price.</p>
+    </div>
+    <div class="mc closed-wrap">
+      <span class="stamp" aria-label="Closed">CLOSED</span>
+      <h5>Marks</h5>
+      <table class="greyed"><thead><tr><th></th><th>Today, Mon Nov 23</th><th>Expired Fri Nov 20</th><th>Change</th></tr></thead>
+      <tbody><tr><td>MNO Mark</td><td></td><td>46.20</td><td>—</td></tr><tr><td>Put Mark</td><td></td><td>Expired</td><td>—</td></tr></tbody></table>
+      <p class="note">Closed by expiration: the option's cell reads "Expired", and the Underlying's row shows its Mark on the expiration date. Example figures.</p>
+    </div>
+  </div>
+</div>
+<figcaption>Greyed text must still meet WCAG AA contrast. The "Closed" stamp is real text that screen readers announce, not decoration. The rail and the other views aren't greyed. Whether a Trade closed by sale should also show the Underlying's Mark on the exit date is still open; see <a href="#open">Still open</a>.</figcaption>
+</figure>
+
+<details class="tech"><summary>Technical detail</summary><div>
+<ul>
+  <li><b>Where the Open table's figures come from:</b> the replay. Its completed sessions give each Instrument's Mark and its change since that Instrument's previous Mark (<code>today.props.ts:26–57</code> already reads them). Change is shown only when the change's <code>since</code> date is the Yesterday column's date, so nothing is worked out in the UI. The session not yet ended (the date of the Journal's "Session not ended yet" card, W12) gives the Today column's date, including the next session's date on a weekend.</li>
+  <li><b>Settlement Due needs a backend addition.</b> An expired contract's Detail reads no Mark frame (revision 73), and its replay stops at the expiration session (revision 98). So the Underlying's two Marks after expiration aren't available to the screen. See <a href="#backend">What the backend must add</a>.</li>
+  <li><b>Closed by expiration:</b> the replay of a Closed Trade ends at its final session, so the Underlying's Mark on the expiration date is already there. The exit column's price and date are the final exit's, taken from the Position Changes the view already holds. Choosing the last one is selection, not arithmetic.</li>
+  <li><b>Entry dot and ticks:</b> the open lots' prices are already in <code>positions[].openLots</code>. Their average is a derived figure, so it must come from Trade Views, not the UI (ADR 0001). A stock Trade already has one in its Trade Summary price; an option Trade needs a small additive field.</li>
+  <li><b>Code that leaves:</b> <code>CurrentMarksCard</code>, <code>CurrentMarksOnly</code> and <code>FigureCard</code> (<code>today.tsx:58–103, 155–156</code>); <code>valuedAtOf</code>, <code>atEntryOf</code>, <code>currentMarksOf</code> and <code>conditionLineOf</code> (<code>today.props.ts:130–144, 184–213, 233–273</code>); the shell's <code>CurrentMarksOnly</code> branch (<code>Cockpit.tsx:105</code>).</li>
+</ul>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="position">9. Position, and naming contracts</h2>
+<p><b>What changes:</b> every contract is named on every row. Open Lots and Lot Matches each gain an Instrument column, the Position row becomes one row per leg, and the Opening fees row goes (the Fee reconciliation already shows it). The Trade Summary line, Net cost and Last activity stay. Every contract name everywhere in the app takes the broker style, <b>"NVDA Dec 18 $150 Call"</b>, in place of "NVDA 18 Dec 2026 150 Call".</p>
+<p>The prototype never named the contract on the Position card, and nor does the built Open Lots table. On a one-leg Trade the Trade Summary line covers it. Two-leg Trades come right after D8, and then a lots table without names can't be read. Executions and Settlement already name the contract on each line, so they only need the new style.</p>
+
+<figure>
+<div class="mock" role="img" aria-label="Mockup of the Position view on a two-leg call spread">
+  <div class="drawers">
+    <div class="mc ch">
+      <span class="tag ch-t">Changed</span>
+      <h5>Position</h5>
+      <p style="margin:0 0 6px" class="sub">Trade Summary line (its two-leg form is designed after D8)</p>
+      <dl>
+        <dt>Position</dt><dd>Long 1 contract of NVDA Dec 18 $150 Call</dd>
+        <dt></dt><dd>Short 1 contract of NVDA Dec 18 $160 Call</dd>
+        <dt>Net cost</dt><dd>$480.65</dd>
+        <dt>Last activity</dt><dd>2026-11-10 11:30</dd>
+      </dl>
+      <div class="gone">Opening fees $1.30 (shown in Fee reconciliation)</div>
+      <h5 style="margin-top:10px">Open Lots</h5>
+      <div class="scroll" style="margin:0"><table>
+        <thead><tr><th class="nw">Instrument</th><th>Opened</th><th>Quantity</th><th>Price</th><th>Unconsumed opening fee</th></tr></thead>
+        <tbody>
+          <tr><td class="nw">NVDA Dec 18 $150 Call</td><td>2026-11-04 10:20</td><td>1</td><td>$7.35</td><td>$0.65</td></tr>
+          <tr><td class="nw">NVDA Dec 18 $160 Call</td><td>2026-11-04 10:20</td><td>−1</td><td>$2.55</td><td>$0.65</td></tr>
+        </tbody>
+      </table></div>
+      <dl style="margin-top:8px"><dt>Open P&amp;L</dt><dd>+$212.40</dd><dt>Realized to date</dt><dd>+$313.70</dd><dt>Incurred fees</dt><dd>$3.25</dd></dl>
+    </div>
+    <div class="mc ch">
+      <span class="tag ch-t">Changed</span>
+      <h5>Lot Matches</h5>
+      <p class="note" style="margin:0 0 4px">Each match's amount is rounded to the cent for display.</p>
+      <div class="scroll" style="margin:0"><table>
+        <thead><tr><th class="nw">Instrument</th><th>Opened</th><th>Closed</th><th>Quantity</th><th>Realized</th></tr></thead>
+        <tbody>
+          <tr><td class="nw">NVDA Dec 18 $150 Call</td><td>$7.35 on 2026-11-04 10:20</td><td>$10.50 on 2026-11-10 11:30</td><td>1</td><td>+$313.70</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="mc">
+      <h5>Fee reconciliation ▸</h5>
+    </div>
+    <div class="mc ch">
+      <span class="tag ch-t">New contract style only</span>
+      <h5>Executions (3)</h5>
+      <div>Sell to close 1 NVDA Dec 18 $150 Call @ $10.50 <span class="sub">2026-11-10 11:30</span></div>
+      <div>Sell to open 1 NVDA Dec 18 $160 Call @ $2.55 <span class="sub">2026-11-04 10:20</span></div>
+      <div>Buy to open 2 NVDA Dec 18 $150 Call @ $7.35 <span class="sub">2026-11-04 10:20</span></div>
+    </div>
+  </div>
+</div>
+<figcaption>Example two-leg Trade: a call spread, long the 150 and short the 160, with one long contract sold. Example figures. The Lot Matches table is shared with the Exit receipt and the Expiration receipt, so they gain the column too, and the wording stays the same on every screen.</figcaption>
+</figure>
+
+<details class="tech"><summary>Technical detail</summary><div>
+<ul>
+  <li><b>Open Lots:</b> columns at <code>src/ui/cockpit/drawers/position.props.ts:38–41</code>. Each lot belongs to a position whose instrument is known (<code>view.positions</code>).</li>
+  <li><b>Lot Matches:</b> columns at <code>src/ui/screens/LotMatchesTable.tsx:48–53</code>. It is shared with <code>ExitReceipt.tsx</code> and <code>ExpirationReceipt.tsx</code>.</li>
+  <li><b>Position row:</b> <code>position.props.ts:32</code> joins positions with ", ". It becomes one row per leg.</li>
+  <li><b>Executions and Settlement</b> already name the contract (<code>src/ui/screens/execution-line.ts:14</code>; <code>trade-detail/Position.tsx:90, 154, 165</code>).</li>
+  <li><b>The contract name comes from one place:</b> <code>instrumentLabel</code> (<code>src/ui/calculation-words.ts:22–25</code>), with about 20 call sites in 14 files (Trade Detail, the entry and expiration forms, Mark entry, the Review card, ReviewSettlement). The short form already exists in the Trade Summary line (<code>src/ui/format.ts:46–63</code>, <code>summaryExpiration</code> and <code>summaryStrike</code>), so <code>instrumentLabel</code> can reuse it with the symbol in front. 47 test and e2e files contain long-form dates; each needs checking, since some are the "Expires" line rather than a contract name.</li>
+  <li><b>Opening fees:</b> remove the row at <code>position.props.ts:34</code>. The C8P.2 exception for it goes.</li>
+</ul>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="planrisk">10. Plan and Risk</h2>
+<p><b>What changes:</b> Plan and Risk becomes the one home for the Plan, every dollar figure about risk and reward, the entry, and Deviations. In order:</p>
+<ol>
+  <li><b>Plan</b>, unchanged: still a complete record, including Stop, Target and Account.</li>
+  <li><b>Plan Baseline</b>, unchanged.</li>
+  <li><b>Conditions</b>, new here: one row per condition with its trigger, its distance, and its Risk to stop or Reward to target in dollars and R. An Underlying condition on an option Trade also shows its value at expiration. Worst case, Max reward and the short notes sit under the rows.</li>
+  <li><b>Entry Quality</b>, unchanged.</li>
+  <li><b>Since the last Marks</b>, new: shown only when lots were bought after earlier Marks.</li>
+  <li><b>Planned-Leg Fulfillment</b>, moved from the footer.</li>
+  <li><b>Deviations</b>, moved from the footer, and hidden when there are none.</li>
+</ol>
+
+<figure>
+<div class="mock" role="img" aria-label="Mockup of the Plan and Risk view">
+  <div class="drawers">
+    <div class="tabs"><span class="tab">Today</span><span class="tab">Position</span><span class="tab on">Plan and Risk</span><span class="tab">Price History</span><span class="tab">Journal 1 owed</span><span class="tab">Payoff</span></div>
+    <div class="mc">
+      <h5>Plan</h5>
+      <dl><dt>Contract</dt><dd>XYZ Dec 18 $55 Call</dd><dt>Leg</dt><dd>Long 2 contracts of XYZ Dec 18 $55 Call</dd><dt>Exercise Intent</dt><dd>Not authorized in advance</dd><dt>Intended entry</dt><dd>$2.00</dd><dt>Stop</dt><dd>Option at or below $1.00</dd><dt>Target</dt><dd>XYZ at or above 60.00</dd><dt>Plan time</dt><dd>2026-10-12 09:00</dd><dt>Account</dt><dd>Fidelity — Roth IRA</dd></dl>
+    </div>
+    <div class="mc"><h5>Plan Baseline</h5><dl><dt>1R (original risk)</dt><dd>$200.00</dd><dt>Original reward</dt><dd>$600.00</dd><dt>Reward : risk</dt><dd>3</dd></dl></div>
+    <div class="mc mv">
+      <span class="tag mv-t">Moved here from the rail</span>
+      <h5>Conditions</h5>
+      <div class="scroll" style="margin:0"><table>
+        <thead><tr><th>Condition</th><th>Distance</th><th>Risk or reward</th><th>Value at expiration</th></tr></thead>
+        <tbody>
+          <tr><td><span class="role s">Stop</span> Option at or below $1.00</td><td>$2.20 away</td><td>Risk to stop $220.00 · 1.10R</td><td></td></tr>
+          <tr><td><span class="role t">Target</span> XYZ at or above 60.00</td><td>2.10 away</td><td>Reward to target $180.00 · 0.90R</td><td>$5.00</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:8px 0 0"><b>Worst case:</b> $320.00 · 1.60R if the call expires worthless<br><b>Max reward:</b> Unbounded above</p>
+      <p class="note">Short notes, when they apply: "Distances to each condition and the worst case arrive with the first Marks." · "Distances to each condition arrive with the first Marks after entry." · "The contract expired, so its conditions are no longer measured."</p>
+      <p class="note">A breached Stop reads "Breached · $0.50 past" and "Risk to stop $60.00 · 0.24R past", not "$0.00 · 0.00R". When today's Mark is missing, the figures are the last available Marks', labelled with that date.</p>
+    </div>
+    <div class="mc"><h5>Entry Quality</h5><dl><dt>Entry</dt><dd>Resolved</dd><dt>Average entry</dt><dd>$2.00</dd><dt>Actual initial risk</dt><dd>$201.30 · 1.01R</dd><dt>…</dt><dd>unchanged</dd></dl></div>
+    <div class="mc nw">
+      <span class="tag nw-t">New (from Today's At entry card)</span>
+      <h5>Since the last Marks</h5>
+      <dl><dt>New lots</dt><dd>1 contract</dd><dt>Average price of new lots</dt><dd>$3.30</dd><dt>Risk from that price</dt><dd>$230.00 · 1.15R</dd><dt>Reward from that price</dt><dd>$170.00 · 0.85R</dd></dl>
+      <p class="note">Only when lots were bought after earlier Marks. Hidden before the first Marks, when Entry Quality already covers the entry.</p>
+    </div>
+    <div class="mc mv"><span class="tag mv-t">Moved here from the footer</span><h5>Planned-Leg Fulfillment</h5><dl><dt>Long 2 contracts of XYZ Dec 18 $55 Call</dt><dd>Filled with Deviation</dd></dl></div>
+    <div class="mc mv"><span class="tag mv-t">Moved here from the footer</span><h5>Deviations</h5><ul style="margin:0;padding-left:18px"><li>Entry Size (Excess): 1 contract above plan, caused by the Position Change at 2026-10-16 11:00.</li></ul><p class="note">Hidden when there are none ("No Deviations recorded." is dropped). Superseded Deviations stay listed, struck through, as the record of what happened.</p></div>
+  </div>
+</div>
+<figcaption>O-C3 on Fri Oct 16, after one more contract was bought at $3.30, with distances from the Thu Oct 15 Marks. Example layout; the four "Since the last Marks" labels are your words.</figcaption>
+</figure>
+
+<details class="tech"><summary>Technical detail</summary><div>
+<ul>
+  <li><code>planRiskProps</code> (<code>src/ui/cockpit/drawers/plan-risk.props.ts:105–118</code>) gains the conditions group (replacing <code>conditionFiguresGroup</code>, lines 48–64), the "Since the last Marks" group (from <code>evaluation.atEntry</code>), and the two groups from <code>footer.props.ts</code>.</li>
+  <li>The dollar figures come from each condition's existing <code>distance</code> and <code>overrun</code> Measures (A206), the distance from the new trigger field, and the value at expiration from <code>baseline.stopBasis</code> and <code>targetBasis</code> (as <code>today.props.ts:132–143</code> reads it now).</li>
+  <li>Worst case and Max reward move from <code>conditions.props.ts:106–107</code>, in W6's words.</li>
+  <li>When today's Mark is missing, the figures come from <code>current.datedLine.evaluation</code>, labelled with its date.</li>
+  <li>The footer component (<code>src/ui/cockpit/footer.tsx</code>, <code>footer.props.ts</code>, <code>footer.types.ts</code>) and the shell's <code>DetailFooter</code> (<code>Cockpit.tsx:168</code>) leave.</li>
+</ul>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="history">11. Price History</h2>
+<p><b>What changes:</b> each Mark's source, saved time and any correction now live here, since Today drops them. The UI contract requires "exact observation dates/source … correction indicators" on Trade Detail. The column headings already give each date. The cells don't show source or correction.</p>
+<figure>
+<div class="mock" role="img" aria-label="Mockup of a Price History cell with its source on hover and a Corrected badge">
+  <div class="mc nw">
+    <span class="tag nw-t">Added</span>
+    <table><thead><tr><th>Session</th><th>Thu<br>Oct 15</th><th>Wed<br>Oct 14</th><th>Tue<br>Oct 13</th><th>Mon<br>Oct 12</th></tr></thead>
+    <tbody>
+      <tr><td>XYZ Mark</td><td>57.90</td><td>57.40 <span class="badge">Corrected</span></td><td>—</td><td>56.00</td></tr>
+      <tr><td>Call Mark</td><td>$3.20</td><td>$2.90</td><td>—</td><td>$2.10</td></tr>
+      <tr><td>Trade P&amp;L</td><td>$218.05</td><td>$188.05</td><td>—</td><td>$18.70</td></tr>
+    </tbody></table>
+    <p class="note">Hover or focus on any Mark: "Manual · saved 2026-10-14 17:00". On a corrected Mark, the reason follows: "Corrected: typo in the first entry" (example). Both are in each cell's accessible name.</p>
+  </div>
+</div>
+<figcaption>The smallest change that meets the UI contract. The replay already carries source, saved time and correction reason (revision 93), so this needs no backend change. Cell code: <code>src/ui/cockpit/drawers/price-history.tsx:37</code>.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="journal">12. Journal</h2>
+<p><b>What changes:</b> each entry shows one short dated line instead of the details grid, and "Not answered" rows go. When a Deviation is active, a line at the top points to Plan and Risk.</p>
+<figure>
+<div class="mock" role="img" aria-label="Mockup of the Journal view with the Deviation line and short dated entry lines">
+  <div class="drawers">
+    <div class="mc nw"><span class="tag nw-t">New</span> 1 active Deviation. <u style="color:var(--accent)">See Plan and Risk.</u></div>
+    <div class="mc">
+      <h5>Sessions, newest first ‹ ›</h5>
+      <b>Yesterday, Thu Oct 15</b><div class="big" style="font-size:16px">$218.05</div><div style="color:var(--target)">+$30.00 since Wed Oct 14</div>
+      <dl><dt>XYZ Mark</dt><dd>57.90</dd><dt>Call Mark</dt><dd>$3.20</dd></dl>
+      <div class="ch" style="padding:6px;margin-top:8px;border-radius:4px">
+        <span class="tag ch-t">Changed</span><br>
+        <b>Daily Trade Review</b> · Hold<br>
+        <span class="sub">Daily Review · Thu Oct 15, 4:00 pm</span>
+      </div>
+      <div class="rm" style="padding:6px;margin-top:6px;border-radius:4px"><span class="tag rm-t">Removed</span><div>Review Date · Anchor Trade XYZ · Source · Moment · Authored · Why are you taking this action? Not answered · Conviction now Not answered · …</div></div>
+      <div style="padding:6px;margin-top:6px"><b>Exit reflection</b> <span class="badge">Deferred, answered</span><br>Sold into strength at the 3.00 level.<br><span class="sub">Position Change · Wed Oct 14, 11:00 am · written Fri Oct 16</span></div>
+    </div>
+  </div>
+</div>
+<figcaption>"· written &lt;date&gt;" appears only when the entry was written, answered or declined on a later date. The Edited and "Deferred, answered" badges stay, and so do declines with their reason. "See Plan and Risk" is a button that selects that tab and moves focus to its Deviations heading. It can't be a link, because the selected tab isn't part of the address. Example reflection text.</figcaption>
+</figure>
+<details class="tech"><summary>Technical detail</summary><div>
+<ul>
+  <li><code>itemOf</code> in <code>src/ui/cockpit/drawers/journal.props.ts:78–104</code> builds the details grid (lines 88–93). It becomes one line: the source, its moment in the app's date and time format, and "· written &lt;date&gt;" when written on a later date.</li>
+  <li>The Deviation count uses the same test the badge used: occurrences whose current version is Active (<code>identity.props.ts:38</code>).</li>
+  <li>The old list kept as a fallback (<code>drawers/journal.tsx</code>, <code>trade-detail/Journal.tsx:65–75</code>) takes the same line.</li>
+</ul>
+</div></details>
+
+<!-- ============================================================ -->
+<h2 id="payoff">13. Payoff</h2>
+<p>No change. It matches the plan (W14) and the prototype. Its contract names take the new style.</p>
+
+<!-- ============================================================ -->
+<h2 id="backend">14. What the backend must add</h2>
+<p>Three small additive changes, and one removal. None changes stored data or the schema.</p>
+<div class="scroll"><table class="t">
+<thead><tr><th>Change</th><th>Why</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td><b>Distance to each trigger, in the condition's own price</b></td><td>The rail's distances. Stock and option-price conditions carry only a dollar figure today.</td><td>Trade Analysis: <code>ConditionReading</code> gains, for example, <code>trigger: { distance, beyond }</code>, set by <code>conditionOf</code> (<code>evaluate.ts:340–354</code>) as |Mark − boundary| toward the boundary (zero once crossed), with <code>beyond</code> once crossed. The option Underlying path copies its existing <code>underlying</code> pair. Trade Views passes it through. Dated distances then come from <code>datedLine.evaluation.conditions</code> for free.</td></tr>
+<tr><td><b>The Underlying's two Marks on a Settlement Due Trade</b></td><td>Today's table for an expired contract. The Detail reads no Mark frame once the contract has expired (revision 73), and its replay stops at expiration (revision 98).</td><td>Trade Views: on a Settlement Due Detail, read the Underlying's Marks for the Today and Yesterday sessions through the read session.</td></tr>
+<tr><td><b>The open lots' average price on an option Trade</b></td><td>The track's "entry" dot. A stock Trade already has it in its Trade Summary price.</td><td>Trade Views: one additive field on the Open Detail.</td></tr>
+<tr><td><b>Remove the "nearest" flag</b></td><td>Only the rail's badge read it, and the badge is dropped.</td><td>Delete <code>nearest?</code> and <code>nearestOf</code> (<code>evaluate.ts:72, 396–401</code>), T8P.6's four cases, revision 88's <code>nearest: true</code> additions in <code>current-evaluation.test.ts</code>, and the assertions in <code>tests/integration/d8p/detail.test.ts</code>, <code>conditions.props.test.ts</code> and <code>e2e/d8p/cockpit.spec.ts</code>. The role headline (A197, <code>plan.ts:137–139</code>) and the per-lot nearest condition at entry (BUG-3, <code>plan.ts:142–153</code>) are different things and stay. Check <code>entry.test.ts</code> and <code>tests/integration/d7/entry-window.test.ts</code> before editing; they mention "nearest" in BUG-3's sense. Also correct the stale comment at <code>plan-risk.props.ts:49</code>.</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="words">15. Words to approve</h2>
+<p>Approved during this audit (the table you answered):</p>
+<ul>
+  <li>Conditions card: "Stop · $2.82 away" ("Stop · 2.10 away" for an Underlying price on an option Trade), "Breached · $0.30 past", "Reached · 0.50 past", and dated "Stop · $4.20 away · Tue Nov 10 Mark" ("Marks" on an option Trade).</li>
+  <li>P&amp;L card: "+$340.00 at the Tue Nov 10 Marks" ("Mark" for stock).</li>
+  <li>"Since the last Marks", "New lots", "Average price of new lots", "Risk from that price", "Reward from that price".</li>
+  <li>Journal: "1 active Deviation. See Plan and Risk." ("2 active Deviations…").</li>
+  <li>An expired option's cell: "Expired", with the screen-reader name "Expired Fri Nov 20".</li>
+  <li>Closed Today column headings: "Exit Fri Nov 13" and "Expired Fri Nov 20".</li>
+  <li>Journal line: "Daily Review · Tue Nov 10, 4:12 pm", with "· written Thu Nov 12".</li>
+  <li>Contract names: "NVDA Dec 18 $150 Call", with "'27" for another year, and the year spelled out for screen readers.</li>
+</ul>
+<p><b>Still needing approval:</b></p>
+<ul>
+  <li>Today's column headings: "Today, Thu Oct 15", "Yesterday, Wed Oct 14", and on a weekend or holiday "Next session, Mon Oct 19".</li>
+  <li>The stamp: "Closed".</li>
+  <li>Plan and Risk's conditions table headings: "Condition", "Distance", "Risk or reward", "Value at expiration".</li>
+  <li>"Risk to stop $60.00 · 0.24R past" for a breached Stop.</li>
+  <li>Price History's cell text: "Manual · saved 2026-10-14 17:00" and "Corrected: &lt;reason&gt;".</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="planrev">16. Plan revision notes</h2>
+<p>These decisions reverse approved D08P words and decisions, so they need a plan revision before any work starts. At a high level:</p>
+<ul>
+  <li><b>Drawers per state:</b> A217's drawer list and default drawers; the T8P.5 case at plan line 358; B8P.4 (<code>e2e/d8p/states.spec.ts</code>).</li>
+  <li><b>Approved words:</b> W3 (dated line), W4 and W18 (contract names), W5 and W6 (the rail's conditions), W8 and W19 (Today), W10 (Journal items), W16 (footer); the D7 approved-words conventions C1 and C3 for contract names.</li>
+  <li><b>Assumptions:</b> A206 (the rail's figure), A207 (retired), A223 (reversed).</li>
+  <li><b>Tasks and their tests:</b> T8P.6 (reversed); T8P.13, T8P.14, T8P.15 (Max reward's R in the rail), T8P.16 cases 1 and 5, T8P.17 case 2, T8P.18 case 3, T8P.29 and T8P.31 (cases 1 to 4, 6 and 7); B8P.1 in <code>e2e/d8p/cockpit.spec.ts</code>; <code>e2e/d7s/conditions</code>, <code>e2e/d4/breach-overrun</code>, <code>e2e/d4/expected-mark</code>, <code>e2e/d8p/first-marks-pending</code> and <code>today-narrow</code>; the footer tests (<code>src/ui/cockpit/footer.test.tsx</code>, <code>src/ui/screens/trade-detail/Footer.test.tsx</code>); the Journal tests that read Anchor, Source, Moment, Authored or "Not answered"; and the 47 files with long-form contract dates.</li>
+  <li><b>C8P.2's accepted repeats:</b> these go: each condition's distance on the rail and in Plan and Risk; the Position drawer's Opening fees; Today's At entry block; the Mark repeated by Today's Stale context line, comparison and dated block. These stay: the Journal cards' Marks; Price History's latest session; each Journal card's Trade P&amp;L and change; Incurred fees beside the Fee reconciliation; Entry Quality's reward : risk beside the Plan Baseline's; the Trade Summary line's repeats.</li>
+  <li><b>Revision 98's consequence</b> for Settlement Due Today (see <a href="#today">Today</a>). Noted, not changed.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="open">17. Still open</h2>
+<ul>
+  <li><b>A Closed Trade sold before expiration: the Underlying's row.</b> For a Trade closed by expiration, the Underlying's row shows its Mark on the expiration date. For an option Trade closed by sale, the earlier recommendation was a dash. For consistency, I'd suggest showing the Underlying's Mark on the final exit's session instead, which the replay already holds. Your call.</li>
+  <li><b>The Trade Summary line for a two-leg Trade.</b> It is built for one leg ("Long 1 Dec 18 $55 Call", <code>format.ts:60–63</code>). Its two-leg form belongs to the multi-leg work after D8.</li>
+  <li><b>The Daily Review card's "At entry" block</b> (<code>CardFigures.tsx:99</code>). Left for the Review page work.</li>
+  <li><b>Two contracts that would share a short name</b> (for example, one adjusted after a split). Noted for when such contracts are supported.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="priorities">18. Recommended changes, in order</h2>
+<p>Ordered by how much each one confuses or misleads the trader today, then by what the later items depend on. The first step is a plan revision.</p>
+<ol class="prio">
+  <li><b>Write the plan revision</b> covering every reversed word and decision in <a href="#planrev">Plan revision notes</a>, with the words still needing approval.<span class="why">Everything below changes approved words or tests, so this comes first.</span></li>
+  <li><b>Name the contract on every Position row:</b> an Instrument column in Open Lots and Lot Matches (and so on the Exit and Expiration receipts), and one Position row per leg.<span class="why">You called this a big problem, and two-leg Trades come right after D8.</span></li>
+  <li><b>Replace Today's cards with one Marks table</b> (Today, Yesterday, Change), removing the current-Marks card, Expected Mark Date and the duplicate Mark-missing link, and adding the Stale and acknowledgment notes under the table.<span class="why">It removes the misleading "Expected Mark Date Fri Oct 9" and "Mon Nov 23" lines.</span></li>
+  <li><b>Move Deviations and Planned-Leg Fulfillment into Plan and Risk</b>, drop the footer and the "Deviation active" badge, and add the Journal's "1 active Deviation" line.<span class="why">Your original request.</span></li>
+  <li><b>Remove the At entry card</b> and add Plan and Risk's "Since the last Marks" group.<span class="why">Your original request.</span></li>
+  <li><b>Remove the dated "At the &lt;date&gt; Marks" card</b>, and add the rail's dated P&amp;L line.<span class="why">Today the rail shows no figure at all in that state.</span></li>
+  <li><b>Backend: add the trigger distance</b> (Trade Analysis) and remove the "nearest" flag.<span class="why">Needed before the conditions redesign. ADR 0001 keeps the arithmetic out of the UI.</span></li>
+  <li><b>Redesign the conditions:</b> distances in the rail (with dated distances), and dollars with R, Worst case, Max reward, the short notes and Value at expiration in Plan and Risk. Remove Today's per-condition lines.<span class="why">Each dollar figure gets one home.</span></li>
+  <li><b>Give every Trade a Today view:</b> Settlement Due (with the Trade Views addition for the Underlying's Marks) and Closed (greyed, "Closed" stamp, final exit column), with Today as the default view.<span class="why">Your direction. It depends on item 3.</span></li>
+  <li><b>Use the broker-style contract name everywhere.</b><span class="why">Wide but mechanical: one function and its tests. Do it as its own task so the test changes are easy to check.</span></li>
+  <li><b>Move each Mark's source, saved time and correction into Price History.</b><span class="why">Keeps the UI contract satisfied once item 3 drops them from Today. Ship it with item 3.</span></li>
+  <li><b>Shorten Journal entries</b> to one dated line, and drop "Not answered" rows.</li>
+  <li><b>Position:</b> drop the Opening fees row.</li>
+  <li><b>Price track:</b> put the entry dot at the open lots' average (with the Trade Views field for option Trades), and add a tick per open lot.</li>
+  <li><b>Fix the before-Marks wording</b> so "Awaiting the close after …" names the session that brings the first Marks.</li>
+</ol>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review page restyle</title>
+<style>
+/* The app's own tokens (src/ui/app.css), so the mockups read as the app. */
+:root {
+  --ground: #f7f3ea;
+  --card: #ffffff;
+  --ink: #1c1b19;
+  --muted: #55524b;
+  --line: #d9d3c5;
+  --focus: #1f5fbf;
+  --warning-ground: #fff4dd;
+  --warning-line: #b26b00;
+  --stop: #a3261b;
+  --stop-ground: #f7e3e0;
+  --target: #1d6b34;
+  --target-ground: #e2f0e5;
+  --info-ground: #e4edfa;
+  --info-ink: #163b75;
+  --info-line: #1f5fbf;
+  --neutral-ground: #ece7da;
+  --tint: #f3efe6;
+  --radius: 14px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+  line-height: 1.5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+a { color: var(--ink); }
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 80px; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 8px; }
+h2 { font-size: 1.35rem; margin: 48px 0 10px; padding-top: 18px; border-top: 2px solid var(--ink); }
+h3 { font-size: 1.08rem; margin: 26px 0 8px; }
+p, li { max-width: 78ch; }
+.lede { font-size: 1.1rem; color: var(--ink); }
+.muted { color: var(--muted); }
+.small { font-size: 0.88rem; }
+.tech { border-left: 3px solid var(--line); padding: 2px 0 2px 14px; color: var(--muted); font-size: 0.92rem; margin: 10px 0; }
+.tech strong { color: var(--ink); }
+code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.86em; background: var(--tint); padding: 1px 4px; border-radius: 4px; }
+.toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 4px 20px; padding: 14px 18px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin: 18px 0; list-style: none; }
+.toc a { text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.summary { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; }
+.summary ol { margin: 6px 0 0; padding-left: 20px; }
+.summary li + li { margin-top: 6px; }
+table.doc { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 10px; overflow: hidden; font-size: 0.92rem; margin: 10px 0; }
+table.doc th, table.doc td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+table.doc thead th { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.doc-scroll { overflow-x: auto; }
+.pick { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--ink); color: #fff; margin-left: 6px; vertical-align: 2px; }
+.alt { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--muted); color: var(--muted); margin-left: 6px; vertical-align: 2px; }
+.flag { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--warning-ground); border: 1px solid var(--warning-line); color: #6b4000; margin-left: 4px; }
+.callout { background: var(--info-ground); color: var(--info-ink); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+.callout strong { color: var(--info-ink); }
+
+/* Figures that hold mockups */
+figure.mock { margin: 16px 0 24px; }
+figure.mock figcaption { font-size: 0.9rem; color: var(--muted); margin-top: 8px; max-width: 80ch; }
+.label { display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.label.before { color: var(--stop); }
+.label.after { color: var(--target); }
+.pair { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.pair > div { min-width: 0; }
+.scrollbox { overflow-x: auto; padding-bottom: 6px; }
+
+/* Device frames */
+.desk { width: 1000px; background: var(--ground); border: 1px solid #c9c2b2; border-radius: 12px; overflow: hidden; font-size: 13px; line-height: 1.4; }
+.desk-bar { height: 22px; background: #e9e3d6; border-bottom: 1px solid #c9c2b2; display: flex; gap: 6px; align-items: center; padding: 0 10px; }
+.desk-bar i { width: 9px; height: 9px; border-radius: 50%; background: #c9c2b2; display: block; }
+.desk-body { display: grid; grid-template-columns: 150px minmax(0, 1fr); min-height: 300px; }
+.side { background: var(--card); border-right: 1px solid var(--line); padding: 14px 10px; }
+.side b { display: block; font-size: 14px; margin: 0 0 12px 6px; }
+.side span { display: block; padding: 6px 10px; border-radius: 999px; font-weight: 600; margin-bottom: 2px; }
+.side span.on { background: var(--ink); color: #fff; }
+.desk-main { padding: 14px 18px 20px; min-width: 0; }
+.phone { width: 330px; flex: none; background: var(--ground); border: 8px solid #2b2a27; border-radius: 30px; overflow: hidden; font-size: 12.5px; line-height: 1.4; position: relative; }
+.phone-body { padding: 12px 12px 56px; }
+.phone-nav { position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line); display: flex; justify-content: space-around; padding: 7px 0 9px; font-size: 10.5px; font-weight: 600; }
+.phone-nav .on { font-weight: 800; }
+.cut { text-align: center; color: var(--muted); font-size: 11px; padding: 4px 0; letter-spacing: 0.1em; }
+
+/* App pieces inside mockups */
+.m-h1 { font-size: 19px; font-weight: 700; margin: 0 0 10px; }
+.m-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 13px; margin-bottom: 10px; }
+.m-sc { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.m-badge { display: inline-block; border: 1px solid var(--ink); border-radius: 999px; padding: 0 7px; font-size: 11px; font-weight: 600; background: var(--neutral-ground); white-space: nowrap; }
+.m-badge.info { background: var(--info-ground); border-color: var(--info-line); color: var(--info-ink); }
+.m-badge.warn { background: var(--warning-ground); border-color: var(--warning-line); }
+.m-pill { display: inline-block; border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px; font-weight: 600; font-size: 12px; background: transparent; margin: 2px 4px 2px 0; white-space: nowrap; }
+.m-pill.primary { background: var(--ink); color: #fff; }
+.m-pill.dim { opacity: 0.5; }
+.m-input { display: block; border: 1px solid var(--muted); border-radius: 8px; height: 26px; background: var(--card); margin: 3px 0; }
+.m-hint { color: var(--muted); font-size: 11.5px; }
+.m-rows > div { border-top: 1px solid var(--line); padding: 6px 0; }
+.m-fig { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; font-size: 12px; }
+.m-fig > span { padding: 4px 0; border-bottom: 1px solid var(--line); }
+.m-fig > span:nth-child(odd) { color: var(--muted); }
+.m-fig > span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; }
+.m-plain dl, .m-plain { font-size: 12px; }
+.m-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.m-tab { border: 1px solid var(--ink); border-radius: 999px; padding: 4px 11px; font-weight: 600; font-size: 12px; background: var(--card); white-space: nowrap; }
+.m-tab.on { background: var(--ink); color: #fff; }
+.m-tab small { font-weight: 500; opacity: 0.85; margin-left: 3px; }
+.m-slider { height: 7px; border-radius: 999px; background: var(--neutral-ground); border: 1px dashed var(--muted); }
+.m-slider.live { border: 0; background: linear-gradient(90deg, var(--stop), #d9a441 50%, var(--target)); position: relative; }
+.m-slider.live::after { content: ''; position: absolute; top: -3px; left: 58%; width: 11px; height: 11px; border-radius: 50%; border: 3px solid var(--ink); background: var(--card); margin-left: -5px; box-sizing: border-box; }
+.m-cond { border-top: 1px solid var(--line); padding: 6px 0; font-size: 12px; }
+.m-cond:first-of-type { border-top: 0; }
+.m-cond .role-s { color: var(--stop); font-weight: 600; }
+.m-cond .role-t { color: var(--target); font-weight: 600; }
+.m-cond .fig { float: right; font-weight: 600; }
+.m-big { font-size: 17px; font-weight: 700; line-height: 1.25; }
+.m-need li { font-size: 12px; padding: 4px 0; border-top: 1px solid var(--line); list-style: none; }
+.m-need { margin: 0; padding: 0; }
+.m-need li:first-child { border-top: 0; }
+.m-need .grp { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-top: 0; padding-top: 8px; }
+.m-trades { margin: 0; padding: 0; list-style: none; }
+.m-trades li { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 3px 10px; align-items: center; padding: 6px 8px; border-top: 1px solid var(--line); }
+.m-trades li:first-child { border-top: 0; }
+.m-trades li.sel { background: var(--tint); border-left: 4px solid var(--ink); border-radius: 6px; }
+.m-trades .who { font-weight: 700; }
+.m-trades .what { color: var(--muted); }
+.m-unsaved { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; background: var(--warning-ground); border: 1px solid var(--warning-line); border-radius: 10px; padding: 6px 10px; margin-top: 8px; font-size: 12px; }
+.dlayout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 14px; align-items: start; }
+
+/* The Marks grid (styled as the cockpit's Price History) */
+.g-scroll { overflow-x: auto; }
+table.g { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 12px; }
+table.g th, table.g td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; vertical-align: middle; }
+table.g thead th { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+table.g thead th b { display: block; color: var(--ink); font-size: 11px; }
+table.g thead th em { display: block; font-style: normal; font-size: 9.5px; letter-spacing: 0.06em; color: var(--info-ink); }
+table.g th[scope='row'] { text-align: left; font-weight: 600; background: var(--card); position: sticky; left: 0; }
+table.g th[scope='row'] small { display: block; font-weight: 400; color: var(--muted); font-size: 10.5px; }
+table.g td.today, table.g th.today { background: #fbf8f1; }
+.c-in { display: inline-block; width: 74px; height: 30px; border: 1px dashed var(--muted); border-radius: 7px; background: var(--tint); vertical-align: middle; text-align: right; padding: 5px 7px; color: var(--ink); }
+.c-in.req { border: 2px solid var(--warning-line); background: var(--warning-ground); }
+.c-in.typed { border: 2px solid var(--focus); background: var(--card); font-weight: 600; }
+.c-in.sel { outline: 3px solid var(--focus); outline-offset: 1px; }
+.c-draft { display: inline-block; min-width: 74px; padding: 3px 7px; border: 1.5px dashed var(--focus); border-radius: 7px; color: var(--info-ink); background: var(--info-ground); font-weight: 600; }
+.c-draft small, .c-ack small, .c-mark small { display: block; font-weight: 500; font-size: 9.5px; text-transform: none; letter-spacing: 0; }
+.c-ack { display: inline-block; min-width: 74px; padding: 3px 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--neutral-ground); color: var(--ink); font-size: 10.5px; font-weight: 600; text-align: center; line-height: 1.2; white-space: normal; width: 86px; }
+.c-mark { display: inline-block; }
+.c-mark .corr { display: inline-block; font-size: 9.5px; border: 1px solid var(--info-line); color: var(--info-ink); background: var(--info-ground); border-radius: 999px; padding: 0 5px; margin-left: 3px; }
+.c-none { color: var(--muted); }
+.gain { color: var(--target); }
+.loss { color: var(--stop); }
+.g-note { font-size: 11.5px; color: var(--muted); margin: 6px 0 0; }
+.g-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; color: var(--muted); margin-top: 8px; align-items: center; }
+.g-legend > span { display: inline-flex; align-items: center; gap: 5px; }
+.g-legend .c-in, .g-legend .c-draft, .g-legend .c-ack { width: 30px; min-width: 0; height: 16px; padding: 0; }
+.editor { border: 1px solid var(--focus); border-radius: 10px; padding: 9px 11px; margin-top: 8px; background: var(--card); font-size: 12px; }
+.editor .ttl { font-weight: 700; margin-bottom: 4px; }
+.editor .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.editor .m-input { width: 120px; display: inline-block; margin: 0; }
+.editor .ta { display: block; width: 100%; height: 38px; border: 1px solid var(--muted); border-radius: 8px; margin: 4px 0; }
+.popover { position: relative; display: inline-block; }
+.popover .pop { position: absolute; right: 0; top: 34px; width: 180px; background: var(--card); border: 1px solid var(--muted); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); padding: 8px 10px; text-align: left; white-space: normal; z-index: 1; font-size: 11.5px; }
+.more { display: inline-block; width: 22px; height: 30px; border: 1px solid var(--line); border-radius: 6px; vertical-align: middle; text-align: center; line-height: 26px; margin-left: 3px; background: var(--card); color: var(--muted); }
+
+/* Sessions as rows (phone) */
+table.s { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 12px; }
+table.s th, table.s td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: right; }
+table.s thead th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
+table.s th[scope='row'] { text-align: left; font-weight: 600; }
+table.s th[scope='row'] em { display: block; font-style: normal; font-size: 9.5px; color: var(--info-ink); letter-spacing: 0.05em; text-transform: uppercase; }
+table.s .c-in { width: 92px; height: 34px; }
+table.s .c-ack { width: 92px; }
+
+/* Before: the stacked list as it is */
+.st-row { border-top: 1px solid var(--line); padding: 6px 0; font-size: 12px; }
+.st-row b { display: block; }
+
+/* Annotations */
+.ann { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--stop); color: #fff; font-size: 11px; font-weight: 700; flex: none; vertical-align: middle; }
+ol.anns { padding-left: 0; list-style: none; }
+ol.anns li { display: flex; gap: 8px; margin: 6px 0; }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.step h4 { margin: 0 0 6px; font-size: 0.95rem; }
+.step .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.step .two > div { background: var(--ground); border-radius: 8px; padding: 6px 8px; font-size: 11.5px; }
+.step .two .who { font-weight: 700; font-size: 11px; margin-bottom: 4px; }
+.step p { font-size: 0.86rem; margin: 6px 0 0; }
+
+ol.prio { counter-reset: p; list-style: none; padding: 0; }
+ol.prio > li { counter-increment: p; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 56px; margin: 10px 0; position: relative; max-width: none; }
+ol.prio > li::before { content: counter(p); position: absolute; left: 14px; top: 12px; width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+ol.prio .meta { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+.tier { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 22px 0 4px; color: var(--muted); }
+
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+  .dlayout { grid-template-columns: minmax(0, 1fr); }
+  ol.prio > li { padding-left: 50px; }
+}
+@media (forced-colors: active) {
+  .c-in, .c-draft, .c-ack, .m-badge, .m-tab { border: 1px solid CanvasText; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <p class="small muted">Research for the Review restyle · Plan follow-on from D08P (its sections 10.1 and 10.2) · Recommendations only, no code changes</p>
+  <h1>Making the Review page look and work like the cockpit</h1>
+  <p class="lede">The Review page still looks like the app did before the Trade Detail cockpit: one long column of plain text, with every Mark asked for in a tall stacked list. This page recommends rebuilding it in the cockpit's style. A rail on the left holds the Review's status and the selected Trade. Drawers on the right hold Marks, Reflections and Action. Marks for several sessions go into one compact grid, styled like the cockpit's Price History.</p>
+  <p class="muted">These recommendations are written to feed the prototype that the D08P plan asks for before any build. The user signs off each screen visually, then a breakdown follows. The prioritised list is at the end.</p>
+</header>
+
+<div class="summary">
+  <strong>In short</strong>
+  <ol>
+    <li><strong>The layout:</strong> a cockpit-like Review. The rail holds the Review's status (a "Needs you" list in the spec's work order) and the selected Trade's cards. The main column holds the Trade list, then drawers for Marks, Reflections, Settlement (only when due) and Action.</li>
+    <li><strong>One Marks grid per Trade</strong>, styled like Price History. It shows the Review Date and the previous session always, then each earlier session without Marks, 20 at a time.</li>
+    <li><strong>Prices typed but not yet saved (drafts) belong to the Review, not to one card.</strong> A price typed for a shared Instrument shows as filled, not as an input, in every other Trade that holds it. Save Marks saves every draft at once.</li>
+    <li><strong>A cell editor under the grid</strong> holds "Can't get a price", Correct and Withdraw, each with its reason. The cells stay small, and A57 still applies: Withdraw is offered on the Review Date only.</li>
+    <li><strong>On a phone, sessions become rows</strong> and Instruments become columns, so nothing scrolls sideways for a single-leg Trade.</li>
+    <li><strong>One data addition:</strong> the Review's <code>open</code> also returns the Marks it doesn't carry today, for the previous session and for mixed gap sessions. They come from the read session's <code>series</code>, which shares the existing gaps scan. That adds no new operation and no schema change, but the Review's interface does change.</li>
+    <li><strong>Three small fixes come first:</strong> the "&lt;date&gt; close" heading, acknowledged sessions in Price History, and Price History's gain and loss colours.</li>
+  </ol>
+</div>
+
+<nav aria-label="Contents">
+<ul class="toc">
+  <li><a href="#settled">1. What the answers settled</a></li>
+  <li><a href="#before">2. The Review today</a></li>
+  <li><a href="#structure">3. The cockpit-like Review</a></li>
+  <li><a href="#grid">4. The Marks grid</a></li>
+  <li><a href="#shared">5. Shared Instruments and drafts</a></li>
+  <li><a href="#editor">6. Can't get a price, Correct and acknowledged cells</a></li>
+  <li><a href="#phone">7. The grid on a phone</a></li>
+  <li><a href="#data">8. What data the grid needs</a></li>
+  <li><a href="#fixes">9. Three small fixes</a></li>
+  <li><a href="#rules">10. Rules that constrain the change</a></li>
+  <li><a href="#decisions">11. Decisions this changes</a></li>
+  <li><a href="#prio">12. Prioritised recommendations</a></li>
+</ul>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="settled">1. What the answers settled</h2>
+<div class="doc-scroll">
+<table class="doc">
+  <thead><tr><th>Question</th><th>The user's answer</th><th>What this page does with it</th></tr></thead>
+  <tbody>
+    <tr><td>Which Review is "new"</td><td>The D08P follow-on: today's Review, restyled with cockpit parts, plus a grid for entering several sessions' Marks.</td><td>Keeps every Review rule and changes the look and the Marks entry.</td></tr>
+    <tr><td>Which grid</td><td>Prototype tab A's editable "Earlier Marks" grid, styled like Price History.</td><td>Sections 4 to 7.</td></tr>
+    <tr><td>Per card or one grid</td><td>One per Trade. A price typed in one card shows as filled, not as an input, in the other cards.</td><td>Section 5: drafts move from the card to the Review.</td></tr>
+    <tr><td>Sessions shown</td><td>Today and yesterday always, then any session missing Marks.</td><td>"Today" is the Review Date and "yesterday" is the previous session (section 4). Section 8 covers the data.</td></tr>
+    <tr><td>Restyle scope</td><td>Full cockpit-like Review.</td><td>Section 3.</td></tr>
+    <tr><td>Long histories</td><td>Keep paging 20 sessions at a time.</td><td>The Review Date and previous session stay fixed; the earlier sessions page.</td></tr>
+    <tr><td>Small fixes</td><td>All three.</td><td>Section 9.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="before">2. The Review today</h2>
+<p>The Review was built in D5R from its own prototype, before the cockpit existed. It works: one card per Trade in attention order, panels for Marks, Reflections and Action, and Save Marks saving a card's drafts together. But it reads as a long plain document, and the Marks panel grows by about 200 px for every missing session of every Instrument.</p>
+
+<figure class="mock">
+  <span class="label before">Before · desktop</span>
+  <div class="scrollbox">
+  <div class="desk" aria-label="Mockup of today's Review at desktop width">
+    <div class="desk-bar"><i></i><i></i><i></i></div>
+    <div class="desk-body">
+      <div class="side"><b>Trade Journal</b><span>Trades</span><span class="on">Review</span><span>New Plan</span><span>Accounts</span><span>About</span></div>
+      <div class="desk-main">
+        <div class="m-h1">Review</div>
+        <div class="m-card">
+          <div>Review Date Thu Oct 8</div>
+          <div style="font-weight:700;margin:6px 0">Incomplete <span class="ann">1</span></div>
+          <ul style="margin:0;padding-left:18px;font-size:12px">
+            <li>Mark missing for <u>ABC</u> on Thu Oct 8</li>
+            <li>Mark missing for <u>NVDA</u> on Thu Oct 8</li>
+            <li>Mark missing for <u>NVDA 18 Dec 2026 150 Call</u> on Thu Oct 8</li>
+            <li>Action missing for <u>ABC (Long 100 shares @ $30.00)</u> …</li>
+          </ul>
+        </div>
+        <div style="margin:4px 0 6px">Stop ◂ ▸ Target</div>
+        <div class="m-card" style="display:flex;gap:10px;align-items:center"><b>ABC</b><span class="muted">Long 100 shares @ $30.00 · 1 Mark · Action</span><span class="m-badge">Evidence limited</span><span style="flex:1"></span><div class="m-slider" style="width:110px"></div></div>
+        <div class="m-card">
+          <div style="display:flex;gap:10px;align-items:center"><b>NVDA</b><span class="muted">Long 2 Dec 18 $150 Call · 2 Marks · Action</span><span class="m-badge">Evidence limited</span><span style="flex:1"></span><div class="m-slider" style="width:110px"></div></div>
+          <div style="font-size:12px;margin-top:6px">Long Call · Roth IRA · Fidelity</div>
+          <div class="m-fig" style="margin-top:4px">
+            <span>Current Marked Trade P&amp;L</span><span>Mark missing: NVDA 18 Dec 2026 150 Call, Thu Oct 8 <span class="ann">2</span></span>
+            <span>Ongoing Risk to Stop</span><span>Mark missing: NVDA 18 Dec 2026 150 Call, Thu Oct 8</span>
+            <span>Worst-Case Ongoing Risk</span><span>Mark missing: NVDA 18 Dec 2026 150 Call, Thu Oct 8</span>
+          </div>
+          <div style="font-weight:700;margin:8px 0 2px">Conditions <span class="ann">3</span></div>
+          <ul style="margin:0;padding-left:18px;font-size:12px"><li>Stop on NVDA at or below 140.00: Mark missing: NVDA 18 Dec 2026 150 Call, Thu Oct 8</li></ul>
+          <div style="font-weight:700;margin:8px 0 2px">Mon Oct 5 close <span class="ann">4</span></div>
+          <div style="font-weight:700;margin:10px 0 4px">Marks <span class="muted" style="font-weight:600">0 of 2 for Thu Oct 8 · 6 earlier optional</span> <span class="m-badge">2 needed</span></div>
+          <div style="font-weight:700;margin:6px 0">Earlier sessions without Marks — optional</div>
+          <div class="st-row"><b>Wed Oct 7</b><b>Missing</b>Price<span class="m-input"></span><span class="m-hint">0 means it closed with no value</span><br><span class="m-pill">Can't get a price</span></div>
+          <div class="st-row"><b>Tue Oct 6</b><b>Missing</b>Price<span class="m-input"></span><span class="m-hint">0 means it closed with no value</span><br><span class="m-pill">Can't get a price</span> <span class="ann">5</span></div>
+          <div class="cut">· · · 4 more blocks like these · · ·</div>
+          <span class="m-pill primary dim">Save Marks (0)</span><span class="m-pill dim">Discard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <figcaption>Redrawn from the screenshots <code>11-review-collapsed-desktop</code> and <code>13-review-nvda-card-desktop</code> of the research run. The real NVDA card's Marks panel is about 2,000 px tall for 8 prices.</figcaption>
+</figure>
+
+<ol class="anns">
+  <li><span class="ann">1</span><span><strong>Status is plain text.</strong> The cockpit uses a "Needs you" card, with small-caps labels and hairlines between items (<code>ReviewView.tsx:153-177</code> compared with <code>rail-b.css:66-90</code>).</span></li>
+  <li><span class="ann">2</span><span><strong>The same reason is repeated on every figure</strong>, seven times on this card. The cockpit says it once on the P&amp;L card and uses the short label "Mark missing" elsewhere (<code>CardFigures.tsx:17-35</code>).</span></li>
+  <li><span class="ann">3</span><span><strong>Conditions are a bulleted sentence list.</strong> The cockpit draws one block per condition, with a red or green role, a figure on the right and a muted line saying why (<code>CardFigures.tsx:40-61</code> compared with <code>rail-b.css:1-64</code>).</span></li>
+  <li><span class="ann">4</span><span><strong>"Mon Oct 5 close"</strong> breaks the Mark wording rule. Trade Detail already says "At the Mon Oct 5 Marks" (W19); the Review card was missed (<code>CardFigures.tsx:108</code>).</span></li>
+  <li><span class="ann">5</span><span><strong>Every missing session is a full block:</strong> date, "Missing", a full-width input, a hint and a pill. They are grouped by Instrument, so the two prices of one session sit far apart (<code>CardMarks.tsx:186-238</code>).</span></li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="structure">3. The cockpit-like Review</h2>
+<p>The Review keeps its job and its rules: Trades in attention order, each with Marks, Reflections, Settlement when due, and an Action, with nothing saved until the trader presses Save. What changes is the frame. It becomes the cockpit's frame: a <strong>rail</strong> that always shows where the Review stands and which Trade is open, and <strong>drawers</strong> for the work on that Trade.</p>
+
+<figure class="mock">
+  <span class="label after">After · desktop</span>
+  <div class="scrollbox">
+  <div class="desk" aria-label="Mockup of the cockpit-like Review at desktop width">
+    <div class="desk-bar"><i></i><i></i><i></i></div>
+    <div class="desk-body">
+      <div class="side"><b>Trade Journal</b><span>Trades</span><span class="on">Review</span><span>New Plan</span><span>Accounts</span><span>About</span></div>
+      <div class="desk-main">
+        <div class="m-h1">Review</div>
+        <div class="dlayout">
+          <div>
+            <div class="m-card">
+              <div class="m-sc">Review Date</div>
+              <div class="m-big">Thu Oct 8</div>
+              <div style="margin:4px 0 6px"><span class="m-badge warn">Incomplete</span></div>
+              <ul class="m-need" aria-label="Needs you">
+                <li class="grp">Marks</li>
+                <li><u>ABC</u> · Mark missing on Thu Oct 8</li>
+                <li><u>NVDA</u>, <u>NVDA 18 Dec 2026 150 Call</u> · Thu Oct 8</li>
+                <li class="grp">Actions</li>
+                <li>ABC, NVDA, XYZ</li>
+              </ul>
+              <div class="m-unsaved"><strong>2 unsaved Marks</strong><span class="m-pill primary" style="padding:2px 10px">Save Marks (2)</span><span class="m-pill" style="padding:2px 10px">Discard</span></div>
+            </div>
+            <div class="m-card">
+              <div style="display:flex;gap:8px;align-items:baseline"><span class="m-big">NVDA</span><span class="m-badge info">Long Call, Open</span></div>
+              <div class="muted" style="font-size:12px">Long 2 Dec 18 $150 Call · Roth IRA · Fidelity</div>
+              <div style="margin-top:6px"><span class="m-badge">Evidence limited</span> <span style="font-size:12px">Mark missing for NVDA 18 Dec 2026 150 Call on Thu Oct 8</span></div>
+            </div>
+            <div class="m-card">
+              <div class="m-sc">Trade P&amp;L</div>
+              <div style="font-weight:700">Mark missing: NVDA 18 Dec 2026 150 Call, Thu Oct 8</div>
+              <div class="m-fig" style="margin-top:4px">
+                <span>Ongoing Risk to Stop</span><span>Mark missing</span>
+                <span>Reward : risk planned</span><span>2.38</span>
+              </div>
+            </div>
+            <div class="m-card">
+              <div class="m-sc">Conditions</div>
+              <div class="m-cond"><span class="role-s">Stop</span><span class="fig">Mark missing</span><br>NVDA at or below 140.00</div>
+              <div class="m-cond"><span class="role-t">Target</span><span class="fig">Mark missing</span><br>NVDA at or above 175.00</div>
+            </div>
+            <div class="m-card">
+              <div class="m-sc">At the Wed Oct 7 Marks</div>
+              <div class="m-fig"><span>Current Marked Trade P&amp;L</span><span class="gain">+$388.70 · +0.26R</span><span>Ongoing Risk to Stop</span><span>$1,860.00 · 1.26R</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="m-card">
+              <div class="m-sc">Trades, by attention</div>
+              <ul class="m-trades">
+                <li><span><span class="who">ABC</span> <span class="what">Long 100 shares @ $30.00</span><br><span class="what">1 Mark · Action</span> <span class="m-badge">Evidence limited</span></span><div class="m-slider"></div></li>
+                <li class="sel" aria-current="true"><span><span class="who">NVDA</span> <span class="what">Long 2 Dec 18 $150 Call</span><br><span class="what">2 Marks · Action</span> <span class="m-badge">Evidence limited</span></span><div class="m-slider"></div></li>
+                <li><span><span class="who">XYZ</span> <span class="what">Long 100 shares @ $50.10</span><br><span class="what">Done · Action saved</span> <span class="m-badge">Routine</span></span><div class="m-slider live"></div></li>
+              </ul>
+              <div class="m-hint" style="margin-top:4px">Stop ◂ ▸ Target</div>
+            </div>
+            <div class="m-tabs" role="presentation"><span class="m-tab on">Marks <small>2</small></span><span class="m-tab">Reflections</span><span class="m-tab">Action</span></div>
+            <div class="m-card">
+              <div class="m-sc">Marks · NVDA</div>
+              <div class="g-scroll">
+              <table class="g">
+                <thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col" class="today"><b>Thu</b>Oct 8<em>Review Date</em></th><th scope="col"><b>Wed</b>Oct 7<em>Previous</em></th><th scope="col"><b>Tue</b>Oct 6</th><th scope="col"><b>Fri</b>Oct 2</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">NVDA Mark</th><td class="today"><span class="c-in typed">157.90</span></td><td>152.40</td><td><span class="c-in"></span></td><td><span class="c-ack">Acknowledged Unavailable</span></td></tr>
+                  <tr><th scope="row">Call Mark</th><td class="today"><span class="c-in typed">$11.60</span></td><td>$9.30</td><td><span class="c-in"></span></td><td><span class="c-in"></span></td></tr>
+                </tbody>
+              </table>
+              </div>
+              <p class="g-note">Today's Marks are needed. Earlier sessions without Marks are optional: they don't block the Review.</p>
+              <div style="margin-top:8px"><span class="m-pill primary">Save Marks (2)</span><span class="m-pill">Discard</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <figcaption>The rail (left) holds the Review's status and the selected Trade. The main column holds the Trade list and the selected Trade's drawers. The words "Review Date", "Previous" and the grid note are proposals that need approval (section 10).</figcaption>
+</figure>
+
+<h3>How the parts fit</h3>
+<div class="doc-scroll">
+<table class="doc">
+  <thead><tr><th>Part</th><th>Recommendation</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Rail: Review status</strong></td><td>A small-caps "Review Date" card with the date, completion as a badge (Incomplete in the warning tone; Complete and Complete with Unavailable Marks in neutral), and a <strong>Needs you</strong> list grouped in the spec's work order: Marks, then Reflections, then Settlement, then Actions. Each item links to its Trade and drawer, as blockers do today (A161).</td><td>The spec's task order (daily-review.md, "Date, eligibility, and ordering") becomes visible as groups. It reuses the cockpit's Needs you pattern (<code>rail-b.css:66-90</code>).</td></tr>
+    <tr><td><strong>Rail: the selected Trade</strong></td><td>The cockpit's cards: an identity card (symbol, Strategy and lifecycle badge, summary line, account, band badge and its reasons), the Trade P&amp;L card with the risk and reward figures in a <code>figure-grid</code>, the Conditions card, and "At the &lt;date&gt; Marks" when present.</td><td>The same pieces as Trade Detail, so a figure looks the same on both screens. D08P's A216 already makes these components take plain props, so sharing them is a move, not a rewrite.</td></tr>
+    <tr><td><strong>Main: the Trade list</strong></td><td>A "Trades, by attention" card. Each row is a button: the symbol, the summary line, what remains, the band badge and the Stop-to-Target slider. The selected row is tinted, with an ink edge and <code>aria-current</code>. Trades with owed reflections follow in their own group (A90). One "Stop ◂ ▸ Target" legend sits under the list (P39).</td><td>It keeps the collapsed card header's content (A150) but drops the accordion. Selecting a Trade replaces the rail and drawers instead of expanding in place.</td></tr>
+    <tr><td><strong>Main: the drawers</strong></td><td>Tabs for Marks, Reflections, Settlement (only while due, decision 81) and Action, with a count where work remains ("Marks 2", "Reflections 1 due"). The first drawer not done opens (A152). Finishing a drawer moves to the next not done (A157), and saving the Action selects the next Trade (P50).</td><td>The cockpit's tabs pattern (the WAI-ARIA tabs with arrow keys, <code>Cockpit.tsx</code>). The panel headers' summaries become tab counts.</td></tr>
+    <tr><td><strong>Unsaved work</strong></td><td><strong>Mark drafts no longer hold a Trade.</strong> They belong to the Review (section 5): switching Trades keeps them, the rail shows "2 unsaved Marks" with Save Marks and Discard, and leaving the page is still held (<code>onDirtyChange</code>). <strong>Action and reflection forms</strong> with entered values still hold their Trade, as A156 says today.</td><td>The user's request that typed prices show in other cards only works if the trader can reach those cards while a draft exists. An Action or a reflection is one Trade's, so its holding rule doesn't change.</td></tr>
+    <tr><td><strong>Empty and loading states</strong></td><td>Unchanged words. An Empty Review with owed reflections shows the rail's status and the owed group.</td><td>The view-state rules in ui-contract.md.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Phone</h3>
+<p>On a phone the cockpit puts its rail on top. The Review is a task, so I recommend putting the work first: status, the Trade list, the selected Trade's identity card, then the drawers. The P&amp;L, risk and Conditions cards follow the drawers. This differs from Trade Detail, so it needs the user's sign-off in the prototype. <span class="flag">Choice</span></p>
+
+<div class="pair">
+  <figure class="mock">
+    <span class="label before">Before · phone</span>
+    <div class="phone" aria-label="Mockup of today's Review on a phone">
+      <div class="phone-body">
+        <div class="m-h1">Review</div>
+        <div class="m-card" style="font-size:12px">Review Date Thu Oct 8<br><b>Incomplete</b><ul style="margin:4px 0 0;padding-left:16px"><li>Mark missing for <u>ABC</u> on Thu Oct 8</li><li>Mark missing for <u>NVDA</u> on Thu Oct 8</li><li>… 5 more</li></ul></div>
+        <div style="font-size:12px">Stop ◂ ▸ Target</div>
+        <div class="m-card"><b>ABC</b> <span class="muted">Long 100 shares @ $30.00</span><br><span class="muted">1 Mark · Action</span> <span class="m-badge">Evidence limited</span><div class="m-slider" style="margin-top:6px"></div></div>
+        <div class="m-card"><b>NVDA</b> <span class="muted">Long 2 Dec 18 $150 Call</span><br><span class="muted">2 Marks · Action</span> <span class="m-badge">Evidence limited</span><div class="m-slider" style="margin-top:6px"></div>
+          <div class="m-fig" style="margin-top:6px"><span>Current Marked Trade P&amp;L</span><span>Mark missing: NVDA 18 Dec 2026 150 Call, Thu Oct 8</span></div>
+          <div class="cut">· · · figures, Conditions, Marks · · ·</div>
+          <div class="st-row"><b>Wed Oct 7</b><b>Missing</b>Price<span class="m-input"></span><span class="m-hint">0 means it closed with no value</span><br><span class="m-pill">Can't get a price</span></div>
+          <div class="cut">· · · 5 more blocks · · ·</div>
+        </div>
+      </div>
+      <div class="phone-nav"><span>Trades</span><span class="on">Review</span><span>New Plan</span><span>Accounts</span><span>About</span></div>
+    </div>
+  </figure>
+  <figure class="mock">
+    <span class="label after">After · phone</span>
+    <div class="phone" aria-label="Mockup of the cockpit-like Review on a phone">
+      <div class="phone-body">
+        <div class="m-h1">Review</div>
+        <div class="m-card"><div class="m-sc">Review Date</div><span class="m-big">Thu Oct 8</span> <span class="m-badge warn">Incomplete</span>
+          <ul class="m-need" style="margin-top:4px"><li class="grp">Marks</li><li><u>ABC</u> · <u>NVDA</u> · <u>Call</u> on Thu Oct 8</li><li class="grp">Actions</li><li>ABC, NVDA, XYZ</li></ul>
+          <div class="m-unsaved"><strong>2 unsaved Marks</strong><span class="m-pill primary" style="padding:2px 9px">Save Marks (2)</span></div></div>
+        <div class="m-card"><div class="m-sc">Trades, by attention</div>
+          <ul class="m-trades"><li><span><span class="who">ABC</span> <span class="what">1 Mark · Action</span></span><div class="m-slider"></div></li><li class="sel"><span><span class="who">NVDA</span> <span class="what">2 Marks · Action</span></span><div class="m-slider"></div></li><li><span><span class="who">XYZ</span> <span class="what">Done</span></span><div class="m-slider live"></div></li></ul></div>
+        <div class="m-card"><span class="m-big">NVDA</span> <span class="m-badge info">Long Call, Open</span><div class="muted">Long 2 Dec 18 $150 Call · Roth IRA</div></div>
+        <div class="m-tabs"><span class="m-tab on">Marks <small>2</small></span><span class="m-tab">Reflections</span><span class="m-tab">Action</span></div>
+        <div class="m-card"><div class="m-sc">Marks · NVDA</div><div class="m-hint">The session grid, as section 7 shows</div></div>
+        <div class="cut">· · · Trade P&amp;L, Conditions · · ·</div>
+      </div>
+      <div class="phone-nav"><span>Trades</span><span class="on">Review</span><span>New Plan</span><span>Accounts</span><span>About</span></div>
+    </div>
+  </figure>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="grid">4. The Marks grid</h2>
+<p>The Marks drawer holds one grid for the selected Trade. Each <strong>row</strong> is one of the Trade's Instruments (the stock, or a contract and its Underlying). Each <strong>column</strong> is a session, newest on the left, as in Price History. It always shows two sessions, then any session missing a Mark.</p>
+<ul>
+  <li><strong>The Review Date</strong>, which the user called "Today". Its Marks are needed to complete the Review.</li>
+  <li><strong>The previous session</strong>, which the user called "yesterday". It is shown even when its Marks exist, so the trader sees what they are comparing with.</li>
+  <li><strong>Each earlier session missing a Mark</strong> for any of the Trade's Instruments, newest first, 20 per page. They are optional, as today.</li>
+</ul>
+<div class="callout"><strong>Why not the words "Today" and "Yesterday":</strong> a Review is often done the next morning, and Monday's previous session is Friday. The date headers ("Thu / Oct 8", as W9 has them) carry the meaning. A small tag names the role: "Review Date", an existing term, and "Previous", which is new and needs approval.</div>
+
+<figure class="mock">
+  <span class="label before">Before · prototype tab A, the grid the user chose</span>
+  <div class="m-card" style="width:fit-content;max-width:100%">
+    <div class="g-scroll">
+    <table class="g">
+      <thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col"><b>Nov 11</b>Wed</th><th scope="col"><b>Nov 10</b>Tue</th><th scope="col"><b>Nov 9</b>Mon</th><th scope="col"><b>Nov 6</b>Fri</th><th scope="col"><b>Nov 5</b>Thu</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">NVDA</th><td><span class="c-in" style="color:var(--muted)">add</span></td><td>155.20</td><td><span class="c-in" style="color:var(--muted)">add</span></td><td><span class="c-in" style="color:var(--muted)">add</span></td><td>151.80</td></tr>
+        <tr><th scope="row">Call</th><td><span class="c-in" style="color:var(--muted)">add</span></td><td>$10.40</td><td><span class="c-in" style="color:var(--muted)">add</span></td><td><span class="c-in" style="color:var(--muted)">add</span></td><td>$8.90</td></tr>
+        <tr><th scope="row">Trade P&amp;L</th><td class="c-none">—</td><td class="gain">$618.05</td><td class="c-none">—</td><td class="c-none">—</td><td class="gain">$308.70</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="g-note">Optional: missing Marks never block a Review.</p>
+  </div>
+  <figcaption>Prototype lines 585-595 (<code>marksGrid</code>). It is a picture: it has no save, no acknowledged state, no today column and no correction. Its inputs are named "NVDA close for …", which the build must not copy.</figcaption>
+</figure>
+
+<figure class="mock">
+  <span class="label after">After · the Marks drawer at desktop width, every cell state</span>
+  <div class="m-card" style="max-width:760px">
+    <div class="m-sc">Marks · NVDA</div>
+    <div class="g-scroll">
+    <table class="g">
+      <thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col" class="today"><b>Thu</b>Oct 8<em>Review Date</em></th><th scope="col"><b>Wed</b>Oct 7<em>Previous</em></th><th scope="col"><b>Tue</b>Oct 6</th><th scope="col"><b>Mon</b>Oct 5</th><th scope="col"><b>Fri</b>Oct 2</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">NVDA Mark<small>also held by 1 Trade</small></th><td class="today"><span class="c-in req"></span></td><td>152.40</td><td><span class="c-draft">151.10<small>Unsaved</small></span></td><td>151.80</td><td><span class="c-ack">Acknowledged Unavailable</span></td></tr>
+        <tr><th scope="row">Call Mark</th><td class="today"><span class="c-in req"></span></td><td><span class="c-mark">$9.30<span class="corr">Corrected</span></span></td><td><span class="c-in typed sel">$8.4</span></td><td><span class="c-in"></span></td><td><span class="c-in"></span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="g-note">Sessions 1 to 3 of 3 earlier sessions without Marks. <span style="color:var(--ink)">Earlier sessions without Marks — optional.</span> These sessions do not block the Review.</p>
+    <div class="g-legend">
+      <span><span class="c-in req"></span>Needed for the Review Date</span>
+      <span><span class="c-in"></span>Optional earlier session</span>
+      <span><span class="c-draft"></span>Unsaved, typed in another Trade</span>
+      <span><span class="c-ack"></span>Acknowledged Unavailable</span>
+    </div>
+    <div style="margin-top:8px"><span class="m-pill primary">Save Marks (2)</span><span class="m-pill">Discard</span></div>
+  </div>
+  <figcaption>Mon Oct 5 is shown because the Call has no Mark there, though NVDA does. Each cell keeps the accessible name today's rows have ("NVDA Mark, Thu Oct 8"), so screen readers and the test helpers find the same names.</figcaption>
+</figure>
+
+<h3>Cell states</h3>
+<div class="doc-scroll">
+<table class="doc">
+  <thead><tr><th>State</th><th>How it looks</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td>Missing, Review Date</td><td>An input with a warning-tone border: needed.</td><td>Type a price. Enter moves on (see below). The cell editor offers "Can't get a price".</td></tr>
+    <tr><td>Missing, earlier session</td><td>A dashed, tinted input, as in tab A.</td><td>The same, but optional and not blocking (A153).</td></tr>
+    <tr><td>Typed here, unsaved</td><td>The input with a solid focus-colour border, plus the existing word "Unsaved" in the cell editor and the rail's count.</td><td>Held until Save Marks or Discard.</td></tr>
+    <tr><td>Typed in another Trade, unsaved</td><td>A filled, dashed blue chip, "151.10 / Unsaved". Not an input.</td><td>Section 5.</td></tr>
+    <tr><td>Has a Mark</td><td>The price as plain text, as in Price History. A corrected one carries the cockpit's "Corrected" badge (<code>today.tsx:50-55</code>).</td><td>Selecting it opens Correct in the cell editor.</td></tr>
+    <tr><td>Acknowledged Unavailable</td><td>The status words from <code>calculation-words.ts</code> on a neutral chip, never a price and never "—".</td><td>Selecting it opens the reason and a Price input (A57: an earlier session can take a price; Withdraw is offered on the Review Date only).</td></tr>
+    <tr><td>Not held that session</td><td>"—" with the accessible name "Not held", as Price History does for a session that held nothing.</td><td>Nothing.</td></tr>
+    <tr><td>Error or conflict</td><td>A red 2 px border (<code>[aria-invalid]</code>, <code>app.css:280</code>), with the message in the cell editor and focus moved there.</td><td>As today: issues beside their key, values kept.</td></tr>
+    <tr><td>Read only (Recovery Only)</td><td>Every cell is text: no inputs, no editor actions, no Save Marks.</td><td>As <code>writable</code> does today.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="tech"><strong>Keyboard.</strong> Enter moves down the current session's column first (all of one session's Instruments), then to the next session, and from the last input to Save Marks. That matches how a trader copies one statement day at a time, and matches the phone's row order (section 7). Today Enter follows DOM order (<code>CardMarks.tsx:341-344</code>). The grid's scroll box is a focusable named region, as Price History's is (<code>price-history.tsx:16</code>), and the row labels are pinned (<code>history.css:12-18</code>).</div>
+<div class="tech"><strong>Trade P&amp;L row.</strong> I recommend leaving it out of the Review's grid. <span class="flag">Differs from tab A</span> Three reasons: the rail already shows Trade P&amp;L once ("one figure, one place"); earlier sessions without Marks would show only "—"; and a draft can't update it, because computing it in the screen would put arithmetic in the UI (ADR 0001). If the user wants it, <code>getTrade</code> would add a dated evaluation for the previous session through its existing dated-line path (decision 102's "one read per distinct earlier date").</div>
+
+<!-- ============================================================ -->
+<h2 id="shared">5. Shared Instruments and drafts</h2>
+<p>A Mark belongs to an Instrument and a session, not to a Trade. If two Trades hold XYZ, they share one XYZ Mark for Thu Oct 8. The user asked that a price typed in one card fill the same cell in every other card, which then stops showing an input. To do that, <strong>drafts move from the card to the Review page</strong>, keyed by Instrument and session. The Trade where the price was typed owns the input. Every other Trade shows the value.</p>
+
+<div class="steps">
+  <div class="step">
+    <h4>1 · Typed in the first Trade</h4>
+    <div class="two">
+      <div><div class="who">XYZ, Long 100 @ $50.10</div><span class="c-in typed" style="width:100%">51.80</span></div>
+      <div><div class="who">XYZ, Long 50 @ $50.00</div><span class="c-draft" style="width:100%">51.80<small>Unsaved · typed in XYZ (Long 100 shares @ $50.10)</small></span></div>
+    </div>
+    <p>The second Trade shows a filled chip, not an input. The chip is a button: pressing it moves the input to this Trade, and the first Trade then shows the chip. The rail counts one unsaved Mark, not two.</p>
+  </div>
+  <div class="step">
+    <h4>2 · Saved</h4>
+    <div class="two">
+      <div><div class="who">XYZ, Long 100</div>51.80</div>
+      <div><div class="who">XYZ, Long 50</div>51.80</div>
+    </div>
+    <p>Save Marks, pressed in either Trade or in the rail, saves every draft on the page in one <code>SaveReviewMarks</code>. Both cells become plain saved Marks, from the result's standings, as the held Review does today (<code>held-review.ts</code>, the fold).</p>
+  </div>
+  <div class="step">
+    <h4>3 · Cleared before saving</h4>
+    <div class="two">
+      <div><div class="who">XYZ, Long 100</div><span class="c-in req" style="width:100%"></span></div>
+      <div><div class="who">XYZ, Long 50</div><span class="c-in req" style="width:100%"></span></div>
+    </div>
+    <p>Emptying the owner's input removes the draft, and both Trades show inputs again. Discard, in either place, empties every draft on the page.</p>
+  </div>
+  <div class="step">
+    <h4>4 · Corrected after saving</h4>
+    <div class="two">
+      <div><div class="who">XYZ, Long 100</div><span class="c-mark">51.85<span class="corr">Corrected</span></span></div>
+      <div><div class="who">XYZ, Long 50</div><span class="c-mark">51.85<span class="corr">Corrected</span></span></div>
+    </div>
+    <p>Correct saves at once with its reason through <code>MarketData.save</code>, as today, and every Trade shows the new value with "Corrected". A Conflict ("This Mark changed after you opened it…") is shown in the cell editor of the Trade where it was attempted.</p>
+  </div>
+</div>
+
+<div class="tech"><strong>What this changes in the code.</strong> Drafts move from <code>CardMarks</code>'s state (<code>CardMarks.tsx:262</code>) to the screen. The screen already keeps each key's standing in the held Review (<code>held-review.ts</code>, A171-A172), and the drafts would sit beside it. <code>SaveReviewMarks</code> already accepts any of the Review's keys (A155) and 1 to 100 entries, so saving drafts typed in several Trades needs no backend change. With more than 100 drafts, Save Marks says so before sending; this needs a new sentence.</div>
+<div class="tech"><strong>Paging gets simpler.</strong> Paging is blocked today while a draft exists, because changing page would unmount the inputs (<code>CardMarks.tsx:189-207</code>). With drafts held by the page, paging can go on and the drafts stay.</div>
+
+<!-- ============================================================ -->
+<h2 id="editor">6. Can't get a price, Correct and acknowledged cells</h2>
+<p>A price fits in a cell. "Can't get a price" and Correct each need a reason, which doesn't fit. Withdraw and the "also held by" list need room too. Three ways to give them room:</p>
+
+<div class="pair">
+  <figure class="mock" style="flex:1 1 300px">
+    <span class="label">Option A · a menu per cell</span> <span class="alt">Not picked</span>
+    <div class="m-card">
+      <table class="g"><tbody><tr><th scope="row">Call Mark</th><td><span class="c-in"></span><span class="popover"><span class="more">⋯</span><span class="pop"><strong>Call Mark, Tue Oct 6</strong><br><span class="m-pill" style="margin-top:4px">Can't get a price</span><br>Reason (required)<span class="ta" style="display:block;height:30px;border:1px solid var(--muted);border-radius:6px"></span></span></span></td></tr></tbody></table>
+      <div style="height:90px"></div>
+    </div>
+    <figcaption>Compact, but every cell gets a second button, which doubles the tab stops. The popover covers neighbouring cells, and on a phone it needs its own focus trap.</figcaption>
+  </figure>
+  <figure class="mock" style="flex:1 1 300px">
+    <span class="label">Option B · a cell editor under the grid</span> <span class="pick">Picked</span>
+    <div class="m-card">
+      <table class="g"><tbody><tr><th scope="row">Call Mark</th><td><span class="c-in sel"></span></td><td><span class="c-in"></span></td></tr></tbody></table>
+      <div class="editor">
+        <div class="ttl">Call Mark, Tue Oct 6 · Missing</div>
+        <div class="row"><span class="m-pill">Can't get a price</span></div>
+        <div class="m-hint">0 means it closed with no value</div>
+      </div>
+    </div>
+    <figcaption>The selected cell's details and actions sit in one place, below the grid. A cell stays one tab stop. The words and controls are today's, from <code>DraftFields</code> and <code>MarkEntry</code>.</figcaption>
+  </figure>
+  <figure class="mock" style="flex:1 1 300px">
+    <span class="label">Option C · the grid for prices, a list for the rest</span> <span class="alt">Not picked</span>
+    <div class="m-card">
+      <table class="g"><tbody><tr><th scope="row">Call Mark</th><td><span class="c-in"></span></td><td><span class="c-in"></span></td></tr></tbody></table>
+      <div class="st-row" style="margin-top:6px"><b>More for these sessions</b>Call Mark, Tue Oct 6 <span class="m-pill">Can't get a price</span></div>
+      <div class="st-row">Call Mark, Mon Oct 5 <span class="m-pill">Can't get a price</span></div>
+    </div>
+    <figcaption>No new pattern, but it brings back the long list the grid was meant to remove, and every session appears twice.</figcaption>
+  </figure>
+</div>
+
+<h3>The picked option, in its states</h3>
+<div class="pair">
+  <div class="editor" style="flex:1 1 300px;max-width:360px">
+    <div class="ttl">Call Mark, Tue Oct 6 · Can't get a price</div>
+    Reason (required)<span class="ta"></span>
+    <div class="row"><span class="m-pill">Cancel</span><span class="m-hint">Unsaved · saved with Save Marks</span></div>
+  </div>
+  <div class="editor" style="flex:1 1 300px;max-width:360px">
+    <div class="ttl">NVDA Mark, Fri Oct 2 · Acknowledged Unavailable</div>
+    <div>You said you can’t get a price: Broker statement has no closing price for that day</div>
+    <div class="row" style="margin-top:4px">Price <span class="m-input"></span></div>
+    <div class="m-hint">An earlier session offers a price, not Withdraw (A57).</div>
+  </div>
+  <div class="editor" style="flex:1 1 300px;max-width:360px">
+    <div class="ttl">Call Mark, Wed Oct 7 · $9.30 · Manual</div>
+    <div class="row"><span class="m-pill">Correct</span></div>
+    <div class="m-hint">Correct opens Price and Reason (required), and saves at once with "Save correction".</div>
+  </div>
+  <div class="editor" style="flex:1 1 300px;max-width:360px">
+    <div class="ttl">NVDA Mark, Thu Oct 8 · Acknowledged Unavailable</div>
+    <div class="row"><span class="m-pill">Withdraw</span><span class="m-pill">Enter</span></div>
+    <div class="m-hint">Withdraw is offered on the Review Date only. Also held by <u>XYZ (Long 50 shares @ $50.00)</u>.</div>
+  </div>
+</div>
+<div class="tech"><strong>Why B.</strong> It keeps today's rules exactly:
+  <ul>
+    <li>"Can't get a price" is a draft with a required reason (A153).</li>
+    <li>Correct and Withdraw save at once, one key at a time (D5R table, "Correct and Withdraw stay one row at a time").</li>
+    <li>A57 offers Withdraw only on the Review Date.</li>
+    <li>The settlement-only note ("Needed only while settlement is due") and "also held by" stay.</li>
+  </ul>
+It also gives one fixed place for Conflict and storage-failure messages, which today sit inside each row's region. The editor is a region named after the cell ("Call Mark, Tue Oct 6"), so links into the Review (<code>?instrument=</code>, A161) can focus it.</div>
+
+<!-- ============================================================ -->
+<h2 id="phone">7. The grid on a phone</h2>
+<p>At 390 px wide, a grid with a pinned label column fits two or three session columns. Two ways to handle more:</p>
+<div class="pair">
+  <figure class="mock">
+    <span class="label">Option 1 · sideways grid</span> <span class="alt">Not picked</span>
+    <div class="phone" style="height:420px">
+      <div class="phone-body">
+        <div class="m-card"><div class="m-sc">Marks · NVDA</div>
+          <div class="g-scroll" style="overflow:hidden">
+          <table class="g">
+            <thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col" class="today"><b>Thu</b>Oct 8<em>Review</em></th><th scope="col"><b>Wed</b>Oct 7<em>Previous</em></th><th scope="col"><b>Tue</b>Oct 6</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">NVDA</th><td class="today"><span class="c-in req" style="width:62px"></span></td><td>152.40</td><td><span class="c-in" style="width:62px"></span></td></tr>
+              <tr><th scope="row">Call</th><td class="today"><span class="c-in req" style="width:62px"></span></td><td>$9.30</td><td><span class="c-in" style="width:62px"></span></td></tr>
+            </tbody>
+          </table>
+          </div>
+          <p class="g-note">Scroll sideways for 2 more sessions →</p>
+        </div>
+      </div>
+    </div>
+    <figcaption>It looks like Price History, but every earlier session is off screen, and a stock Trade becomes one row scrolling sideways.</figcaption>
+  </figure>
+  <figure class="mock">
+    <span class="label">Option 2 · sessions as rows</span> <span class="pick">Picked</span>
+    <div class="phone" style="height:420px">
+      <div class="phone-body">
+        <div class="m-card"><div class="m-sc">Marks · NVDA</div>
+          <table class="s">
+            <thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col">NVDA Mark</th><th scope="col">Call Mark</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Thu Oct 8<em>Review Date</em></th><td><span class="c-in req"></span></td><td><span class="c-in req"></span></td></tr>
+              <tr><th scope="row">Wed Oct 7<em>Previous</em></th><td>152.40</td><td>$9.30</td></tr>
+              <tr><th scope="row">Tue Oct 6</th><td><span class="c-in"></span></td><td><span class="c-in"></span></td></tr>
+              <tr><th scope="row">Fri Oct 2</th><td><span class="c-ack">Acknowledged Unavailable</span></td><td><span class="c-in"></span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:8px"><span class="m-pill primary">Save Marks (0)</span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>The same table turned: sessions down, Instruments across. One or two Instruments fit at 320 px without scrolling. Enter still goes one session at a time.</figcaption>
+  </figure>
+</div>
+<div class="tech"><strong>When it turns.</strong> By the drawer's width, not the device: a container query, as the Review card's slider already uses (<code>app.css:949-956</code>). Below about 40rem the table turns, and both layouts use the same cells. If D10 brings Trades with three or four legs, the turned table scrolls sideways like any other wide table (<code>.table-scroll</code>). It's still one table with the same accessible names, so narrow and wide screens offer the same actions (ui-contract, "Responsive behavior").</div>
+
+<!-- ============================================================ -->
+<h2 id="data">8. What data the grid needs</h2>
+<p>The Review already holds most of what the grid shows. It lacks Marks that <em>exist</em> for sessions other than the Review Date. The grid needs those for the previous session, and for any shown session where one Instrument has a Mark and another doesn't (Mon Oct 5 above).</p>
+<div class="doc-scroll">
+<table class="doc">
+  <thead><tr><th>Column or cell</th><th>Held today?</th><th>Where from</th></tr></thead>
+  <tbody>
+    <tr><td>Review Date: every state</td><td>Yes</td><td>The Marks family's Review-date rows (<code>MarkRow</code>: resolution with price, revision, task and the Trades holding it).</td></tr>
+    <tr><td>Earlier sessions: Missing and Acknowledged Unavailable</td><td>Yes</td><td>The gap groups: dates, revisions and acknowledgments, trimmed to each Trade from the date it is relevant (<code>held-review.ts:79-90</code>).</td></tr>
+    <tr><td>Previous session, when its Mark exists</td><td><strong>No</strong></td><td>New: see below.</td></tr>
+    <tr><td>An Instrument's Mark in an earlier column shown for another Instrument</td><td><strong>No</strong></td><td>New: see below.</td></tr>
+    <tr><td>The previous session's date</td><td>Partly</td><td>Market Data's frames carry <code>previousCloseInstant</code> (<code>market-data.ts:203</code>), but the date isn't passed on to the screen.</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout"><strong>The smallest addition.</strong> When <code>open</code> builds the Marks family, Daily Review also reads each Instrument's <code>series</code> from the read session, from the earliest shown session to the Review Date. It returns, per Instrument, the Available Marks for the previous session and for the listed gap dates: price, revision, source and correction reason.
+<ul>
+  <li><strong>Where the data comes from.</strong> <code>series</code> already exists (D08P, A210, <code>market-data.ts:306</code>) and shares the session's one gaps scan per Instrument (decision 106). So it should add no stored read. A query-count proof, like D08P's I8P.4, must confirm that before the work is agreed.</li>
+  <li><span class="flag">Interface change</span> The Daily Review <code>open</code> result gains an additive field in the Marks family. Save results already return the saved keys, so the fold needs only to handle the new field.</li>
+  <li><strong>What doesn't change:</strong> no Market Data operation, no schema, no fixture.</li>
+  <li><strong>Performance:</strong> AC-PERF-001's Review-open row and tech debt item 3 (the open grows with history) must be re-measured, since this touches the open path.</li>
+</ul></div>
+<div class="tech"><strong>Rejected alternatives.</strong>
+<ul>
+  <li><strong>Read <code>replayTrade</code> per selected Trade:</strong> a second coordinator on the screen, bound to a Trade Detail binding rather than the Review's, and a full replay per Trade switch. It would fit only if the Trade P&amp;L row is wanted for every column.</li>
+  <li><strong>A point frame per extra date:</strong> one more read per distinct date, which grows with the number of gap columns.</li>
+</ul></div>
+
+<!-- ============================================================ -->
+<h2 id="fixes">9. Three small fixes</h2>
+<p>These don't depend on the restyle, so they can go first, each as its own task with its own test.</p>
+
+<h3>9.1 "&lt;date&gt; close" becomes "At the &lt;date&gt; Marks" on the Review card</h3>
+<div class="pair">
+  <div><span class="label before">Before</span><div class="m-card" style="width:300px"><b>Mon Oct 5 close</b><div class="m-fig"><span>Current Marked Trade P&amp;L</span><span>+$308.70 · +0.21R</span></div></div></div>
+  <div><span class="label after">After</span><div class="m-card" style="width:300px"><div class="m-sc">At the Mon Oct 5 Marks</div><div class="m-fig"><span>Current Marked Trade P&amp;L</span><span>+$308.70 · +0.21R</span></div></div></div>
+</div>
+<div class="tech"><code>CardFigures.tsx:108</code>. This is W19's wording, which D08P applied to the Today drawer only. P102 meant both screens to change together, to keep C1 (one wording per concept). The e2e cases that read the old heading need updating: D08P listed them under W19 (d4/breach-overrun, d4/expected-mark, d4/responsive-a11y).</div>
+
+<h3>9.2 Acknowledged unavailable looks different in Price History, and isn't counted as "without Marks"</h3>
+<div class="pair">
+  <div><span class="label before">Before</span>
+    <div class="m-card"><table class="g"><thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col"><b>Mon</b>Oct 5</th><th scope="col"><b>Fri</b>Oct 2</th><th scope="col"><b>Thu</b>Oct 1</th></tr></thead><tbody><tr><th scope="row">XYZ Mark</th><td class="c-none">—</td><td class="c-none">—</td><td>$50.40</td></tr></tbody></table><p class="g-note">4 sessions without Marks. <u>Enter Marks in the Review</u></p></div></div>
+  <div><span class="label after">After</span>
+    <div class="m-card"><table class="g"><thead><tr><th scope="col" style="text-align:left">Session</th><th scope="col"><b>Mon</b>Oct 5</th><th scope="col"><b>Fri</b>Oct 2</th><th scope="col"><b>Thu</b>Oct 1</th></tr></thead><tbody><tr><th scope="row">XYZ Mark</th><td class="c-none">—</td><td><span class="c-ack">Acknowledged Unavailable</span></td><td>$50.40</td></tr></tbody></table><p class="g-note">3 sessions without Marks. <u>Enter Marks in the Review</u></p></div></div>
+</div>
+<div class="tech">In <code>price-history.props.ts</code>:
+<ul>
+  <li><code>markCell</code> returns <code>null</code> for any session without an Available Mark, so the cell reads "—" named "No Mark". It should give the acknowledged status words from <code>calculation-words.ts</code> instead, as a cell kind of its own.</li>
+  <li><code>lacksMarks</code> should count only Missing sessions. That also changes the tab's count (W1).</li>
+  <li>W9 needs an amended row for the new cell, and the Journal cards should get the same treatment, so the two history views agree.</li>
+  <li>Open question for the user: should the acknowledged count be shown on its own ("1 acknowledged unavailable")? That would be new words.</li>
+</ul></div>
+
+<h3>9.3 Trade P&amp;L gets its gain and loss colours in Price History</h3>
+<div class="pair">
+  <div><span class="label before">Before</span><div class="m-card"><table class="g"><tbody><tr><th scope="row">Trade P&amp;L</th><td>$308.70</td><td>−$51.30</td></tr></tbody></table></div></div>
+  <div><span class="label after">After</span><div class="m-card"><table class="g"><tbody><tr><th scope="row">Trade P&amp;L</th><td class="gain">$308.70</td><td class="loss">−$51.30</td></tr></tbody></table></div></div>
+</div>
+<div class="tech">The props already give each cell <code>tone: 'gain' | 'loss'</code>, and <code>price-history.tsx:38</code> sets it as the cell's class, but <code>history.css</code> has no rule for those classes. Add rules using <code>--target</code> and <code>--stop</code>, as <code>rail-a.css:22-28</code> does. The sign glyph already carries the meaning, so colour only reinforces it (ui-contract).</div>
+
+<!-- ============================================================ -->
+<h2 id="rules">10. Rules that constrain the change</h2>
+<div class="doc-scroll">
+<table class="doc">
+  <thead><tr><th>Rule</th><th>What it means here</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Wording check</strong> (<code>npm run verify:wording</code>, <code>eslint.wording.config.js</code>)</td><td>No screen file may write "Mark missing", "Acknowledged unavailable" and the other listed phrases, or branch on a reason code. Every cell's status words come from <code>calculation-words.ts</code> (for example <code>acknowledgedUnavailableStatusLabel()</code>, line 187, or the "label" length at line 54). Comparing a Mark's <code>.kind</code> stays allowed.</td></tr>
+    <tr><td><strong>Mark, never "close"</strong></td><td>A Mark is a session's closing price. Cell names follow today's region names ("NVDA Mark, Thu Oct 8"), never tab A's "NVDA close for …". The "&lt;date&gt; close" heading is fixed (section 9.1). "Awaiting close" names a moment and stays (D08P section 10.3).</td></tr>
+    <tr><td><strong>Acknowledged unavailable</strong> (market-data.md; ui-contract)</td><td>It looks different from Missing, is never shown as a price or a zero, and always shows its reason in the cell editor. It can't be saved over an existing Mark (<code>MarkExists</code>). An earlier session offers a price but not Withdraw; the Review Date offers both (A57). A gap is never filled with a carried-over price.</td></tr>
+    <tr><td><strong>Daily Review order and completion</strong> (daily-review.md)</td><td>The order is today's missing Marks, then Debt, then settlement, then the Trade walk: the rail's Needs you groups follow it. Earlier sessions never block. Save Marks returns the refreshed Review with no second read (P38, AC-RESP-001).</td></tr>
+    <tr><td><strong>Accessibility</strong> (ui-contract, "Accessibility and responsive acceptance")</td><td>
+      <ul style="margin:0;padding-left:18px">
+        <li>A real table with column and row headers. Every input has its own name.</li>
+        <li>Cells are 44 px high on touch screens.</li>
+        <li>Colour never carries meaning alone: words or accessible names carry every state.</li>
+        <li>Focus is visible. After a refused save, focus goes to the first issue in the cell editor.</li>
+        <li>The tabs follow the WAI-ARIA pattern. Narrow and wide screens offer the same actions, and resizing keeps drafts.</li>
+        <li>Contrast meets WCAG AA. The new blue draft chip (<code>--info-ink</code> on <code>--info-ground</code>) needs checking, and forced-colours mode needs borders.</li>
+      </ul></td></tr>
+    <tr><td><strong>New words to approve</strong></td><td>The column tags "Review Date" (an existing term) and "Previous"; the Trade list's title; the chip text "Unsaved · typed in &lt;Trade name&gt;"; the rail's "n unsaved Marks"; the over-100 message; the grid note; and 9.2's acknowledged cell. These go to one approval batch, as for D7 and D08P.</td></tr>
+    <tr><td><strong>Process</strong> (D08P plan, its sections 10.1 and 10.2)</td><td>A prototype first, the user's visual sign-off for each screen, then its own breakdown and gate. The presentational-component rule (A216, <code>eslint.cockpit.config.js</code>) applies to the shared grid.</td></tr>
+    <tr><td><strong>Tests</strong></td><td><code>ReviewCard.test.tsx</code> (1,662 lines) and the e2e Review helpers (<code>e2e/d4/support.ts</code>: <code>reachCard</code>, <code>reachPanel</code>, <code>markRow</code>, <code>enterMark</code>) find rows by region names and open cards by header buttons. Keep the cell names, and move the helpers to the new layout first, as decision 65 did for D5R. Then the specs barely change.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="decisions">11. Decisions this changes</h2>
+<p>The breakdown will need to amend these. Listed here so the prototype can show each one.</p>
+<div class="doc-scroll">
+<table class="doc">
+  <thead><tr><th>Decision</th><th>Today</th><th>Proposed</th></tr></thead>
+  <tbody>
+    <tr><td>A150, A151 (cards opened in place)</td><td>An accordion of cards; one open at a time, opened in place.</td><td>A Trade list that selects; the rail and drawers show the selected Trade. The header's content (what remains, band, slider) stays.</td></tr>
+    <tr><td>A152 (panels)</td><td>Accordion panels with a summary and a status badge.</td><td>Tabs, with counts; first not-done opens, as now.</td></tr>
+    <tr><td>A153 (Marks panel)</td><td>Rows grouped by Instrument; drafts per card; Enter in DOM order.</td><td>The grid with the Review Date, previous session and gaps; drafts per Review; Enter session by session; cell editor.</td></tr>
+    <tr><td>A156 (unsaved work)</td><td>Any draft holds the card.</td><td>Mark drafts don't hold a Trade; Action and reflection forms still do. Leaving the page is still held.</td></tr>
+    <tr><td>A158 (figures)</td><td>One plain list of figures, each with its full reason.</td><td>Cockpit cards: the reason once, short labels elsewhere, the <code>figure-grid</code>, condition blocks.</td></tr>
+    <tr><td>Daily Review <code>open</code></td><td>Marks family: Review-date rows and gap groups.</td><td>Also each Instrument's Available Marks for the previous session and gap dates (section 8).</td></tr>
+    <tr><td>W9, W1 (Price History)</td><td>Acknowledged sessions are gaps and are counted.</td><td>An acknowledged cell of their own, not counted (section 9.2).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="prio">12. Prioritised recommendations</h2>
+<p class="muted">Recommendations only. The order puts what is independent and low-risk first, then the prototype that the plan requires, then the work in the order it depends on itself.</p>
+
+<p class="tier">Now: independent fixes</p>
+<ol class="prio">
+  <li><strong>Change the Review card's "&lt;date&gt; close" heading to "At the &lt;date&gt; Marks"</strong> (section 9.1). It finishes P102 and W19 and restores C1.
+    <div class="meta"><code>CardFigures.tsx:108</code>; its unit and e2e expectations. Small. The words are already approved.</div></li>
+  <li><strong>Give Price History's Trade P&amp;L its gain and loss colours</strong> (section 9.3).
+    <div class="meta"><code>history.css</code>. Trivial. No words change.</div></li>
+  <li><strong>Show acknowledged-unavailable sessions in Price History in their own words, and stop counting them as "without Marks"</strong> (section 9.2). Apply the same to the Journal cards.
+    <div class="meta"><code>price-history.props.ts</code> (<code>markCell</code>, <code>lacksMarks</code>), the tab count, W9 and W1 amendments. Small. Needs words approval.</div></li>
+</ol>
+
+<p class="tier">Next: the prototype and its sign-off (required by the D08P plan)</p>
+<ol class="prio" start="4" style="counter-reset:p 3">
+  <li><strong>Build a Review prototype</strong>, following the review-workflow and trade-detail prototypes, with switchable states. It covers:
+    <ul>
+      <li>the rail and drawers at desktop and phone width (section 3);</li>
+      <li>the grid's cell states (section 4);</li>
+      <li>shared drafts across two XYZ Trades (section 5);</li>
+      <li>the cell editor (section 6);</li>
+      <li>sessions as rows on a phone (section 7);</li>
+      <li>long histories paged 20 at a time;</li>
+      <li>an Empty Review, a Settlement Due Trade and Recovery Only.</li>
+    </ul>
+    Collect the new words (section 10) in the same session.
+    <div class="meta">Prototype file only. The user's visual sign-off for each screen is the gate before any breakdown.</div></li>
+  <li><strong>Decide the choices this page flags:</strong> no Trade P&amp;L row in the Review grid; the work before the rail on a phone; the column tags; mixed sessions shown with the existing Mark's price.
+    <div class="meta">Answered in the prototype session, then recorded as plan decisions.</div></li>
+</ol>
+
+<p class="tier">Then: the build, in dependency order</p>
+<ol class="prio" start="6" style="counter-reset:p 5">
+  <li><strong>Data: <code>open</code> returns the previous session's and gap dates' Available Marks</strong> from the read session's <code>series</code> (section 8).
+    <div class="meta">Daily Review coordinator, its result type, the fold in <code>held-review.ts</code>. Prove with a query-count case that no stored read is added; re-measure the Review open (AC-PERF-001, tech debt item 3). Medium. Interface change.</div></li>
+  <li><strong>One presentational session grid</strong>, shared by Price History (read-only) and the Review (editable): the columns, newest-left order, pinned labels, scroll box, the turn to sessions-as-rows by container width, and the cell kinds.
+    <div class="meta">Move <code>PriceHistoryTable</code>'s frame into a shared component under <code>src/ui/cockpit/</code>, keeping A216's presentational rule. Price History must look the same afterwards. Medium.</div></li>
+  <li><strong>Drafts move to the Review page</strong>, keyed by Instrument and session, with mirrored chips in other Trades, one Save Marks for every draft, paging that keeps drafts, and the 100-entry limit said before sending (section 5).
+    <div class="meta"><code>CardMarks.tsx</code> and <code>ReviewView.tsx</code>; amend A153 and A156. Medium to large; the riskiest step, as it changes the unsaved-work rules.</div></li>
+  <li><strong>The cell editor</strong> for "Can't get a price", Correct, Withdraw (Review Date only), acknowledgment reasons, conflicts and errors (section 6).
+    <div class="meta">Reuses <code>MarkEntry</code>'s and <code>DraftFields</code>'s controls and words. Medium.</div></li>
+  <li><strong>The cockpit-like frame</strong>: the rail's status card (Needs you in work order, the unsaved-Marks bar), the selected Trade's identity, P&amp;L, risk and Conditions cards, the Trade list, and the drawer tabs (section 3).
+    <div class="meta">Reuses the cockpit's rail cards through their props. Amend A150 to A152 and A158. Large: most of <code>ReviewView.tsx</code> and <code>ReviewCard.tsx</code>.</div></li>
+  <li><strong>Move the test helpers first, then the tests</strong>: the e2e Review helpers reach the new list, tabs and grid by the same names, so specs change through helpers only (decision 65's approach). Then <code>ReviewCard.test.tsx</code> and the Review unit tests.
+    <div class="meta">Do this before step 10's switch-over, as D5R did. Large, but mechanical.</div></li>
+  <li><strong>The phone layout and its checks</strong>: sessions as rows, the work-first order, and the accessibility and responsive cases (keyboard-only Review, resizing keeps drafts, 320 px with no page-wide sideways scroll).
+    <div class="meta">Browser cases in a new <code>e2e/</code> folder for the deliverable. Medium.</div></li>
+</ol>
+
+<p class="small muted" style="margin-top:30px">How this was researched: the Review and Trade Detail were driven with Playwright through the app's own forms (three Trades, missing and acknowledged sessions, option and stock legs), at 1280 and 390 px. The Vite dev server on port 5175 serves no <code>sw.js</code>, so the app never passes Runtime Readiness there; requests to that address were answered from the production build of the checked-out code (<code>dist-releases/current</code>) through Playwright routing, with no other server or port. The mockups above are redrawn from those screenshots and from <code>prototypes/trade-detail/index.html</code>.</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Detail Questions</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e2dd;
+    --accent: #2f6fdb; --changed: #fff4d6; --changed-line: #e0b400; --rec: #e8f0fd;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161615; --card: #20201e; --text: #ececea; --muted: #a0a09a; --line: #34342f;
+      --accent: #7aa7f5; --changed: #3a3214; --changed-line: #c99f10; --rec: #1d2a40;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161615; --card: #20201e; --text: #ececea; --muted: #a0a09a; --line: #34342f;
+    --accent: #7aa7f5; --changed: #3a3214; --changed-line: #c99f10; --rec: #1d2a40;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 96px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lede { color: var(--muted); margin: 0 0 20px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .q.changed { background: var(--changed); border-left-color: var(--changed-line); }
+  .q h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; display: flex; gap: 10px; }
+  .num { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 1.8em; }
+  .opts { display: grid; gap: 6px; margin: 0 0 10px; padding: 0; border: 0; }
+  .opts label { display: flex; gap: 8px; align-items: flex-start; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  .opts label.rec { background: var(--rec); }
+  .opts input { margin-top: 3px; }
+  .tag { font-size: 12px; color: var(--accent); margin-left: 6px; white-space: nowrap; }
+  textarea { width: 100%; min-height: 38px; resize: vertical; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  button { font: inherit; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  #status { color: var(--muted); align-self: center; font-size: 13px; }
+  #out { width: 100%; min-height: 160px; margin-top: 16px; display: none; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Trade Detail: open questions</h1>
+  <p class="lede">The recommended answer is preselected and highlighted in blue. Change any you disagree with and add notes. Your choices are saved in this browser as you go. When you're done, use <b>Copy answers</b> and paste the result into the chat.</p>
+  <div id="list"></div>
+  <textarea id="out" readonly aria-label="Answers text"></textarea>
+</main>
+<div class="bar">
+  <button class="primary" id="copy">Copy answers</button>
+  <button id="copyAll">Copy all, including unchanged</button>
+  <button id="reset">Reset to recommended</button>
+  <span id="status" role="status"></span>
+</div>
+<script>
+const Q = [
+  ["The Daily Review card also has an \"At entry\" block. Should it change the way Trade Detail's does?", ["Leave the Review card as it is (look at it later with the Review page work)", "Change it to match Trade Detail"]],
+  ["Under Today's price tracks, each Underlying condition shows \"Value at expiration\" and \"Distance on XYZ\". Where do these go?", ["Drop \"Distance on XYZ\" (the rail shows it) and move \"Value at expiration\" to that condition's row in Plan and Risk", "Keep both in Today", "Drop both"]],
+  ["Before the first Marks, one note says Marks are due \"once the Mon Oct 12 session ends\" while other figures say \"Fri Oct 9\". Fix it as part of this work?", ["Yes, fix it in this work", "List it as a separate bug"]],
+  ["When today's Mark is missing, should Plan and Risk show each condition's Risk to stop and Reward to target as of the last Mark, labelled with its date?", ["Dated figures, matching the rail", "The reason only (\"Mark missing\")"]],
+  ["When a Stop is breached, what does Plan and Risk show instead of \"$0.00 · 0.00R\"?", ["How far past: \"$60.00 · 0.24R past\"", "The word \"Breached\" only"]],
+  ["Each condition's row in Plan and Risk repeats its trigger (\"XYZ at or below $47.50\"), which also appears in the Plan section and the rail. Is the repeat OK?", ["Yes, repeat it (a row is hard to read without it)", "Name rows by role and number only (\"Stop 1\")"]],
+  ["Where do the short notes go, such as \"Distances to each condition arrive with the first Marks\" and \"The contract expired, so its conditions are no longer measured\"?", ["Stay in the rail, shortened", "Move to Plan and Risk, with Worst case"]],
+  ["On a weekend or holiday, what does the Today table's first column show?", ["That day's date, with dashes", "The next trading session's date"]],
+  ["On a Closed Trade that ended by expiration, what goes in the closing-price column, and what goes in the Underlying's row?", ["Cell: \"Expired\". Underlying row: a dash", "Cell: \"$0.00\". Underlying row: a dash", "Cell: \"Expired\". Underlying row: its last Mark"]],
+  ["On a Closed Trade, how is the closing-price column headed, and what does Change show?", ["Heading \"Exit Fri Nov 13\" or \"Expired Fri Nov 20\". Change: dashes", "Heading: the date only. Change: dashes", "Heading \"Exit …\" / \"Expired …\". Change: $0.00"]],
+  ["Do Planned Trades, and Trades whose records disagree, also get a Today view?", ["No (a Planned Trade holds nothing; the other has no figures)", "Yes"]],
+  ["Which view opens first?", ["Today for Open, Settlement Due and Closed; Plan and Risk for Planned; Position when records disagree", "Same, but Position for Closed"]],
+  ["Should the report list the plan and test changes these decisions cause at a high level, or test by test?", ["High level", "Test by test"]],
+  ["Which date format does the Journal's dated line use?", ["\"Tue Nov 10, 4:12 pm\" (the app's usual format)", "\"Tue 10 Nov, 4:12 PM\""]],
+  ["When does a Journal entry show \"· written Thu Nov 12\"?", ["Only when written on a later date", "At any later time, with the time shown"]],
+  ["Contracts expiring in another year show the year as \"Dec 18 '27\", so the same contract's name changes at New Year. OK?", ["Yes", "Always show the year when it isn't this year or is far out"]],
+  ["The \"this year\" check reads the computer's clock, not the app's own clock. Fix it?", ["Yes", "Leave it"]],
+  ["Strikes with cents read \"$152.50\", and whole strikes drop \".00\" (\"$150\"). Is that right everywhere?", ["Yes", "Always show cents"]],
+  ["Should the identity card's \"Expires Fri 18 Dec 2026 (36 days)\" switch to the short date form?", ["Yes: \"Expires Fri Dec 18 (36 days)\"", "Keep the long date"]],
+  ["Two different contracts could someday share a short name (for example, one adjusted after a split). Handle it now?", ["Note it for later", "Handle it now"]],
+  ["Screen readers may read \"'27\" as \"apostrophe 27\". Spell out the year for them?", ["Yes: \"December 18, 2027\"", "Leave it"]],
+  ["The new \"Since the last Marks\" group in Plan and Risk: what happens when the Trade has no Marks yet at all?", ["Hide the group (Entry Quality already covers the entry)", "Show it, headed \"Since entry\""]],
+  ["Today's Mark is missing and there has never been an earlier Mark. What does the rail show?", ["The reason: \"Mark missing\"", "A dash"]],
+  ["On an option Trade where the option's Mark is in but the Underlying's isn't, may rows on the Conditions card carry different dates?", ["Yes, each row dated", "No, show all as missing"]],
+  ["Should the dated P&L line keep cents, and say \"Mark\" for a stock Trade?", ["Yes: \"+$340.00 at the Tue Nov 10 Marks\" (\"Mark\" for stock)", "No cents"]],
+  ["Do the existing tab counts stay: Price History's \"2\" (sessions without Marks) and Journal's \"1 owed\"?", ["Keep both", "Remove both"]],
+  ["If every Deviation has been superseded, is the Deviations group still shown, struck through?", ["Yes, as the record of what happened", "Hide it"]],
+  ["If the price history can't be loaded, the Journal falls back to a plain list. Keep that fallback?", ["Keep it, using the new short dated line", "Remove it"]],
+  ["Each Mark's source, saved time and any correction must appear somewhere on Trade Detail. Once Today drops them, where do they go?", ["Price History: hover text and screen-reader name on each cell, plus a visible \"Corrected\" badge with its reason", "A source column", "Nowhere"]],
+  ["After more contracts are bought, the option track's \"entry\" dot stays at the first average price. Fix it?", ["Yes, use the open lots' average", "Leave it"]],
+  ["Words: on a Settlement Due Trade, the option's cells after expiration read \"Expired\" (screen readers: \"Expired Fri Nov 20\").", ["Approve", "Change (say how in the notes)"]],
+  ["Words: the Conditions card reads \"Stop · $2.82 away\" (\"Stop · 2.10 away\" for an Underlying price), \"Breached · $0.30 past\", \"Reached · 0.50 past\", and when dated \"Stop · $4.20 away · Tue Nov 10 Mark\" (\"Marks\" on an option Trade).", ["Approve", "Change (say how in the notes)"]],
+  ["Words: the rail's P&L card reads \"+$340.00 at the Tue Nov 10 Marks\" (\"Mark\" for stock).", ["Approve", "Change (say how in the notes)"]],
+  ["Words: the group headed \"Since the last Marks\", with rows \"New lots\", \"Average price of new lots\", \"Risk from that price\", \"Reward from that price\".", ["Approve", "Change (say how in the notes)"]],
+  ["Words: at the top of the Journal, \"1 active Deviation. See Plan and Risk.\" (\"2 active Deviations…\"), where \"See Plan and Risk\" opens that tab.", ["Approve", "Change (say how in the notes)"]],
+];
+const KEY = "trade-detail-questions-v1";
+const letter = (i) => String.fromCharCode(97 + i);
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch { state = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} };
+const pick = (n) => state[n]?.choice ?? 0;
+const note = (n) => state[n]?.note ?? "";
+
+const list = document.getElementById("list");
+Q.forEach(([question, options], i) => {
+  const n = i + 1;
+  const card = document.createElement("section");
+  card.className = "q";
+  card.innerHTML = `<h2><span class="num">${n}</span><span></span></h2><fieldset class="opts"><legend class="sr-only" hidden></legend></fieldset><textarea placeholder="Notes (optional)" aria-label="Notes for question ${n}"></textarea>`;
+  card.querySelector("h2 span:last-child").textContent = question;
+  const fs = card.querySelector("fieldset");
+  options.forEach((text, j) => {
+    const label = document.createElement("label");
+    if (j === 0) label.className = "rec";
+    const input = document.createElement("input");
+    input.type = "radio"; input.name = `q${n}`; input.value = j; input.checked = pick(n) === j;
+    input.addEventListener("change", () => { state[n] = { ...state[n], choice: j }; save(); paint(); });
+    const span = document.createElement("span");
+    span.textContent = `(${letter(j)}) ${text}`;
+    if (j === 0) { const t = document.createElement("span"); t.className = "tag"; t.textContent = "recommended"; span.appendChild(t); }
+    label.append(input, span);
+    fs.appendChild(label);
+  });
+  const ta = card.querySelector("textarea");
+  ta.value = note(n);
+  ta.addEventListener("input", () => { state[n] = { ...state[n], note: ta.value }; save(); paint(); });
+  card.dataset.n = n;
+  list.appendChild(card);
+});
+
+function paint() {
+  document.querySelectorAll(".q").forEach((card) => {
+    const n = +card.dataset.n;
+    card.classList.toggle("changed", pick(n) !== 0 || note(n).trim() !== "");
+  });
+}
+paint();
+
+function answers(all) {
+  const lines = [];
+  Q.forEach(([, options], i) => {
+    const n = i + 1, c = pick(n), t = note(n).trim();
+    if (!all && c === 0 && !t) return;
+    lines.push(`${n}: ${letter(c)}${c === 0 ? " (recommended)" : ""} - ${options[c]}${t ? `\n   Note: ${t}` : ""}`);
+  });
+  if (!all) lines.push(lines.length ? "All other items: as recommended." : "All items as recommended.");
+  return lines.join("\n");
+}
+const out = document.getElementById("out"), status = document.getElementById("status");
+async function copy(all) {
+  const text = answers(all);
+  out.value = text; out.style.display = "block";
+  try { await navigator.clipboard.writeText(text); status.textContent = "Copied. Paste it into the chat."; }
+  catch { out.select(); status.textContent = "Select the text below and copy it."; }
+}
+document.getElementById("copy").addEventListener("click", () => copy(false));
+document.getElementById("copyAll").addEventListener("click", () => copy(true));
+document.getElementById("reset").addEventListener("click", () => {
+  state = {}; save();
+  document.querySelectorAll(".q").forEach((card) => {
+    card.querySelectorAll("input")[0].checked = true;
+    card.querySelector("textarea").value = "";
+  });
+  out.style.display = "none"; status.textContent = "Reset to recommended."; paint();
+});
+</script>
+</body>
+</html>
