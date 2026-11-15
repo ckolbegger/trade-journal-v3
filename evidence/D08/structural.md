@@ -1247,3 +1247,7 @@ On first run, choosing Restore from a backup hides the Start your journal form; 
 `entryTypeName(key)` in `backup-text.ts` maps the four Entry Type keys to the glossary names (specs/glossary.md line 115): Plan Reflection, Position Change Reflection, Daily Trade Review, Close Review; an unknown key falls back to the raw key. The shared counts table covers both the preview and the summary. Red: assertion. No first-run passes. Browser specs restore, after-restore, responsive-a11y: 12 passed. Note for the final report: no shared key-to-name source exists elsewhere in the UI (screens use ad-hoc literals).
 - T8.22-B5 ocr review (session 2710d0b5): 3 files, no findings. Raw: `ocr/T8.22-B5-dd5fc138.json`.
 - T8.22-B5 quick run green: unit 2023, integration 258, browser task tier 5 + 39, checks 14 of 14, run complete.
+
+## T8.22-B6 done (`8f56a2cd`)
+
+Cause: the global `input, select, textarea { display:block; width:100% }` rule in app.css; only `form label.check` overrides it, and the confirm step is not in a form. Fix: scoped `.restore-confirm` rules (flex label rows, 1.25rem controls, focus ring on the control only); the decline checkbox now sits beside its warning (`.restore-decline`). Red: browser assertion (checkbox 886 px wide at 1280 px). No first-run passes. Browser specs responsive-a11y, restore, backup: 16 passed; `src/ui/backup` 56 passed.
