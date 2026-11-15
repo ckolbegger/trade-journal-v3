@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 import { expectNoSidewaysScroll, setWidth } from '../d7p/support.ts';
 import {
   chooseFile, chooseRestoreFile, completeLine, confirmStep, declineSafetyBackup, downloadBackup, downloadSection, expect, expectAccessible, firstPage, FIXTURE_BACKUP, installDump, launchAt, MONDAY_1005, openBackup,
@@ -202,12 +202,28 @@ test.describe('B8.16 Responsive and accessible', () => {
   // T8.22-B6 (AC-UI-001): on the confirm step each checkbox and radio sits at its natural size on its label's line, not stretched across the card.
   test('should keep each confirm-step checkbox and radio small and on the same line as its label at 1280 and 320 px, on the Backup page and on first run', async ({ profile }) => {
     test.setTimeout(240_000);
-    const expectControlsBesideLabels = async (page: Page, scope: Locator, label: string): Promise<void> => {
+    const expectControlsBesideLabels = async (scope: Locator, label: string): Promise<void> => {
       const boxes = await scope.locator('input[type="checkbox"], input[type="radio"]').evaluateAll((inputs) =>
         inputs.map((input) => {
           const control = input.getBoundingClientRect();
-          const text = (input.closest('label') ?? document.getElementById(input.getAttribute('aria-labelledby') ?? ''))?.getBoundingClientRect();
-          return { name: (input as HTMLInputElement).type, width: control.width, top: control.top, bottom: control.bottom, textTop: text?.top ?? 0, textBottom: text?.bottom ?? 0 };
+          // The label's own text, not its whole box (which contains the control and so always overlaps it).
+          const wrapper = input.closest('label');
+          const lines: DOMRect[] = [];
+          if (wrapper) {
+            const walker = document.createTreeWalker(wrapper, NodeFilter.SHOW_TEXT);
+            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+              if (!node.textContent?.trim()) continue;
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              lines.push(...Array.from(range.getClientRects()));
+            }
+          } else {
+            const named = document.getElementById(input.getAttribute('aria-labelledby') ?? '');
+            if (named) lines.push(named.getBoundingClientRect());
+          }
+          const textTop = lines.length > 0 ? Math.min(...lines.map((line) => line.top)) : 0;
+          const textBottom = lines.length > 0 ? Math.max(...lines.map((line) => line.bottom)) : 0;
+          return { name: (input as HTMLInputElement).type, width: control.width, top: control.top, bottom: control.bottom, textTop, textBottom };
         }),
       );
       expect(boxes.length, `${label}: controls found`).toBeGreaterThan(0);
@@ -227,7 +243,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     await page.getByRole('radio', { name: 'Replace without a backup' }).check();
     for (const width of [1280, 320]) {
       await setWidth(page, width);
-      await expectControlsBesideLabels(page, confirmStep(page), `Backup page at ${width} px`);
+      await expectControlsBesideLabels(confirmStep(page), `Backup page at ${width} px`);
     }
     await context.close();
 
@@ -239,7 +255,7 @@ test.describe('B8.16 Responsive and accessible', () => {
     await chooseRestoreFile(first, saved);
     for (const width of [1280, 320]) {
       await setWidth(first, width);
-      await expectControlsBesideLabels(first, confirmStep(first), `first run at ${width} px`);
+      await expectControlsBesideLabels(confirmStep(first), `first run at ${width} px`);
     }
     await fresh.close();
   });
