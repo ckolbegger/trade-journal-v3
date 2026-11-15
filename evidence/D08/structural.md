@@ -1400,3 +1400,7 @@ Reviewer note, not a bug task: `D07S` has two plan files with a Progress section
 **D8-Retro-1a-B8** (`f49a830b`): the prefix widens to `([A-Za-z0-9.]+-)*`, and each ID is keyed by its trailing F/B part. Case 12 red then green. ocr review (`ocr/D8-Retro-1a-B8-f49a830b.json`): 1 comment, Valid:
 
 - **D8-Retro-1a-B9** (Valid, `status.sh:36`): the inner `match()` overwrites `RSTART`/`RLENGTH`, so the scan resumes at the wrong offset and `abc T9.2-F1-B1` counts `B1` twice. Case: it should count each ID once when text precedes a chained ID. This is the third round of bug tasks on D8-Retro-1a; findings on B9's review stop for the user.
+
+**D8-Retro-1a-B9** (`2b928c3c`): the scan saves the outer match's position and length before the inner `match()`. Case 13 red then green (fixtures: `abc T9.2-F1-B1`, a mixed cell, and D08's real T8.9 cell). A chained ID such as `F1-B1` is one ID counted by its last part. Real-inputs check by hand: D08 T8.4 F 2, B 10; T8.9 F 1, B 16; D08P T8P.1 F 0, B 9; all correct. ocr review (`ocr/D8-Retro-1a-B9-2b928c3c.json`): 0 comments, no findings. D8-Retro-1a is complete.
+
+Notes from B9's summary, not bug tasks: D07 and D07S Progress tables have no Wave or Lane columns, so `status.sh` prints an awk error and then "nothing open" for them; D07S has two plan files with Progress tables and only the first is read; a parenthetical such as "(B1 moved to T8.11)" still counts in its row; a range "B5 to B7" counts as two.

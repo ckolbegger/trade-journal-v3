@@ -8,6 +8,7 @@ Covers D8's implementation session `1229eba6` (2026-11-14 20:34 to 2026-11-15 18
 - **Cost:** user attention on every status question, and a wrong picture of the work twice in one session.
 - **Proposed change:**
   - A read-only script, `.claude/scripts/status.sh <Dnn>`, prints the Progress table's rows that are not Done, a count of the follow-up and bug tasks per row, and every question in `DECISIONS-PENDING.md` without an answer. One pointer in `implementing.md`: when the user asks for the task table or what the session is waiting for, show this script's output.
+  - **Applied (2026-11-15), part one:** `.claude/scripts/status.sh <Dnn>` and its test (`status.test.sh`, 13 cases), as D8-Retro-1a (`16d30e61`) with bug tasks B1 to B9 over three ocr rounds (see `structural.md`). `implementing.md` points to it when the user asks for the task table or what the session is waiting for. Lesson for briefs: a parser's brief lists the real inputs it must handle (every deliverable's plan), not one example; most of B1 to B9 came from a brief that described D08 only.
   - Follow-up tasks (F) get their own Progress rows, under their parent; bug tasks (B) stay in the Commits cell. A follow-up is a deviation with its own scope (section 1.6 lists them), so it reads as a task.
 
 ## 2. Decision records drift after the answer changes
