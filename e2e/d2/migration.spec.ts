@@ -105,7 +105,7 @@ test.describe('B2.4 Migration Blocked (faults build)', () => {
     await reloadFromNotice(page);
     await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
     await expect(page.getByText('Your data is unchanged.')).toBeVisible();
-    await expect(page.getByRole('button')).toHaveText(['Retry']);
+    await expect(page.getByRole('button')).toHaveText(['Retry', 'Download a copy', 'Verify']);
 
     const blocked = await probe(page);
     expect(storesOf(blocked[oldDatabase])).toEqual(storesOf(before[oldDatabase]));
