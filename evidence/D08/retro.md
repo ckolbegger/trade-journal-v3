@@ -14,7 +14,7 @@ Covers D8's implementation session `1229eba6` (2026-11-14 20:34 to 2026-11-15 18
 
 - **What happened:**
   - Q29's recorded answer says one reset command that rewrites both stored files, and `verify:capacity:restored`. The user's later choices (two reset commands, `bench:verify-capacity`) went into decision 114 and the breakdown, but not into Q29's entry or the final report's "Decisions" paragraph. The T8.19-F1 session had to reconcile them, and explain the gap when the user asked about Q29.
-  - Q8's and Q9's answers are written together after Q8; Q9's own section still says "until the user answers".
+  - Two answers sit in the next question's section: Q8's is under Q9 (Q8's own section still says "until the user answers"), and Q10's is under Q11.
   - The tag move (`3ecb7c25` to `2bc7c795`) leaves `D08-handoff.md` and the final report's first line naming the old commit.
 - **Cost:** a reader of `DECISIONS-PENDING.md` gets a superseded answer, and a script or subagent counting answers gets a false "unanswered".
 - **Proposed change:**

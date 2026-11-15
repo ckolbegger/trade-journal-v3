@@ -83,7 +83,7 @@ Editing the Progress section is not a plan revision. Commit locally, don't push.
 
   <section>
     <h2>2a. A check that every question has its own answer <span class="sev mid">Medium</span></h2>
-    <p class="what">Q9's answer sits under Q8, so Q9's section still reads "until the user answers". A script counting answers would get it wrong.</p>
+    <p class="what">Q8's answer sits under Q9 (so Q8's section still reads "until the user answers"), and Q10's sits under Q11. A script counting answers by section would get it wrong.</p>
     <div class="prompt"><div class="prompt-head"><span>Prompt</span><button>Copy</button></div><pre>Apply D8 retro finding 2, the check (evidence/D08/retro.md, finding 2).
 
 Brief a fresh tdd-task to add .claude/scripts/decisions-check.sh &lt;Dnn&gt;: it fails, naming the question, when a "## Qn." section of evidence/&lt;Dnn&gt;/DECISIONS-PENDING.md has neither its own "**Qn answer" line nor an explicit open marker. Unit-test it on a fixture with one answered, one open and one misplaced answer. If status.sh (finding 1a) exists, have it reuse this check.
@@ -101,7 +101,7 @@ Run ocr-review on the commit, handle findings as usual, commit locally, don't pu
 1. Add to implementing.md's "Pending decisions" step 5: when the user changes an answer later, append "**Amended (date):**" with the new answer in that question's own section, and update the final report wherever it quotes the answer.
 2. Fix D8's records:
    - Q29 in evidence/D08/DECISIONS-PENDING.md: append an "Amended (2026-11-15)" line with the final choices (measure:capacity:reset-basis and measure:capacity:reset-baseline, one file each; bench:verify-capacity), pointing to decision 114.
-   - Q9: move its answer into Q9's own section (leave a one-line pointer under Q8 if the text there reads better that way).
+   - Q8 and Q10: move each answer into its own section (Q8's is under Q9, Q10's under Q11).
    - evidence/D08/final-report.md: correct the Q29 sentence in "Decisions", and the first line, which should say the tag is on 2bc7c795 (moved there after T8.19-F1, at the user's request).
    - plan/D08-handoff.md: note that the tag moved from 3ecb7c25 to 2bc7c795.
 Commit locally, don't push.</pre></div>
