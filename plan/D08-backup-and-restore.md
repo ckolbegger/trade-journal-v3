@@ -683,8 +683,8 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8.14 | 1 | US | Done | `f1c93edc`; B1 `dcbf3262`, B2 `a12810a1`, B3 `a736a7ae`, B4 `02d3c143`, B5 `efccb3aa`, B6 `f28fadab`; F1 `81ab5ad4`, F2 `c1e69079` |
 | T8.11 | 2 | US | Done | `a7913e29`; B1 and B2 `2b28a540`, B3 and B4 `9017c07b`, B5 to B7 `4c786ff8`, B8 `6008be24` |
 | T8.15 | 2 | FT | In progress from `de83f139` | |
-| T8.17 | 2 | FX | In progress from `de83f139` | |
-| T8.20 | 2 | FX | Not started | |
+| T8.17 | 2 | FX | Done | `b486bf83` |
+| T8.20 | 2 | FX | In progress from `4390d956` | |
 | T8.18 | 2 | BG | In progress from `de83f139` | |
 | T8.21 | 2 | BR | Not started | |
 | T8.19 | 2 | BN | Not started | |
