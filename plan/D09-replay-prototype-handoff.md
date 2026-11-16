@@ -19,6 +19,8 @@ If any check fails, stop and ask the user.
 
 Don't ask these again.
 - All six trades below appear in every visualization.
+- Each trade has two Mark series, one bullish and one bearish, and **every visualization has a control that flips it between the bullish and the bearish series**.
+- **Every visualization has a slider** that, moved left to right, reveals more of the price action, one session at a time.
 - Each Mark series runs through expiration: 15 sessions, Mon Nov 2 to Fri Nov 20, 2026, with no gaps.
 - Option Marks come from a pricing model (Black-Scholes), not hand-written numbers.
 - The interview uses the `grilling` skill.
