@@ -1,6 +1,6 @@
 # Replay: what it must do in the daily review
 
-A running record of the replay interview (started 2026-11-15, from `plan/D09-replay-prototype-handoff.md`). It is research: it changes no product code, tests or plan. The page it leads to is `prototypes/replay/index.html`.
+A running record of the replay interview (started 2026-11-15, from `plan/D09-replay-prototype-handoff.md`). It is research: it changes no product code, tests or plan. The page it leads to is `prototypes/replay/index.html` (round 1). After the user's review a second set was built at `prototypes/replay/round-2.html`; see "Round 2" near the end, which also holds the current recommendation.
 
 ## Settled before the interview (handoff section 2)
 
@@ -189,6 +189,127 @@ How the page was checked: every trade, series, visualization and slider position
 - ELIX bullish in Falling to the line: the dots closing on the flat top.
 - AXIO bullish and DALE bearish in the map, at Nov 6 and Nov 10: the two jumps along a ratio line.
 
+## Round 2 (2026-11-16)
+
+The user reviewed round 1 and asked for a second set. Round 1 stays at `prototypes/replay/index.html` as a record. Round 2 is `prototypes/replay/round-2.html`, on the same six trades and the same Marks (the model block is identical, checked by a diff).
+
+### The user's feedback on round 1
+
+"None of the visualizations has the type of impact I am looking for."
+
+- **Ranking.** Keep and iterate: 1 Corridor ("by far my favorite"), 2 Balance, 3 Share equivalent. Discard and try again: Falling to the line, Why it moved, Risk and reward map.
+- **Good.** The generated data; the slider for watching a trade evolve.
+- **Information density.** Option trades had four to six charts, so the price (at the top) and the risk and reward (three or more charts down) could not be watched together.
+- **Layout.** Risk and reward is the most important chart and came fourth. Every chart was the same size, which gave implied volatility more weight than it merits. Try insets, half-sized charts, and a pop-up on hover.
+- **Colour.** When a trade goes against the Plan its Reward to target grows, so the short put's bearish series showed green bars growing while the trade went as badly as it could. "Think about how the risk/reward visualization makes you feel when you look at it."
+- **Suggestions.** Not everything has to be a bar. A gauge for profit and loss on screen with the price; an area that grows and shrinks with the price.
+
+### Decisions from the round 2 questions
+
+| # | Decision | The user's words |
+|---|---|---|
+| R1 | **Lead with how the Trade is going**; what is at stake from here is a secondary window. | "Yes, lead with how is the trade going with what is at stake as a secondary window on the trade." |
+| R2 | **Colour follows the result.** Green is money made or banked; red is money lost. Distance still to go is neutral. | "A profitable trade should 'feel green' and a losing trade should 'feel red'." |
+| R3 | **The price shown beside the result is the Underlying's.** The option's own Mark is carried by the profit and loss picture, which need not be a line. | "I need to see how the price action affected P&L clearly… I'm not sure that should be a line." |
+| R4 | **Two charts at most.** | "Two at most. I worry that on a phone layout we'll never be able to get two charts." |
+| R5 | **Price, time and volatility stays, but not as a layout.** No visualization without a time axis; one layout tries the price as an inset. Each picture must read without touching the slider. | "I had to use the slider to gain any information at all from the chart. Just looking at it cold didn't mean anything to me." |
+| R6 | **What worked in Corridor was the clear picture of profit and loss**, and that it showed what scaling out did. | "They had the clearest visualizations of P&L, particularly the corridor." "It clearly showed the impact of scaling out of the trade." |
+| R7 | **Price and result must be on screen together and both move with the slider.** They need not share one chart. | "I would be fine with a price chart and an additional on-screen visualization of P&L." |
+| R8 | **Only what clears the bar is presented.** A layout that fails is replaced, not shown. | "If you feel strongly that a layout failed, then don't present it." |
+
+### The six visualizations of round 2
+
+| # | Name | What it draws | Against round 1 |
+|---|---|---|---|
+| 1 | **Corridor** | A short price strip, and under it the Trade P&L as an area from break-even, green above and red below, between two rails: the Trade's result at the Stop and at the Target. | Iterated. Three charts removed, the area replaces the line, the red and green gaps became one neutral beam. |
+| 2 | **Balance** | One candle per session: the body runs from break-even to the result so far; the wicks run to the result at the Stop and at the Target. The price strip is under it. | Iterated. The opposed red and green bars became a body coloured by the result with neutral wicks. |
+| 3 | **Share equivalent** | The price line drawn as thick as the number of shares the Position behaves like, over the P&L area. | Iterated. The strip of bars became the thickness of the price line. |
+| 4 | **Ribbon** | One chart. The price line is the spine and the result rides on it as a band: up and green for a profit, down and red for a loss. A beam at the session shown runs from the result at the Stop to the result at the Target. | New. |
+| 5 | **Gauge** | A straight meter from the result at the Stop to the result at the Target, with a pointer at the result so far; under it the price and a small P&L strip. | New. |
+| 6 | **Inset** | The P&L area takes the card; the price is a small inset beside the headline figure. | New. |
+
+**In all six:** the headline is the Trade P&L in the colour of the result, with a sentence on how it is going ("Ahead: 85% of the way to the Target", "Past the Stop by $213.00") and a second, neutral sentence on what is at stake. The card's edge takes the same colour. Light colour is open profit or loss, solid colour is banked, cross-hatching is past a rail. An Execution after the entry is a dashed line down every chart. Under the charts, one line says what moved since the session before (the Underlying, time and volatility, with a small bar). Implied volatility and the share equivalent are chips that open a small chart on hover, focus or tap. Hovering a session shows its Marks, its result and what moved it.
+
+### Decisions the planner made while building round 2 (for the user's review)
+
+| # | Decision | Why | The alternative |
+|---|---|---|---|
+| C1 | **The page opens on the last session**; drag left to replay. | R5: the picture must read cold, and in the Review the trader arrives at today. | Open on the first session, as round 1 did. |
+| C2 | **The option's own Mark is no longer charted.** It is in the headline's sentence when it matters, the hover, the readout and the table. A Stop or Target set on the option's Mark appears as a rail, in dollars. | R3 and R4: one price chart. | Keep a second price chart. |
+| C3 | **The result is a filled area whose edge joins the sessions' Marks.** Each Mark is still a dot and the area breaks at a missing Mark. This reverses B11. | R2 and the user's suggestion of an area: the fill is what makes a winner feel green. The edge is no more than the guide line round 1 already drew between Marks. | Separate columns per session (that is visualization 2). |
+| C4 | **Rails are labelled "Stop −$324" and "Target +$956"**: the Trade's result if the Stop or the Target were reached, for the Position as it stands. | Short enough for a phone; the same words in all six. | "Result at the Stop −$324". |
+| C5 | **What is at stake is drawn once, at the session shown, in black**: a beam from the result down to the Stop's rail and up to the Target's, each tagged with its dollars. | R1 and R2: it is the secondary window, and it must not be green or red. | A band on every session, as round 1 did. |
+| C6 | **Labels are placed in order of importance and a label with no free spot is left out** (the result and the stake tags are always shown; rail labels, "Break-even", Worst case and Max reward give way). Every figure is still in the readout and the table. | 1,080 states at three widths can't be laid out by hand, and overlapping labels are worse than a missing one. | Fixed positions. |
+| C7 | **Worst case and Max reward are drawn only when they fall inside the chart's range.** Otherwise they are in the readout, and the Worst case is in the headline's second sentence once the Stop is breached. | They are the outer bound, not the daily read (decision 4). | Round 1's "off the scale" notes. |
+| C8 | **Two new sentences in the headline:** how far the result is toward the Target or the Stop, as a share; and, when it is true, "Even at the Stop this Trade would end $316.00 ahead." | They are the plainest form of "how is it going" and of what a scale-out bought. | Dollars only. |
+| C9 | **Share equivalent's thickness is measured against contracts × 100**, the most the Position could ever behave like. | One honest scale across the trades. The cost: a spread's line is always thin. | Scale each trade to its own largest value. |
+| C10 | **The Ribbon's band has its own scale, shown by a key ("this tall = 1R")**, and the price keeps the chart's only axis. A fainter beam stands at each Execution so that a scale-in or scale-out can be compared. | One chart with two value axes invites reading the dollars off the price axis. A band's thickness can't be misread that way. | Price and dollars on two axes (see the discarded attempts). |
+| C11 | **The gauge is a straight meter, not a dial.** | Lengths compare more easily than angles, it reads left (Stop) to right (Target), and it fits a phone's width. | A semicircular dial. |
+| C12 | **The Inset's price chart is not lined up with the main chart**; the session's blue line is in both. | An inset can't share the main chart's width. | None; this is what an inset costs. |
+| C13 | **On touch there is no hover**: a tap on a session moves the slider there, and the line under the charts carries the same facts. Chips open on tap. | Decision 9. | None. |
+| C14 | **Heights are set so the sticky bar, the headline and every chart fit one screen**: 800 px at 1280 wide, 667 px at 375 and 320 wide. Measured for every state. | R4 and R7. | Let the charts be taller and scroll. |
+
+### Attempts discarded before presenting (R8)
+
+- **Price and dollars on one plot with two axes** (the "two axes" idea from the plan for this round): not built. The two scales are unrelated for an option, so every crossing of the two lines would be an accident of scaling. The Ribbon is the single-chart answer instead.
+- **A semicircular dial**: replaced by the straight meter (C11).
+- **Balance redrawn "from where you stand"** (the result as the fixed axis, the Stop and Target moving): it makes a fixed Stop look as if it moves every day.
+- **A coloured heat strip under the price** in place of a P&L chart: it says green or red but not how much.
+- **The corridor's rails wrapped around the Ribbon's price line**: three parallel wiggling lines; the beam at the session shown and at each Execution says the same with far less ink.
+- **A waterfall of each session's change**: a good day in a losing trade would be green, against R2.
+- **The corridor on a Stop-to-Target scale with level rails**: a scale-out changes nothing on it, against R6.
+
+### How round 2 was checked
+
+Every trade, series, visualization and slider position (1,080 states) at 1280, 375 and 320 px: no script errors, no sideways scroll, no broken figures, no chart label outside the window, and the sticky bar, headline and charts within one screen (the tallest needs 659 of 667 px). The round 1 arithmetic checks run against round 2's model block: 2,223, none failed. Twenty interaction checks pass: the slider, both radio groups and the tabs from the keyboard; a chip opening on focus, with Enter, and closing with Escape; the hover on a revealed and on an unrevealed session; a click moving the slider; nothing from a later session in the card, the readout or the table. Screenshots of each visualization were looked at, at 1280, 375 and 320 px.
+
+### Round 2 against the goals
+
+| Goal | 1. Corridor | 2. Balance | 3. Share equivalent | 4. Ribbon | 5. Gauge | 6. Inset |
+|---|---|---|---|---|---|---|
+| A winner feels green, a loser red (R2) | **Yes.** A hill or a hollow. | Yes, less strongly: separate columns. | Yes (the same area). | **Yes**, and on the price itself. | Yes, for the session shown; the strip is small. | **Yes**, the largest area. |
+| Price and result seen together (R3, R7) | **Yes, lined up**, one above the other. | Yes, lined up. | Yes, lined up. | **Yes, in the same place.** | Yes, lined up, but the meter is apart. | Together, not lined up. |
+| Reads cold (R5) | Yes. | Yes. | Yes. | Yes, once the key is read. | The meter yes; the history is in the small strip. | Yes. |
+| What a scale-in or scale-out did (R6) | **Best:** the rails step and the banked level appears. | Good: the whole candle shortens, with a solid base. | As Corridor, and the line thins or thickens. | The banked layer is clear; the rails only as beams at each Execution. | For the session shown: the markers move in. In the strip, as Corridor in small. | As Corridor. |
+| What is at stake, as a second window (R1) | The beam. | The wicks, on every session. | The beam. | The beam on the price point. | The spans under the meter. | The beam. |
+| One phone screen (R4) | Yes (653 px of 667 at 320 wide). | Yes (659). | Yes (659). | **Yes, with room** (629): one chart. | Yes (659). | Yes (652). |
+| Price, time and volatility (R5) | The line under the charts, the hover and the chips. The same in all six. | Same. | Same, plus exposure on the price line. | Same. | Same. | Same. |
+| Cost in the app | Low to medium. | Low to medium. | High (share equivalent, ADR 0007). | Medium. | Low. | Low to medium. |
+
+### What round 2 showed
+
+- **The colour rule fixes the problem the user named.** DALE bearish is red in every view from the first session, and stays red while its Reward to target grows.
+- **Corridor is still the clearest**, now in two charts that fit a phone. The step in the rails and the solid banked band make BREN's sale and AXIO's gap sale readable without the slider.
+- **Ribbon is the one new idea that earns its place.** A flat price with a red band growing under it (BREN's first week) is time decay with no words, and CORV's put shows the price falling while the green band grows above it. Its weakness is exact dollars: thickness is read against a key, not an axis.
+- **Balance and Corridor are still the same figures.** As candles the result is easier to compare session by session and harder to feel.
+- **Share equivalent as thickness works for single options and for stock**, and says little for spreads, whose line is thin throughout (C9).
+- **The meter is a good summary of one session and a poor history.** It would suit a row in a list of open Trades better than the replay itself.
+- **Inset adds nothing over Corridor now that both of Corridor's charts fit a phone.** It is presented because the user asked to see the idea.
+
+### Recommendation after round 2
+
+1. **Build Corridor as D9's replay chart**, with the headline, the one-line "since the session before", the chips and the hover exactly as in round 2.
+2. **Use the Gauge's meter where there is no room for a chart**: the collapsed Review card and any list of open Trades. It needs no figures beyond Corridor's.
+3. **Keep Ribbon as the candidate for phones**, to be decided after the user has used both on a phone. If only one is built, build Corridor.
+4. **Don't build Balance or Inset.** Each is Corridor with one thing changed and nothing gained.
+5. **Share equivalent, implied volatility and the price, time and volatility line wait for ADR 0007 to be amended.** When they come, the chips and the one line are the right size for them; the thick price line can be a later option.
+
+Round 2 has no expiration payoff line in replay, so the UI contract's sentence ("Mark-to-Market replay and Expiration Payoff remain separate views") needs no change for any of these six.
+
+**Derived figures Corridor needs from D9** (all sums of what `evaluate` already returns): per session, Trade P&L, realized P&L to date, the Trade's result at the Stop and at the Target, Worst case and Max reward; the same for the Plan Baseline; the share of the way to the Target or the Stop; the lowest and highest result so far (for the meter).
+
+### For the user to look at first in round 2
+
+- DALE bearish in Corridor, last session, then drag left: the trade the round 1 colours got wrong.
+- BREN bullish in Corridor at Nov 13: the sale, the banked band, the Stop's rail above break-even.
+- BREN bullish in Ribbon from Nov 2 to Nov 12: the flat week, then the rally.
+- CORV bearish in Ribbon: the price falls, the green band grows; the missing Mark on Nov 10.
+- AXIO bearish in Balance: the gap sale below the Stop.
+- DALE bullish in Gauge: a low ceiling and a far floor, on one line.
+- On a phone, or a narrow window: Corridor and Ribbon side by side in two tabs.
+
 ## Open points
+
+Round 2 adds: whether Ribbon is built as well as Corridor; whether the meter is used in the Review card.
 
 Left to D9's planning: how a moved Stop is drawn; the interest rate used for implied volatility; whether the dollar split and the payoff line in replay are built; and the round trip between the Review and Price History.
