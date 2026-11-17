@@ -922,3 +922,11 @@ Behavioral task, five cases in `src/ui/cockpit/drawers/today.props.test.ts` ("To
 - `e2e/d8p/states.spec.ts`: `expectDrawers` checks `toBeVisible` again (T8R.2 had relaxed it to "not hidden" until a Closed Today had content), and two blocks of assertions were added: the Settlement Due Today table ("Expired", named "Expired Fri Nov 20") and the Closed Today ("Closed" stamp, empty Today cell, "Expired Fri Nov 20" heading). Run: `npx playwright test e2e/d8p/states.spec.ts` after `npm run build:faults` and `npm run build:releases`: 3 passed.
 - `CurrentMarksOnly`, `CurrentMarksCard`, `currentMarksOf`, `currentMarksProps`, the `CurrentMarks` type, Cockpit's `settlementDue` local and the e2e helpers `valuation` and `todayFigure` are removed (orphaned).
 - Retired tests: Placed.test.tsx "should show the Mark, Source, Saved and Underlying Mark in the Position drawer card even when the replay holds an available Mark"; Placed.test.tsx "should show only the current Marks card in the Today drawer on a Settlement Due Detail" became "should show no current Marks card, price track or At entry in the Today drawer on a Settlement Due Detail"; Cockpit.test.tsx "should show the Settlement Due current Marks in Today, not in Position" became "should show no current Marks card in Today or in Position on a Settlement Due Detail" (a file outside lane TD's list, one case, changed because the card it asserted is gone).
+
+## T8R.7-B2
+
+ocr finding (low, maintainability): the `yesterday` cell in `closedMarksOf` (`src/ui/cockpit/drawers/today.props.ts`) nested ternaries. It is now a small named function, `exitCell`, with early returns: "Expired" by expiration, the Underlying's Mark at the exit session, otherwise the final exit Execution's price. Outcomes are unchanged.
+
+- Before: `npx vitest run src/ui/cockpit/drawers/today.props.test.ts src/ui/screens/trade-detail/Today.test.tsx src/ui/screens/trade-detail/SettlementDue.test.tsx src/ui/screens/trade-detail/Placed.test.tsx` gave 4 files, 32 passed.
+- After: the same command gave 4 files, 32 passed.
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0.

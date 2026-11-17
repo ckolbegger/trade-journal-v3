@@ -132,6 +132,12 @@ function closedMarksOf({ replay }: TodayInput, view: ClosedTradeDetail, optionTr
     const final = view.positionChanges.flatMap((change) => change.executions).filter((e) => instrumentKey(e.instrument) === instrumentKey(instrument)).at(-1);
     return final ? priceTextOf(optionTrade)(instrument, final.price) : '—';
   };
+  // The exit cell: the option's "Expired" by expiration, the Underlying's Mark at the exit session, otherwise the final exit Execution's price.
+  const exitCell = (instrument: Instrument, underlying: boolean, expired: boolean): string => {
+    if (expired) return 'Expired';
+    if (underlying) return cell(instrument, last);
+    return exitPrice(instrument);
+  };
   return {
     columns: [todayHeadingOf(view.marksColumns), `${byExpiration ? 'Expired' : 'Exit'}${last ? ` ${shortDate(last.date)}` : ''}`, 'Change'],
     rows: replay.instruments.map((instrument) => {
@@ -141,7 +147,7 @@ function closedMarksOf({ replay }: TodayInput, view: ClosedTradeDetail, optionTr
       return {
         label: rowLabel(instrument),
         today: '',
-        yesterday: expired ? 'Expired' : underlying ? cell(instrument, last) : exitPrice(instrument),
+        yesterday: exitCell(instrument, underlying, expired),
         ...(expired && { yesterdayName: expiredName(instrument) }),
         change: '—',
       };
