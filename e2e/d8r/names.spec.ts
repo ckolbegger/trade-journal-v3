@@ -31,25 +31,21 @@ async function namesOn(page: Page): Promise<{ visible: string[]; accessible: str
   const attributes = await page.evaluate(() => [...document.querySelectorAll('[aria-label], [title], [alt]')].flatMap((element) =>
     ['aria-label', 'title', 'alt'].map((attribute) => element.getAttribute(attribute) ?? '')));
   accessible.push(...attributes.flatMap(mentions));
-  // Each element that carries a label or leaf text mentioning a contract: its whole accessible name against its visible text.
-  const tagged = await page.evaluate((source) => {
-    let count = 0;
-    for (const element of document.querySelectorAll('body *')) {
-      const own = ['aria-label', 'title', 'alt', 'aria-labelledby'].map((attribute) => element.getAttribute(attribute));
-      const text = (element as HTMLElement).innerText ?? '';
-      if (own.some((value) => value && /\bXYZ\b/.test(value)) || (element.children.length === 0 && new RegExp(source).test(text))) {
-        element.setAttribute('data-b8r5', String(count++));
-      }
-    }
-    return count;
-  }, MENTION_SOURCE);
-  const elements: { accessibleName: string; text: string }[] = [];
-  for (let index = 0; index < tagged; index++) {
-    const element = page.locator(`[data-b8r5="${index}"]`);
-    const snapshot = await element.ariaSnapshot().catch(() => '');
-    const name = /^\s*- [\w-]+ "((?:[^"\\]|\\.)*)"/.exec(snapshot)?.[1];
-    if (name !== undefined) elements.push({ accessibleName: name, text: (await element.innerText()).replace(/\s+/g, ' ').trim() });
-  }
+  // Every element that has an accessible name, hidden or not (the accessibility tree leaves hidden ones out). The name is the text of the aria-labelledby targets
+  // (read whether hidden or not), else aria-label, alt or title, else, for roles named by their content, the content. A content-named element's name is then
+  // compared with its content, so a label such as "Open" over a span that spells the contract is found.
+  const elements = await page.evaluate(() => {
+    const byContent = 'button, a, summary, h1, h2, h3, h4, h5, h6, [role=button], [role=link], [role=tab], [role=menuitem], [role=option], [role=heading]';
+    const squash = (text: string | null): string => (text ?? '').replace(/\s+/g, ' ').trim();
+    return [...document.querySelectorAll('body *')].flatMap((element) => {
+      const targets = (element.getAttribute('aria-labelledby') ?? '').split(/\s+/).map((id) => document.getElementById(id)).filter((found) => found !== null);
+      const text = squash(element.textContent);
+      const named = element.matches(byContent);
+      const accessibleName = squash(targets.map((found) => found.textContent).join(' ')) || element.getAttribute('aria-label') || element.getAttribute('alt')
+        || element.getAttribute('title') || (named ? text : '');
+      return accessibleName ? [{ accessibleName, text: named ? text : '' }] : [];
+    });
+  });
   return { visible, accessible, elements };
 }
 
@@ -62,6 +58,7 @@ async function expectNamed(page: Page, screen: string, name: string, shown: bool
   for (const { accessibleName, text } of elements) {
     if (mentions(text).length > 0) expect(new Set(mentions(accessibleName)), `${screen}: the accessible name "${accessibleName}" against the visible "${text.slice(0, 80)}"`).toEqual(new Set(mentions(text)));
     expect(mentions(accessibleName).every((mention) => mention === name), `${screen}: the accessible name "${accessibleName}"`).toBe(true);
+    expect(mentions(accessibleName).length > 0 || mentions(text).length === 0, `${screen}: the accessible name "${accessibleName}" leaves out the contract in "${text.slice(0, 80)}"`).toBe(true);
   }
 }
 

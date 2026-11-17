@@ -1450,3 +1450,12 @@ Browser suite, `e2e/d8r/` (`today.spec.ts`, `states.spec.ts`, `rail.spec.ts`, `p
 - `npm run build:faults` and `npm run build:releases`: exit 0. `npx playwright test e2e/d8r/names.spec.ts`: 1 passed. `npx playwright test e2e/d8r`: 13 passed (1.2 min), both under the browser lock.
 - Reading applied: the Review card names a position "XYZ (Long 2 Dec 18 $55 Call)" and its button "Review XYZ Long 2 Dec 18 $55 Call ...". The check removes the side and quantity and requires the remaining contract text to be the W28 name. Raised as a question to the main session.
 - Typecheck, `tsc6`, lint (0 errors, 2 existing warnings), `lint:deps`: exit 0.
+
+## T8R.27-B2
+
+`e2e/d8r/names.spec.ts` now checks every element that has an accessible name, hidden or not, in one in-page pass, and reads `aria-labelledby` targets' text directly (so hidden drawer panels are covered). The name is the labelled-by text, else aria-label, alt or title, else, for buttons, links, summaries, headings and the matching roles, the content. Where the content names a contract, the name must name it too, in W28 form. The earlier tagging step (data-b8r5) is gone, so repeated calls on one page cannot share an index. The Review card position-label form from T8R.27-B1 is kept.
+
+- Red (a): a button `aria-label="Open"` around a span with the contract. B1 spec: `1 passed`. New spec: `1 failed`, `Detail: the accessible name "Open" against the visible "XYZ Dec 18 $55 Call"`.
+- Red (b): a hidden panel `aria-labelledby` a hidden target "XYZ 2026-12-18 55 Call". B1 spec: `1 passed`. New spec: `1 failed`, `Detail: the accessible name "XYZ 2026-12-18 55 Call"`.
+- No mutation: `e2e/d8r/names.spec.ts` 1 passed; `npx playwright test e2e/d8r`: 13 passed (1.1 min), under the browser lock. `npm run build:faults` and `npm run build:releases`: exit 0. No real misnamed contract was found on any screen.
+- Rows in `tdd-log/T8R.27-B2.md`.
