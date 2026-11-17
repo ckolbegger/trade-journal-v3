@@ -94,7 +94,7 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     expect(on(twoDates.requests, 'observations')).toEqual([GET_ALL]);
   });
 
-  it('should issue the same Trade Detail requests, bar the frame reads, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
+  it('should issue the same Trade Detail requests, bar the frame reads and the Underlying series read, for an expired and a live contract at one clock', { timeout: 120_000 }, async () => {
     const { d, app: first } = await onboardedAt(MONDAY_NEXT_1700);
     let app = first;
     const dueId = await earlyCall(app);
@@ -123,7 +123,11 @@ describe('T7.29 query count: the Review open and Trade Detail with Settlement Du
     // lookup. So the due Detail makes exactly the live one's requests less those the live one's frame read makes: its date-wide
     // `observations.getAll` and the `meta.get` of that read's snapshot. 18 requests (decision 103; before it, 24: the live 20, the
     // Mark lookup's 1 `meta.get` and 2 `openCursor`, and 1 more `getAll` for A111's Historical frame).
-    expect(due.tally).toEqual({ 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': PINNED['meta.get'] - 1, 'trades.get': 2 });
+    // A234 and I8R.7 (T8R.22): the Settlement Due Detail gains exactly one `series` read of its Underlying, from Yesterday to Today.
+    // That one read is the whole difference: `observations.getAll` x2 (the scan's byInstrumentDate range read, and the clock date's
+    // evidence read, the date-wide getAll) and one `meta.get` (that read snapshot's id). So `meta.get` is the live 11 less the
+    // frame read's 1, plus the series read's 1: 11.
+    expect(due.tally).toEqual({ 'catalog.getAll': 1, 'journalDebts.getAll': 1, 'journalDeclines.getAll': 1, 'journalDefinitions.getAll': 1, 'journalEntries.getAll': 1, 'journalTypes.getAll': 1, 'meta.get': PINNED['meta.get'], 'observations.getAll': 2, 'trades.get': 2 });
     expect('settlement' in live.view && live.view.settlement).toEqual([]);
     expect('settlement' in due.view && due.view.settlement).toHaveLength(1);
   });

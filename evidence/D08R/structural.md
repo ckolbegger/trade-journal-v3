@@ -455,3 +455,11 @@ The first run (session 09a2f606) hit the ChatGPT usage limit on every file. The 
 ## T8R.22
 
 Behavioral task; rows in `tdd-log/T8R.22.md`. `settlementUnderlying` on an Open Detail with `settlement` items and column dates, from one `series` read of the Underlying over the two column dates.
+
+## T8R.22-F1
+
+Structural; `tests/integration/d7/query-count.test.ts`, the T7.29 case at line 126. A234 and I8R.7: the Settlement Due Detail gains exactly one `series` read of its Underlying, so "the same requests" no longer held (due: `meta.get` 11, `observations.getAll` 2 more than the live-less-frame list).
+
+- Before: title "... should issue the same Trade Detail requests, bar the frame reads, for an expired and a live contract at one clock"; due tally `{ ..., 'meta.get': PINNED['meta.get'] - 1, 'trades.get': 2 }`.
+- After: title "... bar the frame reads and the Underlying series read ..."; due tally `{ ..., 'meta.get': PINNED['meta.get'], 'observations.getAll': 2, 'trades.get': 2 }`, with a comment naming A234 and I8R.7. The live assertion and every other assertion are unchanged.
+- The extra requests, all from the one `series` call (no other query-count proof reads a series, so the source was read): `observations.getAll` 1, the scan's `byInstrumentDate` range read (`historicalGaps`); `observations.getAll` 1, the clock date's evidence read (`evidenceFor`, because the series reaches the session's own date); `meta.get` 1, the read snapshot's id (one shared snapshot for both). Nothing else.
