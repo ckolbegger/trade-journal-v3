@@ -1488,3 +1488,31 @@ T8R.25-B4 is committed as `be57bed3` in lane C2.
 - Widths from 960 to about 1100 px are unmeasured. The drawer is narrower there, so the table might still overflow. These widths go into critic-3's brief.
 - The case's "read in full" claim is only partly asserted.
 - Rounding to whole pixels could make the case flake.
+
+## T8R.25-B5 returned; ocr
+
+T8R.25-B5 is committed as `13f0d83d` in lane C2.
+
+**Cause.** `evaluate.ts` built an option's Underlying condition through `markedWithUnderlying`. That function returns Unavailable whenever the contract's Mark is absent, even when the Underlying's own Mark exists.
+
+**Fix.**
+- `evaluate.ts` adds an optional `ConditionStatus.underlyingReading` (additive, A245).
+- The rail and Plan and Risk now show the current distance undated.
+- The dollar figures still need the contract's Mark (A109), so they keep the dated line. On a row that mixes the two, the dollar cell carries its own date, e.g. "$180.00 · 0.90R · Thu Oct 15 Marks".
+
+**Tests.** Three cases went red, then green. 42 browser specs passed.
+
+**Process slip.** The case "should read a crossed Underlying condition from the Underlying Mark alone" passed on its first run and had no mutation check. It is flagged in the log and goes in the final report.
+
+**ocr.** Session 1715b707-3b32-4b13-88e0-3ffba3bb9fd3: 6 files, 1 comment. Raw output: `ocr/T8R.25-B5-13f0d83d.json`.
+
+**Finding** (medium, bug, Valid): `plan-risk.props.ts:97` reads `underlyingReading` only when a dated line exists. Take a contract that has never had a Mark, with today's Underlying Mark in, and the Trade not awaiting its first Marks:
+- The rail shows the distance.
+- Plan and Risk shows "Mark missing".
+
+This becomes bug task **T8R.25-B8**, queued after T8R.25-B6 in lane C2.
+
+**Reviewer notes** (not ocr findings):
+- `underlyingReading` is not read by attention, Needs you alerts, the Trade List badges or the Review card. When the Underlying has crossed a Stop but the contract's Mark is missing, the rail reads "Breached · X past", while there is no alert, no badge and no band.
+- That is consistent with A109, because an Alert needs the dollar overrun. It still shows as an inconsistency on screen. It is recorded for the final report and for critic-3.
+- The guards, ADR 0001 and A245 all hold.

@@ -1,0 +1,193 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 171646,
+    "input_tokens": 170484,
+    "output_tokens": 1162,
+    "cache_read_tokens": 23296,
+    "elapsed": "44s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8,
+      "file_read_diff": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+      "content": "The current Underlying reading is only used when a dated fallback exists. If today's Underlying Mark is available but the contract has no prior usable Marks (and therefore no datedLine), evaluation can still supply underlyingReading, yet the drawer displays “Mark missing” instead of the known current distance. Read underlyingReading independently of `dated`, retaining the settlement guard, and only append the dated label to dollar figures when a fallback is actually used. Add a no-datedLine case to the new test.",
+      "existing_code": "    const currentReading = dated \u0026\u0026 !due ? view.current.evaluation.conditions.find((n) =\u003e n.id === c.id)?.underlyingReading : undefined;",
+      "start_line": 97,
+      "end_line": 97,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade analysis option evaluation and tests",
+      "files": [
+        "src/domain/trade-analysis/evaluate-option.test.ts",
+        "src/domain/trade-analysis/evaluate.ts"
+      ]
+    },
+    {
+      "label": "Plan risk drawer props and tests",
+      "files": [
+        "src/ui/cockpit/drawers/plan-risk.props.ts",
+        "src/ui/cockpit/drawers/plan-risk.test.tsx"
+      ]
+    },
+    {
+      "label": "Cockpit rail conditions props and tests",
+      "files": [
+        "src/ui/cockpit/rail/conditions.props.test.ts",
+        "src/ui/cockpit/rail/conditions.props.ts"
+      ]
+    }
+  ],
+  "session_id": "1715b707-3b32-4b13-88e0-3ffba3bb9fd3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1715b707-3b32-4b13-88e0-3ffba3bb9fd3",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "be57bed3",
+      "requested_head": "13f0d83d",
+      "resolved_base": "be57bed37baa86845ef881baab8f31f9c8cedead",
+      "resolved_head": "13f0d83d1011e2a04b928bbe586dfba160b5846a",
+      "exact_range": "be57bed37baa86845ef881baab8f31f9c8cedead..13f0d83d1011e2a04b928bbe586dfba160b5846a",
+      "source_artifact_sha256": "73bd6056432af5eb8b76bfad744c789e3a9ef594a84c55a87d9ab5fae997219e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "101eb15679d1457664591e47f464088faed2543d14ea0a46c9881a9297ff3e5f",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "1748a0d93822a08b287936182f24d009a48d64ec24e8d341414f057ed346d182"
+        },
+        {
+          "item_id": "38d0f6962db962607137a3a1e533ee5783d2b9885ebb19c626bcb6867b613614",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "e09d79bffef3c657ca3279bc20453e84c3d6d34c2cea7bf2dd0a752e560538d8"
+        },
+        {
+          "item_id": "4ac7a146e57ae017dc61894e9b41446d788659921d1c7fc18753a5a0ddc5d052",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "fingerprint": "ec614aaf4e2f06312899e0397eefdc255125b42d3496c9942dbc98b104cc17b3"
+        },
+        {
+          "item_id": "67bc7191830d2dd651ee92ab82b899755130b66cf26d3ba9dfe3200e9f262e99",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "17d02c57be537c430601d87981b822ca979482978cbd898e3e3621932c8017eb"
+        },
+        {
+          "item_id": "74643c471d4a51dc132401d89dba25320c3ac9ff57decd77d3e8f0b4ad61b6c8",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "2469be5339cb7f324fa50ed772cdcbb7a555772b85afa28d888e527868268ba7"
+        },
+        {
+          "item_id": "7529e2aa01119301eac7cfd17e7568d6c8ed0c2e2ab4e13931803677a7866692",
+          "path": "src/domain/trade-analysis/evaluate-option.test.ts",
+          "fingerprint": "3656b440f64d369b2481542967a5bbd358ef380eaec33ee0908a60525f08015f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "101eb15679d1457664591e47f464088faed2543d14ea0a46c9881a9297ff3e5f",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "1748a0d93822a08b287936182f24d009a48d64ec24e8d341414f057ed346d182"
+        },
+        {
+          "item_id": "38d0f6962db962607137a3a1e533ee5783d2b9885ebb19c626bcb6867b613614",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "e09d79bffef3c657ca3279bc20453e84c3d6d34c2cea7bf2dd0a752e560538d8"
+        },
+        {
+          "item_id": "4ac7a146e57ae017dc61894e9b41446d788659921d1c7fc18753a5a0ddc5d052",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "fingerprint": "ec614aaf4e2f06312899e0397eefdc255125b42d3496c9942dbc98b104cc17b3"
+        },
+        {
+          "item_id": "67bc7191830d2dd651ee92ab82b899755130b66cf26d3ba9dfe3200e9f262e99",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "17d02c57be537c430601d87981b822ca979482978cbd898e3e3621932c8017eb"
+        },
+        {
+          "item_id": "74643c471d4a51dc132401d89dba25320c3ac9ff57decd77d3e8f0b4ad61b6c8",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "2469be5339cb7f324fa50ed772cdcbb7a555772b85afa28d888e527868268ba7"
+        },
+        {
+          "item_id": "7529e2aa01119301eac7cfd17e7568d6c8ed0c2e2ab4e13931803677a7866692",
+          "path": "src/domain/trade-analysis/evaluate-option.test.ts",
+          "fingerprint": "3656b440f64d369b2481542967a5bbd358ef380eaec33ee0908a60525f08015f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "76ae5dddbe7d1d9a029b48ef3e64202e9ec1a856caf114fe9ff0c1aee7daaeee",
+          "path": "evidence/D08R/suite-runs/T8R.25-B5-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "96fd62713446bd8f5bcd6cb1e011fdabfc0276a28247ebecd441b2efc6cbb11c",
+          "path": "evidence/D08R/suite-runs/T8R.25-B5-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "bcd311bb230b26f3b36f2ad0e75971c535a726e485278091bd5f2b153bb568ef",
+          "path": "evidence/D08R/suite-runs/T8R.25-B5-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "d8b285434a84aa4d0115b7b09e62f91c3711f9b86c026e4da1d449c776fa2c95",
+          "path": "evidence/D08R/suite-runs/T8R.25-B5-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "ef2e66bef968a92dfec924793e492aea0aa12935b5e0a6599c3340a322915381",
+          "path": "evidence/D08R/tdd-log/T8R.25-B5.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 44076
+  }
+}
