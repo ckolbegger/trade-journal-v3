@@ -677,7 +677,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.14 | 1 | RA | In progress from `359e0498` | |
 | T8R.15 | 1 | JR | Done | `727fd53a` |
 | T8R.15-F1 | 1 | JR | Done | `17b8abc6` |
-| T8R.16 | 1 | JR | Not started | |
+| T8R.16 | 1 | JR | In progress from `db0352e9` | |
 | T8R.17 | 1 | JR | Not started | |
 | T8R.18 | 1 | BA | Done | `69582aaa` |
 | T8R.19 | 1 | BA | Committed `a471e993` (from `400b4b02`) | |

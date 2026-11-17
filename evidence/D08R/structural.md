@@ -417,3 +417,23 @@ T8R.19 notes: 3 cases plus one extra pass-through case in `value-trade.test.ts`.
 T8R.22's agent built both cases (case 2 a first-run pass, mutation-checked) and stopped before committing. Its lane tier failed one existing proof: `tests/integration/d7/query-count.test.ts:126`, T7.29, "should issue the same Trade Detail requests, bar the frame reads, for an expired and a live contract at one clock". A234's Underlying `series` read gives the expired Detail extra requests (seen as two `observations.getAll` reads and one more `meta.get`). The plan's I8R.7 records that the Settlement Due Detail gains exactly that one read, so T7.29's "the same requests" premise no longer holds, and the plan's rule that existing proofs keep their exact lists cannot hold for T7.29.
 
 The main session's implementation-level decision: T7.29 keeps an exact comparison, and the expired list equals the live list plus exactly the one series read's requests. If those requests are more than one series read needs, that is a stop. A fresh agent commits T8R.22 and makes this change as **T8R.22-F1**. The first agent still had background work in the lane and was stopped. Listed for the final report.
+
+## Merge run: wave 1, batch 1 (`wave1-merge1`)
+
+Complete cumulative run on `db0352e9`, 2026-11-17 02:19 to 02:34 EST, by `suite-runner`. It covers T8R.18, T8R.13, T8R.21, T8R.15 and T8R.15-F1, merged since `wave0-merge` (`11c5c14a`). Browser tier: full (`browser-auto 11c5c14a`; the first matching path was `e2e/d2/ui-alignment.spec.ts`). `run-complete.sh`: run complete.
+
+| Suite | Result |
+|---|---|
+| Unit | 194 files, 2061 tests passed |
+| Integration | 118 files, 258 tests passed |
+| Browser 1 | 125 passed, **1 failed** (5.3m) |
+| Browser 2 | 119 passed, **1 failed** (7.6m) |
+| Checks | 14 of 14 exit 0 |
+
+Failures:
+- `e2e/d2/ui-alignment.spec.ts:1730` T2.64, at line 1763: "description-list values above the Fulfillment row", expected > 0, received 0.
+- `e2e/d5/detail-debt.spec.ts:7` B5.3, at line 25: `detail.journal(page).getByText('Answered', { exact: true })` was not found.
+
+Tech debt item 11's flake did not occur. Both failures are in the Journal drawer, so the suspect is T8R.15. One targeted run, before and after T8R.15, is pinning them. The fix goes to a fresh `tdd-task` from the current head, failing test first.
+
+Load note: T8R.19-F1's first lane-tier run had two 5-second timeouts (`tools/wording-rules.test.ts`, `src/app/bench-generator.test.ts`). Both passed alone, and the whole tier passed on rerun. Several lanes were running suites at once.
