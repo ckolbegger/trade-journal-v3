@@ -151,7 +151,19 @@ describe('Trade Summary', () => {
     ]);
     expect(without(await detailed(views, planned.tradeId), 'summary')).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'payoff', 'plan', 'tradeId']);
     expect(without(await detailed(views, open.tradeId), 'summary', 'netCost')).toEqual([
-      'baseline', 'current', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'feeReconciliation', 'fees', 'findings', 'heldQuantity', 'journal', 'labels', 'lastActivity', 'legFulfillment', 'lifecycle', 'lotMatches', 'marksColumns', 'payoff', 'plan', 'positionChanges', 'positions', 'realizedToDate', 'settlement', 'tradeId',
+      'baseline', 'current', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'feeReconciliation', 'fees', 'findings', 'heldQuantity', 'journal', 'labels', 'lastActivity', 'legFulfillment', 'lifecycle', 'lotMatches', 'marksColumns', 'openAverage', 'payoff', 'plan', 'positionChanges', 'positions', 'realizedToDate', 'settlement', 'tradeId',
     ]);
+  });
+});
+
+describe("getTradeDetail: open lots' average (A236)", () => {
+  it('should give a stock Trade the Trade Summary price', async () => {
+    const { views, confirm, enter } = await summaryStack();
+    const trade = await confirm('XYZ');
+    await enter(trade, '60', '50.10');
+    const detail = await detailed(views, trade.tradeId);
+
+    expect(detail['openAverage']).toEqual(Rational.of(501n, 10n));
+    expect(detail['openAverage']).toEqual((detail['summary'] as { price: Rational }).price);
   });
 });

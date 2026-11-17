@@ -585,3 +585,13 @@ Behavioral task (4 cases); rows in `tdd-log/T8R.5.md`. Notes:
 ## T8R.5-B1
 
 Behavioral bug task (1 case); rows in `tdd-log/T8R.5-B1.md`. First-run pass with a two-part mutation, no product change. The case builds a Trade with a $55 call and a $60 call and checks that each open lot and the Lot Match name their own contract.
+
+## T8R.23 Trade Views: the open lots' average
+
+- **Helper and field:** `openLotsAverageOf(derived)` in `src/coordinators/trade-views/trade-views.ts` is the quantity-weighted Open Lot price, fees excluded and unrounded; it is absent with no open quantity. `getTradeDetail` sets `openAverage` on the Open Detail only when `settlement.length === 0`, so a Settlement Due Detail and a Closed Detail carry no field (A236).
+- **Refactor:** `openItem`'s `averageOpenCost` now calls `openLotsAverageOf` in place of its inline copy of the same sum.
+- **First-run pass, flagged:** "should give a stock Trade the Trade Summary price" passed on its first run, because case 1's helper already gives a stock Trade its lots' average. Mutation: added 1 to the average in `openLotsAverageOf`. Command: `npx vitest run src/coordinators/trade-views/trade-summary.test.ts -t "should give a stock Trade the Trade Summary price"`. It failed on the expected value (off by 1); restored, green again.
+- **Renamed cases:** the planned names carry apostrophes, `$` and `+`, which break `-t` filtering. "should give O-C3+'s open lots' average, $2.65" is "should give O-C3+ open lots average 2.65" (run with the filter "open lots average 2.65"). "should give a stock Trade the Trade Summary's price" is "should give a stock Trade the Trade Summary price". The describe name is "getTradeDetail: open lots' average (A236)".
+- **Key list:** `'openAverage'` was added to the Open Detail's exact key list in "should keep every other field of every item and Detail unchanged" (`trade-summary.test.ts`): main-session decision, additive (A245). The comparison stays exact.
+- **Note for T8R.8:** `openAverage` is absent on an Open Detail with no open lots, so the track must handle an undefined field.
+- **Lane tier:** `.claude/scripts/full-suite.sh evidence/D08R T8R.23 lane`: unit 2065 passed, integration 258 passed, 14 of 14 checks exit 0.

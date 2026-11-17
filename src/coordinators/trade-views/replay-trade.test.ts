@@ -8,7 +8,7 @@ import { beginSemanticTransaction } from '../../persistence/index.ts';
 import { breakFirstExecution, reviewStack } from '../../../tests/support/review-fixture.ts';
 import type { ConfirmPlanCommand, PositionChangeMember } from '../trade-workflows/index.ts';
 import type { InstrumentPosition } from '../../domain/trade-analysis/index.ts';
-import { createTradeViews, type TradeReplayView } from './index.ts';
+import { createTradeViews, type OpenTradeDetail, type TradeReplayView } from './index.ts';
 import { settlementExpirationOf } from './replay-trade.ts';
 
 // O-C3 (D08P section 5): a Long Call on XYZ, 18 Dec 2026 55 Call. Buy 2 @ 2.00 Mon 10-12 10:00 fee 1.30, sell 1 @ 3.00
@@ -273,5 +273,16 @@ describe('replayTrade: Mark provenance (revision 93)', () => {
     expect(callMark(0)).toEqual({ kind: 'Available', mark: { price: '2.1', revisionNumber: 1, source: 'Manual', savedAt: THURSDAY_1700 } });
     expect(callMark(0)).not.toHaveProperty('mark.correctionReason');
     expect(callMark(3)).toEqual({ kind: 'Available', mark: { price: '3.25', revisionNumber: 2, source: 'Manual', savedAt: THURSDAY_1700, correctionReason: 'Typo' } });
+  });
+});
+
+describe("getTradeDetail: open lots' average (A236)", () => {
+  it('should give O-C3+ open lots average 2.65', async () => {
+    const { stack, record, detail } = await oc3Stack(THURSDAY_1830);
+    // O-C3+: a third contract bought Thursday 18:15 at 3.30 joins the one open lot at 2.00.
+    await record('Buy', '2026-10-15T22:15:00Z', '1', '3.30', '0.65', stack.reflection);
+    const { view } = await detail();
+
+    expect((view as OpenTradeDetail).openAverage).toEqual(Rational.of(53n, 20n));
   });
 });

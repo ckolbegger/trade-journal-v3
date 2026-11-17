@@ -497,18 +497,25 @@ function firstMarksDueOf(session: MarketDataReadSession, evaluation: TradeEvalua
   return session.covered && awaitingClose && atEntry !== null && !datedLine && settlement.length === 0 ? session.nextSessionDate : undefined;
 }
 
+// The quantity-weighted Open Lot price, fees excluded; absent with no open quantity. The Trade Summary's price is this value.
+function openLotsAverageOf(derived: DerivedTradeState): Rational | undefined {
+  const lots = derived.positions.flatMap((p) => p.openLots);
+  const openQuantity = sum(lots.map((lot) => lot.quantity));
+  return openQuantity.compare(Rational.of(0n)) === 0 ? undefined : sum(lots.map((lot) => lot.quantity.mul(lot.price))).div(openQuantity);
+}
+
 function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, expected: ExpectedMark, evaluation: TradeEvaluation, settlement: readonly SettlementItem[], datedLine: DatedLine | undefined): OpenTradeItem {
   // The signed open quantity at the quantity-weighted Open Lot price.
   const lots = derived.positions.flatMap((p) => p.openLots);
   const openQuantity = sum(lots.map((lot) => lot.quantity));
-  const held = openQuantity.compare(Rational.of(0n)) !== 0;
+  const average = openLotsAverageOf(derived);
   return {
     tradeId: summary.tradeId,
     underlying: summary.underlying,
     ...labels,
     openQuantity,
     plannedQuantity: sum(analysis.plan.legs.map((l) => decimal(l.quantity))),
-    averageOpenCost: held ? { kind: 'Value', value: sum(lots.map((lot) => lot.quantity.mul(lot.price))).div(openQuantity) } : { kind: 'NotApplicable', reason: 'NoRemainingPosition' },
+    averageOpenCost: average ? { kind: 'Value', value: average } : { kind: 'NotApplicable', reason: 'NoRemainingPosition' },
     ...optional('summary', openSummaryOf(analysis, derived)),
     netCost: derived.netCost,
     incurredFees: derived.fees.incurredOpening,
@@ -854,7 +861,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const expiration = settlement.length === 0 ? expirationLineOf(analysis, 'Expires', asOf) : undefined;
         const columns = marksColumnsOf(session);
         const settlementUnderlying = settlement.length > 0 && columns ? await settlementUnderlyingOf(session, analysis.plan.underlying, columns) : undefined;
-        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), ...optional('marksColumns', columns), ...optional('settlementUnderlying', settlementUnderlying), current };
+        // The open lots' average is the Trade Summary's price, for the tracks; a Settlement Due Detail has no tracks (A236).
+        const openAverage = settlement.length === 0 ? openLotsAverageOf(derived) : undefined;
+        const view: OpenTradeDetail = { ...detailWithoutValuation(planned, analysis, derived, withDueStatus(narrative, closes), lastActivity, settlement), ...optional('contractExpiration', expiration), ...optional('marksColumns', columns), ...optional('settlementUnderlying', settlementUnderlying), ...optional('openAverage', openAverage), current };
         return { binding, view, ...optional('marketDataSnapshotId', snapshotIdOf(session)) };
       });
     },
