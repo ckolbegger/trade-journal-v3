@@ -2,6 +2,19 @@
 
 Every revision of the frozen plan, newest first, one entry each. Each revision is a commit tagged `claude-opus-5.5-plan-r<n>`. The freeze record in `implementation-plan.md` ("Immutable revision") names only the current revision. A new revision adds its entry at the top of this list and replaces the freeze record's entry. Edits to a breakdown's Progress section alone are not revisions (decision 100).
 
+- Revision 104: the commit tagged `claude-opus-5.5-plan-r104` (revision 103 plus decision 115). The user agreed D8R's breakdown on 2026-11-17, after answering its six questions one at a time on 2026-11-15.
+  - **Decision 115:** D8R, the Trade Detail refactor, runs after D8 and before D9, from [D08R-trade-detail-refactor.md](D08R-trade-detail-refactor.md): 28 tasks in three waves and eleven lanes, an agent cap of six, one breakdown with a checkpoint critic.
+  - **The answers:**
+    - Today's column dates come from Market Data's read session through Trade Views; after Thursday's close, Today is Thursday (P110).
+    - `nearest` is removed, and its 90 lines leave five backup fixtures' expected views (P111).
+    - Trade Detail's Journal leaves out the Trade Anchor (P112).
+    - "Awaiting the Mon Oct 12 close" (P113, W34). A price is a Mark, never a "close"; the end of a session is "the close".
+    - Contract names carry the full year only for a later year, and screen readers read what is shown; the Trade Summary line follows (P114, W28).
+    - One breakdown (P115).
+  - **The specs:** `specs/design/market-data.md`'s read-session paragraph names the previous session and a current context's as-of exchange date; `specs/design/ui-contract.md`'s Journal-timeline paragraph lets Trade Detail leave out the Trade Anchor. No line moved. The spec map's S124 (2,610 to 2,776) and S211 (1,216 to 1,396) counts changed, and the reading lists and cost table were regenerated. No tag changed.
+  - **Amended in place:** decision 113 (3), questions one at a time (D8 retro finding 3); tech debt item 24 (T8R.16 fixes it); the D7 approved words' C2, C5 and C6 (a note); D08P's status (a note naming what D8R reverses); the deliverable summary, a D8R definition, and the freeze record.
+
+  No acceptance scenario changes status. No stored data, schema or backup version changes; the one fixture change is the `nearest` deletion. The next decision is 116. [D08R-handoff.md](D08R-handoff.md) starts the implementing session.
 - Revision 103: the commit tagged `claude-opus-5.5-plan-r103` (revision 102 plus decision 114). After the `claude-opus-5.5-d8` tag, at the user's request to carry D8's answered questions into the plan.
   - **D8's 29 answers are recorded in the D8 breakdown.**
     - Section 1.6 lists where each one went: the approved words, the follow-up tasks that deviated from the frozen task list, A229 (failure logging) and the known limits (Q12, Q16).

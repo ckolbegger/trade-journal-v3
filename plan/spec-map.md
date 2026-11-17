@@ -18,40 +18,42 @@ This table is the source of truth. After changing a tag or class here, regenerat
 
 **Revision 92** (2026-11-13) added one clause to S124's read-session paragraph (the next session). No line moved, and only S124's character count changed (2,471 to 2,610). No tag changed. The reading lists and the table below were regenerated.
 
+**Revision 104** (2026-11-15, D8R's P110 and P112) added two sentences: S124's read-session paragraph names the session before its trading date and a current context's as-of exchange date, and S211's Journal-timeline paragraph lets Trade Detail leave out the Trade Anchor. No line moved. S124's character count changed from 2,610 to 2,776 and S211's from 1,216 to 1,396. No tag changed (D8R has no tag, its breakdown's A244). The reading lists and the table below were regenerated.
+
 ## Reading cost per deliverable
 
 Characters of spec text a session reads (core plus tagged), and an estimate in tokens at about 2.4 characters per token. All of `specs/` is 316,457 bytes (every `.md` file, as of 2026-11-10).
 
 | Deliverable | Core | Tagged (non-core) | Total characters | ≈ Tokens |
 |---|---|---|---|---|
-| D1 | 151,084 | 42,967 | 194,051 | 81K |
-| D2 | 151,084 | 49,004 | 200,088 | 83K |
-| D4 | 151,084 | 66,633 | 217,717 | 91K |
-| D5 | 151,084 | 66,694 | 217,778 | 91K |
-| D6 | 151,084 | 73,018 | 224,102 | 93K |
-| D7 | 151,084 | 73,905 | 224,989 | 94K |
-| D8 | 151,084 | 57,463 | 208,547 | 87K |
-| D9 (provisional) | 151,084 | 8,009 | 159,093 | 66K |
-| D10 (provisional) | 151,084 | 40,608 | 191,692 | 80K |
-| D11 (provisional) | 151,084 | 21,717 | 172,801 | 72K |
-| D12 (provisional) | 151,084 | 32,755 | 183,839 | 77K |
-| D13 (provisional) | 151,084 | 28,578 | 179,662 | 75K |
-| D14 (provisional) | 151,084 | 16,641 | 167,725 | 70K |
-| D15 (provisional) | 151,084 | 32,322 | 183,406 | 76K |
-| D16 (provisional) | 151,084 | 18,430 | 169,514 | 71K |
-| D17 (provisional) | 151,084 | 22,558 | 173,642 | 72K |
-| D18 (provisional) | 151,084 | 8,307 | 159,391 | 66K |
-| D19 (provisional) | 151,084 | 12,140 | 163,224 | 68K |
-| D20 (provisional) | 151,084 | 45,101 | 196,185 | 82K |
-| D21 (provisional) | 151,084 | 40,188 | 191,272 | 80K |
-| D22 (provisional) | 151,084 | 29,210 | 180,294 | 75K |
-| D23 (provisional) | 151,084 | 7,514 | 158,598 | 66K |
-| D24 (provisional) | 151,084 | 17,656 | 168,740 | 70K |
-| D25 (provisional) | 151,084 | 16,444 | 167,528 | 70K |
-| D26 (provisional) | 151,084 | 10,291 | 161,375 | 67K |
-| D27 (provisional) | 151,084 | 19,613 | 170,697 | 71K |
-| D28 (provisional) | 151,084 | 6,314 | 157,398 | 66K |
-| RC (provisional) | 151,084 | 5,112 | 156,196 | 65K |
+| D1 | 151,264 | 42,967 | 194,231 | 81K |
+| D2 | 151,264 | 49,004 | 200,268 | 83K |
+| D4 | 151,264 | 66,799 | 218,063 | 91K |
+| D5 | 151,264 | 66,860 | 218,124 | 91K |
+| D6 | 151,264 | 73,184 | 224,448 | 94K |
+| D7 | 151,264 | 74,071 | 225,335 | 94K |
+| D8 | 151,264 | 57,629 | 208,893 | 87K |
+| D9 (provisional) | 151,264 | 8,175 | 159,439 | 66K |
+| D10 (provisional) | 151,264 | 40,774 | 192,038 | 80K |
+| D11 (provisional) | 151,264 | 21,883 | 173,147 | 72K |
+| D12 (provisional) | 151,264 | 32,921 | 184,185 | 77K |
+| D13 (provisional) | 151,264 | 28,578 | 179,842 | 75K |
+| D14 (provisional) | 151,264 | 16,641 | 167,905 | 70K |
+| D15 (provisional) | 151,264 | 32,488 | 183,752 | 77K |
+| D16 (provisional) | 151,264 | 18,430 | 169,694 | 71K |
+| D17 (provisional) | 151,264 | 22,558 | 173,822 | 72K |
+| D18 (provisional) | 151,264 | 8,307 | 159,571 | 66K |
+| D19 (provisional) | 151,264 | 12,306 | 163,570 | 68K |
+| D20 (provisional) | 151,264 | 45,101 | 196,365 | 82K |
+| D21 (provisional) | 151,264 | 40,188 | 191,452 | 80K |
+| D22 (provisional) | 151,264 | 29,210 | 180,474 | 75K |
+| D23 (provisional) | 151,264 | 7,514 | 158,778 | 66K |
+| D24 (provisional) | 151,264 | 17,656 | 168,920 | 70K |
+| D25 (provisional) | 151,264 | 16,444 | 167,708 | 70K |
+| D26 (provisional) | 151,264 | 10,291 | 161,555 | 67K |
+| D27 (provisional) | 151,264 | 19,613 | 170,877 | 71K |
+| D28 (provisional) | 151,264 | 6,314 | 157,578 | 66K |
+| RC (provisional) | 151,264 | 5,112 | 156,376 | 65K |
 
 ## Entries
 
@@ -263,7 +265,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S121 | 3–24 | Contract | 1,346 | core — Module contract/purpose section. | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D19 | Market Data contract: owns closing evidence, acknowledgments, precedence, recovery, provider config; Pricing Provider port. |
 | S122 | 25–53 | Observation model | 1,456 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D16, D19 | Observation keys and sources, Mark/Daily Bar resolution precedence, Stale context, Expected Mark Date semantics. |
 | S123 | 54–86 | Manual writes and precedence | 2,296 | tagged | D4, D5, D7, D8 | D10, D11, D19 | save intentions: Manual Mark, override, correction, assert/withdraw unavailable; Manual stickiness; provider refresh rules. |
-| S124 | 87–116 | Query contract | 2,610 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated; read session (`openReadSession`, decision 101). |
+| S124 | 87–116 | Query contract | 2,776 | tagged | D4, D5, D6, D7, D8 | D9, D10, D11, D12, D15, D19 | query family ResolveFrames, InspectObservations, ReadSeries; MarketDataSnapshotId, ExpectedSnapshot; gaps never interpolated; read session (`openReadSession`, decision 101). |
 | S125 | 117–139 | Automatic recovery | 1,974 | tagged | D4, D5, D6, D7, D8 | D11 | recover: enumerate sessions, find gaps, bounded provider fetch, Manual preserved, diagnostics only; NotConfigured without provider. |
 | S126 | 140–150 | Daily Bar use | 537 | tagged | D4, D7 | D9, D11, D12 | Daily Bar evidence rules for condition checks (high/low, synchronized Marks); Bars never alter valuation. |
 | S127 | 151–154 | Provider configuration | 550 | tagged | D8 | D11 | Provider configuration: zero or one provider, revisioned views, write-only credential never exported or logged. |
@@ -390,7 +392,7 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 | S208 | 47–57 | View states | 825 | core — Shared UI state rules. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Loading, Ready, Empty, Error view states distinguished from domain status values. |
 | S209 | 58–69 | Installation and Runtime Readiness | 2,412 | core — Runtime Readiness UI gating applies to every mutating control. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, RC | UI for readiness pending, install affordance, protection warning, Unsupported, Recovery Only, Integrity Blocked, backup claims. |
 | S210 | 70–81 | Forms and evidence capture | 1,053 | core — Form rules apply to every form-bearing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Accessible forms, chip semantics, exact definition rendering, no implicit evidence, Save as boundary, Hold preselect. |
-| S211 | 82–89 | Trade and Journal presentation | 1,216 | core — Trade Detail and Journal presentation is extended by most deliverables. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Distinguish Plan, Leg, Position Change, Execution, Position, Lot; Trade Detail concepts; Journal timeline display. |
+| S211 | 82–89 | Trade and Journal presentation | 1,396 | core — Trade Detail and Journal presentation is extended by most deliverables. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Distinguish Plan, Leg, Position Change, Execution, Position, Lot; Trade Detail concepts; Journal timeline display. |
 | S212 | 90–99 | Numbers, availability, and graphs | 1,140 | core — Calculation-availability rendering is used by every figure-showing deliverable. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Unrounded values, distinct availability rendering, Missing evidence display, replay candles/points/gaps, accessible graphs. |
 | S213 | 100–107 | Corrections and destructive actions | 1,202 | tagged | D4, D5, D8 | D13, D14, D15, D17, D18, D19, D20, D21, D23, D26, D28 | Edit/View history, previewed Replace/Void/Rebuild, two-step backup verify, whole-Workspace Restore confirmation and safety backup. |
 | S214 | 108–122 | Screenshot limitations | 731 | core — Applies to all UI work referencing screenshots. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | Prototype screenshot behaviors not to copy; screenshots omit many normative flows. |

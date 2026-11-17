@@ -2,7 +2,7 @@
 
 Generated from [plan/spec-map.md](../spec-map.md) by `.claude/scripts/spec-reading-lists.py`; do not edit by hand.
 
-Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). 122 entries, 156,196 characters (≈65K tokens).
+Read each range in full with the Read tool (`offset` = first line, `limit` = last − first + 1). 122 entries, 156,376 characters (≈65K tokens).
 
 - `specs/README.md`: 1–100
 - `specs/acceptance/acceptance-contract.md`: 3–31, 173–179, 402–415, 430–518

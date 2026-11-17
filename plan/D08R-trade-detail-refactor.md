@@ -1,8 +1,8 @@
 # D08R — The Trade Detail refactor: task breakdown
 
-Definition: not yet in the implementation plan. Once this breakdown is agreed, plan revision 104 adds a D8R row to the deliverable summary and a D8R definition after D8 and before D9 (section 1.2). D8R carries out the Trade Detail audit (`research/trade-detail-audit.html`, written 2026-11-14 from `ca839e70`). It removes the leftovers of the pre-cockpit page, moves misplaced parts to their views, gives every Trade with a Position a Today view, and names every contract in the broker style. It runs after D8 (`claude-opus-5.5-d8`, `be736f8b`) and before D9. It is drafted from `plan/D08R-drafting-handoff.md` on `claude-opus-5.5` at `6b11c8bc`.
+Definition: [implementation plan, D8R](implementation-plan.md#d8r--the-trade-detail-refactor), added by plan revision 104 (decision 115). D8R carries out the Trade Detail audit (`research/trade-detail-audit.html`, written 2026-11-14 from `ca839e70`). It removes the leftovers of the pre-cockpit page, moves misplaced parts to their views, gives every Trade with a Position a Today view, and names every contract in the broker style. It runs after D8 (`claude-opus-5.5-d8`, `be736f8b`) and before D9. It is drafted from `plan/D08R-drafting-handoff.md` on `claude-opus-5.5` at `6b11c8bc`.
 
-Status: **Draft, not agreed** (2026-11-15). The six open questions in section 12, and question 5's follow-up, were answered the same day, one at a time; the breakdown is updated to match. It awaits the user's agreement as a whole. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
+Status: **breakdown agreed by the user on 2026-11-17** (plan revision 104, decision 115). The six open questions in section 12, and question 5's follow-up, were answered on 2026-11-15, one at a time, and the breakdown was updated to match before it was agreed. The next plan decision is 116. Numbering continues from D8: P108 and A230. The approved words continue from D08P's W20.
 
 **In the trader's words.** Each part of Trade Detail shows each thing once, in the place you'd look for it:
 - **Today** becomes one Marks table (Today, Yesterday, Change) on every Trade that holds or held a Position, including Settlement Due and Closed ones.
@@ -33,18 +33,18 @@ The user has already decided (handoff section 4): D8R is a swarm; the whole audi
 | P115 | **Size check** (section 1.4; open question 6, **answered 2026-11-15: one breakdown**). | **One breakdown, with a checkpoint critic (T8R.25)** after the UI tasks and before the tail. | Split at the backend seam (section 1.4). Open question 6. |
 | P116 | **No figure disappears between merges.** | **A task that removes a figure is blocked by the task that gives it its new home** (section 4.1). T8R.9 removes Today's At entry, dated card and condition lines only after Plan and Risk and the rail show them. T8R.6 merges only after Price History shows the provenance it removes from Today. | Remove and add in one task: fewer edges, but one task then owns files in two lanes. |
 
-### 1.2 Amendments to other plan sections (applied in revision 104, once agreed)
+### 1.2 Amendments to other plan sections (applied in revision 104)
 
 - **Implementation plan.**
   - A D8R row in the deliverable summary, after D8: "The Trade Detail refactor (decision 115) | 0 (refactor)".
   - A D8R definition after D8 and before D9.
   - **Decision 113 (3)**, amended: pending questions are asked one at a time and the others queued, as `.claude/docs/implementing.md` "Pending decisions" now says (D8 retro finding 3).
   - Tech debt item 24 carries a note naming T8R.16, which fixes it.
-- **Specs** (each needs the user's agreement; section 12):
+- **Specs** (agreed in section 12, and applied by revision 104 itself, so no task edits `specs/`):
   - `specs/design/market-data.md`, the read-session paragraph (line 99): the session also names the session before its trading date from the calendar alone, and carries the as-of exchange date (P110).
   - `specs/design/ui-contract.md` line 88: Trade Detail's Journal leaves out a Trade Anchor (P112).
   - The spec map's line ranges and character counts for both files, and the regenerated reading lists.
-- **D08P breakdown.** These are reversed or amended, with a note on each pointing here:
+- **D08P breakdown.** These are reversed or amended, as a note under D08P's status line says:
   - **Assumptions:** A206 (the rail's figure is now a price distance: A230); A207 (`nearest` removed: T8R.20); A217 (the drawers per state: section 1.6, W1 amended); A223 (reversed: the value at expiration moves to Plan and Risk, the distance on the Underlying to the rail).
   - **Words:** W1 (drawers per state), W3 (the dated line), W4 and W18 (contract names), W5 and W6 (the rail's conditions), W8 and W19 (Today), W10 (Journal items), W16 (footer).
   - **Tasks and their cases:** T8P.5 (its "leave out Today" case), T8P.6 (reversed), T8P.13, T8P.14, T8P.15 (Max reward's R in the rail), T8P.16 (cases 1 and 5), T8P.17 (case 2), T8P.18 (case 3), T8P.29, T8P.31 (cases 1, 2, 3, 4, 6 and 7). Each D8R task names the earlier cases it changes.
@@ -206,11 +206,11 @@ Kind: **B** = behavioral (TDD, red then green per case), **S** = structural (exa
 | T8R.17 | Journal: "1 active Deviation. See Plan and Risk." (item 3) | 1, JR | B | T8R.16 (lane order), T8R.11 | `TradeDetail` | none |
 | T8R.18 | Trade Analysis: the distance to each trigger (item 6) | 1, BA | B | T8R.1 | `TradeAnalysis.evaluate`; `getTradeDetail` | **Trade Analysis:** `trigger` (A230) |
 | T8R.19 | Trade Analysis: `AwaitingClose` names the session that brings the Marks (item 14) | 1, BA | B | T8R.18 (lane order), T8R.21 | `TradeAnalysis.evaluate`; `getTradeDetail` | **Trade Analysis:** `due`; **valuation coordinator:** passes `nextSessionDate` (A243) |
-| T8R.20 | Remove `nearest` (item 6) | 1, BA | S | T8R.19 (lane order), T8R.14; open question 2 | `typecheck`, `verify:fixtures`, `test:integration` | **Trade Analysis:** field removed; **fixtures:** 90 lines deleted (P111) |
-| T8R.21 | Today's column dates (items 2, 8) | 1, BV | B | T8R.1; open question 1 | read session; `getTradeDetail` | **Market Data:** `previousSessionDate`, `exchangeDate`; **Trade Views:** `marksColumns` (A232); **spec:** `market-data.md` (P110) |
+| T8R.20 | Remove `nearest` (item 6) | 1, BA | S | T8R.19 (lane order), T8R.14 | `typecheck`, `verify:fixtures`, `test:integration` | **Trade Analysis:** field removed; **fixtures:** 90 lines deleted (P111) |
+| T8R.21 | Today's column dates (items 2, 8) | 1, BV | B | T8R.1 | read session; `getTradeDetail` | **Market Data:** `previousSessionDate`, `exchangeDate`, as `market-data.md` says since revision 104 (P110); **Trade Views:** `marksColumns` (A232) |
 | T8R.22 | Trade Views: the Underlying's Marks on a Settlement Due Trade (item 8) | 1, BV | B | T8R.21 (lane order) | `getTradeDetail` | **Trade Views:** `settlementUnderlying` (A234) |
 | T8R.23 | Trade Views: the open lots' average (item 13) | 1, BV | B | T8R.22 (lane order) | `getTradeDetail` | **Trade Views:** `openAverage` (A236) |
-| T8R.24 | The before-Marks words (item 14) | 2 | B | T8R.19, every wave-1 UI task; open question 4 | `calculation-words`; the screens that show it | none |
+| T8R.24 | The before-Marks words (item 14) | 2 | B | T8R.19, every wave-1 UI task | `calculation-words`; the screens that show it | none |
 | T8R.25 | Checkpoint browser critic (P115) | 2 | S | T8R.24 | fresh critic report | none |
 | T8R.26 | Node integration suite | 2 | S | T8R.18 to T8R.23 (may start in wave 1) | `test:integration` | none (tests only) |
 | T8R.27 | Browser suite | 2 | S | T8R.24 | `test:e2e` | none (tests only) |
@@ -237,7 +237,7 @@ A lane is one git worktree (`.claude/worktrees/d08r-<lane>`) on one branch (`d08
 | RA | T8R.13, T8R.14 | `src/ui/cockpit/rail/identity*`, `rail/pnl*`, `rail/conditions*`, `styles/rail-a.css`, `styles/rail-b.css`; `e2e/support/detail/rail-a.ts`, `rail-b.ts`; `e2e/d8p/cockpit.spec.ts`; the rail lines of `TradeDetail.test.tsx` and `Placed.test.tsx` |
 | JR | T8R.15, T8R.16, T8R.17 | `drawers/journal*`, `src/ui/cockpit/journal-cards*`, `styles/journal.css`; `trade-detail/Journal.test.tsx`, `Journal.tsx`; `e2e/support/detail/journal.ts`; the Journal lines of `e2e/d8p/history.spec.ts`, `e2e/d8p/support.ts:4`, `e2e/d2/ui-alignment.spec.ts:1141`, `Position.test.tsx:76–82,181`, `Cockpit.test.tsx:161`, `TradeDetail.test.tsx:33` |
 | BA | T8R.18, T8R.19, T8R.20 | `src/domain/trade-analysis/`, `src/domain/calculation-result/`, `src/coordinators/valuation/`; `tests/integration/d8p/detail.test.ts` (its `nearest` lines); the five backup fixtures' `expected-views.json` (T8R.20 only) |
-| BV | T8R.21, T8R.22, T8R.23 | `src/modules/market-data/market-data.ts` and its tests (T8R.21); `src/coordinators/trade-views/`; `specs/design/market-data.md` and the spec map (T8R.21, once agreed); `tests/integration/` support files it extends |
+| BV | T8R.21, T8R.22, T8R.23 | `src/modules/market-data/market-data.ts` and its tests (T8R.21); `src/coordinators/trade-views/`; `tests/integration/` support files it extends |
 
 **Shared files, and how they are split or sequenced.**
 - **`Cockpit.tsx`.** T8R.2 makes every shell change in wave 0: the drawers per state, the Settlement Due current-Marks branch moved from Position into Today (T8R.7 then replaces it), and a drawer request (select a drawer, focus a heading) beside the existing `ReflectRequestContext`, which T8R.17 uses. In wave 1, only T8R.11 touches it, to delete one line.
@@ -604,9 +604,9 @@ Decision 111's swarm rules apply unchanged, with D08P's tooling: lane worktrees,
 
 ---
 
-## 12. Open questions
+## 12. Open questions (all answered 2026-11-15)
 
-Asked one at a time, in this order; each answer is recorded here.
+Asked one at a time, in this order; each answer is recorded here. None is open.
 
 1. **Today's column dates (P110).** Should Market Data's read session name the session before its date and the as-of exchange date, with a spec amendment, so Trade Views can give Today's column dates? Recommended: yes. **Answered 2026-11-15: yes (a).** The user's rule: reviewing on Thu Nov 19 after the close, Today is Thu Nov 19, not the Friday session that hasn't started; the audit's `pending.date` would give Friday.
 2. **`nearest` and the frozen fixtures (P111).** Remove the field and delete its 90 lines from five frozen backup fixtures, or keep it unread? Recommended: remove. **Answered 2026-11-15: remove (a).** Only the expected-views files change; the backup data does not.
