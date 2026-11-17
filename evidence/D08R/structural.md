@@ -1395,3 +1395,20 @@ B2's brief lets it clear the tags inside the tag step it rewrites. The other two
 | Browser 2 | 121 passed (7.6 min) |
 
 `run-complete.sh` confirms the run is complete, and there was no flake. Next comes critic-2, the second critic at the T8R.25 checkpoint, run fresh on flows C8R.1 to C8R.4.
+
+## ocr: T8R.27-B2 (third ocr round on the names spec)
+
+T8R.27-B2 was committed as `b10ea3de`. Both planted mutations that passed under B1 now fail, and all 13 `e2e/d8r` specs are green with no mutation.
+
+ocr session dc51b3c3-0288-42fb-818f-367855a5003d reviewed 1 file and left 2 comments. Raw output: `ocr/T8R.27-B2-b10ea3de.json`.
+
+**Findings** (both medium, test, Valid):
+1. `names.spec.ts:44-45`: for a button or link, the name is taken from its raw content, not the name the browser computes. In `<button><span aria-label="Open">XYZ Dec 18 $55 Call</span></button>`, the browser names the button "Open", but the check reads it as the contract.
+2. `names.spec.ts:46`: an element with another role and an explicit label, such as `<div role="img" aria-label="Open">` holding contract text, keeps no text, so the check never compares its name with its content.
+
+**Reviewer notes** (not ocr findings):
+- `title` is read before content, so a button with a `title` could fail when it shouldn't.
+- `textContent` joins neighbouring blocks with no space.
+- No new source of flakes.
+
+Neither DOM shape exists in the app; the check passes on every real screen. This is the third round on this spec to leave findings, so it is pending decision **P2** for the user, not an automatic T8R.27-B3.

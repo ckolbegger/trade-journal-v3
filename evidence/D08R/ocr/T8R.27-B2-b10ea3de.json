@@ -1,0 +1,136 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 50658,
+    "input_tokens": 49735,
+    "output_tokens": 923,
+    "cache_read_tokens": 11648,
+    "elapsed": "1m3s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d8r/names.spec.ts",
+      "content": "This substitutes raw DOM text for the browser's computed accessible name, so the equality check can now pass when a screen reader omits the contract. For example, `\u003cbutton\u003e\u003cspan aria-label=\"Open\"\u003eXYZ Dec 18 $55 Call\u003c/span\u003e\u003c/button\u003e` has the accessible name \"Open\", but this code assigns the button the contract text and discards the span's text because it is not `byContent`. The page-level snapshot check also passes because it only validates contract mentions that exist. Retain browser-computed names for visible elements (or use a standards-compliant accessible-name implementation), and handle hidden elements separately rather than replacing accessible-name computation with `textContent`.",
+      "existing_code": "      const accessibleName = squash(targets.map((found) =\u003e found.textContent).join(' ')) || element.getAttribute('aria-label') || element.getAttribute('alt')\n        || element.getAttribute('title') || (named ? text : '');",
+      "start_line": 44,
+      "end_line": 45,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d8r/names.spec.ts",
+      "content": "Restricting `text` to `byContent` elements skips the visible-text/name comparison for explicitly labelled elements with other roles. For example, `\u003cdiv role=\"img\" aria-label=\"Open\"\u003eXYZ Dec 18 $55 Call\u003c/div\u003e` is now recorded with `text: ''`, so all assertions pass even though its accessible name omits the visible contract. The previous leaf-text scan included this case. Preserve the visible text for explicitly labelled elements as well, rather than using the name-from-content role list to decide whether to check it.",
+      "existing_code": "      return accessibleName ? [{ accessibleName, text: named ? text : '' }] : [];",
+      "start_line": 46,
+      "end_line": 46,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "e2e/d8r/names.spec.ts",
+      "files": [
+        "e2e/d8r/names.spec.ts"
+      ]
+    }
+  ],
+  "session_id": "dc51b3c3-0288-42fb-818f-367855a5003d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dc51b3c3-0288-42fb-818f-367855a5003d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "8ce31c4f",
+      "requested_head": "b10ea3de",
+      "resolved_base": "8ce31c4f96a6f90ea8502878277a317665b585f9",
+      "resolved_head": "b10ea3de40684c9ef155d5fd55e537aa3660c0d1",
+      "exact_range": "8ce31c4f96a6f90ea8502878277a317665b585f9..b10ea3de40684c9ef155d5fd55e537aa3660c0d1",
+      "source_artifact_sha256": "116bf975dfc2a6bfc8fb4be281bc3e3a57cb99589f6206404ee1a178bad83f90"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d63b6470d7bc0539ef6ff91b292761635be29ed4a0d3bd9d4928cf4161760ec4",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "16ba94c850e86c1ede61bc903b112278d5566a7006830b30d319dd9f2da7a91d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d63b6470d7bc0539ef6ff91b292761635be29ed4a0d3bd9d4928cf4161760ec4",
+          "path": "e2e/d8r/names.spec.ts",
+          "fingerprint": "16ba94c850e86c1ede61bc903b112278d5566a7006830b30d319dd9f2da7a91d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "03ac872e46c3d1893413972d4a6723949891b5dc4dd4f6b5f9eacacc7b2a2c9b",
+          "path": "evidence/D08R/suite-runs/T8R.27-B2-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "09e28780cf0898b0ed9caaa6d7f00725dc5463a51bba67f279ad5aa49684685b",
+          "path": "evidence/D08R/tdd-log/T8R.27-B2.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "57378bcb7d2c12244991f3154a95531d50177e164f8a24f3ece893b45491da3c",
+          "path": "evidence/D08R/suite-runs/T8R.27-B2-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7e5d616d82967137f4d260d4c6148a60d87dbdb8cc87551d701a91b62695649c",
+          "path": "evidence/D08R/suite-runs/T8R.27-B2-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f6c2ca387bcd56cdedee603bc1506ef92edda2b097087357a8a80b543ff4ab09",
+          "path": "evidence/D08R/suite-runs/T8R.27-B2-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 63127
+  }
+}

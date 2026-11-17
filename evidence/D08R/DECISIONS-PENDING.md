@@ -14,3 +14,16 @@ Questions the specs and the frozen plan leave to the user (decision 113, as amen
 3. *Hide the second column until the exit session closes.* Show only Yesterday and Today until the replay reaches the exit session. This is smaller than option 1, but it is still an A235 amendment, and the exit price is missing for the rest of that day.
 
 **Recommendation:** option 1. The date is a label the trader reads as fact, and option 1 never shows a wrong one.
+
+## P2: a third ocr round on the names spec left two narrow findings
+
+T8R.27-B2 (`b10ea3de`, lane BR) is the third ocr round on `e2e/d8r/names.spec.ts`. ocr found two more hand-built accessible-name gaps:
+- a child `aria-label` that overrides a button's content;
+- a labelled element whose role is outside the content-named list.
+
+Both DOM shapes are made up; no screen in the app has them, and the spec passes on the real app.
+
+The options:
+1. Merge lane BR as it stands, and record both findings as tech debt in the final report.
+2. One more bug task, T8R.27-B3, closing the two gaps in the hand-built name.
+3. One more bug task, T8R.27-B3, replacing the hand-built name with the browser's own computed name, read through Chromium's accessibility tree.
