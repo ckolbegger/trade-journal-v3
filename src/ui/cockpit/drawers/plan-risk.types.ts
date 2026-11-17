@@ -28,6 +28,8 @@ export interface PlanRiskGroup {
   readonly table?: PlanRiskTable;
   // Short lines beneath the table (W31): Worst case and Max reward, or one sentence with no label (a contract due for settlement).
   readonly notes?: readonly { readonly label?: string; readonly text: string }[];
+  // The Deviations group's list (W16, T8R.11): one item each; a Superseded one is struck through and named for assistive technology.
+  readonly items?: readonly { readonly text: string; readonly superseded: boolean }[];
 }
 
 export interface PlanRiskDrawerProps {

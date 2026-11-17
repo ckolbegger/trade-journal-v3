@@ -1748,27 +1748,23 @@ test.describe('T2.64 Detail cards', () => {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
       if (width === 1280) {
-        const row = await fulfillment.locator('dt').first().evaluate((dt) => {
-          const box = dt.parentElement!.getBoundingClientRect();
-          return { width: box.width, valueRight: dt.nextElementSibling!.getBoundingClientRect().right };
-        });
-        expect(row.width, 'Fulfillment row width').toBeLessThanOrEqual(480.5);
-        // The values of the description lists above the Fulfillment row in the drawer column (the Summary card now sits in the rail).
-        // The Journal's items are one dated line now (T8R.15), so the value columns are the Plan and Risk panel's.
+        // Fulfillment is a Plan and Risk group now (T8R.11): its row is in the same figure grid as the drawer's other values, so its value shares
+        // their right edge exactly. The Journal's items are one dated line (T8R.15), so the value columns are the Plan and Risk panel's.
         await openDrawer(page, 'Plan and Risk');
+        const row = await fulfillment.locator('dt').first().evaluate((dt) => ({ valueRight: dt.nextElementSibling!.getBoundingClientRect().right }));
         const edges = await page.evaluate((rowTop) => {
           // The Journal's prose answers (`dl.answers`) fill their own line, so they are not value columns.
           return [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl:not(.answers) dd')]
             .filter((dd) => dd.getBoundingClientRect().bottom <= rowTop)
             .map((dd) => dd.getBoundingClientRect().right);
         }, await fulfillment.locator('dt').first().evaluate((dt) => dt.parentElement!.getBoundingClientRect().top));
-        // The Plan and Risk figure lists are two columns at 1280, narrower than Fulfillment's one 480 px column, so no value column shares its right edge: the lists share the left edge instead.
+        // The figure lists also share the left edge.
         const lefts = await page.evaluate(() => [...document.querySelectorAll('.cockpit-drawers [role="tabpanel"]:not([hidden]) dl.figure-grid')].map((dl) => dl.getBoundingClientRect().left));
         const fulfillmentLeft = await fulfillment.locator('dl').first().evaluate((dl) => dl.getBoundingClientRect().left);
         expect(lefts.length, 'Plan and Risk figure lists').toBeGreaterThan(0);
         for (const left of lefts) expect(Math.abs(left - fulfillmentLeft), `Fulfillment left edge ${fulfillmentLeft} vs figure list ${left}`).toBeLessThanOrEqual(1);
         expect(edges.length, 'description-list values above the Fulfillment row').toBeGreaterThan(0);
-        expect(row.valueRight, `Fulfillment value right edge ${row.valueRight} within drawer values ${edges.join(',')}`).toBeLessThanOrEqual(Math.max(...edges) + 1);
+        expect(edges.some((edge) => Math.abs(edge - row.valueRight) <= 1), `Fulfillment value right edge ${row.valueRight} matches a drawer value edge of ${edges.join(',')}`).toBe(true);
         await openDrawer(page, 'Journal');
       }
       const pairs = await journal.locator('dl.answers dt').evaluateAll((dts) =>

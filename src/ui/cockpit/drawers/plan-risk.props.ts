@@ -5,8 +5,8 @@ import { Rational } from '../../../domain/values/index.ts';
 import { calculation, dollarsAndR, settlementDueFigure } from '../../figures.ts';
 import { decimalMoney as price, decimalUnderlyingPrice, localTime, money, quantity, ratio, rMultiple, shortDate, tradeSummary, underlyingPrice } from '../../format.ts';
 import { instrumentLabel } from '../../calculation-words.ts';
-import { conditionDirection, exerciseIntentText } from '../../screens/option-words.ts';
-import { legText, measureText } from '../../screens/trade-detail/words.ts';
+import { conditionDirection, contractCount, exerciseIntentText } from '../../screens/option-words.ts';
+import { changeTime, legText, measureText } from '../../screens/trade-detail/words.ts';
 import type { PlanRiskDrawerProps, PlanRiskGroup, PlanRiskRow } from './plan-risk.types.ts';
 
 // What the shell hands the drawer: the Detail's view and the Workspace zone.
@@ -153,6 +153,39 @@ function entryQualityGroup(view: TradeDetailView, timeZone: string): PlanRiskGro
   };
 }
 
+const FULFILLMENT: Record<string, string> = {
+  Unfilled: 'Unfilled',
+  PartiallyFilled: 'Partially filled',
+  FilledAsPlanned: 'Filled as planned',
+  FilledWithDeviation: 'Filled with Deviation',
+};
+
+// Each Planned Leg's fulfillment under the frozen Plan (A25), then each recorded Deviation occurrence in its current version with the Position
+// Change that caused it. Deviations is absent when none were recorded; a Planned or incoherent Detail has neither group.
+function fulfillmentGroups(view: TradeDetailView, timeZone: string): PlanRiskGroup[] {
+  if (!('positionChanges' in view)) return [];
+  const optionLeg = view.plan.legs[0]?.instrument.kind === 'Option';
+  const items = view.deviations.map((occurrence) => {
+    const current = occurrence.versions.at(-1)!;
+    const unit = optionLeg ? contractCount(current.quantityAbovePlan ?? 0) : `${current.quantityAbovePlan} shares`;
+    return {
+      text: `Entry Size (Excess): ${unit} above plan, caused by the Position Change at ${changeTime(view, current.causingPositionChangeId, timeZone)}.`,
+      superseded: current.status !== 'Active',
+    };
+  });
+  return [
+    {
+      id: 'fulfillment',
+      heading: 'Planned-Leg Fulfillment',
+      rows: view.legFulfillment.map((f) => {
+        const leg = view.plan.legs.find((l) => l.factId === f.plannedLegId);
+        return { label: leg ? legText(leg, timeZone) : f.plannedLegId, value: FULFILLMENT[f.fulfillment]!, plain: true };
+      }),
+    },
+    ...(items.length > 0 ? [{ id: 'deviations', heading: 'Deviations', rows: [], items }] : []),
+  ];
+}
+
 export function planRiskProps({ view, timeZone }: PlanRiskSource): PlanRiskDrawerProps {
   const figures = conditionsGroup(view, timeZone);
   return {
@@ -164,6 +197,7 @@ export function planRiskProps({ view, timeZone }: PlanRiskSource): PlanRiskDrawe
       ...('baseline' in view ? [baselineGroup(view.baseline)] : []),
       // An incoherent Detail has no derived figures, so no Entry Quality.
       ...('baseline' in view ? [entryQualityGroup(view, timeZone)] : []),
+      ...fulfillmentGroups(view, timeZone),
     ],
   };
 }

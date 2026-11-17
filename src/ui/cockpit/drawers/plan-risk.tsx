@@ -68,6 +68,22 @@ function Group({ group }: { readonly group: PlanRiskGroup }) {
           ))}
         </ul>
       )}
+      {group.items && (
+        <ul>
+          {group.items.map((item, at) => (
+            <li key={at}>
+              {item.superseded ? (
+                <>
+                  <span className="visually-hidden">Superseded</span>{' '}
+                  <del>{item.text}</del>
+                </>
+              ) : (
+                item.text
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
       {group.rows.length > 0 && (
         <dl className="figure-grid">
           {group.rows.map((row) => (

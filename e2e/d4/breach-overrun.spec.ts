@@ -26,7 +26,8 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await expect(conditionFigure(page, TARGET)).toHaveText(/^\+\$/);
     await openDrawer(page, 'Plan and Risk');
     await expect(detail.riskFigure(page, 'Risk to stop')).toHaveText('Risk to stop $50.00 · 0.20R past');
-    await expect(detail.deviations(page)).toContainText('No Deviations recorded.');
+    // No Deviation is recorded, so the Deviations group is not shown at all (T8R.11).
+    await expect(detail.deviations(page)).toHaveCount(0);
 
     // Tuesday noon, after 40 more shares at Tuesday 10:00: the Mark is not yet this session's.
     await setClock(context, page, TUESDAY_NOON);

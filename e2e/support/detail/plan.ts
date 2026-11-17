@@ -1,4 +1,4 @@
-// Trade Detail reads of drawer lane D3 (Plan and Risk, and the footer): Plan, Plan Baseline, Entry Quality, 1R, Planned-Leg Fulfillment and
+// Trade Detail reads of drawer lane D3 (Plan and Risk): Plan, Plan Baseline, Entry Quality, 1R, Planned-Leg Fulfillment and
 // Deviations. Each read goes through the current layout, scoped to its card. Callers open the Plan and Risk drawer first.
 import type { Locator, Page } from '@playwright/test';
 import { figureIn, regionOf, valueIn } from './scope.ts';
@@ -12,6 +12,6 @@ export const actualInitialRisk = (page: Page): Locator => valueIn(entryQuality(p
 export const planFigure = (page: Page, term: string): Locator => figureIn(plan(page), term);
 export const planValue = (page: Page, term: string): Locator => valueIn(plan(page), term);
 
-// The footer.
+// The last two groups of Plan and Risk (T8R.11): Deviations is absent when none are recorded.
 export const fulfillment = (page: Page): Locator => regionOf(page, 'Planned-Leg Fulfillment');
 export const deviations = (page: Page): Locator => regionOf(page, 'Deviations');

@@ -690,3 +690,17 @@ T8R.10-B1, B2 and F2 reviewer notes: B1's settlement test matches the rail's and
 ## T8R.23 stop, and the main session's decision
 
 T8R.23's agent built both cases. Case 2 passed on its first run, and its mutation check is recorded. The agent stopped before committing, because one exact expectation broke: `trade-summary.test.ts:153-154` lists the Open Detail's exact keys. The main session's implementation-level decision is to add `'openAverage'` at its sorted place. The comparison stays exact, the field is additive (A245), and T8R.21 did the same for `marksColumns`. A fresh agent applied it and committed. This goes in the final report. Note for T8R.8: `openAverage` is absent on an Open Detail with no open lots.
+
+## T8R.11
+
+Behavioral task; its rows are in `tdd-log/T8R.11.md`. Plan and Risk now ends with Planned-Leg Fulfillment and, only when a Deviation is recorded, Deviations (the heading is exactly "Deviations", for T8R.17's drawer request). The footer is gone: `src/ui/cockpit/footer.{props.ts,tsx,types.ts}`, `footer.test.tsx` and `trade-detail/Footer.test.tsx` were deleted, and `Cockpit.tsx` lost the `<DetailFooter>` line and its import.
+
+Retired by name: T8P.18's case 3 ("should show Planned-Leg Fulfillment and Deviations below the drawers", in `footer.test.tsx`) and `Footer.test.tsx`'s cases: "should show Planned-Leg Fulfillment and each Entry Size Deviation with its quantity and causing Position Change", "should show Planned-Leg Fulfillment as a label/value row with the leg as label and the result as value", "should show an Active Deviation as plain text with no status badge", "should strike through a Superseded Deviation and name it Superseded for assistive technology", "should word an option Entry Size Deviation and the Planned Leg in contracts on Trade Detail". Their words live on in the four new cases. `Banner.test.tsx:133` needed no change (it asserts those regions are absent on an incoherent Detail, still true).
+
+Browser specs changed (run after `npm run build:faults` and `npm run build:releases`, through `with-browser-lock.sh`):
+- `e2e/d4/breach-overrun.spec.ts:29`: before `toContainText('No Deviations recorded.')`, after `toHaveCount(0)` (no Deviations group when none). Passes. The same spec's test B4.14 then fails at line 43, `riskFigure(page, 'Worst case')` matching the rail card and Plan and Risk's notes: the known T8R.10-F1 finding, not this task's (the rail's Worst case goes with T8R.14).
+- `e2e/support/detail/plan.ts`: comments only; `fulfillment` and `deviations` helpers unchanged (`deviations` now matches nothing when none are recorded).
+- `e2e/d2/ui-alignment.spec.ts` T2.64: before, it checked left edges and that Fulfillment's right edge was no further right than the drawer's values (a 480 px column). After, Fulfillment sits in the same figure grid as the drawer's other values, so the test again requires its value's right edge to equal one of the drawer's value right edges (within 1 px), plus the left-edge check; the row-width cap went. Passes.
+- `open-position`, `d2/responsive-a11y` read `detail.deviations` and `detail.fulfillment` after opening Plan and Risk and passed unchanged.
+
+Not touched: `src/ui/cockpit/styles/legacy-detail.css` `dl.figure-grid.one-column` is now unused (not a lane PR file; left). `Cockpit.tsx:19`'s comment still says "and the footer".

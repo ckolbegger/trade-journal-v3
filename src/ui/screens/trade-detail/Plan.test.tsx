@@ -3,7 +3,7 @@ import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../../tests/support/facade-double.ts';
-import { execution, openDetailOf, PC1, PC2, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
+import { execution, openDetailOf, PC1, PC2, PC3, pc3Excess, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionPlannedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
@@ -76,6 +76,20 @@ describe('Open Trade Detail', () => {
       name: 'Entry Quality',
     });
     expect(termValue(flagged, 'Reward : risk')).toBe('Not applicable: entry at or beyond the Stop planned 2.4');
+  });
+});
+
+describe('Plan and Risk: Fulfillment and Deviations, no footer', () => {
+  it('should not show a footer under any drawer', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
+    // Both groups live inside the Plan and Risk drawer's panel; nothing follows the drawers.
+    for (const name of ['Planned-Leg Fulfillment', 'Deviations']) {
+      const panel = (await screen.findByRole('heading', { name, hidden: true })).closest('[role="tabpanel"]');
+      expect(panel, `${name} sits in a drawer panel`).not.toBeNull();
+      expect(document.getElementById(panel!.getAttribute('aria-labelledby')!)?.textContent).toBe('Plan and Risk');
+    }
+    const panels = screen.getAllByRole('tabpanel', { hidden: true });
+    expect(panels.at(-1)!.nextElementSibling).toBeNull();
   });
 });
 

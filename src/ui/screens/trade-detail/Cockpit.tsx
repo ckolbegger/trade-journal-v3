@@ -5,7 +5,6 @@ import { ConditionsCard } from '../../cockpit/rail/conditions.tsx';
 import { IdentityCard } from '../../cockpit/rail/identity.tsx';
 import { NeedsYou } from '../../cockpit/rail/needs-you.tsx';
 import { PnlCard } from '../../cockpit/rail/pnl.tsx';
-import { DetailFooter } from '../../cockpit/footer.tsx';
 import { JournalDrawer } from '../../cockpit/drawers/journal.tsx';
 import { JournalCards, journalTabCount } from '../../cockpit/journal-cards.tsx';
 import { PayoffDrawer } from '../../cockpit/drawers/payoff.tsx';
@@ -183,7 +182,6 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, c
             {panelOf(name)}
           </div>
         ))}
-        <DetailFooter {...shell} />
       </div>
       </DrawerRequestContext.Provider>
     </ReflectRequestContext.Provider>

@@ -2,12 +2,12 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3 } from '../../../../tests/support/open-detail-fixtures.ts';
-import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
+import { openDetailAt, openDetailOf, openDetailUncovered, PC1, PC2, PC3, pc3Excess } from '../../../../tests/support/open-detail-fixtures.ts';
+import { ocExcess, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
 import { Rational } from '../../../domain/values/index.ts';
-import { rowsOf, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
+import { OC_PC3, rowsOf, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
 import { PlanRiskDrawer } from './plan-risk.tsx';
 
 afterEach(cleanup);
@@ -220,5 +220,43 @@ describe('Plan and Risk: Conditions (W31)', () => {
     expect(rowsOf(within(conditions).getByRole('table')).flatMap((cells) => cells.slice(1, 3))).toEqual(Array(4).fill('Settlement Due: XYZ Nov 20 $55 Call'));
     expect(within(conditions).getByText('The contract expired, so its conditions are no longer measured.')).toBeTruthy();
     expect(conditions.textContent).not.toContain('Marks');
+  });
+});
+
+describe('Plan and Risk: Fulfillment and Deviations', () => {
+  const zone = 'America/New_York';
+  const superseded = { ...pc3Excess, versions: [{ ...pc3Excess.versions[0]!, status: 'Superseded' as const, reason: 'NoLongerExpected' as const }] } as unknown as typeof pc3Excess;
+  const headings = () => screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+
+  it('should show Planned-Leg Fulfillment and Deviations as the drawers last two groups', () => {
+    render(<PlanRiskDrawer view={openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] })} timeZone={zone} />);
+    expect(headings().slice(-2)).toEqual(['Planned-Leg Fulfillment', 'Deviations']);
+    const fulfillment = screen.getByRole('region', { name: 'Planned-Leg Fulfillment' });
+    expect(valueOf(fulfillment, 'Long 100 shares of XYZ')).toBe('Filled with Deviation');
+    const deviations = screen.getByRole('region', { name: 'Deviations' });
+    expect(within(deviations).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00.',
+    ]);
+    cleanup();
+    // An option Trade says contracts.
+    render(<PlanRiskDrawer view={optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_PC3], THURSDAY, { recordedDeviations: [ocExcess] })} timeZone={zone} />);
+    expect(within(screen.getByRole('region', { name: 'Deviations' })).getByText('Entry Size (Excess): 1 contract above plan, caused by the Position Change at 2026-10-12 12:00.')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Planned-Leg Fulfillment' })).getByText('Long 2 contracts of XYZ Nov 20 $55 Call', { selector: 'dt' })).toBeTruthy();
+  });
+
+  it('should not show Deviations when there are none', () => {
+    render(<PlanRiskDrawer view={openDetailOf([PC1])} timeZone={zone} />);
+    expect(screen.queryByRole('region', { name: 'Deviations' })).toBeNull();
+    expect(screen.queryByText('No Deviations recorded.')).toBeNull();
+    // Fulfillment is then the last group.
+    expect(headings().slice(-1)).toEqual(['Planned-Leg Fulfillment']);
+    expect(valueOf(screen.getByRole('region', { name: 'Planned-Leg Fulfillment' }), 'Long 100 shares of XYZ')).toBe('Partially filled');
+  });
+
+  it('should list a superseded Deviation struck through', () => {
+    render(<PlanRiskDrawer view={openDetailOf([PC1, PC2, PC3], { recordedDeviations: [superseded] })} timeZone={zone} />);
+    const item = within(screen.getByRole('region', { name: 'Deviations' })).getByRole('listitem');
+    expect(item.querySelector('del')?.textContent).toContain('Entry Size (Excess): 20 shares above plan');
+    expect(item.querySelector('.visually-hidden')?.textContent).toBe('Superseded');
   });
 });
