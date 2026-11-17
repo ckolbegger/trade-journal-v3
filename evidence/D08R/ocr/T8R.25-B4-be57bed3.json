@@ -1,0 +1,127 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 33481,
+    "input_tokens": 33232,
+    "output_tokens": 249,
+    "cache_read_tokens": 4992,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d8r/responsive-a11y.spec.ts",
+        "src/ui/cockpit/styles/today.css"
+      ]
+    }
+  ],
+  "session_id": "2c20df01-d12e-4d9a-bf5a-8cf9ef084a83",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "2c20df01-d12e-4d9a-bf5a-8cf9ef084a83",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "61694390",
+      "requested_head": "be57bed3",
+      "resolved_base": "61694390598726fae5617730781c068b8d0fee7b",
+      "resolved_head": "be57bed37baa86845ef881baab8f31f9c8cedead",
+      "exact_range": "61694390598726fae5617730781c068b8d0fee7b..be57bed37baa86845ef881baab8f31f9c8cedead",
+      "source_artifact_sha256": "70274d35b7541fba2d5ca171713809cb31d5b156b3d25b375660a5feed481321"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d24986a5c64e11d6b101fe35b2b4cd4fd36488061cf3e3bf0a73728399b14433",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "bed22826abfaf672cedb506bd213c194835c43f7de8ab3881a81f7f1f779fd6b"
+        },
+        {
+          "item_id": "ea4496d7bca47ad402de8c65e77b207fb14e6a37a91984bf37a2f776af21ea7d",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "259c4f0bde99ea561f329c52bc890bce30b6af4dc239a6d7c75a3262afcd83cd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d24986a5c64e11d6b101fe35b2b4cd4fd36488061cf3e3bf0a73728399b14433",
+          "path": "e2e/d8r/responsive-a11y.spec.ts",
+          "fingerprint": "bed22826abfaf672cedb506bd213c194835c43f7de8ab3881a81f7f1f779fd6b"
+        },
+        {
+          "item_id": "ea4496d7bca47ad402de8c65e77b207fb14e6a37a91984bf37a2f776af21ea7d",
+          "path": "src/ui/cockpit/styles/today.css",
+          "fingerprint": "259c4f0bde99ea561f329c52bc890bce30b6af4dc239a6d7c75a3262afcd83cd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "23978f1ddb4bc41bb573c06edcb3e0ee0a1471f909a111af8713d1f5f547bd90",
+          "path": "evidence/D08R/suite-runs/T8R.25-B4-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "42e5f2acc205da175802ffcd0d8c729c9f541d19e648d808aadbb136329657e2",
+          "path": "evidence/D08R/suite-runs/T8R.25-B4-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "543d3641ff6c83e49305611c0f7f92d91d88e20b471769d04492c594ee53bb2b",
+          "path": "evidence/D08R/suite-runs/T8R.25-B4-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "6da162b12266d040da94e80d8ed2bce66b8537dd8aa86c73de388bce6d6c3c8f",
+          "path": "evidence/D08R/suite-runs/T8R.25-B4-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "df71069eab527994b48285ee5b62ac6a66c6273c787a014d88689f038ff71e15",
+          "path": "evidence/D08R/tdd-log/T8R.25-B4.md",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 19595
+  }
+}

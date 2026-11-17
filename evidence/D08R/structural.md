@@ -1472,3 +1472,19 @@ The lane was then fast-forwarded, and T8R.27 is Done. Its rebased hashes:
 The B2 commit carries decision P2: the two findings from the third ocr round are tech debt.
 
 The critic-2 fixes run next, in lane C2 from `HEAD`.
+
+## T8R.25-B4 returned; ocr
+
+T8R.25-B4 is committed as `be57bed3` in lane C2.
+
+**Cause.** From 960 px up, `app.css` makes every `table.trades th` nowrap. That made the three Marks headings 588 px wide in a 550 px box, and `ScrollsToEnd` then opened the table scrolled.
+
+**Fix.** One rule in `today.css` lets the Marks table's `thead th` wrap. One Playwright case went red, then green. 27 browser specs passed.
+
+**ocr.** Session 2c20df01-d12e-4d9a-bf5a-8cf9ef084a83 reviewed 2 files and made 0 comments. Raw output: `ocr/T8R.25-B4-be57bed3.json`.
+
+**Reviewer notes** (not ocr findings, so no bug tasks):
+- The selector reaches only the Marks table.
+- Widths from 960 to about 1100 px are unmeasured. The drawer is narrower there, so the table might still overflow. These widths go into critic-3's brief.
+- The case's "read in full" claim is only partly asserted.
+- Rounding to whole pixels could make the case flake.
