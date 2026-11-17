@@ -687,7 +687,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.21 | 1 | BV | Done | `c9155d02` |
 | T8R.22 | 1 | BV | Done | `a414c8c4` |
 | T8R.22-F1 | 1 | BV | Done | `ef9f6ba7` |
-| T8R.23 | 1 | BV | In progress from `HEADNEXT` | |
+| T8R.23 | 1 | BV | In progress from `45add455` | |
 | T8R.24 | 2 | — | Not started | |
 | T8R.25 | 2 | — | Not started | |
 | T8R.26 | 2 | — | Not started | |
