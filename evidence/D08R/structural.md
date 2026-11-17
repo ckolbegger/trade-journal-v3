@@ -1230,3 +1230,52 @@ The report is in `critic-1.md`, saved with `tools/agent-report.ts`. The critic r
 | Critic | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|
 | critic-1 (T8R.25) | critic-brief template, flows C8R.1 to C8R.4, plus decision P1 | 217,339 | 94 | 14 min 17 s | 3 moderate |
+
+## T8R.25-B1 returned; ocr
+
+T8R.25-B1 was committed as `3d5277a7` in lane CB.
+
+**Root cause.** Trade Analysis sets `atEntry` with no `firstMarksDue` in two cases:
+- Marks are missing and no earlier Mark exists.
+- A contract is past expiration, so no Mark is read.
+
+**Fix.** Trade Views now has `OpenCurrentEvaluation.noLotsAfterMarks?: true`, which is additive (A245) and set by `noLotsAfterMarksOf`. Plan and Risk hides the group when it is set.
+
+**Cases.**
+- Case 1 went red, then green.
+- Case 2 passed on its first run; a mutation check made it fail.
+- Case 3 (`option-views.test.ts`) is a process slip for the final report. It was written after the code, so it had no first red. It then failed genuinely against the agent's first version, which ignored the dated line, and passed after the fix.
+
+**Browser.** 12 specs passed.
+
+**Lane tier.** 2098 unit tests, 269 integration tests, 14 of 14 checks.
+
+**ocr.** Session e53719b4-e97f-4bf6-a6dc-12fb178abf75. It reviewed 4 files and left 0 comments, so there is no bug task. Raw output: `ocr/T8R.25-B1-3d5277a7.json`.
+
+**Reviewer notes** (not ocr findings):
+- O-C3+ still shows the group, because its exact Mark or dated line keeps the field unset.
+- A Trade with only a stale Mark is not hidden, because `staleContext` keeps the field unset.
+- Edge case for the final report: a Settlement Due Trade with a lot bought after its last Mark would hide the group, because no stale context or dated line exists after expiration. This is rare, and it agrees with the critic's expectation that the group is hidden on Settlement Due.
+
+## T8R.27 returned
+
+T8R.27 is committed as `f1e5fe8a` in lane BR.
+
+**Coverage.** `e2e/d8r/` holds 13 tests covering B8R.1 to B8R.7. Every case passed on its first run. Each was then checked by changing one asserted value so it failed on an assertion; the failure lines are in `tdd-log/T8R.27.md`.
+
+**Acceptance script.** `acceptance-commands.sh` exits 0: 5 commands, 0 failed.
+
+**Browser time.** `e2e/d8r` takes 1.2 minutes.
+
+**Support changes.**
+- `e2e/d8p/support.ts`: `buildOc3` gains `correctedWednesdayXyz`, which adds B8R.6's correction step (handoff, section 7).
+- New exports: `confirmOc3`, `at` and `CORRECTION_REASON`.
+
+**Readings applied.**
+- **B8R.3:** the rail at Fri 12:00 shows no dated line. The dated distances are checked at Fri 18:00, the same reading as I8R.1.
+- **B8R.4:** the group order is checked, and so are W23's four figures. This closes T8R.9's coverage gap for "Risk from that price".
+- **B8R.2:** K1 sold at 11:00 shows its column as "Exit Fri Nov 13" (decision P1). Its Underlying cell is "—", because no NVDA Mark exists for that session at the read time, which is what P1 says. This is the implementation-level reading for the final report.
+
+**W24 punctuation.** The Journal line has no final period after the button, as shipped. critic-1 raised the same point as minor observation 3. It goes in the final report.
+
+**`e2e/d8p/history.spec.ts`.** The T8R.27 agent thought this spec might be stale. It is not: it passed in `wave2-full1`.

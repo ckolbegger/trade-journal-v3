@@ -1,0 +1,155 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 93096,
+    "input_tokens": 92438,
+    "output_tokens": 658,
+    "cache_read_tokens": 9984,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 7,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade view coordination and option view tests",
+      "files": [
+        "src/coordinators/trade-views/option-views.test.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    },
+    {
+      "label": "Plan risk drawer props and tests",
+      "files": [
+        "src/ui/cockpit/drawers/plan-risk.props.ts",
+        "src/ui/cockpit/drawers/plan-risk.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "e53719b4-e97f-4bf6-a6dc-12fb178abf75",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e53719b4-e97f-4bf6-a6dc-12fb178abf75",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "ce6afeff",
+      "requested_head": "3d5277a7",
+      "resolved_base": "ce6afeff9e2851a800a4178cc966406ecaa0c344",
+      "resolved_head": "3d5277a7a7d3983afb034010cd2af2d003161cfc",
+      "exact_range": "ce6afeff9e2851a800a4178cc966406ecaa0c344..3d5277a7a7d3983afb034010cd2af2d003161cfc",
+      "source_artifact_sha256": "c8ecf5b2f27dde5400886c13ce54b2e3c63619fe462935e74268c4fe1d416c0a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "67bc7191830d2dd651ee92ab82b899755130b66cf26d3ba9dfe3200e9f262e99",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "86f30e2dd258767b1fee609ec26e08ce8a4869ddccf707b813885adf12237c25"
+        },
+        {
+          "item_id": "74643c471d4a51dc132401d89dba25320c3ac9ff57decd77d3e8f0b4ad61b6c8",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "1dc4d508cc1b78f862595451efff00f3f393a28a21246ef1c34a69cce01c9c20"
+        },
+        {
+          "item_id": "8d032ec714837036c84a97991d81236d297f46a6e8a5aeda7ff8ee6b16db1aa7",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "fingerprint": "b4225131fa29429a64312b874f56df1d4b19f58db79e51383269b3e708d1fb55"
+        },
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "2e14678d56649b9288109cb2094eb8aa602bdd52600157247fac74c15a9010b3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "67bc7191830d2dd651ee92ab82b899755130b66cf26d3ba9dfe3200e9f262e99",
+          "path": "src/ui/cockpit/drawers/plan-risk.props.ts",
+          "fingerprint": "86f30e2dd258767b1fee609ec26e08ce8a4869ddccf707b813885adf12237c25"
+        },
+        {
+          "item_id": "74643c471d4a51dc132401d89dba25320c3ac9ff57decd77d3e8f0b4ad61b6c8",
+          "path": "src/ui/cockpit/drawers/plan-risk.test.tsx",
+          "fingerprint": "1dc4d508cc1b78f862595451efff00f3f393a28a21246ef1c34a69cce01c9c20"
+        },
+        {
+          "item_id": "8d032ec714837036c84a97991d81236d297f46a6e8a5aeda7ff8ee6b16db1aa7",
+          "path": "src/coordinators/trade-views/option-views.test.ts",
+          "fingerprint": "b4225131fa29429a64312b874f56df1d4b19f58db79e51383269b3e708d1fb55"
+        },
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "2e14678d56649b9288109cb2094eb8aa602bdd52600157247fac74c15a9010b3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "04bce10229b7ad821e8c3e1282652d2aee18329a478442ad81f91c02575fa85e",
+          "path": "evidence/D08R/tdd-log/T8R.25-B1.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "06428cb5a3ce9b6b44ede77b3b315b42979a2de486dd1788dfc36061088b0095",
+          "path": "evidence/D08R/suite-runs/T8R.25-B1-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "12f3e2b10f9ca47050a4db5c2e0ca49175521ae6ca47c2abde3968defd2be84e",
+          "path": "evidence/D08R/suite-runs/T8R.25-B1-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "5bdb58d0374d7569320f45a3f40a9568b345f427f6d7e1cc725edee174ccb347",
+          "path": "evidence/D08R/suite-runs/T8R.25-B1-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "601a54f36727d04af090fa9e21a59cd3a9c1f18cc3ffcbf19e3e435ec0495844",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "cf3c3b56319386cacb395eae4f460fca3e5b212acdabf8a8712278f44c4b40a6",
+          "path": "evidence/D08R/suite-runs/T8R.25-B1-checks.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 33742
+  }
+}
