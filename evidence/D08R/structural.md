@@ -753,3 +753,11 @@ Outside this task's files, still reading what the rail no longer shows (not edit
 - `e2e/d7s/conditions.spec.ts:52-55` (old figures `−$70.00`, `+$670.00`, `Breached`, `Reached` via `toContainText`) and `:56` (`conditionsSummary` Worst case, Max reward)
 - `e2e/support/detail/rail-b.ts` `riskFigure`'s Worst case and Max reward branch reads the rail's summary (the Plan and Risk helpers in that file belong to T8R.10-F1)
 - `e2e/d8p/states.spec.ts:55,114` and `e2e/d4/expected-mark.spec.ts:35` read `.condition-why` and `.condition-figure` as absent or as "Mark missing": still true.
+
+## T8R.14-B1
+
+Behavioral bug task; its red and green rows are in `tdd-log/T8R.14-B1.md`. The Conditions card's list of notes (the before-Marks, Planned and expired notes) is now named "Conditions notes" instead of "Worst case and Max reward", which left the rail in T8R.14.
+
+The older case "should say beneath the conditions when their distances arrive..." now queries the new name. This is not a loosening: it still expects exactly the three notes where they apply and an empty result on a Closed Detail, so it still proves the list is absent where it should be. Querying the old name would have passed vacuously everywhere after the rename.
+
+Left alone, for T8R.14-F1 after T8R.10 merges: `e2e/support/detail/rail-b.ts` `conditionsSummary` (line 20) still finds the list by the old name, and the browser specs that use it.

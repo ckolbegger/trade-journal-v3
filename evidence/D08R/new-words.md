@@ -18,3 +18,4 @@ Screen texts no approved row covers (decision 116 (2)). Each is the wording the 
 | The table's accessible region name "Conditions table" (the scrollable box around the table) | T8R.10 | Trade Detail, Plan and Risk | Position's "Open Lots" box |
 | A crossed condition on the rail reads "Stop · Breached · $0.10 past" and "Target · Reached · 0.10 past": the role, then W21's "Breached · … past" or "Reached · … past" (W21 gives the status words alone) | T8R.14 | Trade Detail, rail, Conditions card | W21 |
 | The note before the first Marks drops "and the worst case": "Distances to each condition arrive with the first Marks." (Worst case left the rail) | T8R.14 | Trade Detail, rail, Conditions card | W21; T8R.14 case 4 |
+| The accessible name of the list of notes beneath the conditions: "Worst case and Max reward" → "Conditions notes" (provisional; Worst case and Max reward left the rail) | T8R.14-B1 | Trade Detail, rail, Conditions card | W5; W6; decision 116 (2) |

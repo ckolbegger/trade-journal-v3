@@ -145,7 +145,7 @@ describe('Conditions card (W5, W6)', () => {
 
   it('should say beneath the conditions when their distances arrive: before Marks, on a Planned Detail and once the contract expired, and show nothing beneath a Closed Detail', () => {
     const notes = (view: TradeDetailView) => {
-      const summary = within(renderCard(view)).queryByRole('list', { name: 'Worst case and Max reward', hidden: true });
+      const summary = within(renderCard(view)).queryByRole('list', { name: 'Conditions notes', hidden: true });
       const lines = summary ? within(summary).queryAllByRole('listitem', { hidden: true }).map((item) => item.textContent) : [];
       cleanup();
       return lines;
@@ -169,6 +169,14 @@ describe('Conditions card (W5, W6)', () => {
     const planned = blocks(renderCard(optionPlannedDetail('O-S2')));
     expect(planned.map((item) => item.querySelector('.condition-text')?.textContent)).toEqual(['MNO at or below 41.00', 'Option at or above $3.60', 'MNO at or above 44.50', 'Option at or below $0.30']);
     expect(planned.every((item) => item.querySelector('.condition-figure') === null && item.querySelector('.condition-why') === null)).toBe(true);
+  });
+
+  it('should name the list of notes beneath the conditions Conditions notes', () => {
+    const view = optionPlannedDetail('O-S2');
+    const list = within(renderCard(view)).getByRole('list', { name: 'Conditions notes', hidden: true });
+    expect(within(list).getByText('Distances to each condition arrive with the first Marks after entry.')).toBeTruthy();
+    cleanup();
+    expect(within(renderCard(view)).queryByRole('list', { name: 'Worst case and Max reward', hidden: true })).toBeNull();
   });
 
   it('should list the Plan conditions on an incoherent Detail, rows 1 and 2 only, with no figure, no row 3 and no summary', () => {

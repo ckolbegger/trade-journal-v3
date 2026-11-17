@@ -27,7 +27,7 @@ export function ConditionsCard(props: ShellProps | ConditionsCardProps) {
         ))}
       </ul>
       {card.summary.length > 0 && (
-        <ul className="conditions-summary" aria-label="Worst case and Max reward">
+        <ul className="conditions-summary" aria-label="Conditions notes">
           {card.summary.map((line) => (
             <li key={line.text}>{line.text}</li>
           ))}
