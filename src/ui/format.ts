@@ -49,10 +49,12 @@ export const summaryExpiration = (expiration: string, timeZone: string | undefin
   return Number(year) === currentYear(timeZone) ? date : `${date} ${year}`;
 };
 
-// A strike as whole dollars, or with cents when it has decimals (row 23.16).
+// A strike as whole dollars, or with cents when it has decimals (row 23.16); a third decimal is kept (decision 77).
 export const summaryStrike = (strike: string): string => {
   const parsed = parseDecimal(strike);
   if (!parsed.ok) return strike;
+  const thousandths = formatDecimal(parsed.value, 3);
+  if (!thousandths.endsWith('0')) return `$${thousandths.replace(/\d+(?=\.)/, (whole) => whole.replace(/\B(?=(\d{3})+$)/g, ','))}`;
   return parsed.value.denominator === 1n ? money(parsed.value).replace(/\.00$/, '') : money(parsed.value);
 };
 

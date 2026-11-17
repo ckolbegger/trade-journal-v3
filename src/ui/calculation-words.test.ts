@@ -219,6 +219,10 @@ describe('instrumentLabel (W28)', () => {
     expect(instrumentLabel(instrumentOf('XYZ261218P00052500'))).toBe('XYZ Dec 18 $52.50 Put');
   });
 
+  it('should keep a strike third decimal, XYZ Dec 18 52.505 Put', () => {
+    expect(instrumentLabel(instrumentOf('XYZ261218P00052505'))).toBe('XYZ Dec 18 $52.505 Put');
+  });
+
   it('should decide the current year in the Workspace zone, XYZ Jan 15 2027 55 Call at New York New Year', () => {
     vi.setSystemTime(new Date('2027-01-01T03:00:00Z'));
     expect(instrumentLabel(instrumentOf('XYZ270115C00055000'), 'America/New_York')).toBe('XYZ Jan 15 2027 $55 Call');
