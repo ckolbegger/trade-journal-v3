@@ -1,10 +1,7 @@
 import { Fragment, useLayoutEffect, useRef, type ReactNode } from 'react';
-import { Link } from 'react-router';
-import { Badge } from '../../Badge.tsx';
-import { Figure } from '../../screens/trade-detail/figure.tsx';
 import { PriceTrack } from '../track.tsx';
-import type { CurrentMarks, TodayDrawerProps } from './today.types.ts';
-import { currentMarksProps, todayProps, type TodayInput } from './today.props.ts';
+import type { TodayDrawerProps } from './today.types.ts';
+import { todayProps, type TodayInput } from './today.props.ts';
 
 // A line that may wrap only at its spaces: each word is held whole, so a date breaks neither at its hyphens nor a time at its colon.
 const Words = ({ text }: { readonly text: string }) =>
@@ -54,38 +51,6 @@ const FigureCard = ({ id, heading, rows }: { readonly id: string; readonly headi
   </section>
 );
 
-// The current Marks card (revision 96).
-const CurrentMarksCard = ({ currentMarks }: { readonly currentMarks: CurrentMarks }) => (
-  <section className="card current-marks">
-    {currentMarks.missing && (
-      <p>
-        <Link to={currentMarks.missing.to}>{currentMarks.missing.text}</Link>
-      </p>
-    )}
-    {currentMarks.acknowledged && <p>{currentMarks.acknowledged}</p>}
-    {currentMarks.stale && <p>{currentMarks.stale}</p>}
-    <dl className="figure-grid">
-      {currentMarks.rows.map(({ label, value, plain }) => (
-        <Figure key={label} term={label} {...(plain && { plain })}>
-          {value}
-        </Figure>
-      ))}
-    </dl>
-    {currentMarks.correction !== undefined && (
-      <p>
-        <Badge tone="info">Corrected</Badge> {currentMarks.correction}
-      </p>
-    )}
-  </section>
-);
-
-// What a state without a Today drawer shows in its Position drawer: the current Marks card and nothing else of Today's (revision 96, T8P.31).
-// No comparison is drawn there, so the card is built without the replay and leaves no Mark out as "already shown".
-export function CurrentMarksOnly({ view, timeZone }: TodayInput) {
-  const currentMarks = currentMarksProps({ view, timeZone });
-  return currentMarks ? <CurrentMarksCard currentMarks={currentMarks} /> : null;
-}
-
 // The Stale context and the acknowledgment, each only where it applies, under the table.
 const Notes = ({ notes }: { readonly notes: NonNullable<TodayDrawerProps['notes']> }) => (
   <>
@@ -95,9 +60,10 @@ const Notes = ({ notes }: { readonly notes: NonNullable<TodayDrawerProps['notes'
 );
 
 // The Today drawer's content from finished props (A216).
-export function TodayDrawerView({ marks, notes, noMarksText, tracksHeading, tracks, valuedAt, atEntry }: TodayDrawerProps) {
-  return (
+export function TodayDrawerView({ marks, notes, stamp, noMarksText, tracksHeading, tracks, valuedAt, atEntry }: TodayDrawerProps) {
+  const content = (
     <>
+      {stamp && <p className="closed-stamp">{stamp}</p>}
       {noMarksText && <p className="waiting">{noMarksText}</p>}
       {!marks && notes && (
         <section className="card">
@@ -123,10 +89,10 @@ export function TodayDrawerView({ marks, notes, noMarksText, tracksHeading, trac
                 {marks.rows.map((row) => (
                   <tr key={row.label}>
                     <th scope="row">{row.label}</th>
-                    <td className="number">
+                    <td className="number" aria-label={row.todayName}>
                       <span>{row.today}</span>
                     </td>
-                    <td className="number">
+                    <td className="number" aria-label={row.yesterdayName}>
                       <span>{row.yesterday}</span>
                     </td>
                     <td className="number">{row.change}</td>
@@ -152,6 +118,8 @@ export function TodayDrawerView({ marks, notes, noMarksText, tracksHeading, trac
       {atEntry && <FigureCard id="today-at-entry-heading" {...atEntry} />}
     </>
   );
+  // A Closed Trade's Today is greyed as a whole (A242); the other states add no wrapper.
+  return stamp ? <div className="closed-today">{content}</div> : content;
 }
 
 // What the shell places: the Detail view and zone, and the replay once Trade Detail reads it.

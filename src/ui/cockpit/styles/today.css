@@ -43,6 +43,24 @@
   }
 }
 
+/* T8R.7 (A242, W30): a Closed Trade's Today is greyed with the app's muted text colour, which keeps WCAG AA contrast (no opacity). The "Closed"
+   stamp is real text, so the screen readers announce it. */
+.cockpit-drawers .closed-today,
+.cockpit-drawers .closed-today table.trades th,
+.cockpit-drawers .closed-today table.trades td {
+  color: var(--muted);
+}
+
+.cockpit-drawers .closed-stamp {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .cockpit-drawers .grid-note {
   margin: 0.5rem 0 0;
   font-size: 0.9rem;

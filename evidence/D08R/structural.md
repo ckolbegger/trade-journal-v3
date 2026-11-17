@@ -914,3 +914,11 @@ Behavioral, 2 cases; rows in `tdd-log/T8R.12.md`. The group "Since the last Mark
 ## T8R.12-F1
 
 Since the last Marks (W23) moved to sit immediately before Conditions (W31, W32), after the Plan group, following browser row B8R.4 ("W23, W31 and W32 groups in order; Deviations last"). Only `planRiskProps` changed order; every other group keeps its place. Case 1 of T8R.12 went red (Conditions came first), then green. `grep -rn "Since the last\|since-last" e2e` finds nothing, so no browser spec reads the group's place (`e2e/d8p/cockpit.spec.ts` HEADINGS reads O-C3 without new lots). The T8R.12 place row in `new-words.md` was updated.
+
+## T8R.7 Today on Settlement Due and Closed Trades
+
+Behavioral task, five cases in `src/ui/cockpit/drawers/today.props.test.ts` ("Today drawer: Settlement Due and Closed"); rows in `tdd-log/T8R.7.md`.
+
+- `e2e/d8p/states.spec.ts`: `expectDrawers` checks `toBeVisible` again (T8R.2 had relaxed it to "not hidden" until a Closed Today had content), and two blocks of assertions were added: the Settlement Due Today table ("Expired", named "Expired Fri Nov 20") and the Closed Today ("Closed" stamp, empty Today cell, "Expired Fri Nov 20" heading). Run: `npx playwright test e2e/d8p/states.spec.ts` after `npm run build:faults` and `npm run build:releases`: 3 passed.
+- `CurrentMarksOnly`, `CurrentMarksCard`, `currentMarksOf`, `currentMarksProps`, the `CurrentMarks` type, Cockpit's `settlementDue` local and the e2e helpers `valuation` and `todayFigure` are removed (orphaned).
+- Retired tests: Placed.test.tsx "should show the Mark, Source, Saved and Underlying Mark in the Position drawer card even when the replay holds an available Mark"; Placed.test.tsx "should show only the current Marks card in the Today drawer on a Settlement Due Detail" became "should show no current Marks card, price track or At entry in the Today drawer on a Settlement Due Detail"; Cockpit.test.tsx "should show the Settlement Due current Marks in Today, not in Position" became "should show no current Marks card in Today or in Position on a Settlement Due Detail" (a file outside lane TD's list, one case, changed because the card it asserted is gone).

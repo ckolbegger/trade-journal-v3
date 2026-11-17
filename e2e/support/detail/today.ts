@@ -3,11 +3,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { detailRoot, figureIn, regionOf, roleOf } from './scope.ts';
 
-// The current Marks card (T8P.31): the Mark with its provenance, a missing or acknowledged one, the Stale context, the Expected Mark Date and the
-// Underlying Mark. On an Open Detail the Marks table replaces it (T8R.6); it stands in Today only on a Settlement Due Detail, until T8R.7.
-export const valuation = (page: Page): Locator => detailRoot(page).locator('.current-marks');
-export const todayFigure = (page: Page, term: string): Locator => figureIn(valuation(page), term);
-// W29's Marks table on an Open Detail's Today, its headings, and one cell by its row ("XYZ Mark", "Call Mark") and column.
+// W29's Marks table on Today (every state, T8R.6 and T8R.7), its headings, and one cell by its row ("XYZ Mark", "Call Mark") and column.
 export const marksTable = (page: Page): Locator => roleOf(detailRoot(page), 'table', { name: 'Marks', exact: true });
 export const marksHeadings = (page: Page): Locator => marksTable(page).locator('thead th');
 const MARKS_COLUMN = { Today: 1, Yesterday: 2, Change: 3 } as const;

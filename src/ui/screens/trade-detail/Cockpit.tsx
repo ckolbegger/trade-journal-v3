@@ -12,7 +12,7 @@ import { PlanRiskDrawer } from '../../cockpit/drawers/plan-risk.tsx';
 import { PositionDrawer } from '../../cockpit/drawers/position.tsx';
 import { priceHistoryTabCount } from '../../cockpit/drawers/price-history.props.ts';
 import { PriceHistory } from '../../cockpit/drawers/price-history.tsx';
-import { CurrentMarksOnly, TodayDrawer } from '../../cockpit/drawers/today.tsx';
+import { TodayDrawer } from '../../cockpit/drawers/today.tsx';
 import { ReflectRequestContext } from '../OwedDebtItem.tsx';
 import { IncoherentPanel, IntegrityPanel } from './Banner.tsx';
 
@@ -60,7 +60,6 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, c
   const { shown, initial } = drawersOf(view);
   const [selected, setSelected] = useState<Drawer | undefined>(undefined);
   const current = selected && shown.includes(selected) ? selected : initial;
-  const settlementDue = 'positionChanges' in view && !('terminalDisposition' in view) && view.settlement.length > 0;
   const shell = { view, timeZone };
   // Wherever a card or drawer takes the replay, it takes the view beside it.
   const replayed = { ...shell, ...(replay && { replay }) };
@@ -117,8 +116,7 @@ export function Cockpit({ facade, view, replay: read, timeZone, onDirtyChange, c
   const panelOf =(drawer: Drawer): ReactNode => {
     switch (drawer) {
       case 'Today':
-        // A Settlement Due Detail shows only the current Marks card here (revision 96); T8R.7 replaces it with the Settlement Due table.
-        return settlementDue ? <CurrentMarksOnly {...replayed} /> : <TodayDrawer {...replayed} />;
+        return <TodayDrawer {...replayed} />;
       case 'Position':
         return <PositionDrawer {...shell} />;
       case 'Plan and Risk':

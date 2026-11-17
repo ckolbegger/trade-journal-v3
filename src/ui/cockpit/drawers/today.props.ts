@@ -1,15 +1,14 @@
-import type { OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
-import type { UnavailableReason } from '../../../domain/calculation-result/index.ts';
-import { instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
+import type { ClosedTradeDetail, OpenTradeDetail, TradeDetailView } from '../../../app/types.ts';
+import { expiredOn, instrumentKey, type Instrument } from '../../../domain/instrument/index.ts';
 import { text, unavailableWords } from '../../calculation-words.ts';
 import type { Rational } from '../../../domain/values/index.ts';
-import { decimalMoney, decimalUnderlyingPrice, localTime, money, quantity, rMultiple, shortDate, underlyingPrice } from '../../format.ts';
+import { decimalMoney, decimalUnderlyingPrice, money, quantity, rMultiple, shortDate, underlyingPrice } from '../../format.ts';
 import { toWorkspaceLocal } from '../../../domain/time/index.ts';
 import { calculation, dollarsAndR, pnlText, signed } from '../../figures.ts';
 import { contractCount, conditionDirection } from '../../screens/option-words.ts';
 import { abs, type Evaluation } from '../../screens/trade-detail/words.ts';
 import type { PriceTrackProps } from '../track.types.ts';
-import type { CurrentMarks, TodayDrawerProps } from './today.types.ts';
+import type { TodayDrawerProps } from './today.types.ts';
 
 // The adapter from the Detail view, and the replay when there is one, to the Today drawer's plain props (A216). The replay is absent until
 // Trade Detail reads `replayTrade` (T8P.22); without it the drawer leaves the comparison and the earlier markers out.
@@ -67,22 +66,86 @@ const priceTextOf = (optionTrade: boolean) => (instrument: Instrument, text: str
 // Outside session-policy coverage the view names no dates (A232): the headings carry none and no cell is selected.
 function marksOf({ replay }: TodayInput, { marksColumns: columns }: OpenTradeDetail, optionTrade: boolean): TodayDrawerProps['marks'] {
   if (!replay) return undefined;
-  const price = priceTextOf(optionTrade);
   const sessionOn = (date: string | undefined): Session | undefined => replay.sessions.find((s) => s.date === date);
   const today = sessionOn(columns?.today.date);
   const yesterday = sessionOn(columns?.yesterday);
-  const cell = (instrument: Instrument, session: Session | undefined): string => {
-    const mark = markOf(session, instrument);
-    return mark?.resolution.kind === 'Available' ? price(instrument, mark.resolution.mark.price) : '—';
-  };
+  const cell = markCellOf(optionTrade);
   const change = (instrument: Instrument): string => {
     const against = markOf(today, instrument)?.change;
     if (!against || against.since !== columns?.yesterday) return '—';
     return signed(instrument.kind === 'Option' || !optionTrade ? money : underlyingPrice)(against.dollars);
   };
   return {
-    columns: [columns ? `${columns.today.next ? 'Next session' : 'Today'}, ${shortDate(columns.today.date)}` : 'Today', columns ? `Yesterday, ${shortDate(columns.yesterday)}` : 'Yesterday', 'Change'],
+    columns: [todayHeadingOf(columns), columns ? `Yesterday, ${shortDate(columns.yesterday)}` : 'Yesterday', 'Change'],
     rows: replay.instruments.map((instrument) => ({ label: rowLabel(instrument), today: cell(instrument, today), yesterday: cell(instrument, yesterday), change: change(instrument) })),
+  };
+}
+
+// "Today, Thu Oct 15", or "Next session, Mon Oct 19" once the day's session has ended; no date outside session-policy coverage (A232).
+const todayHeadingOf = (columns: OpenTradeDetail['marksColumns']): string => (columns ? `${columns.today.next ? 'Next session' : 'Today'}, ${shortDate(columns.today.date)}` : 'Today');
+
+// A Mark cell: the replay session's Mark, or "—" for a session that has not ended or had none.
+const markCellOf = (optionTrade: boolean) => (instrument: Instrument, session: Session | undefined): string => {
+  const mark = markOf(session, instrument);
+  return mark?.resolution.kind === 'Available' ? priceTextOf(optionTrade)(instrument, mark.resolution.mark.price) : '—';
+};
+
+// An expired option's cell reads "Expired" and a screen reader hears "Expired Fri Nov 20" (W25).
+const expiredName = (instrument: Instrument): string => `Expired${instrument.kind === 'Option' ? ` ${shortDate(instrument.expiration)}` : ''}`;
+
+// A Settlement Due Detail's table (A234): the option's cell is "Expired" for a column dated after its expiration, otherwise its replayed Mark;
+// the Underlying's cells are the Detail's own, since the replay ends at the expiration session. Both of its cells and Change are selected, not computed.
+function settlementMarksOf(input: TodayInput, view: OpenTradeDetail): TodayDrawerProps['marks'] {
+  const { replay } = input;
+  const columns = view.marksColumns;
+  const base = marksOf(input, view, true);
+  if (!base || !replay) return base;
+  const { settlementUnderlying: underlying } = view;
+  const pointText = (point: NonNullable<OpenTradeDetail['settlementUnderlying']>['today']): string => (point?.kind === 'Available' ? decimalUnderlyingPrice(point.price) : '—');
+  return {
+    ...base,
+    rows: base.rows.map((row, index) => {
+      const instrument = replay.instruments[index]!;
+      if (instrument.kind === 'Stock') {
+        return { ...row, today: pointText(underlying?.today), yesterday: pointText(underlying?.yesterday), change: underlying?.change ? signed(underlyingPrice)(underlying.change.dollars) : '—' };
+      }
+      const after = (date: string | undefined): boolean => date !== undefined && expiredOn(instrument, date);
+      const name = expiredName(instrument);
+      return {
+        ...row,
+        ...(after(columns?.today.date) && { today: 'Expired', todayName: name, change: '—' }),
+        ...(after(columns?.yesterday) && { yesterday: 'Expired', yesterdayName: name }),
+      };
+    }),
+  };
+}
+
+// A Closed Detail's table (A235): the second column is the exit session's, headed "Exit Fri Nov 13" (by sale) or "Expired Fri Nov 20" (by
+// expiration) by the replay's last session. An Instrument's cell is its final exit Execution's price (an option that expired reads "Expired") and the
+// Underlying's its Mark at that session. Today's column is headed by the view and empty.
+function closedMarksOf({ replay }: TodayInput, view: ClosedTradeDetail, optionTrade: boolean): TodayDrawerProps['marks'] {
+  if (!replay) return undefined;
+  const byExpiration = view.terminalDisposition.kind === 'Value' && view.terminalDisposition.value.some(({ mechanism }) => mechanism === 'Expiration');
+  const last = replay.sessions.at(-1);
+  const cell = markCellOf(optionTrade);
+  const exitPrice = (instrument: Instrument): string => {
+    const final = view.positionChanges.flatMap((change) => change.executions).filter((e) => instrumentKey(e.instrument) === instrumentKey(instrument)).at(-1);
+    return final ? priceTextOf(optionTrade)(instrument, final.price) : '—';
+  };
+  return {
+    columns: [todayHeadingOf(view.marksColumns), `${byExpiration ? 'Expired' : 'Exit'}${last ? ` ${shortDate(last.date)}` : ''}`, 'Change'],
+    rows: replay.instruments.map((instrument) => {
+      const underlying = optionTrade && instrument.kind === 'Stock';
+      // By expiration the option's cell is "Expired", not a price.
+      const expired = byExpiration && !underlying;
+      return {
+        label: rowLabel(instrument),
+        today: '',
+        yesterday: expired ? 'Expired' : underlying ? cell(instrument, last) : exitPrice(instrument),
+        ...(expired && { yesterdayName: expiredName(instrument) }),
+        change: '—',
+      };
+    }),
   };
 }
 
@@ -237,55 +300,20 @@ function notesOf({ timeZone }: TodayInput, { current }: OpenTradeDetail): TodayD
   };
 }
 
-// The Mark that valued the figures at the Expected Mark Date, in the words the Valuation section gave it (revision 96). What a Settlement Due
-// Detail shows in Today until T8R.7 gives it W29's table; an Open Detail's Today has the table and the notes instead.
-function currentMarksOf({ timeZone }: TodayInput, open: OpenTradeDetail): CurrentMarks | undefined {
-  const { markResolution, evaluation, expectedMarkDate, mark, underlyingMark } = open.current;
-  const { instrument } = evaluation.observation;
-  const date = evaluation.valuationDate;
-  const sentence = (reason: UnavailableReason) => text(unavailableWords(reason, 'sentence', timeZone), timeZone);
-  const stale = evaluation.staleContext;
-  const rows = [
-    ...(expectedMarkDate ? [{ label: 'Expected Mark Date', value: shortDate(expectedMarkDate), plain: true }] : []),
-    ...(mark
-      ? [
-          { label: 'Mark', value: decimalMoney(mark.price) },
-          { label: 'Source', value: mark.source, plain: true },
-          { label: 'Saved', value: localTime(mark.savedAt, timeZone), plain: true },
-        ]
-      : []),
-    ...(underlyingMark ? [{ label: 'Underlying Mark', value: `${decimalMoney(underlyingMark.price)} · ${underlyingMark.source}` }] : []),
-  ];
-  // Before any Marks the "No Marks yet" line says when the first are due (revision 90), so nothing is missing yet.
-  const missing = markResolution?.kind === 'Missing' && open.current.firstMarksDue === undefined;
-  const hasLine = missing || markResolution?.kind === 'AcknowledgedUnavailable' || stale !== undefined;
-  // A card with nothing to show is not drawn.
-  if (rows.length === 0 && !hasLine) return undefined;
-  return {
-    ...(missing && {
-      missing: {
-        text: sentence({ reason: 'MarkMissing', instrument, date }),
-        to: `/review?trade=${encodeURIComponent(open.tradeId)}&instrument=${encodeURIComponent(instrument.symbol)}`,
-      },
-    }),
-    ...(markResolution?.kind === 'AcknowledgedUnavailable' && { acknowledged: `${sentence({ reason: 'AcknowledgedUnavailable', instrument, date })}: your acknowledgment, not a price` }),
-    ...(stale && { stale: `Stale context: ${decimalMoney(stale.price)} from ${shortDate(stale.tradingDate)} close (stale, not used in any current figure)` }),
-    rows,
-    ...(mark?.correctionReason !== undefined && { correction: mark.correctionReason }),
-  };
-}
-
-// The current-Marks card of a Settlement Due Detail's Today (T8R.7 replaces it): no table is drawn there, so no Mark is left out as "already shown".
-export function currentMarksProps(input: TodayInput): CurrentMarks | undefined {
-  const { view } = input;
-  if (!('current' in view) || 'terminalDisposition' in view) return undefined;
-  return currentMarksOf(input, view);
-}
-
 export function todayProps(input: TodayInput): TodayDrawerProps {
   const { view } = input;
-  if (!('current' in view) || 'terminalDisposition' in view) return { tracks: [] };
+  if (!('current' in view)) return { tracks: [] };
   const optionTrade = view.plan.legs[0]?.instrument.kind === 'Option';
+  if ('terminalDisposition' in view) {
+    const closedMarks = closedMarksOf(input, view, optionTrade);
+    return { ...(closedMarks && { marks: closedMarks }), stamp: 'Closed', tracks: [] };
+  }
+  // A Settlement Due Detail has the Marks table and its notes alone (revision 96): no price tracks, dated card or At entry.
+  if (view.settlement.length > 0) {
+    const settlementMarks = settlementMarksOf(input, view);
+    const settlementNotes = notesOf(input, view);
+    return { ...(settlementMarks && { marks: settlementMarks }), ...(settlementNotes && { notes: settlementNotes }), tracks: [] };
+  }
   const marks = marksOf(input, view, optionTrade);
   const noMarksText = noMarksTextOf(view, input.timeZone);
   const notes = notesOf(input, view);

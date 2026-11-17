@@ -21,3 +21,5 @@ Screen texts no approved row covers (decision 116 (2)). Each is the wording the 
 | The accessible name of the list of notes beneath the conditions: "Worst case and Max reward" → "Conditions notes" (provisional; Worst case and Max reward left the rail) | T8R.14-B1 | Trade Detail, rail, Conditions card | W5; W6; decision 116 (2) |
 | The Since the last Marks group's New lots value: "1 contract" for an option Trade, "40 shares" for a stock Trade (the words Today's At entry card gave its Quantity); its Risk and Reward figures read "$110.00 · 0.55R", amount then R | T8R.12 | Trade Detail, Plan and Risk | W23 |
 | The Since the last Marks group's place: before Conditions, after the Plan group (W23 gives no place; browser row B8R.4 reads "W23, W31 and W32 groups in order") | T8R.12 | Trade Detail, Plan and Risk | W23 |
+| A Closed Trade's Today column heading stays the view's "Today, Mon Nov 23" (A235) over empty cells, beside "Exit Fri Nov 13" or "Expired Fri Nov 20" | T8R.7 | Trade Detail, Today | W26, W29 |
+| The "Closed" stamp is drawn as a bordered tag at the top of a Closed Trade's Today (W30 gives only the word) | T8R.7 | Trade Detail, Today | W30 |

@@ -15,8 +15,7 @@ async function expectDrawers(page: Page, shown: readonly (string | RegExp)[], go
   const tabs = page.getByRole('tablist', { name: 'Detail' });
   await expect(tabs.getByRole('tab')).toHaveText([...shown]);
   await expect(tabs.getByRole('tab', { selected: true })).toHaveText(selected);
-  // The selected panel is shown, not `hidden`. A Closed Detail's Today holds no content until T8R.7, so it has no size to be "visible" by.
-  await expect(page.locator(PANEL(selected))).not.toHaveAttribute('hidden');
+  await expect(page.locator(PANEL(selected))).toBeVisible();
   for (const name of gone) {
     await expect(tabs.getByRole('tab', { name, exact: true })).toHaveCount(0);
     await expect(page.locator(PANEL(name))).toHaveCount(0);
@@ -45,6 +44,10 @@ test.describe('B8P.4 States', () => {
     await page.goto(`/trades/${tradeId}`);
     await expect(detail.settlementDueHeading(page)).toBeVisible(READY);
     await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal', 'Payoff'], [], 'Today');
+    // T8R.7 (W25): the put expired on Fri Nov 20, so Today's cell for it reads "Expired" and a screen reader hears "Expired Fri Nov 20".
+    await expect(detail.marksHeadings(page)).toHaveText(['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change']);
+    await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('Expired');
+    await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveAccessibleName('Expired Fri Nov 20');
     // W4: the contract, then what the figure waits for. W15: the Position drawer's Open P&L reads "Settlement Due". W6: the conditions are not measured.
     await expect(detail.pnlFigure(page)).toHaveText('Settlement Due: MNO Nov 20 $45 Put');
     await expect(detail.pnlLine(page)).toHaveText('Trade P&L once the expiration is recorded');
@@ -63,6 +66,11 @@ test.describe('B8P.4 States', () => {
     await expect(detail.heading(page, 'MNO')).toBeVisible(READY);
     await expectDrawers(page, ['Today', 'Position', 'Plan and Risk', PRICE_HISTORY, 'Journal 1 owed', 'Payoff'], [], 'Today');
     await expect(detail.lifecycleBadge(page)).toHaveText('Cash-Secured Put, Closed');
+    // T8R.7 (W26, W30): a Closed Trade's Today carries the "Closed" stamp, an empty Today column, and the expiration session's column.
+    await expect(page.locator(PANEL('Today')).getByText('Closed', { exact: true })).toBeVisible();
+    await expect(detail.marksHeadings(page).nth(1)).toHaveText('Expired Fri Nov 20');
+    await expect(detail.marksCell(page, 'Put Mark', 'Today')).toHaveText('');
+    await expect(detail.marksCell(page, 'Put Mark', 'Yesterday')).toHaveText('Expired');
     await expect(detail.identityCard(page).getByText('Expired Fri 20 Nov 2026', { exact: true })).toBeVisible();
     await expect(detail.pnlFigure(page)).toHaveText('$248.70');
     await expect(detail.pnlLine(page)).toHaveText('+0.69R realized, final');

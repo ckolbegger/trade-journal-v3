@@ -6,8 +6,8 @@ import { createElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { execution, openDetailAt, PC1, PC2, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
-import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
-import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
+import { optionClosedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
+import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1, ocChange, OS_CONTRACT, OS_ES, OS_S1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import type { OpenTradeDetail } from '../../../app/types.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../../domain/values/index.ts';
@@ -404,5 +404,102 @@ describe('Today drawer: the Marks table (W29)', () => {
     expect(screen.queryByRole('link', { hidden: true })).toBeNull();
     expect(screen.queryByText(/Mark missing for/)).toBeNull();
     expect(document.querySelector('.current-marks')).toBeNull();
+  });
+});
+
+// The Settlement Due and Closed tables (T8R.7): O-S2X is MNO's 20 Nov 45 Put (the fixture O-S), K1 and K2 are Trades sold out or expired.
+describe('Today drawer: Settlement Due and Closed (W25, W26, W30)', () => {
+  const NOV_PUT = OS_CONTRACT;
+  const MNO_STOCK: Instrument = { kind: 'Stock', symbol: 'MNO' };
+  const XYZ_STOCK: Instrument = { kind: 'Stock', symbol: 'XYZ' };
+  const columns = { today: { date: '2026-11-23', next: false }, yesterday: '2026-11-20' };
+  const point = (tradingDate: string, price: string) => ({ kind: 'Available' as const, tradingDate, closeInstant: `${tradingDate}T21:00:00Z`, price, revisionNumber: 1, source: 'Manual' as const, savedAt: `${tradingDate}T21:30:00Z` });
+  const tableCells = () => {
+    const table = screen.getByRole('table');
+    return {
+      headings: within(table).getAllByRole('columnheader').map((cell) => cell.textContent),
+      rows: within(table)
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) => [within(row).getByRole('rowheader').textContent, ...within(row).getAllByRole('cell').map((cell) => cell.textContent)]),
+    };
+  };
+  // O-S2X on Mon Nov 23: the put expired on Fri Nov 20. The Underlying's Marks are the Detail's own (A234); the replay ends at the expiration session.
+  const settlementDue = (): { view: OpenTradeDetail; replay: TodayReplay } => {
+    const base = optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' });
+    const view: OpenTradeDetail = {
+      ...base,
+      marksColumns: columns,
+      settlementUnderlying: { today: point('2026-11-23', '51.00'), yesterday: point('2026-11-20', '52.00'), change: { since: '2026-11-20', dollars: rational('-1.00') } },
+    };
+    const replay: TodayReplay = { instruments: [MNO_STOCK, NOV_PUT], sessions: [session('2026-11-19', [mark(NOV_PUT, '0.70')]), session('2026-11-20', [mark(NOV_PUT, '0.80', { since: '2026-11-19', amount: '0.10' })])] };
+    return { view, replay };
+  };
+
+  it("should show the Underlying's Marks for Today and Yesterday on a Settlement Due Trade, and no price tracks", () => {
+    const { view, replay } = settlementDue();
+    drawer(view, replay);
+    expect(tableCells()).toEqual({
+      headings: ['Today, Mon Nov 23', 'Yesterday, Fri Nov 20', 'Change'],
+      rows: [
+        ['MNO Mark', '51.00', '52.00', '−1.00'],
+        ['Put Mark', 'Expired', '$0.80', '—'],
+      ],
+    });
+    expect(document.querySelector('.tracks, .price-track')).toBeNull();
+    expect(screen.queryByRole('heading', { name: /Where the prices? sits?/ })).toBeNull();
+    expect(document.querySelector('.current-marks')).toBeNull();
+  });
+
+  it('should show Expired for the option on a session after its expiration, named Expired Fri Nov 20', () => {
+    const { view, replay } = settlementDue();
+    drawer(view, replay);
+    const expired = screen.getByRole('cell', { name: 'Expired Fri Nov 20' });
+    expect(expired.textContent).toBe('Expired');
+    // Friday is the expiration session itself, so its cell is a Mark; only Today's is Expired.
+    expect(screen.getAllByText('Expired')).toHaveLength(1);
+  });
+
+  // K1 (sold out by Fri Nov 13 at $12.40) and the replay to that session; the Underlying's Mark at it is 55.00.
+  const closedBySale = (): { view: OpenTradeDetail; replay: TodayReplay } => {
+    const sold = ocChange('pc-k1', '2026-11-13T15:00:00Z', 5, 'Sell', '2', '12.40', '0.65');
+    const view = { ...optionClosedDetail('O-C', [OC_PC1, OC_PC2, sold]), marksColumns: columns };
+    const replay: TodayReplay = { instruments: [XYZ_STOCK, OC_CONTRACT], sessions: [session('2026-11-12', [mark(XYZ_STOCK, '54.00'), mark(OC_CONTRACT, '12.00')]), session('2026-11-13', [mark(XYZ_STOCK, '55.00'), mark(OC_CONTRACT, '12.30')])] };
+    return { view, replay };
+  };
+
+  it("should show a Closed by sale Trade's final exit price under Exit Fri Nov 13, and the Underlying's Mark at that session", () => {
+    const { view, replay } = closedBySale();
+    drawer(view, replay);
+    expect(tableCells().headings).toEqual(['Today, Mon Nov 23', 'Exit Fri Nov 13', 'Change']);
+    expect(tableCells().rows.map(([label, , exit]) => [label, exit])).toEqual([
+      ['XYZ Mark', '55.00'],
+      ['Call Mark', '$12.40'],
+    ]);
+  });
+
+  it("should show Expired for the option and the Underlying's expiration Mark under Expired Fri Nov 20", () => {
+    const view = { ...optionClosedDetail('O-S', [OS_S1, OS_ES]), marksColumns: columns };
+    const replay: TodayReplay = { instruments: [MNO_STOCK, NOV_PUT], sessions: [session('2026-11-19', [mark(MNO_STOCK, '51.50')]), session('2026-11-20', [mark(MNO_STOCK, '52.00')])] };
+    drawer(view, replay);
+    expect(tableCells().headings).toEqual(['Today, Mon Nov 23', 'Expired Fri Nov 20', 'Change']);
+    expect(tableCells().rows.map(([label, , exit]) => [label, exit])).toEqual([
+      ['MNO Mark', '52.00'],
+      ['Put Mark', 'Expired'],
+    ]);
+    expect(screen.getByRole('cell', { name: 'Expired Fri Nov 20' })).toBeTruthy();
+  });
+
+  it('should leave the Today column empty and Change as a dash on a Closed Trade, with the Closed stamp', () => {
+    const { view, replay } = closedBySale();
+    drawer(view, replay);
+    for (const row of tableCells().rows) {
+      expect(row[1]).toBe('');
+      expect(row[3]).toBe('—');
+    }
+    // The stamp is real text for the accessibility tree, and the drawer is greyed.
+    const stamp = screen.getByText('Closed');
+    expect(stamp.closest('[aria-hidden="true"]')).toBeNull();
+    expect(stamp.closest('.closed-today')).not.toBeNull();
   });
 });

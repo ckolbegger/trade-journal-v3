@@ -1,29 +1,17 @@
 // @vitest-environment jsdom
 // The figures the legacy Summary card, Valuation and Risk and reward sections gave that no cockpit component showed, each in its one place
 // (D08P T8P.31, revision 96). Every read is scoped to the figure's new place, since the legacy block still shows it too until T8P.22.
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { closedDetailOf } from '../../../../tests/support/closed-detail-fixtures.ts';
 import { openDetailAt, openDetailOf, PC1, PC2, PC3, pc3Excess, X1, X2 } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
 import { OC_PC1, OC_PC2, OC_X1, OS_S1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
 import { plannedDetail } from '../../../../tests/support/views-fixtures.ts';
-import type { Instrument } from '../../../domain/instrument/index.ts';
-import type { TodayReplay } from '../../cockpit/drawers/today.props.ts';
-import { CurrentMarksOnly } from '../../cockpit/drawers/today.tsx';
 import { available, MON_CLOSE, openDrawer, renderView, termValue, THURSDAY, tuesday, useFixedClock } from './test-support.ts';
 
 afterEach(cleanup);
-
-// The card of current Marks inside a drawer's panel. It carries no heading of its own (no word is new), and the legacy Valuation section, which
-// has the same terms, still renders in the same panel, so the card is found by its class.
-function currentMarks(panel: HTMLElement): HTMLElement {
-  const card = panel.querySelector<HTMLElement>('section.current-marks');
-  expect(card).not.toBeNull();
-  return card!;
-}
 
 describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", () => {
   // The option Trade's cases read the current year from the clock, so it is fixed.
@@ -159,12 +147,14 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(linesOf('Reward to target')).toHaveLength(2);
   });
 
-  it('should show only the current Marks card in the Today drawer on a Settlement Due Detail', async () => {
+  // T8R.7: the Settlement Due table replaces the current-Marks card (its case "should show the Mark, Source, Saved and Underlying Mark in the Position
+  // drawer card ..." retires with `CurrentMarksOnly`); the tracks, dated card and At entry stay out.
+  it('should show no current Marks card, price track or At entry in the Today drawer on a Settlement Due Detail', async () => {
     const user = userEvent.setup();
     renderView(optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' }));
     await openDrawer(user, 'Today');
     const panel = document.getElementById('drawer-panel-today')!;
-    expect(panel.querySelector('section.current-marks')).not.toBeNull();
+    expect(panel.querySelector('section.current-marks')).toBeNull();
     // The tracks, condition lines and At entry are the Today drawer's own, so they are gone, hidden panels included.
     expect(panel.querySelector('.tracks, .price-track')).toBeNull();
     expect(within(panel).queryByText(/Where the prices? sits?/, { selector: 'h2' })).toBeNull();
@@ -173,34 +163,5 @@ describe("Trade Detail: the legacy blocks' figures in one place (revision 96)", 
     expect(within(panel).queryByRole('region', { name: /At entry/, hidden: true })).toBeNull();
     expect(within(panel).queryByRole('heading', { name: /At entry/, hidden: true })).toBeNull();
     expect(panel.querySelector('#today-at-entry-heading, #today-tracks-heading')).toBeNull();
-  });
-
-  it('should show the Mark, Source, Saved and Underlying Mark in the Position drawer card even when the replay holds an available Mark', () => {
-    const view = optionOpenDetail('O-S', [OS_S1], { tradingDate: '2026-11-20', closeInstant: '2026-11-20T21:00:00Z', contractMark: '0.80', underlyingMark: '52.00' });
-    const contract = (view as { current: { evaluation: { observation: { instrument: Instrument } } } }).current.evaluation.observation.instrument;
-    const underlying: Instrument = { kind: 'Stock', symbol: (view as { plan: { underlying: string } }).plan.underlying };
-    const marked = (instrument: Instrument, price: string): TodayReplay['sessions'][number]['marks'][number] => ({
-      instrument,
-      resolution: { kind: 'Available', mark: { price, source: 'Manual', savedAt: '2026-11-20T21:00:00Z' } },
-      change: null,
-    });
-    const replay: TodayReplay = {
-      instruments: [contract, underlying],
-      sessions: [
-        { date: '2026-11-19', marks: [marked(contract, '0.70'), marked(underlying, '51.00')] },
-        { date: '2026-11-20', marks: [marked(contract, '0.80'), marked(underlying, '52.00')] },
-      ],
-    };
-    const { container } = render(
-      <MemoryRouter>
-        <CurrentMarksOnly view={view} timeZone="America/New_York" replay={replay} />
-      </MemoryRouter>,
-    );
-    const card = currentMarks(container);
-    expect(termValue(card, 'Mark')).toBe('$0.80');
-    expect(termValue(card, 'Source')).toBe('Manual');
-    expect(termValue(card, 'Saved')).toBe('2026-11-20 16:00');
-    expect(termValue(card, 'Underlying Mark')).toBe('$52.00 · Manual');
-    expect(container.querySelector('table')).toBeNull();
   });
 });

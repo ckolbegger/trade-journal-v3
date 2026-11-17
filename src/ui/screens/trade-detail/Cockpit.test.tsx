@@ -110,13 +110,12 @@ describe('Trade Detail cockpit (W1, A217)', () => {
       expect(within(position).getByRole('region', { name: 'Lot Matches', hidden: true })).toBeTruthy();
     });
 
-    it('should show the Settlement Due current Marks in Today, not in Position', async () => {
+    // T8R.7: the Settlement Due table replaces the current-Marks card in Today (its table's cases are in today.props.test.ts).
+    it('should show no current Marks card in Today or in Position on a Settlement Due Detail', async () => {
       renderView(settlementDue());
       await screen.findByRole('region', { name: 'State of play' });
-      const card = document.getElementById('drawer-panel-today')!.querySelector<HTMLElement>('section.current-marks');
-      expect(card).not.toBeNull();
-      expect(within(card!).getByText('$0.80')).toBeTruthy();
-      // Absence, hidden panels included (T8P.30): the Position panel holds no current Marks card.
+      // Absence, hidden panels included (T8P.30).
+      expect(document.getElementById('drawer-panel-today')!.querySelector('.current-marks')).toBeNull();
       expect(document.getElementById('drawer-panel-position')!.querySelector('.current-marks')).toBeNull();
     });
   });
