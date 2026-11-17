@@ -210,6 +210,26 @@ describe('at-entry figures in Plan R (decision 105)', () => {
   });
 });
 
+describe('evaluate: AwaitingClose due (A243)', () => {
+  const fridayFrame = availableFrame('51.00', '2026-10-09', '2026-10-09T20:00:00Z');
+
+  it('should give AwaitingClose the session after its date as due, Mon Oct 12 for a Trade opened Mon 10:00 after Fridays Marks', () => {
+    const { currentMarkedPnl } = evaluate({ state: derivedState(referenceRecord([PC1, PC2])), frame: fridayFrame, nextSessionDate: '2026-10-12' });
+    expect(currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-09', due: '2026-10-12' });
+  });
+
+  it('should give lots added after earlier Marks the next session as due, Fri Oct 16', () => {
+    const { marketValue } = evaluate({ state: derivedState(referenceRecord([PC1, TUESDAY_PC2])), frame: availableFrame('52.00'), nextSessionDate: '2026-10-16' });
+    expect(marketValue).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-12', due: '2026-10-16' });
+  });
+
+  it('should leave due out when the evaluation has no next session date', () => {
+    const { currentMarkedPnl } = evaluate({ state: derivedState(referenceRecord([PC1, PC2])), frame: fridayFrame });
+    expect(currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: '2026-10-09' });
+    expect(currentMarkedPnl).not.toHaveProperty('due');
+  });
+});
+
 describe('dated last close with a Missing Mark (P13, A54)', () => {
   it('should, given only a Friday Mark and Monday fills, return no dated line (no exposure at Friday close) and at-entry figures for all 100 shares: risk from entry $268.00, reward from entry $582.00', () => {
     const fridayClose = '2026-10-09T20:00:00Z';

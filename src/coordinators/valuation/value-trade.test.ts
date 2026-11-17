@@ -266,6 +266,22 @@ describe('Mark-to-Market Valuation (P77, P78, P80)', () => {
     });
   });
 
+  it("should pass the next session date of the read session into the evaluation as the AwaitingClose due, A243", async () => {
+    const { app, analysisOf, open } = await book('2026-10-13T16:00:00Z');
+    // 100 shares bought Monday, 40 more Tuesday 10:00; only Monday's Mark is entered, and it is Tuesday noon.
+    const tradeId = await planStock(app, 'XYZ', '50.00', '47.50', '56.00');
+    await record(app, tradeId, { quantity: '100', price: '50.00', economicTime: PC1_TIME });
+    await record(app, tradeId, { quantity: '40', price: '50.30', economicTime: '2026-10-13T14:00:00Z' });
+    await saveMark(app, 'XYZ', MONDAY, '52.00');
+    const session = await open({ kind: 'Current', asOf: '2026-10-13T16:00:00Z' });
+
+    const valuation = await valueTrade(session, await analysisOf(tradeId));
+
+    if (valuation.kind !== 'Valued') throw new Error(`expected Valued, got ${valuation.kind}`);
+    expect(session.nextSessionDate).toBeDefined();
+    expect(valuation.evaluation.currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', after: MONDAY, due: session.nextSessionDate });
+  });
+
   it("should add the dated line for O-C at Monday's close, with XYZ's frame at that close (decision 97)", async () => {
     const { app, analysisOf, open } = await book('2026-10-13T21:00:00Z');
     const tradeId = await twoCalls(app);

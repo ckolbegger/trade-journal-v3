@@ -540,3 +540,9 @@ The four lane specs written for the merged state pass now that T8R.21 fills the 
 ocr found that `src/ui/screens/TradeDetail.test.tsx` adds `marksColumns` to its `thursday()` fixture by hand (line 42). T8R.21 now fills the field in `getTradeDetail`.
 
 Result: the override stays; no code changed. The test does not build its Detail through the coordinator. `facadeOf` makes `getTradeDetail` a mock (`facadeDouble()`, `mockResolvedValue({ kind: 'Ready', view, binding })`) and returns the hand-built `thursday()` view, so the screen only ever renders what the fixture holds. Removing the override would leave the table with no dates and the heading assertion (`Today, Thu Oct 15`, `Yesterday, Wed Oct 14`, `Change`) would fail for want of a source that this test has none of; a `marksColumnsOf` mutation could not reach it. The real emission is checked where the coordinator runs: `src/coordinators/trade-views/columns.test.ts` (I8R.2, A232), which T8R.21 added. The override mirrors the real field's shape (`{ today: { date, next }, yesterday }`), so it cannot drift silently from the type.
+
+## T8R.19
+
+- Cases: 3 in `src/domain/trade-analysis/evaluate.test.ts`, plus one coordinator case in `src/coordinators/valuation/value-trade.test.ts` for the pass-through (A243). Case 3 was a first-run pass, mutation-checked.
+- `AwaitingClose.due` is set from `TradeEvaluationInput.nextSessionDate`; `valueTrade` passes the read session's `nextSessionDate` into the main evaluation (not the dated line's).
+- Lane tier: three existing tests outside the lane now see `due` in toEqual expectations and fail: `tests/integration/d4/intraday.test.ts` (I4.18), `src/coordinators/trade-views/current-evaluation.test.ts` (AwaitingClose figures with dated and at-entry lines), `src/coordinators/trade-views/option-views.test.ts` ("should not say so once shares are added after an earlier Mark"). No frozen fixture failed: `verify:fixtures` exit 0. 14 of 14 checks exit 0.

@@ -257,7 +257,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       return { kind: 'Unavailable', reason: 'MarkMissing', instrument: foreign.instrument, date };
     }
     if (openedAfterClose) {
-      return { kind: 'Unavailable', reason: 'AwaitingClose', after: date };
+      return { kind: 'Unavailable', reason: 'AwaitingClose', after: date, ...(input.nextSessionDate !== undefined && { due: input.nextSessionDate }) };
     }
     return {
       kind: 'Unavailable',

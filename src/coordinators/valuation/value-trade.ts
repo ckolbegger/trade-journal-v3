@@ -91,7 +91,7 @@ export async function valueTrade(session: MarketDataReadSession, analysis: Trade
     observationsOf(session, state, analysis),
     options.withGaps ? session.gaps(state.observationRequirements.map((r) => ({ instrumentKey: instrumentKey(r.instrument), earliestExposure: r.earliestRelevance }))) : [],
   ]);
-  const evaluation = evaluate({ state, frame, ...(underlyingFrame && { underlyingFrame }) });
+  const evaluation = evaluate({ state, frame, ...(underlyingFrame && { underlyingFrame }), ...(session.nextSessionDate !== undefined && { nextSessionDate: session.nextSessionDate }) });
   const datedLine = read && !options.skipDatedLine && (await datedLineFor(session, analysis, read.frame, evaluation));
   return { kind: 'Valued', state, evaluation, settlement: await settlementOf(session, analysis.tradeId, evaluation), gaps, ...read, ...(datedLine && { datedLine }) };
 }
