@@ -251,6 +251,21 @@ describe('Plan and Risk: Since the last Marks (W23)', () => {
     expect(screen.queryByRole('region', { name: 'Since the last Marks' })).toBeNull();
     expect(screen.getByRole('region', { name: 'Entry Quality' })).toBeTruthy();
   });
+
+  it('should not show Since the last Marks when no Marks exist and the first-Marks session has passed', () => {
+    // O-S2X at Fri 11-20 12:00 with nothing saved: every lot is at entry, but no Marks exist for any lot to be newer than.
+    render(<PlanRiskDrawer view={oc3Plus({ noLotsAfterMarks: true })} timeZone="America/New_York" />);
+    expect(screen.queryByRole('region', { name: 'Since the last Marks' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'Entry Quality' })).toBeTruthy();
+  });
+
+  it('should not show Since the last Marks on a Settlement Due Trade whose lots predate its last Marks', () => {
+    // O-S2X at Mon 11-23 18:00: the Fri 11-20 Marks came after the lots, and the contract is due for settlement.
+    const base = oc3([stop(), target()]);
+    const view = { ...base, settlement: [{ tradeId: 'O-S2X' }], current: { ...base.current, evaluation: { ...base.current.evaluation, atEntry }, noLotsAfterMarks: true } } as unknown as OpenView;
+    render(<PlanRiskDrawer view={view} timeZone="America/New_York" />);
+    expect(screen.queryByRole('region', { name: 'Since the last Marks' })).toBeNull();
+  });
 });
 
 describe('Plan and Risk: Fulfillment and Deviations', () => {

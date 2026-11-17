@@ -271,6 +271,10 @@ export interface OpenCurrentEvaluation {
   // The trading date whose close brings the Trade's first Marks: present only while no session's Marks have valued it
   // (no dated line, every Lot at entry, nothing settling) and its figures wait on that close, not on a Mark (revision 90).
   readonly firstMarksDue?: string;
+  // Present when the evaluation's at-entry lots are not "bought after earlier Marks": no Marks exist for the figures to follow
+  // (a Mark missing with none earlier, or a contract past expiration, which reads none). Plan and Risk leaves out its
+  // "Since the last Marks" group then (W23). Additive (A245).
+  readonly noLotsAfterMarks?: true;
 }
 
 // A derived Lot Match with its Calculation Results (A78, A80): exact rationals, which the display rounds to cents.
@@ -498,6 +502,14 @@ function firstMarksDueOf(session: MarketDataReadSession, evaluation: TradeEvalua
   const { currentMarkedPnl, atEntry } = evaluation;
   const awaitingClose = currentMarkedPnl.kind === 'Unavailable' && currentMarkedPnl.reason === 'AwaitingClose';
   return session.covered && awaitingClose && atEntry !== null && !datedLine && settlement.length === 0 ? session.nextSessionDate : undefined;
+}
+
+// At-entry lots are "bought after earlier Marks" only when some Mark exists: the frame's own, or the latest earlier one the
+// evaluation discloses. With none, every lot is at entry because nothing has valued any lot (W23).
+function noLotsAfterMarksOf(evaluation: TradeEvaluation, datedLine: DatedLine | undefined): true | undefined {
+  // Lots opened after the frame's close leave its Mark unused, but the dated line then shows the earlier Marks valued the rest.
+  const marksExist = evaluation.observation.mark !== null || evaluation.staleContext !== undefined || datedLine !== undefined;
+  return evaluation.atEntry !== null && !marksExist ? true : undefined;
 }
 
 // The quantity-weighted Open Lot price, fees excluded; absent with no open quantity. The Trade Summary's price is this value.
@@ -859,6 +871,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           evaluation,
           ...optional('datedLine', datedLine),
           ...optional('firstMarksDue', firstMarksDueOf(session, evaluation, datedLine, settlement)),
+          ...optional('noLotsAfterMarks', noLotsAfterMarksOf(evaluation, datedLine)),
         };
         // The closes behind a Debt's due status come from the frame read; with none (after expiration, or no Position), from Market Data's frame for the Underlying.
         const hasDebt = narrative.some((item) => item.kind === 'Debt');

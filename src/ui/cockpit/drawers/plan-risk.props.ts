@@ -120,7 +120,8 @@ function sinceLastMarksGroup(view: TradeDetailView): PlanRiskGroup | undefined {
   if (!('current' in view) || 'terminalDisposition' in view) return undefined;
   const { atEntry } = view.current.evaluation;
   // Before the first Marks every lot is newer than them, and Entry Quality covers the entry (`firstMarksDue`, revision 90).
-  if (!atEntry || view.current.firstMarksDue !== undefined) return undefined;
+  // Nor when no Marks exist for a lot to be newer than, or the contract is past expiration (`noLotsAfterMarks`).
+  if (!atEntry || view.current.firstMarksDue !== undefined || view.current.noLotsAfterMarks) return undefined;
   const optionTrade = view.plan.legs[0]?.instrument.kind === 'Option';
   const inR = (dollars: Rational, planR: Rational) => `${money(dollars)} · ${rMultiple(planR)}`;
   return {

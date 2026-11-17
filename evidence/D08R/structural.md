@@ -1328,3 +1328,13 @@ T8R.25-B3 is committed as `320bda9e` in lane CB.
 - Nothing else used `triggers`.
 - The Plan group's Stop and Target rows keep the bare stock price, as W6 says.
 - The test name says "ABC", but the fixture's Underlying is XYZ. The assertion is sound.
+
+## T8R.25-B1
+
+Plan and Risk showed "Since the last Marks" whenever the evaluation had at-entry lots and `firstMarksDue` was unset. With no Marks at all (Mark missing, none earlier) or on a Settlement Due contract (no Mark is read), every lot is "at entry" and `firstMarksDue` stays unset, so the group appeared although no lot was bought after any Marks.
+
+Fix: Trade Views adds the optional, additive field `OpenCurrentEvaluation.noLotsAfterMarks?: true` (A245). It is set when the evaluation has at-entry lots but no Marks exist: no exact Mark, no stale Mark, no dated line. Plan and Risk leaves the group out when it is present. Entry Quality still covers the entry.
+
+Known limit: a Settlement Due Trade is treated as having no lots after Marks, since an expired contract reads no Mark and cannot be bought after expiration.
+
+Browser, via with-browser-lock.sh on 5175 (after `npm run build:faults` and `npm run build:releases`): e2e/d8p/states.spec.ts, e2e/d8p/cockpit.spec.ts, e2e/d7s (all four specs): 12 passed.

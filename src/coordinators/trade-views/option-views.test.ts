@@ -530,6 +530,28 @@ describe('Trade Detail: first Marks pending (revision 90)', () => {
     expect(expired.settlement).toHaveLength(1);
     expect(expired.current).not.toHaveProperty('firstMarksDue');
   }, 60_000);
+
+  it('should say no lots were bought after Marks when none exist yet or the contract is past expiration, and not after an earlier Mark', async () => {
+    // Monday's Mark is missing and none is earlier: every lot is at entry, but no Marks exist (T8R.25-B1).
+    const missing = await stockDetail(MONDAY_1700, (stack, trade) => stack.fill(trade, MONDAY_10, '100', '50.00'));
+    const expiredStack = await optionStack(MONDAY_NOV_23_1700);
+    const expired = openDetail(await expiredStack.tradeViews.getTradeDetail({ tradeId: await expiredStack.openCashSecuredPut() }));
+    // Monday's Mark values the first 100 shares; the 40 bought Tuesday are newer than it.
+    const after = await stockDetail(
+      TUESDAY_NOON,
+      async (stack, trade) => {
+        await stack.fill(trade, MONDAY_10, '100', '50.00');
+        await stack.fill(trade, TUESDAY_10, '40', '53.00');
+        await stack.saveMark('XYZ', '52.00');
+      },
+      { shares: '150' },
+    );
+
+    expect(missing.current).toEqual(expect.objectContaining({ noLotsAfterMarks: true }));
+    expect(expired.current).toEqual(expect.objectContaining({ noLotsAfterMarks: true }));
+    expect(after.current.evaluation.atEntry).not.toBeNull();
+    expect(after.current).not.toHaveProperty('noLotsAfterMarks');
+  }, 60_000);
 });
 
 // Revision 98 (A212): a Settlement Due Trade's replay lifetime ends with its contract's expiration session.
