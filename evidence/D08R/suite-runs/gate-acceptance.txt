@@ -1,0 +1,6 @@
+AC-CALC-003 (re-proven: each condition's distance and overrun, on the rail and in Plan and Risk) | npm run test:integration -- d8r/detail | 3 tests
+AC-MARK-003 (re-proven: an acknowledgment and an expired contract never read as a price) | npx playwright test e2e/d8r/states.spec.ts | 4 tests
+AC-MARK-004 (cumulative: Today's columns never carry a Mark forward) | npx playwright test e2e/d8r/today.spec.ts | 2 tests
+AC-PERF-001 (cumulative: the Open Detail's reads unchanged) | npm run test:integration -- d8r/query-count | 1 tests
+AC-UI-001, AC-UI-002 (cumulative) | npx playwright test e2e/d8r/responsive-a11y.spec.ts | 3 tests
+summary: 5 commands checked, 0 failed, 0 rows are procedures, not checked

@@ -1639,3 +1639,16 @@ The critic's 10 minor observations go to the final report.
 `.claude/docs/critic-brief.md` says a third critic's moderate defect stops the run. The handoff's later rule, decision 116 (3), approved by the user, takes precedence.
 
 **T8R.25 is Done.** Next: T8R.28, the gate.
+
+## T8R.28 gate: steps 1 and 2
+
+**Step 1, full-tier run `gate-full1` on `077043af`.** The run was complete according to `run-complete.sh`, with no flakes. Results:
+- unit: 2111 passed
+- integration: 269 passed
+- checks: 14 of 14 passed
+- browser-1: 126 passed (5.1 min)
+- browser-2: 136 passed (8.9 min)
+
+**Step 2, `acceptance-commands.sh plan/D08R-trade-detail-refactor.md`.** It exited 0, with 5 commands checked and 0 failed. The output is in `suite-runs/gate-acceptance.txt`.
+
+**Step 3, next.** A fresh gate critic, critic-4, on flows C8R.1 to C8R.6. This gate may use at most three critics.
