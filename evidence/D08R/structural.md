@@ -1232,6 +1232,7 @@ The report is in `critic-1.md`, saved with `tools/agent-report.ts`. The critic r
 | critic-1 (T8R.25) | critic-brief template, flows C8R.1 to C8R.4, plus decision P1 | 217,339 | 94 | 14 min 17 s | 3 moderate |
 | critic-2 (T8R.25) | as critic-1, plus nearby states and 375/320 px on every drawer | 197,247 | 71 | 12 min 27 s | 4 moderate |
 | critic-3 (T8R.25) | as critic-2, plus mixed-Mark days and 1280/1100/1024/960 px | 215,828 | 86 | 17 min 44 s | 1 moderate, 2 low |
+| critic-4 (T8R.28 gate) | critic-brief template, flows C8R.1 to C8R.6, nearby states, 1280/375/320 px and offline | 246,425 | 99 | 22 min 44 s | none |
 
 ## T8R.25-B1 returned; ocr
 
@@ -1652,3 +1653,9 @@ The critic's 10 minor observations go to the final report.
 **Step 2, `acceptance-commands.sh plan/D08R-trade-detail-refactor.md`.** It exited 0, with 5 commands checked and 0 failed. The output is in `suite-runs/gate-acceptance.txt`.
 
 **Step 3, next.** A fresh gate critic, critic-4, on flows C8R.1 to C8R.6. This gate may use at most three critics.
+
+## T8R.28 gate: step 3 and close
+
+critic-4, the gate's first critic, judged the `0fd59006` build and passed all six flows, C8R.1 to C8R.6, with no defects. Its report is in `critic-4.md`, and its cost row is in the critic-cost table. Section 13's five rows are marked covered. T8R.28 is Done.
+
+The final report is `final-report.md`. Next: tag `claude-opus-5.5-d8r` and remove `.claude/session.lock`.

@@ -627,11 +627,11 @@ Status values: `planned`, `covered`, `intentionally not advertised`.
 
 | Scenario | Deliverable | Tasks | Integration / browser | Critic | Command or procedure | Expected | Status |
 |---|---|---|---|---|---|---|---|
-| AC-CALC-003 (re-proven: each condition's distance and overrun, on the rail and in Plan and Risk) | D8R | T8R.10, T8R.14, T8R.18 | I8R.1; B8R.3 | C8R.3 | `npm run test:integration -- d8r/detail` | Every condition listed with its distance; a breach shows how far past | planned |
-| AC-MARK-003 (re-proven: an acknowledgment and an expired contract never read as a price) | D8R | T8R.6, T8R.7 | B8R.1; B8R.2 | C8R.2 | `npx playwright test e2e/d8r/states.spec.ts` | The acknowledgment note and "Expired" cells, never a figure | planned |
-| AC-MARK-004 (cumulative: Today's columns never carry a Mark forward) | D8R | T8R.6, T8R.21 | I8R.2; B8R.1 | C8R.2 | `npx playwright test e2e/d8r/today.spec.ts` | A session without a Mark reads "—" | planned |
-| AC-PERF-001 (cumulative: the Open Detail's reads unchanged) | D8R | T8R.22 | I8R.7 | — | `npm run test:integration -- d8r/query-count` | Open unchanged; Settlement Due adds one series read | planned |
-| AC-UI-001, AC-UI-002 (cumulative) | D8R | T8R.2, T8R.5 to T8R.17 | B8R.7 | C8R.6 | `npx playwright test e2e/d8r/responsive-a11y.spec.ts` | No sideways scroll; axe clean, greyed text included | planned |
+| AC-CALC-003 (re-proven: each condition's distance and overrun, on the rail and in Plan and Risk) | D8R | T8R.10, T8R.14, T8R.18 | I8R.1; B8R.3 | C8R.3 | `npm run test:integration -- d8r/detail` | Every condition listed with its distance; a breach shows how far past | covered |
+| AC-MARK-003 (re-proven: an acknowledgment and an expired contract never read as a price) | D8R | T8R.6, T8R.7 | B8R.1; B8R.2 | C8R.2 | `npx playwright test e2e/d8r/states.spec.ts` | The acknowledgment note and "Expired" cells, never a figure | covered |
+| AC-MARK-004 (cumulative: Today's columns never carry a Mark forward) | D8R | T8R.6, T8R.21 | I8R.2; B8R.1 | C8R.2 | `npx playwright test e2e/d8r/today.spec.ts` | A session without a Mark reads "—" | covered |
+| AC-PERF-001 (cumulative: the Open Detail's reads unchanged) | D8R | T8R.22 | I8R.7 | — | `npm run test:integration -- d8r/query-count` | Open unchanged; Settlement Due adds one series read | covered |
+| AC-UI-001, AC-UI-002 (cumulative) | D8R | T8R.2, T8R.5 to T8R.17 | B8R.7 | C8R.6 | `npx playwright test e2e/d8r/responsive-a11y.spec.ts` | No sideways scroll; axe clean, greyed text included | covered |
 
 ---
 
@@ -697,7 +697,7 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.25 | 2 | CB, C2 | Done: critic-1 and critic-2 defects fixed; critic-3 PASS, 1 moderate and 2 low to tech debt items 25, 26, 27 | B1 `a3256de7`; B2 `aef3d956`; B3 `0adedd00`; B4 `e0704377`; B5 `bffabe3c`; B6 `7b3990fa`; B8 `e5624d06`; B7 `580bace8` |
 | T8R.26 | 2 | NS | Done | `77ee17e1` |
 | T8R.27 | 2 | BR | Done | `d26eef1b`; B1 `f7c2682f`; B2 `4a2b68d6` (decision P2) |
-| T8R.28 | 2 | — | Not started | |
+| T8R.28 | 2 | — | Done: gate-full1 green, acceptance commands exit 0, critic-4 PASS with no defects | |
 
 ---
 
