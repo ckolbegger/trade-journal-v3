@@ -1,0 +1,137 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 25193,
+    "input_tokens": 24952,
+    "output_tokens": 241,
+    "cache_read_tokens": 4992,
+    "elapsed": "15s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/replay-trade.test.ts",
+        "src/coordinators/trade-views/trade-summary.test.ts",
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "d743c54b-3e14-4280-9a1c-89eeaa8a88b8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d743c54b-3e14-4280-9a1c-89eeaa8a88b8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "dbe5ae08",
+      "resolved_base": "45add4554feaf76c4c788924f66e546433f45254",
+      "resolved_head": "dbe5ae083acb196955c69823ce56e59b0dfc252a",
+      "exact_range": "45add4554feaf76c4c788924f66e546433f45254..dbe5ae083acb196955c69823ce56e59b0dfc252a",
+      "source_artifact_sha256": "a396954f3456fbc91e19d3bb36183b786d64c10069dd4d4efd37ff694c8bf93c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "d3e58740e8dbf2fd995cc186e8f61aecbd768926f7d0fd356e61b180febbf8e6"
+        },
+        {
+          "item_id": "2de3c2a3801e9c40d4316c531c61d6d45ad9375aca72a8d35884b2cf0b4edbbb",
+          "path": "src/coordinators/trade-views/trade-summary.test.ts",
+          "fingerprint": "62f3576bb3fbaed943f6b2c7717e17a0c77587c891425c6e76eaafc5a9cf4e30"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "5aa42ce2f4f398b3bff8d5823823ac0e9e911b6308de0f2a596c4abdc49ea87e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1d45db421e94e4694f6f3250c8a059de25ae8ed03b5c669cf5f50e18144d7d03",
+          "path": "src/coordinators/trade-views/replay-trade.test.ts",
+          "fingerprint": "d3e58740e8dbf2fd995cc186e8f61aecbd768926f7d0fd356e61b180febbf8e6"
+        },
+        {
+          "item_id": "2de3c2a3801e9c40d4316c531c61d6d45ad9375aca72a8d35884b2cf0b4edbbb",
+          "path": "src/coordinators/trade-views/trade-summary.test.ts",
+          "fingerprint": "62f3576bb3fbaed943f6b2c7717e17a0c77587c891425c6e76eaafc5a9cf4e30"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "5aa42ce2f4f398b3bff8d5823823ac0e9e911b6308de0f2a596c4abdc49ea87e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "0ed462ed067828c69e4c24a1be5df18a4778a4131f9043ae05d7aee8d4a7944c",
+          "path": "evidence/D08R/suite-runs/T8R.23-unit.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7c89b917634946cdd95944f6df2dd5a83954b1155ce0722e725b3a8e3855a2e1",
+          "path": "evidence/D08R/suite-runs/T8R.23-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "7ef6a2fcea04a682479323ebb77e697e8ae05add86f2162402a4fdfcd9d69846",
+          "path": "evidence/D08R/suite-runs/T8R.23-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "83b8213fdd4d21fd8016568f1fefdb3598c27436b0004fe2b0d92d3b3961bf4f",
+          "path": "evidence/D08R/tdd-log/T8R.23.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "910d271b6ef7f917e07192d6b3fadb121b48567613b1bb4c5b0f5c1863741008",
+          "path": "evidence/D08R/suite-runs/T8R.23-lane.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 14825
+  }
+}

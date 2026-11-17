@@ -663,31 +663,33 @@ Status, not plan: editing this section is not a plan revision (decision 100, ame
 | T8R.3-B1-F1 | 0 | CN | Done | `61451412` |
 | T8R.4 | 0 | PH | Done | `c7a9a3ca`; B1 met by F1 |
 | T8R.4-F1 | 0 | PH | Done | `bed2afe0` |
-| T8R.5 | 1 | PO | In progress from `80f0d7d9` | |
-| T8R.6 | 1 | TD | Committed `651e5470` (from `77d475d0`) | |
-| T8R.6-F1 | 1 | TD | Committed `3226c502` (from `400b4b02`); B1 met by `columns.test.ts`, no code | |
+| T8R.5 | 1 | PO | Done | `fc58e8ca`; B1 `ff8f7f72` |
+| T8R.6 | 1 | TD | Done | `c4585d5e`; B1 met by `columns.test.ts`, no code |
+| T8R.6-F1 | 1 | TD | Done | `665baf34` |
 | T8R.7 | 1 | TD | Not started | |
 | T8R.8 | 1 | TD | Not started | |
 | T8R.9 | 1 | TD | Not started | |
-| T8R.10 | 1 | PR | Committed `d8fd9ffe` (from `77d475d0`) | |
-| T8R.10-F1 | 1 | PR | In progress from `d8fd9ffe` | |
+| T8R.10 | 1 | PR | Done | `ff4b2d79`; B1 `a80d5663`; B2 `992e5792` |
+| T8R.10-F1 | 1 | PR | Done | `e69bf95e`; B1 `db0ecf20` |
+| T8R.10-F2 | 1 | PR | Done | `2d901dfe` |
 | T8R.11 | 1 | PR | Not started | |
 | T8R.12 | 1 | PR | Not started | |
 | T8R.13 | 1 | RA | Done | `5237ada5` |
-| T8R.14 | 1 | RA | In progress from `359e0498` | |
+| T8R.14 | 1 | RA | Committed `51b50abc` (from `359e0498`); B1 `0ef232cd` | |
+| T8R.14-F1 | 1 | RA | In progress (lane RA rebased onto the records commit) | |
 | T8R.15 | 1 | JR | Done | `727fd53a` |
 | T8R.15-F1 | 1 | JR | Done | `17b8abc6` |
-| T8R.15-F2 | 1 | JF | Committed `f6eaacff` (from `6ea5d5aa`) | |
-| T8R.16 | 1 | JR | Committed `86cdd686` (from `db0352e9`) | |
+| T8R.15-F2 | 1 | JF | Done | `5b653d2d` |
+| T8R.16 | 1 | JR | Done | `9170efb5` |
 | T8R.17 | 1 | JR | Not started | |
 | T8R.18 | 1 | BA | Done | `69582aaa` |
-| T8R.19 | 1 | BA | Committed `a471e993` (from `400b4b02`) | |
-| T8R.19-F1 | 1 | BA | Committed `972795f5` (from `a471e993`) | |
+| T8R.19 | 1 | BA | Done | `ce6d4c88` |
+| T8R.19-F1 | 1 | BA | Done | `e1ae8adc` |
 | T8R.20 | 1 | BA | Not started | |
 | T8R.21 | 1 | BV | Done | `c9155d02` |
 | T8R.22 | 1 | BV | Done | `a414c8c4` |
 | T8R.22-F1 | 1 | BV | Done | `ef9f6ba7` |
-| T8R.23 | 1 | BV | In progress from `45add455` | |
+| T8R.23 | 1 | BV | Done | `7d5d1543` |
 | T8R.24 | 2 | — | Not started | |
 | T8R.25 | 2 | — | Not started | |
 | T8R.26 | 2 | — | Not started | |

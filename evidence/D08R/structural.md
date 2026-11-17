@@ -646,3 +646,47 @@ Specs that call `riskFigure` (grep of `e2e/`): `e2e/d4/breach-overrun.spec.ts`, 
 | e2e/d4/responsive-a11y.spec.ts | passed | passed |
 
 Totals both times: 1 failed, 5 passed. `npm run typecheck` exit 0, `npm run lint` exit 0.
+
+## Merges: lanes TD, BA, JF, JR, PO, BV (T8R.23) and PR, in that order
+
+Each lane was rebased onto the deliverable branch's head at its turn and its lane tier rerun (each rebase brought in code it doesn't own), then fast-forwarded. Main took no commits between a rebase and its fast-forward. Evidence conflicts were resolved by keeping upstream and appending the lane commit's own lines.
+
+| Lane | Tasks, rebased hashes | Rerun lane tier (unit, integration, checks) |
+|---|---|---|
+| TD | T8R.6 `c4585d5e`, T8R.6-F1 `665baf34`, T8R.6-B1 evidence `d87d1da8` | 2066, 258, 14 of 14 (`T8R.6-rebased-*`) |
+| BA | T8R.19 `ce6d4c88`, T8R.19-F1 `e1ae8adc` | 2070, 258, 14 of 14 (`T8R.19-rebased-*`) |
+| JF | T8R.15-F2 `5b653d2d` | 2070, 258, 14 of 14 (`T8R.15-F2-rebased-*`) |
+| JR | T8R.16 `9170efb5` | 2072, 258, 14 of 14 (`T8R.16-rebased-*`) |
+| PO | T8R.5 `fc58e8ca`, T8R.5-B1 `ff8f7f72` | 2078, 258, 14 of 14 (`T8R.5-rebased-*`) |
+| BV | T8R.23 `7d5d1543` | 2080, 258, 14 of 14 (`T8R.23-rebased-*`) |
+| PR | T8R.10 `ff4b2d79`, F1 `e69bf95e`, B1 `a80d5663`, B2 `992e5792`, F2 `2d901dfe`, F1-B1 `db0ecf20` | 2086, 258, 14 of 14 (`T8R.10-rebased-*`) |
+
+**Lane PR's code conflict.** `src/ui/screens/TradeDetail.test.tsx` conflicted at T8R.10's commit. T8R.6 had replaced the "Risk to stop", "Reward to target" and Expected Mark Date lines with W29's check that "Expected Mark Date", "Mark", "Source" and "Saved" appear nowhere. T8R.10 had replaced the Risk to stop lines with "Risk or reward" in Plan and Risk, but still expected the Expected Mark Date in Today. The main session kept T8R.10's "Risk or reward" line and T8R.6's four-term check, which is the merged state both tasks describe. `new-words.md` conflicted too, and both sides' rows were kept. The rerun lane tier above passed on the resolution.
+
+**Pending in the same batch.** Lane RA (T8R.14, T8R.14-B1, and T8R.14-F1 to come) must merge before the next merge run. With T8R.10 merged, `e2e/d4/breach-overrun.spec.ts:42` matches two elements, and `e2e/d8p/cockpit.spec.ts:116` lacks the "Conditions" heading. T8R.14-F1 fixes both, along with the specs that T8R.14's rail change leaves stale.
+
+## ocr reviews: T8R.16, T8R.5-B1, T8R.10-B1/B2/F2, T8R.10-F1-B1, T8R.14, T8R.14-B1, T8R.23
+
+All reviews ran on gpt-6.1-sol. Several first runs hit the usage limit, waited until about 03:50 to 03:59, and the reports come from the complete reruns.
+
+| Commit | Session | Files reviewed, comments | Raw output | Result |
+|---|---|---|---|---|
+| T8R.16 `86cdd686` | 3e527d81 | 3, 0 | `ocr/T8R.16-86cdd686.json` | No findings |
+| T8R.5-B1 `f7a99f6e` | 349f0c18 | 1, 0 | `ocr/T8R.5-B1-f7a99f6e.json` | No findings |
+| T8R.10-B1, B2, F2 (`ccc698f1..e6b9be9b`) | 2ef0b40a | 3, 0 | `ocr/T8R.10-B1-B2-F2-e6b9be9b.json` | No findings |
+| T8R.10-F1-B1 `af8fa64f` | 23963e16 | 1, 0 | `ocr/T8R.10-F1-B1-af8fa64f.json` | No findings |
+| T8R.14 `51b50abc` | 5b8f0079 | 8, 1 | `ocr/T8R.14-51b50abc.json` | 1 finding, below |
+| T8R.14-B1 `0ef232cd` | 75f4ae64 | 2, 0 | `ocr/T8R.14-B1-0ef232cd.json` | No findings |
+| T8R.23 `dbe5ae08` | d743c54b | 3, 0 | `ocr/T8R.23-dbe5ae08.json` | No findings |
+
+**T8R.14's finding** (low, bug, `src/ui/cockpit/rail/conditions.tsx:32`): the list of notes beneath the conditions kept `aria-label="Worst case and Max reward"`, though it now holds only the notes. **Valid.** It became **T8R.14-B1**, which renamed the list "Conditions notes" (a new word) and added a case on a Planned Detail. The note-states case now queries the new name.
+
+T8R.14 reviewer note, answering the main session's question: removing `conditionsProps`'s `timeZone` loses nothing. The only zone-dependent text was Worst case and Max reward's `dollarsAndR`, now gone. The remaining reasons come from `unavailableLabel`, which names no contract.
+
+T8R.16 reviewer notes: `flushSync` in the click handler is sound. An effect keyed on the page would need a "the press asked for focus" flag, because "Reflect now" also changes the page. Separately, the Earlier handler in `journal-cards.tsx` ends with stray spaces and `}}>` on one line. That is formatting only, and is not a bug task (only ocr's own findings are).
+
+T8R.10-B1, B2 and F2 reviewer notes: B1's settlement test matches the rail's and `notesOf`'s. B2 keeps the three outcomes. F2 matches W31's cells. ADR 0001 holds.
+
+## T8R.23 stop, and the main session's decision
+
+T8R.23's agent built both cases. Case 2 passed on its first run, and its mutation check is recorded. The agent stopped before committing, because one exact expectation broke: `trade-summary.test.ts:153-154` lists the Open Detail's exact keys. The main session's implementation-level decision is to add `'openAverage'` at its sorted place. The comparison stays exact, the field is additive (A245), and T8R.21 did the same for `marksColumns`. A fresh agent applied it and committed. This goes in the final report. Note for T8R.8: `openAverage` is absent on an Open Detail with no open lots.

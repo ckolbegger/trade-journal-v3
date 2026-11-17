@@ -1,0 +1,208 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 1,
+    "total_tokens": 195656,
+    "input_tokens": 193858,
+    "output_tokens": 1798,
+    "cache_read_tokens": 13312,
+    "elapsed": "1m29s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 11,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/cockpit/rail/conditions.tsx",
+      "content": "The summary now contains only informational notes, but its parent list still has `aria-label=\"Worst case and Max reward\"`. On Planned, first-Marks-pending, and expired trades, screen readers will therefore announce financial concepts that this change removes from the rail. Remove or replace that accessible label and update the note-state tests, which currently query the obsolete name.",
+      "existing_code": "            \u003cli key={line.text}\u003e{line.text}\u003c/li\u003e",
+      "start_line": 32,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Cockpit rail conditions and styling with related unit and end-to-end tests",
+      "files": [
+        "e2e/d8p/cockpit.spec.ts",
+        "e2e/support/detail/rail-b.ts",
+        "src/ui/cockpit/rail/conditions.props.test.ts",
+        "src/ui/cockpit/rail/conditions.props.ts",
+        "src/ui/cockpit/rail/conditions.tsx",
+        "src/ui/cockpit/rail/conditions.types.ts",
+        "src/ui/cockpit/styles/rail-b.css",
+        "src/ui/screens/TradeDetail.test.tsx"
+      ]
+    }
+  ],
+  "session_id": "5b8f0079-247c-400a-8523-045f350882b2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5b8f0079-247c-400a-8523-045f350882b2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "51b50abc",
+      "resolved_base": "3189b5043dac35dc8cad9f0be280ce9dde22881f",
+      "resolved_head": "51b50abcea2e2f4a1379275a6ee5068205181601",
+      "exact_range": "3189b5043dac35dc8cad9f0be280ce9dde22881f..51b50abcea2e2f4a1379275a6ee5068205181601",
+      "source_artifact_sha256": "00575c0d4eedcd8f3988876aa964bd471d22abdda8dc2cd2a6cdcbbcc8a85fd9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.11",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "max_tool_request_times": 100,
+      "rule_config_sha256": "64af5b83f3a1250e5f6943899e993e0c9664c3cbb3879a452d705d418b83a672",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ff0e4978907606ef2648845885ae2f4599422a8bb84c86a48cccb0b7dfb26c0",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "dd9ae5d05545d2cdde9c9c3d39a062f7415d38440f8857416784aa6c3a2760b6"
+        },
+        {
+          "item_id": "1b2ea52d82c680e947cfe9c209497c48df4909d3b5abef4a1f9cb91bf41196a1",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "fingerprint": "c8e8ad3103851f1df24ecfad2ab3e196646f3a8420d651e324c39fc07b057742"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "7a3f25acfcbb26f957b9bbe728c1cdf60d74ccebb07e339998c02780263c17ad"
+        },
+        {
+          "item_id": "5c4e53554ce04237299483dbde2cdcf2cc51979cfa8426133108ec08a9552f90",
+          "path": "src/ui/cockpit/rail/conditions.types.ts",
+          "fingerprint": "5b7c4d32032b5b5678c0be91e4346470d8e4294bf29bb39725d69c997f399210"
+        },
+        {
+          "item_id": "7495c05a82ace2fd3f1d797db35d7767ca7c3700853ec3bb55a01790a62d5cc2",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "10e3c415943a931156f3c09b312e8bee11d719aab5aa920bbf841364471baf47"
+        },
+        {
+          "item_id": "78bc946a77ac98012370fe0cf95e62c1ed2d7e411ed8cce4d8ab94474fbb5080",
+          "path": "src/ui/cockpit/rail/conditions.tsx",
+          "fingerprint": "83ce27b005df5430df3b7e267517f1e6882c448865382c2f50c8a114c3da8633"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "3392710262373b0f5de48d86ab34ccc136441a0b831c68ebc1065c10837e5a58"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "3673a1507e3b25f607edbfb781955354d5363e82fee8740722c2a70be22e99db"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ff0e4978907606ef2648845885ae2f4599422a8bb84c86a48cccb0b7dfb26c0",
+          "path": "src/ui/cockpit/rail/conditions.props.ts",
+          "fingerprint": "dd9ae5d05545d2cdde9c9c3d39a062f7415d38440f8857416784aa6c3a2760b6"
+        },
+        {
+          "item_id": "1b2ea52d82c680e947cfe9c209497c48df4909d3b5abef4a1f9cb91bf41196a1",
+          "path": "src/ui/cockpit/rail/conditions.props.test.ts",
+          "fingerprint": "c8e8ad3103851f1df24ecfad2ab3e196646f3a8420d651e324c39fc07b057742"
+        },
+        {
+          "item_id": "4e8c9fded9c24bb922049c410df7d1152836a705500c2ae0b2bd9662c565f721",
+          "path": "e2e/d8p/cockpit.spec.ts",
+          "fingerprint": "7a3f25acfcbb26f957b9bbe728c1cdf60d74ccebb07e339998c02780263c17ad"
+        },
+        {
+          "item_id": "5c4e53554ce04237299483dbde2cdcf2cc51979cfa8426133108ec08a9552f90",
+          "path": "src/ui/cockpit/rail/conditions.types.ts",
+          "fingerprint": "5b7c4d32032b5b5678c0be91e4346470d8e4294bf29bb39725d69c997f399210"
+        },
+        {
+          "item_id": "7495c05a82ace2fd3f1d797db35d7767ca7c3700853ec3bb55a01790a62d5cc2",
+          "path": "src/ui/cockpit/styles/rail-b.css",
+          "fingerprint": "10e3c415943a931156f3c09b312e8bee11d719aab5aa920bbf841364471baf47"
+        },
+        {
+          "item_id": "78bc946a77ac98012370fe0cf95e62c1ed2d7e411ed8cce4d8ab94474fbb5080",
+          "path": "src/ui/cockpit/rail/conditions.tsx",
+          "fingerprint": "83ce27b005df5430df3b7e267517f1e6882c448865382c2f50c8a114c3da8633"
+        },
+        {
+          "item_id": "87638b8e40a8471b5a00443528a3c98bf4752f964c11c4b564b6258d593b8716",
+          "path": "src/ui/screens/TradeDetail.test.tsx",
+          "fingerprint": "3392710262373b0f5de48d86ab34ccc136441a0b831c68ebc1065c10837e5a58"
+        },
+        {
+          "item_id": "b92e16500abd20dbbb59c0cc55fbda79143a842d0e5653c18c442a0e869dc7f5",
+          "path": "e2e/support/detail/rail-b.ts",
+          "fingerprint": "3673a1507e3b25f607edbfb781955354d5363e82fee8740722c2a70be22e99db"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": [],
+      "excluded": [
+        {
+          "item_id": "097be76f3424ad4312cb458014e4e93e2ee67040ff0d3b25f6e2524a956b49ae",
+          "path": "evidence/D08R/suite-runs/T8R.14-checks.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "485887fb46a4d0a77cb9dbf3a54b7421c4d5c1ced684a7aa65bc885fd69961a6",
+          "path": "evidence/D08R/structural.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "573c9d042a1b2ab5707a2ecc67a608aa549e5a4043eb8f46e7be470ab63857c7",
+          "path": "evidence/D08R/tdd-log/T8R.14.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "a735be025a43ce1a0f7ded770c6ec296235cd416063a83fd2eb5e8ae000275c0",
+          "path": "evidence/D08R/suite-runs/T8R.14-integration.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "b3f2573afc6e5ef618bc2b3fa1407931c4d6d8f0de663c8ef511a8d0ab72248f",
+          "path": "evidence/D08R/new-words.md",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "e716255d6136c1a611354e1d3cd60419b2eaa5531ce860fb0264f50f2a4d7362",
+          "path": "evidence/D08R/suite-runs/T8R.14-lane.txt",
+          "exclude_reason": "user_exclude"
+        },
+        {
+          "item_id": "f6213b0229410e0cb21766f8c9a01c67b419b62d3fa3431e73a08303245646a6",
+          "path": "evidence/D08R/suite-runs/T8R.14-unit.txt",
+          "exclude_reason": "user_exclude"
+        }
+      ]
+    },
+    "elapsed_ms": 89036
+  }
+}
