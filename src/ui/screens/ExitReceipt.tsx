@@ -76,7 +76,7 @@ export function ExitReceipt({ result, timeZone, closeReasons }: ExitReceiptProps
         <ul className="executions">
           {saved.executions.map((e) => (
             <li key={e.factId} className="execution-line">
-              <span className="execution-what">{executionWhat(e, trade.plan.legs)}</span>{' '}
+              <span className="execution-what">{executionWhat(e, trade.plan.legs, timeZone)}</span>{' '}
               <span className="execution-price number">{`@ ${price(e.price)}`}</span>
             </li>
           ))}

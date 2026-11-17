@@ -82,7 +82,7 @@ export function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentT
           <tbody>
             {view.findings.map((finding, index) => (
               <tr key={index}>
-                <td>{text(findingWords(finding, timeZone))}</td>
+                <td>{text(findingWords(finding, timeZone), timeZone)}</td>
               </tr>
             ))}
           </tbody>

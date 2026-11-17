@@ -33,7 +33,7 @@ function planGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup {
   const leg = view.plan.legs[0];
   const rows: PlanRiskRow[] = [];
   if (leg?.instrument.kind === 'Option') rows.push({ label: 'Contract', value: instrumentLabel(leg.instrument, timeZone), plain: true });
-  rows.push({ label: 'Leg', value: leg ? legText(leg) : '', plain: true });
+  rows.push({ label: 'Leg', value: leg ? legText(leg, timeZone) : '', plain: true });
   if (view.plan.exerciseIntent) rows.push({ label: 'Exercise Intent', value: exerciseIntentText(view.plan.exerciseIntent), plain: true });
   rows.push(
     { label: 'Intended entry', value: leg ? price(leg.intendedEntry) : '' },
@@ -47,14 +47,14 @@ function planGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup {
 
 // Each condition's Risk to stop or Reward to target, one line per condition in Plan order (the Risk and reward section's Distance column).
 // The rail's card keeps only the nearest (A207).
-function conditionFiguresGroup(view: TradeDetailView): PlanRiskGroup | undefined {
+function conditionFiguresGroup(view: TradeDetailView, timeZone: string): PlanRiskGroup | undefined {
   if (!('current' in view) || 'terminalDisposition' in view) return undefined;
   const { conditions } = view.current.evaluation;
   // A figure with no reading says why at the figure length, where it lives (A222).
   // A contract due for settlement is not measured (W6), whichever reason its result carries on the expiration day.
   const due = 'settlement' in view ? view.settlement[0] : undefined;
   const lineOf = (c: (typeof conditions)[number]) =>
-    due && c.result.kind === 'Unavailable' ? settlementDueFigure(due) : calculation(c.result, (reading) => measureText(reading.distance));
+    due && c.result.kind === 'Unavailable' ? settlementDueFigure(due, timeZone) : calculation(c.result, (reading) => measureText(reading.distance), timeZone);
   const linesOf = (role: 'Stop' | 'Target') => conditions.filter((c) => c.role === role).map(lineOf);
   const rows = [
     { label: 'Risk to stop', value: linesOf('Stop') },
@@ -103,7 +103,7 @@ function entryQualityGroup(view: TradeDetailView, timeZone: string): PlanRiskGro
 }
 
 export function planRiskProps({ view, timeZone }: PlanRiskSource): PlanRiskDrawerProps {
-  const figures = conditionFiguresGroup(view);
+  const figures = conditionFiguresGroup(view, timeZone);
   return {
     // Only a Planned Detail: the others have it in Position.
     ...(!('positionChanges' in view) && 'summary' in view && view.summary && { tradeSummary: tradeSummary(view.summary, timeZone) }),

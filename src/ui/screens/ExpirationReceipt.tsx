@@ -43,7 +43,7 @@ export function ExpirationReceipt({ result, timeZone, fromReview }: ExpirationRe
         </h2>
         <ul className="executions">
           {(saved.settlements ?? []).map((s) => (
-            <li key={s.factId} className="execution-line">{expirationLine(s)}</li>
+            <li key={s.factId} className="execution-line">{expirationLine(s, timeZone)}</li>
           ))}
         </ul>
       </section>

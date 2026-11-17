@@ -21,8 +21,8 @@ export const unavailableLabel = (reason: UnavailableReason): string => text(unav
 
 // The figure of a contract due for settlement at the figure length. A Detail's settlement items decide it, not the result's own reason: on the
 // expiration day itself the replay's newest session lacks the contract's Mark, so the result says MarkMissing.
-export const settlementDueFigure = (due: { readonly instrument: OptionInstrument; readonly expiration: string }): string =>
-  text(unavailableWords({ reason: 'SettlementDue', instrument: due.instrument, expiration: due.expiration }, 'figure', NO_ZONE));
+export const settlementDueFigure = (due: { readonly instrument: OptionInstrument; readonly expiration: string }, timeZone = NO_ZONE): string =>
+  text(unavailableWords({ reason: 'SettlementDue', instrument: due.instrument, expiration: due.expiration }, 'figure', timeZone), timeZone);
 
 // A list has no result for a Trade whose facts cannot be replayed; it words FactsIncoherent, whose badge and figure these are.
 const FACTS_INCOHERENT = { reason: 'FactsIncoherent', findings: [] } as const satisfies UnavailableReason;
@@ -30,7 +30,8 @@ export const FACTS_INCOHERENT_LABEL = unavailableLabel(FACTS_INCOHERENT);
 export const FACTS_INCOHERENT_FIGURE = text(unavailableWords(FACTS_INCOHERENT, 'figure', NO_ZONE));
 
 // A figure that may lack its Mark says so in words, never as a number or a zero.
-export function calculation<T>(result: CalculationResult<T>, format: (value: T) => string): string {
+// A contract's name in the words decides the current year in the Workspace zone; a figure that never names one needs none.
+export function calculation<T>(result: CalculationResult<T>, format: (value: T) => string, timeZone = NO_ZONE): string {
   switch (result.kind) {
     case 'Value':
       return format(result.value);
@@ -39,14 +40,19 @@ export function calculation<T>(result: CalculationResult<T>, format: (value: T) 
     case 'NotApplicable':
       return text(notApplicableWords(result, 'figure'));
     case 'Unavailable':
-      return text(unavailableWords(result, 'figure', NO_ZONE));
+      return text(unavailableWords(result, 'figure', timeZone), timeZone);
   }
 }
 
 // A figure in dollars and in R ("$450.00 · 1.80R"), or the words for what is missing.
-export function dollarsAndR(dollars: CalculationResult<Rational>, planR: CalculationResult<Rational>, sign: (format: (value: Rational) => string) => (value: Rational) => string = (format) => format): string {
-  return dollars.kind === 'Value' && planR.kind === 'Value' ? `${sign(money)(dollars.value)} · ${sign(rMultiple)(planR.value)}` : calculation(dollars, sign(money));
+export function dollarsAndR(
+  dollars: CalculationResult<Rational>,
+  planR: CalculationResult<Rational>,
+  sign: (format: (value: Rational) => string) => (value: Rational) => string = (format) => format,
+  timeZone = NO_ZONE,
+): string {
+  return dollars.kind === 'Value' && planR.kind === 'Value' ? `${sign(money)(dollars.value)} · ${sign(rMultiple)(planR.value)}` : calculation(dollars, sign(money), timeZone);
 }
 
 // Current Marked Trade P&L in dollars and R ("+$582.00 · +2.33R"), or the words for what is missing.
-export const pnlText = (pnl: CalculationResult<Rational>, planR: CalculationResult<Rational>): string => dollarsAndR(pnl, planR, signed);
+export const pnlText = (pnl: CalculationResult<Rational>, planR: CalculationResult<Rational>, timeZone = NO_ZONE): string => dollarsAndR(pnl, planR, signed, timeZone);

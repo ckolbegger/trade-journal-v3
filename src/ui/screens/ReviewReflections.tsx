@@ -55,10 +55,10 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
       </p>
       <ul className="executions">
         {reflection.executions.map((e) => (
-          <li key={e.factId}>{`${executionWhat(e, reflection.legs ?? [])} @ ${price(e.price)}`}</li>
+          <li key={e.factId}>{`${executionWhat(e, reflection.legs ?? [], timeZone)} @ ${price(e.price)}`}</li>
         ))}
         {(reflection.settlements ?? []).map((s) => (
-          <li key={s.factId}>{expirationLine(s)}</li>
+          <li key={s.factId}>{expirationLine(s, timeZone)}</li>
         ))}
       </ul>
       {!resolved && !isOpen && (

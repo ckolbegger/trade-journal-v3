@@ -88,7 +88,7 @@ const BEFORE_MARKS = 'Distances to each condition and the worst case arrive with
 const PLANNED = 'Distances to each condition arrive with the first Marks after entry.';
 const EXPIRED = 'The contract expired, so its conditions are no longer measured.';
 
-function openProps(view: OpenTradeDetail): ConditionsCardProps {
+function openProps(view: OpenTradeDetail, timeZone: string | undefined): ConditionsCardProps {
   const { plan } = view;
   const { evaluation } = view.current;
   // Once the contract expired its conditions are no longer measured (W6).
@@ -99,22 +99,22 @@ function openProps(view: OpenTradeDetail): ConditionsCardProps {
   if (waiting) return { conditions, summary: [{ text: BEFORE_MARKS }] };
   // A Closed Detail has no open Position to measure.
   if ('terminalDisposition' in view) return { conditions, summary: [] };
-  const worst = dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR);
+  const worst = dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone);
   return {
     conditions,
     summary: [
       { label: 'Worst case', text: evaluation.worstCaseOngoingRisk.kind === 'Value' ? `${worst} if ${worstCaseWords(plan)}` : worst },
-      { label: 'Max reward', text: dollarsAndR(evaluation.maximumIncrementalReward, evaluation.maximumIncrementalRewardInPlanR) },
+      { label: 'Max reward', text: dollarsAndR(evaluation.maximumIncrementalReward, evaluation.maximumIncrementalRewardInPlanR, undefined, timeZone) },
     ],
   };
 }
 
-export function conditionsProps(view: TradeDetailView): ConditionsCardProps | undefined {
-  if ('current' in view) return openProps(view);
+export function conditionsProps(view: TradeDetailView, timeZone?: string): ConditionsCardProps | undefined {
+  if ('current' in view) return openProps(view, timeZone);
   // An incoherent Detail has no replay to measure against, so its card lists the Plan's conditions, rows 1 and 2 only, and says nothing beneath (W5).
   if ('recordedPositionChanges' in view) return { conditions: unmeasured(view.plan), summary: [] };
   return { conditions: unmeasured(view.plan), summary: [{ text: PLANNED }] };
 }
 
 // The shell hands a card its view as `unknown` (ShellProps), since a component may not name `app/types`.
-export const conditionsPropsOf = ({ view }: ShellProps): ConditionsCardProps | undefined => (view === undefined ? undefined : conditionsProps(view as TradeDetailView));
+export const conditionsPropsOf = ({ view, timeZone }: ShellProps): ConditionsCardProps | undefined => (view === undefined ? undefined : conditionsProps(view as TradeDetailView, timeZone));

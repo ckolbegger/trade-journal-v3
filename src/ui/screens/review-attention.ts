@@ -16,12 +16,12 @@ const percent = (share: Rational): string => formatDecimal(Rational.of(share.num
 // Why a Trade is in its band, in words; an Unavailable reason's words are the module's sentence (P72).
 export function reasonText(reason: ReviewTradeItem['reasons'][number], basis: ReviewTradeItem['basis'], timeZone: string): string {
   // Row 24.5's sentence is the module's, so the card and the overview say the same; a screen never branches on its code.
-  if (isSettlementDueAttention(reason)) return text(unavailableWords({ reason: 'SettlementDue', instrument: reason.instrument, expiration: reason.expiration }, 'sentence', timeZone));
+  if (isSettlementDueAttention(reason)) return text(unavailableWords({ reason: 'SettlementDue', instrument: reason.instrument, expiration: reason.expiration }, 'sentence', timeZone), timeZone);
   switch (reason.code) {
     case 'IntegrityDisagreement':
       return 'Recorded facts disagree';
     case 'Unavailable':
-      return text(unavailableWords(reason, 'sentence', timeZone));
+      return text(unavailableWords(reason, 'sentence', timeZone), timeZone);
     case 'StopBreached':
       return 'Stop breached';
     case 'TargetReached':

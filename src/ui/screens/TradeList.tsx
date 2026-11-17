@@ -152,7 +152,7 @@ export function openRowsOf(
     const derived = 'openQuantity' in item ? item : undefined;
     const cost = derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE;
     const disagreement = disagreementBadge(item.integrity, derived);
-    const pnl = derived ? `${pnlText(derived.current.currentMarkedPnl, derived.current.currentMarkedPnlInPlanR)}${derived.current.datedLine ? datedLineText(derived.current.datedLine) : ''}` : undefined;
+    const pnl = derived ? `${pnlText(derived.current.currentMarkedPnl, derived.current.currentMarkedPnlInPlanR, timeZone)}${derived.current.datedLine ? datedLineText(derived.current.datedLine, timeZone) : ''}` : undefined;
     const tradeCell =
       (derived?.summary ? tradeSummary(derived.summary, timeZone) : NOT_AVAILABLE) +
       (disagreement ? ` ${disagreement}` : '') +
@@ -279,19 +279,20 @@ function missingMark(current: Current) {
 }
 
 // The dated line that follows the P&L: " Tue Oct 13 close +$12.00".
-const datedLineText = (datedLine: NonNullable<Current['datedLine']>) =>
-  ` ${shortDate(datedLine.tradingDate)} close ${pnlText(datedLine.evaluation.currentMarkedPnl, datedLine.evaluation.currentMarkedPnlInPlanR)}`;
+const datedLineText = (datedLine: NonNullable<Current['datedLine']>, timeZone: string | undefined) =>
+  ` ${shortDate(datedLine.tradingDate)} close ${pnlText(datedLine.evaluation.currentMarkedPnl, datedLine.evaluation.currentMarkedPnlInPlanR, timeZone)}`;
 
 // Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
 // words link to this Trade's own card in the Review (A161). The dated line's P&L follows, labelled with its date.
 function Pnl({ current, tradeId }: { readonly current: Current; readonly tradeId: string }) {
   const { currentMarkedPnl: pnl, currentMarkedPnlInPlanR: planR, datedLine } = current;
+  const { timeZone } = useRuntime();
   const missing = missingMark(current);
-  const text = pnlText(pnl, planR);
+  const text = pnlText(pnl, planR, timeZone);
   return (
     <>
       {missing ? <Link to={`/review?trade=${encodeURIComponent(tradeId)}&instrument=${encodeURIComponent(missing.instrument.symbol)}`}>{text}</Link> : text}
-      {datedLine && datedLineText(datedLine)}
+      {datedLine && datedLineText(datedLine, timeZone)}
     </>
   );
 }

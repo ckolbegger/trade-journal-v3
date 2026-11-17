@@ -25,12 +25,13 @@ function Figure({ term, children }: { readonly term: string; readonly children: 
 
 // Current Marked Trade P&L in dollars and R, then the Mark-dependent risk and reward.
 function Figures({ evaluation, children }: { readonly evaluation: Evaluation; readonly children?: ReactNode }) {
+  const { timeZone } = useRuntime();
   return (
     <dl>
-      <Figure term="Current Marked Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR)}</Figure>
-      <Figure term="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR)}</Figure>
-      <Figure term="Worst-Case Ongoing Risk">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR)}</Figure>
-      <Figure term="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR)}</Figure>
+      <Figure term="Current Marked Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR, timeZone)}</Figure>
+      <Figure term="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR, undefined, timeZone)}</Figure>
+      <Figure term="Worst-Case Ongoing Risk">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone)}</Figure>
+      <Figure term="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR, undefined, timeZone)}</Figure>
       {children}
     </dl>
   );
@@ -41,6 +42,7 @@ function Figures({ evaluation, children }: { readonly evaluation: Evaluation; re
 // summary; a stock Trade is Long Stock, whose Stop is below and Target above.
 function Conditions({ trade, evaluation }: { readonly trade: DailyTradeReview; readonly evaluation: Evaluation }) {
   const uid = useId();
+  const { timeZone } = useRuntime();
   const { summary } = trade;
   if (evaluation.conditions.length === 0) return null;
   const option = summary?.kind === 'Option' ? { right: summary.right, side: summary.direction } : undefined;
@@ -54,7 +56,7 @@ function Conditions({ trade, evaluation }: { readonly trade: DailyTradeReview; r
           const direction = option ? conditionDirection(condition.role, condition.kind, option) : condition.role === 'Stop' ? 'below' : 'above';
           const on = option ? `${condition.role} on ${optionPrice ? 'the option price' : trade.underlying}` : condition.role;
           const boundary = option && !optionPrice ? decimalUnderlyingPrice(condition.boundary) : decimalMoney(condition.boundary);
-          const status = calculation(condition.result, ({ status: word, overrun }) => (overrun && overrun.dollars.compare(Rational.of(0n)) > 0 ? `${word}, ${money(overrun.dollars)} beyond` : word));
+          const status = calculation(condition.result, ({ status: word, overrun }) => (overrun && overrun.dollars.compare(Rational.of(0n)) > 0 ? `${word}, ${money(overrun.dollars)} beyond` : word), timeZone);
           return <li key={condition.id}>{`${on} at or ${direction} ${boundary}: ${status}`}</li>;
         })}
       </ul>
@@ -80,8 +82,8 @@ export function CardFigures({ trade }: CardFiguresProps) {
             </p>
           )}
           <Figures evaluation={evaluation}>
-            <Figure term="Reward : risk now">{calculation(evaluation.rewardRiskNow, ratio)}</Figure>
-            <Figure term="Reward : risk planned">{calculation(evaluation.planBaseline, (baseline) => ratio(baseline.rewardRiskRatio))}</Figure>
+            <Figure term="Reward : risk now">{calculation(evaluation.rewardRiskNow, ratio, timeZone)}</Figure>
+            <Figure term="Reward : risk planned">{calculation(evaluation.planBaseline, (baseline) => ratio(baseline.rewardRiskRatio), timeZone)}</Figure>
           </Figures>
           <Conditions trade={trade} evaluation={evaluation} />
         </>
@@ -93,7 +95,7 @@ export function CardFigures({ trade }: CardFiguresProps) {
       {atClose?.kind === 'Value' && <p>{valueAtCloseText(trade.underlying, atClose.value)}</p>}
       {atClose?.kind === 'Unavailable' && (
         <dl>
-          <Figure term={valueAtCloseTerm(trade.underlying)}>{calculation(atClose, () => '')}</Figure>
+          <Figure term={valueAtCloseTerm(trade.underlying)}>{calculation(atClose, () => '', timeZone)}</Figure>
         </dl>
       )}
       {evaluation?.atEntry && (

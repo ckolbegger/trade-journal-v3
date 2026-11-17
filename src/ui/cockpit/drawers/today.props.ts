@@ -129,11 +129,11 @@ function trackOf(
 
 // An Underlying condition's line under its track (A223): the contract's value at expiration at the boundary and the distance on the
 // Underlying, in the words the Conditions table gave them (row 23.17).
-function conditionLineOf(view: OpenTradeDetail, condition: OpenTradeDetail['current']['evaluation']['conditions'][number]): PriceTrackProps['conditionLines'][number] {
+function conditionLineOf(view: OpenTradeDetail, condition: OpenTradeDetail['current']['evaluation']['conditions'][number], timeZone: string): PriceTrackProps['conditionLines'][number] {
   const symbol = view.plan.underlying;
   const basis = (condition.role === 'Stop' ? view.baseline.stopBasis : view.baseline.targetBasis)[Number(condition.id.split('-')[1]) - 1];
   // A result with no reading says why at the figure length (A222); only a reading without an Underlying distance keeps the dash.
-  const distance = calculation(condition.result, (reading) => (reading.underlying ? underlyingPrice(reading.underlying.distance) : '—'));
+  const distance = calculation(condition.result, (reading) => (reading.underlying ? underlyingPrice(reading.underlying.distance) : '—'), timeZone);
   return {
     label: `${condition.role} on ${symbol}`,
     figures: [
@@ -143,7 +143,7 @@ function conditionLineOf(view: OpenTradeDetail, condition: OpenTradeDetail['curr
   };
 }
 
-function tracksOf({ replay }: TodayInput, view: OpenTradeDetail, optionTrade: boolean): readonly PriceTrackProps[] {
+function tracksOf({ replay, timeZone }: TodayInput, view: OpenTradeDetail, optionTrade: boolean): readonly PriceTrackProps[] {
   const leg = view.plan.legs[0];
   if (!leg) return [];
   const comparison = comparisonOf(replay);
@@ -173,7 +173,7 @@ function tracksOf({ replay }: TodayInput, view: OpenTradeDetail, optionTrade: bo
   const underlyingTrack = trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...earlierMarker(underlying), ...(underlyingMark && { now: Number(underlyingMark.price) }) }, decimalUnderlyingPrice, underlyingMark?.price, false);
   return drawn([
     trackOf('Option price', conditionsOf('StructureValue'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(leg.instrument), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, true),
-    underlyingTrack && { ...underlyingTrack, conditionLines: evaluation.conditions.filter((c) => c.kind === 'UnderlyingPrice').map((condition) => conditionLineOf(view, condition)) },
+    underlyingTrack && { ...underlyingTrack, conditionLines: evaluation.conditions.filter((c) => c.kind === 'UnderlyingPrice').map((condition) => conditionLineOf(view, condition, timeZone)) },
   ]);
 }
 
@@ -182,18 +182,18 @@ const drawn = (tracks: readonly (PriceTrackProps | undefined)[]): readonly Price
 type Row = { readonly label: string; readonly value: string };
 
 // The Position held at an earlier session's Marks, valued with that session's own Mark: the figures the dated line has always shown (P12, P13).
-function valuedAtOf(line: NonNullable<OpenTradeDetail['current']['datedLine']>): NonNullable<TodayDrawerProps['valuedAt']> {
+function valuedAtOf(line: NonNullable<OpenTradeDetail['current']['datedLine']>, timeZone: string): NonNullable<TodayDrawerProps['valuedAt']> {
   const { evaluation } = line;
   const { mark } = evaluation.observation;
   const rows: Row[] = [
     ...(mark ? [{ label: 'Mark', value: decimalMoney(mark.price) }] : []),
     { label: 'Realized to date', value: calculation(evaluation.realizedToDate, signed(money)) },
-    { label: 'Open P&L', value: calculation(evaluation.remainingOpenPnl, signed(money)) },
-    { label: 'Current Marked Trade P&L', value: pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR) },
+    { label: 'Open P&L', value: calculation(evaluation.remainingOpenPnl, signed(money), timeZone) },
+    { label: 'Current Marked Trade P&L', value: pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR, timeZone) },
     { label: 'Incurred fees', value: calculation(evaluation.incurredFees, money) },
-    { label: 'Risk to stop', value: dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR) },
-    { label: 'Worst case', value: dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR) },
-    { label: 'Reward to target', value: dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR) },
+    { label: 'Risk to stop', value: dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR, undefined, timeZone) },
+    { label: 'Worst case', value: dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR, undefined, timeZone) },
+    { label: 'Reward to target', value: dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR, undefined, timeZone) },
   ];
   return { heading: `At the ${shortDate(line.tradingDate)} Marks`, rows };
 }
@@ -240,7 +240,7 @@ function currentMarksOf({ timeZone, replay }: TodayInput, open: OpenTradeDetail)
   const mark = compared(instrument) ? undefined : open.current.mark;
   const underlyingMark = compared({ kind: 'Stock', symbol: open.plan.underlying }) ? undefined : open.current.underlyingMark;
   const date = evaluation.valuationDate;
-  const sentence = (reason: UnavailableReason) => text(unavailableWords(reason, 'sentence', timeZone));
+  const sentence = (reason: UnavailableReason) => text(unavailableWords(reason, 'sentence', timeZone), timeZone);
   const stale = evaluation.staleContext;
   const rows = [
     ...(expectedMarkDate ? [{ label: 'Expected Mark Date', value: shortDate(expectedMarkDate), plain: true }] : []),
@@ -285,7 +285,7 @@ export function todayProps(input: TodayInput): TodayDrawerProps {
     ...(noMarksText && { noMarksText }),
     tracksHeading: optionTrade ? 'Where the prices sit' : 'Where the price sits',
     tracks: tracksOf(input, view, optionTrade),
-    ...(view.current.datedLine && { valuedAt: valuedAtOf(view.current.datedLine) }),
+    ...(view.current.datedLine && { valuedAt: valuedAtOf(view.current.datedLine, input.timeZone) }),
     ...(view.current.evaluation.atEntry && { atEntry: atEntryOf(view.current.evaluation.atEntry, optionTrade) }),
   };
 }

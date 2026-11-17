@@ -29,7 +29,7 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
       ? {}
       : {
           summary: [
-            { label: 'Position', value: view.positions.map(positionText).join(', ') },
+            { label: 'Position', value: view.positions.map((p) => positionText(p, timeZone)).join(', ') },
             ...(view.netCost.kind === 'Value' ? [{ label: 'Net cost', value: netCost(view.netCost.value) }] : []),
             { label: 'Opening fees', value: money(fees.incurredOpening) },
             { label: 'Last activity', value: localTime(view.lastActivity, timeZone), plain: true },
@@ -45,7 +45,7 @@ export function positionProps(input: unknown, timeZone: string): PositionDrawerP
               label: 'Open P&L',
               value: due
                 ? unavailableLabel({ reason: 'SettlementDue', instrument: due.instrument, expiration: due.expiration })
-                : calculation(view.current.evaluation.remainingOpenPnl, signed(money)),
+                : calculation(view.current.evaluation.remainingOpenPnl, signed(money), timeZone),
             },
             { label: 'Realized to date', value: calculation(view.current.evaluation.realizedToDate, signed(money)) },
             { label: 'Incurred fees', value: calculation(view.current.evaluation.incurredFees, money) },

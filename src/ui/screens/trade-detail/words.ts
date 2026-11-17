@@ -20,15 +20,15 @@ export function answerText(answer: NarrativeAnswer): string {
 export type PlannedLeg = PlannedTradeDetail['plan']['legs'][number];
 
 // A Planned Leg in words: an option leg by contracts and contract (C2), a stock leg by shares.
-export const legText = (leg: PlannedLeg): string =>
-  leg.instrument.kind === 'Option' ? holdingText(leg.side, leg.quantity, leg.instrument) : `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`;
+export const legText = (leg: PlannedLeg, timeZone: string): string =>
+  leg.instrument.kind === 'Option' ? holdingText(leg.side, leg.quantity, leg.instrument, timeZone) : `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}`;
 
 export const abs = (value: Rational): Rational => (value.compare(Rational.of(0n)) < 0 ? Rational.of(0n).sub(value) : value);
 
 // An open position: an option by its direction, contracts and contract (23.4), a stock by shares.
-export const positionText = (p: OpenTradeDetail['positions'][number]): string =>
+export const positionText = (p: OpenTradeDetail['positions'][number], timeZone: string): string =>
   p.instrument.kind === 'Option'
-    ? holdingText(p.quantity.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long', quantity(abs(p.quantity)), p.instrument)
+    ? holdingText(p.quantity.compare(Rational.of(0n)) < 0 ? 'Short' : 'Long', quantity(abs(p.quantity)), p.instrument, timeZone)
     : `${quantity(p.quantity)} shares of ${p.instrument.symbol}`;
 
 export const measureText = (measure: { readonly dollars: Rational; readonly planR: Rational }) => `${money(measure.dollars)} · ${rMultiple(measure.planR)}`;

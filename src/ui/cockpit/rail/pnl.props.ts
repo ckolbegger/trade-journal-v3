@@ -34,7 +34,7 @@ function openLineOf(view: PlannedTradeDetail | OpenTradeDetail): string {
   return `${quantity(held)} of ${leg?.quantity ?? ''} shares open`;
 }
 
-function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined): Omit<PnlCardProps, 'name'> {
+function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined, timeZone: string | undefined): Omit<PnlCardProps, 'name'> {
   const pnl = view.current.evaluation.currentMarkedPnl;
   const change = replay?.sessions.at(-1)?.change;
   // Before any Marks, Trade Views names the session whose close brings them (revision 90); the card infers nothing.
@@ -42,9 +42,9 @@ function openProps(view: OpenTradeDetail, replay: PnlReplay | undefined): Omit<P
   if (firstMarksDue !== undefined) return { figure: NO_FIGURE, line: `Trade P&L once the ${shortDate(firstMarksDue)} session ends`, openLine: openLineOf(view) };
   // A contract due for settlement has no figure: its reason names the contract, and the line says what the figure waits for.
   const due = view.settlement[0];
-  if (due && pnl.kind === 'Unavailable') return { figure: settlementDueFigure(due), line: 'Trade P&L once the expiration is recorded' };
+  if (due && pnl.kind === 'Unavailable') return { figure: settlementDueFigure(due, timeZone), line: 'Trade P&L once the expiration is recorded' };
   return {
-    figure: calculation(pnl, money),
+    figure: calculation(pnl, money, timeZone),
     ...(pnl.kind === 'Value' && toneProps('tone', pnl.value)),
     ...(pnl.kind === 'Value' && change && { line: `${signed(money)(change.dollars)} since ${shortDate(change.since)}`, ...toneProps('lineTone', change.dollars) }),
     openLine: openLineOf(view),
@@ -69,18 +69,18 @@ function closedProps(view: ClosedTradeDetail): Omit<PnlCardProps, 'name'> {
 }
 
 // The adapter from a Detail to the P&L card's plain props (A216, W3, W4). The change line needs the replay (T8P.22 passes it).
-export function pnlProps(view: TradeDetailView, replay?: PnlReplay): PnlCardProps {
-  return { name: 'Trade P&L', ...figuresOf(view, replay) };
+export function pnlProps(view: TradeDetailView, replay?: PnlReplay, timeZone?: string): PnlCardProps {
+  return { name: 'Trade P&L', ...figuresOf(view, replay, timeZone) };
 }
 
-function figuresOf(view: TradeDetailView, replay: PnlReplay | undefined): Omit<PnlCardProps, 'name'> {
+function figuresOf(view: TradeDetailView, replay: PnlReplay | undefined, timeZone: string | undefined): Omit<PnlCardProps, 'name'> {
   if ('recordedPositionChanges' in view) return { figure: FACTS_INCOHERENT_FIGURE, line: 'Trade P&L' };
   if ('terminalDisposition' in view) return closedProps(view);
-  if ('current' in view) return openProps(view, replay);
+  if ('current' in view) return openProps(view, replay, timeZone);
   return { figure: NO_FIGURE, line: 'Trade P&L once the entry is recorded and marked', openLine: openLineOf(view) };
 }
 
 // The card the shell renders: the Detail's view in, the card's plain props out.
-export function PnlCardFromView({ view, replay }: { readonly view: TradeDetailView; readonly timeZone: string; readonly replay?: PnlReplay }) {
-  return createElement(PnlCardView, pnlProps(view, replay));
+export function PnlCardFromView({ view, replay, timeZone }: { readonly view: TradeDetailView; readonly timeZone: string; readonly replay?: PnlReplay }) {
+  return createElement(PnlCardView, pnlProps(view, replay, timeZone));
 }

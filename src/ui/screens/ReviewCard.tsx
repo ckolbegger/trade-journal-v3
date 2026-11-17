@@ -35,9 +35,9 @@ function remainsText(progress: CardProgress): string {
 }
 
 // The slider's description speaks these figures in the app's own words (figures.ts), never as zero when missing.
-function sliderFigures(figures: SliderEvaluation | undefined): { readonly riskToStop: string; readonly pnl: string; readonly rewardToRisk: string } {
+function sliderFigures(figures: SliderEvaluation | undefined, timeZone: string | undefined): { readonly riskToStop: string; readonly pnl: string; readonly rewardToRisk: string } {
   if (!figures) return { riskToStop: FACTS_INCOHERENT_FIGURE, pnl: FACTS_INCOHERENT_FIGURE, rewardToRisk: FACTS_INCOHERENT_FIGURE };
-  return { riskToStop: calculation(figures.riskToStop, money), pnl: calculation(figures.pnl, signed(money)), rewardToRisk: calculation(figures.rewardRiskNow, ratio) };
+  return { riskToStop: calculation(figures.riskToStop, money, timeZone), pnl: calculation(figures.pnl, signed(money), timeZone), rewardToRisk: calculation(figures.rewardRiskNow, ratio, timeZone) };
 }
 
 export const PANELS = ['Marks', 'Reflections', 'Settlement', 'Action'] as const;
@@ -88,6 +88,7 @@ export interface ReviewCardProps {
 export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, go, marks, held, onResult, tradeLine, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
+  const { timeZone } = useRuntime();
   useEffect(() => {
     if (reveal === 0) return;
     item.current?.scrollIntoView?.({ block: 'start' });
@@ -120,7 +121,7 @@ export function ReviewCard({ facade, trade, expanded, detail, reveal, advance, g
             <Badge tone="neutral">{BAND_TEXT[trade.band]}</Badge>
           </button>
         </h3>
-        <StopTargetSlider position={trade.rangePosition} figures={sliderFigures(trade.figures)} />
+        <StopTargetSlider position={trade.rangePosition} figures={sliderFigures(trade.figures, timeZone)} />
       </div>
       {expanded && holdMessage && <p role="status">Save or discard what you entered for {tradeName(trade)} to leave it.</p>}
       {expanded && detail === 'Loading' && <p role="status">Loading the Trade…</p>}

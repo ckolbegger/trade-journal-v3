@@ -38,7 +38,7 @@ export function footerProps({ view, timeZone }: FooterSource): DetailFooterProps
         heading: 'Planned-Leg Fulfillment',
         rows: view.legFulfillment.map((f) => {
           const leg = view.plan.legs.find((l) => l.factId === f.plannedLegId);
-          return { label: leg ? legText(leg) : f.plannedLegId, value: FULFILLMENT[f.fulfillment]! };
+          return { label: leg ? legText(leg, timeZone) : f.plannedLegId, value: FULFILLMENT[f.fulfillment]! };
         }),
         items: [],
       },
