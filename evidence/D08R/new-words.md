@@ -23,3 +23,4 @@ Screen texts no approved row covers (decision 116 (2)). Each is the wording the 
 | The Since the last Marks group's place: before Conditions, after the Plan group (W23 gives no place; browser row B8R.4 reads "W23, W31 and W32 groups in order") | T8R.12 | Trade Detail, Plan and Risk | W23 |
 | A Closed Trade's Today column heading stays the view's "Today, Mon Nov 23" (A235) over empty cells, beside "Exit Fri Nov 13" or "Expired Fri Nov 20" | T8R.7 | Trade Detail, Today | W26, W29 |
 | The "Closed" stamp is drawn as a bordered tag at the top of a Closed Trade's Today (W30 gives only the word) | T8R.7 | Trade Detail, Today | W30 |
+| A lot tick's accessible name and hover text: "$3.30 · Fri Oct 16" (the lot's price, " · ", the date it was opened; A237 gives the shape) | T8R.8 | Trade Detail, Today, price track | A237 |

@@ -1063,3 +1063,10 @@ All 21 Today specs passed.
 **Orphans in files T8R.9 does not own:** `ConditionReading.underlying` and `trigger` are no longer read by Today, as A230 says. Removing `underlying` waits for the next fixture refreeze; listed for the final report.
 
 **ocr:** session 06f4f8a9-e600-4441-8133-d07f15a51354, 14 files reviewed, 0 comments, raw output in `ocr/T8R.9-c0905d18.json`. The reviewer checked by hand that no dead code remains and that the absence checks use the same region lookup that would have matched the old cards.
+
+## T8R.8
+
+The price track's entry dot is the view's `openAverage` (A236), no longer Entry Quality's average entry. Each open lot gets a tick (`PriceTrackProps.ticks`, a required `{ label, price }` list; label "$3.30 · Fri Oct 16", A237) drawn as a `.tick` span with that accessible name and hover text, on the option price track (or the stock's track), not on the Underlying's track of an option Trade. The range includes the ticks' prices. The Today adapter reads lots from `positions[].openLots` and their dates from the recorded executions.
+
+- Existing expectations that gained the field: `today.props.test.ts` (the O-S2 views gained `openAverage: 1.25`), `track.test.tsx` and `today.test.tsx` (`ticks: []`).
+- No browser spec reads the track's entry dot or ticks (grep of `e2e` for `.mk`, `.track`, `.dot`, `data-kind` finds none), so no browser line changed.

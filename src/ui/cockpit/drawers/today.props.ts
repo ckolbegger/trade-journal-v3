@@ -165,8 +165,9 @@ function trackOf(
   format: (text: string) => string,
   nowText: string | undefined,
   zeroBased: boolean,
+  ticks: PriceTrackProps['ticks'] = [],
 ): PriceTrackProps | undefined {
-  const prices = [...conditions.map((c) => Number(c.boundary)), ...[markers.entry, markers.earlier?.price, markers.now].filter((p): p is number => p !== undefined)];
+  const prices = [...conditions.map((c) => Number(c.boundary)), ...ticks.map((t) => t.price), ...[markers.entry, markers.earlier?.price, markers.now].filter((p): p is number => p !== undefined)];
   // A track with nothing to place on it is not drawn.
   if (prices.length === 0) return undefined;
   const low = Math.min(...prices);
@@ -186,6 +187,7 @@ function trackOf(
       ...(markers.earlier ? [{ kind: 'earlier' as const, label: markers.earlier.label, price: markers.earlier.price }] : []),
       ...(markers.now === undefined ? [] : [{ kind: 'now' as const, label: 'now', price: markers.now }]),
     ],
+    ticks,
     conditionLines: [],
   };
 }
@@ -214,8 +216,15 @@ function tracksOf({ replay, timeZone }: TodayInput, view: OpenTradeDetail, optio
     const mark = markOf(comparison?.earlier, instrument);
     return comparison && mark?.resolution.kind === 'Available' ? { label: shortDate(comparison.earlier.date), price: Number(mark.resolution.mark.price) } : undefined;
   };
-  const quality = view.entryQuality;
-  const entryPrice = quality.kind === 'Value' && quality.value.averageEntry.kind === 'Value' ? asNumber(quality.value.averageEntry.value) : undefined;
+  // The entry dot is the open lots' average (A236) and each open lot has a tick at its price (A237): both are the view's, never recalculated.
+  const entryPrice = view.openAverage && asNumber(view.openAverage);
+  const executions = view.positionChanges.flatMap((change) => change.executions);
+  const ticks = view.positions.flatMap((p) =>
+    p.openLots.map((lot) => {
+      const opened = executions.find((e) => e.factId === lot.openingExecutionId)?.economicTime ?? '';
+      return { label: `${money(lot.price)} · ${openedDate(opened, timeZone)}`, price: asNumber(lot.price) };
+    }),
+  );
   const { mark, underlyingMark, evaluation } = view.current;
   const symbol = view.plan.underlying;
   const below = (condition: (typeof evaluation.conditions)[number]) =>
@@ -230,12 +239,12 @@ function tracksOf({ replay, timeZone }: TodayInput, view: OpenTradeDetail, optio
   };
   if (!optionTrade) {
     const stock: Instrument = { kind: 'Stock', symbol };
-    return drawn([trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(stock), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, false)]);
+    return drawn([trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(stock), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, false, ticks)]);
   }
   const underlying: Instrument = { kind: 'Stock', symbol };
   const underlyingTrack = trackOf(symbol, conditionsOf('UnderlyingPrice'), { ...earlierMarker(underlying), ...(underlyingMark && { now: Number(underlyingMark.price) }) }, decimalUnderlyingPrice, underlyingMark?.price, false);
   return drawn([
-    trackOf('Option price', conditionsOf('StructureValue'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(leg.instrument), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, true),
+    trackOf('Option price', conditionsOf('StructureValue'), { ...(entryPrice !== undefined && { entry: entryPrice }), ...earlierMarker(leg.instrument), ...(mark && { now: Number(mark.price) }) }, decimalMoney, mark?.price, true, ticks),
     underlyingTrack && { ...underlyingTrack, conditionLines: evaluation.conditions.filter((c) => c.kind === 'UnderlyingPrice').map((condition) => conditionLineOf(view, condition, timeZone)) },
   ]);
 }

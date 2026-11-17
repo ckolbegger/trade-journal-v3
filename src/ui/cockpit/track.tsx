@@ -5,7 +5,7 @@ const LANES = { now: 'above', entry: 'higher', earlier: 'below' } as const;
 
 // A price track (A215): a horizontal bar with its Stop and Target zones and its markers, placed by percentage. The markers carry no prices; the
 // accessible name and the comparison table do.
-export function PriceTrack({ title, accessibleName, min, max, zones, markers, conditionLines }: PriceTrackProps) {
+export function PriceTrack({ title, accessibleName, min, max, zones, markers, ticks, conditionLines }: PriceTrackProps) {
   const pct = (price: number) => Number((((price - min) / (max - min)) * 100).toFixed(2));
   return (
     <div className="track-block">
@@ -13,6 +13,9 @@ export function PriceTrack({ title, accessibleName, min, max, zones, markers, co
       <div className="track" role="img" aria-label={accessibleName}>
         {zones.map((zone, index) => (
           <span key={index} className={`zone z-${zone.role.toLowerCase()}`} data-role={zone.role} style={{ left: `${pct(zone.from)}%`, width: `${Number((pct(zone.to) - pct(zone.from)).toFixed(2))}%` }} />
+        ))}
+        {ticks.map((tick, index) => (
+          <span key={index} className="tick" role="img" aria-label={tick.label} title={tick.label} style={{ left: `${pct(tick.price)}%` }} />
         ))}
         {markers.map((marker) => (
           <span key={marker.kind} className={`mk ${marker.kind}`} data-kind={marker.kind} style={{ left: `${pct(marker.price)}%` }}>

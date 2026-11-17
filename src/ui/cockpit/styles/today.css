@@ -100,6 +100,16 @@
   background: color-mix(in srgb, var(--target) 40%, var(--card));
 }
 
+/* A lot's price (A237): a thin mark across the bar, under the markers. */
+.track .tick {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  background: var(--muted);
+}
+
 .track .mk {
   position: absolute;
   top: 50%;

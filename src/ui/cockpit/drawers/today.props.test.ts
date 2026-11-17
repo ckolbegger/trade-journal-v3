@@ -7,8 +7,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { execution, openDetailAt, PC1, PC2, positionChange } from '../../../../tests/support/open-detail-fixtures.ts';
 import { optionClosedDetail, optionOpenDetail } from '../../../../tests/support/option-detail-fixtures.ts';
-import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1, ocChange, OS_CONTRACT, OS_ES, OS_S1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';
-import type { OpenTradeDetail } from '../../../app/types.ts';
+import { OC_CONTRACT, OC_PC1, OC_PC2, OC_X1, ocChange, OS_CONTRACT, OS_ES, OS_S1, OS2_S1 } from '../../../../tests/support/option-trade-fixtures.ts';import type { OpenTradeDetail } from '../../../app/types.ts';
 import type { Instrument } from '../../../domain/instrument/index.ts';
 import { parseDecimal, Rational } from '../../../domain/values/index.ts';
 import { MON_CLOSE, THURSDAY, tuesday, useFixedClock } from '../../screens/trade-detail/test-support.ts';
@@ -46,8 +45,10 @@ const session = (date: string, marks: readonly ReplayMark[]): ReplaySession => (
 const replayOf = (sessions: readonly ReplaySession[]): TodayReplay => ({ instruments: [MNO, PUT], sessions });
 
 // O-S2 (MNO's Cash-Secured Put) valued at the Thu Oct 15 Marks: put $3.20, MNO 43.00.
-const thursday = (): OpenTradeDetail =>
-  optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.20', underlyingMark: '43.00' });
+const thursday = (): OpenTradeDetail => ({
+  ...optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '3.20', underlyingMark: '43.00' }),
+  openAverage: rational('1.25'),
+});
 
 // Wed Oct 14 and Thu Oct 15 with Marks: the put at $3.10 then $3.20, MNO at 42.50 then 43.00.
 const wednesdayAndThursday = (): TodayReplay =>
@@ -202,7 +203,7 @@ describe('Today drawer (W8): gaps and crowding (T8P.16-B)', () => {
 
   it('should keep the entry and now labels apart when the Mark is at the entry', () => {
     // The put's Mark is $1.25, the average entry of O-S2's Sell at 1.25: both markers sit at one place on the track.
-    drawer(optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '1.25', underlyingMark: '43.00' }));
+    drawer({ ...optionOpenDetail('O-S2', [OS2_S1], { tradingDate: '2026-10-15', closeInstant: '2026-10-15T20:00:00Z', contractMark: '1.25', underlyingMark: '43.00' }), openAverage: rational('1.25') });
     const track = screen.getByRole('img', { name: /^Option price:/ });
     const lane = (kind: string) => track.querySelector<HTMLElement>(`.mk[data-kind="${kind}"] .lab`)!.dataset['lane'];
     expect(track.querySelector<HTMLElement>('.mk[data-kind="entry"]')!.style.left).toBe(track.querySelector<HTMLElement>('.mk[data-kind="now"]')!.style.left);
@@ -525,5 +526,40 @@ describe('Today drawer: Settlement Due and Closed (W25, W26, W30)', () => {
     const stamp = screen.getByText('Closed');
     expect(stamp.closest('[aria-hidden="true"]')).toBeNull();
     expect(stamp.closest('.closed-today')).not.toBeNull();
+  });
+});
+
+describe('Price track: open lots', () => {
+  // O-C3+ at Fri 10-16: one contract left at $2.00 (Mon), one bought Fri 11:00 at $3.30. Trade Views gives the open lots' average, $2.65 (A236).
+  const buy = ocChange('pc-1', '2026-10-12T14:00:00Z', 1, 'Buy', '2', '2.00', '1.30');
+  const sell = ocChange('pc-2', '2026-10-14T15:00:00Z', 3, 'Sell', '1', '3.00', '0.65');
+  const lateBuy = ocChange('pc-3', '2026-10-16T15:00:00Z', 5, 'Buy', '1', '3.30', '0.65');
+  const FRIDAY = { tradingDate: '2026-10-16', closeInstant: '2026-10-16T20:00:00Z', contractMark: '3.50', underlyingMark: '53.00' };
+  const oc3Plus = (): OpenTradeDetail => ({ ...optionOpenDetail('O-C', [buy, sell, lateBuy], FRIDAY), openAverage: rational('2.65') });
+  const optionTrack = () => screen.getByRole('img', { name: /^Option price: / });
+  const left = (element: HTMLElement | undefined) => Number.parseFloat(element!.style.left);
+
+  it("should place the entry dot at the open lots' average, $2.65, not the first entry's $2.00", () => {
+    drawer(oc3Plus());
+    const track = optionTrack();
+    const entry = left(parts(track, '.mk[data-kind="entry"]')[0]);
+    const [first, second] = parts(track, '.tick');
+    // Equal lots: $2.65 is half way between the two ticks, and the first entry's $2.00 is the first tick.
+    expect(entry).toBeCloseTo((left(first) + left(second)) / 2, 1);
+    expect(entry).toBeGreaterThan(left(first));
+  });
+
+  it('should place one tick per open lot at its price, named "$3.30 · Fri Oct 16"', () => {
+    drawer(oc3Plus());
+    const ticks = parts(optionTrack(), '.tick');
+    expect(ticks.map((tick) => tick.getAttribute('aria-label'))).toEqual(['$2.00 · Mon Oct 12', '$3.30 · Fri Oct 16']);
+    expect(ticks.map((tick) => tick.title)).toEqual(['$2.00 · Mon Oct 12', '$3.30 · Fri Oct 16']);
+    expect(left(ticks[0])).toBeLessThan(left(ticks[1]));
+  });
+
+  it('should not tick a lot that was sold', () => {
+    // O-C: Mon Buy 1 @ 2.10, Mon Buy 1 @ 1.90, Tue Sell 1 @ 3.00. The first lot is sold, so only the $1.90 lot is open.
+    drawer({ ...optionOpenDetail('O-C', [OC_PC1, OC_PC2, OC_X1], THURSDAY), openAverage: rational('1.90') });
+    expect(parts(optionTrack(), '.tick').map((tick) => tick.getAttribute('aria-label'))).toEqual(['$1.90 · Mon Oct 12']);
   });
 });

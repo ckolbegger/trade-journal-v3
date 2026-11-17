@@ -1,0 +1,14 @@
+# D08R TDD log, T8R.8
+
+One file per task (decision 111), so parallel lanes never edit one file. Each row is one single-case run; see `../tdd-log.md` for the rules.
+
+| T8R.8 | should place the entry dot at the open lots | red | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should place the entry dot at the open lots"` | exit 1; Tests  1 failed, 26 skipped (27) | TypeError: Cannot read properties of undefined (reading 'style')  |
+| T8R.8 | should place one tick per open lot at its price | red | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should place one tick per open lot at its price"` | exit 1; Tests  1 failed, 26 skipped (27) | AssertionError: expected [] to deeply equal [ '$2.00 · Mon Oct 12', …(1) ]  |
+| T8R.8 | should not tick a lot that was sold | red | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should not tick a lot that was sold"` | exit 1; Tests  1 failed, 26 skipped (27) | AssertionError: expected [] to deeply equal [ '$1.90 · Mon Oct 12' ]  |
+| T8R.8 | should place the entry dot at the open lots | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should place the entry dot at the open lots"` | exit 0; Tests  1 passed, 26 skipped (27) |  |
+| T8R.8 | should place one tick per open lot at its price | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should place one tick per open lot at its price"` | exit 0; Tests  1 passed, 26 skipped (27) |  |
+| T8R.8 | should not tick a lot that was sold | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should not tick a lot that was sold"` | exit 0; Tests  1 passed, 26 skipped (27) |  |
+| T8R.8 | should place the entry dot at the open lots | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should place the entry dot at the open lots"` | exit 0; Tests  1 passed, 26 skipped (27) |  |
+| T8R.8 | should place one tick per open lot at its price | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should place one tick per open lot at its price"` | exit 0; Tests  1 passed, 26 skipped (27) |  |
+| T8R.8 | should not tick a lot that was sold | green | `npx vitest run src/ui/cockpit/drawers/today.props.test.ts -t "should not tick a lot that was sold"` | exit 0; Tests  1 passed, 26 skipped (27) |  |
+| T8R.8 | refactor | none needed: `trackOf` takes `ticks` as one defaulted parameter; no test renamed. Assertions beyond the plan: the tick's hover text (`title`) equals its accessible name; the entry dot lies between the two ticks. The first-case partial name "should place the entry dot at the open lots" matches the planned case (the apostrophe breaks `-t`). Cases 2 and 3 were written green together with case 1's code, so their reds were taken by temporarily rendering no ticks, then restored. |

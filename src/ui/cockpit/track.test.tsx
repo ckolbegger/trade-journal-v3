@@ -18,6 +18,7 @@ describe('price track (A215)', () => {
           { role: 'Target', from: 60, to: 70 },
         ]}
         markers={[{ kind: 'now', label: 'now', price: 50 }]}
+        ticks={[]}
         conditionLines={[]}
       />,
     );
